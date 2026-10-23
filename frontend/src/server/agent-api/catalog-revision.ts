@@ -63,6 +63,7 @@ function projectEngine(candidate: AgentPublicGenerationEngine): JsonValue {
       audio: engine.audio,
       inputLimits: engine.inputLimits,
       inputSchema: engine.inputSchema ?? null,
+      ...(engine.operationCaps ? { operationCaps: engine.operationCaps } : {}),
       updatedAt: engine.updatedAt,
     },
   }) as JsonValue;

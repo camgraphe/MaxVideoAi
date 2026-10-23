@@ -1,3 +1,4 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import { createHash } from 'node:crypto';
 
 import type {
@@ -51,6 +52,7 @@ const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
 };
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
+  'operation',
   'surface',
   'engineId',
   'mode',
@@ -538,6 +540,9 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   if (seedanceWorkflow && !['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode)) fail('seedanceWorkflow', 'Unsupported Draft mode.');
   assertSurfaceMode(surface, mode);
 
+  let operation;
+  try { operation = normalizeVideoOperation(normalizeEngineId(input.engineId), mode, input.operation); }
+  catch { fail('operation', 'Unsupported operation for this engine and mode.'); }
   const settings = normalizeSettings(input.settings, mode);
   const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
   if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
@@ -550,6 +555,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   }
   return {
     schemaVersion: 1,
+    ...(operation ? { operation } : {}),
     ...(seedanceWorkflow ? { seedanceWorkflow } : {}),
     surface,
     engineId: normalizeEngineId(input.engineId),

@@ -82,6 +82,7 @@ export type GenerateBillingPreflightResult =
 
 export async function resolveGenerateBillingPreflight(params: {
   workflowStep?: 'draft' | 'final';
+  operation?: import('@/lib/video-operation').VideoOperation;
   req: NextRequest;
   engine: EngineCaps;
   mode: Mode;
@@ -188,6 +189,7 @@ export async function resolveGenerateBillingPreflight(params: {
   });
   const pricing = capturedQuote ? structuredClone(capturedQuote.pricing) : await computePricingSnapshotFn({
     workflowStep: params.workflowStep,
+    operation: params.operation,
     engine: pricingEngine,
     durationSec: params.durationSec,
     resolution: params.pricingResolution,

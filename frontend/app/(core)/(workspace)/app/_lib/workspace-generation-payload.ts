@@ -72,6 +72,14 @@ export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
 ): WorkspaceGeneratePayloadBuildResult {
   const requestMode = options.submissionMode as Mode;
+  if (options.form.operation) {
+    const fields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])]
+      .filter(field => !field.modes?.length || field.modes.includes(requestMode));
+    const allowed = new Set(fields.map(field => field.id));
+    options = { ...options, extraInputValues: Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => allowed.has(key))),
+      inputsPayload: options.inputsPayload?.filter(input => !input.slotId || allowed.has(input.slotId)),
+      ...(options.form.operation === 'kling-edit' ? { primaryImageUrl: undefined, primaryAudioUrl: undefined, endImageUrl: undefined, multiPromptPayload: undefined, shotType: 'customize' as const } : {}) };
+  }
   const shouldSendAspectRatio = workspaceModeSupportsRequestField({
     inputSchema: options.inputSchema,
     capability: options.capability,
@@ -120,7 +128,8 @@ export function buildWorkspaceGeneratePayload(
     engineId: options.selectedEngineId,
     prompt: options.trimmedPrompt,
     mode: options.submissionMode,
-    durationSec: resolvedDurationSeconds,
+    ...(options.form.operation ? { operation: options.form.operation } : {}),
+    ...(options.form.operation === 'kling-edit' ? {} : { durationSec: resolvedDurationSeconds }),
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },
     cfgScale: typeof options.cfgScale === 'number' ? options.cfgScale : undefined,

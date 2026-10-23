@@ -1,4 +1,5 @@
 'use client';
+import { VideoOperationSelector } from './VideoOperationSelector';
 import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import { getSeedanceAutomaticPricingNote } from '@/lib/seedance-modelark-options';
 
@@ -560,6 +561,7 @@ export function WorkspaceComposerSurface({
                 disabledReason={guestUploadLockedReason}
               />
             ) : null}
+            <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
             {showOmniStudioPanel ? (
               <OmniStudioPanel
                 form={form}

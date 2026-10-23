@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { EngineCaps } from '@/types/engines';
 
@@ -234,6 +235,7 @@ export function buildPaidVideoRequestBody(
     return { ...execution.seedanceWorkflow.body, engineId: execution.request.engineId, jobId: execution.quoteId,
       payment: { mode: 'wallet' }, membershipTier: resolvePaidMembershipTier(execution.canonicalPricing) };
   }
+  if (execution.engine) execution = { ...execution, engine: resolveVideoOperationEngine(execution.engine, toEngineGenerationMode(execution.request.engineId, execution.request.mode), execution.request.operation) };
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
@@ -241,6 +243,7 @@ export function buildPaidVideoRequestBody(
   const references = materializeReferences(execution);
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
+    ...(execution.request.operation ? { operation: execution.request.operation } : {}),
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
     prompt: execution.request.prompt,
     jobId: execution.quoteId,

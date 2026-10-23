@@ -66,6 +66,7 @@ const persistedReferenceSchema = z.object({
 }).strict();
 
 const preflightRequestSchema = z.object({
+  operation: z.enum(['kling-reference', 'kling-edit']).optional(),
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),

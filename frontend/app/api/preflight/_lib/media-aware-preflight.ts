@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine, validateKlingEditSource } from '@/lib/video-operation';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
@@ -148,8 +149,10 @@ export async function resolveMediaAwarePreflight(
   const privateEngine = !publicEngine && canAccessPrivate
     ? await getConfiguredEngineIncludingHiddenFn(request.engine)
     : undefined;
-  const engine = publicEngine ?? privateEngine;
+  let engine = publicEngine ?? privateEngine;
   if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
+  try { engine = resolveVideoOperationEngine(engine, request.mode, request.operation); }
+  catch { return mediaPricingFailure('OPERATION_INVALID', 'Invalid video operation.'); }
   const finalFacts = input.trustedSeedanceWorkflow?.finalFacts;
   if (finalFacts) {
     return computeConfiguredPreflightFn({ ...request, mode: finalFacts.mode, durationSec: finalFacts.durationSec,
@@ -224,7 +227,7 @@ export async function resolveMediaAwarePreflight(
     && (isSeedanceAdaptiveAspect(request.aspectRatio) || (engine.id === 'seedance-2-5' && ['i2v', 'extend'].includes(request.mode)))
     && ['i2v', 'v2v', 'extend'].includes(request.mode));
   if (!needsLumaSourceTiming && !needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration && !needsSeedanceSourceAspect) {
-    const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p' });
+  const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p' });
     return computeConfiguredPreflightFn({ ...request, durationSec: priced.durationSec }, {
       seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
       resolvedEngine: engine,
@@ -329,9 +332,15 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
+  const operationSeconds = request.operation === 'kling-edit' ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  const operationSourceError = request.operation === 'kling-edit' ? validateKlingEditSource((processed.trustedMediaReferences ?? []).find(reference => reference.kind === 'video' && reference.fieldId === 'video_url')) : undefined;
+  if (operationSourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', operationSourceError);
+  if (request.operation === 'kling-edit' && (typeof operationSeconds !== 'number' || !Number.isFinite(operationSeconds) || operationSeconds < 3 || operationSeconds > 15)) {
+    return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Kling Edit requires a verified 3–15 second source.');
+  }
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
-  return computeConfiguredPreflightFn({ ...request, durationSec: needsLumaSourceTiming && request.mode === 'v2v'
-    ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec,
+  return computeConfiguredPreflightFn({ ...request, durationSec: operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
+    ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec),
     ...(needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
   }, {

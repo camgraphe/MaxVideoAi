@@ -20,6 +20,7 @@ export type GenerateAttachment = {
 };
 
 export type GeneratePayload = {
+  operation?: import('@/lib/video-operation').VideoOperation;
   /** Internal execution policy; MCP returns after queue acceptance. */
   submissionMode?: 'enqueue';
   engineId: string;

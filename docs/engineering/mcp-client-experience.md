@@ -631,3 +631,19 @@ unchanged. The local client gate passed 173 tests with one skip and all 70 curat
 scenarios. This is source/SDK evidence, not a production deployment, plugin package
 release or installed-host verification. Existing host connections need a catalog
 refresh after server delivery to receive the additive preparation schema.
+
+
+### Kling operation schema review (2026-10-24)
+
+The optional preparation `operation` enum adds Kling Reference/Edit selection;
+engine/mode compatibility remains validated by canonical normalization. The
+reviewed policy change is limited to that input-schema field. Instructions and
+prepare description remain unchanged at 1,551 and 1,639 UTF-8 bytes respectively;
+the SDK preparation input schema is 10,541 bytes. The read-only in-memory metadata
+collector reports fingerprint
+`6c216c9f26886ab04073d83b080b197b447065e050e4a21c29b6710be3ea5016`.
+Only the fingerprint changed in the curated policy fixture, preserving its 70
+decisions and fixture contract hash. The local client gate passes 173 tests with
+one skip and all 70 curated scenarios. This is offline source/SDK evidence, not
+installed-host or deployment evidence. Existing hosts need a catalog refresh
+following delivery to discover the additive operation schema.

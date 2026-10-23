@@ -676,7 +676,7 @@ test('workspace keeps Kling Omni creation unified and exposes supported Modify s
     })?.map(({ mode }) => mode),
     [null, 'v2v']
   );
-  assert.equal(
+  assert.deepEqual(
     buildComposerModeToggles({
       selectedEngine: klingO34k,
       audioWorkflowLocked: false,
@@ -688,8 +688,8 @@ test('workspace keeps Kling Omni creation unified and exposes supported Modify s
         audioLocked: 'Audio locked',
         audioLockedFallback: 'Audio locked',
       },
-    }),
-    undefined
+    })?.map(({ mode }) => mode),
+    [null, 'v2v']
   );
 
   const v2vSchema = summarizeWorkspaceInputSchema({
@@ -735,7 +735,7 @@ test('workspace keeps Kling Omni creation unified and exposes supported Modify s
 
   assert.deepEqual(
     fourKSchema.assetFields.map(({ field }) => field.id),
-    ['image_urls', 'image_url', 'end_image_url']
+    ['image_urls', 'image_url', 'end_image_url', 'video_url']
   );
 });
 

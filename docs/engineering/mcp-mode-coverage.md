@@ -246,3 +246,31 @@ rank Extend, certify identity preservation or establish relative prices.
 canonical requests and paid-body forwarding; the composer DOM matrix covers every
 authored Extend mode. Host catalog refresh after server delivery is separate from
 these source checks; no installed plugin release is implied.
+
+## Kling Omni operations (2026-10-24)
+
+`v2v` keeps its historical Reference meaning when `operation` is omitted.
+Explicit `kling-reference` has the same Standard/Pro tariff selector; it does not
+rewrite omitted-operation canonical JSON or historical receipts. `kling-edit`
+selects a full source-timed schema: owned 3–15s source, required prompt, optional
+reference images and `keepAudio`, with no requested duration or aspect ratio.
+The shared operation details project those inputs to Site, MCP and Studio.
+Standard/Pro/4K Edit and new 4K Reference select their verified fal endpoints;
+there is no Kling Extend or inferred direct 4K route. Legacy Reference keeps its
+conservative 3–10s contract; this change does not widen direct transport limits.
+
+New operations bind operation, fal endpoint and trusted source metadata to the
+quote. They require separate active reviewed customer tariffs, even when the
+legacy pricing policy is active. Missing cells fail closed. The read-only
+`server/pricing/kling-operation-tariff-proposal.ts` prepares 16 exact selector
+classes (three fractional source-second Edit classes and thirteen requested
+3–15s 4K Reference classes), tied to the loaded tariff revision. It neither
+copies Reference retail prices nor writes or activates cells. The dated public
+supplier rates are Standard Edit $0.126/s, Pro Edit $0.168/s, and 4K $0.42/s;
+they are published endpoint reference rates, not verified effective invoices.
+Generic Standard/Pro $0.14 base metadata does not replace them.
+
+Site retains existing Kling Elements. Canonical MCP/Studio previously had no
+owned Kling Element request representation; this change retains that boundary
+and exposes supported ordered reference images, without adding unchecked
+provider IDs or ad hoc element JSON. Full Element parity remains separate work.

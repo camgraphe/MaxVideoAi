@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine, videoOperationEndpoint } from '@/lib/video-operation';
 import { applyFalLegacyVideoContracts } from '@/lib/fal-legacy-video-contracts';
 import {
   getLumaRay2DurationInfo,
@@ -34,6 +35,7 @@ export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  const operationEndpoint = videoOperationEndpoint(payload.engineId, payload.mode ?? 't2v', payload.operation);
   if (isFlux3MaxEngineId(payload.engineId)) return buildFlux3MaxFalRequest(payload);
   if (isKling3TurboEngineId(payload.engineId)) {
     const mode = payload.mode ?? 't2v';
@@ -63,7 +65,7 @@ export function buildFalGenerationRequest(
   }
 
   const soraFal = payload.soraRequest ? buildSoraFalInput(payload.soraRequest) : null;
-  let model = defaultModel;
+  let model = operationEndpoint ?? defaultModel;
   let requestBody: Record<string, unknown> = {};
 
   if (soraFal) {
@@ -73,7 +75,8 @@ export function buildFalGenerationRequest(
       requestBody.api_key = apiKey;
     }
   } else {
-    const inputSchema = getFalEngineById(payload.engineId)?.engine.inputSchema;
+    const baseEngine = getFalEngineById(payload.engineId)?.engine;
+    const inputSchema = baseEngine ? resolveVideoOperationEngine(baseEngine, (payload.mode ?? 't2v') as Mode, payload.operation).inputSchema : undefined;
     const activeField = (
       candidateFieldIds: readonly string[],
       type?: 'image' | 'video' | 'audio' | 'enum' | 'boolean' | 'number',
@@ -462,5 +465,13 @@ export function buildFalGenerationRequest(
     requestBody.metadata = { ...existing, ...metadataPayload };
   }
 
+  if (operationEndpoint) {
+    if (!requestBody.video_url && payload.videoUrl) requestBody.video_url = payload.videoUrl;
+    const images = Array.isArray(requestBody.image_urls) ? requestBody.image_urls.length : 0;
+    const elements = Array.isArray(requestBody.elements) ? requestBody.elements.length : 0;
+    if (images + elements > 4) throw new Error('Kling video operations allow four reference images and elements combined.');
+    delete requestBody.resolution;
+    if (payload.operation === 'kling-edit') { delete requestBody.duration; delete requestBody.aspect_ratio; delete requestBody.generate_audio; }
+  }
   return { model, requestBody };
 }

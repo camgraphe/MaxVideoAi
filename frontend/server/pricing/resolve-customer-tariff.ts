@@ -53,7 +53,7 @@ export function resolveCustomerTariffQuote(input: {
     const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
     const omni = continuous.engineId === 'gemini-omni-flash';
     const openUnit = continuous.referenceTokenBudget === 'continuous' ? 'reference_tokens'
-      : ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
+      : continuous.operation === 'kling-edit' || ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
     const requiredInput = openUnit ? units.includes(openUnit) : units.includes(unit) || (omni && units.includes('input_tokens'));
     const requiredOutput = !omni || units.includes('output_tokens') || units.includes('output_seconds');
     if (cell.price.kind === 'fixed' || !requiredInput || !requiredOutput) {

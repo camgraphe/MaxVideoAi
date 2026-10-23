@@ -102,6 +102,7 @@ function cloneInputField(field: EngineInputField): EngineInputField {
 export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
     ...engine,
+    ...(engine.operationCaps ? { operationCaps: structuredClone(engine.operationCaps) } : {}),
     params: { ...engine.params },
     inputLimits: { ...engine.inputLimits },
     inputSchema: engine.inputSchema

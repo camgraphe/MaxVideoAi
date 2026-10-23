@@ -1,3 +1,4 @@
+import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
 import {
   computePricingDefinitionFacts,
   type PricingFacts,
@@ -100,6 +101,21 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  const operationRate = klingOperationPublishedRate(engine.id, context.mode ?? 't2v', context.operation);
+  if (operationRate) {
+    if (!Number.isFinite(durationSec) || durationSec < 3 || durationSec > 15) throw new Error('Unsupported Kling operation duration.');
+    const expectedResolution = engine.id === 'kling-o3-standard' ? '720p' : engine.id === 'kling-o3-pro' ? '1080p' : '4k';
+    if (resolution !== expectedResolution) throw new Error('Unsupported Kling operation resolution.');
+    if (currency !== 'USD') throw new Error('Kling operation reference rates are documented in USD only.');
+    const amount = durationSec * operationRate.centsPerSecond;
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: amount,
+      base: { seconds: durationSec, rate: operationRate.centsPerSecond / 100, unit: 'sec', amountCents: Math.ceil(amount) },
+      meta: { pricing_model: 'kling_fal_operation', videoOperation: operationRate,
+        provider_cost_source: 'dated_public_endpoint_rate', effective_supplier_charge_verified: false,
+        output_duration_sec: durationSec },
+    });
+  }
+
   const mode = context.mode ?? 't2v';
 
   if (engine.id === 'gemini-omni-flash') {

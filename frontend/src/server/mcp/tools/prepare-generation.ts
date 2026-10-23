@@ -124,6 +124,7 @@ export const prepareGenerationInputSchema = z.object({
   schemaVersion: z.literal(1).nullable().default(null),
   surface: z.enum(['video', 'image']),
   engineId: z.string(),
+  operation: z.enum(['kling-reference', 'kling-edit']).nullable().default(null),
   mode: z.enum(CANONICAL_GENERATION_MODES).nullable().default(null),
   prompt: z.string().nullable().default(null),
   seedanceWorkflow: seedanceWorkflowSchema.nullable().default(null).describe(

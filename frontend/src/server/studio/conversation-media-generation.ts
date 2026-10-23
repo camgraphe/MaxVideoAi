@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import {query} from '@/lib/db';
 import {readMediaFacts} from '@/lib/media-identity';
@@ -139,7 +140,7 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
     ? resolutionField.default : details.resolutions[0];
   return {
     ...Object.fromEntries(details.settings.filter(setting => setting.default !== null).map(setting => [setting.key, setting.default])),
-    durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min,
+    ...(details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
     resolution: legacy ? '480p' : resolution,
     ...(details.aspectRatios.length ? {aspectRatio} : {}),
     ...(details.audio === 'optional' ? {audio: legacy ? false : true} : {}),
@@ -178,15 +179,19 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     if (mode==='ref2v' && !selections.length)
       throw new AgentApiError('REFERENCE_REQUIRED','Reference-to-video requires attached or ready project reference media.');
     const catalog = await factories.video(actor, {enabled}).catalog();
-    const candidate = catalog.find(entry => entry.surface === 'video' && entry.engine.id === (action.modelId ?? 'wan-3'));
+    let candidate = catalog.find(entry => entry.surface === 'video' && entry.engine.id === (action.modelId ?? 'wan-3'));
     if (!candidate) throw new StudioPreparationInputError('ENGINE_UNAVAILABLE', 'The selected video model is unavailable in this Studio workflow.');
+    if (action.operation) {
+      const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(candidate.engine.id, mode), action.operation);
+      candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
+    }
     if (!candidate.publicModes.includes(mode) || !candidate.modeCaps[mode])
       throw new AgentApiError('MODE_UNSUPPORTED', 'The selected video model does not support this Studio mode.');
     const legacy = !action.modelId && action.settings == null;
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
     const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
-      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt,
+      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(action.operation ? { operation: action.operation } : {}),
         settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings, ...settings},
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
           ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});
@@ -232,7 +237,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
-    if(!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
+    if(action.operation !== 'kling-edit'&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
     }

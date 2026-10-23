@@ -200,6 +200,7 @@ export type AgentModelImageSizeConstraints = Readonly<{
 }>;
 
 export type AgentModelModeDetails = Readonly<{
+  operations?: readonly (AgentModelModeDetails & { operation: import('@/lib/video-operation').VideoOperation; label: string; promptRequired: boolean })[];
   mode: AgentGenerationMode;
   editorialPreference?: import('@/lib/video-workflow-review').VideoWorkflowPreference;
   notices?: readonly import('@/lib/video-workflow-capabilities').VideoWorkflowNotice[];

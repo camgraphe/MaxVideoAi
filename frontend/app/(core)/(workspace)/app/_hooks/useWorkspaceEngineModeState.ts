@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
@@ -98,6 +99,7 @@ function hasFormStateChanged(previous: FormState, next: FormState): boolean {
   return (
     previous.engineId !== next.engineId ||
     previous.mode !== next.mode ||
+    previous.operation !== next.operation ||
     previous.durationSec !== next.durationSec ||
     previous.durationOption !== next.durationOption ||
     previous.numFrames !== next.numFrames ||
@@ -143,7 +145,9 @@ export function useWorkspaceEngineModeState({
   }, [engines, effectiveRequestedEngineToken]);
 
   const selectedEngine = useMemo<EngineCaps | null>(() => {
-    return resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
+    const engine = resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
+    if (!engine || !form?.operation) return engine;
+    return resolveVideoOperationEngine(engine, form.mode, form.operation);
   }, [engines, form, engineOverride]);
   const {
     supportsKlingV3Controls,

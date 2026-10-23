@@ -71,7 +71,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
             const pricingService={...service,compare:(input:Parameters<typeof service.compare>[0])=>service.compare(input,selected.resolveReferences)};
             return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,pricingService):await pricingService.compare(comparison)};
           }
-          return {ok:true,action:request.action,data:await service.estimate({...scenario,engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
+          return {ok:true,action:request.action,data:await service.estimate({...scenario,...(request.operation ? {operation:request.operation}:{}),engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
         }
         case 'export.prepare':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');

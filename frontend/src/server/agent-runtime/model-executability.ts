@@ -1,3 +1,4 @@
+import { videoOperationEndpoint } from '@/lib/video-operation';
 import {
   isBytePlusModelArkEnabled,
   isBytePlusLasExecutionEnabled,
@@ -303,6 +304,9 @@ export function resolveAgentGenerationRequestExecutability(
   resolvedReferences: readonly ResolvedReference[] = [],
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
 ): AgentGenerationExecutabilityDecision {
+  try {
+    if (videoOperationEndpoint(request.engineId, request.mode, request.operation)) return credentialDecision(configured(environment.falApiKey));
+  } catch { return { executable: false, reason: 'profile_invalid' }; }
   if (request.engineId === 'seedance-2-5' && request.seedanceWorkflow) {
     return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment, { nativeSeedanceWorkflow: true });
   }

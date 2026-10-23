@@ -1,3 +1,4 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
@@ -175,6 +176,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     }
   }
   const sourceVideoContext = resolveGenerateSourceVideoContext({
+    operation: normalizeVideoOperation(engine.id, mode, body.operation),
     engineId: engine.id,
     trustedSourceVideo: attachmentProcessing.trustedMediaReferences?.find(reference =>
       reference.kind === 'video' && reference.fieldId === 'video_url' && reference.url === sourceInputVideoUrl),
@@ -291,6 +293,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
         durationSec: effectiveDurationSec,
       })
     : await resolveGenerateBillingPreflight({
+    operation: normalizeVideoOperation(engine.id, mode, body.operation),
     workflowStep: params.seedanceWorkflow?.workflow.step,
     req,
     engine,
@@ -359,6 +362,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
         : '/assets/frames/thumb-16x9.svg';
 
   const { falInputs, falInputSummary, falDurationOption, clampedFps, falPayload } = buildFalRequestParts({
+    operation: normalizeVideoOperation(engine.id, mode, body.operation),
     attachments: processedAttachments,
     engineId: engine.id,
     prompt,
@@ -438,6 +442,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     falInputs,
   });
+  if (body.operation) settingsSnapshot.operation = normalizeVideoOperation(engine.id, mode, body.operation);
   if (isBytePlus && inputVideoDurationSec !== undefined) settingsSnapshot.byteplusInputVideoDurationSec = inputVideoDurationSec;
   if (seedanceEditSource) settingsSnapshot.seedanceEditSource = seedanceEditSource;
   if (params.seedanceWorkflow) settingsSnapshot.seedanceWorkflow = { ...params.seedanceWorkflow.workflow,

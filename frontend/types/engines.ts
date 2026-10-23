@@ -239,6 +239,7 @@ export type EngineModeAvailability = Readonly<{
 }>;
 
 export interface EngineCaps {
+  operationCaps?: Partial<Record<import('@/lib/video-operation').VideoOperation, import('@/lib/video-operation').VideoOperationCaps>>;
   id: string;
   label: string;
   provider: string;
@@ -297,6 +298,7 @@ export interface EnginesResponse {
 }
 
 export interface PreflightRequest {
+  operation?: import('@/lib/video-operation').VideoOperation;
   seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engine: string;
   mode: Mode;

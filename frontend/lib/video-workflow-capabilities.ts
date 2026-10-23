@@ -38,6 +38,7 @@ export function videoWorkflowNotices(engineId:string,mode:string,locale='en'):re
 
 export function videoInheritsSourceFraming(engine: EngineCaps, mode: Mode): boolean {
   return mode === 'v2v' && (
+    (engine.modeCaps?.[mode]?.durationPolicy === 'source_video' && !engine.modeCaps[mode]?.aspectRatio?.length) ||
     engine.id === 'gemini-omni-flash' || engine.modeAvailability?.[mode]?.inheritsSourceVideo === true
   );
 }

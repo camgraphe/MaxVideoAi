@@ -1,3 +1,4 @@
+import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
@@ -21,6 +22,13 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (selector.operation === 'kling-edit') {
+    const identity = videoOperationTariffIdentity(selector.engineId, selector.mode, selector.operation);
+    const seconds = Number(selector.durationSec);
+    if (!identity || selector.transport !== identity.transport || selector.endpoint !== identity.endpoint
+      || !Number.isFinite(seconds) || seconds < 3 || seconds > 15) throw new Error('Invalid Kling Edit tariff identity or duration.');
+    return { ...selector, durationSec: 'continuous' };
+  }
   if (supportsSeedanceInputTariff(selector.engineId, selector.mode, selector.billingInputType)) {
     if (selector.inputVideoDurationSec === undefined) return null;
     validateSeedanceInputTariffDuration(selector.engineId, Number(selector.inputVideoDurationSec));
@@ -86,6 +94,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
+    ...videoOperationTariffIdentity(facts.engineId, context.mode ?? 't2v', context.operation),
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(billedDuration),
     ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),

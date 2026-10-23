@@ -1,3 +1,6 @@
+import { generationOperationQuoteBinding } from './generation-operation-facts';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { toEngineGenerationMode } from './generation-mode-aliases';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, seedanceWorkflowQuoteBinding } from './seedance-workflow';
@@ -164,10 +167,14 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
   const finalFacts = inherited.workflow?.finalFacts;
   const publicEngines = await dependencies.listPublicEngines();
   const publicCandidate = publicEngines.find((entry) => entry.engine.id === request.engineId);
-  const candidate = publicCandidate ? seedanceWorkflowCandidate(request, publicCandidate) : undefined;
+  let candidate = publicCandidate ? seedanceWorkflowCandidate(request, publicCandidate) : undefined;
   if (!candidate || candidate.surface !== request.surface) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'The selected model is not publicly available.');
   }
+  try {
+    const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(request.engineId, request.mode), request.operation);
+    candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
+  } catch { throw new AgentApiError('PARAMETER_INVALID', 'Invalid video operation.'); }
   if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');
   }
@@ -181,7 +188,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
-      if (request.surface === 'video' && request.settings.durationSec === undefined
+      if (request.surface === 'video' && request.operation !== 'kling-edit' && request.settings.durationSec === undefined
         && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
         const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');
         if (source.length !== 1 || typeof source[0].durationSec !== 'number'
@@ -238,6 +245,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
     );
   }
   const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership),
+    ...generationOperationQuoteBinding(request, resolvedReferences),
     ...seedanceWorkflowQuoteBinding(inherited.workflow) };
   return {pricing, pricingSnapshot, resolvedReferences, catalogRevision, request, workflow: inherited.workflow, resolvedEngine: candidate.engine};
 }

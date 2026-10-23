@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {
   cloneEngine,
   getBaseEngineIncludingHidden,
@@ -170,7 +171,11 @@ export async function computeConfiguredPreflight(
   const bootstrap = options.bootstrap !== false;
   const resolvedEngine = options.resolvedEngine
     ?? await getConfiguredEngineForPreflight(engineId, false, bootstrap);
-  const engine = resolvedEngine?.id === engineId ? resolvedEngine : undefined;
+  let engine = resolvedEngine?.id === engineId ? resolvedEngine : undefined;
+  if (engine) {
+    try { engine = resolveVideoOperationEngine(engine, request.mode, request.operation); }
+    catch { return { ok: false, messages: ['Invalid operation'], error: { code: 'OPERATION_INVALID', message: 'Invalid operation' } }; }
+  }
   if (!engine) {
     const disabledEngine = await getConfiguredEngineForPreflight(engineId, true, bootstrap);
     if (disabledEngine) {
@@ -261,7 +266,7 @@ export async function computeConfiguredPreflight(
     };
   }
 
-  const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
+  const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, request.operation === 'kling-edit' ? request.durationSec : Math.round(request.durationSec)) : 4;
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const loop = isLumaRay2 && supportsDuration ? normaliseLumaRay2Loop(request.loop) : undefined;
@@ -312,6 +317,7 @@ export async function computeConfiguredPreflight(
   try {
     snapshot = await computeCanonicalPublicSnapshot({
       workflowStep: options.seedanceWorkflowStep,
+      operation: request.operation,
       engine: pricingEngine,
       durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution: effectiveResolution,

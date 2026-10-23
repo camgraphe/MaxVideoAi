@@ -1,3 +1,4 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import { snapshotReferenceInputs } from './workspace-snapshot-reference-inputs';
 import { resolveExampleResolution } from './workspace-example-resolution';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
@@ -23,6 +24,7 @@ type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
 
 type VideoSettingsRecord = {
+  operation?: unknown;
   schemaVersion?: unknown;
   surface?: unknown;
   engineId?: unknown;
@@ -75,6 +77,7 @@ export type ResolvedVideoSettingsSnapshot = {
     scenes: MultiPromptScene[];
   };
   formValues: {
+    operation?: import('@/lib/video-operation').VideoOperation;
     durationSec?: number;
     durationOption?: number | string;
     numFrames?: number;
@@ -298,6 +301,7 @@ export function resolveVideoSettingsSnapshot(
       scenes: multiPromptScenes ?? [options.createFallbackScene()],
     },
     formValues: {
+      ...(record.operation !== undefined ? { operation: normalizeVideoOperation(engine.id, mode, record.operation) } : {}),
       durationSec: readFiniteNumber(core.durationSec),
       durationOption:
         typeof core.durationOption === 'number' || typeof core.durationOption === 'string'
@@ -339,6 +343,7 @@ export function buildVideoSettingsFormState(
   const { engine, mode, formValues } = snapshot;
   const candidate: FormState = {
     engineId: engine.id,
+    ...(formValues.operation ? { operation: formValues.operation } : {}),
     mode,
     durationSec: typeof formValues.durationSec === 'number' ? formValues.durationSec : previous?.durationSec ?? 4,
     durationOption:

@@ -1,3 +1,4 @@
+import { canonicalOperationSourceDuration } from './generation-operation-facts';
 import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
@@ -376,7 +377,8 @@ export async function priceCanonicalGeneration(
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
       mode: engineMode,
-      durationSec: lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
+      ...(request.operation ? { operation: request.operation } : {}),
+      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences) ?? lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
       ...(settings.durationOption === 'auto' ? { durationOption: 'auto' } : {}),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
@@ -454,7 +456,7 @@ export async function priceCanonicalGenerationWithBilling(
     const lumaModifyDurationSec = assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
-    const durationSec = lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
+    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences) ?? lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
     const seedanceEditSource = canonicalSeedanceEditSource(request, referenceContext);
     const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, referenceContext);
     const resolution = requiredString(request.settings, 'resolution');
@@ -469,6 +471,7 @@ export async function priceCanonicalGenerationWithBilling(
     };
     snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
+      ...(request.operation ? { operation: request.operation } : {}),
       durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution,
       aspectRatio: seedanceEditSource?.pricingAspectRatio ?? optionalString(request.settings, 'aspectRatio'),

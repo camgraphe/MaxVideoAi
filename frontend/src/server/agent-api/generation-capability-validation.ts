@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import {
@@ -189,6 +190,7 @@ function validateVideoModeCaps(
   caps: EngineModeUiCaps,
   candidate: AgentPublicGenerationEngine,
 ): void {
+  if (request.operation === 'kling-edit' && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
   const duration = request.settings.durationSec;
   if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
@@ -707,6 +709,7 @@ function validateTrustedReferenceDuration(
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
       : undefined;
+  if (request.operation === 'kling-edit' && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
   const exclusiveMaximum =
     requestModeForExclusiveDuration(candidate, field);
   const sourcePlusOutputMaximum = field.id === 'video_url'
@@ -962,6 +965,10 @@ export function validateCanonicalGenerationCapabilities(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions = {},
 ): void {
+  try {
+    const engine = resolveVideoOperationEngine(candidate.engine, request.mode as Mode, request.operation);
+    candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
+  } catch { fail('operation'); }
   if (
     candidate.engine.id !== request.engineId
     || candidate.surface !== request.surface

@@ -1,3 +1,4 @@
+import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, assertSeedanceWorkflowQuoteBinding, seedanceWorkflowQuoteBinding } from './seedance-workflow';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
@@ -438,7 +439,7 @@ async function confirmationTransaction(
         quote.request,
         catalogRevision,
         membership,
-      ), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
+      ), ...generationOperationQuoteBinding(quote.request, resolvedReferences), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();
       staleQuote();

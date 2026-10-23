@@ -1,3 +1,4 @@
+import { resolveVideoOperationRequestEngine } from '@/lib/video-operation';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import {
   getLumaRay2DurationInfo,
@@ -109,7 +110,9 @@ export function buildGenerateRequestOptions(params: {
   mode: Mode;
   isBytePlusV1a: boolean;
 }): GenerateRequestOptionsResult {
-  const { body, engine, mode, isBytePlusV1a } = params;
+  const { body, mode, isBytePlusV1a } = params; let engine = params.engine;
+  try { engine = resolveVideoOperationRequestEngine(engine, mode, body); }
+  catch { return { ok: false, status: 400, body: { ok: false, error: 'Invalid operation' } }; }
   const prompt = String(body.prompt || '');
   const multiPrompt = normalizeMultiPrompt(body.multiPrompt);
   const multiPromptTotalSec = multiPrompt
@@ -122,7 +125,7 @@ export function buildGenerateRequestOptions(params: {
         ? body.generate_audio
         : undefined;
   const isLumaRay2 = isLumaRay2EngineId(engine.id);
-  const fixtureCapability = getEngineCaps(engine.id, mode);
+  const fixtureCapability = body.operation ? engine.modeCaps?.[mode] : getEngineCaps(engine.id, mode);
   const resolutionPolicy = resolveRuntimeResolutionPolicy(engine, mode);
   const usesRuntimeSchema = resolutionPolicy.usesSchemaDefaults;
   const capability = fixtureCapability

@@ -149,14 +149,15 @@ for (const id of ['kling-o3-standard', 'kling-o3-pro']) {
   });
 }
 
-test('Kling Omni 4K cannot select unsupported Modify or Extend', async () => {
+test('Kling Omni 4K exposes verified Modify but never unsupported Extend', async () => {
   const view = await mount('kling-o3-4k');
   try {
-    assert.ok(!view.workflow.composerModeToggles?.some(({ mode }) => mode === 'v2v' || mode === 'extend'));
+    assert.ok(view.workflow.composerModeToggles?.some(({ mode }) => mode === 'v2v'));
+    assert.ok(!view.workflow.composerModeToggles?.some(({ mode }) => mode === 'extend'));
     await act(async () => view.workflow.handleComposerModeToggle('v2v'));
-    assert.equal(view.workflow.submissionMode, 't2v');
+    assert.equal(view.workflow.submissionMode, 'v2v');
     await act(async () => view.workflow.handleComposerModeToggle('extend'));
-    assert.equal(view.workflow.submissionMode, 't2v');
+    assert.equal(view.workflow.submissionMode, 'v2v');
   } finally { await view.close(); }
 });
 

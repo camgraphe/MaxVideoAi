@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoWorkflowPreference} from '@/lib/video-workflow-review';
 import {videoDurationPolicy,videoWorkflowNotices,videoInheritsSourceFraming} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
@@ -379,6 +380,7 @@ function projectBaseSettings(details: Pick<AgentModelModeDetails, 'durationPolic
 export function projectAgentModelModeDetails(
   candidate: Pick<AgentPublicCatalogEngine, 'engine' | 'surface' | 'modeCaps'>,
   mode: AgentGenerationMode,
+  includeOperations = true,
 ): AgentModelModeDetails {
   const caps = candidate.modeCaps[mode];
   if (!caps) {
@@ -417,6 +419,11 @@ export function projectAgentModelModeDetails(
   } as const;
   return Object.freeze({
     mode,
+    ...(includeOperations && candidate.engine.operationCaps ? { operations: Object.values(candidate.engine.operationCaps).filter(operation => operation.mode === mode).map(operation => {
+      const engine = resolveVideoOperationEngine(candidate.engine, mode as import('@/types/engines').Mode, operation.operation);
+      return { operation: operation.operation, label: operation.label, promptRequired: operation.promptRequired,
+        ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
+    }) } : {}),
     ...baseControls,
     ...(videoWorkflowPreference(candidate.engine.id,mode) ? {editorialPreference:videoWorkflowPreference(candidate.engine.id,mode)} : {}),
     ...(videoWorkflowNotices(candidate.engine.id,mode).length ? {notices:videoWorkflowNotices(candidate.engine.id,mode)} : {}),

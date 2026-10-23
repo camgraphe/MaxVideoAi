@@ -1,3 +1,4 @@
+import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
@@ -101,9 +102,10 @@ export async function computeCanonicalBillingSnapshot(
   const memberTierDiscounts = LIVE_MEMBERSHIP_DISCOUNTS;
 
   const billingFacts = buildBillingPricingFacts(context, pricingDetails, currency);
+  const operationBinding = videoOperationTariffIdentity(context.engine.id, context.mode ?? 't2v', context.operation);
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
-  if (requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  if (operationBinding || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -122,6 +124,7 @@ export async function computeCanonicalBillingSnapshot(
         vendorAccountId,
         meta: {
           ...billingFacts.meta,
+          ...(operationBinding ? { videoOperation: operationBinding } : {}),
           ...(seedanceAutomaticPricingMetadata(requestedContext, context) ? {
             seedanceAutomaticPricing: seedanceAutomaticPricingMetadata(requestedContext, context) } : {}),
           ...(context.seedanceEditSource ? { seedanceEditSource: context.seedanceEditSource,
@@ -140,6 +143,7 @@ export async function computeCanonicalBillingSnapshot(
       });
     }
   }
+  if (operationBinding) throw new CustomerTariffUnavailableError('A separate active reviewed video operation tariff is required.');
   if (requiresEditTariff) throw new CustomerTariffUnavailableError(`An active reviewed ${requiresLasTariff ? 'LAS' : 'ModelArk'} Edit customer tariff is required.`);
   if (context.workflowStep) throw new CustomerTariffUnavailableError('A separate active Draft workflow tariff is required.');
   const policyDocument = getVersionedPricingPolicy();

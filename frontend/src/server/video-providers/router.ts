@@ -1,3 +1,4 @@
+import { videoOperationEndpoint } from '@/lib/video-operation';
 import type { Mode } from '@/types/engines';
 import { isAlibabaDirectEngine, isAlibabaDirectModeSupported, isAlibabaFalFallbackCompatible } from './alibaba-model-studio/model-map';
 import { isGoogleVertexOmniEngine, isGoogleVertexOmniModeSupported } from './google-vertex-omni/model-map';
@@ -100,12 +101,14 @@ function isGcsUriConfigured(value: string | undefined): boolean {
 }
 
 export function resolveVideoProviderRoutingPlan(params: {
+  operation?: unknown;
   engineId: string;
   mode: Mode | string;
   isAdmin: boolean;
   env?: VideoProviderRoutingEnv;
 }): VideoProviderRoutingPlan {
   const falOnly: VideoProviderRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  if (videoOperationEndpoint(params.engineId, params.mode, params.operation)) return falOnly;
   if (isAlibabaDirectEngine(params.engineId)) {
     if (!isAlibabaDirectModeSupported(params.engineId, params.mode)) return falOnly;
     const fallbackCompatible = isAlibabaFalFallbackCompatible(params.engineId, params.mode);

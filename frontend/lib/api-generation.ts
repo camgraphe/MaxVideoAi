@@ -20,6 +20,7 @@ import { customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/li
 type PrimitiveValue = string | number | boolean | null | undefined;
 
 type GeneratePayload = {
+  operation?: import('@/lib/video-operation').VideoOperation;
   jobId?: string;
   seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engineId: string;
