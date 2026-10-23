@@ -3,7 +3,11 @@ import test from 'node:test';
 import { createServer } from 'node:http';
 import { build } from 'esbuild';
 import { resolve, join } from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import ffmpeg from '../frontend/node_modules/@ffmpeg-installer/ffmpeg';
 import { createRequire } from 'node:module';
 import tailwindConfig from '../frontend/tailwind.config';
 import { chromium } from '@playwright/test';
@@ -46,11 +50,14 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
    await page.waitForFunction(()=>document.querySelector('[role=dialog]')?.contains(document.activeElement));
    assert.equal(await dialog.locator('video').getAttribute('src'),'https://playback.invalid/full');
    assert.equal(await dialog.locator('video').getAttribute('preload'),'none');
+   await page.waitForTimeout(50);
+   assert.equal(mediaRequests.filter(url=>url==='https://playback.invalid/full').length,0,'opening alone must not fetch full-source bytes');
    if(action==='Apply'){
     await dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}).fill('1');
     await dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true}).fill('5');
    }
    if(action==='Apply')await dialog.getByRole('button',{name:'Use excerpt',exact:true}).click();else if(action==='Cancel')await dialog.getByRole('button',{name:'Cancel',exact:true}).click();else await page.keyboard.press('Escape');
+   mediaRequests.splice(0);
    await dialog.waitFor({state:'hidden',timeout:5000}).catch(async error=>{throw new Error(`${density}/${width}/${action}: ${await dialog.textContent()} / page errors ${pageErrors.join('; ')} / ${error}`);});
    assert.equal(await opener.evaluate(el=>document.activeElement===el),true,`${density}/${width}/${action}: closing returns focus to the current source action`);
   }
@@ -61,7 +68,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
    await page.evaluate(()=>{(window as any).holdPreparation=true;});
    let opener=page.getByRole('button',{name:'Choose excerpt',exact:true});
    await opener.focus();await page.keyboard.press('Enter');
-   let dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();
+   let dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();mediaRequests.length=0;
    await dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}).fill('1');
    await dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true}).fill('5');
    await dialog.getByRole('button',{name:'Use excerpt',exact:true}).click();
@@ -78,9 +85,78 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
    await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
    assert.equal(await opener.evaluate(el=>el===document.activeElement),true);
   }
-  assert.deepEqual(mediaRequests.filter(url=>density!=='default'||url!=='https://preview.invalid/short'),[],`${density}: the selector must not fetch full source media before Play`);
+  assert.deepEqual(mediaRequests.filter(url=>url!=='https://playback.invalid/full'&&(density!=='default'||url!=='https://preview.invalid/short')),[],`${density}: preview intent uses only the owned full source`);
   mediaRequests.length=0;
   }
   assert.deepEqual(pageErrors,[],'no browser runtime exceptions');
  }finally{await browser.close();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));}
+});
+
+
+test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop and short mobile viewports', async () => {
+ const frontend=resolve('frontend');
+ const dir=await mkdtemp(join(tmpdir(),'excerpt-timeline-'));
+ await promisify(execFile)(ffmpeg.path,['-v','error','-f','lavfi','-i','testsrc=size=160x90:rate=10:duration=60','-pix_fmt','yuv420p','-c:v','libx264','-threads','1','-movflags','+faststart','-y',join(dir,'source.mp4')],{timeout:30000});
+ const bytes=await readFile(join(dir,'source.mp4'));
+ const bundle=await build({stdin:{contents:`import React from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';createRoot(document.getElementById('root')).render(<VideoExcerptSelector previewUrl="/source.mp4" durationSec={60} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale="en" onCancel={()=>{}} onApply={async range=>{window.applied=range;}}/>);`,loader:'tsx',resolveDir:frontend},bundle:true,platform:'browser',format:'iife',write:false,define:{'process.env.NODE_ENV':'"production"'},jsx:'automatic',tsconfig:join(frontend,'tsconfig.json')});
+ let mediaRequests=0;
+ const server=createServer((req,res)=>{
+  if(req.url==='/source.mp4'){mediaRequests++;res.setHeader('Content-Type','video/mp4');res.setHeader('Accept-Ranges','bytes');const match=req.headers.range?.match(/bytes=(\d+)-(\d*)/);const start=match?Number(match[1]):0,end=match?.[2]?Math.min(Number(match[2]),bytes.length-1):bytes.length-1;if(match)res.writeHead(206,{'Content-Range':`bytes ${start}-${end}/${bytes.length}`,'Content-Length':end-start+1});else res.setHeader('Content-Length',bytes.length);res.end(bytes.subarray(start,end+1));return;}
+  if(req.url==='/app.js'){res.setHeader('Content-Type','text/javascript');res.end(bundle.outputFiles[0].text);return;}
+  res.end('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;font-family:Arial}button{color:inherit;font:inherit}button{border:0}.app-reference-modal-layer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0006}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}p{margin:0}</style><div id="root"></div><script src="/app.js"></script>');
+ });
+ await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));
+ const address=server.address();assert.ok(address&&typeof address!=='string');
+ const browser=await chromium.launch({headless:true});
+ try {
+  const context=await browser.newContext({hasTouch:true});const page=await context.newPage();
+  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+  for(const [width,height] of [[1440,1000],[390,667],[320,568]]){
+   await page.setViewportSize({width,height});mediaRequests=0;
+   await page.goto(`http://127.0.0.1:${address.port}`);await page.waitForTimeout(150);
+   assert.equal(mediaRequests,0,'opening alone never fetches source or thumbnails');
+   const dialog=page.getByRole('dialog'), start=dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}), end=dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true});
+   assert.equal(await dialog.getByRole('button',{name:'Use excerpt',exact:true}).isDisabled(),true);
+   const track=dialog.locator('.video-excerpt-track');await track.scrollIntoViewIfNeeded();
+   let box=await track.boundingBox();assert.ok(box);
+   let grip=await dialog.locator('.video-excerpt-handle-start').boundingBox();assert.ok(grip);
+   await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/3,grip.y+grip.height/2,{steps:4});await page.mouse.up();
+   assert.ok(Math.abs(Number(await start.inputValue())-20)<.1);
+   await end.fill('25');
+   await dialog.getByRole('button',{name:'Zoom to excerpt',exact:true}).click();
+   const beforeRange=[await start.inputValue(),await end.inputValue()];
+   assert.equal(await dialog.getByRole('button',{name:'Full view'}).getAttribute('aria-pressed'),'true');
+   assert.deepEqual([await start.inputValue(),await end.inputValue()],beforeRange);
+   await page.waitForFunction(()=>document.querySelectorAll('.video-excerpt-frames img').length===10);
+   const frames=await dialog.locator('.video-excerpt-frames img').evaluateAll(nodes=>nodes.map(node=>(node as HTMLImageElement).src));
+   assert.ok(new Set(frames).size>1,'filmstrip contains changing real decoded frames');
+   assert.equal(await dialog.locator('video').getAttribute('crossorigin'),null);
+   const stageBox=await dialog.locator('.video-excerpt-stage').boundingBox(),videoBox=await dialog.locator('video').boundingBox();assert.ok(stageBox&&videoBox);
+   assert.ok(videoBox.height<=stageBox.height+1,'decoded video stays within its stage geometry');
+   const selected=dialog.locator('.video-excerpt-selection');await selected.focus();await page.keyboard.press('Shift+ArrowRight');
+   assert.ok(Math.abs(Number(await end.inputValue())-Number(await start.inputValue())-5)<.1);
+   await track.scrollIntoViewIfNeeded();box=await track.boundingBox();assert.ok(box);
+   const ruler=await dialog.locator('.video-excerpt-seek').boundingBox();assert.ok(ruler);
+   await page.touchscreen.tap(box.x+box.width*.45,ruler.y+10);
+   await page.waitForFunction(()=>{const video=document.querySelector('video')!;return video.readyState>=2&&video.currentTime>19;});
+   assert.equal(await dialog.locator('video').evaluate(node=>node.paused),true,'scrubbing does not start playback');
+   const cdp=await context.newCDPSession(page);
+   grip=await dialog.locator('.video-excerpt-handle-end').boundingBox();assert.ok(grip);
+   const scrollBefore=await dialog.evaluate(node=>node.scrollTop);
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:grip.x+grip.width/2,y:grip.y+grip.height/2}]});
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:grip.x+grip.width/2-15,y:grip.y+grip.height/2}]});
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+   await cdp.detach();
+   assert.equal(await dialog.evaluate(node=>node.scrollTop),scrollBefore,'touch trim does not scroll dialog');
+   assert.ok(Number(await end.inputValue())<26);
+   assert.ok(Number(await start.inputValue())<Number(await end.inputValue()));
+   await dialog.getByRole('button',{name:'Whole video',exact:true}).click();
+   assert.equal(await start.inputValue(),'0');assert.equal(await end.inputValue(),'60');
+   const apply=dialog.getByRole('button',{name:'Use excerpt',exact:true});await apply.scrollIntoViewIfNeeded();
+   const actionBox=await apply.boundingBox();assert.ok(actionBox);assert.ok(actionBox.y>=0&&actionBox.y+actionBox.height<=height);
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   assert.equal(await dialog.evaluate(node=>node.scrollWidth>node.clientWidth+1),false);
+  }
+  assert.deepEqual(errors,[]);
+ } finally {await browser.close();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));await rm(dir,{recursive:true,force:true});}
 });

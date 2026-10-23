@@ -1019,7 +1019,7 @@ short-lived full-timeline URL. Gallery previews remain unchanged and may be shor
 than the source; they are not valid excerpt timelines. The workspace's initiating
 account operation fences read responses as well as preparation responses. Local
 upload blobs already contain the whole original and need no access request. Opening
-still fetches no video bytes until explicit Play; access failure is localized and
+still fetches no video bytes until explicit Play or scrubbing; access failure is localized and
 Cancel remains available. Canonical source identity never becomes a signed URL.
 
 The excerpt encoder fits a complete frame count to the chosen interval at a
@@ -1038,3 +1038,36 @@ in `tests/video-excerpt-{fractional-boundary,media}.test.ts`.
 source-workflow notices. The route hook retains account, reservation, request and
 media ownership. Chromium excerpt coverage verifies keyboard focus restoration,
 manual loading and independently reachable controls for long library filenames.
+
+
+The selector delegates its single time axis to
+`components/media/VideoExcerptTimeline.client.tsx`: two stable, focusable slider
+thumbs resize the retained interval; its selected body moves the interval without
+changing its length; the upper time ruler scrubs the paused preview. Arrow keys
+move by 0.1 s, Shift by 1 s, and Home/End use the legal bounds. Thumb ARIA bounds
+track the opposite thumb. Numeric controls retain exact typed fractions and serve
+as the alternate precise/touch-assistive input. Pointer movement uses centiseconds;
+source-end and Whole video reset preserve the exact measured source duration.
+Focus selection/Full view changes the viewport only. Model validation remains in
+`validateVideoExcerptRange`; the timeline must never silently cut an oversized
+initial source to satisfy it. The primary duration is localized presentation only.
+
+`useVideoExcerptFilmstrip.ts` owns optional local frame capture, activated only
+by explicit playback or scrubbing (including a range edit that seeks its frame).
+Opening and viewport zoom do not activate it. Capture uses one temporary decoder,
+at most ten JPEG data URLs with neither dimension above 160 px, and a 12-second
+overall deadline. Source changes/unmount abort pending waits and release its source.
+Only that optional decoder requests anonymous CORS; the main player retains its
+ordinary source access. Decoder/canvas/CORS failure leaves the time ruler and
+selection usable, without retrying on every Play or reporting a preparation error.
+Frames never become owned assets, persisted thumbnails or optimizer requests.
+The selector-local style owner fixes stage geometry for portrait and landscape
+sources and lets the dialog scroll in short viewports. Its dependencies remain
+inside the existing lazy selector boundary; no backend or quote owner moves here.
+
+`tests/video-excerpt-selector-dom.test.ts` exercises exact reset, model-invalid
+ranges, keyboard/pointer moves, capture failure and cleanup. The real Chromium
+fixture in `tests/video-excerpt-browser.test.ts` verifies decoded frames, mouse and
+touch interaction, paused seeking, zoom, source geometry, short mobile viewports,
+no initial media request, and shared modal focus/session fencing. This does not
+certify physical-device VoiceOver/TalkBack behavior or provider CORS availability.

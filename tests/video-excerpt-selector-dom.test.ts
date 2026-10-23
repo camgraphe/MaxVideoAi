@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
 const bundle = bundleClientFlow(
-  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';import {requestVideoExcerpt} from './lib/client-video-excerpt';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector previewUrl="https://example.invalid/signed" durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');if(window.request)await requestVideoExcerpt({source:{type:'asset',assetId:'owned',kind:'video'},engineId:'luma-ray-3-2',mode:'v2v',range},window.request);}}/>),unmount:()=>root.unmount()};`,
+  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';import {requestVideoExcerpt} from './lib/client-video-excerpt';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector previewUrl={window.previewUrl||"https://example.invalid/signed"} durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');if(window.request)await requestVideoExcerpt({source:{type:'asset',assetId:'owned',kind:'video'},engineId:'luma-ray-3-2',mode:'v2v',range},window.request);}}/>),unmount:()=>root.unmount()};`,
   {}
 );
 async function mount(duration = 5.558333, locale = 'en') {
@@ -10,6 +10,7 @@ async function mount(duration = 5.558333, locale = 'en') {
   const w = dom.window as any;
   Object.assign(w, { duration, locale, cancelled: 0, applied: [] });
   w.HTMLMediaElement.prototype.pause = function () {};
+  w.HTMLMediaElement.prototype.load = function () {};
   w.eval(await bundle);
   await w.fx.act(async () => w.fx.render());
   return {
@@ -33,14 +34,16 @@ async function mount(duration = 5.558333, locale = 'en') {
     },
   };
 }
-test('selector retains exact fractional full range, uses lazy manual playback and exposes touch sliders', async () => {
+test('selector retains exact fractional full range, uses lazy manual playback and exposes one dual-handle track', async () => {
   const f = await mount();
   try {
     const d = f.w.document;
     assert.equal(d.querySelector('[aria-label="End (seconds)"]').value, '5.558333');
     assert.equal(d.querySelector('video').preload, 'none');
     assert.equal(d.querySelector('video').autoplay, false);
-    assert.equal(d.querySelectorAll('input[type=range]').length, 2);
+    assert.equal(d.querySelectorAll('input[type=range]').length, 0);
+    assert.equal(d.querySelectorAll('.video-excerpt-track').length, 1);
+    assert.equal(d.querySelectorAll('.video-excerpt-handle[role=slider]').length, 2);
     await f.click('Use excerpt');
     assert.deepEqual(JSON.parse(JSON.stringify(f.w.applied)), [{ startSec: 0, endSec: 5.558333 }]);
   } finally {
@@ -146,6 +149,7 @@ for (const density of ['workspace', 'default'])
     const w = dom.window as any;
     Object.assign(w, { density, generated: 0, applied: 0 });
     w.HTMLMediaElement.prototype.pause = function () {};
+  w.HTMLMediaElement.prototype.load = function () {};
     w.eval(await composerBundle);
     const buttons = () => [...w.document.querySelectorAll('button')] as any[];
     try {
@@ -316,4 +320,138 @@ test('shared Composer waits for owned full-timeline access and never plays the g
   assert.equal(w.document.querySelector('[role=dialog] video').preload,'none');
   assert.equal(w.document.querySelector('[role=dialog] video').autoplay,false);
  }finally{await w.fx.act(async()=>w.fx.unmount());dom.window.close();}
+});
+
+
+test('timeline keyboard handles cannot cross, moves preserve length, zoom never changes range and reset is exact', async () => {
+  const f = await mount(60.558333);
+  const d = f.w.document;
+  const key = async (selector: string, value: string, shiftKey = false) => f.w.fx.act(async () =>
+    d.querySelector(selector).dispatchEvent(new f.w.KeyboardEvent('keydown', {key:value,shiftKey,bubbles:true})));
+  const value = (label: string) => Number(d.querySelector(`[aria-label="${label} (seconds)"]`).value);
+  try {
+    await f.input('Start (seconds)', '20');
+    await f.input('End (seconds)', '25');
+    await key('.video-excerpt-handle-start', 'ArrowRight');
+    assert.equal(value('Start'), 20.1);
+    await key('.video-excerpt-handle-start', 'End');
+    assert.ok(value('Start') < value('End'));
+    assert.equal(Number(d.querySelector('.video-excerpt-handle-end').getAttribute('aria-valuemin')), value('Start') + .01);
+    await f.input('Start (seconds)', '20');
+    await key('.video-excerpt-selection', 'ArrowRight', true);
+    assert.equal(value('Start'), 21);
+    assert.equal(value('End'), 26);
+    await f.click('Zoom to excerpt');
+    assert.equal(d.querySelector('[aria-label="Full view"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(value('Start'), 21);
+    assert.equal(value('End'), 26);
+    await f.click('Whole video');
+    assert.equal(value('Start'), 0);
+    assert.equal(value('End'), 60.558333);
+    assert.equal(d.querySelector('[aria-label="Zoom to excerpt"]').getAttribute('aria-pressed'), 'false');
+    assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use excerpt').disabled,true);
+    await key('.video-excerpt-handle-end', 'ArrowLeft', true);
+    await key('.video-excerpt-handle-end', 'End');
+    assert.equal(value('End'), 60.558333);
+  } finally { await f.dispose(); }
+});
+
+test('pointer resize, selected-body movement and time-ruler seeking use the same bounded timeline', async () => {
+  const f = await mount(60);
+  const d = f.w.document;
+  const pointer = async (node: any, type: string, x: number, pointerType = 'touch') => f.w.fx.act(async () => {
+    const event = new f.w.Event(type, {bubbles:true,cancelable:true});
+    Object.assign(event,{clientX:x,pointerId:1,pointerType,button:0});node.dispatchEvent(event);
+  });
+  try {
+    const track = d.querySelector('.video-excerpt-track');
+    track.getBoundingClientRect = () => ({left:0,width:600});
+    const handle = d.querySelector('.video-excerpt-handle-start');
+    await pointer(handle,'pointerdown',0);
+    await pointer(handle,'pointermove',100);
+    await pointer(handle,'pointerup',100);
+    assert.equal(d.querySelector('[aria-label="Start (seconds)"]').value,'10');
+    await f.input('End (seconds)', '20');
+    const selected=d.querySelector('.video-excerpt-selection');
+    await pointer(selected,'pointerdown',150,'mouse');
+    await pointer(selected,'pointermove',300,'mouse');
+    await pointer(selected,'pointerup',300,'mouse');
+    assert.equal(d.querySelector('[aria-label="Start (seconds)"]').value,'25');
+    assert.equal(d.querySelector('[aria-label="End (seconds)"]').value,'35');
+    await pointer(d.querySelector('.video-excerpt-seek'),'pointerdown',400);
+    assert.equal(d.querySelector('video').currentTime,40);
+    assert.equal(f.w.applied.length,0);
+  } finally { await f.dispose(); }
+});
+
+test('filmstrip is optional: one decoder only after preview intent and cancellation releases it', async () => {
+  const f=await mount(60), d=f.w.document;
+  const original=d.createElement.bind(d), decoders:any[]=[];
+  d.createElement=(tag:string,...args:any[])=>{const node=original(tag,...args);if(tag==='video'){decoders.push(node);node.load=()=>{};node.pause=()=>{};}return node;};
+  try {
+    assert.equal(decoders.length,0);
+    await f.w.fx.act(async()=>d.querySelector('video').dispatchEvent(new f.w.Event('play',{bubbles:true})));
+    assert.equal(decoders.length,1);
+    const decoder=decoders[0];
+    assert.equal(decoder.crossOrigin,'anonymous');
+    assert.equal(d.querySelector('video').hasAttribute('crossorigin'),false);
+    await f.w.fx.act(async()=>decoder.dispatchEvent(new f.w.Event('error')));
+    assert.equal(d.querySelectorAll('.video-excerpt-frames img').length,0);
+    assert.equal(d.querySelectorAll('.video-excerpt-handle').length,2);
+    assert.equal(decoder.hasAttribute('src'),false);
+    await f.w.fx.act(async()=>d.querySelector('video').dispatchEvent(new f.w.Event('play',{bubbles:true})));
+    assert.equal(decoders.length,1,'failed optional capture is not retried per play');
+  } finally { await f.dispose(); }
+});
+
+
+test('pending filmstrip decoder is cancelled on source change and unmount without publishing old frames', async () => {
+ const f=await mount(60),d=f.w.document,original=d.createElement.bind(d),decoders:any[]=[];
+ d.createElement=(tag:string,...args:any[])=>{const node=original(tag,...args);if(tag==='video'){decoders.push(node);node.load=()=>{};node.pause=()=>{};}return node;};
+ try{
+  await f.w.fx.act(async()=>d.querySelector('video').dispatchEvent(new f.w.Event('play',{bubbles:true})));
+  assert.equal(decoders.length,1);assert.ok(decoders[0].hasAttribute('src'));
+  f.w.previewUrl='https://example.invalid/replacement';
+  await f.w.fx.act(async()=>f.w.fx.render());
+  assert.equal(decoders.length,2);assert.equal(decoders[0].hasAttribute('src'),false);
+  assert.equal(d.querySelectorAll('.video-excerpt-frames img').length,0);
+  await f.w.fx.act(async()=>f.w.fx.unmount());
+  assert.equal(decoders[1].hasAttribute('src'),false);
+ }finally{await f.dispose();}
+});
+
+test('unavailable canvas leaves functional handles after an explicitly activated capture', async () => {
+ const f=await mount(60),d=f.w.document,original=d.createElement.bind(d),decoders:any[]=[];
+ d.createElement=(tag:string,...args:any[])=>{const node=original(tag,...args);if(tag==='video'){decoders.push(node);node.load=()=>{};node.pause=()=>{};Object.defineProperty(node,'videoWidth',{value:160});Object.defineProperty(node,'videoHeight',{value:90});}if(tag==='canvas')node.getContext=()=>null;return node;};
+ try{
+  await f.w.fx.act(async()=>d.querySelector('video').dispatchEvent(new f.w.Event('play',{bubbles:true})));
+  await f.w.fx.act(async()=>decoders[0].dispatchEvent(new f.w.Event('loadeddata')));
+  assert.equal(decoders[0].hasAttribute('src'),false);
+  assert.equal(d.querySelectorAll('.video-excerpt-frames img').length,0);
+  await f.input('Start (seconds)','20');await f.input('End (seconds)','25');
+  assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use excerpt').disabled,false);
+ }finally{await f.dispose();}
+});
+
+test('moving a precise typed interval preserves its true width across an integer duration boundary', async () => {
+ const f=await mount(60),d=f.w.document;
+ try {
+  await f.input('Start (seconds)','1.0000001');await f.input('End (seconds)','7.0000002');
+  const width=7.0000002-1.0000001;
+  await f.w.fx.act(async()=>d.querySelector('.video-excerpt-selection').dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'ArrowRight',shiftKey:true,bubbles:true})));
+  const start=Number(d.querySelector('[aria-label="Start (seconds)"]').value),end=Number(d.querySelector('[aria-label="End (seconds)"]').value);
+  assert.ok(end-start>6,'movement must not cross the integer pricing boundary by rounding width');
+  assert.ok(Math.abs(end-start-width)<1e-12);
+  assert.ok(Math.abs(start-2.0000001)<1e-12,'keyboard movement quantizes the delta, retaining the typed offset');
+  await f.w.fx.act(async()=>d.querySelector('.video-excerpt-selection').dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'Home',bubbles:true})));
+  assert.equal(d.querySelector('[aria-label="Start (seconds)"]').value,'0','Home uses the exact bound even with a typed fractional offset');
+  await f.w.fx.act(async()=>d.querySelector('.video-excerpt-selection').dispatchEvent(new f.w.KeyboardEvent('keydown',{key:'End',bubbles:true})));
+  assert.equal(d.querySelector('[aria-label="End (seconds)"]').value,'60');
+ } finally {await f.dispose();}
+});
+
+test('preview timecode carries rounded centiseconds into the next minute', async () => {
+ const f=await mount(60);
+ try {await f.input('Start (seconds)','59.999');assert.equal(f.w.document.querySelector('.video-excerpt-time strong').textContent,'01:00.00');}
+ finally {await f.dispose();}
 });
