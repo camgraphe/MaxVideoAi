@@ -72,7 +72,7 @@ The environment and Fal health routes below run the shared healthcheck authoriza
 
 ## Health endpoints
 
-- GET `/api/health/env` — Node.js runtime; after authorization, returns a JSON boolean presence map for `FAL_KEY`, `FAL_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `DATABASE_URL`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, and `STRIPE_SECRET_KEY`. It reports configuration presence, not provider connectivity.
+- GET `/api/health/env` — Node.js runtime; after authorization, returns a JSON boolean presence map for `FAL_KEY`, `FAL_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `DATABASE_URL`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, and `STRIPE_SECRET_KEY`. It reports configuration presence, not provider connectivity. Successful responses include `x-runtime-node-version` from the executing process and `Cache-Control: private, no-store`, so an authenticated deployment check can verify the effective runtime patch without exposing versions to unauthenticated callers.
 - GET `/api/health/fal` — Node.js runtime; after authorization, resolves the normalized `FAL_KEY` / `FAL_API_KEY` alias. It returns `503` with `fal_credentials_missing` when credentials are absent and `{ ok: true }` when present; it does not call Fal or perform a remote readiness probe.
 - GET `/api/health/db` — Node runtime; executes `SELECT 1` against Neon.
 - GET `/api/health/legal` — Node runtime; checks Neon and current legal-document seeding.
