@@ -135,3 +135,41 @@ test('API options reject unknown operation and stale Edit controls before submis
  assert.equal(result.ok, true);
  if (result.ok) { assert.equal(result.options.supportsDuration, false); assert.equal(result.options.supportsAspectRatio, false); }
 });
+
+test('proposal selectors cover actual canonical Element and Site guidance/orientation pricing contexts', async () => {
+ const {priceCanonicalGenerationWithBilling}=await import('../frontend/src/server/agent-api/generation-pricing');
+ const {computeConfiguredPreflight}=await import('../frontend/src/server/engines');
+ const state={status:'loaded' as const,active:true,revision:1,versionedCells:[],databaseCells:[]};
+ const proposal=prepareKlingOperationTariffProposal(state);
+ const verify=(context:import('../frontend/src/lib/pricing-context').PricingContext)=>{
+  const facts=buildBillingPricingFacts(context,context.engine.pricingDetails,'USD').facts;
+  const exact=buildManualTariffScenario(context,facts).selector;
+  const selector=continuousInputTariffSelector(exact)??exact;
+  assert.ok(proposal.proposals.some(item=>JSON.stringify(item.selector)===JSON.stringify(selector)),JSON.stringify(selector));
+  assert.equal(selector.aspectRatio,undefined);assert.equal(selector.referenceImageCount,undefined);
+  return {totalCents:100,currency:'USD',membershipTier:'member',base:{seconds:context.durationSec,rate:1,unit:'sec',amountCents:100},addons:[],meta:{}} as never;
+ };
+ for(const engineId of ['kling-o3-standard','kling-o3-pro','kling-o3-4k']) {
+  const original=getFalEngineById(engineId)!.engine;
+  const engine=resolveVideoOperationEngine(original,'v2v','kling-edit');
+  const refs=[{assetId:'clip',role:'source' as const,mediaKind:'video' as const,slot:undefined,storageUrl:'https://example.com/a.mp4',width:1280,height:720,durationSec:5.25,mimeType:'video/mp4'},
+   ...[0,1].map(slot=>({assetId:`image-${slot}`,role:'reference' as const,mediaKind:'image' as const,slot,storageUrl:`https://example.com/${slot}.png`,width:1280,height:720,durationSec:null,mimeType:'image/png'}))];
+  const canonical=normalizeGenerationRequest({surface:'video',engineId,mode:'v2v',operation:'kling-edit',prompt:'Edit subject',settings:{resolution:engine.modeCaps!.v2v!.resolution![0]},
+   references:refs.map(ref=>({kind:'asset',assetId:ref.assetId,role:ref.role,...(ref.slot===undefined?{}:{slot:ref.slot})})),elements:[{kind:'images',frontalSlot:0,referenceSlots:[1]}]});
+  await priceCanonicalGenerationWithBilling(canonical,'member',{resolvedEngine:engine,resolvedReferences:refs},async context=>{assert.equal(context.referenceImageCount,2);return verify(context);});
+  const site=await computeConfiguredPreflight({engine:engineId,mode:'v2v',operation:'kling-edit',durationSec:5.25,resolution:engine.modeCaps!.v2v!.resolution![0],aspectRatio:'9:16',referenceImageCount:2} as never,
+   {resolvedEngine:engine,trustedMediaPricingFacts:{referenceImageCount:2},computePublicSnapshot:async context=>{assert.equal(context.referenceImageCount,2);return verify(context);}});
+  assert.equal(site.ok,true,JSON.stringify(site));
+ }
+ const engine=getFalEngineById('kling-o3-4k')!.engine;
+ const guidance=Array.from({length:4},(_,slot)=>({assetId:`guide-${slot}`,role:'reference' as const,slot,mediaKind:'image' as const,storageUrl:`https://example.com/${slot}.png`,width:1280,height:720,durationSec:null,mimeType:'image/png'}));
+ for(const aspectRatio of ['16:9','9:16','1:1']) for(const durationSec of Array.from({length:13},(_,index)=>index+3)) {
+  const canonical=normalizeGenerationRequest({surface:'video',engineId:engine.id,mode:'v2v',operation:'kling-reference',prompt:'Reference',settings:{resolution:'4k',durationSec,aspectRatio},references:guidance.map(ref=>({kind:'asset',assetId:ref.assetId,role:ref.role,slot:ref.slot}))});
+  await priceCanonicalGenerationWithBilling(canonical,'member',{resolvedEngine:engine,resolvedReferences:guidance},async context=>{assert.equal(context.referenceImageCount,4);return verify(context);});
+  const site=await computeConfiguredPreflight({engine:engine.id,mode:'v2v',operation:'kling-reference',durationSec,resolution:'4k',aspectRatio,referenceImageCount:4} as never,{resolvedEngine:engine,trustedMediaPricingFacts:{referenceImageCount:4},computePublicSnapshot:async context=>{assert.equal(context.referenceImageCount,4);return verify(context);}});
+  assert.equal(site.ok,true,JSON.stringify(site));
+ }
+ const details=projectAgentModelModeDetails({engine,surface:'video',publicModes:['v2v'],modeCaps:engine.modeCaps!},'v2v');
+ assert.match(JSON.stringify(details.operations?.find(item=>item.operation==='kling-edit')),/720–3840/);
+ assert.match(engine.modeCaps!.v2v!.notes!,/3-15s/);
+});

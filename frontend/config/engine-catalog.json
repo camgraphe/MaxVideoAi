@@ -7500,7 +7500,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       },
       "operationCaps": {
@@ -7709,7 +7709,7 @@
             ],
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+            "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
           },
           "promptRequired": true
         },
@@ -7731,6 +7731,7 @@
                 "id": "video_url",
                 "type": "video",
                 "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
                 "modes": [
                   "v2v"
                 ],
@@ -7836,7 +7837,7 @@
             "resolutionLocked": true,
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Edits the source video while preserving its timing and framing. Up to four images and elements combined."
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
           },
           "promptRequired": true,
           "transport": "fal",
@@ -8005,7 +8006,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],
@@ -8486,7 +8487,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       },
       "operationCaps": {
@@ -8694,7 +8695,7 @@
             ],
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+            "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
           },
           "promptRequired": true
         },
@@ -8716,6 +8717,7 @@
                 "id": "video_url",
                 "type": "video",
                 "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
                 "modes": [
                   "v2v"
                 ],
@@ -8821,7 +8823,7 @@
             "resolutionLocked": true,
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Edits the source video while preserving its timing and framing. Up to four images and elements combined."
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
           },
           "promptRequired": true,
           "transport": "fal",
@@ -8990,7 +8992,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],
@@ -9475,7 +9477,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       },
       "operationCaps": {
@@ -9694,7 +9696,7 @@
             ],
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+            "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
           },
           "promptRequired": true,
           "transport": "fal",
@@ -9718,6 +9720,7 @@
                 "id": "video_url",
                 "type": "video",
                 "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
                 "modes": [
                   "v2v"
                 ],
@@ -9823,7 +9826,7 @@
             "resolutionLocked": true,
             "maxUploadMB": 200,
             "audioToggle": false,
-            "notes": "Edits the source video while preserving its timing and framing. Up to four images and elements combined."
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
           },
           "promptRequired": true,
           "transport": "fal",
@@ -9992,7 +9995,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],

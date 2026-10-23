@@ -342,7 +342,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
               maxUploadMB: 200,
               audioToggle: false,
               notes:
-                'Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control.',
+                `Video-to-video Reference workflow from one ${tier.id === 'kling-o3-4k' ? '3-15s' : '3-10s'} source clip, optional @Image references, Kling Elements, and keep-audio control.`,
             },
           }
         : {}),

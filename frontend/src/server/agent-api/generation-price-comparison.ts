@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { customerDisplayPrice } from "@/lib/customer-price-presentation";
 import { recordedGenerationOutputDuration, recordedGenerationSourceVideoOutput } from "@/lib/generation-output-duration";
 import { getRuntimeModelById } from "@/config/model-runtime";
@@ -27,7 +28,7 @@ import type { StudioPricingEstimate } from "@/lib/studio/conversation-pricing-co
 
 export type GenerationPriceComparisonInput = Pick<
   CanonicalGenerationRequest,
-  "surface" | "mode" | "prompt" | "settings" | "references"
+  "surface" | "mode" | "prompt" | "settings" | "references" | "operation"
 > & {
   /** Only supply when the client asks to compare against this exact model. Repriced, never a stored amount. */
   baselineModelId?: string;
@@ -58,10 +59,11 @@ export type GenerationPriceComparison = {
   quoteRequired: true;
 };
 
-type ComparisonCatalogScope=Pick<CanonicalGenerationRequest,'surface'|'mode'> & {candidateModelIds?:readonly string[]|null;baselineModelId?:string|null};
+type ComparisonCatalogScope=Pick<CanonicalGenerationRequest,'surface'|'mode'> & {operation?:CanonicalGenerationRequest['operation']|null;candidateModelIds?:readonly string[]|null;baselineModelId?:string|null};
 function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]) {
   const explicitIds=new Set([...(input.candidateModelIds??[]),...(input.baselineModelId?[input.baselineModelId]:[])]);
   return catalog.filter(candidate=>candidate.surface===input.surface&&candidate.publicModes.includes(input.mode)
+    &&(!input.operation || candidate.engine.operationCaps?.[input.operation]?.mode === input.mode)
     &&(!input.candidateModelIds||explicitIds.has(candidate.engine.id))
     &&(explicitIds.has(candidate.engine.id)||isAgentModelRecommendationEligible(candidate.engine.id,getRuntimeModelById(candidate.engine.id)?.lifecycle)));
 }
@@ -70,7 +72,7 @@ function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly Agen
 export function generationComparisonCatalogFingerprint(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]):string {
   const models=comparisonCandidates(input,catalog).map(candidate=>({modelId:candidate.engine.id,engine:candidate.engine,modeCaps:candidate.modeCaps,publicModes:candidate.publicModes}))
     .sort((a,b)=>a.modelId.localeCompare(b.modelId));
-  return createHash('sha256').update(stableJson(JSON.parse(JSON.stringify({surface:input.surface,mode:input.mode,models})))).digest('hex');
+  return createHash('sha256').update(stableJson(JSON.parse(JSON.stringify({surface:input.surface,mode:input.mode,...(input.operation ? {operation:input.operation}:{}),models})))).digest('hex');
 }
 
 function defaultAspectRatio(
@@ -172,10 +174,11 @@ export async function compareGenerationPrices(
   for (let start = 0; start < scenarios.length; start += 4) {
     await Promise.all(
       scenarios.slice(start, start + 4).map(async (scenario) => {
-        const { candidate } = scenario;
+        let { candidate } = scenario;
         const modelId = candidate.engine.id;
         let validatedInput=false;
         try {
+          if (input.operation) { const engine = resolveVideoOperationEngine(candidate.engine, base.mode as import('@/types/engines').Mode, input.operation); candidate = {...candidate,engine,modeCaps:{...candidate.modeCaps,...engine.modeCaps}}; }
           const details = projectAgentModelModeDetails(candidate, base.mode);
           const settings = { ...scenario.settings };
           const defaultedSettings: string[] = [];
@@ -213,6 +216,7 @@ export async function compareGenerationPrices(
             }
           const request = normalizeGenerationRequest({
             ...base,
+            ...(input.operation ? {operation:input.operation}:{}),
             engineId: modelId,
             settings,
           });
@@ -251,6 +255,7 @@ export async function compareGenerationPrices(
           const option: GenerationPriceOption = {
             modelId,
             modelLabel: candidate.engine.label,
+            ...(request.operation ? {operation:request.operation}:{}),
             surface: request.surface,
             mode: request.mode,
             settings: scalarSettings,
@@ -286,6 +291,7 @@ export async function compareGenerationPrices(
     // the single-output contract and provide live facts for a workflow decision.
     const models = candidates.flatMap(candidate => {
       try {
+        if (input.operation) { const engine = resolveVideoOperationEngine(candidate.engine, base.mode as import('@/types/engines').Mode, input.operation); candidate = {...candidate,engine,modeCaps:{...candidate.modeCaps,...engine.modeCaps}}; }
         const details = projectAgentModelModeDetails(candidate, base.mode);
         const {mode,duration,durationPolicy,audio,resolutions,aspectRatios,references,settings}=details;
         return [{modelId: candidate.engine.id,mode,duration,durationPolicy,audio,resolutions,aspectRatios,references,settings}];

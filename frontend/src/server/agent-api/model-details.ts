@@ -152,6 +152,7 @@ function projectReferences(
     const minImageSidePx = field.type === 'image' ? engine.inputSchema?.constraints?.minImageSidePx : undefined;
     return [Object.freeze({
       type: field.type,
+      ...(field.description ? {description: field.description} : {}),
       roles: Object.freeze([...roles]),
       assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),

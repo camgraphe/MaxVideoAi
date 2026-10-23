@@ -152,6 +152,7 @@ export type AgentModelDurationDetails = Readonly<{
 
 export type AgentModelReferenceFieldDetails = Readonly<{
   type: 'image' | 'video' | 'audio';
+  description?: string;
   roles: readonly CanonicalGenerationReferenceRole[];
   assetRequired: boolean;
   maxSizeMB?: number;

@@ -22,6 +22,7 @@ export const studioPricingReadSchema=z.object({
   outputCount:z.literal(1),
 }).strict();
 export type StudioPricingEstimate=Readonly<{
+  operation?: import('@/lib/video-operation').VideoOperation;
   modelId:string;surface:'image'|'video';mode:string;settings:Readonly<Record<string,string|number|boolean|null>>;
   outputCount:1;outputDurationSec?:number;sourceVideoOutput?:SeedanceEditSourceFacts;referenceCount:number;price:Readonly<CustomerDisplayPrice>;estimatedAt:string;quoteRequired:true;
 }>;

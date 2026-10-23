@@ -39,7 +39,7 @@ export function buildKlingOperationCaps(engine: EngineCaps): Partial<Record<Vide
   const editSchema: EngineInputSchema = {
     required: [
       { id: 'prompt', type: 'text', label: 'Edit instruction', modes: ['v2v'] },
-      { id: 'video_url', type: 'video', label: 'Source video', modes: ['v2v'], requiredInModes: ['v2v'],
+      { id: 'video_url', type: 'video', label: 'Source video', description: 'Owned 3–15 second video; width and height must each be 720–3840 pixels.', modes: ['v2v'], requiredInModes: ['v2v'],
         source: 'either', minCount: 1, maxCount: 1, minDurationSec: 3, maxDurationSec: 15, maxSizeMB: 200,
         acceptedFileExtensions: ['mp4', 'mov'], acceptedMimeTypes: ['video/mp4', 'video/quicktime'] },
     ],
@@ -55,7 +55,7 @@ export function buildKlingOperationCaps(engine: EngineCaps): Partial<Record<Vide
   };
   const ui: EngineModeUiCaps = { modes: ['v2v'], durationPolicy: 'source_video', resolution: [resolution],
     resolutionLocked: true, maxUploadMB: 200, audioToggle: false,
-    notes: 'Edits the source video while preserving its timing and framing. Up to four images and elements combined.' };
+    notes: 'Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined.' };
   return {
     'kling-reference': { operation: 'kling-reference', mode: 'v2v', label: 'Reference', defaultForMode: true,
       inputSchema: engine.inputSchema!, ui: engine.modeCaps!.v2v!, promptRequired: true,
@@ -71,7 +71,8 @@ export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, valu
   if (!operation) return engine;
   const caps = engine.operationCaps?.[operation];
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
-  return { ...engine, inputSchema: caps.inputSchema,
+  return { ...engine, inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit'
+      ? (caps.ui.resolution as EngineCaps['resolutions'] | undefined) ?? engine.resolutions : engine.resolutions,
     inputLimits: { ...engine.inputLimits, ...(caps.transport === 'fal' ? { videoMaxDurationSec: 15 } : {}) },
     modeCaps: { ...engine.modeCaps, [mode]: caps.ui } };
 }

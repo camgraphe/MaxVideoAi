@@ -78,14 +78,17 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);
-  const factualAspect = facts.metadata?.manualTariffAspectRatio;
+  // These new endpoint rates depend only on tier/output seconds. Reference orientation
+  // and guidance/Element member counts remain request facts, not separate tariff classes.
+  const operationIdentity = videoOperationTariffIdentity(facts.engineId, context.mode ?? 't2v', context.operation);
+  const factualAspect = operationIdentity ? null : facts.metadata?.manualTariffAspectRatio;
   const pricedAspect = factualAspect === null ? null
     : typeof factualAspect === 'string' ? factualAspect : context.aspectRatio ?? 'default';
   // These factual owners price 0/1 references differently; neither count can alias a default cell.
   const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
     || isLumaAgentsImageEngineId(facts.engineId)
     || (isMinimaxH3EngineId(facts.engineId) && context.mode === 'ref2v');
-  const projectedMedia = facts.metadata?.manualTariffMedia as ManualTariffMedia | undefined;
+  const projectedMedia = operationIdentity ? {} : facts.metadata?.manualTariffMedia as ManualTariffMedia | undefined;
   const media = projectedMedia ?? context;
   const factualAudio = facts.metadata?.manualTariffAudio;
   const audio = factualAudio === null ? undefined : typeof factualAudio === 'boolean' ? factualAudio : context.addons?.audio;
@@ -94,7 +97,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
-    ...videoOperationTariffIdentity(facts.engineId, context.mode ?? 't2v', context.operation),
+    ...operationIdentity,
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(billedDuration),
     ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),

@@ -20,6 +20,7 @@ import {priceStudioFilm} from './conversation-film-pricing';
 
 export function createStudioActionExecutor(actor: StudioGenerationActor, dependencies: {
   enabled: boolean;
+  readProject?: typeof readStudioConversationProject;
   referenceFingerprint?: string;
   generation?: ReturnType<typeof createStudioImageGenerationService>;
   prepareImage(request: Extract<StudioActionRequest, {action: 'image.prepare'}>): Promise<PreparedGeneration>;
@@ -47,7 +48,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
     const request = studioActionRequestSchema.parse(value);
     try {
       if (!dependencies.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio actions are unavailable.');
-      const project = await readStudioConversationProject(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
+      const project = await (dependencies.readProject ?? readStudioConversationProject)(actor,{exportsEnabled:dependencies.editingEnabled&&dependencies.exportsEnabled});
       switch (request.action) {
         case 'analysis.prepare':
           if(!dependencies.analysisEnabled||!dependencies.prepareAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis is unavailable.');
@@ -63,7 +64,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
             ? dependencies.factories.video(actor,{enabled:dependencies.enabled}) : null;
           if (!service) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio video estimates are unavailable.');
           const selected=studioPricingSourceSelection(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))});
-          const scenario={surface:request.surface,mode:request.mode,
+          const scenario={surface:request.surface,mode:request.mode,...(request.operation ? {operation:request.operation}:{}),
             settings:conversationSelectionSettings(request.settings),references:selected.references};
           if(request.action==='pricing.compare') {
             const comparison={...scenario,prompt:request.prompt,
