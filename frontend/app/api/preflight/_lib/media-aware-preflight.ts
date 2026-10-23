@@ -1,4 +1,4 @@
-import { isLumaSourceVideoMode, validateLumaSourceVideoTiming } from '@/lib/luma-source-video';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
@@ -330,7 +330,8 @@ export async function resolveMediaAwarePreflight(
   }
 
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
-  return computeConfiguredPreflightFn({ ...request, durationSec: priced.durationSec,
+  return computeConfiguredPreflightFn({ ...request, durationSec: needsLumaSourceTiming && request.mode === 'v2v'
+    ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec,
     ...(needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
   }, {

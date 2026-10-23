@@ -1,8 +1,9 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 
 export type MediaLibraryAssetKind = 'image' | 'video' | 'audio';
 
-export type MediaLibraryAsset = {
+export type MediaLibraryAsset = MediaReadAccess & {
   id: string;
   url: string;
   thumbUrl?: string | null;

@@ -1,3 +1,4 @@
+import { snapshotReferenceInputs } from './workspace-snapshot-reference-inputs';
 import { resolveExampleResolution } from './workspace-example-resolution';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -183,6 +184,7 @@ function readSnapshotInputAssets(value: unknown): Record<string, (ReferenceAsset
       url,
       width,
       height,
+      durationSec: readFiniteNumber(attachment.durationSec) ?? null,
       assetId,
       status: 'ready',
     };
@@ -323,7 +325,7 @@ export function resolveVideoSettingsSnapshot(
       safetyChecker: typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined,
       extraInputValues: coerceStoredExtraInputValues(advanced.extraInputValues) ?? {},
     },
-    inputAssets: Object.prototype.hasOwnProperty.call(refs, 'inputs') ? readSnapshotInputAssets(refs.inputs) : null,
+    inputAssets: readSnapshotInputAssets(snapshotReferenceInputs(refs, engine, mode)),
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')
       ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement)
       : null,

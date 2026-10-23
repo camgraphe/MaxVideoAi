@@ -243,6 +243,7 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'fal-ai/luma-dream-machine/ray-2-flash/modify',
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'source_video',
           notes: 'Modify a source clip quickly with the same adherence and reimagination presets exposed in Flash.',
         },
       },

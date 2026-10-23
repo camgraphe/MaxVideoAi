@@ -14,8 +14,10 @@ import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromot
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
 import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
+import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
-import { getVideoExtensionSourceState, videoExtensionCopy } from '@/lib/video-extension';
+import { videoExtensionCopy } from '@/lib/video-extension';
+import { videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -58,6 +60,8 @@ export function Composer({
   referenceAuthAction,
   assets,
   onAssetAdd,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
   onAssetRemove,
   onNotice,
   onOpenLibrary,
@@ -84,13 +88,7 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
-  const extensionWorkflow = workspaceDensity && (activeManualMode === 'extend' || caps?.modes?.[0] === 'extend');
-  const extensionCopy = videoExtensionCopy(locale);
-  const extensionSourceState = extensionWorkflow ? getVideoExtensionSourceState(engine.inputSchema, assets) : null;
-  const extensionNotice = extensionSourceState === 'missing' ? extensionCopy.uploadForPrice
-    : extensionSourceState === 'uploading' ? extensionCopy.uploading : null;
-  const extensionQuoteStatus = extensionSourceState === 'missing' ? extensionCopy.awaitingVideo
-    : extensionSourceState === 'uploading' ? extensionCopy.awaitingUpload : undefined;
+  const { excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -133,15 +131,15 @@ export function Composer({
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
   const formattedPrice = useMemo(() => {
-    if (price == null || isPricing || preflight?.ok === false) return null;
+    if (price == null || isPricing || excerptEditorOpen || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency, isPricing, preflight?.ok]);
+  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen]);
   const promptLabel = promptField?.label ?? 'Prompt';
-  const promptDescription = extensionWorkflow ? undefined : promptField?.description;
+  const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
@@ -153,9 +151,10 @@ export function Composer({
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
+    excerptEditorOpen ||
     isLoading ||
     isPricing ||
-    (extensionWorkflow && extensionSourceState !== 'ready') ||
+    (videoSourceWorkflow && extensionSourceState !== 'ready') ||
     promptTooLong ||
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
@@ -194,7 +193,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = extensionWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
+  const promptPlaceholderValue = videoSourceWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -233,7 +232,7 @@ export function Composer({
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
-    : generateLabel ?? (extensionWorkflow ? extensionCopy.extend : composerCopy.button.idle);
+    : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
 
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
@@ -348,8 +347,9 @@ export function Composer({
 
         {workspaceDensity && assetFields.length > 0 ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
-            extensionWorkflow={extensionWorkflow}
+            extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction}
+            onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
           {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
@@ -447,7 +447,8 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              <ComposerReferenceFields orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+              <ComposerReferenceFields videoSourceWorkflow={videoSourceWorkflow} orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+                onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
                 onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
                 onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
             </div>

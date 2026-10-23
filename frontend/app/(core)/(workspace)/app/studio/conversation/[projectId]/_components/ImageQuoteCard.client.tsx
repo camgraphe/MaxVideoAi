@@ -1,4 +1,5 @@
 "use client";
+import {videoWorkflowNotices} from '@/lib/video-workflow-capabilities';
 import { useEffect, useState } from "react";
 import type { ImageConversationTurn } from "@/lib/studio/image-conversation-contract";
 import {
@@ -58,6 +59,7 @@ export function ImageQuoteCard({
           ? presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence')}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale')}
       </p>
+      {videoWorkflowNotices(quote.summary.engineId,quote.summary.mode,locale).map(note=><p key={note.code} role="note" className={styles.muted}>{note.message}</p>)}
       {presentation.operation && <p className={styles.muted}>{presentation.operation}</p>}
       {turn.extensionAssembly && turn.generation?.status!=='failed' && <p className={styles.muted} role="status">
         {turn.extensionAssembly.state==='saved'

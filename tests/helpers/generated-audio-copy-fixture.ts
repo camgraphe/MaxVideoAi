@@ -17,7 +17,7 @@ export async function generatedAudioCopyFixture(bytes: Buffer, sourceUrl: string
     },
   };
   const stubs: Record<string, string> = {
-    '@/server/storage': 'export const uploadFileBuffer=async input=>fixture.upload(input);export const uploadImageToStorage=()=>{throw Error("Unexpected image upload")};',
+    '@/server/storage': 'export const uploadFileBuffer=async input=>fixture.upload(input);export const uploadImageToStorage=()=>{throw Error("Unexpected image upload")};export const extractStorageKeyFromUrl=()=>{throw Error("Unexpected video storage key read")};',
     '@/server/owned-media-read-access': 'export const createOwnedMediaReadUrl=async ({url})=>{fixture.readUrls.push(url);return url};',
     '@/server/media/detect-has-audio': 'export const probeMediaBuffer=async()=>({kind:"audio",canonicalMime:"audio/mpeg",durationSec:10.371});',
     '@/server/media/generated-video-facts': 'export const measureGeneratedVideoBuffer=()=>{throw Error("Unexpected video probe")};',

@@ -166,17 +166,6 @@ export function calculateLumaRay32ReferencePrice(params: {
   };
 }
 
-function normalizeRay32Duration(value: string | number | null | undefined): '5s' | '10s' {
-  const duration =
-    typeof value === 'number'
-      ? (`${Math.round(value)}s` as string)
-      : value?.trim().toLowerCase();
-  if (!LUMA_RAY_32_DURATIONS.includes(duration as '5s' | '10s')) {
-    throw new Error('Luma Ray 3.2 supports 5s or 10s direct priced durations.');
-  }
-  return duration as '5s' | '10s';
-}
-
 function normalizeRay32Resolution(value: string | null | undefined): '540p' | '720p' | '1080p' {
   const resolution = value?.trim().toLowerCase();
   if (!LUMA_RAY_32_RESOLUTIONS.includes(resolution as '540p' | '720p' | '1080p')) {
@@ -226,10 +215,16 @@ export function calculateLumaRay32InterpolatedPrice(params: {
     };
   }
 
-  const duration = normalizeRay32Duration(params.duration);
-  const durationSec = duration === '10s' ? 10 : 5;
-  const falReferenceUsd = Number((RAY_32_FAL_REFERENCE_PRICE_USD[duration][resolution] * dynamicRangeMultiplier).toFixed(4));
-  const lumaDirectFloorUsd = Number((RAY_32_DIRECT_VIDEO_EDIT_PRICE_USD[duration][resolution] * dynamicRangeMultiplier).toFixed(4));
+  if (!Number.isInteger(params.durationSec) || params.durationSec < 5 || params.durationSec > 18) {
+    throw new Error('Luma Modify requires a source-derived tariff class from 5 to 18 seconds.');
+  }
+  const durationSec = params.durationSec;
+  const duration = durationSec === 5 ? '5s' : durationSec === 10 ? '10s' : 'per_second';
+  // Commercial reference projection, not an observed provider charge. New classes
+  // require reviewed active tariff coverage; the 5s and 10s amounts stay unchanged.
+  const scale = durationSec / 5;
+  const falReferenceUsd = Number((RAY_32_FAL_REFERENCE_PRICE_USD['5s'][resolution] * scale * dynamicRangeMultiplier).toFixed(4));
+  const lumaDirectFloorUsd = Number((RAY_32_DIRECT_VIDEO_EDIT_PRICE_USD['5s'][resolution] * scale * dynamicRangeMultiplier).toFixed(4));
   const totalUsd = Math.max(falReferenceUsd, lumaDirectFloorUsd);
   return {
     totalUsd,

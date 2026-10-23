@@ -10,7 +10,7 @@ test('stored signed and unknown-host thumbnails retain exact URLs, lazy loading 
   const browserSource = readFileSync('frontend/components/library/AssetLibraryBrowser.tsx', 'utf8');
   assert.doesNotMatch(browserSource, /from 'next\/image'/);
   assert.match(browserSource, /<LibraryImageThumbnail asset=\{asset\}/);
-  assert.match(browserSource, /asset=\{\{ \.\.\.asset, url: asset.thumbUrl \}\}/, 'video poster fallback must remain an image');
+  assert.match(browserSource, /asset=\{\{ url: asset.thumbnailAccessUrl \?\? asset.thumbUrl \}\}/, 'video poster fallback must remain an image');
   const dom = new JSDOM('<div id="root"></div>');
   const globals = { window: dom.window, document: dom.window.document, React, IS_REACT_ACT_ENVIRONMENT: true };
   const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));

@@ -14,8 +14,9 @@ function asset(fieldId: string, kind: ReferenceAsset['kind'], durationSec?: numb
     url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}`, status: 'ready', durationSec };
 }
 function live(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, patch: Partial<FormState> = {}, klingElements: KlingElementState[] = [], onFormChange?: (form: FormState | null) => void) {
-  const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
-  assert.ok(engine, id);
+  const entry = listFalEngines().find((entry) => entry.id === id);
+  assert.ok(entry, id);
+  const engine = { ...entry.engine, modeCaps: Object.fromEntries(entry.modes.map(({ mode, ui }) => [mode, ui])) };
   const form: FormState = { engineId: id, mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: true, extraInputValues: {}, ...patch };
   let result: ReturnType<typeof useWorkspaceComposerState> | undefined;
   function Harness() {
@@ -76,12 +77,17 @@ test('live Veo first/last promotion preserves implicit i2v and submits fl2v', ()
   assert.equal(result.submissionMode, 'fl2v');
 });
 
-test('live Kling O3 subjects choose reference mode and video sources control effective duration', () => {
+test('live Kling O3 subjects choose reference mode and Modify preserves the requested output duration', () => {
   const subject = { id: 'subject', frontal: asset('frontal', 'image'), references: [], video: null } as KlingElementState;
   assert.equal(live('kling-o3-pro', {}, {}, [subject]).submissionMode, 'ref2v');
   const source = live('kling-o3-pro', { video_url: [asset('video_url', 'video', 7.2)] });
   assert.equal(source.submissionMode, 'v2v');
-  assert.equal(source.effectiveDurationSec, 8);
+  assert.equal(source.effectiveDurationSec, 5);
+  for (const id of ['kling-o3-standard', 'kling-o3-pro']) {
+    for (const durationSec of [3, 6, 15]) {
+      assert.equal(live(id, { video_url: [asset('video_url', 'video', 5.558333)] }, { durationSec }).effectiveDurationSec, durationSec);
+    }
+  }
   assert.ok(live('kling-o3-4k', { video_url: [asset('video_url', 'video', 7.2)] }).klingO3UnsupportedVideoReason);
 });
 
@@ -137,5 +143,15 @@ test('Ray 3.2 Reframe keeps selected output duration while Modify inherits sourc
         primaryAudioDurationSec: null, primaryVideoDurationSec: 8 }, prompt: 'Change the room',
       multiPromptEnabled: false, multiPromptScenes: [], voiceIdsInput: '' });
     assert.equal(facts.effectiveDurationSec, expected);
+  }
+});
+
+test('Seedance 2.0 Modify keeps the full requested output duration independently of the source', () => {
+  for (const id of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini']) {
+    for (const durationSec of [4, 6, 15]) {
+      const result = live(id, { video_url: [asset('video_url', 'video', 5.558333)] }, { mode: 'v2v', durationSec });
+      assert.equal(result.submissionMode, 'v2v');
+      assert.equal(result.effectiveDurationSec, durationSec, id);
+    }
   }
 });

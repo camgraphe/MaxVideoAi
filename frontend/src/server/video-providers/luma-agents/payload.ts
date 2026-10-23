@@ -142,7 +142,7 @@ function assertNoReferenceImages(referenceImageUrls: string[] | null | undefined
 
 function applyCompatibilityRules(params: {
   type: LumaAgentsGenerationType;
-  duration: LumaAgentsRay32DirectDuration;
+  duration?: LumaAgentsRay32DirectDuration;
   resolution: LumaAgentsRay32DirectResolution;
   aspectRatio?: string;
   loop: boolean;
@@ -380,7 +380,7 @@ export function buildLumaAgentsVideoPayload(params: {
     invalidRequest('Prompt is required for Luma Agents video generation.', 'LUMA_AGENTS_PROMPT_REQUIRED');
   }
 
-  const duration = normalizeDuration({
+  const duration = route.type === 'video_edit' ? undefined : normalizeDuration({
     durationOption: route.type === 'video' ? params.durationOption : undefined,
     durationSec: params.durationSec,
   });
@@ -427,7 +427,7 @@ export function buildLumaAgentsVideoPayload(params: {
   const video: LumaAgentsVideoOptions = {
     resolution,
   };
-  video.duration = duration;
+  if (duration) video.duration = duration;
   if (loop && route.type === 'video') video.loop = true;
   if (startFrameUrl && route.type !== 'video_reframe') video.start_frame = { url: startFrameUrl };
   if (endFrameUrl && route.type === 'video') video.end_frame = { url: endFrameUrl };

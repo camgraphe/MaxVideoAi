@@ -159,6 +159,14 @@ function invalidModeReferences(): never {
 }
 
 const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.freeze({
+  keepAudio: 'keep_audio',
+  safetyTolerance: 'safety_tolerance',
+  audioSetting: 'audio_setting',
+  personGeneration: 'person_generation',
+  compressionQuality: 'compression_quality',
+  promptAudioDirection: 'prompt_audio_direction',
+  promptCameraDirection: 'prompt_camera_direction',
+  promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
   returnLastFrame: 'return_last_frame',
   watermark: 'watermark',

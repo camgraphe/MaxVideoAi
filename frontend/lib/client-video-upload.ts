@@ -15,6 +15,8 @@ export type UploadedVideoAsset = {
   durationSec?: number;
   id: string;
   url: string;
+  /** Temporary read access for playback; url remains the stored original identity. */
+  previewUrl?: string;
   width?: number | null;
   height?: number | null;
   size?: number | null;

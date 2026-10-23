@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
+import { verifyPublicMediaHttp } from '../../server/media/public-http-readiness';
 
 import profileConfig from '../../config/public-video-rendition-profiles.json';
 import type {
@@ -789,65 +790,14 @@ export async function publishPreparedCheckpoints(
   return manifest;
 }
 
-async function responseWithTimeout(
-  fetchFn: typeof fetch,
-  url: string,
-  init: RequestInit,
-  timeoutMs: number
-): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try { return await fetchFn(url, { ...init, redirect: 'error', signal: controller.signal }); }
-  finally { clearTimeout(timer); }
-}
-
-async function readExactRangeBody(response: Response, expectedBytes: number): Promise<Buffer> {
-  if (!response.body) throw new Error('Public rendition Range response has no body');
-  const reader = response.body.getReader();
-  const output = Buffer.alloc(expectedBytes);
-  let offset = 0;
-  while (true) {
-    const chunk = await reader.read();
-    if (chunk.done) break;
-    if (offset + chunk.value.byteLength > expectedBytes) {
-      await reader.cancel('Range response exceeded the byte limit');
-      throw new Error(`Public rendition Range body exceeds ${expectedBytes} bytes`);
-    }
-    output.set(chunk.value, offset);
-    offset += chunk.value.byteLength;
-  }
-  if (offset !== expectedBytes) throw new Error('Public rendition Range body has invalid length');
-  return output;
-}
-
 export async function verifyPublicHttpRendition(
   url: string,
   expectedBytes: number,
   dependencies: { fetchFn?: typeof fetch; now?: () => Date; timeoutMs?: number } = {}
 ): Promise<HttpCheckEvidence> {
   assertAllowedPublicMp4Url(url);
-  const fetchFn = dependencies.fetchFn ?? fetch;
-  const timeoutMs = Math.min(dependencies.timeoutMs ?? 15_000, 120_000);
-  const head = await responseWithTimeout(fetchFn, url, { method: 'HEAD' }, timeoutMs);
-  if (!head.ok) throw new Error(`Public rendition HEAD failed with ${head.status}`);
-  if (head.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'video/mp4') throw new Error('Public rendition must be video/mp4');
-  if (Number(head.headers.get('content-length')) !== expectedBytes) throw new Error('Public rendition content length differs from manifest');
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const range = await fetchFn(url, { method: 'GET', headers: { Range: 'bytes=0-31' }, redirect: 'error', signal: controller.signal });
-    if (range.status !== 206) throw new Error('Public rendition must support Range requests');
-    if (range.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'video/mp4') {
-      throw new Error('Public rendition Range response must be video/mp4');
-    }
-    const match = range.headers.get('content-range')?.match(/^bytes 0-31\/(\d+)$/);
-    if (!match || Number(match[1]) !== expectedBytes) throw new Error('Public rendition returned an invalid Content-Range');
-    if (Number(range.headers.get('content-length')) !== 32) throw new Error('Public rendition Range response has invalid length');
-    const body = await readExactRangeBody(range, 32);
-    if (body.toString('ascii', 4, 8) !== 'ftyp') throw new Error('Public rendition Range body is not an MP4 prefix');
-  } finally {
-    clearTimeout(timer);
-  }
+  const body = await verifyPublicMediaHttp(url, { bytes: expectedBytes, mime: 'video/mp4' }, dependencies);
+  if (body.toString('ascii', 4, 8) !== 'ftyp') throw new Error('Public rendition Range body is not an MP4 prefix');
   return {
     checkedAt: (dependencies.now ?? (() => new Date()))().toISOString(),
     contentType: 'video/mp4',

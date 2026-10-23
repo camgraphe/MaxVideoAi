@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query, type QueryExecutor } from '@/lib/db';
 import { mapGalleryVideoRow, type VideoRow } from '../videos-normalization';
 import { imageThumbFallbackSelect, videoOutputDimensionSelect } from '../videos-query';
@@ -24,7 +25,7 @@ export async function readLegacyPlaylistVideos({slug,limit,engineAliases}: {slug
         })()
       : '';
 
-  const rows = await db.query<VideoRow & { order_index: number }>(
+  const rows = await marketingVideoReader(db).query<VideoRow & { order_index: number }>(
     `
       SELECT aj.job_id, aj.user_id, aj.engine_id, aj.engine_label, aj.duration_sec, aj.prompt,
              COALESCE(NULLIF(aj.thumb_url, ''), (${imageThumbFallbackSelect('aj')})) AS thumb_url,

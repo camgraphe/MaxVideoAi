@@ -1,3 +1,5 @@
+import { deleteMarketingVideo } from '@/server/marketing-media/manage';
+import { MarketingMediaError } from '@/server/marketing-media/snapshot';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, withDbTransaction } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -24,6 +26,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ videoI
   }
 
   try {
+    if (await deleteMarketingVideo(videoId, undefined, { publicationOnly: true })) return NextResponse.json({ ok: true });
     await ensureBillingSchema();
     const removed = await withDbTransaction(async (executor) => {
       const owned = await executor.query<{ job_id: string }>(
@@ -60,6 +63,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ videoI
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof MarketingMediaError) return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
     console.error('[admin/videos] failed to delete video', error);
     return NextResponse.json({ ok: false, error: 'Failed to delete video' }, { status: 500 });
   }

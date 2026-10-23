@@ -1,3 +1,4 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import type { ComposerAttachment, AssetFieldConfig } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import {
@@ -8,6 +9,10 @@ import {
 import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 
 export type ReferenceAsset = {
+  ref?: ComposerAttachment['ref'];
+  excerptEditing?: boolean;
+  excerptSource?: ComposerAttachment['excerptSource'];
+  excerptRange?: ComposerAttachment['excerptRange'];
   id: string;
   fieldId: string;
   previewUrl: string;
@@ -40,7 +45,9 @@ export type ReferenceAssetInsertionResult =
       replacedAsset?: undefined;
     };
 
-export type UserAsset = {
+export type UserAsset = MediaReadAccess & {
+  assetId?: string;
+  ref?: ComposerAttachment['ref'];
   id: string;
   url: string;
   thumbUrl?: string | null;
@@ -118,9 +125,15 @@ export function normalizeAssetLibraryPayload(
         const mime = asset.mime ?? null;
         return {
           id: asset.id,
+          assetId: asset.assetId,
+          ref: asset.ref,
           url: asset.url,
           thumbUrl: asset.thumbUrl ?? null,
           previewUrl: asset.previewUrl ?? null,
+          accessUrl: asset.accessUrl,
+          thumbnailAccessUrl: asset.thumbnailAccessUrl,
+          previewAccessUrl: asset.previewAccessUrl,
+          playbackAccessUrl: asset.playbackAccessUrl,
           kind: asset.kind === 'audio' || asset.kind === 'video' || asset.kind === 'image'
             ? asset.kind : mime?.startsWith('audio/') ? 'audio' : mime?.startsWith('video/') ? 'video' : 'image',
           width: asset.width ?? null,
@@ -204,7 +217,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     fieldId: field.id,
-    previewUrl: asset.url,
+    previewUrl: field.type === 'video' ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url : asset.accessUrl ?? asset.url,
     kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
     name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
     size: asset.size ?? 0,
@@ -213,7 +226,8 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
     width: asset.width ?? null,
     height: asset.height ?? null,
     durationSec: asset.durationSec ?? null,
-    assetId: asset.id,
+    assetId: asset.assetId ?? asset.id,
+    ref: asset.ref ?? (asset.jobId && asset.sourceOutputId ? { type: 'job-output', jobId: asset.jobId, outputId: asset.sourceOutputId, kind: asset.kind } : { type: 'asset', assetId: asset.assetId ?? asset.id, kind: asset.kind }),
     status: 'ready',
   };
 }
@@ -485,7 +499,9 @@ export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
   return {
     id: asset.id || `library_${Date.now().toString(36)}`,
     assetId: asset.id,
-    previewUrl: asset.previewUrl ?? asset.thumbUrl ?? asset.url,
+    previewUrl: isVideo
+      ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url
+      : asset.previewAccessUrl ?? asset.previewUrl ?? asset.thumbnailAccessUrl ?? asset.thumbUrl ?? asset.accessUrl ?? asset.url,
     kind: isVideo ? 'video' : 'image',
     name: asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image'),
     status: 'ready',
@@ -601,6 +617,14 @@ export function buildComposerAttachments(
     map[fieldId] = entries.map((asset) =>
       asset
         ? {
+            id: asset.id,
+            assetId: asset.assetId,
+            ref: asset.ref,
+            url: asset.url,
+            durationSec: asset.durationSec,
+            excerptEditing: asset.excerptEditing,
+            excerptSource: asset.excerptSource,
+            excerptRange: asset.excerptRange,
             kind: asset.kind,
             name: asset.name,
             size: asset.size,

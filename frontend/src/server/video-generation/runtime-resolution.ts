@@ -48,6 +48,7 @@ export function resolveRuntimeResolutionPolicy(
       ? {
           defaultResolution:
             schemaDefault
+            ?? registeredCapability?.resolution?.[0]
             ?? engine.resolutions[0]
             ?? pricingFallbackResolution,
         }

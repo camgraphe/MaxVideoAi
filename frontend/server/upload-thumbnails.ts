@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { uploadImageToStorage } from '@/server/storage';
+import type { PrivateMediaStorageScope } from '@/server/private-media-storage';
 
 const requireForRuntime = createRequire(import.meta.url);
 const DEFAULT_MAX_DIMENSION = Number.parseInt(process.env.UPLOAD_THUMB_MAX_DIMENSION ?? '640', 10);
@@ -22,6 +23,7 @@ type UploadThumbnailParams = {
   fileName?: string | null;
   acl?: string | null;
   cacheControl?: string;
+  privateStorageScope?: PrivateMediaStorageScope;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 };
@@ -73,6 +75,7 @@ export async function createUploadImageThumbnail(params: UploadThumbnailParams):
       mime: 'image/webp',
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
+      privateStorageScope: params.privateStorageScope,
       fileName: `${baseName(params.fileName)}-thumb.webp`,
       ...(params.acl !== undefined ? { acl: params.acl } : {}),
       ...(params.cacheControl !== undefined ? { cacheControl: params.cacheControl } : {}),
@@ -109,6 +112,7 @@ export async function createUploadVideoThumbnail(params: UploadThumbnailParams):
       mime: 'image/jpeg',
       userId: params.userId ?? undefined,
       prefix: 'user-asset-thumbs',
+      privateStorageScope: params.privateStorageScope,
       fileName: `${baseName(params.fileName)}-thumb.jpg`,
       ...(params.acl !== undefined ? { acl: params.acl } : {}),
       ...(params.cacheControl !== undefined ? { cacheControl: params.cacheControl } : {}),

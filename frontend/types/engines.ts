@@ -219,6 +219,8 @@ export interface EngineModeUiCaps {
   extensionOutput?:'continuation'|'combined';
   modes: Mode[];
   duration?: EngineModeDurationCaps;
+  /** Explicit source/output timing contract for source-video workflows. */
+  durationPolicy?: 'requested' | 'source_video';
   frames?: number[];
   resolution?: string[];
   resolutionLocked?: boolean;

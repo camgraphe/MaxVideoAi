@@ -2,7 +2,13 @@ import { publicExampleRequestedResolution, publicExampleResolution } from '@/lib
 import type { SharedVideoPreview } from '@/lib/video-preview-group';
 import { buildPublicKeyframeSettingsSnapshot, parsePublicKeyframeRecipe } from '@/lib/public-keyframe-demo';
 
+export function hasPublishedRecreationSnapshot(shared: SharedVideoPreview): boolean {
+  const value = shared.recreationSnapshot as Record<string, unknown> | null;
+  return Boolean(value && value.schemaVersion === 1 && value.surface === 'video' && value.engineId === shared.engineId && typeof value.prompt === 'string' && value.core && value.refs);
+}
+
 export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVideoPreview): unknown {
+  if (hasPublishedRecreationSnapshot(sharedVideo)) return sharedVideo.recreationSnapshot;
   const recipe = parsePublicKeyframeRecipe(sharedVideo.keyframeRecipe);
   if (recipe && recipe.jobId === sharedVideo.id && recipe.engineId === sharedVideo.engineId) {
     return buildPublicKeyframeSettingsSnapshot(recipe);

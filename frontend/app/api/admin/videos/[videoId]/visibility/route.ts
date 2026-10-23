@@ -1,3 +1,6 @@
+import { revalidateMarketingPublication } from '@/server/marketing-media/revalidate';
+import { updateMarketingVisibility } from '@/server/marketing-media/manage';
+import { MarketingMediaError } from '@/server/marketing-media/snapshot';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { requireAdmin, adminErrorToResponse } from '@/server/admin';
@@ -62,6 +65,9 @@ export async function POST(req: NextRequest, props: RouteParams) {
   }
 
   try {
+    const marketing = await updateMarketingVisibility(videoId, { visibility: nextVisibility, indexable: nextIndexable });
+    if (marketing) await revalidateMarketingPublication(videoId);
+    if (marketing) return NextResponse.json({ ok: true, video: { id: marketing.job_id, visibility: marketing.visibility, indexable: marketing.indexable } });
     values.push(videoId);
     const rows = await query<VisibilityUpdateRow>(
       `
@@ -85,6 +91,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
       },
     });
   } catch (error) {
+    if (error instanceof MarketingMediaError) return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
     console.error('[admin/videos/:id/visibility] failed', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }

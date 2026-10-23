@@ -17,7 +17,7 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
       return {...canonical,outputCount: {min: 1,max: 1,default: 1},
         settings: canonical.settings.filter(setting => setting.type !== 'multi_prompt'&&!['documentUrl','webpageUrl'].includes(setting.key)),
         references: canonical.references.filter(reference => candidate.surface==='video'||reference.type === 'image').map(reference=>({...reference,
-          max: Math.min(reference.max ?? maxReferences,maxReferences)}))};
+          max: candidate.surface==='video' && (mode==='v2v'||mode==='extend') ? reference.max : Math.min(reference.max ?? maxReferences,maxReferences)}))};
     }),
     referenceIdentity: candidate.surface === 'image' ? 'attached_image_asset' : 'attached_owned_media_or_ready_project_output',
     outputCount: 1,maxReferences: Math.max(...candidate.publicModes.map(mode=>studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode))),guidance: getAgentModelGuidance(candidate.engine.id),

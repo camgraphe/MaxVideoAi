@@ -445,7 +445,7 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.doesNotMatch(clientSource, />\s*\{copy\.assets\.useSettingsButton\}\s*</);
   const panelSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaActionPanel.client.tsx'), 'utf8');
   assert.match(browserSource, /<MediaActionPanel/);
-  assert.match(panelSource, /buildAppDownloadUrl\(asset\.url, suggestDownloadFilename/);
+  assert.match(panelSource, /buildAppDownloadUrl\(originalReadUrl, suggestDownloadFilename/);
   assert.match(panelSource, /\{copy\.download\}/);
   assert.match(panelSource, /<MediaDialog/);
   const dialogSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaDialog.client.tsx'), 'utf8');
@@ -521,8 +521,8 @@ test('video preview urls stay separate from final media urls across library cont
   assert.match(assetsRoute, /previewUrl:\s*asset\.previewUrl/);
   assert.match(recentRoute, /previewUrl:\s*output\.previewUrl/);
   assert.match(browserSource, /activePreviewId/);
-  assert.match(browserSource, /src=\{activePreviewId === asset\.id \? asset\.previewUrl : undefined\}/);
-  assert.match(browserSource, /poster=\{asset\.thumbUrl \?\? undefined\}/);
+  assert.match(browserSource, /src=\{activePreviewId === asset\.id \? asset\.previewAccessUrl \?\? asset\.previewUrl \?\? undefined : undefined\}/);
+  assert.match(browserSource, /poster=\{asset\.thumbnailAccessUrl \?\? asset\.thumbUrl \?\? undefined\}/);
 });
 
 test('job output upserts preserve detected dimensions when legacy sync omits them', () => {

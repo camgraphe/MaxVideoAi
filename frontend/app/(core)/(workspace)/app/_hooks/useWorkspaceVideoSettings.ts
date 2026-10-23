@@ -1,3 +1,4 @@
+import { hasPublishedRecreationSnapshot } from '../_lib/workspace-shared-video-snapshot';
 import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -351,7 +352,7 @@ export function useWorkspaceVideoSettings({
       // Do not hydrate the original job: it would replace the chosen model and may restore private inputs.
     } else {
       applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
-      void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+      if (!hasPublishedRecreationSnapshot(sharedVideoSettings)) void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
     }
     if (imported?.videoId === sharedVideoSettings.id && imported.generation === valid) {
       setCommittingSharedImport(imported);

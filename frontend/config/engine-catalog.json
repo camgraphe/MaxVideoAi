@@ -2385,6 +2385,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "duration": {
             "options": [
               "3s",
@@ -2952,6 +2953,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "notes": "Modify a source clip with optional prompt and reference-image guidance plus provider adherence presets."
         }
       },
@@ -3447,6 +3449,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "notes": "Modify a source clip quickly with the same adherence and reimagination presets exposed in Flash."
         }
       },
@@ -3631,7 +3634,7 @@
             "id": "video_url",
             "type": "video",
             "label": "Source video",
-            "description": "Modify preserves source timing. Use an owned clip of exactly 5s or 10s and select the matching duration (provider source limit: 18s).",
+            "description": "Upload a video from your device or library, up to 18s. Modify follows the source timing; the price is calculated after import.",
             "modes": [
               "v2v"
             ],
@@ -3673,7 +3676,6 @@
             "modes": [
               "t2v",
               "i2v",
-              "v2v",
               "reframe"
             ]
           },
@@ -4034,13 +4036,7 @@
           "modes": [
             "v2v"
           ],
-          "duration": {
-            "options": [
-              "5s",
-              "10s"
-            ],
-            "default": "5s"
-          },
+          "durationPolicy": "source_video",
           "resolution": [
             "540p",
             "720p",
@@ -4054,7 +4050,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Modify preserves timing. Upload an owned video of exactly 5s or 10s and select the matching duration. Guide frames and keyframes are optional."
+          "notes": "Modify follows the imported video timing, up to 18s. Price appears after import. Guide frames, keyframes and preservation controls are optional."
         }
       },
       {
@@ -7247,7 +7243,8 @@
             "type": "enum",
             "label": "Resolution",
             "values": [
-              "1080p"
+              "1080p",
+              "720p"
             ],
             "default": "1080p"
           },
@@ -7306,7 +7303,8 @@
         "perSecondCents": {
           "default": 12.6,
           "byResolution": {
-            "1080p": 12.6
+            "1080p": 12.6,
+            "720p": 12.6
           }
         },
         "addons": {
@@ -7319,7 +7317,8 @@
         "unit": "USD/s",
         "base": 0.126,
         "byResolution": {
-          "1080p": 0.126
+          "1080p": 0.126,
+          "720p": 0.126
         },
         "currency": "USD",
         "notes": "Provider cost: $0.084/s audio off and $0.126/s audio on for Kling 3.0 Omni Standard. MaxVideoAI display prices add platform margin before showing quotes."
@@ -7466,8 +7465,9 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
-            "1080p"
+            "720p"
           ],
           "resolutionLocked": true,
           "aspectRatio": [
@@ -7630,8 +7630,9 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
-            "1080p"
+            "720p"
           ],
           "resolutionLocked": true,
           "aspectRatio": [
@@ -8110,6 +8111,7 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
             "1080p"
           ],
@@ -8274,6 +8276,7 @@
             ],
             "default": 5
           },
+          "durationPolicy": "requested",
           "resolution": [
             "1080p"
           ],
@@ -10816,6 +10819,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "source_video",
           "resolution": [
             "720p",
             "1080p"
@@ -11976,6 +11980,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",
@@ -12823,6 +12828,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",
@@ -13588,6 +13594,7 @@
           "modes": [
             "v2v"
           ],
+          "durationPolicy": "requested",
           "duration": {
             "options": [
               "auto",

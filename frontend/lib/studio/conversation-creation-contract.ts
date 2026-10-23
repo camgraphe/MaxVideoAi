@@ -1,9 +1,10 @@
+import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 
 export const STUDIO_CONVERSATION_MAX_REFERENCES=8;
 /** The attachment pool precedes model selection; generation keeps its own mode limit. */
-export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=10;
+export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=MAX_GENERATION_REFERENCES;
 
 export const conversationAspectRatioSchema = z.string().regex(/^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/);
 const settingValue = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);

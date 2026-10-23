@@ -161,7 +161,7 @@ export default function AppClientPage({
     setInputAssets: assetState.setInputAssets,
     commitInputAssetMutation: assetState.commitInputAssetMutation,
     engineId: routeForm.form?.engineId,
-    inputSchema: composer.selectedEngine?.inputSchema,
+    engine: composer.selectedEngine,
     preferredMode: composer.submissionMode,
     workflowCopy: app.workflowCopy,
     showNotice: noticeState.showNotice,

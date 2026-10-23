@@ -44,7 +44,9 @@ function contentBlocks(raw: unknown): Record<string, unknown>[] {
   if (Array.isArray(record?.steps)) {
     for (const step of record.steps) {
       const stepRecord = asRecord(step);
-      if (Array.isArray(stepRecord?.content)) {
+      // GET includes the original user_input video before model_output. Selecting
+      // the first video across all steps would persist the input as a paid result.
+      if (stepRecord?.type === 'model_output' && Array.isArray(stepRecord.content)) {
         candidates.push(...stepRecord.content);
       }
     }

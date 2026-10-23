@@ -119,7 +119,7 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   ]);
 
   assert.deepEqual(field(entry, 'duration').values, ['5s', '10s']);
-  assert.deepEqual(field(entry, 'duration').modes, ['t2v', 'i2v', 'v2v', 'reframe']);
+  assert.deepEqual(field(entry, 'duration').modes, ['t2v', 'i2v', 'reframe']);
   assert.deepEqual(field(entry, 'resolution').values, ['540p', '720p', '1080p']);
   assert.deepEqual(field(entry, 'aspect_ratio').values, ['9:16', '3:4', '1:1', '4:3', '16:9', '21:9']);
   assert.deepEqual(field(entry, 'aspect_ratio').modes, ['t2v', 'i2v', 'reframe']);

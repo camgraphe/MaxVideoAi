@@ -30,6 +30,7 @@ export type VideoRow = {
   currency: string | null;
   pricing_snapshot?: PricingSnapshot | null;
   settings_snapshot?: unknown;
+  recreation_snapshot?: unknown;
   order_index?: number | null;
 };
 
@@ -58,6 +59,7 @@ export type GalleryVideo = {
   currency?: string | null;
   pricingSnapshot?: PricingSnapshot;
   settingsSnapshot?: unknown;
+  recreationSnapshot?: unknown;
   playlistOrder?: number | null;
 };
 
@@ -100,6 +102,7 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     currency: row.currency ?? historicalPrice?.currency ?? undefined,
     pricingSnapshot: row.pricing_snapshot ?? undefined,
     settingsSnapshot: row.settings_snapshot ?? undefined,
+    recreationSnapshot: row.recreation_snapshot ?? undefined,
     playlistOrder: typeof row.order_index === 'number' ? row.order_index : null,
   };
 }

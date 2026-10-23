@@ -243,6 +243,7 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'fal-ai/luma-dream-machine/ray-2/modify',
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'source_video',
           notes: 'Modify a source clip with optional prompt and reference-image guidance plus provider adherence presets.',
         },
       },

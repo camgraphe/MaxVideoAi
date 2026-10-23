@@ -1,8 +1,30 @@
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
+import type { VideoExcerptRange } from '@/lib/video-excerpt';
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import type { EngineInputField } from '@/types/engines';
 
 export type AssetSlotAttachment = {
+  id?: string;
+  assetId?: string;
+  ref?: ToolAssetRef;
+  url?: string;
+  durationSec?: number | null;
+  excerptEditing?: boolean;
+  excerptSource?: {
+    id: string;
+    assetId?: string;
+    ref: ToolAssetRef;
+    url: string;
+    previewUrl: string;
+    durationSec: number;
+    name: string;
+    type: string;
+    size: number;
+    width?: number | null;
+    height?: number | null;
+  };
+  excerptRange?: VideoExcerptRange;
   kind: 'image' | 'video' | 'audio';
   name: string;
   size: number;

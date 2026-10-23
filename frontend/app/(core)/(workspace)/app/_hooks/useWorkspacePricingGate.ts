@@ -4,8 +4,9 @@ import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
+import { getVideoExcerptLimits } from '@/lib/video-excerpt';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
-import { getVideoExtensionSourceState } from '@/lib/video-extension';
+import { getVideoWorkflowSourceField, getVideoWorkflowSourceState, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
@@ -90,10 +91,11 @@ export function useWorkspacePricingGate({
   inputAssets,
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
-  const waitingForExtensionSource = submissionMode === 'extend'
-    && getVideoExtensionSourceState(selectedEngine?.inputSchema, inputAssets) !== 'ready';
+  const waitingForVideoSource = isVideoSourceWorkflow(submissionMode)
+    && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
+    && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage && !waitingForExtensionSource ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
       effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets,
     }) : null,

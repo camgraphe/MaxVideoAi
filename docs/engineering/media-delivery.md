@@ -24,6 +24,34 @@ keep their own owners. `tests/video-upload-direct.test.ts` guards this shared
 boundary, with behavioral coverage for large MOVs in Studio, library and
 background-removal tests.
 
+The upload probe in `server/media/detect-has-audio.ts` reports display-oriented
+video dimensions: display-matrix rotation takes precedence over legacy rotate
+tags, and quarter turns swap width/height. This fixes portrait phone files whose
+encoded pixels are landscape. Original bytes are not rotated, transcoded or
+trimmed. The shared facts reach library readers and source-inheriting models.
+Existing stored metadata is not repaired on reads; older assets need a verified
+re-import or a separately bounded metadata repair after deployment.
+
+## Marketing-copy delivery
+
+Marketing-copy delivery and the public-rendition CLI share the bounded HTTP verifier in `server/media/public-http-readiness.ts`. The CLI retains its allowed-source and MP4-prefix checks; copies additionally compare source prefix/suffix bytes. This shared verification does not alter original/download URLs, playback policy or the browser rendition projection. See `marketing-media.md` for the independent-publication and catalog/reuse read boundaries.
+
+## Generated Omni outputs
+
+Generated Omni outputs are selected only from `model_output` steps; the
+Interactions GET response also contains `user_input` media. Never publish that
+echoed source as a completed render. For an explicit `has_audio=false` request,
+the poller passes the downloaded generated output through
+`server/media/generated-video-audio.ts` before durable storage. This copies video
+packets into an MP4 without audio, using the bundled executable and a 30-second
+deadline, and removes temporary files on success or failure. Audio-on/unspecified
+outputs retain their original bytes. A preparation failure follows the existing
+output-copy retry path and must not publish the audible file. This is delivery
+preparation, not a provider audio-disable parameter or an audio price discount.
+`tests/generated-video-audio-media.test.ts` checks real audio removal, unchanged
+video packet hashes, geometry and timing; the Omni runtime test covers completion
+and failure ordering. Phone originals and public display derivatives are untouched.
+
 ## Authenticated original downloads
 
 `GET /api/download` authenticates before network work and serves exact original
@@ -391,6 +419,8 @@ production cold/warm measurements and Safari/iOS playback remain rollout checks.
 - Preserve private/signed URL behavior. Public image optimization does not forward a user's authorization headers; do not strip signatures or publish a private source to make optimization work.
 - `server/owned-media-read-access.ts` grants 300-second server GET access only to exact owner-prefixed objects in configured storage. The storage ownership helper also recognizes existing content-addressed uploads under approved `prefix/by-content/SHA256(userId)[0:32]/` namespaces, including configured staging prefixes. Library copies and image/video thumbnail creation use this reader and persist only durable originals/derivatives and original provenance. Foreign-owner or unowned internal objects fail closed; external provider sources retain their existing URLs. The operator thumbnail backfill may explicitly opt ownerless rows into an unsigned HTTPS GET for the exact `renders/images/anonymous/` legacy prefix, without query strings, credentials or fragments. This never signs anonymous media or opens private storage; account-facing callers do not receive the exception. `tests/owned-media-read-access.test.ts` covers ownership denial, signing failure, actual content-addressed uploads, library promotion and the legacy backfill/Sharp/upload path using network doubles.
 - `server/fal-provider-media-access.ts` extends that reader at the server-only Fal submission boundary with grants bounded to one hour for asynchronous input retrieval. Sign only typed media fields in a transport copy and pass the authenticated owner through all fallback adapters. The exact-owner check includes the existing authenticated `inline` upload namespace, including its content-addressed form; anonymous and foreign inline objects are not granted access. Persist canonical inputs and enqueue summaries, never access grants. The provider diagnostic sanitizer covers synchronous submission and asynchronous webhook/poll logs, including up to three URL encoding layers, because validation bodies may echo input URLs. Local ownership/signing denial must occur before a paid provider call; a failed input download must not be reported as a completed render whose output could not be stored. `tests/fal-provider-media-access.test.ts` exercises the real submission/request-body owner with local signing and provider doubles.
+- Authenticated `GET /api/media-library/assets` projects separate `accessUrl`, `thumbnailAccessUrl`, `previewAccessUrl` and `playbackAccessUrl` grants for stored `upload` sources through `server/media-library/read-access.ts`. This bounded source class covers newly private excerpts and existing private MCP imports, which have no historical ACL marker. The exact storage owner is checked before signing; unrelated generated/public catalog projections stay unchanged. Canonical `url`, `thumbUrl`, `previewUrl`, asset refs and database rows never become grants. Responses use private/no-store caching; signing failure returns `LOAD_FAILED` rather than unsigned private fallback. Grants last 300 seconds and a fresh library read renews them; this does not provide indefinite access to a picker or selected preview left open. Shared library cards, reference pickers and original readers consume the corresponding grants without using video as an image fallback. Workspace selection keeps canonical original URL/ref for generation and puts only the temporary preview in the display field; input assets remain excluded from persisted workspace drafts. Download and native share-file actions pass the original read grant through the existing authenticated `/api/download` transport. Tests `library-private-read-access`, `library-private-read-dom` and `library-owner-cache` cover real local signatures, foreign-owner denial, canonical selection, both dropzones, thumbnail separation and account-scoped projection. No live storage request or production data repair is part of these checks.
+
 - `server/media-library/owned-video-facts.ts` owns missing measured video facts for editing. It validates the ready owned original and provenance, obtains server read access, and uses a dedicated fixed 100 MiB qualification downloader plus local-file FFprobe in `src/server/audio/source-video-probe.ts`. Ready generated originals can exceed private upload limits; this envelope preserves the shared HTTPS, public-address DNS pinning, redirect and 30-second request guards plus the 15-second probe timeout. Private uploads and the global Audio source probe retain their existing limits. `tests/owned-video-facts.test.ts` exercises the canonical inspector with real MP4 bytes above 50 MiB and FFprobe, and verifies declared/streamed sources above 100 MiB stop without persisting facts. Exact owner, current original URL and ready/nonhidden state guard persistence to `job_outputs` and matching promoted assets. Store only measured duration, dimensions and audio presence in `metadata.mediaFacts` with `source: 'probe'`; requested duration remains history and no frame rate is inferred. Library promotion forwards validated facts. The shared conversation edit command releases each failed validation transaction before inspection, then rechecks the receipt, revision, project scope and media ownership in a fresh transaction. Insert/assembly may qualify each distinct selected video reference once, up to the command's 12-clip bound, without another assistant call, generation or paid analysis. Repeated references reuse persisted facts; a source still missing facts after its attempt stops rather than retrying indefinitely. Every resolved video reference retains its exact original URL through subsequent retries, so replacing that original during another source's inspection rejects the edit. The entire timeline edit and receipt remain atomic; independently validated source facts can survive a rejected edit. `tests/studio-conversation-edit-command-postgres.test.ts` covers multiple older sources, the 12-source bound, replay, nonpersisting/failed qualification and concurrent original, ownership and revision changes. `studio/media-resolver.ts` remains read-only and never downloads or repairs a source. Probe errors expose no signed URL or FFprobe command.
 - Audio completion passes its measured byte duration to the legacy output mapper, which preserves canonical `metadata.mediaFacts` separately from the historical integer duration. Synchronous Audio confirmation promotes only completed outputs after the exact owned quote is accepted; a promotion outage never fails or refunds the completed paid result. An accepted confirmation replay may retry this bounded promotion without generating or reserving again. Studio's read-only project projection exposes only validated probe durations for video/audio. Library insertion uses those same facts and floors source-limited frames, so an integer duration or a fractional final frame cannot extend a clip past its source. Focused coverage lives in `audio-reserved-execution-postgres`, `mcp-audio-services`, `media-library-contract`, `studio-conversation-media-scope-postgres` and `studio-conversation-timeline` tests.
 - Saved audio copies use the existing local-file `probeMediaBuffer` on the downloaded original bytes before upload. `asset-media.ts` records measured duration and detected audio MIME; `assets.ts` discards duration/probe claims for copied audio, and the public ensure handler ignores client audio duration. Upload owners that already measured their bytes retain their existing insertion path. A failed probe leaves duration unknown; it never falls back to requested duration. The reference selector keeps its MP3/WAV, 30-second and 10 MiB limits. For previously saved audio missing duration, `audio-duration-projection.ts` enriches only the selected listing page (at most 100 assets) or exact-origin result with one read-only batch. It requires the same owner, a completed nonhidden job, ready audio output when an output ID is specified, and the exact original/provenance URL. It reads output probe facts or measured-duration metadata, or the exact matching audio URL's completion snapshot. Historical integer/requested durations are not measurements. Existing valid durations, originals, saved metadata and pagination stay unchanged; no network inspection, DDL or repair writes occur while listing. Sources without trusted measured evidence remain unavailable for reference selection. `audio-library-duration` exercises actual WAV bytes through saving and the reference selector; `audio-library-duration-postgres` covers canonical/legacy compatibility, ownership, exact source matching, pagination and read-only batching.
@@ -948,3 +978,141 @@ priority. The WebP is 25,310 bytes versus 48,132 for the previous image; this is
 asset-transfer evidence, not a claim about production Core Web Vitals. The
 original image remains available for historical review. Reference behavior and
 media originals are unchanged.
+
+### Workspace video excerpt selection
+
+`VideoExcerptSelector.client.tsx` is the shared, lazy manual range dialog for
+Modify, Extend and Reframe sources. `VideoExcerptControl.client.tsx` owns its
+presentation session; both workspace and default composer reference surfaces use
+it. Opening, moving a control and cancelling create no media. Exact numeric ends
+retain measured fractional duration; an unchanged full range is a no-op.
+Returning an excerpt to the legal full original restores its retained canonical
+identity, URL, filename, MIME, size and measured facts without another preparation.
+The ordinary quote lifecycle still invalidates and requotes that source change.
+The selected slot's trigger survives URL replacement so modal cleanup can restore
+keyboard focus after Apply. Its dialog session remains keyed by source URL, with
+model/mode/slot keys on the control; retired async callbacks cannot close a newer
+session or steal its focus.
+
+`useWorkspaceVideoExcerpt` owns account/model/mode/source fencing, explicit abort,
+atomic upload reservation and rollback/settlement. It composes the existing owned
+upload operation, never ambient-cookie authorization. Apply calls the trusted
+`/api/uploads/video/excerpt` endpoint and replaces only the selected slot with the
+actual measured owned result. Original/range lineage supports subsequent edits
+against the original. Blob previews needed by that lineage survive replacement
+and are released when no selected lineage uses them, on account change or unmount.
+Temporary signed previews remain distinct from canonical URL/ref identity.
+
+Prepared excerpts carry `videoExcerpt.version: 3` and `storageAccess: 'private'`.
+The internal `privateStorageScope: 'video-excerpt'` uses reserved file leaves
+starting with `video-excerpts-private-v3-`, with `storageAcl: null` and
+`Cache-Control: private, no-store` for the original and generated thumbnail.
+The `video-excerpt-private-v3` content-addressed namespace also creates a fresh
+legacy asset identity even when a v1/v2 excerpt has identical bytes and provenance;
+preparation never changes or silently reuses that old object. The existing
+`user-assets/by-content/<owner hash>/` and `user-asset-thumbs/<owner>/` roots keep
+their ownership, producer-fence and SQL reference contracts without a migration.
+Missing thumbnails are not retried during persistence. Later library thumbnail
+recovery and `scripts/backfill-upload-thumbnails.ts` recognize the reserved original
+leaf, authorize a temporary owned read and keep the same private thumbnail scope.
+Scoped uploads reject paths outside the four protected patterns before writing,
+including an unrecognized staging prefix; ordinary uploads keep their existing rules.
+
+**Storage prerequisite:** ACL omission and cache headers do not override a public
+bucket policy, and `BucketOwnerEnforced` disables object ACLs. Before deploying this
+writer, preserve existing policies and deny anonymous `s3:GetObject` and
+`s3:GetObjectVersion` on exactly these four key patterns, retaining access for the
+application signing principal:
+
+- `user-assets/by-content/*/video-excerpts-private-v3-*`
+- `user-asset-thumbs/*/video-excerpts-private-v3-*`
+- `mcp-reference-staging/user-assets/by-content/*/video-excerpts-private-v3-*`
+- `mcp-reference-staging/user-asset-thumbs/*/video-excerpts-private-v3-*`
+
+Verify both global and regional origins: unsigned GET/Range is denied, signed
+GET/Range succeeds, and existing public media stays readable. A fresh synthetic
+canary establishes policy behavior; deployed excerpt qualification must also prove
+the actual original and thumbnail keys match these patterns. This change does not
+alter older objects or the separate privacy rollout of existing MCP imports.
+The response retains the canonical original URL and returns temporary signed
+playback and thumbnail URLs. Luma direct submission signs all URL references in
+its validated provider payload (source, start/end frames and edit keyframes)
+through owned-media access, as Fal already does at its transport boundary.
+Provider grants never replace stored identities or survive in attempt diagnostics.
+
+`getVideoExcerptLimits` remains the model source-policy owner. Import relaxation
+is explicit and restricted to the active source field, within preparation duration
+and existing byte/upload bounds. A long uncut source stays selectable but cannot
+receive a quote or generate outside its model limits. Editor state also masks
+quotes/Generate immediately. Prepared facts flow through ordinary preflight inputs
+and existing inherited/requested duration projection; output settings and tariffs
+have no excerpt-specific calculation. Input assets and transient editor state are
+not persisted by the workspace's form/prompt draft-storage owner.
+
+
+Excerpt preview access resolves the owned original through
+`server/video-excerpts/source-access.ts` and the authenticated, same-origin
+`/api/uploads/video/excerpt/source` adapter. The request accepts an asset/job-output
+reference, never a URL to sign. `createConversationMediaReadAccess` provides the
+short-lived full-timeline URL. Gallery previews remain unchanged and may be shorter
+than the source; they are not valid excerpt timelines. The workspace's initiating
+account operation fences read responses as well as preparation responses. Local
+upload blobs already contain the whole original and need no access request. Opening
+still fetches no video bytes until explicit Play or scrubbing; access failure is localized and
+Cancel remains available. Canonical source identity never becomes a signed URL.
+
+The excerpt encoder fits a complete frame count to the chosen interval at a
+rational CFR cadence no higher than the measured source rate. Its output interval
+is rounded down to milliseconds (under 1 ms), with an exact matching MP4 video
+track timescale, so a final fractional-rate frame cannot cross an integer tariff
+boundary. Exact integer model minima and maxima remain exact. Intervals shorter
+than one complete source frame fail explicitly. The output bytes, stream facts and
+upload container facts are independently measured; declared metadata is never
+clamped. Audio is encoded as 48 kHz AAC with one 1024-sample priming interval
+(21.34 ms) reserved at the selected end. The bundled Linux muxer otherwise includes
+that delay in container duration and can turn an exact 18-second selection into
+18.006 seconds. The time bound finishes both encoders; a video frame-count stop
+can prematurely flush the audio. Decoded audio is checked within one AAC frame of
+the selected length on both bundled macOS and Linux binaries. `h264-aac-v4` lineage
+separates these bytes from earlier encodings.
+Canonical duration projection, tariff ceilings and strict model source policy are
+unchanged. Fractional-rate, VFR, 120 fps, tiny-clip, minimum and maximum checks live
+in `tests/video-excerpt-{fractional-boundary,media}.test.ts`.
+
+`useComposerVideoSourceWorkflow` owns the shared excerpt presentation mask and
+source-workflow notices. The route hook retains account, reservation, request and
+media ownership. Chromium excerpt coverage verifies keyboard focus restoration,
+manual loading and independently reachable controls for long library filenames.
+
+
+The selector delegates its single time axis to
+`components/media/VideoExcerptTimeline.client.tsx`: two stable, focusable slider
+thumbs resize the retained interval; its selected body moves the interval without
+changing its length; the upper time ruler scrubs the paused preview. Arrow keys
+move by 0.1 s, Shift by 1 s, and Home/End use the legal bounds. Thumb ARIA bounds
+track the opposite thumb. Numeric controls retain exact typed fractions and serve
+as the alternate precise/touch-assistive input. Pointer movement uses centiseconds;
+source-end and Whole video reset preserve the exact measured source duration.
+Focus selection/Full view changes the viewport only. Model validation remains in
+`validateVideoExcerptRange`; the timeline must never silently cut an oversized
+initial source to satisfy it. The primary duration is localized presentation only.
+
+`useVideoExcerptFilmstrip.ts` owns optional local frame capture, activated only
+by explicit playback or scrubbing (including a range edit that seeks its frame).
+Opening and viewport zoom do not activate it. Capture uses one temporary decoder,
+at most ten JPEG data URLs with neither dimension above 160 px, and a 12-second
+overall deadline. Source changes/unmount abort pending waits and release its source.
+Only that optional decoder requests anonymous CORS; the main player retains its
+ordinary source access. Decoder/canvas/CORS failure leaves the time ruler and
+selection usable, without retrying on every Play or reporting a preparation error.
+Frames never become owned assets, persisted thumbnails or optimizer requests.
+The selector-local style owner fixes stage geometry for portrait and landscape
+sources and lets the dialog scroll in short viewports. Its dependencies remain
+inside the existing lazy selector boundary; no backend or quote owner moves here.
+
+`tests/video-excerpt-selector-dom.test.ts` exercises exact reset, model-invalid
+ranges, keyboard/pointer moves, capture failure and cleanup. The real Chromium
+fixture in `tests/video-excerpt-browser.test.ts` verifies decoded frames, mouse and
+touch interaction, paused seeking, zoom, source geometry, short mobile viewports,
+no initial media request, and shared modal focus/session fencing. This does not
+certify physical-device VoiceOver/TalkBack behavior or provider CORS availability.

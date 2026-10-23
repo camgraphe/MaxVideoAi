@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { createLibraryMediaReadAccess } from '@/server/media-library/read-access';
 import {
   deleteLibraryAsset,
   findLibraryAssetByOrigin,
@@ -46,15 +47,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, assets: [], error: 'LOAD_FAILED' }, { status: 500 });
   }
 
+  let readAccess: Awaited<ReturnType<typeof createLibraryMediaReadAccess>>[];
+  try {
+    readAccess = await Promise.all(page.items.map(asset => createLibraryMediaReadAccess(userId, asset)));
+  } catch {
+    // Never fall back to inaccessible private URLs or log temporary grants.
+    return NextResponse.json({ ok: false, assets: [], error: 'LOAD_FAILED' }, { status: 500 });
+  }
   return NextResponse.json({
     ok: true,
-    assets: page.items.map((asset) => ({
+    assets: page.items.map((asset, index) => ({
       id: asset.id,
       ...canonicalMediaAssetFields(asset.publicId, asset.kind),
       mediaFacts: readMediaFacts(asset.metadata.mediaFacts),
       url: asset.url,
       thumbUrl: asset.thumbUrl,
       previewUrl: asset.previewUrl,
+      ...readAccess[index],
       playbackVideoUrl: typeof asset.metadata.playbackVideoUrl === 'string' ? asset.metadata.playbackVideoUrl : undefined,
       mime: asset.mimeType,
       width: asset.width,
@@ -69,7 +78,7 @@ export async function GET(req: NextRequest) {
     })),
     nextCursor: page.nextCursor,
     hasMore: page.hasMore,
-  });
+  }, { headers: { 'Cache-Control': 'private, no-store' } });
 }
 
 export async function DELETE(req: NextRequest) {

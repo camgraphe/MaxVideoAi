@@ -181,6 +181,7 @@ function miniMode(mode: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'): RawFalEngin
     falModelId: BYTEPLUS_SEEDANCE_2_MINI_ENDPOINTS[mode],
     ui: {
       modes: [mode],
+      ...(mode === 'v2v' ? { durationPolicy: 'requested' as const } : {}),
       duration: { options: ['auto', ...MINI_DURATION_OPTIONS], default: 5 },
       resolution: [...MINI_RESOLUTIONS],
       aspectRatio: [...SEEDANCE_2_MINI_ASPECT_RATIOS],

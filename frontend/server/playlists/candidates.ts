@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query } from '@/lib/db';
 import {
   mapPlaylistCandidateRow,
@@ -57,7 +58,7 @@ export async function searchPlaylistCandidates(options: {
   params.push(limit);
   const limitIndex = params.length;
 
-  const rows = await query<PlaylistCandidateRow>(
+  const rows = await marketingVideoReader({ query }).query<PlaylistCandidateRow>(
     `SELECT job_id, engine_id, engine_label, prompt, created_at,
             COALESCE(
               NULLIF(thumb_url, ''),

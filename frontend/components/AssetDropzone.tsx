@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { VIDEO_EXCERPT_PREPARATION_LIMITS } from '@/lib/video-excerpt';
 import { useMemo, useCallback, useRef } from 'react';
 import type { ChangeEvent, ClipboardEvent, DragEvent, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps } from '@/types/engines';
@@ -42,6 +43,7 @@ interface AssetDropzoneProps {
   assets: (AssetSlotAttachment | null)[];
   headerAction?: ReactNode;
   density?: 'default' | 'compact' | 'workspace';
+  allowVideoExcerptImport?: boolean;
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
@@ -66,6 +68,7 @@ export function AssetDropzone({
   headerAction,
   density = 'default',
   onSelect,
+  allowVideoExcerptImport = false,
   onRemove,
   onError,
   onOpenLibrary,
@@ -159,7 +162,9 @@ export function AssetDropzone({
           return;
         }
         const duration = await readMediaDuration(file, 'video');
-        const maxDurationSec = field.maxDurationSec ?? limits.videoMaxDurationSec;
+        const modelMaxDurationSec = field.maxDurationSec ?? limits.videoMaxDurationSec ?? constraints.maxVideoDurationSec;
+        const maxDurationSec = allowVideoExcerptImport && typeof modelMaxDurationSec === 'number'
+          ? Math.max(modelMaxDurationSec, VIDEO_EXCERPT_PREPARATION_LIMITS.maxSourceSec) : modelMaxDurationSec;
         if (duration == null && typeof maxDurationSec === 'number') {
           onError?.(assetCopy.unableToReadVideoDuration);
           return;
@@ -193,9 +198,11 @@ export function AssetDropzone({
       onSelect(field, file, slotIndex);
     },
     [
+      allowVideoExcerptImport,
       acceptFormats,
       assetCopy,
       constraints.maxVideoSizeMB,
+      constraints.maxVideoDurationSec,
       engine.label,
       field,
       limits.audioMaxDurationSec,

@@ -13,6 +13,7 @@ test('video GET preserves public sharing and limits private videos to their owne
   const fixture = {
     configured: true, userId: null as string | null, authCalls: 0, bootstrapCalls: 0,
     video: null as Record<string, unknown> | null,
+    personalVideo: null as Record<string, unknown> | null, isAdmin: false,
     seoVideo: null as Record<string, unknown> | null, seoReads: 0,
     selections: [] as Array<{ modelSlug: string; jobId: string; referenceImages: string[] }>,
   };
@@ -27,7 +28,8 @@ test('video GET preserves public sharing and limits private videos to their owne
       const mocks: Record<string, string> = {
         '@/lib/db': 'export function isDatabaseConfigured(){return globalThis.__videoReadFixture.configured;}',
         '@/lib/schema': 'export async function ensureBillingSchema(){globalThis.__videoReadFixture.bootstrapCalls++; throw new Error("Schema writes are forbidden on this read-only connection");}',
-        '@/server/videos': 'export async function getVideoById(){return globalThis.__videoReadFixture.video;} export async function getSeoVideoById(){globalThis.__videoReadFixture.seoReads++;return globalThis.__videoReadFixture.seoVideo;} export async function updateVideoIndexableForUser(){throw new Error("No writes in GET tests");}',
+        '@/server/videos': 'export async function getVideoById(){return globalThis.__videoReadFixture.video;} export async function getPersonalVideoById(){return globalThis.__videoReadFixture.personalVideo;} export async function getSeoVideoById(){globalThis.__videoReadFixture.seoReads++;return globalThis.__videoReadFixture.seoVideo;} export async function updateVideoIndexableForUser(){throw new Error("No writes in GET tests");}',
+        '@/server/admin': 'export async function isUserAdmin(){return globalThis.__videoReadFixture.isAdmin;}',
         '@/config/model-keyframe-demos.json': 'export default {get demos(){return globalThis.__videoReadFixture.selections;}};',
         '@/lib/supabase-ssr': 'export async function getRouteAuthContext(){globalThis.__videoReadFixture.authCalls++; return {userId:globalThis.__videoReadFixture.userId};}',
       };
@@ -92,6 +94,23 @@ test('video GET preserves public sharing and limits private videos to their owne
     assert.deepEqual(payload.video, fixture.video);
     assert.equal('settingsSnapshot' in payload.video, false);
     assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  });
+  await t.test('retired and private marketing copies preserve only their personal owner’s access', async () => {
+    for (const projected of [null, { ...video, visibility: 'private', userId: null, recreationSnapshot: { schemaVersion: 1 } }]) {
+      fixture.video = projected;
+      fixture.personalVideo = video; // A once-public original must not resurrect the retired public link.
+      for (const userId of [null, 'other-user', 'owner']) {
+        fixture.userId = userId;
+        const response = await request();
+        assert.equal(response.status, userId === 'owner' ? 200 : 404);
+        if (userId === 'owner') assert.deepEqual((await response.json()).video, video);
+      }
+    }
+    fixture.personalVideo = null;
+    fixture.isAdmin = true;
+    fixture.userId = 'admin';
+    assert.equal((await request()).status, 200, 'admins can preview an unpublished independent copy');
+    fixture.isAdmin = false;
   });
   await t.test('a private video with no owner fails closed and unavailable data stays a 503', async () => {
     fixture.video = { ...video, visibility: 'private', userId: null }; fixture.userId = null;

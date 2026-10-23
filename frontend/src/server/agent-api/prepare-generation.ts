@@ -1,3 +1,4 @@
+import {videoWorkflowNotices,type VideoWorkflowNotice} from '@/lib/video-workflow-capabilities';
 import { readSeedanceWorkflowPrices, type SeedanceWorkflowPrices } from './seedance-workflow-prices';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import {customerDisplayPrice,type CustomerDisplayPrice} from '@/lib/customer-price-presentation';
@@ -77,6 +78,7 @@ export type PrepareGenerationInput = Omit<
 };
 
 export type PreparedGeneration = {
+  notices?: readonly VideoWorkflowNotice[];
   seedanceWorkflowPrices?: SeedanceWorkflowPrices;
   sourceVideoOutput?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   quoteId: string;
@@ -427,6 +429,7 @@ export async function prepareGenerationForActor(
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
+    ...(videoWorkflowNotices(request.engineId,request.mode).length ? {notices:videoWorkflowNotices(request.engineId,request.mode)} : {}),
     ...(pricing.pricingSnapshot.meta && typeof pricing.pricingSnapshot.meta === 'object'
       && (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource
       ? { sourceVideoOutput: (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource as import('@/lib/seedance-edit-source').SeedanceEditSourceFacts } : {}),

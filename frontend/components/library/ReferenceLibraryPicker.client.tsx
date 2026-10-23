@@ -81,7 +81,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
               aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
               onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
               <span className="app-picker-cover">
-                {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
+                {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbnailAccessUrl ?? asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
                 <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
               </span>
               <span className="app-picker-card-meta"><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>

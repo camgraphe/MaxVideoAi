@@ -72,6 +72,19 @@ test('database and tariff validation retain their full suites on the stable vali
   }
 });
 
+test('media and browser validation retain their full coverage on the stable toolchain image', () => {
+  const workflow = YAML.parse(readFileSync(workflowPath, 'utf8')) as QualityWorkflow;
+  for (const name of ['integration', 'browser']) {
+    assert.equal(workflow.jobs[name]['runs-on'], 'ubuntu-24.04');
+    assert.ok(workflow.jobs[name].steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
+  }
+  assert.ok(workflow.jobs.integration.steps.some(step => step.run === 'pnpm run test:validate -- --suite integration'));
+  assert.ok(workflow.jobs.integration.steps.some(step => step.run === 'pnpm run test:validate -- --suite studio'));
+  assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:validate -- --suite browser'));
+  assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:admin-smoke'));
+  assert.equal(workflow.jobs.browser['timeout-minutes'], 40);
+});
+
 test('production Lighthouse measurements run daily or manually instead of racing every main push', () => {
   const workflow = YAML.parse(readFileSync('.github/workflows/lighthouse.yml', 'utf8')) as QualityWorkflow;
   assert.equal(Object.hasOwn(workflow.on, 'push'), false);

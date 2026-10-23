@@ -12,6 +12,7 @@ type KlingO3Tier = {
   versionLabel: string;
   variantLabel: string;
   resolution: Resolution;
+  modifyResolution?: Resolution;
   basePerSecondCents: number;
   audioOffDiscountCents?: number;
   referenceImageLimit: number;
@@ -30,6 +31,7 @@ const TIERS: KlingO3Tier[] = [
     versionLabel: '3.0 Omni Standard',
     variantLabel: 'Standard',
     resolution: '1080p',
+    modifyResolution: '720p',
     basePerSecondCents: 12.6,
     audioOffDiscountCents: -4.2,
     referenceImageLimit: 4,
@@ -100,6 +102,8 @@ function buildPricingNotes(tier: KlingO3Tier) {
 
 function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
   const hasVideoToVideo = supportsVideoToVideo(tier);
+  const modifyResolution = tier.modifyResolution ?? tier.resolution;
+  const resolutions = [...new Set([tier.resolution, ...(hasVideoToVideo ? [modifyResolution] : [])])];
   return {
     id: tier.id,
     label: tier.label,
@@ -111,6 +115,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
     region: 'global',
     modes: hasVideoToVideo ? ['t2v', 'i2v', 'ref2v', 'v2v'] : ['t2v', 'i2v', 'ref2v'],
     maxDurationSec: 15,
+    // Model-wide defaults describe generation; Modify has its own mode resolution.
     resolutions: [tier.resolution],
     aspectRatios: [...KLING_O3_ASPECT_RATIOS],
     fps: [24],
@@ -214,7 +219,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
           id: 'resolution',
           type: 'enum',
           label: 'Resolution',
-          values: [tier.resolution],
+          values: resolutions,
           default: tier.resolution,
         },
         {
@@ -260,6 +265,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
         default: tier.basePerSecondCents,
         byResolution: {
           [tier.resolution]: tier.basePerSecondCents,
+          ...(hasVideoToVideo ? { [modifyResolution]: tier.basePerSecondCents } : {}),
         },
       },
       addons: tier.audioOffDiscountCents
@@ -275,6 +281,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
       base: Number((tier.basePerSecondCents / 100).toFixed(3)),
       byResolution: {
         [tier.resolution]: Number((tier.basePerSecondCents / 100).toFixed(3)),
+        ...(hasVideoToVideo ? { [modifyResolution]: Number((tier.basePerSecondCents / 100).toFixed(3)) } : {}),
       },
       currency: 'USD',
       notes: buildPricingNotes(tier),
@@ -324,7 +331,8 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
             v2v: {
               modes: ['v2v'] as const,
               duration: { options: [...KLING_O3_DURATION_OPTIONS], default: 5 },
-              resolution: [tier.resolution],
+              durationPolicy: 'requested' as const,
+              resolution: [modifyResolution],
               resolutionLocked: true,
               aspectRatio: [...KLING_O3_ASPECT_RATIOS],
               maxUploadMB: 200,

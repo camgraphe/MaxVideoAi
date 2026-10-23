@@ -237,3 +237,14 @@ test('derived public resolution maps to the engine token without dropping 1080p 
   const form = buildVideoSettingsFormState(resolveForEngine(snapshot, engine), { ...previousForm(), resolution: '768P' });
   assert.equal(form.resolution, '1080P');
 });
+
+test('complete public recreation restores typed reference fields without a private job hydration', () => {
+  const engine = getBaseEngines().find(candidate => candidate.id === 'luma-ray-3-2');
+  assert.ok(engine);
+  const snapshot = { schemaVersion:1,surface:'video',engineId:engine.id,inputMode:'v2v',prompt:'Exact modify prompt',
+    core:{durationSec:5,resolution:'720p',aspectRatio:'16:9'},advanced:{extraInputValues:{strength:0.7}},
+    refs:{videoUrls:['https://media.example/marketing-media/source.mp4'],inputs:null} };
+  const result=resolveForEngine(snapshot,engine);
+  assert.equal(result.inputAssets?.video_url?.[0]?.url,'https://media.example/marketing-media/source.mp4');
+  assert.equal(result.formValues.extraInputValues.strength,0.7);
+});

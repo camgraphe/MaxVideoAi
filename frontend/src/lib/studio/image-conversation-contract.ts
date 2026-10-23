@@ -30,7 +30,7 @@ export const imageTurnInputSchema = z
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
-    if (ids.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: 'Attach up to ten distinct references.'});
+    if (ids.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: `Attach up to ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} distinct references.`});
     const labels = new Set<string>();
     const mentionedIds = new Set<string>();
     for (const [index, mention] of (input.referenceMentions ?? []).entries()) {

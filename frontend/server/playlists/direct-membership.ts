@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query, type QueryExecutor } from '@/lib/db';
 import { getCurationAliases } from './curation-store';
 import { CURATION_ELIGIBILITY } from './curation-eligibility';
@@ -9,7 +10,7 @@ export async function listPlaylistVideoIds(
 ): Promise<{ ids: string[]; total: number }> {
   const limit = Number.isFinite(options.limit) ? Math.max(1, Math.min(500, Math.floor(options.limit))) : 500;
   const offset = Number.isFinite(options.offset) ? Math.max(0, Math.floor(options.offset)) : 0;
-  const read = (withCuration: boolean) => db.query<{ job_id: string | null; total: number }>(`WITH source AS (
+  const read = (withCuration: boolean) => marketingVideoReader(db).query<{ job_id: string | null; total: number }>(`WITH source AS (
     SELECT p.id,p.is_public,${withCuration ? "c.mode,ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids AS ordered_ids,c.excluded_ids" : 'NULL::text AS mode,NULL::text[] AS ordered_ids,NULL::text[] AS excluded_ids'}
     FROM playlists p ${withCuration ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : ''} WHERE p.slug=$1
   ), membership AS (

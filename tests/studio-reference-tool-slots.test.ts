@@ -1,3 +1,4 @@
+import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '../frontend/lib/studio/conversation-creation-contract';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
@@ -11,7 +12,7 @@ test('actual Studio tool schemas prevent positional image labels from becoming u
       const schema=tool.parameters as {properties:{references:{items:{properties:{slot:{type:string|string[];minimum?:number;maximum?:number}}}}}};
       const slot=schema.properties.references.items.properties.slot;
       if(name==='image_prepare')assert.equal(slot.type,'null',name);
-      else{assert.deepEqual(slot.type,['integer','null']);assert.equal(slot.minimum,0);assert.equal(slot.maximum,49);}
+      else{assert.deepEqual(slot.type,['integer','null']);assert.equal(slot.minimum,0);assert.equal(slot.maximum,STUDIO_CONVERSATION_MAX_ATTACHMENTS-1);}
       checked++;
     }
     return {id:'schema-response',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:undefined,output_text:JSON.stringify({reply:'Describe your idea.'}),output:[]};

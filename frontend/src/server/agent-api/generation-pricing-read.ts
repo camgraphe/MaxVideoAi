@@ -1,3 +1,4 @@
+import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, seedanceWorkflowQuoteBinding } from './seedance-workflow';
 import {retireMembershipPricing} from '@/lib/membership-policy';
@@ -20,6 +21,8 @@ export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies
 const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
   'engineId','mode','prompt','settings','references','outputCount',
   'aspectRatio','audio','durationSec','resolution','fps','loop','seed',
+  'safetyTolerance','keepAudio','audioSetting','personGeneration','compressionQuality',
+  'promptAudioDirection','promptCameraDirection','promptEditInstruction',
   'cameraFixed','cfgScale','contextSec','cropEndX','cropEndY','cropStartX','cropStartY',
   'documentUrl','enablePromptExpansion','guidanceScale','hdr','negativePrompt','numFrames',
   'promptExpansionMode','reframeGridPositionX','reframeGridPositionY','retakeMode','safetyChecker',
@@ -178,6 +181,16 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
+      if (request.surface === 'video' && request.settings.durationSec === undefined
+        && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
+        const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');
+        if (source.length !== 1 || typeof source[0].durationSec !== 'number'
+          || !Number.isFinite(source[0].durationSec) || source[0].durationSec <= 0) {
+          throw new AgentApiError('REFERENCE_INVALID', REFERENCE_CONSTRAINT_MESSAGES.duration_unverified);
+        }
+        // Dispatch uses an integer placeholder; exact measured source timing remains in pricing context.
+        request = { ...request, settings: { ...request.settings, durationSec: Math.ceil(source[0].durationSec) } };
+      }
       validateGenerationPricingCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
       if (error instanceof AgentApiError) {

@@ -10,6 +10,8 @@ import type {
 } from 'react';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
+import type { ComposerProps } from '@/components/composer/composer-types';
+import { VideoExcerptControl } from '@/components/media/VideoExcerptControl.client';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import {
   DEFAULT_VISIBLE_KEYFRAME_COUNT,
@@ -32,7 +34,7 @@ const PROVIDER_KEYFRAME_SLOT_LIMIT = 64;
 const COMPACT_TIMELINE_SLOT_WIDTH = 122;
 const MIN_TIMELINE_WIDTH = 680;
 
-export type LumaRay32KeyframeEditorProps = {
+export type LumaRay32KeyframeEditorProps = Pick<ComposerProps, 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange'> & {
   engine: EngineCaps;
   caps?: EngineModeUiCaps;
   form: FormState;
@@ -59,6 +61,8 @@ export function LumaRay32KeyframeEditor({
   assetFields,
   inputAssets,
   onAssetAdd,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
   onAssetRemove,
   onOpenLibrary,
   onNotice,
@@ -378,21 +382,31 @@ export function LumaRay32KeyframeEditor({
       </div>
 
       {sourceVideoEntry && sourceVideoField ? <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(220px,0.8fr)]">
-        <AssetDropzone
-          engine={engine}
-          caps={caps}
-          field={sourceVideoField}
-          required={sourceVideoEntry.required}
-          role={sourceVideoEntry.role}
-          assets={sourceVideoAssets}
-          density="compact"
-          disabled={Boolean(disabledReason)}
-          disabledReason={disabledReason}
-          onSelect={onAssetAdd}
-          onRemove={onAssetRemove}
-          onError={onNotice}
-          onOpenLibrary={onOpenLibrary}
-        />
+        <div className="min-w-0 space-y-2">
+          <AssetDropzone
+            engine={engine}
+            caps={caps}
+            field={sourceVideoField}
+            required={sourceVideoEntry.required}
+            role={sourceVideoEntry.role}
+            assets={sourceVideoAssets}
+            density="compact"
+            allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt)}
+            disabled={Boolean(disabledReason)}
+            disabledReason={disabledReason}
+            onSelect={onAssetAdd}
+            onRemove={onAssetRemove}
+            onError={onNotice}
+            onOpenLibrary={onOpenLibrary}
+          />
+          {sourceVideoAssets.map((asset, index) => asset && (asset.status === 'ready' || asset.excerptEditing) ? (
+            <VideoExcerptControl
+              key={`${engine.id}:v2v:${sourceVideoField.id}:${index}`}
+              engine={engine} field={sourceVideoField} index={index} asset={asset} mode="v2v" locale={uiLocale}
+              onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange}
+            />
+          ) : null)}
+        </div>
         {guideFrameField ? (
           <AssetDropzone
             engine={engine}

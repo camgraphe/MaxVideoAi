@@ -1,4 +1,5 @@
 'use client';
+import {videoDurationPolicy,videoInheritsSourceFraming,videoSourceDurationLabel} from '@/lib/video-workflow-capabilities';
 
 import clsx from 'clsx';
 import { useMemo, type ReactNode } from 'react';
@@ -291,6 +292,7 @@ export function CoreSettingsBar({
   const { t, locale } = useI18n();
   const extensionWorkflow = mode === 'extend';
   const extensionCopy = videoExtensionCopy(locale);
+  const sourceDuration = videoDurationPolicy(engine,mode,caps)==='source_video';
   const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
   const workspaceDensity = density !== 'default';
   const comparisonDensity = density === 'comparison';
@@ -334,7 +336,7 @@ export function CoreSettingsBar({
     if (isLtxFastLong) return base.filter((value) => value === 25);
     return base;
   }, [caps?.fps, engine.fps, isLtxFastLong]);
-  const resolvedDurationManagedLabel = durationManagedLabel ?? (inheritsSourceVideo ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
+  const resolvedDurationManagedLabel = sourceDuration ? (inheritsSourceVideo ? durationManagedLabel ?? seedanceEditSourceLabel(undefined,locale) : videoSourceDurationLabel(locale)) : durationManagedLabel ?? (inheritsSourceVideo ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
 
   const durationOptions =
     frameOptions && frameOptions.length
@@ -425,7 +427,7 @@ export function CoreSettingsBar({
           workspaceDensity ? 'w-full flex-wrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
-        {durationManaged || inheritsSourceVideo ? (
+        {durationManaged || sourceDuration ? (
           <div
             className={clsx(
               'inline-flex items-center rounded-full border border-dashed border-border bg-surface-glass-60 font-semibold uppercase tracking-micro text-text-muted',
@@ -489,7 +491,7 @@ export function CoreSettingsBar({
           />
         ) : null}
 
-        {showAspectControl && !inheritsSourceVideo ? (
+        {showAspectControl && !videoInheritsSourceFraming(engine,mode) ? (
           <InlineSelectControl
             kind="aspect"
             readOnly={extensionWorkflow && aspectOptionsList.length === 1}

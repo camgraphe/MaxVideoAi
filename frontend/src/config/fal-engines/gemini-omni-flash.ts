@@ -270,6 +270,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: OMNI_MODEL_ID,
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'source_video',
           duration: { options: OMNI_DURATIONS, default: '10s' },
           resolution: [...OMNI_RESOLUTIONS],
           aspectRatio: ['16:9', '9:16'],

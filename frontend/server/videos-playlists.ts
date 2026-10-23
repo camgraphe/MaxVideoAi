@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query } from '@/lib/db';
 import { isLocalPublicExamplesEnabled, listLocalModelExamples } from './local-public-examples';
 import { mapGalleryVideoRow, type GalleryVideo, type VideoRow } from './videos-normalization';
@@ -69,7 +70,7 @@ export async function listCuratedGalleryVideos(
   const publicPlaylist = curationScope
     ? 'AND EXISTS (SELECT 1 FROM playlists p WHERE p.slug=$2 AND p.is_public=TRUE)'
     : '';
-  const rows = await query<VideoRow>(
+  const rows = await marketingVideoReader({ query }).query<VideoRow>(
     `${BASE_SELECT} WHERE job_id=ANY($1::text[]) AND ${CURATION_ELIGIBILITY} ${publicPlaylist}`,
     curationScope ? [ids, slug] : [ids],
   );

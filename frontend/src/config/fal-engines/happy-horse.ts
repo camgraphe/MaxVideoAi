@@ -296,6 +296,7 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: HAPPY_HORSE_ENDPOINTS.v2v,
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'source_video',
           resolution: ['720p', '1080p'],
           maxUploadMB: 100,
           audioToggle: false,

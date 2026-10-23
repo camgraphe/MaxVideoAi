@@ -34,7 +34,7 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
   const filename = suggestDownloadFilename(asset.url, 'maxvideoai-video.mp4');
   const downloadHref = asset.source === 'public-example' && asset.jobId
     ? `/api/video-shares/public-download?${new URLSearchParams({ jobId: asset.jobId })}`
-    : buildAppDownloadUrl(asset.url, filename);
+    : buildAppDownloadUrl(asset.accessUrl ?? asset.url, filename);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => panelRef.current?.scrollIntoView?.({ block: 'nearest' }));

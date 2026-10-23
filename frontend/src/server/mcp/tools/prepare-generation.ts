@@ -1,3 +1,4 @@
+import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -10,15 +11,25 @@ import { runAgentTool } from '@/server/mcp/tool-result';
 const referenceRole = z.enum(['source', 'reference', 'first_frame', 'last_frame', 'mask']);
 const referenceMediaKind = z.enum(['image', 'video', 'audio']);
 const reference = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole }).strict(),
+  z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole, slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).optional() }).strict(),
   z.object({
     kind: z.literal('https'),
     url: z.string(),
     role: referenceRole,
     mediaKind: referenceMediaKind,
+    slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).optional(),
   }).strict(),
 ]);
 export const canonicalSettingsSchema = z.object({
+  keepAudio: z.boolean().nullable().default(null),
+  safetyTolerance: z.number().int().min(0).max(4).nullable().default(null),
+  audioSetting: z.string().trim().min(1).max(128).nullable().default(null),
+  personGeneration: z.string().trim().min(1).max(128).nullable().default(null),
+  compressionQuality: z.string().trim().min(1).max(128).nullable().default(null),
+  promptAudioDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptCameraDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptEditInstruction: z.string().trim().min(1).max(4096).nullable().default(null),
+
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),
     durationSec: z.number().int().min(1).max(15),
@@ -26,7 +37,7 @@ export const canonicalSettingsSchema = z.object({
     'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; otherwise send null or omit it. Omit the top-level prompt text content for this form.',
   ),
   durationSec: z.number().int().min(1).max(86_400).nullable().default(null).describe(
-    'For video modes, use the exact key settings.durationSec for the requested duration in seconds; never send settings.duration. Send null when not applicable.',
+    'Use settings.durationSec for requested output seconds. When get_model_details reports source_video duration, omit it or send null; the owned source supplies timing. Never use settings.duration.',
   ),
   documentUrl: z.string().url().max(4_096).nullable().default(null).describe(
     'Public HTTPS document reference; use only when reported by get_model_details. Mutually exclusive with webpageUrl and requires prompt expansion.',
@@ -119,7 +130,7 @@ export const prepareGenerationInputSchema = z.object({
     'Seedance 2.5 native Draft only: draft selects finalizable 480p; final uses an owned ready draftJobId and inherits creative facts. Omit for ordinary generation. For final, omit mode, prompt, settings and references.',
   ),
   settings: canonicalSettingsSchema.nullable().default(null),
-  references: z.array(reference).nullable().default(null),
+  references: z.array(reference).max(MAX_GENERATION_REFERENCES).nullable().default(null),
   outputCount: z.number().int().min(1).max(15).nullable().default(null).describe(
     'Number of outputs. Video must use 1. Image limits are model-specific; read outputCount from get_model_details.',
   ),

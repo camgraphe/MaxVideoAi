@@ -33,6 +33,34 @@ const baseJob = {
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
 
+test('Luma polling strips echoed private input grants from attempt snapshots while copying the exact output URL', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const inputGrant = 'https://media.example/user-assets/owner/source.mp4?X-Amz-Signature=INPUT_SECRET&X-Amz-Expires=3600';
+  const outputGrant = 'https://providers.lumalabs.ai/output.mp4?X-Amz-Signature=OUTPUT_GRANT';
+  let copied = false;
+  await runLumaAgentsPoll({ deps: {
+    claimPollFn: allowGenerationPoll,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [baseJob] as never;
+      if (/FROM provider_attempts/.test(sql)) return [{ id: 23, attempt_index: 1 }] as never;
+      if (/SET status = 'completed'/.test(sql)) return [{ job_id: baseJob.job_id }] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn: () => ({ getGeneration: async () => ({ id: 'gen_luma_123', state: 'completed',
+      source: { url: inputGrant }, details: encodeURIComponent(inputGrant), output: [{ type: 'video', url: outputGrant }] }) }),
+    ensureFastStartVideoFn: async ({ videoUrl }) => { assert.equal(videoUrl, outputGrant); copied = true; return 'https://media.maxvideoai.com/renders/completed.mp4'; },
+    detectVideoDimensionsFn: async () => ({ width: 1280, height: 720 }),
+    ensureJobThumbnailFn: async () => 'https://media.maxvideoai.com/renders/thumb.jpg',
+    upsertLegacyJobOutputsFn: async () => undefined,
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  } });
+  assert.equal(copied, true);
+  assert.ok(queries.some(entry => /UPDATE provider_attempts/.test(entry.sql)));
+  assert.doesNotMatch(JSON.stringify(queries), /INPUT_SECRET/);
+});
+
 test('Luma completion mirrors persisted EXR settings into attempt and job cost', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const job = { ...baseJob, duration_sec: 5, settings_snapshot: { inputMode: 'v2v',
