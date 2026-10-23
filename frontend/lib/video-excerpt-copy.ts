@@ -1,7 +1,7 @@
 import { VIDEO_EXCERPT_PREPARATION_LIMITS as limits } from '@/lib/video-excerpt';
 
-export function videoExcerptCopy(locale: string) {
-  return locale === 'fr'
+export function videoExcerptCopy(locale: string, kind: 'video' | 'audio' = 'video') {
+  const copy = locale === 'fr'
     ? {
         close: 'Fermer',
         timeline: 'EXTRAIT',
@@ -19,8 +19,8 @@ export function videoExcerptCopy(locale: string) {
         loadingPreview: 'Ouverture de la vidéo originale…',
         editing: 'Choix de l’extrait…',
         requires: 'Choisissez un extrait respectant les limites du modèle pour calculer le prix.',
-        choose: 'Choisir un extrait',
-        title: 'Choisir un extrait vidéo',
+        choose: 'Choisir le début et la fin',
+        title: 'Quel passage souhaitez-vous utiliser ?',
         start: 'Début (secondes)',
         end: 'Fin (secondes)',
         cancel: 'Annuler',
@@ -57,8 +57,8 @@ export function videoExcerptCopy(locale: string) {
           loadingPreview: 'Abriendo el vídeo original…',
           editing: 'Eligiendo fragmento…',
           requires: 'Elige un fragmento dentro de los límites del modelo para calcular el precio.',
-          choose: 'Elegir un fragmento',
-          title: 'Elegir un fragmento de vídeo',
+          choose: 'Elegir inicio y final',
+          title: '¿Qué parte quieres usar?',
           start: 'Inicio (segundos)',
           end: 'Fin (segundos)',
           cancel: 'Cancelar',
@@ -94,8 +94,8 @@ export function videoExcerptCopy(locale: string) {
           loadingPreview: 'Opening original video…',
           editing: 'Choosing excerpt…',
           requires: 'Choose an excerpt within this model’s limits to calculate the price.',
-          choose: 'Choose excerpt',
-          title: 'Choose a video excerpt',
+          choose: 'Choose start and end',
+          title: 'Which part would you like to use?',
           start: 'Start (seconds)',
           end: 'End (seconds)',
           cancel: 'Cancel',
@@ -114,11 +114,22 @@ export function videoExcerptCopy(locale: string) {
           model: 'This model or mode is no longer available. Choose another one.',
           busyFailure: 'A preparation is already running. Try again shortly.',
         };
+  return kind === 'audio' ? { ...copy,
+    auth: locale === 'fr' ? 'Connectez-vous de nouveau, puis choisissez l’audio à préparer.' : locale === 'es' ? 'Inicia sesión de nuevo y vuelve a elegir el audio.' : 'Sign in again, then select the source audio.',
+    source: locale === 'fr' ? 'Cet audio a changé ou n’est plus disponible. Choisissez-le de nouveau.' : locale === 'es' ? 'El audio ha cambiado o ya no está disponible. Vuelve a elegirlo.' : 'This audio changed or is no longer available. Select it again.',
+    budget: locale === 'fr'
+      ? `Utilisez un audio mono ou stéréo de ${limits.maxBytes / 1024 / 1024} Mio et ${limits.maxSourceSec} s maximum, et un extrait de ${limits.maxExcerptSec} s maximum, en respectant les limites du modèle.`
+      : locale === 'es' ? `Usa un audio mono o estéreo de hasta ${limits.maxBytes / 1024 / 1024} MiB y ${limits.maxSourceSec} s, y un fragmento de hasta ${limits.maxExcerptSec} s, dentro de los límites del modelo.`
+      : `Use mono or stereo audio up to ${limits.maxBytes / 1024 / 1024} MiB and ${limits.maxSourceSec} s, and a passage up to ${limits.maxExcerptSec} s, within the model’s limits.`,
+    whole: locale === 'fr' ? 'Audio entier' : locale === 'es' ? 'Audio completo' : 'Whole audio',
+    loadingPreview: locale === 'fr' ? 'Ouverture de l’audio original…' : locale === 'es' ? 'Abriendo el audio original…' : 'Opening original audio…',
+    invalid: locale === 'fr' ? 'Choisissez un début et une fin dans l’audio, en respectant les limites du modèle.' : locale === 'es' ? 'Elige inicio y final dentro del audio y de los límites del modelo.' : 'Choose a start and end within the audio and this model’s limits.',
+  } : copy;
 }
 
 /** Never render raw server/browser messages, which may be English or contain private details. */
-export function videoExcerptFailureMessage(failure: unknown, locale: string): string {
-  const copy = videoExcerptCopy(locale);
+export function videoExcerptFailureMessage(failure: unknown, locale: string, kind: 'video' | 'audio' = 'video'): string {
+  const copy = videoExcerptCopy(locale, kind);
   const code = failure && typeof failure === 'object' && 'code' in failure ? failure.code : null;
   switch (code) {
     case 'PARAMETER_INVALID':

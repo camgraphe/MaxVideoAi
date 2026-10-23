@@ -15,10 +15,10 @@ function asset(fieldId: string, kind: ReferenceAsset['kind']): ReferenceAsset {
   return { id: fieldId, fieldId, kind, name: fieldId, size: 1, type: `${kind}/test`,
     url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}`, status: 'ready' };
 }
-function project(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, mode: Mode = 't2v') {
+function project(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, mode: Mode = 't2v', extraInputValues: Record<string, unknown> = {}) {
   const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
   assert.ok(engine, id);
-  const workflow = resolveWorkspaceWorkflow({ engine, form: coerceFormState(engine, mode, null), inputAssets, klingElements: [] });
+  const workflow = resolveWorkspaceWorkflow({ engine, form: { ...coerceFormState(engine, mode, null), extraInputValues }, inputAssets, klingElements: [] });
   const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: workflow.activeMode,
     allowsUnifiedVeoFirstLast: workflow.allowsUnifiedVeoFirstLast, isUnifiedHappyHorse: workflow.isUnifiedHappyHorse,
     isUnifiedSeedance: workflow.isUnifiedSeedance, isUnifiedGeminiOmni: workflow.isUnifiedGeminiOmni, uiLocale: 'en' });
@@ -30,13 +30,13 @@ function project(id: string, inputAssets: Record<string, (ReferenceAsset | null)
 }
 
 for (const id of ids) {
-  test(`${id}: reference entry is available from an empty composer and manual reference mode remains selected`, () => {
+  test(`${id}: reference entry is available from empty Create and explicit reference tabs retain their mode`, () => {
     const initial = project(id);
     const visible = initial.fields.filter((entry) => !entry.disabled).map(({ field }) => field.id);
     for (const fieldId of ['reference_image_urls', 'reference_video_urls', 'reference_audio_urls']) {
       assert.ok(visible.includes(fieldId), `${fieldId} can be selected before the first upload`);
     }
-    assert.equal(project(id, {}, 'ref2v').workflow.activeMode, 'ref2v');
+    assert.equal(project(id, {}, 'ref2v').workflow.activeMode, id.startsWith('wan-') ? 't2v' : 'ref2v');
     assert.ok(initial.fields.every((entry) => !entry.required));
   });
 
@@ -84,8 +84,7 @@ for (const id of ['wan-3', 'wan-3-prime']) {
         assert.equal(result.fields.find(({ field }) => field.id === fieldId)?.disabled, false, fieldId);
       }
       const referenceVideos = result.fields.find(({ field }) => field.id === 'reference_video_urls');
-      if (mode === 'extend') assert.equal(referenceVideos, undefined, 'unsupported extension inputs are hidden');
-      else assert.equal(referenceVideos?.disabled, true);
+      assert.equal(referenceVideos, undefined, 'unsupported source-workflow inputs are hidden');
       assert.deepEqual(reconcileReferenceAssets(inputAssets, result.summary.assetFields.map(({ field }) => field), null), inputAssets);
     });
   }
@@ -111,7 +110,7 @@ test('unsupported audio slots still trigger the guard instead of gaining a famil
 });
 
 function generationGuard(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]>, mode: Mode = 't2v', extraInputValues: Record<string, unknown> = {}) {
-  const { engine, workflow, summary } = project(id, inputAssets, mode);
+  const { engine, workflow, summary } = project(id, inputAssets, mode, extraInputValues);
   const fieldsWithRole = (role: string) => new Set(summary.assetFields.filter((entry) => entry.role === role).map(({ field }) => field.id));
   const form = { ...coerceFormState(engine, workflow.submissionMode, null), extraInputValues };
   const prepared = prepareGenerationInputs({ selectedEngineId: id, ...workflow, form,
@@ -125,10 +124,13 @@ function generationGuard(id: string, inputAssets: Record<string, (ReferenceAsset
 }
 
 for (const id of ids) {
-  test(`${id}: generation accepts video-only and audio-only references while refusing an empty reference request`, () => {
+  test(`${id}: generation accepts video/audio references and normalizes empty unified Create without a reference request`, () => {
     assert.equal(generationGuard(id, { reference_video_urls: [asset('reference_video_urls', 'video')] }), null);
     assert.equal(generationGuard(id, { reference_audio_urls: [asset('reference_audio_urls', 'audio')] }), null);
-    assert.ok(generationGuard(id, {}, 'ref2v'));
+    if (id.startsWith('wan-')) {
+      assert.equal(project(id, {}, 'ref2v').workflow.submissionMode, 't2v');
+      assert.equal(generationGuard(id, {}, 'ref2v'), null, 'empty unified Create is text-to-video');
+    } else assert.ok(generationGuard(id, {}, 'ref2v'));
   });
 
   test(`${id}: stored incompatible frames and references are rejected, never silently dropped`, () => {
@@ -156,5 +158,20 @@ test('Wan edit quotes and submits the selected output duration independently of 
       multiPromptScenes: [], voiceIdsInput: '' });
     assert.equal(workflow.primaryVideoDurationSec, 8);
     assert.equal(facts.effectiveDurationSec, 12);
+  }
+});
+
+for (const id of ['wan-3', 'wan-3-prime']) test(`${id}: document/web references in Create select ref2v and survive restored parameters`, () => {
+  for (const fieldId of ['file_url', 'web_url']) {
+    const empty = project(id);
+    assert.ok(empty.summary.secondaryFields.some(({ field }) => field.id === fieldId));
+    const extras = { [fieldId]: 'https://example.com/reference' };
+    for (const priorMode of ['t2v', 'ref2v'] as const) {
+      const reference = project(id, {}, priorMode, extras);
+      assert.equal(reference.workflow.activeManualMode, null);
+      assert.equal(reference.workflow.submissionMode, 'ref2v');
+      assert.equal(generationGuard(id, {}, priorMode, extras), null);
+    }
+    assert.match(generationGuard(id, { start_image_url: [asset('start_image_url', 'image')] }, 't2v', extras) ?? '', /incompatible/i);
   }
 });

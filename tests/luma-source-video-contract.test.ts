@@ -17,6 +17,27 @@ const source: ResolvedReference = { assetId: 'ma_' + 'a'.repeat(32), role: 'sour
   storageUrl: url, mimeType: 'video/mp4', sizeBytes: 1000, width: 1280, height: 720, durationSec: 5 };
 const pricing = { totalCents: 150, currency: 'USD', membershipTier: 'member' } as const;
 const priced = { ok: true, total: 150, currency: 'USD', pricing } as never;
+
+test('owned library public IDs quote exact Luma excerpts while retaining legacy identity and URL fences', async () => {
+  for (const [assetId, storedUrl, expected] of [
+    [source.assetId, url, true], ['url:internal-source', url, true],
+    ['ma_' + 'b'.repeat(32), url, false],
+    [source.assetId, url + '?different=1', false],
+  ] as const) {
+    let quotes = 0;
+    const result = await resolveMediaAwarePreflight({ userId: 'luma-user', request: {
+      engine: engine.id, mode: 'v2v', durationSec: 10, resolution: '1080p', fps: 24,
+      inputs: [{ assetId, kind: 'video', slotId: 'video_url', url }],
+    } }, { getConfiguredEngineFn: async () => engine,
+      computeConfiguredPreflightFn: async input => { quotes++; assert.equal(input.durationSec, 5); return priced; },
+      mediaConstraintDeps: { queryFn: async () => [{ asset_id: 'url:internal-source', public_asset_id: source.assetId,
+        url: storedUrl, origin_url: url, original_name: 'video-excerpt.mp4', mime_type: 'video/mp4',
+        size_bytes: 3043001, duration_sec: 4, width: 1080, height: 1920 }] as never[] },
+    });
+    assert.equal(result.ok, expected, assetId + ' ' + storedUrl);
+    assert.equal(quotes, expected ? 1 : 0);
+  }
+});
 function request(mode: 'v2v' | 'reframe', durationSec = 5): CanonicalGenerationRequest {
   return { schemaVersion: 1, surface: 'video', engineId: engine.id, mode, prompt: 'Change the room.',
     settings: { durationSec, resolution: '720p', aspectRatio: '16:9' }, outputCount: 1,

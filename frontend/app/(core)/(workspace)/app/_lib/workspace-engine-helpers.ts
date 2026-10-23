@@ -232,7 +232,7 @@ export function buildComposerModeToggles({
   const explicitModes =
     selectedEngine.id === 'flux-3-max' ? (['ref2v'] as const) :
     selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime'
-      ? (['ref2v', 'v2v', 'extend'] as const)
+      ? (['v2v', 'extend'] as const)
       : isLumaRay2EngineId(selectedEngine.id)
       ? (['v2v', 'reframe'] as const)
       : isLumaRay32EngineId(selectedEngine.id)

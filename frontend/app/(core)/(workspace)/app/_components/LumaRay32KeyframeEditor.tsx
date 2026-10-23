@@ -81,9 +81,15 @@ export function LumaRay32KeyframeEditor({
   const sourceVideoEntry = useMemo(() => getFieldEntry(assetFields, 'video_url'), [assetFields]);
   const guideFrameEntry = useMemo(() => getFieldEntry(assetFields, 'start_image_url'), [assetFields]);
   const keyframeEntry = useMemo(() => getFieldEntry(assetFields, imageFieldId), [assetFields, imageFieldId]);
-  const durationSec = isFluxMax ? Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5)) : form.durationOption === '10s' || form.durationOption === 10 || form.durationSec === 10 ? 10 : 5;
+  const selectedSourceDuration = sourceVideoEntry
+    ? inputAssets[sourceVideoEntry.field.id]?.find(asset => asset?.kind === 'video' && asset.status === 'ready')?.durationSec
+    : undefined;
+  const sourceDuration = typeof selectedSourceDuration === 'number' && Number.isFinite(selectedSourceDuration)
+    && selectedSourceDuration > 0 && selectedSourceDuration <= 18 ? selectedSourceDuration : undefined;
+  const durationSec = isFluxMax ? Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5))
+    : sourceDuration ?? (form.durationOption === '10s' || form.durationOption === 10 || form.durationSec === 10 ? 10 : 5);
   const fps = isFluxMax ? 24 : Number.isFinite(form.fps) ? Math.max(1, Math.trunc(form.fps)) : 24;
-  const maxFrameIndex = Math.max(1, durationSec * fps - (isFluxMax ? 0 : 1));
+  const maxFrameIndex = Math.max(1, Math.floor(durationSec * fps) - (isFluxMax ? 0 : 1));
   const maxKeyframeSlots = Math.min(
     isFluxMax ? 10 : PROVIDER_KEYFRAME_SLOT_LIMIT,
     maxFrameIndex + 1,
@@ -370,7 +376,9 @@ export function LumaRay32KeyframeEditor({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-text-primary">{isFluxMax ? `FLUX 3 Max · ${keyframesLabel}` : 'Ray 3.2 Modify'}</p>
-          <p className="text-xs text-text-muted">{durationSec}s @ {fps}fps</p>
+          <p className="text-xs text-text-muted">{isFluxMax ? `${durationSec}s @ ${fps}fps`
+            : sourceDuration != null ? `${uiLocale === 'fr' ? 'Vidéo source' : uiLocale === 'es' ? 'Vídeo original' : 'Source video'} · ${sourceDuration}s`
+            : uiLocale === 'fr' ? 'Importez une vidéo pour régler les images clés' : uiLocale === 'es' ? 'Importa un vídeo para ajustar los fotogramas clave' : 'Import a video to set keyframes'}</p>
         </div>
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
           <span>{filledKeyframeCount}/{keyframeSlots.length} {isFluxMax ? keyframesLabel : 'modified'}</span>

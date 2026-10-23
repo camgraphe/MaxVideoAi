@@ -24,6 +24,7 @@ type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promis
 
 export type StoredMediaMetadataRow = {
   asset_id: string;
+  public_asset_id?: string | null;
   url: string;
   origin_url: string | null;
   original_name: string | null;
@@ -262,6 +263,7 @@ export async function validateGenerationMediaConstraints(params: {
     const queryFn = params.deps?.queryFn ?? query;
     rows = await queryFn<StoredMediaMetadataRow>(
       `SELECT asset_id::text AS asset_id,
+              NULL::text AS public_asset_id,
               url,
               metadata->>'originUrl' AS origin_url,
               metadata->>'originalName' AS original_name,
@@ -280,6 +282,7 @@ export async function validateGenerationMediaConstraints(params: {
           )
         UNION ALL
        SELECT id::text AS asset_id,
+              public_id::text AS public_asset_id,
               url,
               metadata->>'originUrl' AS origin_url,
               metadata->>'originalName' AS original_name,
@@ -294,6 +297,7 @@ export async function validateGenerationMediaConstraints(params: {
           AND deleted_at IS NULL
           AND (
             id = ANY($2::text[])
+            OR public_id = ANY($2::text[])
             OR url = ANY($3::text[])
             OR metadata->>'originUrl' = ANY($3::text[])
           )`,
@@ -314,7 +318,7 @@ export async function validateGenerationMediaConstraints(params: {
     });
     const stored =
       (candidate.assetId
-        ? matchingRows.find((row) => row.asset_id === candidate.assetId)
+        ? matchingRows.find((row) => row.asset_id === candidate.assetId || row.public_asset_id === candidate.assetId)
         : undefined) ?? (requiresExactSource && candidate.assetId ? undefined : matchingRows[0]);
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {

@@ -71,6 +71,6 @@ test('excerpt trigger survives URL replacement while its dialog retains source a
   const workspace = fs.readFileSync(path.join(root, 'frontend/components/composer/WorkspaceReferenceSection.client.tsx'), 'utf8');
   const defaults = fs.readFileSync(path.join(root, 'frontend/components/composer/ComposerReferenceFields.tsx'), 'utf8');
   assert.match(control, /<VideoExcerptSession\s+key=\{asset.url\}/);
-  assert.match(workspace, /key=\{`\$\{engine.id\}:\$\{sourceMode\}:\$\{entry.field.id\}:\$\{slotIndex\}`\}/);
-  assert.match(defaults, /key=\{`\$\{engine.id\}:\$\{videoSourceWorkflow\}:\$\{field.id\}:\$\{index\}`\}/);
+  assert.match(workspace, /key=\{`\$\{engine.id\}:\$\{excerptMode\}:\$\{entry.field.id\}:\$\{slotIndex\}`\}/);
+  assert.match(defaults, /key=\{`\$\{engine.id\}:\$\{excerptMode\}:\$\{field.id\}:\$\{index\}`\}/);
 });

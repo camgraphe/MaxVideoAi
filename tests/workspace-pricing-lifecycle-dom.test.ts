@@ -28,7 +28,7 @@ async function mount() {
   const { useWorkspacePricingGate: useGate } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate');
   let options = {
     accessToken: 'fixture-a', authChecked: true, locale: 'en', memberTier: 'Member', setMemberTier: () => {},
-    topUpCopy: {}, selectedEngine: { id: 'seedance-2-0', modeCaps: {} }, submissionMode: 't2v',
+    topUpCopy: {}, selectedEngine: { id: 'seedance-2-0', modes: ['t2v'], modeCaps: {} }, submissionMode: 't2v',
     form: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: false, extraInputValues: {} },
     effectiveDurationSec: 5, supportsAudioToggle: false, voiceControlEnabled: false, inputAssets: {},
   } as Options;

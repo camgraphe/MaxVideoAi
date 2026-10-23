@@ -51,7 +51,7 @@ test('workspace Options appears only for useful advanced controls and stale vide
   const composer = readFileSync('frontend/components/Composer.tsx', 'utf8');
   const video = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx', 'utf8');
   const image = readFileSync('frontend/app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface.tsx', 'utf8');
-  assert.match(composer, /price == null \|\| isPricing \|\| excerptEditorOpen \|\| \(videoSourceWorkflow && extensionSourceState !== \'ready\'\) \|\| preflight\?\.ok === false/);
+  assert.match(composer, /price == null \|\| isPricing \|\| excerptEditorOpen \|\| excerptNeedsRange \|\| \(videoSourceWorkflow && extensionSourceState !== \'ready\'\) \|\| preflight\?\.ok === false/);
   assert.match(video, /isPricing=\{isPricing\}/);
   assert.match(video, /const showOptionsControl = Boolean\(/);
   assert.match(video, /selectedEngine\.params\?\.cfg_scale/);

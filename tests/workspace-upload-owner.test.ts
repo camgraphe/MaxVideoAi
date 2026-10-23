@@ -43,7 +43,7 @@ const uploadBundle = bundleClientFlow(
   const noop=()=>{};
   function Main(){
     const state=useWorkspaceAssetState(window.owner);
-    const actions=useWorkspaceReferenceAssets({accountScope:window.owner,engineId:'wan-3',preferredMode:'ref2v',
+    const actions=useWorkspaceReferenceAssets({accountScope:window.owner,engineId:'wan-3',preferredMode:window.mode??'ref2v',
       inputAssets:state.inputAssets,setInputAssets:state.setInputAssets,commitInputAssetMutation:state.commitInputAssetMutation,
       workflowCopy:{clearReferencesToUseStartEnd:'clear',clearStartEndToUseReferences:'clear'},
       showNotice:m=>window.notices.push(m),assetLibrarySource:'all',resetAssetLibraryForSource:noop,setAssetPickerTarget:noop,setAssetLibrary:noop});
@@ -233,6 +233,21 @@ async function startUpload(w: any, suite: string, kind: string, file: File) {
     }
   });
 }
+test('Create imports audio under its declared reference mode and explicitly requests bounded preparation', async () => {
+  const f = await uploadFixture('main');
+  try {
+    f.w.mode = 't2v'; await f.w.fx.act(async () => f.w.fx.render());
+    await f.w.fx.act(async () => f.w.probe.handleAssetAdd({ id: 'reference_audio_urls', type: 'audio', label: 'Audio', maxCount: 5,
+      modes: ['ref2v', 'v2v', 'extend'] }, new File(['synthetic'], 'source.wav', { type: 'audio/wav' }), 0, { durationSec: 40, prepareExcerpt: true }));
+    await settle(f.w, () => f.requests.length === 1, 'owned audio upload dispatched');
+    const request = f.requests[0], body = request.init.body as FormData;
+    assert.equal(request.url, '/api/uploads/audio');
+    assert.equal(request.bearer, 'Bearer token-A');
+    assert.equal(body.get('mode'), 'ref2v');
+    assert.equal(body.get('fieldId'), 'reference_audio_urls');
+    assert.equal(body.get('prepareExcerpt'), '1');
+  } finally { await f.dispose(); }
+});
 for (const [suite, kinds] of [
   ['main', ['image', 'audio', 'video']],
   ['kling', ['image', 'video']],

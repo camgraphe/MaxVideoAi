@@ -183,7 +183,9 @@ export function AssetDropzone({
           return;
         }
         const minDurationSec = field.minDurationSec;
-        const maxDurationSec = field.maxDurationSec ?? limits.audioMaxDurationSec;
+        const modelMaxDurationSec = field.maxDurationSec ?? limits.audioMaxDurationSec;
+        const maxDurationSec = allowVideoExcerptImport && typeof modelMaxDurationSec === 'number'
+          ? Math.max(modelMaxDurationSec, VIDEO_EXCERPT_PREPARATION_LIMITS.maxSourceSec) : modelMaxDurationSec;
         if (typeof minDurationSec === 'number' && duration < minDurationSec) {
           onError?.(assetCopy.audioMinDuration(minDurationSec));
           return;
@@ -192,7 +194,7 @@ export function AssetDropzone({
           onError?.(assetCopy.audioMaxDuration(maxDurationSec));
           return;
         }
-        onSelect(field, file, slotIndex, { durationSec: duration });
+        onSelect(field, file, slotIndex, { durationSec: duration, ...(allowVideoExcerptImport ? { prepareExcerpt: true } : {}) });
         return;
       }
       onSelect(field, file, slotIndex);

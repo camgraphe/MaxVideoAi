@@ -35,7 +35,7 @@ function reference(fieldId: string, kind: ReferenceAsset['kind']): ReferenceAsse
 }
 
 for (const id of ['wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max']) {
-  test(`${id}: mounted mode and schema effects retain a manual reference session and uploaded media`, async () => {
+  test(`${id}: mounted creation/reference effects retain URL options and uploaded media`, async () => {
     const { Composer } = await loadComposer();
     const engine = listFalEngines().find((entry) => entry.id === id)!.engine;
     const engines = [engine];
@@ -51,6 +51,7 @@ for (const id of ['wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max']) {
     };
     let current: {
       mode: ReturnType<typeof useWorkspaceEngineModeState>;
+      setForm: React.Dispatch<React.SetStateAction<FormState | null>>;
       schema: ReturnType<typeof useWorkspaceInputSchemaState>;
       inputAssets: Record<string, (ReferenceAsset | null)[]>;
       setInputAssets: React.Dispatch<React.SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
@@ -65,7 +66,7 @@ for (const id of ['wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max']) {
         requestedModeOverrideRef: useRef(null), writeStorage: noop, uiLocale: 'en', workflowCopy, showNotice: noop });
       const schema = useWorkspaceInputSchemaState({ ...mode, uiLocale: 'en', authChecked: true, authLoading: false,
         authenticatedUserId: 'test', uploadLockedCopy: 'Sign in', setInputAssets, setForm });
-      current = { mode, schema, inputAssets, setInputAssets };
+      current = { mode, schema, inputAssets, setInputAssets, setForm };
       return createElement(Composer, {
         engine, density: 'workspace', prompt: '', onPromptChange: noop, price: null, currency: 'USD', isLoading: false,
         promptRequired: schema.inputSchemaSummary.promptRequired, assetFields: schema.inputSchemaSummary.assetFields, assets: inputAssets,
@@ -85,16 +86,25 @@ for (const id of ['wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max']) {
       })));
       if (id.startsWith('wan-')) {
         const modeButtons = [...dom.window.document.querySelectorAll<HTMLButtonElement>('.app-mode-switch button')];
-        for (const nextMode of ['ref2v', 'v2v', 'extend'] as const) {
+        for (const nextMode of ['v2v', 'extend'] as const) {
           assert.ok(modeButtons.some((button) => button.textContent === getEngineModeLabel(id, nextMode, 'en')),
             `${nextMode} must be reachable from the composer`);
         }
-        await act(async () => modeButtons.find((button) => button.textContent === getEngineModeLabel(id, 'ref2v', 'en'))!.click());
+        assert.equal(modeButtons.some(button => button.textContent === getEngineModeLabel(id, 'ref2v', 'en')), false, 'references belong to Create');
+        assert.ok(modeButtons.some(button => button.textContent === workflowCopy.generateVideo));
         await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[data-options]')!.click());
         for (const label of ['Document URL', 'Public webpage URL']) {
           const control = [...dom.window.document.querySelectorAll('label')].find((entry) => entry.textContent?.includes(label))?.querySelector('textarea');
           assert.ok(control, `${label} must be reachable with no media uploads`);
           assert.equal(control.disabled, false);
+        }
+        for (const key of ['file_url', 'web_url']) {
+          await act(async () => current.setForm(form => form ? { ...form, extraInputValues: { [key]: 'https://example.com/reference' } } : form));
+          assert.equal(current!.mode.submissionMode, 'ref2v', `${key} selects reference generation through mounted effects`);
+          assert.equal(current!.mode.activeManualMode, null, 'Create remains the visible workflow');
+          assert.ok([...dom.window.document.querySelectorAll('textarea')].some(control => control.value === 'https://example.com/reference'), 'mode inference retains the entered URL');
+          await act(async () => current.setForm(form => form ? { ...form, extraInputValues: {} } : form));
+          assert.equal(current!.mode.submissionMode, 't2v', 'clearing the last reference returns to text creation');
         }
       } else {
         await act(async () => dom.window.document.querySelector<HTMLButtonElement>('[data-reference-command="collections"]')!.click());
@@ -115,7 +125,7 @@ for (const id of ['wan-3', 'wan-3-prime', 'minimax-h3', 'minimax-h3-max']) {
         await act(async () => upload.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
         await act(async () => current.mode.handleModeChange('ref2v'));
       }
-      assert.equal(current!.mode.submissionMode, 'ref2v');
+      assert.equal(current!.mode.submissionMode, id.startsWith('wan-') ? 't2v' : 'ref2v');
       assert.ok(current!.schema.inputSchemaSummary.assetFields.some(({ field }) => field.id === 'reference_audio_urls'));
       const assets = { reference_audio_urls: [reference('reference_audio_urls', 'audio')] };
       await act(async () => current.setInputAssets(assets));

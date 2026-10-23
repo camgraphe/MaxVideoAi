@@ -9,6 +9,18 @@ const ref = {...source,assetId:'ma_22222222222222222222222222222222'};
 const media: StudioResolvedMedia = {id:'source',ref:source,kind:'video',url:'https://media.example/source.mp4',mime:'video/mp4',thumbUrl:null,previewUrl:null,mediaFacts:undefined,originalAccess:{type:'external'}};
 const facts:VideoExcerptFacts = {kind:'video',width:640,height:480,durationSec:60,fps:30,hasAudio:true,sizeBytes:10,mimeType:'video/mp4',videoCodec:'h264',audioCodec:'aac'};
 const input = {source,engineId:'luma-ray-3-2',mode:'v2v' as const,range:{startSec:20,endSec:38}};
+
+test('reference video preparation retains its real field/mode policy and rejects audio-slot impersonation', async () => {
+  for (const [engineId, fieldId] of [['wan-3', 'reference_video_urls'], ['seedance-2-5', 'video_urls']]) {
+    const { state, deps } = setup({ persist: async () => ({ id: ref.assetId, assetId: ref.assetId, ref, url: 'https://media.example/excerpt.mp4', durationSec: 5 }) });
+    const result = await prepareVideoExcerpt('owner', { source, engineId, mode: 'ref2v', fieldId, range: { startSec: 10, endSec: 15 } }, deps);
+    assert.equal(result.asset.durationSec, 5);
+    assert.equal(state.downloads, 1);
+  }
+  const { state, deps } = setup();
+  await assert.rejects(prepareVideoExcerpt('owner', { source, engineId: 'wan-3', mode: 'ref2v', fieldId: 'reference_audio_urls', range: { startSec: 10, endSec: 15 } }, deps));
+  assert.equal(state.downloads, 0);
+});
 function setup(overrides: Partial<VideoExcerptDependencies> = {}) {
   const state = {downloads:0,persists:0,lineage:null as unknown,trims:0};
   const deps: VideoExcerptDependencies = {

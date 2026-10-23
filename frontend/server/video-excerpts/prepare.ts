@@ -1,19 +1,22 @@
+import type { Mode } from '@/types/engines';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { toolAssetRefSchema, type ToolAssetRef } from '@/lib/toolbox/contract';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import type { UploadedVideoAsset } from '@/lib/client-video-upload';
-import { getVideoExcerptLimits, validateVideoExcerptRange, type VideoExcerptRange } from '@/lib/video-excerpt';
+import { getVideoExcerptLimits, getMediaExcerptLimits, validateVideoExcerptRange, type VideoExcerptRange } from '@/lib/video-excerpt';
 import { resolveStudioMedia } from '@/server/studio/media-resolver';
 import { createConversationMediaReadAccess } from '@/server/studio/conversation-media-read-access';
 import { getReadOnlyConfiguredEngine } from '@/server/agent-api/read-only-engine-catalog';
 import { storeVideoUpload } from '@/server/uploads/store-media-upload';
 import { downloadVideoExcerptMedia, inspectVideoExcerptBytes, trimVideoExcerptBytes, validateVideoExcerptOutput, validateStoredVideoExcerptFacts, withVideoExcerptSlot, VideoExcerptError, VIDEO_EXCERPT_PREPARATION_LIMITS, type VideoExcerptFacts } from './media';
 
-export type PrepareVideoExcerptInput = { source: ToolAssetRef; engineId: string; mode: 'v2v' | 'extend' | 'reframe'; range: VideoExcerptRange };
+export type PrepareVideoExcerptInput = { source: ToolAssetRef; engineId: string; mode: Mode; fieldId?: string; range: VideoExcerptRange };
 const inputSchema = z.object({
   source: toolAssetRefSchema.refine(value => value.kind === 'video'), engineId: z.string().trim().min(1).max(128),
-  mode: z.enum(['v2v','extend','reframe']),
+  mode: z.enum(['t2v','i2v','ref2v','fl2v','v2v','extend','reframe','retake','r2v','a2v']),
+  fieldId: z.string().trim().min(1).max(128).optional(),
   range: z.object({ startSec: z.number().finite().nonnegative(), endSec: z.number().finite().positive() }).strict(),
 }).strict();
 
@@ -43,7 +46,8 @@ export async function prepareVideoExcerpt(userId: string, value: unknown, depend
   const input = parsed.data, deps = {...defaults,...dependencies};
   return withVideoExcerptSlot(userId, async () => {
     try {
-      const engine = await deps.engine(input.engineId), limits = engine && getVideoExcerptLimits(engine,input.mode);
+      const engine = await deps.engine(input.engineId), limits = engine && (input.fieldId ? getMediaExcerptLimits(engine,input.mode,input.fieldId) : isVideoSourceWorkflow(input.mode) ? getVideoExcerptLimits(engine,input.mode) : null);
+      if (input.fieldId && engine && ![...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])].some(field => field.id === input.fieldId && field.type === 'video')) throw new VideoExcerptError('PARAMETER_INVALID','Choose a video input.');
       if (!limits) throw new VideoExcerptError('ENGINE_UNAVAILABLE','This source-video mode is unavailable. Choose another active model or mode.');
       if (input.range.endSec-input.range.startSec > VIDEO_EXCERPT_PREPARATION_LIMITS.maxExcerptSec) throw new VideoExcerptError('PREPARATION_LIMIT','Choose an excerpt of at most 60 seconds. The full-video workflow remains available.');
       const original = await deps.resolve(userId,input.source), snapshot = fingerprint(original);
@@ -58,7 +62,7 @@ export async function prepareVideoExcerpt(userId: string, value: unknown, depend
       let outputDuration = result.facts.durationSec;
       const reauthorize = async () => {
         if (fingerprint(await deps.resolve(userId,input.source)) !== snapshot) throw new VideoExcerptError('SOURCE_CHANGED','The original video changed. Choose it again.');
-        const current = await deps.engine(input.engineId), currentLimits = current && getVideoExcerptLimits(current,input.mode);
+        const current = await deps.engine(input.engineId), currentLimits = current && (input.fieldId ? getMediaExcerptLimits(current,input.mode,input.fieldId) : isVideoSourceWorkflow(input.mode) ? getVideoExcerptLimits(current,input.mode) : null);
         if (!currentLimits) throw new VideoExcerptError('ENGINE_UNAVAILABLE','The selected model or mode became unavailable.');
         // Apply the model policy to the independently measured output, never to the original's stored duration.
         try { validateVideoExcerptRange({startSec:0,endSec:outputDuration},outputDuration,currentLimits); }
@@ -66,7 +70,7 @@ export async function prepareVideoExcerpt(userId: string, value: unknown, depend
         if (currentLimits.maxSizeMB && result.bytes.length > currentLimits.maxSizeMB*1024*1024) throw new VideoExcerptError('PREPARATION_LIMIT','The prepared excerpt exceeds this model’s source file size limit. Choose a shorter excerpt.');
       };
       await reauthorize();
-      const asset = await deps.persist(userId,result.bytes,result.facts,{version:3,storageAccess:'private',encoder:'h264-aac-v4',source:input.source,range,engineId:input.engineId,mode:input.mode,
+      const asset = await deps.persist(userId,result.bytes,result.facts,{version:3,storageAccess:'private',encoder:'h264-aac-v4',source:input.source,range,engineId:input.engineId,mode:input.mode,...(input.fieldId ? {fieldId:input.fieldId} : {}),
         sourceFingerprint:snapshot,sourceSha256:createHash('sha256').update(downloaded.bytes).digest('hex'),sourceFacts,outputFacts:result.facts});
       if (!asset.ref || asset.ref.kind !== 'video' || JSON.stringify(asset.ref) === JSON.stringify(input.source)) throw new VideoExcerptError('PREPARATION_FAILED','The excerpt could not be saved as a distinct video.');
       outputDuration = asset.durationSec ?? Number.NaN;
