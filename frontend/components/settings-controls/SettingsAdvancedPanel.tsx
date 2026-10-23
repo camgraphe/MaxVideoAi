@@ -1,5 +1,6 @@
 'use client';
 
+import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import {
@@ -302,7 +303,7 @@ function AdvancedRangeFields({
         </div>
       ) : null}
 
-      {engine.params.cfg_scale ? (
+      {supportsVideoCfgScaleControl(engine, mode) && engine.params.cfg_scale ? (
         <div className="space-y-2">
           <span className={labelClassName}>{controlsCopy.cfgScale}</span>
           <RangeWithInput

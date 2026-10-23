@@ -1,3 +1,4 @@
+import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -179,7 +180,7 @@ export function useSettingsControlState({
       showKlingV3Controls ||
       showSeedanceControls ||
       showSafetyCheckerControl ||
-      engine.params.cfg_scale ||
+      supportsVideoCfgScaleControl(engine, mode) ||
       hasGenericAdvancedFields
   );
 

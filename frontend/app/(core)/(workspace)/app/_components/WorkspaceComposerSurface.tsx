@@ -1,4 +1,5 @@
 'use client';
+import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import { getSeedanceAutomaticPricingNote } from '@/lib/seedance-modelark-options';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -432,7 +433,7 @@ export function WorkspaceComposerSurface({
     selectedEngine.params?.promptStrength ||
     selectedEngine.params?.guidance ||
     (submissionMode === 'i2v' && selectedEngine.params?.initInfluence) ||
-    selectedEngine.params?.cfg_scale ||
+    supportsVideoCfgScaleControl(selectedEngine, submissionMode) ||
     advancedFields.length
   );
   const showKlingElementsBuilder =

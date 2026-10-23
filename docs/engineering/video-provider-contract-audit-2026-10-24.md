@@ -9,6 +9,8 @@ This correction covers the currently exposed Kling 2.5 Pro, Kling 2.6 Pro and LT
 - LTX 2.3 I2V (regular/Fast) omits `guidance_scale`. LTX 2.3 regular A2V retains its valid guidance control and optional first frame.
 - LTX 2.5 A2V (Pro/Fast) omits `guidance_scale`; optional first frame, source audio and aspect ratio remain supported.
 
+Actual CFG visibility and workspace Options eligibility use `supportsVideoCfgScaleControl` in `frontend/src/lib/video-input-schema.ts`. Authored schema mode restrictions take precedence over global engine parameters; older params-only models retain their controls. Visibility changes do not reset saved CFG values. `tests/kling-cfg-settings-dom.test.ts` renders the real advanced panel across T2V → I2V → T2V and verifies the saved value survives.
+
 `tests/video-provider-audit-contracts.test.ts` verifies complete real-builder bodies, supported fields, stale-control omission, unchanged caller settings, original attachment URLs, and conformance to the compact dated snapshots. Existing P0 and Seedance Draft suites cover surrounding capabilities, including FLUX Draft. Generated engine catalog changes must come from `pnpm engine:catalog`; validate with `pnpm model:registry:check`.
 
 No live render, provider submission, billing operation, production mutation or deployment is part of this verification. Provider changes after the evidence date require a fresh contract review.
