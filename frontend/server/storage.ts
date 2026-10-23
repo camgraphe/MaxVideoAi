@@ -570,6 +570,13 @@ export function isStorageConfigured(): boolean {
   return Boolean(S3_BUCKET && S3_REGION && S3_ACCESS_KEY_ID && S3_SECRET_ACCESS_KEY);
 }
 
+/** Optional server-authored preparation identity keeps derivatives disjoint from original byte keys. */
+export function buildContentAddressedFileLeaf(data: Buffer, mime: string, namespace?: string): string {
+  if (namespace !== undefined && !/^[a-zA-Z0-9_-]{1,128}$/u.test(namespace)) throw new Error('Invalid media identity namespace.');
+  const prefix = namespace ? `prepared-${createHash('sha256').update(namespace).digest('hex')}-` : '';
+  return `${prefix}${createHash('sha256').update(data).digest('hex')}.${inferExtension(mime)}`;
+}
+
 export async function uploadFileBuffer(params: {
   data: Buffer;
   mime: string;
@@ -579,6 +586,7 @@ export async function uploadFileBuffer(params: {
   cacheControl?: string;
   acl?: string | null;
   contentAddressed?: boolean;
+  contentAddressedNamespace?: string;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<{ key: string; url: string }> {
@@ -587,7 +595,7 @@ export async function uploadFileBuffer(params: {
     ? buildObjectKey({
         prefix: `${params.prefix ?? 'files'}/by-content`,
         userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
-        leafName: `${createHash('sha256').update(params.data).digest('hex')}.${inferExtension(params.mime)}`,
+        leafName: buildContentAddressedFileLeaf(params.data,params.mime,params.contentAddressedNamespace),
       })
     : buildObjectKey({
         prefix: params.prefix ?? 'files',
