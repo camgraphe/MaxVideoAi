@@ -32,10 +32,10 @@
 
 **Interfaces:** Export `VideoExcerptRange = {startSec:number;endSec:number}` and `getVideoExcerptLimits(engine,mode)` from the shared policy, with source min/max and inherited/requested timing. Export `prepareVideoExcerpt(userId,input,dependencies?)` taking `{source: ToolAssetRef; engineId:string; mode:'v2v'|'extend'|'reframe'; range:VideoExcerptRange}` and returning `{asset: UploadedVideoAsset; range:VideoExcerptRange; original:ToolAssetRef}`. Route returns `{ok:true,...result}` or explicit bounded errors. Original stored URL remains distinct from signed playback access.
 
-- [ ] Write failing policy/preparation tests: Luma18/Reframe10; Kling input10/output15; Wan15; Seedance authored fields; Ray2 no invented generation cap; invalid ranges; unauthorized/changed source; real rotated cut with preserved audio.
-- [ ] Implement policy from actual source field constraints, not a second model table. Server must verify active model/mode, identity ownership, actual source and range, output facts and policy, and preserve lineage. Use bounded download/FFmpeg with cleanup, concurrent work protection, rotation-aware probing, frame tolerance, size/timeout limits. Operational preparation limits must never narrow existing full-source workflows.
-- [ ] Add authenticated, same-origin, bounded JSON adapter. Do not tie excerpt preparation to paid Creator gates or billing. Existing storage/owned assets provide persistence and reuse; no new migration unless unavoidable.
-- [ ] Run focused tests plus real FFmpeg qualification; report limits and verification in task report; commit only scoped files.
+- [x] Write failing policy/preparation tests: Luma18/Reframe10; Kling input10/output15; Wan15; Seedance authored fields; Ray2 no invented generation cap; invalid ranges; unauthorized/changed source; real rotated cut with preserved audio.
+- [x] Implement policy from actual source field constraints, not a second model table. Server must verify active model/mode, identity ownership, actual source and range, output facts and policy, and preserve lineage. Use bounded download/FFmpeg with cleanup, concurrent work protection, rotation-aware probing, frame tolerance, size/timeout limits. Operational preparation limits must never narrow existing full-source workflows.
+- [x] Add authenticated, same-origin, bounded JSON adapter. Do not tie excerpt preparation to paid Creator gates or billing. Existing storage/owned assets provide persistence and reuse; no new migration unless unavoidable.
+- [x] Run focused tests plus real FFmpeg qualification; report limits and verification in task report; commit only scoped files.
 
 ### Task 2: Shared selector and workspace source lifecycle
 
@@ -43,17 +43,17 @@
 
 **Interfaces:** Consume Task1 range/limits/endpoint. Optional composer callback `onPrepareVideoExcerpt(field,index,range): Promise<void>` applies owned prepared media, and editor state must block stale Generate/price. Source identity and measured duration must survive attachment projection.
 
-- [ ] Write failing tests for legal long-source import, exact range editing, cancel, model/source/account changes, duplicate apply, preparation failure, stale prices and preserved model output settings.
-- [ ] Implement shared lazy dialog with manual video, start/end touch sliders and numeric controls, selected length/limits, cancel/apply and readable failures. Use existing modal focus and styling owners. Show action for ready source assets only.
-- [ ] Implement route-local preparation with existing account/upload-lifetime fencing and reservation settlement. Insert actual measured derivative; cancel/failure restores original; stale results cannot overwrite another selection. Long imports can reach selector without being rejected by model input duration; retain platform upload bounds and generation validation.
-- [ ] Verify normal quote pipeline uses derivative duration/URL, including source-inherited and requested output models, and hides pending/stale prices. Retain original library item.
-- [ ] Run DOM/lifecycle/architecture and type/lint checks; commit scoped implementation.
+- [x] Write failing tests for legal long-source import, exact range editing, cancel, model/source/account changes, duplicate apply, preparation failure, stale prices and preserved model output settings.
+- [x] Implement shared lazy dialog with manual video, start/end touch sliders and numeric controls, selected length/limits, cancel/apply and readable failures. Use existing modal focus and styling owners. Show action for ready source assets only.
+- [x] Implement route-local preparation with existing account/upload-lifetime fencing and reservation settlement. Insert actual measured derivative; cancel/failure restores original; stale results cannot overwrite another selection. Long imports can reach selector without being rejected by model input duration; retain platform upload bounds and generation validation.
+- [x] Verify normal quote pipeline uses derivative duration/URL, including source-inherited and requested output models, and hides pending/stale prices. Retain original library item.
+- [x] Run DOM/lifecycle/architecture and type/lint checks; commit scoped implementation.
 
 ### Task 3: Complete integration, demonstration and review
 
 **Files:** focused quote/integration/browser tests, engineering guide and QA report; local demo under ignored/untracked output only.
 
-- [ ] Exercise source selection, actual preparation and quote invalidation on a supplied iPhone source and one-minute fixture, at mobile and desktop sizes. Use actual UI and media owners; disclose any simulated account/pricing transport.
-- [ ] Check per-model source policy and inherited vs requested pricing against existing canonical tests. Run applicable validation lanes, TypeScript, lint, exposure and full build.
-- [ ] Review whole feature diff independently, resolve concrete findings and rerun affected checks. Record screenshots, measurements, remaining operational limitations and unchanged production state.
-- [ ] Commit only source/tests/docs; leave no product modifications unverified, no push/deploy.
+- [x] Exercise source selection, actual preparation and quote invalidation on a supplied iPhone source and one-minute fixture, at mobile and desktop sizes. Use actual UI and media owners; disclose any simulated account/pricing transport.
+- [x] Check per-model source policy and inherited vs requested pricing against existing canonical tests. Run applicable validation lanes, TypeScript, lint, exposure and full build.
+- [x] Review whole feature diff independently, resolve concrete findings and rerun affected checks. Record screenshots, measurements, remaining operational limitations and unchanged production state.
+- [x] Commit only source/tests/docs; leave no product modifications unverified, no push/deploy.

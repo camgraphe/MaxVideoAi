@@ -1,8 +1,11 @@
 # Shared video excerpt qualification — 2026-10-23
 
 Status: locally qualified on `codex/marketing-media`. No push, deployment, paid
-render, or production storage/database mutation occurred. The combined final-review findings are fixed; scoped confirmation remains the
-separate final gate. The local demo remains at `http://127.0.0.1:3266/?view=excerpt`.
+render, or production storage/database mutation occurred. Independent whole-feature
+review and the scoped confirmation of its final fixes are complete: all findings
+addressed, no new Critical/Important breakage. The final product candidate is
+`a29d305b467810615e6fadb747ef6e0ac82cdb4f`. The local demo remains at
+`http://127.0.0.1:3266/?view=excerpt`.
 
 ## Real bytes and canonical timing
 
@@ -207,6 +210,27 @@ wave. The parent replayed the supplied phone's 1–5 s Apply, obtaining a measur
 screen. The quote invalidated and began recalculating; focus returned correctly.
 Parent captures are `output/video-excerpt-demo/final-desktop-selector.png`
 (1440×1000) and `final-mobile-selector.png` (390×844), showing the actual shared
-selector with all controls visible and manual playback paused at 4 s. Scoped
-review remains owned by the parent.
+selector with all controls visible and manual playback paused at 4 s. The scoped
+independent review confirmed all three findings addressed, with no new breakage
+or out-of-scope observations. It inspected the code, covering commands and logs;
+it did not repeat unchanged suites. Final parent checks confirmed the unchanged
+original SHA-256, HTTP 200 demo and clean diff whitespace.
 No push, deployment, production mutation or paid render occurred.
+
+## Decisions retained and tradeoffs
+
+1. Proceed with the previously agreed preserve-original/prepare-copy workflow
+   under the user's explicit implementation request. A different UX preference
+   would require a later interface revision, not destructive media migration.
+2. Store an excerpt as a separate owned measured derivative using existing media
+   owners. This adds retained storage when a real passage is prepared; full-range
+   restoration reuses the original and creates no additional copy.
+3. Bound opt-in preparation to 100 MiB / 180 s source and 60 s excerpt, separately
+   from model policies and the existing upload limit. Larger preparations require
+   further worker qualification; existing full-source capabilities are unchanged.
+4. Correct fractional-frame encoder artifacts in the output bytes, without
+   relaxing limits or altering canonical billing. Unusual frame cadences may
+   need additional qualification; measured duration remains authoritative.
+5. Read the full owned original for the selector instead of a shortened gallery
+   preview. This adds a scoped access request and existing signing expiry; it
+   does not grant public access or replace the canonical source reference.
