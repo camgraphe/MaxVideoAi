@@ -455,3 +455,39 @@ test('preview timecode carries rounded centiseconds into the next minute', async
  try {await f.input('Start (seconds)','59.999');assert.equal(f.w.document.querySelector('.video-excerpt-time strong').textContent,'01:00.00');}
  finally {await f.dispose();}
 });
+
+for (const pointerType of ['mouse', 'touch'])
+ test(`${pointerType}: off-center handle grabs resize by pointer delta and retain exact bounds`, async () => {
+  const f=await mount(60.558333),d=f.w.document;
+  const value=(which:string)=>Number(d.querySelector(`[aria-label="${which} (seconds)"]`).value);
+  const drag=async(which:string,from:number,to:number)=>{
+   const node=d.querySelector(`.video-excerpt-handle-${which}`);
+   for(const [type,x] of [['pointerdown',from],['pointermove',to],['pointerup',to]] as const){
+    await f.w.fx.act(async()=>{const event=new f.w.Event(type,{bubbles:true,cancelable:true});Object.assign(event,{clientX:x,pointerId:7,pointerType,button:0});node.dispatchEvent(event);});
+   }
+  };
+  try {
+   d.querySelector('.video-excerpt-track').getBoundingClientRect=()=>({left:0,width:600});
+   await f.input('Start (seconds)','20');await f.input('End (seconds)','40');
+   // Both grabs are15px left of their bounds; a1px movement changes only~0.1s.
+   await drag('start',20/60.558333*600-15,20/60.558333*600-14);
+   assert.equal(value('Start'),20.1);
+   await drag('end',40/60.558333*600-15,40/60.558333*600-14);
+   assert.equal(value('End'),40.1);
+   await drag('start',20.1/60.558333*600-15,5000);
+   assert.equal(value('Start'),40.09,'start cannot cross end');
+   await drag('end',40.1/60.558333*600+15,-5000);
+   assert.equal(value('End'),40.1,'end cannot cross start');
+   await drag('start',40.09/60.558333*600-15,-5000);
+   assert.equal(value('Start'),0);
+   await drag('end',40.1/60.558333*600+15,5000);
+   assert.equal(value('End'),60.558333,'source-end clamp retains the exact fraction');
+   await drag('start',-15,-14);
+   assert.equal(value('Start'),.1,'an outer source-edge grab still tracks the raw pixel delta');
+   await drag('end',615,614);
+   assert.equal(value('End'),60.46,'an outer end-edge grab still tracks the raw pixel delta');
+   await drag('start',-14,-5000);await drag('end',614,5000);
+   assert.equal(value('Start'),0);assert.equal(value('End'),60.558333);
+   assert.equal(f.w.applied.length,0);
+  } finally {await f.dispose();}
+ });

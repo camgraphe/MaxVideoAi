@@ -71,7 +71,13 @@ export function VideoExcerptTimeline({ durationSec, range, currentTime, disabled
     if (!active || active.pointerId !== event.pointerId || disabled) return;
     if (active.kind === 'seek') onSeek(timeAt(event.clientX));
     else if (active.kind === 'move') update('move', active.range.startSec + timeAt(event.clientX) - timeAt(active.x), active.range);
-    else update(active.kind, timeAt(event.clientX), active.range);
+    else {
+      const width = track.current?.getBoundingClientRect().width;
+      if (!width) return;
+      const delta = (event.clientX - active.x) / width * span;
+      const initial = active.kind === 'start' ? active.range.startSec : active.range.endSec;
+      update(active.kind, initial + delta, active.range);
+    }
   };
   const endDrag = () => { drag.current = null; };
   const events = (kind: 'start' | 'end' | 'move' | 'seek') => ({

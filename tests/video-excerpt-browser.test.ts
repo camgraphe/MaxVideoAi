@@ -122,6 +122,10 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    let grip=await dialog.locator('.video-excerpt-handle-start').boundingBox();assert.ok(grip);
    await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/3,grip.y+grip.height/2,{steps:4});await page.mouse.up();
    assert.ok(Math.abs(Number(await start.inputValue())-20)<.1);
+   const initialStart=Number(await start.inputValue());
+   grip=await dialog.locator('.video-excerpt-handle-start').boundingBox();assert.ok(grip);
+   await page.mouse.move(grip.x+grip.width/2-15,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2-14,grip.y+grip.height/2);await page.mouse.up();
+   assert.equal(Number(await start.inputValue()),Number((initialStart+60/box.width).toFixed(2)),'off-center mouse grab preserves offset');
    await end.fill('25');
    await dialog.getByRole('button',{name:'Zoom to excerpt',exact:true}).click();
    const beforeRange=[await start.inputValue(),await end.inputValue()];
@@ -134,7 +138,7 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    const stageBox=await dialog.locator('.video-excerpt-stage').boundingBox(),videoBox=await dialog.locator('video').boundingBox();assert.ok(stageBox&&videoBox);
    assert.ok(videoBox.height<=stageBox.height+1,'decoded video stays within its stage geometry');
    const selected=dialog.locator('.video-excerpt-selection');await selected.focus();await page.keyboard.press('Shift+ArrowRight');
-   assert.ok(Math.abs(Number(await end.inputValue())-Number(await start.inputValue())-5)<.1);
+   assert.ok(Math.abs(Number(await end.inputValue())-Number(await start.inputValue())-(Number(beforeRange[1])-Number(beforeRange[0])))<.1);
    await track.scrollIntoViewIfNeeded();box=await track.boundingBox();assert.ok(box);
    const ruler=await dialog.locator('.video-excerpt-seek').boundingBox();assert.ok(ruler);
    await page.touchscreen.tap(box.x+box.width*.45,ruler.y+10);
@@ -143,12 +147,14 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    const cdp=await context.newCDPSession(page);
    grip=await dialog.locator('.video-excerpt-handle-end').boundingBox();assert.ok(grip);
    const scrollBefore=await dialog.evaluate(node=>node.scrollTop);
-   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:grip.x+grip.width/2,y:grip.y+grip.height/2}]});
-   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:grip.x+grip.width/2-15,y:grip.y+grip.height/2}]});
+   const beforeTouchEnd=Number(await end.inputValue());
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:grip.x+grip.width/2+15,y:grip.y+grip.height/2}]});
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:grip.x+grip.width/2,y:grip.y+grip.height/2}]});
    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
    await cdp.detach();
    assert.equal(await dialog.evaluate(node=>node.scrollTop),scrollBefore,'touch trim does not scroll dialog');
-   assert.ok(Number(await end.inputValue())<26);
+   const viewSpan=Number(beforeRange[1])-Number(beforeRange[0])+2;
+   assert.equal(Number(await end.inputValue()),Number((beforeTouchEnd-15/box.width*viewSpan).toFixed(2)),'off-center touch grab preserves offset');
    assert.ok(Number(await start.inputValue())<Number(await end.inputValue()));
    await dialog.getByRole('button',{name:'Whole video',exact:true}).click();
    assert.equal(await start.inputValue(),'0');assert.equal(await end.inputValue(),'60');
