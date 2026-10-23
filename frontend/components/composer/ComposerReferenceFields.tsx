@@ -36,7 +36,7 @@ export function ComposerReferenceFields({ videoSourceWorkflow, onPrepareVideoExc
                   referenceWarning={referenceWarning}
                 />
                 {videoSourceWorkflow && sourceField?.id === field.id ? (assets[field.id] ?? []).map((asset, index) => asset && (asset.status === 'ready' || asset.excerptEditing) ? <VideoExcerptControl
-                  key={`${engine.id}:${videoSourceWorkflow}:${asset.url}`} engine={engine} field={field} index={index} asset={asset} mode={videoSourceWorkflow} locale={locale}
+                  key={`${engine.id}:${videoSourceWorkflow}:${field.id}:${index}`} engine={engine} field={field} index={index} asset={asset} mode={videoSourceWorkflow} locale={locale}
                   onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange} /> : null) : null}</Fragment>
               ))}
   </>;

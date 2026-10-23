@@ -126,7 +126,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
           <span>{asset.name}</span>{asset.status === 'uploading' ? <small role="status">…</small> : asset.status === 'error' ? <small role="alert">{asset.error ?? '!'}</small> : null}
         </button>
         {entry === sourceEntry && sourceMode && (asset.status === 'ready' || asset.excerptEditing) ? <VideoExcerptControl
-          key={`${engine.id}:${sourceMode}:${asset.url}`} engine={engine} field={entry.field} index={slotIndex} asset={asset} mode={sourceMode} locale={locale}
+          key={`${engine.id}:${sourceMode}:${entry.field.id}:${slotIndex}`} engine={engine} field={entry.field} index={slotIndex} asset={asset} mode={sourceMode} locale={locale}
           onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange} /> : null}
         {onAssetRemove ? <button className="app-reference-selected-remove" type="button" onClick={() => removeAsset(entry.field, slotIndex)} aria-label={`${copy.remove} · ${asset.name}`} title={copy.remove}>
           <span aria-hidden="true">×</span>

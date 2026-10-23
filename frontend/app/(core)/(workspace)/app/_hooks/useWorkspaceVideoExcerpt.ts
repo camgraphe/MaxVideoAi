@@ -69,20 +69,22 @@ export function useWorkspaceVideoExcerpt({
   const epoch = generation.current;
 
   const restore = useCallback(
-    (session: Editor, keepEditing = false) => {
+    (session: Editor, keepEditing = false, replacement = session.original) => {
       session.previewOperation?.cancel();
       session.previewOperation?.finish();
       session.operation?.cancel();
       session.operation?.finish();
-      const original = { ...session.original, ...(keepEditing ? { excerptEditing: true } : {}) };
-      commitInputAssetMutation((previous) =>
-        settleReferenceAssetReservation(
+      const original = { ...replacement, ...(keepEditing ? { excerptEditing: true } : {}) };
+      commitInputAssetMutation((previous) => {
+        if (previous[session.field.id]?.[session.index]?.url !== session.original.url)
+          return { state: previous };
+        return settleReferenceAssetReservation(
           previous,
           session.field,
           session.reservationId ?? session.original.id,
           original
-        )
-      );
+        );
+      });
     },
     [commitInputAssetMutation]
   );
@@ -176,12 +178,33 @@ export function useWorkspaceVideoExcerpt({
         throw new Error('This source workflow is unavailable.');
       const source = session.original;
       const original = source.excerptSource ?? {
+        id: source.id,
+        assetId: source.assetId,
         ref: source.ref ?? { type: 'asset' as const, assetId: source.assetId!, kind: 'video' as const },
         url: source.url!,
         previewUrl: source.previewUrl,
         durationSec: source.durationSec!,
+        name: source.name,
+        type: source.type,
+        size: source.size,
+        width: source.width,
+        height: source.height,
       };
       validateVideoExcerptRange(range, original.durationSec, limits);
+      // Restoring a legal full original is a source change, not another encode.
+      if (source.excerptSource && range.startSec === 0 && range.endSec === original.durationSec) {
+        editor.current = null;
+        restore(session, false, {
+          ...source,
+          ...original,
+          excerptSource: undefined,
+          excerptRange: undefined,
+          excerptEditing: undefined,
+          status: 'ready',
+          error: undefined,
+        });
+        return;
+      }
       // An unchanged selection creates no new media, including exact fractional full ranges.
       const unchanged = source.excerptRange
         ? range.startSec === source.excerptRange.startSec && range.endSec === source.excerptRange.endSec

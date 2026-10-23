@@ -1,7 +1,7 @@
 # Shared video excerpt qualification — 2026-10-23
 
 Status: locally qualified on `codex/marketing-media`. No push, deployment, paid
-render, or production storage/database mutation occurred. Parent review is a
+render, or production storage/database mutation occurred. The combined final-review findings are fixed; scoped confirmation remains the
 separate final gate. The local demo remains at `http://127.0.0.1:3266/?view=excerpt`.
 
 ## Real bytes and canonical timing
@@ -141,3 +141,72 @@ Runtime memory/CPU/timeout qualification on the intended host remains a release
 check. Full-original signed access expires after five minutes; reopening refreshes
 it. This local proof does not certify live authentication, deployed private storage
 or a provider render. No production state changed.
+
+
+## Combined final-review corrections
+
+The single fix wave after `a82dde680354e668b44e930f3660715ddc89b052`
+addresses both reproduced P2 issues and the browser error assertion:
+
+- Original → excerpt → full original now validates the current model's source
+  limits, restores the exact original ref, URL, selection/asset identity, filename,
+  MIME, bytes, measured duration and dimensions, and clears excerpt/editor state.
+  No second preparation request or encode occurs. Restoration also checks the
+  active slot URL inside the atomic mutation, so a same-ID source replacement
+  cannot be overwritten before React effects flush. Reapplying the unchanged
+  prepared range remains a no-op. The real quote gate invalidates and requotes
+  both source changes; requested output duration stays independent. Remote and
+  blob originals are covered, including retained blob lifetime.
+- Both `WorkspaceReferenceSection` and default `ComposerReferenceFields` keep a
+  surviving excerpt trigger for focus return. The dialog retains a URL-keyed
+  session under the model/mode/slot-keyed control. A session token fences late
+  preview and Apply callbacks. Chromium verifies successful URL-changing Apply,
+  Cancel and Escape at 1440, 390 and 320 px for both surfaces, then late Apply
+  completion after source, model and account replacement without closing the new
+  dialog or moving focus out of it.
+- Browser `pageerror` events are collected and asserted empty before teardown.
+  Full-timeline media still has `preload="none"` and makes no request before Play.
+  The default source card's existing short-preview request is measured separately
+  from the excerpt reader; workspace controls make no media request.
+
+RED evidence: the new hook regression observed two preparation requests instead
+of one for both remote and blob originals. The browser regression observed a false
+focus-return assertion on successful Apply. Logs are
+`output/video-excerpt-demo/logs/final-fix-red.log` and
+`final-fix-browser-red.log`. The first combined browser attempt also exposed a
+fixture timing race around initial modal focus; the test now waits for actual
+focus inside the dialog before keyboard interactions.
+
+Final focused verification (repository root):
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/workspace-video-excerpt-dom.test.ts tests/video-excerpt-selector-dom.test.ts tests/video-excerpt-browser.test.ts tests/client-video-excerpt.test.ts tests/video-excerpt-policy.test.ts tests/video-excerpt-source-access.test.ts tests/workspace-assets-hook-contract.test.ts tests/workspace-assets-split-contract.test.ts tests/composer-architecture.test.ts tests/workspace-app-client-architecture.test.ts tests/workspace-progressive-references.test.ts tests/workspace-pricing-lifecycle-dom.test.ts tests/workspace-upload-owner.test.ts tests/workspace-assets.test.ts tests/video-workflow-surface-parity.test.ts
+pnpm --prefix frontend exec tsc --noEmit
+npm --prefix frontend run lint
+npm run lint:exposure
+git diff --check
+```
+
+Results: **167 passed, zero failed/skipped**, TypeScript exit 0, lint exit 0 with
+six existing unrelated warnings, exposure guard passed, whitespace check passed.
+The affected hook, shared UI/browser, ownership, pricing lifecycle and architecture
+checks are included. Logs use the `final-fix-` prefix in the existing local log
+folder. No full fast-lane or production build rerun is claimed: the base production
+build passed, and these narrow client state/focus changes were verified with the
+full frontend type check plus browser compilation of the actual shared Composer
+and product CSS. The encoder, backend, routes, tariff and model contracts are
+unchanged, so previous real-cut qualification was not repeated.
+
+The complete local demo was rebuilt from `output/marketing-demo/serve.ts`, retaining
+all views. HTML and the rebuilt JavaScript returned HTTP 200 at
+`http://127.0.0.1:3266/?view=excerpt`. No root Cua tab was manipulated by the fix
+wave. The parent replayed the supplied phone's 1–5 s Apply, obtaining a measured
+4 s derivative, local USD 1.41 quote and focus on Choose excerpt, then restored
+0–5.558333 s immediately to `IMG_9773.MOV`, original asset
+`ma_11111111111111111111111111111111` and measured 5.558333 s without a preparation
+screen. The quote invalidated and began recalculating; focus returned correctly.
+Parent captures are `output/video-excerpt-demo/final-desktop-selector.png`
+(1440×1000) and `final-mobile-selector.png` (390×844), showing the actual shared
+selector with all controls visible and manual playback paused at 4 s. Scoped
+review remains owned by the parent.
+No push, deployment, production mutation or paid render occurred.

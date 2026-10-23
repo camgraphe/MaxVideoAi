@@ -147,6 +147,97 @@ test('opening and full fractional range apply preserve original without a prepar
     await f.dispose();
   }
 });
+for (const previewUrl of [source.previewUrl, 'blob:original'])
+  test(`excerpt to full original restores exact facts and requotes without preparation (${previewUrl})`, async () => {
+    const f = await mount(5.558333);
+    try {
+      const revoked: string[] = [];
+      f.w.URL.revokeObjectURL = (url: string) => revoked.push(url);
+      const original = { ...source, name: 'original.MOV', type: 'video/quicktime', size: 26852432,
+        durationSec: 5.558333, width: 2160, height: 3840, previewUrl };
+      await f.w.fx.act(async () => {
+        f.w.probe.setInputAssets({ video_url: [original] });
+        f.w.pricingEnabled = true;
+        f.w.fx.render();
+      });
+      const tick = () => f.w.fx.act(async () => new Promise((r) => setTimeout(r, 240)));
+      await tick();
+      assert.equal(f.w.probe.pricing.price, 1.25);
+      await f.open();
+      assert.equal(f.w.probe.pricing.price, null);
+      f.w.prepared = { ...prepared, durationSec: 4, name: 'excerpt.mp4' };
+      const first = await f.apply({ startSec: 1, endSec: 5 });
+      await f.respond();
+      await first.result;
+      await tick();
+      assert.equal(f.w.probe.pricing.price, 1.25);
+      assert.equal(f.w.quotes.at(-1).inputs.find((input: any) => input.slotId === 'video_url').url, prepared.url);
+      // Re-applying the prepared range is still a no-op.
+      await f.open();
+      await f.w.fx.act(async () => f.w.probe.handlePrepareVideoExcerpt(field, 0, { startSec: 1, endSec: 5 }));
+      assert.equal(f.requests.length, 1);
+      assert.equal(f.w.probe.inputAssets.video_url[0].url, prepared.url);
+      await f.open();
+      assert.equal(f.w.probe.pricing.price, null);
+      const restored = await f.apply({ startSec: 0, endSec: 5.558333 });
+      assert.equal(f.requests.length, 1, 'full original must not prepare a second derivative');
+      await restored.result;
+      const selected = f.w.probe.inputAssets.video_url[0];
+      for (const key of ['id', 'assetId', 'ref', 'url', 'previewUrl', 'name', 'type', 'size', 'durationSec', 'width', 'height'])
+        assert.deepEqual(selected[key], original[key as keyof typeof original], `original ${key}`);
+      assert.equal(selected.excerptSource, undefined);
+      assert.equal(selected.excerptRange, undefined);
+      assert.equal(selected.excerptEditing, undefined);
+      assert.equal(f.w.probe.sourceState, 'ready');
+      assert.equal(f.w.probe.pricing.price, null);
+      await tick();
+      assert.equal(f.w.probe.pricing.price, 1.25);
+      const quote = f.w.quotes.at(-1);
+      assert.equal(quote.inputs.find((input: any) => input.slotId === 'video_url').url, source.url);
+      assert.equal(quote.durationSec, 6);
+      assert.equal(f.w.probe.form.durationSec, 15);
+      assert.deepEqual(revoked, [], 'restored original still owns the blob');
+      await f.w.fx.act(async () => f.w.probe.setInputAssets({}));
+      assert.deepEqual(revoked, previewUrl.startsWith('blob:') ? ['blob:original'] : []);
+    } finally { await f.dispose(); }
+  });
+
+test('full-original restoration cannot overwrite a same-slot source replacement before React effects flush', async () => {
+  const f = await mount(5.558333);
+  try {
+    await f.open();
+    f.w.prepared = { ...prepared, durationSec: 4 };
+    const first = await f.apply({ startSec: 1, endSec: 5 });
+    await f.respond();
+    await first.result;
+    await f.open();
+    const replacement = { ...f.w.probe.inputAssets.video_url[0], url: 'https://example.invalid/replacement' };
+    await f.w.fx.act(async () => {
+      f.w.probe.setInputAssets({ video_url: [replacement] });
+      await f.w.probe.handlePrepareVideoExcerpt(field, 0, { startSec: 0, endSec: 5.558333 });
+    });
+    assert.equal(f.w.probe.inputAssets.video_url[0].url, replacement.url);
+    assert.equal(f.requests.length, 1);
+  } finally { await f.dispose(); }
+});
+
+test('full-original restoration still enforces current model source limits', async () => {
+  const f = await mount();
+  try {
+    await f.open();
+    const first = await f.apply();
+    await f.respond();
+    await first.result;
+    await f.open();
+    const full = await f.apply({ startSec: 0, endSec: 60 });
+    await assert.rejects(full.result);
+    assert.equal(f.requests.length, 1);
+    assert.equal(f.w.probe.inputAssets.video_url[0].url, prepared.url);
+    await f.cancel();
+    assert.equal(f.w.probe.sourceState, 'ready');
+  } finally { await f.dispose(); }
+});
+
 test('explicit apply reserves once and inserts measured canonical derivative with original lineage', async () => {
   const f = await mount();
   try {

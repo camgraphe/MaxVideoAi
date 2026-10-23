@@ -984,6 +984,13 @@ Modify, Extend and Reframe sources. `VideoExcerptControl.client.tsx` owns its
 presentation session; both workspace and default composer reference surfaces use
 it. Opening, moving a control and cancelling create no media. Exact numeric ends
 retain measured fractional duration; an unchanged full range is a no-op.
+Returning an excerpt to the legal full original restores its retained canonical
+identity, URL, filename, MIME, size and measured facts without another preparation.
+The ordinary quote lifecycle still invalidates and requotes that source change.
+The selected slot's trigger survives URL replacement so modal cleanup can restore
+keyboard focus after Apply. Its dialog session remains keyed by source URL, with
+model/mode/slot keys on the control; retired async callbacks cannot close a newer
+session or steal its focus.
 
 `useWorkspaceVideoExcerpt` owns account/model/mode/source fencing, explicit abort,
 atomic upload reservation and rollback/settlement. It composes the existing owned

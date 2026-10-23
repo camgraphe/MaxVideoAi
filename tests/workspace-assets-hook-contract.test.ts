@@ -63,3 +63,14 @@ test('excerpt preparation stays in a route-local owner and all composer surfaces
   assert.doesNotMatch(composer, /api\/uploads\/video\/excerpt/);
   assert.equal((composer.match(/onPrepareVideoExcerpt=\{onPrepareVideoExcerpt\}/g) ?? []).length, 2);
 });
+
+
+test('excerpt trigger survives URL replacement while its dialog retains source and model session fences', () => {
+  const root = process.cwd();
+  const control = fs.readFileSync(path.join(root, 'frontend/components/media/VideoExcerptControl.client.tsx'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'frontend/components/composer/WorkspaceReferenceSection.client.tsx'), 'utf8');
+  const defaults = fs.readFileSync(path.join(root, 'frontend/components/composer/ComposerReferenceFields.tsx'), 'utf8');
+  assert.match(control, /<VideoExcerptSession\s+key=\{asset.url\}/);
+  assert.match(workspace, /key=\{`\$\{engine.id\}:\$\{sourceMode\}:\$\{entry.field.id\}:\$\{slotIndex\}`\}/);
+  assert.match(defaults, /key=\{`\$\{engine.id\}:\$\{videoSourceWorkflow\}:\$\{field.id\}:\$\{index\}`\}/);
+});
