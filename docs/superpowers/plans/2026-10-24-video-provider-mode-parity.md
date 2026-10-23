@@ -1,0 +1,43 @@
+# Video provider mode parity — implementation plan
+
+## Goal and authority
+
+Implement the provider audit accepted by Adrien on 2026-10-24: correct inconsistent inputs and add confirmed missing video workflows across the workspace, MCP and Studio, preserving all existing capabilities and Draft. Open a PR, verify its exact candidate, and deliver through Git/Vercel only when CI and operational prerequisites pass.
+
+The accepted design/evidence is `/Users/adrienmillot/.codex/tmp/video-provider-audit-2026-10-24/AUDIT-MODELES-VIDEO.md`; its `schemas/`, schema indexes, contract comparison and real builder replays provide dated primary contracts. Documentation proves an endpoint contract, not account access or render quality. Resolve uncertain constraints conservatively and document them.
+
+## Global constraints
+
+- Work only in the isolated `modify-workflow-release` worktree on `codex/video-provider-mode-parity`, starting at `bb21f712754e7b56075c6fce72ed1a51d9b21123`.
+- Preserve every existing model/version, valid input, saved request, public URL, original media, ownership boundary and reusable settings. Preserve Seedance native Draft and FLUX Draft including its Extend.
+- Do not confuse Reference, Edit, Motion Control or different model versions. New modes must have exact endpoint, validation, mode-specific fields and duration policy, authoritative quote, recovery, and Site/MCP/Studio projections.
+- No admin-only restriction introduced. No paid render, client media mutation, mass migration, storage charging, invented provider price, ad-hoc financial SQL or CI bypass.
+- Identity is authored only in model-registry.json; regenerate projections with repository commands. Preserve nearest AGENTS.md architecture and canonical pricing ownership.
+- Test real builders/validators/quotes and negative cases against dated provider contracts, not merely catalog self-consistency. Use red/green regressions for changed behavior. Full selected Quality CI is mandatory before merge.
+- Implementers do not spawn agents, push, open PRs, mutate production or deploy. Commit only their scoped changes; report tests, unresolved prerequisites and exact files.
+
+## Task 1: Correct currently exposed provider contracts
+
+Fix Kling 2.6 I2V mapping to `start_image_url`, add its end frame, and preserve prompt/T2V fields supported by the current schema. Add Kling 2.5 Pro `tail_image_url` through the existing end-image UI without changing the historical Standard alias. Scope controls by mode: guidance_scale remains valid for LTX 2.3 A2V but must not be offered/transmitted for 2.3 I2V or 2.5 A2V where absent from current contracts. Do not erase stored settings or remove controls in valid modes.
+
+Owners: relevant raw definitions under frontend/src/config/fal-engines, fal request-body/override owners, focused tests, dated engineering documentation. Inspect closest instructions and architecture contracts first. Keep provider-specific behavior in focused helpers rather than growing the central builder. Verify complete payloads and unsupported control omission with meaningful regression tests; verify existing modes and Draft unchanged. Regenerate projections as needed and run registry checks. This task does not add new endpoints or pricing.
+
+## Task 2: Kling Omni editing and source constraints
+
+Add real /video-to-video/edit for Standard/Pro/4K and retain the existing /reference workflow. Keep operation identity explicit through UI, MCP, Studio, quote, persisted settings, validation and endpoint selection. Edit inherits source duration/framing and exposes keep_audio/references/elements; Reference retains requested duration and aspect ratio. Never silently reinterpret old v2v requests. Add 4K Modify using its verified fal transport; do not claim unsupported direct access or any Kling Extend. Apply 3–15 s source limits only to a transport whose current contract supports them. Confirm provider rates from primary sources and prepare exact canonical pricing/tariff additions; no production application. Correct stale guide exclusions. Include rejection/quote parity tests.
+
+## Task 3: MiniMax H3 Max source workflows
+
+Add confirmed Extend, Recast, Relight, Insert and Reframe with distinct explicit operation contracts, avoiding a freeform-edit promise for specialized tools. Extend source is 1.625–60 s / 50 MB, added duration 0.71–15 s; continuation contains 1.625 s repeated context, so preserve correct Studio assembly and billing semantics. Preserve combined output as an explicit choice. Add reference start/end/middle frames and ordered references with documented exclusivity and resolution constraints. Revisit fractional 0.92–15 s creation duration only with canonical quote support. Do not change base H3 or publish Director endpoints whose schemas are unavailable. Implement shared inputs, endpoints, ownership checks, price facts and cross-surface projections with focused tests. Prepare any bounded exact tariff changes, without applying them.
+
+## Task 4: Luma Ray 3.2 source continuity and controls
+
+Make automatic/preset/manual edit controls explicit and truthful: manual signals must not silently ignore a displayed preset; omission is provider-default, not an explicit off. Preserve saved values through compatible normalization and test all three surfaces. Add forward/backward Extend via an owned successful Luma generation ID resolved server-side, not an arbitrary uploaded URL. Enforce SDR, compatible keyframes and forward-only loop, preserve existing Modify/Reframe/18 s qualified limit and HDR/EXR creation. Add confirmed creation multi-keyframes (1–64 with indexes) without replacing start/end workflows. Exact quote and source lineage must survive MCP/Studio and settings reuse. Determine output continuity from primary contract, never assume. Prepare required pricing maintenance only after reviewed provider facts.
+
+## Task 5: FLUX, LTX and remaining confirmed coverage
+
+Add FLUX Edit FAST with explicit quality label, MP4 source <15 s / 50 MB, output 720p and confirmed provider cost; do not relabel as Max. Add base/Draft keyframes (up to 10 unique indexes bounded by duration × 24). Add Draft Enhance only with owned provider cache provenance/expiry, exact quote and recovery, preserving native Draft and existing Extend. Add LTX 2.3 Reframe without presenting it as 2.5 or Fast. Verify Veo Standard 4/6/8 s I2V per actual transport/resolution and broaden only confirmed priced combinations. Preserve unresolved Gemini source-limit ambiguity. Review the entire 38-entry matrix and document specialized variants not conflated with current models.
+
+## Task 6: Integrate, qualify and deliver
+
+Audit Site/MCP/Studio for every entry/mode/operation: correct controls, duration/excerpt policies, exact price, missing/invalid source errors, ordinary/admin parity, persistence/reuse, and Draft. Refresh docs, registry and offline MCP checks. Use existing preview auth and fixtures for unpaid browser verification on mobile/desktop, private source imports, audio/reference excerpts and source continuity. Run tsc/lint/exposure/registry plus affected contracts, database/browser/financial suites. Review the entire branch. Publish PR and attach it. Prepare concrete exact tariff/feature prerequisites via existing bounded maintenance; any unsatisfied prerequisite blocks activation/release, not an invented fallback. Fetch main, reconcile concurrent changes, rerun required exact CI and deployment provenance check. Merge without bypass only once all gates pass; verify both production domains serve the merged SHA, smoke behavior and runtime errors. Report verified delivery and remaining intentional constraints accurately.
