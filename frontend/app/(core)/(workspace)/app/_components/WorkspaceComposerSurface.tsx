@@ -551,6 +551,8 @@ export function WorkspaceComposerSurface({
                 assetFields={inputSchemaSummary.assetFields}
                 inputAssets={inputAssets}
                 onAssetAdd={handleAssetAdd}
+                onPrepareVideoExcerpt={handlePrepareVideoExcerpt}
+                onVideoExcerptEditorChange={handleVideoExcerptEditorChange}
                 onAssetRemove={handleAssetRemove}
                 onOpenLibrary={handleOpenAssetLibrary}
                 onNotice={showNotice}

@@ -1244,3 +1244,73 @@ Other lengths retain unknown supplier cost. Observed qualification invoices
 (5.558s at 720p: $1.08; 8.4s and 17.52s at 360p: $0.54 each) are dated evidence
 only. Live qualification, complete tariff review and the production lifecycle
 canary remain distinct release requirements. Reframe is unchanged by this slice.
+
+### Bounded Modify tariff initialization — 2026-10-23 proposal
+
+`server/pricing/modify-tariffs.ts` prepares exactly 49 missing SDR cells. It reuses
+the Kling resolution preparation owner to copy the 13 current 1080p Modify
+amounts into distinct 720p selectors. The original selectors remain untouched.
+Luma's 36 missing source classes use the existing canonical commercial reference
+projection and effective database policy, frozen as literal customer cents. Its
+six current 5s/10s anchors must still be 94/188 (540p), 141/281 (720p), and
+281/562 (1080p), and the canonical projection must reproduce each anchor.
+Intermediate Luma supplier cost remains **unknown**; this authoring operation
+does not establish provider billing or margin. Existing HDR/EXR cells, anchors,
+historical prices, paid jobs and receipts remain unchanged.
+
+Proposed Luma customer cents from the existing canonical policy:
+
+| Source tariff class | 540p | 720p | 1080p |
+| --- | ---: | ---: | ---: |
+| 6s | 113 | 169 | 337 |
+| 7s | 132 | 197 | 394 |
+| 8s | 150 | 225 | 450 |
+| 9s | 169 | 253 | 506 |
+| 11s | 206 | 309 | 618 |
+| 12s | 225 | 337 | 674 |
+| 13s | 244 | 366 | 731 |
+| 14s | 263 | 394 | 787 |
+| 15s | 281 | 422 | 843 |
+| 16s | 300 | 450 | 899 |
+| 17s | 319 | 478 | 955 |
+| 18s | 337 | 506 | 1011 |
+
+The reviewed Kling 3–15s source amounts are respectively 50, 66, 82, 99, 115,
+132, 148, 164, 181, 197, 214, 229 and 246 cents. The fresh receipt must show the
+actual current source amounts; this table does not override the active database.
+
+The standalone maintenance CLI requires a clean committed candidate published on
+the explicitly named `--release-branch codex/marketing-media`. A clean detached
+worktree at that exact candidate is supported; unrelated untracked files never
+qualify for a cleanliness exception. The CLI compares remote `main` to fetched
+`origin/main` and requires that commit to be an ancestor of the candidate. Fetch
+`origin main` before preparing a release and follow `docs/deployment/github-vercel.md`.
+Keep the explicitly selected environment file and receipt outside the checkout.
+These are operational examples, not evidence that prices were activated:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json frontend/scripts/initialize-modify-tariffs.ts preview --environment /private/release.env --actor ADMIN_UUID --candidate FULL_40_CHARACTER_SHA --release-branch codex/marketing-media --review /private/modify-review.json
+pnpm exec tsx --tsconfig frontend/tsconfig.json frontend/scripts/initialize-modify-tariffs.ts apply --environment /private/release.env --actor ADMIN_UUID --candidate FULL_40_CHARACTER_SHA --release-branch codex/marketing-media --review /private/modify-review.json --pr PR_NUMBER --approve-fingerprint REVIEWED_64_CHARACTER_FINGERPRINT
+```
+
+Preview uses a repeatable-read, read-only transaction and exclusively creates a
+0600 receipt containing all prices, unknown-cost disclosure, target identity,
+actor, candidate, named release branch, complete source-state/policy hash, revision and fingerprint.
+Apply requires review of that exact proposal, operational authorization and
+an open PR in `camgraphe/MaxVideoAi` on the named branch with successful
+`Quality CI` on the exact candidate. Git and PR fences run again before commit.
+It locks the administrator,
+tariff state, cells/history and policy tables, reproduces the fingerprint, inserts
+only missing cells through the canonical store, verifies all 49 persisted quotes
+and unchanged old rows, and appends one pricing event in the same transaction.
+Any failure rolls the transaction back. A changed source, policy, revision,
+candidate, existing target selector or candidate ID blocks the operation.
+
+The event target is `modify:bounded-source-class-initialization`; inspect it
+before retrying an interrupted command. A completed initialization cannot be
+repeated. Subsequent price changes use reviewed admin operations; never delete
+active cells or deactivate the entire grid to undo this bounded addition. No
+route, build or deployment invokes the writer. The quote reader continues to fail
+closed until the required cells exist. The PG17 integration contract exercises
+stale review, administrator checks, concurrent-write locks, partial-insert/audit
+failure rollback, persisted quotes and preservation of the anchors and HDR/EXR.
