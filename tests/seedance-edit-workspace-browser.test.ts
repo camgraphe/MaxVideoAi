@@ -6,6 +6,9 @@ import test from 'node:test';
 import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
+import { isWorkspaceModeAvailable, coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import { resolveWorkspaceWorkflow } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
+import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 
 // Exercise the actual route surface, state hooks and controls with a library-selection fixture.
 // Generation is captured locally: this fixture never calls a provider or spends credits.
@@ -163,8 +166,48 @@ test('real workspace source selection enables Edit and preserves unavailable sav
         } else assert.equal(await extend.count(), 0, 'Kling has no supported Extend endpoint');
       }
     }
+    let catalogCases = 0;
+    for (const width of [1200, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const engine of getBaseEnginesByCategory('video')) {
+        await page.goto(`http://127.0.0.1:${address.port}/app`);
+        await page.evaluate(engine => { (globalThis as any).seedanceFixtureEngine = engine; (globalThis as any).process = { env: { NODE_ENV: 'production' } }; }, engine);
+        await page.addScriptTag({ url: `http://127.0.0.1:${address.port}/fixture.js` });
+        await page.locator('[data-mode]').waitFor();
+        for (const [mode, label] of [['v2v', 'Modify Video'], ['extend', 'Extend Video'], ['reframe', 'Reframe Video']] as const) {
+          const action = page.getByRole('button', { name: label, exact: true });
+          assert.equal(await action.count(), isWorkspaceModeAvailable(engine, mode) ? 1 : 0, `${engine.id}/${width}/${mode}: action matches public capabilities`);
+          if (!isWorkspaceModeAvailable(engine, mode)) continue;
+          await action.click();
+          await page.waitForFunction(mode => document.querySelector('[data-mode]')?.textContent === mode, mode);
+          assert.equal(await action.getAttribute('aria-pressed'), 'true');
+          assert.equal(await page.locator('.app-generation-action').isDisabled(), true, 'source is required before generating');
+          const form = coerceFormState(engine, mode, null);
+          const workflow = resolveWorkspaceWorkflow({ engine, form, inputAssets: {}, klingElements: [] });
+          const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, ...workflow, uiLocale: 'en' });
+          const commands = await page.locator('[data-reference-command]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-reference-command')));
+          const source = summary.assetFields.find(({ field, required }) => field.type === 'video' && required)!;
+          if (engine.id === 'luma-ray-3-2' && mode === 'v2v') {
+            const editor = page.locator('section').filter({ hasText: 'Ray 3.2 Modify' });
+            await editor.locator('input[type="file"][accept*="video"]').waitFor({ state: 'attached' });
+            assert.equal(await page.locator('[data-reference-command="video_url"]').count(), 0, 'Luma keyframe editor owns its source without a duplicate picker');
+          } else assert.equal(commands[0], source.field.id, `${engine.id}/${mode}: source comes first`);
+          for (const id of commands) {
+            if (id === 'collections') {
+              await page.locator('[data-reference-command="collections"]').click();
+              const referenceIds = await page.locator('[data-reference-field]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-reference-field')));
+              assert.ok(referenceIds.length, 'reference menu must not be empty');
+              for (const ref of referenceIds) assert.ok(summary.assetFields.some(({ field }) => field.id === ref && field.id !== source.field.id), `${engine.id}/${mode}: extraneous ${ref} reference`);
+              await page.keyboard.press('Escape');
+            } else assert.ok(summary.assetFields.some(({ field }) => field.id === id), `${engine.id}/${mode}: extraneous ${id} control`);
+          }
+          assert.equal(await page.getByRole('button', { name: 'Storyboard', exact: true }).count(), 0);
+          catalogCases++;
+        }
+      }
+    }
     assert.deepEqual(errors, []);
-    t.diagnostic(`Chromium ${browser.version()}: runtime gates plus six Seedance/Kling variants on desktop/mobile, explicit workflows and exact source capture passed.`);
+    t.diagnostic(`Chromium ${browser.version()}: six Seedance/Kling variants preserve exact source capture; ${catalogCases} source workflows across the entire public video catalog pass on desktop/mobile.`);
   } finally {
     await browser.close(); server.closeAllConnections(); await new Promise<void>((resolve) => server.close(() => resolve()));
   }

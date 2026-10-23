@@ -164,11 +164,10 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
-    if (isUnifiedSeedance || isUnifiedKlingO3) {
+    if (isUnifiedSeedance || isUnifiedKlingO3 || isUnifiedGeminiOmni) {
       return (currentMode === 'v2v' || currentMode === 'extend') && isWorkspaceModeAvailable(selectedEngine, currentMode)
         ? currentMode : null;
     }
-    if (isUnifiedGeminiOmni) return null;
     if ((selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime') && currentMode === 'ref2v') return null;
     if (hasMultimodalReferences && currentMode && !isVideoSourceWorkflow(currentMode)
       && !workspaceAssetsSupportMode(mediaFields, inputAssets, currentMode)) return null;

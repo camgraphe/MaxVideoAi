@@ -229,36 +229,21 @@ export function buildComposerModeToggles({
   workflowCopy: WorkspaceWorkflowCopy;
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
-  const explicitModes =
-    selectedEngine.id === 'flux-3-max' ? (['ref2v'] as const) :
-    selectedEngine.id === 'wan-3' || selectedEngine.id === 'wan-3-prime'
-      ? (['v2v', 'extend'] as const)
-      : isLumaRay2EngineId(selectedEngine.id)
-      ? (['v2v', 'reframe'] as const)
-      : isLumaRay32EngineId(selectedEngine.id)
-        ? (['v2v', 'reframe'] as const)
-      : selectedEngine.id === 'ltx-2-3'
-        ? (['extend'] as const)
-        : selectedEngine.id === 'veo-3-1'
-          ? (['ref2v', 'extend'] as const)
-          : selectedEngine.id === 'veo-3-1-fast'
-            ? (['ref2v', 'extend'] as const)
-            : selectedEngine.id === 'veo-3-1-lite'
-              ? (['extend'] as const)
-              : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
-                ? (['v2v', 'extend'] as const)
-                : isKlingO3EngineId(selectedEngine.id)
-                  ? selectedEngine.modes.includes('v2v') ? (['v2v'] as const) : ([] as const)
-                  : null;
-  if (!explicitModes) return undefined;
-  if (explicitModes.length === 0) return undefined;
+  const explicitModes: readonly Mode[] = selectedEngine.id === 'flux-3-max'
+    ? ['ref2v']
+    : isLumaRay2EngineId(selectedEngine.id) || isLumaRay32EngineId(selectedEngine.id)
+      ? ['v2v', 'reframe']
+      : selectedEngine.id === 'veo-3-1' || selectedEngine.id === 'veo-3-1-fast'
+        ? ['ref2v', 'extend']
+        : ['v2v', 'extend'];
+  const availableModes = filterAvailableWorkspaceModes(selectedEngine, explicitModes);
+  if (availableModes.length === 0) return undefined;
   const disabledReason = audioWorkflowLocked
     ? workflowCopy.removeAudioToUnlock
     : undefined;
   return [
     { mode: null, label: workflowCopy.generateVideo },
-    ...explicitModes
-      .filter((mode) => isWorkspaceModeAvailable(selectedEngine, mode))
+    ...availableModes
       .map((mode) => ({
         mode,
         label: getEngineModeLabel(selectedEngine.id, mode, uiLocale),
