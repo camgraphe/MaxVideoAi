@@ -73,6 +73,20 @@ async function mount(selected = true) {
   return { w, requests, button, async dispose() { await w.fx.act(async () => w.fx.unmount()); dom.window.close(); } };
 }
 
+test('Luma keyframe range follows a selected 4s or 18s source instead of stale presets', async () => {
+  const f = await mount();
+  try {
+    for (const durationSec of [4, 18, 5.558]) {
+      await f.w.fx.act(async () => f.w.probe.setInputAssets({ video_url: [{ ...source, durationSec }], edit_keyframe_urls: [keyframe] }));
+      assert.ok(f.w.document.body.textContent.includes(`Source video · ${durationSec}s`));
+      assert.ok(f.w.document.body.textContent.includes(`f0-f${Math.floor(durationSec * 24) - 1}`));
+      assert.doesNotMatch(f.w.document.body.textContent, /Video includes audio|5s @ 24fps/);
+      assert.equal(f.w.probe.inputAssets.edit_keyframe_urls[0].url, keyframe.url);
+      assert.equal(f.w.probe.form.extraInputValues.modify_strength, 0.7);
+    }
+  } finally { await f.dispose(); }
+});
+
 test('specialized Luma source opens and applies the real excerpt flow without changing keyframes or options', async () => {
   const f = await mount();
   try {

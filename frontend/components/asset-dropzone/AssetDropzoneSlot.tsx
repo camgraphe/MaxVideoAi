@@ -219,7 +219,7 @@ function DefaultAssetDropzoneSlot({
                     : 'absolute inset-0 h-full w-full'
                 )}
               />
-              <span className="sr-only">{assetCopy.videoIncludesAudio}</span>
+              <span className="sr-only">{assetCopy.sourceVideoSlot}</span>
             </>
           )}
           {visibleBadge && !compactCollectionLayout ? (
