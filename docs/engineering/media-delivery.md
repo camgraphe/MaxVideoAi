@@ -1003,12 +1003,37 @@ against the original. Blob previews needed by that lineage survive replacement
 and are released when no selected lineage uses them, on account change or unmount.
 Temporary signed previews remain distinct from canonical URL/ref identity.
 
-Prepared excerpts always use the MCP private storage contract: `storageAcl: null`
-and `Cache-Control: private, no-store` for the original and generated thumbnail.
-Their lineage carries `videoExcerpt.version: 2` and `storageAccess: 'private'`.
-The `video-excerpt-private-v2` content-addressed namespace creates a fresh object
-and asset identity even when an older public excerpt has identical bytes and
-provenance; preparation never changes or silently reuses that old object.
+Prepared excerpts carry `videoExcerpt.version: 3` and `storageAccess: 'private'`.
+The internal `privateStorageScope: 'video-excerpt'` uses reserved file leaves
+starting with `video-excerpts-private-v3-`, with `storageAcl: null` and
+`Cache-Control: private, no-store` for the original and generated thumbnail.
+The `video-excerpt-private-v3` content-addressed namespace also creates a fresh
+legacy asset identity even when a v1/v2 excerpt has identical bytes and provenance;
+preparation never changes or silently reuses that old object. The existing
+`user-assets/by-content/<owner hash>/` and `user-asset-thumbs/<owner>/` roots keep
+their ownership, producer-fence and SQL reference contracts without a migration.
+Missing thumbnails are not retried during persistence. Later library thumbnail
+recovery and `scripts/backfill-upload-thumbnails.ts` recognize the reserved original
+leaf, authorize a temporary owned read and keep the same private thumbnail scope.
+Scoped uploads reject paths outside the four protected patterns before writing,
+including an unrecognized staging prefix; ordinary uploads keep their existing rules.
+
+**Storage prerequisite:** ACL omission and cache headers do not override a public
+bucket policy, and `BucketOwnerEnforced` disables object ACLs. Before deploying this
+writer, preserve existing policies and deny anonymous `s3:GetObject` and
+`s3:GetObjectVersion` on exactly these four key patterns, retaining access for the
+application signing principal:
+
+- `user-assets/by-content/*/video-excerpts-private-v3-*`
+- `user-asset-thumbs/*/video-excerpts-private-v3-*`
+- `mcp-reference-staging/user-assets/by-content/*/video-excerpts-private-v3-*`
+- `mcp-reference-staging/user-asset-thumbs/*/video-excerpts-private-v3-*`
+
+Verify both global and regional origins: unsigned GET/Range is denied, signed
+GET/Range succeeds, and existing public media stays readable. A fresh synthetic
+canary establishes policy behavior; deployed excerpt qualification must also prove
+the actual original and thumbnail keys match these patterns. This change does not
+alter older objects or the separate privacy rollout of existing MCP imports.
 The response retains the canonical original URL and returns temporary signed
 playback and thumbnail URLs. Luma direct submission signs all URL references in
 its validated provider payload (source, start/end frames and edit keyframes)

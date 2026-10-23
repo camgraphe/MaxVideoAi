@@ -11,6 +11,7 @@ import { createReadStream } from 'node:fs';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { privateMediaStorageLeaf, privateMediaStorageScopeForKey, type PrivateMediaStorageScope } from './private-media-storage';
 
 export type UploadResult = {
   url: string;
@@ -271,6 +272,7 @@ export async function uploadImageToStorage(params: {
   contentAddressed?: boolean;
   acl?: string | null;
   cacheControl?: string;
+  privateStorageScope?: PrivateMediaStorageScope;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<UploadResult> {
@@ -280,22 +282,25 @@ export async function uploadImageToStorage(params: {
     ? buildObjectKey({
         prefix: `${params.prefix ?? 'uploads'}/by-content`,
         userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
-        leafName: `${createHash('sha256').update(params.data).digest('hex')}.${inferExtension(safeMime)}`,
+        leafName: privateMediaStorageLeaf(`${createHash('sha256').update(params.data).digest('hex')}.${inferExtension(safeMime)}`, params.privateStorageScope),
       })
     : buildObjectKey({
         prefix: params.prefix,
         userId: params.userId,
-        leafName: buildStorageLeafName({ mime: safeMime, fileName: params.fileName }),
+        leafName: privateMediaStorageLeaf(buildStorageLeafName({ mime: safeMime, fileName: params.fileName }), params.privateStorageScope),
       });
 
+  if (params.privateStorageScope && privateMediaStorageScopeForKey(key) !== params.privateStorageScope) {
+    throw new Error('Unsupported private media storage path.');
+  }
   const putCommand = new PutObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
     Body: params.data,
     ContentType: safeMime,
-    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
+    CacheControl: params.privateStorageScope ? 'private, no-store' : params.cacheControl ?? S3_CACHE_CONTROL,
   });
-  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
+  const acl = params.privateStorageScope ? null : params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
   if (acl) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
@@ -587,6 +592,7 @@ export async function uploadFileBuffer(params: {
   acl?: string | null;
   contentAddressed?: boolean;
   contentAddressedNamespace?: string;
+  privateStorageScope?: PrivateMediaStorageScope;
   beforeUpload?: (key: string) => Promise<void>;
   signal?: AbortSignal;
 }): Promise<{ key: string; url: string }> {
@@ -595,23 +601,26 @@ export async function uploadFileBuffer(params: {
     ? buildObjectKey({
         prefix: `${params.prefix ?? 'files'}/by-content`,
         userId: createHash('sha256').update(params.userId ?? 'anonymous').digest('hex').slice(0, 32),
-        leafName: buildContentAddressedFileLeaf(params.data,params.mime,params.contentAddressedNamespace),
+        leafName: privateMediaStorageLeaf(buildContentAddressedFileLeaf(params.data,params.mime,params.contentAddressedNamespace), params.privateStorageScope),
       })
     : buildObjectKey({
         prefix: params.prefix ?? 'files',
         userId: params.userId ?? 'anonymous',
-        leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
+        leafName: privateMediaStorageLeaf(buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }), params.privateStorageScope),
       });
 
+  if (params.privateStorageScope && privateMediaStorageScopeForKey(key) !== params.privateStorageScope) {
+    throw new Error('Unsupported private media storage path.');
+  }
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET,
     Key: key,
     Body: params.data,
     ContentType: params.mime || 'application/octet-stream',
-    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
+    CacheControl: params.privateStorageScope ? 'private, no-store' : params.cacheControl ?? S3_CACHE_CONTROL,
   });
 
-  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
+  const acl = params.privateStorageScope ? null : params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
   if (acl) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env

@@ -2,7 +2,8 @@ import { type MediaFacts } from '@/lib/media-identity';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { measureGeneratedVideoBuffer } from '@/server/media/generated-video-facts';
-import { uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
+import { extractStorageKeyFromUrl, uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
+import { privateMediaStorageScopeForKey } from '@/server/private-media-storage';
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import { inferMimeFromUrl, type MediaKind } from '../media-library-records';
@@ -97,6 +98,7 @@ export async function createRemoteVideoAssetThumbnail(params: {
       data: buffer,
       userId: params.userId,
       fileName: params.fileName,
+      privateStorageScope: privateMediaStorageScopeForKey(extractStorageKeyFromUrl(params.url)),
     });
   } catch (error) {
     console.warn('[media-library] failed to create remote video thumbnail', {

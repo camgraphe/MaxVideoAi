@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
+import type { PrivateMediaStorageScope } from '@/server/private-media-storage';
 import {
   claimStorageObjectProducer,
   renewStorageObjectProducer,
@@ -72,6 +73,7 @@ export type StoreMediaUploadInput = {
   referenceEligibility?: 'workspace' | 'mcp';
   storageAcl?: string | null;
   storageCacheControl?: string;
+  privateStorageScope?: PrivateMediaStorageScope;
   cleanupObjects?: {
     beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
     retain(objectKey: string): Promise<void>;
@@ -193,6 +195,7 @@ function createStoreMediaUploadService(
         fileName: input.fileName,
         userId: input.userId,
         prefix: 'user-assets',
+        privateStorageScope: input.privateStorageScope,
         contentAddressed: true,
         ...(input.contentAddressedNamespace ? { contentAddressedNamespace: input.contentAddressedNamespace } : {}),
         ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
@@ -237,6 +240,7 @@ function createStoreMediaUploadService(
             data: input.bytes,
             userId: input.userId,
             fileName: input.fileName,
+            privateStorageScope: input.privateStorageScope,
             ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
             ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
             ...(input.cleanupObjects ? {
@@ -274,6 +278,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const canonicalAsset = await dependencies.ensureReusableAsset({
+        ...(input.privateStorageScope ? { allowRemoteThumbnailFallback: false } : {}),
         userId: input.userId,
         url: upload.url,
         kind: mediaKind,

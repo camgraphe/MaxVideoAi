@@ -60,6 +60,9 @@ async function main(): Promise<void> {
 
   const { query, getDb } = await import('../src/lib/db');
   const { createUploadImageThumbnail, createUploadVideoThumbnail } = await import('../server/upload-thumbnails');
+  const { extractStorageKeyFromUrl } = await import('../server/storage');
+  const { privateMediaStorageScopeForKey } = await import('../server/private-media-storage');
+  const { createRemoteVideoAssetThumbnail } = await import('../server/media-library/asset-media');
 
   async function markBackfillFailure(row: UploadAssetRow, reason: string): Promise<void> {
     const safeReason = reason.slice(0, 500);
@@ -119,19 +122,20 @@ async function main(): Promise<void> {
             return;
           }
 
-          const source = await fetchImage(row.url);
-          const thumbUrl =
-            row.kind === 'video'
-              ? await createUploadVideoThumbnail({
-                  data: source,
-                  userId: row.user_id,
-                  fileName: `${row.id}.mp4`,
-                })
-              : await createUploadImageThumbnail({
-                  data: source,
-                  userId: row.user_id,
-                  fileName: `${row.id}.webp`,
-                });
+          let thumbUrl: string | null;
+          if (row.kind === 'video' && privateMediaStorageScopeForKey(extractStorageKeyFromUrl(row.url))) {
+            if (!row.user_id) throw new Error('MEDIA_NOT_AVAILABLE');
+            thumbUrl = await createRemoteVideoAssetThumbnail({
+              userId: row.user_id,
+              url: row.url,
+              fileName: `${row.id}.mp4`,
+            });
+          } else {
+            const source = await fetchImage(row.url);
+            thumbUrl = row.kind === 'video'
+              ? await createUploadVideoThumbnail({ data: source, userId: row.user_id, fileName: `${row.id}.mp4` })
+              : await createUploadImageThumbnail({ data: source, userId: row.user_id, fileName: `${row.id}.webp` });
+          }
 
           if (!thumbUrl) {
             await markBackfillFailure(row, 'thumbnail creation returned null');

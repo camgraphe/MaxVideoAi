@@ -18,10 +18,10 @@ const inputSchema = z.object({
 }).strict();
 
 export async function persistVideoExcerpt(userId: string, bytes: Buffer, facts: VideoExcerptFacts, lineage: Record<string, unknown>, store: typeof storeVideoUpload = storeVideoUpload): Promise<UploadedVideoAsset> {
-  // Never reuse or overwrite a v1 object that may already have a public ACL/cache entry.
-  const contentAddressedNamespace = `video-excerpt-private-v2-${createHash('sha256').update(JSON.stringify(lineage)).digest('hex')}`;
+  // v1/v2 objects may have public bucket access; v3 also separates their legacy asset identity.
+  const contentAddressedNamespace = `video-excerpt-private-v3-${createHash('sha256').update(JSON.stringify(lineage)).digest('hex')}`;
   const stored = await store({ userId, bytes, fileName:'video-excerpt.mp4', declaredMime:'video/mp4', contentAddressedNamespace,
-    storageAcl:null, storageCacheControl:'private, no-store', metadata:{videoExcerpt:lineage} });
+    privateStorageScope:'video-excerpt', storageAcl:null, storageCacheControl:'private, no-store', metadata:{videoExcerpt:lineage} });
   validateStoredVideoExcerptFacts(facts,stored);
   return { id:stored.legacyAssetId, legacyAssetId:stored.legacyAssetId, ...canonicalMediaAssetFields(stored.assetId,'video'),
     url:stored.storageUrl, durationSec:stored.durationSec, mediaFacts:stored.mediaFacts, width:stored.width, height:stored.height,
@@ -66,7 +66,7 @@ export async function prepareVideoExcerpt(userId: string, value: unknown, depend
         if (currentLimits.maxSizeMB && result.bytes.length > currentLimits.maxSizeMB*1024*1024) throw new VideoExcerptError('PREPARATION_LIMIT','The prepared excerpt exceeds this model’s source file size limit. Choose a shorter excerpt.');
       };
       await reauthorize();
-      const asset = await deps.persist(userId,result.bytes,result.facts,{version:2,storageAccess:'private',encoder:'h264-aac-v4',source:input.source,range,engineId:input.engineId,mode:input.mode,
+      const asset = await deps.persist(userId,result.bytes,result.facts,{version:3,storageAccess:'private',encoder:'h264-aac-v4',source:input.source,range,engineId:input.engineId,mode:input.mode,
         sourceFingerprint:snapshot,sourceSha256:createHash('sha256').update(downloaded.bytes).digest('hex'),sourceFacts,outputFacts:result.facts});
       if (!asset.ref || asset.ref.kind !== 'video' || JSON.stringify(asset.ref) === JSON.stringify(input.source)) throw new VideoExcerptError('PREPARATION_FAILED','The excerpt could not be saved as a distinct video.');
       outputDuration = asset.durationSec ?? Number.NaN;
