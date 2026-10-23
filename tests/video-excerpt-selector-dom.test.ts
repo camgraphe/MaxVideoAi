@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
 const bundle = bundleClientFlow(
-  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector previewUrl="https://example.invalid/signed" durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');}}/>),unmount:()=>root.unmount()};`,
+  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';import {requestVideoExcerpt} from './lib/client-video-excerpt';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector previewUrl="https://example.invalid/signed" durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');if(window.request)await requestVideoExcerpt({source:{type:'asset',assetId:'owned',kind:'video'},engineId:'luma-ray-3-2',mode:'v2v',range},window.request);}}/>),unmount:()=>root.unmount()};`,
   {}
 );
 async function mount(duration = 5.558333, locale = 'en') {
@@ -72,7 +72,10 @@ test('prepare failure is readable and Escape cancels through accessible modal', 
   try {
     f.w.failure = true;
     await f.click('Utiliser cet extrait');
-    assert.match(f.w.document.querySelector('[role=alert]').textContent, /Failed to prepare/);
+    assert.match(
+      f.w.document.querySelector('[role=alert]').textContent,
+      /Impossible de préparer cet extrait/
+    );
     await f.w.fx.act(async () =>
       f.w.document
         .querySelector('[role=dialog]')
@@ -191,3 +194,105 @@ test('every selected source retains an excerpt action beyond the compact summary
     dom.window.close();
   }
 });
+
+test('initial oversized source can play manually and loop finite in-source selection while Apply remains blocked', async () => {
+  const f = await mount(60);
+  try {
+    const video = f.w.document.querySelector('video');
+    let pauses = 0;
+    video.pause = () => pauses++;
+    Object.defineProperty(video, 'paused', { get: () => false });
+    await f.w.fx.act(async () => video.dispatchEvent(new f.w.Event('play', { bubbles: true })));
+    assert.equal(pauses, 0, 'full source preview must not require a model-valid excerpt first');
+    assert.equal(
+      [...f.w.document.querySelectorAll('button')].find((b: any) => b.textContent === 'Use excerpt').disabled,
+      true
+    );
+    await f.input('Start (seconds)', '20');
+    await f.input('End (seconds)', '50');
+    video.currentTime = 50;
+    await f.w.fx.act(async () => video.dispatchEvent(new f.w.Event('timeupdate', { bubbles: true })));
+    assert.equal(video.currentTime, 20, 'an oversized finite in-source interval may still preview and loop');
+    await f.input('End (seconds)', '61');
+    video.currentTime = 45;
+    const before = pauses;
+    await f.w.fx.act(async () => video.dispatchEvent(new f.w.Event('play', { bubbles: true })));
+    assert.equal(pauses, before, 'invalid handles must still permit manual full-source preview');
+    assert.equal(video.currentTime, 45);
+    assert.equal(f.w.applied.length, 0);
+  } finally {
+    await f.dispose();
+  }
+});
+for (const [locale, apply, expected] of [
+  [
+    'en',
+    'Use excerpt',
+    {
+      generic: /Unable to prepare/,
+      network: /connection/,
+      malformed: /verified/,
+      budget: /100 MiB.*180.*60/,
+      range: /valid start and end/,
+    },
+  ],
+  [
+    'fr',
+    'Utiliser cet extrait',
+    {
+      generic: /Impossible de préparer/,
+      network: /connexion/,
+      malformed: /vérifié/,
+      budget: /100 Mio.*180.*60/,
+      range: /début et une fin valides/,
+    },
+  ],
+  [
+    'es',
+    'Usar fragmento',
+    {
+      generic: /No se pudo preparar/,
+      network: /conexión/,
+      malformed: /verificar/,
+      budget: /100 MiB.*180.*60/,
+      range: /inicio y un final válidos/,
+    },
+  ],
+] as const)
+  for (const kind of ['generic', 'network', 'malformed', 'budget', 'range'] as const)
+    test(`${locale}: actual ${kind} request failure is localized without raw exception text`, async () => {
+      const f = await mount(5, locale);
+      try {
+        f.w.request = async () => {
+          if (kind === 'network') throw new TypeError('RAW network details');
+          if (kind === 'malformed')
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ ok: true, asset: { id: 'wrong', url: 'https://example.invalid/wrong' } }),
+            };
+          return {
+            ok: false,
+            status: 422,
+            json: async () => ({
+              ok: false,
+              error: {
+                code:
+                  kind === 'budget'
+                    ? 'PREPARATION_LIMIT'
+                    : kind === 'range'
+                      ? 'PARAMETER_INVALID'
+                      : 'FUTURE_ERROR',
+                message: 'RAW server details',
+              },
+            }),
+          };
+        };
+        await f.click(apply);
+        const message = f.w.document.querySelector('[role=alert]').textContent;
+        assert.match(message, expected[kind]);
+        assert.doesNotMatch(message, /RAW|FUTURE_ERROR|Failed to prepare/);
+      } finally {
+        await f.dispose();
+      }
+    });

@@ -215,10 +215,13 @@ test('failed prepare restores ready original and permits retry', async () => {
     await f.w.fx.act(async () =>
       f.requests[0].response.resolve({
         ok: false,
-        json: async () => ({ ok: false, error: { message: 'Preparation failed' } }),
+        json: async () => ({
+          ok: false,
+          error: { code: 'PREPARATION_FAILED', message: 'Raw server detail' },
+        }),
       })
     );
-    await assert.rejects(result, /Preparation failed/);
+    await assert.rejects(result, (error: any) => error.code === 'PREPARATION_FAILED');
     assert.equal(f.w.probe.inputAssets.video_url[0].url, source.url);
     assert.equal(f.w.probe.inputAssets.video_url[0].status, 'ready');
     await f.cancel();

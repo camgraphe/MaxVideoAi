@@ -3,7 +3,7 @@
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
-import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
+import { videoExcerptCopy, videoExcerptFailureMessage } from '@/lib/video-excerpt-copy';
 import {
   validateVideoExcerptRange,
   type VideoExcerptLimits,
@@ -41,6 +41,17 @@ export function VideoExcerptSelector({
   const video = useRef<HTMLVideoElement>(null);
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: onCancel });
   const range = { startSec: start.trim() ? Number(start) : NaN, endSec: end.trim() ? Number(end) : NaN };
+  // Playback may inspect a source before its selected length meets the model policy.
+  const previewRange =
+    Number.isFinite(durationSec) &&
+    durationSec > 0 &&
+    Number.isFinite(range.startSec) &&
+    Number.isFinite(range.endSec) &&
+    range.startSec >= 0 &&
+    range.endSec > range.startSec &&
+    range.endSec <= durationSec
+      ? range
+      : null;
   let valid = true;
   try {
     validateVideoExcerptRange(range, durationSec, limits);
@@ -61,7 +72,7 @@ export function VideoExcerptSelector({
     try {
       await onApply(range);
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : copy.failed);
+      setError(videoExcerptFailureMessage(failure, locale));
     } finally {
       pending.current = false;
       setBusy(false);
@@ -94,26 +105,29 @@ export function VideoExcerptSelector({
           preload="none"
           onPlay={(event) => {
             const node = event.currentTarget;
-            if (!valid) {
+            if (busy) {
               node.pause();
               return;
             }
-            if (node.currentTime < range.startSec || node.currentTime >= range.endSec)
-              node.currentTime = range.startSec;
+            if (
+              previewRange &&
+              (node.currentTime < previewRange.startSec || node.currentTime >= previewRange.endSec)
+            )
+              node.currentTime = previewRange.startSec;
           }}
           onEnded={(event) => {
-            if (!valid || busy) return;
-            event.currentTarget.currentTime = range.startSec;
+            if (!previewRange || busy) return;
+            event.currentTarget.currentTime = previewRange.startSec;
             void event.currentTarget.play().catch(() => {});
           }}
           onTimeUpdate={(event) => {
             const node = event.currentTarget;
             if (
               !node.paused &&
-              valid &&
-              (node.currentTime >= range.endSec || node.currentTime < range.startSec)
+              previewRange &&
+              (node.currentTime >= previewRange.endSec || node.currentTime < previewRange.startSec)
             )
-              node.currentTime = range.startSec;
+              node.currentTime = previewRange.startSec;
           }}
         />
         {(['start', 'end'] as const).map((which) => (
