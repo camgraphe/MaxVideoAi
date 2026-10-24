@@ -263,3 +263,7 @@ Self-review covered the source/proof union, exact wire-body hashing, queue callb
 - `tests/workspace-multimodal-reference-workflow.test.ts`
 - `tests/workspace-pricing-lifecycle-dom.test.ts`
 - `tests/workspace-source-workflow-coverage.test.ts`
+
+### Connected Studio candidate invocation — compilation correction
+
+Candidate `17c4eda7bdd5e8712f773c347787eec2e993327d` was frozen for the specified single browser command. It exited before initializing any browser/runtime: the new local `created` binding collided with the existing montage creation binding in the same test scope. `/tmp/task6a-connected-studio-final.log`: transform error at line 381, 0 pass / 1 test-file failure, 0.82s. This is an implementer test-compilation defect, not an application/browser failure. Renamed the new binding to `newConversation` only; no assertion, application code or timing changed. The same browser command will run again on the next frozen commit; all application checks above remain valid.

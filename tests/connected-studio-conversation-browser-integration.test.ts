@@ -378,9 +378,9 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.getByRole('button',{name:'New conversation',exact:true}).click();
     const response=await creation;
     assert.equal(response.status(),200);
-    const created=await response.json();
-    assert.equal(created.ok,true);assert.ok(created.result.projectId);assert.notEqual(created.result.projectId,previousProjectId);
-    await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${created.result.projectId}`,{timeout:30000});
+    const newConversation=await response.json();
+    assert.equal(newConversation.ok,true);assert.ok(newConversation.result.projectId);assert.notEqual(newConversation.result.projectId,previousProjectId);
+    await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${newConversation.result.projectId}`,{timeout:30000});
     await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
     await proof('empty-workspace');
