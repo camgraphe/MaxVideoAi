@@ -32,7 +32,10 @@ export const studioAudioActionSchema=z.object({action:z.literal('audio.prepare')
 export function validateStudioVideoPrompt(value: {action: string; modelId?: string | null; mode?: string | null; prompt?: string; operation?: string | null}, context: z.RefinementCtx) {
   if (value.action !== 'video.prepare') return;
   let operation;
-  try { operation = normalizeVideoOperation(value.modelId??'',value.mode??'t2v',value.operation??undefined); }
+  // Preparation infers an omitted mode from typed sources; do not invent t2v here.
+  // Its canonical validation checks operation compatibility after that inference.
+  try { operation = value.mode == null ? value.operation??undefined
+    : normalizeVideoOperation(value.modelId??'',value.mode,value.operation??undefined); }
   catch { context.addIssue({code:z.ZodIssueCode.custom,path:['operation'],message:'Choose a supported operation for this model and mode.'}); return; }
   const prompt = value.prompt ?? '';
   const promptUnsupported = ['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(operation??'');

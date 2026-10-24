@@ -52,3 +52,35 @@ for (const operation of [undefined, null, 'ltx23-reframe'] as const) test(`Studi
   const result=await execute({action:'pricing.read',surface:'video',modelId:'ltx-2-3',mode:'reframe',operation,settings:[{name:'resolution',value:'720p'},{name:'aspectRatio',value:'4:5'}],references:[{ref:{type:'asset',assetId,kind:'video'},role:'source'}],outputCount:1});
   assert.equal(result.ok,true,JSON.stringify(result));assert.equal(priced,1);
 });
+
+import { studioMediaRequest } from '../frontend/src/server/studio/conversation-media-generation';
+for (const mode of [undefined,null] as const) test(`Studio preserves source-inferred Kling Edit mode for ${String(mode)} through both ingress schemas`,async()=>{
+ const clip={type:'asset' as const,kind:'video' as const,assetId};
+ const entry=getFalEngineById('kling-o3-standard')!;
+ const candidate={engine:entry.engine,surface:'video' as const,publicModes:['v2v'],modeCaps:entry.engine.modeCaps!};
+ const factories={video:()=>({catalog:async()=>[candidate]})} as unknown as StudioMediaFactories;
+ const input={requestId:'00000000-0000-4000-8000-000000000001',message:'Edit this clip',references:[],attachments:[clip]};
+ const dependencies={resolveMedia:async()=>({id:assetId,ref:clip,kind:'video',url:original,mime:'video/mp4',sizeBytes:1024,originalName:'clip.mp4',thumbUrl:null,previewUrl:null,mediaFacts:{source:'probe',width:1280,height:720,durationSec:5},originalAccess:{type:'external'}})};
+ const base={action:'video.prepare',reply:'Review',modelId:'kling-o3-standard',operation:'kling-edit',mode,prompt:'Make it winter',aspectRatio:'16:9',settings:[{name:'resolution',value:'720p'}]};
+ for(const selection of [{source:clip,references:null},{source:null,references:[{ref:clip,role:'source',slot:null}]}]) {
+  for(const schema of [studioMediaIntentSchema,studioActionRequestSchema]) {
+   const action=schema.parse({...base,...selection});
+   assert.equal(action.action,'video.prepare');
+   const request=await studioMediaRequest(actor,action as never,input,factories,true,dependencies as never);
+   assert.equal(request.mode,'v2v');assert.equal(request.operation,'kling-edit');
+   assert.equal(schema.safeParse({...base,...selection,mode:'t2v'}).success,false,'An explicit incompatible mode remains invalid');
+  }
+ }
+});
+
+test('omitted/null Studio modes retain existing explicit-operation prompt rules until source inference',()=>{
+ for(const mode of [undefined,null]) for(const [modelId,operation,prompt]of [
+  ['kling-o3-standard','kling-edit','Edit'],['kling-o3-standard','kling-reference','Reference'],
+  ['minimax-h3-max','h3-recast',''],['minimax-h3-max','h3-relight',''],['flux-3','flux-fast-edit','Edit'],['flux-3-draft','flux-draft-enhance',''],
+ ]) for(const schema of [studioMediaIntentSchema,studioActionRequestSchema]) {
+  const action={action:'video.prepare',reply:'Review',modelId,operation,mode,prompt,aspectRatio:'16:9',source:{type:'asset',kind:'video',assetId}};
+  assert.equal(schema.safeParse(action).success,true,`${modelId}/${operation}/${String(mode)}`);
+  if(operation==='h3-relight'||operation==='flux-draft-enhance')assert.equal(schema.safeParse({...action,prompt:'Invalid nonempty prompt'}).success,false);
+  if(operation==='flux-fast-edit')assert.equal(schema.safeParse({...action,prompt:'a'.repeat(4097)}).success,false);
+ }
+});
