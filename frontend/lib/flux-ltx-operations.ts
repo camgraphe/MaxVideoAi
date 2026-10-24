@@ -12,6 +12,7 @@ export function isFluxLtxSourceOperation(value: unknown): value is FluxLtxSource
 /** Explicit application/customer admission bound, not a provider maximum or invoice rule.
  * Native Draft requests end at 20s; measured outputs up to 21s qualify individually. */
 export const FLUX_DRAFT_MEASURED_MAX_SEC = 21;
+export const FLUX_FAST_PROMPT_MAX_CHARS = 4096;
 export function fluxLtxDurationBounds(operation: FluxLtxSourceOperation) {
   return { min: 0, max: operation === 'flux-fast-edit' ? 15 : operation === 'ltx23-reframe' ? 60 : FLUX_DRAFT_MEASURED_MAX_SEC,
     maxExclusive: operation === 'flux-fast-edit' };
@@ -39,7 +40,7 @@ export function buildFluxLtxOperationCaps(operation: FluxLtxSourceOperation): Vi
   const mode: 'v2v' | 'reframe' = operation === 'ltx23-reframe' ? 'reframe' : 'v2v';
   const resolutions = fast ? ['720p'] : enhance ? ['1080p'] : ['720p','1080p'];
   return {operation,mode,label:fast?'FAST Edit':enhance?'Enhance Draft':'Reframe (LTX 2.3)',defaultForMode:true,
-    promptRequired:fast,transport:'fal',endpoint:FLUX_LTX_ENDPOINTS[operation],
+    promptRequired:fast,...(fast?{promptMaxChars:FLUX_FAST_PROMPT_MAX_CHARS}:{}),transport:'fal',endpoint:FLUX_LTX_ENDPOINTS[operation],
     inputSchema:{required:[
       ...(fast ? [{id:'prompt',type:'text' as const,label:'Edit instruction',modes:[mode],requiredInModes:[mode]}] : []),
       ...(enhance ? [{id:'source_job_id',type:'text' as const,label:'Owned Draft generation',modes:[mode],requiredInModes:[],description:'Successful owned native Draft with a qualified paired provider cache. Imported videos and Draft Extend caches are not eligible.'}]

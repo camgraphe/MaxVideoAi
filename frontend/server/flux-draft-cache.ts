@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { validateFluxLtxSource } from '@/lib/flux-ltx-operations';
-import { openPublicHttpsResponse, publicMediaTransport, type ReferenceFileDownloaderDependencies } from './public-media-transport';
+import { openPublicHttpsResponse, publicMediaTransport, type ReferenceFileDownloaderDependencies, type ReferenceHttpsResponse } from './public-media-transport';
 
 export type FluxDraftOrigin = {ownerId:string;jobId:string;outputId:string;providerRequestId:string;attemptId:number;endpoint:string;outputUrl:string;outputSha256:string};
 export type FluxDraftPairProof = {providerRequestId:string;providerVideoUrl:string;cacheUrl:string;videoIdentity:string;audioIdentity:string|null;ownedVideoIdentity:string;ownedAudioIdentity:string|null;ownedSha256:string;durationSec:number;fps:number;decodedFrameCount:number};
@@ -24,17 +24,36 @@ export function qualifyFluxDraftPair(source:FluxDraftOrigin,proof:FluxDraftPairP
   const fingerprint=digest([source,cacheIdentity,proof.videoIdentity,proof.audioIdentity,proof.durationSec,proof.fps,proof.decodedFrameCount]);
   return {...source,cacheUrl:proof.cacheUrl,providerVideoUrl:proof.providerVideoUrl,cacheIdentity,durationSec:proof.durationSec,fps:proof.fps,decodedFrameCount:proof.decodedFrameCount,fingerprint,expiresAt:null,invalidatedAt:null};
 }
-/** GET with pinned public DNS/no redirects and early stream cancellation also supports hosts
- * without HEAD. Reachability is evidence only, not a guarantee of future supplier acceptance. */
-export async function checkFluxDraftCacheAvailability(source:QualifiedFluxDraftSource,dependencies:ReferenceFileDownloaderDependencies=publicMediaTransport):Promise<void> {
+export const FLUX_CACHE_AVAILABILITY_TIMEOUT_MS = 30_000;
+/** One deadline covers DNS, connection and the first nonempty body chunk. GET with
+ * pinned public DNS and no redirects supports hosts without HEAD. This is current
+ * reachability evidence only, not a guarantee of future supplier acceptance. */
+export async function checkFluxDraftCacheAvailability(source:QualifiedFluxDraftSource,dependencies:ReferenceFileDownloaderDependencies=publicMediaTransport,options:{timeoutMs?:number}={}):Promise<void> {
   fluxProviderMediaUrl(source.cacheUrl);
   if(source.invalidatedAt || (source.expiresAt!==null && (!Number.isFinite(Date.parse(source.expiresAt))||Date.parse(source.expiresAt)<=Date.now()))) throw new Error('The Draft cache is no longer available.');
-  const response=await openPublicHttpsResponse(source.cacheUrl,dependencies);
-  try {
+  const timeoutMs = Math.min(options.timeoutMs??FLUX_CACHE_AVAILABILITY_TIMEOUT_MS,FLUX_CACHE_AVAILABILITY_TIMEOUT_MS);
+  if (!Number.isFinite(timeoutMs)||timeoutMs<=0) throw new Error('Invalid cache availability deadline.');
+  const controller = new AbortController();
+  let response:ReferenceHttpsResponse|undefined;
+  const cancel = () => { const current=response;response=undefined;current?.cancel?.(); };
+  let timer:ReturnType<typeof setTimeout>|undefined;
+  const deadline = new Promise<never>((_,reject)=>{
+    timer=setTimeout(()=>{
+      const error=new Error('The Draft cache availability check timed out.');
+      controller.abort(error);cancel();reject(error);
+    },timeoutMs);
+  });
+  const read = async () => {
+    const opened=await openPublicHttpsResponse(source.cacheUrl,dependencies,{signal:controller.signal,timeoutMs,redirect:'error'});
+    // A late injected/transport response must not retain a socket after the deadline.
+    if(controller.signal.aborted){opened.cancel?.();controller.signal.throwIfAborted();}
+    response=opened;
     if(response.statusCode!==200&&response.statusCode!==206) throw new Error('The Draft cache could not be read.');
-    for await(const chunk of response.body) {if(chunk.byteLength>0)return;}
+    for await(const chunk of response.body) {controller.signal.throwIfAborted();if(chunk.byteLength>0)return;}
     throw new Error('The Draft cache is empty.');
-  } finally {response.cancel?.();}
+  };
+  try { await Promise.race([read(),deadline]); }
+  finally {clearTimeout(timer);cancel();}
 }
 /** Public-safe quote binding. Cache URLs never enter request, quote, history or reuse data. */
 export function fluxDraftQuoteBinding(source:QualifiedFluxDraftSource|undefined) {

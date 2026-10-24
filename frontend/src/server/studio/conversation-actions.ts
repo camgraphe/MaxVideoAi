@@ -1,3 +1,4 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
 import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
 import {studioActionRequestSchema, type StudioActionRequest, type StudioActionResult} from '@/lib/studio/conversation-action-contract';
@@ -57,6 +58,8 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           if(!dependencies.readAnalysis)throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis results are unavailable.');
           return {ok:true,action:request.action,data:await dependencies.readAnalysis(request.analysisId)};
         case 'pricing.read': case 'pricing.compare': {
+          const operation = request.action==='pricing.read' && request.surface==='video'
+            ? normalizeVideoOperation(request.modelId,request.mode,request.operation??undefined) : request.operation??undefined;
           if (request.references.some(({ref})=>ref.type==='asset'&&!(ref.kind==='image'?dependencies.attachedImageIds?.includes(ref.assetId):dependencies.attachedMedia?.some(attached=>attached.assetId===ref.assetId&&attached.mediaKind===ref.kind)))) {
             throw new AgentApiError('REFERENCE_INVALID','Attach this saved library media before estimating its use.');
           }
@@ -66,8 +69,8 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           const selected=studioPricingSourceSelection(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))});
           const lumaSource = request.surface === 'video' && request.mode === 'extend' && (request.operation === 'luma-extend' || (request.action === 'pricing.read' && request.modelId === 'luma-ray-3-2'))
             ? await studioLumaPricingSource(actor, request.references, { references: [...dependencies.attachedImageIds ?? []], attachments: dependencies.attachedMedia?.filter(ref => ref.mediaKind !== 'image').map(ref => ({ type: 'asset' as const, assetId: ref.assetId, kind: ref.mediaKind })) }) : undefined;
-          const fluxSource=request.operation==='flux-draft-enhance'?await studioFluxPricingSource(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))}):undefined;
-          const scenario={surface:request.surface,mode:request.mode,...(request.operation ? {operation:request.operation}:{}),
+          const fluxSource=operation==='flux-draft-enhance'?await studioFluxPricingSource(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))}):undefined;
+          const scenario={surface:request.surface,mode:request.mode,...(operation ? {operation}:{}),
             settings:conversationSelectionSettings(request.settings),references:selected.references, ...lumaSource,...fluxSource};
           if(request.action==='pricing.compare') {
             const comparison={...scenario,prompt:request.prompt,
@@ -75,7 +78,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
             const pricingService={...service,compare:(input:Parameters<typeof service.compare>[0])=>service.compare(input,selected.resolveReferences)};
             return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,pricingService):await pricingService.compare(comparison)};
           }
-          return {ok:true,action:request.action,data:await service.estimate({...scenario,...(request.operation ? {operation:request.operation}:{}),...(request.elements ? {elements:request.elements}:{}),engineId:request.modelId,prompt:['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(request.operation??'')?'':'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
+          return {ok:true,action:request.action,data:await service.estimate({...scenario,...(operation ? {operation}:{}),...(request.elements ? {elements:request.elements}:{}),engineId:request.modelId,prompt:['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(operation??'')?'':'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
         }
         case 'export.prepare':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');

@@ -28,18 +28,19 @@ async function workspace<T>(run: (directory: string) => Promise<T>): Promise<T> 
   const directory = await mkdtemp(join(tmpdir(), 'video-excerpt-'));
   try { return await run(directory); } finally { await rm(directory, { recursive: true, force: true }); }
 }
-export type VideoExcerptFacts = { kind: 'video'; width: number; height: number; durationSec: number; fps: number; hasAudio: boolean; sizeBytes: number; mimeType: string; videoCodec: string; audioCodec: string | null; videoStreamIndex?: number; decodedFrameCount?: number; constantFrameRate?: boolean };
+export type VideoExcerptFacts = { kind: 'video'; width: number; height: number; durationSec: number; fps: number; hasAudio: boolean; sizeBytes: number; mimeType: string; containerFormat?: string; containerMajorBrand?: string | null; videoCodec: string; audioCodec: string | null; videoStreamIndex?: number; decodedFrameCount?: number; constantFrameRate?: boolean };
 const limitError = () => new VideoExcerptError('PREPARATION_LIMIT', 'Excerpt preparation supports videos up to 100 MiB, 180 seconds, 16 megapixels and 120 fps. The full-video workflow remains available.');
 export async function inspectVideoExcerptBytes(bytes: Uint8Array, mimeType: string, options: { decodedFrames?: boolean } = {}): Promise<VideoExcerptFacts> {
   const limits = VIDEO_EXCERPT_PREPARATION_LIMITS;
   if (!bytes.length || bytes.length > limits.maxBytes) throw limitError();
   return workspace(async directory => {
     const path = join(directory, 'source'); await writeFile(path, bytes);
-    const { stdout } = await exec(ffprobe.path!, ['-v','error','-protocol_whitelist','file,pipe', ...(options.decodedFrames ? ['-count_frames','-show_frames'] : []), '-show_entries',`stream=index,codec_type,codec_name,width,height,avg_frame_rate,duration,nb_read_frames:stream_disposition=attached_pic:stream_side_data_list:stream_tags=rotate:format=format_name,duration${options.decodedFrames ? ':frame=media_type,stream_index,best_effort_timestamp_time' : ''}`,'-of','json',path], { timeout: options.decodedFrames ? 45_000 : 15_000, maxBuffer: 8 * 1024 * 1024 });
+    const { stdout } = await exec(ffprobe.path!, ['-v','error','-protocol_whitelist','file,pipe', ...(options.decodedFrames ? ['-count_frames','-show_frames'] : []), '-show_entries',`stream=index,codec_type,codec_name,width,height,avg_frame_rate,duration,nb_read_frames:stream_disposition=attached_pic:stream_side_data_list:stream_tags=rotate:format=format_name,duration:format_tags=major_brand${options.decodedFrames ? ':frame=media_type,stream_index,best_effort_timestamp_time' : ''}`,'-of','json',path], { timeout: options.decodedFrames ? 45_000 : 15_000, maxBuffer: 8 * 1024 * 1024 });
     return resolveVideoExcerptFacts(JSON.parse(stdout) as VideoExcerptProbeMetadata,mimeType,bytes.length);
   });
 }
-type VideoExcerptProbeMetadata = Omit<Parameters<typeof resolveProbedMediaMetadata>[0], 'streams'> & {
+type VideoExcerptProbeMetadata = Omit<Parameters<typeof resolveProbedMediaMetadata>[0], 'streams' | 'format'> & {
+  format?: {format_name?:string;duration?:string;tags?:{major_brand?:string}};
   streams: Array<NonNullable<Parameters<typeof resolveProbedMediaMetadata>[0]['streams']>[number] & {index?:number;codec_name?:string;avg_frame_rate?:string;nb_read_frames?:string}>;
   frames?: Array<{media_type?:string;stream_index?:number;best_effort_timestamp_time?:string}>;
 };
@@ -61,7 +62,7 @@ export function resolveVideoExcerptFacts(data: VideoExcerptProbeMetadata, mimeTy
   const decoded = Number.isSafeInteger(decodedFrameCount) && decodedFrameCount > 0 && frames?.length === decodedFrameCount;
   const constantFrameRate = decoded && times!.every((time,index)=>Number.isFinite(time) && (index===0 || Math.abs(time-times![index-1]!-1/fps)<0.000002));
   return {...(decoded ? {decodedFrameCount,constantFrameRate} : {}),kind:'video',width:measured.width,height:measured.height,durationSec,fps,hasAudio:Boolean(audio),sizeBytes,
-    mimeType:measured.canonicalMime,videoCodec:video.codec_name,audioCodec:audio?.codec_name??null,videoStreamIndex:video.index??0};
+    mimeType:measured.canonicalMime,containerFormat:data.format?.format_name??'',containerMajorBrand:data.format?.tags?.major_brand??null,videoCodec:video.codec_name,audioCodec:audio?.codec_name??null,videoStreamIndex:video.index??0};
 }
 
 export function validateVideoExcerptOutput(source: VideoExcerptFacts, actual: VideoExcerptFacts, range: VideoExcerptRange): void {

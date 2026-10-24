@@ -13,6 +13,7 @@ export type VideoOperationCaps = {
   inputSchema: EngineInputSchema;
   ui: EngineModeUiCaps;
   promptRequired: boolean;
+  promptMaxChars?: number;
   transport?: 'fal' | 'luma_agents_direct';
   endpoint?: string;
 };
@@ -91,7 +92,7 @@ export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, valu
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
   return { ...engine, ...(isH3SourceOperation(operation) ? {maxDurationSec:operation==='h3-recast'?30:15} : {}), inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit' || isH3SourceOperation(operation) || isFluxLtxSourceOperation(operation)
       ? (caps.ui.resolution as EngineCaps['resolutions'] | undefined) ?? engine.resolutions : engine.resolutions,
-    inputLimits: { ...engine.inputLimits, ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'ltx23-reframe' ? 60 : operation === 'h3-recast' ? 30 : 15 } : {}) },
+    inputLimits: { ...engine.inputLimits, ...(caps.promptMaxChars!==undefined?{promptMaxChars:caps.promptMaxChars}:{}), ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'ltx23-reframe' ? 60 : operation === 'h3-recast' ? 30 : 15 } : {}) },
     modeCaps: { ...engine.modeCaps, [mode]: caps.ui } };
 }
 
@@ -132,6 +133,8 @@ export function validateKlingEditSource(source: { durationSec?: number | null; w
 
 export function resolveVideoOperationRequestEngine(engine: EngineCaps, mode: Mode, body: Record<string, unknown>): EngineCaps {
   const resolved = resolveVideoOperationEngine(engine, mode, body.operation);
+  const promptMaxChars = resolved.operationCaps?.[body.operation as VideoOperation]?.promptMaxChars;
+  if (typeof promptMaxChars==='number' && typeof body.prompt==='string' && body.prompt.length>promptMaxChars) throw new Error(`This operation supports at most ${promptMaxChars} prompt characters.`);
   if (isFluxLtxSourceOperation(body.operation)) {
     if (['duration','durationSec','durationOption','fps','audio',...(body.operation === 'ltx23-reframe' ? [] : ['aspectRatio'])].some(key=>body[key]!==undefined)) throw new Error('This operation inherits source timing and audio.');
     if (body.operation !== 'flux-fast-edit' && typeof body.prompt==='string' && body.prompt.trim()) throw new Error('This operation does not accept a prompt.');

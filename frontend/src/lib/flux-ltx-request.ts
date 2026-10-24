@@ -1,4 +1,4 @@
-import { FLUX_LTX_ENDPOINTS, isFluxLtxSourceOperation } from '../../lib/flux-ltx-operations';
+import { FLUX_FAST_PROMPT_MAX_CHARS, FLUX_LTX_ENDPOINTS, isFluxLtxSourceOperation } from '../../lib/flux-ltx-operations';
 import type { GeneratePayload } from './fal-types';
 import { parseFlux3MaxKeyframeIndexes } from './flux-3-max';
 
@@ -19,7 +19,7 @@ export function buildFluxLtxRequest(payload: GeneratePayload) {
       if (!['720p','1080p'].includes(resolution)||!['1:1','4:5','5:4','9:16','16:9'].includes(aspect)) throw new Error('Unsupported LTX 2.3 Reframe settings.');
       return {model:FLUX_LTX_ENDPOINTS[operation],requestBody:{video_url:source,resolution,aspect_ratio:aspect,enable_safety_checker:payload.safetyChecker??extras.enable_safety_checker??true}};
     }
-    if(!payload.prompt.trim()||payload.prompt.length>4096) throw new Error('FAST Edit requires an instruction up to 4096 characters.');
+    if(!payload.prompt.trim()||payload.prompt.length>FLUX_FAST_PROMPT_MAX_CHARS) throw new Error('FAST Edit requires an instruction up to 4096 characters.');
     const safety=extras.safety_tolerance??2;
     if(!Number.isInteger(safety)||Number(safety)<0||Number(safety)>4) throw new Error('Safety tolerance must be an integer from 0 through 4.');
     return {model:FLUX_LTX_ENDPOINTS[operation],requestBody:{prompt:payload.prompt.trim(),video_url:source,safety_tolerance:safety}};

@@ -95,9 +95,37 @@ import { inspectOwnedFluxLtxSource } from '../frontend/server/video-excerpts/flu
 import { withVideoExcerptSlot } from '../frontend/server/video-excerpts/media';
 test('source inspection rejects busy before reads and qualifies actual compatible MP4 facts without changing original',async()=>{
  let reads=0;
- const facts={kind:'video' as const,width:720,height:1280,durationSec:5.558333,fps:25,hasAudio:true,sizeBytes:26852432,mimeType:'video/mp4',videoCodec:'h264',audioCodec:'aac'};
+ const facts={kind:'video' as const,width:720,height:1280,durationSec:5.558333,fps:25,hasAudio:true,sizeBytes:26852432,mimeType:'video/mp4',containerFormat:'mov,mp4,m4a,3gp,3g2,mj2',containerMajorBrand:'isom',videoCodec:'h264',audioCodec:'aac'};
  const deps={createReadUrl:async()=>{reads++;return'owned-signed';},download:async()=>({bytes:Buffer.from('original'),mimeType:'video/mp4'}),inspect:async()=>facts};
  await withVideoExcerptSlot('owner',async()=>{await assert.rejects(()=>inspectOwnedFluxLtxSource('owned','flux-fast-edit','owner',deps as any),{code:'RATE_LIMITED',retryable:true});assert.equal(reads,0);});
  assert.equal((await inspectOwnedFluxLtxSource('owned','flux-fast-edit','owner',deps as any)).durationSec,5.558333);
  await assert.rejects(()=>inspectOwnedFluxLtxSource('owned','flux-fast-edit','owner',{...deps,inspect:async()=>({...facts,mimeType:'video/quicktime'})}as any),{code:'REFERENCE_INVALID'});
+});
+
+import { prepareGenerationForActor } from '../frontend/src/server/agent-api/prepare-generation';
+import { readGenerationPricing } from '../frontend/src/server/agent-api/generation-pricing-read';
+import { buildGenerateRequestOptions } from '../frontend/app/api/generate/_lib/request-options';
+test('FAST 4096/4097 boundary is enforced before canonical pricing and Site reservation, with final wire defense',async()=>{
+ const candidate=candidateFor('flux-3');
+ const resolved=[{assetId:'ma_'+'1'.repeat(32),role:'source' as const,mediaKind:'video' as const,storageUrl:'https://media.maxvideoai.com/source.mp4',durationSec:5.558333,width:1280,height:720,sizeBytes:1000,mimeType:'video/mp4'}];
+ let prices=0;
+ for(const length of [4096,4097]) {
+  const prompt='a'.repeat(length),body={engineId:'flux-3',mode:'v2v',operation:'flux-fast-edit',prompt,resolution:'720p',videoUrl:resolved[0].storageUrl};
+  const request=normalizeGenerationRequest({surface:'video',engineId:'flux-3',mode:'v2v',operation:'flux-fast-edit',prompt,settings:{resolution:'720p'},references:[{kind:'asset',assetId:resolved[0].assetId,role:'source'}]});
+  const actor={authMethod:'studio-session' as const,userId:'owner',projectId:'project',clientId:null};
+  const deps={
+   listPublicEngines:async()=>[candidate],resolveGenerationReferences:async()=>resolved,
+   resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
+   priceGeneration:async()=>{prices++;return{priceCents:48,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:48,currency:'USD',membershipTier:'member'}};},
+  };
+  const price=()=>readGenerationPricing(request,actor,deps as never);
+  if(length===4096) {await price();assert.doesNotThrow(()=>buildFalGenerationRequest(body,'wrong'));}
+  else {
+   await assert.rejects(price(),{code:'PARAMETER_INVALID'});
+   let writes=0;const forbidden=async()=>{writes++;throw new Error('Cannot write or reserve an invalid request');};
+   await assert.rejects(prepareGenerationForActor(request,actor,{...deps,paidGenerationEnabled:()=>true,getAccountRestriction:async()=>null,getWalletSummary:forbidden,withTransaction:forbidden,insertPreparedQuote:forbidden} as never),{code:'PARAMETER_INVALID'});
+   assert.equal(writes,0);assert.throws(()=>buildFalGenerationRequest(body,'wrong'),/4096/);}
+  assert.equal(buildGenerateRequestOptions({body,engine:candidate.engine,mode:'v2v',isBytePlusV1a:false}).ok,length===4096);
+ }
+ assert.equal(prices,1,'Invalid FAST instructions cannot read a price or produce an approvable quote');
 });

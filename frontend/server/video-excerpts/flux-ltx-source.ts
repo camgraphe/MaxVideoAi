@@ -11,6 +11,11 @@ export async function inspectOwnedFluxLtxSource(url:string,operation:FluxLtxSour
     const access=await dependencies.createReadUrl({url,userId,expiresInSeconds:300});
     const downloaded=await dependencies.download({file_id:'owned-operation-source',download_url:access});
     const facts=await dependencies.inspect(downloaded.bytes,downloaded.mimeType);
+    // The shared display MIME intentionally maps QuickTime to video/mp4. FAST needs
+    // positive byte-probed MP4 evidence; unknown/QuickTime brands require preparation.
+    const mp4Brand = /^(?:isom|iso[2-9]|mp4[12]|avc1|M4V |MSNV|dash|cmf[cs])$/;
+    if (operation==='flux-fast-edit' && (!facts.containerFormat?.split(',').includes('mp4')
+      || !mp4Brand.test(facts.containerMajorBrand??''))) throw new Error('Prepare an MP4 source.');
     const error=validateFluxLtxSource(operation,facts);
     if(error) throw new Error(error);
     return {...facts,sourceSha256:createHash('sha256').update(downloaded.bytes).digest('hex')};

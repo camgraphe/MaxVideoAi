@@ -28041,6 +28041,7 @@
           "label": "FAST Edit",
           "defaultForMode": true,
           "promptRequired": true,
+          "promptMaxChars": 4096,
           "transport": "fal",
           "endpoint": "blackforestlabs/flux-3/edit-video",
           "inputSchema": {

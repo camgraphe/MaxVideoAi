@@ -1,4 +1,5 @@
-import { VIDEO_OPERATIONS } from '@/lib/video-operation';
+import { FLUX_FAST_PROMPT_MAX_CHARS } from '@/lib/flux-ltx-operations';
+import { normalizeVideoOperation, VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { klingOwnedElementsSchema, klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
 import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
@@ -28,11 +29,16 @@ export const studioMusicActionSchema = z.object({
   ...conversationSelectionFields,references:audioReferences,
 }).strict();
 export const studioAudioActionSchema=z.object({action:z.literal('audio.prepare'),reply,prompt:z.string().max(12000),mode:z.enum(AUDIO_PACK_VALUES),...conversationSelectionFields,references:audioReferences}).strict();
-export function validateStudioVideoPrompt(value: {action: string; prompt?: string; operation?: string | null}, context: z.RefinementCtx) {
+export function validateStudioVideoPrompt(value: {action: string; modelId?: string | null; mode?: string | null; prompt?: string; operation?: string | null}, context: z.RefinementCtx) {
   if (value.action !== 'video.prepare') return;
+  let operation;
+  try { operation = normalizeVideoOperation(value.modelId??'',value.mode??'t2v',value.operation??undefined); }
+  catch { context.addIssue({code:z.ZodIssueCode.custom,path:['operation'],message:'Choose a supported operation for this model and mode.'}); return; }
   const prompt = value.prompt ?? '';
-  if (['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(value.operation??'') ? Boolean(prompt.trim()) : value.operation === 'h3-recast' ? prompt.length > 2000 : !prompt.trim())
-    context.addIssue({code:z.ZodIssueCode.custom,path:['prompt'],message:['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(value.operation??'') ? 'This operation does not accept a prompt.' : 'Provide a valid prompt for the selected operation.'});
+  const promptUnsupported = ['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(operation??'');
+  if (promptUnsupported ? Boolean(prompt.trim()) : operation === 'h3-recast' ? prompt.length > 2000 : !prompt.trim()
+    || (operation === 'flux-fast-edit' && prompt.length > FLUX_FAST_PROMPT_MAX_CHARS))
+    context.addIssue({code:z.ZodIssueCode.custom,path:['prompt'],message:promptUnsupported ? 'This operation does not accept a prompt.' : 'Provide a valid prompt for the selected operation.'});
 }
 export const studioMediaIntentSchema = z.discriminatedUnion('action', [studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema]).superRefine(validateStudioVideoPrompt);
 export type StudioMediaIntent = z.infer<typeof studioMediaIntentSchema>;

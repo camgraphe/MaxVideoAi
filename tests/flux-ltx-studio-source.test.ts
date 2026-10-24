@@ -24,6 +24,31 @@ for(const [engineId,mode,operation,resolution]of [['flux-3','v2v','flux-fast-edi
  const pricing=studioPricingSourceSelection(actor,[{ref:output,role:'source',slot:null}],input,dependencies);
  const priced=await pricing.resolveReferences({...request,references:pricing.references}as any);
  assert.equal(priced[0].durationSec,5.558333);assert.equal(priced[0].sourceSha256,'same');assert.equal(writes,1,'Read-only pricing never promotes');
- if(operation==='ltx23-reframe'){const inferred=await validateStudioMediaRequest(actor,{...action,operation:undefined},input,factories,true,dependencies);assert.equal((await inferred.materialize()).settings.durationSec,undefined);}
+ if(operation==='ltx23-reframe'){const inferred=await validateStudioMediaRequest(actor,studioMediaIntentSchema.parse({...action,operation:undefined}),input,factories,true,dependencies);assert.equal((await inferred.materialize()).settings.durationSec,undefined);}
  for(const corruption of ['all',original,durable]){changed='none';const pending=await validateStudioMediaRequest(actor,action,input,factories,true,dependencies);changed=corruption;await assert.rejects(pending.materialize(),{code:'REFERENCE_INVALID'},corruption);}
+});
+
+import { studioActionRequestSchema } from '../frontend/lib/studio/conversation-action-contract';
+import { createStudioActionExecutor } from '../frontend/src/server/studio/conversation-actions';
+import { createStudioVideoGenerationService } from '../frontend/src/server/studio/image-generation-service';
+for (const operation of [undefined, null, 'ltx23-reframe'] as const) test(`Studio real schemas and pricing executor infer LTX Reframe for ${String(operation)}`, async () => {
+  const action = {action:'video.prepare',reply:'Review',modelId:'ltx-2-3',mode:'reframe',operation,prompt:'',aspectRatio:'4:5',source:null,references:[],settings:[{name:'resolution',value:'720p'}]};
+  for (const schema of [studioMediaIntentSchema,studioActionRequestSchema]) {
+    assert.equal(schema.safeParse(action).success,true);
+    assert.equal(schema.safeParse({...action,prompt:'Not supported'}).success,false);
+  }
+  const entry=getFalEngineById('ltx-2-3')!;
+  const candidate={engine:entry.engine,surface:'video' as const,publicModes:entry.engine.modes,modeCaps:Object.fromEntries(entry.modes.map(m=>[m.mode,m.ui]))};
+  let priced=0;
+  const service=createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{
+    listPublicEngines:async()=>[candidate],resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+    resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
+    priceGeneration:async(request)=>{assert.equal(request.operation,'ltx23-reframe');assert.equal(request.prompt,'');priced++;return{priceCents:48,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:48,currency:'USD',membershipTier:'member'}};},
+  }});
+  const execute=createStudioActionExecutor(actor,{enabled:true,mediaEnabled:true,generation:{} as never,readProject:async()=>({}) as never,prepareImage:async()=>{throw new Error('unused');},attachedMedia:[{assetId,mediaKind:'video'}],factories:{video:()=>({...service,
+    // Only replace the authorized-media DB boundary; execute the real Studio estimator.
+    estimate:input=>service.estimate(input,async()=>[{assetId,role:'source',mediaKind:'video',storageUrl:durable,durationSec:5.558333,width:720,height:1280,sizeBytes:1000,mimeType:'video/mp4'}]),
+  })} as StudioMediaFactories});
+  const result=await execute({action:'pricing.read',surface:'video',modelId:'ltx-2-3',mode:'reframe',operation,settings:[{name:'resolution',value:'720p'},{name:'aspectRatio',value:'4:5'}],references:[{ref:{type:'asset',assetId,kind:'video'},role:'source'}],outputCount:1});
+  assert.equal(result.ok,true,JSON.stringify(result));assert.equal(priced,1);
 });
