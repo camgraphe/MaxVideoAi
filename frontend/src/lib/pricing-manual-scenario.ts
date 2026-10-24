@@ -139,7 +139,8 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
-    ...(isH3SourceOperation(context.operation) || isFluxLtxSourceOperation(context.operation) ? {input_video_seconds:billedDuration} : {}),
+    ...(operationIdentity?.operation === 'kling-edit' || isH3SourceOperation(operationIdentity?.operation) || isFluxLtxSourceOperation(operationIdentity?.operation)
+      ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,
     ...(media.inputVideoDurationSec !== undefined || (isWan3EngineId(facts.engineId) && context.mode === 'ref2v')
       ? { input_video_seconds: media.inputVideoDurationSec ?? 0 } : {}),

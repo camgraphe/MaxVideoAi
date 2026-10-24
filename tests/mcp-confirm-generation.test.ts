@@ -1470,3 +1470,55 @@ test('Luma source deletion blocks a prepared confirmation before reservation but
     assert.equal(captures.events.includes('reserve_video'),false);assert.equal(captures.providerCalls,0);
   }
 });
+
+for (const seconds of [5.558333, 1.1111111111111113e-9]) {
+  test(`source-operation confirmation retains exact ${seconds}s canonical price, including zero cents`, async () => {
+    const { normalizeGenerationRequest } = await import('../frontend/src/server/agent-api/generation-normalization');
+    const { generationOperationQuoteBinding } = await import('../frontend/src/server/agent-api/generation-operation-facts');
+    const { operationReservationDuration } = await import('../frontend/src/server/agent-api/operation-reservation-duration');
+    const { buildGenerationPricingSnapshot } = await import('../frontend/src/server/agent-api/prepare-generation');
+    const { prepareVideoOperationTariffs } = await import('../frontend/server/pricing/video-operation-tariffs');
+    const { operationTariffState, operationPolicy, operationIdentity } = await import('./helpers/video-operation-tariff-fixture');
+    const { computeCanonicalBillingSnapshot } = await import('../frontend/server/pricing/quote-billing');
+    const prepared = await prepareVideoOperationTariffs({ ...operationIdentity, state: operationTariffState(), policy: operationPolicy });
+    const request = normalizeGenerationRequest({surface:'video',engineId:'flux-3',mode:'v2v',operation:'flux-fast-edit',
+      prompt:'Adjust the lighting.',settings:{resolution:'720p'},references:[{kind:'asset',assetId:'owned-source',role:'source'}]});
+    const engine = listFalEngines().find(entry => entry.engine.id === request.engineId)!.engine;
+    const candidate: AgentPublicGenerationEngine = {engine,surface:'video',publicModes:['v2v'],modeCaps:engine.modeCaps!};
+    const media = [{assetId:'owned-source',role:'source' as const,mediaKind:'video' as const,storageUrl:'https://example.com/source.mp4',
+      durationSec:seconds,width:1280,height:720,mimeType:'video/mp4',sizeBytes:1000,originalName:'source.mp4'}];
+    const { priceCanonicalGenerationWithBilling } = await import('../frontend/src/server/agent-api/generation-pricing');
+    const price: ConfirmGenerationDependencies['priceGeneration'] = (canonical,tier,input) => priceCanonicalGenerationWithBilling(canonical,tier,{
+      ...input,resolvedEngine:input.candidate.engine},context => computeCanonicalBillingSnapshot(context,{
+        pricingPolicy:{loadOverrides:async()=>operationPolicy},loadCustomerTariffState:async()=>({...operationTariffState(),databaseCells:prepared.cells})}));
+    const pricing = await price(request,'member',{candidate,executor:{} as TransactionQueryExecutor,resolvedReferences:media});
+    if (seconds < 1) assert.equal(pricing.priceCents,0);
+    const catalogRevision=computeGenerationCatalogRevision([candidate]);
+    const stored=quoteFor(request,{catalogRevision,priceCents:pricing.priceCents,pricingSnapshot:{
+      ...buildGenerationPricingSnapshot(pricing,request,catalogRevision,membership),...generationOperationQuoteBinding(request,media)}});
+    let reservations=0;
+    const {dependencies,captures}=baseDependencies(request,{
+      listPublicEngines:async()=>[candidate],lockOwnedQuote:async()=>({quote:stored,databaseNow:NOW}),
+      resolveGenerationReferences:async()=>media,priceGeneration:price,
+      resolveRequestExecutability:()=>({executable:true,reason:'available'}),
+      reserveInitialJob:async(input)=>{
+        reservations++;
+        assert.equal(input.quote.priceCents,pricing.priceCents);
+        const canonical=input.pricingSnapshot.canonicalPricing as Record<string,unknown>;
+        assert.equal(operationReservationDuration(input.quote.request,input.pricingSnapshot,canonical),Math.max(1,Math.round(seconds)));
+        assert.equal((canonical.base as {seconds:number}).seconds,seconds);
+        return {jobId:QUOTE_ID,surface:'video',execution:{surface:'video',quoteId:QUOTE_ID}} as never;
+      },
+      readGenerationStatus:async()=>({...safeStatus(request),priceCents:pricing.priceCents}),
+    });
+    assert.equal((await confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies)).priceCents,pricing.priceCents);
+    assert.equal(reservations,1);assert.equal(captures.providerCalls,1,'stubbed submission only');
+    dependencies.resolveGenerationReferences=async()=>media.map(source=>({...source,durationSec:seconds+0.01}));
+    await expectAgentError(confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies),'QUOTE_EXPIRED');
+    assert.equal(reservations,1,'changed owned source never reaches reservation');
+    stored.state='accepted';stored.jobId=QUOTE_ID;
+    dependencies.resolveGenerationReferences=async()=>{throw new Error('accepted recovery must not resolve mutable sources');};
+    assert.equal((await confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies)).priceCents,pricing.priceCents);
+    assert.equal(reservations,1);
+  });
+}

@@ -1,3 +1,6 @@
+import {isH3SourceOperation} from '@/lib/h3-source-operations';
+import {qualifyH3SourceReference} from '@/server/agent-api/h3-source-reference';
+import {qualifyFluxLtxSourceReference} from '@/server/agent-api/flux-ltx-source-reference';
 import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
@@ -145,11 +148,14 @@ function createStudioVisualGenerationService(
         // must never supply stale URL/duration facts to pricing or dispatch.
         const asset=executor?await resolveOwnedReferenceAssetForActor(actor,reference.assetId,{executor}):observed;
         if (surface==='image'&&asset.mediaKind !== "image") throw new Error("IMAGE_REQUIRED");
-        references.push({
+        const ownedReference = {
           ...asset,
           role: reference.role,
           ...(reference.slot === undefined ? {} : { slot: reference.slot }),
-        });
+        };
+        references.push(isH3SourceOperation(request.operation)
+          ? await qualifyH3SourceReference(ownedReference,request.operation,actor.userId)
+          : await qualifyFluxLtxSourceReference(ownedReference,request.operation,actor.userId));
       } catch {
         throw new AgentApiError(
           "REFERENCE_INVALID",

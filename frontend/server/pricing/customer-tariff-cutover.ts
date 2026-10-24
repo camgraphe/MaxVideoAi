@@ -145,7 +145,7 @@ export async function activateInitialCustomerTariffGrid(executor: TransactionQue
     point.scenario = { ...point.scenario,context: { ...point.scenario.context,engine: engines.get(point.scenario.modelId)! } };
   }
   await assertReviewedCustomerTariffCutoverPolicy({ release: input.release,policy,
-    scenarios: cases.filter(row => row.kind === 'ordinary' && row.currentStatus === 'quoted').map(row => row.scenario) });
+    scenarios: cases.filter(row => ['ordinary','new_offer'].includes(row.kind) && row.currentStatus === 'quoted').map(row => row.scenario) });
   const validatedDomains = new Set<string>();
   for (const { scenario, currentStatus } of cases) {
     if (currentStatus === 'unavailable') continue;

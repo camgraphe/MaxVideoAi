@@ -11,6 +11,7 @@ import { manualTariffDurations } from './manual-tariff-durations';
 import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabilities';
 import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
 import { seedanceAutomaticDurationBounds, isSeedanceAdaptiveAspect } from '@/lib/seedance-option-pricing';
+import { hasOperationTariffInventory, videoOperationTariffContexts } from './video-operation-tariff-inventory';
 
 export type ManualTariffCoverageScenario = {
   id: string;
@@ -30,7 +31,8 @@ export type EffectiveCustomerTariffBaseline = {
   at: string;
   registryHash: string;
   databaseIdentity: string | null;
-  rows: Array<{ scenarioId: string; customerCents: number; currency: string; policySource: string; ruleId: string }>;
+  rows: Array<{ scenarioId: string; customerCents: number; currency: string; policySource: string; ruleId: string;
+    initialization?: { kind: 'new_offer'; family: string; beforeCents: null } }>;
   gaps: string[];
 };
 
@@ -96,6 +98,7 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       if (scope.mode !== undefined && mode !== scope.mode) continue;
+      if (hasOperationTariffInventory(model.id, mode)) continue;
       const isImage = entry.category === 'image';
       const gptImage = isImage && isGptImageFamilyEngineId(model.id);
       const outputs = isImage ? manualTariffImageOutputCounts(entry, mode) : null;
@@ -174,6 +177,8 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
         }
     }
   }
+  for (const context of videoOperationTariffContexts(scope)) scenarios.push(buildManualTariffCoverageScenario(context,
+    `${context.engine.id}:${context.mode}:${context.operation}:${context.resolution}`));
   // Requested orientations are retained in quote context; only factual price dimensions author cells.
   const unique = new Map<string, ManualTariffCoverageScenario>();
   for (const scenario of scenarios) {
@@ -208,7 +213,9 @@ export async function collectEffectiveCustomerTariffBaseline(input: {
         continue;
       }
       rows.push({ scenarioId: scenario.id, customerCents: snapshot.totalCents, currency: snapshot.currency,
-        policySource: provenance.source, ruleId: provenance.sourceRuleId });
+        policySource: provenance.source, ruleId: provenance.sourceRuleId,
+        ...(snapshot.meta?.tariffInitialization ? { initialization: snapshot.meta.tariffInitialization as
+          { kind: 'new_offer'; family: string; beforeCents: null } } : {}) });
     } catch {
       gaps.push(scenario.id);
     }

@@ -103,7 +103,9 @@ function resolveDefaultResolution(engine: EngineCaps): string {
 }
 
 function resolveDefaultMode(entry: FalEngineEntry): Mode {
-  return (entry.modes[0]?.mode ?? (entry.category === 'image' ? 't2i' : 't2v')) as Mode;
+  // Source operations can lead the catalog without changing frozen creation quotes.
+  const creationMode = entry.category === 'image' ? 't2i' : 't2v';
+  return (entry.modes.find((candidate) => candidate.mode === creationMode)?.mode ?? entry.modes[0]?.mode ?? creationMode) as Mode;
 }
 
 function snapshotRow(params: {

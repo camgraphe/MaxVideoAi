@@ -9,6 +9,8 @@ import { compileCurrentContinuousTariffPrice } from './compile-current-continuou
 import { prepareReviewedSeedanceMigrationPrice } from './seedance-reviewed-migration';
 import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import { prepareReviewedSeedanceLasPrice, SEEDANCE_LAS_INITIALIZATION_POLICY } from './seedance-las-authoring';
+import { newVideoTariffFamily } from '@/lib/pricing-audit/video-operation-tariff-inventory';
+import { computeCustomerTariffInitializationBaseline } from './customer-tariff-initialization-baseline';
 
 const key = (selector: object) => JSON.stringify(Object.entries(selector).sort(([a],[b]) => a.localeCompare(b)));
 
@@ -24,6 +26,19 @@ export async function assertReviewedCustomerTariffCutoverPolicy(input: {
   const original = new Map(input.scenarios.map(s => [key(s.selector),checkpoints.get(`ordinary:${s.id}`)?.beforeCents ?? undefined]));
   const checkedCurves = new Set<string>();
   for (const scenario of input.scenarios) {
+    if (newVideoTariffFamily(scenario.context)) {
+      const row = checkpoints.get(`new_offer:${scenario.id}`), selector = continuousInputTariffSelector(scenario.selector) ?? scenario.selector;
+      const cell = cells.get(key(selector));
+      const proposed = await computeCustomerTariffInitializationBaseline(scenario.context, input.policy);
+      if (!row || row.beforeCents !== null || row.customerCents !== proposed.totalCents || !cell) throw new Error('New-offer current-policy proposal changed.');
+      if (!checkedCurves.has(cell.id)) {
+        const expected = selector.durationSec === 'continuous' ? await compileCurrentContinuousTariffPrice(scenario, input.policy)
+          : { kind: 'fixed', customerCents: proposed.totalCents };
+        if (cutoverDigest(cell.price) !== cutoverDigest(expected)) throw new Error('New-offer literal tariff changed.');
+        checkedCurves.add(cell.id);
+      }
+      continue;
+    }
     const row = checkpoints.get(`ordinary:${scenario.id}`);
     if (!row || row.beforeCents === null) throw new Error('Original ordinary captured amount missing.');
     const selector = continuousInputTariffSelector(scenario.selector);

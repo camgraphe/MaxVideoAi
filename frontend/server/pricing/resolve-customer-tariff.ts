@@ -15,6 +15,7 @@ import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from
 import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/server/byteplus-las-tariff';
 import { seedanceInputTariffRate } from './seedance-input-tariff';
 import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
+import { usesOperationReferenceSettlement } from '@/lib/video-operation';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -53,7 +54,7 @@ export function resolveCustomerTariffQuote(input: {
     const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
     const omni = continuous.engineId === 'gemini-omni-flash';
     const openUnit = continuous.referenceTokenBudget === 'continuous' ? 'reference_tokens'
-      : continuous.operation === 'kling-edit' || ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
+      : ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
     const requiredInput = openUnit ? units.includes(openUnit) : units.includes(unit) || (omni && units.includes('input_tokens'));
     const requiredOutput = !omni || units.includes('output_tokens') || units.includes('output_seconds');
     if (cell.price.kind === 'fixed' || !requiredInput || !requiredOutput) {
@@ -81,6 +82,8 @@ export function resolveCustomerTariffQuote(input: {
     at: input.at,
     versionedCells: input.state.versionedCells,
     databaseCells: input.state.databaseCells,
+    ...(usesOperationReferenceSettlement(input.context.engine.id, input.context.mode ?? 't2v', input.context.operation)
+      ? { referenceSubtotalRounding: 'nearest' as const } : {}),
   });
   return { quote, revision: input.state.revision, supplierCost };
 }

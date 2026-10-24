@@ -27,6 +27,7 @@ import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
 import type { ResolvedReference } from './reference-types';
 import { stableJson } from './generation-normalization';
+import { operationReservationDuration } from './operation-reservation-duration';
 import {
   buildPaidVideoRequestBody,
   resolvePaidMembershipTier,
@@ -174,7 +175,7 @@ function videoInitialParams(
   pricing: Record<string, unknown>,
 ): CreateVideoInitialJobParams {
   const { quote, candidate } = input;
-  const durationSec = quote.request.settings.durationSec;
+  const durationSec = operationReservationDuration(quote.request,input.pricingSnapshot,pricing) ?? quote.request.settings.durationSec;
   if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1) {
     throw new Error('Invalid reserved video duration.');
   }

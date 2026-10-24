@@ -110,6 +110,14 @@ export function videoOperationTariffIdentity(engineId: string, mode: string, val
     endpoint: endpoint ?? 'fal-ai/kling-video/o3/4k/video-to-video/reference' };
 }
 
+/** New source offers retain canonical standard's nearest reference settlement.
+ * This derives from strict engine/mode/endpoint identity, never request metadata. */
+export function usesOperationReferenceSettlement(engineId: string, mode: string, operation?: unknown): boolean {
+  const identity = videoOperationTariffIdentity(engineId, mode, operation);
+  return Boolean(identity && (identity.operation === 'kling-edit' || isH3SourceOperation(identity.operation)
+    || isFluxLtxSourceOperation(identity.operation)));
+}
+
 /** Keep inactive operation values in storage; filter only the outgoing payload. */
 export function filterVideoOperationValues(engine: EngineCaps, mode: Mode, values: Record<string, unknown>) {
   if (engine.id === 'luma-ray-3-2') {

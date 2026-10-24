@@ -18,7 +18,7 @@ import {toolAssetRefSchema,type ToolAssetRef} from '../frontend/src/lib/toolbox/
 import {isWorkspaceModelCertifiedForBlock} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
 import {projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
-import {workflowCatalog,workflowAction,workflowInput,workflowActor,workflowReference,workflowResolved,workflowLumaSource,workflowLumaSourceRow} from './helpers/studio-video-workflow-fixtures';
+import {workflowCatalog,workflowAction,workflowInput,workflowActor,workflowReference,workflowResolved,workflowLumaSource,workflowLumaSourceRow,workflowDraftSource} from './helpers/studio-video-workflow-fixtures';
 
 const actor={authMethod:'studio-session' as const,userId:'workflow-owner',projectId:'workflow-project',clientId:null};
 const entries=listFalEngines();
@@ -42,7 +42,7 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138,'Conversation qualification preserves every proven public tuple.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138+6,'Conversation qualification preserves every proven public tuple.');
   assert.equal(studio.find(e=>e.engine.id==='gemini-omni-flash')!.publicModes.includes('retake'),false,'Private interaction continuity remains excluded by the public catalog.');
   for(const candidate of studio){const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface==='video');for(const mode of details.modes){const canonical=projectAgentModelModeDetails(candidate,mode.mode);assert.deepEqual(mode.references.map(r=>[r.type,r.roles,r.required,r.min]),canonical.references.map(r=>[r.type,r.roles,r.required,r.min]));}}
 });
@@ -84,10 +84,17 @@ test('strict video schema scopes each asset identity to its exact reviewed media
   assert.deepEqual(tool.properties,original);
 });
 test('every certified video tuple preserves its authored request and provider media fields',async t=>{
-  const catalog=await workflowCatalog();const factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
+  const catalog=await workflowCatalog();const factories={video:()=>({catalog:async()=>catalog,
+    resolveReferences:async(request:CanonicalGenerationRequest)=>request.references.map(ref=>({...workflowReference(ref.kind==='asset'&&ref.assetId===ids.image?'image':'video',ref.role,ref.slot,request.engineId),
+      ...(ref.role==='source'?{sourceSha256:'a'.repeat(64),...(request.operation==='h3-recast'?{fps:24}:{})}:{})}))})} as unknown as StudioMediaFactories;
   for(const candidate of catalog)for(const mode of candidate.publicModes)await t.test(candidate.engine.id+' '+mode,async()=>{
     const action=workflowAction(candidate,mode);
-    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{lumaSourceExecutor:{query:async(sql,params)=>{
+    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{prepareFluxDraftSource:async()=>workflowDraftSource,resolveFluxDraftSource:async()=>workflowDraftSource,
+      inspectFluxLtxSource:async()=>({...workflowReference('video','source'),sourceSha256:'a'.repeat(64)}) as never,
+      inspectH3Source:async()=>({...workflowReference('video','source'),sourceSha256:'a'.repeat(64),fps:24}) as never,
+      lumaSourceExecutor:{query:async(sql,params)=>{
+      if(candidate.engine.id==='flux-3-draft'&&mode==='v2v'){assert.equal(params?.[0],ids.video);return [{source_job_id:workflowDraftSource.jobId,source_output_id:workflowDraftSource.outputId}] as never;}
+
       assert.equal(params?.[1],workflowActor.userId);
       if(sql.includes('FROM media_assets')){assert.equal(params?.[0],workflowLumaSource.assetId);return [{source_job_id:workflowLumaSource.sourceJobId,source_output_id:workflowLumaSource.outputId}] as never;}
       assert.equal(params?.[0],workflowLumaSource.sourceJobId);assert.equal(params?.[2],workflowLumaSource.assetId);return [workflowLumaSourceRow] as never;

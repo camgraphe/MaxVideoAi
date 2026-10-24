@@ -1,6 +1,7 @@
 import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
+import { normalizeVideoOperation, usesOperationReferenceSettlement } from '@/lib/video-operation';
 import {
   computePricingDefinitionFacts,
   type PricingFacts,
@@ -569,10 +570,16 @@ function buildBillingPricingFactsInternal(
 
 /** The factual owner identifies whether requested orientation changes the billing amount. */
 export function buildBillingPricingFacts(context: PricingContext, pricingDetails: EnginePricingDetails | undefined, currency: string): BillingPricingFacts {
+  const operation = normalizeVideoOperation(context.engine.id, context.mode ?? 't2v', context.operation);
+  if (operation !== context.operation) context = { ...context, operation };
   const engine = applyEngineVariantPricing(context.engine, context.mode);
   const effectiveContext = normalizeSeedancePricingContext(engine === context.engine ? context : { ...context, engine });
   const details = engine === context.engine ? pricingDetails : engine.pricingDetails;
   const result = buildBillingPricingFactsInternal(effectiveContext, details, currency);
+  if (usesOperationReferenceSettlement(context.engine.id, context.mode ?? 't2v', context.operation)) {
+    result.meta = { ...result.meta, supplierReferenceSettlementRounding: 'nearest',
+      supplierReferenceExactCents: result.facts.vendorSubtotalExactCents, effective_supplier_charge_verified: false };
+  }
   const identityFacts = { ...result.meta, ...result.facts.metadata };
   const tokenBreakdown = engine.id === 'gemini-omni-flash'
     ? result.meta.cost_breakdown_usd as { outputTokens: number; inputImageTokens: number; inputVideoTokens: number } : undefined;

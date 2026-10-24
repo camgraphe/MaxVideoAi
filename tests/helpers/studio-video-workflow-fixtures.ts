@@ -4,6 +4,7 @@ import {projectAgentModelModeDetails} from '../../frontend/src/server/agent-api/
 import type {CanonicalGenerationRequest} from '../../frontend/src/server/agent-api/generation-types';
 import type {ResolvedReference} from '../../frontend/src/server/agent-api/reference-types';
 import type {StudioMediaIntent} from '../../frontend/lib/studio/conversation-media-contract';
+import {resolveVideoOperationEngine,usesOperationReferenceSettlement} from '../../frontend/lib/video-operation';
 import {isLumaRay2EngineId} from '../../frontend/src/lib/luma-ray2';
 
 export const workflowActor={authMethod:'studio-session' as const,userId:'workflow-owner',projectId:'workflow-project',clientId:null};
@@ -17,15 +18,21 @@ export function workflowReference(kind:ResolvedReference['mediaKind'],role:Resol
   return {assetId:lumaVideo?workflowLumaVideoId:workflowAssetIds[kind],role,mediaKind:kind,...(slot===undefined?{}:{slot}),storageUrl:`https://cdn.maxvideoai.com/${lumaVideo?'luma-workflow':'workflow'}.${extension}`,mimeType:kind==='image'?'image/png':kind==='video'?'video/mp4':'audio/wav',width:kind==='audio'?null:1920,height:kind==='audio'?null:1080,durationSec:kind==='image'?null:lumaVideo?5:6,sizeBytes:4096,originalName:`${lumaVideo?'luma-workflow':'workflow'}.${extension}`};
 }
 export function workflowAction(candidate:AgentPublicGenerationEngine,mode:CanonicalGenerationRequest['mode']):Extract<StudioMediaIntent,{action:'video.prepare'}> {
+  const operation=mode==='v2v'?(candidate.engine.id==='minimax-h3-max'?'h3-recast':candidate.engine.id==='flux-3'?'flux-fast-edit':candidate.engine.id==='flux-3-draft'?'flux-draft-enhance':undefined)
+    :candidate.engine.id==='ltx-2-3'&&mode==='reframe'?'ltx23-reframe':undefined;
+  if(operation){const engine=resolveVideoOperationEngine(candidate.engine,mode as never,operation);candidate={...candidate,engine,modeCaps:engine.modeCaps!};}
+  const sourceOperation=usesOperationReferenceSettlement(candidate.engine.id,mode,operation);
   const details=projectAgentModelModeDetails(candidate,mode);
   const pairs: [ResolvedReference['mediaKind'],ResolvedReference['role']][]=mode==='t2v'?[]:mode==='fl2v'?[['image','first_frame'],['image','last_frame']]:mode==='ref2v'?[['image','reference']]:mode==='r2v'?[['video','reference']]:mode==='a2v'?[['audio','source']]:['v2v','extend','retake','reframe'].includes(mode)?[['video','source']]:[['image','first_frame']];
   const settings=details.settings.filter(s=>s.default!==null&&s.type!=='multi_prompt'&&!['durationSec','resolution','aspectRatio','documentUrl','webpageUrl'].includes(s.key)).map(s=>({name:s.key,value:s.default}));
-  if(candidate.engine.id==='flux-3-max'&&mode==='ref2v')settings.push({name:'keyframeIndexes',value:'0'});
+  if(['flux-3-max','flux-3','flux-3-draft'].includes(candidate.engine.id)&&mode==='ref2v')settings.push({name:'keyframeIndexes',value:'0'});
   const derived=mode==='a2v'||mode==='reframe'&&candidate.engine.id!=='luma-ray-3-2'||mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id);
-  settings.push({name:'durationSec',value:derived?6:details.duration?.options?.[0]??details.duration?.range?.min??5});
+  if(!sourceOperation)settings.push({name:'durationSec',value:derived?6:details.duration?.options?.[0]??details.duration?.range?.min??5});
   settings.push({name:'resolution',value:mode==='v2v'&&isLumaRay2EngineId(candidate.engine.id)?candidate.engine.resolutions.find(r=>r!=='auto')!:details.resolutions[0]});
-  if(details.aspectRatios.length)settings.push({name:'aspectRatio',value:details.aspectRatios.includes('16:9')?'16:9':details.aspectRatios[0]});
-  return {action:'video.prepare',reply:'Review this exact media quote.',prompt:'Continue the cinematic action with restrained motion.',aspectRatio:'16:9',source:null,modelId:candidate.engine.id,mode:mode as never,settings,outputCount:1,references:pairs.map(([kind,role])=>({ref:{type:'asset',assetId:kind==='video'&&candidate.engine.id==='luma-ray-3-2'?workflowLumaVideoId:workflowAssetIds[kind],kind},role,slot:null}))};
+  if(details.aspectRatios.length&&!sourceOperation)settings.push({name:'aspectRatio',value:details.aspectRatios.includes('16:9')?'16:9':details.aspectRatios[0]});
+  if(operation==='h3-recast')pairs.push(['image','reference']);
+  if(sourceOperation)for(let i=settings.length-1;i>=0;i--)if(['durationSec','durationOption','fps','audio','aspectRatio'].includes(settings[i].name))settings.splice(i,1);
+  return {operation,action:'video.prepare',reply:'Review this exact media quote.',prompt:operation==='flux-draft-enhance'||operation==='ltx23-reframe'?'':'Continue the cinematic action with restrained motion.',aspectRatio:'16:9',source:null,modelId:candidate.engine.id,mode:mode as never,settings,outputCount:1,references:pairs.map(([kind,role])=>({ref:{type:'asset',assetId:kind==='video'&&candidate.engine.id==='luma-ray-3-2'?workflowLumaVideoId:workflowAssetIds[kind],kind},role,slot:null}))};
 }
 export function workflowResolved(request:CanonicalGenerationRequest,action:Extract<StudioMediaIntent,{action:'video.prepare'}>):ResolvedReference[]{return request.references.map(reference=>{
   const selection=action.references!.find(r=>r.ref.type==='asset'&&reference.kind==='asset'&&r.ref.assetId===reference.assetId&&r.role===reference.role)!;
@@ -47,3 +54,10 @@ export const workflowLumaSourceRow = {
   original_url: workflowLumaSource.originalUrl, output_url: workflowLumaSource.originalUrl,
   asset_id: workflowLumaSource.assetId, asset_owner: workflowLumaSource.ownerId, asset_status: 'ready',
 };
+
+
+export const workflowDraftSource = {ownerId:workflowActor.userId,jobId:'workflow-draft-source',outputId:'workflow-draft-output',
+  providerRequestId:'fixture-draft-request',attemptId:1,endpoint:'blackforestlabs/flux-3/image-to-video/draft',
+  outputUrl:workflowReference('video','source').storageUrl,outputSha256:'a'.repeat(64),cacheUrl:'https://v3.fal.media/cache.bin',
+  cacheIdentity:'b'.repeat(64),providerVideoUrl:'https://v3.fal.media/draft.mp4',durationSec:10.041667,fps:24,decodedFrameCount:241,
+  fingerprint:'c'.repeat(64),expiresAt:null,invalidatedAt:null};
