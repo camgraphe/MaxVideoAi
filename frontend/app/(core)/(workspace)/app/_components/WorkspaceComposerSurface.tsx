@@ -14,8 +14,7 @@ import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.c
 import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
-// Subject slots occupy the initial form. A nested lazy boundary inserts the
-// panel late and moves the mobile results rail.
+// Retained subject slots render synchronously; an empty builder is opt-in from References.
 import { KlingElementsBuilder, type KlingElementState, type KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
@@ -448,7 +447,6 @@ export function WorkspaceComposerSurface({
     showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
     showOmniStudioPanel ||
     showRetakeWorkflowAction ||
-    showKlingElementsBuilder ||
     (showOptionsControl && optionsOpen)
   );
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, uiLocale);
@@ -575,6 +573,18 @@ export function WorkspaceComposerSurface({
               />
             ) : null}
         </>}
+        subjectReferences={showKlingElementsBuilder ? {
+          hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
+          content: <KlingElementsBuilder
+            elements={klingElements}
+            onAddElement={handleKlingElementAdd}
+            onRemoveElement={handleKlingElementRemove}
+            onAddAsset={handleKlingElementAssetAdd}
+            onRemoveAsset={handleKlingElementAssetRemove}
+            onOpenLibrary={handleOpenKlingAssetLibrary}
+            videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
+          />,
+        } : undefined}
         extraFields={showExtraFields ? (
           <>
             {showOmniStudioPanel ? (
@@ -604,17 +614,6 @@ export function WorkspaceComposerSurface({
                   {getLocalizedModeLabel('retake', uiLocale)}
                 </Button>
               </div>
-            ) : null}
-            {showKlingElementsBuilder ? (
-              <KlingElementsBuilder
-                elements={klingElements}
-                onAddElement={handleKlingElementAdd}
-                onRemoveElement={handleKlingElementRemove}
-                onAddAsset={handleKlingElementAssetAdd}
-                onRemoveAsset={handleKlingElementAssetRemove}
-                onOpenLibrary={handleOpenKlingAssetLibrary}
-                videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
-              />
             ) : null}
             <fieldset disabled={draftSettingsLocked} className="min-w-0">
               <SettingsControls

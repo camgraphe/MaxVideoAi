@@ -1,6 +1,6 @@
 "use client";
 import {useI18n} from '@/lib/i18n/I18nProvider';
-import {videoDurationPolicy,videoInheritsSourceFraming,videoSourceDurationLabel} from '@/lib/video-workflow-capabilities';
+import {videoDurationPolicy,videoInheritsSourceFraming,videoSourceDurationLabel,videoModifySettingsCopy} from '@/lib/video-workflow-capabilities';
 
 import clsx from 'clsx';
 import { Card } from '@/components/ui/Card';
@@ -67,6 +67,8 @@ export function SettingsControls({
   variant = 'full',
 }: SettingsControlsProps) {
   const {locale}=useI18n();
+  const sourceWorkflow = mode === 'v2v' || mode === 'extend';
+  const modifyCopy = videoModifySettingsCopy(locale);
   const showCore = variant !== 'advanced';
   const sourceDuration = videoDurationPolicy(engine,mode,caps)==='source_video';
   const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
@@ -212,10 +214,12 @@ export function SettingsControls({
               <div className="rounded-input border border-dashed border-border bg-surface-glass-60 p-3 text-[12px] text-text-muted">
                 {sourceDuration ? (inheritsSourceVideo ? resolvedDurationManagedLabel : videoSourceDurationLabel(locale)) : resolvedDurationManagedLabel}
               </div>
+            ) : sourceWorkflow && enumeratedDurationOptions?.length === 1 ? (
+              <p className="p-3 text-sm text-text-secondary">{controlsCopy.duration.optionsLabel}: {enumeratedDurationOptions[0].label}</p>
             ) : enumeratedDurationOptions && enumeratedDurationOptions.length ? (
               <div className="flex flex-col gap-2 text-sm text-text-secondary">
                 <span className="text-[12px] uppercase tracking-micro text-text-muted">
-                  {controlsCopy.duration.optionsLabel}
+                  {mode === 'v2v' ? modifyCopy.duration : controlsCopy.duration.optionsLabel}
                   <span className="ml-2 align-middle text-[11px] text-text-muted/80">
                     {(controlsCopy.duration.maxLabel ?? 'Max {seconds}s').replace('{seconds}', String(durationMaxSeconds))}
                   </span>
@@ -246,7 +250,7 @@ export function SettingsControls({
             ) : durationRange ? (
               <label className="flex flex-col gap-2 text-sm text-text-secondary">
                 <span className="text-[12px] uppercase tracking-micro text-text-muted">
-                  {controlsCopy.duration.rangeLabel}
+                  {mode === 'v2v' ? modifyCopy.duration : controlsCopy.duration.rangeLabel}
                   <span className="ml-2 align-middle text-[11px] text-text-muted/80">
                     {(controlsCopy.duration.rangeHint ?? 'Min {min}s · Max {max}s')
                       .replace('{min}', String(durationRange.min))
@@ -287,6 +291,7 @@ export function SettingsControls({
                 onChange={onResolutionChange}
                 focusRef={focusRefs?.resolution}
                 disabled={resolutionLocked}
+                readOnly={sourceWorkflow && (resolutionLocked || resolutionOptions.length === 1)}
                 labelFor={(opt) => {
                   const resolutionCopy = controlsCopy.resolution;
                   const optionKey = String(opt);
@@ -319,7 +324,8 @@ export function SettingsControls({
 
             {showAspectControl && !videoInheritsSourceFraming(engine,mode) && (
               <FieldGroup
-                label={controlsCopy.aspect.label}
+                label={mode === 'v2v' ? modifyCopy.format : controlsCopy.aspect.label}
+                readOnly={sourceWorkflow && aspectOptions.length === 1}
                 options={aspectOptions}
                 value={aspectRatio}
                 onChange={onAspectRatioChange}
@@ -367,8 +373,10 @@ export function SettingsControls({
           )}
           {showAudioToggle && (
             <div className="-mt-1 flex items-center justify-between px-1">
-              <span className="text-[11px] uppercase tracking-micro text-text-muted">{controlsCopy.audio.label}</span>
-              <Button
+              <span className="text-[11px] uppercase tracking-micro text-text-muted">{mode === 'v2v' ? modifyCopy.audio : controlsCopy.audio.label}</span>
+              {sourceWorkflow && !canToggleAudio ? (
+                <span className="text-[12px] text-text-secondary">{audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}</span>
+              ) : <Button
                 type="button"
                 size="sm"
                 variant="outline"
@@ -388,7 +396,7 @@ export function SettingsControls({
                 aria-pressed={audioEnabled}
               >
                 {audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}
-              </Button>
+              </Button>}
             </div>
           )}
           {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (

@@ -18,11 +18,11 @@ import * as optionCopy from '../frontend/lib/seedance-modelark-options';
 const base = { modelId: 'dreamina-seedance-2-5-260628', prompt: 'A landscape.', durationSec: 4,
   resolution: '480p', ratio: '16:9', allowedDurationOptions: [4, 30], allowedResolutions: ['480p'] as ['480p'], transport: 'modelark' as const };
 
-test('ModelArk creative output choices survive payload construction without changing defaults', () => {
+test('ModelArk keeps MOV but ignores retired watermark and last-frame switches from old requests', () => {
   const selected = buildBytePlusSeedancePayload({ ...base, outputFormat: 'mov', returnLastFrame: true, watermark: true } as any) as any;
   assert.equal(selected.output_format, 'mov');
-  assert.equal(selected.return_last_frame, true);
-  assert.equal(selected.watermark, true);
+  assert.equal(selected.return_last_frame, undefined);
+  assert.equal(selected.watermark, false);
   const ordinary = buildBytePlusSeedancePayload(base) as any;
   assert.equal(ordinary.watermark, false);
   assert.equal(ordinary.output_format, undefined);
@@ -64,8 +64,8 @@ test('workspace discovers the creative controls and extension image/audio refere
   const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: 'extend', allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false, isUnifiedSeedance: true, isUnifiedGeminiOmni: false, uiLocale: 'en' });
   assert.ok(summary.secondaryFields.some(({field}) => field.id === 'output_format'));
-  assert.ok(summary.secondaryFields.some(({field}) => field.id === 'return_last_frame'));
-  assert.ok(summary.secondaryFields.some(({field}) => field.id === 'watermark'));
+  assert.ok(!summary.secondaryFields.some(({field}) => field.id === 'return_last_frame'));
+  assert.ok(!summary.secondaryFields.some(({field}) => field.id === 'watermark'));
   assert.ok(summary.assetFields.some(({field}) => field.id === 'image_urls'));
   assert.ok(summary.assetFields.some(({field}) => field.id === 'audio_urls'));
 });
@@ -124,7 +124,7 @@ test('generation submission forwards selected output controls and Extend referen
         } }), queryFn: async () => [] },
     } as any);
     assert.equal(result.ok, true);
-    assert.equal(outgoing?.output_format, 'mov'); assert.equal(outgoing?.return_last_frame, true); assert.equal(outgoing?.watermark, true);
+    assert.equal(outgoing?.output_format, 'mov'); assert.equal(outgoing?.return_last_frame, undefined); assert.equal(outgoing?.watermark, false);
     assert.equal(outgoing?.duration, -1);
     assert.deepEqual((outgoing?.content as Array<{type:string}>).map(item => item.type), ['text','image_url','video_url','audio_url']);
   } finally { ENV.SEEDANCE_2_5_BYTEPLUS_ENABLED = prior.enabled; ENV.SEEDANCE_2_5_PROVIDER = prior.provider; }
@@ -138,9 +138,11 @@ test('MCP validates, advertises and materializes the same Seedance output choice
     settings: { durationSec: 4, resolution: '480p', aspectRatio: '16:9', outputFormat: 'mov', returnLastFrame: true, watermark: true }, references: [] });
   validateCanonicalGenerationCapabilities(request, candidate);
   const body = buildPaidVideoRequestBody({ quoteId: 'fixture-quote', request, engine, canonicalPricing: { membershipTier: 'member' } });
-  assert.deepEqual(body.extraInputValues, { output_format: 'mov', return_last_frame: true, watermark: true });
+  assert.deepEqual(body.extraInputValues, { output_format: 'mov' });
+  assert.equal(request.settings.returnLastFrame, undefined);
+  assert.equal(request.settings.watermark, undefined);
   const details = projectAgentModelModeDetails(candidate, 't2v');
-  assert.ok(details.settings.some(setting => setting.key === 'returnLastFrame'));
+  assert.ok(!details.settings.some(setting => ['returnLastFrame', 'watermark'].includes(setting.key)));
   assert.ok(details.settings.some(setting => setting.key === 'outputFormat' && setting.values?.includes('mov')));
   assert.ok(details.settings.some(setting => setting.key === 'durationOption' && setting.values?.includes('auto')));
 });

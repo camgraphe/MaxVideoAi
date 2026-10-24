@@ -1,3 +1,4 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { query, type QueryExecutor } from '@/lib/db';
 import { isRecord } from './byteplus-record-utils';
 import { getOwnedReadySeedanceDraftLink } from './seedance-draft-links';
@@ -51,7 +52,7 @@ export async function resolveSeedanceWorkflowRequest(input: {
     || (isRecord(body.payment) && body.payment.mode && body.payment.mode !== 'wallet')) throw invalid();
   if (raw.step === 'draft') {
     if (body.resolution !== undefined && body.resolution !== '480p') throw invalid();
-    return { body: { ...body, resolution: '480p', iterationCount: 1, audio: body.audio !== false }, workflow: { step: 'draft' } };
+    return { body: { ...body, ...(isRecord(body.extraInputValues) ? { extraInputValues: withoutRetiredOutputControls(body.extraInputValues) } : {}), resolution: '480p', iterationCount: 1, audio: body.audio !== false }, workflow: { step: 'draft' } };
   }
   const draftJobId = raw.draftJobId;
   if (typeof draftJobId !== 'string' || !draftJobId || draftJobId.length > 255 || /\s|\0/u.test(draftJobId)) throw invalid();
@@ -87,5 +88,5 @@ export async function resolveSeedanceWorkflowRequest(input: {
       shotType: advanced.shotType, voiceIds: advanced.voiceIds ?? [], voiceControl: advanced.voiceControl === true,
       elements: refs.elements,
       seed: advanced.seed, cameraFixed: advanced.cameraFixed, safetyChecker: advanced.safetyChecker,
-      extraInputValues: isRecord(advanced.extraInputValues) ? advanced.extraInputValues : {} } };
+      extraInputValues: isRecord(advanced.extraInputValues) ? withoutRetiredOutputControls(advanced.extraInputValues) : {} } };
 }

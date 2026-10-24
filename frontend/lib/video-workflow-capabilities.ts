@@ -24,6 +24,14 @@ export function videoSourceDurationLabel(locale:string):string {
   return locale==='fr'?'Durée de la vidéo source':locale==='es'?'Duración del vídeo original':'Source video duration';
 }
 
+export function videoModifySettingsCopy(locale: string) {
+  return locale === 'fr'
+    ? { duration: 'Durée du résultat', format: 'Format du résultat', audio: 'Audio généré' }
+    : locale === 'es'
+      ? { duration: 'Duración del resultado', format: 'Formato del resultado', audio: 'Audio generado' }
+      : { duration: 'Output duration', format: 'Output format', audio: 'Generated audio' };
+}
+
 export type VideoWorkflowNotice=Readonly<{code:'seedance_recognizable_people';message:string}>;
 export function videoWorkflowNotices(engineId:string,mode:string,locale='en'):readonly VideoWorkflowNotice[] {
   if(!['seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5'].includes(engineId)

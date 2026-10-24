@@ -1,5 +1,24 @@
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Optional output controls retired — 24 October 2026 source candidate
+
+The shared authored schemas no longer expose optional AI watermark or Seedance
+return-last-frame controls to the site, MCP or Studio. `prepare_generation` no
+longer advertises `watermark`. Saved settings and reused Drafts cannot re-enable
+these controls: canonical preparation drops them, BytePlus video/image payloads
+force optional watermark off, and Seedance requests omit last-frame extraction.
+MOV/MP4, native Draft/final and existing last-frame artifact recovery remain
+unchanged. Provider-required provenance markers are unaffected.
+
+The reviewed schema-only policy change yields fingerprint
+`f8aa47c705f0f8adeccd2490e6cbe4c2ab340cafbee5818bd43ff9c39c5eae29`.
+All 70 curated decisions and the fixture-contract fingerprint are preserved.
+Measured metadata: global instructions 1,551 UTF-8 bytes, preparation description
+1,639 bytes, serialized preparation input schema 12,686 bytes, maximum tool
+description 1,927 bytes. These local checks do not imply deployment, plugin
+release or refreshed metadata in an existing host session.
+
+
 ## Luma source timing — 22 October 2026 source candidate
 
 Ray 3.2 Modify requires a verified owned 5s/10s source matching the selected

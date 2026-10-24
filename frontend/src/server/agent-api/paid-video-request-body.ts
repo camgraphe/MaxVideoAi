@@ -1,3 +1,4 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
@@ -170,8 +171,6 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   promptCameraDirection: 'prompt_camera_direction',
   promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
-  returnLastFrame: 'return_last_frame',
-  watermark: 'watermark',
   contextSec: 'context',
   cropEndX: 'x_end',
   cropEndY: 'y_end',
@@ -247,7 +246,7 @@ export function buildPaidVideoRequestBody(
       payment: { mode: 'wallet' }, membershipTier: resolvePaidMembershipTier(execution.canonicalPricing) };
   }
   if (execution.engine) execution = { ...execution, engine: resolveVideoOperationEngine(execution.engine, toEngineGenerationMode(execution.request.engineId, execution.request.mode), execution.request.operation) };
-  const settings = { ...execution.request.settings };
+  const settings = withoutRetiredOutputControls(execution.request.settings);
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);

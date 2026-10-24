@@ -88,14 +88,6 @@ const SEEDREAM_ENGINE: EngineCaps = {
         default: 'jpeg',
         description: 'Choose the Seedream output file format.',
       },
-      {
-        id: 'watermark',
-        engineParam: 'watermark',
-        type: 'boolean',
-        label: 'AI watermark',
-        default: false,
-        description: 'Add AI-generated watermark text to the image.',
-      },
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'gif'],
@@ -207,14 +199,6 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
         values: ['jpeg', 'png'],
         default: 'jpeg',
         description: 'Choose the Seedream output file format.',
-      },
-      {
-        id: 'watermark',
-        engineParam: 'watermark',
-        type: 'boolean',
-        label: 'AI watermark',
-        default: false,
-        description: 'Add AI-generated watermark text to the image.',
       },
     ],
     constraints: {

@@ -24,10 +24,6 @@ export function withSeedanceModelArkOptions(engine: EngineCaps): EngineCaps {
   const outputs: EngineInputField[] = [
     ...(flagship ? [{ id: 'output_format', type: 'enum' as const, label: 'Output format', values: ['mp4', 'mov'], default: 'mp4',
       description: 'MP4 for sharing; MOV preserves professional colour and audio fidelity. The original remains available to download.' }] : []),
-    { id: 'return_last_frame', type: 'boolean', label: 'Return last frame', default: false,
-      description: 'Save the final JPEG frame as a separate image to continue the next video.' },
-    { id: 'watermark', type: 'boolean', label: 'AI watermark', default: false,
-      description: 'Include the provider’s AI-generated watermark in the video.' },
   ];
   const required = (engine.inputSchema.required ?? []).map(adaptField);
   const optional = [...(engine.inputSchema.optional ?? []).map(adaptField), ...outputs];
@@ -51,13 +47,9 @@ export function localizeSeedanceOutputField(field: EngineInputField, locale: str
   const copy: Record<string, Record<string, [string, string]>> = {
     fr: {
       output_format: ['Format de sortie', 'MP4 pour partager ; MOV pour conserver la fidélité des couleurs et du son. L’original reste téléchargeable.'],
-      return_last_frame: ['Récupérer la dernière image', 'Enregistrer la dernière image JPEG séparément pour poursuivre la vidéo suivante.'],
-      watermark: ['Filigrane IA', 'Ajouter le filigrane du fournisseur indiquant une création par IA.'],
     },
     es: {
       output_format: ['Formato de salida', 'MP4 para compartir; MOV conserva la fidelidad del color y del audio. El original se puede descargar.'],
-      return_last_frame: ['Guardar el último fotograma', 'Guardar el último fotograma JPEG como imagen para continuar el siguiente vídeo.'],
-      watermark: ['Marca de agua IA', 'Incluir la marca del proveedor que indica que el vídeo fue generado por IA.'],
     },
   };
   const entry = copy[locale.split('-')[0]]?.[field.id];

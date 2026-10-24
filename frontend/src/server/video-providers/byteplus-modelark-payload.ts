@@ -42,9 +42,8 @@ export type BytePlusSeedanceFastPayload = {
   generate_audio: boolean;
   camera_fixed?: boolean;
   seed?: number;
-  watermark: boolean;
+  watermark: false;
   output_format?: 'mp4' | 'mov';
-  return_last_frame?: boolean;
 };
 
 export type BytePlusSeedancePayload = BytePlusSeedanceFastPayload;
@@ -100,6 +99,7 @@ export function buildBytePlusSeedancePayload(params: {
   cameraFixed?: boolean;
   seed?: number;
   outputFormat?: 'mp4' | 'mov';
+  // Legacy inputs remain readable; neither option can be enabled on new tasks.
   returnLastFrame?: boolean;
   watermark?: boolean;
   allowedModes?: readonly Mode[];
@@ -399,9 +399,8 @@ export function buildBytePlusSeedancePayload(params: {
     generate_audio: params.generateAudio === true,
     ...(typeof params.cameraFixed === 'boolean' ? { camera_fixed: params.cameraFixed } : {}),
     ...(params.seed !== undefined ? { seed: params.seed } : {}),
-    watermark: params.watermark ?? false,
+    watermark: false,
     ...(params.outputFormat !== undefined ? { output_format: params.outputFormat } : {}),
-    ...(params.returnLastFrame !== undefined ? { return_last_frame: params.returnLastFrame } : {}),
   };
 }
 

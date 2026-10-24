@@ -83,6 +83,14 @@ in EN/FR/ES that loading more extends the search. It must not conceal later
 pages or clear the query to load them. This does not claim server-wide search;
 the paginated readers retain their account/type/source scopes.
 
+Reference and Audio video selectors keep a stable 4:3 cover, with stored video
+posters contained in full rather than cropped. Posters are absolutely bounded by
+that cover so intrinsic portrait dimensions cannot enlarge or offset WebKit's grid
+track. This is display-only: keep lazy loading, signed thumbnail access and the
+canonical original selection; never fetch the original video to fill a card.
+`tests/reference-picker-portrait-browser.test.ts` covers Chromium/WebKit, mobile
+and desktop, portrait/landscape/square posters and missing source dimensions.
+
 ## Portrait backdrops on examples pages
 
 `ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive
@@ -1000,9 +1008,28 @@ for the same existing image minimum as server element validation. Its uploader
 retires model/mode or replaced-slot work and removes only pending initiating
 asset IDs; account changes cannot mutate another owner’s retained elements.
 
+The workspace References menu offers subject references only where the existing
+Kling capability/mode allows them. Its empty default builder appears after an
+explicit choice; retained subject assets (or multiple explicitly added subject
+rows) render immediately. This is presentation state in the reference owner:
+opening/closing References never clears elements, prompt tokens or regular
+references. The route still owns the unchanged builder callbacks and limits.
+`tests/workspace-subject-references-dom.test.ts` covers opt-in and retention;
+`tests/seedance-draft-composer-dom.test.ts` covers the route's initial projection,
+and `tests/workspace-subject-references-browser.test.ts` checks the real shared
+components/CSS at mobile and desktop widths, with synthetic media and no renders.
+
 `media-input-eligibility`, `workspace-upload-owner`, `reference-picker-dom` and
 `workspace-reference-mentions*` cover these boundaries. The model/slot matrix is
 a known-facts audit, not certification of every provider render or file codec.
+
+The prompt heading is owned by `ComposerPromptHeader.client.tsx`. Its localized
+clear action keeps a one-step undo in `ComposerPromptClear.client.tsx` memory only;
+new text invalidates that backup. Clearing/restoring uses the existing prompt
+callback and synchronously focuses the same textarea for mobile keyboards. The
+shared action never clears multi-prompt scenes or media references. Character and
+Kling subject actions remain in References, not the prompt heading. Browser tests
+exercise Chromium and WebKit at touch and desktop widths, including rapid edits.
 
 ### Milo Studio preview
 
@@ -1091,6 +1118,25 @@ still select Create and submit `ref2v`. Their document/web URL options remain
 available from empty Create and select `ref2v` when filled; an empty Create without
 references uses `t2v`. Model schema, provider modes and legitimate
 optional image/audio references remain authoritative.
+
+New Modify selections initialize supported requested output timing and framing from
+measured source metadata. Source-inheriting models retain their existing policies;
+Extend retains an independently chosen continuation length. This is a UI default,
+not a new tariff or provider policy. Fractional source timing is retained for input
+billing while requested integer output timing rounds up when supported. Full saved
+job/draft settings, manual changes during upload, and signed playback URL refreshes
+remain authoritative. The source mutation revision and pending upload identity
+separate explicit selection from restoration.
+
+Create parks ready Modify/Extend/Reframe source inputs in account/engine-scoped,
+per-mode memory; parked clips are absent from both quotes and submissions. Returning
+to the source mode restores its selection, while ordinary Create references (including
+Kling Reference) retain their normal behavior. No library media is deleted. Unfinished
+uploads leave the composer when switching; their late completion cannot reinsert a
+removed slot. Imposed controls are plain information rather than editable buttons in
+both Modify and Extend. Generated audio controls remain distinct from provider-specific
+source-audio preservation options.
+
 
 Import relaxation is explicit and restricted to the selected temporal field, within
 preparation duration and existing byte/upload bounds. Audio multipart uploads pass
