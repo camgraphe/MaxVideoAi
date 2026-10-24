@@ -106,6 +106,21 @@ test('mobile chat keeps reading space, references and navigation without changin
     await expect(page.getByRole('button',{name:'Close assistance',exact:true})).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('button',{name:'Milo settings and credits',exact:true})).toBeFocused();
+    // iOS changes the visual viewport without resizing the layout viewport.
+    await page.evaluate(()=>{
+      Object.defineProperty(window.visualViewport!,'height',{configurable:true,value:430});
+      Object.defineProperty(window.visualViewport!,'offsetTop',{configurable:true,value:60});
+      window.visualViewport!.dispatchEvent(new Event('resize'));
+    });
+    await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
+    const keyboardPanel=await panel.boundingBox();
+    assert.ok(keyboardPanel&&keyboardPanel.y>=60&&keyboardPanel.y+keyboardPanel.height<=490,'References fit above the keyboard in the visual viewport.');
+    await page.keyboard.press('Escape');
+    await page.evaluate(()=>{
+      Reflect.deleteProperty(window.visualViewport!,'height');
+      Reflect.deleteProperty(window.visualViewport!,'offsetTop');
+      window.visualViewport!.dispatchEvent(new Event('resize'));
+    });
     for(const size of [{width:320,height:568},{width:390,height:430}]){
       await page.setViewportSize(size);await message.fill('A short follow-up');
       await expect(message).toBeInViewport();

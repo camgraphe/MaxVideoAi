@@ -290,7 +290,7 @@ function StudioImageConversationWorkspace({
             )}
             <div ref={bottom} />
           </div>
-          {!following && <button className={styles.jumpLatest} aria-label={t('Latest message','Dernier message')} onClick={() => {follow.current = true;setFollowing(true);bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={16}/><span>{t('Latest message','Dernier message')}</span></button>}
+          {!following && <button className={styles.jumpLatest} aria-label={t('Latest message','Dernier message')} onClick={() => {follow.current = true;setFollowing(true);if(mobile)log.current?.scrollTo({top:log.current.scrollHeight,behavior:'instant'});else bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={16}/><span>{t('Latest message','Dernier message')}</span></button>}
           </div>
           {(studio.error || studio.canResumePending) && (
             <div className={styles.error} role="alert">
