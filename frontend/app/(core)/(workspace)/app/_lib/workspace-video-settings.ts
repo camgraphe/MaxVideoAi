@@ -24,6 +24,7 @@ type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
 
 type VideoSettingsRecord = {
+  sourceJobId?: unknown;
   operation?: unknown;
   schemaVersion?: unknown;
   surface?: unknown;
@@ -327,7 +328,7 @@ export function resolveVideoSettingsSnapshot(
       seed: readInteger(advanced.seed) ?? null,
       cameraFixed: typeof advanced.cameraFixed === 'boolean' ? advanced.cameraFixed : undefined,
       safetyChecker: typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined,
-      extraInputValues: coerceStoredExtraInputValues(advanced.extraInputValues) ?? {},
+      extraInputValues: { ...(coerceStoredExtraInputValues(advanced.extraInputValues) ?? {}), ...(typeof record.sourceJobId === 'string' ? { source_job_id: record.sourceJobId } : {}) },
     },
     inputAssets: readSnapshotInputAssets(snapshotReferenceInputs(refs, engine, mode)),
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')

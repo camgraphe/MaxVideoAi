@@ -156,8 +156,8 @@ test('Luma Agents source-video modes route direct without Fal fallback when vide
   );
 });
 
-test('Luma Agents keeps extend fal-only even when advanced direct-only flag is enabled', () => {
-  assert.equal(isLumaAgentsVideoModeSupported('extend'), false);
+test('Luma Agents routes owned Extend direct without fallback', () => {
+  assert.equal(isLumaAgentsVideoModeSupported('extend'), true);
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'luma-ray-3-2',
@@ -170,7 +170,7 @@ test('Luma Agents keeps extend fal-only even when advanced direct-only flag is e
         LUMA_AGENTS_FALLBACK_TO_FAL_ENABLED: 'true',
       },
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    { kind: 'luma_agents_direct_primary', primaryProvider: 'luma_agents_direct', fallbackProvider: 'fal', fallbackEnabled: false, advancedDirectOnlyEnabled: true }
   );
 });
 

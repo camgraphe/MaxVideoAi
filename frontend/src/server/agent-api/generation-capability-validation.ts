@@ -1,3 +1,4 @@
+import { validateLumaCanonicalShape } from './generation-luma-shape';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
@@ -62,7 +63,14 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cropStartY: 'y_start',
   documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
+  extendDirection: 'extend_direction',
   editFace: 'edit_face',
+  editControlMode: 'edit_control_mode',
+  editPoseMode: 'edit_pose_mode',
+  editDepthMode: 'edit_depth_mode',
+  editNormalsMode: 'edit_normals_mode',
+  editTrajectoryMode: 'edit_trajectory_mode',
+  editFaceMode: 'edit_face_mode',
   editKeyframeIndexes: 'edit_keyframe_indexes',
   reasoningLevel: 'reasoning_level',
   keyframeIndexes: 'keyframe_indexes',
@@ -550,7 +558,7 @@ function fieldIdsForRole(
   role: CanonicalGenerationReference['role'],
 ): readonly string[] {
   if (request.mode === 't2v') {
-    return role === 'reference' ? ['target_audio_url'] : [];
+    return role === 'reference' ? ['target_audio_url', 'keyframe_urls'] : [];
   }
   if (request.mode === 'i2v' || request.mode === 'i2v_standard') {
     if (role === 'source') return ['image_url', 'start_image_url', 'first_frame_url'];
@@ -988,9 +996,14 @@ export function validateCanonicalGenerationCapabilities(
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
   try { validateOwnedKlingElements(request, options.resolvedReferences); } catch { fail('elements', 'reference_invalid'); }
-  const ordinaryRequest = request.elements ? { ...request, references: request.references.filter(ref => !isElementReference(ref, request.elements)) } : request;
+  const ordinaryRequest = request.engineId === 'luma-ray-3-2' && request.mode === 'extend' ? { ...request, references: [] } : request.elements ? { ...request, references: request.references.filter(ref => !isElementReference(ref, request.elements)) } : request;
   const ordinaryOptions = request.elements && options.resolvedReferences ? { ...options, resolvedReferences: options.resolvedReferences.filter(ref => !isElementReference(ref, request.elements)) } : options;
   validateReferences(ordinaryRequest, candidate, ordinaryOptions);
   validateDerivedSourceFacts(ordinaryRequest, candidate, ordinaryOptions);
   if (request.surface === 'video') validateVideoExecutionConstraints(ordinaryRequest, candidate, ordinaryOptions);
+  if (request.engineId === 'luma-ray-3-2') {
+    try { validateLumaCanonicalShape(request, Object.fromEntries(Object.entries(request.settings)
+      .map(([key, value]) => [VIDEO_FIELD_BY_SETTING[key] ?? key, value]))); }
+    catch { fail('settings'); }
+  }
 }

@@ -5,7 +5,7 @@ import type { ComposerProps } from './composer-types';
 import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
 import { getVideoExcerptLimits, mediaExcerptNeedsSelection } from '@/lib/video-excerpt';
 import { videoExtensionCopy } from '@/lib/video-extension';
-import { getVideoWorkflowSourceState, isVideoSourceWorkflow, videoModifyCopy } from '@/lib/video-source-workflow';
+import { getVideoWorkflowSourceState, getVideoWorkflowSourceField, isVideoSourceWorkflow, videoModifyCopy } from '@/lib/video-source-workflow';
 
 /** Shared presentation mask and source eligibility; preparation remains with the workspace owner. */
 export function useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale }:
@@ -18,7 +18,7 @@ export function useComposerVideoSourceWorkflow({ engine, assets, activeManualMod
   const excerptCopy = videoExcerptCopy(locale);
   const extensionWorkflow = workspaceDensity && (activeManualMode === 'extend' || caps?.modes?.[0] === 'extend');
   const sourceMode = activeManualMode ?? caps?.modes?.[0];
-  const videoSourceWorkflow = (workspaceDensity || Boolean(onPrepareVideoExcerpt)) && isVideoSourceWorkflow(sourceMode) ? sourceMode : undefined;
+  const videoSourceWorkflow = (workspaceDensity || Boolean(onPrepareVideoExcerpt)) && isVideoSourceWorkflow(sourceMode) && getVideoWorkflowSourceField(engine.inputSchema, sourceMode) ? sourceMode : undefined;
   const excerptNeedsRange = Boolean(sourceMode && mediaExcerptNeedsSelection(engine, sourceMode, assets));
   const extensionCopy = extensionWorkflow ? videoExtensionCopy(locale) : videoModifyCopy(locale, sourceMode === 'reframe');
   const extensionSourceState = videoSourceWorkflow ? getVideoWorkflowSourceState(engine.inputSchema, assets, videoSourceWorkflow, getVideoExcerptLimits(engine, videoSourceWorkflow)) : null;

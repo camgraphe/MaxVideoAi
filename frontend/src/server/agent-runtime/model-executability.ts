@@ -290,7 +290,7 @@ function lumaRequestPayload(
     ...(typeof settings.aspectRatio === 'string' ? { aspectRatio: settings.aspectRatio } : {}),
     ...(typeof settings.resolution === 'string' ? { resolution: settings.resolution } : {}),
     ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
-    ...(referenceImages.length
+    ...(referenceImages.length && request.mode !== 't2v' && request.mode !== 'v2v'
       ? { referenceImages: referenceImages.map((_, index) => `https://references.invalid/${index}.png`) }
       : {}),
     ...(hasEndImage ? { endImageUrl: 'https://references.invalid/end.png' } : {}),
@@ -311,6 +311,11 @@ export function resolveAgentGenerationRequestExecutability(
     return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment, { nativeSeedanceWorkflow: true });
   }
   if (request.surface === 'video' && isLumaAgentsVideoEngine(engine.id)) {
+    if (request.mode === 't2v' && request.references.some(reference => reference.role === 'reference')) {
+      const route = resolveVideoProviderRoutingPlan({ engineId: engine.id, mode: request.mode, isAdmin: false,
+        env: environment.providerEnv ?? process.env });
+      if (route.kind !== 'luma_agents_direct_primary') return { executable: false, reason: 'provider_disabled' };
+    }
     const providerEnv = environment.providerEnv ?? process.env;
     const support = resolveLumaAgentsVideoSupport({
       engineId: engine.id,

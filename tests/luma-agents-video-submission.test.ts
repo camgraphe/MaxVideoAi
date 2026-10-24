@@ -428,3 +428,29 @@ test('Luma Agents submission does not route HDR requests with fal-only options t
     false
   );
 });
+
+test('Extend revalidates private lineage immediately before submit and never falls back to fal', async () => {
+  let directCalls=0, falCalls=0;
+  const {queryFn}=createQueryRecorder();
+  const {params}=baseParams({mode:'extend',falPayload:{...falPayload,mode:'extend',loop:false},
+    lumaGenerationSource:{sourceJobId:'job-source',sourceOutputIdentity:'output',provider:'luma_agents_direct',providerModel:'ray-3.2',providerGenerationId:'secret',fingerprint:'old'},
+    deps:{queryFn,getLumaAgentsClientFn:()=>({createGeneration:async()=>{directCalls++;return acceptedTask();},getGeneration:async()=>acceptedTask()}),
+      generateFalVideoFn:async()=>{falCalls++;throw new Error('must not fall back');}}});
+  const result=await submitLumaAgentsGenerateTask(params);
+  assert.equal(result.ok,false);assert.equal(directCalls,0);assert.equal(falCalls,0);
+});
+
+test('owned Extend submits one backward generation anchor and persists only redacted effective controls', async () => {
+  const {resolveOwnedLumaGenerationSource}=await import('../frontend/src/server/agent-api/generation-luma-lineage');
+  const recorder=createQueryRecorder();
+  const row={owner_id:'user_123',source_job_id:'job-source',engine_id:'luma-ray-3-2',surface:'video',status:'completed',provider:'luma_agents_direct',provider_job_id:'private-source-generation',attempt_id:9,attempt_provider:'luma_agents_direct',attempt_model:'ray-3.2',attempt_status:'completed',attempt_provider_job_id:'private-source-generation',output_id:'job-source:video:0',output_owner:'user_123',output_status:'ready',original_url:'https://private.example/source',output_url:'https://private.example/source'};
+  const queryFn:typeof recorder.queryFn=async(sql,values)=>/FROM app_jobs j/.test(sql)?[row] as never:recorder.queryFn(sql,values);
+  const source=await resolveOwnedLumaGenerationSource({actor:{userId:'user_123'},sourceJobId:'job-source',executor:{query:queryFn}});
+  let calls=0;
+  const {params}=baseParams({mode:'extend',lumaGenerationSource:source,falPayload:{...falPayload,mode:'extend',loop:false,extraInputValues:{extend_direction:'backward'}},
+    deps:{queryFn,getLumaAgentsClientFn:()=>({createGeneration:async(payload)=>{calls++;assert.deepEqual(payload.video.end_frame,{generation_id:row.provider_job_id});assert.equal(payload.video.start_frame,undefined);assert.equal(payload.source,undefined);return acceptedTask();},getGeneration:async()=>acceptedTask()}),
+      submitFalGenerateTaskFn:async()=>{throw new Error('must not fall back');}}});
+  assert.equal((await submitLumaAgentsGenerateTask(params)).ok,true);assert.equal(calls,1);
+  const summary=recorder.queries.find(entry=>entry.sql.includes('request_snapshot = COALESCE'));
+  assert.ok(summary);assert.doesNotMatch(JSON.stringify(summary),/private-source-generation|private.example|cinematic/);
+});

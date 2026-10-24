@@ -398,3 +398,57 @@ for (const durationSec of [5.558333, 6, 8.4, 18]) {
     assert.deepEqual(payload.video.start_frame, { url: 'https://cdn.maxvideoai.com/guide.png' });
   });
 }
+
+const modify = (extraInputValues: Record<string, unknown>) => buildLumaAgentsVideoPayload({
+  engineId: 'luma-ray-3-2', mode: 'v2v', prompt: 'Private prompt', durationSec: 18,
+  videoUrl: 'https://private.example/source.mp4', extraInputValues,
+}).video.edit;
+
+test('manual preset and signals coexist, including explicit disabled signals', () => {
+  assert.deepEqual(modify({ edit_control_mode: 'manual', edit_strength: 'adhere_1', edit_face_mode: 'off',
+    edit_pose_mode: 'on', edit_pose_strength: 'precise', edit_depth_mode: 'off', edit_depth_blur: 0.5 }), {
+    strength: 'adhere_1', controls: { pose: { enabled: true, strength: 'precise' }, depth: { enabled: false }, face: { enabled: false } },
+  });
+});
+test('legacy false and off remain omitted while legacy preset is no longer dropped', () => {
+  assert.deepEqual(modify({ edit_strength: 'adhere_1', edit_face: true, edit_pose_strength: 'off' }), {
+    strength: 'adhere_1', controls: { face: { enabled: true } },
+  });
+  assert.deepEqual(modify({ edit_control_mode: 'manual', edit_face: false, edit_pose_strength: 'off' }), {});
+});
+test('automatic excludes active manual controls and manual may omit a preset', () => {
+  assert.throws(() => modify({ edit_control_mode: 'automatic', edit_face_mode: 'on' }), /automatic/i);
+  assert.throws(() => modify({ edit_control_mode: 'automatic', edit_strength: 'adhere_1' }), /automatic/i);
+  assert.deepEqual(modify({ edit_control_mode: 'automatic' }), { auto_controls: true });
+  assert.deepEqual(modify({ edit_control_mode: 'manual', edit_strength: 'auto', edit_face_mode: 'default' }), {});
+});
+
+test('creation accepts 1–64 indexed images without replacing start/end fields', () => {
+  const urls = Array.from({length: 64}, (_, index) => `https://example.com/${index}.png`);
+  const payload = buildLumaAgentsVideoPayload({engineId:'luma-ray-3-2',mode:'t2v',prompt:'Create',durationSec:5,
+    keyframeUrls:urls,extraInputValues:{keyframe_indexes:urls.map((_,i)=>i).join(',')}});
+  assert.equal(payload.video.keyframes?.length,64);
+  assert.deepEqual(payload.video.keyframe_indexes,urls.map((_,i)=>i));
+  for (const indexes of ['0,0','0.5,1','-1,1','0']) assert.throws(()=>buildLumaAgentsVideoPayload({engineId:'luma-ray-3-2',mode:'t2v',prompt:'Create',durationSec:5,
+    keyframeUrls:urls.slice(0,2),extraInputValues:{keyframe_indexes:indexes}}));
+});
+test('extend uses only a trusted forward/backward generation anchor', () => {
+  for (const direction of ['forward','backward'] as const) {
+    const payload=buildLumaAgentsVideoPayload({engineId:'luma-ray-3-2',mode:'extend',prompt:'Continue',durationSec:5,
+      trustedGenerationSource:{providerGenerationId:'private-id'},extendDirection:direction});
+    assert.equal(payload.source,undefined);
+    assert.deepEqual(payload.video[direction==='forward'?'start_frame':'end_frame'],{generation_id:'private-id'});
+  }
+});
+
+
+test('Extend rejects mixed anchors, unsupported flags, durations and backward loops', () => {
+  const base = { engineId: 'luma-ray-3-2', mode: 'extend', prompt: 'Continue', durationSec: 5,
+    trustedGenerationSource: { providerGenerationId: 'private-id' } };
+  for (const patch of [{ videoUrl: 'https://private.example/video' }, { imageUrl: 'https://private.example/start' },
+    { endImageUrl: 'https://private.example/end' }, { keyframeUrls: ['https://private.example/key'] },
+    { extraInputValues: { hdr: true } }, { extraInputValues: { exr_export: true } }, { durationSec: 10 },
+    { extraInputValues: { keyframe_indexes: '0' } }, { extendDirection: 'backward', loop: true }, { extendDirection: 'sideways' }]) {
+    assert.throws(() => buildLumaAgentsVideoPayload({ ...base, ...patch } as Parameters<typeof buildLumaAgentsVideoPayload>[0]));
+  }
+});

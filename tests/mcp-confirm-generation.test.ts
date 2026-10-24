@@ -1452,3 +1452,21 @@ test('Kling Element substitution invalidates a prepared quote before reservation
   assert.equal(captures.events.includes('reserve_video'),false);
   assert.equal(captures.providerCalls,0);
 });
+
+test('Luma source deletion blocks a prepared confirmation before reservation but never blocks accepted recovery', async () => {
+  const request:CanonicalGenerationRequest={...videoRequest,engineId:'luma-ray-3-2',mode:'extend',operation:'luma-extend',
+    sourceJobId:'job-deleted-source',settings:{durationSec:5,resolution:'720p'},references:[]};
+  for(const state of ['prepared','accepted'] as const){
+    let sourceReads=0;
+    const executor={query:async(sql:string)=>{assert.match(sql,/FROM app_jobs j/);sourceReads++;return [];}} as TransactionQueryExecutor;
+    const {dependencies,captures}=baseDependencies(request,{
+      withTransaction:async callback=>callback(executor),
+      lockOwnedQuote:async()=>({quote:quoteFor(request,{state,jobId:state==='accepted'?QUOTE_ID:null}),databaseNow:NOW}),
+      getAccountRestriction:async()=>null,
+    });
+    if(state==='prepared')await expectAgentError(confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies),'REFERENCE_INVALID');
+    else await confirmGeneration({quoteId:QUOTE_ID,confirmed:true},principal,dependencies);
+    assert.equal(sourceReads,state==='prepared'?1:0);
+    assert.equal(captures.events.includes('reserve_video'),false);assert.equal(captures.providerCalls,0);
+  }
+});

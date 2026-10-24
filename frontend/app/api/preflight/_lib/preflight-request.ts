@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 
 export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
-export const MAX_PREFLIGHT_INPUTS = 50;
+export const MAX_PREFLIGHT_INPUTS = 66;
 
 const modes = [
   't2v',
@@ -66,7 +66,9 @@ const persistedReferenceSchema = z.object({
 }).strict();
 
 const preflightRequestSchema = z.object({
-  operation: z.enum(['kling-reference', 'kling-edit']).optional(),
+  sourceJobId: z.string().min(1).max(255).optional(),
+  sourceOutputId: z.string().min(1).max(255).optional(),
+  operation: z.enum(['kling-reference', 'kling-edit', 'luma-extend']).optional(),
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),

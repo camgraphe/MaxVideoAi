@@ -1,3 +1,4 @@
+import { hydrateOwnedVideoMediaFacts } from '@/server/media-library/owned-video-facts';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
@@ -64,6 +65,7 @@ type LumaAgentsPendingJob = {
 };
 
 type LumaAgentsPollDeps = {
+  hydrateOwnedVideoMediaFactsFn?: typeof hydrateOwnedVideoMediaFacts;
   queryFn?: QueryFn;
   claimPollFn?: typeof claimGenerationPoll;
   getLumaAgentsClientFn?: () => LumaAgentsPollClient;
@@ -538,6 +540,7 @@ export async function runLumaAgentsPoll(options: { jobId?: string; deps?: LumaAg
       if (!completedRows.length) {
         continue;
       }
+      const isExtension = Boolean(job.settings_snapshot && typeof job.settings_snapshot === 'object' && 'sourceJobId' in job.settings_snapshot);
       await upsertLegacyJobOutputsFn({
         job_id: job.job_id,
         user_id: job.user_id,
@@ -550,9 +553,14 @@ export async function runLumaAgentsPoll(options: { jobId?: string; deps?: LumaAg
         video_width: detectedDimensions?.width ?? null,
         video_height: detectedDimensions?.height ?? null,
         render_ids: null,
-        duration_sec: job.duration_sec,
+        duration_sec: isExtension ? null : job.duration_sec,
         status: 'completed',
       });
+      if (isExtension && job.user_id) {
+        await (deps.hydrateOwnedVideoMediaFactsFn ?? hydrateOwnedVideoMediaFacts)({ userId: job.user_id,
+          ref: { type: 'job-output', jobId: job.job_id, outputId: `${job.job_id}:video:0`, kind: 'video' }, expectedUrl: copiedVideoUrl,
+        }).catch(() => console.warn('[luma-agents] output timing awaits measurement', { jobId: job.job_id }));
+      }
       await Promise.allSettled([
         generateAndPersistJobPreviewVideoFn({
           jobId: job.job_id,

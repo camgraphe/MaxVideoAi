@@ -1,3 +1,4 @@
+import { effectiveLumaEditValues } from '@/lib/luma-edit-controls';
 import type { runGenerate } from '@/lib/api';
 import { toLumaRay2DurationLabel } from '@/lib/luma-ray2';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -72,13 +73,14 @@ export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
 ): WorkspaceGeneratePayloadBuildResult {
   const requestMode = options.submissionMode as Mode;
-  if (options.form.operation) {
+  if (options.form.engineId === 'luma-ray-3-2') options = { ...options, extraInputValues: effectiveLumaEditValues(Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])].some(field => field.id === key && (!field.modes || field.modes.includes(requestMode)))))) };
+  if (options.form.operation || options.form.engineId === 'luma-ray-3-2') {
     const fields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])]
       .filter(field => !field.modes?.length || field.modes.includes(requestMode));
     const allowed = new Set(fields.map(field => field.id));
     options = { ...options, extraInputValues: Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => allowed.has(key))),
       inputsPayload: options.inputsPayload?.filter(input => !input.slotId || allowed.has(input.slotId)),
-      ...(options.form.operation === 'kling-edit' ? { primaryImageUrl: undefined, primaryAudioUrl: undefined, endImageUrl: undefined, multiPromptPayload: undefined, shotType: 'customize' as const } : {}) };
+      ...((options.form.operation === 'kling-edit' || (options.form.engineId === 'luma-ray-3-2' && requestMode === 'extend')) ? { referenceImageUrls: [], primaryImageUrl: undefined, primaryAudioUrl: undefined, endImageUrl: undefined, multiPromptPayload: undefined, shotType: 'customize' as const } : {}) };
   }
   const shouldSendAspectRatio = workspaceModeSupportsRequestField({
     inputSchema: options.inputSchema,

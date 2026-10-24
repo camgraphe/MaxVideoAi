@@ -43,6 +43,7 @@ test('Luma Agents registry uses direct provider metadata with fal fallback model
     'luma-ray-3-2': [
       'luma/agent/ray/v3.2/text-to-video',
       'luma/agent/ray/v3.2/image-to-video',
+      'luma/agent/ray/v3.2/generation-anchor',
       'luma/agent/ray/v3.2/video-edit',
       'luma/agent/ray/v3.2/reframe',
     ],
@@ -101,8 +102,8 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   const entry = byId('luma-ray-3-2');
   assert.equal(entry.category, 'video');
   assert.equal(entry.family, 'luma');
-  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe']);
-  assert.equal(entry.engine.extend, false);
+  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe', 'extend']);
+  assert.equal(entry.engine.extend, true);
   assert.equal(entry.engine.keyframes, true);
   assert.equal(entry.engine.motionControls, true);
   assert.equal(entry.engine.upscale4k, false);

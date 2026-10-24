@@ -261,7 +261,14 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   file_url: 'documentUrl',
   web_url: 'webpageUrl',
   enable_prompt_expansion: 'enablePromptExpansion',
+  extend_direction: 'extendDirection',
   edit_face: 'editFace',
+  edit_control_mode: 'editControlMode',
+  edit_pose_mode: 'editPoseMode',
+  edit_depth_mode: 'editDepthMode',
+  edit_normals_mode: 'editNormalsMode',
+  edit_trajectory_mode: 'editTrajectoryMode',
+  edit_face_mode: 'editFaceMode',
   edit_keyframe_indexes: 'editKeyframeIndexes',
   reasoning_level: 'reasoningLevel',
   keyframe_indexes: 'keyframeIndexes',
@@ -423,10 +430,15 @@ export function projectAgentModelModeDetails(
     mode,
     ...(includeOperations && candidate.engine.operationCaps ? { operations: Object.values(candidate.engine.operationCaps).filter(operation => operation.mode === mode).map(operation => {
       const engine = resolveVideoOperationEngine(candidate.engine, mode as import('@/types/engines').Mode, operation.operation);
-      return { operation: operation.operation, label: operation.label, elements: klingOwnedElementsProperty, promptRequired: operation.promptRequired,
+      return { operation: operation.operation, label: operation.label, ...(operation.operation !== 'luma-extend' ? { elements: klingOwnedElementsProperty } : {}), promptRequired: operation.promptRequired,
         ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
     }) } : {}),
     ...baseControls,
+    ...(candidate.engine.id === 'luma-ray-3-2' && mode === 'extend' ? { sourceGeneration: {
+      required: true as const, requestField: 'sourceJobId' as const, outputField: 'sourceOutputId' as const,
+      studioReferenceRole: 'source' as const, outputAssembly: 'unverified' as const,
+      description: 'Select your completed direct Ray 3.2 generation. Use its application job ID from recent generations, never a provider ID or URL. Studio requires one attached owned source or ready project output. Eligibility is rechecked before spending; five new seconds do not establish the full artifact duration.',
+    } } : {}),
     ...(videoWorkflowPreference(candidate.engine.id,mode) ? {editorialPreference:videoWorkflowPreference(candidate.engine.id,mode)} : {}),
     ...(videoWorkflowNotices(candidate.engine.id,mode).length ? {notices:videoWorkflowNotices(candidate.engine.id,mode)} : {}),
     ...(caps.extensionOutput ? {extensionOutput:caps.extensionOutput} : {}),

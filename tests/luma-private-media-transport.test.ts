@@ -110,3 +110,12 @@ test('Luma provider validation echoes cannot retain signed input credentials in 
   assert.equal(result.ok, false);
   assert.doesNotMatch(JSON.stringify({ records, result }), /X-Amz-|fixture-secret/);
 });
+
+test('generation anchors pass through media transport without being treated as URLs', async () => {
+  const {createLumaAgentsMediaTransport}=await import('../frontend/src/server/video-providers/luma-agents/media-access');
+  for(const field of ['start_frame','end_frame'] as const){
+    const payload:LumaAgentsVideoPayload={model:'ray-3.2',type:'video',prompt:'Continue',video:{duration:'5s',resolution:'720p',[field]:{generation_id:'private-generation'}}};
+    const transport=await createLumaAgentsMediaTransport({payload,userId:'owner'});
+    assert.deepEqual(transport.payload,payload);
+  }
+});

@@ -298,6 +298,8 @@ export interface EnginesResponse {
 }
 
 export interface PreflightRequest {
+  sourceJobId?: string;
+  sourceOutputId?: string;
   operation?: import('@/lib/video-operation').VideoOperation;
   seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engine: string;

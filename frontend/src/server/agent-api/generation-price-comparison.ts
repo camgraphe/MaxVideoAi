@@ -28,7 +28,7 @@ import type { StudioPricingEstimate } from "@/lib/studio/conversation-pricing-co
 
 export type GenerationPriceComparisonInput = Pick<
   CanonicalGenerationRequest,
-  "surface" | "mode" | "prompt" | "settings" | "references" | "operation"
+  "surface" | "mode" | "prompt" | "settings" | "references" | "operation" | "sourceJobId" | "sourceOutputId"
 > & {
   /** Only supply when the client asks to compare against this exact model. Repriced, never a stored amount. */
   baselineModelId?: string;
@@ -222,6 +222,7 @@ export async function compareGenerationPrices(
             }
           const request = normalizeGenerationRequest({
             ...base,
+            ...(input.sourceJobId ? { sourceJobId: input.sourceJobId, sourceOutputId: input.sourceOutputId } : {}),
             ...(input.operation ? {operation:input.operation}:{}),
             engineId: modelId,
             settings,

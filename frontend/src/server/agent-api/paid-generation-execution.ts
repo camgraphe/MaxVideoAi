@@ -41,6 +41,7 @@ export type {
 } from './included-trial-generation-execution';
 
 export type PaidGenerationExecution = {
+  lumaSourceFingerprint?: string;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   surface: 'video' | 'image';
   quoteId: string;
@@ -316,6 +317,7 @@ export async function reservePaidGenerationInitialJob(
         resolvedReferences: input.resolvedReferences ?? [],
         engine: input.candidate.engine,
         canonicalPricing: pricing,
+        lumaSourceFingerprint: (input.pricingSnapshot.lumaSource as { fingerprint?: string } | undefined)?.fingerprint,
         trustedInitialState: {
           kind: 'created',
           jobId: input.quote.quoteId,
@@ -435,6 +437,7 @@ export async function submitReservedPaidGeneration(
 ): Promise<PaidGenerationProviderOutcome> {
   const trustedQuotedBilling: TrustedQuotedBilling = {
     pricing: execution.canonicalPricing as unknown as PricingSnapshot,
+    lumaSourceFingerprint: execution.lumaSourceFingerprint,
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
   };
   const body = paidRequestBody(execution);

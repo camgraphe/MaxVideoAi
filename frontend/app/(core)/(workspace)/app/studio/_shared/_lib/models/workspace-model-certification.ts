@@ -103,6 +103,7 @@ const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
   'wan-3', 'wan-3-prime', 'ltx-2-3',
 ]);
 const CONVERSATION_VIDEO_EXTEND_MODELS = new Set([
+  'luma-ray-3-2',
   'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'gemini-omni-flash',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
   'wan-3', 'wan-3-prime', 'ltx-2-3', 'flux-3', 'flux-3-draft',

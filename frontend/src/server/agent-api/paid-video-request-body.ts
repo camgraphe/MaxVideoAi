@@ -179,7 +179,14 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   cropStartY: 'y_start',
   documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
+  extendDirection: 'extend_direction',
   editFace: 'edit_face',
+  editControlMode: 'edit_control_mode',
+  editPoseMode: 'edit_pose_mode',
+  editDepthMode: 'edit_depth_mode',
+  editNormalsMode: 'edit_normals_mode',
+  editTrajectoryMode: 'edit_trajectory_mode',
+  editFaceMode: 'edit_face_mode',
   editKeyframeIndexes: 'edit_keyframe_indexes',
   reasoningLevel: 'reasoning_level',
   keyframeIndexes: 'keyframe_indexes',
@@ -252,6 +259,7 @@ export function buildPaidVideoRequestBody(
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
     ...(elements ? {elements} : {}),
+    ...(execution.request.sourceJobId ? { sourceJobId: execution.request.sourceJobId, sourceOutputId: execution.request.sourceOutputId } : {}),
     ...(execution.request.operation ? { operation: execution.request.operation } : {}),
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
     prompt: execution.request.prompt,
@@ -265,7 +273,14 @@ export function buildPaidVideoRequestBody(
     inputs: [],
   };
 
+  if (execution.request.engineId === 'luma-ray-3-2' && execution.request.mode === 'extend') return body;
+
   if (execution.request.mode === 't2v') {
+    if (execution.request.engineId === 'luma-ray-3-2' && references.length) {
+      if (references.some(ref => ref.kind !== 'image' || ref.role !== 'reference') || references.length > 64) invalidModeReferences();
+      body.inputs = references.map(ref => input(ref, 'keyframe_urls'));
+      return body;
+    }
     const targetAudioFieldId = activeReferenceFieldId(execution, 'audio', ['target_audio_url']);
     if (references.length) {
       if (!targetAudioFieldId || references.length !== 1

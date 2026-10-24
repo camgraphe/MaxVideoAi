@@ -1,3 +1,6 @@
+import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
+import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
+import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
 import { resolveVideoOperationEngine, validateKlingEditSource } from '@/lib/video-operation';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
@@ -39,6 +42,7 @@ type MediaConstraintDependencies = Parameters<
 >[0]['mediaConstraintDeps'];
 
 export type MediaAwarePreflightDependencies = {
+  lineageExecutor?: import('@/lib/db').QueryExecutor;
   getConfiguredEngineFn?: typeof getReadOnlyConfiguredEngine;
   getConfiguredEngineIncludingHiddenFn?: typeof getReadOnlyConfiguredEngineIncludingRuntimePrivate;
   computeConfiguredPreflightFn?: (
@@ -153,6 +157,22 @@ export async function resolveMediaAwarePreflight(
   if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
   try { engine = resolveVideoOperationEngine(engine, request.mode, request.operation); }
   catch { return mediaPricingFailure('OPERATION_INVALID', 'Invalid video operation.'); }
+  if (engine.id === 'luma-ray-3-2' && request.mode === 'extend') {
+    try {
+      const validation = validateExtraInputValues({ engine, mode: request.mode, rawExtraInputValues: request.extraInputValues ?? null });
+      if (!validation.ok) return mediaPricingFailure(validation.body.error, validation.body.message);
+      const userId = input.userId ?? await input.resolveUserId?.();
+      if (!userId) return mediaPricingFailure('AUTH_REQUIRED', 'Sign in to select your source generation.');
+      const source = await resolveOwnedLumaGenerationSource({ actor: { userId },
+        sourceJobId: request.sourceJobId ?? String(validation.values.source_job_id ?? ''), expectedOutputId: request.sourceOutputId, executor: dependencies.lineageExecutor });
+      buildLumaAgentsVideoPayload({ engineId: engine.id, mode: 'extend', prompt: 'Preflight validation', durationSec: request.durationSec,
+        durationOption: request.durationOption, resolution: request.resolution, loop: request.loop,
+        referenceImageUrls: request.inputs?.length ? ['unexpected-reference'] : [], extraInputValues: validation.values,
+        trustedGenerationSource: source, extendDirection: validation.values.extend_direction as 'forward' | 'backward' | undefined });
+      const result = await computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
+      return { ...result, ...(result.pricing ? { pricing: { ...result.pricing, ...lumaLineageQuoteBinding(source, validation.values.extend_direction) } } : {}) };
+    } catch { return mediaPricingFailure('REFERENCE_INVALID', 'The source generation or extension settings are not available.'); }
+  }
   const finalFacts = input.trustedSeedanceWorkflow?.finalFacts;
   if (finalFacts) {
     return computeConfiguredPreflightFn({ ...request, mode: finalFacts.mode, durationSec: finalFacts.durationSec,

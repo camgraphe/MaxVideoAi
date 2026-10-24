@@ -432,3 +432,24 @@ test('Luma Agents polling is isolated from Fal APIs and exposed through a cron r
   assert.match(readFileSync(routePath, 'utf8'), /runLumaAgentsPoll/);
   assert.match(readFileSync(vercelConfigPath, 'utf8'), /luma-agents-poll/);
 });
+
+test('Extend bills five seconds but persists measured output timing without assuming timeline assembly', async () => {
+  const job={...baseJob,duration_sec:5,settings_snapshot:{inputMode:'extend',sourceJobId:'job-source',core:{resolution:'720p'}}};
+  let measured=false;
+  await runLumaAgentsPoll({deps:{
+    claimPollFn:allowGenerationPoll,
+    queryFn:async(sql)=>{
+      if(/FROM app_jobs/.test(sql)&&/provider = \$1/.test(sql))return [job] as never;
+      if(/FROM provider_attempts/.test(sql))return [{id:23,attempt_index:1}] as never;
+      if(/SET status = 'completed'/.test(sql))return [{job_id:job.job_id}] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn:()=>({getGeneration:async()=>({id:job.provider_job_id,state:'completed',output:[{type:'video',url:'https://provider.example/out.mp4'}]})}),
+    ensureFastStartVideoFn:async()=> 'https://media.example/out.mp4',detectVideoDimensionsFn:async()=>({width:1280,height:720}),
+    ensureJobThumbnailFn:async()=> 'https://media.example/thumb.jpg',
+    upsertLegacyJobOutputsFn:async(output)=>{assert.equal(output.duration_sec,null);},
+    hydrateOwnedVideoMediaFactsFn:async(input)=>{assert.equal(input.ref.type,'job-output');assert.equal(input.expectedUrl,'https://media.example/out.mp4');measured=true;return {} as never;},
+    generateAndPersistJobPreviewVideoFn:async()=>null,generateAndPersistJobKeyframesFn:async()=>[],
+  }});
+  assert.equal(measured,true);
+});

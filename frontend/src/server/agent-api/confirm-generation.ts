@@ -1,3 +1,4 @@
+import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, assertSeedanceWorkflowQuoteBinding, seedanceWorkflowQuoteBinding } from './seedance-workflow';
@@ -347,6 +348,7 @@ async function confirmationTransaction(
       staleQuote();
     }
 
+    const lumaSource = await resolveCanonicalLumaLineage(quote.request, principal, executor);
     const inherited = await resolveAgentSeedanceWorkflow(quote.request, principal.userId, { queryFn: executor.query.bind(executor) });
     assertSeedanceWorkflowQuoteBinding(quote.request, inherited.request, quote.pricingSnapshot, inherited.workflow);
     const publicEngines = await dependencies.listPublicEngines({ executor });
@@ -439,7 +441,7 @@ async function confirmationTransaction(
         quote.request,
         catalogRevision,
         membership,
-      ), ...generationOperationQuoteBinding(quote.request, resolvedReferences), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
+      ), ...generationOperationQuoteBinding(quote.request, resolvedReferences), ...lumaLineageQuoteBinding(lumaSource, quote.request.settings.extendDirection), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();
       staleQuote();

@@ -23,7 +23,7 @@ export function buildWorkspacePreflightRequest({
   const extraInputValues = filterVideoOperationValues(selectedEngine, submissionMode, form.extraInputValues);
   const allowedMedia = new Set([...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])]
     .filter(field => !field.modes?.length || field.modes.includes(submissionMode)).map(field => field.id));
-  const quoteAssets = form.operation ? Object.fromEntries(Object.entries(inputAssets).filter(([field]) => allowedMedia.has(field))) : inputAssets;
+  const quoteAssets = form.operation || selectedEngine.id === 'luma-ray-3-2' ? Object.fromEntries(Object.entries(inputAssets).filter(([field]) => allowedMedia.has(field))) : inputAssets;
   const capability = selectedEngine.modeCaps?.[submissionMode];
   // Match generation: the editor's frame clock is not an unsupported provider control.
   const shouldSendFps = !capability

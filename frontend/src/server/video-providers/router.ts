@@ -220,7 +220,7 @@ export function resolveVideoProviderRoutingPlan(params: {
 
   if (isLumaAgentsVideoEngine(params.engineId)) {
     const unavailable = (reason: 'direct_not_configured' | 'public_routing_disabled' | 'admin_only'): VideoProviderRoutingPlan =>
-      params.mode === 'v2v' || params.mode === 'reframe'
+      params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend'
         ? { kind: 'luma_agents_unavailable', reason }
         : falOnly;
     const advancedDirectOnlyEnabled = flagEnabled(

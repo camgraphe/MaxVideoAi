@@ -657,3 +657,21 @@ covered by the Element contract tests. The preparation SDK input schema is now
 reviewed fingerprint is
 `18b78f9a22a4a9d892d5daf84fd54d7ba958620b9947882e606e962c3e70dfa8`.
 Curated policy decisions and the fixture contract hash remain unchanged.
+
+## Luma controls and owned Extend — 24 October 2026 source candidate
+
+The additive preparation schema carries explicit Modify strategy/signal modes,
+application source-job/output IDs and forward/backward Extend direction. Creation
+keyframe index text now accommodates 64 indexed references; model validation
+retains each model's actual bounds. No provider generation ID becomes a public
+input. See [Luma generation continuity](luma-generation-continuity.md) for shared
+Site/MCP/Studio lineage, recovery and fixed-block pricing ownership.
+
+The reviewed runtime metadata collector fingerprint is
+`dd0aa60c98fc3026d3466cb055b7cab148b3fde93a4a105c8a9b6898e6b800c7`.
+Only that value changed in the curated policy artifact; all 70 decisions and its
+fixture-contract hash remain intact. `pnpm mcp:client:check` passes (175 tests,
+one intentional skip, then the curated evaluator). The instruction matrix reports
+1,998 bytes maximum across 256 gate combinations; each tool description remains
+within the 2,000-byte budget. This records deterministic source validation, not
+plugin publication, deployment, paid render or real-host qualification.

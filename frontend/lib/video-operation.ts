@@ -1,16 +1,17 @@
+import { effectiveLumaEditValues } from '../src/lib/luma-edit-controls';
 import type { EngineCaps, EngineInputSchema, EngineModeUiCaps, Mode } from '@/types/engines';
 
-export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit'] as const;
+export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit', 'luma-extend'] as const;
 export type VideoOperation = (typeof VIDEO_OPERATIONS)[number];
 export type VideoOperationCaps = {
   operation: VideoOperation;
-  mode: 'v2v';
+  mode: 'v2v' | 'extend';
   label: string;
   defaultForMode?: boolean;
   inputSchema: EngineInputSchema;
   ui: EngineModeUiCaps;
   promptRequired: boolean;
-  transport?: 'fal';
+  transport?: 'fal' | 'luma_agents_direct';
   endpoint?: string;
 };
 const KLING_OMNI_IDS = new Set(['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']);
@@ -18,6 +19,7 @@ const KLING_OMNI_IDS = new Set(['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4
 /** Omission is intentionally not normalized to Reference: old JSON and receipts stay stable. */
 export function normalizeVideoOperation(engineId: string, mode: string, value: unknown): VideoOperation | undefined {
   if (value === undefined) return undefined;
+  if (engineId === 'luma-ray-3-2' && mode === 'extend' && value === 'luma-extend') return value;
   if (!KLING_OMNI_IDS.has(engineId) || mode !== 'v2v'
     || (value !== 'kling-reference' && value !== 'kling-edit')) {
     throw new Error('Unsupported video operation for this engine and mode.');
@@ -27,6 +29,7 @@ export function normalizeVideoOperation(engineId: string, mode: string, value: u
 
 export function videoOperationEndpoint(engineId: string, mode: string, value: unknown): string | undefined {
   const operation = normalizeVideoOperation(engineId, mode, value);
+  if (operation === 'luma-extend') return undefined;
   if (!operation && engineId === 'kling-o3-4k' && mode === 'v2v') return 'fal-ai/kling-video/o3/4k/video-to-video/reference';
   if (!operation || (operation === 'kling-reference' && engineId !== 'kling-o3-4k')) return undefined;
   const tier = engineId.slice('kling-o3-'.length);
@@ -68,7 +71,7 @@ export function buildKlingOperationCaps(engine: EngineCaps): Partial<Record<Vide
 
 export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, value?: unknown): EngineCaps {
   const operation = normalizeVideoOperation(engine.id, mode, value);
-  if (!operation) return engine;
+  if (!operation || operation === 'luma-extend') return engine;
   const caps = engine.operationCaps?.[operation];
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
   return { ...engine, inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit'
@@ -79,6 +82,10 @@ export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, valu
 
 /** New tariff identity never aliases historical Reference selectors. */
 export function videoOperationTariffIdentity(engineId: string, mode: string, value?: unknown) {
+  if (engineId === 'luma-ray-3-2' && mode === 'extend') {
+    normalizeVideoOperation(engineId, mode, value);
+    return { operation: 'luma-extend' as const, transport: 'luma_agents_direct' as const, endpoint: 'ray-3.2/video/generation-anchor' };
+  }
   const endpoint = videoOperationEndpoint(engineId, mode, value);
   // 4K v2v has no historical contract, even when an older client omits operation.
   if (!endpoint && !(engineId === 'kling-o3-4k' && mode === 'v2v')) return undefined;
@@ -89,6 +96,10 @@ export function videoOperationTariffIdentity(engineId: string, mode: string, val
 
 /** Keep inactive operation values in storage; filter only the outgoing payload. */
 export function filterVideoOperationValues(engine: EngineCaps, mode: Mode, values: Record<string, unknown>) {
+  if (engine.id === 'luma-ray-3-2') {
+    const allowed = new Set([...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])].filter(field => !field.modes?.length || field.modes.includes(mode)).map(field => field.id));
+    return effectiveLumaEditValues(Object.fromEntries(Object.entries(values).filter(([key]) => allowed.has(key))));
+  }
   if (!engine.operationCaps) return values;
   const allowed = new Set([...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])]
     .filter(field => !field.modes?.length || field.modes.includes(mode)).map(field => field.id));

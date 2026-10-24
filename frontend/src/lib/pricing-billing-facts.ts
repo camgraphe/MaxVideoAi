@@ -101,6 +101,14 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (engine.id === 'luma-ray-3-2' && context.mode === 'extend') {
+    const amount = ({ '540p': 15, '720p': 30, '1080p': 120 } as Record<string, number>)[resolution ?? ''];
+    if (!amount || durationSec !== 5 || currency !== 'USD') throw new Error('Unsupported Luma fixed extension block.');
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: amount,
+      base: { seconds: 5, rate: amount / 500, unit: 'sec', amountCents: amount },
+      meta: { pricing_model: 'luma_fixed_extend', provider_cost_source: 'luma_single_keyframe_extend_public_price',
+        fixed_extension_seconds: 5, output_layout: 'unverified' } });
+  }
   const operationRate = klingOperationPublishedRate(engine.id, context.mode ?? 't2v', context.operation);
   if (operationRate) {
     if (!Number.isFinite(durationSec) || durationSec < 3 || durationSec > 15) throw new Error('Unsupported Kling operation duration.');

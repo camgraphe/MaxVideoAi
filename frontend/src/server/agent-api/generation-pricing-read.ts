@@ -1,3 +1,4 @@
+import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { toEngineGenerationMode } from './generation-mode-aliases';
@@ -162,6 +163,7 @@ export function buildGenerationPricingSnapshot(
 /** Shared read-only verification and canonical pricing. No quote, wallet or reservation writes. */
 export async function readGenerationPricing(request: CanonicalGenerationRequest,principal: GenerationActor,dependencies: GenerationPricingReadDependencies) {
   requireGenerationActor(principal);
+  const lumaSource = await resolveCanonicalLumaLineage(request, principal);
   const inherited = await resolveAgentSeedanceWorkflow(request, principal.userId);
   request = inherited.request;
   const finalFacts = inherited.workflow?.finalFacts;
@@ -246,6 +248,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
   }
   const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership),
     ...generationOperationQuoteBinding(request, resolvedReferences),
+    ...lumaLineageQuoteBinding(lumaSource, request.settings.extendDirection),
     ...seedanceWorkflowQuoteBinding(inherited.workflow) };
   return {pricing, pricingSnapshot, resolvedReferences, catalogRevision, request, workflow: inherited.workflow, resolvedEngine: candidate.engine};
 }

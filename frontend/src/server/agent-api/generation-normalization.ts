@@ -54,6 +54,8 @@ const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
   'operation',
+  'sourceJobId',
+  'sourceOutputId',
   'elements',
   'surface',
   'engineId',
@@ -118,11 +120,18 @@ const VIDEO_SETTING_KEYS = new Set([
   'sourcePositionY',
   'startTimeSec',
   'extendPosition',
+  'extendDirection',
   'modifyStrength',
   'multiPrompt',
   'exrExport',
   'editDepthBlur',
   'editFace',
+  'editControlMode',
+  'editPoseMode',
+  'editDepthMode',
+  'editNormalsMode',
+  'editTrajectoryMode',
+  'editFaceMode',
   'editKeyframeIndexes',
   'reasoningLevel',
   'keyframeIndexes',
@@ -466,7 +475,7 @@ function normalizeReferences(
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || (engineId === 'flux-3-max' && mode === 'ref2v')
+    : mode === 'r2v' || mode === 'v2v' || (engineId === 'flux-3-max' && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -545,6 +554,9 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   let operation;
   try { operation = normalizeVideoOperation(normalizeEngineId(input.engineId), mode, input.operation); }
   catch { fail('operation', 'Unsupported operation for this engine and mode.'); }
+  const sourceJobId = input.sourceJobId === undefined ? undefined : normalizeText(input.sourceJobId, 'sourceJobId', 255, false);
+  const sourceOutputId = input.sourceOutputId === undefined ? undefined : normalizeText(input.sourceOutputId, 'sourceOutputId', 255, false);
+  if ((sourceJobId || sourceOutputId) && (input.engineId !== 'luma-ray-3-2' || mode !== 'extend' || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
   const settings = normalizeSettings(input.settings, mode);
   const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
   if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
@@ -560,6 +572,8 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   catch { fail('elements', 'Invalid owned Kling Element composition.'); }
   const result: CanonicalGenerationRequest = {
     schemaVersion: 1,
+    ...(sourceJobId ? { sourceJobId } : {}),
+    ...(sourceOutputId ? { sourceOutputId } : {}),
     ...(elements ? {elements} : {}),
     ...(operation ? { operation } : {}),
     ...(seedanceWorkflow ? { seedanceWorkflow } : {}),

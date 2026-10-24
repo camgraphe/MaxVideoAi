@@ -1,3 +1,4 @@
+import { resolveStudioLumaGenerationSource } from './luma-generation-source';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import {query} from '@/lib/db';
@@ -49,6 +50,7 @@ export async function readStudioProjectMedia(actor: StudioGenerationActor): Prom
 }
 
 export type StudioMotionSourceDependencies = {
+  lumaSourceExecutor?: import('@/lib/db').QueryExecutor;
   saveOutput?: typeof saveJobOutputToLibrary;
   readProjectMedia?: typeof readStudioProjectMedia;
   resolveMedia?: typeof resolveStudioMedia;
@@ -187,6 +189,22 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     }
     if (!candidate.publicModes.includes(mode) || !candidate.modeCaps[mode])
       throw new AgentApiError('MODE_UNSUPPORTED', 'The selected video model does not support this Studio mode.');
+    if (candidate.engine.id === 'luma-ray-3-2' && mode === 'extend') {
+      if (selections.length !== 1 || selections[0].role !== 'source') throw new AgentApiError('REFERENCE_REQUIRED', 'Select one attached or ready project generation.');
+      const selected = selections[0].ref;
+      const media = await requireStudioMediaSource(actor, selected, input, dependencies);
+      const source = await resolveStudioLumaGenerationSource(actor.userId, selected, dependencies.lumaSourceExecutor);
+      const request = normalizeGenerationRequest({ schemaVersion: 1, surface: 'video', engineId: candidate.engine.id,
+        mode, operation: 'luma-extend', sourceJobId: source.sourceJobId, sourceOutputId: source.sourceOutputIdentity,
+        prompt: action.prompt, settings: { durationSec: 5, resolution: '720p', ...settings }, references: [], outputCount: 1 });
+      validateCanonicalGenerationCapabilities(request, candidate);
+      return { extensionSource: media, materialize: async () => {
+        await requireStudioMediaSource(actor, selected, input, dependencies);
+        const current = await resolveStudioLumaGenerationSource(actor.userId, selected, dependencies.lumaSourceExecutor);
+        if (current.fingerprint !== source.fingerprint) throw new AgentApiError('REFERENCE_INVALID', 'The source generation changed.');
+        return request as CanonicalGenerationRequest & { surface: 'video' };
+      } };
+    }
     const legacy = !action.modelId && action.settings == null;
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
@@ -278,4 +296,13 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
 
 export async function studioMediaRequest(actor: StudioGenerationActor, action: StudioMediaIntent, input: ImageTurnInput, factories: StudioMediaFactories, enabled: boolean, dependencies: StudioMotionSourceDependencies = {}):Promise<StudioCanonicalMediaRequest> {
   return (await validateStudioMediaRequest(actor,action,input,factories,enabled,dependencies)).materialize();
+}
+
+export async function studioLumaPricingSource(actor: StudioGenerationActor,
+  selections: NonNullable<Extract<StudioMediaIntent, { action: 'video.prepare' }>['references']>,
+  input: Pick<ImageTurnInput, 'references' | 'attachments'>) {
+  if (selections.length !== 1 || selections[0].role !== 'source') throw new AgentApiError('REFERENCE_REQUIRED', 'Select one attached or ready project generation.');
+  await requireStudioMediaSource(actor, selections[0].ref, input, {});
+  const source = await resolveStudioLumaGenerationSource(actor.userId, selections[0].ref);
+  return { sourceJobId: source.sourceJobId, sourceOutputId: source.sourceOutputIdentity, references: [] };
 }

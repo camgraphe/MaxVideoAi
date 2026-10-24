@@ -311,7 +311,7 @@ export function buildGenerateRequestOptions(params: {
         : null;
   const numFrames =
     rawNumFrames != null && Number.isFinite(rawNumFrames) && rawNumFrames > 0 ? Math.round(rawNumFrames) : null;
-  const supportsLoop = isLumaRay2 || (isLumaRay32EngineId(engine.id) && isLumaRay32PublicMode(mode));
+  const supportsLoop = isLumaRay2 || (isLumaRay32EngineId(engine.id) && (isLumaRay32PublicMode(mode) || mode === 'extend'));
   const loopValue = supportsLoop ? normaliseLumaRay2Loop(body.loop) : undefined;
   const loop = supportsLoop ? loopValue === true : false;
 

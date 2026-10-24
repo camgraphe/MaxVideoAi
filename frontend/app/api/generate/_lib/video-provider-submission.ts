@@ -29,6 +29,7 @@ export type GenerateProviderSubmissionResult =
     };
 
 export async function submitGenerateProviderTask(params: {
+  lumaGenerationSource?: import('@/server/agent-api/generation-luma-lineage').OwnedLumaGenerationSource;
   providerRoutingPlan: VideoProviderRoutingPlan;
   providerKey: string;
   falPayload: GeneratePayload;
@@ -108,6 +109,7 @@ export async function submitGenerateProviderTask(params: {
 
   if (params.providerRoutingPlan.kind === 'luma_agents_direct_primary') {
     const lumaSubmission = await submitLumaAgentsGenerateTask({
+      lumaGenerationSource: params.lumaGenerationSource,
       jobId: params.jobId,
       userId: params.userId,
       engineId: params.engineId,

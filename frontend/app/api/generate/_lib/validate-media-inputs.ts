@@ -415,7 +415,9 @@ export function validateModeMediaInputs(params: {
     }
   }
 
-  if (normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake') {
+  // Owned generation anchors are resolved separately before reservation; they are never upload URLs.
+  if ((normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake')
+    && !(engineId === 'luma-ray-3-2' && normalizedMode === 'extend')) {
     const configuredExtendSource =
       normalizedMode === 'extend' ? ENGINE_EXTEND_SOURCE_VIDEO_LIMITS[engineId] : undefined;
     const extensionSources = configuredExtendSource
