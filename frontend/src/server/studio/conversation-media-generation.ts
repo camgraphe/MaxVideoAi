@@ -1,3 +1,4 @@
+import { hashH3PromotionImage } from './h3-promotion-identity';
 import { qualifyH3SourceReference } from '@/server/agent-api/h3-source-reference';
 import type { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
@@ -59,6 +60,7 @@ export type StudioMotionSourceDependencies = {
   resolveMedia?: typeof resolveStudioMedia;
   reviewedReferences?:readonly ResolvedReference[];
   inspectH3Source?: typeof inspectOwnedH3Source;
+  hashH3Image?: typeof hashH3PromotionImage;
 };
 
 /** Read-only pricing aliases keep native project outputs out of the asset library. */
@@ -95,22 +97,25 @@ async function requireStudioMediaSource(actor: StudioGenerationActor, source: To
   catch {throw new AgentApiError('REFERENCE_INVALID', 'The selected media is no longer available.');}
 }
 
-async function promoteStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, dependencies: StudioMotionSourceDependencies,expected?:ResolvedReference): Promise<string> {
-  if (source.type === 'asset') return source.assetId;
+async function promoteStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, dependencies: StudioMotionSourceDependencies,expected?:ResolvedReference, verifyPromotionUrl=false): Promise<{assetId:string; promoted?:{storageUrl:string;originalName?:string|null}}> {
+  if (source.type === 'asset') return {assetId:source.assetId};
   // Explicit creation action uses the existing idempotent library-save owner, preserving original output provenance.
   const asset = await (dependencies.saveOutput ?? saveJobOutputToLibrary)({userId: actor.userId, jobId: source.jobId, outputId: source.outputId});
   if (!asset.publicId) throw new AgentApiError('REFERENCE_INVALID', 'The media identity is unavailable.');
   if(expected&&(asset.userId!==actor.userId||asset.kind!==source.kind||asset.sourceJobId!==source.jobId||asset.sourceOutputId!==source.outputId||asset.status!=='ready'||asset.metadata.originUrl!==expected.storageUrl))
     throw new AgentApiError('REFERENCE_INVALID','The saved media no longer matches the selected project output.');
-  try {await (dependencies.resolveMedia ?? resolveStudioMedia)(actor.userId, {type: 'asset', assetId: asset.publicId, kind: source.kind});}
+  let promoted:StudioResolvedMedia;
+  try {promoted=await (dependencies.resolveMedia ?? resolveStudioMedia)(actor.userId, {type: 'asset', assetId: asset.publicId, kind: source.kind});}
   catch {throw new AgentApiError('REFERENCE_INVALID', 'The saved media is no longer available.');}
-  return asset.publicId;
+  if (verifyPromotionUrl && (promoted.url !== asset.url || promoted.kind !== source.kind))
+    throw new AgentApiError('REFERENCE_INVALID','The saved media no longer matches the promoted asset.');
+  return {assetId:asset.publicId,promoted:{storageUrl:promoted.url,originalName:promoted.originalName}};
 }
 
 export async function studioMotionSource(actor: StudioGenerationActor, source: ToolAssetRef, input: ImageTurnInput, dependencies: StudioMotionSourceDependencies = {}): Promise<string> {
   if(source.kind!=='image')throw new AgentApiError('REFERENCE_INVALID','Choose an image reference.');
   await requireStudioMediaSource(actor, source, input, dependencies);
-  return promoteStudioMediaSource(actor, source, dependencies);
+  return (await promoteStudioMediaSource(actor, source, dependencies)).assetId;
 }
 
 function canonicalPreparation<T>(build: () => T, correctable=false): T {
@@ -237,6 +242,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     const resolvedReferences:ResolvedReference[]=[];
     let extensionSource:StudioResolvedMedia|undefined;
     const nativeBaselines=new Map<number,ResolvedReference>();
+    const nativeImageHashes=new Map<number,string>();
     const used=new Set<string>();
     const referenceFactsSignal=AbortSignal.timeout(8_000);
     for (const [index,selection]of selections.entries()){
@@ -263,6 +269,8 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     if (candidate.engine.id === 'minimax-h3-max' && isH3SourceOperation(action.operation)) {
       for (let index=0; index<resolvedReferences.length; index++) {
         resolvedReferences[index]=await qualifyH3SourceReference(resolvedReferences[index],action.operation,actor.userId,dependencies.inspectH3Source);
+        if(selections[index].ref.type==='job-output' && resolvedReferences[index].mediaKind==='image')
+          nativeImageHashes.set(index,await (dependencies.hashH3Image??hashH3PromotionImage)(resolvedReferences[index].storageUrl,actor.userId));
       }
     }
     if(action.operation !== 'kling-edit' && !isH3SourceOperation(action.operation)&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
@@ -278,23 +286,35 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           const previous=nativeBaselines.get(index)!;const current=mediaReference(media,{assetId:previous.assetId,role:previous.role,...(previous.slot===undefined?{}:{slot:previous.slot})});
           if(!sameReferenceFacts(previous,current))
             throw new AgentApiError('REFERENCE_INVALID','The project output changed before quote preparation. Send a new message to review it again.');
+          if(isH3SourceOperation(action.operation)) {
+            const measured=await qualifyH3SourceReference(current,action.operation,actor.userId,dependencies.inspectH3Source);
+            const imageHash=nativeImageHashes.has(index) ? await (dependencies.hashH3Image??hashH3PromotionImage)(current.storageUrl,actor.userId) : undefined;
+            if(!sameReferenceFacts(resolvedReferences[index],measured) || (nativeImageHashes.has(index) && imageHash!==nativeImageHashes.get(index)))
+              throw new AgentApiError('REFERENCE_INVALID','The project output bytes changed before quote preparation.');
+          }
         }
       };
       // Check the entire ready-output selection before the first library write.
       await verifyNativeSources();
-      const assetIds: string[] = [];
-      for (const [index,selection]of selections.entries()) assetIds.push(await promoteStudioMediaSource(actor, selection.ref, dependencies,resolvedReferences[index]));
-      // Copy time is separate from the bounded HEAD preflight. Compare native
-      // snapshots without I/O; enriched facts remain bound to that exact original.
+      const promotions:Awaited<ReturnType<typeof promoteStudioMediaSource>>[]=[];
+      for (const [index,selection]of selections.entries()) promotions.push(await promoteStudioMediaSource(actor, selection.ref, dependencies,resolvedReferences[index],isH3SourceOperation(action.operation)));
+      const assetIds=promotions.map(promotion=>promotion.assetId);
+      // Copy time is separate from preflight. Reauthorize native outputs again;
+      // H3 also rechecks bytes so a source changed during promotion is rejected.
       await verifyNativeSources();
       const request=build(assetIds,false,resolvedReferences.map((reference,index)=>({...reference,assetId:assetIds[index]})));
       if(dependencies.reviewedReferences || isH3SourceOperation(action.operation)){
         const current=await factories.video(actor,{enabled}).resolveReferences(request);
         for(const [index,selection]of selections.entries()){
           if(selection.ref.type!=='asset' && !isH3SourceOperation(action.operation))continue;
-          const previous={...resolvedReferences[index],assetId:assetIds[index]};const next=current.find(reference=>reference.assetId===previous.assetId&&reference.role===previous.role&&reference.slot===previous.slot);
+          // Only the URL/display-name transition certified by the save owner is allowed.
+          // All measured fields, source hash and role/slot stay bound to the original.
+          const previous={...resolvedReferences[index],assetId:assetIds[index],...(promotions[index].promoted??{})};
+          const next=current.find(reference=>reference.assetId===previous.assetId&&reference.role===previous.role&&reference.slot===previous.slot);
           if(!next||studioReferenceFingerprint([comparableReference(previous)])!==studioReferenceFingerprint([comparableReference(next)]))
             throw new AgentApiError('REFERENCE_INVALID','The selected references changed before quote preparation. Send a new message to review them again.');
+          if(next && nativeImageHashes.has(index) && await (dependencies.hashH3Image??hashH3PromotionImage)(next.storageUrl,actor.userId)!==nativeImageHashes.get(index))
+            throw new AgentApiError('REFERENCE_INVALID','The promoted image bytes changed before quote preparation.');
         }
         preparedFingerprint=studioReferenceFingerprint(current);
       }

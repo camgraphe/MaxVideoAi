@@ -94,3 +94,13 @@ redirect and deadline enforcement to the unchanged `public-media-transport.ts`.
 Reference-import defaults stay in their existing adapter; the shared downloader
 does not import upload sessions or file persistence. The full preflight import
 graph contract and private-storage/SSRF tests cover these boundaries.
+
+Studio ready-output promotion binds the original job/output, owner, kind, ready
+status and original URL to the saved asset. It accepts only that saved asset's
+verified durable URL (and presentation filename) in the final snapshot. H3 source
+video hashes and measured facts remain unchanged; ready portrait/sphere outputs
+also receive a bounded byte hash before promotion and on the durable copy. Native
+outputs are reauthorized and rehashed before and after copying. Substituted owner,
+provenance, durable URL or bytes reject before quote preparation. Image hashing
+uses the same admission guard, signed owned reads and bounded anti-SSRF transport;
+its size bound is operational, not a new supplier limit.
