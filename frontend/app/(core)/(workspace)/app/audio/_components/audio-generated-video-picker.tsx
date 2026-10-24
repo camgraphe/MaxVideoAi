@@ -49,7 +49,7 @@ function OpenAudioGeneratedVideoPicker({ videos, isLoading, error, locale, copy,
             pending.current = true; setPendingId(video.jobId); setFailure(null);
             try { await onSelect(video); } catch { setFailure(pickerCopy.error); } finally { pending.current = false; setPendingId(null); }
           }}>
-          <span className="app-picker-cover">{video.thumbUrl ? <LibraryImageThumbnail asset={{ url: video.thumbUrl }} /> : <AppGlyph name="video" />}<span className="app-picker-check" aria-hidden>{pendingId === video.jobId ? '✓' : '+'}</span></span>
+          <span className="app-picker-cover" data-media-kind="video">{video.thumbUrl ? <LibraryImageThumbnail asset={{ url: video.thumbUrl }} /> : <AppGlyph name="video" />}<span className="app-picker-check" aria-hidden>{pendingId === video.jobId ? '✓' : '+'}</span></span>
           <span className="app-picker-card-meta"><span>{video.label}</span><span>{video.durationSec ? formatAudioDurationLabel(video.durationSec) : copy.source.durationPending}{video.aspectRatio ? ` · ${video.aspectRatio}` : ''}</span>{video.hasAudio ? <span>{copy.picker.audioBadge}</span> : null}<span className="sr-only">{formatDateTime(video.createdAt, locale)}</span></span>
         </button>)}</div>
       </div>

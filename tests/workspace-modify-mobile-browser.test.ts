@@ -33,8 +33,8 @@ test('mobile and desktop Modify uses source defaults, exposes real choices and l
  const fixture=await startWorkspaceReferenceFixture({source});
  const evidence=process.env.MODIFY_MOBILE_EVIDENCE_DIR;
  if(evidence)await mkdir(evidence,{recursive:true});
- try{for(const [name,type] of [['chromium',chromium],['webkit',webkit]] as const){
-  const browser=await type.launch({headless:true});
+ try{for(const name of ['chromium','webkit'] as const){
+  const browser=name==='webkit'?await webkit.launch({headless:true}):await chromium.launch({headless:true});
   try{for(const width of [390,1440])for(const engineId of ['wan-3','wan-3-prime']){
    const page=await browser.newPage({viewport:{width,height:844},hasTouch:width===390});const errors:string[]=[];
    page.on('pageerror',error=>errors.push(error.message));await page.goto(fixture.url);

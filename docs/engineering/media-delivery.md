@@ -83,6 +83,14 @@ in EN/FR/ES that loading more extends the search. It must not conceal later
 pages or clear the query to load them. This does not claim server-wide search;
 the paginated readers retain their account/type/source scopes.
 
+Reference and Audio video selectors keep a stable 4:3 cover, with stored video
+posters contained in full rather than cropped. Posters are absolutely bounded by
+that cover so intrinsic portrait dimensions cannot enlarge or offset WebKit's grid
+track. This is display-only: keep lazy loading, signed thumbnail access and the
+canonical original selection; never fetch the original video to fill a card.
+`tests/reference-picker-portrait-browser.test.ts` covers Chromium/WebKit, mobile
+and desktop, portrait/landscape/square posters and missing source dimensions.
+
 ## Portrait backdrops on examples pages
 
 `ExamplesMainVideoFeature` keeps its blurred portrait backdrop on the same responsive

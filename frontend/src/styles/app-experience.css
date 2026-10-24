@@ -554,8 +554,10 @@
 .app-experience .app-picker-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: start; gap: 10px; }
 .app-experience .app-picker-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; text-align: left; border: 1px solid var(--app-line); background: var(--app-canvas); color: var(--app-ink); }
 .app-experience .app-picker-card[aria-pressed="true"] { border-color: var(--app-accent); box-shadow: 0 0 0 2px var(--app-accent); background: var(--app-accent-soft); }
-.app-experience .app-picker-cover { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--app-canvas); }
-.app-experience .app-picker-cover img { width: 100%; height: 100%; object-fit: cover; }
+.app-experience .app-picker-cover { position: relative; display: grid; place-items: center; flex: none; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--app-canvas); }
+/* Bound replaced images to the cover: intrinsic portrait height must not size a WebKit grid track. */
+.app-experience .app-picker-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.app-experience .app-picker-cover[data-media-kind="video"] img { object-fit: contain; }
 .app-experience .app-picker-cover > svg { width: 36px; height: 36px; color: var(--app-muted); }
 .app-experience .app-picker-check { position: absolute; right: 8px; top: 8px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--app-panel); color: var(--app-ink); box-shadow: 0 1px 5px rgb(0 0 0 / .2); }
 .app-experience [aria-pressed="true"] .app-picker-check { background: var(--app-accent); color: var(--on-brand); }

@@ -86,7 +86,9 @@ test('shared composer clears and safely restores prompts with touch and keyboard
   const browsers = [chromium, webkit];
   try {
     for (const browserType of browsers) {
-      const browser = await browserType.launch({ headless: true });
+      const browser = browserType === webkit
+        ? await webkit.launch({ headless: true })
+        : await chromium.launch({ headless: true });
       try {
         for (const width of [390, 1440]) for (const locale of ['en', 'fr', 'es'] as const) for (const density of ['workspace', 'default']) {
           const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width === 390, hasTouch: width === 390 });
