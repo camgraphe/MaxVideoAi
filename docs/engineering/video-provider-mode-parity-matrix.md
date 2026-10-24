@@ -66,4 +66,6 @@ The four entry gaps are covered by positive workspace actions and shared keyfram
 
 Kling's new Modify action selects explicit Edit, while a new Create video reference selects explicit Reference. Old omitted-operation v2v settings/links keep Reference semantics. Public example recipes remove only private source job/output binding; authenticated personal recall retains it and the server reauthorizes ownership. No public media migration is required.
 
+The workspace operation selector only offers choices within the active workflow. Kling Reference belongs to Create, so it is not offered again inside Modify. Single-operation workflows have no redundant dropdown; H3 Max keeps its Recast/Relight choice. This presentation rule does not rewrite saved operation identities or change provider endpoints, quotes, or MCP/Studio capabilities. `tests/video-operation-controls-dom.test.ts` covers the rendered controls and retained quote identities.
+
 Offline DOM, HTTP/storage-IO-injected and PostgreSQL tests establish application behavior; they do not establish live Vercel import, mobile layout, active customer prices, or paid output quality. Controller and Task6B retain those gates.

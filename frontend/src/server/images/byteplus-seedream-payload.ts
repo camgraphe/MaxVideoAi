@@ -13,7 +13,7 @@ export type BytePlusSeedreamPayload = {
   output_format?: 'jpeg' | 'png';
   response_format: 'url';
   stream?: boolean;
-  watermark: boolean;
+  watermark: false;
   image?: string | string[];
   sequential_image_generation?: 'auto';
   sequential_image_generation_options?: {
@@ -45,6 +45,7 @@ export function buildBytePlusSeedreamPayload(params: {
   size: string;
   aspectRatio?: string | null;
   responseFormat: 'url';
+  // Legacy saved settings cannot enable the optional provider watermark.
   watermark?: boolean | null;
 }): BytePlusSeedreamPayload {
   const model = params.modelId.trim();
@@ -114,7 +115,7 @@ export function buildBytePlusSeedreamPayload(params: {
     size: resolveSeedreamProviderSize(params.size, params.aspectRatio),
     ...(outputFormat ? { output_format: outputFormat } : {}),
     response_format: params.responseFormat,
-    watermark: params.watermark === true,
+    watermark: false,
     ...(image ? { image } : {}),
     ...(sequentialImageGeneration
       ? {

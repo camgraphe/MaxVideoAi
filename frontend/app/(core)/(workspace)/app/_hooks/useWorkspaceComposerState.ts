@@ -16,6 +16,8 @@ import {
   type WorkspaceReferenceInputStatus,
 } from './useWorkspaceEngineModeState';
 
+import { useWorkspaceModifySourceDefaults } from './useWorkspaceModifySourceDefaults';
+
 type ShotType = 'customize' | 'intelligent';
 
 type UseWorkspaceComposerStateOptions = {
@@ -23,6 +25,8 @@ type UseWorkspaceComposerStateOptions = {
   form: FormState | null;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  setInputAssets?: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
+  inputAssetMutationRevision?: number;
   klingElements: KlingElementState[];
   prompt: string;
   multiPromptEnabled: boolean;
@@ -111,6 +115,8 @@ export function useWorkspaceComposerState({
   form,
   setForm,
   inputAssets,
+  setInputAssets,
+  inputAssetMutationRevision = 0,
   klingElements,
   prompt,
   multiPromptEnabled,
@@ -171,6 +177,7 @@ export function useWorkspaceComposerState({
     form,
     setForm,
     inputAssets,
+    setInputAssets,
     klingElements,
     shotType,
     setShotType,
@@ -187,6 +194,10 @@ export function useWorkspaceComposerState({
     uiLocale,
     workflowCopy,
     showNotice,
+  });
+  useWorkspaceModifySourceDefaults({
+    engine: selectedEngine, mode: submissionMode, inputAssets, mutationRevision: inputAssetMutationRevision,
+    ready: authChecked && hydratedForScope === storageScope, scope: storageScope, form, setForm,
   });
   const {
     multiPromptActive,

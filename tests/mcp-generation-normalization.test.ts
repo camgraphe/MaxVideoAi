@@ -369,6 +369,7 @@ test('allows only the closed transport-neutral settings for each canonical mode'
     assert.deepEqual(normalized.settings, {
       ...Object.fromEntries(
         Object.entries(entry.settings)
+          .filter(([key]) => key !== 'watermark')
           .map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
           .sort(([left], [right]) => String(left).localeCompare(String(right)))
       ),

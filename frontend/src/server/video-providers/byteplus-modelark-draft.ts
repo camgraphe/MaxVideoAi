@@ -16,9 +16,8 @@ export type Seedance25FinalRequest = {
   model: string;
   content: [{ type: 'draft_task'; draft_task: { id: string } }];
   resolution: '1080p';
-  watermark: boolean;
+  watermark: false;
   output_format?: 'mp4' | 'mov';
-  return_last_frame?: boolean;
 };
 
 export function buildSeedance25DraftRequest(input: DraftInput): Seedance25DraftRequest {
@@ -44,6 +43,7 @@ export function buildSeedance25FinalRequest(input: {
   modelId: string;
   draftProviderTaskId: string;
   outputFormat?: 'mp4' | 'mov';
+  // Legacy inputs remain readable; neither option can be enabled on new tasks.
   returnLastFrame?: boolean;
   watermark?: boolean;
 }): Seedance25FinalRequest {
@@ -61,8 +61,7 @@ export function buildSeedance25FinalRequest(input: {
     model,
     content: [{ type: 'draft_task', draft_task: { id: draftProviderTaskId } }],
     resolution: '1080p',
-    watermark: input.watermark ?? false,
+    watermark: false,
     ...(input.outputFormat !== undefined ? { output_format: input.outputFormat } : {}),
-    ...(input.returnLastFrame !== undefined ? { return_last_frame: input.returnLastFrame } : {}),
   };
 }

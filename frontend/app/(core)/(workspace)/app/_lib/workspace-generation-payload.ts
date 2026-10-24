@@ -1,3 +1,4 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { effectiveLumaEditValues } from '@/lib/luma-edit-controls';
@@ -74,6 +75,7 @@ function schemaSupportsField(inputSchema: EngineCaps['inputSchema'] | null | und
 export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
 ): WorkspaceGeneratePayloadBuildResult {
+  options = { ...options, extraInputValues: withoutRetiredOutputControls(options.extraInputValues) };
   const requestMode = options.submissionMode as Mode;
   if (options.form.engineId === 'luma-ray-3-2') options = { ...options, extraInputValues: effectiveLumaEditValues(Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])].some(field => field.id === key && (!field.modes || field.modes.includes(requestMode)))))) };
   if (options.form.operation || options.form.engineId === 'luma-ray-3-2') {

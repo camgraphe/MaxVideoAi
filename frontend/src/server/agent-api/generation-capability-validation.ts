@@ -54,8 +54,6 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   promptCameraDirection: 'prompt_camera_direction',
   promptEditInstruction: 'prompt_edit_instruction',
   outputFormat: 'output_format',
-  returnLastFrame: 'return_last_frame',
-  watermark: 'watermark',
   cameraFixed: 'camera_fixed',
   cfgScale: 'cfg_scale',
   contextSec: 'context',
@@ -116,7 +114,6 @@ const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   seed: 'seed',
   style: 'style',
   thinkingLevel: 'thinking_level',
-  watermark: 'watermark',
 };
 
 export type ReferenceConstraintFailure =

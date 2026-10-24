@@ -58,7 +58,7 @@ test('Draft preserves each supported mode and its original owned media and creat
       userId: 'owner', engineId: 'seedance-2-5', enabled: true });
     assert.equal(result?.body.mode, mode);
     assert.deepEqual(result?.body.inputs, inputs);
-    assert.deepEqual(result?.body.extraInputValues, extraInputValues);
+    assert.deepEqual(result?.body.extraInputValues, { output_format: 'mov' });
     assert.equal(result?.body.durationOption, 'auto');
     assert.equal(result?.body.resolution, '480p');
   }
@@ -85,7 +85,7 @@ test('Final inherits immutable multimodal Draft facts and defeats caller media a
   assert.equal(result?.body.durationSec, 6, 'measured Draft output must not replace immutable billing duration');
   assert.equal(result?.body.resolution, '1080p');
   assert.deepEqual(result?.body.inputs, [input]);
-  assert.deepEqual(result?.body.extraInputValues, { output_format: 'mov', return_last_frame: true, watermark: true });
+  assert.deepEqual(result?.body.extraInputValues, { output_format: 'mov' });
   assert.equal(result?.finalFacts?.inputVideoDurationSec, 5.2);
   assert.equal(result?.finalFacts?.hasVideoInput, true);
   await assert.rejects(requests.resolveSeedanceWorkflowRequest({ body: { mode: 't2v', seedanceWorkflow: { step: 'final', draftJobId: draft.draftJobId } },

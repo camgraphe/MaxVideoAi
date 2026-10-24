@@ -26,5 +26,5 @@ test('Final output choices come from stored owned settings and content contains 
         output_format: 'mov', return_last_frame: true, watermark: true } } } }]
       : [{ provider_task_id: 'owned-task', provider_model_id: 'owned-model' }]);
   assert.deepEqual(result.payload, { model: 'owned-model', content: [{ type: 'draft_task', draft_task: { id: 'owned-task' } }],
-    resolution: '1080p', watermark: true, output_format: 'mov', return_last_frame: true });
+    resolution: '1080p', watermark: false, output_format: 'mov' });
 });

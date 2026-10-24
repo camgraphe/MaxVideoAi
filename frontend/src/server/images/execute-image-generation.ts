@@ -7,7 +7,6 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
 import {
-  getImageFieldDefaultBoolean,
   getImageFieldValues,
   getImageInputField,
   normalizeFalImageResolution,
@@ -224,10 +223,7 @@ export async function executeImageGeneration({
   const limitGenerations =
     Boolean(getImageInputField(engine, 'limit_generations', mode)) &&
     normalizeOptionalBoolean(body.limitGenerations) === true;
-  const watermarkField = getImageInputField(engine, 'watermark', mode);
-  const watermark =
-    Boolean(watermarkField) &&
-    (normalizeOptionalBoolean(body.watermark) ?? getImageFieldDefaultBoolean(engine, 'watermark', mode) ?? false);
+  const watermark = false;
   const includedKlingFirstFrameParentJobId = await resolveIncludedKlingFirstFrameParentJobId({
     userId,
     jobId,

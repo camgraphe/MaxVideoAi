@@ -23,6 +23,7 @@ import {
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { getWorkspaceMediaFields, workspaceAssetsSupportMode } from '../_lib/workspace-multimodal-workflow';
+import { useWorkspaceSourceModeAssets } from './useWorkspaceSourceModeAssets';
 
 type ShotType = 'customize' | 'intelligent';
 
@@ -44,6 +45,7 @@ type UseWorkspaceEngineModeStateOptions = {
   form: FormState | null;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  setInputAssets?: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
   klingElements: KlingElementState[];
   shotType: ShotType;
   setShotType: Dispatch<SetStateAction<ShotType>>;
@@ -122,6 +124,7 @@ export function useWorkspaceEngineModeState({
   form,
   setForm,
   inputAssets,
+  setInputAssets,
   klingElements,
   shotType,
   setShotType,
@@ -180,6 +183,10 @@ export function useWorkspaceEngineModeState({
     () => resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEngine, form, inputAssets, klingElements }),
     [selectedEngine, capabilityEngine, form, inputAssets, klingElements]
   );
+
+  const prepareModeAssets = useWorkspaceSourceModeAssets({
+    engine: capabilityEngine, mode: activeManualMode ?? undefined, scope: storageScope, assets: inputAssets, setAssets: setInputAssets,
+  });
 
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
@@ -393,12 +400,14 @@ export function useWorkspaceEngineModeState({
         return;
       }
       if (mode && (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
-      const nextMode = mode ?? implicitMode;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
+      const nextAssets = prepareModeAssets(mode);
+      const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,
+        inputAssets: nextAssets, klingElements }).implicitMode;
       setForm((current) => coerceFormState(base, nextMode, current ? { ...current, mode: nextMode,
         ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null));
     },
-    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3]
+    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3, prepareModeAssets, form, klingElements]
   );
 
   const formEngineId = form?.engineId;

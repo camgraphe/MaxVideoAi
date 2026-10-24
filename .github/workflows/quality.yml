@@ -123,7 +123,7 @@ jobs:
       - uses: ./.github/actions/setup-project
       - uses: ./.github/actions/setup-validation-tools
       - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate connected Studio browser
         run: pnpm run test:validate -- --suite browser
       - name: Smoke test admin

@@ -131,7 +131,7 @@ export default function AppClientPage({
     engines: app.engines,
     form: routeForm.form,
     setForm: routeForm.setForm,
-    inputAssets: assetState.inputAssets,
+    ...assetState,
     klingElements: routeForm.klingElements,
     prompt: routeForm.prompt,
     multiPromptEnabled: routeForm.multiPromptEnabled,

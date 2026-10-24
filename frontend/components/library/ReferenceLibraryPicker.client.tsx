@@ -91,7 +91,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
             return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || isDisabled(asset)}
               aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
               onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
-              <span className="app-picker-cover">
+              <span className="app-picker-cover" data-media-kind={asset.kind}>
                 {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbnailAccessUrl ?? asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
                 <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
               </span>

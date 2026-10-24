@@ -1,3 +1,4 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { resolveVideoOperationRequestEngine } from '@/lib/video-operation';
 import { getEngineCaps } from '@/fixtures/engineCaps';
 import {
@@ -239,9 +240,8 @@ export function buildGenerateRequestOptions(params: {
   const etaLabel = trimString(body.etaLabel);
   const rawExtraInputValues =
     body.extraInputValues && typeof body.extraInputValues === 'object' && !Array.isArray(body.extraInputValues)
-      ? (body.extraInputValues as Record<string, unknown>)
+      ? withoutRetiredOutputControls(body.extraInputValues as Record<string, unknown>)
       : null;
-
   let requestedResolution =
     typeof body.resolution === 'string' && body.resolution.trim().length
       ? body.resolution.trim()
