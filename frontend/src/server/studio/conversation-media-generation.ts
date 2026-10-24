@@ -287,9 +287,13 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           if(!sameReferenceFacts(previous,current))
             throw new AgentApiError('REFERENCE_INVALID','The project output changed before quote preparation. Send a new message to review it again.');
           if(isH3SourceOperation(action.operation)) {
-            const measured=await qualifyH3SourceReference(current,action.operation,actor.userId,dependencies.inspectH3Source);
+            // Native images were already compared with their raw baseline above.
+            // Completed byte-size facts may come from HEAD/a saved copy and are not
+            // present on the raw output row. Their freshness is bound by the byte hash.
+            const measured=current.mediaKind==='video'
+              ? await qualifyH3SourceReference(current,action.operation,actor.userId,dependencies.inspectH3Source) : undefined;
             const imageHash=nativeImageHashes.has(index) ? await (dependencies.hashH3Image??hashH3PromotionImage)(current.storageUrl,actor.userId) : undefined;
-            if(!sameReferenceFacts(resolvedReferences[index],measured) || (nativeImageHashes.has(index) && imageHash!==nativeImageHashes.get(index)))
+            if((measured && !sameReferenceFacts(resolvedReferences[index],measured)) || (nativeImageHashes.has(index) && imageHash!==nativeImageHashes.get(index)))
               throw new AgentApiError('REFERENCE_INVALID','The project output bytes changed before quote preparation.');
           }
         }

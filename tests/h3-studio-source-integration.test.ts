@@ -75,3 +75,45 @@ test('promotion image byte identity is admission bounded before reading',async()
  });
  assert.equal(reads,0);
 });
+
+import {resolveStudioMedia,type StudioMediaExecutor} from '../frontend/src/server/studio/media-resolver';
+for(const operation of ['h3-recast','h3-relight'] as const) test(`Studio ${operation} rechecks native images with actual raw/completed resolver facts`,async()=>{
+ const outputs=refs.map((ref,index)=>({type:'job-output' as const,jobId:'job',outputId:`output-${index}`,kind:ref.kind}));
+ let changedImage=false;let writes=0;
+ const raw=outputs.map((ref,index)=>({id:ref.outputId,job_id:ref.jobId,user_id:actor.userId,job_user_id:actor.userId,kind:ref.kind,status:'ready',url:media[index].url,mime_type:media[index].mime,width:512,height:512,metadata:index===0?{mediaFacts:{source:'probe',durationSec:5}}:{}}));
+ const saved=raw.map((row,index)=>({...row,id:`saved-${index}`,public_id:ids[index],url:`https://media.maxvideoai.com/saved-${index}`,size_bytes:8192,source_job_id:'job',source_output_id:row.id,metadata:{...row.metadata,originUrl:row.url}}));
+ const execute:StudioMediaExecutor=async(sql,values)=>{
+  if(sql.includes('FROM job_outputs o'))return raw.filter(row=>row.id===values[2]&&row.user_id===values[0]);
+  if(sql.includes('a.source_output_id = $3'))return saved.filter(row=>row.source_output_id===values[2]&&row.user_id===values[0]);
+  return saved.filter(row=>row.public_id===values[1]&&row.user_id===values[0]);
+ };
+ const resolve:typeof resolveStudioMedia=(user,ref,_executor,options)=>resolveStudioMedia(user,ref,execute,options);
+ assert.equal((await resolve(actor.userId,outputs[1])).sizeBytes,null);
+ assert.equal((await resolve(actor.userId,outputs[1],undefined,{completeReferenceFacts:true})).sizeBytes,8192);
+ const inspect=async()=>({kind:'video' as const,width:512,height:512,durationSec:124/24,sizeBytes:8192,mimeType:'video/mp4',fps:24,decodedFrameCount:124,constantFrameRate:true,sourceSha256:'video-identical',hasAudio:true,videoCodec:'h264',audioCodec:'aac'});
+ const factories={video:()=>({catalog:async()=>[{engine,surface:'video',publicModes:['v2v'],modeCaps:engine.modeCaps}],resolveReferences:(request:Parameters<typeof resolveGenerationReferencesForActor>[0])=>resolveGenerationReferencesForActor(request,actor,{resolveOwnedReferenceAsset:async(_actor,assetId)=>{
+  const index=ids.indexOf(assetId);const current=await resolve(actor.userId,{type:'asset',assetId,kind:refs[index].kind});
+  return {assetId,mediaKind:current.kind,storageUrl:current.url,mimeType:current.mime,width:current.width??null,height:current.height??null,durationSec:current.durationSec??null,sizeBytes:current.sizeBytes,...(current.originalName?{originalName:current.originalName}:{})};
+ },inspectH3Source:inspect})})} as unknown as StudioMediaFactories;
+ const action=studioMediaIntentSchema.parse({action:'video.prepare',reply:'Review',operation,modelId:engine.id,mode:'v2v',aspectRatio:'auto',source:null,references:outputs.map((ref,index)=>({ref,role:index===0?'source':'reference'})),settings:[{name:'resolution',value:'768P'}]});
+ const dependencies={resolveMedia:resolve,readProjectMedia:async()=>outputs.map(ref=>({ref,name:'Output',durationSec:null})),inspectH3Source:inspect,
+  hashH3Image:async()=>changedImage?'changed':'image-identical',
+  saveOutput:async({outputId}:{outputId:string})=>{writes++;const row=saved.find(item=>item.source_output_id===outputId)!;return {publicId:row.public_id,userId:row.user_id,kind:row.kind,url:row.url,sourceJobId:row.source_job_id,sourceOutputId:row.source_output_id,status:row.status,metadata:row.metadata} as never;},
+ };
+ const context={...input,references:[],attachments:[]};
+ const valid=await validateStudioMediaRequest(actor,action,context,factories,true,dependencies);
+ await valid.materialize();assert.equal(writes,2);
+ const pending=await validateStudioMediaRequest(actor,action,context,factories,true,dependencies);
+ changedImage=true;
+ await assert.rejects(pending.materialize(),{code:'REFERENCE_INVALID'});assert.equal(writes,2);
+ changedImage=false;
+ for(const mutation of ['raw-width','owner','origin','saved-size']) {
+  const checked=await validateStudioMediaRequest(actor,action,context,factories,true,dependencies);
+  if(mutation==='raw-width')raw[1].width=640;
+  if(mutation==='owner')raw[1].user_id='foreign';
+  if(mutation==='origin')saved[1].metadata.originUrl='https://media.maxvideoai.com/other-origin';
+  if(mutation==='saved-size')saved[1].size_bytes=4096;
+  await assert.rejects(checked.materialize(),{code:'REFERENCE_INVALID'},mutation);
+  raw[1].width=512;raw[1].user_id=actor.userId;saved[1].metadata.originUrl=raw[1].url;saved[1].size_bytes=8192;
+ }
+});
