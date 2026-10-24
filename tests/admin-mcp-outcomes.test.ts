@@ -5,6 +5,8 @@ import { loadAdminMcpOutcomes, MCP_CLIENT_LABELS } from '../frontend/server/admi
 import { readMcpAuthMetadata } from '../frontend/server/admin-mcp-auth-metadata.ts';
 import { recordMcpEvent } from '../frontend/src/server/agent-api/audit-events.ts';
 
+const originCoverage = { studio_quotes_excluded: 0, toolbox_quotes_excluded: 0, unknown_origin_quotes_excluded: 0 };
+
 const range = { from: new Date('2026-07-01Z'), to: new Date('2026-07-08Z'), timeZone: 'UTC' as const, conversionWindowSeconds: 60 };
 
 test('client families are coarse self-reported metadata with an explicit unknown bucket', () => {
@@ -56,8 +58,9 @@ test('audit accepts only the optional family enum on initialize and does not sto
 });
 
 test('admin outcomes expose every registered application family while preserving the unidentified bucket', async () => {
-  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true };
+  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true, quoteAuthOrigin: true };
   const row = {
+    ...originCoverage,
     accounts: 0,
     new_signups: 0,
     missing_profiles: 0,
@@ -118,13 +121,14 @@ test('outcome outages stay unavailable and invalid dates never query', async () 
 });
 
 test('missing aggregate columns fail closed instead of becoming zero', async () => {
-  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true };
+  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true, quoteAuthOrigin: true };
   const base = {
+    ...originCoverage,
     client: 'all', accounts: 1, new_signups: 0, missing_profiles: 0,
     generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0,
     image_generators: 0, images_submitted: 0, images: 0, image_failed: 0, image_pending: 0,
   };
-  for (const missing of ['image_generators', 'generators']) {
+  for (const missing of ['image_generators', 'generators', 'unknown_origin_quotes_excluded']) {
     const row = { ...base } as Record<string, unknown>;
     delete row[missing];
     const result = await loadAdminMcpOutcomes(range, {
@@ -140,8 +144,9 @@ test('missing aggregate columns fail closed instead of becoming zero', async () 
 });
 
 test('feed outages stay unavailable instead of rendering an empty feed', async () => {
-  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true };
+  const relations = { audit: true, quotes: true, jobs: true, profiles: false, funnel: false, clientFamily: true, quoteAuthOrigin: true };
   const row = {
+    ...originCoverage,
     client: 'all', accounts: 0, new_signups: 0, missing_profiles: 0,
     generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0,
     image_generators: 0, images_submitted: 0, images: 0, image_failed: 0, image_pending: 0,

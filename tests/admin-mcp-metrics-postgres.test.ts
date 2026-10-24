@@ -277,7 +277,7 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       SET search_path TO outcomes_fixture;
       CREATE TABLE mcp_audit_events (event_type text, user_id text, oauth_client_id text, outcome text, client_family text, created_at timestamptz);
       CREATE TABLE mcp_funnel_events (event_type text, user_id text, oauth_client_id text, acquisition_client text, occurred_at timestamptz);
-      CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text, created_at timestamptz);
+      CREATE TABLE mcp_generation_quotes (user_id text, oauth_client_id text, job_id text, created_at timestamptz, auth_origin text DEFAULT 'oauth');
       CREATE TABLE app_jobs (job_id text UNIQUE, user_id text, surface text, engine_id text, engine_label text, status text, created_at timestamptz);
       CREATE TABLE profiles (id text PRIMARY KEY, created_at timestamptz, synced_from_supabase boolean);
       INSERT INTO profiles VALUES
@@ -309,17 +309,17 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
         ('wrong-owner', 'outsider', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-04Z'),
         ('before', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-06-30Z'),
         ('after', 'a', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-08Z');
-      INSERT INTO mcp_generation_quotes
+      INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at)
         SELECT 'a', CASE WHEN job_id IN ('a3', 'image') THEN 'claude-id' ELSE 'codex-id' END, job_id, '2026-06-30Z'
           FROM app_jobs WHERE job_id IN ('a1', 'a2', 'a3', 'image', 'before', 'after', 'wrong-owner');
-      INSERT INTO mcp_generation_quotes VALUES ('a', 'codex-id', 'a1', '2026-07-01 00:30Z');
-      INSERT INTO mcp_generation_quotes VALUES
+      INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at) VALUES ('a', 'codex-id', 'a1', '2026-07-01 00:30Z');
+      INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at) VALUES
         ('b', 'chatgpt-id', 'b1', '2026-07-02Z'), ('b', 'chatgpt-id', 'b2', '2026-07-03Z'),
         ('c', 'unknown-id', 'c1', '2026-07-04Z'), ('c', 'unknown-id', NULL, '2026-07-04Z'),
         ('d', 'openclaw-id', 'd1', '2026-07-05Z'), ('e', 'n8n-id', 'e1', '2026-07-05Z'),
         ('a', 'codex-id', 'image-pending', '2026-07-05Z'), ('a', 'codex-id', 'image-failed', '2026-07-06Z');
     `);
-    const relations = { audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true };
+    const relations = { audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true, quoteAuthOrigin: true };
     const load = (readAuthMetadata?: typeof readMcpAuthMetadata) => loadAdminMcpOutcomes({ from: params[0], to: params[1], timeZone: 'UTC', conversionWindowSeconds: 60 }, {
       configured: () => true,
       readAuthMetadata,
@@ -351,12 +351,12 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
                CASE WHEN n % 2 = 0 THEN 'GPT Image 2' ELSE 'Veo 3' END,
                'completed', '2026-07-07Z'::timestamptz + n * interval '1 minute'
           FROM generate_series(1, 35) AS series(n);
-        INSERT INTO mcp_generation_quotes
+        INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at)
         SELECT 'a', 'codex-id', 'bulk-' || n, '2026-07-07Z'::timestamptz + n * interval '1 minute'
           FROM generate_series(1, 35) AS series(n);
-        INSERT INTO mcp_generation_quotes VALUES ('a', 'codex-id', 'bulk-35', '2026-07-07 01:00Z');
+        INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at) VALUES ('a', 'codex-id', 'bulk-35', '2026-07-07 01:00Z');
       `);
-      const rows = (await client.query(buildMcpGenerationItemsSql({ audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true }), [
+      const rows = (await client.query(buildMcpGenerationItemsSql({ audit: true, quotes: true, jobs: true, profiles: true, funnel: true, clientFamily: true, quoteAuthOrigin: true }), [
         ...params, JSON.stringify({ profiles: [], clients: [] }), 30,
       ])).rows;
       assert.equal(rows.length, 30);
@@ -394,7 +394,7 @@ test('admin MCP aggregates enforce causal ordering, canonical UTC windows, and t
       INSERT INTO profiles VALUES ('glama-user', '2026-07-04Z', true);
       INSERT INTO mcp_audit_events VALUES ('connection_initialized', 'glama-user', 'glama-id', 'success', 'glama', '2026-07-04Z');
       INSERT INTO app_jobs VALUES ('glama-video', 'glama-user', 'video', 'veo-3', 'Veo 3', 'completed', '2026-07-05Z');
-      INSERT INTO mcp_generation_quotes VALUES ('glama-user', 'glama-id', 'glama-video', '2026-07-04Z');
+      INSERT INTO mcp_generation_quotes (user_id, oauth_client_id, job_id, created_at) VALUES ('glama-user', 'glama-id', 'glama-video', '2026-07-04Z');
     `);
     const glamaOutcome = await load();
     assert.equal(glamaOutcome.clients.find((row) => row.client === 'glama')?.accounts, 1);
