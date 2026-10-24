@@ -63,14 +63,14 @@ async function main() {
       const authorized = admins.length ? admins.some(row => row.user_id === actorId) : (await executor.query('SELECT user_id FROM app_admins WHERE user_id=$1::uuid', [actorId])).length === 1;
       if (!authorized) throw new Error('Release actor must be an existing administrator.');
     } else await lockPricingCutoverAdministrator(executor, actorId);
-    const prepared = await prepareVideoOperationTariffs({ state: await loadEffectiveCustomerTariffState(executor),
-      policy: await loadPricingPolicyOverridesWithExecutor(executor), actorId, candidateCommit });
+    const prepared = await prepareVideoOperationTariffs({ ...identity, state: await loadEffectiveCustomerTariffState(executor),
+      policy: await loadPricingPolicyOverridesWithExecutor(executor) });
     const proposal = { ...identity, policy: prepared.policy, fingerprint: prepared.fingerprint,
       sourceRevision: prepared.sourceRevision, insertedCells: prepared.cells.length, scope: prepared.scope,
       approved: false, activationReady: false, basis: prepared.basis, sourceStateHash: prepared.sourceStateHash, existingPricesChanged: false,
       cells: prepared.cells.map(({ id, selector, currency, price }) => ({ id, selector, currency, price })) };
     if (mode === 'apply') assertVideoOperationReleaseReview(reviewed, identity, proposal);
-    const receipt = mode === 'preview' ? proposal : await applyVideoOperationTariffs(executor, { actorId, candidateCommit, authorizedActorId: actorId,
+    const receipt = mode === 'preview' ? proposal : await applyVideoOperationTariffs(executor, { ...identity, authorizedActorId: actorId,
         authorizedCandidateCommit: candidateCommit, policy: VIDEO_OPERATION_TARIFF_POLICY,
         fingerprint: (reviewed as VideoOperationReleaseReview).fingerprint, sourceRevision: (reviewed as VideoOperationReleaseReview).sourceRevision });
     assertRelease();

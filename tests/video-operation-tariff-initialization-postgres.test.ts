@@ -13,10 +13,12 @@ import { ensureKnownRejectionRefund } from '../frontend/src/server/generations/p
 import { reservePaidGenerationInitialJob } from '../frontend/src/server/agent-api/paid-generation-execution';
 import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import type { McpGenerationQuote } from '../frontend/src/server/agent-api/quote-repository';
+import { pricingCutoverTarget } from '../frontend/server/pricing/cutover-target';
 
 test('PG17 VideoOperation initialization rejects stale review, rolls back failures, proves quotes and preserves every existing row', { timeout: 180_000 }, async () => {
   await withTariffReaderFixture(async ({ database }) => {
-    const { actorId, candidateCommit } = operationIdentity;
+    const identity = { ...operationIdentity, databaseIdentity: pricingCutoverTarget({ DATABASE_URL: database.databaseUrl }).databaseIdentity };
+    const { actorId, candidateCommit } = identity;
     await database.pool.query(`CREATE TABLE user_roles (user_id uuid, role text);
       CREATE TABLE app_admins (user_id uuid);
       UPDATE app_pricing_rules SET margin_percent=0.3,surcharge_audio_percent=0,surcharge_upscale_percent=0;`);
@@ -31,10 +33,10 @@ test('PG17 VideoOperation initialization rejects stale review, rolls back failur
       FROM jsonb_to_recordset($1::jsonb) AS r(id text,selector_key text,selector_json jsonb,price_json jsonb)`, [JSON.stringify(rows), actorId]);
     await database.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1798');
     const beforeRows = (await database.pool.query('SELECT * FROM app_customer_tariff_cells ORDER BY id')).rows;
-    const prepare = () => withDbTransaction(async executor => prepareVideoOperationTariffs({ ...operationIdentity,
+    const prepare = () => withDbTransaction(async executor => prepareVideoOperationTariffs({ ...identity,
       state: await loadEffectiveCustomerTariffState(executor), policy: await loadPricingPolicyOverridesWithExecutor(executor) }));
     const prepared = await prepare();
-    const input = { ...operationIdentity, authorizedActorId: actorId, authorizedCandidateCommit: candidateCommit,
+    const input = { ...identity, authorizedActorId: actorId, authorizedCandidateCommit: candidateCommit,
       fingerprint: prepared.fingerprint, sourceRevision: prepared.sourceRevision, policy: VIDEO_OPERATION_TARIFF_POLICY };
     const assertUnchanged = async () => {
       assert.deepEqual((await database.pool.query('SELECT * FROM app_customer_tariff_cells ORDER BY id')).rows, beforeRows);
@@ -43,6 +45,10 @@ test('PG17 VideoOperation initialization rejects stale review, rolls back failur
       assert.equal((await database.pool.query('SELECT count(*) FROM app_pricing_change_events')).rows[0].count, '0');
     };
     await assertUnchanged();
+    for (const changed of [{ databaseIdentity: 'd'.repeat(64) }, { releaseBranch: 'codex/other-release' }]) {
+      await assert.rejects(withDbTransaction(executor => applyVideoOperationTariffs(executor, { ...input, ...changed })), /fingerprint changed/i);
+      await assertUnchanged();
+    }
     await assert.rejects(withDbTransaction(executor => applyVideoOperationTariffs(executor, { ...input, sourceRevision: 1797 })), /changed/i);
     await assert.rejects(withDbTransaction(executor => applyVideoOperationTariffs(executor, { ...input, authorizedActorId: 'other' })), /authorized/i);
     await database.pool.query("UPDATE user_roles SET role='user'");
@@ -82,6 +88,8 @@ test('PG17 VideoOperation initialization rejects stale review, rolls back failur
     assert.equal(events[0].id, result.eventId);
     assert.equal(events[0].next_state.length, 89);
     assert.equal(events[0].preview_summary.fingerprint, prepared.fingerprint);
+    assert.equal(events[0].preview_summary.databaseIdentity, identity.databaseIdentity);
+    assert.equal(events[0].preview_summary.releaseBranch, identity.releaseBranch);
     assert.equal(events[0].preview_summary.existingPricesChanged, false);
     for (const scenario of videoOperationInitializationScenarios()) {
       const cell = prepared.cells.find(cell => key(cell.selector) === key(continuousInputTariffSelector(scenario.selector) ?? scenario.selector))!;

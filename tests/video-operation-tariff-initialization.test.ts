@@ -29,3 +29,18 @@ test('all 89 additions require an active initialized exact tariff, including new
       loadCustomerTariffState:async()=>({...operationTariffState(),active,databaseCells:[]})}),undefined,`${scenario.id}:${active}`);
   }
 });
+
+test('identical grids and literal cells require fresh approval for each database and release branch', async () => {
+  const input = { ...operationIdentity, state: operationTariffState(), policy: operationPolicy, at: '2026-10-24T00:00:00Z' };
+  const original = await prepareVideoOperationTariffs(input);
+  for (const changed of [{ databaseIdentity: 'd'.repeat(64) }, { releaseBranch: 'codex/other-release' }]) {
+    const prepared = await prepareVideoOperationTariffs({ ...input, ...changed });
+    assert.deepEqual(prepared.cells, original.cells, 'Only release identity changed, not prices or intervals');
+    assert.equal(prepared.sourceStateHash, original.sourceStateHash);
+    assert.notEqual(prepared.fingerprint, original.fingerprint, 'Approval must bind target and branch');
+  }
+  for (const changed of [{ databaseIdentity: '' }, { databaseIdentity: 'not-a-target-hash' }, { releaseBranch: 'main' },
+    { releaseBranch: 'codex/' }, { releaseBranch: 'codex/../other' }, { releaseBranch: 'codex/name.lock' }]) {
+    await assert.rejects(prepareVideoOperationTariffs({ ...input, ...changed }), /release identity/i);
+  }
+});

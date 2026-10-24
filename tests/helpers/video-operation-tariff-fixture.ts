@@ -1,7 +1,8 @@
 import type { ManualTariffCell } from '@maxvideoai/pricing';
 export const operationPolicy = { status: 'loaded' as const, rules: [{ id: 'default', marginPercent: .3,
   marginFlatCents: 0, surchargeAudioPercent: 0, surchargeUpscalePercent: 0, currency: 'USD' }], routingRules: [] };
-export const operationIdentity = { actorId: '11111111-1111-4111-8111-111111111111', candidateCommit: 'a'.repeat(40) };
+export const operationIdentity = { actorId: '11111111-1111-4111-8111-111111111111', candidateCommit: 'a'.repeat(40),
+  databaseIdentity: 'c'.repeat(64), releaseBranch: 'codex/video-provider-mode-parity' };
 export function operationTariffState() {
   const databaseCells: ManualTariffCell[] = [];
   for (const resolution of ['720p','1080p','4k']) for (const audio of ['false','true']) databaseCells.push({

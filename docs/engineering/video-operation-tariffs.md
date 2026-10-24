@@ -86,8 +86,12 @@ Preview is read-only, repeatable-read and requires the existing administrator. I
 rereads current active tariffs and effective policy; revision 1798 is historical
 observation, not an application assumption. The receipt binds target identity,
 actor, candidate, branch, revision, full prior grid/policy hash, explicit scope,
-reference basis and every literal proposed cell. It remains `approved: false` and
-`activationReady: false`; a receipt never claims provider qualification or deployment.
+reference basis and every literal proposed cell. The target identity and release
+branch participate in the approved fingerprint
+itself: changing either requires fresh preparation and approval, even for identical
+cloned grid/policy/cell bytes. Both are also retained in the immutable event. The
+receipt remains `approved: false` and `activationReady: false`; it never claims
+provider qualification or deployment.
 Review the exact prices before supplying its fingerprint. Do not edit receipt fields.
 
 Apply rechecks the receipt and administrator, locks state/cells/version history/policy,

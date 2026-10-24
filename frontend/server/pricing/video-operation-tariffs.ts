@@ -20,9 +20,15 @@ export { VIDEO_OPERATION_TARIFF_POLICY, VIDEO_OPERATION_TARIFF_SCOPE, VIDEO_OPER
 const ordered = (cells: ManualTariffCell[]) => [...cells].sort((a,b) => a.id.localeCompare(b.id));
 const grid = (state: Extract<EffectiveCustomerTariffState, { status: 'loaded' }>) => ({ active: state.active,
   databaseCells: ordered(state.databaseCells), versionedCells: ordered(state.versionedCells) });
-function releaseIdentity(actor: string, candidate: string) {
+type VideoOperationReleaseIdentity = { actorId: string; candidateCommit: string; databaseIdentity: string; releaseBranch: string };
+function releaseIdentity({ actorId: actor, candidateCommit: candidate, databaseIdentity, releaseBranch }: VideoOperationReleaseIdentity) {
+  const validBranch = typeof releaseBranch === 'string' && /^codex\/[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(releaseBranch)
+    && !releaseBranch.includes('..') && releaseBranch.split('/').every(part => part && !part.startsWith('.')
+      && !part.endsWith('.') && !part.endsWith('.lock'));
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(actor)
-    || !/^[0-9a-f]{40}$/.test(candidate)) throw new Error('An authorized actor and committed candidate are required.');
+    || !/^[0-9a-f]{40}$/.test(candidate) || !/^[0-9a-f]{64}$/.test(databaseIdentity) || !validBranch) {
+    throw new Error('A validated release identity requires an authorized actor, committed candidate, target hash and codex branch.');
+  }
 }
 export function videoOperationInitializationScenarios() {
   return [...videoOperationTariffContexts().map(context => buildManualTariffCoverageScenario(context, 'operation-initialization')),
@@ -31,10 +37,10 @@ export function videoOperationInitializationScenarios() {
 
 /** Bounded, missing-only maintenance. No route/build invokes this writer. All
  * before-prices are absent; the six existing Veo8s anchors remain exact. */
-export async function prepareVideoOperationTariffs(input: {
-  state: EffectiveCustomerTariffState; policy: PricingPolicyOverrideLoadResult; actorId: string; candidateCommit: string; at?: string;
+export async function prepareVideoOperationTariffs(input: VideoOperationReleaseIdentity & {
+  state: EffectiveCustomerTariffState; policy: PricingPolicyOverrideLoadResult; at?: string;
 }) {
-  releaseIdentity(input.actorId, input.candidateCommit);
+  releaseIdentity(input);
   if (input.state.status !== 'loaded' || !input.state.active || !Number.isSafeInteger(input.state.revision) || input.state.revision < 0) throw new Error('Active current tariffs are required.');
   if (input.policy.status !== 'loaded') throw new Error('Current effective policy is required.');
   const state = input.state, at = input.at ?? new Date().toISOString();
@@ -76,19 +82,21 @@ export async function prepareVideoOperationTariffs(input: {
     supplierInvoiceVerified: false, supplierCostKind: 'published_reference_estimate', beforeCents: null,
     enhanceQuantity: 'exact_measured_owned_native_draft_up_to_21s_v1', draftExtendCacheQualified: false } as const;
   const fingerprint = cutoverDigest({ policy: VIDEO_OPERATION_TARIFF_POLICY, sourceStateHash, actorId: input.actorId,
-    candidateCommit: input.candidateCommit, scope: VIDEO_OPERATION_TARIFF_SCOPE, basis,
+    candidateCommit: input.candidateCommit, databaseIdentity: input.databaseIdentity, releaseBranch: input.releaseBranch,
+    scope: VIDEO_OPERATION_TARIFF_SCOPE, basis,
     cells: cells.map(({ id,selector,currency,price }) => ({ id,selector,currency,price })) });
-  return { policy: VIDEO_OPERATION_TARIFF_POLICY, fingerprint, sourceRevision: state.revision, sourceStateHash, cells,
+  return { policy: VIDEO_OPERATION_TARIFF_POLICY, fingerprint, databaseIdentity: input.databaseIdentity, releaseBranch: input.releaseBranch,
+    sourceRevision: state.revision, sourceStateHash, cells,
     sourceBindings, basis, scope: VIDEO_OPERATION_TARIFF_SCOPE, existingPricesChanged: false as const, activationReady: false as const };
 }
 
 /** Caller owns exact Git/target/CI fences; all writes/history/verification share
  * this transaction. A retry after commit fails its revision fence without writes. */
-export async function applyVideoOperationTariffs(executor: TransactionQueryExecutor, input: {
-  actorId: string; candidateCommit: string; authorizedActorId: string; authorizedCandidateCommit: string;
+export async function applyVideoOperationTariffs(executor: TransactionQueryExecutor, input: VideoOperationReleaseIdentity & {
+  authorizedActorId: string; authorizedCandidateCommit: string;
   policy: typeof VIDEO_OPERATION_TARIFF_POLICY; fingerprint: string; sourceRevision: number;
 }) {
-  releaseIdentity(input.actorId,input.candidateCommit);
+  releaseIdentity(input);
   if (!isTransactionQueryExecutor(executor) || !customerTariffsEnabledByCode() || input.actorId !== input.authorizedActorId
     || input.candidateCommit !== input.authorizedCandidateCommit || input.policy !== VIDEO_OPERATION_TARIFF_POLICY
     || !/^[0-9a-f]{64}$/.test(input.fingerprint) || !Number.isSafeInteger(input.sourceRevision) || input.sourceRevision < 0) {
@@ -120,6 +128,7 @@ export async function applyVideoOperationTariffs(executor: TransactionQueryExecu
     actorId: input.actorId, previousState: null, nextState: JSON.parse(JSON.stringify(persisted)),
     previewSummary: { fingerprint: prepared.fingerprint, sourceRevision: state.revision, targetRevision: after.revision,
       sourceStateHash: prepared.sourceStateHash, candidateCommit: input.candidateCommit, policy: prepared.policy,
+      databaseIdentity: prepared.databaseIdentity, releaseBranch: prepared.releaseBranch,
       insertedCells: persisted.length, existingPricesChanged: false, basis: prepared.basis, scope: JSON.parse(JSON.stringify(prepared.scope)) },
     affectedScenarioIds: persisted.map(cell => cutoverDigest(cell.selector)) });
   return { insertedCells: persisted.length, revision: after.revision, fingerprint: prepared.fingerprint, eventId: event.id };
