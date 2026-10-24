@@ -39,8 +39,11 @@ test('References opts into subject builder and hydration preserves subjects and 
     assert.equal(doc.querySelector('input[accept="image/*"]'), null, 'default empty subject slots stay hidden');
     assert.match(doc.querySelector('.app-reference-selected-summary')!.textContent!, /Image/);
     await clickReferences();
-    const enable = [...doc.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.querySelector('.app-reference-command-label')?.textContent === 'Subject references');
-    assert.ok(enable, 'References offers an explicit subject choice');
+    const enable = [...doc.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.querySelector('.app-reference-command-label')?.textContent === 'Kling subjects (optional)');
+    assert.ok(enable, 'Kling-specific subjects are explicitly optional');
+    const menuText = doc.querySelector('[role="dialog"]')!.textContent!;
+    assert.ok(menuText.indexOf('Reference images') >= 0);
+    assert.ok(menuText.indexOf('Reference images') < menuText.indexOf('Kling subjects (optional)'), 'ordinary references come before the optional Kling module');
     await act(async () => enable.click());
     assert.equal(doc.querySelector('[role="dialog"]'), null);
     assert.equal(doc.querySelectorAll('input[accept="image/*"]').length, 4);

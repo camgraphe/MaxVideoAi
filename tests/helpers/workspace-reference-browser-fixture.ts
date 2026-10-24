@@ -59,7 +59,7 @@ export async function startWorkspaceReferenceFixture(options: { source?: string;
     } else {
       response.writeHead(200, { 'content-type': 'text/html' });
       const init = options.config ? `<script>globalThis.fixtureConfig=${JSON.stringify(options.config).replace(/</g, '\\u003c')}</script><script src="/${script}"></script>` : '';
-      response.end(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"></head><body class="app-experience"><div id="root"></div><script>globalThis.process={env:{NODE_ENV:'production'}};globalThis.__name=value=>value;</script>${init}</body></html>`);
+      response.end(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"></head><body class="app-experience"><div id="root"></div><script>globalThis.process={env:{NODE_ENV:'production'}};globalThis.__name=value=>value;</script>${init}</body></html>`);
     }
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));

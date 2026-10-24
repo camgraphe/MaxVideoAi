@@ -159,18 +159,20 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     {engine.activeVideoOperation === 'h3-recast' && selectedCollections.some(({ entry }) => entry.field.id === 'reference_image_urls') ? <p className="app-reference-required" role="note">{mentionCopy.portraits}</p> : null}
     {subjectsVisible ? <div id={subjectPanelId} data-subject-references>{subjectReferences?.content}</div> : null}
     {popupFields.length || activeCommand === 'collections' && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
-      {activeCommand === 'collections' && subjectReferences ? <button type="button" className="app-reference-command"
-        aria-expanded={subjectsVisible} aria-controls={subjectsVisible ? subjectPanelId : undefined}
-        onClick={() => { setSubjectEnabledFor(engine.id); close(); }}>
-        <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
-        <span className="app-reference-command-label">{copy.subjects}</span>
-        <span aria-hidden="true">{subjectsVisible ? '✓' : '+'}</span>
-      </button> : null}
       <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}
         onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />} />
+      {activeCommand === 'collections' && subjectReferences ? <div className="mt-3 space-y-1 border-t border-border pt-3"><button type="button" className="app-reference-command"
+        aria-describedby={`${subjectPanelId}-description`} aria-expanded={subjectsVisible} aria-controls={subjectsVisible ? subjectPanelId : undefined}
+        onClick={() => { setSubjectEnabledFor(engine.id); close(); }}>
+        <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
+        <span className="app-reference-command-label">{copy.subjects}</span>
+        <span aria-hidden="true">{subjectsVisible ? '✓' : '+'}</span>
+      </button>
+      <p id={`${subjectPanelId}-description`} className="text-xs text-text-muted">{copy.subjectsHint}</p>
+      </div> : null}
     </WorkspaceReferencePopup> : null}
   </section>;
 }

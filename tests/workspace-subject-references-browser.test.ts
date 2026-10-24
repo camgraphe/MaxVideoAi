@@ -39,7 +39,7 @@ test('subject references opt in below References and hydrated subjects remain vi
         if (evidence) await page.screenshot({ path: join(evidence, `subjects-${width}-initial.png`), fullPage: true });
         await references.click();
         const dialog = page.getByRole('dialog');
-        const subjects = dialog.getByRole('button', { name: 'Subject references', exact: true });
+        const subjects = dialog.getByRole('button', { name: 'Kling subjects (optional)', exact: true });
         await expect(subjects).toBeVisible();
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'References menu fits the viewport');
         if (evidence) await page.screenshot({ path: join(evidence, `subjects-${width}-menu.png`), fullPage: true });
