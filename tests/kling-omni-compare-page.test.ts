@@ -67,6 +67,7 @@ test('Kling 3.0 Omni compare specs expose reference and storyboard controls', ()
   assert.match(specs.firstLastFrame, /start/i);
   assert.match(specs.firstLastFrame, /end/i);
   assert.match(specs.referenceImageStyle, /@Image|reference/i);
+  assert.match(specs.referenceImageStyle, /Kling Elements/i);
   assert.match(specs.referenceVideo, /Reference \/ Edit/);
   assert.match(specs.referenceVideo, /source timing and framing for Edit/);
   assert.equal(specs.nativeAudioGeneration, 'Supported');

@@ -172,7 +172,7 @@ test('an overdue editorial review stops boosting a reference while on-request mo
   assert.ok(result.recommendations[1].tradeoffs.some(reason=>/does not boost/i.test(reason)));
 });
 
-test('H3 Max recommendations derive executable image and reference modes from the shared runtime', async () => {
+test('H3 Max recommendations derive executable creation, reference and source operations from the shared runtime', async () => {
   const catalogDeps: AgentModelCatalogDeps = {
     ...realRegistryDeps(),
     isModeExecutable: (engine, mode) => resolveAgentGenerationModeExecutability(engine, mode, {
@@ -184,7 +184,14 @@ test('H3 Max recommendations derive executable image and reference modes from th
   };
   const details = await getAgentModelDetails('minimax-h3-max', catalogDeps);
   assert.equal(details.lifecycle, 'current');
-  assert.deepEqual(details.modes.map((mode) => mode.mode), ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(details.modes.map((mode) => mode.mode), ['t2v', 'i2v', 'ref2v', 'v2v']);
+  const sourceOperations = details.modes.find((mode) => mode.mode === 'v2v')?.operations;
+  assert.deepEqual(sourceOperations?.map(({ operation, durationPolicy }) => ({ operation, durationPolicy })), [
+    { operation: 'h3-recast', durationPolicy: 'source_video' },
+    { operation: 'h3-relight', durationPolicy: 'source_video' },
+  ]);
+  assert.deepEqual(details.modes.flatMap((mode) => mode.operations?.map(({ operation }) => operation) ?? []),
+    ['h3-recast', 'h3-relight'], 'deferred H3 Extend, Insert and Reframe must not be advertised');
   assert.equal(details.modes[0].audio, 'always_generated');
   assert.deepEqual(details.modes[0].resolutions, ['480P', '768P', '1080P']);
   assert.ok(details.modes[0].settings.some((setting) => setting.key === 'promptExpansionMode'));
@@ -194,6 +201,12 @@ test('H3 Max recommendations derive executable image and reference modes from th
   assert.equal(recommendation.recommendations[0]?.model.id, 'minimax-h3-max');
   assert.ok(recommendation.recommendations[0].reasons.some((reason) => reason.includes('Reviewed guidance')));
   assert.equal((await recommendAgentModels({ id: 'minimax-h3-max', mode: 'ref2v' }, catalogDeps)).recommendations[0]?.model.id, 'minimax-h3-max');
+  const sourceRecommendation = await recommendAgentModels({ id: 'minimax-h3-max', mode: 'v2v' }, catalogDeps);
+  assert.deepEqual(sourceRecommendation.recommendations.map(({ model }) => ({ id: model.id, modes: model.modes })),
+    [{ id: 'minimax-h3-max', modes: ['v2v'] }]);
+  for (const mode of ['extend', 'reframe'] as const) {
+    assert.deepEqual((await recommendAgentModels({ id: 'minimax-h3-max', mode }, catalogDeps)).recommendations, [], mode);
+  }
 });
 
 test('recommendations keep explicit capabilities as hard constraints and cap stable ties at three', async () => {
