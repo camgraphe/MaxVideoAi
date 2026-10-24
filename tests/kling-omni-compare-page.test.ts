@@ -61,13 +61,15 @@ test('Kling 3.0 Omni compare specs expose reference and storyboard controls', ()
 
   assert.equal(specs.textToVideo, 'Supported');
   assert.equal(specs.imageToVideo, 'Supported');
-  assert.match(specs.videoToVideo, /source-video|video-to-video|V2V/i);
+  assert.match(specs.videoToVideo, /Reference \/ Edit/);
+  assert.match(specs.videoToVideo, /source timing and framing for Edit/);
   assert.doesNotMatch(specs.firstLastFrame, /^Supported\b/);
   assert.match(specs.firstLastFrame, /start/i);
   assert.match(specs.firstLastFrame, /end/i);
   assert.match(specs.referenceImageStyle, /@Image|reference/i);
-  assert.doesNotMatch(specs.referenceVideo, /^Supported\b/);
-  assert.match(specs.referenceVideo, /video element/i);
+  assert.match(specs.referenceImageStyle, /Kling Elements/i);
+  assert.match(specs.referenceVideo, /Reference \/ Edit/);
+  assert.match(specs.referenceVideo, /source timing and framing for Edit/);
   assert.equal(specs.nativeAudioGeneration, 'Supported');
   assert.match(specs.lipSync, /supported/i);
   assert.match(specs.cameraMotionControls, /Shot type|multi-shot|prompt/i);

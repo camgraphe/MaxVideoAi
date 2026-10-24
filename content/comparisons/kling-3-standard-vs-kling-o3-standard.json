@@ -9,7 +9,7 @@
     "heroIntro": "Compare Kling 3 Standard with Kling 3.0 Omni Standard when both offer 15-second 1080p output and audio at the same listed base price. Standard keeps text and start-image generation focused, while Omni adds reference-to-video and video-to-video control for source-led work.",
     "quickVerdict": {
       "title": "Quick verdict",
-      "body": "Choose Kling 3 Standard for streamlined text-to-video or start-frame testing when extra reference modes would only add complexity. Choose Kling 3.0 Omni Standard when characters, products, visual references, or an existing source clip need to guide the result through reference-to-video or video-to-video."
+      "body": "Choose Kling 3 Standard for streamlined text-to-video or start-frame testing when extra reference modes would only add complexity. Choose Kling 3.0 Omni Standard when characters, products, visual references, or an existing source clip need to guide the result through reference-to-video or video-to-video. Kling Omni Standard, Pro and 4K distinguish Reference, which guides a new clip with requested duration, from Edit, which inherits source timing and framing. They do not support Extend. These Omni source operations do not transfer to Kling 3 or older Kling versions; Kling 2.5 Turbo and 2.6 Pro support an optional end image in image-to-video."
     },
     "topCards": [
       {
@@ -72,7 +72,7 @@
     "heroIntro": "Comparez Kling 3 Standard et Kling 3.0 Omni Standard lorsque les deux offrent 15 secondes en 1080p avec audio au même tarif de base. Standard simplifie la génération depuis un texte ou une image de départ ; Omni ajoute les références visuelles et la transformation d’une vidéo source.",
     "quickVerdict": {
       "title": "Verdict rapide",
-      "body": "Choisissez Kling 3 Standard pour tester directement un prompt ou une image de départ sans complexité inutile. Choisissez Kling 3.0 Omni Standard lorsque des personnages, produits, références visuelles ou une vidéo existante doivent guider le résultat grâce aux modes référence-vers-vidéo ou vidéo-vers-vidéo."
+      "body": "Choisissez Kling 3 Standard pour tester directement un prompt ou une image de départ sans complexité inutile. Choisissez Kling 3.0 Omni Standard lorsque des personnages, produits, références visuelles ou une vidéo existante doivent guider le résultat grâce aux modes référence-vers-vidéo ou vidéo-vers-vidéo. Kling Omni Standard, Pro et 4K distinguent Reference, qui guide un nouveau clip avec durée demandée, d’Edit, qui reprend durée et cadrage de la source. Ils n’offrent pas Extend. Ces opérations Omni ne se transfèrent pas à Kling 3 ni aux anciens Kling ; Kling 2.5 Turbo et 2.6 Pro acceptent une image de fin facultative en image-vers-vidéo."
     },
     "topCards": [
       {
@@ -135,7 +135,7 @@
     "heroIntro": "Compara Kling 3 Standard con Kling 3.0 Omni Standard cuando ambos ofrecen 15 segundos en 1080p con audio al mismo precio base. Standard simplifica la generación desde texto o una imagen inicial; Omni agrega referencias visuales y transformación de un video fuente.",
     "quickVerdict": {
       "title": "Veredicto rápido",
-      "body": "Elige Kling 3 Standard para probar directamente un prompt o una imagen inicial sin complejidad extra. Elige Kling 3.0 Omni Standard cuando personajes, productos, referencias visuales o un video existente deban guiar el resultado mediante referencia a video o video a video."
+      "body": "Elige Kling 3 Standard para probar directamente un prompt o una imagen inicial sin complejidad extra. Elige Kling 3.0 Omni Standard cuando personajes, productos, referencias visuales o un video existente deban guiar el resultado mediante referencia a video o video a video. Kling Omni Standard, Pro y 4K distinguen Reference, que guía un clip nuevo con duración solicitada, de Edit, que hereda duración y encuadre del origen. No ofrecen Extend. Estas operaciones Omni no se transfieren a Kling 3 ni a versiones anteriores; Kling 2.5 Turbo y 2.6 Pro aceptan una imagen final opcional en imagen a video."
     },
     "topCards": [
       {

@@ -19,6 +19,12 @@ for (const { engine, id } of extensions) {
       isUnifiedGeminiOmni: id === 'gemini-omni-flash', uiLocale: 'en',
     });
     assert.deepEqual(summary.assetFields.map(({ field }) => field.id).sort(), [...new Set(expected.map(field => field.id))].sort());
+    if (id === 'luma-ray-3-2') {
+      assert.deepEqual(summary.assetFields, [], 'owned Luma lineage cannot be substituted with an upload');
+      assert.equal(getVideoExtensionSourceField(schema), null);
+      assert.ok([...(schema.required??[]),...(schema.optional??[])].some(field => field.id === 'source_job_id' && field.modes?.includes('extend')));
+      return;
+    }
     assert.ok(summary.assetFields.some(({ field, required }) => field.type === 'video' && required));
     const source = getVideoExtensionSourceField(schema)!;
     assert.ok(summary.assetFields.some(({ field, required }) => field.id === source.id && required));

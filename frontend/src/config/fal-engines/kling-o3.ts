@@ -1,3 +1,4 @@
+import { buildKlingOperationCaps } from '../../../lib/video-operation';
 import type { EngineCaps, Resolution } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
@@ -69,6 +70,7 @@ const TIERS: KlingO3Tier[] = [
     variantLabel: '4K',
     resolution: '4k',
     basePerSecondCents: 42,
+    videoInputPerSecondCents: 42,
     referenceImageLimit: 7,
     defaultModelSlug: 'fal-ai/kling-video/o3/4k/text-to-video',
     mediaVideoUrl:
@@ -130,7 +132,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
       ...(hasVideoToVideo
         ? {
             videoMaxMB: 200,
-            videoMaxDurationSec: 10,
+            videoMaxDurationSec: tier.id === 'kling-o3-4k' ? 15 : 10,
             videoCodecs: ['mp4', 'mov'],
           }
         : {}),
@@ -169,7 +171,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
                 maxCount: 1,
                 source: 'either' as const,
                 minDurationSec: 3,
-                maxDurationSec: 10,
+                maxDurationSec: tier.id === 'kling-o3-4k' ? 15 : 10,
               },
             ]
           : []),
@@ -181,12 +183,14 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
           label: 'Reference / storyboard images',
           description:
             'Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.',
-          modes: hasVideoToVideo ? ['ref2v', 'v2v'] : ['ref2v'],
+          modes: hasVideoToVideo && tier.id !== 'kling-o3-4k' ? ['ref2v', 'v2v'] : ['ref2v'],
           minCount: 0,
           maxCount: tier.referenceImageLimit,
           source: 'either',
           slotLabelPattern: '@Image{n}',
         },
+        ...(tier.id === 'kling-o3-4k' ? [{ id: 'image_urls', type: 'image' as const, label: 'Reference images',
+          modes: ['v2v' as const], minCount: 0, maxCount: 4, source: 'either' as const, slotLabelPattern: '@Image{n}' }] : []),
         {
           id: 'start_image_url',
           type: 'image',
@@ -338,7 +342,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
               maxUploadMB: 200,
               audioToggle: false,
               notes:
-                'Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control.',
+                `Video-to-video Reference workflow from one ${tier.id === 'kling-o3-4k' ? '3-15s' : '3-10s'} source clip, optional @Image references, Kling Elements, and keep-audio control.`,
             },
           }
         : {}),
@@ -348,6 +352,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
 
 function buildKlingO3RegistryEntry(tier: KlingO3Tier): RawFalEngineEntry {
   const engine = buildKlingO3Engine(tier);
+  engine.operationCaps = buildKlingOperationCaps(engine);
   return {
     id: tier.id,
     marketingName: tier.label,

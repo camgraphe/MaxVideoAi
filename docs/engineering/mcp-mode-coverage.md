@@ -246,3 +246,58 @@ rank Extend, certify identity preservation or establish relative prices.
 canonical requests and paid-body forwarding; the composer DOM matrix covers every
 authored Extend mode. Host catalog refresh after server delivery is separate from
 these source checks; no installed plugin release is implied.
+
+## Kling Omni operations (2026-10-24)
+
+`v2v` keeps its historical Reference meaning when `operation` is omitted.
+Explicit `kling-reference` has the same Standard/Pro tariff selector; it does not
+rewrite omitted-operation canonical JSON or historical receipts. `kling-edit`
+selects a full source-timed schema: owned 3–15s source, required prompt, optional
+reference images and `keepAudio`, with no requested duration or aspect ratio.
+The shared operation details project those inputs to Site, MCP and Studio.
+Standard/Pro/4K Edit and new 4K Reference select their verified fal endpoints;
+there is no Kling Extend or inferred direct 4K route. Legacy Reference keeps its
+conservative 3–10s contract; this change does not widen direct transport limits.
+
+New operations bind operation, fal endpoint and trusted source metadata to the
+quote. They require separate active reviewed customer tariffs, even when the
+legacy pricing policy is active. Missing cells fail closed. The read-only
+`server/pricing/kling-operation-tariff-proposal.ts` prepares 16 exact selector
+classes (three fractional source-second Edit classes and thirteen requested
+3–15s 4K Reference classes), tied to the loaded tariff revision. It neither
+copies Reference retail prices nor writes or activates cells. The dated public
+supplier rates are Standard Edit $0.126/s, Pro Edit $0.168/s, and 4K $0.42/s;
+they are published endpoint reference rates, not verified effective invoices.
+Generic Standard/Pro $0.14 base metadata does not replace them.
+
+Site retains its existing owned Kling Elements. Canonical MCP and Studio now
+compose Elements with typed `elements` entries: `{kind: "images", frontalSlot,
+referenceSlots}` (one to three supporting slots), or `{kind: "video", videoSlot}`.
+Slots are the zero-based ordered `role: "reference"` entries and must resolve to
+owned assets, never HTTPS references or provider IDs. Studio uses its existing
+attached-library and ready-project-output checks and promotion owner. Element
+slots are removed from ordinary guidance images; at most three Elements and four
+Elements plus guidance images are allowed. Every member is owner-resolved again
+at confirmation, and its exact resolved metadata is quote-bound to prevent media
+substitution. Stored intents and canonical requests retain the typed composition.
+The MCP schema and Studio director/pricing schemas expose the same composition;
+model operation details describe it. No second ownership or grant path exists.
+
+### Operation discovery and source-fact handoff
+
+Mode discovery evaluates the authored operation alternatives through the real
+provider routing and credential gates. An available alternative publishes the
+mode; request admission still checks only the selected operation. FLUX source
+operations and H3 Recast/Relight require explicit operation identity. Historical
+Kling Reference omission and inferred standard LTX 2.3 Reframe remain unchanged.
+
+Owned-source validation returns its qualified facts through both the attachment
+and trusted-reference projections. A byte probe supersedes stored duration for
+FAST/LTX and H3; later duration-limit checks must consume that projection rather
+than reload stored timing. Site preflight normalizes inferred operations before
+selecting exact source seconds, matching execution and canonical quotation.
+`tests/video-operation-source-seams.test.ts` connects the executable catalogue,
+prepare admission, normalized attachments, Site preflight, source execution guard
+and canonical customer billing with only storage/probe/policy I/O substituted.
+It includes credential rejection, source identity mismatch, busy/invalid probes,
+missing stored timing, fractional customer-cent transitions and strict FAST bounds.

@@ -369,7 +369,7 @@ test('Kling catalog separates V3 start-frame workflows from 3.0 Omni reference w
   assert.equal(klingO3Pro.modes.find((mode) => mode.mode === 'ref2v')?.falModelId, 'fal-ai/kling-video/o3/pro/reference-to-video');
 });
 
-test('Kling 3.0 Omni catalog exposes video-to-video for Standard and Pro only', () => {
+test('Kling 3.0 Omni catalog exposes video-to-video for Standard, Pro and fal-only 4K', () => {
   const entriesById = new Map(listFalEngines().map((entry) => [entry.id, entry]));
 
   [
@@ -398,8 +398,10 @@ test('Kling 3.0 Omni catalog exposes video-to-video for Standard and Pro only', 
 
   const native4k = entriesById.get('kling-o3-4k');
   assert.ok(native4k);
-  assert.equal(native4k.engine.modes.includes('v2v'), false);
-  assert.equal(native4k.modes.some((mode) => mode.mode === 'v2v'), false);
+  assert.equal(native4k.engine.modes.includes('extend'), false);
+  assert.equal(resolveVideoProviderRoutingPlan({ engineId: 'kling-o3-4k', mode: 'v2v', isAdmin: true, env: { KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true' } }).kind, 'fal_only');
+  assert.equal(native4k.engine.modes.includes('v2v'), true);
+  assert.equal(native4k.modes.some((mode) => mode.mode === 'v2v'), true);
 });
 
 test('Kling direct is preferred for Kling 3.0 Omni video-to-video with Fal fallback', () => {

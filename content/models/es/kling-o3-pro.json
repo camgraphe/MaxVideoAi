@@ -54,7 +54,7 @@
     },
     {
       "label": "Video-to-video",
-      "body": "Sube un video fuente de 3 a 10 s para V2V y menciónalo como @Video1. Pro mantiene referencias @Image opcionales para estilo o storyboard, además de keep_audio cuando la banda sonora fuente debe preservarse."
+      "body": "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend. Reference acepta un origen de 3–10 segundos en Standard/Pro; su salida solicitada puede durar 3–15 segundos."
     },
     {
       "label": "Modo start frame",
@@ -68,7 +68,7 @@
     },
     {
       "q": "¿Kling 3.0 Omni Pro soporta video-to-video?",
-      "a": "Sí. Pro soporta V2V con un video fuente de 3 a 10 s referenciado como @Video1, referencias @Image1 opcionales y keep_audio para mantener el audio fuente."
+      "a": "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend. Reference acepta un origen de 3–10 segundos en Standard/Pro; su salida solicitada puede durar 3–15 segundos."
     }
   ],
   "decision": {
@@ -147,12 +147,17 @@
         "title": "Precio en vivo",
         "body": "La app muestra el precio exacto antes de generar.",
         "tone": "price"
+      },
+      {
+        "title": "Reference / Edit con video de origen",
+        "body": "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend.",
+        "tone": "reference"
       }
     ],
     "decisionCards": [
       {
         "title": "¿O3 Pro o Kling 3 Pro?",
-        "body": "Elige O3 Pro cuando las imágenes son referencias o storyboard. Elige Kling 3 Pro cuando una imagen debe ser el start frame visible.",
+        "body": "Elige Omni Pro para referencias de imagen o Reference y Edit con video de origen. Kling 3 Pro se centra en texto e imagen inicial; su imagen final opcional no lo convierte en un editor de video de origen.",
         "cta": {
           "label": "Comparar O3 Pro vs Kling 3 Pro",
           "href": "/es/comparativa/kling-3-pro-vs-kling-o3-pro"
@@ -160,7 +165,7 @@
       },
       {
         "title": "¿Necesitas guía V2V?",
-        "body": "Usa O3 Pro o Standard para V2V desde video fuente. Cita @Video1 cuando la fuente debe controlar movimiento o continuidad de cámara.",
+        "body": "Elige Reference para movimiento nuevo guiado por un video o Edit para un cambio que hereda duración y encuadre del origen. Standard, Pro y Omni 4K tienen sus propios ajustes y cotizaciones exactos.",
         "cta": {
           "label": "Abrir compositor O3 Pro",
           "href": "/app?engine=kling-o3-pro"
@@ -168,7 +173,7 @@
       },
       {
         "title": "¿Necesitas 4K nativo?",
-        "body": "Usa O3 4K cuando la dirección por referencias ya está aprobada. Mantente en Pro para probar V2V y estructura storyboard.",
+        "body": "Omni 4K también ofrece Reference y Edit. Compara los ajustes de salida exactos y la cotización actual antes de elegir Standard, Pro o 4K.",
         "cta": {
           "label": "Ver O3 4K",
           "href": "/es/modelos/kling-o3-4k"
@@ -189,8 +194,8 @@
         "body": "Agrega apertura o final opcional cuando la pose debe controlarse."
       },
       {
-        "title": "Video fuente",
-        "body": "Usa @Video1 para guiar movimiento, ritmo, composición o cámara en video-to-video."
+        "title": "Reference / Edit con video de origen",
+        "body": "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend. Reference acepta un origen de 3–10 segundos en Standard/Pro; su salida solicitada puede durar 3–15 segundos."
       },
       {
         "title": "Referencia más V2V",
@@ -254,7 +259,8 @@
       "Usa @Image1, @Image2 para imágenes y @Video1 solo para un video fuente V2V.",
       "Cuando @Video1 está cargado, el flujo pasa a V2V: start/end frames no deben dirigir la toma.",
       "Mantén una acción legible por toma y una sola función por referencia.",
-      "Usa keep_audio solo si el audio fuente debe conservarse."
+      "Usa keep_audio solo si el audio fuente debe conservarse.",
+      "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend."
     ],
     "engineWhy": [
       "Pro es la opción correcta cuando referencias, storyboard y V2V deben mantener fidelidad.",

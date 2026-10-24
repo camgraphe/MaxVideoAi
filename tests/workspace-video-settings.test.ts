@@ -248,3 +248,20 @@ test('complete public recreation restores typed reference fields without a priva
   assert.equal(result.inputAssets?.video_url?.[0]?.url,'https://media.example/marketing-media/source.mp4');
   assert.equal(result.formValues.extraInputValues.strength,0.7);
 });
+
+test('public recreation strips private source binding while authenticated personal recall preserves it', () => {
+  const engine = getBaseEngines().find(engine => engine.id === 'flux-3-draft')!;
+  const snapshot = {schemaVersion:1,surface:'video',engineId:engine.id,inputMode:'v2v',operation:'flux-draft-enhance',
+    prompt:'Reusable creative text',sourceJobId:'private-job',sourceOutputId:'private-output',
+    core:{resolution:'1080p'},advanced:{extraInputValues:{source_job_id:'private-job',source_output_id:'private-output',safety_tolerance:2}},refs:{inputs:[]}};
+  const options = {engines:[engine],engineMap:new Map([[engine.id,engine]]),createLocalId:()=> 'id',
+    createFallbackScene:()=>({id:'scene',prompt:'',duration:5}),createFallbackKlingElement:()=>({id:'element',frontal:null,references:[],video:null})};
+  const shared = buildVideoSettingsSnapshotFromSharedVideo({id:'public',engineId:engine.id,recreationSnapshot:snapshot} as any);
+  const publicResult = resolveVideoSettingsSnapshot(shared,options as any);
+  assert.equal(publicResult.prompt,snapshot.prompt);
+  assert.equal(publicResult.formValues.operation,'flux-draft-enhance');
+  assert.deepEqual(publicResult.formValues.extraInputValues,{safety_tolerance:2});
+  const personalResult=resolveVideoSettingsSnapshot(snapshot,options as any);
+  assert.deepEqual(personalResult.formValues.extraInputValues,snapshot.advanced.extraInputValues);
+  assert.equal(snapshot.sourceJobId,'private-job','the authored recipe is not mutated');
+});

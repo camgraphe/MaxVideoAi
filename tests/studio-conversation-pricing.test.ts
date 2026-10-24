@@ -144,3 +144,26 @@ test('Studio catalog never advertises modes rejected by its existing session pre
     assert.throws(()=>requireStudioGenerationRequest({...request,outputCount:2}),{code:'PARAMETER_INVALID'});
   }
 });
+
+test('action executor preserves explicit Edit through comparison candidate filtering and operation defaults',async()=>{
+ const {createStudioActionExecutor}=await import('../frontend/src/server/studio/conversation-actions');
+ const {compareGenerationPrices}=await import('../frontend/src/server/agent-api/generation-price-comparison');
+ const models=['kling-o3-standard','wan-3'].map(id=>candidate(id,'video'));
+ const source={assetId:'clip',role:'source' as const,mediaKind:'video' as const,storageUrl:'https://example.com/clip.mp4',width:1280,height:720,durationSec:5.25,mimeType:'video/mp4',originalName:'clip.mp4',sizeBytes:1000};
+ const captured:unknown[]=[];
+ const service={compare:async(scenario:Parameters<typeof compareGenerationPrices>[0])=>{
+  assert.equal(scenario.operation,'kling-edit');
+  return compareGenerationPrices(scenario,actor,{listPublicEngines:async()=>models,resolveGenerationReferences:async()=>[source],resolveMembershipPricing:async()=>membership,
+   resolveRequestExecutability:()=>({executable:true,reason:'available'}),priceGeneration:async(request)=>{captured.push(request);assert.equal(request.operation,'kling-edit');assert.equal(request.settings.durationSec,undefined);assert.equal(request.settings.aspectRatio,undefined);return {priceCents:123,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:123,currency:'USD',membershipTier:'member'}};}});
+ }};
+ const execute=createStudioActionExecutor(actor,{enabled:true,readProject:async()=>({} as never),generation:{} as never,mediaEnabled:true,factories:{video:()=>service} as never,
+  attachedMedia:[source],prepareImage:async()=>{throw new Error('No preparation');}});
+ for(const baseline of [null,{modelId:'wan-3',settings:[{name:'durationSec',value:5},{name:'resolution',value:'720p'}]}]) {
+ const result=await execute({action:'pricing.compare',surface:'video',mode:'v2v',operation:'kling-edit',outputCount:1,prompt:'Edit light',settings:[],references:[{ref:{type:'asset',assetId:'clip',kind:'video'},role:'source',slot:null}],baselineModelId:baseline?.modelId??null,baselineSettings:baseline?.settings??null,candidateModelIds:['kling-o3-standard','wan-3']} as never);
+ assert.equal(result.ok,true,JSON.stringify(result));
+ if(!result.ok||result.action!=='pricing.compare')throw new Error('Expected comparison');
+ assert.deepEqual(result.data.options.map(option=>[option.modelId,option.operation]),[['kling-o3-standard','kling-edit']]);
+ if(baseline){assert.equal(result.data.baseline,null);assert.ok(result.data.unavailable.some(item=>item.modelId==='wan-3'&&item.baseline===true&&item.code==='PARAMETER_INVALID'));}
+ }
+ assert.equal(captured.length,2);
+});

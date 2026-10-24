@@ -65,7 +65,7 @@ a successfully completed truncated file. No complete video buffer is retained.
 The shared `server/public-media-transport.ts` permits HTTPS on port 443, refuses
 embedded credentials/fragments/localhost and non-public resolved addresses,
 checks all DNS answers, pins the validated address at socket creation and
-revalidates at most three redirects. It sends no user cookie or Authorization
+revalidates at most three redirects by default. A caller may explicitly select `redirect: error`; FLUX paired-cache availability uses that option with its own DNS-through-body deadline. It sends no user cookie or Authorization
 header upstream. Existing MCP and tool media imports reuse this connection
 boundary with their own buffered MIME/byte policies. Signed URLs and original
 bytes are never replaced by display derivatives; HTTP-only and private-network

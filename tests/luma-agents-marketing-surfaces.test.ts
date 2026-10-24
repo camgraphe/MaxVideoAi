@@ -90,10 +90,10 @@ test('Luma Agents specs keep Ray video-only and Uni image-only capabilities expl
 
   assert.equal(ray32.textToVideo, 'Supported');
   assert.equal(ray32.imageToVideo, 'Supported');
-  assert.equal(ray32.videoToVideo, 'Supported (Ray 3.2 Modify and Reframe source-video routes)');
+  assert.equal(ray32.videoToVideo, 'Supported (Modify / Reframe / owned-generation Extend)');
   assert.equal(ray32.firstLastFrame, 'Supported (I2V end frame plus Modify guide/keyframes up to 64 anchors)');
   assert.equal(ray32.referenceImageStyle, 'Supported through guide frames and indexed Modify keyframes');
-  assert.equal(ray32.referenceVideo, 'Supported for Modify and Reframe source-video workflows');
+  assert.equal(ray32.referenceVideo, 'Supported (Modify / Reframe / owned-generation Extend)');
   assert.equal(ray32.maxResolution, '1080p');
   assert.equal(ray32.cameraMotionControls, 'Prompt, source-video preservation, guide frames and Modify keyframes');
   assert.equal(ray32.audioOutput, 'Not supported');

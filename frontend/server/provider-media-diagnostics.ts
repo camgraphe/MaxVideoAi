@@ -42,6 +42,7 @@ export function sanitizeProviderMediaDiagnostics(value: unknown, canonicalByGran
     visited.set(current, record);
     for (const key of Object.getOwnPropertyNames(current)) {
       if (/^x-amz-/i.test(key)) continue;
+      if (/draftcache/i.test(key.replace(/_/g,''))) { record[key]='[private Draft cache]'; continue; }
       record[key] = visit((current as Record<string, unknown>)[key]);
     }
     return record;

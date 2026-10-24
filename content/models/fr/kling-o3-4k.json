@@ -3,18 +3,18 @@
   "versionLabel": "3.0 Omni 4K",
   "seo": {
     "title": "Kling 3.0 Omni 4K reference-to-video | MaxVideoAI",
-    "description": "Utilisez Kling 3.0 Omni 4K pour des vidéos Kling natives 4K guidées par références, storyboard et ancres @Image. Utilisez Standard ou Pro pour le V2V depuis vidéo source."
+    "description": "Génération 4K native guidée par images et video-to-video Reference ou Edit."
   },
   "overview": "Kling 3.0 Omni 4K est la route native 4K pour les rendus Kling guidés par références et storyboard.",
   "pricingNotes": "Coût provider approximatif avant marge MaxVideoAI : $0.42/s.",
   "custom": {
     "relatedTitle": "Passer du draft à la livraison finale",
-    "relatedSubtitle": "Utilisez 4K après validation du plan de références en Standard ou Pro. Gardez le V2V depuis vidéo source sur Standard ou Pro, car la route 4K actuelle est orientée références.",
+    "relatedSubtitle": "Comparez Standard ou Pro pour d’autres résolutions de sortie et des essais de références avant de choisir la 4K.",
     "relatedItems": [
       {
         "brand": "kling",
         "title": "Kling 3.0 Omni Pro",
-        "description": "Utilisez Pro quand le même storyboard demande V2V depuis vidéo source, audio natif ou tests de références plus flexibles avant la sortie 4K finale.",
+        "description": "Comparez Standard ou Pro pour d’autres résolutions de sortie et des essais de références avant de choisir la 4K.",
         "modelSlug": "kling-o3-pro",
         "ctaLabel": "Ouvrir Kling 3.0 Omni Pro ->"
       },
@@ -34,13 +34,13 @@
       }
     ],
     "finalPara1": "Kling 3.0 Omni 4K est la route de livraison pour les concepts guidés par références déjà validés : gardez le storyboard et les ancres visuelles stables, puis rendez le plan final en 4K native.",
-    "finalPara2": "Pour le V2V depuis vidéo source ou les tests exploratoires de références, restez d’abord sur Standard ou Pro et passez en 4K seulement quand la direction de scène est verrouillée.",
+    "finalPara2": "Comparez Standard ou Pro pour d’autres résolutions de sortie et des essais de références avant de choisir la 4K.",
     "finalButton": "Générer avec Kling 3.0 Omni 4K"
   },
   "hero": {
     "title": "Kling 3.0 Omni 4K pour rendus 4K guidés par références",
-    "intro": "Utilisez Kling 3.0 Omni 4K quand les images de référence ou de storyboard doivent guider un rendu Kling natif 4K sans être forcées comme frame d’ouverture. Cette route 4K n’est pas la route video-to-video depuis vidéo source.",
-    "badge": "Images de référence · 4K native · Storyboard · Pas de V2V",
+    "intro": "Utilisez des images ou un storyboard pour guider une génération 4K native. Dans Modify, choisissez Reference ou Edit pour une vidéo source.",
+    "badge": "Images de référence · 4K native · Reference / Edit",
     "ctaPrimary": {
       "label": "Générer avec Kling 3.0 Omni 4K",
       "href": "/app?engine=kling-o3-4k"
@@ -53,8 +53,8 @@
       "body": "Importez jusqu’à 7 images de référence et mentionnez-les comme @Image1, @Image2, etc. pour guider le storyboard, le style ou la composition."
     },
     {
-      "label": "Pas de V2V depuis vidéo source",
-      "body": "Kling 3.0 Omni 4K est une route 4K orientée références. Elle ne supporte pas le source-video video-to-video dans la route MaxVideoAI actuelle ; utilisez 3.0 Omni Standard ou Pro quand @Video1 et keep_audio sont requis."
+      "label": "Vidéo source Reference / Edit",
+      "body": "Modify propose Reference et Edit via fal. Reference utilise une source de 3–15 secondes et une durée de sortie de 3–15 secondes choisie séparément. Edit utilise une source de 3–15 secondes, dont chaque côté mesure entre 720 et 3840 pixels, et conserve sa durée et son cadrage. Quatre images de guidage et éléments au total au maximum. Aucune extension Extend ni route 4K directe."
     },
     {
       "label": "Résolution",
@@ -70,7 +70,7 @@
       "Choisir le mode Reference pour les images storyboard ou style",
       "Mentionner chaque image comme @Image1, @Image2, etc.",
       "Verrouiller mouvement, cadrage, choix audio et contraintes de continuité",
-      "Utiliser 3.0 Omni Standard ou Pro si le workflow exige @Video1, du video-to-video depuis vidéo source ou keep_audio",
+      "Utilisez Reference pour guider un nouveau clip avec @Video1 ; choisissez Edit pour modifier la source en conservant sa durée et son cadrage. Conservez son audio avec keep_audio si nécessaire.",
       "Utiliser Kling 3 4K seulement si l’image importée doit ouvrir le clip"
     ]
   },
@@ -81,7 +81,7 @@
     },
     {
       "q": "Kling 3.0 Omni 4K supporte-t-il le video-to-video ?",
-      "a": "Non. La route 4K actuelle sert aux rendus 4K natifs guidés par références, pas au V2V depuis vidéo source. Utilisez Kling 3.0 Omni Standard ou Pro quand le prompt doit citer @Video1 ou conserver l’audio source avec keep_audio."
+      "a": "Modify propose Reference et Edit via fal. Reference utilise une source de 3–15 secondes et une durée de sortie de 3–15 secondes choisie séparément. Edit utilise une source de 3–15 secondes, dont chaque côté mesure entre 720 et 3840 pixels, et conserve sa durée et son cadrage. Quatre images de guidage et éléments au total au maximum. Aucune extension Extend ni route 4K directe."
     }
   ],
   "decision": {
@@ -89,13 +89,13 @@
     "hero": {
       "eyebrow": "KLING 3.0 OMNI 4K",
       "title": "Kling 3.0 Omni 4K",
-      "subtitle": "Vidéo Kling 4K native guidée par références pour directions storyboard validées. Ce n’est pas la route V2V depuis vidéo source.",
+      "subtitle": "Génération 4K native guidée par images et video-to-video Reference ou Edit.",
       "subtitleHighlights": [
         "4K native",
         "guidage par références",
-        "pas de V2V source"
+        "Reference / Edit"
       ],
-      "paragraph": "Utilisez Kling 3.0 Omni 4K quand des images de référence ou frames storyboard doivent guider une finale 4K native sans devenir la frame d’ouverture. Utilisez O3 Pro ou Standard quand il faut une vidéo source ou @Video1.",
+      "paragraph": "Utilisez des images ou un storyboard pour guider une génération 4K native. Dans Modify, choisissez Reference ou Edit pour une vidéo source.",
       "primaryCta": {
         "label": "Générer avec Kling 3.0 Omni 4K",
         "href": "/app?engine=kling-o3-4k"
@@ -152,8 +152,8 @@
         "tone": "reference"
       },
       {
-        "title": "Pas de V2V source",
-        "body": "Utilisez O3 Pro ou Standard quand une vidéo source et @Video1 sont requis.",
+        "title": "Vidéo source Reference / Edit",
+        "body": "Utilisez Reference pour guider un nouveau clip avec @Video1 ; choisissez Edit pour modifier la source en conservant sa durée et son cadrage. Conservez son audio avec keep_audio si nécessaire.",
         "tone": "duration"
       },
       {
@@ -173,7 +173,7 @@
       },
       {
         "title": "Besoin de V2V source ?",
-        "body": "N’utilisez pas 4K pour le V2V depuis vidéo source. Utilisez O3 Pro ou Standard quand @Video1 doit guider le mouvement.",
+        "body": "Comparez Standard ou Pro pour d’autres résolutions de sortie et des essais de références avant de choisir la 4K.",
         "cta": {
           "label": "Voir O3 Pro",
           "href": "/fr/modeles/kling-o3-pro"
@@ -202,8 +202,8 @@
         "body": "Soyez explicite sur caméra, action, continuité et intention de livraison."
       },
       {
-        "title": "Pas de vidéo source",
-        "body": "Utilisez O3 Pro ou Standard si le workflow demande @Video1."
+        "title": "Reference / Edit sur vidéo source",
+        "body": "Reference génère un nouveau clip guidé par @Video1 avec une durée demandée distincte. Edit modifie une source de 3–15 secondes en reprenant durée et cadrage ; chaque côté doit mesurer 720–3840 pixels. Edit accepte quatre images de guidage et éléments combinés au maximum. Aucune de ces opérations n’est Extend."
       },
       {
         "title": "Passe finale",
@@ -220,7 +220,7 @@
     },
     "meta": {
       "title": "Kling 3.0 Omni 4K : vidéo référence 4K native | MaxVideoAI",
-      "description": "Utilisez Kling 3.0 Omni 4K pour vidéo 4K native guidée par références et storyboard. Utilisez O3 Pro ou Standard pour V2V source."
+      "description": "Génération 4K native guidée par images et video-to-video Reference ou Edit."
     }
   },
   "prompting": {
@@ -252,7 +252,7 @@
         "label": "Start/End",
         "title": "Start/end frame en 4K",
         "description": "Pour contrôler la frontière visuelle du plan final.",
-        "copy": "Opening frame optionnel:\\n[Pose ou composition initiale attendue]\\n\\nEnd frame optionnel:\\n[Landing frame final]\\n\\nAction:\\n[Mouvement unique entre les deux états]\\n\\nRègle:\\nNe pas utiliser @Video1. La route 4K actuelle est reference-to-video, pas V2V source.\\n\\nExample:\\nDépart sur @Image1, léger travelling avant, fin proche de l’end frame. Même produit, même lumière, aucune rupture de décor."
+        "copy": "Opening frame optionnel:\\n[Pose ou composition initiale attendue]\\n\\nEnd frame optionnel:\\n[Landing frame final]\\n\\nAction:\\n[Mouvement unique entre les deux états]\\n\\nRègle:\\nPour ce workflow avec frames de début et de fin, omettez @Video1. Pour utiliser une vidéo source, passez à Modify et choisissez Reference ou Edit.\\n\\nExample:\\nDépart sur @Image1, léger travelling avant, fin proche de l’end frame. Même produit, même lumière, aucune rupture de décor."
       },
       {
         "id": "storyboard",
@@ -266,14 +266,14 @@
     "globalPrinciples": [
       "Assignez un rôle clair à chaque image : composition, style, produit, personnage ou détail.",
       "Validez le mouvement en Standard ou Pro avant de payer une finale 4K.",
-      "N’utilisez pas @Video1 ni keep_audio sur la route 4K actuelle.",
+      "Utilisez Reference pour guider un nouveau clip avec @Video1 ; choisissez Edit pour modifier la source en conservant sa durée et son cadrage. Conservez son audio avec keep_audio si nécessaire.",
       "Décrivez caméra, action, continuité et intention de livraison dans le prompt."
     ],
     "engineWhy": [
       "4K est une route de livraison, pas le meilleur endroit pour explorer une direction.",
-      "La page doit guider les références image et le storyboard, sans promettre de V2V source.",
+      "Utilisez des images ou un storyboard pour guider une génération 4K native. Dans Modify, choisissez Reference ou Edit pour une vidéo source.",
       "Les prompts doivent verrouiller composition, texture, caméra et fin exploitable.",
-      "Si le workflow demande @Video1, revenez en O3 Pro ou Standard."
+      "Utilisez Reference pour guider un nouveau clip avec @Video1 ; choisissez Edit pour modifier la source en conservant sa durée et son cadrage. Conservez son audio avec keep_audio si nécessaire."
     ],
     "demo": {
       "title": "Prompt démo — O3 4K finale référence",
@@ -303,7 +303,7 @@
     "modelSlug": "kling-o3-4k",
     "section": {
       "title": "Démos Kling 3.0 Omni 4K pour livraison",
-      "intro": "Consultez des rendus O3 natifs 4K guidés par storyboard ou images de référence. Utilisez ces exemples quand la direction créative est validée et que la sortie finale doit être livrée en 4K plutôt qu’en V2V depuis vidéo source.",
+      "intro": "Consultez des rendus O3 natifs 4K guidés par storyboard ou images de référence. Ces exemples illustrent la génération guidée par images ; ils ne démontrent pas Reference ou Edit depuis une vidéo source.",
       "defaultCtaLabel": "Voir les exemples Kling ->",
       "recreateLabel": "Recréer ce rendu →"
     },

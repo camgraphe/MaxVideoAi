@@ -1,3 +1,4 @@
+import { videoOperationEndpoint } from '../../lib/video-operation';
 import { listFalEngines } from '@/config/falEngines';
 import type { GeneratePayload } from '@/lib/fal-types';
 import { isFlux3MaxEngineId, resolveFlux3MaxEndpoint } from '@/lib/flux-3-max';
@@ -115,6 +116,7 @@ export function resolveFalModelSlug(payload: GeneratePayload, fallback?: string)
       : undefined;
   }
   if (isMinimaxH3MaxEngineId(payload.engineId)) {
+    if (payload.mode === 'v2v') return videoOperationEndpoint(payload.engineId, 'v2v', payload.operation);
     const mode = payload.mode ?? 't2v';
     if (mode === 't2v' || mode === 'i2v' || mode === 'ref2v') {
       return resolveMinimaxH3MaxEndpoint(mode as MinimaxH3MaxMode);

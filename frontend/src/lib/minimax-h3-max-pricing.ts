@@ -100,6 +100,7 @@ export function calculateMinimaxH3MaxProviderCostCents(input: MinimaxH3MaxPricin
 }
 
 export type MinimaxH3MaxPricingReference = {
+  fps?: number; decodedFrameCount?: number; constantFrameRate?: boolean; sourceSha256?: string;
   kind: 'image' | 'video' | 'audio';
   fieldId?: string;
   url: string;

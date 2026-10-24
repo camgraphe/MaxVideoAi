@@ -136,7 +136,7 @@
     },
     {
       "q": "¿Qué modos soporta?",
-      "a": "Texto → Video e Imagen → Video en una sola tarjeta. No hay first/last frame en este routing."
+      "a": "Se admiten texto a video e imagen a video. En imagen a video, aporta la imagen inicial y opcionalmente una imagen final para guiar la llegada. Es distinto de la edición de video a video."
     },
     {
       "q": "¿Sigue siendo util Kling 2.6 Pro para imagen-a-video y planos cortos con dialogo?",
@@ -338,7 +338,7 @@
       },
       {
         "title": "Imagen inicial",
-        "body": "Usa una imagen para anclar producto, identidad o composición de apertura."
+        "body": "Imagen a video acepta una imagen inicial y una imagen final opcional. La final define un límite del clip, no un conjunto separado de referencias de estilo."
       },
       {
         "title": "Cue de audio",
@@ -429,7 +429,8 @@
     "globalPrinciples": [
       "Un sujeto, una acción, un movimiento de cámara.",
       "Indica luz y sensación de lente.",
-      "Añade cues sonoros cortos o diálogo si el audio está on."
+      "Añade cues sonoros cortos o diálogo si el audio está on.",
+      "Imagen a video acepta una imagen inicial y una imagen final opcional. La final define un límite del clip, no un conjunto separado de referencias de estilo."
     ],
     "engineWhy": [
       "El modo audio maneja bien una ambientación simple y líneas cortas.",

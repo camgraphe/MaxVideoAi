@@ -230,7 +230,7 @@ export const VEO_3_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: 'fal-ai/veo3.1/image-to-video',
         ui: {
           modes: ['i2v'],
-          duration: { options: ['8s'], default: '8s' },
+          duration: { options: ['4s', '6s', '8s'], default: '8s' },
           resolution: ['720p', '1080p', '4k'],
           aspectRatio: ['16:9', '9:16'],
           audioToggle: true,

@@ -147,3 +147,10 @@ test('Fal webhook retries thumbnail capture after stable video copy', () => {
   assert.match(retryBlock, /videoUrl:\s*finalVideoUrl/);
   assert.match(retryBlock, /force:\s*true/);
 });
+
+ test('optional Draft cache capture follows persisted output and lifecycle, outside payment completion',()=>{
+  const capture=handlerSource.indexOf('await captureCompletedFalDraftCache(job,nextStatus)');
+  assert.ok(capture>handlerSource.indexOf('failed to record Fal lifecycle log'));
+  assert.ok(capture>handlerSource.indexOf('const finalThumbUrl'));
+  assert.doesNotMatch(handlerSource,/recoverOwnedFluxDraftCache/);
+ });

@@ -51,7 +51,6 @@ function createInputSchema(options: LtxVariant): EngineInputSchema {
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: ['i2v', 'a2v'], values: [...LTX_2_5_ASPECT_RATIOS], default: 'auto', description: 'For a2v, auto uses the image ratio or 16:9 when no image is supplied.' },
       { id: 'generate_audio', type: 'boolean', label: 'Generate audio', modes: [...generatedModes], default: true },
       { id: 'camera_motion', type: 'enum', label: 'Camera motion', modes: [...generatedModes], values: [...LTX_2_5_CAMERA_MOTIONS] },
-      { id: 'guidance_scale', type: 'number', label: 'Guidance scale', modes: ['a2v'], min: 1, max: 50, description: 'Provider conditional default: 5 without image_url, 9 with image_url.' },
     ],
     constraints: {
       supportedAudioFormats: LTX_2_5_AUDIO_EXTENSIONS,

@@ -30,11 +30,12 @@ export async function createLumaAgentsMediaTransport(input: {
   if (payload.source && 'url' in payload.source) payload.source = { ...payload.source, url: await readUrl(payload.source.url) };
   for (const field of ['start_frame', 'end_frame'] as const) {
     const frame = payload.video[field];
-    if (frame) payload.video[field] = { ...frame, url: await readUrl(frame.url) };
+    if (frame && 'url' in frame) payload.video[field] = { ...frame, url: await readUrl(frame.url) };
   }
   if (payload.video.edit?.keyframes) payload.video.edit = {
     ...payload.video.edit,
     keyframes: await Promise.all(payload.video.edit.keyframes.map(async frame => ({ ...frame, url: await readUrl(frame.url) }))),
   };
+  if (payload.video.keyframes) payload.video.keyframes = await Promise.all(payload.video.keyframes.map(async frame => ({ url: await readUrl(frame.url) })));
   return { payload, sanitize: value => sanitizeProviderMediaDiagnostics(value, canonicalByGrant) };
 }

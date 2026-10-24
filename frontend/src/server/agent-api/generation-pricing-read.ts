@@ -1,3 +1,11 @@
+import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
+import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
+import { generationOperationQuoteBinding } from './generation-operation-facts';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { toEngineGenerationMode } from './generation-mode-aliases';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, seedanceWorkflowQuoteBinding } from './seedance-workflow';
@@ -15,7 +23,7 @@ import type {ResolvedReference} from './reference-types';
 import {assertGenerationReferenceUrls,resolveGenerationReferencesForActor} from './resolve-generation-references';
 import type {PrepareGenerationDependencies} from './prepare-generation';
 
-export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
+export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'resolveFluxLineage' | 'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
 
 // Error presentation only: never expose provider aliases, arbitrary field names or values.
 const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
@@ -159,15 +167,24 @@ export function buildGenerationPricingSnapshot(
 /** Shared read-only verification and canonical pricing. No quote, wallet or reservation writes. */
 export async function readGenerationPricing(request: CanonicalGenerationRequest,principal: GenerationActor,dependencies: GenerationPricingReadDependencies) {
   requireGenerationActor(principal);
+  const fluxDraftSource = await (dependencies.resolveFluxLineage ?? resolveCanonicalFluxLineage)(request,principal);
+  const lumaSource = await resolveCanonicalLumaLineage(request, principal);
   const inherited = await resolveAgentSeedanceWorkflow(request, principal.userId);
   request = inherited.request;
   const finalFacts = inherited.workflow?.finalFacts;
   const publicEngines = await dependencies.listPublicEngines();
   const publicCandidate = publicEngines.find((entry) => entry.engine.id === request.engineId);
-  const candidate = publicCandidate ? seedanceWorkflowCandidate(request, publicCandidate) : undefined;
+  let candidate = publicCandidate ? seedanceWorkflowCandidate(request, publicCandidate) : undefined;
   if (!candidate || candidate.surface !== request.surface) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'The selected model is not publicly available.');
   }
+  try {
+    const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(request.engineId, request.mode), request.operation);
+    if (engine !== candidate.engine) {
+      const mode = toEngineGenerationMode(request.engineId, request.mode);
+      candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, [request.mode]: engine.modeCaps?.[mode] } };
+    }
+  } catch { throw new AgentApiError('PARAMETER_INVALID', 'Invalid video operation.'); }
   if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');
   }
@@ -181,7 +198,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
-      if (request.surface === 'video' && request.settings.durationSec === undefined
+      if (request.surface === 'video' && request.operation !== 'kling-edit' && !isH3SourceOperation(request.operation) && !isFluxLtxSourceOperation(request.operation) && request.settings.durationSec === undefined
         && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
         const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');
         if (source.length !== 1 || typeof source[0].durationSec !== 'number'
@@ -229,7 +246,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
     pricing = await dependencies.priceGeneration(
       request,
       membership.tier,
-      { resolvedReferences, resolvedEngine: candidate.engine, seedanceFinalFacts: finalFacts },
+      { resolvedReferences, resolvedEngine: candidate.engine, seedanceFinalFacts: finalFacts, fluxDraftSource },
     );
   } catch {
     throw new AgentApiError(
@@ -238,6 +255,8 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
     );
   }
   const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership),
+    ...generationOperationQuoteBinding(request, resolvedReferences,fluxDraftSource),
+    ...lumaLineageQuoteBinding(lumaSource, request.settings.extendDirection), ...fluxDraftQuoteBinding(fluxDraftSource),
     ...seedanceWorkflowQuoteBinding(inherited.workflow) };
   return {pricing, pricingSnapshot, resolvedReferences, catalogRevision, request, workflow: inherited.workflow, resolvedEngine: candidate.engine};
 }

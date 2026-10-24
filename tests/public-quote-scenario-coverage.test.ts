@@ -27,6 +27,9 @@ test('unknown or unpublished model and unsupported mode scopes cannot expand to 
   for (const scope of [
     { modelId: 'missing-model' },
     { modelId: '' },
+    { modelId: '', mode: 'v2v' },
+    { modelId: 'flux-3', mode: '' },
+    { modelId: 'flux-3-draft', mode: '' },
     { modelId: 'wan-3', mode: 'missing-mode' },
     { modelId: 'wan-3', mode: '' },
     ...listRuntimeModels().filter(model => !model.publication.app.published).map(model => ({ modelId: model.id })),

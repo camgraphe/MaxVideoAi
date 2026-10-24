@@ -1,6 +1,8 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import type { EngineInputField, Mode } from '@/types/engines';
 
 export interface FormState {
+  operation?: import('@/lib/video-operation').VideoOperation;
   engineId: string;
   mode: Mode;
   durationSec: number;
@@ -105,6 +107,7 @@ export function parseStoredForm(value: string): StoredFormState | null {
 
     return {
       engineId,
+      ...(raw.operation !== undefined ? { operation: normalizeVideoOperation(engineId, mode, raw.operation) } : {}),
       mode: mode as Mode,
       durationSec: typeof durationSec === 'number' && Number.isFinite(durationSec) ? durationSec : undefined,
       durationOption:

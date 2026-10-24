@@ -1,3 +1,4 @@
+import { resolveOwnedLumaGenerationSource, type OwnedLumaGenerationSource } from '@/server/agent-api/generation-luma-lineage';
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
@@ -13,7 +14,7 @@ import {
   resolveLumaAgentsModelRoute,
   resolveLumaAgentsVideoSupport,
 } from '@/server/video-providers/luma-agents/model-map';
-import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
+import { buildLumaAgentsVideoPayload, summarizeLumaEffectiveControls } from '@/server/video-providers/luma-agents/payload';
 import { createLumaAgentsMediaTransport } from '@/server/video-providers/luma-agents/media-access';
 import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
@@ -88,7 +89,7 @@ function hasAdvancedDirectOnlyRequest(params: {
 }): boolean {
   if (params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend') return true;
   const extra = params.falPayload.extraInputValues ?? {};
-  return booleanValue(extra.hdr) || booleanValue(extra.exr_export ?? extra.exrExport);
+  return booleanValue(extra.hdr) || booleanValue(extra.exr_export ?? extra.exrExport) || params.falPayload.inputs?.some(input => input.slotId === 'keyframe_urls') === true;
 }
 
 export function resolveLumaAgentsSubmissionMediaInputs(params: {
@@ -136,8 +137,8 @@ export function resolveLumaAgentsSubmissionMediaInputs(params: {
       addUniqueUrl(referenceImageUrls, url);
       continue;
     }
-    if (input.kind === 'image' && slotId === 'edit_keyframe_urls') {
-      addUniqueUrl(keyframeUrls, url);
+    if (input.kind === 'image' && (slotId === 'edit_keyframe_urls' || slotId === 'keyframe_urls')) {
+      keyframeUrls.push(url);
       continue;
     }
     if (
@@ -341,6 +342,7 @@ async function submitFalFromLumaAgents(params: {
 }
 
 export async function submitLumaAgentsGenerateTask(params: {
+  lumaGenerationSource?: OwnedLumaGenerationSource;
   jobId: string;
   userId: string;
   engineId: string;
@@ -470,7 +472,16 @@ export async function submitLumaAgentsGenerateTask(params: {
   let acceptedProviderJobId: string | null = null;
   let sanitizeDiagnostics: (value: unknown) => unknown = sanitizeProviderMediaDiagnostics;
   try {
+    if (params.mode === 'extend') {
+      if (!params.lumaGenerationSource) throw new Error('Owned generation source required.');
+      const current = await resolveOwnedLumaGenerationSource({ actor: { userId: params.userId },
+        sourceJobId: params.lumaGenerationSource.sourceJobId, expectedOutputId: params.lumaGenerationSource.sourceOutputIdentity,
+        executor: { query: queryFn } });
+      if (current.fingerprint !== params.lumaGenerationSource.fingerprint) throw new Error('Source generation changed.');
+    }
     const payload = buildLumaAgentsVideoPayload({
+      trustedGenerationSource: params.lumaGenerationSource,
+      extendDirection: params.falPayload.extraInputValues?.extend_direction as 'forward' | 'backward' | undefined,
       engineId: params.engineId,
       mode: params.mode,
       prompt: params.prompt,
@@ -488,6 +499,8 @@ export async function submitLumaAgentsGenerateTask(params: {
       extraInputValues: params.falPayload.extraInputValues ?? null,
       advancedDirectOnlyEnabled: params.advancedDirectOnlyEnabled,
     });
+    await queryFn(`UPDATE provider_attempts SET request_snapshot = COALESCE(request_snapshot, '{}'::jsonb) || $2::jsonb WHERE id = $1`,
+      [lumaAttempt.id, JSON.stringify({ effectiveControls: summarizeLumaEffectiveControls(payload) })]);
     const transport = await createLumaAgentsMediaTransport({ payload, userId: params.userId });
     sanitizeDiagnostics = transport.sanitize;
     const task = await getLumaAgentsClientFn().createGeneration(transport.payload, { requestId: params.jobId });

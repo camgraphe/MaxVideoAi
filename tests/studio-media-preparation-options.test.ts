@@ -299,3 +299,30 @@ test('Audio inspection exposes canonical settings scoped to each available varia
     }
   }
 });
+
+test('saved Kling Element intent uses attached assets and ready project outputs without changing composition', async () => {
+  const engine=getFalEngineById('kling-o3-standard')!.engine;
+  const candidate:AgentPublicGenerationEngine={engine,surface:'video',publicModes:['v2v'],modeCaps:engine.modeCaps!};
+  const clip={type:'asset' as const,kind:'video' as const,assetId:'ma_'+'2'.repeat(32)};
+  const sideId='ma_'+'3'.repeat(32);
+  const action={...video,modelId:engine.id,mode:'v2v',operation:'kling-edit',settings:[{name:'resolution',value:'720p'}],
+    references:[{ref:clip,role:'source',slot:null},{ref:image,role:'reference',slot:0},{ref:output,role:'reference',slot:1}],
+    elements:[{kind:'images',frontalSlot:0,referenceSlots:[1]}]};
+  const saved=JSON.parse(JSON.stringify(action));
+  const media=mediaDependencies();
+  const deps={...media.dependencies,
+    resolveMedia:async(userId:string,ref:ToolAssetRef)=>{
+      const value=await media.dependencies.resolveMedia(userId,ref);
+      return ref.kind==='video'?{...value,mime:'video/mp4',originalName:'clip.mp4',url:'https://cdn.maxvideoai.com/clip.mp4',mediaFacts:{source:'probe' as const,width:1280,height:720,durationSec:5}}:value;
+    },
+    saveOutput:async(identity:{userId:string;jobId:string;outputId:string})=>({...await media.dependencies.saveOutput(identity),publicId:sideId}),
+  };
+  const request=await studioMediaRequest(actor,saved,inputWithClip(),factories([candidate]),true,deps) as CanonicalGenerationRequest;
+  assert.deepEqual(request.elements,action.elements);
+  assert.deepEqual(saved,action,'Persisted intent is immutable across materialization.');
+  assert.deepEqual(request.references.filter(ref=>ref.role==='reference').map(ref=>ref.kind==='asset'&&ref.assetId),[image.assetId,sideId]);
+  const noOutput={...deps,readProjectMedia:async()=>[]};
+  await assert.rejects(studioMediaRequest(actor,saved,inputWithClip(),factories([candidate]),true,noOutput),{code:'REFERENCE_INVALID'});
+  await assert.rejects(studioMediaRequest(actor,saved,{...inputWithClip(),references:[]},factories([candidate]),true,deps),{code:'REFERENCE_INVALID'});
+  function inputWithClip(){return {...input,attachments:[clip]};}
+});

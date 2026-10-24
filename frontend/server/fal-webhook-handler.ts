@@ -1,3 +1,4 @@
+import { captureCompletedFalDraftCache } from './fal-webhook-draft-cache';
 import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { query } from '@/lib/db';
@@ -684,5 +685,5 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
       console.warn('[fal-webhook] failed to record no-media log', { jobId: job.job_id, providerJobId: requestId }, noMediaLogError);
     }
   }
-
+  await captureCompletedFalDraftCache(job,nextStatus);
 }

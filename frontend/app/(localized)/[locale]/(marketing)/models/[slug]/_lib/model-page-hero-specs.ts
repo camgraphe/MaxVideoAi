@@ -12,7 +12,7 @@ import {
 } from './model-page-spec-status';
 
 export function normalizeMaxResolution(value: string) {
-  if (value.includes('/') || value.includes(',')) return value;
+  if (value.includes('/') || value.includes(',') || value.includes(';')) return value;
   const matchP = value.match(/(\d{3,4}p)/i);
   if (matchP) return matchP[1];
   const matchK = value.match(/(\d+)\s?k/i);

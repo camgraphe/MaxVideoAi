@@ -712,6 +712,8 @@
           ],
           "duration": {
             "options": [
+              "4s",
+              "6s",
               "8s"
             ],
             "default": "8s"
@@ -3565,7 +3567,8 @@
         "t2v",
         "i2v",
         "v2v",
-        "reframe"
+        "reframe",
+        "extend"
       ],
       "maxDurationSec": 10,
       "resolutions": [
@@ -3586,7 +3589,7 @@
       ],
       "audio": false,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": true,
       "keyframes": true,
       "params": {},
@@ -3605,13 +3608,15 @@
               "t2v",
               "i2v",
               "v2v",
-              "reframe"
+              "reframe",
+              "extend"
             ],
             "requiredInModes": [
               "t2v",
               "i2v",
               "v2v",
-              "reframe"
+              "reframe",
+              "extend"
             ],
             "description": "Describe the video motion, subject, camera, edit, style, or new canvas area."
           },
@@ -3712,7 +3717,8 @@
               "t2v",
               "i2v",
               "v2v",
-              "reframe"
+              "reframe",
+              "extend"
             ]
           },
           {
@@ -3797,10 +3803,159 @@
             ]
           },
           {
+            "id": "source_job_id",
+            "type": "text",
+            "label": "Source generation",
+            "modes": [
+              "extend"
+            ],
+            "description": "Application job ID of your completed direct Ray 3.2 generation. Uploaded URLs cannot be extended."
+          },
+          {
+            "id": "extend_direction",
+            "type": "enum",
+            "label": "Extension direction",
+            "modes": [
+              "extend"
+            ],
+            "values": [
+              "forward",
+              "backward"
+            ],
+            "default": "forward"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "New footage",
+            "modes": [
+              "extend"
+            ],
+            "values": [
+              "5s"
+            ],
+            "default": "5s",
+            "description": "Fixed five-second extension. Result layout is unverified; no automatic timeline assembly."
+          },
+          {
+            "id": "loop",
+            "type": "boolean",
+            "label": "Loop video",
+            "modes": [
+              "extend"
+            ],
+            "default": false,
+            "description": "Forward extension only."
+          },
+          {
+            "id": "keyframe_urls",
+            "type": "image",
+            "label": "Creation keyframes",
+            "modes": [
+              "t2v"
+            ],
+            "minCount": 0,
+            "maxCount": 64,
+            "source": "either",
+            "description": "One to 64 images with matching frame indexes. Start/end image workflows remain available separately."
+          },
+          {
+            "id": "keyframe_indexes",
+            "type": "text",
+            "label": "Creation frame indexes",
+            "modes": [
+              "t2v"
+            ],
+            "description": "Unique non-negative integer indexes, comma-separated, in image order."
+          },
+          {
+            "id": "edit_control_mode",
+            "type": "enum",
+            "label": "Modify control strategy",
+            "values": [
+              "automatic",
+              "manual"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Automatic scheduling or manual preset and signal controls. Omitted uses compatible saved settings."
+          },
+          {
+            "id": "edit_pose_mode",
+            "type": "enum",
+            "label": "pose signal",
+            "values": [
+              "default",
+              "on",
+              "off"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+          },
+          {
+            "id": "edit_depth_mode",
+            "type": "enum",
+            "label": "depth signal",
+            "values": [
+              "default",
+              "on",
+              "off"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+          },
+          {
+            "id": "edit_normals_mode",
+            "type": "enum",
+            "label": "normals signal",
+            "values": [
+              "default",
+              "on",
+              "off"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+          },
+          {
+            "id": "edit_trajectory_mode",
+            "type": "enum",
+            "label": "trajectory signal",
+            "values": [
+              "default",
+              "on",
+              "off"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+          },
+          {
+            "id": "edit_face_mode",
+            "type": "enum",
+            "label": "face signal",
+            "values": [
+              "default",
+              "on",
+              "off"
+            ],
+            "modes": [
+              "v2v"
+            ],
+            "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+          },
+          {
             "id": "edit_strength",
             "type": "enum",
             "label": "Modify strength",
-            "description": "Auto lets Luma derive controls. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.",
+            "description": "Auto uses automatic scheduling unless manual strategy or signals are selected. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.",
             "values": [
               "auto",
               "adhere_1",
@@ -3822,7 +3977,7 @@
             "id": "edit_pose_strength",
             "type": "enum",
             "label": "Pose control",
-            "description": "Optional manual pose conditioning. Any manual control disables auto controls.",
+            "description": "Optional manual pose conditioning. Manual pose tuning can accompany a strength preset. Legacy off leaves the provider default.",
             "values": [
               "off",
               "precise",
@@ -3951,7 +4106,536 @@
         "modelSlug": "ray-3-2"
       },
       "availability": "available",
-      "brandId": "luma"
+      "brandId": "luma",
+      "operationCaps": {
+        "luma-extend": {
+          "operation": "luma-extend",
+          "mode": "extend",
+          "label": "Extend owned generation",
+          "defaultForMode": true,
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Prompt",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "v2v",
+                  "reframe",
+                  "extend"
+                ],
+                "requiredInModes": [
+                  "t2v",
+                  "i2v",
+                  "v2v",
+                  "reframe",
+                  "extend"
+                ],
+                "description": "Describe the video motion, subject, camera, edit, style, or new canvas area."
+              },
+              {
+                "id": "image_url",
+                "type": "image",
+                "label": "Start image",
+                "description": "Use one source image to anchor the opening frame for image-to-video.",
+                "modes": [
+                  "i2v"
+                ],
+                "requiredInModes": [
+                  "i2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Upload a video from your device or library, up to 18s. Modify follows the source timing; the price is calculated after import.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either",
+                "maxDurationSec": 18
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Use one owned source clip up to 10s for Reframe. Select the output duration separately.",
+                "modes": [
+                  "reframe"
+                ],
+                "requiredInModes": [
+                  "reframe"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either",
+                "maxDurationSec": 10
+              }
+            ],
+            "optional": [
+              {
+                "id": "duration",
+                "type": "enum",
+                "label": "Duration",
+                "values": [
+                  "5s",
+                  "10s"
+                ],
+                "default": "5s",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "reframe"
+                ]
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "values": [
+                  "9:16",
+                  "3:4",
+                  "1:1",
+                  "4:3",
+                  "16:9",
+                  "21:9"
+                ],
+                "default": "16:9",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "reframe"
+                ]
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "values": [
+                  "540p",
+                  "720p",
+                  "1080p"
+                ],
+                "default": "720p",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "v2v",
+                  "reframe",
+                  "extend"
+                ]
+              },
+              {
+                "id": "loop",
+                "type": "boolean",
+                "label": "Loop video",
+                "default": false,
+                "modes": [
+                  "t2v",
+                  "i2v"
+                ],
+                "description": "Loop is supported for 5s requests. 10s loop requests are provider-limited."
+              },
+              {
+                "id": "hdr",
+                "type": "boolean",
+                "label": "HDR",
+                "default": false,
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "v2v"
+                ],
+                "description": "Generate an HDR MP4 when Luma direct supports the selected duration and resolution."
+              },
+              {
+                "id": "exr_export",
+                "type": "boolean",
+                "label": "EXR export",
+                "default": false,
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "v2v"
+                ],
+                "description": "Export an EXR file alongside the MP4. Requires HDR and routes direct to Luma."
+              },
+              {
+                "id": "end_image_url",
+                "type": "image",
+                "label": "End image",
+                "description": "Optional final frame for 5s image-to-video interpolation. Not compatible with loop.",
+                "modes": [
+                  "i2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "start_image_url",
+                "type": "image",
+                "label": "Guide frame",
+                "description": "Optional single guide frame for Ray 3.2 Modify. Do not combine with multi-keyframes.",
+                "modes": [
+                  "v2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "edit_keyframe_urls",
+                "type": "image",
+                "label": "Modify keyframes",
+                "description": "Optional guide frames pinned to source-video frame indexes. Provide indexes below in the same order.",
+                "modes": [
+                  "v2v"
+                ],
+                "minCount": 0,
+                "maxCount": 64,
+                "source": "either",
+                "slotLabelPattern": "Frame {n}"
+              },
+              {
+                "id": "edit_keyframe_indexes",
+                "type": "text",
+                "label": "Keyframe indexes",
+                "description": "Comma-separated source frame indexes for Modify keyframes, for example 0, 48, 96.",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "source_job_id",
+                "type": "text",
+                "label": "Source generation",
+                "modes": [
+                  "extend"
+                ],
+                "description": "Application job ID of your completed direct Ray 3.2 generation. Uploaded URLs cannot be extended."
+              },
+              {
+                "id": "extend_direction",
+                "type": "enum",
+                "label": "Extension direction",
+                "modes": [
+                  "extend"
+                ],
+                "values": [
+                  "forward",
+                  "backward"
+                ],
+                "default": "forward"
+              },
+              {
+                "id": "duration",
+                "type": "enum",
+                "label": "New footage",
+                "modes": [
+                  "extend"
+                ],
+                "values": [
+                  "5s"
+                ],
+                "default": "5s",
+                "description": "Fixed five-second extension. Result layout is unverified; no automatic timeline assembly."
+              },
+              {
+                "id": "loop",
+                "type": "boolean",
+                "label": "Loop video",
+                "modes": [
+                  "extend"
+                ],
+                "default": false,
+                "description": "Forward extension only."
+              },
+              {
+                "id": "keyframe_urls",
+                "type": "image",
+                "label": "Creation keyframes",
+                "modes": [
+                  "t2v"
+                ],
+                "minCount": 0,
+                "maxCount": 64,
+                "source": "either",
+                "description": "One to 64 images with matching frame indexes. Start/end image workflows remain available separately."
+              },
+              {
+                "id": "keyframe_indexes",
+                "type": "text",
+                "label": "Creation frame indexes",
+                "modes": [
+                  "t2v"
+                ],
+                "description": "Unique non-negative integer indexes, comma-separated, in image order."
+              },
+              {
+                "id": "edit_control_mode",
+                "type": "enum",
+                "label": "Modify control strategy",
+                "values": [
+                  "automatic",
+                  "manual"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Automatic scheduling or manual preset and signal controls. Omitted uses compatible saved settings."
+              },
+              {
+                "id": "edit_pose_mode",
+                "type": "enum",
+                "label": "pose signal",
+                "values": [
+                  "default",
+                  "on",
+                  "off"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+              },
+              {
+                "id": "edit_depth_mode",
+                "type": "enum",
+                "label": "depth signal",
+                "values": [
+                  "default",
+                  "on",
+                  "off"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+              },
+              {
+                "id": "edit_normals_mode",
+                "type": "enum",
+                "label": "normals signal",
+                "values": [
+                  "default",
+                  "on",
+                  "off"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+              },
+              {
+                "id": "edit_trajectory_mode",
+                "type": "enum",
+                "label": "trajectory signal",
+                "values": [
+                  "default",
+                  "on",
+                  "off"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+              },
+              {
+                "id": "edit_face_mode",
+                "type": "enum",
+                "label": "face signal",
+                "values": [
+                  "default",
+                  "on",
+                  "off"
+                ],
+                "modes": [
+                  "v2v"
+                ],
+                "description": "Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only."
+              },
+              {
+                "id": "edit_strength",
+                "type": "enum",
+                "label": "Modify strength",
+                "description": "Auto uses automatic scheduling unless manual strategy or signals are selected. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.",
+                "values": [
+                  "auto",
+                  "adhere_1",
+                  "adhere_2",
+                  "adhere_3",
+                  "flex_1",
+                  "flex_2",
+                  "flex_3",
+                  "reimagine_1",
+                  "reimagine_2",
+                  "reimagine_3"
+                ],
+                "default": "auto",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "edit_pose_strength",
+                "type": "enum",
+                "label": "Pose control",
+                "description": "Optional manual pose conditioning. Manual pose tuning can accompany a strength preset. Legacy off leaves the provider default.",
+                "values": [
+                  "off",
+                  "precise",
+                  "coarse"
+                ],
+                "default": "off",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "edit_depth_blur",
+                "type": "number",
+                "label": "Depth freedom",
+                "description": "Optional depth blur from 0 to 1. Higher values allow more geometry freedom.",
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "edit_normals_augmentation",
+                "type": "number",
+                "label": "Normals freedom",
+                "description": "Optional surface-normal augmentation from 0 to 1.",
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "edit_trajectory_sparsity",
+                "type": "number",
+                "label": "Trajectory sparsity",
+                "description": "Optional motion-trajectory sparsity from 0 to 1.",
+                "min": 0,
+                "max": 1,
+                "step": 0.05,
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "edit_face",
+                "type": "boolean",
+                "label": "Face control",
+                "description": "Enable face-identity conditioning when the source has a face.",
+                "default": false,
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "source_position_x_norm",
+                "type": "number",
+                "label": "Source X",
+                "description": "Optional source rectangle x position for Reframe, normalized to output width.",
+                "min": -2,
+                "max": 2,
+                "step": 0.05,
+                "modes": [
+                  "reframe"
+                ]
+              },
+              {
+                "id": "source_position_y_norm",
+                "type": "number",
+                "label": "Source Y",
+                "description": "Optional source rectangle y position for Reframe, normalized to output height.",
+                "min": -2,
+                "max": 2,
+                "step": 0.05,
+                "modes": [
+                  "reframe"
+                ]
+              },
+              {
+                "id": "source_position_w_norm",
+                "type": "number",
+                "label": "Source width",
+                "description": "Optional source rectangle width for Reframe, normalized to output width.",
+                "min": 0.05,
+                "max": 2,
+                "step": 0.05,
+                "modes": [
+                  "reframe"
+                ]
+              },
+              {
+                "id": "source_position_h_norm",
+                "type": "number",
+                "label": "Source height",
+                "description": "Optional source rectangle height for Reframe, normalized to output height.",
+                "min": 0.05,
+                "max": 2,
+                "step": 0.05,
+                "modes": [
+                  "reframe"
+                ]
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp",
+                "mp4",
+                "mov",
+                "webm",
+                "m4v"
+              ],
+              "maxImageSizeMB": 50,
+              "maxVideoSizeMB": 200,
+              "maxVideoDurationSec": 18
+            }
+          },
+          "promptRequired": true,
+          "transport": "luma_agents_direct",
+          "endpoint": "ray-3.2/video/generation-anchor",
+          "ui": {
+            "modes": [
+              "extend"
+            ],
+            "duration": {
+              "options": [
+                "5s"
+              ],
+              "default": "5s"
+            },
+            "resolution": [
+              "540p",
+              "720p",
+              "1080p"
+            ],
+            "audioToggle": false
+          }
+        }
+      }
     },
     "modes": [
       {
@@ -4030,6 +4714,28 @@
         }
       },
       {
+        "mode": "extend",
+        "falModelId": "luma/agent/ray/v3.2/generation-anchor",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "5s"
+            ],
+            "default": "5s"
+          },
+          "resolution": [
+            "540p",
+            "720p",
+            "1080p"
+          ],
+          "audioToggle": false,
+          "notes": "Extend your completed direct Ray 3.2 generation forward or backward by five seconds. SDR only; result layout is unverified."
+        }
+      },
+      {
         "mode": "v2v",
         "falModelId": "luma/agent/ray/v3.2/video-edit",
         "ui": {
@@ -4103,7 +4809,7 @@
         "value": true
       },
       "extend": {
-        "value": false
+        "value": true
       }
     }
   },
@@ -5339,6 +6045,17 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration_seconds",
             "type": "enum",
             "label": "Duration (seconds)",
@@ -5691,6 +6408,17 @@
         ],
         "optional": [
           {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
             "id": "duration",
             "type": "enum",
             "label": "Duration (seconds)",
@@ -5704,6 +6432,9 @@
             "id": "aspect_ratio",
             "type": "enum",
             "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
             "values": [
               "16:9",
               "9:16",
@@ -5740,15 +6471,13 @@
             "id": "cfg_scale",
             "type": "number",
             "label": "CFG scale",
+            "modes": [
+              "t2v"
+            ],
             "min": 0,
             "max": 1,
             "step": 0.05,
             "default": 0.5
-          },
-          {
-            "id": "seed",
-            "type": "number",
-            "label": "Seed"
           }
         ],
         "constraints": {
@@ -7477,7 +8206,348 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      },
+      "operationCaps": {
+        "kling-reference": {
+          "operation": "kling-reference",
+          "mode": "v2v",
+          "label": "Reference",
+          "defaultForMode": true,
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Prompt"
+              },
+              {
+                "id": "image_url",
+                "type": "image",
+                "label": "Start frame",
+                "description": "Used as the first frame for image-to-video generation.",
+                "modes": [
+                  "i2v"
+                ],
+                "requiredInModes": [
+                  "i2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either",
+                "minDurationSec": 3,
+                "maxDurationSec": 10
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference / storyboard images",
+                "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+                "modes": [
+                  "ref2v",
+                  "v2v"
+                ],
+                "minCount": 0,
+                "maxCount": 4,
+                "source": "either",
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "start_image_url",
+                "type": "image",
+                "label": "Optional start frame",
+                "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+                "modes": [
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "duration",
+                "type": "enum",
+                "label": "Duration (seconds)",
+                "values": [
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "10",
+                  "11",
+                  "12",
+                  "13",
+                  "14",
+                  "15"
+                ],
+                "default": "5",
+                "min": 3,
+                "max": 15
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "values": [
+                  "16:9",
+                  "9:16",
+                  "1:1"
+                ],
+                "default": "16:9",
+                "modes": [
+                  "t2v",
+                  "ref2v",
+                  "v2v"
+                ]
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "values": [
+                  "1080p",
+                  "720p"
+                ],
+                "default": "1080p"
+              },
+              {
+                "id": "generate_audio",
+                "type": "enum",
+                "label": "Audio",
+                "values": [
+                  "true",
+                  "false"
+                ],
+                "default": "true",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "ref2v"
+                ]
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "description": "Preserve the original source-video audio when the provider supports it.",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "end_image_url",
+                "type": "image",
+                "label": "End frame (optional)",
+                "modes": [
+                  "i2v",
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1"
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "duration": {
+              "options": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "default": 5
+            },
+            "durationPolicy": "requested",
+            "resolution": [
+              "720p"
+            ],
+            "resolutionLocked": true,
+            "aspectRatio": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          },
+          "promptRequired": true
+        },
+        "kling-edit": {
+          "operation": "kling-edit",
+          "mode": "v2v",
+          "label": "Edit",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Edit instruction",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "minDurationSec": 3,
+                "maxDurationSec": 15,
+                "maxSizeMB": 200,
+                "acceptedFileExtensions": [
+                  "mp4",
+                  "mov"
+                ],
+                "acceptedMimeTypes": [
+                  "video/mp4",
+                  "video/quicktime"
+                ]
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference images",
+                "modes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 0,
+                "maxCount": 4,
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "shot_type",
+                "type": "enum",
+                "label": "Shot type",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "customize"
+                ],
+                "default": "customize"
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "720p"
+                ],
+                "default": "720p"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1",
+              "maxVideoSizeMB": 200,
+              "ownedAssetModes": [
+                "v2v"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "720p"
+            ],
+            "resolutionLocked": true,
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
+          },
+          "promptRequired": true,
+          "transport": "fal",
+          "endpoint": "fal-ai/kling-video/o3/standard/video-to-video/edit"
         }
       }
     },
@@ -7642,7 +8712,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],
@@ -8123,7 +9193,347 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      },
+      "operationCaps": {
+        "kling-reference": {
+          "operation": "kling-reference",
+          "mode": "v2v",
+          "label": "Reference",
+          "defaultForMode": true,
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Prompt"
+              },
+              {
+                "id": "image_url",
+                "type": "image",
+                "label": "Start frame",
+                "description": "Used as the first frame for image-to-video generation.",
+                "modes": [
+                  "i2v"
+                ],
+                "requiredInModes": [
+                  "i2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either",
+                "minDurationSec": 3,
+                "maxDurationSec": 10
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference / storyboard images",
+                "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+                "modes": [
+                  "ref2v",
+                  "v2v"
+                ],
+                "minCount": 0,
+                "maxCount": 4,
+                "source": "either",
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "start_image_url",
+                "type": "image",
+                "label": "Optional start frame",
+                "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+                "modes": [
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "duration",
+                "type": "enum",
+                "label": "Duration (seconds)",
+                "values": [
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "10",
+                  "11",
+                  "12",
+                  "13",
+                  "14",
+                  "15"
+                ],
+                "default": "5",
+                "min": 3,
+                "max": 15
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "values": [
+                  "16:9",
+                  "9:16",
+                  "1:1"
+                ],
+                "default": "16:9",
+                "modes": [
+                  "t2v",
+                  "ref2v",
+                  "v2v"
+                ]
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "values": [
+                  "1080p"
+                ],
+                "default": "1080p"
+              },
+              {
+                "id": "generate_audio",
+                "type": "enum",
+                "label": "Audio",
+                "values": [
+                  "true",
+                  "false"
+                ],
+                "default": "true",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "ref2v"
+                ]
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "description": "Preserve the original source-video audio when the provider supports it.",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "end_image_url",
+                "type": "image",
+                "label": "End frame (optional)",
+                "modes": [
+                  "i2v",
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1"
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "duration": {
+              "options": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "default": 5
+            },
+            "durationPolicy": "requested",
+            "resolution": [
+              "1080p"
+            ],
+            "resolutionLocked": true,
+            "aspectRatio": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          },
+          "promptRequired": true
+        },
+        "kling-edit": {
+          "operation": "kling-edit",
+          "mode": "v2v",
+          "label": "Edit",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Edit instruction",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "minDurationSec": 3,
+                "maxDurationSec": 15,
+                "maxSizeMB": 200,
+                "acceptedFileExtensions": [
+                  "mp4",
+                  "mov"
+                ],
+                "acceptedMimeTypes": [
+                  "video/mp4",
+                  "video/quicktime"
+                ]
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference images",
+                "modes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 0,
+                "maxCount": 4,
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "shot_type",
+                "type": "enum",
+                "label": "Shot type",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "customize"
+                ],
+                "default": "customize"
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "1080p"
+                ],
+                "default": "1080p"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1",
+              "maxVideoSizeMB": 200,
+              "ownedAssetModes": [
+                "v2v"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "1080p"
+            ],
+            "resolutionLocked": true,
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
+          },
+          "promptRequired": true,
+          "transport": "fal",
+          "endpoint": "fal-ai/kling-video/o3/pro/video-to-video/edit"
         }
       }
     },
@@ -8288,7 +9698,7 @@
           ],
           "maxUploadMB": 200,
           "audioToggle": false,
-          "notes": "Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          "notes": "Video-to-video Reference workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],
@@ -8393,7 +9803,8 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 15,
       "resolutions": [
@@ -8415,6 +9826,12 @@
       "params": {},
       "inputLimits": {
         "imageMaxMB": 10,
+        "videoMaxMB": 200,
+        "videoMaxDurationSec": 15,
+        "videoCodecs": [
+          "mp4",
+          "mov"
+        ],
         "promptMaxChars": 2500,
         "promptMaxCharsSource": "observed"
       },
@@ -8439,6 +9856,23 @@
             "minCount": 1,
             "maxCount": 1,
             "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "minDurationSec": 3,
+            "maxDurationSec": 15
           }
         ],
         "optional": [
@@ -8452,6 +9886,18 @@
             ],
             "minCount": 0,
             "maxCount": 7,
+            "source": "either",
+            "slotLabelPattern": "@Image{n}"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 4,
             "source": "either",
             "slotLabelPattern": "@Image{n}"
           },
@@ -8502,7 +9948,8 @@
             "default": "16:9",
             "modes": [
               "t2v",
-              "ref2v"
+              "ref2v",
+              "v2v"
             ]
           },
           {
@@ -8528,6 +9975,16 @@
               "i2v",
               "ref2v"
             ]
+          },
+          {
+            "id": "keep_audio",
+            "type": "boolean",
+            "label": "Keep source audio",
+            "description": "Preserve the original source-video audio when the provider supports it.",
+            "modes": [
+              "v2v"
+            ],
+            "default": true
           },
           {
             "id": "end_image_url",
@@ -8691,6 +10148,395 @@
           "maxUploadMB": 10,
           "audioToggle": true,
           "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "durationPolicy": "requested",
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
+        }
+      },
+      "operationCaps": {
+        "kling-reference": {
+          "operation": "kling-reference",
+          "mode": "v2v",
+          "label": "Reference",
+          "defaultForMode": true,
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Prompt"
+              },
+              {
+                "id": "image_url",
+                "type": "image",
+                "label": "Start frame",
+                "description": "Used as the first frame for image-to-video generation.",
+                "modes": [
+                  "i2v"
+                ],
+                "requiredInModes": [
+                  "i2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Reference video for video-to-video. Use @Video1 in the prompt to guide motion, camera language, or scene continuity.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "minCount": 1,
+                "maxCount": 1,
+                "source": "either",
+                "minDurationSec": 3,
+                "maxDurationSec": 15
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference / storyboard images",
+                "description": "Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.",
+                "modes": [
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 7,
+                "source": "either",
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference images",
+                "modes": [
+                  "v2v"
+                ],
+                "minCount": 0,
+                "maxCount": 4,
+                "source": "either",
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "start_image_url",
+                "type": "image",
+                "label": "Optional start frame",
+                "description": "Optional opening frame for reference-to-video. Leave empty when reference images or elements should guide the shot without opening it.",
+                "modes": [
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              },
+              {
+                "id": "duration",
+                "type": "enum",
+                "label": "Duration (seconds)",
+                "values": [
+                  "3",
+                  "4",
+                  "5",
+                  "6",
+                  "7",
+                  "8",
+                  "9",
+                  "10",
+                  "11",
+                  "12",
+                  "13",
+                  "14",
+                  "15"
+                ],
+                "default": "5",
+                "min": 3,
+                "max": 15
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "values": [
+                  "16:9",
+                  "9:16",
+                  "1:1"
+                ],
+                "default": "16:9",
+                "modes": [
+                  "t2v",
+                  "ref2v",
+                  "v2v"
+                ]
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "values": [
+                  "4k"
+                ],
+                "default": "4k"
+              },
+              {
+                "id": "generate_audio",
+                "type": "enum",
+                "label": "Audio",
+                "values": [
+                  "true",
+                  "false"
+                ],
+                "default": "true",
+                "modes": [
+                  "t2v",
+                  "i2v",
+                  "ref2v"
+                ]
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "description": "Preserve the original source-video audio when the provider supports it.",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "end_image_url",
+                "type": "image",
+                "label": "End frame (optional)",
+                "modes": [
+                  "i2v",
+                  "ref2v"
+                ],
+                "minCount": 0,
+                "maxCount": 1,
+                "source": "either"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1"
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "duration": {
+              "options": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ],
+              "default": 5
+            },
+            "durationPolicy": "requested",
+            "resolution": [
+              "4k"
+            ],
+            "resolutionLocked": true,
+            "aspectRatio": [
+              "16:9",
+              "9:16",
+              "1:1"
+            ],
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
+          },
+          "promptRequired": true,
+          "transport": "fal",
+          "endpoint": "fal-ai/kling-video/o3/4k/video-to-video/reference"
+        },
+        "kling-edit": {
+          "operation": "kling-edit",
+          "mode": "v2v",
+          "label": "Edit",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Edit instruction",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "description": "Owned 3–15 second video; width and height must each be 720–3840 pixels.",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "minDurationSec": 3,
+                "maxDurationSec": 15,
+                "maxSizeMB": 200,
+                "acceptedFileExtensions": [
+                  "mp4",
+                  "mov"
+                ],
+                "acceptedMimeTypes": [
+                  "video/mp4",
+                  "video/quicktime"
+                ]
+              }
+            ],
+            "optional": [
+              {
+                "id": "image_urls",
+                "type": "image",
+                "label": "Reference images",
+                "modes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 0,
+                "maxCount": 4,
+                "slotLabelPattern": "@Image{n}"
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "shot_type",
+                "type": "enum",
+                "label": "Shot type",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "customize"
+                ],
+                "default": "customize"
+              },
+              {
+                "id": "keep_audio",
+                "type": "boolean",
+                "label": "Keep source audio",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "4k"
+                ],
+                "default": "4k"
+              }
+            ],
+            "constraints": {
+              "supportedFormats": [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp"
+              ],
+              "maxImageSizeMB": 10,
+              "minImageSidePx": 300,
+              "imageAspectRatioRange": "1:2.5 to 2.5:1",
+              "maxVideoSizeMB": 200,
+              "ownedAssetModes": [
+                "v2v"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "4k"
+            ],
+            "resolutionLocked": true,
+            "maxUploadMB": 200,
+            "audioToggle": false,
+            "notes": "Edits a 3–15 second source with each side between 720 and 3840 pixels, preserving its timing and framing. Up to four images and elements combined."
+          },
+          "promptRequired": true,
+          "transport": "fal",
+          "endpoint": "fal-ai/kling-video/o3/4k/video-to-video/edit"
         }
       }
     },
@@ -8816,6 +10662,46 @@
           "maxUploadMB": 10,
           "audioToggle": true,
           "notes": "Reference-to-video for storyboard, visual reference images, elements, and optional start/end frames. Use @Image1, @Image2, and @Element1 anchors in the prompt."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "fal-ai/kling-video/o3/4k/video-to-video/reference",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "durationPolicy": "requested",
+          "resolution": [
+            "4k"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "maxUploadMB": 200,
+          "audioToggle": false,
+          "notes": "Video-to-video Reference workflow from one 3-15s source clip, optional @Image references, Kling Elements, and keep-audio control."
         }
       }
     ],
@@ -16524,17 +18410,6 @@
               "t2v",
               "i2v"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "description": "Adjust prompt adherence for LTX 2.3 Fast.",
-            "modes": [
-              "i2v"
-            ],
-            "min": 1,
-            "max": 50
           }
         ],
         "constraints": {
@@ -16778,7 +18653,8 @@
         "i2v",
         "a2v",
         "extend",
-        "retake"
+        "retake",
+        "reframe"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -16802,6 +18678,101 @@
       "motionControls": false,
       "keyframes": false,
       "params": {},
+      "operationCaps": {
+        "ltx23-reframe": {
+          "operation": "ltx23-reframe",
+          "mode": "reframe",
+          "label": "Reframe (LTX 2.3)",
+          "defaultForMode": true,
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "fal-ai/ltx-2.3/reframe",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "reframe"
+                ],
+                "requiredInModes": [
+                  "reframe"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "maxDurationSec": 60
+              }
+            ],
+            "optional": [
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "reframe"
+                ],
+                "values": [
+                  "720p",
+                  "1080p"
+                ],
+                "default": "1080p"
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "modes": [
+                  "reframe"
+                ],
+                "values": [
+                  "1:1",
+                  "4:5",
+                  "5:4",
+                  "9:16",
+                  "16:9"
+                ],
+                "default": "16:9"
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "reframe"
+                ],
+                "default": true
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "reframe"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "reframe"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "720p",
+              "1080p"
+            ],
+            "resolutionLocked": false,
+            "audioToggle": false,
+            "aspectRatio": [
+              "1:1",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9"
+            ],
+            "notes": "Reframe up to 60 seconds with LTX 2.3; retains source timing."
+          }
+        }
+      },
       "inputLimits": {
         "imageMaxMB": 25,
         "videoMaxMB": 30,
@@ -16985,9 +18956,8 @@
             "id": "guidance_scale",
             "type": "number",
             "label": "Guidance scale",
-            "description": "Adjust prompt adherence for LTX 2.3.",
+            "description": "Adjust prompt adherence for audio-to-video.",
             "modes": [
-              "i2v",
               "a2v"
             ],
             "min": 1,
@@ -17110,6 +19080,30 @@
       "brandId": "lightricks"
     },
     "modes": [
+      {
+        "mode": "reframe",
+        "falModelId": "fal-ai/ltx-2.3/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "audioToggle": false,
+          "aspectRatio": [
+            "1:1",
+            "4:5",
+            "5:4",
+            "9:16",
+            "16:9"
+          ],
+          "notes": "Reframe up to 60 seconds with LTX 2.3; retains source timing."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "fal-ai/ltx-2.3/text-to-video",
@@ -17941,7 +19935,8 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 15,
       "resolutions": [
@@ -17989,9 +19984,84 @@
               "i2v",
               "ref2v"
             ]
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 1,
+            "minDurationSec": 5,
+            "maxDurationSec": 30,
+            "description": "5–30 seconds total. Each shot must be at most 15 seconds; the provider checks this content constraint."
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Ordered character portraits",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 4,
+            "description": "One portrait per person, replacing people from left to right in each shot."
           }
         ],
         "optional": [
+          {
+            "id": "middle_image_url",
+            "type": "image",
+            "acceptedMimeTypes": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ],
+            "acceptedFileExtensions": [
+              "jpg",
+              "jpeg",
+              "png",
+              "webp"
+            ],
+            "label": "Middle frame",
+            "description": "Requires start and end frames and native 480P or 768P.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "middle_frame_time",
+            "type": "number",
+            "label": "Middle frame time (seconds)",
+            "modes": [
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 15,
+            "step": 0.041666666666666664
+          },
+          {
+            "id": "reference_order",
+            "type": "text",
+            "label": "Reference order",
+            "description": "Optional complete order, for example video1,image1,audio1. List every attached reference exactly once. Leave empty to use the separate image/video/audio lists.",
+            "modes": [
+              "ref2v"
+            ]
+          },
           {
             "id": "image_url",
             "type": "image",
@@ -18009,7 +20079,8 @@
             "label": "Start image",
             "description": "First frame; supply a start image, an end image, or both.",
             "modes": [
-              "i2v"
+              "i2v",
+              "ref2v"
             ],
             "minCount": 0,
             "maxCount": 1,
@@ -18032,7 +20103,8 @@
             "label": "End image",
             "description": "Final frame; may be supplied alone or with a start image.",
             "modes": [
-              "i2v"
+              "i2v",
+              "ref2v"
             ],
             "minCount": 0,
             "maxCount": 1,
@@ -18244,6 +20316,55 @@
               "quality"
             ],
             "default": "balanced"
+          },
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Optional replacement instruction",
+            "modes": [
+              "v2v"
+            ]
+          },
+          {
+            "id": "enhance_realism",
+            "type": "boolean",
+            "label": "Enhance realism",
+            "modes": [
+              "v2v"
+            ],
+            "default": false
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "v2v"
+            ],
+            "values": [
+              "768P",
+              "1080P"
+            ],
+            "default": "1080P"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "modes": [
+              "v2v"
+            ],
+            "min": 0,
+            "step": 1
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "boolean",
+            "label": "Safety checker",
+            "modes": [
+              "v2v"
+            ],
+            "default": true
           }
         ],
         "referenceBudget": {
@@ -18264,7 +20385,8 @@
           "ownedAssetModes": [
             "t2v",
             "i2v",
-            "ref2v"
+            "ref2v",
+            "v2v"
           ],
           "combinedDurationModes": [
             "ref2v"
@@ -18429,6 +20551,259 @@
           ],
           "audioToggle": false,
           "notes": "Combine image, video, and audio references, including audio-only references."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "768P",
+            "1080P"
+          ],
+          "audioToggle": false,
+          "notes": "Choose Recast or Relight; these are specialized source operations."
+        }
+      },
+      "operationCaps": {
+        "h3-recast": {
+          "operation": "h3-recast",
+          "mode": "v2v",
+          "defaultForMode": true,
+          "label": "Recast",
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "minimax/h3-max/recast",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "minDurationSec": 5,
+                "maxDurationSec": 30,
+                "description": "5–30 seconds total. Each shot must be at most 15 seconds; the provider checks this content constraint."
+              },
+              {
+                "id": "reference_image_urls",
+                "type": "image",
+                "label": "Ordered character portraits",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 4,
+                "description": "One portrait per person, replacing people from left to right in each shot."
+              }
+            ],
+            "optional": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Optional replacement instruction",
+                "modes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "enhance_realism",
+                "type": "boolean",
+                "label": "Enhance realism",
+                "modes": [
+                  "v2v"
+                ],
+                "default": false
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "768P",
+                  "1080P"
+                ],
+                "default": "1080P"
+              },
+              {
+                "id": "seed",
+                "type": "number",
+                "label": "Seed",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "step": 1
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "768P",
+              "1080P"
+            ],
+            "audioToggle": false,
+            "notes": "Replace people with ordered portraits; preserves source motion, cuts and audio. Each shot must be at most 15 seconds."
+          }
+        },
+        "h3-relight": {
+          "operation": "h3-relight",
+          "mode": "v2v",
+          "label": "Relight",
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "minimax/h3-max/relight",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "minDurationSec": 2.3333333333333335,
+                "maxDurationSec": 15,
+                "description": "Prepared constant 24 fps video with 17n+5 decoded frames; at least 56 frames and at most 15 seconds."
+              },
+              {
+                "id": "reference_image_url",
+                "type": "image",
+                "label": "Lighting sphere",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "description": "Sphere render showing the target lighting."
+              }
+            ],
+            "optional": [
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Framing",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "auto",
+                  "21:9",
+                  "16:9",
+                  "4:3",
+                  "1:1",
+                  "3:4",
+                  "9:16"
+                ],
+                "default": "auto"
+              },
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "v2v"
+                ],
+                "values": [
+                  "480P",
+                  "768P",
+                  "1080P",
+                  "2K"
+                ],
+                "default": "768P"
+              },
+              {
+                "id": "seed",
+                "type": "number",
+                "label": "Seed",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "step": 1
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "v2v"
+                ],
+                "default": true
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "480P",
+              "768P",
+              "1080P",
+              "2K"
+            ],
+            "audioToggle": false,
+            "aspectRatio": [
+              "auto",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "notes": "Relight from a sphere render. Prepared source timing and audio are retained; review any compatible-copy trim."
+          }
         }
       }
     },
@@ -18544,6 +20919,22 @@
           ],
           "audioToggle": false,
           "notes": "Combine image, video, and audio references, including audio-only references."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "minimax/h3-max/recast",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "768P",
+            "1080P"
+          ],
+          "audioToggle": false,
+          "notes": "Choose Recast or Relight; these are specialized source operations."
         }
       }
     ],
@@ -23612,17 +26003,6 @@
               "static",
               "focus_shift"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "modes": [
-              "a2v"
-            ],
-            "min": 1,
-            "max": 50,
-            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
           }
         ],
         "constraints": {
@@ -24212,17 +26592,6 @@
               "static",
               "focus_shift"
             ]
-          },
-          {
-            "id": "guidance_scale",
-            "type": "number",
-            "label": "Guidance scale",
-            "modes": [
-              "a2v"
-            ],
-            "min": 1,
-            "max": 50,
-            "description": "Provider conditional default: 5 without image_url, 9 with image_url."
           }
         ],
         "constraints": {
@@ -25001,7 +27370,9 @@
         "t2v",
         "i2v",
         "fl2v",
-        "extend"
+        "extend",
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -25022,7 +27393,7 @@
       "upscale4k": false,
       "extend": true,
       "motionControls": false,
-      "keyframes": false,
+      "keyframes": true,
       "params": {},
       "inputLimits": {},
       "inputSchema": {
@@ -25125,6 +27496,43 @@
               "mp4"
             ],
             "description": "Provider requires MP4 smaller than 50 MB and shorter than 15 seconds."
+          },
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ]
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Ordered keyframe images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 10
+          },
+          {
+            "id": "keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe positions",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "description": "Unique integer frame positions, in image order, from 0 through duration × 24 inclusive."
           }
         ],
         "optional": [
@@ -25243,6 +27651,86 @@
               "i2v",
               "fl2v",
               "extend"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "ref2v"
             ],
             "values": [
               "720p",
@@ -25489,10 +27977,211 @@
           "maxUploadMB": 50,
           "audioToggle": true,
           "notes": "Requires an MP4 source smaller than 50 MB and shorter than 15 seconds."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "FAST quality, 720p. Preserves source timing and framing."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      "operationCaps": {
+        "flux-fast-edit": {
+          "operation": "flux-fast-edit",
+          "mode": "v2v",
+          "label": "FAST Edit",
+          "defaultForMode": true,
+          "promptRequired": true,
+          "promptMaxChars": 4096,
+          "transport": "fal",
+          "endpoint": "blackforestlabs/flux-3/edit-video",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Edit instruction",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "maxDurationSec": 15,
+                "maxSizeMB": 50,
+                "acceptedMimeTypes": [
+                  "video/mp4"
+                ],
+                "acceptedFileExtensions": [
+                  "mp4"
+                ],
+                "description": "MP4 strictly shorter than 15 seconds and smaller than 50 MB. MOV/HEVC requires a compatible copy."
+              }
+            ],
+            "optional": [
+              {
+                "id": "safety_tolerance",
+                "type": "number",
+                "label": "Safety tolerance",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "max": 4,
+                "step": 1,
+                "default": 2
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ],
+              "videoSizeExclusiveMaxBytes": 50000000,
+              "videoDurationExclusiveMaxSec": 15
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "720p"
+            ],
+            "resolutionLocked": true,
+            "audioToggle": false,
+            "notes": "FAST quality, 720p. Preserves source timing and framing."
+          }
         }
       }
     },
     "modes": [
+      {
+        "mode": "ref2v",
+        "falModelId": "blackforestlabs/flux-3/keyframes-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "blackforestlabs/flux-3/edit-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "FAST quality, 720p. Preserves source timing and framing."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "blackforestlabs/flux-3/text-to-video",
@@ -25702,7 +28391,7 @@
         "value": false
       },
       "keyframes": {
-        "value": false
+        "value": true
       },
       "extend": {
         "value": true
@@ -26521,7 +29210,9 @@
         "t2v",
         "i2v",
         "fl2v",
-        "extend"
+        "extend",
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -26541,7 +29232,7 @@
       "upscale4k": false,
       "extend": true,
       "motionControls": false,
-      "keyframes": false,
+      "keyframes": true,
       "params": {},
       "inputLimits": {},
       "inputSchema": {
@@ -26629,6 +29320,43 @@
               "mp4"
             ],
             "description": "Provider accepts a URL or data URI for an MP4 up to 50 MiB."
+          },
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ]
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Ordered keyframe images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 10
+          },
+          {
+            "id": "keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe positions",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "description": "Unique integer frame positions, in image order, from 0 through duration × 24 inclusive."
           }
         ],
         "optional": [
@@ -26732,6 +29460,73 @@
               "i2v",
               "fl2v",
               "extend"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "ref2v"
             ],
             "min": 0,
             "max": 4,
@@ -26957,10 +29752,183 @@
           "maxUploadMB": 50,
           "audioToggle": true,
           "notes": "URL/data-URI MP4 up to 50 MiB. Returns draft_cache."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      "operationCaps": {
+        "flux-draft-enhance": {
+          "operation": "flux-draft-enhance",
+          "mode": "v2v",
+          "label": "Enhance Draft",
+          "defaultForMode": true,
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "blackforestlabs/flux-3/draft-enhance",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "source_job_id",
+                "type": "text",
+                "label": "Owned Draft generation",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [],
+                "description": "Successful owned native Draft with a qualified paired provider cache. Imported videos and Draft Extend caches are not eligible."
+              }
+            ],
+            "optional": [
+              {
+                "id": "safety_tolerance",
+                "type": "number",
+                "label": "Safety tolerance",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "max": 4,
+                "step": 1,
+                "default": 2
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ],
+              "ownedProviderDraftCache": true
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "1080p"
+            ],
+            "resolutionLocked": true,
+            "audioToggle": false,
+            "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+          }
         }
       }
     },
     "modes": [
+      {
+        "mode": "ref2v",
+        "falModelId": "blackforestlabs/flux-3/keyframes-to-video/draft",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "blackforestlabs/flux-3/draft-enhance",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "blackforestlabs/flux-3/text-to-video/draft",
@@ -27158,7 +30126,7 @@
         "value": false
       },
       "keyframes": {
-        "value": false
+        "value": true
       },
       "extend": {
         "value": true

@@ -11,6 +11,7 @@ import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace
 import { CoreSettingsBar } from '../frontend/components/CoreSettingsBar';
 import type { ComposerProps } from '../frontend/components/Composer';
 
+import { OwnedGenerationSourcePicker } from '../frontend/app/(core)/(workspace)/app/_components/OwnedGenerationSourcePicker.client';
 const noop = () => {};
 for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => mode.mode === 'extend'))) {
   test(`${id}: Extend puts its source first, guides pricing and only offers meaningful controls`, async () => {
@@ -42,6 +43,7 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       React.createElement(I18nProvider, { locale: 'en', dictionary: {} as Dictionary, fallback: {} as Dictionary,
         children: React.createElement(Composer, { density: 'workspace', engine, caps, activeManualMode: 'extend',
           prompt: '', onPromptChange: noop, price: null, currency: 'USD', isLoading: false, error,
+          beforeAssets: id === 'luma-ray-3-2' ? React.createElement(OwnedGenerationSourcePicker,{account:null,operation:'luma-extend',sourceJobId:'',locale:'en',onSelect:noop}) : undefined,
           promptRequired: summary.promptRequired, assetFields: summary.assetFields, assets, settingsBar: settings,
           onGenerate: noop, onAssetRemove: noop, onOpenLibrary: (field, index) => libraryCalls.push([field.id, index]) }),
       }),
@@ -49,6 +51,15 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
     try {
       await render();
       const doc = dom.window.document;
+      if (id === 'luma-ray-3-2') {
+        const picker = doc.querySelector('[data-testid="owned-generation-source-picker"]');
+        assert.ok(picker);
+        assert.match(picker.textContent ?? '', /Choose an owned generation.*exact price/);
+        assert.equal(doc.querySelector('input[type="file"]'), null);
+        assert.ok(picker.compareDocumentPosition(doc.querySelector('textarea')!) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+        assert.equal(doc.querySelector<HTMLButtonElement>('.app-generation-action')!.disabled, true);
+        return;
+      }
       assert.match(doc.body.textContent ?? '', /Upload the video to extend.*calculate the price/);
       assert.equal(doc.querySelector('[role="alert"]'), null);
       if (id.startsWith('seedance-2-')) assert.match(doc.querySelector('[role="note"]')?.textContent ?? '', /recognizable person/);

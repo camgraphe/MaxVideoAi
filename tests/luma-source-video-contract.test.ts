@@ -192,3 +192,20 @@ test('canonical capability admission accepts the full Modify source domain', () 
       { resolvedReferences: [{ ...source, durationSec: durationSec === 18 ? 17.52 : durationSec - 0.2 }] }));
   }
 });
+
+test('Site Extend preflight resolves the owned job without an uploaded source and rejects raw provider IDs', async () => {
+  let reads=0,quotes=0;
+  const row={owner_id:'alice',source_job_id:'job-owned',engine_id:engine.id,surface:'video',status:'completed',provider:'luma_agents_direct',provider_job_id:'private-provider',attempt_id:9,attempt_provider:'luma_agents_direct',attempt_model:'ray-3.2',attempt_status:'completed',attempt_provider_job_id:'private-provider',output_id:'job-owned:video:0',output_owner:'alice',output_status:'ready',original_url:'https://private.example/source',output_url:'https://private.example/source'};
+  const deps={getConfiguredEngineFn:async()=>engine,computeConfiguredPreflightFn:async()=>{quotes++;return priced;},
+    lineageExecutor:{query:async()=>{reads++;return [row] as never;}}};
+  const request={engine:engine.id,mode:'extend' as const,durationSec:5,resolution:'720p' as const,sourceJobId:'job-owned'};
+  const result=await resolveMediaAwarePreflight({userId:'alice',request},deps);
+  assert.equal(result.ok,true);assert.equal(reads,1);assert.equal(quotes,1);
+  assert.doesNotMatch(JSON.stringify(result),/private-provider|private.example/);
+  for(const extraInputValues of [{source_generation_id:'raw-private'},{hdr:true},{extend_direction:'backward'}]){
+    const invalid=await resolveMediaAwarePreflight({userId:'alice',request:{...request,loop:true,extraInputValues}},deps);
+    assert.equal(invalid.ok,false);
+  }
+  assert.equal(quotes,1);
+  const foreign=await resolveMediaAwarePreflight({userId:'admin',request},deps);assert.equal(foreign.ok,false);assert.equal(quotes,1);
+});

@@ -26,6 +26,7 @@ import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-reques
 import { persistReservedBytePlusLasExecutionSettings } from '@/server/byteplus-submission-state';
 
 export type ExecutePreparedVideoGenerationParams = {
+  lumaGenerationSource?: import('@/server/agent-api/generation-luma-lineage').OwnedLumaGenerationSource;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   body: Record<string, unknown>;
   routeContext: GenerateRouteContext;
@@ -316,6 +317,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
             };
       }
       return adapters.submitGenerateProviderTask({
+        lumaGenerationSource: params.lumaGenerationSource,
         providerRoutingPlan,
         providerKey,
         falPayload,

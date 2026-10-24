@@ -1314,3 +1314,23 @@ route, build or deployment invokes the writer. The quote reader continues to fai
 closed until the required cells exist. The PG17 integration contract exercises
 stale review, administrator checks, concurrent-write locks, partial-insert/audit
 failure rollback, persisted quotes and preservation of the anchors and HDR/EXR.
+
+
+### Video operation tariff ownership — 2026-10-24
+
+The operation inventory is additive: 26,982 historical monetary checkpoints remain,
+with 89 separately classified new offers (76 fixed cells and 13 continuous classes).
+New-offer proposals carry `beforeCents: null`; they are never described as preserved
+historical charges. `video-operation-tariff-inventory.ts` owns enumeration;
+`video-operation-continuous-tariff.ts` compiles exact canonical cent transitions;
+`video-operation-tariffs.ts` owns missing-only transactional maintenance.
+See [the operation maintenance guide](video-operation-tariffs.md) for scope,
+reference settlement precision, release fences and rollback.
+
+Only the new source-operation identities use the canonical standard nearest
+reference subtotal for settlement. The raw published reference estimate and its
+unverified-invoice metadata remain intact. Existing manual tariffs retain their
+upward normalization and historical amounts. This is not a provider invoice claim
+or a new retail markup. Runtime reads literal cells/bands. MCP/Studio reservation
+keeps exact source seconds in the canonical snapshot and projects only the legacy
+integer job display column; caller duration cannot replace a trusted source quantity.

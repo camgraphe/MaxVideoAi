@@ -35,6 +35,7 @@ export async function createFalMediaTransport(
     return pending;
   };
   const payload = { ...input.payload };
+  if(payload.trustedFluxDraftCache) canonicalByGrant.set(payload.trustedFluxDraftCache.url,'[private Draft cache]');
   for (const field of ['imageUrl', 'videoUrl', 'audioUrl', 'endImageUrl'] as const) {
     const url = payload[field];
     if (typeof url === 'string') payload[field] = await readUrl(url);

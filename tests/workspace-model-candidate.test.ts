@@ -149,11 +149,12 @@ test('candidate allows configuration-only manual retake when the required source
   assert.deepEqual(candidate.setup.inputAssets, {});
 });
 
-test('candidate retains the existing Kling 4K source-video prohibition before reconciliation', () => {
+test('candidate preserves source video when switching to supported Kling 4K Modify', () => {
   const current = setup('kling-o3-pro', { inputAssets: { video_url: [asset('video_url', 'video', 'source', 7.2)] } });
   const candidate = prepareWorkspaceModelCandidate({ engine: engine('kling-o3-4k'), current, locale: 'en' });
-  assert.equal(candidate.applicable, false);
-  assert.ok(candidate.blockingReasons.some(({ code, scope }) => code === 'unsupported-workflow' && scope === 'apply'));
+  assert.equal(candidate.applicable, true);
+  assert.equal(candidate.workflow.submissionMode, 'v2v');
+  assert.deepEqual(candidate.setup.inputAssets.video_url, current.inputAssets.video_url);
 });
 
 test('candidate identifies subject references that become inactive even within the Kling control family', () => {

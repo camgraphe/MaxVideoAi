@@ -79,7 +79,7 @@ export function useWorkspaceInputSchemaState({
   useEffect(() => {
     if (!hydrationReady || !selectedEngine) return;
     setForm((current) => {
-      if (!current || current.engineId !== selectedEngine.id) return current;
+      if (!current || current.engineId !== selectedEngine.id || selectedEngine.operationCaps || selectedEngine.id === 'luma-ray-3-2') return current;
       const allowedFieldIds = new Set(extraInputFields.map(({ field }) => field.id));
       const nextExtraInputValues = Object.entries(current.extraInputValues).reduce<
         Record<string, unknown>
@@ -97,7 +97,7 @@ export function useWorkspaceInputSchemaState({
   }, [hydrationReady, selectedEngine, extraInputFields, setForm]);
 
   useEffect(() => {
-    if (!hydrationReady || !selectedEngine) return;
+    if (!hydrationReady || !selectedEngine || selectedEngine.operationCaps) return;
     const activeFields = inputSchemaSummary.assetFields.map((entry) => entry.field);
     const referenceBudget = resolveEngineReferenceBudget(
       selectedEngine?.inputSchema,

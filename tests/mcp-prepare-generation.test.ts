@@ -730,8 +730,8 @@ test('request-aware provider readiness rejects an unavailable routed provider be
     surface: 'video',
     engineId: 'luma-ray-3-2',
     mode: 'i2v',
-    prompt: 'Animate this still image for ten seconds.',
-    settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9', loop: false },
+    prompt: 'Animate this still image for five seconds.',
+    settings: { durationSec: 5, resolution: '720p', aspectRatio: '16:9', loop: false },
     references: [{
       kind: 'https',
       url: 'https://cdn.maxvideoai.com/source.png',

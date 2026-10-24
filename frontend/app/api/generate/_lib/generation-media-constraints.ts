@@ -1,3 +1,6 @@
+import { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
+import { AgentApiError } from '@/server/agent-api/errors';
+import { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isLumaSourceVideoMode } from '@/lib/luma-source-video';
 import { videoDuration } from '@/lib/generated-video-media-facts';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
@@ -37,6 +40,7 @@ export type StoredMediaMetadataRow = {
 };
 
 type MediaConstraintError =
+  | 'RATE_LIMITED'
   | 'MEDIA_METADATA_UNVERIFIED'
   | 'MEDIA_FILE_TOO_LARGE'
   | 'MEDIA_FORMAT_UNSUPPORTED'
@@ -51,10 +55,11 @@ export type GenerationMediaConstraintValidationResult =
   | { ok: true; trustedDurationSecByField?: Record<string, number[]>; trustedMediaReferences?: MinimaxH3MaxPricingReference[] }
   | {
       ok: false;
-      status: 422;
+      status: 422 | 429;
       body: {
         ok: false;
         error: MediaConstraintError;
+        retryable?: boolean;
         message: string;
         field: string;
         maxMB?: number;
@@ -164,6 +169,8 @@ export async function validateGenerationMediaConstraints(params: {
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
   trustedResolvedReferences?: readonly ResolvedReference[];
   deps?: {
+    inspectFluxLtxSourceFn?: typeof inspectOwnedFluxLtxSource;
+    inspectH3SourceFn?: typeof inspectOwnedH3Source;
     queryFn?: QueryFn;
     detectVideoDimensionsFn?: typeof detectVideoDimensions;
     detectMediaDurationFn?: typeof detectMediaDuration;
@@ -183,6 +190,9 @@ export async function validateGenerationMediaConstraints(params: {
         message: 'Select exactly one owned source video in the source video field and remove other video inputs.' });
     }
   }
+  const fluxLtxOperation = params.engineId==='flux-3' && params.mode==='v2v' ? 'flux-fast-edit' as const : params.engineId==='ltx-2-3' && params.mode==='reframe' ? 'ltx23-reframe' as const : undefined;
+  const h3Operation = params.engineId === 'minimax-h3-max' && params.mode === 'v2v'
+    ? (params.inputSchema?.required?.some(field=>field.id==='reference_image_url') ? 'h3-relight' : 'h3-recast') : undefined;
   const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
   const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
   const requiresExactOwnedMedia = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
@@ -310,7 +320,7 @@ export async function validateGenerationMediaConstraints(params: {
   const trustedMediaReferences: MinimaxH3MaxPricingReference[] = [];
   const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
-    const requiresExactSource = requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
+    const requiresExactSource = Boolean(h3Operation || fluxLtxOperation) || (requiresOwnedMedia && candidate.fieldId === 'video_url') || requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
       const originUrl = normalizeUrl(row.origin_url);
@@ -372,6 +382,22 @@ export async function validateGenerationMediaConstraints(params: {
         ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec))
         : normalizeDurationSec(stored.duration_sec),
     };
+    if (h3Operation && candidate.kind === 'video' && candidate.fieldId === 'video_url') {
+      try {
+        const measured = await (params.deps?.inspectH3SourceFn ?? inspectOwnedH3Source)(stored.url,h3Operation,params.userId);
+        Object.assign(trustedReference,{durationSec:measured.durationSec,fps:measured.fps,decodedFrameCount:measured.decodedFrameCount,constantFrameRate:measured.constantFrameRate,sourceSha256:measured.sourceSha256});
+      } catch (error) {
+        if (error instanceof AgentApiError && error.retryable) return {ok:false,status:429,body:{ok:false,error:'RATE_LIMITED',message:error.message,field:candidate.fieldId,retryable:true},metric:{errorCode:'RATE_LIMITED',meta:{field:candidate.fieldId}}};
+        return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This source could not be qualified for the selected H3 operation. Relight needs constant 24 fps and 17n+5 decoded frames; prepare a compatible copy.'});
+      }
+    }
+    if (fluxLtxOperation && candidate.kind==='video' && candidate.fieldId==='video_url') {
+      try { const measured=await (params.deps?.inspectFluxLtxSourceFn??inspectOwnedFluxLtxSource)(stored.url,fluxLtxOperation,params.userId);
+        Object.assign(trustedReference,{durationSec:measured.durationSec,width:measured.width,height:measured.height,sizeBytes:measured.sizeBytes,mimeType:measured.mimeType,sourceSha256:measured.sourceSha256});
+      } catch (error) {
+        if(error instanceof AgentApiError&&error.retryable) return {ok:false,status:429,body:{ok:false,error:'RATE_LIMITED',retryable:true,message:error.message,field:candidate.fieldId},metric:{errorCode:'RATE_LIMITED',meta:{field:candidate.fieldId}}};
+        return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This owned source does not satisfy the selected operation. Prepare a compatible copy and review its timing.'});}
+    }
     trustedMediaReferences.push(trustedReference);
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
@@ -473,7 +499,8 @@ export async function validateGenerationMediaConstraints(params: {
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
-      let durationSec = (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec));
+      // Start from the qualified projection: source probes above supersede stored timing.
+      let durationSec = trustedReference.durationSec ?? null;
       // Older web uploads have no measured duration. Only probe an owned storage
       // original, never an arbitrary browser URL or a claimed client duration.
       if (durationSec == null && params.engineId === 'seedance-2-5' && field.type === 'video') {
@@ -549,7 +576,8 @@ export async function validateGenerationMediaConstraints(params: {
   return {
     ok: true,
     ...(Object.keys(trustedDurationSecByField).length ? { trustedDurationSecByField } : {}),
-    ...(isLumaSourceVideoMode(params.engineId, params.mode)
+    ...(requiresOwnedMedia
+      || isLumaSourceVideoMode(params.engineId, params.mode)
       || params.engineId === 'minimax-h3-max'
       || isSeedance2TokenPricing(engine.pricingDetails)
       || typeof params.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'

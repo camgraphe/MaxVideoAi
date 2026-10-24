@@ -14,5 +14,9 @@ export type ResolvedReference = {
   durationSec: number | null;
   mimeType: string;
   sizeBytes?: number | null;
+  fps?: number;
+  decodedFrameCount?: number;
+  constantFrameRate?: boolean;
+  sourceSha256?: string;
   originalName?: string | null;
 };

@@ -7,7 +7,7 @@ import type { VideoExcerptFacts } from '../frontend/server/video-excerpts/media'
 const source = {type:'asset' as const,assetId:'ma_11111111111111111111111111111111',kind:'video' as const};
 const ref = {...source,assetId:'ma_22222222222222222222222222222222'};
 const media: StudioResolvedMedia = {id:'source',ref:source,kind:'video',url:'https://media.example/source.mp4',mime:'video/mp4',thumbUrl:null,previewUrl:null,mediaFacts:undefined,originalAccess:{type:'external'}};
-const facts:VideoExcerptFacts = {kind:'video',width:640,height:480,durationSec:60,fps:30,hasAudio:true,sizeBytes:10,mimeType:'video/mp4',videoCodec:'h264',audioCodec:'aac'};
+const facts:VideoExcerptFacts = {kind:'video',width:1280,height:720,durationSec:60,fps:30,hasAudio:true,sizeBytes:10,mimeType:'video/mp4',videoCodec:'h264',audioCodec:'aac'};
 const input = {source,engineId:'luma-ray-3-2',mode:'v2v' as const,range:{startSec:20,endSec:38}};
 
 test('reference video preparation retains its real field/mode policy and rejects audio-slot impersonation', async () => {
@@ -29,6 +29,7 @@ function setup(overrides: Partial<VideoExcerptDependencies> = {}) {
     readAccess:async(_user,value)=>({url:value.url+'?signed=read',expires:null}),
     download:async file=>{state.downloads++;assert.equal(file.download_url,media.url+'?signed=read');return {bytes:Buffer.from('source'),fileName:'source.mp4',mimeType:'video/mp4'};},
     inspect:async()=>facts,
+    relight:async()=>{throw new Error('Unused Relight encoder');},
     trim:async(_bytes,_facts,range)=>{state.trims++;return {bytes:Buffer.from('prepared'),facts:{...facts,durationSec:range.endSec-range.startSec}};},
     persist:async(_user,bytes,measured,lineage)=>{state.persists++;state.lineage=lineage;assert.equal(bytes.toString(),'prepared');assert.equal(measured.durationSec,18);return {id:ref.assetId,assetId:ref.assetId,ref,url:'https://media.example/excerpt.mp4',durationSec:18};},...overrides,
   };
@@ -88,4 +89,45 @@ test('strict model maximum still rejects overlong fractional-frame output before
     });
     await assert.rejects(prepareVideoExcerpt('owner',input,deps),/current model source limits/);
   }
+});
+
+test('explicit Kling Edit prepares 15 seconds while Reference omission keeps its 10 second bound', async () => {
+  for (const operation of ['kling-edit', 'kling-reference', undefined]) {
+    const { deps } = setup({ persist: async (_user, _bytes, measured, lineage) => {
+      assert.equal(lineage.operation, 'kling-edit');
+      return { id: ref.assetId, assetId: ref.assetId, ref, url: 'https://media.example/excerpt.mp4', durationSec: measured.durationSec };
+    }});
+    const request = { source, engineId: 'kling-o3-standard', mode: 'v2v', fieldId: 'video_url', range: {startSec:0,endSec:15}, ...(operation ? {operation} : {}) };
+    if (operation === 'kling-edit') assert.equal((await prepareVideoExcerpt('owner', request, deps)).asset.durationSec, 15);
+    else await assert.rejects(prepareVideoExcerpt('owner', request, deps));
+  }
+});
+test('operation/engine/mode/field mismatch and provider-lineage preparation fail before reading media', async () => {
+  for (const request of [
+    {...input,operation:'kling-edit'}, {...input,engineId:'kling-o3-pro',mode:'t2v',operation:'kling-edit'},
+    {...input,engineId:'kling-o3-pro',operation:'kling-edit',fieldId:'image_urls'},
+    {...input,operation:'luma-extend',mode:'extend',fieldId:'video_url'},
+    {...input,engineId:'flux-3-draft',operation:'flux-draft-enhance',fieldId:'video_url'},
+    {...input,operation:null}, {...input,operation:'unknown'},
+  ]) {
+    const {state,deps}=setup(); await assert.rejects(prepareVideoExcerpt('owner',request,deps));assert.equal(state.downloads,0);
+  }
+});
+test('operation capability revocation after encoding prevents persistence', async () => {
+  let reads=0;
+  const {state,deps}=setup({engine:async id=>{ const engine=getBaseEngineIncludingHidden(id)!; return ++reads===1?engine:{...engine,operationCaps:{}}; }});
+  await assert.rejects(prepareVideoExcerpt('owner',{source,engineId:'kling-o3-pro',mode:'v2v',operation:'kling-edit',range:{startSec:0,endSec:15}},deps));
+  assert.equal(state.trims,1);assert.equal(state.persists,0);
+});
+
+test('Relight requires the reviewed actual copy duration and persists its distinct cadence profile', async () => {
+  const request={source,engineId:'minimax-h3-max',mode:'v2v',operation:'h3-relight',fieldId:'video_url',range:{startSec:0,endSec:5.56}};
+  const {state,deps}=setup();
+  await assert.rejects(prepareVideoExcerpt('owner',request,deps));assert.equal(state.downloads,0);
+  let lineage: any;
+  const result=await prepareVideoExcerpt('owner',{...request,acceptedCopyDurationSec:124/24},{...deps,
+    relight:async()=>({bytes:Buffer.from('prepared'),facts:{...facts,durationSec:124/24,fps:24,decodedFrameCount:124,constantFrameRate:true},plan:{fps:24,frameCount:124,durationSec:124/24,removedEndSec:5.56-124/24},sourceSha256:'hash'}),
+    persist:async(_u,_b,measured,l)=>{lineage=l;return {id:ref.assetId,assetId:ref.assetId,ref,url:'https://media.example/excerpt.mp4',durationSec:measured.durationSec};},
+  });
+  assert.equal(result.asset.durationSec,124/24);assert.equal(lineage.encoder,'h3-relight-24fps-v1');assert.equal(lineage.operation,'h3-relight');assert.deepEqual(lineage.range,request.range);
 });

@@ -1,9 +1,10 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 
 export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
-export const MAX_PREFLIGHT_INPUTS = 50;
+export const MAX_PREFLIGHT_INPUTS = 66;
 
 const modes = [
   't2v',
@@ -66,6 +67,9 @@ const persistedReferenceSchema = z.object({
 }).strict();
 
 const preflightRequestSchema = z.object({
+  sourceJobId: z.string().min(1).max(255).optional(),
+  sourceOutputId: z.string().min(1).max(255).optional(),
+  operation: z.enum(VIDEO_OPERATIONS).optional(),
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),
@@ -83,7 +87,12 @@ const preflightRequestSchema = z.object({
   inputs: z.array(persistedReferenceSchema).max(MAX_PREFLIGHT_INPUTS).optional(),
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
-}).strict();
+}).strict().superRefine((request, context) => {
+  // The transport ceiling accommodates 64 Ray keyframes plus guide/source; it does
+  // not widen Seedance's independently bounded 50-reference admission contract.
+  if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
+    context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
+});
 
 type PreflightRequestFailure = {
   ok: false;

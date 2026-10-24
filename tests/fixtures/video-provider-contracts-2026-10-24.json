@@ -1,0 +1,185 @@
+[
+  {
+    "endpoint": "fal-ai/kling-video/v2.5-turbo/pro/image-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fkling-video%2Fv2.5-turbo%2Fpro%2Fimage-to-video",
+    "checkedAt": "2026-10-23T22:44:27.167209+00:00",
+    "sha256": "cbf6c817fa1122ffdfb74019f0dbdd5ff8db01c6aa6e518ae815a3c57e4e8684",
+    "keys": [
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "image_url",
+      "negative_prompt",
+      "prompt",
+      "tail_image_url"
+    ],
+    "required": [
+      "prompt",
+      "image_url"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fkling-video%2Fv2.5-turbo%2Fpro%2Ftext-to-video",
+    "checkedAt": "2026-10-23T22:44:27.282985+00:00",
+    "sha256": "a60751dfb7e6d6395ba2b2dd49b16d95d841f60fe8d9c801546c474fb40a8c7a",
+    "keys": [
+      "aspect_ratio",
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "negative_prompt",
+      "prompt"
+    ],
+    "required": [
+      "prompt"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/kling-video/v2.5-turbo/standard/image-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fkling-video%2Fv2.5-turbo%2Fstandard%2Fimage-to-video",
+    "checkedAt": "2026-10-23T22:44:27.341838+00:00",
+    "sha256": "e32c30e54e5380f5fc69ce9072424b67a811d20c6c3169cbb495bf4a67b4e399",
+    "keys": [
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "image_url",
+      "negative_prompt",
+      "prompt"
+    ],
+    "required": [
+      "prompt",
+      "image_url"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/kling-video/v2.6/pro/image-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fkling-video%2Fv2.6%2Fpro%2Fimage-to-video",
+    "checkedAt": "2026-10-23T22:44:27.387334+00:00",
+    "sha256": "90cf0e38efa9f26f198ac48e76f0717fd980d0a051f78018d7bd7d1f6dfe49ee",
+    "keys": [
+      "duration",
+      "enable_safety_checker",
+      "end_image_url",
+      "generate_audio",
+      "negative_prompt",
+      "prompt",
+      "start_image_url",
+      "voice_ids"
+    ],
+    "required": [
+      "prompt",
+      "start_image_url"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/kling-video/v2.6/pro/text-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fkling-video%2Fv2.6%2Fpro%2Ftext-to-video",
+    "checkedAt": "2026-10-23T22:44:27.615098+00:00",
+    "sha256": "67bda98a4c63c14c0543a95cdca3dd89880d06b6504fd868eb0a7a18980ac8c8",
+    "keys": [
+      "aspect_ratio",
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "generate_audio",
+      "negative_prompt",
+      "prompt"
+    ],
+    "required": [
+      "prompt"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/ltx-2.3/audio-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fltx-2.3%2Faudio-to-video",
+    "checkedAt": "2026-10-23T22:44:28.621860+00:00",
+    "sha256": "6494eb5f740bfcba50fb6f1e05c54b01cd8dd0aa2de745cd4594d6d1afc38537",
+    "keys": [
+      "aspect_ratio",
+      "audio_url",
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_url",
+      "prompt"
+    ],
+    "required": [
+      "audio_url"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/ltx-2.3/image-to-video",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fltx-2.3%2Fimage-to-video",
+    "checkedAt": "2026-10-23T22:44:29.008798+00:00",
+    "sha256": "1284d0a4c889f386196897f063d2edf28d21843828e5270fcddc90520ae26eea",
+    "keys": [
+      "aspect_ratio",
+      "duration",
+      "enable_safety_checker",
+      "end_image_url",
+      "fps",
+      "generate_audio",
+      "image_url",
+      "prompt",
+      "resolution"
+    ],
+    "required": [
+      "prompt",
+      "image_url"
+    ]
+  },
+  {
+    "endpoint": "fal-ai/ltx-2.3/image-to-video/fast",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai%2Fltx-2.3%2Fimage-to-video%2Ffast",
+    "checkedAt": "2026-10-23T22:44:29.051331+00:00",
+    "sha256": "cf030bb78ae805fa8ab616dff76f266b57b4a5799d0500c97043923d2b27c9f9",
+    "keys": [
+      "aspect_ratio",
+      "duration",
+      "enable_safety_checker",
+      "end_image_url",
+      "fps",
+      "generate_audio",
+      "image_url",
+      "prompt",
+      "resolution"
+    ],
+    "required": [
+      "prompt",
+      "image_url"
+    ]
+  },
+  {
+    "endpoint": "lightricks/ltx-2.5/audio-to-video/fast",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks%2Fltx-2.5%2Faudio-to-video%2Ffast",
+    "checkedAt": "2026-10-23T22:44:31.880272+00:00",
+    "sha256": "5e24b8a71681050b3c0c34e40ec339c9e8f121ecc17d7ffc7f3e482c7c700d8d",
+    "keys": [
+      "aspect_ratio",
+      "audio_url",
+      "enable_safety_checker",
+      "image_url",
+      "prompt"
+    ],
+    "required": [
+      "audio_url"
+    ]
+  },
+  {
+    "endpoint": "lightricks/ltx-2.5/audio-to-video/pro",
+    "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=lightricks%2Fltx-2.5%2Faudio-to-video%2Fpro",
+    "checkedAt": "2026-10-23T22:44:31.909626+00:00",
+    "sha256": "eed48b0c5ca291c0346d7e978d7208b3f3114aeae2068481a0e1e2432e5c538d",
+    "keys": [
+      "aspect_ratio",
+      "audio_url",
+      "enable_safety_checker",
+      "image_url",
+      "prompt"
+    ],
+    "required": [
+      "audio_url"
+    ]
+  }
+]

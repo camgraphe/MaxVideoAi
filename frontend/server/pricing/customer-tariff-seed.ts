@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
 import type { EffectiveCustomerTariffBaseline, ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
+import { newVideoTariffFamily } from '@/lib/pricing-audit/video-operation-tariff-inventory';
 
 export function customerTariffCellId(scenarioId: string): string {
   return `customer:${createHash('sha256').update(scenarioId).digest('hex').slice(0, 32)}`;
@@ -29,6 +30,11 @@ export function buildCustomerTariffSeed(input: {
     selectors.add(key);
     const row = quotes.get(scenario.id);
     if (!row) throw new Error('Incomplete baseline coverage');
+    const family = newVideoTariffFamily(scenario.context);
+    if (family && (row.initialization?.kind !== 'new_offer' || row.initialization.family !== family || row.initialization.beforeCents !== null)) {
+      throw new Error('New offers require an explicit absent-before-price maintenance proposal.');
+    }
+    if (!family && row.initialization) throw new Error('Historical baseline cannot be classified as a new offer.');
     if (!Number.isSafeInteger(row.customerCents) || row.customerCents < 0 || !/^[A-Z]{3}$/.test(row.currency) ||
         row.policySource !== 'database' || !row.ruleId?.trim()) throw new Error('Invalid effective baseline amount or provenance');
     return { id: customerTariffCellId(scenario.id), source: 'database', version: 1,

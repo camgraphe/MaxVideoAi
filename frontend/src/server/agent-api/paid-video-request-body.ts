@@ -1,3 +1,5 @@
+import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { EngineCaps } from '@/types/engines';
 
@@ -177,7 +179,14 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   cropStartY: 'y_start',
   documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
+  extendDirection: 'extend_direction',
   editFace: 'edit_face',
+  editControlMode: 'edit_control_mode',
+  editPoseMode: 'edit_pose_mode',
+  editDepthMode: 'edit_depth_mode',
+  editNormalsMode: 'edit_normals_mode',
+  editTrajectoryMode: 'edit_trajectory_mode',
+  editFaceMode: 'edit_face_mode',
   editKeyframeIndexes: 'edit_keyframe_indexes',
   reasoningLevel: 'reasoning_level',
   keyframeIndexes: 'keyframe_indexes',
@@ -192,6 +201,9 @@ const EXTRA_INPUT_FIELD_BY_SETTING: Readonly<Record<string, string>> = Object.fr
   hdr: 'hdr',
   modifyStrength: 'mode',
   promptExpansionMode: 'prompt_expansion_mode',
+  enhanceRealism: 'enhance_realism',
+  middleFrameTime: 'middle_frame_time',
+  referenceOrder: 'reference_order',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
@@ -234,13 +246,24 @@ export function buildPaidVideoRequestBody(
     return { ...execution.seedanceWorkflow.body, engineId: execution.request.engineId, jobId: execution.quoteId,
       payment: { mode: 'wallet' }, membershipTier: resolvePaidMembershipTier(execution.canonicalPricing) };
   }
+  if (execution.engine) execution = { ...execution, engine: resolveVideoOperationEngine(execution.engine, toEngineGenerationMode(execution.request.engineId, execution.request.mode), execution.request.operation) };
   const settings = { ...execution.request.settings };
   if (!supportsAspectRatio(execution)) delete settings.aspectRatio;
   const multiPrompt = projectMultiPrompt(settings);
   const extraInputValues = projectExtraInputValues(settings);
-  const references = materializeReferences(execution);
+  validateOwnedKlingElements(execution.request, execution.resolvedReferences);
+  const allReferences = materializeReferences(execution);
+  const references = allReferences.filter(ref => !isElementReference(ref, execution.request.elements));
+  const elementMedia = (slot: number) => allReferences.find(ref => ref.role === 'reference' && ref.slot === slot)!;
+  const elements = execution.request.elements?.map(element => element.kind === 'video'
+    ? { videoUrl: elementMedia(element.videoSlot).url, videoAssetId: elementMedia(element.videoSlot).assetId }
+    : { frontalImageUrl: elementMedia(element.frontalSlot).url, frontalAssetId: elementMedia(element.frontalSlot).assetId,
+      referenceImageUrls: element.referenceSlots.map(slot => elementMedia(slot).url), referenceAssetIds: element.referenceSlots.map(slot => elementMedia(slot).assetId) });
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
+    ...(elements ? {elements} : {}),
+    ...(execution.request.sourceJobId ? { sourceJobId: execution.request.sourceJobId, sourceOutputId: execution.request.sourceOutputId } : {}),
+    ...(execution.request.operation ? { operation: execution.request.operation } : {}),
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
     prompt: execution.request.prompt,
     jobId: execution.quoteId,
@@ -253,7 +276,15 @@ export function buildPaidVideoRequestBody(
     inputs: [],
   };
 
+  if (execution.request.operation==='flux-draft-enhance') return body;
+  if (execution.request.engineId === 'luma-ray-3-2' && execution.request.mode === 'extend') return body;
+
   if (execution.request.mode === 't2v') {
+    if (execution.request.engineId === 'luma-ray-3-2' && references.length) {
+      if (references.some(ref => ref.kind !== 'image' || ref.role !== 'reference') || references.length > 64) invalidModeReferences();
+      body.inputs = references.map(ref => input(ref, 'keyframe_urls'));
+      return body;
+    }
     const targetAudioFieldId = activeReferenceFieldId(execution, 'audio', ['target_audio_url']);
     if (references.length) {
       if (!targetAudioFieldId || references.length !== 1
@@ -316,13 +347,16 @@ export function buildPaidVideoRequestBody(
   if (execution.request.mode === 'ref2v') {
     const start = references.filter((reference) =>
       reference.kind === 'image' && reference.role === 'first_frame');
+    const middle = references.filter(reference=>reference.kind==='image'&&reference.role==='middle_frame');
+    const middleFieldId=activeReferenceFieldId(execution,'image',['middle_image_url']);
+    if (middle.length>1 || (middle.length && !middleFieldId)) invalidModeReferences();
     const end = references.filter((reference) =>
       reference.kind === 'image' && reference.role === 'last_frame');
     const referenceMedia = references.filter((reference) => reference.role === 'reference');
     if (
       start.length > 1
       || end.length > 1
-      || start.length + end.length + referenceMedia.length !== references.length
+      || start.length + middle.length + end.length + referenceMedia.length !== references.length
     ) invalidModeReferences();
     const images = referenceMedia.filter((reference) => reference.kind === 'image').map(({ url }) => url);
     const videoReferences = referenceMedia.filter((reference) => reference.kind === 'video');
@@ -331,7 +365,7 @@ export function buildPaidVideoRequestBody(
     const audio = audioReferences.map(({ url }) => url);
     const hasDocumentReference = typeof extraInputValues.file_url === 'string'
       || typeof extraInputValues.web_url === 'string';
-    if (!referenceMedia.length && !start.length && !hasDocumentReference) invalidModeReferences();
+    if (!referenceMedia.length && !start.length && !(execution.engine.id==='minimax-h3-max' && end.length) && !hasDocumentReference) invalidModeReferences();
     if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;
@@ -353,6 +387,7 @@ export function buildPaidVideoRequestBody(
       || (audio.length && !audioFieldId)
     ) invalidModeReferences();
     body.inputs = [
+      ...(middle[0] && middleFieldId ? [input(middle[0],middleFieldId)] : []),
       ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
       ...(imageFieldId && imageFieldId !== 'image_urls'
@@ -392,7 +427,7 @@ export function buildPaidVideoRequestBody(
     const imageFieldId = activeReferenceFieldId(
       execution,
       'image',
-      ['image_url', 'edit_keyframe_urls', 'image_urls', 'reference_image_urls'],
+      ['image_url', 'edit_keyframe_urls', 'image_urls', 'reference_image_urls', 'reference_image_url'],
     );
     const audioFieldId = activeReferenceFieldId(execution, 'audio', VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio);
     if ((images.length && !imageFieldId) || (audio.length && !audioFieldId)) invalidModeReferences();

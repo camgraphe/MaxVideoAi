@@ -27,6 +27,10 @@ function normalizeResolution(value: string | null | undefined): Resolution {
 
 export function estimateLumaAgentsVideoCost(input: ProviderCostInput): ProviderCostEstimate {
   const resolution = normalizeResolution(input.resolution);
+  if (input.mode === 'extend') {
+    if (input.durationSec !== 5 || input.hdr || input.exrExport || (input.resolution != null && !['540p', '720p', '1080p'].includes(input.resolution))) return { providerCostUnits: null, providerCostUsd: null, source: 'luma_agents_pricing_unavailable' };
+    return { providerCostUnits: 1, providerCostUsd: LUMA_AGENTS_RAY_32_GENERATION_PRICE_USD[resolution]['5s'], source: 'luma_agents_extend_fixed_block_public_pricing_estimate' };
+  }
   const hdr = input.hdr === true;
   const exrExport = input.exrExport === true;
   if ((input.resolution != null && !['540p', '720p', '1080p'].includes(input.resolution))

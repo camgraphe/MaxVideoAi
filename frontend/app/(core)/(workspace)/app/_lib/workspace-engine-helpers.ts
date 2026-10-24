@@ -137,7 +137,7 @@ export function isModeValue(value: unknown): value is Mode {
 }
 
 export function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, locale?: string | null): string {
-  if (engineId === 'flux-3-max' && mode === 'ref2v') {
+  if (engineId?.startsWith('flux-3') && mode === 'ref2v') {
     return locale === 'fr' ? 'Images clés' : locale === 'es' ? 'Fotogramas clave' : 'Keyframes';
   }
   if (isHappyHorseEngineId(engineId) && mode === 'ref2v') {
@@ -157,7 +157,7 @@ export function isWorkspaceModeAvailable(engine: EngineCaps, mode: Mode): boolea
   if (engine.modeCaps && !engine.modeCaps[mode]) return false;
   if (mode === 'extend') {
     if (!engine.extend) return false;
-    return getEngineFieldsForMode(engine, mode).some((field) => field.type === 'video');
+    return getEngineFieldsForMode(engine, mode).some((field) => field.type === 'video' || field.id === 'source_job_id');
   }
   if (mode === 'ref2v') {
     return getEngineFieldsForMode(engine, mode).some((field) => field.type === 'image' || field.type === 'video');
@@ -193,7 +193,7 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
     return available.length ? available : undefined;
   }
   if (engine.id === 'ltx-2-3') {
-    const order: Mode[] = ['extend', 'retake'];
+    const order: Mode[] = ['extend', 'retake', 'reframe'];
     const available = filterAvailableWorkspaceModes(engine, order);
     return available.length ? available : undefined;
   }
@@ -229,13 +229,13 @@ export function buildComposerModeToggles({
   workflowCopy: WorkspaceWorkflowCopy;
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
-  const explicitModes: readonly Mode[] = selectedEngine.id === 'flux-3-max'
-    ? ['ref2v']
+  const explicitModes: readonly Mode[] = selectedEngine.id.startsWith('flux-3')
+    ? ['ref2v', 'v2v', 'extend']
     : isLumaRay2EngineId(selectedEngine.id) || isLumaRay32EngineId(selectedEngine.id)
-      ? ['v2v', 'reframe']
+      ? ['v2v', 'reframe', 'extend']
       : selectedEngine.id === 'veo-3-1' || selectedEngine.id === 'veo-3-1-fast'
         ? ['ref2v', 'extend']
-        : ['v2v', 'extend'];
+        : ['v2v', 'extend', 'reframe'];
   const availableModes = filterAvailableWorkspaceModes(selectedEngine, explicitModes);
   if (availableModes.length === 0) return undefined;
   const disabledReason = audioWorkflowLocked
@@ -561,6 +561,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
 
   return {
     engineId: engine.id,
+    ...(previous?.engineId === engine.id && engine.operationCaps?.[previous.operation!]?.mode === mode ? { operation: previous.operation } : !isKlingO3EngineId(engine.id) && Object.values(engine.operationCaps ?? {}).find(op => op.mode === mode && op.defaultForMode) ? {operation:Object.values(engine.operationCaps!).find(op => op.mode === mode && op.defaultForMode)!.operation} : {}),
     mode,
     durationSec: durationResult.durationSec,
     durationOption: durationResult.durationOption,

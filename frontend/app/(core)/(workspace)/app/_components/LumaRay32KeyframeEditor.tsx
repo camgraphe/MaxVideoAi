@@ -69,7 +69,7 @@ export function LumaRay32KeyframeEditor({
   disabledReason,
   uiLocale = 'en',
 }: LumaRay32KeyframeEditorProps) {
-  const isFluxMax = engine.id === 'flux-3-max';
+  const isFluxMax = engine.id.startsWith('flux-3');
   const slotIndexesFieldId = isFluxMax ? 'keyframe_slot_indexes' : 'edit_keyframe_slot_indexes';
   const indexesFieldId = isFluxMax ? 'keyframe_indexes' : 'edit_keyframe_indexes';
   const imageFieldId = isFluxMax ? 'reference_image_urls' : 'edit_keyframe_urls';
@@ -372,10 +372,10 @@ export function LumaRay32KeyframeEditor({
   const filledKeyframeCount = keyframeSlots.filter((slot) => Boolean(keyframeAssets[slot.assetSlot])).length;
 
   return (
-    <section className="space-y-4 rounded-[24px] border border-border/60 bg-surface-2/70 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
+    <section data-testid="video-keyframe-editor" data-engine-id={engine.id} className="space-y-4 rounded-[24px] border border-border/60 bg-surface-2/70 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-text-primary">{isFluxMax ? `FLUX 3 Max · ${keyframesLabel}` : 'Ray 3.2 Modify'}</p>
+          <p className="text-sm font-semibold text-text-primary">{isFluxMax ? `${engine.label} · ${keyframesLabel}` : 'Ray 3.2 Modify'}</p>
           <p className="text-xs text-text-muted">{isFluxMax ? `${durationSec}s @ ${fps}fps`
             : sourceDuration != null ? `${uiLocale === 'fr' ? 'Vidéo source' : uiLocale === 'es' ? 'Vídeo original' : 'Source video'} · ${sourceDuration}s`
             : uiLocale === 'fr' ? 'Importez une vidéo pour régler les images clés' : uiLocale === 'es' ? 'Importa un vídeo para ajustar los fotogramas clave' : 'Import a video to set keyframes'}</p>

@@ -6,7 +6,7 @@
       "description": "Compare Luma Ray 3.2 and Veo 3.1 Fast for cinematic motion, video-to-video control, reframe tools, native audio, speed, scorecard ratings and best use cases.",
       "titleBranding": "none"
     },
-    "heroIntro": "Use Luma Ray 3.2 when the creative problem is source-video control: Modify Video, Reframe, guide frames, cinematic motion preservation, and 1080p visual iteration without native audio. Use Veo 3.1 Fast when the brief needs a faster Veo-style draft, native audio options, higher delivery headroom, and premium short-form polish before moving into final production. This comparison is most useful for teams deciding whether the next pass should edit or reframe existing motion, or generate a more polished audio-ready Veo draft.",
+    "heroIntro": "Use Luma Ray 3.2 when the creative problem is source-video control: Modify Video, Reframe, guide frames, cinematic motion preservation, and 1080p visual iteration without native audio. Use Veo 3.1 Fast when the brief needs a faster Veo-style draft, native audio options, higher delivery headroom, and premium short-form polish before moving into final production. This comparison is most useful for teams deciding whether the next pass should edit or reframe existing motion, or generate a more polished audio-ready Veo draft. Ray 3.2 Extend adds five new seconds forward or backward only from an eligible owned direct Luma generation. Uploaded or copied public videos do not supply that lineage. Creation keyframes and Modify guide frames remain separate and cannot be added to Extend; automatic assembly with the original is not promised.",
     "primaryLinksTitle": "Recommended next steps",
     "primaryLinks": [
       {
@@ -37,6 +37,10 @@
         {
           "question": "Which one is better for product or ad tests?",
           "answer": "Luma Ray 3.2 is stronger when you already have source footage to modify or reframe. Veo 3.1 Fast is stronger for fresh cinematic drafts, audio-ready ad concepts, and high-polish short tests."
+        },
+        {
+          "question": "Can I extend an uploaded or public Luma clip?",
+          "answer": "Ray 3.2 Extend adds five new seconds forward or backward only from an eligible owned direct Luma generation. Uploaded or copied public videos do not supply that lineage. Creation keyframes and Modify guide frames remain separate and cannot be added to Extend; automatic assembly with the original is not promised."
         }
       ]
     }
@@ -47,7 +51,7 @@
       "description": "Comparez Luma Ray 3.2 et Veo 3.1 Fast pour le mouvement cinématographique, le contrôle vidéo-à-vidéo, le recadrage, l’audio natif, la vitesse et les usages.",
       "titleBranding": "none"
     },
-    "heroIntro": "Utilisez Luma Ray 3.2 quand le probleme creatif porte sur le controle de source video: Modify Video, Reframe, guide frames, preservation du mouvement cinematographique et iteration visuelle 1080p sans audio natif. Utilisez Veo 3.1 Fast quand le brief demande un draft plus rapide au rendu Veo, des options d audio natif, plus de marge de livraison et une finition short-form premium avant production finale. Cette comparaison aide a decider si la prochaine passe doit editer ou reframer un mouvement existant, ou generer un draft Veo plus soigne et audio-ready.",
+    "heroIntro": "Utilisez Luma Ray 3.2 quand le probleme creatif porte sur le controle de source video: Modify Video, Reframe, guide frames, preservation du mouvement cinematographique et iteration visuelle 1080p sans audio natif. Utilisez Veo 3.1 Fast quand le brief demande un draft plus rapide au rendu Veo, des options d audio natif, plus de marge de livraison et une finition short-form premium avant production finale. Cette comparaison aide a decider si la prochaine passe doit editer ou reframer un mouvement existant, ou generer un draft Veo plus soigne et audio-ready. Extend de Ray 3.2 ajoute cinq nouvelles secondes vers l’avant ou l’arrière uniquement depuis une génération Luma directe admissible de votre compte. Imports et copies publiques ne fournissent pas cette provenance. Images clés de création et images guides Modify restent distinctes et ne s’ajoutent pas à Extend ; aucun assemblage automatique avec l’original n’est promis.",
     "primaryLinksTitle": "Parcours recommande",
     "primaryLinks": [
       {
@@ -78,6 +82,10 @@
         {
           "question": "Lequel convient mieux aux tests produit ou pub ?",
           "answer": "Luma Ray 3.2 est plus fort si vous avez deja une source video a modifier ou reframer. Veo 3.1 Fast est plus fort pour de nouveaux drafts cinematographiques, concepts publicitaires audio-ready et tests courts tres soignes."
+        },
+        {
+          "question": "Puis-je prolonger un clip Luma importé ou public ?",
+          "answer": "Extend de Ray 3.2 ajoute cinq nouvelles secondes vers l’avant ou l’arrière uniquement depuis une génération Luma directe admissible de votre compte. Imports et copies publiques ne fournissent pas cette provenance. Images clés de création et images guides Modify restent distinctes et ne s’ajoutent pas à Extend ; aucun assemblage automatique avec l’original n’est promis."
         }
       ]
     }
@@ -88,7 +96,7 @@
       "description": "Compara Luma Ray 3.2 y Veo 3.1 Fast por movimiento cinematográfico, control de video a video, reencuadre, audio nativo, velocidad y mejores usos.",
       "titleBranding": "none"
     },
-    "heroIntro": "Usa Luma Ray 3.2 cuando el problema creativo es el control de video fuente: Modify Video, Reframe, guide frames, preservacion del movimiento cinematico e iteracion visual 1080p sin audio nativo. Usa Veo 3.1 Fast cuando el brief necesita un borrador mas rapido con look Veo, opciones de audio nativo, mas margen de entrega y pulido short-form premium antes de produccion final. Esta comparacion ayuda a decidir si la siguiente pasada debe editar o reframar movimiento existente, o generar un draft Veo mas pulido y audio-ready.",
+    "heroIntro": "Usa Luma Ray 3.2 cuando el problema creativo es el control de video fuente: Modify Video, Reframe, guide frames, preservacion del movimiento cinematico e iteracion visual 1080p sin audio nativo. Usa Veo 3.1 Fast cuando el brief necesita un borrador mas rapido con look Veo, opciones de audio nativo, mas margen de entrega y pulido short-form premium antes de produccion final. Esta comparacion ayuda a decidir si la siguiente pasada debe editar o reframar movimiento existente, o generar un draft Veo mas pulido y audio-ready. Extend de Ray 3.2 añade cinco segundos nuevos hacia delante o atrás solo desde una generación Luma directa elegible de tu cuenta. Importaciones y copias públicas no aportan esa procedencia. Fotogramas de creación e imágenes guía Modify siguen separados y no se añaden a Extend; no se promete montaje automático con el original.",
     "primaryLinksTitle": "Siguientes pasos recomendados",
     "primaryLinks": [
       {
@@ -119,6 +127,10 @@
         {
           "question": "Cual encaja mejor en pruebas de producto o ads?",
           "answer": "Luma Ray 3.2 es mas fuerte si ya tienes video fuente para modificar o reframar. Veo 3.1 Fast es mas fuerte para nuevos drafts cinematicos, conceptos publicitarios audio-ready y pruebas cortas muy pulidas."
+        },
+        {
+          "question": "¿Puedo extender un clip Luma importado o público?",
+          "answer": "Extend de Ray 3.2 añade cinco segundos nuevos hacia delante o atrás solo desde una generación Luma directa elegible de tu cuenta. Importaciones y copias públicas no aportan esa procedencia. Fotogramas de creación e imágenes guía Modify siguen separados y no se añaden a Extend; no se promete montaje automático con el original."
         }
       ]
     }

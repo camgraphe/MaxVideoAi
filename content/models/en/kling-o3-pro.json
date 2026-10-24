@@ -85,7 +85,7 @@
     },
     {
       "label": "Video-to-video",
-      "body": "Upload one 3-10 s source video for V2V and mention it as @Video1. Pro keeps optional @Image references for style or storyboard context, plus keep_audio when the source soundtrack should be preserved."
+      "body": "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend. Reference accepts a 3–10-second source on Standard/Pro; its requested output can be 3–15 seconds."
     },
     {
       "label": "Start frame mode",
@@ -135,7 +135,7 @@
     },
     {
       "q": "Does Kling 3.0 Omni Pro support video-to-video?",
-      "a": "Yes. Pro supports source-video V2V with one 3-10 s source clip referenced as @Video1, optional @Image references, and keep_audio for preserving the source soundtrack."
+      "a": "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend. Reference accepts a 3–10-second source on Standard/Pro; its requested output can be 3–15 seconds."
     }
   ],
   "decision": {
@@ -214,12 +214,17 @@
         "title": "Live quote",
         "body": "The app shows the exact price before generation.",
         "tone": "price"
+      },
+      {
+        "title": "Source-video Reference / Edit",
+        "body": "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend.",
+        "tone": "reference"
       }
     ],
     "decisionCards": [
       {
         "title": "O3 Pro or Kling 3 Pro?",
-        "body": "Choose O3 Pro when images are references or storyboard inputs. Choose Kling 3 Pro when an uploaded image should be the visible start frame.",
+        "body": "Choose Omni Pro for image references or source-video Reference and Edit. Kling 3 Pro focuses on text and start-image generation; its optional end frame does not make it a source-video editor.",
         "cta": {
           "label": "Compare O3 Pro vs Kling 3 Pro",
           "href": "/ai-video-engines/kling-3-pro-vs-kling-o3-pro"
@@ -227,7 +232,7 @@
       },
       {
         "title": "Need source-video guidance?",
-        "body": "Use O3 Pro or Standard for source-video V2V. Prompt with @Video1 when the source clip should control motion or camera continuity.",
+        "body": "Choose Reference for new motion guided by a video, or Edit for a change that inherits source timing and framing. Standard, Pro and Omni 4K expose their own exact settings and quotes.",
         "cta": {
           "label": "Open O3 Pro composer",
           "href": "/app?engine=kling-o3-pro"
@@ -235,7 +240,7 @@
       },
       {
         "title": "Need native 4K?",
-        "body": "Use O3 4K after the reference direction is approved. Stay on Pro while testing source-video V2V and storyboard structure.",
+        "body": "Omni 4K also has Reference and Edit. Compare exact output settings and the current quote before choosing Standard, Pro or 4K.",
         "cta": {
           "label": "View O3 4K",
           "href": "/models/kling-o3-4k"
@@ -256,8 +261,8 @@
         "body": "Add optional opening or ending frames when the first or last pose must be controlled."
       },
       {
-        "title": "Source video",
-        "body": "Use @Video1 for video-to-video motion, pacing, composition or camera continuity."
+        "title": "Source-video Reference / Edit",
+        "body": "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend. Reference accepts a 3–10-second source on Standard/Pro; its requested output can be 3–15 seconds."
       },
       {
         "title": "Reference plus V2V",
@@ -321,7 +326,8 @@
       "Use @Image1, @Image2 for images and @Video1 only for source-video V2V.",
       "When @Video1 is loaded, the workflow becomes V2V; start/end frames should not drive the shot.",
       "Keep one readable action per shot and one job per reference.",
-      "Use keep_audio only when the source soundtrack should remain."
+      "Use keep_audio only when the source soundtrack should remain.",
+      "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend."
     ],
     "engineWhy": [
       "Pro is the right route when references, storyboard, and V2V need stronger fidelity.",

@@ -4,6 +4,8 @@ import type { PricingSnapshot } from '@/types/engines';
 export type WalletReservation = 'reserve' | 'already_reserved';
 
 export type TrustedQuotedBilling = {
+  lumaSourceFingerprint?: string;
+  fluxDraftFingerprint?: string;
   pricing: PricingSnapshot;
   membershipTier: 'member' | 'plus' | 'pro';
 };

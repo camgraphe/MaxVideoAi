@@ -1,3 +1,5 @@
+import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
+import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
 import { query } from '@/lib/db';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
 import { FalGenerationError, generateVideo, type GeneratePayload, type GenerateResult } from '@/lib/fal';
@@ -135,7 +137,7 @@ export async function submitFalGenerateTask(params: {
   walletChargeReserved: boolean;
   getLastProviderJobId: () => string | null | undefined;
   setLastProviderJobId: (providerJobId: string | null) => void;
-  persistProviderJobId: (providerJobId: string) => void | Promise<void>;
+  persistProviderJobId: (providerJobId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => void | Promise<void>;
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: SubmitFalGenerateTaskDeps;
@@ -149,19 +151,26 @@ export async function submitFalGenerateTask(params: {
   let sanitize = sanitizeProviderMediaDiagnostics;
 
   try {
+    if(params.falPayload.operation==='flux-draft-enhance') {
+      const trusted=params.falPayload.trustedFluxDraftCache;
+      if(!trusted?.sourceJobId)throw new Error('Qualified Draft cache required.');
+      const current=await resolveOwnedFluxDraftSource({userId:params.userId,sourceJobId:trusted.sourceJobId,sourceOutputId:trusted.sourceOutputId});
+      if(current.fingerprint!==trusted.fingerprint)throw new Error('Draft cache changed.');
+      params={...params,falPayload:{...params.falPayload,trustedFluxDraftCache:{...trusted,url:current.cacheUrl}}};
+    }
     const transport = await createFalMediaTransport({ payload: params.falPayload, userId: params.userId });
     sanitize = transport.sanitize;
     providerSubmissionStarted = true;
     const promise = generateVideoFn(
       transport.payload,
       {
-        onRequestId: (requestId) => {
+        onRequestId: (requestId, nativeDraftSubmission) => {
           console.info('[fal] request id received', {
             jobId: params.jobId,
             engineId: params.engineId,
             requestId,
           });
-          return params.persistProviderJobId(requestId);
+          return params.persistProviderJobId(requestId, nativeDraftSubmission);
         },
         onQueueUpdate: (status) => {
           if (!status) return;

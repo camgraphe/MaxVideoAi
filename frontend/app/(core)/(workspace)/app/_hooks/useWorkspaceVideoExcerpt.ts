@@ -1,5 +1,6 @@
 'use client';
 
+import { planH3RelightCopy } from '@/lib/h3-source-operations';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import {
@@ -61,7 +62,9 @@ export function useWorkspaceVideoExcerpt({
       }
     });
   }, [inputAssets]);
-  const context = `${engine?.id ?? ''}:${mode}`;
+  const videoOperation = engine?.activeVideoOperation;
+  const compatibleCopy = videoOperation === 'flux-fast-edit' || videoOperation === 'h3-relight';
+  const context = `${engine?.id ?? ''}:${mode}:${videoOperation ?? ''}`;
   const generation = useRef({ context, valid });
   if (generation.current.context !== context || generation.current.valid !== valid)
     generation.current = { context, valid };
@@ -191,7 +194,7 @@ export function useWorkspaceVideoExcerpt({
       };
       validateVideoExcerptRange(range, original.durationSec, limits);
       // Restoring a legal full original is a source change, not another encode.
-      if (source.excerptSource && range.startSec === 0 && range.endSec === original.durationSec) {
+      if (!compatibleCopy && source.excerptSource && range.startSec === 0 && range.endSec === original.durationSec) {
         editor.current = null;
         restore(session, false, {
           ...source,
@@ -208,7 +211,7 @@ export function useWorkspaceVideoExcerpt({
       const unchanged = source.excerptRange
         ? range.startSec === source.excerptRange.startSec && range.endSec === source.excerptRange.endSec
         : range.startSec === 0 && range.endSec === original.durationSec;
-      if (unchanged) {
+      if (unchanged && !compatibleCopy) {
         cancel();
         return;
       }
@@ -229,7 +232,9 @@ export function useWorkspaceVideoExcerpt({
       }
       try {
         const result = await requestVideoExcerpt(
-          { source: original.ref, engineId: engine.id, mode, fieldId: field.id, range },
+          { source: original.ref, engineId: engine.id, mode, fieldId: field.id, range,
+            ...(videoOperation ? {operation: videoOperation} : {}),
+            ...(videoOperation === 'h3-relight' ? {acceptedCopyDurationSec:planH3RelightCopy(range.endSec-range.startSec).durationSec} : {}) },
           operation.request
         );
         if (editor.current !== session || !session.current()) return;
@@ -268,7 +273,7 @@ export function useWorkspaceVideoExcerpt({
         operation.finish();
       }
     },
-    [beginUpload, cancel, commitInputAssetMutation, engine, mode, restore]
+    [beginUpload, cancel, commitInputAssetMutation, engine, mode, restore, compatibleCopy, videoOperation]
   );
   return { handleVideoExcerptEditorChange, handlePrepareVideoExcerpt };
 }

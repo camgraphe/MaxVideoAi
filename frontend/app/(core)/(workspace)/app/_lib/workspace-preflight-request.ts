@@ -1,3 +1,4 @@
+import { filterVideoOperationValues } from '@/lib/video-operation';
 import type { EngineCaps, Mode, PreflightRequest } from '@/types/engines';
 import type { FormState } from './workspace-form-state';
 import type { ReferenceAsset } from './workspace-assets';
@@ -19,6 +20,10 @@ export function buildWorkspacePreflightRequest({
   form, selectedEngine, submissionMode, effectiveDurationSec, supportsAudioToggle,
   voiceControlEnabled, inputAssets, memberTier,
 }: WorkspacePreflightRequestOptions): PreflightRequest {
+  const extraInputValues = filterVideoOperationValues(selectedEngine, submissionMode, form.extraInputValues);
+  const allowedMedia = new Set([...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])]
+    .filter(field => !field.modes?.length || field.modes.includes(submissionMode)).map(field => field.id));
+  const quoteAssets = form.operation || selectedEngine.id === 'luma-ray-3-2' ? Object.fromEntries(Object.entries(inputAssets).filter(([field]) => allowedMedia.has(field))) : inputAssets;
   const capability = selectedEngine.modeCaps?.[submissionMode];
   // Match generation: the editor's frame clock is not an unsupported provider control.
   const shouldSendFps = !capability
@@ -45,7 +50,9 @@ export function buildWorkspacePreflightRequest({
 
   return {
     engine: form.engineId,
+    ...(form.operation ? { operation: form.operation } : {}),
     mode: submissionMode,
+    ...((form.operation === 'flux-draft-enhance' || (form.engineId === 'luma-ray-3-2' && submissionMode === 'extend')) && form.extraInputValues.source_job_id ? {sourceJobId:String(form.extraInputValues.source_job_id),...(form.extraInputValues.source_output_id ? {sourceOutputId:String(form.extraInputValues.source_output_id)} : {})} : {}),
     durationSec: effectiveDurationSec,
     ...(durationOption !== undefined && durationOption !== null ? { durationOption } : {}),
     ...(shouldSendResolution
@@ -61,8 +68,8 @@ export function buildWorkspacePreflightRequest({
     ...(voiceControlEnabled ? { voiceControl: true } : {}),
     // Max tariffs depend on mode, duration and resolution, not reference media.
     // Keep URL-only public recipes in generation without inventing owned asset IDs for a quote.
-    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(inputAssets),
-    ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
+    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(quoteAssets),
+    ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     user: { memberTier },
   };
 }

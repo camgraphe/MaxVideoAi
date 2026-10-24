@@ -1,3 +1,4 @@
+import { resolveOperationVideoSupport } from '@/lib/marketing/video-operation-specs';
 import { getFalEngineById } from '@/config/falEngines';
 import { localizeCapabilityDetail } from '@/lib/marketing/spec-capability-copy';
 import type { AppLocale } from '@/i18n/locales';
@@ -109,7 +110,7 @@ export function buildSpecValues(
     extensionDuration: extension ? `${extension.seconds.join(' / ')} s` : resolveModeSupported(entry, 'extend') === 'Not supported' ? 'Not supported' : undefined,
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(entry, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(entry, 'i2v')),
-    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(entry)),
+    videoToVideo: resolveOperationVideoSupport(getFalEngineById(entry.engineId)?.engine) ?? resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(entry)),
     firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveFirstLastSupport(entry)),
     referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveReferenceImageSupport(entry)),
     referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', resolveReferenceVideoSupport(entry)),

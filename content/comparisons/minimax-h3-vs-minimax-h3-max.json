@@ -2,19 +2,19 @@
   "slug": "minimax-h3-vs-minimax-h3-max",
   "en": {
     "meta": { "title": "MiniMax H3 Max vs H3: Scores, Speed & Specs", "description": "Compare MiniMax H3 Max and H3 for quality, speed, resolution, references and production use.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Quick verdict", "body": "Choose H3 Max for faster 768P production and strong value. Choose H3 when 2K or 4K delivery and broader final-output options matter more." },
+    "quickVerdict": { "title": "Quick verdict", "body": "Choose H3 Max for faster 768P production and strong value. Choose H3 when 2K or 4K delivery and broader final-output options matter more. H3 Max Recast and Relight are specialized source operations, separate from mixed-reference creation. Recast accepts 5–30-second sources, with each shot at most 15 seconds; Relight needs prepared 24 fps timing and alone offers 2K. New H3 Max Extend, Insert and Reframe remain pending. These operations do not transfer to H3 or older Hailuo models." },
     "primaryLinksTitle": "Explore the models",
     "primaryLinks": [{ "href": "/models/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/models/minimax-h3", "label": "MiniMax H3" }]
   },
   "fr": {
     "meta": { "title": "MiniMax H3 Max vs H3 : notes, vitesse et specs", "description": "Comparez MiniMax H3 Max et H3 sur la qualité, vitesse, résolution, références et usages.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez H3 Max pour produire plus vite en 768P avec un bon rapport qualité-prix. Choisissez H3 si la livraison 2K ou 4K et des sorties finales plus larges sont prioritaires." },
+    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez H3 Max pour produire plus vite en 768P avec un bon rapport qualité-prix. Choisissez H3 si la livraison 2K ou 4K et des sorties finales plus larges sont prioritaires. Recast et Relight de H3 Max sont des opérations spécialisées sur source, distinctes de la création avec références mixtes. Recast accepte une source de 5–30 secondes, avec des plans de 15 secondes maximum ; Relight exige une préparation à 24 i/s et propose seul le 2K. Les nouveaux H3 Max Extend, Insert et Reframe restent en attente. Ces opérations ne se transfèrent pas à H3 ni aux anciens Hailuo." },
     "primaryLinksTitle": "Explorer les modèles",
     "primaryLinks": [{ "href": "/fr/modeles/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/fr/modeles/minimax-h3", "label": "MiniMax H3" }]
   },
   "es": {
     "meta": { "title": "MiniMax H3 Max vs H3: notas, velocidad y specs", "description": "Compara MiniMax H3 Max y H3 en calidad, velocidad, resolución, referencias y usos.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige H3 Max para producir más rápido en 768P con buena relación calidad-precio. Elige H3 si priorizas entregas 2K o 4K y opciones finales más amplias." },
+    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige H3 Max para producir más rápido en 768P con buena relación calidad-precio. Elige H3 si priorizas entregas 2K o 4K y opciones finales más amplias. Recast y Relight de H3 Max son operaciones especializadas de origen, separadas de la creación con referencias mixtas. Recast acepta orígenes de 5–30 segundos, con planos de 15 segundos como máximo; Relight exige preparación a 24 fps y es el único que ofrece 2K. Los nuevos H3 Max Extend, Insert y Reframe siguen pendientes. Estas operaciones no se transfieren a H3 ni a los Hailuo anteriores." },
     "primaryLinksTitle": "Explorar los modelos",
     "primaryLinks": [{ "href": "/es/modelos/minimax-h3-max", "label": "MiniMax H3 Max" }, { "href": "/es/modelos/minimax-h3", "label": "MiniMax H3" }]
   }

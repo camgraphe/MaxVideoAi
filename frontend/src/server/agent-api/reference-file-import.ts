@@ -17,12 +17,8 @@ import {
 
 export const MAX_REFERENCE_FILES_PER_IMPORT = 8;
 
-export type HostReferenceFile = {
-  download_url: string;
-  file_id: string;
-  mime_type?: string;
-  file_name?: string;
-};
+import type { HostReferenceFile, DownloadedReferenceFile } from '@/server/bounded-media-download';
+export type { HostReferenceFile, DownloadedReferenceFile } from '@/server/bounded-media-download';
 
 export type ImportReferenceFilesInput = {
   files: HostReferenceFile[];
@@ -47,12 +43,6 @@ export type ImportReferenceFilesResult = {
   assets: ImportedReferenceAsset[];
   failures: ReferenceFileImportFailure[];
   library: AgentOpenUrlDestination;
-};
-
-export type DownloadedReferenceFile = {
-  bytes: Buffer;
-  fileName: string;
-  mimeType: string;
 };
 
 export type StoreReferenceFileInput = DownloadedReferenceFile & {

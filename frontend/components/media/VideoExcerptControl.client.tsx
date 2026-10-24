@@ -31,7 +31,7 @@ export function VideoExcerptControl({
   const copy = videoExcerptCopy(locale);
   const limits = getMediaExcerptLimits(engine, mode, field.id);
   // Retire selection even when a source changes away and later returns to the same URL.
-  useLayoutEffect(() => setSelection(null), [asset.url]);
+  useLayoutEffect(() => setSelection(null), [asset.url, engine.activeVideoOperation]);
   if (
     !limits ||
     asset.kind !== field.type ||
@@ -58,7 +58,7 @@ export function VideoExcerptControl({
       </button>
       {selected ? (
         <VideoExcerptSession
-          key={asset.url}
+          key={`${asset.url}:${engine.activeVideoOperation ?? ''}`}
           engine={engine}
           field={field}
           index={index}
@@ -106,6 +106,7 @@ function VideoExcerptSession({
   return (
     <Suspense fallback={<button type="button" onClick={onClose}>{copy.cancel}</button>}>
       <Selector
+        operation={engine.activeVideoOperation}
         mediaKind={asset.kind === 'audio' ? 'audio' : 'video'}
         previewUrl={preview.url}
         previewPending={preview.pending}

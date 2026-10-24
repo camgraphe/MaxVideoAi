@@ -273,7 +273,14 @@ export function summarizeWorkspaceInputSchema({
       }
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
         // Mode-specific definitions can share a slot; cross-mode entry still renders one picker.
-        if (assetFields.some(({ field: existing }) => existing.id === localizedField.id)) return;
+        const existingIndex = assetFields.findIndex(({ field: existing }) => existing.id === localizedField.id);
+        if (existingIndex >= 0) {
+          const existing = assetFields[existingIndex].field;
+          const priority = (candidate: EngineInputField) => !candidate.modes?.length || candidate.modes.includes(activeMode)
+            ? 2 : !isVideoSourceWorkflow(activeMode) && candidate.modes.some(mode => !isVideoSourceWorkflow(mode)) ? 1 : 0;
+          if (priority(localizedField) <= priority(existing)) return;
+          assetFields.splice(existingIndex, 1);
+        }
         if (isUnifiedKlingO3 && !isVideoSourceWorkflow(activeMode) && localizedField.id === 'start_image_url') {
           return;
         }
@@ -310,7 +317,8 @@ export function summarizeWorkspaceInputSchema({
   ingest(schema.required, 'required');
   ingest(schema.optional, 'optional');
 
-  const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : true;
+  const operationPromptRequired = selectedEngine.activeVideoOperation ? selectedEngine.operationCaps?.[selectedEngine.activeVideoOperation]?.promptRequired : undefined;
+  const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : operationPromptRequired ?? true;
   const negativePromptRequired = negativePromptField
     ? isRequired(negativePromptField, negativePromptOrigin ?? 'optional')
     : false;

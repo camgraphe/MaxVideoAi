@@ -162,7 +162,7 @@
     },
     {
       "q": "¿Veo 3.1 admite imagen→video?",
-      "a": "Sí. Google Veo 3.1 puede partir de un still en Image-to-Video, usar 1-4 imágenes de referencia en Reference-to-Video o unir una imagen inicial y un último frame."
+      "a": "Sí. Imagen a video Standard parte de una imagen y permite 4/6/8 segundos. Referencias usa 1–3 imágenes a 8 segundos; primera/última imagen es una ruta separada. Comprueba resolución y cotización de cada modo."
     },
     {
       "q": "¿Cómo uso Veo 3.1 para text-to-video?",
@@ -475,7 +475,7 @@
       },
       {
         "title": "Imagen inicial",
-        "body": "Usa una imagen fija para definir composición inicial e identidad visual."
+        "body": "Imagen a video Standard ofrece 4, 6 u 8 segundos a 720p, 1080p o 4K con o sin audio, con una cotización exacta actual. Referencias sigue a 8 segundos con 1–3 imágenes; las demás rutas conservan sus controles."
       },
       {
         "title": "Set de referencias",
@@ -568,7 +568,8 @@
       "Mantén una acción física clara y un solo movimiento de cámara por clip.",
       "Dile a Veo qué debe permanecer fijo cuando haces un puente o una extensión.",
       "Usa restricciones positivas y pistas de atmósfera concretas.",
-      "Usa referencias para estabilizar marca, personaje, producto o escenario, no para pelear contra la dirección de cámara."
+      "Usa referencias para estabilizar marca, personaje, producto o escenario, no para pelear contra la dirección de cámara.",
+      "Imagen a video Standard ofrece 4, 6 u 8 segundos a 720p, 1080p o 4K con o sin audio, con una cotización exacta actual. Referencias sigue a 8 segundos con 1–3 imágenes; las demás rutas conservan sus controles."
     ],
     "engineWhy": [
       "El text-to-video y la animación desde una sola imagen funcionan mejor cuando el brief se lee como una toma live-action.",

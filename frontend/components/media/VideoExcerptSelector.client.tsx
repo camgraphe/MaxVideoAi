@@ -1,5 +1,7 @@
 'use client';
 
+import type { VideoOperation } from '@/lib/video-operation';
+import { planH3RelightCopy } from '@/lib/h3-source-operations';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Pause, Play, Scissors, Music2, X } from 'lucide-react';
@@ -15,6 +17,7 @@ import {
 } from '@/lib/video-excerpt';
 
 export type VideoExcerptSelectorProps = {
+  operation?: VideoOperation;
   mediaKind?: 'video' | 'audio';
   previewUrl: string;
   previewPending?: boolean;
@@ -29,6 +32,7 @@ export type VideoExcerptSelectorProps = {
 
 /** Range preview is local. Only the explicit apply action may prepare owned media. */
 export function VideoExcerptSelector({
+  operation,
   mediaKind = 'video',
   previewUrl,
   previewPending = false,
@@ -69,7 +73,26 @@ export function VideoExcerptSelector({
     range.endSec <= durationSec
       ? range
       : null;
-  let valid = !previewPending && !previewError;
+  let copyPlan: ReturnType<typeof planH3RelightCopy> | undefined;
+  if (operation === 'h3-relight') {
+    try { copyPlan = planH3RelightCopy(range.endSec-range.startSec); } catch { /* range validation below */ }
+  }
+  // Presentation only: range, frame planning and the applied payload retain full precision.
+  const number = (value: number) => `${Math.abs(value - Math.round(value * 100) / 100) > 1e-10 ? '≈' : ''}${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value)}`;
+  const limitNumber = (value: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(value);
+  const minimum = operation === 'h3-relight'
+    ? (locale.startsWith('fr') ? '≥56 images à 24 images/s' : locale.startsWith('es') ? '≥56 fotogramas a 24 fps' : '≥56 frames at 24 fps')
+    : `${limitNumber(limits.minDurationSec ?? 0)} s`;
+
+  const copyNotice = copyPlan ? (locale.startsWith('fr')
+    ? `Copie à 24 images/s : sélection ${number(range.endSec-range.startSec)} s, durée réelle ${number(copyPlan.durationSec)} s (${copyPlan.frameCount} images). ${number(copyPlan.removedEndSec)} s retirée(s) à la fin. Original, cadrage et audio conservés.`
+    : locale.startsWith('es') ? `Copia a 24 fps: selección ${number(range.endSec-range.startSec)} s, duración real ${number(copyPlan.durationSec)} s (${copyPlan.frameCount} fotogramas). Se eliminan ${number(copyPlan.removedEndSec)} s del final. Se conservan el original, el encuadre y el audio.`
+    : `24 fps copy: selected ${number(range.endSec-range.startSec)} s, actual ${number(copyPlan.durationSec)} s (${copyPlan.frameCount} frames). Removes ${number(copyPlan.removedEndSec)} s from the end. Original, framing and audio are retained.`)
+    : operation === 'flux-fast-edit' ? (locale.startsWith('fr') ? 'Préparer une copie MP4 compatible, même pour la vidéo entière. L’original, le cadrage et l’audio sont conservés.'
+      : locale.startsWith('es') ? 'Preparar una copia MP4 compatible, incluso del vídeo completo. Se conservan el original, el encuadre y el audio.'
+      : 'Prepare a compatible MP4 copy, including when the whole video is selected. Original, framing and audio are retained.') : null;
+  let valid = !previewPending && !previewError && (operation !== 'h3-relight' || Boolean(copyPlan))
+    && (operation !== 'flux-fast-edit' || range.endSec - range.startSec < 15);
   try {
     validateVideoExcerptRange(range, durationSec, limits);
   } catch {
@@ -131,7 +154,7 @@ export function VideoExcerptSelector({
       >
         <header className="video-excerpt-heading">
           <div><span className="video-excerpt-eyebrow"><Scissors size={13} aria-hidden="true" />{copy.timeline}</span><h2 id={titleId}>{copy.title}</h2></div>
-          <button type="button" className="video-excerpt-close" aria-label={copy.close} onClick={onCancel}><X size={19} aria-hidden="true" /></button>
+          <button type="button" className="video-excerpt-close" data-modal-initial-focus="true" aria-label={copy.close} onClick={onCancel}><X size={19} aria-hidden="true" /></button>
         </header>
         <div className="video-excerpt-stage" style={mediaKind === 'audio' ? { aspectRatio: 'auto', height: 80, minHeight: 80 } : undefined}>
         {mediaKind === 'audio' ? <span className="video-excerpt-stage-mark" aria-hidden="true"><Music2 size={26} /></span> : null}
@@ -188,12 +211,13 @@ export function VideoExcerptSelector({
           </label>)}
           <div className="video-excerpt-duration" aria-live="polite"><span>{copy.length}</span><strong>{Number.isFinite(range.endSec-range.startSec) ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(range.endSec-range.startSec) : '—'} <small>s</small></strong></div>
         </div>
-        <p className="video-excerpt-limits">{copy.limits}: {limits.minDurationSec ?? 0}–{limits.maxDurationSec ?? '∞'} s</p>
+        <p className="video-excerpt-limits">{copy.limits}: {minimum} · {operation === 'flux-fast-edit' ? '<' : '≤'}{limits.maxDurationSec == null ? '∞' : limitNumber(limits.maxDurationSec)} s</p>
         {!valid ? <p role="alert">{copy.invalid}</p> : null}
         {error ? <p role="alert">{error}</p> : null}
+        {copyNotice ? <p data-testid="video-compatible-copy-disclosure" role="status">{copyNotice}</p> : null}
         <p id={hintId}>{copy.quote}</p>
         <div className="video-excerpt-actions">
-          <button type="button" data-modal-initial-focus="true" onClick={onCancel}>
+          <button type="button" onClick={onCancel}>
             {copy.cancel}
           </button>
           <button type="button" disabled={!valid || busy} onClick={() => void apply()}>

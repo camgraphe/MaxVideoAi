@@ -11,6 +11,9 @@ import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace
 import { CoreSettingsBar } from '../frontend/components/CoreSettingsBar';
 import type { ComposerProps } from '../frontend/components/Composer';
 
+import {coerceFormState} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import {resolveVideoOperationEngine} from '../frontend/lib/video-operation';
+import {OwnedGenerationSourcePicker} from '../frontend/app/(core)/(workspace)/app/_components/OwnedGenerationSourcePicker.client';
 const noop = () => {};
 for (const { id } of listFalEngines().filter(entry => entry.modes.some(({ mode }) => mode === 'v2v'))) {
   test(`${id}: Modify puts its source first and preserves every supported reference`, async () => {
@@ -26,8 +29,9 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(({ mode }
     for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
     dom.window.HTMLElement.prototype.getClientRects = function () { return [{ width: 44, height: 44 }] as unknown as DOMRectList; };
     const entry = listFalEngines().find(entry => entry.id === id)!;
-    const engine = entry.engine;
-    const caps = entry.modes.find(({ mode }) => mode === 'v2v')!.ui;
+    const form=coerceFormState(entry.engine,'v2v',null);
+    const engine = resolveVideoOperationEngine(entry.engine,'v2v',form.operation);
+    const caps = engine.modeCaps?.v2v ?? entry.modes.find(({mode})=>mode==='v2v')!.ui;
     const summary = summarizeWorkspaceInputSchema({ selectedEngine: engine, activeMode: 'v2v',
       allowsUnifiedVeoFirstLast: id.startsWith('veo'), isUnifiedHappyHorse: id === 'happy-horse-1-0',
       isUnifiedSeedance: id.startsWith('seedance'), isUnifiedGeminiOmni: id === 'gemini-omni-flash', uiLocale: 'en' });
@@ -42,6 +46,7 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(({ mode }
       React.createElement(I18nProvider, { locale: 'en', dictionary: {} as Dictionary, fallback: {} as Dictionary,
         children: React.createElement(Composer, { density: 'workspace', engine, caps, activeManualMode: 'v2v',
           prompt: '', onPromptChange: noop, price: null, currency: 'USD', isLoading: false, error,
+          beforeAssets: id==='flux-3-draft' ? React.createElement(OwnedGenerationSourcePicker,{account:null,operation:'flux-draft-enhance',sourceJobId:'',locale:'en',onSelect:noop}) : undefined,
           promptRequired: summary.promptRequired, assetFields: summary.assetFields, assets, settingsBar: settings,
           onGenerate: noop, onAssetRemove: noop, onOpenLibrary: (field, index) => libraryCalls.push([field.id, index]) }),
       }),
@@ -49,6 +54,14 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(({ mode }
     try {
       await render();
       const doc = dom.window.document;
+      if(id==='flux-3-draft'){
+        assert.ok(doc.querySelector('[data-testid="owned-generation-source-picker"]'),'Enhance uses the owned native Draft picker');
+        assert.equal(summary.assetFields.some(({field})=>field.type==='video'),false);
+        assert.equal(doc.querySelector('input[type="file"]'),null,'no arbitrary video upload for Enhance');
+        // Owned-source and exact quote admission belong to WorkspaceComposerSurface;
+        // seedance-edit-workspace-browser covers that real surface, including zero-cent quotes.
+        return;
+      }
       assert.match(doc.body.textContent ?? '', /Upload the video to modify.*calculate the price/);
       assert.equal(doc.querySelector('[role="alert"]'), null);
       assert.match(doc.querySelector('.app-generation-quote > .relative')?.textContent ?? '', /Add a video/);

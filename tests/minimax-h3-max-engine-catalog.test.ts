@@ -16,7 +16,7 @@ function field(id: string) {
     ...(entry.engine.inputSchema?.required ?? []),
     ...(entry.engine.inputSchema?.optional ?? []),
   ];
-  const match = fields.find((candidate) => candidate.id === id);
+  const match = fields.find((candidate) => candidate.id === id && candidate.modes?.some(mode => mode !== 'v2v'));
   assert.ok(match, `MiniMax H3 Max field ${id} should exist`);
   return match;
 }
@@ -26,7 +26,7 @@ test('MiniMax H3 Max keeps its documented runtime identity and capabilities sepa
   assert.equal(entry.id, 'minimax-h3-max');
   assert.equal(entry.marketingName, 'MiniMax H3 Max');
   assert.equal(entry.provider, 'MiniMax');
-  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v']);
   assert.deepEqual(entry.engine.resolutions, ['480P', '768P', '1080P']);
   assert.deepEqual(entry.engine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16', 'auto']);
   assert.equal(entry.engine.maxDurationSec, 15);
@@ -37,6 +37,7 @@ test('MiniMax H3 Max keeps its documented runtime identity and capabilities sepa
       t2v: 'minimax/h3-max/text-to-video',
       i2v: 'minimax/h3-max/image-to-video',
       ref2v: 'minimax/h3-max/reference-to-video',
+      v2v: 'minimax/h3-max/recast',
     },
   );
   assert.equal(RAW_FAL_ENGINE_REGISTRY.some(({ id }) => id === 'minimax-h3'), true);

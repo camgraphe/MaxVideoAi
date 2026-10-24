@@ -1,3 +1,7 @@
+import { qualifyFluxLtxSourceReference } from './flux-ltx-source-reference';
+import { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
+import { qualifyH3SourceReference } from './h3-source-reference';
+import { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPrincipal } from './principal';
 import { requireOAuthGenerationActor, type GenerationActor } from './generation-actor';
@@ -24,6 +28,8 @@ export function assertGenerationReferenceUrls(request: CanonicalGenerationReques
 }
 
 export type ResolveGenerationReferencesDependencies = {
+  inspectFluxLtxSource?: typeof inspectOwnedFluxLtxSource;
+  inspectH3Source?: typeof inspectOwnedH3Source;
   resolveOwnedReferenceAsset(
     principal: GenerationActor,
     assetId: string,
@@ -43,7 +49,10 @@ export async function resolveGenerationReferencesForActor(
   for (const reference of request.references) {
     if (reference.kind !== 'asset') continue;
     const asset = await dependencies.resolveOwnedReferenceAsset(principal, reference.assetId);
-    resolved.push({ ...asset, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) });
+    const referenceFacts = { ...asset, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) };
+    resolved.push(request.engineId === 'minimax-h3-max'
+      ? await qualifyH3SourceReference(referenceFacts, request.operation, principal.userId, dependencies.inspectH3Source)
+      : await qualifyFluxLtxSourceReference(referenceFacts,request.operation,principal.userId,dependencies.inspectFluxLtxSource));
   }
   return resolved;
 }

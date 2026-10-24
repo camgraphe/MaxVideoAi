@@ -44,6 +44,7 @@ export type CanonicalGenerationReferenceRole =
   | 'source'
   | 'reference'
   | 'first_frame'
+  | 'middle_frame'
   | 'last_frame'
   | 'mask';
 
@@ -77,6 +78,10 @@ export type SeedanceGenerationWorkflow = { step: 'draft' } | { step: 'final'; dr
 
 export type CanonicalGenerationRequest = {
   schemaVersion: 1;
+  sourceJobId?: string;
+  sourceOutputId?: string;
+  elements?: import('@/lib/kling-owned-elements').KlingOwnedElements;
+  operation?: import('@/lib/video-operation').VideoOperation;
   surface: CanonicalGenerationSurface;
   engineId: string;
   mode: CanonicalGenerationMode;

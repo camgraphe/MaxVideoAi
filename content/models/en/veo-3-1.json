@@ -163,7 +163,7 @@
     },
     {
       "q": "Does Veo 3.1 support image-to-video?",
-      "a": "Yes. Google Veo 3.1 can start from a single still in Image-to-Video, use 1-4 reference stills in Reference-to-Video, or bridge a start and last frame."
+      "a": "Yes. Standard image-to-video starts from one still with 4/6/8-second choices. Reference-to-video uses 1–3 stills at 8 seconds; first/last-frame is a separate route. Check each mode’s resolution and quote."
     },
     {
       "q": "How do I use Veo 3.1 for text-to-video?",
@@ -476,7 +476,7 @@
       },
       {
         "title": "Start image",
-        "body": "Use one still to define the opening composition and visual identity."
+        "body": "Standard image-to-video offers 4, 6 or 8 seconds at 720p, 1080p or 4K with audio off or on, subject to a current exact quote. Reference-to-video stays at 8 seconds and uses 1–3 stills; other routes keep their own controls."
       },
       {
         "title": "Reference set",
@@ -569,7 +569,8 @@
       "Keep one clear physical action and one camera move per clip.",
       "Tell Veo what must stay fixed when you bridge or extend a shot.",
       "Use positive constraints and concrete atmosphere cues.",
-      "Use references to stabilize brand, wardrobe, product, or setting, not to fight the camera direction."
+      "Use references to stabilize brand, wardrobe, product, or setting, not to fight the camera direction.",
+      "Standard image-to-video offers 4, 6 or 8 seconds at 720p, 1080p or 4K with audio off or on, subject to a current exact quote. Reference-to-video stays at 8 seconds and uses 1–3 stills; other routes keep their own controls."
     ],
     "engineWhy": [
       "Text-to-video and single-image animation work best when the brief reads like a live-action shot.",

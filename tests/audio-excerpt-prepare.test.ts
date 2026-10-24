@@ -74,3 +74,11 @@ test('full audio preview requires ownership and matching kind', async () => {
   await assert.rejects(readMediaExcerptSource('owner', { source }, 'video', access));
   await assert.rejects(readMediaExcerptSource('other', { source }, 'audio', { ...access, resolve: async () => { throw new Error('MEDIA_NOT_AVAILABLE'); } }));
 });
+
+test('audio excerpt optional operation rejects unknown or inapplicable intent without changing omitted legacy lineage',async()=>{
+ for(const operation of [null,'unknown','kling-reference','flux-draft-enhance']){
+  const {state,deps}=setup();await assert.rejects(prepareAudioExcerpt('owner',{...input,operation},deps));assert.equal(state.downloads,0);
+ }
+ const {state,deps}=setup();await prepareAudioExcerpt('owner',input,deps);
+ assert.equal(Object.hasOwn(state.stored[0].metadata.audioExcerpt,'operation'),false);
+});

@@ -1,3 +1,8 @@
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { validateLumaCanonicalShape } from './generation-luma-shape';
+import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { videoDurationPolicy, videoInheritsSourceFraming } from '@/lib/video-workflow-capabilities';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, LUMA_MODIFY_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import {
@@ -60,7 +65,14 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   cropStartY: 'y_start',
   documentUrl: 'file_url',
   editDepthBlur: 'edit_depth_blur',
+  extendDirection: 'extend_direction',
   editFace: 'edit_face',
+  editControlMode: 'edit_control_mode',
+  editPoseMode: 'edit_pose_mode',
+  editDepthMode: 'edit_depth_mode',
+  editNormalsMode: 'edit_normals_mode',
+  editTrajectoryMode: 'edit_trajectory_mode',
+  editFaceMode: 'edit_face_mode',
   editKeyframeIndexes: 'edit_keyframe_indexes',
   reasoningLevel: 'reasoning_level',
   keyframeIndexes: 'keyframe_indexes',
@@ -77,6 +89,9 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   multiPrompt: 'multi_prompt',
   negativePrompt: 'negative_prompt',
   promptExpansionMode: 'prompt_expansion_mode',
+  enhanceRealism: 'enhance_realism',
+  middleFrameTime: 'middle_frame_time',
+  referenceOrder: 'reference_order',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
@@ -189,6 +204,7 @@ function validateVideoModeCaps(
   caps: EngineModeUiCaps,
   candidate: AgentPublicGenerationEngine,
 ): void {
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
   const duration = request.settings.durationSec;
   if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
@@ -395,7 +411,7 @@ function validateDerivedSourceFacts(
         || typeof resolved.durationSec !== 'number'
       ) fail('references', 'reference_invalid');
       if (
-        (request.mode === 'a2v' || (request.mode === 'reframe' && request.engineId !== 'luma-ray-3-2'))
+        (request.mode === 'a2v' || (request.mode === 'reframe' && request.engineId !== 'luma-ray-3-2' && request.operation!=='ltx23-reframe'))
         && request.settings.durationSec !== Math.max(1, Math.ceil(resolved.durationSec))
       ) fail('durationSec');
       if (request.mode === 'retake') {
@@ -477,6 +493,9 @@ function validateVideoExecutionConstraints(
   options: GenerationCapabilityValidationOptions,
 ): void {
   const payload = buildProviderConstraintPayload(request, candidate, options);
+  // Asset modality is unavailable during initial canonical ingress. Keep all other
+  // validation active; check the complete permutation after owned facts resolve.
+  if (request.engineId === 'minimax-h3-max' && request.references.some(reference => !resolvedMediaKind(reference, options))) delete payload.reference_order;
   const provider = validateProviderSpecificConstraints({
     engineId: request.engineId,
     normalizedMode: toEngineGenerationMode(request.engineId, request.mode),
@@ -547,7 +566,7 @@ function fieldIdsForRole(
   role: CanonicalGenerationReference['role'],
 ): readonly string[] {
   if (request.mode === 't2v') {
-    return role === 'reference' ? ['target_audio_url'] : [];
+    return role === 'reference' ? ['target_audio_url', 'keyframe_urls'] : [];
   }
   if (request.mode === 'i2v' || request.mode === 'i2v_standard') {
     if (role === 'source') return ['image_url', 'start_image_url', 'first_frame_url'];
@@ -556,6 +575,7 @@ function fieldIdsForRole(
     return role === 'reference' ? ['image_urls', 'reference_image_urls', 'target_audio_url'] : [];
   }
   if (request.mode === 'ref2v') {
+    if (role === 'middle_frame') return ['middle_image_url'];
     if (role === 'first_frame') return ['start_image_url', 'image_url'];
     if (role === 'last_frame') return ['end_image_url'];
     return role === 'reference'
@@ -584,6 +604,7 @@ function fieldIdsForRole(
         'edit_keyframe_urls',
         'image_urls',
         'reference_image_urls',
+        'reference_image_url',
         'audio_urls',
         'reference_audio_urls',
       ]
@@ -707,6 +728,7 @@ function validateTrustedReferenceDuration(
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
       : undefined;
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
   const exclusiveMaximum =
     requestModeForExclusiveDuration(candidate, field);
   const sourcePlusOutputMaximum = field.id === 'video_url'
@@ -904,7 +926,7 @@ function validateReferences(
     request.references.flatMap((reference) =>
       fieldsForReference(request, candidate, reference, null)),
   );
-  for (const role of ['source', 'reference', 'first_frame', 'last_frame', 'mask'] as const) {
+  for (const role of ['source', 'reference', 'first_frame', 'middle_frame', 'last_frame', 'mask'] as const) {
     const placeholder: CanonicalGenerationReference = {
       kind: 'asset',
       assetId: 'capability-placeholder',
@@ -962,6 +984,13 @@ export function validateCanonicalGenerationCapabilities(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions = {},
 ): void {
+  try {
+    const engine = resolveVideoOperationEngine(candidate.engine, request.mode as Mode, request.operation);
+    if (engine !== candidate.engine) {
+      const mode = request.mode as Mode;
+      candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, [request.mode]: engine.modeCaps?.[mode] } };
+    }
+  } catch { fail('operation'); }
   if (
     candidate.engine.id !== request.engineId
     || candidate.surface !== request.surface
@@ -977,9 +1006,19 @@ export function validateCanonicalGenerationCapabilities(
   }
   const modeCaps = candidate.modeCaps[request.mode];
   if (!modeCaps) fail('mode');
+  if (['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(request.operation??'') && request.prompt.trim()) fail('prompt');
+  if (request.operation === 'h3-recast' && request.prompt.length>2000) fail('prompt');
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
-  validateReferences(request, candidate, options);
-  validateDerivedSourceFacts(request, candidate, options);
-  if (request.surface === 'video') validateVideoExecutionConstraints(request, candidate, options);
+  try { validateOwnedKlingElements(request, options.resolvedReferences); } catch { fail('elements', 'reference_invalid'); }
+  const ordinaryRequest = request.engineId === 'luma-ray-3-2' && request.mode === 'extend' ? { ...request, references: [] } : request.elements ? { ...request, references: request.references.filter(ref => !isElementReference(ref, request.elements)) } : request;
+  const ordinaryOptions = request.elements && options.resolvedReferences ? { ...options, resolvedReferences: options.resolvedReferences.filter(ref => !isElementReference(ref, request.elements)) } : options;
+  validateReferences(ordinaryRequest, candidate, ordinaryOptions);
+  validateDerivedSourceFacts(ordinaryRequest, candidate, ordinaryOptions);
+  if (request.surface === 'video') validateVideoExecutionConstraints(ordinaryRequest, candidate, ordinaryOptions);
+  if (request.engineId === 'luma-ray-3-2') {
+    try { validateLumaCanonicalShape(request, Object.fromEntries(Object.entries(request.settings)
+      .map(([key, value]) => [VIDEO_FIELD_BY_SETTING[key] ?? key, value]))); }
+    catch { fail('settings'); }
+  }
 }

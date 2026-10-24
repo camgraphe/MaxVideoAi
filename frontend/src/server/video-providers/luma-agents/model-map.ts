@@ -42,7 +42,7 @@ export function isLumaAgentsVideoModeSupported(
   mode: Mode | string
 ): boolean {
   if (isLumaRay32PublicMode(mode)) return true;
-  return mode === 'v2v' || mode === 'reframe';
+  return mode === 'v2v' || mode === 'reframe' || mode === 'extend';
 }
 
 export function resolveLumaAgentsModelRoute(params: {
@@ -115,7 +115,7 @@ function hasAdvancedDirectOnlyRequest(params: {
   hdrRequested: boolean;
   exrRequested: boolean;
 }): boolean {
-  return params.mode === 'v2v' || params.mode === 'reframe' || params.hdrRequested || params.exrRequested;
+  return params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend' || params.hdrRequested || params.exrRequested;
 }
 
 export function resolveLumaAgentsVideoSupport(params: {
@@ -137,7 +137,7 @@ export function resolveLumaAgentsVideoSupport(params: {
     hdrRequested,
     exrRequested,
   });
-  const unsupportedFallbackCompatible = advancedDirectOnlyRequest ? false : route.fallbackCompatible;
+  const unsupportedFallbackCompatible = (advancedDirectOnlyRequest || params.falPayload.inputs?.some(input => input.slotId === 'keyframe_urls')) ? false : route.fallbackCompatible;
 
   if (!isLumaAgentsVideoModeSupported(params.mode)) {
     return { supported: false, route, reason: 'unsupported_mode', fallbackCompatible: unsupportedFallbackCompatible };

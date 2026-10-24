@@ -152,6 +152,7 @@ export type AgentModelDurationDetails = Readonly<{
 
 export type AgentModelReferenceFieldDetails = Readonly<{
   type: 'image' | 'video' | 'audio';
+  description?: string;
   roles: readonly CanonicalGenerationReferenceRole[];
   assetRequired: boolean;
   maxSizeMB?: number;
@@ -200,6 +201,10 @@ export type AgentModelImageSizeConstraints = Readonly<{
 }>;
 
 export type AgentModelModeDetails = Readonly<{
+  sourceGeneration?: Readonly<{ required: true; requestField: 'sourceJobId'; outputField: 'sourceOutputId';
+    studioReferenceRole: 'source'; description: string; outputAssembly: 'unverified' }>;
+
+  operations?: readonly (AgentModelModeDetails & { operation: import('@/lib/video-operation').VideoOperation; label: string; promptRequired: boolean })[];
   mode: AgentGenerationMode;
   editorialPreference?: import('@/lib/video-workflow-review').VideoWorkflowPreference;
   notices?: readonly import('@/lib/video-workflow-capabilities').VideoWorkflowNotice[];

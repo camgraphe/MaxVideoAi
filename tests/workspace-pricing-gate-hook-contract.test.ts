@@ -60,8 +60,11 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /buildWorkspacePreflightRequest/);
   assert.doesNotMatch(hookSource, /runPreflight|buildWorkspacePreflightInputs/);
   assert.match(requestSource, /import \{ buildWorkspacePreflightInputs \} from '\.\/workspace-generation-inputs';/);
-  assert.match(requestSource, /buildWorkspacePreflightInputs\(inputAssets\)/);
+  assert.match(requestSource, /buildWorkspacePreflightInputs\(quoteAssets\)/);
   assert.match(requestSource, /workspaceModeSupportsRequestField/);
+  assert.match(requestSource, /const quoteAssets = form\.operation \|\| selectedEngine\.id === 'luma-ray-3-2'/);
+  assert.match(requestSource, /allowedMedia\.has\(field\)/);
+  assert.match(requestSource, /: inputAssets;/);
   assert.doesNotMatch(requestSource, /iterations|runPreflight|useEffect/);
   assert.match(quoteSource, /runPreflight\(payload, \{ accessToken \}\)/);
   assert.doesNotMatch(quoteSource, /useHostedWalletCheckout|authFetch|setMemberTier|setTopUpModal/);

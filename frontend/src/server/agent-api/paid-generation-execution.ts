@@ -27,6 +27,7 @@ import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
 import type { ResolvedReference } from './reference-types';
 import { stableJson } from './generation-normalization';
+import { operationReservationDuration } from './operation-reservation-duration';
 import {
   buildPaidVideoRequestBody,
   resolvePaidMembershipTier,
@@ -41,6 +42,8 @@ export type {
 } from './included-trial-generation-execution';
 
 export type PaidGenerationExecution = {
+  lumaSourceFingerprint?: string;
+  fluxDraftFingerprint?: string;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   surface: 'video' | 'image';
   quoteId: string;
@@ -172,7 +175,7 @@ function videoInitialParams(
   pricing: Record<string, unknown>,
 ): CreateVideoInitialJobParams {
   const { quote, candidate } = input;
-  const durationSec = quote.request.settings.durationSec;
+  const durationSec = operationReservationDuration(quote.request,input.pricingSnapshot,pricing) ?? quote.request.settings.durationSec;
   if (!Number.isSafeInteger(durationSec) || (durationSec as number) < 1) {
     throw new Error('Invalid reserved video duration.');
   }
@@ -316,6 +319,8 @@ export async function reservePaidGenerationInitialJob(
         resolvedReferences: input.resolvedReferences ?? [],
         engine: input.candidate.engine,
         canonicalPricing: pricing,
+        fluxDraftFingerprint: (input.pricingSnapshot.fluxDraftSource as {fingerprint?:string}|undefined)?.fingerprint,
+        lumaSourceFingerprint: (input.pricingSnapshot.lumaSource as { fingerprint?: string } | undefined)?.fingerprint,
         trustedInitialState: {
           kind: 'created',
           jobId: input.quote.quoteId,
@@ -435,6 +440,8 @@ export async function submitReservedPaidGeneration(
 ): Promise<PaidGenerationProviderOutcome> {
   const trustedQuotedBilling: TrustedQuotedBilling = {
     pricing: execution.canonicalPricing as unknown as PricingSnapshot,
+    lumaSourceFingerprint: execution.lumaSourceFingerprint,
+    fluxDraftFingerprint: execution.fluxDraftFingerprint,
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
   };
   const body = paidRequestBody(execution);

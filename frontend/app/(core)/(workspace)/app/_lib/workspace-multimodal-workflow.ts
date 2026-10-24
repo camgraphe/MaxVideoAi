@@ -30,9 +30,7 @@ export function workspaceAssetsSupportMode(
 /** Infer from the actual slots: reference videos are not source videos, and a soundtrack is not a2v. */
 export function resolveMultimodalReferenceMode(engine: EngineCaps, inputAssets: InputAssets): Mode | null {
   const fields = getWorkspaceMediaFields(engine);
-  const populatedFields = fields.filter((field) =>
-    (inputAssets[field.id] ?? []).some((asset) => asset?.kind === field.type));
   const preference: Mode[] = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'];
   return preference.find((mode) => engine.modes.includes(mode)
-    && populatedFields.every((field) => fieldAcceptsMode(field, mode))) ?? null;
+    && workspaceAssetsSupportMode(fields, inputAssets, mode)) ?? null;
 }

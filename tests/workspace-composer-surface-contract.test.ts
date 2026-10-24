@@ -45,6 +45,7 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.doesNotMatch(appSource, /getLocalizedModeLabel/);
 
   assert.match(surfaceSource, /export function WorkspaceComposerSurface/);
+  assert.match(surfaceSource, /supportsVideoCfgScaleControl\(selectedEngine, submissionMode\) \|\|/);
   assert.match(surfaceSource, /<Composer\b/);
   assert.match(surfaceSource, /<SettingsControls\b/);
   assert.match(surfaceSource, /<CoreSettingsBar\b/);

@@ -6,8 +6,8 @@
     "description": "Use Luma Ray 3.2 in MaxVideoAI for source-video Modify, AI video Reframe, keyframed guide frames, silent 5s/10s video, prompts, examples and pricing.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 3.2 is best positioned in MaxVideoAI as an editing-first Luma video route: Modify an existing source clip, steer selected moments with guide frames or keyframes, and Reframe approved footage into new aspect ratios. Text-to-video and image-to-video remain available for short Luma motion tests, but Ray 3.2 does not generate native audio or lip sync.",
-  "pricingNotes": "All Ray 3.2 routes keep the MaxVideoAI customer quote aligned to the Fal reference price plus the configured margin, including Modify and Reframe. Internal routing does not change the client-facing price shown before generation.",
+  "overview": "Luma Ray 3.2 is best positioned in MaxVideoAI as an editing-first Luma video route: Modify an existing source clip, steer selected moments with guide frames or keyframes, and Reframe approved footage into new aspect ratios. Text-to-video and image-to-video remain available for short Luma motion tests, but Ray 3.2 does not generate native audio or lip sync. Extend adds five new seconds forward or backward from an eligible owned direct Luma generation; uploads cannot provide that lineage.",
+  "pricingNotes": "Generation, Modify and Reframe retain their existing quote rules. Direct-only Extend has its own quote for five new seconds. Review the current MaxVideoAI total before each operation; a supplier reference rate is not the customer price.",
   "hero": {
     "title": "Luma Ray 3.2 - Modify and Reframe for current Luma video",
     "intro": "Start from a source video when timing already works, then use Ray 3.2 Modify to change the look or guided moments, or Reframe to create vertical, square, landscape and ultrawide delivery cuts. Prompt-only and start-image generation stay available for short silent motion tests.",
@@ -64,7 +64,7 @@
     },
     {
       "label": "Duration",
-      "body": "5s or 10s generation; source-video intake up to the configured clip limit for Modify/Reframe"
+      "body": "Text/image generation uses 5s or 10s where the selected settings permit it. Modify accepts source clips up to 18s with source-derived timing; Reframe accepts up to 10s with its separate 5s/10s output choice. Extend bills five new seconds, not the full returned artifact."
     },
     {
       "label": "Resolution",
@@ -76,7 +76,7 @@
     },
     {
       "label": "Guides",
-      "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify"
+      "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify. Creation also accepts up to 64 ordered keyframe images with unique nonnegative integer indexes; these are separate from Modify keyframes."
     },
     {
       "label": "Source video",
@@ -84,7 +84,7 @@
     },
     {
       "label": "Pricing",
-      "body": "Generation, Modify and Reframe use the same Fal-reference customer quote logic with MaxVideoAI margin"
+      "body": "Generation, Modify and Reframe retain their existing quote rules. Direct-only Extend has its own quote for five new seconds. Review the current MaxVideoAI total before each operation; a supplier reference rate is not the customer price."
     }
   ],
   "promptStructure": {
@@ -134,7 +134,7 @@
   "faqs": [
     {
       "q": "What does Luma Ray 3.2 support in MaxVideoAI?",
-      "a": "The model page focuses on source-video Modify, Reframe, guide/keyframe editing, plus short text-to-video and image-to-video when you need a new silent Luma clip."
+      "a": "The model page focuses on source-video Modify, Reframe, guide/keyframe editing, plus short text-to-video and image-to-video when you need a new silent Luma clip. Extend adds five new seconds forward or backward from an eligible completed Ray 3.2 generation in your account. It requires the original direct Luma lineage; an upload or public MP4 copy cannot replace it. No extra keyframes or automatic assembly with the original are promised."
     },
     {
       "q": "When is Ray 3.2 the strongest choice?",
@@ -196,7 +196,7 @@
       "Silent output||Ray 3.2 is video-only in MaxVideoAI, so audio is planned downstream."
     ],
     "specTitle": "Ray 3.2 specs",
-    "specNote": "Specs describe the MaxVideoAI Ray 3.2 surface for generation, Modify and Reframe.",
+    "specNote": "Generation settings and source-operation limits differ. Extend requires eligible owned generation lineage and its own exact quote.",
     "specSections": [
       {
         "title": "Edit and reframe surface",
@@ -208,7 +208,7 @@
           "Reframe for aspect-ratio delivery variants.",
           "Text-to-video for prompt-only silent motion tests.",
           "Image-to-video when one opening still should anchor the clip.",
-          "5s and 10s durations.",
+          "Text/image generation uses 5s or 10s where the selected settings permit it. Modify accepts source clips up to 18s with source-derived timing; Reframe accepts up to 10s with its separate 5s/10s output choice. Extend bills five new seconds, not the full returned artifact.",
           "540p, 720p and 1080p output choices."
         ]
       },
@@ -217,8 +217,8 @@
         "items": [
           "MaxVideoAI keeps Ray 3.2 requests on supported settings.",
           "Provider capacity can vary during peak usage.",
-          "All Ray 3.2 public modes keep the Fal-reference customer quote with margin.",
-          "Internal routing does not change the price shown to the client."
+          "Generation, Modify and Reframe retain their existing quote rules. Direct-only Extend has its own quote for five new seconds. Review the current MaxVideoAI total before each operation; a supplier reference rate is not the customer price.",
+          "Generation settings and source-operation limits differ. Extend requires eligible owned generation lineage and its own exact quote."
         ]
       }
     ],
@@ -231,7 +231,7 @@
       "Upload one source video for Modify or Reframe.",
       "For Modify, add a guide frame or indexed keyframes when specific moments need direction.",
       "For Reframe, choose the target ratio and subject priority.",
-      "Set duration to 5s or 10s where the mode supports it.",
+      "Text/image generation uses 5s or 10s where the selected settings permit it. Modify accepts source clips up to 18s with source-derived timing; Reframe accepts up to 10s with its separate 5s/10s output choice. Extend bills five new seconds, not the full returned artifact.",
       "Choose 540p, 720p or 1080p.",
       "Use prompt-only or a start image only when generating a new clip.",
       "Review the exact price and generate."
@@ -249,7 +249,8 @@
       "Resolution choices are 540p, 720p and 1080p.",
       "Ray 3.2 output is silent in MaxVideoAI.",
       "It is not positioned as the best all-purpose choice when native audio, dialogue or lip sync is required.",
-      "Provider capacity can vary during peak usage."
+      "Provider capacity can vary during peak usage.",
+      "Extend adds five new seconds forward or backward from an eligible completed Ray 3.2 generation in your account. It requires the original direct Luma lineage; an upload or public MP4 copy cannot replace it. No extra keyframes or automatic assembly with the original are promised."
     ],
     "safetyTitle": "Safety and likeness",
     "safetyRules": [
@@ -272,7 +273,7 @@
         "Reframe",
         "silent video outputs"
       ],
-      "paragraph": "Use Ray 3.2 when a source clip already has usable timing: change the visual treatment with Modify, guide selected moments with a frame or keyframes, or Reframe the approved shot into new delivery ratios. Text-to-video and image-to-video remain useful supporting routes for short silent Luma motion tests.",
+      "paragraph": "Use Ray 3.2 when a source clip already has usable timing: change the visual treatment with Modify, guide selected moments with a frame or keyframes, or Reframe the approved shot into new delivery ratios. Text-to-video and image-to-video remain useful supporting routes for short silent Luma motion tests. Extend adds five new seconds forward or backward from an eligible owned direct Luma generation; uploads cannot provide that lineage.",
       "primaryCta": {
         "label": "Generate with Luma Ray 3.2",
         "href": "/app?engine=luma-ray-3-2"
@@ -337,6 +338,11 @@
         "title": "Silent by design",
         "body": "Ray 3.2 outputs video only in MaxVideoAI; add music, voice or sound design later.",
         "tone": "price"
+      },
+      {
+        "title": "Extend",
+        "body": "Extend adds five new seconds forward or backward from an eligible completed Ray 3.2 generation in your account. It requires the original direct Luma lineage; an upload or public MP4 copy cannot replace it. No extra keyframes or automatic assembly with the original are promised.",
+        "tone": "duration"
       }
     ],
     "decisionCards": [
@@ -368,7 +374,7 @@
     "referenceWorkflows": [
       {
         "title": "Source video",
-        "body": "Upload a clean MP4, MOV or WebM clip when Modify or Reframe should preserve source timing."
+        "body": "Text/image generation uses 5s or 10s where the selected settings permit it. Modify accepts source clips up to 18s with source-derived timing; Reframe accepts up to 10s with its separate 5s/10s output choice. Extend bills five new seconds, not the full returned artifact."
       },
       {
         "title": "Modify",
@@ -385,12 +391,20 @@
       {
         "title": "Supporting generation",
         "body": "Use text or a start image only when you need to create a new short silent clip before editing."
+      },
+      {
+        "title": "Extend",
+        "body": "Extend adds five new seconds forward or backward from an eligible completed Ray 3.2 generation in your account. It requires the original direct Luma lineage; an upload or public MP4 copy cannot replace it. No extra keyframes or automatic assembly with the original are promised."
+      },
+      {
+        "title": "Modify controls",
+        "body": "For Modify, choose automatic interpretation or manual strength and signal controls. A single guide frame and Modify keyframes are alternatives. Multi-keyframe creation is a separate generation input and cannot be mixed into Extend."
       }
     ],
     "pricingCopy": {
       "title": "Luma Ray 3.2 pricing at a glance",
       "subtitle": "Preset Ray 3.2 totals use MaxVideoAI display pricing; exact price appears before generation.",
-      "footnote": "All Ray 3.2 routes keep the same MaxVideoAI customer quote based on Fal reference pricing plus the configured margin; direct fulfillment does not change the client price.",
+      "footnote": "Generation, Modify and Reframe retain their existing quote rules. Direct-only Extend has its own quote for five new seconds. Review the current MaxVideoAI total before each operation; a supplier reference rate is not the customer price.",
       "ctaLabel": "View full pricing",
       "maxDurationNote": "Up to 1080p",
       "ctaHref": "/pricing#luma-ray-3-2-pricing"
@@ -415,7 +429,8 @@
       "Use one edit goal per source clip.",
       "Keep the preservation rule and the requested change separate.",
       "Use 10s only when the action needs the extra time.",
-      "Use generation only when no source clip exists yet."
+      "Use generation only when no source clip exists yet.",
+      "For Modify, choose automatic interpretation or manual strength and signal controls. A single guide frame and Modify keyframes are alternatives. Multi-keyframe creation is a separate generation input and cannot be mixed into Extend."
     ],
     "engineWhy": [
       "Source videos make Modify and Reframe practical when timing is already approved.",

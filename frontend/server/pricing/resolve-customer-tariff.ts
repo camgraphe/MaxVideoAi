@@ -15,6 +15,7 @@ import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from
 import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/server/byteplus-las-tariff';
 import { seedanceInputTariffRate } from './seedance-input-tariff';
 import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
+import { usesOperationReferenceSettlement } from '@/lib/video-operation';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -81,6 +82,8 @@ export function resolveCustomerTariffQuote(input: {
     at: input.at,
     versionedCells: input.state.versionedCells,
     databaseCells: input.state.databaseCells,
+    ...(usesOperationReferenceSettlement(input.context.engine.id, input.context.mode ?? 't2v', input.context.operation)
+      ? { referenceSubtotalRounding: 'nearest' as const } : {}),
   });
   return { quote, revision: input.state.revision, supplierCost };
 }

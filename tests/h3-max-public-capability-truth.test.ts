@@ -21,7 +21,7 @@ const h3 = listFalEngines().find((entry) => entry.id === 'minimax-h3')!;
 const availableCapabilities = ['imageToVideo', 'firstLastFrame', 'referenceImageStyle', 'referenceVideo'] as const;
 
 test('H3 Max public specs and comparisons expose its executable image and reference workflows', () => {
-  assert.deepEqual(h3Max.engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable), ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(h3Max.engine.modes.filter(isMinimaxH3MaxRuntimeModeAvailable), ['t2v', 'i2v', 'ref2v', 'v2v']);
   const authored = specs.specs.find((entry) => entry.modelSlug === h3Max.modelSlug)!.keySpecs;
   const comparisons = compareSpecs(catalog.find((entry) => entry.modelSlug === h3Max.modelSlug)!, authored);
   const model = modelSpecs(h3Max, authored);

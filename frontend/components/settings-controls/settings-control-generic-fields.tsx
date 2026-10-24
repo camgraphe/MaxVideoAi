@@ -1,3 +1,4 @@
+import { lumaEditStrategy, visibleLumaEditField } from '@/lib/luma-edit-controls';
 import type { EngineInputField } from '@/types/engines';
 import { Button } from '@/components/ui/Button';
 
@@ -12,14 +13,16 @@ export function SettingsGenericAdvancedFields({
   values,
   onChange,
 }: SettingsGenericAdvancedFieldsProps) {
+  const lumaControls = fields.some(({ field }) => field.id === 'edit_control_mode');
+  const displayValues = lumaControls ? { ...values, edit_control_mode: lumaEditStrategy(values), edit_face_mode: values.edit_face_mode ?? (values.edit_face === true ? 'on' : 'default') } : values;
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {fields.map(({ field, required }) => (
+      {fields.filter(({ field }) => !lumaControls || visibleLumaEditField(field.id, displayValues)).map(({ field, required }) => (
         <SettingsGenericAdvancedField
           key={field.id}
           field={field}
           required={required}
-          value={values[field.id] ?? field.default ?? ''}
+          value={displayValues[field.id] ?? field.default ?? ''}
           onChange={onChange}
         />
       ))}

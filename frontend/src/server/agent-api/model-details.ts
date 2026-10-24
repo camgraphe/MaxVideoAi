@@ -1,3 +1,5 @@
+import { klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoWorkflowPreference} from '@/lib/video-workflow-review';
 import {videoDurationPolicy,videoWorkflowNotices,videoInheritsSourceFraming} from '@/lib/video-workflow-capabilities';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
@@ -68,11 +70,12 @@ function canonicalRolesForReferenceField(
   if (fieldId === 'audio_url' && mode === 'a2v') return ['source'];
   if (fieldId === 'video_url' || fieldId === 'extension_source_videos') return ['source'];
   if (fieldId === 'video_urls') return mode === 'extend' ? ['source'] : ['reference'];
+  if (fieldId === 'middle_image_url') return ['middle_frame'];
   if (fieldId === 'first_frame_url') return ['first_frame'];
   if (fieldId === 'last_frame_url' || fieldId === 'end_image_url') return ['last_frame'];
   if (fieldId === 'start_image_url') return ['first_frame'];
   if (fieldId === 'image_url') {
-    if (mode === 'a2v') return ['first_frame'];
+    if (mode === 'a2v' || mode === 'ref2v') return ['first_frame'];
     if (mode === 'v2v' || mode === 'reframe') return ['reference'];
     if (mode === 'i2v' || mode === 'i2v_standard') return ['source', 'first_frame'];
   }
@@ -150,6 +153,7 @@ function projectReferences(
     const minImageSidePx = field.type === 'image' ? engine.inputSchema?.constraints?.minImageSidePx : undefined;
     return [Object.freeze({
       type: field.type,
+      ...(field.description ? {description: field.description} : {}),
       roles: Object.freeze([...roles]),
       assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
@@ -258,7 +262,14 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   file_url: 'documentUrl',
   web_url: 'webpageUrl',
   enable_prompt_expansion: 'enablePromptExpansion',
+  extend_direction: 'extendDirection',
   edit_face: 'editFace',
+  edit_control_mode: 'editControlMode',
+  edit_pose_mode: 'editPoseMode',
+  edit_depth_mode: 'editDepthMode',
+  edit_normals_mode: 'editNormalsMode',
+  edit_trajectory_mode: 'editTrajectoryMode',
+  edit_face_mode: 'editFaceMode',
   edit_keyframe_indexes: 'editKeyframeIndexes',
   reasoning_level: 'reasoningLevel',
   keyframe_indexes: 'keyframeIndexes',
@@ -283,6 +294,9 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   output_format: 'outputFormat',
   return_last_frame: 'returnLastFrame',
   prompt_expansion_mode: 'promptExpansionMode',
+  enhance_realism: 'enhanceRealism',
+  middle_frame_time: 'middleFrameTime',
+  reference_order: 'referenceOrder',
   quality: 'quality',
   retake_mode: 'retakeMode',
   seed: 'seed',
@@ -379,6 +393,7 @@ function projectBaseSettings(details: Pick<AgentModelModeDetails, 'durationPolic
 export function projectAgentModelModeDetails(
   candidate: Pick<AgentPublicCatalogEngine, 'engine' | 'surface' | 'modeCaps'>,
   mode: AgentGenerationMode,
+  includeOperations = true,
 ): AgentModelModeDetails {
   const caps = candidate.modeCaps[mode];
   if (!caps) {
@@ -417,7 +432,18 @@ export function projectAgentModelModeDetails(
   } as const;
   return Object.freeze({
     mode,
+    ...(includeOperations && candidate.engine.operationCaps ? { operations: Object.values(candidate.engine.operationCaps).filter(operation => operation.mode === mode).map(operation => {
+      const engine = resolveVideoOperationEngine(candidate.engine, mode as import('@/types/engines').Mode, operation.operation);
+      return { operation: operation.operation, label: operation.label, ...(operation.operation === 'kling-edit' || operation.operation === 'kling-reference' ? { elements: klingOwnedElementsProperty } : {}), promptRequired: operation.promptRequired,
+        ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
+    }) } : {}),
     ...baseControls,
+    ...(candidate.engine.id==='flux-3-draft' && mode==='v2v' ? {sourceGeneration:{required:true as const,requestField:'sourceJobId' as const,outputField:'sourceOutputId' as const,studioReferenceRole:'source' as const,outputAssembly:'unverified' as const,description:'Select an owned completed native FLUX Draft with its paired cache. No cache URL is accepted. Missing cache, invalidated cache and unqualified Draft Extend are unavailable for Enhance; the Draft remains usable. Unknown cache expiry alone is allowed. Exact measured duration up to 21 seconds is the application customer quantity; 1080p with audio, earlier Draft charge separate.'}} : {}),
+    ...(candidate.engine.id === 'luma-ray-3-2' && mode === 'extend' ? { sourceGeneration: {
+      required: true as const, requestField: 'sourceJobId' as const, outputField: 'sourceOutputId' as const,
+      studioReferenceRole: 'source' as const, outputAssembly: 'unverified' as const,
+      description: 'Select your completed direct Ray 3.2 generation. Use its application job ID from recent generations, never a provider ID or URL. Studio requires one attached owned source or ready project output. Eligibility is rechecked before spending; five new seconds do not establish the full artifact duration.',
+    } } : {}),
     ...(videoWorkflowPreference(candidate.engine.id,mode) ? {editorialPreference:videoWorkflowPreference(candidate.engine.id,mode)} : {}),
     ...(videoWorkflowNotices(candidate.engine.id,mode).length ? {notices:videoWorkflowNotices(candidate.engine.id,mode)} : {}),
     ...(caps.extensionOutput ? {extensionOutput:caps.extensionOutput} : {}),

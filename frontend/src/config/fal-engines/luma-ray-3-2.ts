@@ -25,14 +25,14 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'v2v', 'reframe'],
+  modes: ['t2v', 'i2v', 'v2v', 'reframe', 'extend'],
   maxDurationSec: 10,
   resolutions: [...LUMA_RAY_32_RESOLUTIONS],
   aspectRatios: [...LUMA_RAY_32_ASPECT_RATIOS] as EngineCaps['aspectRatios'],
   fps: [24],
   audio: false,
   upscale4k: false,
-  extend: false,
+  extend: true,
   motionControls: true,
   keyframes: true,
   params: {},
@@ -47,8 +47,8 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         id: 'prompt',
         type: 'text',
         label: 'Prompt',
-        modes: ['t2v', 'i2v', 'v2v', 'reframe'],
-        requiredInModes: ['t2v', 'i2v', 'v2v', 'reframe'],
+        modes: ['t2v', 'i2v', 'v2v', 'reframe', 'extend'],
+        requiredInModes: ['t2v', 'i2v', 'v2v', 'reframe', 'extend'],
         description: 'Describe the video motion, subject, camera, edit, style, or new canvas area.',
       },
       {
@@ -105,7 +105,7 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: [...LUMA_RAY_32_RESOLUTIONS],
         default: '720p',
-        modes: ['t2v', 'i2v', 'v2v', 'reframe'],
+        modes: ['t2v', 'i2v', 'v2v', 'reframe', 'extend'],
       },
       {
         id: 'loop',
@@ -169,11 +169,30 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         description: 'Comma-separated source frame indexes for Modify keyframes, for example 0, 48, 96.',
         modes: ['v2v'],
       },
+      { id: 'source_job_id', type: 'text', label: 'Source generation', modes: ['extend'],
+        description: 'Application job ID of your completed direct Ray 3.2 generation. Uploaded URLs cannot be extended.' },
+      { id: 'extend_direction', type: 'enum', label: 'Extension direction', modes: ['extend'], values: ['forward', 'backward'], default: 'forward' },
+      { id: 'duration', type: 'enum', label: 'New footage', modes: ['extend'], values: ['5s'], default: '5s', description: 'Fixed five-second extension. Result layout is unverified; no automatic timeline assembly.' },
+      { id: 'loop', type: 'boolean', label: 'Loop video', modes: ['extend'], default: false, description: 'Forward extension only.' },
+      { id: 'keyframe_urls', type: 'image', label: 'Creation keyframes', modes: ['t2v'], minCount: 0, maxCount: 64, source: 'either',
+        description: 'One to 64 images with matching frame indexes. Start/end image workflows remain available separately.' },
+      { id: 'keyframe_indexes', type: 'text', label: 'Creation frame indexes', modes: ['t2v'], description: 'Unique non-negative integer indexes, comma-separated, in image order.' },
+
+      {
+        id: 'edit_control_mode', type: 'enum', label: 'Modify control strategy',
+        values: ['automatic', 'manual'], modes: ['v2v'],
+        description: 'Automatic scheduling or manual preset and signal controls. Omitted uses compatible saved settings.',
+      },
+      ...(['pose', 'depth', 'normals', 'trajectory', 'face'] as const).map((signal) => ({
+        id: `edit_${signal}_mode`, type: 'enum' as const, label: `${signal} signal`,
+        values: ['default', 'on', 'off'], modes: ['v2v'] as ['v2v'],
+        description: 'Default leaves the provider setting omitted; On enables it; Off explicitly disables it. Manual strategy only.',
+      })),
       {
         id: 'edit_strength',
         type: 'enum',
         label: 'Modify strength',
-        description: 'Auto lets Luma derive controls. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.',
+        description: 'Auto uses automatic scheduling unless manual strategy or signals are selected. Adhere preserves motion; Flex balances; Reimagine gives the prompt more freedom.',
         values: [...LUMA_RAY_32_EDIT_STRENGTHS],
         default: 'auto',
         modes: ['v2v'],
@@ -182,7 +201,7 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
         id: 'edit_pose_strength',
         type: 'enum',
         label: 'Pose control',
-        description: 'Optional manual pose conditioning. Any manual control disables auto controls.',
+        description: 'Optional manual pose conditioning. Manual pose tuning can accompany a strength preset. Legacy off leaves the provider default.',
         values: [...LUMA_RAY_32_POSE_STRENGTHS],
         default: 'off',
         modes: ['v2v'],
@@ -283,6 +302,13 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
   brandId: 'luma',
 };
 
+LUMA_RAY_3_2_ENGINE.operationCaps = {
+  'luma-extend': { operation: 'luma-extend', mode: 'extend', label: 'Extend owned generation', defaultForMode: true,
+    inputSchema: LUMA_RAY_3_2_ENGINE.inputSchema!, promptRequired: true, transport: 'luma_agents_direct',
+    endpoint: 'ray-3.2/video/generation-anchor', ui: { modes: ['extend'], duration: { options: ['5s'], default: '5s' },
+      resolution: [...LUMA_RAY_32_RESOLUTIONS], audioToggle: false } },
+};
+
 export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'luma-ray-3-2',
@@ -321,6 +347,11 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           audioToggle: false,
           notes: 'Animate one source image, with optional reference images for style or subject guidance.',
         },
+      },
+      {
+        mode: 'extend', falModelId: 'luma/agent/ray/v3.2/generation-anchor',
+        ui: { modes: ['extend'], duration: { options: ['5s'], default: '5s' }, resolution: [...LUMA_RAY_32_RESOLUTIONS],
+          audioToggle: false, notes: 'Extend your completed direct Ray 3.2 generation forward or backward by five seconds. SDR only; result layout is unverified.' },
       },
       {
         mode: 'v2v',
