@@ -86,6 +86,10 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
     'durationSec',
     'mimeType',
     'sizeBytes',
+    'fps',
+    'decodedFrameCount',
+    'constantFrameRate',
+    'sourceSha256',
     'originalName',
   ]);
   assert.match(

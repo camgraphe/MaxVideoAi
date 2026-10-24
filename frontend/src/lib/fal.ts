@@ -1,3 +1,4 @@
+import {nativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import type { QueueStatus } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
 import { getResultProviderMode } from '@/lib/result-provider';
@@ -53,6 +54,7 @@ async function generateViaFal(
   const falClient = getFalClient();
   const { model, requestBody } = buildFalGenerationRequest(payload, defaultModel);
 
+  const submissionProof = nativeFluxDraftSubmission(payload.engineId, payload.mode, model, requestBody);
   let latestQueueStatus: QueueStatus | null = null;
   const webhookUrl = getFalWebhookUrl() ?? undefined;
   if (!webhookUrl && !warnedMissingWebhookUrl) {
@@ -65,7 +67,7 @@ async function generateViaFal(
     if (payload.submissionMode === 'enqueue') {
       enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId);
       if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
-      await hooks?.onRequestId?.(enqueuedRequestId);
+      await hooks?.onRequestId?.(enqueuedRequestId, submissionProof);
       return {
         provider,
         thumbUrl: fallbackThumb,
@@ -82,7 +84,7 @@ async function generateViaFal(
         if (typeof requestId === 'string') {
           enqueuedRequestId = requestId;
           if (hooks?.onRequestId) {
-            Promise.resolve(hooks.onRequestId(requestId)).catch((error) => {
+            Promise.resolve(hooks.onRequestId(requestId, submissionProof)).catch((error) => {
               console.warn('[fal] onRequestId hook failed', error);
             });
           }
@@ -133,7 +135,7 @@ async function generateViaFal(
     }
     (falError as { originalError?: unknown }).originalError = error;
     if (fallbackProviderJobId && hooks?.onRequestId) {
-      Promise.resolve(hooks.onRequestId(fallbackProviderJobId)).catch((hookError) => {
+      Promise.resolve(hooks.onRequestId(fallbackProviderJobId, submissionProof)).catch((hookError) => {
         console.warn('[fal] onRequestId hook failed after error', hookError);
       });
     }
@@ -153,7 +155,7 @@ async function generateViaFal(
     const asset = ensureAssetShape(immediateAsset);
     const thumbUrl = asset.thumbnailUrl ?? fallbackThumb;
     if (providerJobId && hooks?.onRequestId) {
-      Promise.resolve(hooks.onRequestId(providerJobId)).catch((error) => {
+      Promise.resolve(hooks.onRequestId(providerJobId, submissionProof)).catch((error) => {
         console.warn('[fal] onRequestId hook failed after immediate result', error);
       });
     }
@@ -177,7 +179,7 @@ async function generateViaFal(
 
   const resolvedProviderJobId = providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined;
   if (resolvedProviderJobId && hooks?.onRequestId) {
-    Promise.resolve(hooks.onRequestId(resolvedProviderJobId)).catch((error) => {
+    Promise.resolve(hooks.onRequestId(resolvedProviderJobId, submissionProof)).catch((error) => {
       console.warn('[fal] onRequestId hook failed after pending result', error);
     });
   }

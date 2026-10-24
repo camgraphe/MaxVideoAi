@@ -13,6 +13,7 @@ test('picker SQL includes owned ready originals without media_assets, isolates a
  CREATE TABLE job_outputs(id text,job_id text,user_id text,kind text,position integer,status text,url text,storage_url text,metadata jsonb,duration_sec numeric);
  CREATE TABLE media_assets(public_id text,source_output_id text,source_job_id text,user_id text,status text,deleted_at timestamptz);`);
  await db.pool.query(readFileSync('neon/migrations/79_flux_draft_cache_sources.sql','utf8'));
+ await db.pool.query(readFileSync('neon/migrations/80_flux_draft_origin_provenance.sql','utf8'));
  await db.pool.query(`INSERT INTO app_jobs(id,job_id,user_id,engine_id,surface,status,provider,provider_job_id,video_url,prompt) VALUES
  (1,'luma','alice','luma-ray-3-2','video','completed','luma_agents_direct','private-luma','https://owned/luma.mp4','A landscape'),
  (2,'draft','alice','flux-3-draft','video','completed','fal','private-draft','https://owned/draft.mp4','A portrait'),

@@ -2934,23 +2934,11 @@ test('Veo 3.1 Lite FL2V requires both frames', () => {
   assert.deepEqual(valid, OK);
 });
 
-test('Veo 3 I2V rejects durations other than 8s', () => {
-  const invalid = validateRequest('veo-3-1', 'i2v', {
-    duration: '6s',
-    resolution: '1080p',
-    aspect_ratio: 'auto',
-    image_url: 'https://example.com/frame.png',
-  });
-  assert.equal(invalid.ok, false);
-  assert.equal(invalid.error?.field, 'duration');
-
-  const valid = validateRequest('veo-3-1', 'i2v', {
-    duration: '8s',
-    resolution: '1080p',
-    aspect_ratio: '16:9',
-    image_url: 'https://example.com/frame.png',
-  });
-  assert.deepEqual(valid, OK);
+test('Veo 3.1 I2V accepts 4/6/8 seconds and rejects unsupported duration', () => {
+  const inputs={resolution:'1080p',aspect_ratio:'16:9',image_url:'https://example.com/frame.png'};
+  for(const duration of ['4s','6s','8s'])assert.deepEqual(validateRequest('veo-3-1','i2v',{...inputs,duration}),OK);
+  const invalid=validateRequest('veo-3-1','i2v',{...inputs,duration:'5s'});
+  assert.equal(invalid.ok,false);assert.equal(invalid.error?.field,'duration');
 });
 
 test('Luma Ray 2 modify and reframe validate the new workflow surface', () => {

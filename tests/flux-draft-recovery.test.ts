@@ -3,7 +3,7 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { createFluxDraftRecoveryFetch, recoverOwnedFluxDraftCache } from '../frontend/server/flux-draft-cache-recovery';
 import { withVideoExcerptSlot } from '../frontend/server/video-excerpts/media';
-const origin={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'request',attemptId:9,endpoint:'blackforestlabs/flux-3/image-to-video/draft',outputUrl:'owned',outputSha256:'a'.repeat(64)};
+const origin={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'request',attemptId:9,provenance:{kind:'provider_attempt' as const},endpoint:'blackforestlabs/flux-3/image-to-video/draft',outputUrl:'owned',outputSha256:'a'.repeat(64)};
 test('terminal recovery transport binds exact GET endpoint/request, disables redirects, and bounds responses',async()=>{
  let calls=0;const base='https://queue.fal.run/blackforestlabs/flux-3/requests/request';
  const recover=createFluxDraftRecoveryFetch(origin,async(_,init)=>{calls++;assert.equal(init?.redirect,'error');assert.ok(init?.signal);return new Response('{}');});

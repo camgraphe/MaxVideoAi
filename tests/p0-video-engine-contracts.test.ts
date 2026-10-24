@@ -55,12 +55,16 @@ const expectedEndpoints = {
     i2v: 'blackforestlabs/flux-3/image-to-video',
     fl2v: 'blackforestlabs/flux-3/first-last-frame-to-video',
     extend: 'blackforestlabs/flux-3/extend-video',
+    ref2v: 'blackforestlabs/flux-3/keyframes-to-video',
+    v2v: 'blackforestlabs/flux-3/edit-video',
   },
   'flux-3-draft': {
     t2v: 'blackforestlabs/flux-3/text-to-video/draft',
     i2v: 'blackforestlabs/flux-3/image-to-video/draft',
     fl2v: 'blackforestlabs/flux-3/first-last-frame-to-video/draft',
     extend: 'blackforestlabs/flux-3/extend-video/draft',
+    ref2v: 'blackforestlabs/flux-3/keyframes-to-video/draft',
+    v2v: 'blackforestlabs/flux-3/draft-enhance',
   },
 } as const;
 const expectedBrandIds = {
@@ -92,13 +96,13 @@ function field(id: keyof typeof expectedEndpoints, mode: Mode, fieldId: string):
   return match;
 }
 
-test('seven raw engines expose exactly the canonical 27 modes and execution endpoints', () => {
+test('seven raw engines expose exactly the canonical 31 modes and execution endpoints', () => {
   assert.equal(registries.length, 7);
   assert.deepEqual(registries.map(({ id }) => id), Object.keys(expectedEndpoints));
 
   for (const [id, endpoints] of Object.entries(expectedEndpoints)) {
     const actual = entry(id as keyof typeof expectedEndpoints);
-    assert.deepEqual(actual.modes.map(({ mode }) => mode), Object.keys(endpoints));
+    assert.deepEqual(actual.modes.map(({ mode }) => mode), id.startsWith('flux-') ? ['ref2v','v2v','t2v','i2v','fl2v','extend'] : Object.keys(endpoints));
     assert.deepEqual(
       Object.fromEntries(actual.modes.map(({ mode, falModelId }) => [mode, falModelId])),
       endpoints,
@@ -110,11 +114,11 @@ test('seven raw engines expose exactly the canonical 27 modes and execution endp
   }
 
   const allModes = registries.flatMap((item) => item.modes.map(({ mode }) => mode));
-  assert.equal(allModes.length, 27);
+  assert.equal(allModes.length, 31);
   assert.ok(!allModes.includes('keyframes-to-video' as never));
   assert.ok(!allModes.includes('draft-enhance' as never));
   assert.ok(!allModes.includes('r2v'));
-  assert.equal(allModes.filter((mode) => mode === 'v2v').length, 2);
+  assert.equal(allModes.filter((mode) => mode === 'v2v').length, 4);
 });
 
 test('Wan 3 and Prime preserve the complete provider schema and reference contract', () => {
@@ -239,7 +243,9 @@ test('FLUX standard and Draft preserve exact frame, extension, resolution, and p
     assert.deepEqual(field(id, 't2v', 'aspect_ratio').values, ['auto', '21:9', '2:1', '16:9', '4:3', '1:1', '3:4', '9:16']);
     assert.deepEqual({ min: field(id, 't2v', 'safety_tolerance').min, max: field(id, 't2v', 'safety_tolerance').max, default: field(id, 't2v', 'safety_tolerance').default }, { min: 0, max: 4, default: 2 });
     assert.ok(!fieldsFor(id, 'fl2v').some(({ id: fieldId }) => fieldId === 'keyframes'));
-    assert.equal(entry(id).engine.keyframes, false, `${id} uses explicit fl2v inputs, not generic keyframes`);
+    assert.equal(entry(id).engine.keyframes, true, `${id} supports explicit ordered keyframes in ref2v`);
+    assert.ok(fieldsFor(id,'ref2v').some(({id})=>id==='keyframe_indexes'));
+    assert.ok(fieldsFor(id,'ref2v').some(({id})=>id==='reference_image_urls'));
   }
 
   assert.deepEqual(field('flux-3', 't2v', 'resolution').values, ['720p', '1080p']);

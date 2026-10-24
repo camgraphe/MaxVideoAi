@@ -49,8 +49,9 @@ import {
 } from './workspace-engine-helpers';
 
 /** Pure live/candidate workflow facts. Null inputs retain the live hydration fallback. */
-export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAssets, klingElements }: {
+export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEngine = selectedEngine, form, inputAssets, klingElements }: {
   engine: EngineCaps | null;
+  capabilityEngine?: EngineCaps | null;
   form: FormState | null;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   klingElements: KlingElementState[];
@@ -99,10 +100,11 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
     return null;
   })();
 
-  const workspaceExecutableModes = selectedEngine ? selectedEngine.modes.filter((mode) => isWorkspaceModeAvailable(selectedEngine, mode)) : [];
+  // Operation schemas own active fields; navigation retains the full engine capability set.
+  const workspaceExecutableModes = capabilityEngine ? capabilityEngine.modes.filter((mode) => isWorkspaceModeAvailable(capabilityEngine, mode)) : [];
 
-  const engineModeOptions = getEngineModeOptions(selectedEngine
-    ? { ...selectedEngine, modes: workspaceExecutableModes }
+  const engineModeOptions = getEngineModeOptions(capabilityEngine
+    ? { ...capabilityEngine, modes: workspaceExecutableModes }
     : null);
 
   const referenceInputStatus = getReferenceInputStatus(inputAssets);

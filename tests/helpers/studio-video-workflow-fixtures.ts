@@ -57,7 +57,7 @@ export const workflowLumaSourceRow = {
 
 
 export const workflowDraftSource = {ownerId:workflowActor.userId,jobId:'workflow-draft-source',outputId:'workflow-draft-output',
-  providerRequestId:'fixture-draft-request',attemptId:1,endpoint:'blackforestlabs/flux-3/image-to-video/draft',
+  providerRequestId:'fixture-draft-request',attemptId:1,provenance:{kind:'provider_attempt' as const},endpoint:'blackforestlabs/flux-3/image-to-video/draft',
   outputUrl:workflowReference('video','source').storageUrl,outputSha256:'a'.repeat(64),cacheUrl:'https://v3.fal.media/cache.bin',
   cacheIdentity:'b'.repeat(64),providerVideoUrl:'https://v3.fal.media/draft.mp4',durationSec:10.041667,fps:24,decodedFrameCount:241,
   fingerprint:'c'.repeat(64),expiresAt:null,invalidatedAt:null};

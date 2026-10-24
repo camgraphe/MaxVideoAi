@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client';
 import type { useWorkspacePricingGate } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 
+import {coerceFormState} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import {resolveVideoOperationEngine} from '../frontend/lib/video-operation';
 type Options = Parameters<typeof useWorkspacePricingGate>[0];
 async function mount() {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
@@ -80,12 +82,22 @@ for (const { id, engine } of listFalEngines().filter(entry => entry.modes.some((
 test(`${id}: Modify prices only a ready source and removes the previous quote immediately`, async () => {
   const f = await mount();
   try {
-    await f.update({ selectedEngine: { ...engine, modeAvailability: { ...engine.modeAvailability, v2v: { available: true, reason: 'available' } } }, submissionMode: 'v2v',
-      form: { ...f.options.form!, engineId: engine.id, mode: 'v2v' } });
+    const form=coerceFormState(engine,'v2v',null);
+    const projected=resolveVideoOperationEngine(engine,'v2v',form.operation);
+    await f.update({ selectedEngine: { ...projected, modeAvailability: { ...projected.modeAvailability, v2v: { available: true, reason: 'available' } } }, submissionMode: 'v2v',form });
     await f.tick();
     assert.equal(f.requests.length, 0);
     assert.equal(f.current.isPricing, false);
     assert.equal(f.current.preflightError, undefined);
+    if(id==='flux-3-draft') {
+      await f.update({inputAssets:{video_url:[{kind:'video',name:'upload.mp4',size:1,type:'video/mp4',status:'ready',url:'https://example.com/upload.mp4'}] as never}});
+      await f.tick();assert.equal(f.requests.length,0,'an upload cannot supply native Draft authority');
+      await f.update({form:{...form,extraInputValues:{source_job_id:'owned-native-draft',source_output_id:'owned-output'}}});
+      await f.tick();assert.equal(f.requests.length,1);
+      await f.respond(0);assert.equal(f.current.price,1.25);
+      await f.update({form});masked(f);await f.tick();assert.equal(f.requests.length,1);
+      return;
+    }
     const source = { id: 'source', fieldId: 'video_url', kind: 'video', name: 'source.mp4',
       type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
     await f.update({ inputAssets: { video_url: [source] } });

@@ -1,8 +1,27 @@
+import type {FluxDraftProvenance} from './flux-draft-provenance';
+import {stableJson} from '@/server/agent-api/generation-normalization';
 import { createHash } from 'node:crypto';
 import { validateFluxLtxSource } from '@/lib/flux-ltx-operations';
 import { openPublicHttpsResponse, publicMediaTransport, type ReferenceFileDownloaderDependencies, type ReferenceHttpsResponse } from './public-media-transport';
 
-export type FluxDraftOrigin = {ownerId:string;jobId:string;outputId:string;providerRequestId:string;attemptId:number;endpoint:string;outputUrl:string;outputSha256:string};
+export type FluxDraftOrigin = {ownerId:string;jobId:string;outputId:string;providerRequestId:string;attemptId:number|null;provenance:FluxDraftProvenance;endpoint:string;outputUrl:string;outputSha256:string};
+
+function validFluxDraftOriginProof(source:FluxDraftOrigin):boolean {
+  const proof=source.provenance;
+  if(proof?.kind==='provider_attempt')return Number.isSafeInteger(source.attemptId)&&Number(source.attemptId)>0;
+  if(source.attemptId!==null||!proof||!['fal_submission','canonical_queue'].includes(proof.kind))return false;
+  if(!('enqueueId' in proof)||!/^\d+$/.test(proof.enqueueId)||!/^\d+$/.test(proof.completedId)||BigInt(proof.enqueueId)>=BigInt(proof.completedId))return false;
+  return /^[a-f0-9]{64}$/.test(proof.kind==='fal_submission'?proof.requestSha256:proof.snapshotSha256);
+}
+/** Compare a persisted JSON proof structurally; pre-union attempt caches keep their identity. */
+export function sameFluxDraftOrigin(origin:FluxDraftOrigin,candidate:unknown):boolean {
+  if(!candidate||typeof candidate!=='object'||Array.isArray(candidate))return false;
+  const stored=candidate as Record<string,unknown>;
+  const proof=stored.provenance??(Number.isSafeInteger(stored.attemptId)&&Number(stored.attemptId)>0?{kind:'provider_attempt'}:null);
+  return validFluxDraftOriginProof(origin)&&Object.entries(origin).every(([key,value])=>key==='provenance'
+    ? stableJson(value)===stableJson(proof):stored[key]===value);
+}
+
 export type FluxDraftPairProof = {providerRequestId:string;providerVideoUrl:string;cacheUrl:string;videoIdentity:string;audioIdentity:string|null;ownedVideoIdentity:string;ownedAudioIdentity:string|null;ownedSha256:string;durationSec:number;fps:number;decodedFrameCount:number};
 export type QualifiedFluxDraftSource = FluxDraftOrigin & {cacheUrl:string;cacheIdentity:string;providerVideoUrl:string;durationSec:number;fps:number;decodedFrameCount:number;fingerprint:string;expiresAt:string|null;invalidatedAt:string|null};
 export const FLUX_NATIVE_DRAFT_ENDPOINTS = ['text-to-video','image-to-video','first-last-frame-to-video','keyframes-to-video'].map(mode=>`blackforestlabs/flux-3/${mode}/draft`);
@@ -15,7 +34,7 @@ export function fluxProviderMediaUrl(value:string):URL {
 /** Only server-recovered terminal results and paired decoded bytes may call this owner. */
 export function qualifyFluxDraftPair(source:FluxDraftOrigin,proof:FluxDraftPairProof):QualifiedFluxDraftSource {
   const cache=fluxProviderMediaUrl(proof.cacheUrl);fluxProviderMediaUrl(proof.providerVideoUrl);
-  if(!FLUX_NATIVE_DRAFT_ENDPOINTS.includes(source.endpoint)||!source.ownerId||!source.jobId||!source.outputId||!source.attemptId
+  if(!FLUX_NATIVE_DRAFT_ENDPOINTS.includes(source.endpoint)||!source.ownerId||!source.jobId||!source.outputId||!validFluxDraftOriginProof(source)
     ||proof.providerRequestId!==source.providerRequestId||!proof.videoIdentity||proof.videoIdentity!==proof.ownedVideoIdentity
     ||proof.audioIdentity!==proof.ownedAudioIdentity||proof.ownedSha256!==source.outputSha256||!/^[a-f0-9]{64}$/.test(source.outputSha256)
     ||!Number.isFinite(proof.fps)||proof.fps<=0||!Number.isSafeInteger(proof.decodedFrameCount)||proof.decodedFrameCount<1

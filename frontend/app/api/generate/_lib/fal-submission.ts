@@ -1,3 +1,4 @@
+import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
 import { query } from '@/lib/db';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
@@ -136,7 +137,7 @@ export async function submitFalGenerateTask(params: {
   walletChargeReserved: boolean;
   getLastProviderJobId: () => string | null | undefined;
   setLastProviderJobId: (providerJobId: string | null) => void;
-  persistProviderJobId: (providerJobId: string) => void | Promise<void>;
+  persistProviderJobId: (providerJobId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => void | Promise<void>;
   logMetricFn: LogMetricFn;
   clientErrorPolicy?: ProviderClientErrorPolicy;
   deps?: SubmitFalGenerateTaskDeps;
@@ -163,13 +164,13 @@ export async function submitFalGenerateTask(params: {
     const promise = generateVideoFn(
       transport.payload,
       {
-        onRequestId: (requestId) => {
+        onRequestId: (requestId, nativeDraftSubmission) => {
           console.info('[fal] request id received', {
             jobId: params.jobId,
             engineId: params.engineId,
             requestId,
           });
-          return params.persistProviderJobId(requestId);
+          return params.persistProviderJobId(requestId, nativeDraftSubmission);
         },
         onQueueUpdate: (status) => {
           if (!status) return;

@@ -1,3 +1,4 @@
+import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import { query } from '@/lib/db';
 import type { FalInputSummary } from './fal-request';
 
@@ -6,7 +7,7 @@ type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
 export type ProviderJobTracker = {
   getLastProviderJobId: () => string | null;
   setLastProviderJobId: (requestId: string | null | undefined) => void;
-  persistProviderJobId: (requestId: string) => Promise<void>;
+  persistProviderJobId: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => Promise<void>;
 };
 
 export function createProviderJobTracker(params: {
@@ -19,6 +20,7 @@ export function createProviderJobTracker(params: {
   queryFn?: QueryFn;
 }): ProviderJobTracker {
   let lastProviderJobId: string | null = null;
+  const nativeDraftProofRequestIds = new Set<string>();
   const queryFn = params.queryFn ?? query;
   const now = params.now ?? (() => new Date());
 
@@ -28,8 +30,12 @@ export function createProviderJobTracker(params: {
     }
   };
 
-  const persistProviderJobId = async (requestId: string) => {
-    if (!requestId || lastProviderJobId === requestId) return;
+  const persistProviderJobId = async (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => {
+    // A queue status can arrive before onEnqueue or an immediate-result callback.
+    // Seeing its ID must not suppress the first authoritative native Draft proof.
+    const needsNativeDraftProof = nativeDraftSubmission && !nativeDraftProofRequestIds.has(requestId);
+    if (!requestId || (lastProviderJobId === requestId && !needsNativeDraftProof)) return;
+    if (nativeDraftSubmission) nativeDraftProofRequestIds.add(requestId);
     lastProviderJobId = requestId;
     try {
       await queryFn(
@@ -58,6 +64,7 @@ export function createProviderJobTracker(params: {
           provider: params.providerKey,
           promptLength: params.prompt.length,
           inputSummary: params.inputSummary,
+          ...(nativeDraftSubmission ? {nativeDraftSubmission} : {}),
         }),
         ]
       );

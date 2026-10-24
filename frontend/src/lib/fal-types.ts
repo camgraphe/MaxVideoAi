@@ -1,3 +1,4 @@
+import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import type { QueueStatus } from '@fal-ai/client';
 import type { SoraRequest } from '@/lib/sora';
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
@@ -69,6 +70,6 @@ export type GenerateResult = {
 };
 
 export type GenerateHooks = {
-  onRequestId?: (requestId: string) => void | Promise<void>;
+  onRequestId?: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => void | Promise<void>;
   onQueueUpdate?: (status: QueueStatus) => void | Promise<void>;
 };

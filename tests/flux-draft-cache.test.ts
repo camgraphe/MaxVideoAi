@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { qualifyFluxDraftPair, checkFluxDraftCacheAvailability, fluxDraftQuoteBinding } from '../frontend/server/flux-draft-cache';
-const source={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'request',attemptId:9,endpoint:'blackforestlabs/flux-3/image-to-video/draft',outputUrl:'owned',outputSha256:'a'.repeat(64)};
+const source={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'request',attemptId:9,provenance:{kind:'provider_attempt' as const},endpoint:'blackforestlabs/flux-3/image-to-video/draft',outputUrl:'owned',outputSha256:'a'.repeat(64)};
 const proof={providerVideoUrl:'https://v3.fal.media/files/output.mp4',cacheUrl:'https://v3.fal.media/files/cache.bin',providerRequestId:'request',videoIdentity:'same-video',audioIdentity:'same-audio',ownedVideoIdentity:'same-video',ownedAudioIdentity:'same-audio',ownedSha256:source.outputSha256,durationSec:10.041667,fps:24,decodedFrameCount:241};
 test('unknown expiry admits exact paired native Draft with measured fractional quantity',()=>{
  const pair=qualifyFluxDraftPair(source,proof);

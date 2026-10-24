@@ -81,3 +81,53 @@ test('ordinary video requests retain synchronous completion', async (t) => {
   assert.equal(result.status, 'completed');
   assert.equal(result.videoUrl, 'https://example.test/output.mp4');
 });
+
+test('shared standard Fal native Draft writer persists the exact submitted endpoint and request digest',async t=>{
+ const {createProviderJobTracker}=await import('../frontend/app/api/generate/_lib/provider-job-tracker');
+ const {createHash}=await import('node:crypto');
+ const {stableJson}=await import('../frontend/src/server/agent-api/generation-normalization');
+ const previousKey=ENV.FAL_API_KEY;ENV.FAL_API_KEY='test-only';t.after(()=>{ENV.FAL_API_KEY=previousKey;});
+ let submits=0,wire:Record<string,unknown>={};
+ t.mock.method(globalThis,'fetch',async(url:URL,options:RequestInit)=>{submits++;assert.equal(url.pathname,'/blackforestlabs/flux-3/text-to-video/draft');wire=JSON.parse(String(options.body));return new Response(JSON.stringify({request_id:'native-request'}));});
+ for(const surface of ['caller']){
+  const writes:Array<{sql:string;params?:unknown[]}>=[];
+  const tracker=createProviderJobTracker({jobId:surface+'-job',providerKey:'fal',engineId:'flux-3-draft',prompt:'Animate',inputSummary:{primaryImageUrl:null,primaryAudioUrl:null,referenceImageCount:0,referenceVideoCount:0,referenceAudioCount:0,hasFirstFrame:false,hasLastFrame:false,inputSlots:[]},queryFn:async(sql,params)=>{writes.push({sql,params});}});
+  const result=await generateVideo({engineId:'flux-3-draft',prompt:'Animate',mode:'t2v',submissionMode:'enqueue',durationSec:5,resolution:'480p',aspectRatio:'16:9'}, {onRequestId:tracker.persistProviderJobId});
+  assert.equal(result.providerJobId,'native-request');
+  const row=writes.find(write=>write.sql.includes('INSERT INTO fal_queue_log'))!;
+  assert.deepEqual(row.params?.slice(0,5),[surface+'-job','fal','native-request','flux-3-draft','enqueue']);
+  const proof=JSON.parse(String(row.params?.[5])).nativeDraftSubmission;
+  assert.deepEqual(proof,{version:1,engineId:'flux-3-draft',mode:'t2v',endpoint:'blackforestlabs/flux-3/text-to-video/draft',requestSha256:createHash('sha256').update(stableJson({engineId:'flux-3-draft',mode:'t2v',endpoint:'blackforestlabs/flux-3/text-to-video/draft',requestBody:wire})).digest('hex')});
+ }
+ assert.equal(submits,1,'one accepted request, never an Enhance retry');
+});
+
+test('optional native Draft enqueue-proof persistence failure cannot resubmit or fail accepted generation',async t=>{
+ const {createProviderJobTracker}=await import('../frontend/app/api/generate/_lib/provider-job-tracker');
+ const previousKey=ENV.FAL_API_KEY;ENV.FAL_API_KEY='test-only';t.after(()=>{ENV.FAL_API_KEY=previousKey;});
+ let submits=0;t.mock.method(globalThis,'fetch',async()=>{submits++;return new Response(JSON.stringify({request_id:'accepted-native'}));});t.mock.method(console,'warn',()=>{});
+ const tracker=createProviderJobTracker({jobId:'job',providerKey:'fal',engineId:'flux-3-draft',prompt:'Animate',inputSummary:{primaryImageUrl:null,primaryAudioUrl:null,referenceImageCount:0,referenceVideoCount:0,referenceAudioCount:0,hasFirstFrame:false,hasLastFrame:false,inputSlots:[]},queryFn:async sql=>{if(sql.includes('INSERT'))throw new Error('offline queue unavailable');}});
+ const result=await generateVideo({engineId:'flux-3-draft',prompt:'Animate',mode:'t2v',submissionMode:'enqueue',durationSec:5,resolution:'480p',aspectRatio:'16:9'},{onRequestId:tracker.persistProviderJobId});
+ assert.equal(result.providerJobId,'accepted-native');assert.equal(result.status,'queued');assert.equal(submits,1);
+});
+
+ test('synchronous native Draft completion persists proof even when queue status arrives before request tracking',async t=>{
+ const {createProviderJobTracker}=await import('../frontend/app/api/generate/_lib/provider-job-tracker');
+ const previousKey=ENV.FAL_API_KEY;ENV.FAL_API_KEY='test-only';t.after(()=>{ENV.FAL_API_KEY=previousKey;});
+ const writes:Array<{sql:string;params?:unknown[]}>=[];
+ const tracker=createProviderJobTracker({jobId:'job',providerKey:'fal',engineId:'flux-3-draft',prompt:'Animate',inputSummary:{primaryImageUrl:null,primaryAudioUrl:null,referenceImageCount:0,referenceVideoCount:0,referenceAudioCount:0,hasFirstFrame:false,hasLastFrame:false,inputSlots:[]},queryFn:async(sql,params)=>{writes.push({sql,params});}});
+ t.mock.method(getFalClient(),'subscribe',async(_model,options)=>{
+   options.onQueueUpdate({status:'COMPLETED',request_id:'native-completed'});
+   return {requestId:'native-completed',data:{video_url:'https://example.test/output.mp4'}};
+ });
+ let tracked:Promise<void>|undefined;
+ const result=await generateVideo({engineId:'flux-3-draft',prompt:'Animate',mode:'t2v',durationSec:5,resolution:'480p',aspectRatio:'16:9'},{
+   onQueueUpdate:status=>tracker.setLastProviderJobId(status.request_id),
+   onRequestId:(id,proof)=>{tracked=Promise.all([tracker.persistProviderJobId(id,proof),tracker.persistProviderJobId(id,proof)]).then(()=>{});return tracked;},
+ });
+ await tracked;
+ assert.equal(result.status,'completed');
+ const enqueues=writes.filter(write=>write.sql.includes('INSERT INTO fal_queue_log'));
+ assert.equal(enqueues.length,1,'queue status must not swallow proof, and repeated request hooks must not duplicate it');
+ assert.equal(JSON.parse(String(enqueues[0].params?.[5])).nativeDraftSubmission.endpoint,'blackforestlabs/flux-3/text-to-video/draft');
+ });

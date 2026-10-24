@@ -205,7 +205,7 @@ export function VideoExcerptSelector({
           </label>)}
           <div className="video-excerpt-duration" aria-live="polite"><span>{copy.length}</span><strong>{Number.isFinite(range.endSec-range.startSec) ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(range.endSec-range.startSec) : '—'} <small>s</small></strong></div>
         </div>
-        <p className="video-excerpt-limits">{copy.limits}: {limits.minDurationSec ?? 0}–{limits.maxDurationSec ?? '∞'} s</p>
+        <p className="video-excerpt-limits">{copy.limits}: {number(limits.minDurationSec ?? 0)}–{limits.maxDurationSec == null ? '∞' : number(limits.maxDurationSec)} s</p>
         {!valid ? <p role="alert">{copy.invalid}</p> : null}
         {error ? <p role="alert">{error}</p> : null}
         {copyNotice ? <p data-testid="video-compatible-copy-disclosure" role="status">{copyNotice}</p> : null}

@@ -452,7 +452,9 @@ export function WorkspaceComposerSurface({
     (showOptionsControl && optionsOpen)
   );
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, uiLocale);
-  const quoteUnavailable = !isEngineModeQuoteReady(selectedEngine, submissionMode, preflight);
+  const ownedGenerationRequired = (selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'extend') || form.operation === 'flux-draft-enhance';
+  const quoteUnavailable = !isEngineModeQuoteReady(selectedEngine, submissionMode, preflight)
+    || (ownedGenerationRequired && (!form.extraInputValues.source_job_id || preflight?.ok !== true));
   const automaticPricingNote = getSeedanceAutomaticPricingNote({ engineId: selectedEngine.id, mode: submissionMode,
     durationOption: form.durationOption, aspectRatio: form.aspectRatio, locale: uiLocale, inheritsSourceVideo });
   const resolvedWorkflowNotice = modeUnavailableMessage ?? klingO3UnsupportedVideoReason
@@ -547,7 +549,7 @@ export function WorkspaceComposerSurface({
         disableGenerate={Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         beforeAssets={<>
             <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
-            {((selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'extend') || form.operation === 'flux-draft-enhance') ?
+            {ownedGenerationRequired ?
               <OwnedGenerationSourcePicker key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
                 operation={form.operation === 'flux-draft-enhance' ? 'flux-draft-enhance' : 'luma-extend'} locale={uiLocale}
                 sourceJobId={String(form.extraInputValues.source_job_id ?? '')}

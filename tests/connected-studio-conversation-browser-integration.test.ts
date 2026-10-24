@@ -373,8 +373,14 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.getByRole('button',{name:'Rename Native Studio film',exact:true})).toBeFocused();
     await expect(page.getByRole('dialog',{name:'Your projects',exact:true})).toBeVisible();
     await proof('projects-entry');
+    const previousProjectId=new URL(page.url()).pathname.split('/').at(-1);
+    const creation=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/studio/conversation-projects' && response.request().method()==='POST');
     await page.getByRole('button',{name:'New conversation',exact:true}).click();
-    await expect(page).toHaveURL(/\/app\/studio\/conversation\/project_/,{timeout:30000});
+    const response=await creation;
+    assert.equal(response.status(),200);
+    const created=await response.json();
+    assert.equal(created.ok,true);assert.ok(created.result.projectId);assert.notEqual(created.result.projectId,previousProjectId);
+    await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${created.result.projectId}`,{timeout:30000});
     await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
     await proof('empty-workspace');

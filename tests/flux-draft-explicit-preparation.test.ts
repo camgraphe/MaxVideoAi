@@ -8,7 +8,7 @@ import { qualifyFluxDraftPair } from '../frontend/server/flux-draft-cache';
 import { normalizeGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import { studioMediaIntentSchema } from '../frontend/lib/studio/conversation-media-contract';
 import { studioMediaRequest } from '../frontend/src/server/studio/conversation-media-generation';
-const origin={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'private-request',attemptId:1,endpoint:'blackforestlabs/flux-3/text-to-video/draft',outputUrl:'https://media.invalid/original.mp4',outputSha256:'a'.repeat(64)};
+const origin={ownerId:'owner',jobId:'draft',outputId:'out',providerRequestId:'private-request',attemptId:1,provenance:{kind:'provider_attempt' as const},endpoint:'blackforestlabs/flux-3/text-to-video/draft',outputUrl:'https://media.invalid/original.mp4',outputSha256:'a'.repeat(64)};
 const pair=qualifyFluxDraftPair(origin,{providerRequestId:origin.providerRequestId,providerVideoUrl:'https://v3.fal.media/output.mp4',cacheUrl:'https://v3.fal.media/private-cache',ownedSha256:origin.outputSha256,videoIdentity:'same',ownedVideoIdentity:'same',audioIdentity:null,ownedAudioIdentity:null,durationSec:5.56,fps:25,decodedFrameCount:139});
 const entry=getFalEngineById('flux-3-draft')!;
 const candidate={engine:entry.engine,surface:'video' as const,publicModes:entry.engine.modes,modeCaps:entry.engine.modeCaps!};

@@ -145,11 +145,12 @@ export function useWorkspaceEngineModeState({
     return engines.find((engine) => matchesEngineToken(engine, effectiveRequestedEngineToken)) ?? null;
   }, [engines, effectiveRequestedEngineToken]);
 
+  const capabilityEngine = useMemo(() => resolveSelectedWorkspaceEngine({engines,form,engineOverride}),[engines,form,engineOverride]);
   const selectedEngine = useMemo<EngineCaps | null>(() => {
-    const engine = resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
+    const engine = capabilityEngine;
     if (!engine || !form?.operation) return engine;
     return resolveVideoOperationEngine(engine, form.mode, form.operation);
-  }, [engines, form, engineOverride]);
+  }, [capabilityEngine, form]);
   const {
     supportsKlingV3Controls,
     supportsKlingV3VoiceControl,
@@ -176,8 +177,8 @@ export function useWorkspaceEngineModeState({
     capability,
     supportsAudioToggle,
   } = useMemo(
-    () => resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAssets, klingElements }),
-    [selectedEngine, form, inputAssets, klingElements]
+    () => resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEngine, form, inputAssets, klingElements }),
+    [selectedEngine, capabilityEngine, form, inputAssets, klingElements]
   );
 
   const klingO3DisabledEngineReasons = useMemo(
@@ -349,22 +350,22 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode)) return;
-      const nextMode = getPreferredEngineMode(selectedEngine, mode);
-      setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
+      if (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)) return;
+      const nextMode = getPreferredEngineMode(capabilityEngine, mode);
+      setForm((current) => coerceFormState(capabilityEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
-    [selectedEngine, setForm, workspaceExecutableModes]
+    [selectedEngine, capabilityEngine, setForm, workspaceExecutableModes]
   );
 
   const composerModeToggles = useMemo(
     () =>
       buildComposerModeToggles({
-        selectedEngine,
+        selectedEngine:capabilityEngine,
         audioWorkflowLocked,
         uiLocale,
         workflowCopy,
       }),
-    [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]
+    [audioWorkflowLocked, capabilityEngine, uiLocale, workflowCopy]
   );
 
   const showRetakeWorkflowAction = Boolean(selectedEngine?.id === 'ltx-2-3' && selectedEngine.modes.includes('retake'));
@@ -391,13 +392,13 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
+      if (mode && (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
       const nextMode = mode ?? implicitMode;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
       setForm((current) => coerceFormState(base, nextMode, current ? { ...current, mode: nextMode,
         ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null));
     },
-    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3]
+    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3]
   );
 
   const formEngineId = form?.engineId;

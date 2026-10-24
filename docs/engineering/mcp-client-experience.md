@@ -709,3 +709,15 @@ decisions without changing any decision. New offline policy fingerprint:
 `0c7a391564438cde26daa38dd997c67e73762dd37358960a7d93c622a3ea869e`.
 The instructions and tool descriptions remain unchanged; the existing byte-budget
 tests remain the size authority.
+
+
+## Explicit source preparation — 24 October 2026 follow-up
+
+The canonical evaluator now includes the reviewed explicit owned Draft preparation
+schema and source-operation controls. Recovery remains an explicit preparation
+step; read-only discovery/status never submits generation or writes cache authority.
+The collector (`collectPolicyFingerprintInput` then `computePolicyFingerprintSha256`)
+reports `35c0f9e9b5d2e1e8ea75c36c8d65d907e54ba7294e14355625c1ca33ca2a24d9`.
+Only the policy fingerprint changed in the curated fixture; all 70 decisions and
+fixture-contract hash `05f0fd68e1f8b0a403760bd68368a1cfeb73d85308750ffbc6808dc7e08cdb04`
+remain unchanged. Offline gates do not establish hosted preparation or deployment.

@@ -1,7 +1,7 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { resolveOwnedLumaGenerationSource } from '@/server/agent-api/generation-luma-lineage';
 import { resolveFluxDraftOrigin } from '@/server/flux-draft-cache-store';
-import { FLUX_NATIVE_DRAFT_ENDPOINTS } from '@/server/flux-draft-cache';
+import { sameFluxDraftOrigin } from '@/server/flux-draft-cache';
 import type { OwnedGenerationSourceOperation, OwnedGenerationSourcePage } from '@/lib/owned-generation-source';
 
 type SourceRow = {recordId:string;jobId:string;outputId:string;label:string|null;createdAt:string;durationSec:number|null;cacheState:'ready'|'prepare'|'unavailable';qualifiedSource?:unknown};
@@ -21,10 +21,9 @@ export async function listOwnedGenerationSources(userId:string,input:{operation:
     WHERE j.user_id=$1 AND j.engine_id=$2 AND j.surface='video' AND j.status='completed' AND COALESCE(j.hidden,false)=false
       AND j.video_url=COALESCE(o.storage_url,o.url) AND ($3::bigint IS NULL OR j.id<$3)
       AND ($4::text IS NULL OR j.job_id=$4)
-      AND EXISTS(SELECT 1 FROM provider_attempts a WHERE a.job_id=j.id AND a.provider=j.provider AND a.provider_job_id=j.provider_job_id
-        AND a.status='completed' AND a.provider_model=ANY($5::text[]))
-    ORDER BY j.id DESC LIMIT 26`,[userId,flux?'flux-3-draft':'luma-ray-3-2',input.cursor??null,input.sourceJobId??null,
-      flux?[...FLUX_NATIVE_DRAFT_ENDPOINTS]:['ray-3.2']]);
+      ${flux ? "AND j.provider='fal'" : `AND EXISTS(SELECT 1 FROM provider_attempts a WHERE a.job_id=j.id AND a.provider=j.provider AND a.provider_job_id=j.provider_job_id
+        AND a.status='completed' AND a.provider_model=ANY($5::text[]))`}
+    ORDER BY j.id DESC LIMIT 26`,[userId,flux?'flux-3-draft':'luma-ray-3-2',input.cursor??null,input.sourceJobId??null,...(flux?[]:[['ray-3.2']])]);
   const sources:OwnedGenerationSourcePage['sources']=[];
   for(const row of rows.slice(0,25)) {
     try {
@@ -33,8 +32,7 @@ export async function listOwnedGenerationSources(userId:string,input:{operation:
         const origin=await dependencies.flux({userId,sourceJobId:row.jobId,sourceOutputId:row.outputId,executor:dependencies.executor});
         if(preparation==='ready') {
           const qualified=row.qualifiedSource;
-          if(!qualified||typeof qualified!=='object'||Array.isArray(qualified)
-            ||Object.entries(origin).some(([key,value])=>(qualified as Record<string,unknown>)[key]!==value)) preparation='unavailable';
+          if(!sameFluxDraftOrigin(origin,qualified)) preparation='unavailable';
         }
       }
       else await dependencies.luma({actor:{userId},sourceJobId:row.jobId,expectedOutputId:row.outputId,executor:dependencies.executor});

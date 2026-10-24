@@ -20,7 +20,7 @@ test('owned source listing uses ready outputs even without a media asset and nev
 });
 
 test('read-only Draft readiness distinguishes absent, raw and matching qualified provenance without cache IO',async()=>{
- const origin={ownerId:'owner',jobId:'draft',outputId:'output',providerRequestId:'private-request',attemptId:2,endpoint:'draft-endpoint',outputUrl:'owned',outputSha256:'a'.repeat(64)};
+ const origin={ownerId:'owner',jobId:'draft',outputId:'output',providerRequestId:'private-request',attemptId:2,provenance:{kind:'provider_attempt' as const},endpoint:'draft-endpoint',outputUrl:'owned',outputSha256:'a'.repeat(64)};
  for(const [qualifiedSource,expected]of [[null,'prepare'],[{},'unavailable'],[{...origin,attemptId:1},'unavailable'],[{...origin,cacheUrl:'private-cache'},'ready']] as const){
   const executor={query:async()=>[{recordId:'1',jobId:'draft',outputId:'output',label:'Draft',createdAt:'2026-10-24',durationSec:5,cacheState:qualifiedSource?'ready':'prepare',qualifiedSource}]} as any;
   const page=await listOwnedGenerationSources('owner',{operation:'flux-draft-enhance'},{executor,flux:async()=>origin,luma:async()=>{throw new Error('Wrong lineage');}});

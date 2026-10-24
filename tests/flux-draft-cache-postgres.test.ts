@@ -9,10 +9,12 @@ test('private Draft cache binds current owner, attempt, exact output and survive
  assert.equal(process.env.DATABASE_URL,undefined);const pg=await startDisposablePostgres('flux-draft-cache');process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();delete process.env.DATABASE_URL;await pg.cleanup();});
  await pg.pool.query(`CREATE TABLE app_jobs(id bigserial PRIMARY KEY,job_id text,user_id text,engine_id text,provider text,provider_job_id text,surface text,status text,hidden boolean,video_url text);
+ CREATE TABLE fal_queue_log(id bigserial PRIMARY KEY,job_id text,provider text,provider_job_id text,engine_id text,status text,payload jsonb);
  CREATE TABLE provider_attempts(id bigserial PRIMARY KEY,job_id bigint,provider text,provider_model text,provider_job_id text,status text);
  CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,position int,status text,url text,storage_url text,metadata jsonb);
  CREATE TABLE media_assets(public_id text,source_output_id text,source_job_id text,user_id text,status text,deleted_at timestamptz);`);
  await pg.pool.query(readFileSync('neon/migrations/79_flux_draft_cache_sources.sql','utf8'));
+ await pg.pool.query(readFileSync('neon/migrations/80_flux_draft_origin_provenance.sql','utf8'));
  await pg.pool.query(`INSERT INTO app_jobs(job_id,user_id,engine_id,provider,provider_job_id,surface,status,hidden,video_url) VALUES('draft','owner','flux-3-draft','fal','request','video','completed',false,'owned');
  INSERT INTO provider_attempts(job_id,provider,provider_model,provider_job_id,status) VALUES(1,'fal','blackforestlabs/flux-3/image-to-video/draft','request','completed');
  INSERT INTO media_assets VALUES('asset','out','draft','owner','ready',NULL);`);

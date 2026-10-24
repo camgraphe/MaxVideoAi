@@ -37,11 +37,12 @@ export async function prepareH3RelightCopy(bytes: Uint8Array, mimeType: string, 
   try {
     const input = join(directory,'source'), output = join(directory,'relight.mp4');
     await writeFile(input,bytes);
+    // One track tick per frame preserves exact video duration with the bundled Linux MP4 muxer/probe.
     await promisify(execFile)(await ensureExecutableFfmpegPath(ffmpeg.path),[
       '-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-ss',String(selected.startSec),'-i',input,
       '-map',`0:${source.videoStreamIndex??0}`,'-map','0:a:0?','-map_metadata','-1',
       '-vf',`fps=24,trim=end_frame=${plan.frameCount},setpts=PTS-STARTPTS`,
-      '-t',String(plan.durationSec),'-c:v','libx264','-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2',
+      '-t',String(plan.durationSec),'-c:v','libx264','-video_track_timescale','24','-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2',
       '-c:a','aac','-ar','48000', ...(source.hasAudio ? ['-af',`atrim=end=${plan.durationSec-1024/48000},asetpts=PTS-STARTPTS`] : []),
       '-movflags','+faststart','-y',output,
     ],{timeout:90_000,maxBuffer:1024*1024});
