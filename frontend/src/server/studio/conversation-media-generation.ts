@@ -1,7 +1,7 @@
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { qualifyFluxLtxSourceReference } from '@/server/agent-api/flux-ltx-source-reference';
 import type { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
-import { resolveStudioFluxDraftSource } from './flux-draft-source';
+import { prepareStudioFluxDraftSource, resolveStudioFluxDraftSource } from './flux-draft-source';
 import { hashH3PromotionImage } from './h3-promotion-identity';
 import { qualifyH3SourceReference } from '@/server/agent-api/h3-source-reference';
 import type { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
@@ -58,6 +58,8 @@ export async function readStudioProjectMedia(actor: StudioGenerationActor): Prom
 }
 
 export type StudioMotionSourceDependencies = {
+  resolveFluxDraftSource?: (input:Parameters<typeof import('@/server/flux-draft-cache-store').resolveOwnedFluxDraftSource>[0])=>ReturnType<typeof import('@/server/flux-draft-cache-store').resolveOwnedFluxDraftSource>;
+  prepareFluxDraftSource?: typeof import('@/server/prepare-flux-draft-source').prepareOwnedFluxDraftSource;
   lumaSourceExecutor?: import('@/lib/db').QueryExecutor;
   saveOutput?: typeof saveJobOutputToLibrary;
   readProjectMedia?: typeof readStudioProjectMedia;
@@ -214,12 +216,13 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     if(operation==='flux-draft-enhance') {
       if(selections.length!==1||selections[0].role!=='source')throw new AgentApiError('REFERENCE_REQUIRED','Select one attached or ready native Draft output.');
       const selected=selections[0].ref;await requireStudioMediaSource(actor,selected,input,dependencies);
-      const source=await resolveStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor);
-      const request=normalizeGenerationRequest({surface:'video',engineId:'flux-3-draft',mode:'v2v',operation:'flux-draft-enhance',sourceJobId:source.jobId,sourceOutputId:source.outputId,prompt:'',settings:{resolution:'1080p',...settings},references:[],outputCount:1});
+      const request=normalizeGenerationRequest({surface:'video',engineId:'flux-3-draft',mode:'v2v',operation:'flux-draft-enhance',prompt:'',settings:{resolution:'1080p',...settings},references:[],outputCount:1});
       validateCanonicalGenerationCapabilities(request,candidate);
+      const source=await prepareStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor,dependencies.prepareFluxDraftSource);
+      request.sourceJobId=source.jobId; request.sourceOutputId=source.outputId;
       return {materialize:async()=>{
         await requireStudioMediaSource(actor,selected,input,dependencies);
-        const current=await resolveStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor);
+        const current=await resolveStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor,dependencies.resolveFluxDraftSource);
         if(current.fingerprint!==source.fingerprint)throw new AgentApiError('REFERENCE_INVALID','The Draft source changed.');
         return request as CanonicalGenerationRequest & {surface:'video'};
       }};

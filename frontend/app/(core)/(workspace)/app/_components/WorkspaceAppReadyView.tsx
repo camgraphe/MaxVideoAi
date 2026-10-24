@@ -333,6 +333,7 @@ export function WorkspaceAppReadyView({
         setViewerTarget={setViewerTarget}
         composerSurface={
           <WorkspaceComposerSurface
+            sourceAccount={workflowAccount}
             localDraftPreview={draftControls}
             selectedEngine={selectedEngine}
             form={form}

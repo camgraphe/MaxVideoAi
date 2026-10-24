@@ -627,7 +627,7 @@ test('workspace unifies Luma Ray 3.2 text and image generation under Generate Vi
         audioLockedFallback: 'Audio locked',
       },
     })?.map((entry) => entry.mode),
-    [null, 'v2v', 'reframe']
+    [null, 'v2v', 'reframe', 'extend']
   );
 
   const generateSchema = summarizeWorkspaceInputSchema({
@@ -951,4 +951,21 @@ test('workspace hides Veo manual workflow toggles when the mode is not actually 
     })?.map((entry) => entry.mode),
     [null, 'ref2v']
   );
+});
+
+import {resolveVideoOperationEngine} from '../frontend/lib/video-operation';
+test('specialized source requests omit stale creative aliases and requested frames while preserving owned source binding',()=>{
+ for(const [id,mode,operation]of [['flux-3','v2v','flux-fast-edit'],['flux-3-draft','v2v','flux-draft-enhance'],['minimax-h3-max','v2v','h3-relight'],['ltx-2-3','reframe','ltx23-reframe']] as const){
+  const engine=resolveVideoOperationEngine(listFalEngines().find(e=>e.id===id)!.engine,mode,operation),caps=engine.modeCaps![mode]!;
+  const form=baseForm({engineId:id,mode,operation,numFrames:121,extraInputValues:{source_job_id:'own-draft',source_output_id:'own-output'}});
+  const result=buildWorkspaceGeneratePayload({selectedEngineId:id,activeMode:mode,submissionMode:mode,form,
+   trimmedPrompt:'Previous creative prompt',trimmedNegativePrompt:'',effectiveDurationSec:5.56,paymentMode:'wallet',capability:caps,inputSchema:engine.inputSchema,
+   supportsNegativePrompt:false,supportsAudioToggle:false,isSeedance:false,supportsKlingV3Controls:false,supportsKlingV3VoiceControl:false,voiceIds:[],voiceControlEnabled:false,shotType:'customize',
+   localKey:'local',batchId:'batch',iterationIndex:0,iterationCount:1,friendlyMessage:'Test',lumaContext:getLumaRay2GenerationContext({selectedEngineId:id,submissionMode:mode,form}),
+   inputsPayload:[],primaryImageUrl:'https://stale/image',primaryAudioUrl:'https://stale/audio',referenceImageUrls:['https://stale/ref'],endImageUrl:'https://stale/end',extraInputValues:form.extraInputValues,
+  }).payload;
+  for(const key of ['durationSec','durationOption','numFrames','fps','audio','imageUrl','audioUrl','referenceImages','endImageUrl'])assert.equal((result as any)[key],undefined,`${operation}:${key}`);
+  assert.equal(result.prompt,operation==='flux-fast-edit'?'Previous creative prompt':'');
+  if(operation==='flux-draft-enhance'){assert.equal(result.sourceJobId,'own-draft');assert.equal(result.sourceOutputId,'own-output');}
+ }
 });

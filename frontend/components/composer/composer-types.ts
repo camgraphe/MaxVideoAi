@@ -92,6 +92,7 @@ export interface ComposerProps {
     error?: string | null;
   } | null;
   extraFields?: ReactNode;
+  beforeAssets?: React.ReactNode;
   afterAssets?: ReactNode;
   disableGenerate?: boolean;
   workflowNotice?: string | null;

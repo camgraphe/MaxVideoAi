@@ -77,6 +77,7 @@ export function Composer({
   promotedActions,
   multiPrompt,
   extraFields,
+  beforeAssets,
   afterAssets,
   disableGenerate,
   workflowNotice,
@@ -326,6 +327,7 @@ export function Composer({
                   return (
                     <Button
                       key={entry.mode ?? 'base'}
+                      data-composer-mode={entry.mode ?? 'create'}
                       type="button"
                       size="sm"
                       variant={active ? 'primary' : 'outline'}
@@ -345,6 +347,7 @@ export function Composer({
           </div>
         </div>
 
+        {beforeAssets}
         {workspaceDensity && assetFields.length > 0 ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
@@ -356,7 +359,7 @@ export function Composer({
           {afterAssets}
         </> : null}
 
-        <div className="space-y-3">
+        <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
               className={clsx(
                 'app-prompt-surface overflow-visible rounded-[28px] border bg-surface dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.94),rgba(19,28,38,0.98))]',

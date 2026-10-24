@@ -40,9 +40,6 @@ export const EXPECTED_VIDEO_PROVIDER_MODES:Record<string,readonly string[]>={
  'flux-3-max':['t2v','i2v','fl2v','ref2v'],
  'flux-3-draft':['t2v','i2v','fl2v','extend','ref2v','v2v'],
 };
-/** These expected actions are explicitly tracked integration debt owned by Task6A.
- * Delete entries when UI implementation arrives; never add provider modes to this list. */
-export const SITE_ACTION_GAPS_PENDING_TASK6=new Set(['luma-ray-3-2:extend','ltx-2-3:reframe','flux-3:ref2v','flux-3-draft:ref2v']);
 export const PROVIDER_PARITY_EXCLUSIONS={
  'gemini-omni-flash':{mcp:['retake'],reason:'Owned provider interaction resolver is required; source limit 10 versus 30 seconds remains unresolved.'},
  'minimax-h3-max':{pending:['extend','insert','reframe'],reason:'Human decision retains unanchored new tariff domains as pending.'},

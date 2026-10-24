@@ -92,7 +92,8 @@ export function useWorkspacePricingGate({
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
   const waitingForExcerpt = selectedEngine && mediaExcerptNeedsSelection(selectedEngine, submissionMode, inputAssets);
-  const waitingForVideoSource = isVideoSourceWorkflow(submissionMode)
+  const ownedGenerationRequired = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'extend') || form?.operation === 'flux-draft-enhance';
+  const waitingForVideoSource = (ownedGenerationRequired && !form?.extraInputValues.source_job_id) || isVideoSourceWorkflow(submissionMode)
     && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
     && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({

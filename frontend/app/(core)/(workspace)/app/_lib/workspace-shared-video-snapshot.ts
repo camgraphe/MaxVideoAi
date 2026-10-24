@@ -8,7 +8,18 @@ export function hasPublishedRecreationSnapshot(shared: SharedVideoPreview): bool
 }
 
 export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVideoPreview): unknown {
-  if (hasPublishedRecreationSnapshot(sharedVideo)) return sharedVideo.recreationSnapshot;
+  if (hasPublishedRecreationSnapshot(sharedVideo)) {
+    // A published recipe transfers creative settings, never private provider lineage.
+    // Personal job recall uses the authenticated job route and retains its own source binding.
+    const record = sharedVideo.recreationSnapshot as unknown as Record<string, unknown>;
+    const advanced = record.advanced && typeof record.advanced === 'object' ? record.advanced as Record<string, unknown> : {};
+    const extra = advanced.extraInputValues && typeof advanced.extraInputValues === 'object'
+      ? advanced.extraInputValues as Record<string, unknown> : {};
+    const settings = { ...record }, reusable = { ...extra };
+    delete settings.sourceJobId; delete settings.sourceOutputId;
+    delete reusable.source_job_id; delete reusable.source_output_id;
+    return { ...settings, advanced: { ...advanced, extraInputValues: reusable } };
+  }
   const recipe = parsePublicKeyframeRecipe(sharedVideo.keyframeRecipe);
   if (recipe && recipe.jobId === sharedVideo.id && recipe.engineId === sharedVideo.engineId) {
     return buildPublicKeyframeSettingsSnapshot(recipe);

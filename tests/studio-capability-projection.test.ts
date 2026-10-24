@@ -88,7 +88,7 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
       mode: 'i2v',
       references: [
         { type: 'image', roles: ['first_frame'], assetRequired: false, required: true, min: 1, max: 1 },
-        { type: 'image', roles: ['last_frame'], assetRequired: false, required: false, min: 0, max: 1 },
+        { type: 'image', roles: ['last_frame'], assetRequired: false, required: false, min: 0, max: 1, description: 'Only valid with start_image_url.' },
       ],
     },
   },
@@ -115,11 +115,11 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
         {
           type: 'image', roles: ['reference'], assetRequired: false,
           assetRequiredWhen: { setting: 'resolution', values: ['auto'] },
-          required: true, min: 1, max: 16,
+          required: true, min: 1, max: 16, description: 'Add up to 16 source or reference images for edit mode.',
           maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
           acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
         },
-        { type: 'image', roles: ['mask'], assetRequired: false, required: false, min: 0, max: 1,
+        { type: 'image', roles: ['mask'], assetRequired: false, required: false, min: 0, max: 1, description: 'Optional public mask image URL for edit requests.',
           maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
           acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'] },
       ],

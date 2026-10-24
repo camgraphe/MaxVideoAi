@@ -239,6 +239,8 @@ export type EngineModeAvailability = Readonly<{
 }>;
 
 export interface EngineCaps {
+  /** Effective client projection; request validation still resolves the canonical catalog. */
+  activeVideoOperation?: import('@/lib/video-operation').VideoOperation;
   operationCaps?: Partial<Record<import('@/lib/video-operation').VideoOperation, import('@/lib/video-operation').VideoOperationCaps>>;
   id: string;
   label: string;

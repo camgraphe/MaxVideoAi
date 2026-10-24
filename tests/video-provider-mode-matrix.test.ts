@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EXPECTED_VIDEO_PROVIDER_MODES as expected,SITE_ACTION_GAPS_PENDING_TASK6 as pending,PROVIDER_PARITY_EXCLUSIONS } from './fixtures/video-provider-mode-parity';
+import { EXPECTED_VIDEO_PROVIDER_MODES as expected,PROVIDER_PARITY_EXCLUSIONS } from './fixtures/video-provider-mode-parity';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { listPublicAgentModes } from '../frontend/src/server/agent-api/public-engine-policy';
 import { isStudioConversationVideoModeCertified } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
@@ -17,14 +17,14 @@ test('independent 38-provider matrix preserves exact native modes, public canoni
   for(const mode of publicModes)assert.equal(isStudioConversationVideoModeCertified(id,mode),true,`${id}:${mode}: Studio`);
  }
 });
-test('expected source actions are tested independently of workspace availability and explicitly enumerate remaining Task6 UI gaps',()=>{
+test('expected source actions are tested independently of workspace availability for every audited entry',()=>{
  for(const [id,modes]of Object.entries(expected)){
   const engine=getFalEngineById(id)!.engine;
   const actions=buildComposerModeToggles({selectedEngine:engine,audioWorkflowLocked:false,uiLocale:'en',workflowCopy})?.map(t=>t.mode)??[];
   const required=modes.filter(m=>['v2v','extend','reframe'].includes(m)||((id.startsWith('flux-3')||id==='veo-3-1'||id==='veo-3-1-fast')&&m==='ref2v'));
-  for(const mode of required){if(pending.has(`${id}:${mode}`))continue;assert.ok(actions.includes(mode as any),`${id}:${mode}: expected Site action missing`);}
+  for(const mode of required){assert.ok(actions.includes(mode as any),`${id}:${mode}: expected Site action missing`);}
  }
- assert.equal(pending.size,4,'Task6A must close the explicit debt, not infer readiness from this test');
+
 });
 test('specialized exclusions never borrow a different model endpoint',()=>{
  assert.ok(PROVIDER_PARITY_EXCLUSIONS['minimax-h3-max'].pending.includes('insert'));

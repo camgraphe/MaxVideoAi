@@ -9,14 +9,15 @@ import React,{act} from 'react';import {createRoot} from 'react-dom/client';
 import {useWorkspaceAssetState} from './app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import {useWorkspaceVideoExcerpt} from './app/(core)/(workspace)/app/_hooks/useWorkspaceVideoExcerpt';
 import {getBaseEngineIncludingHidden} from './src/lib/engines';
+import {resolveVideoOperationEngine} from './lib/video-operation';
 import {getVideoExcerptLimits} from './lib/video-excerpt';
 import {getVideoWorkflowSourceState} from './lib/video-source-workflow';
 import {useWorkspacePricingGate} from './app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate';
 import {resolveWorkspaceWorkflow,resolveWorkspaceComposerFacts} from './app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
 import {buildComposerAttachments} from './app/(core)/(workspace)/app/_lib/workspace-assets';
-function Main(){const state=useWorkspaceAssetState(window.owner);const engine=getBaseEngineIncludingHidden(window.engineId);
+function Main(){const state=useWorkspaceAssetState(window.owner);const engine=resolveVideoOperationEngine(getBaseEngineIncludingHidden(window.engineId),window.mode,window.operation);
 const actions=useWorkspaceVideoExcerpt({accountScope:window.owner,engine,mode:window.mode,inputAssets:state.inputAssets,commitInputAssetMutation:state.commitInputAssetMutation});
-const form={engineId:window.engineId,mode:window.mode,durationSec:15,resolution:'720p',aspectRatio:'16:9',fps:24,iterations:1,audio:false,extraInputValues:{}};
+const form={engineId:window.engineId,mode:window.mode,operation:window.operation,durationSec:15,resolution:'720p',aspectRatio:'16:9',fps:24,iterations:1,audio:false,extraInputValues:{}};
 const workflow=resolveWorkspaceWorkflow({engine,form,inputAssets:state.inputAssets,klingElements:[]});
 const facts=resolveWorkspaceComposerFacts({engine,form,workflow:{...workflow,submissionMode:window.mode},prompt:'edit',multiPromptEnabled:false,multiPromptScenes:[],voiceIdsInput:''});
 const pricing=useWorkspacePricingGate({accessToken:'token-'+window.owner,locale:'en',topUpCopy:{},form,selectedEngine:engine,authChecked:!!window.pricingEnabled,memberTier:'Member',setMemberTier:()=>{},supportsAudioToggle:false,effectiveDurationSec:facts.effectiveDurationSec,voiceControlEnabled:false,submissionMode:window.mode,inputAssets:state.inputAssets});
@@ -477,4 +478,20 @@ for(const change of ['cancel','model','account','source'])test(`late full-timeli
   f.w.holdSourceRead.resolve({ok:true,json:async()=>({ok:true,previewUrl:'https://example.invalid/stale-private'})});
   await assert.rejects(pending!, (e:any)=>e.name==='AbortError');
  }finally{await f.dispose();}
+});
+
+test('whole FAST MOV is always prepared and operation switches discard a pending copy',async()=>{
+ const fx=await mount(5.56);
+ try{
+  await fx.w.fx.act(async()=>{fx.w.engineId='flux-3';fx.w.operation='flux-fast-edit';fx.w.fx.render();});
+  await fx.open();const applying=await fx.apply({startSec:0,endSec:5.56});
+  assert.equal(fx.requests.length,1,'whole unchanged source still requires MP4 conversion');
+  assert.equal(JSON.parse(fx.requests[0].init.body).operation,'flux-fast-edit');
+  await fx.w.fx.act(async()=>{fx.w.engineId='minimax-h3-max';fx.w.operation='h3-relight';fx.w.fx.render();});
+  await fx.respond();await applying.result;
+  assert.equal(fx.w.probe.inputAssets.video_url[0].assetId,'owned-source');
+  await fx.open();const relight=await fx.apply({startSec:0,endSec:5.56});
+  const request=JSON.parse(fx.requests[1].init.body);assert.equal(request.operation,'h3-relight');assert.equal(request.acceptedCopyDurationSec,124/24);
+  await fx.respond(1);await relight.result;
+ }finally{await fx.dispose();}
 });

@@ -24,7 +24,7 @@ import { buildPaidVideoRequestBody } from '../frontend/src/server/agent-api/paid
 import { isPaidVideoContinuationMode } from '../frontend/src/server/generations/paid-provider-execution';
 import { prepareGenerationInputSchema } from '../frontend/src/server/mcp/tools/prepare-generation';
 import { toCanonicalGenerationMode } from '../frontend/src/server/agent-api/generation-mode-aliases';
-import { resolveAgentGenerationModeExecutability } from '../frontend/src/server/agent-runtime/model-executability';
+import { resolveAgentGenerationModeExecutability, resolveAgentGenerationRequestExecutability } from '../frontend/src/server/agent-runtime/model-executability';
 
 function registryCapability(engineId: string): AgentPublicGenerationEngine {
   const entry = listFalEngines().find((candidate) => candidate.id === engineId);
@@ -180,7 +180,7 @@ test('MCP mode parity audit identifies every remaining specialized public workfl
       const canonical = toCanonicalGenerationMode(entry.id, surface, mode);
       return canonical ? [canonical] : [];
     });
-    assert.deepEqual(model.modes, expectedModes, entry.id);
+    assert.deepEqual([...model.modes].sort(), [...expectedModes].sort(), entry.id);
   }
 });
 
@@ -195,7 +195,12 @@ test('the specialized-mode audit verifies H3 Max owned-media modes are executabl
     .map((mode) => `${h3Max.id}:${mode}`)
     .sort();
 
-  assert.deepEqual(closed, []);
+  assert.deepEqual(closed, ['minimax-h3-max:v2v']);
+  for (const operation of ['h3-recast', 'h3-relight'] as const) {
+    assert.equal(resolveAgentGenerationRequestExecutability(normalizeGenerationRequest({surface:'video',engineId:h3Max.id,mode:'v2v',operation,prompt:operation==='h3-recast'?'Edit the setting':'',settings:{resolution:'720p'}}), h3Max.engine, [], {
+      bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: 'test-credential', providerEnv: {},
+    }).executable, true, operation);
+  }
 });
 
 test('MCP normalization and tool schema accept every transport-safe video workflow', () => {

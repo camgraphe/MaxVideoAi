@@ -1,4 +1,5 @@
-import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { isKlingO3EngineId } from '../_lib/kling-o3-unified-workflow';
+import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
@@ -199,9 +200,10 @@ export function useWorkspaceEngineModeState({
     if (form.mode === implicitMode) return;
     setForm((current) => {
       if (!current || current.mode === implicitMode) return current;
-      return coerceFormState(selectedEngine, implicitMode, { ...current, mode: implicitMode });
+      return coerceFormState(engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine, implicitMode, { ...current, mode: implicitMode,
+        ...(isUnifiedKlingO3 && implicitMode === 'v2v' ? {operation:'kling-reference'} : {}) });
     });
-  }, [activeManualMode, form, implicitMode, selectedEngine, setForm]);
+  }, [activeManualMode, form, implicitMode, selectedEngine, setForm, engines, isUnifiedKlingO3]);
 
   useEffect(() => {
     if (!supportsKlingV3Controls) return;
@@ -295,7 +297,7 @@ export function useWorkspaceEngineModeState({
       return;
     }
     if (!authChecked || hydratedForScope !== storageScope || !form) return;
-    const requestKey = JSON.stringify([storageScope, requestedWorkflow.engineToken, requestedWorkflow.mode, requestedWorkflow.mediaToken]);
+    const requestKey = JSON.stringify([storageScope, requestedWorkflow.engineToken, requestedWorkflow.mode, requestedWorkflow.mediaToken, requestedWorkflow.operation]);
     if (appliedWorkflowRequestRef.current === requestKey) return;
     const engine = engines.find((entry) => matchesEngineToken(entry, requestedWorkflow.engineToken));
     if (!engine) return;
@@ -305,8 +307,13 @@ export function useWorkspaceEngineModeState({
     setForm((current) => {
       if (!current) return current;
       const mode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: requestedWorkflow.mode, carryoverMode: current.mode });
-      if (current.engineId === engine.id && current.mode === mode) return current;
-      return coerceFormStateForEngineChange(engine, mode, current);
+      let operation;
+      const requestedOperation = requestedWorkflow.operation ?? (!isKlingO3EngineId(engine.id)
+        ? Object.values(engine.operationCaps ?? {}).find(value => value.mode === mode && value.defaultForMode)?.operation
+        : undefined);
+      try { operation = normalizeVideoOperation(engine.id, mode, requestedOperation); } catch { return current; }
+      if (current.engineId === engine.id && current.mode === mode && current.operation === operation) return current;
+      return coerceFormStateForEngineChange(engine, mode, {...current,operation});
     });
   }, [authChecked, engines, form, hydratedForScope, requestedWorkflow, setForm, storageScope]);
 
@@ -386,11 +393,11 @@ export function useWorkspaceEngineModeState({
       }
       if (mode && (!workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
       const nextMode = mode ?? implicitMode;
-      setForm((current) =>
-        coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
-      );
+      const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
+      setForm((current) => coerceFormState(base, nextMode, current ? { ...current, mode: nextMode,
+        ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null));
     },
-    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes]
+    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3]
   );
 
   const formEngineId = form?.engineId;

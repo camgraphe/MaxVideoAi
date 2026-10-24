@@ -1,3 +1,4 @@
+import type { VideoExcerptRange } from '@/lib/video-excerpt';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { execFile } from 'node:child_process';
@@ -27,15 +28,17 @@ export async function inspectOwnedH3Source(url: string, operation: H3SourceOpera
 }
 /** Explicit opt-in compatible copy; never changes the original or the generic excerpt profile.
  * Present plan.actual duration BEFORE calling. Task6 routes/persists the resulting owned copy. */
-export async function prepareH3RelightCopy(bytes: Uint8Array, mimeType: string): Promise<{bytes:Buffer;facts:VideoExcerptFacts; plan:ReturnType<typeof planH3RelightCopy>;sourceSha256:string}> {
+export async function prepareH3RelightCopy(bytes: Uint8Array, mimeType: string, range?: VideoExcerptRange): Promise<{bytes:Buffer;facts:VideoExcerptFacts; plan:ReturnType<typeof planH3RelightCopy>;sourceSha256:string}> {
   const source = await inspectVideoExcerptBytes(bytes,mimeType,{decodedFrames:true});
-  const plan = planH3RelightCopy(source.durationSec);
+  const selected = range ?? { startSec: 0, endSec: source.durationSec };
+  if (selected.startSec < 0 || selected.endSec > source.durationSec || selected.endSec <= selected.startSec) throw new Error('Choose a valid source range.');
+  const plan = planH3RelightCopy(selected.endSec - selected.startSec);
   const directory = await mkdtemp(join(tmpdir(),'h3-relight-'));
   try {
     const input = join(directory,'source'), output = join(directory,'relight.mp4');
     await writeFile(input,bytes);
     await promisify(execFile)(await ensureExecutableFfmpegPath(ffmpeg.path),[
-      '-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-i',input,
+      '-hide_banner','-loglevel','error','-nostdin','-threads','2','-protocol_whitelist','file,pipe','-ss',String(selected.startSec),'-i',input,
       '-map',`0:${source.videoStreamIndex??0}`,'-map','0:a:0?','-map_metadata','-1',
       '-vf',`fps=24,trim=end_frame=${plan.frameCount},setpts=PTS-STARTPTS`,
       '-t',String(plan.durationSec),'-c:v','libx264','-pix_fmt','yuv420p','-preset','veryfast','-crf','18','-threads','2',

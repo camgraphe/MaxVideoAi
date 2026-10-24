@@ -9,7 +9,7 @@ import { useSeedanceDraftWorkflow } from '../frontend/app/(core)/(workspace)/app
 import { SeedanceDraftLocalPreviewMode } from '../frontend/app/(core)/(workspace)/app/_components/SeedanceDraftLocalPreviewMode.client';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 
-for (const mode of ['ref2v', 'v2v', 'extend'] as const) test(`${mode}: creator Draft uses its own quote, locks 480p, and recovers one persisted job after an ambiguous response`, async () => {
+for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const) test(`${mode}: creator Draft uses its own quote, locks 480p, and recovers one persisted job after an ambiguous response`, async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const quotes: any[] = [], submissions: any[] = [];
@@ -24,7 +24,7 @@ for (const mode of ['ref2v', 'v2v', 'extend'] as const) test(`${mode}: creator D
   const form = { engineId: 'seedance-2-5', mode, durationSec: 5, durationOption: 'auto', resolution: '720p', aspectRatio: 'auto', audio: true, fps: 24, iterations: 1,
     extraInputValues: { output_format: 'mov', return_last_frame: true, watermark: true } } as FormState;
   const sourceSlot = mode === 'ref2v' ? 'video_urls' : mode === 'v2v' ? 'video_url' : 'extension_source_videos';
-  const inputs = [{ name: 'owned.mp4', type: 'video/mp4', size: 100, kind: 'video' as const, slotId: sourceSlot, assetId: 'owned-video', url: 'https://cdn.example/video.mp4' },
+  const inputs = mode === 't2v' ? [] : mode === 'i2v' ? [{ name:'owned.png',type:'image/png',size:100,kind:'image' as const,slotId:'image_url',assetId:'owned-image',url:'https://cdn.example/image.png' }] : [{ name: 'owned.mp4', type: 'video/mp4', size: 100, kind: 'video' as const, slotId: sourceSlot, assetId: 'owned-video', url: 'https://cdn.example/video.mp4' },
     { name: 'owned.mp3', type: 'audio/mp3', size: 100, kind: 'audio' as const, slotId: 'audio_urls', assetId: 'owned-audio', url: 'https://cdn.example/audio.mp3' }];
   const preflightInputs = inputs.map(({ assetId, slotId, kind, url }) => ({ assetId, slotId, kind, url }));
   function Fixture() {

@@ -25,6 +25,7 @@ type ShotType = 'customize' | 'intelligent';
 
 type VideoSettingsRecord = {
   sourceJobId?: unknown;
+  sourceOutputId?: unknown;
   operation?: unknown;
   schemaVersion?: unknown;
   surface?: unknown;
@@ -328,7 +329,7 @@ export function resolveVideoSettingsSnapshot(
       seed: readInteger(advanced.seed) ?? null,
       cameraFixed: typeof advanced.cameraFixed === 'boolean' ? advanced.cameraFixed : undefined,
       safetyChecker: typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined,
-      extraInputValues: { ...(coerceStoredExtraInputValues(advanced.extraInputValues) ?? {}), ...(typeof record.sourceJobId === 'string' ? { source_job_id: record.sourceJobId } : {}) },
+      extraInputValues: { ...(coerceStoredExtraInputValues(advanced.extraInputValues) ?? {}), ...(typeof record.sourceJobId === 'string' ? { source_job_id: record.sourceJobId } : {}), ...(typeof record.sourceOutputId === 'string' ? { source_output_id: record.sourceOutputId } : {}) },
     },
     inputAssets: readSnapshotInputAssets(snapshotReferenceInputs(refs, engine, mode)),
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')

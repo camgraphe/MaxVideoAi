@@ -23,7 +23,7 @@ import type {ResolvedReference} from './reference-types';
 import {assertGenerationReferenceUrls,resolveGenerationReferencesForActor} from './resolve-generation-references';
 import type {PrepareGenerationDependencies} from './prepare-generation';
 
-export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
+export type GenerationPricingReadDependencies=Pick<PrepareGenerationDependencies,'resolveFluxLineage' | 'listPublicEngines' | 'resolveGenerationReferences' | 'resolveRequestExecutability' | 'resolveMembershipPricing' | 'priceGeneration'>;
 
 // Error presentation only: never expose provider aliases, arbitrary field names or values.
 const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
@@ -167,7 +167,7 @@ export function buildGenerationPricingSnapshot(
 /** Shared read-only verification and canonical pricing. No quote, wallet or reservation writes. */
 export async function readGenerationPricing(request: CanonicalGenerationRequest,principal: GenerationActor,dependencies: GenerationPricingReadDependencies) {
   requireGenerationActor(principal);
-  const fluxDraftSource = await resolveCanonicalFluxLineage(request,principal);
+  const fluxDraftSource = await (dependencies.resolveFluxLineage ?? resolveCanonicalFluxLineage)(request,principal);
   const lumaSource = await resolveCanonicalLumaLineage(request, principal);
   const inherited = await resolveAgentSeedanceWorkflow(request, principal.userId);
   request = inherited.request;

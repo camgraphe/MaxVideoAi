@@ -1,4 +1,5 @@
 'use client';
+import { OwnedGenerationSourcePicker } from './OwnedGenerationSourcePicker.client';
 import { VideoOperationSelector } from './VideoOperationSelector';
 import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import { getSeedanceAutomaticPricingNote } from '@/lib/seedance-modelark-options';
@@ -75,6 +76,7 @@ type WorkflowCopy = {
 };
 
 type WorkspaceComposerSurfaceProps = {
+  sourceAccount?: {userId:string;token:string}|null;
   localDraftPreview?: SeedanceDraftControls;
   selectedEngine: EngineCaps;
   form: FormState;
@@ -205,6 +207,7 @@ function isTruthyExtraInputValue(value: unknown): boolean {
 }
 
 export function WorkspaceComposerSurface({
+  sourceAccount = null,
   localDraftPreview: candidateDraftControls,
   selectedEngine,
   form,
@@ -299,7 +302,7 @@ export function WorkspaceComposerSurface({
   const klingO3VideoToVideoSupported = supportsKlingO3VideoToVideo(selectedEngine);
   const klingO3VideoReferenceDisabledReason =
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
-  const showFlux3MaxKeyframeEditor = selectedEngine.id === 'flux-3-max' && submissionMode === 'ref2v';
+  const showFlux3MaxKeyframeEditor = selectedEngine.id.startsWith('flux-3') && submissionMode === 'ref2v';
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
   const showMultiPrompt = supportsWorkspaceMultiPrompt(selectedEngine, submissionMode);
@@ -333,6 +336,7 @@ export function WorkspaceComposerSurface({
   );
   const advancedFields = useMemo(() => {
     const shouldHideInlineField = (field: EngineInputField) =>
+      field.id === 'source_job_id' ||
       Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id) ||
       (showMultiPrompt && field.id === 'multi_prompt') ||
       (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id)) ||
@@ -490,7 +494,7 @@ export function WorkspaceComposerSurface({
       <Composer
         density="workspace"
         engine={selectedEngine}
-        prompt={prompt}
+        prompt={selectedEngine.activeVideoOperation && !inputSchemaSummary.promptField ? '' : prompt}
         onPromptChange={setPrompt}
         negativePrompt={negativePrompt}
         onNegativePromptChange={setNegativePrompt}
@@ -541,8 +545,14 @@ export function WorkspaceComposerSurface({
             : null
         }
         disableGenerate={Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-        extraFields={showExtraFields ? (
-          <>
+        beforeAssets={<>
+            <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
+            {((selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'extend') || form.operation === 'flux-draft-enhance') ?
+              <OwnedGenerationSourcePicker key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
+                operation={form.operation === 'flux-draft-enhance' ? 'flux-draft-enhance' : 'luma-extend'} locale={uiLocale}
+                sourceJobId={String(form.extraInputValues.source_job_id ?? '')}
+                onSelect={source => setForm(current => current ? {...current,extraInputValues:{...current.extraInputValues,
+                  source_job_id:source?.sourceJobId ?? '',source_output_id:source?.sourceOutputId ?? ''}} : current)} /> : null}
             {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
               <LumaRay32KeyframeEditor
                 uiLocale={uiLocale}
@@ -561,7 +571,9 @@ export function WorkspaceComposerSurface({
                 disabledReason={guestUploadLockedReason}
               />
             ) : null}
-            <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
+        </>}
+        extraFields={showExtraFields ? (
+          <>
             {showOmniStudioPanel ? (
               <OmniStudioPanel
                 form={form}

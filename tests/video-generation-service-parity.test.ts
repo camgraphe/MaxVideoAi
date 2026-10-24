@@ -37,6 +37,11 @@ test('video generation has a thin HTTP adapter and an injected server orchestrat
   assert.match(prepared, /buildFinalGenerateResponse/);
   assert.match(prepared, /trustedInitialState:\s*params\.preReservedInitialState/);
   assert.match(adapters, /satisfies VideoGenerationAdapters/);
+  assert.match(service, /prepareGenerationLineage\(params\)/);
+  const lineage = readFileSync(join(root, 'frontend/src/server/video-generation/prepare-generation-lineage.ts'), 'utf8');
+  assert.match(lineage, /resolveOwnedFluxDraftSource/);
+  assert.match(lineage, /resolveOwnedLumaGenerationSource/);
+  assert.match(lineage, /buildResponseFromExistingVideoJob/);
   assert.ok(service.split('\n').length < 500, `video preparation owner must stay below 500 lines`);
   assert.ok(prepared.split('\n').length < 500, `prepared execution owner must stay below 500 lines`);
   assert.doesNotMatch(service, /createAtomicInitialVideoJob|submitGenerateProviderTask|persistFinalVideoJobUpdate/);

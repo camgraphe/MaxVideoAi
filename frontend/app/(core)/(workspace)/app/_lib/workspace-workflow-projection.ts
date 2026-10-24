@@ -92,7 +92,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
       const entries = inputAssets[fieldId] ?? [];
       for (const asset of entries) {
         if (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec)) {
-          return Math.max(1, Math.ceil(asset.durationSec));
+          return selectedEngine?.activeVideoOperation ? asset.durationSec : Math.ceil(asset.durationSec);
         }
       }
     }
@@ -164,6 +164,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAs
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
+    if (isUnifiedKlingO3 && form?.operation === 'kling-reference') return null;
     if (isUnifiedSeedance || isUnifiedKlingO3 || isUnifiedGeminiOmni) {
       return (currentMode === 'v2v' || currentMode === 'extend') && isWorkspaceModeAvailable(selectedEngine, currentMode)
         ? currentMode : null;
@@ -293,8 +294,9 @@ export function resolveWorkspaceComposerFacts({
     .filter((value) => value.length > 0);
   const voiceControlEnabled = Boolean(supportsKlingV3VoiceControl && voiceIds.length);
   const promptMaxChars = !multiPromptActive ? (selectedEngine?.inputLimits.promptMaxChars ?? null) : null;
-  const promptCharLimitExceeded = typeof promptMaxChars === 'number' && prompt.length > promptMaxChars;
-  const effectivePrompt = multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
+  const promptCharLimitExceeded = typeof promptMaxChars === 'number' && promptMaxChars > 0 && prompt.length > promptMaxChars;
+  const noPrompt = selectedEngine?.activeVideoOperation && ![...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])].some(field => field.id === 'prompt');
+  const effectivePrompt = noPrompt ? '' : multiPromptActive ? buildMultiPromptSummary(multiPromptScenes) : prompt;
   const effectiveDurationSec = (() => {
     if (multiPromptActive) return multiPromptTotalSec;
     if (submissionMode === 'a2v' && typeof primaryAudioDurationSec === 'number') return primaryAudioDurationSec;

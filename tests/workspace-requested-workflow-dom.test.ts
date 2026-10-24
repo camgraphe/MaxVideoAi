@@ -209,3 +209,27 @@ test('mode-only links and cross-model handoffs use executable model capabilities
     assert.notEqual(view.workflow.submissionMode, 'retake');
   } finally { await view.close(); }
 });
+
+for (const id of ['kling-o3-standard','kling-o3-pro','kling-o3-4k']) test(`${id}: new Modify is Edit and Create references retain Reference`, async()=>{
+ const view=await mount(id);
+ try {
+  await act(async()=>view.workflow.handleComposerModeToggle('v2v'));
+  assert.equal(view.route.form?.operation,'kling-edit');
+  await view.source('ready');
+  await act(async()=>view.workflow.handleComposerModeToggle(null));
+  assert.equal(view.route.form?.operation,'kling-reference');
+  assert.equal(view.workflow.activeManualMode,null);assert.equal(view.workflow.submissionMode,'v2v');
+  await view.clearSources();assert.equal(view.workflow.submissionMode,'t2v');
+  await view.navigate(`engine=${id}&mode=v2v&operation=kling-edit&media=new-edit`);
+  assert.equal(view.route.form?.operation,'kling-edit');
+  await view.clearSources();assert.equal(view.workflow.activeManualMode,'v2v');
+  await view.navigate(`engine=${id}&mode=v2v&media=legacy`);
+  assert.equal(view.route.form?.operation,undefined,'legacy link retains omitted Reference');
+ } finally {await view.close();}
+});
+
+for(const [id,mode,operation]of [['minimax-h3-max','v2v','h3-recast'],['flux-3','v2v','flux-fast-edit'],['flux-3-draft','v2v','flux-draft-enhance']] as const)test(`${id}: existing mode links select the supported default operation`,async()=>{
+ const view=await mount();
+ try{await view.navigate(`engine=${id}&mode=${mode}`);assert.equal(view.route.form?.engineId,id);assert.equal(view.route.form?.operation,operation);assert.equal(view.workflow.submissionMode,mode);}
+ finally{await view.close();}
+});

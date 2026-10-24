@@ -1,3 +1,4 @@
+import { VIDEO_OPERATIONS, type VideoOperation } from '@/lib/video-operation';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
@@ -21,6 +22,7 @@ export type WorkspaceWorkflowRequest = {
   engineToken: string;
   mode: Mode;
   mediaToken: string | null;
+  operation?: VideoOperation;
 };
 
 export type WorkspaceRequestParams = {
@@ -93,7 +95,8 @@ export function resolveWorkspaceRequestParams(
     resolvedRequestedEngineId,
     requestedEngineToken,
     requestedWorkflow: requestedEngineToken && requestedMode
-      ? { engineToken: requestedEngineToken, mode: requestedMode, mediaToken: readTrimmedParam(searchParams, 'media') }
+      ? { engineToken: requestedEngineToken, mode: requestedMode, mediaToken: readTrimmedParam(searchParams, 'media'),
+        ...(VIDEO_OPERATIONS.includes(readTrimmedParam(searchParams, 'operation') as VideoOperation) ? {operation:readTrimmedParam(searchParams, 'operation') as VideoOperation} : {}) }
       : null,
     searchString,
     loginRedirectTarget: searchString ? `${base}?${searchString}` : base,

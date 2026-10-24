@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { bundleClientFlow, createClientFlowDom } from './helpers/client-flow-dom';
 const bundle = bundleClientFlow(
-  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';import {requestVideoExcerpt} from './lib/client-video-excerpt';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector previewUrl={window.previewUrl||"https://example.invalid/signed"} durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');if(window.request)await requestVideoExcerpt({source:{type:'asset',assetId:'owned',kind:'video'},engineId:'luma-ray-3-2',mode:'v2v',range},window.request);}}/>),unmount:()=>root.unmount()};`,
+  `import React,{act} from 'react';import {createRoot} from 'react-dom/client';import {VideoExcerptSelector} from './components/media/VideoExcerptSelector.client';import {requestVideoExcerpt} from './lib/client-video-excerpt';const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<VideoExcerptSelector operation={window.operation} previewUrl={window.previewUrl||"https://example.invalid/signed"} durationSec={window.duration} limits={{sourceFieldId:'video_url',minDurationSec:null,maxDurationSec:18,maxSizeMB:100,durationPolicy:'source_video'}} locale={window.locale} onCancel={()=>window.cancelled++} onApply={async range=>{window.applied.push(range);if(window.failure)throw new Error('Failed to prepare');if(window.request)await requestVideoExcerpt({source:{type:'asset',assetId:'owned',kind:'video'},engineId:'luma-ray-3-2',mode:'v2v',range},window.request);}}/>),unmount:()=>root.unmount()};`,
   {}
 );
 async function mount(duration = 5.558333, locale = 'en') {
@@ -491,3 +491,19 @@ for (const pointerType of ['mouse', 'touch'])
    assert.equal(f.w.applied.length,0);
   } finally {await f.dispose();}
  });
+
+
+test('Relight discloses chosen/actual timing and ending removal before Apply; FAST rejects a 15 second selection',async()=>{
+ const f=await mount(5.56);
+ try{
+  await f.w.fx.act(async()=>{f.w.operation='h3-relight';f.w.fx.render();});
+  const disclosure=f.w.document.querySelector('[data-testid="video-compatible-copy-disclosure"]');
+  assert.match(disclosure.textContent,/24 fps.*selected 5.56 s.*actual 5.166667 s.*124 frames.*0.393333 s/);
+  assert.equal(f.w.applied.length,0);await f.click('Use excerpt');assert.equal(f.w.applied.length,1);
+  await f.w.fx.act(async()=>{f.w.operation='flux-fast-edit';f.w.duration=20;f.w.fx.render();});
+  await f.input('End (seconds)','15');
+  const apply=[...f.w.document.querySelectorAll('button')].find((button:any)=>button.textContent==='Use excerpt') as any;
+  assert.equal(apply.disabled,true);await f.input('End (seconds)','14.9');assert.equal(apply.disabled,false);
+  assert.match(f.w.document.querySelector('[data-testid="video-compatible-copy-disclosure"]').textContent,/whole video.*Original, framing and audio/);
+ }finally{await f.dispose();}
+});

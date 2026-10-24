@@ -87,7 +87,12 @@ const preflightRequestSchema = z.object({
   inputs: z.array(persistedReferenceSchema).max(MAX_PREFLIGHT_INPUTS).optional(),
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
-}).strict();
+}).strict().superRefine((request, context) => {
+  // The transport ceiling accommodates 64 Ray keyframes plus guide/source; it does
+  // not widen Seedance's independently bounded 50-reference admission contract.
+  if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
+    context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
+});
 
 type PreflightRequestFailure = {
   ok: false;

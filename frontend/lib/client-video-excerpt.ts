@@ -1,6 +1,7 @@
 import type { UploadedVideoAsset } from '@/lib/client-video-upload';
 import type { ToolAssetRef } from '@/lib/toolbox/contract';
 import type { VideoExcerptRange } from '@/lib/video-excerpt';
+import type { VideoOperation } from '@/lib/video-operation';
 import type { Mode } from '@/types/engines';
 
 /** Machine-readable failure; user copy is localized by the shared selector. */
@@ -46,7 +47,7 @@ async function requestExcerptJson(
 }
 
 export async function requestVideoExcerpt(
-  input: { source: ToolAssetRef; engineId: string; mode: Mode; fieldId?: string; range: VideoExcerptRange },
+  input: { source: ToolAssetRef; engineId: string; mode: Mode; fieldId?: string; operation?: VideoOperation; acceptedCopyDurationSec?: number; range: VideoExcerptRange },
   request: typeof fetch
 ) {
   const path = input.source.kind === 'audio' ? '/api/uploads/audio/excerpt' : '/api/uploads/video/excerpt';

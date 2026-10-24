@@ -52,6 +52,7 @@ export function buildWorkspacePreflightRequest({
     engine: form.engineId,
     ...(form.operation ? { operation: form.operation } : {}),
     mode: submissionMode,
+    ...((form.operation === 'flux-draft-enhance' || (form.engineId === 'luma-ray-3-2' && submissionMode === 'extend')) && form.extraInputValues.source_job_id ? {sourceJobId:String(form.extraInputValues.source_job_id),...(form.extraInputValues.source_output_id ? {sourceOutputId:String(form.extraInputValues.source_output_id)} : {})} : {}),
     durationSec: effectiveDurationSec,
     ...(durationOption !== undefined && durationOption !== null ? { durationOption } : {}),
     ...(shouldSendResolution
