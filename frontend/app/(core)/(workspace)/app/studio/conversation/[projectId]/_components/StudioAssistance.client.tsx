@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useId,useRef,useState,type RefObject} from 'react';
 import Link from 'next/link';
-import {ArrowUpRight,Info,Check, X} from 'lucide-react';
+import {ArrowUpRight,Info,Check, X,ChevronDown} from 'lucide-react';
 import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {additionalAssistanceBudget} from '../_lib/conversation-assistance';
 import styles from './studio-assistance.module.css';
@@ -25,7 +25,7 @@ export function StudioAssistance(props:Props) {
           <button type="button" aria-pressed={!!status&&luna} aria-haspopup="dialog" disabled={!status||props.busy} onClick={event=>show(event.currentTarget,'luna')}>Standard</button>
           <button type="button" aria-pressed={!!status&&!luna} aria-haspopup="dialog" disabled={!status||props.busy} onClick={event=>show(event.currentTarget,'sol')}>Max</button>
         </div>
-        <button type="button" ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Milo settings and credits','Réglages et crédits Milo')} onClick={event=>show(event.currentTarget)}><Info size={16}/></button>
+        <button type="button" ref={trigger} className={styles.trigger} aria-haspopup="dialog" aria-expanded={open} aria-label={t('Milo settings and credits','Réglages et crédits Milo')} onClick={event=>show(event.currentTarget)}><Info size={16}/><span className={styles.mobileMode}>{status ? luna ? 'Standard' : 'Max' : 'Milo'}<ChevronDown size={13}/></span></button>
       </div>
     </div>
     {open&&(status?.credits?<StudioAssistanceCreditsDialog {...props} initialView={requestedView} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>:<AssistanceDialog {...props} trigger={returnFocus} fallbackTrigger={trigger} onClose={close}/>)}
