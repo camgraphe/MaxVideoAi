@@ -360,3 +360,30 @@ on Extend, and must not disable the paid confirmation control. Model-discovery
 notes let Studio mention the restriction before preparing a quote. Modify owner
 preferences carry their single-trial scope in mode details; Extend has no inherited
 quality ranking.
+
+## Mobile conversation space — 2026-10-25
+
+Authenticated conversation routes use the route-local `studio-mobile.module.css`
+shell below 768px. The existing app-menu trigger shares the Studio heading;
+its full menu retains navigation, connections, preferences and wallet access.
+The surrounding header actions and bottom navigation are hidden only within
+that shell. Desktop and guest entry retain their existing layouts.
+
+`useStudioMobileLayout` owns the mobile breakpoint subscription and visual viewport
+height/offset for the iPhone keyboard, with listener/style cleanup on exit. It
+does not reflow the shell during pinch zoom. The composer remains 16px on mobile
+and bounds its height against the visible viewport.
+
+`ConversationMobilePanel` presents the existing reference shelf and film timeline
+in native modal sheets on mobile, with Escape and trigger-focus restoration.
+The same children render without a wrapper on desktop. The film stays mounted
+while its sheet is closed, but `ConversationTimeline.visible` stops playback and
+closes the monitor. Reference IDs, attachment session storage, preview grants,
+timeline persistence, generation confirmation and assistance policy stay with
+their existing owners. The references trigger counts attachments to the next
+message, not all historic shelf media.
+
+Mobile completed task receipts can expand from their summary; consumed credits
+remain in that summary. Tasks with errors, reserved credits or recovery actions
+retain the full presentation. Milo's compact mode trigger opens the existing
+settings/credits dialog without changing the selected model.

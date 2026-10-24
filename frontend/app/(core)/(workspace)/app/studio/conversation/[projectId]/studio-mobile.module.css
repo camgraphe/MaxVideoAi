@@ -28,7 +28,7 @@
   .shell :global(.app-header-actions), .shell :global(.app-site-trigger)>span:not(:global(.app-glyph)),
   .shell :global(.app-site-trigger)>img {display:none;}
   .shell :global(.app-site-trigger) {width:44px;height:44px;justify-content:center;padding:0;}
-  .shell :global(.app-site-trigger) > :global(.app-glyph) {width:22px;height:22px;margin:0;color:var(--app-ink);}
+  .shell :global(.app-site-trigger) > :global(.app-glyph) {display:block;width:22px;height:22px;margin:0;color:var(--app-ink);}
   .mobileTools {display:flex;align-items:center;gap:4px;min-width:0;}
   .mobileTools button {display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 10px;border:0;font-size:12px;}
   .mobileTools .references {max-width:170px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}

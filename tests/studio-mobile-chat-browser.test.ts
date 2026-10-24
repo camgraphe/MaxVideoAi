@@ -23,6 +23,9 @@ test('mobile chat keeps reading space, references and navigation without changin
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
   try{
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'mobile-chat-fixture'});
+    // Compile the owned route before the bounded MCP command timeout starts.
+    const warm=await fetch(runtime.origin+'/mcp',{headers:{Host:runtime.mcpHost},signal:AbortSignal.timeout(90000)});
+    await warm.arrayBuffer();
     const created=await postStudioMcpRequest(runtime,{jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'create_studio_montage',arguments:STUDIO_CONNECTED_MONTAGE_INPUT}},{token:session.access_token}).then(readStudioMcpResponse);
     assert.notEqual(created.result.isError,true,JSON.stringify(created.result));
     const {projectId}=created.result.structuredContent;
@@ -47,6 +50,7 @@ test('mobile chat keeps reading space, references and navigation without changin
     await expect(log.getByText('Scene 8: use these three references.',{exact:true})).toBeAttached();
     const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
     await expect(message).toBeVisible();
+    await expect(page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).locator('.app-glyph')).toBeVisible();
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-mobile-chat';
     await mkdir(evidence,{recursive:true});
     const geometry=async()=>page.evaluate(()=>{
@@ -74,6 +78,10 @@ test('mobile chat keeps reading space, references and navigation without changin
     await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
     await page.keyboard.press('Escape');
     assert.ok(Math.abs(await log.evaluate(element=>element.scrollTop)-scroll)<2,'Opening references preserves reading position.');
+    await message.fill('A long follow-up\nwith several lines\nabout the framing\nand the camera\nand the lighting\nand the ending.');
+    const latest=await page.getByRole('button',{name:'Latest message',exact:true}).boundingBox();
+    const input=await message.boundingBox();
+    assert.ok(latest&&input&&latest.y+latest.height<=input.y,'The latest-message button stays above a multiline composer.');
     await page.getByRole('button',{name:'Latest message',exact:true}).click();
     await expect.poll(()=>log.evaluate(element=>element.scrollHeight-element.clientHeight-element.scrollTop)).toBeLessThan(5);
     await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
