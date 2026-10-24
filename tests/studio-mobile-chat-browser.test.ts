@@ -23,6 +23,7 @@ test('mobile chat keeps reading space, references and navigation without changin
     for(let i=0;i<3;i++)await db.pool.query("INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready',$5,'{}'::jsonb)",[`20000000-0000-4000-8000-00000000000${i+5}`,refs[i],STUDIO_FIXTURE_OWNERS[0],urls[i],`Reference ${i+1}`]);
   }});
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
+  let releaseTimelineReads=()=>{};
   try{
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'mobile-chat-fixture'});
     // Compile the owned route before the bounded MCP command timeout starts.
@@ -33,6 +34,10 @@ test('mobile chat keeps reading space, references and navigation without changin
     const {projectId}=created.result.structuredContent;
     browser=await startStudioConnectedBrowserFixture({runtime,browserName});
     const {page}=await browser.newContext(session,{viewport:{width:390,height:844},locale:'en-US',reducedMotion:'reduce'});
+    const timelineUrl=runtime.browserOrigin+'/api/studio/projects/'+projectId+'/conversation-timeline?preview=1';
+    // The chat must remain usable while the real timeline route compiles/loads.
+    const timelineReadGate=new Promise<void>(resolve=>{releaseTimelineReads=resolve;});
+    await page.route(timelineUrl,async route=>{await timelineReadGate;await route.continue();});
     const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
     const layoutIssues:string[]=[];
     const paidActions:string[]=[];
@@ -56,6 +61,12 @@ test('mobile chat keeps reading space, references and navigation without changin
     await expect(log.getByText('Scene 8: use these three references.',{exact:true})).toBeAttached();
     const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
     await expect(message).toBeVisible();
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(0);
+    const timelineLoaded=page.waitForResponse(response=>response.url()===timelineUrl&&response.request().method()==='GET');
+    releaseTimelineReads();
+    const timelineResponse=await timelineLoaded;
+    assert.equal(timelineResponse.status(),200,'The owned timeline must load before geometry is measured.');
+    assert.equal((await timelineResponse.json()).result?.items?.length,2);
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
     await expect(page.getByRole('button',{name:'Milo settings and credits',exact:true})).toBeVisible();
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-mobile-chat';
@@ -163,5 +174,5 @@ test('mobile chat keeps reading space, references and navigation without changin
     assert.deepEqual(errors,[]);
     assert.deepEqual(layoutIssues,[]);
     assert.deepEqual(paidActions,[],'Opening mobile tools never submits a message, generation or assistance choice.');
-  }finally{await browser?.close();await runtime.close();}
+  }finally{releaseTimelineReads();await browser?.close();await runtime.close();}
 });
