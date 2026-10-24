@@ -95,3 +95,11 @@ the user's library: its measured6s source now quotes234cents, enables generation
 at1440/390px and prepares a5s private section without a provider render. The
 preview's DATABASE_URL is explicitly scoped to its separate Neon branch; the
 bounded audio QA import exists there and is absent from production.
+
+## Wan 3 private input delivery follow-up
+
+The direct Alibaba submission now gives Wan 3 and Prime a temporary owned-media GET grant instead of the private canonical input URL. Canonical selection/reuse/fallback payloads stay intact. No object ACL, storage policy, provider mode, tariff or other model transport changed. Public document/webpage references retain their contract. Local access failures stop before any provider or fallback call; Wan input-download failures now identify an unreadable reference. Both submission and polling diagnostics remove echoed signatures, including encoded error messages, while signed output URLs remain available to the durable copy.
+
+Validation: 69/69 targeted Alibaba submission/poll/provider/architecture, private transport, owned-media, Fal and Luma tests passed; TypeScript, ESLint, exposure and whitespace checks passed. Independent review found an encoded-message leak, reproduced it against the earlier implementation and verified the correction. Both previously failing generic-message cases now pass.
+
+No-spend real-source qualification on 2026-10-24 at 17:33 UTC used the existing admin source from the failed Wan attempt: both Wan transports produced an owned 3600-second grant readable with HTTP 206; the unchanged canonical source remained anonymous HTTP 403; another owner was rejected; diagnostics were clean. Only a 64-byte Range read was made per transport. No provider generation, media write or historical job mutation occurred. This verifies input delivery access, not a new end-to-end Wan render. Private evidence: `wan-orbit-diagnosis-2026-10-24/wan-transport-qualified.json` under the operator's Codex temporary directory.

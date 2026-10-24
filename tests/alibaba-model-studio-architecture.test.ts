@@ -23,7 +23,7 @@ function frontendTypescriptFiles(): string[] {
 test('Alibaba direct video integration has one adapter, submission owner, and poll owner', () => {
   assert.ok(existsSync(providerDirectory));
   assert.deepEqual(readdirSync(providerDirectory).sort(), [
-    'client.ts', 'cost.ts', 'errors.ts', 'index.ts', 'model-map.ts', 'payload.ts', 'response.ts', 'types.ts',
+    'client.ts', 'cost.ts', 'errors.ts', 'index.ts', 'media-access.ts', 'model-map.ts', 'payload.ts', 'response.ts', 'types.ts',
   ]);
   assert.ok(existsSync(submissionPath));
   assert.ok(existsSync(pollPath));

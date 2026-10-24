@@ -34,6 +34,14 @@ The workspace prompt-expansion control maps to Alibaba `prompt_extend`. Fal's `e
 
 Alibaba's smart duration (`duration=-1`) is deliberately not exposed. MaxVideoAI quotes and reserves an exact customer amount before submission, while smart duration makes the billed output length unknown at quote time. Keep the explicit 2–30 second duration until a separately reviewed estimate-and-reconciliation billing contract exists.
 
+### Private Wan source delivery
+
+Wan 3 and Prime resolve owned image/video/audio inputs in the validated Alibaba payload through `media-access.ts` immediately before submission. This transport reuses `createOwnedMediaReadUrl` with the authenticated owner and a one-hour GET grant. It clones the payload, deduplicates reads, and leaves canonical library, reuse and fallback inputs intact. No object ACL, storage policy, pricing, duration or capability changes are involved. Public document/webpage references and HappyHorse transport remain unchanged.
+
+An ownership refusal or signing failure stops before any provider call or Fal fallback. Submission snapshots and polled Wan diagnostics remove temporary grants, including URLs embedded in error messages. Signed provider output URLs remain intact until the durable output copy. Wan `InvalidParameter` / `Failed to download` failures are reported as unreadable reference media, not as a completed render with an output-copy failure. The grant supports initial provider access; it is not a guarantee against an indefinitely queued provider task.
+
+Regression coverage lives in `wan-private-media-transport.test.ts`, the Alibaba submission/poll suites, and the shared owned-media, Fal and Luma private transport suites. A no-spend qualification may read an existing owned source through the transport grant and confirm anonymous 403; it must not submit a generation.
+
 ## Environment contract
 
 All routing switches are server-only. Never create `NEXT_PUBLIC_` aliases for them.

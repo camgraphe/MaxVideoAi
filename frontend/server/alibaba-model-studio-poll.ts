@@ -27,6 +27,7 @@ import {
   resolveAlibabaModelRoute,
 } from '@/server/video-providers/alibaba-model-studio/model-map';
 import { normalizeAlibabaTask } from '@/server/video-providers/alibaba-model-studio/response';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import {
   findProviderAttemptForJob,
   markProviderAttemptFailed,
@@ -134,10 +135,19 @@ function costBreakdown(job: AlibabaPendingJob, task: NormalizedVideoProviderTask
   };
 }
 
-function normalizePolledTask(raw: unknown, providerJobId: string): NormalizedVideoProviderTask {
+function normalizePolledTask(raw: unknown, providerJobId: string, isWan: boolean): NormalizedVideoProviderTask {
   const record = asRecord(raw);
   const providerRaw = record && 'raw' in record ? record.raw : raw;
-  return normalizeAlibabaTask(providerRaw, providerJobId);
+  const task = normalizeAlibabaTask(providerRaw, providerJobId);
+  if (!isWan) return task;
+  // Keep signed output videoUrl intact for the durable copy; only diagnostics are sanitized.
+  return {
+    ...task,
+    raw: sanitizeProviderMediaDiagnostics(task.raw),
+    message: task.status === 'failed' && task.errorCode === 'InvalidParameter'
+      && /^Failed to download\b/i.test(task.message ?? '')
+      ? 'Reference media could not be read.' : sanitizeProviderMediaDiagnostics(task.message) as string | null,
+  };
 }
 
 async function findAttempt(job: AlibabaPendingJob, queryFn: QueryFn) {
@@ -345,7 +355,8 @@ export async function runAlibabaModelStudioPoll(options: { jobId?: string; deps?
     if (!pollClaim) continue;
     try {
       const attempt = await findAttempt(job, queryFn);
-      const task = normalizePolledTask(await client.getTask(job.provider_job_id), job.provider_job_id);
+      const task = normalizePolledTask(await client.getTask(job.provider_job_id), job.provider_job_id,
+        resolveAlibabaModelRoute(job.engine_id, modeForJob(job))?.family === 'wan3');
       await pollClaim.checked();
       const estimate = costForJob(job, task);
       if (task.status === 'queued' || task.status === 'running') {
