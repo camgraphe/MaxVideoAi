@@ -32,7 +32,7 @@ export function videoOperationTariffContexts(scope: { modelId?: string; mode?: s
   const result: PricingContext[] = [];
   const add = (id: string, mode: 'v2v' | 'extend' | 'ref2v' | 'reframe', operation: VideoOperation,
     resolutions: readonly string[], durations: readonly number[]) => {
-    if ((scope.modelId && scope.modelId !== id) || (scope.mode && scope.mode !== mode)) return;
+    if ((scope.modelId !== undefined && scope.modelId !== id) || (scope.mode !== undefined && scope.mode !== mode)) return;
     const engine = resolveVideoOperationEngine(getFalEngineById(id)!.engine, mode, operation);
     for (const resolution of resolutions) for (const durationSec of durations) result.push({ engine, mode, operation,
       resolution, durationSec, hasVideoInput: mode !== 'ref2v',

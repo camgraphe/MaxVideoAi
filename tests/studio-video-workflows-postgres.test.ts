@@ -82,6 +82,7 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
   await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,status,position,url) VALUES($1,$2,$3,'video','ready',0,$4)`,[source.outputId,source.sourceJobId,source.ownerId,source.originalUrl]);
   await pg.pool.query('UPDATE media_assets SET source_job_id=$1,source_output_id=$2 WHERE public_id=$3 AND user_id=$4',[source.sourceJobId,source.outputId,source.assetId,source.ownerId]);
   await pg.pool.query(readFileSync('neon/migrations/79_flux_draft_cache_sources.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/80_flux_draft_origin_provenance.sql','utf8'));
   const draftUrl=workflowReference('video','source').storageUrl;
   const draftJob=(await pg.pool.query<{id:number}>(`INSERT INTO app_jobs(job_id,user_id,engine_id,surface,status,provider,provider_job_id,video_url)
     VALUES('workflow-draft-source',$1,'flux-3-draft','video','completed','fal','draft-provider-request',$2) RETURNING id`,[workflowActor.userId,draftUrl])).rows[0];

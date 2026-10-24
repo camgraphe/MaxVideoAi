@@ -2,6 +2,25 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { collectCustomerTariffCutoverCheckpoints } from '../frontend/server/pricing/customer-tariff-cutover-evidence';
+import { videoOperationTariffContexts } from '../frontend/lib/pricing-audit/video-operation-tariff-inventory';
+
+test('operation inventory distinguishes omitted scope from explicit empty model or mode', () => {
+  const full = videoOperationTariffContexts();
+  assert.equal(full.length, 77);
+  assert.deepEqual(videoOperationTariffContexts({ modelId: undefined, mode: undefined }), full);
+  for (const scope of [{ modelId: '' }, { modelId: '', mode: 'v2v' }, { mode: '' },
+    { modelId: 'flux-3', mode: '' }, { modelId: 'flux-3-draft', mode: '' },
+    { modelId: 'missing-model' }, { modelId: 'flux-3', mode: 'missing-mode' }]) {
+    assert.deepEqual(videoOperationTariffContexts(scope), [], JSON.stringify(scope));
+  }
+  for (const modelId of new Set(full.map(context => context.engine.id))) {
+    const model = full.filter(context => context.engine.id === modelId);
+    assert.deepEqual(videoOperationTariffContexts({ modelId }), model);
+    for (const mode of new Set(model.map(context => context.mode))) {
+      assert.deepEqual(videoOperationTariffContexts({ modelId, mode }), model.filter(context => context.mode === mode));
+    }
+  }
+});
 
 test('all historical checkpoints and independently enumerated additive operation families are disjoint', () => {
   const coverage = collectSellableManualTariffCoverage();

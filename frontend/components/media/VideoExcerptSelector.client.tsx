@@ -148,7 +148,7 @@ export function VideoExcerptSelector({
       >
         <header className="video-excerpt-heading">
           <div><span className="video-excerpt-eyebrow"><Scissors size={13} aria-hidden="true" />{copy.timeline}</span><h2 id={titleId}>{copy.title}</h2></div>
-          <button type="button" className="video-excerpt-close" aria-label={copy.close} onClick={onCancel}><X size={19} aria-hidden="true" /></button>
+          <button type="button" className="video-excerpt-close" data-modal-initial-focus="true" aria-label={copy.close} onClick={onCancel}><X size={19} aria-hidden="true" /></button>
         </header>
         <div className="video-excerpt-stage" style={mediaKind === 'audio' ? { aspectRatio: 'auto', height: 80, minHeight: 80 } : undefined}>
         {mediaKind === 'audio' ? <span className="video-excerpt-stage-mark" aria-hidden="true"><Music2 size={26} /></span> : null}
@@ -211,7 +211,7 @@ export function VideoExcerptSelector({
         {copyNotice ? <p data-testid="video-compatible-copy-disclosure" role="status">{copyNotice}</p> : null}
         <p id={hintId}>{copy.quote}</p>
         <div className="video-excerpt-actions">
-          <button type="button" data-modal-initial-focus="true" onClick={onCancel}>
+          <button type="button" onClick={onCancel}>
             {copy.cancel}
           </button>
           <button type="button" disabled={!valid || busy} onClick={() => void apply()}>

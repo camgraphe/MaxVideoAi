@@ -35,7 +35,15 @@ test('missing cache and mismatched bytes cannot write or alter original success'
 });
 test('Draft optional cache qualification follows all critical completion persistence and settlement',()=>{
  const source=readFileSync('frontend/server/fal-webhook-handler.ts','utf8');
- assert.ok(source.lastIndexOf('await recoverOwnedFluxDraftCache(')>source.lastIndexOf('if (forcedNoMediaFailure)'));
+ const capture=source.indexOf('await captureCompletedFalDraftCache(job,nextStatus)');
+ assert.ok(capture>=0,'the optional capture remains awaited in the handler');
+ for(const before of ['await upsertLegacyJobOutputs(', 'await maybeAutoRefundWalletCharge(', 'failed to record Fal lifecycle log', 'failed to record no-media log']) {
+   assert.ok(source.indexOf(before)>=0 && capture>source.indexOf(before),`capture follows ${before}`);
+ }
+ assert.ok(capture>source.lastIndexOf('if (forcedNoMediaFailure)'));
+ assert.match(source,/import \{ captureCompletedFalDraftCache \} from '\.\/fal-webhook-draft-cache'/);
+ assert.doesNotMatch(source,/recoverOwnedFluxDraftCache/,'recovery stays in the optional helper');
+ assert.match(readFileSync('frontend/server/fal-webhook-draft-cache.ts','utf8'),/await recover\(\{ userId: job.user_id, sourceJobId: job.job_id \}\)/);
  assert.match(readFileSync('frontend/server/flux-draft-cache-store.ts','utf8'),/isTransactionQueryExecutor/);
 });
 
