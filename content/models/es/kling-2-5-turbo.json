@@ -141,8 +141,8 @@
       "a": "5 o 10 segundos; 16:9, 9:16, 1:1 para runs de texto e imagen."
     },
     {
-      "q": "¿Puedo subir más de una imagen?",
-      "a": "No. Una imagen por render. Combina referencias en un solo board si hace falta."
+      "q": "¿Puedo usar una imagen inicial y final?",
+      "a": "Sí. En imagen a video, aporta la imagen inicial y opcionalmente una imagen final para guiar la llegada. Es distinto de la edición de video a video."
     },
     {
       "q": "¿Cómo se cobra Kling?",
@@ -295,8 +295,8 @@
         "a": "5 o 10 segundos; 16:9, 9:16, 1:1 para texto e imagen."
       },
       {
-        "q": "¿Puedo subir varias imágenes?",
-        "a": "Una imagen por render. Combina tus referencias en un solo board si hace falta."
+        "q": "¿Puedo usar una imagen inicial y final?",
+        "a": "Sí. En imagen a video, aporta la imagen inicial y opcionalmente una imagen final para guiar la llegada. Es distinto de la edición de video a video."
       },
       {
         "q": "¿Cómo se cobra Kling?",
@@ -433,7 +433,7 @@
       },
       {
         "title": "Imagen única",
-        "body": "Usa un still cuando forma del sujeto, producto o composición deban quedar anclados."
+        "body": "Imagen a video acepta una imagen inicial y una imagen final opcional. La final define un límite del clip, no un conjunto separado de referencias de estilo."
       },
       {
         "title": "Prompt negativo",
@@ -513,7 +513,8 @@
     "globalPrinciples": [
       "Un sujeto, una acción, un movimiento de cámara.",
       "Usa nombres concretos y escenarios simples.",
-      "Añade un prompt negativo corto para texto/logos/personas extra."
+      "Añade un prompt negativo corto para texto/logos/personas extra.",
+      "Imagen a video acepta una imagen inicial y una imagen final opcional. La final define un límite del clip, no un conjunto separado de referencias de estilo."
     ],
     "engineWhy": [
       "Acciones cortas y físicas se leen mejor en 5–10 s.",

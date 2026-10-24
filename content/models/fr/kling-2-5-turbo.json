@@ -141,8 +141,8 @@
       "a": "5 ou 10 secondes en 16:9, 9:16 ou 1:1 pour les runs texte et image."
     },
     {
-      "q": "Puis‑je uploader plus d’une image ?",
-      "a": "Non. Une image par rendu. Fusionnez vos références dans un board si besoin."
+      "q": "Puis-je utiliser une image de départ et de fin ?",
+      "a": "Oui. En image-vers-vidéo, fournissez l’image de départ et éventuellement une image de fin pour guider l’arrivée. Cela reste distinct de la modification vidéo-vers-vidéo."
     },
     {
       "q": "Comment Kling est‑il tarifé ?",
@@ -295,8 +295,8 @@
         "a": "5 ou 10 secondes ; 16:9, 9:16, 1:1 pour texte et image."
       },
       {
-        "q": "Puis‑je uploader plusieurs images ?",
-        "a": "Une image par rendu. Fusionnez vos références dans un seul board si besoin."
+        "q": "Puis-je utiliser une image de départ et de fin ?",
+        "a": "Oui. En image-vers-vidéo, fournissez l’image de départ et éventuellement une image de fin pour guider l’arrivée. Cela reste distinct de la modification vidéo-vers-vidéo."
       },
       {
         "q": "Comment Kling est‑il tarifé ?",
@@ -433,7 +433,7 @@
       },
       {
         "title": "Image unique",
-        "body": "Utilisez une image quand la forme du sujet, le produit ou le cadrage doivent rester stables."
+        "body": "Le mode image-vers-vidéo accepte une image de départ et une image de fin facultative. Celle-ci définit la limite finale, pas un jeu distinct de références de style."
       },
       {
         "title": "Prompt négatif",
@@ -513,7 +513,8 @@
     "globalPrinciples": [
       "Un sujet, une action, un mouvement caméra.",
       "Utilisez des noms concrets et des décors simples.",
-      "Ajoutez un prompt négatif court pour texte/logos/personnes en trop."
+      "Ajoutez un prompt négatif court pour texte/logos/personnes en trop.",
+      "Le mode image-vers-vidéo accepte une image de départ et une image de fin facultative. Celle-ci définit la limite finale, pas un jeu distinct de références de style."
     ],
     "engineWhy": [
       "Les actions courtes et physiques lisent mieux en 5–10 s.",

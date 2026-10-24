@@ -229,8 +229,8 @@
         "body": "Keep the prompt explicit about camera, action, continuity and delivery intent."
       },
       {
-        "title": "No source video",
-        "body": "Use Reference to guide a new clip with @Video1; use Edit to change the source while preserving its timing and framing. Keep source audio with keep_audio when needed."
+        "title": "Source-video Reference / Edit",
+        "body": "Reference generates a new clip guided by @Video1 with a separately requested duration. Edit changes a 3–15-second source while inheriting timing and framing; each source side must be 720–3840 pixels. Up to four guidance images and elements combined for Edit. Neither operation is Extend."
       },
       {
         "title": "Final pass",

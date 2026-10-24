@@ -1,3 +1,4 @@
+import { resolveOperationVideoSupport } from '@/lib/marketing/video-operation-specs';
 import type { FalEngineEntry } from '@/config/falEngines';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -203,7 +204,7 @@ export function buildSpecValues(
     imageToImage: resolveKeySpecValue(specs, 'imageToImage', resolveModeSupported(engineCaps, 'i2i')),
     textToVideo: resolveKeySpecValue(specs, 'textToVideo', resolveModeSupported(engineCaps, 't2v')),
     imageToVideo: resolveKeySpecValue(specs, 'imageToVideo', resolveModeSupported(engineCaps, 'i2v')),
-    videoToVideo: resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(engineCaps)),
+    videoToVideo: resolveOperationVideoSupport(engineCaps) ?? resolveKeySpecValue(specs, 'videoToVideo', resolveVideoToVideoSupport(engineCaps)),
     firstLastFrame: resolveKeySpecValue(specs, 'firstLastFrame', resolveFirstLastSupport(engineCaps)),
     referenceImageStyle: resolveKeySpecValue(specs, 'referenceImageStyle', resolveReferenceImageSupport(engineCaps)),
     referenceVideo: resolveKeySpecValue(specs, 'referenceVideo', resolveReferenceVideoSupport(engineCaps)),

@@ -221,8 +221,11 @@ export async function prepareModelsCatalogCards({
     const audioSupported =
       resolveSupported((keySpecs as Record<string, unknown>).audioOutput) ??
       (catalogEntry?.engine?.audio == null ? null : Boolean(catalogEntry.engine.audio));
+    // Paired Enhance is a source operation; catalogue discovery describes native creation.
     const maxResolution = extractMaxResolution(
-      (keySpecs as Record<string, string>).maxResolution,
+      engine.engine.operationCaps?.['flux-draft-enhance']
+        ? undefined
+        : (keySpecs as Record<string, string>).maxResolution,
       catalogEntry?.engine?.resolutions
     );
     const maxDuration = extractMaxDuration(

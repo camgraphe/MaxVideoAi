@@ -202,8 +202,8 @@
         "body": "Sé explícito con cámara, acción, continuidad e intención de entrega."
       },
       {
-        "title": "Sin video fuente",
-        "body": "Usa Reference para guiar un nuevo clip con @Video1; elige Edit para modificar la fuente conservando su duración y encuadre. Conserva el audio fuente con keep_audio cuando sea necesario."
+        "title": "Reference / Edit con video de origen",
+        "body": "Reference genera un clip nuevo guiado por @Video1 con duración solicitada separada. Edit modifica un origen de 3–15 segundos y hereda duración y encuadre; cada lado debe medir 720–3840 píxeles. Edit admite hasta cuatro imágenes de guía y elementos combinados. Ninguna operación es Extend."
       },
       {
         "title": "Pasada final",

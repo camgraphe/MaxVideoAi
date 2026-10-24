@@ -8,8 +8,8 @@
   },
   "overview": "LTX 2.3 Pro permanece disponible como ruta de legado de generación anterior para flujos, ejemplos y búsquedas existentes. LTX 2.5 Pro es su sucesor actual de producción.",
   "hero": {
-    "title": "LTX 2.3 Pro — modelo LTX actual para audio, Extend y Retake",
-    "intro": "LTX 2.3 Pro es el modelo LTX actual para generación de video de mayor fidelidad, workflows guiados por audio, Extend y Retake cuando necesitas la página LTX principal actual para trabajo de producción pulido.",
+    "title": "LTX 2.3 Pro — audio, Extend, Retake y Reframe",
+    "intro": "LTX 2.3 Pro permanece disponible como ruta de legado de generación anterior para flujos, ejemplos y búsquedas existentes. LTX 2.5 Pro es su sucesor actual de producción. Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5.",
     "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
       "label": "Generar con LTX 2.3 Pro",
@@ -95,7 +95,7 @@
     },
     {
       "label": "Workflows de edición",
-      "body": "Extend al inicio o al final con controles de contexto; retake sobre una ventana temporal elegida con reemplazo de audio, video o ambos"
+      "body": "Extend al inicio o al final con controles de contexto; retake sobre una ventana temporal elegida con reemplazo de audio, video o ambos Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5."
     },
     {
       "label": "Precios",
@@ -250,7 +250,8 @@
     "boundaries": [
       "4K, 9:16 y los controles de fps se aplican hoy a los modos estándar de generación, no a todos los workflows de edición.",
       "Audio a video, Extend y Retake están disponibles solo en LTX 2.3 Pro estándar, no en Fast.",
-      "Retake sigue necesitando una ventana fuente precisa y un prompt claro para evitar desviarse demasiado del clip original."
+      "Retake sigue necesitando una ventana fuente precisa y un prompt claro para evitar desviarse demasiado del clip original.",
+      "Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5."
     ],
     "safetyTitle": "Seguridad y reglas de likeness",
     "safetyRules": [
@@ -381,6 +382,11 @@
         "title": "Pago por uso",
         "body": "Ve el precio exacto antes de generar.",
         "tone": "price"
+      },
+      {
+        "title": "Reencuadrar un video de origen",
+        "body": "Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5.",
+        "tone": "duration"
       }
     ],
     "decisionCards": [
@@ -429,6 +435,10 @@
       {
         "title": "Pasada final",
         "body": "Sube resolución cuando la ruta y el prompt ya estén aprobados."
+      },
+      {
+        "title": "Reencuadrar un video de origen",
+        "body": "Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5."
       }
     ],
     "pricingCopy": {
@@ -504,7 +514,8 @@
     "globalPrinciples": [
       "Define un sujeto, un beat central y un movimiento de cámara antes de añadir estilo.",
       "Usa el workflow que corresponda al trabajo: generación, audio, extend o retake.",
-      "En retakes, describe solo la sección que debe cambiar en vez de reescribir todo el video."
+      "En retakes, describe solo la sección que debe cambiar en vez de reescribir todo el video.",
+      "Reframe en LTX 2.3 estándar conserva la duración exacta del origen hasta 60 segundos, a 720p o 1080p, con formato objetivo y sin prompt. Esto no añade Reframe a LTX 2.3 Fast ni a LTX 2.5."
     ],
     "engineWhy": [
       "La generación con texto e imagen sigue siendo directa y cinematográfica.",
@@ -577,7 +588,7 @@
       {
         "id": "proof-1",
         "title": "Resultados reales",
-        "body": "Mira qué es posible con LTX 2.3 Pro — modelo LTX actual para audio, Extend y Retake.",
+        "body": "Revisa el resultado original de LTX 2.3 Pro con su prompt y ajustes registrados; no demuestra todas las operaciones de origen.",
         "icon": "sparkles"
       },
       {

@@ -8,8 +8,8 @@
   },
   "overview": "LTX 2.3 Pro reste disponible comme route legacy de génération précédente pour les workflows, exemples et recherches existants. LTX 2.5 Pro est son successeur de production actuel.",
   "hero": {
-    "title": "LTX 2.3 Pro — modèle LTX actuel pour l’audio, Extend et Retake",
-    "intro": "LTX 2.3 Pro est le modèle LTX actuel pour la génération vidéo haute fidélité, les workflows pilotés par l’audio, Extend et Retake quand vous avez besoin de la page LTX principale actuelle pour un rendu de production soigné.",
+    "title": "LTX 2.3 Pro — audio, Extend, Retake et Reframe",
+    "intro": "LTX 2.3 Pro reste disponible comme route legacy de génération précédente pour les workflows, exemples et recherches existants. LTX 2.5 Pro est son successeur de production actuel. Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5.",
     "badge": "T2V + I2V + A2V + Extend + Retake",
     "ctaPrimary": {
       "label": "Générer avec LTX 2.3 Pro",
@@ -95,7 +95,7 @@
     },
     {
       "label": "Workflows d'édition",
-      "body": "Extend au début ou à la fin avec contrôles de contexte ; retake sur une fenêtre temporelle choisie avec remplacement de l'audio, de la vidéo ou des deux"
+      "body": "Extend au début ou à la fin avec contrôles de contexte ; retake sur une fenêtre temporelle choisie avec remplacement de l'audio, de la vidéo ou des deux Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
     },
     {
       "label": "Tarification",
@@ -250,7 +250,8 @@
     "boundaries": [
       "La 4K, le 9:16 et les contrôles fps s'appliquent actuellement aux modes de génération standards, pas à tous les workflows d'édition.",
       "Audio vers vidéo, Extend et Retake sont disponibles seulement sur LTX 2.3 Pro standard, pas sur Fast.",
-      "Retake a toujours besoin d'une fenêtre source précise et d'un prompt clair pour éviter une dérive trop forte par rapport au clip d'origine."
+      "Retake a toujours besoin d'une fenêtre source précise et d'un prompt clair pour éviter une dérive trop forte par rapport au clip d'origine.",
+      "Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
     ],
     "safetyTitle": "Sécurité et consignes de likeness",
     "safetyRules": [
@@ -381,6 +382,11 @@
         "title": "Paiement à l’usage",
         "body": "Prix exact affiché avant génération.",
         "tone": "price"
+      },
+      {
+        "title": "Recadrer une vidéo source",
+        "body": "Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5.",
+        "tone": "duration"
       }
     ],
     "decisionCards": [
@@ -429,6 +435,10 @@
       {
         "title": "Passe finale",
         "body": "Passez en haute résolution une fois la route et le prompt validés."
+      },
+      {
+        "title": "Recadrer une vidéo source",
+        "body": "Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
       }
     ],
     "pricingCopy": {
@@ -504,7 +514,8 @@
     "globalPrinciples": [
       "Définissez un sujet, un beat principal et un mouvement caméra avant d'ajouter le style.",
       "Utilisez le workflow qui correspond au job : génération, audio, extend ou retake.",
-      "Pour les retakes, décrivez seulement la section à changer au lieu de réécrire toute la vidéo."
+      "Pour les retakes, décrivez seulement la section à changer au lieu de réécrire toute la vidéo.",
+      "Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
     ],
     "engineWhy": [
       "La génération texte et image reste directe et cinématique.",
@@ -577,7 +588,7 @@
       {
         "id": "proof-1",
         "title": "Rendus communautaires",
-        "body": "Voyez ce qui est possible avec LTX 2.3 Pro — modèle LTX actuel pour l’audio, Extend et Retake.",
+        "body": "Examinez le résultat LTX 2.3 Pro original avec son prompt et ses réglages enregistrés ; il ne démontre pas toutes les opérations sur source.",
         "icon": "sparkles"
       },
       {

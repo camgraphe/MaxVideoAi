@@ -3,17 +3,17 @@
   "versionLabel": "3 Draft",
   "seo": {
     "title": "Générateur vidéo IA FLUX 3 Draft pour les essais rapides",
-    "description": "Testez texte, image, transition ou extension en 720p avec FLUX 3 Draft avant un passage en production, avec prompts et devis canoniques."
+    "description": "Créez des essais FLUX 3 Draft en 720p depuis du texte ou des images clés, conservez Extend natif et améliorez les Drafts appariés admissibles avec un devis distinct."
   },
-  "overview": "FLUX 3 Draft est la route d'exploration rapide de la nouvelle génération FLUX vidéo. Elle reprend les quatre workflows de FLUX 3 en 720p pour répondre à une question créative avant une passe standard. Black Forest Labs possède le modèle et Fal distribue les endpoints utilisés par MaxVideoAI pour ce lancement.",
+  "overview": "FLUX 3 Video Draft crée des essais en 720p depuis du texte, une image, deux images limites ou des images clés indexées et conserve Extend natif. Enhance est une opération distincte en 1080p pour un Draft natif de votre compte avec cache apparié qualifié. Un Draft réussi ne garantit pas un cache disponible. Black Forest Labs possède FLUX ; MaxVideoAI utilise ce modèle via Fal.",
   "decision": {
     "modelSlug": "flux-3-draft",
     "hero": {
       "eyebrow": "ROUTE FLUX D'EXPLORATION",
       "title": "FLUX 3 Draft",
-      "subtitle": "Testez rapidement un prompt, une animation d'image, un pont entre deux cadres ou l'extension d'un clip en 720p.",
-      "subtitleHighlights": ["rapidement", "quatre workflows", "720p"],
-      "paragraph": "Choisissez Draft pour répondre à une question précise sur l'action, la caméra, la compatibilité des images ou la continuité d'une extension avant d'investir dans la route standard. Les entrées restent celles des quatre modes de FLUX 3. Black Forest Labs possède FLUX ; Fal distribue l'exécution de ce modèle sur MaxVideoAI au lancement.",
+      "subtitle": "Draft natif en 720p avec images clés et Extend ; Enhance distinct pour les Drafts appariés admissibles.",
+      "subtitleHighlights": ["720p", "Extend", "Enhance"],
+      "paragraph": "Utilisez Draft natif en 720p pour texte, image, deux images limites, images clés indexées et Extend. Enhance recalcule un Draft natif admissible de votre compte en 1080p depuis son cache apparié ; imports, copies publiques et caches Draft Extend ne donnent pas cette admissibilité. Le coût du Draft initial reste distinct.",
       "primaryCta": { "label": "Générer avec FLUX 3 Draft", "href": "/app?engine=flux-3-draft" },
       "secondaryCta": { "label": "Voir la galerie FLUX", "href": "/fr/galerie/flux" },
       "quickLinks": [
@@ -23,26 +23,46 @@
         { "label": "Ouvrir le laboratoire Draft", "href": "#prompting" }
       ]
     },
-    "media": { "caption": "Galerie de preuves FLUX 3 Draft", "description": "Les brouillons acceptés apparaîtront après revue", "renderLabel": "Examiner le brouillon accepté", "badges": ["Draft", "Quatre workflows", "720p"], "altContext": "exemple vidéo FLUX 3 Draft accepté" },
+    "media": { "caption": "Galerie de preuves FLUX 3 Draft", "description": "Les brouillons acceptés apparaîtront après revue", "renderLabel": "Examiner le brouillon accepté", "badges": ["Draft", "720p"], "altContext": "exemple vidéo FLUX 3 Draft accepté" },
     "features": [
-      { "title": "Un brouillon pour décider", "body": "Chaque génération doit répondre à une question : le mouvement fonctionne-t-il, les cadres sont-ils compatibles ou l'extension conserve-t-elle la trajectoire ?", "tone": "quality" },
-      { "title": "Sources préparées pour le transfert", "body": "Utilisez les mêmes images ou vidéos autorisées que celles envisagées en production et documentez leur rôle. Le passage à FLUX 3 devient alors reproductible.", "tone": "reference" },
+      { "title": "Un brouillon pour décider", "body": "Draft natif reste en 720p. Enhance en 1080p exige un cache apparié admissible et un devis distinct ; tous les Drafts ne peuvent pas être améliorés automatiquement.", "tone": "quality" },
+      { "title": "Sources préparées pour le transfert", "body": "Le texte exige un prompt, l’image une image de départ, première/dernière image les deux images, les images clés 1–10 images indexées et Extend natif une vidéo source.", "tone": "reference" },
       { "title": "Quatre modes en 720p", "body": "Testez texte, image, double image ou extension avec des entrées distinctes. Le format Draft reste un outil d'itération et non une promesse de livraison finale.", "tone": "duration" },
-      { "title": "Extension tarifée par le calcul canonique", "body": "La page compare un texte de six secondes et une extension de six secondes en 720p. Les deux montants viennent du moteur tarifaire actif.", "tone": "price" }
+      { "title": "Extension tarifée par le calcul canonique", "body": "Extend natif de Draft reste un workflow de continuation en 720p avec son devis propre. Son cache n’est pas admissible pour Enhance.", "tone": "price" }
     ],
     "decisionCards": [
       { "title": "Idéal pour une question créative isolée", "body": "Utilisez Draft pour choisir un mouvement, un cadrage ou un couple d'images avant la passe de production.", "cta": { "label": "Lancer un test Draft", "href": "/app?engine=flux-3-draft" } },
-      { "title": "Moins adapté au livrable final", "body": "Quand la direction est approuvée, conservez le prompt et les sources puis poursuivez sur FLUX 3 standard.", "cta": { "label": "Ouvrir FLUX 3", "href": "/fr/modeles/flux-3" } },
+      { "title": "Moins adapté au livrable final", "body": "Draft natif reste en 720p. Enhance en 1080p exige un cache apparié admissible et un devis distinct ; tous les Drafts ne peuvent pas être améliorés automatiquement.", "cta": { "label": "Ouvrir FLUX 3", "href": "/fr/modeles/flux-3" } },
       { "title": "Préparer le transfert dès le départ", "body": "Notez la question, la source, le réglage et le résultat retenu afin que le test reste utile à la production.", "cta": { "label": "Ouvrir le laboratoire", "href": "#prompting" } }
     ],
     "referenceWorkflows": [
-      { "title": "Test depuis texte", "body": "Isolez une action ou un mouvement caméra à valider rapidement." },
-      { "title": "Test depuis image", "body": "Vérifiez que l'identité et la composition survivent au mouvement demandé." },
-      { "title": "Test de transition", "body": "Contrôlez la compatibilité de deux cadres avant une passe standard." },
-      { "title": "Test d'extension", "body": "Prolongez l'état final d'un clip sans coupe, nouveau sujet ni changement de lumière." }
+      {
+        "title": "Test depuis texte",
+        "body": "Isolez une action ou un mouvement caméra à valider rapidement."
+      },
+      {
+        "title": "Test depuis image",
+        "body": "Vérifiez que l'identité et la composition survivent au mouvement demandé."
+      },
+      {
+        "title": "Test de transition",
+        "body": "Contrôlez la compatibilité de deux cadres avant une passe standard."
+      },
+      {
+        "title": "Test d'extension",
+        "body": "Prolongez l'état final d'un clip sans coupe, nouveau sujet ni changement de lumière."
+      },
+      {
+        "title": "Images clés",
+        "body": "Utilisez 1–10 images ordonnées et des positions uniques de 0 à la durée demandée × 24. Choisissez 5–20 secondes entières ; le mode première/dernière image exige toujours les deux images."
+      },
+      {
+        "title": "Enhance Draft",
+        "body": "Enhance exige votre propre Draft natif terminé, issu de texte, image, première/dernière image ou images clés, et un cache apparié vérifié. Tous les Drafts n’en fournissent pas. La durée mesurée doit être positive et ne pas dépasser 21 secondes ; c’est une limite d’admission de l’application, pas une garantie de durée du fournisseur. La disponibilité est revérifiée avant exécution ; Enhance possède son propre devis."
+      }
     ],
     "pricingCopy": { "title": "Tarification par scénario FLUX 3 Draft", "subtitle": "Comparez six secondes de génération texte et six secondes d'extension vidéo, toutes deux en 720p.", "footnote": "Les valeurs sont calculées au moment de l'affichage ; le contenu ne fixe aucun prix ni marge.", "ctaLabel": "Générer avec FLUX 3 Draft", "ctaHref": "/app?engine=flux-3-draft" },
-    "meta": { "title": "FLUX 3 Draft, tests rapides et tarification canonique", "description": "Utilisez FLUX 3 Draft pour tester quatre workflows en 720p, documenter le transfert vers FLUX 3 et consulter des devis canoniques." }
+    "meta": { "title": "FLUX 3 Draft, tests rapides et tarification canonique", "description": "Créez des essais FLUX 3 Draft en 720p depuis du texte ou des images clés, conservez Extend natif et améliorez les Drafts appariés admissibles avec un devis distinct." }
   },
   "prompting": {
     "modelSlug": "flux-3-draft",
@@ -54,11 +74,11 @@
     ],
     "tabNotes": [
       { "tabId": "question", "body": "Si le résultat ne peut pas répondre oui ou non à une question, le brouillon est encore trop large." },
-      { "tabId": "sources", "body": "Les cadres d'une transition doivent partager assez d'identité, de perspective et de lumière." },
+      { "tabId": "sources", "body": "Distinguez première/dernière image des 1–10 images clés indexées. Enhance exige votre propre Draft natif admissible et son cache apparié qualifié, pas seulement un MP4 exporté." },
       { "tabId": "handoff", "body": "Conservez le prompt et les sources exacts au lieu de reconstruire le test de mémoire." }
     ],
     "globalPrinciples": ["Testez une hypothèse importante par génération.", "Gardez les autres variables stables pour comparer les résultats.", "Employez des sources réutilisables et explicitement autorisées.", "Appliquez la même revue de sécurité aux brouillons qu'aux sorties finales."],
-    "engineWhy": ["Draft offre les quatre workflows FLUX dans une route d'exploration 720p.", "Le couple Draft et standard rend le passage de l'essai à la production explicite.", "Les scénarios canoniques permettent de comparer texte et extension sans prix éditorial."],
+    "engineWhy": ["Le texte exige un prompt, l’image une image de départ, première/dernière image les deux images, les images clés 1–10 images indexées et Extend natif une vidéo source.", "Extend natif de Draft reste un workflow de continuation en 720p avec son devis propre. Son cache n’est pas admissible pour Enhance.", "Les scénarios canoniques permettent de comparer texte et extension sans prix éditorial."],
     "demo": {
       "title": "Test d'extension FLUX 3 Draft",
       "promptLabel": "Brouillon de prolongation vidéo",

@@ -6,7 +6,7 @@
       "description": "Compare Seedance 2.0 Mini and Luma Ray 3.2 for batch cost, audio, video editing, reframe workflows, scorecard ratings and best marketing use cases.",
       "titleBranding": "none"
     },
-    "heroIntro": "Use Seedance 2.0 Mini when the job needs lower-cost Dreamina Seedance batches, ecommerce variants, social hooks, video extension, source-video edits, and native audio tests at 480p or 720p. Use Luma Ray 3.2 when the job depends on Luma-style cinematic motion, Modify Video, Reframe, source-video preservation, guide frames, and 1080p visual control without native audio. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and production decision guidance instead of side-by-side videos.",
+    "heroIntro": "Use Seedance 2.0 Mini when the job needs lower-cost Dreamina Seedance batches, ecommerce variants, social hooks, video extension, source-video edits, and native audio tests at 480p or 720p. Use Luma Ray 3.2 when the job depends on Luma-style cinematic motion, Modify Video, Reframe, source-video preservation, guide frames, and 1080p visual control without native audio. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and production decision guidance instead of side-by-side videos. Ray 3.2 Extend adds five new seconds forward or backward only from an eligible owned direct Luma generation. Uploaded or copied public videos do not supply that lineage. Creation keyframes and Modify guide frames remain separate and cannot be added to Extend; automatic assembly with the original is not promised.",
     "primaryLinksTitle": "Recommended next steps",
     "primaryLinks": [
       {
@@ -37,6 +37,10 @@
         {
           "question": "Why is this page scorecard-only?",
           "answer": "Mini comparison pages stay scorecard-only until curated Mini side-by-side renders are selected, so this page prioritizes specs, workflow positioning, and cost tradeoffs."
+        },
+        {
+          "question": "Can I extend an uploaded or public Luma clip?",
+          "answer": "Ray 3.2 Extend adds five new seconds forward or backward only from an eligible owned direct Luma generation. Uploaded or copied public videos do not supply that lineage. Creation keyframes and Modify guide frames remain separate and cannot be added to Extend; automatic assembly with the original is not promised."
         }
       ]
     }
@@ -47,7 +51,7 @@
       "description": "Comparez Seedance 2.0 Mini et Luma Ray 3.2 pour le coût par lot, l’audio, le montage vidéo, le recadrage, les notes et les meilleurs usages marketing.",
       "titleBranding": "none"
     },
-    "heroIntro": "Utilisez Seedance 2.0 Mini quand le job demande des batches Dreamina Seedance moins couteux, des variantes ecommerce, des hooks social, de l extension video, des edits depuis source video et des tests avec audio natif en 480p ou 720p. Utilisez Luma Ray 3.2 quand le job depend du mouvement cinematographique Luma, de Modify Video, Reframe, preservation de source video, guide frames et controle visuel 1080p sans audio natif. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote.",
+    "heroIntro": "Utilisez Seedance 2.0 Mini quand le job demande des batches Dreamina Seedance moins couteux, des variantes ecommerce, des hooks social, de l extension video, des edits depuis source video et des tests avec audio natif en 480p ou 720p. Utilisez Luma Ray 3.2 quand le job depend du mouvement cinematographique Luma, de Modify Video, Reframe, preservation de source video, guide frames et controle visuel 1080p sans audio natif. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote. Extend de Ray 3.2 ajoute cinq nouvelles secondes vers l’avant ou l’arrière uniquement depuis une génération Luma directe admissible de votre compte. Imports et copies publiques ne fournissent pas cette provenance. Images clés de création et images guides Modify restent distinctes et ne s’ajoutent pas à Extend ; aucun assemblage automatique avec l’original n’est promis.",
     "primaryLinksTitle": "Parcours recommande",
     "primaryLinks": [
       {
@@ -78,6 +82,10 @@
         {
           "question": "Pourquoi cette page est-elle scorecard-only ?",
           "answer": "Les pages Mini restent scorecard-only jusqu a selection de renders Mini cote-a-cote, donc cette page priorise specs, positionnement workflow et compromis de cout."
+        },
+        {
+          "question": "Puis-je prolonger un clip Luma importé ou public ?",
+          "answer": "Extend de Ray 3.2 ajoute cinq nouvelles secondes vers l’avant ou l’arrière uniquement depuis une génération Luma directe admissible de votre compte. Imports et copies publiques ne fournissent pas cette provenance. Images clés de création et images guides Modify restent distinctes et ne s’ajoutent pas à Extend ; aucun assemblage automatique avec l’original n’est promis."
         }
       ]
     }
@@ -88,7 +96,7 @@
       "description": "Compara Seedance 2.0 Mini y Luma Ray 3.2 por costo por lote, audio, edición de video, reencuadre, calificaciones y mejores usos de marketing.",
       "titleBranding": "none"
     },
-    "heroIntro": "Usa Seedance 2.0 Mini cuando el trabajo necesita batches Dreamina Seedance de menor coste, variantes ecommerce, hooks social, extension de video, ediciones desde video fuente y pruebas con audio nativo en 480p o 720p. Usa Luma Ray 3.2 cuando el trabajo depende del movimiento cinematico de Luma, Modify Video, Reframe, preservacion de video fuente, guide frames y control visual 1080p sin audio nativo. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado.",
+    "heroIntro": "Usa Seedance 2.0 Mini cuando el trabajo necesita batches Dreamina Seedance de menor coste, variantes ecommerce, hooks social, extension de video, ediciones desde video fuente y pruebas con audio nativo en 480p o 720p. Usa Luma Ray 3.2 cuando el trabajo depende del movimiento cinematico de Luma, Modify Video, Reframe, preservacion de video fuente, guide frames y control visual 1080p sin audio nativo. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado. Extend de Ray 3.2 añade cinco segundos nuevos hacia delante o atrás solo desde una generación Luma directa elegible de tu cuenta. Importaciones y copias públicas no aportan esa procedencia. Fotogramas de creación e imágenes guía Modify siguen separados y no se añaden a Extend; no se promete montaje automático con el original.",
     "primaryLinksTitle": "Siguientes pasos recomendados",
     "primaryLinks": [
       {
@@ -119,6 +127,10 @@
         {
           "question": "Por que esta pagina es scorecard-only?",
           "answer": "Las paginas Mini siguen scorecard-only hasta que se elijan renders Mini lado a lado, asi que esta pagina prioriza specs, posicionamiento de workflow y tradeoffs de coste."
+        },
+        {
+          "question": "¿Puedo extender un clip Luma importado o público?",
+          "answer": "Extend de Ray 3.2 añade cinco segundos nuevos hacia delante o atrás solo desde una generación Luma directa elegible de tu cuenta. Importaciones y copias públicas no aportan esa procedencia. Fotogramas de creación e imágenes guía Modify siguen separados y no se añaden a Extend; no se promete montaje automático con el original."
         }
       ]
     }

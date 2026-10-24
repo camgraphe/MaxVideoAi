@@ -136,7 +136,7 @@
     },
     {
       "q": "Which modes are supported?",
-      "a": "Text → Video and Image → Video in a single card. No first/last frame in this routing."
+      "a": "Yes. In image-to-video, supply the start image and optionally an end image to guide the landing frame. This is distinct from video-to-video editing."
     },
     {
       "q": "Is Kling 2.6 Pro still good for image-to-video and short dialogue shots?",
@@ -338,7 +338,7 @@
       },
       {
         "title": "Start image",
-        "body": "Use one image for product framing, character identity or a stable opening composition."
+        "body": "Image-to-video accepts a start image and an optional end image. The end image is a boundary frame, not a separate style-reference stack."
       },
       {
         "title": "Audio cue",
@@ -429,7 +429,8 @@
     "globalPrinciples": [
       "One subject, one action, one camera move.",
       "Call out lighting and lens feel.",
-      "Add short sound cues or dialogue if audio is on."
+      "Add short sound cues or dialogue if audio is on.",
+      "Image-to-video accepts a start image and an optional end image. The end image is a boundary frame, not a separate style-reference stack."
     ],
     "engineWhy": [
       "Audio mode supports simple ambience and short lines.",
