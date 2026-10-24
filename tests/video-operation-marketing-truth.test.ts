@@ -77,3 +77,17 @@ test('rendered Draft resolution keeps its native versus Enhance qualification', 
 test('catalogue keeps valid higher image-generation resolutions across scoped clauses', () => {
   assert.deepEqual(extractMaxResolution('T2V: 480p/720p; I2V: 480p/720p/1080p', ['480p', '720p']), { label: '1080p', value: 1080 });
 });
+
+for (const locale of ['en', 'fr', 'es']) test(`${locale}: source-operation editorial answers and workflow keys remain unambiguous`, () => {
+  const load = (slug: string) => JSON.parse(readFileSync(`content/models/${locale}/${slug}.json`, 'utf8'));
+  const draft = load('flux-3-draft');
+  assert.doesNotMatch(JSON.stringify(draft), /Quatre modes|Cuatro modos/);
+  const luma = load('luma-ray-3-2');
+  const titles = luma.decision.referenceWorkflows.map((workflow: { title: string }) => workflow.title);
+  assert.equal(new Set(titles).size, titles.length);
+  const answer = load('kling-2-6-pro').faqs[1].a;
+  assert.match(answer, /text-to-video|texte-vers-vidéo|texto a video/i);
+  assert.match(answer, /image-to-video|image-vers-vidéo|imagen a video/i);
+  assert.doesNotMatch(JSON.stringify(luma), /Modify (?:Creation|La création|La creación)/);
+  assert.doesNotMatch(JSON.stringify(load('ltx-2-3-pro')), /(?:both|deux|ambos) Reframe/);
+});

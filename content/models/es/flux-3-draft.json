@@ -27,7 +27,7 @@
     "features": [
       { "title": "Un borrador para decidir", "body": "Draft nativo sigue a 720p. Enhance a 1080p exige una caché emparejada elegible y una cotización separada; no todos los Drafts se pueden mejorar automáticamente.", "tone": "quality" },
       { "title": "Fuentes preparadas para el traslado", "body": "El texto exige un prompt, imagen una imagen inicial, primera/última imagen ambas imágenes, fotogramas clave 1–10 imágenes indexadas y Extend nativo un video de origen.", "tone": "reference" },
-      { "title": "Cuatro modos en 720p", "body": "Prueba texto, imagen, doble imagen o extensión con entradas distintas. Draft es una herramienta de iteración, no una promesa de entrega final.", "tone": "duration" },
+      { "title": "Flujos Draft nativos a 720p", "body": "Prueba texto, imagen, primera/última imagen, fotogramas clave indexados o Extend nativo con entradas distintas. Draft es una herramienta de iteración, no una promesa de entrega final.", "tone": "duration" },
       { "title": "Extensión con precio canónico", "body": "Extend nativo de Draft sigue siendo un flujo de continuación a 720p con su propia cotización. Su caché no es elegible para Enhance.", "tone": "price" }
     ],
     "decisionCards": [

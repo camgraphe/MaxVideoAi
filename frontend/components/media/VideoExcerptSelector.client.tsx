@@ -77,7 +77,13 @@ export function VideoExcerptSelector({
   if (operation === 'h3-relight') {
     try { copyPlan = planH3RelightCopy(range.endSec-range.startSec); } catch { /* range validation below */ }
   }
-  const number = (value: number) => new Intl.NumberFormat(locale, {maximumFractionDigits: 6}).format(value);
+  // Presentation only: range, frame planning and the applied payload retain full precision.
+  const number = (value: number) => `${Math.abs(value - Math.round(value * 100) / 100) > 1e-10 ? '≈' : ''}${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value)}`;
+  const limitNumber = (value: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 6 }).format(value);
+  const minimum = operation === 'h3-relight'
+    ? (locale.startsWith('fr') ? '≥56 images à 24 images/s' : locale.startsWith('es') ? '≥56 fotogramas a 24 fps' : '≥56 frames at 24 fps')
+    : `${limitNumber(limits.minDurationSec ?? 0)} s`;
+
   const copyNotice = copyPlan ? (locale.startsWith('fr')
     ? `Copie à 24 images/s : sélection ${number(range.endSec-range.startSec)} s, durée réelle ${number(copyPlan.durationSec)} s (${copyPlan.frameCount} images). ${number(copyPlan.removedEndSec)} s retirée(s) à la fin. Original, cadrage et audio conservés.`
     : locale.startsWith('es') ? `Copia a 24 fps: selección ${number(range.endSec-range.startSec)} s, duración real ${number(copyPlan.durationSec)} s (${copyPlan.frameCount} fotogramas). Se eliminan ${number(copyPlan.removedEndSec)} s del final. Se conservan el original, el encuadre y el audio.`
@@ -205,7 +211,7 @@ export function VideoExcerptSelector({
           </label>)}
           <div className="video-excerpt-duration" aria-live="polite"><span>{copy.length}</span><strong>{Number.isFinite(range.endSec-range.startSec) ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(range.endSec-range.startSec) : '—'} <small>s</small></strong></div>
         </div>
-        <p className="video-excerpt-limits">{copy.limits}: {number(limits.minDurationSec ?? 0)}–{limits.maxDurationSec == null ? '∞' : number(limits.maxDurationSec)} s</p>
+        <p className="video-excerpt-limits">{copy.limits}: {minimum} · {operation === 'flux-fast-edit' ? '<' : '≤'}{limits.maxDurationSec == null ? '∞' : limitNumber(limits.maxDurationSec)} s</p>
         {!valid ? <p role="alert">{copy.invalid}</p> : null}
         {error ? <p role="alert">{error}</p> : null}
         {copyNotice ? <p data-testid="video-compatible-copy-disclosure" role="status">{copyNotice}</p> : null}

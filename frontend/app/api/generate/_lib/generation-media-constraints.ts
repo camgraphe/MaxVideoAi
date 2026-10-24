@@ -320,7 +320,7 @@ export async function validateGenerationMediaConstraints(params: {
   const trustedMediaReferences: MinimaxH3MaxPricingReference[] = [];
   const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
-    const requiresExactSource = Boolean(h3Operation || fluxLtxOperation) || requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
+    const requiresExactSource = Boolean(h3Operation || fluxLtxOperation) || (requiresOwnedMedia && candidate.fieldId === 'video_url') || requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
       const originUrl = normalizeUrl(row.origin_url);
@@ -499,7 +499,8 @@ export async function validateGenerationMediaConstraints(params: {
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
-      let durationSec = h3Operation && candidate.fieldId === 'video_url' ? trustedReference.durationSec ?? null : (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec));
+      // Start from the qualified projection: source probes above supersede stored timing.
+      let durationSec = trustedReference.durationSec ?? null;
       // Older web uploads have no measured duration. Only probe an owned storage
       // original, never an arbitrary browser URL or a claimed client duration.
       if (durationSec == null && params.engineId === 'seedance-2-5' && field.type === 'video') {
@@ -575,7 +576,8 @@ export async function validateGenerationMediaConstraints(params: {
   return {
     ok: true,
     ...(Object.keys(trustedDurationSecByField).length ? { trustedDurationSecByField } : {}),
-    ...(isLumaSourceVideoMode(params.engineId, params.mode)
+    ...(requiresOwnedMedia
+      || isLumaSourceVideoMode(params.engineId, params.mode)
       || params.engineId === 'minimax-h3-max'
       || isSeedance2TokenPricing(engine.pricingDetails)
       || typeof params.inputSchema?.constraints?.maxSourcePlusOutputDurationSec === 'number'

@@ -1,10 +1,11 @@
+import { isFluxLtxSourceOperation, validateFluxLtxSource } from '@/lib/flux-ltx-operations';
 import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { isH3SourceOperation, validateH3Source } from '@/lib/h3-source-operations';
 import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
 import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
-import { resolveVideoOperationEngine, validateKlingEditSource } from '@/lib/video-operation';
+import { normalizeVideoOperation, resolveVideoOperationEngine, validateKlingEditSource } from '@/lib/video-operation';
 import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
@@ -158,7 +159,10 @@ export async function resolveMediaAwarePreflight(
     : undefined;
   let engine = publicEngine ?? privateEngine;
   if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
-  try { engine = resolveVideoOperationEngine(engine, request.mode, request.operation); }
+  try {
+    request.operation = normalizeVideoOperation(engine.id, request.mode, request.operation);
+    engine = resolveVideoOperationEngine(engine, request.mode, request.operation);
+  }
   catch { return mediaPricingFailure('OPERATION_INVALID', 'Invalid video operation.'); }
   if(request.operation==='flux-draft-enhance') {
     try { const userId=input.userId??await input.resolveUserId?.();
@@ -364,7 +368,11 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
-  const operationSeconds = (request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  const operationSeconds = (request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  if (isFluxLtxSourceOperation(request.operation)) {
+    const sourceError = validateFluxLtxSource(request.operation, (processed.trustedMediaReferences ?? []).find(reference => reference.kind === 'video' && reference.fieldId === 'video_url'));
+    if (sourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', sourceError);
+  }
   if (isH3SourceOperation(request.operation)) {
     const sourceError = validateH3Source(request.operation,(processed.trustedMediaReferences ?? []).find(reference=>reference.kind==='video'&&reference.fieldId==='video_url'));
     if (sourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED',sourceError);

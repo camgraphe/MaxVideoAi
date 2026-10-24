@@ -76,7 +76,7 @@
     },
     {
       "label": "Guías",
-      "body": "Una imagen inicial para imagen a video, cuadro guía o hasta 64 imágenes clave indexadas para Modify La creación también admite hasta 64 imágenes clave ordenadas con índices enteros únicos no negativos; son distintas de los fotogramas Modify."
+      "body": "Una imagen inicial para imagen a video, cuadro guía o hasta 64 imágenes clave indexadas para Modify. La creación también admite hasta 64 imágenes clave ordenadas con índices enteros únicos no negativos; son distintas de los fotogramas Modify."
     },
     {
       "label": "Video fuente",
@@ -397,7 +397,7 @@
         "body": "Extend añade cinco segundos nuevos hacia delante o atrás desde una generación Ray 3.2 completada elegible de tu cuenta. Exige la procedencia Luma directa original; una importación o copia MP4 pública no la sustituye. No se prometen fotogramas adicionales ni montaje automático con el original."
       },
       {
-        "title": "Modify",
+        "title": "Controles Modify",
         "body": "En Modify, elige interpretación automática o controles manuales de intensidad y señales. Una imagen guía y los fotogramas clave Modify son alternativas. La creación con varios fotogramas es una entrada separada y no se combina con Extend."
       }
     ],

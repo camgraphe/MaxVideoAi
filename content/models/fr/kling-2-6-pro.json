@@ -136,7 +136,7 @@
     },
     {
       "q": "Quels modes sont supportés ?",
-      "a": "Oui. En image-vers-vidéo, fournissez l’image de départ et éventuellement une image de fin pour guider l’arrivée. Cela reste distinct de la modification vidéo-vers-vidéo."
+      "a": "Texte-vers-vidéo et image-vers-vidéo sont disponibles. En image-vers-vidéo, fournissez l’image de départ et éventuellement une image de fin pour guider l’arrivée. Cela reste distinct de la modification vidéo-vers-vidéo."
     },
     {
       "q": "Kling 2.6 Pro reste-t-il utile pour l image-vers-video et les plans courts avec dialogue ?",

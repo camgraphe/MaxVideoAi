@@ -136,7 +136,7 @@
     },
     {
       "q": "Which modes are supported?",
-      "a": "Yes. In image-to-video, supply the start image and optionally an end image to guide the landing frame. This is distinct from video-to-video editing."
+      "a": "Text-to-video and image-to-video are supported. In image-to-video, supply the start image and optionally an end image to guide the landing frame. This is distinct from video-to-video editing."
     },
     {
       "q": "Is Kling 2.6 Pro still good for image-to-video and short dialogue shots?",

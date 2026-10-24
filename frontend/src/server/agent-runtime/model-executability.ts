@@ -164,6 +164,23 @@ export function resolveAgentGenerationModeExecutability(
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
   options?: { nativeSeedanceWorkflow: true },
 ): AgentGenerationExecutabilityDecision {
+  // Discovery asks whether any supported operation can run. Request admission
+  // still normalizes the caller's explicit operation and rejects ambiguity.
+  const operations = Object.values(engine.operationCaps ?? {}).filter(caps => caps?.mode === mode);
+  const decisions = [undefined, ...operations.map(caps => caps!.operation)].map(operation =>
+    resolveAgentGenerationModeOperationExecutability(engine, mode, environment, options, operation));
+  return decisions.find(decision => decision.executable)
+    ?? decisions.find(decision => decision.reason !== 'profile_invalid')
+    ?? decisions[0]!;
+}
+
+function resolveAgentGenerationModeOperationExecutability(
+  engine: EngineCaps,
+  mode: Mode,
+  environment: AgentGenerationExecutabilityEnvironment,
+  options?: { nativeSeedanceWorkflow: true },
+  operation?: import('@/lib/video-operation').VideoOperation,
+): AgentGenerationExecutabilityDecision {
   if (isBytePlusSeedreamEngine(engine)) {
     return resolveAgentGenerationEngineExecutability(engine, environment);
   }
@@ -200,6 +217,7 @@ export function resolveAgentGenerationModeExecutability(
       const routingPlan = resolveVideoProviderRoutingPlan({
         engineId: engine.id,
         mode,
+        operation,
         isAdmin: false,
         env: providerEnv,
       });
@@ -331,7 +349,7 @@ export function resolveAgentGenerationRequestExecutability(
         : { executable: false, reason: 'profile_invalid' };
     }
   }
-  return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment);
+  return resolveAgentGenerationModeOperationExecutability(engine, request.mode as Mode, environment, undefined, request.operation);
 }
 
 export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {

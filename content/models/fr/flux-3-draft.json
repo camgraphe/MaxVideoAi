@@ -27,7 +27,7 @@
     "features": [
       { "title": "Un brouillon pour décider", "body": "Draft natif reste en 720p. Enhance en 1080p exige un cache apparié admissible et un devis distinct ; tous les Drafts ne peuvent pas être améliorés automatiquement.", "tone": "quality" },
       { "title": "Sources préparées pour le transfert", "body": "Le texte exige un prompt, l’image une image de départ, première/dernière image les deux images, les images clés 1–10 images indexées et Extend natif une vidéo source.", "tone": "reference" },
-      { "title": "Quatre modes en 720p", "body": "Testez texte, image, double image ou extension avec des entrées distinctes. Le format Draft reste un outil d'itération et non une promesse de livraison finale.", "tone": "duration" },
+      { "title": "Workflows Draft natifs en 720p", "body": "Testez texte, image, première/dernière image, images clés indexées ou Extend natif avec des entrées distinctes. Le format Draft reste un outil d'itération et non une promesse de livraison finale.", "tone": "duration" },
       { "title": "Extension tarifée par le calcul canonique", "body": "Extend natif de Draft reste un workflow de continuation en 720p avec son devis propre. Son cache n’est pas admissible pour Enhance.", "tone": "price" }
     ],
     "decisionCards": [

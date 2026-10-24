@@ -95,7 +95,7 @@
     },
     {
       "label": "Editing workflows",
-      "body": "Extend at the start or end with context controls; retake a selected time window and replace audio, video, or both Reframe on standard LTX 2.3 keeps exact source timing for clips up to 60 seconds, at 720p or 1080p, with a target aspect ratio and no prompt. This does not add Reframe to LTX 2.3 Fast or LTX 2.5."
+      "body": "Extend at the start or end with context controls; retake a selected time window and replace audio, video, or both. Reframe on standard LTX 2.3 keeps exact source timing for clips up to 60 seconds, at 720p or 1080p, with a target aspect ratio and no prompt. This does not add Reframe to LTX 2.3 Fast or LTX 2.5."
     },
     {
       "label": "Pricing",

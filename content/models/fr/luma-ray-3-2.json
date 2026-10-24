@@ -76,7 +76,7 @@
     },
     {
       "label": "Guides",
-      "body": "Une image de départ pour image vers vidéo, image guide ou jusqu’à 64 images clés indexées pour Modify La création accepte aussi jusqu’à 64 images clés ordonnées avec indices entiers uniques positifs ou nuls ; elles sont distinctes des images clés Modify."
+      "body": "Une image de départ pour image vers vidéo, image guide ou jusqu’à 64 images clés indexées pour Modify. La création accepte aussi jusqu’à 64 images clés ordonnées avec indices entiers uniques positifs ou nuls ; elles sont distinctes des images clés Modify."
     },
     {
       "label": "Vidéo source",
@@ -397,7 +397,7 @@
         "body": "Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Ray 3.2 terminée admissible de votre compte. La provenance Luma directe originale est obligatoire ; un import ou une copie MP4 publique ne la remplace pas. Aucune image clé supplémentaire ni assemblage automatique avec l’original n’est promis."
       },
       {
-        "title": "Modify",
+        "title": "Contrôles Modify",
         "body": "Pour Modify, choisissez l’interprétation automatique ou les contrôles manuels de force et de signaux. Une image guide et les images clés Modify sont des alternatives. La création multi-images clés est une entrée distincte et ne se mélange pas à Extend."
       }
     ],

@@ -136,7 +136,7 @@
     },
     {
       "q": "¿Qué modos soporta?",
-      "a": "Sí. En imagen a video, aporta la imagen inicial y opcionalmente una imagen final para guiar la llegada. Es distinto de la edición de video a video."
+      "a": "Se admiten texto a video e imagen a video. En imagen a video, aporta la imagen inicial y opcionalmente una imagen final para guiar la llegada. Es distinto de la edición de video a video."
     },
     {
       "q": "¿Sigue siendo util Kling 2.6 Pro para imagen-a-video y planos cortos con dialogo?",

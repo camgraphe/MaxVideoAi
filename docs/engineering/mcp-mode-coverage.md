@@ -282,3 +282,22 @@ at confirmation, and its exact resolved metadata is quote-bound to prevent media
 substitution. Stored intents and canonical requests retain the typed composition.
 The MCP schema and Studio director/pricing schemas expose the same composition;
 model operation details describe it. No second ownership or grant path exists.
+
+### Operation discovery and source-fact handoff
+
+Mode discovery evaluates the authored operation alternatives through the real
+provider routing and credential gates. An available alternative publishes the
+mode; request admission still checks only the selected operation. FLUX source
+operations and H3 Recast/Relight require explicit operation identity. Historical
+Kling Reference omission and inferred standard LTX 2.3 Reframe remain unchanged.
+
+Owned-source validation returns its qualified facts through both the attachment
+and trusted-reference projections. A byte probe supersedes stored duration for
+FAST/LTX and H3; later duration-limit checks must consume that projection rather
+than reload stored timing. Site preflight normalizes inferred operations before
+selecting exact source seconds, matching execution and canonical quotation.
+`tests/video-operation-source-seams.test.ts` connects the executable catalogue,
+prepare admission, normalized attachments, Site preflight, source execution guard
+and canonical customer billing with only storage/probe/policy I/O substituted.
+It includes credential rejection, source identity mismatch, busy/invalid probes,
+missing stored timing, fractional customer-cent transitions and strict FAST bounds.

@@ -76,7 +76,7 @@
     },
     {
       "label": "Guides",
-      "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify Creation also accepts up to 64 ordered keyframe images with unique nonnegative integer indexes; these are separate from Modify keyframes."
+      "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify. Creation also accepts up to 64 ordered keyframe images with unique nonnegative integer indexes; these are separate from Modify keyframes."
     },
     {
       "label": "Source video",
@@ -397,7 +397,7 @@
         "body": "Extend adds five new seconds forward or backward from an eligible completed Ray 3.2 generation in your account. It requires the original direct Luma lineage; an upload or public MP4 copy cannot replace it. No extra keyframes or automatic assembly with the original are promised."
       },
       {
-        "title": "Modify",
+        "title": "Modify controls",
         "body": "For Modify, choose automatic interpretation or manual strength and signal controls. A single guide frame and Modify keyframes are alternatives. Multi-keyframe creation is a separate generation input and cannot be mixed into Extend."
       }
     ],

@@ -95,7 +95,7 @@
     },
     {
       "label": "Workflows d'édition",
-      "body": "Extend au début ou à la fin avec contrôles de contexte ; retake sur une fenêtre temporelle choisie avec remplacement de l'audio, de la vidéo ou des deux Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
+      "body": "Extend au début ou à la fin avec contrôles de contexte ; retake sur une fenêtre temporelle choisie avec remplacement de l'audio, de la vidéo ou des deux. Reframe sur LTX 2.3 standard conserve la durée exacte de la source jusqu’à 60 secondes, en 720p ou 1080p, avec un format cible et sans prompt. Cela n’ajoute pas Reframe à LTX 2.3 Fast ni à LTX 2.5."
     },
     {
       "label": "Tarification",
