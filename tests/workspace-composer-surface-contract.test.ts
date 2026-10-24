@@ -47,6 +47,8 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.match(surfaceSource, /export function WorkspaceComposerSurface/);
   assert.match(surfaceSource, /supportsVideoCfgScaleControl\(selectedEngine, submissionMode\) \|\|/);
   assert.match(surfaceSource, /<Composer\b/);
+  const composerInputs = surfaceSource.slice(surfaceSource.indexOf('<Composer\n'), surfaceSource.indexOf('beforeAssets=', surfaceSource.indexOf('<Composer\n')));
+  assert.match(composerInputs, /caps=\{capability\}/, 'Create must pass its inferred reference mode to shared section controls, just as explicit Modify/Extend do');
   assert.match(surfaceSource, /<SettingsControls\b/);
   assert.match(surfaceSource, /<CoreSettingsBar\b/);
   assert.match(surfaceSource, /KlingElementsBuilder/);

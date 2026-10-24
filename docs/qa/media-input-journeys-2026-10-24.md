@@ -81,3 +81,17 @@ new PR from `codex/media-input-journeys`, based on the current deployed main.
 Required Quality CI, authenticated hosted checks and both-domain Git provenance
 remain release gates. No new model operation, tariff, migration or paid-provider
 trial is part of this follow-up. Final immutable evidence belongs in the PR.
+
+Hosted qualification of the first candidate found one additional shared wiring
+regression: `WorkspaceComposerSurface` omitted the inferred mode capabilities
+when rendering `Composer`. Explicit Modify worked, but a successful20s Wan Create
+audio import had no section control. The surface now passes its canonical
+capability projection; an ownership contract locks that connection.85focused
+composer, source-workflow, model-matrix and real-hook tests and TypeScript pass.
+The exact new candidate must repeat hosted audio qualification before release.
+
+The first hosted candidate also reproduced the missing-dimension H3 source from
+the user's library: its measured6s source now quotes234cents, enables generation
+at1440/390px and prepares a5s private section without a provider render. The
+preview's DATABASE_URL is explicitly scoped to its separate Neon branch; the
+bounded audio QA import exists there and is absent from production.
