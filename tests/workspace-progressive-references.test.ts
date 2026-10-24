@@ -59,6 +59,8 @@ test('workspace Options appears only for useful advanced controls and stale vide
   assert.match(video, /advancedOpen=\{showOptionsControl && optionsOpen\}/);
   assert.match(video, /optionsControl=\{showOptionsControl \? <WorkspaceOptionsButton/);
   assert.match(image, /<ImageAdvancedSettings\s+open=\{optionsOpen\}/);
-  assert.match(composer, /htmlFor=\{promptId\}/);
+  const promptHeader = readFileSync('frontend/components/composer/ComposerPromptHeader.client.tsx', 'utf8');
+  assert.match(composer, /<ComposerPromptHeader promptId=\{promptId\}/);
+  assert.match(promptHeader, /htmlFor=\{promptId\}/);
   assert.match(composer, /<textarea\s+id=\{promptId\}/);
 });

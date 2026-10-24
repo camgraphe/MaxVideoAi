@@ -1015,6 +1015,14 @@ components/CSS at mobile and desktop widths, with synthetic media and no renders
 `workspace-reference-mentions*` cover these boundaries. The model/slot matrix is
 a known-facts audit, not certification of every provider render or file codec.
 
+The prompt heading is owned by `ComposerPromptHeader.client.tsx`. Its localized
+clear action keeps a one-step undo in `ComposerPromptClear.client.tsx` memory only;
+new text invalidates that backup. Clearing/restoring uses the existing prompt
+callback and synchronously focuses the same textarea for mobile keyboards. The
+shared action never clears multi-prompt scenes or media references. Character and
+Kling subject actions remain in References, not the prompt heading. Browser tests
+exercise Chromium and WebKit at touch and desktop widths, including rapid edits.
+
 ### Milo Studio preview
 
 `studio-milo-preview.webp` is a real isolated connected-task capture from

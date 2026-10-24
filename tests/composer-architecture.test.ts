@@ -11,6 +11,7 @@ const multiPromptEditorPath = join(root, 'frontend/components/composer/ComposerM
 const promotedActionIconPath = join(root, 'frontend/components/composer/ComposerPromotedActionIcon.tsx');
 const generationQuotePath = join(root, 'frontend/components/composer/ComposerGenerationQuote.client.tsx');
 const noticesPath = join(root, 'frontend/components/composer/ComposerNotices.client.tsx');
+const promptHeaderPath = join(root, 'frontend/components/composer/ComposerPromptHeader.client.tsx');
 
 const composerSource = readFileSync(composerPath, 'utf8');
 const composerTypesSource = readFileSync(composerTypesPath, 'utf8');
@@ -51,6 +52,16 @@ test('composer prompt textarea uses the configured prompt label as its accessibl
   const textareaBlock = composerSource.slice(textareaStart, textareaEnd);
 
   assert.match(textareaBlock, /aria-label=\{promptLabel\}/);
+});
+
+test('composer delegates prompt label, count, and clear presentation to the prompt header', () => {
+  assert.match(composerSource, /<ComposerPromptHeader\b/);
+  assert.doesNotMatch(composerSource, /<ComposerPromptClear\b|<label htmlFor=\{promptId\}/);
+  const headerSource = readFileSync(promptHeaderPath, 'utf8');
+  assert.match(headerSource, /<label htmlFor=\{promptId\}/, 'single prompt retains its textarea label association');
+  assert.match(headerSource, /<h2 id=\{`\$\{promptId\}-heading`\}/, 'multi-prompt retains the heading consumed by its scene editor');
+  assert.match(headerSource, /<ComposerPromptClear\b/, 'header owns clear action placement');
+  assert.match(composerSource, /labelledBy=\{`\$\{promptId\}-heading`\}/);
 });
 
 test('composer workspace density is opt-in and keeps price inside Generate', () => {
