@@ -1,3 +1,4 @@
+import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
 import {
@@ -102,6 +103,21 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (['flux-3','flux-3-draft'].includes(engine.id) && context.mode==='ref2v') {
+    const cents=engine.id==='flux-3-draft'?(resolution==='720p'?6:undefined):({'720p':17,'1080p':29} as Record<string,number>)[resolution??''];
+    if(!cents||!Number.isSafeInteger(durationSec)||durationSec<5||durationSec>20||currency!=='USD')throw new Error('Unsupported keyframe pricing domain.');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:durationSec*cents},factsMetadata:{manualTariffAudio:null},
+      meta:{pricing_model:'flux_keyframes',operation:'flux-keyframes',provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false}});
+  }
+  if (isFluxLtxSourceOperation(context.operation)) {
+    const bounds=fluxLtxDurationBounds(context.operation);
+    if (!Number.isFinite(durationSec)||durationSec<=0||(bounds.maxExclusive?durationSec>=bounds.max:durationSec>bounds.max)||currency!=='USD') throw new Error('Unsupported source operation pricing domain.');
+    const cents=fluxLtxReferenceRate(context.operation,resolution??'');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:Math.ceil(durationSec*cents)},factsMetadata:{manualTariffAudio:null},
+      meta:{pricing_model:'flux_ltx_source_operation',operation:context.operation,provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false,input_video_seconds:durationSec,pricing_basis:context.operation==='flux-draft-enhance'?'measured_owned_draft_duration':'measured_source_duration'}});
+  }
   if (engine.id === 'luma-ray-3-2' && context.mode === 'extend') {
     const amount = ({ '540p': 15, '720p': 30, '1080p': 120 } as Record<string, number>)[resolution ?? ''];
     if (!amount || durationSec !== 5 || currency !== 'USD') throw new Error('Unsupported Luma fixed extension block.');

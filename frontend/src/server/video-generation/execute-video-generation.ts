@@ -1,3 +1,5 @@
+import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
+import { fluxDraftQuoteBinding, type QualifiedFluxDraftSource } from '@/server/flux-draft-cache';
 import { query } from '@/lib/db';
 import { buildResponseFromExistingVideoJob, type ExistingVideoJobRow } from '@/app/api/generate/_lib/initial-video-job';
 import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding, type OwnedLumaGenerationSource } from '@/server/agent-api/generation-luma-lineage';
@@ -123,6 +125,17 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     && routeContext.providerRoutingPlan.kind !== 'luma_agents_direct_primary') {
     return { status: 400, body: { ok: false, error: 'LUMA_MODE_UNAVAILABLE', message: 'Creation keyframes require direct Luma access.' } };
   }
+  let fluxDraftSource:QualifiedFluxDraftSource|undefined;
+  if(body.operation==='flux-draft-enhance' && !preReservedInitialState) {
+    const existing=await query<ExistingVideoJobRow>(`SELECT * FROM app_jobs WHERE job_id=$1 AND user_id=$2 AND engine_id='flux-3-draft' AND provider='fal' AND provider_job_id IS NOT NULL LIMIT 1`,[jobId,userId]);
+    if(existing[0])return {body:buildResponseFromExistingVideoJob(existing[0],localKey)};
+  }
+  if(body.operation==='flux-draft-enhance') {
+    try {
+      fluxDraftSource=await resolveOwnedFluxDraftSource({userId,sourceJobId:String(body.sourceJobId??validatedExtraInputValues.source_job_id??''),sourceOutputId:typeof body.sourceOutputId==='string'?body.sourceOutputId:undefined});
+      if((body.inputs as unknown[]|undefined)?.length || (trustedQuotedBilling&&trustedQuotedBilling.fluxDraftFingerprint!==fluxDraftSource.fingerprint)) throw new Error('Source changed.');
+    } catch {return {status:400,body:{ok:false,error:'REFERENCE_INVALID',message:'The owned Draft cache is unavailable or changed.'}};}
+  }
   let lumaGenerationSource: OwnedLumaGenerationSource | undefined;
   if (engine.id === 'luma-ray-3-2' && mode === 'extend' && !preReservedInitialState) {
     const existing = await query<ExistingVideoJobRow>(`SELECT * FROM app_jobs WHERE job_id = $1 AND user_id = $2
@@ -205,7 +218,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       };
     }
   }
-  const sourceVideoContext = resolveGenerateSourceVideoContext({
+  const sourceVideoContext = fluxDraftSource ? {ok:true as const,durationSec:fluxDraftSource.durationSec,durationLabel:`${fluxDraftSource.durationSec}s`,hasVideoInput:true} : resolveGenerateSourceVideoContext({
     operation: normalizeVideoOperation(engine.id, mode, body.operation),
     engineId: engine.id,
     trustedSourceVideo: attachmentProcessing.trustedMediaReferences?.find(reference =>
@@ -383,6 +396,12 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
   }
 
   const billing = billingPreflight.preflight;
+  if (fluxDraftSource) {
+    const binding=fluxDraftQuoteBinding(fluxDraftSource);
+    billing.pricing={...billing.pricing,...binding};billing.receiptSnapshot={...billing.receiptSnapshot,...binding};
+    billing.pricingSnapshotJson=JSON.stringify(billing.receiptSnapshot);
+    if(billing.pendingReceipt)billing.pendingReceipt={...billing.pendingReceipt,snapshot:billing.receiptSnapshot,auditPricingSnapshot:billing.pricing};
+  }
   if (lumaGenerationSource) {
     const binding = lumaLineageQuoteBinding(lumaGenerationSource, validatedExtraInputValues.extend_direction);
     billing.pricing = { ...billing.pricing, ...binding };
@@ -481,6 +500,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     elements,
     falInputs,
   });
+  if(fluxDraftSource) {falPayload.trustedFluxDraftCache={url:fluxDraftSource.cacheUrl,fingerprint:fluxDraftSource.fingerprint,sourceJobId:fluxDraftSource.jobId,sourceOutputId:fluxDraftSource.outputId};settingsSnapshot.sourceJobId=fluxDraftSource.jobId;settingsSnapshot.sourceOutputId=fluxDraftSource.outputId;}
   if (lumaGenerationSource) { settingsSnapshot.sourceJobId = lumaGenerationSource.sourceJobId; settingsSnapshot.sourceOutputId = lumaGenerationSource.sourceOutputIdentity; }
   if (body.operation) settingsSnapshot.operation = normalizeVideoOperation(engine.id, mode, body.operation);
   if (isBytePlus && inputVideoDurationSec !== undefined) settingsSnapshot.byteplusInputVideoDurationSec = inputVideoDurationSec;

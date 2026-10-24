@@ -712,6 +712,8 @@
           ],
           "duration": {
             "options": [
+              "4s",
+              "6s",
               "8s"
             ],
             "default": "8s"
@@ -18651,7 +18653,8 @@
         "i2v",
         "a2v",
         "extend",
-        "retake"
+        "retake",
+        "reframe"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -18675,6 +18678,101 @@
       "motionControls": false,
       "keyframes": false,
       "params": {},
+      "operationCaps": {
+        "ltx23-reframe": {
+          "operation": "ltx23-reframe",
+          "mode": "reframe",
+          "label": "Reframe (LTX 2.3)",
+          "defaultForMode": true,
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "fal-ai/ltx-2.3/reframe",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "reframe"
+                ],
+                "requiredInModes": [
+                  "reframe"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "maxDurationSec": 60
+              }
+            ],
+            "optional": [
+              {
+                "id": "resolution",
+                "type": "enum",
+                "label": "Resolution",
+                "modes": [
+                  "reframe"
+                ],
+                "values": [
+                  "720p",
+                  "1080p"
+                ],
+                "default": "1080p"
+              },
+              {
+                "id": "aspect_ratio",
+                "type": "enum",
+                "label": "Aspect ratio",
+                "modes": [
+                  "reframe"
+                ],
+                "values": [
+                  "1:1",
+                  "4:5",
+                  "5:4",
+                  "9:16",
+                  "16:9"
+                ],
+                "default": "16:9"
+              },
+              {
+                "id": "enable_safety_checker",
+                "type": "boolean",
+                "label": "Safety checker",
+                "modes": [
+                  "reframe"
+                ],
+                "default": true
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "reframe"
+              ]
+            }
+          },
+          "ui": {
+            "modes": [
+              "reframe"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "720p",
+              "1080p"
+            ],
+            "resolutionLocked": false,
+            "audioToggle": false,
+            "aspectRatio": [
+              "1:1",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9"
+            ],
+            "notes": "Reframe up to 60 seconds with LTX 2.3; retains source timing."
+          }
+        }
+      },
       "inputLimits": {
         "imageMaxMB": 25,
         "videoMaxMB": 30,
@@ -18982,6 +19080,30 @@
       "brandId": "lightricks"
     },
     "modes": [
+      {
+        "mode": "reframe",
+        "falModelId": "fal-ai/ltx-2.3/reframe",
+        "ui": {
+          "modes": [
+            "reframe"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "audioToggle": false,
+          "aspectRatio": [
+            "1:1",
+            "4:5",
+            "5:4",
+            "9:16",
+            "16:9"
+          ],
+          "notes": "Reframe up to 60 seconds with LTX 2.3; retains source timing."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "fal-ai/ltx-2.3/text-to-video",
@@ -27248,7 +27370,9 @@
         "t2v",
         "i2v",
         "fl2v",
-        "extend"
+        "extend",
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -27269,7 +27393,7 @@
       "upscale4k": false,
       "extend": true,
       "motionControls": false,
-      "keyframes": false,
+      "keyframes": true,
       "params": {},
       "inputLimits": {},
       "inputSchema": {
@@ -27372,6 +27496,43 @@
               "mp4"
             ],
             "description": "Provider requires MP4 smaller than 50 MB and shorter than 15 seconds."
+          },
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ]
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Ordered keyframe images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 10
+          },
+          {
+            "id": "keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe positions",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "description": "Unique integer frame positions, in image order, from 0 through duration × 24 inclusive."
           }
         ],
         "optional": [
@@ -27490,6 +27651,86 @@
               "i2v",
               "fl2v",
               "extend"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "ref2v"
             ],
             "values": [
               "720p",
@@ -27736,10 +27977,210 @@
           "maxUploadMB": 50,
           "audioToggle": true,
           "notes": "Requires an MP4 source smaller than 50 MB and shorter than 15 seconds."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "FAST quality, 720p. Preserves source timing and framing."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      "operationCaps": {
+        "flux-fast-edit": {
+          "operation": "flux-fast-edit",
+          "mode": "v2v",
+          "label": "FAST Edit",
+          "defaultForMode": true,
+          "promptRequired": true,
+          "transport": "fal",
+          "endpoint": "blackforestlabs/flux-3/edit-video",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "prompt",
+                "type": "text",
+                "label": "Edit instruction",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ]
+              },
+              {
+                "id": "video_url",
+                "type": "video",
+                "label": "Source video",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [
+                  "v2v"
+                ],
+                "source": "either",
+                "minCount": 1,
+                "maxCount": 1,
+                "maxDurationSec": 15,
+                "maxSizeMB": 50,
+                "acceptedMimeTypes": [
+                  "video/mp4"
+                ],
+                "acceptedFileExtensions": [
+                  "mp4"
+                ],
+                "description": "MP4 strictly shorter than 15 seconds and smaller than 50 MB. MOV/HEVC requires a compatible copy."
+              }
+            ],
+            "optional": [
+              {
+                "id": "safety_tolerance",
+                "type": "number",
+                "label": "Safety tolerance",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "max": 4,
+                "step": 1,
+                "default": 2
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ],
+              "videoSizeExclusiveMaxBytes": 50000000,
+              "videoDurationExclusiveMaxSec": 15
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "720p"
+            ],
+            "resolutionLocked": true,
+            "audioToggle": false,
+            "notes": "FAST quality, 720p. Preserves source timing and framing."
+          }
         }
       }
     },
     "modes": [
+      {
+        "mode": "ref2v",
+        "falModelId": "blackforestlabs/flux-3/keyframes-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "resolutionLocked": false,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "blackforestlabs/flux-3/edit-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "FAST quality, 720p. Preserves source timing and framing."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "blackforestlabs/flux-3/text-to-video",
@@ -27949,7 +28390,7 @@
         "value": false
       },
       "keyframes": {
-        "value": false
+        "value": true
       },
       "extend": {
         "value": true
@@ -28768,7 +29209,9 @@
         "t2v",
         "i2v",
         "fl2v",
-        "extend"
+        "extend",
+        "ref2v",
+        "v2v"
       ],
       "maxDurationSec": 20,
       "resolutions": [
@@ -28788,7 +29231,7 @@
       "upscale4k": false,
       "extend": true,
       "motionControls": false,
-      "keyframes": false,
+      "keyframes": true,
       "params": {},
       "inputLimits": {},
       "inputSchema": {
@@ -28876,6 +29319,43 @@
               "mp4"
             ],
             "description": "Provider accepts a URL or data URI for an MP4 up to 50 MiB."
+          },
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ]
+          },
+          {
+            "id": "reference_image_urls",
+            "type": "image",
+            "label": "Ordered keyframe images",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 10
+          },
+          {
+            "id": "keyframe_indexes",
+            "type": "text",
+            "label": "Keyframe positions",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "description": "Unique integer frame positions, in image order, from 0 through duration × 24 inclusive."
           }
         ],
         "optional": [
@@ -28979,6 +29459,73 @@
               "i2v",
               "fl2v",
               "extend"
+            ],
+            "min": 0,
+            "max": 4,
+            "step": 1,
+            "default": 2
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "21:9",
+              "2:1",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "generate_audio",
+            "type": "boolean",
+            "label": "Generate audio",
+            "modes": [
+              "ref2v"
+            ],
+            "default": true
+          },
+          {
+            "id": "safety_tolerance",
+            "type": "number",
+            "label": "Safety tolerance",
+            "modes": [
+              "ref2v"
             ],
             "min": 0,
             "max": 4,
@@ -29204,10 +29751,183 @@
           "maxUploadMB": 50,
           "audioToggle": true,
           "notes": "URL/data-URI MP4 up to 50 MiB. Returns draft_cache."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      "operationCaps": {
+        "flux-draft-enhance": {
+          "operation": "flux-draft-enhance",
+          "mode": "v2v",
+          "label": "Enhance Draft",
+          "defaultForMode": true,
+          "promptRequired": false,
+          "transport": "fal",
+          "endpoint": "blackforestlabs/flux-3/draft-enhance",
+          "inputSchema": {
+            "required": [
+              {
+                "id": "source_job_id",
+                "type": "text",
+                "label": "Owned Draft generation",
+                "modes": [
+                  "v2v"
+                ],
+                "requiredInModes": [],
+                "description": "Successful owned native Draft with a qualified paired provider cache. Imported videos and Draft Extend caches are not eligible."
+              }
+            ],
+            "optional": [
+              {
+                "id": "safety_tolerance",
+                "type": "number",
+                "label": "Safety tolerance",
+                "modes": [
+                  "v2v"
+                ],
+                "min": 0,
+                "max": 4,
+                "step": 1,
+                "default": 2
+              }
+            ],
+            "constraints": {
+              "ownedAssetModes": [
+                "v2v"
+              ],
+              "ownedProviderDraftCache": true
+            }
+          },
+          "ui": {
+            "modes": [
+              "v2v"
+            ],
+            "durationPolicy": "source_video",
+            "resolution": [
+              "1080p"
+            ],
+            "resolutionLocked": true,
+            "audioToggle": false,
+            "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+          }
         }
       }
     },
     "modes": [
+      {
+        "mode": "ref2v",
+        "falModelId": "blackforestlabs/flux-3/keyframes-to-video/draft",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "1–10 ordered keyframes with unique frame indexes, bounded by duration × 24."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "blackforestlabs/flux-3/draft-enhance",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "durationPolicy": "source_video",
+          "resolution": [
+            "1080p"
+          ],
+          "resolutionLocked": true,
+          "audioToggle": false,
+          "notes": "Re-renders the same paired Draft motion at 1080p with synchronized audio. Earlier Draft charge remains separate."
+        }
+      },
       {
         "mode": "t2v",
         "falModelId": "blackforestlabs/flux-3/text-to-video/draft",
@@ -29405,7 +30125,7 @@
         "value": false
       },
       "keyframes": {
-        "value": false
+        "value": true
       },
       "extend": {
         "value": true

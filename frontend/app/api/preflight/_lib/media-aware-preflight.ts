@@ -1,3 +1,5 @@
+import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
+import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { isH3SourceOperation, validateH3Source } from '@/lib/h3-source-operations';
 import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
 import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
@@ -158,6 +160,14 @@ export async function resolveMediaAwarePreflight(
   if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
   try { engine = resolveVideoOperationEngine(engine, request.mode, request.operation); }
   catch { return mediaPricingFailure('OPERATION_INVALID', 'Invalid video operation.'); }
+  if(request.operation==='flux-draft-enhance') {
+    try { const userId=input.userId??await input.resolveUserId?.();
+      if(!userId||(request.inputs?.length??0)>0) return mediaPricingFailure('REFERENCE_INVALID','Select one owned Draft generation.');
+      const source=await resolveOwnedFluxDraftSource({userId,sourceJobId:request.sourceJobId??String(request.extraInputValues?.source_job_id??''),sourceOutputId:request.sourceOutputId,executor:dependencies.lineageExecutor});
+      const result=await computeConfiguredPreflightFn({...request,durationSec:source.durationSec,resolution:'1080p'},{resolvedEngine:engine,bootstrap:false});
+      return {...result,...(result.pricing?{pricing:{...result.pricing,...fluxDraftQuoteBinding(source)}}:{})};
+    } catch {return mediaPricingFailure('REFERENCE_INVALID','The paired Draft cache is unavailable.');}
+  }
   if (engine.id === 'luma-ray-3-2' && request.mode === 'extend') {
     try {
       const validation = validateExtraInputValues({ engine, mode: request.mode, rawExtraInputValues: request.extraInputValues ?? null });

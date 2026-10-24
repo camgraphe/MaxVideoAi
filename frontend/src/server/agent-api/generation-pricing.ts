@@ -65,12 +65,14 @@ export type ExecutorGenerationPricingDependencies = {
   /** Server-only billing product adapter; ordinary generation uses the canonical model owner. */
   computeBillingSnapshot?: typeof computeCanonicalBillingSnapshot;
   seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
+  fluxDraftSource?: import('@/server/flux-draft-cache').QualifiedFluxDraftSource;
 };
 
 export type GenerationPricingReferenceContext = Readonly<{
   resolvedReferences?: readonly ResolvedReference[];
   resolvedEngine?: EngineCaps;
   seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
+  fluxDraftSource?: import('@/server/flux-draft-cache').QualifiedFluxDraftSource;
 }>;
 
 const defaultDependencies: GenerationPricingDependencies = {
@@ -378,7 +380,7 @@ export async function priceCanonicalGeneration(
       engine: request.engineId,
       mode: engineMode,
       ...(request.operation ? { operation: request.operation } : {}),
-      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences) ?? lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
+      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
       ...(settings.durationOption === 'auto' ? { durationOption: 'auto' } : {}),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
@@ -456,7 +458,7 @@ export async function priceCanonicalGenerationWithBilling(
     const lumaModifyDurationSec = assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
-    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences) ?? lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
+    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
     const seedanceEditSource = canonicalSeedanceEditSource(request, referenceContext);
     const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, referenceContext);
     const resolution = requiredString(request.settings, 'resolution');

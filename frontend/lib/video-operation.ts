@@ -1,12 +1,13 @@
+import { FLUX_LTX_ENDPOINTS, isFluxLtxSourceOperation } from './flux-ltx-operations';
 import { isH3SourceOperation } from './h3-source-operations';
 import { effectiveLumaEditValues } from '../src/lib/luma-edit-controls';
 import type { EngineCaps, EngineInputSchema, EngineModeUiCaps, Mode } from '@/types/engines';
 
-export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight'] as const;
+export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight', 'flux-fast-edit', 'flux-draft-enhance', 'ltx23-reframe', 'flux-keyframes'] as const;
 export type VideoOperation = (typeof VIDEO_OPERATIONS)[number];
 export type VideoOperationCaps = {
   operation: VideoOperation;
-  mode: 'v2v' | 'extend';
+  mode: 'v2v' | 'extend' | 'reframe' | 'ref2v';
   label: string;
   defaultForMode?: boolean;
   inputSchema: EngineInputSchema;
@@ -20,9 +21,15 @@ const KLING_OMNI_IDS = new Set(['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4
 /** Omission is intentionally not normalized to Reference: old JSON and receipts stay stable. */
 export function normalizeVideoOperation(engineId: string, mode: string, value: unknown): VideoOperation | undefined {
   if (value === undefined) {
+    if ((engineId === 'flux-3' || engineId === 'flux-3-draft') && mode === 'v2v') throw new Error('Choose the FLUX source operation explicitly.');
+    if (engineId === 'ltx-2-3' && mode === 'reframe') return 'ltx23-reframe';
     if (engineId === 'minimax-h3-max' && mode === 'v2v') throw new Error('Choose Recast or Relight explicitly.');
     return undefined;
   }
+  if ((engineId === 'flux-3' && mode === 'v2v' && value === 'flux-fast-edit')
+    || (engineId === 'flux-3-draft' && mode === 'v2v' && value === 'flux-draft-enhance')
+    || (engineId === 'ltx-2-3' && mode === 'reframe' && value === 'ltx23-reframe')
+    || (['flux-3','flux-3-draft'].includes(engineId) && mode === 'ref2v' && value === 'flux-keyframes')) return value;
   if (engineId === 'minimax-h3-max' && mode === 'v2v' && isH3SourceOperation(value)) return value;
   if (engineId === 'luma-ray-3-2' && mode === 'extend' && value === 'luma-extend') return value;
   if (!KLING_OMNI_IDS.has(engineId) || mode !== 'v2v'
@@ -34,6 +41,8 @@ export function normalizeVideoOperation(engineId: string, mode: string, value: u
 
 export function videoOperationEndpoint(engineId: string, mode: string, value: unknown): string | undefined {
   const operation = normalizeVideoOperation(engineId, mode, value);
+  if (isFluxLtxSourceOperation(operation)) return FLUX_LTX_ENDPOINTS[operation];
+  if (['flux-3','flux-3-draft'].includes(engineId) && mode === 'ref2v') return `blackforestlabs/flux-3/keyframes-to-video${engineId.endsWith('draft')?'/draft':''}`;
   if (isH3SourceOperation(operation)) return `minimax/h3-max/${operation.slice(3)}`;
   if (operation === 'luma-extend') return undefined;
   if (!operation && engineId === 'kling-o3-4k' && mode === 'v2v') return 'fal-ai/kling-video/o3/4k/video-to-video/reference';
@@ -77,12 +86,12 @@ export function buildKlingOperationCaps(engine: EngineCaps): Partial<Record<Vide
 
 export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, value?: unknown): EngineCaps {
   const operation = normalizeVideoOperation(engine.id, mode, value);
-  if (!operation || operation === 'luma-extend') return engine;
+  if (!operation || operation === 'luma-extend' || operation === 'flux-keyframes') return engine;
   const caps = engine.operationCaps?.[operation];
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
-  return { ...engine, ...(isH3SourceOperation(operation) ? {maxDurationSec:operation==='h3-recast'?30:15} : {}), inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit' || isH3SourceOperation(operation)
+  return { ...engine, ...(isH3SourceOperation(operation) ? {maxDurationSec:operation==='h3-recast'?30:15} : {}), inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit' || isH3SourceOperation(operation) || isFluxLtxSourceOperation(operation)
       ? (caps.ui.resolution as EngineCaps['resolutions'] | undefined) ?? engine.resolutions : engine.resolutions,
-    inputLimits: { ...engine.inputLimits, ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'h3-recast' ? 30 : 15 } : {}) },
+    inputLimits: { ...engine.inputLimits, ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'ltx23-reframe' ? 60 : operation === 'h3-recast' ? 30 : 15 } : {}) },
     modeCaps: { ...engine.modeCaps, [mode]: caps.ui } };
 }
 
@@ -95,7 +104,7 @@ export function videoOperationTariffIdentity(engineId: string, mode: string, val
   const endpoint = videoOperationEndpoint(engineId, mode, value);
   // 4K v2v has no historical contract, even when an older client omits operation.
   if (!endpoint && !(engineId === 'kling-o3-4k' && mode === 'v2v')) return undefined;
-  return { operation: normalizeVideoOperation(engineId, mode, value) ?? 'kling-reference' as VideoOperation,
+  return { operation: normalizeVideoOperation(engineId, mode, value) ?? (['flux-3','flux-3-draft'].includes(engineId) ? 'flux-keyframes' : 'kling-reference') as VideoOperation,
     transport: 'fal' as const,
     endpoint: endpoint ?? 'fal-ai/kling-video/o3/4k/video-to-video/reference' };
 }
@@ -123,6 +132,10 @@ export function validateKlingEditSource(source: { durationSec?: number | null; w
 
 export function resolveVideoOperationRequestEngine(engine: EngineCaps, mode: Mode, body: Record<string, unknown>): EngineCaps {
   const resolved = resolveVideoOperationEngine(engine, mode, body.operation);
+  if (isFluxLtxSourceOperation(body.operation)) {
+    if (['duration','durationSec','durationOption','fps','audio',...(body.operation === 'ltx23-reframe' ? [] : ['aspectRatio'])].some(key=>body[key]!==undefined)) throw new Error('This operation inherits source timing and audio.');
+    if (body.operation !== 'flux-fast-edit' && typeof body.prompt==='string' && body.prompt.trim()) throw new Error('This operation does not accept a prompt.');
+  }
   if (isH3SourceOperation(body.operation) && ['duration', 'durationSec', 'durationOption', 'fps', 'audio', ...(body.operation === 'h3-recast' ? ['aspectRatio'] : [])].some(key => body[key] !== undefined)) {
     throw new Error('H3 source operations inherit source timing and audio.');
   }

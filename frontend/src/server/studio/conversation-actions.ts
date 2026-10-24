@@ -9,7 +9,7 @@ import type {PreparedGeneration} from '@/server/agent-api/prepare-generation';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
 import type {AgentGenerationStatus} from '@/server/generations/generation-status';
-import {readStudioProjectMedia,studioPricingSourceSelection,studioLumaPricingSource, type StudioMediaFactories} from './conversation-media-generation';
+import {readStudioProjectMedia,studioPricingSourceSelection,studioLumaPricingSource,studioFluxPricingSource, type StudioMediaFactories} from './conversation-media-generation';
 import {readStudioConversationTimeline} from './conversation-timeline';
 import type {ConversationEditResult} from './conversation-edit-command';
 import type {StudioQuoteDiscardResult} from './conversation-quote-command';
@@ -66,15 +66,16 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           const selected=studioPricingSourceSelection(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))});
           const lumaSource = request.surface === 'video' && request.mode === 'extend' && (request.operation === 'luma-extend' || (request.action === 'pricing.read' && request.modelId === 'luma-ray-3-2'))
             ? await studioLumaPricingSource(actor, request.references, { references: [...dependencies.attachedImageIds ?? []], attachments: dependencies.attachedMedia?.filter(ref => ref.mediaKind !== 'image').map(ref => ({ type: 'asset' as const, assetId: ref.assetId, kind: ref.mediaKind })) }) : undefined;
+          const fluxSource=request.operation==='flux-draft-enhance'?await studioFluxPricingSource(actor,request.references,{references:[...dependencies.attachedImageIds??[]],attachments:dependencies.attachedMedia?.filter(ref=>ref.mediaKind!=='image').map(ref=>({type:'asset' as const,assetId:ref.assetId,kind:ref.mediaKind}))}):undefined;
           const scenario={surface:request.surface,mode:request.mode,...(request.operation ? {operation:request.operation}:{}),
-            settings:conversationSelectionSettings(request.settings),references:selected.references, ...lumaSource};
+            settings:conversationSelectionSettings(request.settings),references:selected.references, ...lumaSource,...fluxSource};
           if(request.action==='pricing.compare') {
             const comparison={...scenario,prompt:request.prompt,
               ...(request.baselineModelId?{baselineModelId:request.baselineModelId}:{}),...(request.baselineSettings?{baselineSettings:conversationSelectionSettings(request.baselineSettings)}:{}),...(request.candidateModelIds?{candidateModelIds:request.candidateModelIds}:{})};
             const pricingService={...service,compare:(input:Parameters<typeof service.compare>[0])=>service.compare(input,selected.resolveReferences)};
             return {ok:true,action:request.action,data:request.filmDurationSec?await priceStudioFilm(comparison,request.filmDurationSec,pricingService):await pricingService.compare(comparison)};
           }
-          return {ok:true,action:request.action,data:await service.estimate({...scenario,...(request.operation ? {operation:request.operation}:{}),...(request.elements ? {elements:request.elements}:{}),engineId:request.modelId,prompt:'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
+          return {ok:true,action:request.action,data:await service.estimate({...scenario,...(request.operation ? {operation:request.operation}:{}),...(request.elements ? {elements:request.elements}:{}),engineId:request.modelId,prompt:['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(request.operation??'')?'':'Studio pricing scenario',outputCount:1},selected.resolveReferences)};
         }
         case 'export.prepare':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.prepareExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');

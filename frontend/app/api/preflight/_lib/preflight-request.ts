@@ -1,3 +1,4 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
@@ -68,7 +69,7 @@ const persistedReferenceSchema = z.object({
 const preflightRequestSchema = z.object({
   sourceJobId: z.string().min(1).max(255).optional(),
   sourceOutputId: z.string().min(1).max(255).optional(),
-  operation: z.enum(['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight']).optional(),
+  operation: z.enum(VIDEO_OPERATIONS).optional(),
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),

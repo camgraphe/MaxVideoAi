@@ -42,6 +42,7 @@ export type {
 
 export type PaidGenerationExecution = {
   lumaSourceFingerprint?: string;
+  fluxDraftFingerprint?: string;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   surface: 'video' | 'image';
   quoteId: string;
@@ -317,6 +318,7 @@ export async function reservePaidGenerationInitialJob(
         resolvedReferences: input.resolvedReferences ?? [],
         engine: input.candidate.engine,
         canonicalPricing: pricing,
+        fluxDraftFingerprint: (input.pricingSnapshot.fluxDraftSource as {fingerprint?:string}|undefined)?.fingerprint,
         lumaSourceFingerprint: (input.pricingSnapshot.lumaSource as { fingerprint?: string } | undefined)?.fingerprint,
         trustedInitialState: {
           kind: 'created',
@@ -438,6 +440,7 @@ export async function submitReservedPaidGeneration(
   const trustedQuotedBilling: TrustedQuotedBilling = {
     pricing: execution.canonicalPricing as unknown as PricingSnapshot,
     lumaSourceFingerprint: execution.lumaSourceFingerprint,
+    fluxDraftFingerprint: execution.fluxDraftFingerprint,
     membershipTier: resolvePaidMembershipTier(execution.canonicalPricing),
   };
   const body = paidRequestBody(execution);

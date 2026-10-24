@@ -482,7 +482,7 @@ function normalizeReferences(
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || ((engineId === 'flux-3-max' || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
+    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft'].includes(engineId) || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -563,13 +563,14 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   catch { fail('operation', 'Unsupported operation for this engine and mode.'); }
   const sourceJobId = input.sourceJobId === undefined ? undefined : normalizeText(input.sourceJobId, 'sourceJobId', 255, false);
   const sourceOutputId = input.sourceOutputId === undefined ? undefined : normalizeText(input.sourceOutputId, 'sourceOutputId', 255, false);
-  if ((sourceJobId || sourceOutputId) && (input.engineId !== 'luma-ray-3-2' || mode !== 'extend' || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
+  if ((sourceJobId || sourceOutputId) && (!((input.engineId === 'luma-ray-3-2' && mode === 'extend') || operation === 'flux-draft-enhance') || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
   const settings = normalizeSettings(input.settings, mode);
-  const prompt = normalizeText((final || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
-  if (!prompt && !final && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
+  const noPrompt = operation === 'ltx23-reframe' || operation === 'flux-draft-enhance';
+  const prompt = normalizeText((final || noPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
+  if (!prompt && !final && !noPrompt && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
   }
-  if (operation === 'h3-relight' && prompt) fail('prompt','Relight does not accept a prompt.');
+  if ((operation === 'h3-relight' || noPrompt) && prompt) fail('prompt','This operation does not accept a prompt.');
   if (operation === 'h3-recast' && prompt.length > 2000) fail('prompt','Recast supports at most 2000 characters.');
   if (seedanceWorkflow?.step === 'draft') {
     if (settings.resolution !== undefined && settings.resolution !== '480p') fail('resolution', 'Native Draft requires 480p.');

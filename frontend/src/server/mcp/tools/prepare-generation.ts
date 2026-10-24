@@ -1,3 +1,4 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
@@ -143,7 +144,7 @@ export const prepareGenerationInputSchema = z.object({
   elements: klingOwnedElementsSchema.nullable().optional(),
   sourceJobId: z.string().min(1).max(255).nullable().default(null),
   sourceOutputId: z.string().min(1).max(255).nullable().default(null),
-  operation: z.enum(['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight']).nullable().default(null),
+  operation: z.enum(VIDEO_OPERATIONS).nullable().default(null),
   mode: z.enum(CANONICAL_GENERATION_MODES).nullable().default(null),
   prompt: z.string().nullable().default(null),
   seedanceWorkflow: seedanceWorkflowSchema.nullable().default(null).describe(

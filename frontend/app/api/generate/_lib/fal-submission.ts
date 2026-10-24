@@ -1,3 +1,4 @@
+import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
 import { query } from '@/lib/db';
 import { translateError, type ErrorTranslationInput } from '@/lib/error-messages';
 import { FalGenerationError, generateVideo, type GeneratePayload, type GenerateResult } from '@/lib/fal';
@@ -149,6 +150,13 @@ export async function submitFalGenerateTask(params: {
   let sanitize = sanitizeProviderMediaDiagnostics;
 
   try {
+    if(params.falPayload.operation==='flux-draft-enhance') {
+      const trusted=params.falPayload.trustedFluxDraftCache;
+      if(!trusted?.sourceJobId)throw new Error('Qualified Draft cache required.');
+      const current=await resolveOwnedFluxDraftSource({userId:params.userId,sourceJobId:trusted.sourceJobId,sourceOutputId:trusted.sourceOutputId});
+      if(current.fingerprint!==trusted.fingerprint)throw new Error('Draft cache changed.');
+      params={...params,falPayload:{...params.falPayload,trustedFluxDraftCache:{...trusted,url:current.cacheUrl}}};
+    }
     const transport = await createFalMediaTransport({ payload: params.falPayload, userId: params.userId });
     sanitize = transport.sanitize;
     providerSubmissionStarted = true;

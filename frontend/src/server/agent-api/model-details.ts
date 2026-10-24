@@ -438,6 +438,7 @@ export function projectAgentModelModeDetails(
         ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
     }) } : {}),
     ...baseControls,
+    ...(candidate.engine.id==='flux-3-draft' && mode==='v2v' ? {sourceGeneration:{required:true as const,requestField:'sourceJobId' as const,outputField:'sourceOutputId' as const,studioReferenceRole:'source' as const,outputAssembly:'unverified' as const,description:'Select an owned completed native FLUX Draft with its paired cache. No cache URL is accepted. Missing cache, invalidated cache and unqualified Draft Extend are unavailable for Enhance; the Draft remains usable. Unknown cache expiry alone is allowed. Exact measured duration up to 21 seconds is the application customer quantity; 1080p with audio, earlier Draft charge separate.'}} : {}),
     ...(candidate.engine.id === 'luma-ray-3-2' && mode === 'extend' ? { sourceGeneration: {
       required: true as const, requestField: 'sourceJobId' as const, outputField: 'sourceOutputId' as const,
       studioReferenceRole: 'source' as const, outputAssembly: 'unverified' as const,

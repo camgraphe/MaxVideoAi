@@ -1,3 +1,4 @@
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { validateLumaCanonicalShape } from './generation-luma-shape';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
@@ -203,7 +204,7 @@ function validateVideoModeCaps(
   caps: EngineModeUiCaps,
   candidate: AgentPublicGenerationEngine,
 ): void {
-  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
   const duration = request.settings.durationSec;
   if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
@@ -410,7 +411,7 @@ function validateDerivedSourceFacts(
         || typeof resolved.durationSec !== 'number'
       ) fail('references', 'reference_invalid');
       if (
-        (request.mode === 'a2v' || (request.mode === 'reframe' && request.engineId !== 'luma-ray-3-2'))
+        (request.mode === 'a2v' || (request.mode === 'reframe' && request.engineId !== 'luma-ray-3-2' && request.operation!=='ltx23-reframe'))
         && request.settings.durationSec !== Math.max(1, Math.ceil(resolved.durationSec))
       ) fail('durationSec');
       if (request.mode === 'retake') {
@@ -727,7 +728,7 @@ function validateTrustedReferenceDuration(
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
       : undefined;
-  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
   const exclusiveMaximum =
     requestModeForExclusiveDuration(candidate, field);
   const sourcePlusOutputMaximum = field.id === 'video_url'
@@ -1005,7 +1006,7 @@ export function validateCanonicalGenerationCapabilities(
   }
   const modeCaps = candidate.modeCaps[request.mode];
   if (!modeCaps) fail('mode');
-  if (request.operation === 'h3-relight' && request.prompt.trim()) fail('prompt');
+  if (['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(request.operation??'') && request.prompt.trim()) fail('prompt');
   if (request.operation === 'h3-recast' && request.prompt.length>2000) fail('prompt');
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);

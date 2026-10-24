@@ -1,3 +1,4 @@
+import { recoverOwnedFluxDraftCache } from './flux-draft-cache-recovery';
 import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { query } from '@/lib/db';
@@ -683,6 +684,14 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     } catch (noMediaLogError) {
       console.warn('[fal-webhook] failed to record no-media log', { jobId: job.job_id, providerJobId: requestId }, noMediaLogError);
     }
+  }
+
+  // Optional, bounded GET/decode recovery runs only after original success, outputs,
+  // settlement and lifecycle records have completed. A timeout cannot undo them.
+  if(nextStatus==='completed' && job.engine_id==='flux-3-draft' && job.user_id) {
+    await recoverOwnedFluxDraftCache({userId:job.user_id,sourceJobId:job.job_id}).catch(()=>{
+      console.info('[fal-webhook] optional Draft cache not qualified',{jobId:job.job_id});
+    });
   }
 
 }

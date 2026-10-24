@@ -1,3 +1,4 @@
+import { withFlux3Coverage } from './flux-3-coverage';
 import type { EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 import { createFlux3CommonOptionalFields, FLUX_3_ASPECT_RATIOS, FLUX_3_AUTO_DURATIONS, FLUX_3_EXPLICIT_DURATIONS } from './flux-3-shared';
@@ -79,8 +80,10 @@ export const FLUX_3_DRAFT_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: 'flux-3-draft', marketingName: 'FLUX 3 Draft', cardTitle: 'FLUX 3 Draft Video', provider: 'Black Forest Labs', brandId: 'black-forest-labs',
   versionLabel: '3 Draft', availability: 'available', logoPolicy: 'textOnly',
   billingNote: 'Draft generation bills $0.06 per 720p output second; draft extend bills $0.12. Task 5 supplies exact mode-aware pricing.',
-  engine,
+  engine: withFlux3Coverage(engine),
   modes: [
+    { mode: 'ref2v', falModelId: 'blackforestlabs/flux-3/keyframes-to-video/draft', ui: withFlux3Coverage(engine).modeCaps!.ref2v! },
+    { mode: 'v2v', falModelId: 'blackforestlabs/flux-3/draft-enhance', ui: withFlux3Coverage(engine).modeCaps!.v2v! },
     { mode: 't2v', falModelId: FLUX_3_DRAFT_ENDPOINTS.t2v, ui: DRAFT_CAPS.t2v! },
     { mode: 'i2v', falModelId: FLUX_3_DRAFT_ENDPOINTS.i2v, ui: DRAFT_CAPS.i2v! },
     { mode: 'fl2v', falModelId: FLUX_3_DRAFT_ENDPOINTS.fl2v, ui: DRAFT_CAPS.fl2v! },

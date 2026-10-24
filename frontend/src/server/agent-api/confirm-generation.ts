@@ -1,3 +1,5 @@
+import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
+import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
@@ -119,6 +121,7 @@ export type ConfirmGenerationDependencies = {
       candidate: AgentPublicGenerationEngine;
       resolvedReferences?: readonly ResolvedReference[];
       seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
+    fluxDraftSource?: import('@/server/flux-draft-cache').QualifiedFluxDraftSource;
     },
   ): Promise<GenerationPricingResult>;
   checkSpendingLimits(
@@ -348,6 +351,7 @@ async function confirmationTransaction(
       staleQuote();
     }
 
+    const fluxDraftSource = await resolveCanonicalFluxLineage(quote.request,principal,executor);
     const lumaSource = await resolveCanonicalLumaLineage(quote.request, principal, executor);
     const inherited = await resolveAgentSeedanceWorkflow(quote.request, principal.userId, { queryFn: executor.query.bind(executor) });
     assertSeedanceWorkflowQuoteBinding(quote.request, inherited.request, quote.pricingSnapshot, inherited.workflow);
@@ -427,7 +431,7 @@ async function confirmationTransaction(
       pricing = await dependencies.priceGeneration(
         quote.request,
         membership.tier,
-        { executor, candidate, resolvedReferences, seedanceFinalFacts: inherited.workflow?.finalFacts },
+        { executor, candidate, resolvedReferences, seedanceFinalFacts: inherited.workflow?.finalFacts, fluxDraftSource },
       );
     } catch (error) {
       if (error instanceof AgentApiError) throw error;
@@ -441,7 +445,7 @@ async function confirmationTransaction(
         quote.request,
         catalogRevision,
         membership,
-      ), ...generationOperationQuoteBinding(quote.request, resolvedReferences), ...lumaLineageQuoteBinding(lumaSource, quote.request.settings.extendDirection), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
+      ), ...generationOperationQuoteBinding(quote.request, resolvedReferences,fluxDraftSource), ...lumaLineageQuoteBinding(lumaSource, quote.request.settings.extendDirection), ...fluxDraftQuoteBinding(fluxDraftSource), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();
       staleQuote();

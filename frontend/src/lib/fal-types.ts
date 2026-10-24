@@ -20,6 +20,8 @@ export type GenerateAttachment = {
 };
 
 export type GeneratePayload = {
+  /** Server materialization only; never copied from a caller request. */
+  trustedFluxDraftCache?: {url:string;fingerprint:string;sourceJobId?:string;sourceOutputId?:string};
   operation?: import('@/lib/video-operation').VideoOperation;
   /** Internal execution policy; MCP returns after queue acceptance. */
   submissionMode?: 'enqueue';

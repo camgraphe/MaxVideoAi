@@ -253,6 +253,10 @@ export function validateProviderSpecificConstraints(params: {
       orderedH3References(typeof p.reference_order==='string'?p.reference_order:undefined,{image:Array.isArray(p.reference_image_urls)?p.reference_image_urls:[],video:Array.isArray(p.reference_video_urls)?p.reference_video_urls:[],audio:Array.isArray(p.reference_audio_urls)?p.reference_audio_urls:[]});
     } catch(error) { return minimaxH3Error('references',error instanceof Error?error.message:'Invalid H3 reference controls.'); }
   }
+  if (['flux-3','flux-3-draft'].includes(params.engineId) && params.normalizedMode==='ref2v') {
+    const violation=getFlux3MaxConstraintViolation('ref2v',params.payload);
+    if(violation)return minimaxH3Error(violation.field,violation.message.replaceAll('FLUX 3 Max','FLUX keyframes'));
+  }
   if (isFlux3MaxEngineId(params.engineId)) {
     const violation = getFlux3MaxConstraintViolation(params.normalizedMode, params.payload);
     return violation ? { ok: false, error: { code: 'ENGINE_CONSTRAINT', ...violation } } : { ok: true };

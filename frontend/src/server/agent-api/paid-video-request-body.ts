@@ -276,6 +276,7 @@ export function buildPaidVideoRequestBody(
     inputs: [],
   };
 
+  if (execution.request.operation==='flux-draft-enhance') return body;
   if (execution.request.engineId === 'luma-ray-3-2' && execution.request.mode === 'extend') return body;
 
   if (execution.request.mode === 't2v') {

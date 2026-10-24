@@ -23,6 +23,9 @@ const SECRET_SNAPSHOT_KEYS = new Set([
   'password',
   'credential',
   'credentials',
+  'draftcache',
+  'draftcacheurl',
+  'trustedfluxdraftcache',
 ]);
 const PRIVATE_IDENTIFIER_KEYS = new Set(['workspaceid', 'workspaceidentifier']);
 

@@ -1,3 +1,4 @@
+import { buildFluxLtxRequest } from './flux-ltx-request';
 import { resolveVideoOperationEngine, videoOperationEndpoint } from '@/lib/video-operation';
 import { applyFalLegacyVideoContracts } from '@/lib/fal-legacy-video-contracts';
 import {
@@ -36,6 +37,8 @@ export function buildFalGenerationRequest(
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
   const operationEndpoint = videoOperationEndpoint(payload.engineId, payload.mode ?? 't2v', payload.operation);
+  const fluxLtx = buildFluxLtxRequest(payload);
+  if (fluxLtx) return fluxLtx;
   if (isFlux3MaxEngineId(payload.engineId)) return buildFlux3MaxFalRequest(payload);
   if (isKling3TurboEngineId(payload.engineId)) {
     const mode = payload.mode ?? 't2v';

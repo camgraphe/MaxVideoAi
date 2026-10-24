@@ -1,3 +1,6 @@
+import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
+import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
@@ -164,6 +167,7 @@ export function buildGenerationPricingSnapshot(
 /** Shared read-only verification and canonical pricing. No quote, wallet or reservation writes. */
 export async function readGenerationPricing(request: CanonicalGenerationRequest,principal: GenerationActor,dependencies: GenerationPricingReadDependencies) {
   requireGenerationActor(principal);
+  const fluxDraftSource = await resolveCanonicalFluxLineage(request,principal);
   const lumaSource = await resolveCanonicalLumaLineage(request, principal);
   const inherited = await resolveAgentSeedanceWorkflow(request, principal.userId);
   request = inherited.request;
@@ -194,7 +198,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
-      if (request.surface === 'video' && request.operation !== 'kling-edit' && !isH3SourceOperation(request.operation) && request.settings.durationSec === undefined
+      if (request.surface === 'video' && request.operation !== 'kling-edit' && !isH3SourceOperation(request.operation) && !isFluxLtxSourceOperation(request.operation) && request.settings.durationSec === undefined
         && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
         const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');
         if (source.length !== 1 || typeof source[0].durationSec !== 'number'
@@ -242,7 +246,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
     pricing = await dependencies.priceGeneration(
       request,
       membership.tier,
-      { resolvedReferences, resolvedEngine: candidate.engine, seedanceFinalFacts: finalFacts },
+      { resolvedReferences, resolvedEngine: candidate.engine, seedanceFinalFacts: finalFacts, fluxDraftSource },
     );
   } catch {
     throw new AgentApiError(
@@ -251,8 +255,8 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
     );
   }
   const pricingSnapshot = { ...buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership),
-    ...generationOperationQuoteBinding(request, resolvedReferences),
-    ...lumaLineageQuoteBinding(lumaSource, request.settings.extendDirection),
+    ...generationOperationQuoteBinding(request, resolvedReferences,fluxDraftSource),
+    ...lumaLineageQuoteBinding(lumaSource, request.settings.extendDirection), ...fluxDraftQuoteBinding(fluxDraftSource),
     ...seedanceWorkflowQuoteBinding(inherited.workflow) };
   return {pricing, pricingSnapshot, resolvedReferences, catalogRevision, request, workflow: inherited.workflow, resolvedEngine: candidate.engine};
 }

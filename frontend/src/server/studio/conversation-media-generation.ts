@@ -1,9 +1,13 @@
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
+import { qualifyFluxLtxSourceReference } from '@/server/agent-api/flux-ltx-source-reference';
+import type { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
+import { resolveStudioFluxDraftSource } from './flux-draft-source';
 import { hashH3PromotionImage } from './h3-promotion-identity';
 import { qualifyH3SourceReference } from '@/server/agent-api/h3-source-reference';
 import type { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveStudioLumaGenerationSource } from './luma-generation-source';
-import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
 import {query} from '@/lib/db';
 import {readMediaFacts} from '@/lib/media-identity';
@@ -60,8 +64,15 @@ export type StudioMotionSourceDependencies = {
   resolveMedia?: typeof resolveStudioMedia;
   reviewedReferences?:readonly ResolvedReference[];
   inspectH3Source?: typeof inspectOwnedH3Source;
+  inspectFluxLtxSource?: typeof inspectOwnedFluxLtxSource;
   hashH3Image?: typeof hashH3PromotionImage;
 };
+
+function isMeasuredSourceOperation(operation:unknown) {return isH3SourceOperation(operation)||isFluxLtxSourceOperation(operation);}
+function qualifyMeasuredSource(reference:ResolvedReference,operation:unknown,userId:string,dependencies:StudioMotionSourceDependencies) {
+  return isH3SourceOperation(operation) ? qualifyH3SourceReference(reference,operation,userId,dependencies.inspectH3Source)
+    : qualifyFluxLtxSourceReference(reference,operation,userId,dependencies.inspectFluxLtxSource);
+}
 
 /** Read-only pricing aliases keep native project outputs out of the asset library. */
 export function studioPricingSourceSelection(actor:StudioGenerationActor,selections:NonNullable<Extract<StudioMediaIntent,{action:'video.prepare'}>['references']>,input:Pick<ImageTurnInput,'references'|'attachments'>,dependencies:StudioMotionSourceDependencies={}) {
@@ -76,7 +87,7 @@ export function studioPricingSourceSelection(actor:StudioGenerationActor,selecti
         if(index<0)throw new AgentApiError('REFERENCE_INVALID','Select attached media or a ready output in this project.');
         const media=await requireStudioMediaSource(actor,selections[index].ref,input,dependencies,signal);
         const facts=mediaReference(media,{assetId:ids[index],role:reference.role,...(reference.slot===undefined?{}:{slot:reference.slot})});
-        references.push(request.engineId === 'minimax-h3-max' ? await qualifyH3SourceReference(facts,request.operation,actor.userId,dependencies.inspectH3Source) : facts);
+        references.push(await qualifyMeasuredSource(facts,request.operation,actor.userId,dependencies));
       }
       return references;
     },
@@ -193,12 +204,26 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     const catalog = await factories.video(actor, {enabled}).catalog();
     let candidate = catalog.find(entry => entry.surface === 'video' && entry.engine.id === (action.modelId ?? 'wan-3'));
     if (!candidate) throw new StudioPreparationInputError('ENGINE_UNAVAILABLE', 'The selected video model is unavailable in this Studio workflow.');
-    if (action.operation) {
-      const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(candidate.engine.id, mode), action.operation);
+    const operation=normalizeVideoOperation(candidate.engine.id,mode,action.operation??undefined);
+    if (operation) {
+      const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(candidate.engine.id, mode), operation);
       candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
     }
     if (!candidate.publicModes.includes(mode) || !candidate.modeCaps[mode])
       throw new AgentApiError('MODE_UNSUPPORTED', 'The selected video model does not support this Studio mode.');
+    if(operation==='flux-draft-enhance') {
+      if(selections.length!==1||selections[0].role!=='source')throw new AgentApiError('REFERENCE_REQUIRED','Select one attached or ready native Draft output.');
+      const selected=selections[0].ref;await requireStudioMediaSource(actor,selected,input,dependencies);
+      const source=await resolveStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor);
+      const request=normalizeGenerationRequest({surface:'video',engineId:'flux-3-draft',mode:'v2v',operation:'flux-draft-enhance',sourceJobId:source.jobId,sourceOutputId:source.outputId,prompt:'',settings:{resolution:'1080p',...settings},references:[],outputCount:1});
+      validateCanonicalGenerationCapabilities(request,candidate);
+      return {materialize:async()=>{
+        await requireStudioMediaSource(actor,selected,input,dependencies);
+        const current=await resolveStudioFluxDraftSource(actor.userId,selected,dependencies.lumaSourceExecutor);
+        if(current.fingerprint!==source.fingerprint)throw new AgentApiError('REFERENCE_INVALID','The Draft source changed.');
+        return request as CanonicalGenerationRequest & {surface:'video'};
+      }};
+    }
     if (candidate.engine.id === 'luma-ray-3-2' && mode === 'extend') {
       if (selections.length !== 1 || selections[0].role !== 'source') throw new AgentApiError('REFERENCE_REQUIRED', 'Select one attached or ready project generation.');
       const selected = selections[0].ref;
@@ -219,7 +244,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
     const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
-      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(action.operation ? { operation: action.operation } : {}), ...(action.elements ? {elements:action.elements}:{}),
+      const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(operation ? { operation: operation } : {}), ...(action.elements ? {elements:action.elements}:{}),
         settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings, ...settings},
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
           ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});
@@ -266,14 +291,14 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
-    if (candidate.engine.id === 'minimax-h3-max' && isH3SourceOperation(action.operation)) {
+    if (isMeasuredSourceOperation(operation)) {
       for (let index=0; index<resolvedReferences.length; index++) {
-        resolvedReferences[index]=await qualifyH3SourceReference(resolvedReferences[index],action.operation,actor.userId,dependencies.inspectH3Source);
-        if(selections[index].ref.type==='job-output' && resolvedReferences[index].mediaKind==='image')
+        resolvedReferences[index]=await qualifyMeasuredSource(resolvedReferences[index],operation,actor.userId,dependencies);
+        if(isH3SourceOperation(operation)&&selections[index].ref.type==='job-output' && resolvedReferences[index].mediaKind==='image')
           nativeImageHashes.set(index,await (dependencies.hashH3Image??hashH3PromotionImage)(resolvedReferences[index].storageUrl,actor.userId));
       }
     }
-    if(action.operation !== 'kling-edit' && !isH3SourceOperation(action.operation)&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
+    if(operation !== 'kling-edit' && !isMeasuredSourceOperation(operation)&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
     }
@@ -286,12 +311,12 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           const previous=nativeBaselines.get(index)!;const current=mediaReference(media,{assetId:previous.assetId,role:previous.role,...(previous.slot===undefined?{}:{slot:previous.slot})});
           if(!sameReferenceFacts(previous,current))
             throw new AgentApiError('REFERENCE_INVALID','The project output changed before quote preparation. Send a new message to review it again.');
-          if(isH3SourceOperation(action.operation)) {
+          if(isMeasuredSourceOperation(operation)) {
             // Native images were already compared with their raw baseline above.
             // Completed byte-size facts may come from HEAD/a saved copy and are not
             // present on the raw output row. Their freshness is bound by the byte hash.
             const measured=current.mediaKind==='video'
-              ? await qualifyH3SourceReference(current,action.operation,actor.userId,dependencies.inspectH3Source) : undefined;
+              ? await qualifyMeasuredSource(current,operation,actor.userId,dependencies) : undefined;
             const imageHash=nativeImageHashes.has(index) ? await (dependencies.hashH3Image??hashH3PromotionImage)(current.storageUrl,actor.userId) : undefined;
             if((measured && !sameReferenceFacts(resolvedReferences[index],measured)) || (nativeImageHashes.has(index) && imageHash!==nativeImageHashes.get(index)))
               throw new AgentApiError('REFERENCE_INVALID','The project output bytes changed before quote preparation.');
@@ -301,16 +326,16 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
       // Check the entire ready-output selection before the first library write.
       await verifyNativeSources();
       const promotions:Awaited<ReturnType<typeof promoteStudioMediaSource>>[]=[];
-      for (const [index,selection]of selections.entries()) promotions.push(await promoteStudioMediaSource(actor, selection.ref, dependencies,resolvedReferences[index],isH3SourceOperation(action.operation)));
+      for (const [index,selection]of selections.entries()) promotions.push(await promoteStudioMediaSource(actor, selection.ref, dependencies,resolvedReferences[index],isMeasuredSourceOperation(operation)));
       const assetIds=promotions.map(promotion=>promotion.assetId);
       // Copy time is separate from preflight. Reauthorize native outputs again;
-      // H3 also rechecks bytes so a source changed during promotion is rejected.
+      // Measured source operations also reject changed bytes during promotion.
       await verifyNativeSources();
       const request=build(assetIds,false,resolvedReferences.map((reference,index)=>({...reference,assetId:assetIds[index]})));
-      if(dependencies.reviewedReferences || isH3SourceOperation(action.operation)){
+      if(dependencies.reviewedReferences || isMeasuredSourceOperation(operation)){
         const current=await factories.video(actor,{enabled}).resolveReferences(request);
         for(const [index,selection]of selections.entries()){
-          if(selection.ref.type!=='asset' && !isH3SourceOperation(action.operation))continue;
+          if(selection.ref.type!=='asset' && !isMeasuredSourceOperation(operation))continue;
           // Only the URL/display-name transition certified by the save owner is allowed.
           // All measured fields, source hash and role/slot stay bound to the original.
           const previous={...resolvedReferences[index],assetId:assetIds[index],...(promotions[index].promoted??{})};
@@ -339,4 +364,11 @@ export async function studioLumaPricingSource(actor: StudioGenerationActor,
   await requireStudioMediaSource(actor, selections[0].ref, input, {});
   const source = await resolveStudioLumaGenerationSource(actor.userId, selections[0].ref);
   return { sourceJobId: source.sourceJobId, sourceOutputId: source.sourceOutputIdentity, references: [] };
+}
+
+export async function studioFluxPricingSource(actor:StudioGenerationActor,selections:NonNullable<Extract<StudioMediaIntent,{action:'video.prepare'}>['references']>,input:Pick<ImageTurnInput,'references'|'attachments'>) {
+  if(selections.length!==1||selections[0].role!=='source')throw new AgentApiError('REFERENCE_REQUIRED','Select one owned Draft generation.');
+  await requireStudioMediaSource(actor,selections[0].ref,input,{});
+  const source=await resolveStudioFluxDraftSource(actor.userId,selections[0].ref);
+  return {sourceJobId:source.jobId,sourceOutputId:source.outputId,references:[]};
 }
