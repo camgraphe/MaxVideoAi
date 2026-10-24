@@ -32,13 +32,25 @@
 
 **Interfaces:** Consume existing shelf selection/attachment callbacks and timeline props. Add only mobile presentation state and a scoped visual-viewport shell.
 
-- [ ] Add a connected browser regression with a long conversation and three owned references; assert at least 60% of a 390×844 viewport for the log, one-tap references, focus restoration, navigation and no overflow.
-- [ ] Run against the baseline and retain the failing geometry and screenshot.
-- [ ] Implement the mobile shell and reusable overlay controls; desktop rendering stays intact.
-- [ ] Update existing connected tests for the deliberate mobile interactions; add short viewport and desktop parity checks.
-- [ ] Run focused browser verification on Chromium and WebKit, inspect screenshots, then run qa:editor, lint:exposure and test:editor:e2e.
-- [ ] Document ownership and verified limits. Commit the candidate for immutable runtime checks and fresh review.
+- [x] Add a connected browser regression with a long conversation and three owned references; assert at least 60% of a 390×844 viewport for the log, one-tap references, focus restoration, navigation and no overflow.
+- [x] Run against the baseline and retain the failing geometry and screenshot.
+- [x] Implement the mobile shell and reusable overlay controls; desktop rendering stays intact.
+- [x] Update existing connected tests for the deliberate mobile interactions; add short viewport and desktop parity checks.
+- [x] Run focused browser verification on Chromium and WebKit, inspect screenshots, then run qa:editor, lint:exposure and test:editor:e2e.
+- [x] Document ownership and verified limits. Commit the candidate for immutable runtime checks and fresh review.
 
 ## Execution notes
 
 User explicitly approved implementation; continue without another plan approval. Worktree created with the native app tool from origin/main at 5030bb6a6.
+
+## Verification — 2026-10-25
+
+- Product candidate: `c08a2f5b8`; final browser expectation update: `6fb92f9ab`.
+- With the same loaded three-reference/two-clip fixture at 390×844, the conversation grew from 164.5px to 683px (80.9% of the viewport).
+- Desktop header, history, input, media shelf and timeline bounds match baseline `5030bb6a6` exactly at 1440×900.
+- `npm run qa:editor`: passed (1,398 tests passed, one existing skip, zero failures), including TypeScript, lint and diff validation. `npm run lint:exposure`: passed.
+- Focused connected mobile regression: passed on Chromium and WebKit, including references, selected-image visibility, attachment removal, focus restoration, scroll preservation, multiline input, short screens and simulated visual-viewport height/offset changes.
+- Fresh review identified a retained timeline insertion being replayed after a breakpoint remount. The regression failed with four clips instead of three, then passed on both engines after preserving component identity; no additional timeline writes occur on resize.
+- `npm run test:editor:e2e`: completed all 37 browser files (59 cases). 57 passed; two montage recovery cases used the old directly-visible mobile timeline control. Their test flow now opens Film tools. Both cases and the connected conversation passed on focused rerun (3/3); no unresolved failures remain.
+- Local screenshots and geometry: `output/playwright/studio-mobile-chat/` (ignored proof artifacts).
+- Physical iPhone Safari keyboard behavior remains a device check; WebKit plus visual-viewport emulation is the available local coverage. No production deployment was performed.
