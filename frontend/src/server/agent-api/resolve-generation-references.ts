@@ -1,4 +1,4 @@
-import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { qualifyH3SourceReference } from './h3-source-reference';
 import { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPrincipal } from './principal';
@@ -46,9 +46,10 @@ export async function resolveGenerationReferencesForActor(
   for (const reference of request.references) {
     if (reference.kind !== 'asset') continue;
     const asset = await dependencies.resolveOwnedReferenceAsset(principal, reference.assetId);
-    const measured = request.engineId === 'minimax-h3-max' && isH3SourceOperation(request.operation) && reference.role === 'source' && asset.mediaKind === 'video'
-      ? await (dependencies.inspectH3Source ?? inspectOwnedH3Source)(asset.storageUrl,request.operation,principal.userId) : {};
-    resolved.push({ ...asset, ...measured, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) });
+    const referenceFacts = { ...asset, role: reference.role, ...(reference.slot === undefined ? {} : { slot: reference.slot }) };
+    resolved.push(request.engineId === 'minimax-h3-max'
+      ? await qualifyH3SourceReference(referenceFacts, request.operation, principal.userId, dependencies.inspectH3Source)
+      : referenceFacts);
   }
   return resolved;
 }

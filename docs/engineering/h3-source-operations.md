@@ -18,11 +18,17 @@ framing is supported. It requires constant 24 fps, decoded frame count 17n+5,
 at least 56 frames and at most 15 seconds. Seed and safety controls are retained.
 
 `server/video-excerpts/h3-relight.ts` inspects exact account-owned storage bytes
-through the bounded downloader. Canonical reference resolution runs it after
+through the bounded downloader. It acquires `withVideoExcerptSlot` before signing,
+downloading or probing (one task/account, two tasks/process); saturation returns
+retryable `RATE_LIMITED`, with HTTP 429 on web preflight/submission. Canonical reference resolution runs it after
 ownership resolution, including for admins; website preflight/submission runs
 it after the scoped media lookup and rejects origin-URL aliases. ffprobe decoded
 frame timestamps establish cadence; rounded duration multiplied by fps cannot
 establish count. Canonical quote binding includes source hash, cadence and count.
+Studio and canonical resolution share `qualifyH3SourceReference`: only authoritative
+reference facts enter the snapshot, excluding probe-only codec/stream details. Studio
+rechecks bytes at materialization, including when no reviewed-reference list was
+supplied; unchanged facts pass and a changed source hash fails.
 Missing or uninspectable source facts fail before spending. Existing fal job
 transport/polling and terminal failure recovery remain the execution owners.
 
@@ -58,7 +64,9 @@ needs canonical quote-domain support before publication.
 `referenceOrder` is a complete permutation of existing modality slots, for example
 `video1,image1,audio1`. It never accepts URLs. The provider adapter translates it
 into ordered `reference_conditions` and omits every `reference_*_urls` field.
-Omission keeps legacy grouped request shape. All selected references and frame
+Explicit order preserves caller order with canonical slots. Modality-dependent
+permutation validation waits for owned kinds; it runs again after resolution.
+Omission keeps legacy grouped request shape and canonical sorting/hashes. All selected references and frame
 assets still undergo ownership/media checks and the existing reference pricing
 budget. MCP and Studio use the `middle_frame` role plus canonical scalar settings;
 Site uses schema-driven fields. `h3-reference-controls.ts` owns shared validation.
@@ -75,3 +83,14 @@ facts and bounded `input_video_seconds` domains. Task6 owns compiling current
 commercial policy into literal continuous bands, full inventory, review and safe
 application. Runtime must never evaluate a percentage fallback or alias creation
 or Kling tariffs. Until literal cells exist, these new operation prices fail closed.
+
+## Read-only infrastructure boundary
+
+Preflight imports `storage-read.ts` for transient signed GET/HEAD and owned-key
+checks, and `storage-keys.ts` for the existing key policy. The legacy storage facade
+re-exports those functions; write/bootstrap owners remain outside preflight.
+`bounded-media-download.ts` owns byte/MIME/completeness checks and delegates DNS,
+redirect and deadline enforcement to the unchanged `public-media-transport.ts`.
+Reference-import defaults stay in their existing adapter; the shared downloader
+does not import upload sessions or file persistence. The full preflight import
+graph contract and private-storage/SSRF tests cover these boundaries.

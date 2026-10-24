@@ -476,12 +476,13 @@ function normalizeReferences(
   value: unknown,
   mode: CanonicalGenerationMode,
   engineId: string,
+  explicitH3Order = false,
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || (engineId === 'flux-3-max' && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
+    : mode === 'r2v' || mode === 'v2v' || ((engineId === 'flux-3-max' || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -590,7 +591,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     mode,
     prompt,
     settings,
-    references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId)),
+    references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId), normalizeEngineId(input.engineId) === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string'),
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
   try { validateOwnedKlingElements(result); } catch { fail('elements', 'Invalid owned Kling Element composition.'); }

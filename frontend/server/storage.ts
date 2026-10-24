@@ -1,3 +1,7 @@
+import { StorageUploadError, buildObjectKey, isStorageKeyWithinUserPrefix, getObjectKeySizeBytes, MAX_SAFE_OBJECT_KEY_BYTES } from './storage-keys';
+export { StorageUploadError, buildObjectKey, isStorageKeyWithinUserPrefix } from './storage-keys';
+import { extractObjectKeyFromUrl } from './storage-read';
+export { extractObjectKeyFromUrl, extractStorageKeyFromUrl, createSignedDownloadUrl, isOwnedMediaStorageKey, ownedMediaStorageKeyForUrl } from './storage-read';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -31,37 +35,7 @@ const S3_UPLOAD_ACL = (process.env.S3_UPLOAD_ACL || '').trim();
 const S3_CACHE_CONTROL = (process.env.S3_CACHE_CONTROL || 'public, max-age=3600').trim();
 
 let s3Client: S3Client | null = null;
-const MAX_SAFE_OBJECT_KEY_BYTES = 1000;
 export const MCP_REFERENCE_STAGING_STORAGE_PREFIX = 'mcp-reference-staging/';
-
-export class StorageUploadError extends Error {
-  context: {
-    code?: 'precondition-conflict';
-    stage?: 'before-upload' | 'put-object';
-    key?: string;
-    keyBytes?: number;
-    prefix?: string;
-    userId?: string | null;
-    originalFileName?: string | null;
-  };
-
-  constructor(
-    message: string,
-    context: {
-      code?: 'precondition-conflict';
-      stage?: 'before-upload' | 'put-object';
-      key?: string;
-      keyBytes?: number;
-      prefix?: string;
-      userId?: string | null;
-      originalFileName?: string | null;
-    } = {}
-  ) {
-    super(message);
-    this.name = 'StorageUploadError';
-    this.context = context;
-  }
-}
 
 function getS3Client(): S3Client {
   if (!s3Client) {
@@ -160,58 +134,6 @@ function getImageDimensions(buffer: Buffer, mime: string): { width: number | nul
   return { width: null, height: null };
 }
 
-function sanitizeSegment(segment: string): string {
-  return segment
-    .replace(/^\/+|\/+$/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^a-zA-Z0-9._-]/g, '')
-    .replace(/-+/g, '-');
-}
-
-function getObjectKeySizeBytes(key: string): number {
-  return Buffer.byteLength(key, 'utf8');
-}
-
-function resolveStoragePrefix(prefix?: string): string {
-  const requested = (prefix || 'uploads').replace(/^\/+|\/+$/g, '');
-  const referenceNamespace = process.env.MCP_STAGING_REFERENCE_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
-  if (
-    referenceNamespace
-    && ['media-assets', 'user-assets', 'user-asset-thumbs'].some(
-      (root) => requested === root || requested.startsWith(`${root}/`),
-    )
-  ) {
-    return `${referenceNamespace}/${requested}`;
-  }
-  const renderNamespace = process.env.VIDEO_RENDER_STORAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, '');
-  if (!renderNamespace || (requested !== 'renders' && !requested.startsWith('renders/'))) {
-    return requested;
-  }
-  const suffix = requested.slice('renders'.length).replace(/^\/+/, '');
-  return suffix ? `${renderNamespace}/${suffix}` : renderNamespace;
-}
-
-export function buildObjectKey(params: { prefix?: string; userId?: string | null; leafName: string }): string {
-  const { prefix, userId, leafName } = params;
-  const prefixSegments = resolveStoragePrefix(prefix).split('/').map((segment) => sanitizeSegment(segment));
-  const key = [...prefixSegments, userId ?? 'anonymous', leafName]
-    .map((segment) => sanitizeSegment(segment))
-    .filter((segment) => segment.length > 0)
-    .join('/');
-
-  const keyBytes = getObjectKeySizeBytes(key);
-  if (keyBytes > MAX_SAFE_OBJECT_KEY_BYTES) {
-    throw new StorageUploadError('Storage object key is too long.', {
-      key,
-      keyBytes,
-      prefix,
-      userId,
-    });
-  }
-
-  return key;
-}
-
 function buildStorageLeafName(params: { mime: string; fileName?: string | null }): string {
   const safeMime = params.mime || 'application/octet-stream';
   const inferredExtension = inferExtension(safeMime, 'bin');
@@ -247,20 +169,6 @@ export function createStorageFileKey(params: {
     userId: params.userId ?? 'anonymous',
     leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
   });
-}
-
-export function isStorageKeyWithinUserPrefix(params: {
-  key: string;
-  prefix?: string;
-  userId?: string | null;
-}): boolean {
-  const markerKey = buildObjectKey({
-    prefix: params.prefix,
-    userId: params.userId,
-    leafName: '__upload_marker__',
-  });
-  const expectedPrefix = markerKey.slice(0, markerKey.lastIndexOf('/') + 1);
-  return params.key.startsWith(expectedPrefix);
 }
 
 export async function uploadImageToStorage(params: {
@@ -372,47 +280,6 @@ function buildHostAllowList(): Set<string> {
       .forEach((host) => hosts.add(host));
   }
   return hosts;
-}
-
-export function extractObjectKeyFromUrl(assetUrl: string): string | null {
-  if (!assetUrl) return null;
-  try {
-    const parsed = new URL(assetUrl);
-    const pathname = parsed.pathname || '';
-    const normalizedPath = pathname.replace(/^\/+/, '');
-
-    if (S3_PUBLIC_BASE_URL) {
-      try {
-        const base = new URL(S3_PUBLIC_BASE_URL);
-        if (parsed.host !== base.host) {
-          return null;
-        }
-        const basePath = base.pathname.replace(/\/+$/, '');
-        if (basePath && !parsed.pathname.startsWith(basePath)) {
-          return null;
-        }
-        const relativePath = basePath
-          ? parsed.pathname.slice(basePath.length).replace(/^\/+/, '')
-          : normalizedPath;
-        return relativePath.length > 0 ? relativePath : null;
-      } catch {
-        // fall back to default extraction when base URL is invalid
-      }
-    }
-
-    if (!S3_BUCKET) return null;
-    const defaultHost = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
-    if (parsed.host !== defaultHost) {
-      return null;
-    }
-    return normalizedPath.length > 0 ? normalizedPath : null;
-  } catch {
-    return null;
-  }
-}
-
-export function extractStorageKeyFromUrl(assetUrl: string): string | null {
-  return extractObjectKeyFromUrl(assetUrl);
 }
 
 async function deleteObjectFromStorage(key: string): Promise<void> {
@@ -809,67 +676,6 @@ export async function getStorageObjectBuffer(key: string, options: { signal?: Ab
     { abortSignal: options.signal },
   );
   return storageBodyToBuffer(response.Body, options.signal);
-}
-
-export async function createSignedDownloadUrl(
-  key: string,
-  {
-    expiresInSeconds,
-    downloadFilename,
-    method = 'GET',
-  }: {
-    expiresInSeconds: number;
-    downloadFilename?: string;
-    method?: 'GET' | 'HEAD';
-  },
-): Promise<string> {
-  const client = getS3Client();
-  const safeDownloadFilename = downloadFilename
-    ?.trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 160);
-  const command = method === 'HEAD' ? new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }) : new GetObjectCommand({
-    Bucket: S3_BUCKET,
-    Key: key,
-    ...(safeDownloadFilename
-      ? { ResponseContentDisposition: `attachment; filename="${safeDownloadFilename}"` }
-      : {}),
-  });
-  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
-}
-const OWNED_MEDIA_STORAGE_PREFIXES = [
-  'renders/images',
-  'renders/thumbs',
-  'renders/previews',
-  'renders/keyframes',
-  'storyboard-template-references',
-  'normalized-references',
-  'background-removal',
-  'timeline-exports',
-  'user-asset-thumbs',
-  'media-assets',
-  'user-assets',
-  'inline',
-  'upscale',
-  'angle',
-  'renders',
-  'files',
-] as const;
-
-export function isOwnedMediaStorageKey(params: { key: string; userId: string }): boolean {
-  if (!params.key || !params.userId) return false;
-  const contentOwner = createHash('sha256').update(params.userId).digest('hex').slice(0, 32);
-  return OWNED_MEDIA_STORAGE_PREFIXES.some((prefix) =>
-    isStorageKeyWithinUserPrefix({ key: params.key, prefix, userId: params.userId })
-    || isStorageKeyWithinUserPrefix({ key: params.key, prefix: `${prefix}/by-content`, userId: contentOwner }),
-  );
-}
-
-export function ownedMediaStorageKeyForUrl(params: { url: string; userId: string }): string | null {
-  const key = extractObjectKeyFromUrl(params.url);
-  return key && isOwnedMediaStorageKey({ key, userId: params.userId }) ? key : null;
 }
 
 export async function uploadFilePath(params: {

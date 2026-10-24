@@ -1,3 +1,4 @@
+import { AgentApiError } from '@/server/agent-api/errors';
 import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -8,16 +9,21 @@ import { createHash } from 'node:crypto';
 import ffmpeg from '@ffmpeg-installer/ffmpeg';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { planH3RelightCopy, validateH3Source, type H3SourceOperation } from '@/lib/h3-source-operations';
-import { downloadVideoExcerptMedia, inspectVideoExcerptBytes, type VideoExcerptFacts } from './media';
+import { downloadVideoExcerptMedia, inspectVideoExcerptBytes, withVideoExcerptSlot, VideoExcerptError, type VideoExcerptFacts } from './media';
 
 /** Caller must first resolve this exact storage URL through account-owned assets. */
-export async function inspectOwnedH3Source(url: string, operation: H3SourceOperation, userId: string) {
-  const accessUrl = await createOwnedMediaReadUrl({url,userId,expiresInSeconds:300});
-  const downloaded = await downloadVideoExcerptMedia({file_id:'owned-h3-source',download_url:accessUrl});
-  const facts = await inspectVideoExcerptBytes(downloaded.bytes, downloaded.mimeType, {decodedFrames: operation === 'h3-relight'});
+export async function inspectOwnedH3Source(url: string, operation: H3SourceOperation, userId: string, dependencies = {createReadUrl:createOwnedMediaReadUrl,download:downloadVideoExcerptMedia,inspect:inspectVideoExcerptBytes}) {
+ try { return await withVideoExcerptSlot(userId, async () => {
+  const accessUrl = await dependencies.createReadUrl({url,userId,expiresInSeconds:300});
+  const downloaded = await dependencies.download({file_id:'owned-h3-source',download_url:accessUrl});
+  const facts = await dependencies.inspect(downloaded.bytes, downloaded.mimeType, {decodedFrames: operation === 'h3-relight'});
   const error = validateH3Source(operation,facts);
   if (error) throw new Error(error);
   return {...facts, ...(operation === 'h3-relight' ? {durationSec:facts.decodedFrameCount!/24} : {}), sourceSha256:createHash('sha256').update(downloaded.bytes).digest('hex')};
+ }); } catch (error) {
+  if (error instanceof VideoExcerptError && error.code === 'PREPARATION_BUSY') throw new AgentApiError('RATE_LIMITED', error.message, true);
+  throw error;
+ }
 }
 /** Explicit opt-in compatible copy; never changes the original or the generic excerpt profile.
  * Present plan.actual duration BEFORE calling. Task6 routes/persists the resulting owned copy. */

@@ -288,6 +288,7 @@ export async function resolveMediaAwarePreflight(
       : 'Required media pricing facts could not be verified.';
     return mediaPricingFailure(code, message, {
       field: body.field,
+      ...(body.retryable === true ? {retryable:true} : {}),
       ...(typeof body.durationSec === 'number' ? { durationSec: body.durationSec } : {}),
       ...(typeof body.maxDurationSec === 'number' ? { maxDurationSec: body.maxDurationSec } : {}),
     });

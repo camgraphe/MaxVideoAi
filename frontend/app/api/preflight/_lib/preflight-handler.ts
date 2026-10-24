@@ -61,7 +61,7 @@ export function createPreflightPostHandler(dependencies: PreflightPostDependenci
         ?? (await getRouteAuthContextFn(req)).userId,
     }, dependencies.mediaAwarePreflightDependencies);
     return NextResponse.json(response, {
-      status: response.ok ? 200 : 400,
+      status: response.ok ? 200 : response.error?.code === 'RATE_LIMITED' ? 429 : 400,
       headers: { 'Cache-Control': 'private, no-store' },
     });
   };

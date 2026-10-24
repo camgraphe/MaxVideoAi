@@ -9,7 +9,7 @@ import type {TimelineExportJobResponse} from '@/server/timeline-exports/contract
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
 import type { AgentGenerationStatus } from '@/server/generations/generation-status';
 import type { AgentApiFailure } from '@/server/agent-api/errors';
-import {studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema, STUDIO_MEDIA_DIRECTOR_TOOLS} from './conversation-media-contract';
+import {validateStudioVideoPrompt, studioVideoActionSchema, studioVoiceActionSchema, studioMusicActionSchema,studioAudioActionSchema, STUDIO_MEDIA_DIRECTOR_TOOLS} from './conversation-media-contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
@@ -78,7 +78,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
   studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
-]);
+]).superRefine(validateStudioVideoPrompt);
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary; audioWorkflow?: StudioAudioWorkflowFacts};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;

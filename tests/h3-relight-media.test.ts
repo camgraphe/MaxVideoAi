@@ -25,3 +25,20 @@ test('real 25fps 139-frame rotated source is rejected then explicitly prepared t
   assert.deepEqual(await readFile(rotated),bytes);
  } finally {await rm(directory,{recursive:true,force:true});}
 });
+
+import {inspectOwnedH3Source} from '../frontend/server/video-excerpts/h3-relight';
+import {withVideoExcerptSlot} from '../frontend/server/video-excerpts/media';
+test('H3 admission rejects same-account and global saturation before signing/downloading/decoding; releases after failure',async()=>{
+ let reads=0;
+ const dependencies={createReadUrl:async()=>{reads++;throw new Error('injected read failure');},download:async()=>{throw new Error('must not download');},inspect:inspectVideoExcerptBytes};
+ const busy=(error:unknown)=>Boolean(error&&typeof error==='object'&&'code' in error&&error.code==='RATE_LIMITED'&&'retryable' in error&&error.retryable);
+ await withVideoExcerptSlot('one',async()=>{
+  await assert.rejects(inspectOwnedH3Source('owned','h3-recast','one',dependencies),busy);
+  await withVideoExcerptSlot('two',async()=>{
+   await assert.rejects(inspectOwnedH3Source('owned','h3-relight','three',dependencies),busy);
+  });
+ });
+ assert.equal(reads,0);
+ for(let i=0;i<2;i++) await assert.rejects(inspectOwnedH3Source('owned','h3-recast','one',dependencies),/injected read failure/);
+ assert.equal(reads,2);
+});

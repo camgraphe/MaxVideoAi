@@ -1,5 +1,5 @@
 import { canReadMarketingFile } from '@/server/marketing-media/access';
-import { createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
+import { createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from './storage-read';
 
 /** Transient server read access; callers persist the original URL, never this grant. */
 export async function createOwnedMediaReadUrl(

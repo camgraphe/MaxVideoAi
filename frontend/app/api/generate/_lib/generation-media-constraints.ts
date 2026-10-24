@@ -1,3 +1,4 @@
+import { AgentApiError } from '@/server/agent-api/errors';
 import { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isLumaSourceVideoMode } from '@/lib/luma-source-video';
 import { videoDuration } from '@/lib/generated-video-media-facts';
@@ -38,6 +39,7 @@ export type StoredMediaMetadataRow = {
 };
 
 type MediaConstraintError =
+  | 'RATE_LIMITED'
   | 'MEDIA_METADATA_UNVERIFIED'
   | 'MEDIA_FILE_TOO_LARGE'
   | 'MEDIA_FORMAT_UNSUPPORTED'
@@ -52,10 +54,11 @@ export type GenerationMediaConstraintValidationResult =
   | { ok: true; trustedDurationSecByField?: Record<string, number[]>; trustedMediaReferences?: MinimaxH3MaxPricingReference[] }
   | {
       ok: false;
-      status: 422;
+      status: 422 | 429;
       body: {
         ok: false;
         error: MediaConstraintError;
+        retryable?: boolean;
         message: string;
         field: string;
         maxMB?: number;
@@ -380,7 +383,8 @@ export async function validateGenerationMediaConstraints(params: {
       try {
         const measured = await (params.deps?.inspectH3SourceFn ?? inspectOwnedH3Source)(stored.url,h3Operation,params.userId);
         Object.assign(trustedReference,{durationSec:measured.durationSec,fps:measured.fps,decodedFrameCount:measured.decodedFrameCount,constantFrameRate:measured.constantFrameRate,sourceSha256:measured.sourceSha256});
-      } catch {
+      } catch (error) {
+        if (error instanceof AgentApiError && error.retryable) return {ok:false,status:429,body:{ok:false,error:'RATE_LIMITED',message:error.message,field:candidate.fieldId,retryable:true},metric:{errorCode:'RATE_LIMITED',meta:{field:candidate.fieldId}}};
         return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This source could not be qualified for the selected H3 operation. Relight needs constant 24 fps and 17n+5 decoded frames; prepare a compatible copy.'});
       }
     }

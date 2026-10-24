@@ -1,3 +1,5 @@
+import { qualifyH3SourceReference } from '@/server/agent-api/h3-source-reference';
+import type { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveStudioLumaGenerationSource } from './luma-generation-source';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -56,6 +58,7 @@ export type StudioMotionSourceDependencies = {
   readProjectMedia?: typeof readStudioProjectMedia;
   resolveMedia?: typeof resolveStudioMedia;
   reviewedReferences?:readonly ResolvedReference[];
+  inspectH3Source?: typeof inspectOwnedH3Source;
 };
 
 /** Read-only pricing aliases keep native project outputs out of the asset library. */
@@ -70,7 +73,8 @@ export function studioPricingSourceSelection(actor:StudioGenerationActor,selecti
         const index=reference.kind==='asset'?ids.indexOf(reference.assetId):-1;
         if(index<0)throw new AgentApiError('REFERENCE_INVALID','Select attached media or a ready output in this project.');
         const media=await requireStudioMediaSource(actor,selections[index].ref,input,dependencies,signal);
-        references.push(mediaReference(media,{assetId:ids[index],role:reference.role,...(reference.slot===undefined?{}:{slot:reference.slot})}));
+        const facts=mediaReference(media,{assetId:ids[index],role:reference.role,...(reference.slot===undefined?{}:{slot:reference.slot})});
+        references.push(request.engineId === 'minimax-h3-max' ? await qualifyH3SourceReference(facts,request.operation,actor.userId,dependencies.inspectH3Source) : facts);
       }
       return references;
     },
@@ -256,6 +260,11 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
+    if (candidate.engine.id === 'minimax-h3-max' && isH3SourceOperation(action.operation)) {
+      for (let index=0; index<resolvedReferences.length; index++) {
+        resolvedReferences[index]=await qualifyH3SourceReference(resolvedReferences[index],action.operation,actor.userId,dependencies.inspectH3Source);
+      }
+    }
     if(action.operation !== 'kling-edit' && !isH3SourceOperation(action.operation)&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
@@ -279,11 +288,11 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
       // snapshots without I/O; enriched facts remain bound to that exact original.
       await verifyNativeSources();
       const request=build(assetIds,false,resolvedReferences.map((reference,index)=>({...reference,assetId:assetIds[index]})));
-      if(dependencies.reviewedReferences){
+      if(dependencies.reviewedReferences || isH3SourceOperation(action.operation)){
         const current=await factories.video(actor,{enabled}).resolveReferences(request);
         for(const [index,selection]of selections.entries()){
-          if(selection.ref.type!=='asset')continue;
-          const previous=resolvedReferences[index];const next=current.find(reference=>reference.assetId===previous.assetId&&reference.role===previous.role&&reference.slot===previous.slot);
+          if(selection.ref.type!=='asset' && !isH3SourceOperation(action.operation))continue;
+          const previous={...resolvedReferences[index],assetId:assetIds[index]};const next=current.find(reference=>reference.assetId===previous.assetId&&reference.role===previous.role&&reference.slot===previous.slot);
           if(!next||studioReferenceFingerprint([comparableReference(previous)])!==studioReferenceFingerprint([comparableReference(next)]))
             throw new AgentApiError('REFERENCE_INVALID','The selected references changed before quote preparation. Send a new message to review them again.');
         }

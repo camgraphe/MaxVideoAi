@@ -119,3 +119,58 @@ test('canonical Relight source and lighting sphere reach paid adapter without a 
  assert.equal(provider.requestBody.reference_image_url,resolved[1]!.storageUrl);
  assert.equal(provider.requestBody.prompt,undefined);
 });
+
+test('explicit H3 order survives canonical ingress and validates modalities only after ownership resolution',async()=>{
+ const refs=[2,1,3,4].map(n=>({kind:'asset' as const,assetId:`ma_${String(n).padStart(32,'0')}`,role:'reference' as const}));
+ const input={surface:'video',engineId:'minimax-h3-max',mode:'ref2v',prompt:'Follow these references',settings:{durationSec:5,resolution:'768P',aspectRatio:'auto',referenceOrder:'video1,image1,audio1,image2'},references:refs};
+ const request=normalizeGenerationRequest(input);
+ assert.deepEqual(request.references.map(r=>r.kind==='asset'?r.assetId:''),refs.map(r=>r.assetId));
+ assert.deepEqual(normalizeGenerationRequest({...input,references:refs.map((r,slot)=>({...r,slot}))}),request);
+ const candidate={engine:MINIMAX_H3_MAX_ENGINE,surface:'video' as const,publicModes:['ref2v' as const],modeCaps:MINIMAX_H3_MAX_ENGINE.modeCaps!};
+ validateCanonicalGenerationCapabilities(request,candidate);
+ const resolved=refs.map((ref,index)=>({...ref,slot:index,mediaKind: index<2?'image' as const:index===2?'video' as const:'audio' as const,storageUrl:`https://media.maxvideoai.com/${index}`,width:512,height:512,durationSec:index<2?null:5,mimeType:index<2?'image/png':index===2?'video/mp4':'audio/mpeg',originalName:index<2?'image.png':index===2?'video.mp4':'sound.mp3',sizeBytes:1000}));
+ validateCanonicalGenerationCapabilities(request,candidate,{resolvedReferences:resolved});
+ const body=buildPaidVideoRequestBody({quoteId:'q',request,engine:candidate.engine,resolvedReferences:resolved,canonicalPricing:{membershipTier:'member'}});
+ assert.deepEqual(buildMinimaxH3MaxFalRequestFromPayload(body as never).requestBody.reference_conditions,[2,0,3,1].map(i=>({type:resolved[i].mediaKind,url:resolved[i].storageUrl})));
+ assert.throws(()=>validateCanonicalGenerationCapabilities({...request,settings:{...request.settings,referenceOrder:'image1,image2,image3,image4'}},candidate,{resolvedReferences:resolved}));
+ const {readGenerationPricing}=await import('../frontend/src/server/agent-api/generation-pricing-read');
+ const {resolveGenerationReferencesForActor}=await import('../frontend/src/server/agent-api/resolve-generation-references');
+ const result=await readGenerationPricing(request,{authMethod:'oauth',userId:'owner',clientId:'client',emailVerified:true},{
+  listPublicEngines:async()=>[candidate],resolveGenerationReferences:(current,actor)=>resolveGenerationReferencesForActor(current,actor,{resolveOwnedReferenceAsset:async(_actor,id)=>resolved.find(ref=>ref.assetId===id)!}),
+  resolveMembershipPricing:async()=>({tier:'member',source:'app_receipts_rolling_30d',spent30Cents:0,thresholdCents:0,discountPercent:0}),
+  priceGeneration:async()=>({priceCents:48,currency:'USD',membershipTier:'member',pricingSnapshot:{totalCents:48,currency:'USD',membershipTier:'member'}}),
+ });
+ assert.equal(result.pricing.priceCents,48);
+ const omitted={...input,settings:{durationSec:5,resolution:'768P'}};
+ assert.deepEqual(normalizeGenerationRequest(omitted),normalizeGenerationRequest({...omitted,references:[...refs].reverse()}));
+});
+
+import {studioMediaIntentSchema} from '../frontend/lib/studio/conversation-media-contract';
+import {studioActionRequestSchema} from '../frontend/lib/studio/conversation-action-contract';
+test('Studio accepts empty/omitted source-operation prompts but preserves creation prompt validation',()=>{
+ const action={action:'video.prepare',reply:'Review',modelId:'minimax-h3-max',mode:'v2v',operation:'h3-relight',aspectRatio:'auto',source:null};
+ for(const schema of [studioMediaIntentSchema,studioActionRequestSchema]) {
+  for(const prompt of ['',undefined]) assert.equal(schema.safeParse({...action,prompt}).success,true);
+  assert.equal(schema.safeParse({...action,prompt:'change lighting'}).success,false);
+  assert.equal(schema.safeParse({...action,operation:'h3-recast'}).success,true);
+  assert.equal(schema.safeParse({...action,operation:undefined,mode:'t2v',prompt:''}).success,false);
+ }
+});
+
+import {withVideoExcerptSlot} from '../frontend/server/video-excerpts/media';
+import {resolveGenerationReferencesForActor} from '../frontend/src/server/agent-api/resolve-generation-references';
+import {createPreflightPostHandler} from '../frontend/app/api/preflight/_lib/preflight-handler';
+import {NextRequest} from 'next/server';
+test('canonical and web source inspection propagate retryable admission before any source I/O',async()=>{
+ const engine=resolveVideoOperationEngine(MINIMAX_H3_MAX_ENGINE,'v2v','h3-recast');
+ const url='https://media.maxvideoai.com/source.mp4';
+ await withVideoExcerptSlot('busy-owner',async()=>{
+  const request=normalizeGenerationRequest({surface:'video',engineId:engine.id,mode:'v2v',operation:'h3-recast',settings:{resolution:'768P'},references:[{kind:'asset',assetId:'ma_00000000000000000000000000000001',role:'source'}]});
+  await assert.rejects(resolveGenerationReferencesForActor(request,{authMethod:'studio-session',userId:'busy-owner',projectId:'project',clientId:null},{resolveOwnedReferenceAsset:async()=>({assetId:'ma_00000000000000000000000000000001',mediaKind:'video',storageUrl:url,mimeType:'video/mp4',width:512,height:512,durationSec:5})}),error=>Boolean(error&&typeof error==='object'&&'code' in error&&error.code==='RATE_LIMITED'&&'retryable' in error&&error.retryable));
+  const result=await validateGenerationMediaConstraints({engineId:engine.id,mode:'v2v',userId:'busy-owner',inputSchema:engine.inputSchema,attachments:[{assetId:'asset',slotId:'video_url',kind:'video',url,name:'source.mp4',type:'video/mp4',size:100}],referenceMediaItems:[{fieldId:'video_url',kind:'video',url}],deps:{queryFn:async<T>()=>[{asset_id:'asset',url,origin_url:null,original_name:'source.mp4',mime_type:'video/mp4',size_bytes:100,duration_sec:5,width:512,height:512}] as T[]}});
+  assert.equal(result.ok,false);if(!result.ok){assert.equal(result.status,429);assert.equal(result.body.retryable,true);}
+ });
+ const handler=createPreflightPostHandler({resolveMediaAwarePreflightFn:async()=>({ok:false,error:{code:'RATE_LIMITED',message:'Retry shortly.'}})});
+ const response=await handler(new NextRequest('https://maxvideoai.com/api/preflight',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({engine:'grok-imagine-video-1-5',mode:'t2v',durationSec:6,resolution:'720p',aspectRatio:'16:9',fps:24,user:{memberTier:'Member'}})}));
+ assert.equal(response.status,429);
+});

@@ -492,6 +492,9 @@ function validateVideoExecutionConstraints(
   options: GenerationCapabilityValidationOptions,
 ): void {
   const payload = buildProviderConstraintPayload(request, candidate, options);
+  // Asset modality is unavailable during initial canonical ingress. Keep all other
+  // validation active; check the complete permutation after owned facts resolve.
+  if (request.engineId === 'minimax-h3-max' && request.references.some(reference => !resolvedMediaKind(reference, options))) delete payload.reference_order;
   const provider = validateProviderSpecificConstraints({
     engineId: request.engineId,
     normalizedMode: toEngineGenerationMode(request.engineId, request.mode),

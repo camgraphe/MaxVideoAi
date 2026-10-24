@@ -7,7 +7,7 @@ import ffmpeg from '@ffmpeg-installer/ffmpeg';
 import ffprobe from 'ffprobe-static';
 import { ensureExecutableFfmpegPath } from '@/server/ffmpeg-runtime';
 import { resolveProbedMediaMetadata } from '@/server/media/detect-has-audio';
-import { createBoundedMediaDownloader } from '@/server/agent-api/reference-file-download';
+import { createBoundedMediaDownloader } from '@/server/bounded-media-download';
 import { VIDEO_EXCERPT_PREPARATION_LIMITS, type VideoExcerptRange } from '@/lib/video-excerpt';
 export { VIDEO_EXCERPT_PREPARATION_LIMITS } from '@/lib/video-excerpt';
 
