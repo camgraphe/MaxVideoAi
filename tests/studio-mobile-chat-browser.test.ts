@@ -133,6 +133,14 @@ test('mobile chat keeps reading space, references and navigation without changin
       Reflect.deleteProperty(window.visualViewport!,'offsetTop');
       window.visualViewport!.dispatchEvent(new Event('resize'));
     });
+    await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
+    await panel.getByRole('button',{name:'Preview Image 2',exact:true}).click();
+    await panel.getByRole('button',{name:'Add to timeline',exact:true}).click();
+    await expect(page.getByRole('dialog',{name:'Film tools',exact:true})).toBeVisible();
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(3,{timeout:20000});
+    await page.getByRole('button',{name:'Close film tools',exact:true}).click();
+    const replayedInsertions:string[]=[];
+    page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/conversation-timeline'))replayedInsertions.push(request.postData()??'');});
     for(const size of [{width:320,height:568},{width:390,height:430}]){
       await page.setViewportSize(size);await message.fill('A short follow-up');
       await expect(message).toBeInViewport();
@@ -150,6 +158,8 @@ test('mobile chat keeps reading space, references and navigation without changin
     await page.getByRole('button',{name:'Dark',exact:true}).click();
     await page.keyboard.press('Escape');
     await page.screenshot({path:join(evidence,browserName+'-mobile-dark.png')});
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(3);
+    assert.deepEqual(replayedInsertions,[],'Crossing mobile/desktop must not replay an insertion.');
     assert.deepEqual(errors,[]);
     assert.deepEqual(layoutIssues,[]);
     assert.deepEqual(paidActions,[],'Opening mobile tools never submits a message, generation or assistance choice.');

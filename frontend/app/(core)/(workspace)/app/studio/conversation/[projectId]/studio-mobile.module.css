@@ -1,4 +1,5 @@
 .mobileTools {display:none;}
+.desktopPanel {display:contents;color:inherit;}
 .panel {
   position:fixed;top:var(--studio-mobile-top, 0px);
   bottom:calc(100% - var(--studio-mobile-top, 0px) - var(--studio-mobile-height, 100dvh) + 8px);

@@ -376,7 +376,9 @@ and bounds its height against the visible viewport.
 
 `ConversationMobilePanel` presents the existing reference shelf and film timeline
 in native modal sheets on mobile, with Escape and trigger-focus restoration.
-The same children render without a wrapper on desktop. The film stays mounted
+The same dialog becomes a nonmodal presentation wrapper with `display: contents`
+on desktop. Its subtree remains mounted across breakpoints so a retained insertion
+cannot replay after rotation or resizing. The film stays mounted
 while its sheet is closed, but `ConversationTimeline.visible` stops playback and
 closes the monitor. Reference IDs, attachment session storage, preview grants,
 timeline persistence, generation confirmation and assistance policy stay with
