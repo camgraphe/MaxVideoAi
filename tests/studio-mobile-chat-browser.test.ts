@@ -8,10 +8,12 @@ import {startStudioConnectedBrowserFixture} from './helpers/studio-connected-bro
 import {initializeStudioConnectedFixture,STUDIO_CONNECTED_MONTAGE_INPUT} from './helpers/studio-connected-fixture-data';
 import {STUDIO_FIXTURE_OWNERS} from './helpers/studio-auth-fixture';
 import {postStudioMcpRequest,readStudioMcpResponse} from './helpers/studio-mcp-http-fixture';
+import {STUDIO_ASSISTANCE_TARIFF,type StudioAssistanceStatus} from '../frontend/src/lib/studio/assistance-contract';
 
 const browserName=process.env.STUDIO_BROWSER_ENGINE==='webkit'?'webkit':'chromium';
 const refs=['a','b','c'].map(value=>'ma_'+value.repeat(32));
 const urls=refs.map((_,index)=>`https://cdn.maxvideoai.com/studio-local-fixture/mobile-${index}.webp`);
+const assistance:StudioAssistanceStatus={enabled:true,policyVersion:'mobile-layout-fixture',revision:1,selectedModel:'gpt-6-luna',mode:'sponsored_luna',tariff:STUDIO_ASSISTANCE_TARIFF,includedSol:{remainingPercent:100,renewal:'one_time'},sponsoredLuna:{remainingPercent:100,renewal:'one_time'},paid:{enabled:false,authorizedCents:0,spentCents:0,reservedCents:0,remainingCents:0,maxAdditionalBudgetCents:2000},unresolvedCalls:0,canContinue:true,blockedReason:null};
 
 test('mobile chat keeps reading space, references and navigation without changing desktop ('+browserName+')',{timeout:240000},async()=>{
   const runtime=await startStudioIntegrationRuntime({revision:process.env.STUDIO_TEST_REVISION,mcp:{studioMontageCreation:true},privateStorage:true,conversation:true,initializeDatabase:async db=>{
@@ -32,6 +34,10 @@ test('mobile chat keeps reading space, references and navigation without changin
     browser=await startStudioConnectedBrowserFixture({runtime,browserName});
     const {page}=await browser.newContext(session,{viewport:{width:390,height:844},locale:'en-US',reducedMotion:'reduce'});
     const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+    const layoutIssues:string[]=[];
+    const paidActions:string[]=[];
+    page.on('request',request=>{if(request.method()==='POST'&&/\/(image-conversation|assistance)(\/confirm)?$/.test(new URL(request.url()).pathname))paidActions.push(request.url());});
+    await page.route('**/api/studio/assistance',route=>route.fulfill({json:{ok:true,result:assistance}}));
     for(const [path,json] of [['/api/member-status',{tier:'Member'}],['/api/wallet',{balance:46.29,balanceCents:4629,currency:'USD'}],['/api/admin/access',{ok:false}],['/api/legal/reconsent',{ok:true,needsReconsent:false,documents:[]}]] as const)await page.route(runtime.browserOrigin+path,route=>route.fulfill({json}));
     // Deterministic conversation prose; auth, project, references and timeline use the real owned fixture.
     await page.route('**/image-conversation',route=>route.request().method()==='GET'?route.fulfill({json:{ok:true,result:{projectId,projectName:'Three reference film',turns:Array.from({length:8},(_,i)=>({
@@ -50,6 +56,8 @@ test('mobile chat keeps reading space, references and navigation without changin
     await expect(log.getByText('Scene 8: use these three references.',{exact:true})).toBeAttached();
     const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
     await expect(message).toBeVisible();
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+    await expect(page.getByRole('button',{name:'Milo settings and credits',exact:true})).toBeVisible();
     const evidence=process.env.STUDIO_PROOF_DIRECTORY??'/tmp/studio-mobile-chat';
     await mkdir(evidence,{recursive:true});
     const geometry=async()=>page.evaluate(()=>{
@@ -60,6 +68,7 @@ test('mobile chat keeps reading space, references and navigation without changin
     await page.screenshot({path:join(evidence,browserName+'-mobile.png')});
     await writeFile(join(evidence,browserName+'-geometry.json'),JSON.stringify(await geometry(),null,2));
     await page.setViewportSize({width:1440,height:900});
+    await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
     await expect(page.getByRole('img',{name:'Reference 1',exact:true})).toBeVisible({timeout:30000});
     await page.evaluate(()=>document.fonts.ready);
     await page.screenshot({path:join(evidence,browserName+'-desktop-initial.png')});
@@ -75,6 +84,9 @@ test('mobile chat keeps reading space, references and navigation without changin
     await references.click();
     const panel=page.getByRole('dialog',{name:'References',exact:true});
     await expect(panel).toBeVisible();
+    await expect(panel.getByRole('img',{name:'Reference 1',exact:true})).toBeVisible();
+    const selected=await panel.locator('[data-media-card][data-selected="true"]').boundingBox();
+    if(!selected||selected.x<0||selected.x+selected.width>390)layoutIssues.push('Opening references must bring the selected image into view.');
     await page.screenshot({path:join(evidence,browserName+'-references.png')});
     await panel.getByRole('button',{name:'Preview Image 1',exact:true}).click();
     await panel.getByRole('button',{name:'Enlarge Image 1',exact:true}).click();
@@ -114,7 +126,7 @@ test('mobile chat keeps reading space, references and navigation without changin
     });
     await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
     const keyboardPanel=await panel.boundingBox();
-    assert.ok(keyboardPanel&&keyboardPanel.y>=60&&keyboardPanel.y+keyboardPanel.height<=490,'References fit above the keyboard in the visual viewport.');
+    if(!keyboardPanel||keyboardPanel.y<60||keyboardPanel.y+keyboardPanel.height>490)layoutIssues.push('References must fit above the keyboard in the visual viewport.');
     await page.keyboard.press('Escape');
     await page.evaluate(()=>{
       Reflect.deleteProperty(window.visualViewport!,'height');
@@ -139,5 +151,7 @@ test('mobile chat keeps reading space, references and navigation without changin
     await page.keyboard.press('Escape');
     await page.screenshot({path:join(evidence,browserName+'-mobile-dark.png')});
     assert.deepEqual(errors,[]);
+    assert.deepEqual(layoutIssues,[]);
+    assert.deepEqual(paidActions,[],'Opening mobile tools never submits a message, generation or assistance choice.');
   }finally{await browser?.close();await runtime.close();}
 });

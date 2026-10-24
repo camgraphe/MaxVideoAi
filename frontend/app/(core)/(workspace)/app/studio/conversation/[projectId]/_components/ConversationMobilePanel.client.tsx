@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useId, useRef, type ReactNode, type RefObject} from 'react';
+import {useLayoutEffect, useId, useRef, type ReactNode, type RefObject} from 'react';
 import {X} from 'lucide-react';
 import styles from '../studio-mobile.module.css';
 
@@ -17,7 +17,7 @@ export function ConversationMobilePanel({mobile, open, title, closeLabel, kind, 
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = dialog.current;
     if (!mobile || !open || !element) return;
     const opener = trigger.current;
