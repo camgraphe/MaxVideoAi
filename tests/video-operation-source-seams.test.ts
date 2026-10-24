@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
+import { GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/gemini-omni-flash';
 import { normalizeVideoOperation, resolveVideoOperationEngine, type VideoOperation } from '../frontend/lib/video-operation';
 import { normalizeGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import { createAgentModelCatalogDeps, listPublicAgentGenerationEngines } from '../frontend/src/server/agent-api/model-catalog';
@@ -8,6 +9,7 @@ import { resolveAgentGenerationRequestExecutability } from '../frontend/src/serv
 import { createPrepareGenerationForActorService } from '../frontend/src/server/agent-api/prepare-generation';
 import { resolveGenerationReferencesForActor } from '../frontend/src/server/agent-api/resolve-generation-references';
 import { validateNormalizedGenerationAttachments } from '../frontend/app/api/generate/_lib/normalized-generation-attachment-validation';
+import { validateRuntimeRequestSettings } from '../frontend/app/api/generate/_lib/runtime-schema-options';
 import { resolveGenerateSourceVideoContext } from '../frontend/app/api/generate/_lib/source-video-context';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { computeConfiguredPreflight } from '../frontend/src/server/engines';
@@ -169,7 +171,7 @@ for (const [engineId, operation, resolution] of [
     },
     getWalletSummary: async () => ({ balanceCents: 1000, currency: 'USD' }) as never,
     withTransaction: async callback => callback({} as never), checkSpendingLimits: async () => ({ allowed: true }) as never,
-    insertPreparedQuote: async data => { inserted++; return { ...data, quoteId: 'prepared', authOrigin: 'studio-session', studioProjectId: actor.projectId, expiresAt: new Date('2026-12-01'), pricingSnapshot: data.pricingSnapshot } as never; },
+    insertPreparedQuote: async data => { inserted++; return { ...data, quoteId: 'prepared', authOrigin: data.oauthClientId ? 'oauth' : 'studio-session', studioProjectId: data.oauthClientId ? null : actor.projectId, expiresAt: new Date('2026-12-01'), pricingSnapshot: data.pricingSnapshot } as never; },
   });
   const result = await service('test-no-network')(input, actor);
   assert.deepEqual(b.quantities, [seconds]);
@@ -177,6 +179,82 @@ for (const [engineId, operation, resolution] of [
   await assert.rejects(service('')(input, actor));
   await assert.rejects(service('test-no-network')({ ...input, operation: undefined }, actor), { code: 'PARAMETER_INVALID' });
   assert.equal(inserted, 1); assert.equal(priced, 1);
+  if (h3) {
+    const source = { assetId, kind: 'video' as const, slotId: 'video_url', url };
+    const image = { assetId: imageId, kind: 'image' as const,
+      slotId: operation === 'h3-recast' ? 'reference_image_urls' : 'reference_image_url', url: 'https://media.maxvideoai.com/light.jpg' };
+    const facts = { ...measured(seconds), decodedFrameCount: 124, constantFrameRate: true, sourceSha256: 'a'.repeat(64) };
+    let probeFacts = facts, queries = 0, probes = 0;
+    const site = (clientSeconds: number, userId = owner, selectedSource: typeof source | null = source) => resolveMediaAwarePreflight({ userId,
+      request: { engine: engineId, mode: 'v2v', operation, resolution, durationOption: 4, durationSec: clientSeconds,
+        ...(operation === 'h3-relight' ? { aspectRatio: '16:9' as const } : {}), inputs: selectedSource ? [selectedSource, image] : [image] } }, {
+      getConfiguredEngineFn: async () => base,
+      mediaConstraintDeps: {
+        queryFn: async <T>(sql: string, params?: readonly unknown[]) => {
+          queries++; assert.match(sql, /WHERE user_id = \$1/);
+          return (params?.[0] === owner ? [{ asset_id: assetId, url, origin_url: null, original_name: 'source.mp4',
+            mime_type: 'video/mp4', size_bytes: 1000, duration_sec: 6, width: 1280, height: 720 },
+            { asset_id: imageId, url: image.url, origin_url: null, original_name: 'light.jpg',
+              mime_type: 'image/jpeg', size_bytes: 1000, duration_sec: null, width: 1280, height: 720 }] : []) as T[];
+        },
+        inspectH3SourceFn: async (selectedUrl, selectedOperation, selectedOwner) => {
+          probes++; assert.equal(selectedUrl, url); assert.equal(selectedOperation, operation); assert.equal(selectedOwner, owner);
+          return probeFacts;
+        },
+      },
+      computeConfiguredPreflightFn: (request, options) => computeConfiguredPreflight(request, { ...options, computePublicSnapshot: b.compute }),
+    });
+    // The picker sends a rounded display duration and a stale output-duration selection.
+    // Neither is authoritative for the owned source operation, including a tampered value.
+    for (const clientSeconds of [Math.round(seconds * 1000) / 1000, 4, 999]) {
+      const quote = await site(clientSeconds);
+      assert.equal(quote.ok, true, JSON.stringify(quote));
+      assert.equal(quote.total, result.balance.beforeCents - result.balance.afterCents);
+      assert.equal(b.quantities.at(-1), seconds);
+    }
+    assert.equal(queries, 3); assert.equal(probes, 3);
+    const oauth = await service('test-no-network')(input, { ...actor, authMethod: 'oauth', clientId: 'mcp-client' });
+    assert.deepEqual(oauth.price, result.price);
+    assert.deepEqual(b.quantities, Array(5).fill(seconds), 'Site, Studio and MCP use the exact probed source duration');
+    for (const principal of [actor, { ...actor, authMethod: 'oauth' as const, clientId: 'mcp-client' }]) {
+      await assert.rejects(service('test-no-network')({ ...input, references: input.references.filter(reference => reference.role === 'source') }, principal),
+        { code: 'REFERENCE_REQUIRED' }, 'required owned portraits or lighting sphere cannot be omitted from preparation');
+    }
+    const quoted = b.quantities.length;
+    for (const [userId, selectedSource] of [
+      ['other', source], [owner, { ...source, assetId: imageId }], [owner, { ...source, url: url + '?other' }],
+    ] as const) assert.equal((await site(5, userId, selectedSource)).ok, false);
+    assert.equal((await site(5, owner, null)).ok, false, 'a client duration cannot replace an absent owned source');
+    assert.equal(probes, 3, 'ownership and exact identity reject before probing');
+    probeFacts = { ...facts, durationSec: operation === 'h3-recast' ? 30.01 : 15.01 };
+    assert.equal((await site(5)).ok, false, 'a valid client duration cannot hide an invalid source duration');
+    if (operation === 'h3-relight') {
+      probeFacts = { ...facts, decodedFrameCount: 120 };
+      assert.equal((await site(5)).ok, false, 'incompatible source frames remain rejected');
+    }
+    assert.equal(b.quantities.length, quoted, 'invalid sources never reach quotation');
+  }
+});
+
+for (const mode of ['t2v', 'i2v', 'ref2v'] as const) test(`H3 Max ${mode} retains selected-duration rejection`, async () => {
+  let quotes = 0;
+  const result = await resolveMediaAwarePreflight({ userId: owner, request: { engine: 'minimax-h3-max', mode,
+    durationSec: 124 / 24, resolution: '768P', aspectRatio: '16:9' } }, {
+    getConfiguredEngineFn: async () => getFalEngineById('minimax-h3-max')!.engine,
+    computeConfiguredPreflightFn: async () => { quotes++; throw new Error('Invalid selected durations cannot quote'); },
+  });
+  assert.equal(result.ok, false); assert.equal(result.error?.code, 'ENGINE_CONSTRAINT'); assert.equal(quotes, 0);
+});
+
+test('source-video labels without an active operation retain explicit selected-duration validation', () => {
+  const entry = GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY[0];
+  const engine = { ...entry.engine, modeCaps: { v2v: entry.modes.find(({ mode }) => mode === 'v2v')!.ui } };
+  assert.equal(engine.modeCaps?.v2v?.durationPolicy, 'source_video');
+  assert.ok(engine.modeCaps?.v2v?.duration);
+  assert.deepEqual(validateRuntimeRequestSettings({ engine, mode: 'v2v', durationSec: 5 }), { ok: true });
+  const invalid = validateRuntimeRequestSettings({ engine, mode: 'v2v', durationSec: 124 / 24 });
+  assert.equal(invalid.ok, false);
+  if (!invalid.ok) assert.equal(invalid.error.field, 'durationSec');
 });
 
 for (const c of cases.filter(c => c[0] === 'flux-3' || c[0] === 'ltx-2-3')) {
