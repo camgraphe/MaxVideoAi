@@ -30,6 +30,40 @@ async function harness() {
 const asset: AssetBrowserAsset = { id: 'original', url: 'https://private.example/original.png?sig=Exact', thumbUrl: 'https://private.example/thumb.png?sig=Thumb', kind: 'image', width: 1024, height: 768, sourceOutputId: 'output-7' };
 const props: AssetLibraryBrowserProps = { title: 'Reference', assetType: 'image', assets: [asset], isLoading: false, source: 'all', availableSources: ['all', 'upload'], sourceLabels: { all: 'All', upload: 'Uploaded' }, onSourceChange() {}, searchPlaceholder: 'Search', sourcesTitle: 'Source', emptyLabel: 'Empty', emptySearchLabel: 'No match', renderAssetActions: () => null };
 
+for (const example of [
+  { kind: 'image', fieldId: 'keyframe_images', label: 'Keyframe 1', name: 'keyframe.png', mime: 'image/png', wrongName: 'clip.mp4', wrongMime: 'video/mp4' },
+  { kind: 'video', fieldId: 'video_url', label: 'Source video', name: 'clip.mp4', mime: 'video/mp4', wrongName: 'keyframe.png', wrongMime: 'image/png' },
+] as const) {
+  test(`${example.label} library import accepts its media kind and rejects a mismatched file before upload`, async () => {
+    const h = await harness(); const previousFetch = globalThis.fetch;
+    const selected: File[] = [];
+    globalThis.fetch = async () => { throw new Error('The owned import callback must handle the upload'); };
+    try {
+      const field = { id: example.fieldId, type: example.kind, label: example.label, acceptedMimeTypes: [example.mime] };
+      await h.render(React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
+        React.createElement(AssetLibraryModal, { fieldLabel: example.label, assetType: example.kind,
+          assets: [], isLoading: false, error: null, onClose() {}, onSelect() {}, source: 'all', onSourceChange() {},
+          onRefresh() {}, onDelete() {}, deletingAssetId: null,
+          getEligibility: (asset, context) => getMediaInputEligibility({ asset, field, context }),
+          onImportFile: async file => { selected.push(file); } }) }));
+      const input = h.doc.querySelector<HTMLInputElement>('input[type=file]')!;
+      assert.equal(input.accept, `${example.kind}/*`);
+      const choose = async (name: string, mime: string) => {
+        const file = new h.dom.window.File(['source'], name, { type: mime }) as unknown as File;
+        Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+        await act(async () => { input.dispatchEvent(new h.dom.window.Event('change', { bubbles: true })); });
+        return file;
+      };
+      await choose(example.wrongName, example.wrongMime);
+      assert.deepEqual(selected, [], 'a mismatched media file must not reach upload');
+      assert.ok(h.doc.querySelector('[role=alert]'), 'the user should see why the file cannot be imported');
+      const accepted = await choose(example.name, example.mime);
+      assert.deepEqual(selected, [accepted], 'the original file must reach its owned import handler once');
+      assert.equal(h.doc.querySelector('[role=alert]'), null);
+    } finally { globalThis.fetch = previousFetch; await h.close(); }
+  });
+}
+
 test('audio reference library imports through its supplied owned callback without generic upload requests', async () => {
   const h = await harness(); const previousFetch = globalThis.fetch;
   let selected: File | undefined;

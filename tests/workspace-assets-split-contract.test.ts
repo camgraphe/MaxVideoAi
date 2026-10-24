@@ -37,6 +37,8 @@ test('workspace asset library, field assets, and Kling element assets are split 
       appSource.indexOf('useWorkspaceAssets({')
   );
   assert.match(appSource, /preferredMode: composer\.submissionMode/);
+  assert.match(appSource, /useWorkspaceAssets\(\{\s*\.\.\.assetState,\s*locale: app\.uiLocale,\s*accountScope: confirmedAccount,\s*userId: confirmedAccount,/,
+    'asset orchestration receives the owned state bundle and explicit locale/account scope');
 
   assert.match(assetsHookSource, /useWorkspaceAssetLibrary\(\{/);
   assert.match(assetsHookSource, /useWorkspaceReferenceAssets\(\{/);

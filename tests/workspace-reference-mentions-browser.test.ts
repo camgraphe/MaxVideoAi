@@ -51,6 +51,7 @@ test('actual Composer inserts at the cursor, protects changed references, and lo
       await page.locator('[data-reference-label="Image 1"] .app-reference-selected-remove').click();
       await expect(prompt).toHaveValue('Keep @Image2 visible.');
       await expect(page.locator('.app-reference-mention-review')).toBeVisible();
+      await expect(page.locator('.app-reference-mention-review')).toHaveAttribute('role', 'alert');
       await expect(page.locator('.app-generation-action')).toBeDisabled();
       if (evidence) await page.screenshot({ path: join(evidence, `reference-review-${width}.png`), fullPage: true });
       await prompt.fill('Keep @Image1 visible.');

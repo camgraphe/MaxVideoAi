@@ -13,10 +13,9 @@ import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPr
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
-import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
+import { ComposerNotices, ComposerReferenceMentionNotice, ComposerSoraImageNotice } from '@/components/composer/ComposerNotices.client';
 import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
 import { useComposerReferenceMentions } from '@/components/composer/useComposerReferenceMentions';
-import { referenceMentionCopy } from '@/components/composer/workspace-reference-mentions';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { videoModifyCopy } from '@/lib/video-source-workflow';
@@ -92,7 +91,6 @@ export function Composer({
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
-  const mentionCopy = referenceMentionCopy(locale);
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -361,14 +359,12 @@ export function Composer({
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
-          {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
+          {showSoraImageWarning ? <ComposerSoraImageNotice workspace /> : null}
           {afterAssets}
         </> : null}
 
-        {referenceMentions.needsReview ? <div className="app-reference-mention-review" role="alert">
-          <p>{mentionCopy.changed} <strong>{referenceMentions.changed.join(', ')}</strong></p>
-          <button type="button" onClick={referenceMentions.review}>{mentionCopy.reviewed}</button>
-        </div> : null}
+        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
+          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
         <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
@@ -466,12 +462,7 @@ export function Composer({
                 onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
                 onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
             </div>
-            {showSoraImageWarning ? (
-              <p className="text-[12px] text-text-muted" role="note">
-                Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected.{' '}
-                <span className="font-semibold uppercase tracking-micro text-[11px] text-text-muted">OpenAI</span>
-              </p>
-            ) : null}
+            {showSoraImageWarning ? <ComposerSoraImageNotice /> : null}
             {afterAssets}
           </div>
         ) : null}

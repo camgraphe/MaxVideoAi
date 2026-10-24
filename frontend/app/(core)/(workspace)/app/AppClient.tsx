@@ -155,12 +155,10 @@ export default function AppClientPage({
     showNotice: noticeState.showNotice,
   });
   const assets = useWorkspaceAssets({
+    ...assetState,
     locale: app.uiLocale,
     accountScope: confirmedAccount,
     userId: confirmedAccount,
-    inputAssets: assetState.inputAssets,
-    setInputAssets: assetState.setInputAssets,
-    commitInputAssetMutation: assetState.commitInputAssetMutation,
     engineId: routeForm.form?.engineId,
     engine: composer.selectedEngine,
     preferredMode: composer.submissionMode,
