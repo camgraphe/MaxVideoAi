@@ -83,7 +83,7 @@ test('a saved eight-second Seedance Mini intent keeps its duration alias through
     references: [{ref: output, role: 'first_frame', slot: null}]};
   const saved = structuredClone(action);
   const request = await studioMediaRequest(actor, action as never, input, factories(), true, dependencies) as CanonicalGenerationRequest;
-  assert.deepEqual(request.settings, {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p', returnLastFrame: false, watermark: false});
+  assert.deepEqual(request.settings, {aspectRatio: '9:16', audio: true, durationSec: 8, resolution: '720p'});
   assert.deepEqual(request.references, [{kind: 'asset', assetId: image.assetId, role: 'first_frame'}]);
   assert.deepEqual(action, saved, 'Preparation must not rewrite an immutable saved intent.');
   validateCanonicalGenerationCapabilities(request, videoCapability('seedance-2-0-mini'));

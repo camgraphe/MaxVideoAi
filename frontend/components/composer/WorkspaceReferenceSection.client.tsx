@@ -21,9 +21,9 @@ import { getVideoWorkflowSourceField, videoModifyCopy, type VideoSourceWorkflow 
 import { ReferenceThumbnail } from './ReferenceThumbnail.client';
 import { buildReferenceMentions, selectedReferenceLabel, referenceMentionCopy, type ReferenceMention } from './workspace-reference-mentions';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction'> & { referenceWarning: string; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction' | 'subjectReferences'> & { referenceWarning: string; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
 
-export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
+export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, subjectReferences, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const mentionCopy = referenceMentionCopy(locale);
@@ -32,6 +32,10 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
   const requiredId = useId();
   const restrictionId = useId();
   const [activeCommand, setActiveCommand] = useState<string | null>(null);
+  const [subjectEnabledFor, setSubjectEnabledFor] = useState<string | null>(null);
+  // Presentation only: retained subjects always remain visible and are never cleared here.
+  const subjectsVisible = Boolean(subjectReferences && (subjectReferences.hasSubjects || subjectEnabledFor === engine.id));
+  const subjectPanelId = useId();
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const commandRefs = useRef(new Map<string, HTMLButtonElement>());
   const excerptMode = videoSourceWorkflow ?? caps?.modes?.[0] ?? engine.modes[0];
@@ -106,9 +110,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
             {!asset && entry.required ? <small>{copy.required}</small> : null}
           </button>;
         })}
-        {collections.length ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled ? ' is-add-disabled' : ''}`} data-reference-command="collections"
-          data-add-disabled={collectionAvailability.addDisabled || undefined} aria-disabled={!collectionAvailability.canOpen || undefined}
-          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen) open('collections', event.currentTarget); }}>
+        {collections.length || subjectReferences ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled && !subjectReferences ? ' is-add-disabled' : ''}`} data-reference-command="collections"
+          data-add-disabled={collectionAvailability.addDisabled && !subjectReferences || undefined} aria-disabled={!collectionAvailability.canOpen && !subjectReferences || undefined}
+          aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen || subjectReferences) open('collections', event.currentTarget); }}>
           <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
           <span className="app-reference-command-label">{sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title}</span>
           <span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? selectedCollections.length : '+'}</span>
@@ -153,7 +157,15 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
       {selectedCollections.length > visibleCollections.length ? <span>+{selectedCollections.length - visibleCollections.length}</span> : null}
     </div> : null}
     {engine.activeVideoOperation === 'h3-recast' && selectedCollections.some(({ entry }) => entry.field.id === 'reference_image_urls') ? <p className="app-reference-required" role="note">{mentionCopy.portraits}</p> : null}
-    {popupFields.length ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
+    {subjectsVisible ? <div id={subjectPanelId} data-subject-references>{subjectReferences?.content}</div> : null}
+    {popupFields.length || activeCommand === 'collections' && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
+      {activeCommand === 'collections' && subjectReferences ? <button type="button" className="app-reference-command"
+        aria-expanded={subjectsVisible} aria-controls={subjectsVisible ? subjectPanelId : undefined}
+        onClick={() => { setSubjectEnabledFor(engine.id); close(); }}>
+        <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
+        <span className="app-reference-command-label">{copy.subjects}</span>
+        <span aria-hidden="true">{subjectsVisible ? '✓' : '+'}</span>
+      </button> : null}
       <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
         density="workspace" engine={engine} caps={caps}

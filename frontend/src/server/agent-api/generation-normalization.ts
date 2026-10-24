@@ -1,3 +1,4 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
 import { normalizeVideoOperation } from '@/lib/video-operation';
@@ -378,7 +379,7 @@ function normalizeSettings(
   if (Buffer.byteLength(stableJson(ordered), 'utf8') > MAX_CANONICAL_SETTINGS_JSON_BYTES) {
     fail('settings', 'settings exceeds the canonical size limit.');
   }
-  return ordered;
+  return withoutRetiredOutputControls(ordered);
 }
 
 function normalizeReferenceRole(value: unknown, index: number): CanonicalGenerationReferenceRole {

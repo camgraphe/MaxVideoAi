@@ -21,7 +21,7 @@ test('builds a BytePlus Seedream text-to-image payload', () => {
     size: '2K',
     output_format: 'png',
     response_format: 'url',
-    watermark: true,
+    watermark: false,
   });
 });
 

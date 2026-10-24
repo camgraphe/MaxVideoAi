@@ -62,6 +62,7 @@ export interface ComposerProps {
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
   referenceAuthAction?: { label: string; href: string };
+  subjectReferences?: { hasSubjects: boolean; content: ReactNode };
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
   onPrepareVideoExcerpt?: (field: EngineInputField, index: number, range: VideoExcerptRange) => Promise<void>;

@@ -6,8 +6,11 @@ import type { FormState } from '../_lib/workspace-form-state';
 export function VideoOperationSelector({ engine, mode, form, setForm, locale = 'en' }: {
   locale?: string; engine: EngineCaps; mode: Mode; form: FormState; setForm: Dispatch<SetStateAction<FormState | null>>;
 }) {
-  const operations = Object.values(engine.operationCaps ?? {}).filter(operation => operation.mode === mode);
-  if (!operations.length) return null;
+  // Kling Reference belongs to unified Create despite its historical v2v transport.
+  // Create/Modify navigation owns that choice; this selector only refines a workflow.
+  const operations = Object.values(engine.operationCaps ?? {}).filter(operation =>
+    operation.mode === mode && operation.operation !== 'kling-reference');
+  if (operations.length < 2) return null;
   const language = locale.toLowerCase().split('-')[0];
   const isCharacterOrLightingEdit = operations.some(operation => operation.operation === 'h3-recast' || operation.operation === 'h3-relight');
   const label = isCharacterOrLightingEdit

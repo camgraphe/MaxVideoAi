@@ -58,7 +58,7 @@ export function Composer({
   negativePromptField,
   negativePromptRequired = false,
   assetFields,
-  referenceAuthAction,
+  referenceAuthAction, subjectReferences,
   assets,
   onAssetAdd,
   onPrepareVideoExcerpt,
@@ -351,11 +351,11 @@ export function Composer({
         </div>
 
         {beforeAssets}
-        {workspaceDensity && assetFields.length > 0 ? <>
+        {workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
-            referenceAuthAction={referenceAuthAction}
+            referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />

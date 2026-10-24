@@ -13480,20 +13480,6 @@
             "type": "boolean",
             "label": "Audio",
             "default": true
-          },
-          {
-            "id": "return_last_frame",
-            "type": "boolean",
-            "label": "Return last frame",
-            "default": false,
-            "description": "Save the final JPEG frame as a separate image to continue the next video."
-          },
-          {
-            "id": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Include the provider’s AI-generated watermark in the video."
           }
         ],
         "constraints": {
@@ -14338,20 +14324,6 @@
               "extend"
             ],
             "source": "either"
-          },
-          {
-            "id": "return_last_frame",
-            "type": "boolean",
-            "label": "Return last frame",
-            "default": false,
-            "description": "Save the final JPEG frame as a separate image to continue the next video."
-          },
-          {
-            "id": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Include the provider’s AI-generated watermark in the video."
           }
         ],
         "constraints": {
@@ -15163,20 +15135,6 @@
             "minCount": 0,
             "maxCount": 3,
             "source": "either"
-          },
-          {
-            "id": "return_last_frame",
-            "type": "boolean",
-            "label": "Return last frame",
-            "default": false,
-            "description": "Save the final JPEG frame as a separate image to continue the next video."
-          },
-          {
-            "id": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Include the provider’s AI-generated watermark in the video."
           }
         ],
         "constraints": {
@@ -16316,20 +16274,6 @@
             ],
             "default": "mp4",
             "description": "MP4 for sharing; MOV preserves professional colour and audio fidelity. The original remains available to download."
-          },
-          {
-            "id": "return_last_frame",
-            "type": "boolean",
-            "label": "Return last frame",
-            "default": false,
-            "description": "Save the final JPEG frame as a separate image to continue the next video."
-          },
-          {
-            "id": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Include the provider’s AI-generated watermark in the video."
           }
         ],
         "referenceBudget": {
@@ -23830,14 +23774,6 @@
             ],
             "default": "jpeg",
             "description": "Choose the Seedream output file format."
-          },
-          {
-            "id": "watermark",
-            "engineParam": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Add AI-generated watermark text to the image."
           }
         ],
         "constraints": {
@@ -24111,14 +24047,6 @@
             ],
             "default": "jpeg",
             "description": "Choose the Seedream output file format."
-          },
-          {
-            "id": "watermark",
-            "engineParam": "watermark",
-            "type": "boolean",
-            "label": "AI watermark",
-            "default": false,
-            "description": "Add AI-generated watermark text to the image."
           }
         ],
         "constraints": {

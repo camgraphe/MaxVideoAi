@@ -1000,6 +1000,17 @@ for the same existing image minimum as server element validation. Its uploader
 retires model/mode or replaced-slot work and removes only pending initiating
 asset IDs; account changes cannot mutate another owner’s retained elements.
 
+The workspace References menu offers subject references only where the existing
+Kling capability/mode allows them. Its empty default builder appears after an
+explicit choice; retained subject assets (or multiple explicitly added subject
+rows) render immediately. This is presentation state in the reference owner:
+opening/closing References never clears elements, prompt tokens or regular
+references. The route still owns the unchanged builder callbacks and limits.
+`tests/workspace-subject-references-dom.test.ts` covers opt-in and retention;
+`tests/seedance-draft-composer-dom.test.ts` covers the route's initial projection,
+and `tests/workspace-subject-references-browser.test.ts` checks the real shared
+components/CSS at mobile and desktop widths, with synthetic media and no renders.
+
 `media-input-eligibility`, `workspace-upload-owner`, `reference-picker-dom` and
 `workspace-reference-mentions*` cover these boundaries. The model/slot matrix is
 a known-facts audit, not certification of every provider render or file codec.

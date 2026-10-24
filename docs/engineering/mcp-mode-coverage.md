@@ -158,9 +158,13 @@ aspect pricing uses the highest current exact tariff among the six documented
 formats, or the verified source class when framing is inherited. Unsupported
 arbitrary inherited framing fails closed until its pricing domain is reviewed.
 
-Seedance output settings map `outputFormat`, `returnLastFrame` and `watermark`
-to the shared creative input schema. MOV selection belongs to 2.5. Original
-downloads, full compatible playback and the reusable last-frame JPEG remain
+Seedance output settings expose `outputFormat` through the shared creative input
+schema; MOV selection belongs to 2.5. Optional AI watermark and return-last-frame
+controls were retired on 2026-10-24 across the site, MCP and Studio. Saved/reused
+values are dropped before new submission, including native Draft finalization.
+BytePlus video/image payloads force optional watermark off and omit last-frame
+extraction. Provider-required provenance markers are unaffected. Existing original
+downloads, compatible playback and already-produced last-frame JPEGs remain
 distinct owned artifacts. P0 and P1 modes continue to derive settings,
 references, prices and paid request bodies from the site execution owners.
 
