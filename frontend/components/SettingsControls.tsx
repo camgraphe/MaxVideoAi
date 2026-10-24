@@ -374,7 +374,9 @@ export function SettingsControls({
           {showAudioToggle && (
             <div className="-mt-1 flex items-center justify-between px-1">
               <span className="text-[11px] uppercase tracking-micro text-text-muted">{mode === 'v2v' ? modifyCopy.audio : controlsCopy.audio.label}</span>
-              <Button
+              {sourceWorkflow && !canToggleAudio ? (
+                <span className="text-[12px] text-text-secondary">{audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}</span>
+              ) : <Button
                 type="button"
                 size="sm"
                 variant="outline"
@@ -394,7 +396,7 @@ export function SettingsControls({
                 aria-pressed={audioEnabled}
               >
                 {audioEnabled ? controlsCopy.audio.on : controlsCopy.audio.off}
-              </Button>
+              </Button>}
             </div>
           )}
           {showLoopControl && typeof loopEnabled === 'boolean' && onLoopChange && (
