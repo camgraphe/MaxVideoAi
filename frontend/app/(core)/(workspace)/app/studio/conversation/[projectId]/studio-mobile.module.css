@@ -25,7 +25,7 @@
     position:absolute;top:6px;left:8px;width:44px;height:44px;min-height:0;
     padding:0;border:0;background:transparent;
   }
-  .shell :global(.app-header-actions), .shell :global(.app-site-trigger)>span,
+  .shell :global(.app-header-actions), .shell :global(.app-site-trigger)>span:not(:global(.app-glyph)),
   .shell :global(.app-site-trigger)>img {display:none;}
   .shell :global(.app-site-trigger) {width:44px;height:44px;justify-content:center;padding:0;}
   .shell :global(.app-site-trigger) > :global(.app-glyph) {width:22px;height:22px;margin:0;color:var(--app-ink);}

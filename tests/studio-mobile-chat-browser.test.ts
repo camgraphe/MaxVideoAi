@@ -38,8 +38,11 @@ test('mobile chat keeps reading space, references and navigation without changin
       state:'ready',retryable:false,quote:null,generation:null,createdAt:'2026-10-24T12:00:00Z',
     }))}}}):route.continue());
     for(const url of urls)await page.route(url,route=>route.fulfill({contentType:'image/webp',path:'frontend/public/media/mcp/project-demo/watch-static.webp'}));
+    await page.route('**/api/legal/cookies/version',route=>route.fulfill({json:{ok:true,version:'mobile-chat',publishedAt:null}}));
+    await page.route('**/api/legal/cookies',route=>route.fulfill({json:{ok:true,version:'mobile-chat'}}));
     await page.goto(runtime.browserOrigin+'/app/studio/conversation/'+projectId,{timeout:120000});
-    const consent=page.getByRole('button',{name:'Reject all',exact:true});if(await consent.isVisible())await consent.click();
+    const consent=page.getByRole('button',{name:'Reject all',exact:true});
+    await expect(consent).toBeVisible({timeout:20000});await consent.click();await expect(consent).not.toBeVisible();
     const log=page.getByRole('log',{name:'Conversation with Milo',exact:true});
     await expect(log.getByText('Scene 8: use these three references.',{exact:true})).toBeAttached();
     const message=page.getByRole('textbox',{name:'Message Milo',exact:true});

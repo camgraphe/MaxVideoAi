@@ -25,6 +25,6 @@ export function ConversationTask({task,projectId,accountKey,locale,onChanged,onS
     </div>
     {control.error&&<p role="alert">{t('The action could not be verified. Refresh the result or contact support before retrying.','L’action n’a pas pu être vérifiée. Actualisez le résultat ou contactez le support avant de réessayer.')} <button onClick={onChanged}>{t('Check result','Vérifier le résultat')}</button></p>}
   </>;
-  if (compact && task.state === 'completed' && !task.error && task.reservedCredits === 0) return <details className={styles.completed} aria-label={t('Studio task','Demande Studio')}><summary>{phases[task.phase]}</summary>{body}</details>;
+  if (compact && task.state === 'completed' && !task.error && task.reservedCredits === 0) return <section className={styles.completed} aria-label={t('Studio task','Demande Studio')} data-state={task.state}><details><summary>{phases[task.phase]}{task.consumedCredits > 0 && ` · ${task.consumedCredits} ${t('credits used', 'crédits consommés')}`}</summary>{body}</details></section>;
   return <section className={styles.card} aria-label={t('Studio task','Demande Studio')} data-state={task.state}><strong role="status">{phases[task.phase]}</strong>{body}</section>;
 }
