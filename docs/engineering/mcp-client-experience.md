@@ -692,3 +692,20 @@ the deterministic selection evaluator. The instruction-budget check measures a
 maximum of 1,998 bytes across 256 gate combinations; descriptor budget checks
 also pass. These offline checks do not establish deployment, host refresh or
 real-host qualification.
+
+## H3 Max source and reference controls — 24 October 2026 candidate
+
+Model details project explicit Recast/Relight operation schemas and optional/no-prompt
+semantics; only Kling operations expose Kling elements. Preparation adds
+`enhanceRealism`, `middleFrameTime`, `referenceOrder` and the capability-gated
+`middle_frame` role. The scalar order names existing owned modality slots; it
+cannot introduce arbitrary URLs. Global instructions are unchanged. Source-byte
+inspection is required before quotes and confirmation; missing operation tariffs
+fail closed. See `h3-source-operations.md` for frame admission and Task6 copy/routing
+integration. No plugin publication or real-host qualification is inferred.
+
+Reviewed additive H3 preparation schema changes against the existing curated
+decisions without changing any decision. New offline policy fingerprint:
+`0c7a391564438cde26daa38dd997c67e73762dd37358960a7d93c622a3ea869e`.
+The instructions and tool descriptions remain unchanged; the existing byte-budget
+tests remain the size authority.

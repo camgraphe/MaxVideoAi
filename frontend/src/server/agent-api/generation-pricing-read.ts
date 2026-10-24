@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -193,7 +194,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
         ?? ((currentRequest, currentPrincipal) =>
           resolveGenerationReferencesForActor(currentRequest, currentPrincipal));
       resolvedReferences = await resolveReferences(request, principal);
-      if (request.surface === 'video' && request.operation !== 'kling-edit' && request.settings.durationSec === undefined
+      if (request.surface === 'video' && request.operation !== 'kling-edit' && !isH3SourceOperation(request.operation) && request.settings.durationSec === undefined
         && videoDurationPolicy(candidate.engine, request.mode, candidate.modeCaps[request.mode]) === 'source_video') {
         const source = resolvedReferences.filter(reference => reference.role === 'source' && reference.mediaKind === 'video');
         if (source.length !== 1 || typeof source[0].durationSec !== 'number'

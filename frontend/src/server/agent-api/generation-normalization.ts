@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import { createHash } from 'node:crypto';
@@ -41,12 +42,14 @@ const ROLE_SET = new Set<CanonicalGenerationReferenceRole>([
   'source',
   'reference',
   'first_frame',
+  'middle_frame',
   'last_frame',
   'mask',
 ]);
 const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
   source: 0,
   first_frame: 1,
+  middle_frame: 1.5,
   last_frame: 2,
   reference: 3,
   mask: 4,
@@ -106,6 +109,9 @@ const VIDEO_SETTING_KEYS = new Set([
   'negativePrompt',
   'numFrames',
   'promptExpansionMode',
+  'enhanceRealism',
+  'middleFrameTime',
+  'referenceOrder',
   'resolution',
   'reframeGridPositionX',
   'reframeGridPositionY',
@@ -558,10 +564,12 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   const sourceOutputId = input.sourceOutputId === undefined ? undefined : normalizeText(input.sourceOutputId, 'sourceOutputId', 255, false);
   if ((sourceJobId || sourceOutputId) && (input.engineId !== 'luma-ray-3-2' || mode !== 'extend' || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
   const settings = normalizeSettings(input.settings, mode);
-  const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
-  if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
+  const prompt = normalizeText((final || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, true);
+  if (!prompt && !final && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
   }
+  if (operation === 'h3-relight' && prompt) fail('prompt','Relight does not accept a prompt.');
+  if (operation === 'h3-recast' && prompt.length > 2000) fail('prompt','Recast supports at most 2000 characters.');
   if (seedanceWorkflow?.step === 'draft') {
     if (settings.resolution !== undefined && settings.resolution !== '480p') fail('resolution', 'Native Draft requires 480p.');
     settings.resolution = '480p';

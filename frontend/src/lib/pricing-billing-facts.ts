@@ -1,3 +1,4 @@
+import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
 import {
   computePricingDefinitionFacts,
@@ -108,6 +109,14 @@ function buildBillingPricingFactsInternal(
       base: { seconds: 5, rate: amount / 500, unit: 'sec', amountCents: amount },
       meta: { pricing_model: 'luma_fixed_extend', provider_cost_source: 'luma_single_keyframe_extend_public_price',
         fixed_extension_seconds: 5, output_layout: 'unverified' } });
+  }
+  if (engine.id === 'minimax-h3-max' && context.mode === 'v2v' && isH3SourceOperation(context.operation)) {
+    const min = context.operation === 'h3-recast' ? 5 : 56/24, max = context.operation === 'h3-recast' ? 30 : 15;
+    if (!Number.isFinite(durationSec) || durationSec < min || durationSec > max || currency !== 'USD') throw new Error('Unsupported H3 source pricing domain.');
+    const cents = h3OperationRate(context.operation,resolution??'');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:Math.ceil(durationSec*cents)},
+      meta:{pricing_model:'h3_source_operation',operation:context.operation,provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false,input_video_seconds:durationSec,reference_included:true} });
   }
   const operationRate = klingOperationPublishedRate(engine.id, context.mode ?? 't2v', context.operation);
   if (operationRate) {

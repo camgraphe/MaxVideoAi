@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveStudioLumaGenerationSource } from './luma-generation-source';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoDurationPolicy} from '@/lib/video-workflow-capabilities';
@@ -255,7 +256,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           throw new AgentApiError('REFERENCE_INVALID','The attached references changed after Studio reviewed them. Send a new message to review them again.');
       }
     }
-    if(action.operation !== 'kling-edit'&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
+    if(action.operation !== 'kling-edit' && !isH3SourceOperation(action.operation)&&!Object.hasOwn(settings,'durationSec')&&videoDurationPolicy(candidate.engine,mode,candidate.modeCaps[mode])!=='requested'){
       const duration=resolvedReferences.find(reference=>reference.role==='source')?.durationSec;
       if(typeof duration==='number')derivedSettings={durationSec:Math.max(1,Math.ceil(duration))};
     }

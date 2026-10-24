@@ -70,11 +70,12 @@ function canonicalRolesForReferenceField(
   if (fieldId === 'audio_url' && mode === 'a2v') return ['source'];
   if (fieldId === 'video_url' || fieldId === 'extension_source_videos') return ['source'];
   if (fieldId === 'video_urls') return mode === 'extend' ? ['source'] : ['reference'];
+  if (fieldId === 'middle_image_url') return ['middle_frame'];
   if (fieldId === 'first_frame_url') return ['first_frame'];
   if (fieldId === 'last_frame_url' || fieldId === 'end_image_url') return ['last_frame'];
   if (fieldId === 'start_image_url') return ['first_frame'];
   if (fieldId === 'image_url') {
-    if (mode === 'a2v') return ['first_frame'];
+    if (mode === 'a2v' || mode === 'ref2v') return ['first_frame'];
     if (mode === 'v2v' || mode === 'reframe') return ['reference'];
     if (mode === 'i2v' || mode === 'i2v_standard') return ['source', 'first_frame'];
   }
@@ -293,6 +294,9 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   output_format: 'outputFormat',
   return_last_frame: 'returnLastFrame',
   prompt_expansion_mode: 'promptExpansionMode',
+  enhance_realism: 'enhanceRealism',
+  middle_frame_time: 'middleFrameTime',
+  reference_order: 'referenceOrder',
   quality: 'quality',
   retake_mode: 'retakeMode',
   seed: 'seed',
@@ -430,7 +434,7 @@ export function projectAgentModelModeDetails(
     mode,
     ...(includeOperations && candidate.engine.operationCaps ? { operations: Object.values(candidate.engine.operationCaps).filter(operation => operation.mode === mode).map(operation => {
       const engine = resolveVideoOperationEngine(candidate.engine, mode as import('@/types/engines').Mode, operation.operation);
-      return { operation: operation.operation, label: operation.label, ...(operation.operation !== 'luma-extend' ? { elements: klingOwnedElementsProperty } : {}), promptRequired: operation.promptRequired,
+      return { operation: operation.operation, label: operation.label, ...(operation.operation === 'kling-edit' || operation.operation === 'kling-reference' ? { elements: klingOwnedElementsProperty } : {}), promptRequired: operation.promptRequired,
         ...projectAgentModelModeDetails({ ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } }, mode, false) };
     }) } : {}),
     ...baseControls,

@@ -28,19 +28,20 @@ async function workspace<T>(run: (directory: string) => Promise<T>): Promise<T> 
   const directory = await mkdtemp(join(tmpdir(), 'video-excerpt-'));
   try { return await run(directory); } finally { await rm(directory, { recursive: true, force: true }); }
 }
-export type VideoExcerptFacts = { kind: 'video'; width: number; height: number; durationSec: number; fps: number; hasAudio: boolean; sizeBytes: number; mimeType: string; videoCodec: string; audioCodec: string | null; videoStreamIndex?: number };
+export type VideoExcerptFacts = { kind: 'video'; width: number; height: number; durationSec: number; fps: number; hasAudio: boolean; sizeBytes: number; mimeType: string; videoCodec: string; audioCodec: string | null; videoStreamIndex?: number; decodedFrameCount?: number; constantFrameRate?: boolean };
 const limitError = () => new VideoExcerptError('PREPARATION_LIMIT', 'Excerpt preparation supports videos up to 100 MiB, 180 seconds, 16 megapixels and 120 fps. The full-video workflow remains available.');
-export async function inspectVideoExcerptBytes(bytes: Uint8Array, mimeType: string): Promise<VideoExcerptFacts> {
+export async function inspectVideoExcerptBytes(bytes: Uint8Array, mimeType: string, options: { decodedFrames?: boolean } = {}): Promise<VideoExcerptFacts> {
   const limits = VIDEO_EXCERPT_PREPARATION_LIMITS;
   if (!bytes.length || bytes.length > limits.maxBytes) throw limitError();
   return workspace(async directory => {
     const path = join(directory, 'source'); await writeFile(path, bytes);
-    const { stdout } = await exec(ffprobe.path!, ['-v','error','-protocol_whitelist','file,pipe','-show_entries','stream=index,codec_type,codec_name,width,height,avg_frame_rate,duration:stream_disposition=attached_pic:stream_side_data_list:stream_tags=rotate:format=format_name,duration','-of','json',path], { timeout: 15_000, maxBuffer: 1024 * 1024 });
+    const { stdout } = await exec(ffprobe.path!, ['-v','error','-protocol_whitelist','file,pipe', ...(options.decodedFrames ? ['-count_frames','-show_frames'] : []), '-show_entries',`stream=index,codec_type,codec_name,width,height,avg_frame_rate,duration,nb_read_frames:stream_disposition=attached_pic:stream_side_data_list:stream_tags=rotate:format=format_name,duration${options.decodedFrames ? ':frame=media_type,stream_index,best_effort_timestamp_time' : ''}`,'-of','json',path], { timeout: options.decodedFrames ? 45_000 : 15_000, maxBuffer: 8 * 1024 * 1024 });
     return resolveVideoExcerptFacts(JSON.parse(stdout) as VideoExcerptProbeMetadata,mimeType,bytes.length);
   });
 }
 type VideoExcerptProbeMetadata = Omit<Parameters<typeof resolveProbedMediaMetadata>[0], 'streams'> & {
-  streams: Array<NonNullable<Parameters<typeof resolveProbedMediaMetadata>[0]['streams']>[number] & {index?:number;codec_name?:string;avg_frame_rate?:string}>;
+  streams: Array<NonNullable<Parameters<typeof resolveProbedMediaMetadata>[0]['streams']>[number] & {index?:number;codec_name?:string;avg_frame_rate?:string;nb_read_frames?:string}>;
+  frames?: Array<{media_type?:string;stream_index?:number;best_effort_timestamp_time?:string}>;
 };
 /** Keep display orientation under the shared upload probe's rotation policy. */
 export function resolveVideoExcerptFacts(data: VideoExcerptProbeMetadata, mimeType: string, sizeBytes: number): VideoExcerptFacts {
@@ -54,7 +55,12 @@ export function resolveVideoExcerptFacts(data: VideoExcerptProbeMetadata, mimeTy
   if (!measured || measured.kind!=='video' || !measured.width || !measured.height || !video?.codec_name
     || !durationSec || !Number.isFinite(durationSec) || durationSec>limits.maxSourceSec
     || measured.width*measured.height>limits.maxPixels || !Number.isFinite(fps) || fps<=0 || fps>limits.maxFps) throw limitError();
-  return {kind:'video',width:measured.width,height:measured.height,durationSec,fps,hasAudio:Boolean(audio),sizeBytes,
+  const frames = data.frames?.filter(frame=>frame.media_type==='video' && frame.stream_index===(video.index??0));
+  const decodedFrameCount = Number(video.nb_read_frames);
+  const times = frames?.map(frame=>Number(frame.best_effort_timestamp_time));
+  const decoded = Number.isSafeInteger(decodedFrameCount) && decodedFrameCount > 0 && frames?.length === decodedFrameCount;
+  const constantFrameRate = decoded && times!.every((time,index)=>Number.isFinite(time) && (index===0 || Math.abs(time-times![index-1]!-1/fps)<0.000002));
+  return {...(decoded ? {decodedFrameCount,constantFrameRate} : {}),kind:'video',width:measured.width,height:measured.height,durationSec,fps,hasAudio:Boolean(audio),sizeBytes,
     mimeType:measured.canonicalMime,videoCodec:video.codec_name,audioCodec:audio?.codec_name??null,videoStreamIndex:video.index??0};
 }
 

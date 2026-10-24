@@ -15,7 +15,7 @@ export function conversationSelectionSettings(values: z.infer<typeof conversatio
 }
 export const conversationReferenceSchema = z.object({
   ref: toolAssetRefSchema.refine(ref => ref.kind === 'image', 'Only image generation references are qualified.'),
-  role: z.enum(['reference','source','first_frame','last_frame','mask']),
+  role: z.enum(['reference','source','first_frame','middle_frame','last_frame','mask']),
   slot: z.number().int().min(0).max(49).nullable().optional(),
 }).strict();
 const selection = {
@@ -50,7 +50,7 @@ export const conversationCreationPromptProperty={type:'string',description:'Writ
 export function conversationReferencesProperties(jobOutputs: boolean) {
   return {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['ref','role','slot'], properties: {
     ref: jobOutputs ? {anyOf: [conversationImageRefProperties,conversationJobImageRefProperties]} : conversationImageRefProperties,
-    role: {type: 'string',enum: ['reference','source','first_frame','last_frame','mask']},
+    role: {type: 'string',enum: ['reference','source','first_frame','middle_frame','last_frame','mask']},
     slot: {type: 'null',description: 'Use null for these Studio modes. Image labels and positions are not ordered reference slots.'},
   }}};
 }

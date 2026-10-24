@@ -561,7 +561,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
 
   return {
     engineId: engine.id,
-    ...(previous?.engineId === engine.id && mode === 'v2v' && previous.operation ? { operation: previous.operation } : {}),
+    ...(previous?.engineId === engine.id && mode === 'v2v' && previous.operation ? { operation: previous.operation } : engine.id === 'minimax-h3-max' && mode === 'v2v' ? { operation: 'h3-recast' as const } : {}),
     mode,
     durationSec: durationResult.durationSec,
     durationOption: durationResult.durationOption,

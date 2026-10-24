@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { validateLumaCanonicalShape } from './generation-luma-shape';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -87,6 +88,9 @@ const VIDEO_FIELD_BY_SETTING: Record<string, string> = {
   multiPrompt: 'multi_prompt',
   negativePrompt: 'negative_prompt',
   promptExpansionMode: 'prompt_expansion_mode',
+  enhanceRealism: 'enhance_realism',
+  middleFrameTime: 'middle_frame_time',
+  referenceOrder: 'reference_order',
   reframeGridPositionX: 'grid_position_x',
   reframeGridPositionY: 'grid_position_y',
   retakeMode: 'retake_mode',
@@ -199,7 +203,7 @@ function validateVideoModeCaps(
   caps: EngineModeUiCaps,
   candidate: AgentPublicGenerationEngine,
 ): void {
-  if (request.operation === 'kling-edit' && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) && (request.settings.durationSec !== undefined || request.settings.durationOption !== undefined)) fail('durationSec');
   const duration = request.settings.durationSec;
   if (request.settings.durationOption !== undefined && (request.settings.durationOption !== 'auto'
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
@@ -567,6 +571,7 @@ function fieldIdsForRole(
     return role === 'reference' ? ['image_urls', 'reference_image_urls', 'target_audio_url'] : [];
   }
   if (request.mode === 'ref2v') {
+    if (role === 'middle_frame') return ['middle_image_url'];
     if (role === 'first_frame') return ['start_image_url', 'image_url'];
     if (role === 'last_frame') return ['end_image_url'];
     return role === 'reference'
@@ -595,6 +600,7 @@ function fieldIdsForRole(
         'edit_keyframe_urls',
         'image_urls',
         'reference_image_urls',
+        'reference_image_url',
         'audio_urls',
         'reference_audio_urls',
       ]
@@ -718,7 +724,7 @@ function validateTrustedReferenceDuration(
     : field.type === 'audio'
       ? constraints?.maxCombinedAudioDurationSec
       : undefined;
-  if (request.operation === 'kling-edit' && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
+  if ((request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) && reference.role === 'source' && reference.kind !== 'asset') fail('references', 'reference_invalid', 'duration_unverified');
   const exclusiveMaximum =
     requestModeForExclusiveDuration(candidate, field);
   const sourcePlusOutputMaximum = field.id === 'video_url'
@@ -916,7 +922,7 @@ function validateReferences(
     request.references.flatMap((reference) =>
       fieldsForReference(request, candidate, reference, null)),
   );
-  for (const role of ['source', 'reference', 'first_frame', 'last_frame', 'mask'] as const) {
+  for (const role of ['source', 'reference', 'first_frame', 'middle_frame', 'last_frame', 'mask'] as const) {
     const placeholder: CanonicalGenerationReference = {
       kind: 'asset',
       assetId: 'capability-placeholder',
@@ -996,6 +1002,8 @@ export function validateCanonicalGenerationCapabilities(
   }
   const modeCaps = candidate.modeCaps[request.mode];
   if (!modeCaps) fail('mode');
+  if (request.operation === 'h3-relight' && request.prompt.trim()) fail('prompt');
+  if (request.operation === 'h3-recast' && request.prompt.length>2000) fail('prompt');
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
   try { validateOwnedKlingElements(request, options.resolvedReferences); } catch { fail('elements', 'reference_invalid'); }

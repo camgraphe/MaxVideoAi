@@ -51,7 +51,7 @@ export type StudioConversationQuoteFacts = {
   outputDurationSec?: number;
   sourceVideoOutput?: SeedanceEditSourceFacts;
   referenceCount: number;
-  referenceRoles: ('source' | 'reference' | 'first_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
+  referenceRoles: ('source' | 'reference' | 'first_frame' | 'middle_frame' | 'last_frame' | 'mask' | 'source_video' | 'voice_sample')[];
 };
 export type StudioConversationProject = {
   name: string;

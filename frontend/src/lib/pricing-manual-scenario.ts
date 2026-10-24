@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '../../lib/h3-source-operations';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
@@ -22,6 +23,12 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (isH3SourceOperation(selector.operation)) {
+    const identity = videoOperationTariffIdentity(selector.engineId,selector.mode,selector.operation);
+    const seconds=Number(selector.durationSec), min=selector.operation==='h3-recast'?5:56/24, max=selector.operation==='h3-recast'?30:15;
+    if (!identity || selector.transport!==identity.transport || selector.endpoint!==identity.endpoint || !Number.isFinite(seconds) || seconds<min || seconds>max) throw new Error('Invalid H3 operation tariff identity or duration.');
+    return {...selector,durationSec:'continuous'};
+  }
   if (selector.operation === 'kling-edit') {
     const identity = videoOperationTariffIdentity(selector.engineId, selector.mode, selector.operation);
     const seconds = Number(selector.durationSec);
@@ -126,6 +133,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
+    ...(isH3SourceOperation(context.operation) ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,
     ...(media.inputVideoDurationSec !== undefined || (isWan3EngineId(facts.engineId) && context.mode === 'ref2v')
       ? { input_video_seconds: media.inputVideoDurationSec ?? 0 } : {}),

@@ -1,3 +1,4 @@
+import { validateH3MiddleFrame, orderedH3References } from '@/lib/h3-reference-controls';
 import {
   isKlingMultiPromptEngine,
   isKlingOmniEngine,
@@ -245,6 +246,13 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
+  if (params.engineId==='minimax-h3-max' && params.normalizedMode==='ref2v') {
+    const p=params.payload;
+    try {
+      validateH3MiddleFrame({mode:'ref2v',start:typeof p.image_url==='string'?p.image_url:undefined,end:typeof p.end_image_url==='string'?p.end_image_url:undefined,middle:typeof p.middle_image_url==='string'?p.middle_image_url:undefined,time:typeof p.middle_frame_time==='number'?p.middle_frame_time:undefined,duration:Number(p.duration??5),resolution:String(p.resolution??'768P')});
+      orderedH3References(typeof p.reference_order==='string'?p.reference_order:undefined,{image:Array.isArray(p.reference_image_urls)?p.reference_image_urls:[],video:Array.isArray(p.reference_video_urls)?p.reference_video_urls:[],audio:Array.isArray(p.reference_audio_urls)?p.reference_audio_urls:[]});
+    } catch(error) { return minimaxH3Error('references',error instanceof Error?error.message:'Invalid H3 reference controls.'); }
+  }
   if (isFlux3MaxEngineId(params.engineId)) {
     const violation = getFlux3MaxConstraintViolation(params.normalizedMode, params.payload);
     return violation ? { ok: false, error: { code: 'ENGINE_CONSTRAINT', ...violation } } : { ok: true };

@@ -44,6 +44,7 @@ export type CanonicalGenerationReferenceRole =
   | 'source'
   | 'reference'
   | 'first_frame'
+  | 'middle_frame'
   | 'last_frame'
   | 'mask';
 

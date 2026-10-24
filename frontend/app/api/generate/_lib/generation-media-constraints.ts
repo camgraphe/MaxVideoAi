@@ -1,3 +1,4 @@
+import { inspectOwnedH3Source } from '@/server/video-excerpts/h3-relight';
 import { isLumaSourceVideoMode } from '@/lib/luma-source-video';
 import { videoDuration } from '@/lib/generated-video-media-facts';
 import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
@@ -164,6 +165,7 @@ export async function validateGenerationMediaConstraints(params: {
   referenceMediaItems: readonly ReferenceBudgetMediaItem[];
   trustedResolvedReferences?: readonly ResolvedReference[];
   deps?: {
+    inspectH3SourceFn?: typeof inspectOwnedH3Source;
     queryFn?: QueryFn;
     detectVideoDimensionsFn?: typeof detectVideoDimensions;
     detectMediaDurationFn?: typeof detectMediaDuration;
@@ -183,6 +185,8 @@ export async function validateGenerationMediaConstraints(params: {
         message: 'Select exactly one owned source video in the source video field and remove other video inputs.' });
     }
   }
+  const h3Operation = params.engineId === 'minimax-h3-max' && params.mode === 'v2v'
+    ? (params.inputSchema?.required?.some(field=>field.id==='reference_image_url') ? 'h3-relight' : 'h3-recast') : undefined;
   const combinedModes = params.inputSchema?.constraints?.combinedDurationModes;
   const applyCombinedLimits = !Array.isArray(combinedModes) || combinedModes.includes(params.mode);
   const requiresExactOwnedMedia = params.engineId === 'seedance-2-5' && params.mode === 'v2v';
@@ -310,7 +314,7 @@ export async function validateGenerationMediaConstraints(params: {
   const trustedMediaReferences: MinimaxH3MaxPricingReference[] = [];
   const durationByKindAndUrl = new Map<string, { kind: 'video' | 'audio'; durationSec: number; fieldId: string }>();
   for (const candidate of candidates) {
-    const requiresExactSource = requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
+    const requiresExactSource = Boolean(h3Operation) || requiresExactOwnedMedia || (isLumaSourceVideoMode(params.engineId, params.mode) && candidate.kind === 'video');
     const matchingRows = rows.filter((row) => {
       const rowUrl = normalizeUrl(row.url);
       const originUrl = normalizeUrl(row.origin_url);
@@ -372,6 +376,14 @@ export async function validateGenerationMediaConstraints(params: {
         ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec))
         : normalizeDurationSec(stored.duration_sec),
     };
+    if (h3Operation && candidate.kind === 'video' && candidate.fieldId === 'video_url') {
+      try {
+        const measured = await (params.deps?.inspectH3SourceFn ?? inspectOwnedH3Source)(stored.url,h3Operation,params.userId);
+        Object.assign(trustedReference,{durationSec:measured.durationSec,fps:measured.fps,decodedFrameCount:measured.decodedFrameCount,constantFrameRate:measured.constantFrameRate,sourceSha256:measured.sourceSha256});
+      } catch {
+        return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This source could not be qualified for the selected H3 operation. Relight needs constant 24 fps and 17n+5 decoded frames; prepare a compatible copy.'});
+      }
+    }
     trustedMediaReferences.push(trustedReference);
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
@@ -473,7 +485,7 @@ export async function validateGenerationMediaConstraints(params: {
         typeof field.maxDurationSec === 'number' ||
         typeof combinedDurationLimit === 'number');
     if ((field.type === 'video' || field.type === 'audio') && requiresTrustedDuration) {
-      let durationSec = (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec));
+      let durationSec = h3Operation && candidate.fieldId === 'video_url' ? trustedReference.durationSec ?? null : (candidate.kind === 'video' ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec)) : normalizeDurationSec(stored.duration_sec));
       // Older web uploads have no measured duration. Only probe an owned storage
       // original, never an arbitrary browser URL or a claimed client duration.
       if (durationSec == null && params.engineId === 'seedance-2-5' && field.type === 'video') {

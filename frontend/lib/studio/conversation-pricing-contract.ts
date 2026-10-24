@@ -15,7 +15,7 @@ export type StudioPriceComparison=GenerationPriceComparison & {filmDurationSec?:
 
 export const studioPricingReadSchema=z.object({
   elements: klingOwnedElementsSchema.nullable().optional(),
-  operation:z.enum(['kling-reference','kling-edit','luma-extend']).nullable().optional(),
+  operation:z.enum(['kling-reference','kling-edit','luma-extend','h3-recast','h3-relight']).nullable().optional(),
   action:z.literal('pricing.read'),surface:z.enum(['image','video']),modelId:z.string().trim().min(1).max(128),
   mode:z.enum(CANONICAL_GENERATION_MODES),settings:conversationSettingsSchema,
   references:z.array(conversationMediaReferenceSchema).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
@@ -41,7 +41,7 @@ export const STUDIO_PRICING_COMPARE_TOOL={action:'pricing.compare',name:'pricing
   baselineModelId:{type:['string','null']},baselineSettings:{type:['array','null'],maxItems:32,description:'For resolution/duration changes, preserve the original quote settings here to reprice the original configuration and calculate savings. Null uses the current scenario.',items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},candidateModelIds:{type:['array','null'],minItems:1,maxItems:32,items:{type:'string'}},outputCount:{type:'integer',enum:[1]},
 }} as const;
 export const STUDIO_PRICING_DIRECTOR_TOOL={action:'pricing.read',name:'pricing_read',description:'Read the current MaxVideoAI customer estimate for ONE exact supported image/video scenario. Use settings from model_details and attached saved media or exact ready project outputs from media_read, with exact kind and supported roles. No quote is created/replaced, no spending or media promotion. Compare current like-for-like estimates before a budget recommendation; a fresh prepare quote and client confirmation are still required. Project output pricing is read-only and never saves a library copy. Audio generation is not supported here.',properties:{
-  surface:{type:'string',enum:['image','video']},modelId:{type:'string'},elements:klingOwnedElementsProperty,operation:{type:['string','null'],enum:['kling-reference','kling-edit','luma-extend',null]},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},
+  surface:{type:'string',enum:['image','video']},modelId:{type:'string'},elements:klingOwnedElementsProperty,operation:{type:['string','null'],enum:['kling-reference','kling-edit','luma-extend','h3-recast','h3-relight',null]},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},
   settings:{type:'array',description:'Supply an exact scenario: always include resolution from mode.resolutions in model_details. Include aspectRatio only when mode.aspectRatios is nonempty; otherwise omit it because framing comes from the source. For video, also include durationSec (seconds) from mode.duration, never duration. Include audio only when mode.audio is optional. Other setting names and values come from mode.settings. Explicit imageWidth/imageHeight also require resolution custom. Do not rely on prepare defaults for an estimate.',maxItems:32,items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},
   references:{...conversationMediaReferencesProperties(),type:'array',maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS},outputCount:{type:'integer',enum:[1]},
 }} as const;

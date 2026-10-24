@@ -1,3 +1,4 @@
+import { isH3SourceOperation, validateH3Source } from '@/lib/h3-source-operations';
 import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
 import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
@@ -352,7 +353,11 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
-  const operationSeconds = request.operation === 'kling-edit' ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  const operationSeconds = (request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  if (isH3SourceOperation(request.operation)) {
+    const sourceError = validateH3Source(request.operation,(processed.trustedMediaReferences ?? []).find(reference=>reference.kind==='video'&&reference.fieldId==='video_url'));
+    if (sourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED',sourceError);
+  }
   const operationSourceError = request.operation === 'kling-edit' ? validateKlingEditSource((processed.trustedMediaReferences ?? []).find(reference => reference.kind === 'video' && reference.fieldId === 'video_url')) : undefined;
   if (operationSourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', operationSourceError);
   if (request.operation === 'kling-edit' && (typeof operationSeconds !== 'number' || !Number.isFinite(operationSeconds) || operationSeconds < 3 || operationSeconds > 15)) {

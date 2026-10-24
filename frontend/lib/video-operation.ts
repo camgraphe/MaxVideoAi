@@ -1,7 +1,8 @@
+import { isH3SourceOperation } from './h3-source-operations';
 import { effectiveLumaEditValues } from '../src/lib/luma-edit-controls';
 import type { EngineCaps, EngineInputSchema, EngineModeUiCaps, Mode } from '@/types/engines';
 
-export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit', 'luma-extend'] as const;
+export const VIDEO_OPERATIONS = ['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight'] as const;
 export type VideoOperation = (typeof VIDEO_OPERATIONS)[number];
 export type VideoOperationCaps = {
   operation: VideoOperation;
@@ -18,7 +19,11 @@ const KLING_OMNI_IDS = new Set(['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4
 
 /** Omission is intentionally not normalized to Reference: old JSON and receipts stay stable. */
 export function normalizeVideoOperation(engineId: string, mode: string, value: unknown): VideoOperation | undefined {
-  if (value === undefined) return undefined;
+  if (value === undefined) {
+    if (engineId === 'minimax-h3-max' && mode === 'v2v') throw new Error('Choose Recast or Relight explicitly.');
+    return undefined;
+  }
+  if (engineId === 'minimax-h3-max' && mode === 'v2v' && isH3SourceOperation(value)) return value;
   if (engineId === 'luma-ray-3-2' && mode === 'extend' && value === 'luma-extend') return value;
   if (!KLING_OMNI_IDS.has(engineId) || mode !== 'v2v'
     || (value !== 'kling-reference' && value !== 'kling-edit')) {
@@ -29,6 +34,7 @@ export function normalizeVideoOperation(engineId: string, mode: string, value: u
 
 export function videoOperationEndpoint(engineId: string, mode: string, value: unknown): string | undefined {
   const operation = normalizeVideoOperation(engineId, mode, value);
+  if (isH3SourceOperation(operation)) return `minimax/h3-max/${operation.slice(3)}`;
   if (operation === 'luma-extend') return undefined;
   if (!operation && engineId === 'kling-o3-4k' && mode === 'v2v') return 'fal-ai/kling-video/o3/4k/video-to-video/reference';
   if (!operation || (operation === 'kling-reference' && engineId !== 'kling-o3-4k')) return undefined;
@@ -74,9 +80,9 @@ export function resolveVideoOperationEngine(engine: EngineCaps, mode: Mode, valu
   if (!operation || operation === 'luma-extend') return engine;
   const caps = engine.operationCaps?.[operation];
   if (!caps || caps.mode !== mode) throw new Error('Video operation capabilities are unavailable.');
-  return { ...engine, inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit'
+  return { ...engine, ...(isH3SourceOperation(operation) ? {maxDurationSec:operation==='h3-recast'?30:15} : {}), inputSchema: caps.inputSchema, resolutions: operation === 'kling-edit' || isH3SourceOperation(operation)
       ? (caps.ui.resolution as EngineCaps['resolutions'] | undefined) ?? engine.resolutions : engine.resolutions,
-    inputLimits: { ...engine.inputLimits, ...(caps.transport === 'fal' ? { videoMaxDurationSec: 15 } : {}) },
+    inputLimits: { ...engine.inputLimits, ...(isH3SourceOperation(operation) ? {promptMaxChars:operation==='h3-recast'?2000:0} : {}), ...(caps.transport === 'fal' ? { videoMaxDurationSec: operation === 'h3-recast' ? 30 : 15 } : {}) },
     modeCaps: { ...engine.modeCaps, [mode]: caps.ui } };
 }
 
@@ -117,6 +123,11 @@ export function validateKlingEditSource(source: { durationSec?: number | null; w
 
 export function resolveVideoOperationRequestEngine(engine: EngineCaps, mode: Mode, body: Record<string, unknown>): EngineCaps {
   const resolved = resolveVideoOperationEngine(engine, mode, body.operation);
+  if (isH3SourceOperation(body.operation) && ['duration', 'durationSec', 'durationOption', 'fps', 'audio', ...(body.operation === 'h3-recast' ? ['aspectRatio'] : [])].some(key => body[key] !== undefined)) {
+    throw new Error('H3 source operations inherit source timing and audio.');
+  }
+  if (body.operation === 'h3-recast' && typeof body.prompt === 'string' && body.prompt.length>2000) throw new Error('Recast supports at most 2000 prompt characters.');
+  if (body.operation === 'h3-relight' && typeof body.prompt === 'string' && body.prompt.trim()) throw new Error('Relight does not accept a prompt.');
   if (body.operation === 'kling-edit' && ['duration', 'durationSec', 'durationOption', 'aspectRatio', 'fps', 'audio']
     .some(key => body[key] !== undefined)) {
     throw new Error('Kling Edit inherits source timing and framing; omit output duration, aspect ratio, fps and generated audio.');

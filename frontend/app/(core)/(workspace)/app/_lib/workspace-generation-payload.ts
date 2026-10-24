@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { effectiveLumaEditValues } from '@/lib/luma-edit-controls';
 import type { runGenerate } from '@/lib/api';
 import { toLumaRay2DurationLabel } from '@/lib/luma-ray2';
@@ -131,7 +132,7 @@ export function buildWorkspaceGeneratePayload(
     prompt: options.trimmedPrompt,
     mode: options.submissionMode,
     ...(options.form.operation ? { operation: options.form.operation } : {}),
-    ...(options.form.operation === 'kling-edit' ? {} : { durationSec: resolvedDurationSeconds }),
+    ...((options.form.operation === 'kling-edit' || isH3SourceOperation(options.form.operation)) ? {} : { durationSec: resolvedDurationSeconds }),
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },
     cfgScale: typeof options.cfgScale === 'number' ? options.cfgScale : undefined,

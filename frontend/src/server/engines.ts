@@ -1,3 +1,4 @@
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {
   cloneEngine,
@@ -267,7 +268,7 @@ export async function computeConfiguredPreflight(
     };
   }
 
-  const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, request.operation === 'kling-edit' ? request.durationSec : Math.round(request.durationSec)) : 4;
+  const durationSecRaw = Number.isFinite(request.durationSec) ? Math.max(1, (request.operation === 'kling-edit' || isH3SourceOperation(request.operation)) ? request.durationSec : Math.round(request.durationSec)) : 4;
   const durationSec = durationInfo ? durationInfo.seconds : durationSecRaw;
   const memberTier = normalizeMemberTier(request.user?.memberTier);
   const loop = isLumaRay2 && supportsDuration ? normaliseLumaRay2Loop(request.loop) : undefined;

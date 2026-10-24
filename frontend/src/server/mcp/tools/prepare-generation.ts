@@ -8,7 +8,7 @@ import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { omitNullishToolInput } from '@/server/mcp/optional-tool-input';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const referenceRole = z.enum(['source', 'reference', 'first_frame', 'last_frame', 'mask']);
+const referenceRole = z.enum(['source', 'reference', 'first_frame', 'middle_frame', 'last_frame', 'mask']);
 const referenceMediaKind = z.enum(['image', 'video', 'audio']);
 const reference = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole, slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).optional() }).strict(),
@@ -104,6 +104,9 @@ export const canonicalSettingsSchema = z.object({
     'Use only when get_model_details reports a background setting for the selected image model.',
   ),
   outputFormat: z.string().trim().min(1).max(64).nullable().default(null),
+  middleFrameTime: z.number().positive().max(15).nullable().default(null),
+  referenceOrder: z.string().max(128).nullable().default(null),
+  enhanceRealism: z.boolean().nullable().default(null),
   promptExpansionMode: z.enum(['disabled', 'balanced', 'quality']).nullable().default(null).describe(
     'Use only when get_model_details reports the promptExpansionMode setting for the selected mode.',
   ),
@@ -140,7 +143,7 @@ export const prepareGenerationInputSchema = z.object({
   elements: klingOwnedElementsSchema.nullable().optional(),
   sourceJobId: z.string().min(1).max(255).nullable().default(null),
   sourceOutputId: z.string().min(1).max(255).nullable().default(null),
-  operation: z.enum(['kling-reference', 'kling-edit', 'luma-extend']).nullable().default(null),
+  operation: z.enum(['kling-reference', 'kling-edit', 'luma-extend', 'h3-recast', 'h3-relight']).nullable().default(null),
   mode: z.enum(CANONICAL_GENERATION_MODES).nullable().default(null),
   prompt: z.string().nullable().default(null),
   seedanceWorkflow: seedanceWorkflowSchema.nullable().default(null).describe(
