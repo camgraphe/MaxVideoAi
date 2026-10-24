@@ -30,7 +30,9 @@ Shared design: add optional top-level `operation` with strict engine/mode compat
 
 ## Task 3: MiniMax H3 Max source workflows
 
-Add confirmed Extend, Recast, Relight, Insert and Reframe with distinct explicit operation contracts, avoiding a freeform-edit promise for specialized tools. Extend source is 1.625–60 s / 50 MB, added duration 0.71–15 s; continuation contains 1.625 s repeated context, so preserve correct Studio assembly and billing semantics. Preserve combined output as an explicit choice. Add reference start/end/middle frames and ordered references with documented exclusivity and resolution constraints. Revisit fractional 0.92–15 s creation duration only with canonical quote support. Do not change base H3 or publish Director endpoints whose schemas are unavailable. Implement shared inputs, endpoints, ownership checks, price facts and cross-surface projections with focused tests. Prepare any bounded exact tariff changes, without applying them.
+Implement Recast and Relight with distinct explicit operation contracts, avoiding a freeform-edit promise for specialized tools. Add reference start/end/middle frames and ordered references with documented exclusivity and resolution constraints. Revisit fractional 0.92–15 s creation duration only with canonical quote support. Do not change base H3 or publish Director endpoints whose schemas are unavailable. Implement shared inputs, endpoints, ownership checks, source admission/preparation, price facts, recovery and Site/MCP/Studio projections with focused tests. Prepare bounded exact tariff changes, without applying them.
+
+Adrien explicitly chose to activate the other qualified additions and keep the three new H3 Extend, Insert and Reframe modes pending because their conditioning/window supplements remain unknown. Do not add these three to executable public operations, initialize their tariffs or advertise them as usable. Preserve all existing H3 capabilities. Keep the dated provider contracts and future output/billing design in the audit for later implementation; do not build a large unreachable paid pipeline in this release.
 
 ## Task 4: Luma Ray 3.2 source continuity and controls
 
