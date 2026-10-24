@@ -29,7 +29,7 @@ observed prolonged dependency downloads on the new image. The shared PostgreSQL
 17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
 not change coverage or the aggregate Quality CI gate.
 
-The browser lane also uses Ubuntu 24.04 and has a 40-minute total budget. On the
+The browser lane installs Chromium and WebKit so the mobile prompt and Modify navigation regressions run against both engines. It uses Ubuntu 24.04 and has a 40-minute total budget. On the
 2026-10-23 candidate, tool/browser installation consumed over 12 minutes before
 the tests, so the former 25-minute limit canceled the still-progressing browser
 suite before admin smoke. All browser tests and the admin suite remain required.

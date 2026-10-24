@@ -1103,6 +1103,25 @@ available from empty Create and select `ref2v` when filled; an empty Create with
 references uses `t2v`. Model schema, provider modes and legitimate
 optional image/audio references remain authoritative.
 
+New Modify selections initialize supported requested output timing and framing from
+measured source metadata. Source-inheriting models retain their existing policies;
+Extend retains an independently chosen continuation length. This is a UI default,
+not a new tariff or provider policy. Fractional source timing is retained for input
+billing while requested integer output timing rounds up when supported. Full saved
+job/draft settings, manual changes during upload, and signed playback URL refreshes
+remain authoritative. The source mutation revision and pending upload identity
+separate explicit selection from restoration.
+
+Create parks ready Modify/Extend/Reframe source inputs in account/engine-scoped,
+per-mode memory; parked clips are absent from both quotes and submissions. Returning
+to the source mode restores its selection, while ordinary Create references (including
+Kling Reference) retain their normal behavior. No library media is deleted. Unfinished
+uploads leave the composer when switching; their late completion cannot reinsert a
+removed slot. Imposed controls are plain information rather than editable buttons in
+both Modify and Extend. Generated audio controls remain distinct from provider-specific
+source-audio preservation options.
+
+
 Import relaxation is explicit and restricted to the selected temporal field, within
 preparation duration and existing byte/upload bounds. Audio multipart uploads pass
 `prepareExcerpt=1` only from a range-enabled slot and use a mode actually declaring

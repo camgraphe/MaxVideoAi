@@ -10,11 +10,16 @@ type FieldGroupProps = {
   onChange: (value: string) => void;
   focusRef?: Ref<HTMLDivElement>;
   disabled?: boolean;
+  readOnly?: boolean;
   labelFor?: (option: string | number) => string;
   iconFor?: (option: string | number) => string | undefined;
 };
 
-export function FieldGroup({ label, options, value, onChange, focusRef, disabled = false, labelFor, iconFor }: FieldGroupProps) {
+export function FieldGroup({ label, options, value, onChange, focusRef, disabled = false, readOnly = false, labelFor, iconFor }: FieldGroupProps) {
+  if (readOnly) {
+    const option = options.find(option => String(option) === value) ?? options[0];
+    return <p className="p-3 text-sm text-text-secondary">{label}: {labelFor ? labelFor(option) : String(option)}</p>;
+  }
   return (
     <div
       className={clsx(

@@ -13,6 +13,7 @@ import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPr
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
+import { ComposerPromptClear } from '@/components/composer/ComposerPromptClear.client';
 import { ComposerNotices, ComposerReferenceMentionNotice, ComposerSoraImageNotice } from '@/components/composer/ComposerNotices.client';
 import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
 import { useComposerReferenceMentions } from '@/components/composer/useComposerReferenceMentions';
@@ -378,15 +379,18 @@ export function Composer({
               'app-prompt-heading flex items-start justify-between px-4',
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
-              <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
-                {multiPromptEnabled ? <h2 id={`${promptId}-heading`} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</h2> : <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>}
-                {typeof promptMaxChars === 'number' ? (
-                  <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
-                    {promptCharCount}/{promptMaxChars}
-                  </div>
-                ) : null}
+              <div className="flex w-full items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  {multiPromptEnabled ? <h2 id={`${promptId}-heading`} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</h2> : <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>}
+                  {typeof promptMaxChars === 'number' ? (
+                    <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
+                      {promptCharCount}/{promptMaxChars}
+                    </div>
+                  ) : null}
+                </div>
+                {!multiPromptEnabled ? <ComposerPromptClear prompt={prompt} onPromptChange={onPromptChange} inputId={promptId} locale={locale} /> : null}
               </div>
-              <div className={clsx(
+              {multiPrompt || promotedActions?.length ? <div className={clsx(
                 'flex items-center justify-end',
                 workspaceDensity ? 'min-w-0 flex-wrap gap-1.5' : 'flex-wrap gap-2'
               )}>
@@ -420,7 +424,7 @@ export function Composer({
                     <span className="whitespace-nowrap">{action.label}</span>
                   </Button>
                 ))}
-              </div>
+              </div> : null}
             </div>
             {multiPromptEnabled && multiPrompt ? (
               <ComposerMultiPromptEditor multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
