@@ -116,6 +116,7 @@
   min-height: 0;
   min-width: 0;
 }
+.history {display:contents;}
 .log {
   flex: 1;
   overflow: auto;
@@ -483,12 +484,14 @@
   .canvas {padding:0 12px max(4px,env(safe-area-inset-bottom));gap:0;}
   .conversation {width:100%;}
   .conversation[data-empty="true"] {padding-bottom:0;}
+  .history {position:relative;display:flex;flex-direction:column;flex:1;min-height:0;}
+  .conversation[data-empty="true"] .history {flex:0 1 auto;}
   .log {min-height:0;padding:12px 4px 16px;}
   .attachments {display:none;}
   .composer {padding:5px;gap:6px;border-radius:24px;}
   .composer textarea {font-size:16px;padding:10px 0;line-height:24px;}
   .composerTools {display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:44px;}
   .conversation > .footnote {display:none;}
-  .studio .jumpLatest {bottom:112px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;justify-content:center;}
+  .studio .jumpLatest {bottom:12px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;justify-content:center;}
   .jumpLatest span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
 }

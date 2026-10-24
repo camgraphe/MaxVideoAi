@@ -193,6 +193,7 @@ function StudioImageConversationWorkspace({
         onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current=0;setDropping(false);if(studio.loading){shelf.setError(t('Your workspace is opening. Try dropping your media again in a moment.','Votre espace s’ouvre. Déposez à nouveau vos médias dans un instant.'));return;}void shelf.upload(Array.from(event.dataTransfer.files));}}}>
         {dropping&&<div className={styles.dropSurface}><ImagePlus size={28}/><span>{t('Bring it into the conversation','Ajoutez-le à la conversation')}</span><small>{t('Drop your media here','Déposez vos médias ici')}</small></div>}
         <div className={styles.conversation} data-empty={!studio.conversation.turns.length && !studio.pending && !studio.loading && !studio.error}>
+          <div className={styles.history}>
           <div
             ref={log}
             className={styles.log}
@@ -290,6 +291,7 @@ function StudioImageConversationWorkspace({
             <div ref={bottom} />
           </div>
           {!following && <button className={styles.jumpLatest} aria-label={t('Latest message','Dernier message')} onClick={() => {follow.current = true;setFollowing(true);bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={16}/><span>{t('Latest message','Dernier message')}</span></button>}
+          </div>
           {(studio.error || studio.canResumePending) && (
             <div className={styles.error} role="alert">
               <p>
