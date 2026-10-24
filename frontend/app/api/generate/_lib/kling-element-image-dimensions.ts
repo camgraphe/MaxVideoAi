@@ -1,8 +1,8 @@
 import { query } from '@/lib/db';
 import type { MaxVideoProviderElement } from '@/lib/video-provider-elements';
+import { getKlingElementImageDimensionIssue, KLING_ELEMENT_MINIMUM_IMAGE_WIDTH, KLING_ELEMENT_MINIMUM_IMAGE_HEIGHT } from '@/lib/kling-element-media-constraints';
 
-export const KLING_ELEMENT_MINIMUM_IMAGE_WIDTH = 300;
-export const KLING_ELEMENT_MINIMUM_IMAGE_HEIGHT = 300;
+export { KLING_ELEMENT_MINIMUM_IMAGE_WIDTH, KLING_ELEMENT_MINIMUM_IMAGE_HEIGHT } from '@/lib/kling-element-media-constraints';
 
 const KLING_ELEMENT_IMAGE_TOO_SMALL = 'KLING_ELEMENT_IMAGE_TOO_SMALL';
 
@@ -90,10 +90,7 @@ export async function validateKlingElementImageDimensions(params: {
     const actualWidth = knownDimension(row.width);
     const actualHeight = knownDimension(row.height);
     if (actualWidth == null || actualHeight == null) continue;
-    if (
-      actualWidth >= KLING_ELEMENT_MINIMUM_IMAGE_WIDTH &&
-      actualHeight >= KLING_ELEMENT_MINIMUM_IMAGE_HEIGHT
-    ) {
+    if (getKlingElementImageDimensionIssue(actualWidth, actualHeight) !== 'too-small') {
       continue;
     }
 

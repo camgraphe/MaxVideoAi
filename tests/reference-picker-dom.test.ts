@@ -11,6 +11,9 @@ import { WorkspaceReferenceInventory } from '../frontend/components/composer/Wor
 import type { AssetFieldConfig } from '../frontend/components/AssetDropzone';
 import { AudioGeneratedVideoPickerModal } from '../frontend/app/(core)/(workspace)/app/audio/_components/audio-generated-video-picker';
 import type { AudioWorkspaceCopy } from '../frontend/app/(core)/(workspace)/app/audio/copy';
+import { getMediaInputEligibility } from '../frontend/lib/media-input-eligibility';
+import { AssetLibraryModal } from '../frontend/components/library/AssetLibraryModal';
+import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 
 async function harness() {
   const dom = new JSDOM('<button id="opener">Open</button><div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
@@ -26,6 +29,104 @@ async function harness() {
 }
 const asset: AssetBrowserAsset = { id: 'original', url: 'https://private.example/original.png?sig=Exact', thumbUrl: 'https://private.example/thumb.png?sig=Thumb', kind: 'image', width: 1024, height: 768, sourceOutputId: 'output-7' };
 const props: AssetLibraryBrowserProps = { title: 'Reference', assetType: 'image', assets: [asset], isLoading: false, source: 'all', availableSources: ['all', 'upload'], sourceLabels: { all: 'All', upload: 'Uploaded' }, onSourceChange() {}, searchPlaceholder: 'Search', sourcesTitle: 'Source', emptyLabel: 'Empty', emptySearchLabel: 'No match', renderAssetActions: () => null };
+
+for (const example of [
+  { kind: 'image', fieldId: 'keyframe_images', label: 'Keyframe 1', name: 'keyframe.png', mime: 'image/png', wrongName: 'clip.mp4', wrongMime: 'video/mp4' },
+  { kind: 'video', fieldId: 'video_url', label: 'Source video', name: 'clip.mp4', mime: 'video/mp4', wrongName: 'keyframe.png', wrongMime: 'image/png' },
+] as const) {
+  test(`${example.label} library import accepts its media kind and rejects a mismatched file before upload`, async () => {
+    const h = await harness(); const previousFetch = globalThis.fetch;
+    const selected: File[] = [];
+    globalThis.fetch = async () => { throw new Error('The owned import callback must handle the upload'); };
+    try {
+      const field = { id: example.fieldId, type: example.kind, label: example.label, acceptedMimeTypes: [example.mime] };
+      await h.render(React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
+        React.createElement(AssetLibraryModal, { fieldLabel: example.label, assetType: example.kind,
+          assets: [], isLoading: false, error: null, onClose() {}, onSelect() {}, source: 'all', onSourceChange() {},
+          onRefresh() {}, onDelete() {}, deletingAssetId: null,
+          getEligibility: (asset, context) => getMediaInputEligibility({ asset, field, context }),
+          onImportFile: async file => { selected.push(file); } }) }));
+      const input = h.doc.querySelector<HTMLInputElement>('input[type=file]')!;
+      assert.equal(input.accept, `${example.kind}/*`);
+      const choose = async (name: string, mime: string) => {
+        const file = new h.dom.window.File(['source'], name, { type: mime }) as unknown as File;
+        Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+        await act(async () => { input.dispatchEvent(new h.dom.window.Event('change', { bubbles: true })); });
+        return file;
+      };
+      await choose(example.wrongName, example.wrongMime);
+      assert.deepEqual(selected, [], 'a mismatched media file must not reach upload');
+      assert.ok(h.doc.querySelector('[role=alert]'), 'the user should see why the file cannot be imported');
+      const accepted = await choose(example.name, example.mime);
+      assert.deepEqual(selected, [accepted], 'the original file must reach its owned import handler once');
+      assert.equal(h.doc.querySelector('[role=alert]'), null);
+    } finally { globalThis.fetch = previousFetch; await h.close(); }
+  });
+}
+
+test('audio reference library imports through its supplied owned callback without generic upload requests', async () => {
+  const h = await harness(); const previousFetch = globalThis.fetch;
+  let selected: File | undefined;
+  globalThis.fetch = async () => { throw new Error('Generic upload must not run'); };
+  try {
+    await h.render(React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
+      React.createElement(AssetLibraryModal, { fieldLabel: 'Soundtrack', assetType: 'audio', assets: [], isLoading: false, error: null,
+        onClose() {}, onSelect() {}, source: 'all', onSourceChange() {}, onRefresh() {}, onDelete() {}, deletingAssetId: null,
+        onImportFile: async file => { selected = file; } }) }));
+    assert.match(h.doc.querySelector('h2')!.textContent!, /audio/);
+    const input = h.doc.querySelector<HTMLInputElement>('input[type=file]')!;
+    assert.equal(input.accept, 'audio/*');
+    const file = new h.dom.window.File(['audio'], 'sound.wav', { type: 'audio/wav' }) as unknown as File;
+    Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+    await act(async () => { input.dispatchEvent(new h.dom.window.Event('change', { bubbles: true })); });
+    assert.equal(selected, file);
+    assert.equal(h.doc.querySelector('[role=alert]'), null);
+  } finally { globalThis.fetch = previousFetch; await h.close(); }
+});
+
+test('an audio reference slot requests and retains audio originals from Media', async () => {
+  const { useWorkspaceAssetLibrary } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary');
+  const h = await harness(); const oldFetch = globalThis.fetch; const urls: string[] = [];
+  const audio = { id: 'voice', url: 'https://private.example/voice.wav?sig=Exact', kind: 'audio', mime: 'audio/wav', durationSec: 9 };
+  globalThis.fetch = async input => { urls.push(String(input)); return Response.json({ ok: true, assets: [audio] }); };
+  let library!: ReturnType<typeof useWorkspaceAssetLibrary>;
+  function Owner() { library = useWorkspaceAssetLibrary({ userId: 'A', showNotice() {}, setInputAssets() {} }); return null; }
+  try {
+    await h.render(React.createElement(Owner));
+    await act(async () => library.setAssetPickerTarget({ kind: 'field', field: { id: 'audio_urls', type: 'audio', label: 'Audio', maxCount: 3 } }));
+    assert.equal(library.assetLibraryKind, 'audio');
+    assert.match(urls[0], /kind=audio/);
+    assert.equal(library.visibleAssetLibrary[0].url, audio.url);
+    assert.equal(library.visibleAssetLibrary[0].durationSec, 9);
+  } finally { globalThis.fetch = oldFetch; await h.close(); }
+});
+
+test('picker filters known incompatibilities, explains all-media exclusions and keeps unknown originals selectable', async () => {
+  const h = await harness(); let chosen: AssetBrowserAsset | undefined;
+  const unknown = { ...asset, id: 'unknown', mime: null, size: null };
+  const wrong = { ...asset, id: 'wrong', mime: 'image/gif', url: 'https://media.example/image.gif' };
+  const field = { id: 'image', type: 'image' as const, label: 'Image', acceptedMimeTypes: ['image/png'], maxSizeMB: 5 };
+  try {
+    await h.render(React.createElement(AssetLibraryBrowser, { ...props, assets: [unknown, wrong], selection: {
+      scope: 'owner:image', getEligibility: value => getMediaInputEligibility({ asset: value, field }), onConfirm: value => { chosen = value; },
+    } }));
+    assert.equal(h.doc.querySelectorAll('.app-picker-card').length, 1);
+    assert.match(h.doc.body.textContent!, /validated|verified/i);
+    await h.click('.app-picker-card'); await h.click('.app-picker-use'); assert.equal(chosen, unknown);
+    await act(async () => {
+      const select = h.doc.querySelector<HTMLSelectElement>('select[data-compatibility-filter]')!;
+      select.value = 'all'; select.dispatchEvent(new h.dom.window.Event('change', { bubbles: true }));
+    });
+    const cards = h.doc.querySelectorAll<HTMLButtonElement>('.app-picker-card');
+    assert.equal(cards.length, 2); assert.equal(cards[1].disabled, true);
+    assert.match(cards[1].textContent!, /Format/);
+    await h.render(React.createElement(AssetLibraryBrowser, { ...props, assets: [wrong], selection: {
+      scope: 'owner:image:other-slot', getEligibility: value => getMediaInputEligibility({ asset: value, field }),
+    } }));
+    assert.match(h.doc.querySelector('.app-picker-empty')!.textContent!, /All media/,
+      'incompatible results must not claim that the account library is empty');
+  } finally { await h.close(); }
+});
 
 test('staged selection confirms exact original once, keeps rejection in panel, and cancels without insertion', async () => {
   const h = await harness();

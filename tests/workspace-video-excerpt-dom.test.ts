@@ -38,6 +38,7 @@ const source = {
   type: 'video/mp4',
   size: 1,
   previewUrl: 'https://example.invalid/signed-original',
+  thumbnailUrl: 'https://example.invalid/signed-original-thumb.jpg',
   url: 'https://example.invalid/original',
   durationSec: 60,
   status: 'ready',
@@ -48,6 +49,7 @@ const prepared = {
   ref: { type: 'asset', assetId: 'owned-prepared', kind: 'video' },
   url: 'https://example.invalid/prepared',
   previewUrl: 'https://example.invalid/signed-prepared',
+  thumbUrl: 'https://example.invalid/signed-prepared-thumb.jpg',
   durationSec: 17.985,
   width: 100,
   height: 200,
@@ -173,6 +175,7 @@ for (const previewUrl of [source.previewUrl, 'blob:original'])
       await tick();
       assert.equal(f.w.probe.pricing.price, 1.25);
       assert.equal(f.w.quotes.at(-1).inputs.find((input: any) => input.slotId === 'video_url').url, prepared.url);
+      assert.equal(f.w.probe.inputAssets.video_url[0].thumbnailUrl, prepared.thumbUrl);
       // Re-applying the prepared range is still a no-op.
       await f.open();
       await f.w.fx.act(async () => f.w.probe.handlePrepareVideoExcerpt(field, 0, { startSec: 1, endSec: 5 }));
@@ -184,7 +187,7 @@ for (const previewUrl of [source.previewUrl, 'blob:original'])
       assert.equal(f.requests.length, 1, 'full original must not prepare a second derivative');
       await restored.result;
       const selected = f.w.probe.inputAssets.video_url[0];
-      for (const key of ['id', 'assetId', 'ref', 'url', 'previewUrl', 'name', 'type', 'size', 'durationSec', 'width', 'height'])
+      for (const key of ['id', 'assetId', 'ref', 'url', 'previewUrl', 'thumbnailUrl', 'name', 'type', 'size', 'durationSec', 'width', 'height'])
         assert.deepEqual(selected[key], original[key as keyof typeof original], `original ${key}`);
       assert.equal(selected.excerptSource, undefined);
       assert.equal(selected.excerptRange, undefined);
@@ -495,3 +498,25 @@ test('whole FAST MOV is always prepared and operation switches discard a pending
   await fx.respond(1);await relight.result;
  }finally{await fx.dispose();}
 });
+
+for (const previewUrl of [source.previewUrl, 'blob:uploaded-original']) {
+  test(`H3 Recast below-minimum source cannot enter a dead-end editor and replacement restores exact quote (${previewUrl})`, async () => {
+    const f = await mount(4);
+    try {
+      await f.w.fx.act(async () => {
+        f.w.engineId = 'minimax-h3-max'; f.w.operation = 'h3-recast'; f.w.pricingEnabled = true;
+        f.w.probe.setInputAssets({ video_url: [{ ...source, durationSec: 4, previewUrl }] }); f.w.fx.render();
+      });
+      await f.open();
+      assert.equal(f.w.probe.inputAssets.video_url[0].excerptEditing, undefined);
+      assert.equal(f.w.sourceReads.length, 0, 'a too-short original cannot produce a valid section');
+      assert.equal(f.w.probe.pricing.price, null);
+      assert.equal(f.w.quotes.length, 0);
+      await f.w.fx.act(async () => f.w.probe.setInputAssets({ video_url: [{ ...source, durationSec: 6, previewUrl }] }));
+      await f.w.fx.act(async () => new Promise(resolve => setTimeout(resolve, 240)));
+      assert.equal(f.w.probe.pricing.price, 1.25);
+      assert.equal(f.w.quotes.at(-1).operation, 'h3-recast');
+      assert.equal(f.w.quotes.at(-1).inputs[0].url, source.url);
+    } finally { await f.dispose(); }
+  });
+}

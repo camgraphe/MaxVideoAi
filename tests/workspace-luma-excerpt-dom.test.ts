@@ -94,7 +94,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.sourceState, 'error', 'the uncut 60-second source is not generation-ready');
     const beforeKeyframes = JSON.stringify(f.w.probe.inputAssets.edit_keyframe_urls);
     const beforeOptions = JSON.stringify(f.w.probe.form.extraInputValues);
-    const choose = f.button('Choose start and end');
+    const choose = f.button('Choose section');
     assert.ok(choose, 'the actual specialized source must expose the shared excerpt control');
     await f.w.fx.act(async () => choose.click());
     assert.equal(f.w.probe.sourceState, 'uploading', 'opening masks source eligibility through the existing route hook');
@@ -107,7 +107,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.sourceState, 'error');
     assert.equal(f.requests.length, 0, 'cancelling performs no preparation');
 
-    await f.w.fx.act(async () => f.button('Choose start and end')!.click());
+    await f.w.fx.act(async () => f.button('Choose section')!.click());
     for (const [label, value] of [['Start (seconds)', '20'], ['End (seconds)', '38']]) {
       const input = f.w.document.querySelector(`input[aria-label="${label}"]`);
       assert.ok(input);
@@ -116,7 +116,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
         input.dispatchEvent(new f.w.Event('input', { bubbles: true }));
       });
     }
-    const apply = f.button('Use excerpt');
+    const apply = f.button('Use this section');
     assert.ok(apply && !apply.disabled);
     await f.w.fx.act(async () => apply.click());
     assert.equal(f.requests.length, 1);
@@ -137,7 +137,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
     assert.equal(f.w.probe.inputAssets.video_url[0].excerptSource.url, source.url);
     assert.equal(JSON.stringify(f.w.probe.inputAssets.edit_keyframe_urls), beforeKeyframes);
     assert.equal(JSON.stringify(f.w.probe.form.extraInputValues), beforeOptions);
-    assert.ok(f.button('Choose start and end'), 'the trigger survives source replacement for subsequent edits');
+    assert.ok(f.button('Choose section'), 'the trigger survives source replacement for subsequent edits');
   } finally { await f.dispose(); }
 });
 

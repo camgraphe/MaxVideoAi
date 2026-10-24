@@ -3,7 +3,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ComposerProps, ComposerAttachment } from '@/components/composer/composer-types';
 import type { EngineInputField, Mode } from '@/types/engines';
-import { getMediaExcerptLimits } from '@/lib/video-excerpt';
+import { getMediaExcerptDurationIssue, getMediaExcerptLimits } from '@/lib/video-excerpt';
 import { videoExcerptCopy } from '@/lib/video-excerpt-copy';
 
 const Selector = lazy(() =>
@@ -34,6 +34,7 @@ export function VideoExcerptControl({
   useLayoutEffect(() => setSelection(null), [asset.url, engine.activeVideoOperation]);
   if (
     !limits ||
+    getMediaExcerptDurationIssue(asset.excerptSource?.durationSec ?? asset.durationSec, limits) === 'too-short' ||
     asset.kind !== field.type ||
     limits.sourceFieldId !== field.id ||
     !onPrepareVideoExcerpt ||

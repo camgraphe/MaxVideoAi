@@ -17,6 +17,7 @@ const composerTypesSource = readFileSync(composerTypesPath, 'utf8');
 const composerCopySource = readFileSync(composerCopyPath, 'utf8');
 const multiPromptEditorSource = readFileSync(multiPromptEditorPath, 'utf8');
 const promotedActionIconSource = readFileSync(promotedActionIconPath, 'utf8');
+const noticesSource = readFileSync(noticesPath, 'utf8');
 
 test('composer delegates copy, contracts, multi-prompt, promoted action icon, quote, and notice presentation ownership', () => {
   for (const path of [composerPath, composerTypesPath, composerCopyPath, multiPromptEditorPath, promotedActionIconPath, generationQuotePath, noticesPath]) {
@@ -29,6 +30,9 @@ test('composer delegates copy, contracts, multi-prompt, promoted action icon, qu
   assert.match(composerSource, /<ComposerGenerationQuote workspace=\{workspaceDensity\}/, 'workspace quote presentation belongs in the focused owner');
   assert.match(composerSource, /<ComposerNotices /, 'Composer should delegate guidance and error presentation');
   assert.doesNotMatch(composerSource, /role="alert"/, 'notice severity belongs in ComposerNotices');
+  assert.match(composerSource, /<ComposerReferenceMentionNotice\b/, 'reference review presentation belongs in the notice owner');
+  assert.match(noticesSource, /export function ComposerReferenceMentionNotice\b/, 'the notice owner presents changed reference associations');
+  assert.match(noticesSource, /export function ComposerSoraImageNotice\b/, 'the notice owner presents provider reference warnings for both densities');
   assert.doesNotMatch(composerSource, /export const DEFAULT_COMPOSER_COPY|function renderPromotedActionIcon/, 'copy and icon drawing belong in focused modules');
   assert.doesNotMatch(composerSource, /type MultiPromptScene|interface ComposerProps/, 'composer contracts belong in composer-types.ts');
   assert.match(composerTypesSource, /export interface ComposerProps/, 'composer types should own the public props contract');

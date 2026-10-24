@@ -9,8 +9,8 @@ test('asset library modal title follows the requested asset type', () => {
 
   assert.match(
     source,
-    /const libraryTitle =\s+assetType === 'video'\s+\? \(uiLocale === 'fr'[\s\S]+?\)\s+: copyAssetLibrary\.title;/,
-    'video pickers should not reuse the reference-image title'
+    /const libraryTitle =[\s\S]+?assetType === 'audio'[\s\S]+?assetType === 'video'[\s\S]+?: copyAssetLibrary\.title;/,
+    'audio and video pickers should not reuse the reference-image title'
   );
   assert.match(source, /title=\{target\?\.role \?[^\n]+: libraryTitle\}/, 'AssetLibraryBrowser should receive the asset-type-aware title');
 });

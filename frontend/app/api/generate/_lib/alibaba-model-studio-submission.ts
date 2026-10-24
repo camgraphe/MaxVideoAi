@@ -12,6 +12,9 @@ import {
   resolveAlibabaModelRoute,
 } from '@/server/video-providers/alibaba-model-studio/model-map';
 import { buildAlibabaVideoPayload } from '@/server/video-providers/alibaba-model-studio/payload';
+import { createWanMediaTransport } from '@/server/video-providers/alibaba-model-studio/media-access';
+import type { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 import type { AlibabaReferenceAsset } from '@/server/video-providers/alibaba-model-studio/types';
 import {
   createProviderAttempt,
@@ -35,6 +38,7 @@ type LogMetricFn = (
 
 type AlibabaSubmissionClient = Pick<ReturnType<typeof getAlibabaModelStudioClient>, 'createVideo' | 'getTask'>;
 type AlibabaSubmissionDeps = {
+  createOwnedMediaReadUrlFn?: typeof createOwnedMediaReadUrl;
   getAlibabaModelStudioClientFn?: () => AlibabaSubmissionClient;
   submitFalGenerateTaskFn?: typeof submitFalGenerateTask;
   queryFn?: QueryFn;
@@ -118,6 +122,9 @@ export function resolveAlibabaSubmissionMediaInputs(params: {
 }
 
 function userSafeAlibabaMessage(errorClass: string, errorCode?: string | null): string {
+  if (errorCode === 'REFERENCE_INVALID' || errorCode === 'REFERENCE_ACCESS_FAILED') {
+    return 'Reference media could not be read. Select it again from your library or import it again.';
+  }
   if (errorCode === 'ALIBABA_REFERENCE_AUDIO_UNSUPPORTED') {
     return 'Wan 3 reference audio must be an MP3 or WAV file. Convert the audio and try again.';
   }
@@ -353,6 +360,8 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
   });
 
   let acceptedProviderJobId: string | null = null;
+  let sanitizeDiagnostics: (value: unknown) => unknown = route.family === 'wan3'
+    ? sanitizeProviderMediaDiagnostics : value => value;
   try {
     const extraInputValues = params.falPayload.extraInputValues ?? {};
     const payload = buildAlibabaVideoPayload({
@@ -377,12 +386,14 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
           : undefined,
       seed: params.falPayload.seed,
     });
-    const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(payload);
+    const transport = await createWanMediaTransport({ payload, userId: params.userId }, { read: deps.createOwnedMediaReadUrlFn });
+    sanitizeDiagnostics = transport.sanitize;
+    const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(transport.payload);
     acceptedProviderJobId = task.providerJobId;
     await markProviderAttemptAccepted({
       attemptId: attempt.id,
       providerJobId: acceptedProviderJobId,
-      responseSnapshot: task.raw,
+      responseSnapshot: sanitizeDiagnostics(task.raw),
       queryFn,
     });
     const status = task.status === 'running' ? 'running' : 'queued';
@@ -435,7 +446,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
         errorCode: normalized.code,
         errorClass: normalized.errorClass,
         fallbackEligible,
-        responseSnapshot: normalized.raw,
+        responseSnapshot: sanitizeDiagnostics(normalized.raw),
         queryFn,
       });
     } catch {

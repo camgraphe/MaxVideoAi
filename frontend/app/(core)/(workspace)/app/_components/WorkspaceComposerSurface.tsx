@@ -496,6 +496,7 @@ export function WorkspaceComposerSurface({
       <Composer
         density="workspace"
         engine={selectedEngine}
+        caps={capability}
         prompt={selectedEngine.activeVideoOperation && !inputSchemaSummary.promptField ? '' : prompt}
         onPromptChange={setPrompt}
         negativePrompt={negativePrompt}

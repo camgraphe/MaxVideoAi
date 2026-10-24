@@ -318,7 +318,7 @@ export function AssetDropzone({
   const shouldLimitSoloWidth = isSoloField && displaySlots.length === 1 && !workspaceDensity;
 
   const renderSlot = ({ asset, slotIndex }: (typeof displaySlots)[number]) => {
-    const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video'));
+    const canOpenLibrary = Boolean(onOpenLibrary && (field.type === 'image' || field.type === 'video' || field.type === 'audio'));
     const slotLabel = resolveSlotLabel(field, role, slotIndex, assetCopy);
 
     return (

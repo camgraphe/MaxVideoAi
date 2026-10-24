@@ -53,8 +53,8 @@ export function useWorkspaceAssetLibrary({
 
   const assetLibraryKind = useMemo<AssetLibraryKind>(() => {
     if (!assetPickerTarget) return 'image';
-    if (assetPickerTarget.kind === 'field' && assetPickerTarget.field.type === 'video') {
-      return 'video';
+    if (assetPickerTarget.kind === 'field' && (assetPickerTarget.field.type === 'video' || assetPickerTarget.field.type === 'audio')) {
+      return assetPickerTarget.field.type;
     }
     if (assetPickerTarget.kind === 'kling' && assetPickerTarget.slot === 'video') {
       return 'video';

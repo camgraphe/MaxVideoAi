@@ -89,7 +89,7 @@ test('Relight opens at its heading; File/blob frames and denied-CORS playback re
         await expect(dialog.getByTestId('video-compatible-copy-disclosure')).toContainText('24 fps copy:');
         assert.equal(mediaRequests, 0, 'opening does not fetch source or filmstrip bytes');
         await page.keyboard.press('Shift+Tab');
-        await expect(dialog.getByRole('button', { name: 'Use excerpt', exact: true })).toBeFocused();
+        await expect(dialog.getByRole('button', { name: 'Use this section', exact: true })).toBeFocused();
         await page.keyboard.press('Tab');
         await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
         const denied = source === 'cors-denied'

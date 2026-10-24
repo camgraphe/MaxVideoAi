@@ -1,5 +1,30 @@
 'use client';
 
+import { referenceMentionCopy } from './workspace-reference-mentions';
+
+export function ComposerSoraImageNotice({ workspace = false }: { workspace?: boolean }) {
+  return (
+    <p className={workspace ? 'text-xs text-text-muted' : 'text-[12px] text-text-muted'} role="note">
+      Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected.{' '}
+      {workspace ? 'OpenAI' : <span className="font-semibold uppercase tracking-micro text-[11px] text-text-muted">OpenAI</span>}
+    </p>
+  );
+}
+
+export function ComposerReferenceMentionNotice({ locale, changed, onReview }: {
+  locale: string;
+  changed: readonly string[];
+  onReview: () => void;
+}) {
+  const copy = referenceMentionCopy(locale);
+  return (
+    <div className="app-reference-mention-review" role="alert">
+      <p>{copy.changed} <strong>{changed.join(', ')}</strong></p>
+      <button type="button" onClick={onReview}>{copy.reviewed}</button>
+    </div>
+  );
+}
+
 export function ComposerNotices({
   promptDescription,
   workflowNotice,

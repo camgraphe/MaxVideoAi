@@ -17,6 +17,7 @@ export type AssetSlotAttachment = {
     ref: ToolAssetRef;
     url: string;
     previewUrl: string;
+    thumbnailUrl?: string | null;
     durationSec: number;
     name: string;
     type: string;
@@ -30,6 +31,7 @@ export type AssetSlotAttachment = {
   size: number;
   type: string;
   previewUrl: string;
+  thumbnailUrl?: string | null;
   status?: 'uploading' | 'ready' | 'error';
   error?: string;
   badge?: string;

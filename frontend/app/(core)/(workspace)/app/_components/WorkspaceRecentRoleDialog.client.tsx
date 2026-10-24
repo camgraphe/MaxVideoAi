@@ -6,6 +6,8 @@ import type { AssetFieldConfig } from '@/components/Composer';
 import { recentMediaCopy } from '@/components/library/recent-media-copy';
 import { mediaReferenceLabel } from '@/components/library/media-reference-label';
 import { MediaActionPanel } from '@/components/library/MediaActionPanel.client';
+import { getMediaInputEligibility } from '@/lib/media-input-eligibility';
+import { mediaInputEligibilityMessage } from '@/components/library/media-input-eligibility-copy';
 import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import { getRecentReferenceIssue } from '../_lib/workspace-recent-media';
 import type { ReferenceAsset, UserAsset } from '../_lib/workspace-assets';
@@ -27,6 +29,7 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
   const slotIndex = slot === 'add' ? undefined : Number(slot);
   const issue = entry ? getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine) : null;
   const disabledReason = entry?.disabled ? entry.disabledReason || copy.noRole : null;
+  const eligibilityMessage = entry ? mediaInputEligibilityMessage(getMediaInputEligibility({ asset, field: entry.field, engine, mode }), locale) : null;
   return <MediaActionPanel title={locale.startsWith('fr') ? 'Utiliser comme référence' : locale.startsWith('es') ? 'Usar como referencia' : 'Use as reference'} asset={asset} locale={locale} onClose={onClose}>
     <div className="app-recent-role-dialog app-media-reference-body">
       {!compatible.length ? <p>{copy.noRole}</p> : <>
@@ -48,7 +51,7 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
           </select></label> : null}
         </> : null}
         {metadataLoading ? <p role="status">{copy.preparing}</p> : metadataError ? <div role="alert"><p>{copy.issues.metadata}</p><button type="button" onClick={onMetadataRetry}>{copy.retry}</button></div> : null}
-        {disabledReason || (issue && !metadataLoading && !metadataError) ? <p role="status">{disabledReason ?? (issue ? copy.issues[issue] : '')}</p> : null}
+        {disabledReason || (!metadataLoading && (issue || eligibilityMessage)) ? <p role="status">{disabledReason ?? (issue ? eligibilityMessage ?? copy.issues[issue] : eligibilityMessage)}</p> : null}
         <button type="button" className="app-recent-insert" disabled={!entry || Boolean(disabledReason || issue) || pending || metadataLoading} onClick={async () => {
           if (!entry || entry.disabled || getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine)) return;
           setPending(true);

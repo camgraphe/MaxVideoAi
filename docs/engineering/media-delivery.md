@@ -968,6 +968,42 @@ session races, unmount, in-flight parts, character cache isolation, and measured
 multipart bodies for 1, 8 and 20 MiB files. These are browser-DOM/transport tests,
 not paid generations or a claim of live storage validation.
 
+### Video workspace input eligibility and prompt mentions
+
+`lib/media-input-eligibility.ts` projects known media facts against the exact
+resolved model, mode, operation and field. The full library, recent-media picker
+and reference upload owner share this projection. Missing metadata remains
+selectable for authoritative verification; it is not evidence of compatibility
+or incompatibility. Long sources remain selectable when the existing private
+passage preparer can handle them. Too-short sources require replacement, since
+trimming cannot make them longer. Keep strict provider geometry/duration checks
+in their existing pure validators rather than duplicating provider policy.
+
+Library Import routes through the workspace's owned uploader, with account,
+model/mode and target-slot guards around asynchronous decoding. Image imports
+retain their existing normalization: apply the slot's byte ceiling to the
+prepared image, not the raw image before compression. Stored images do not
+receive that assumption. Server ownership, measured source facts and pricing
+remain authoritative; browser eligibility never creates a quote or new mode.
+
+`ReferenceThumbnail.client.tsx` uses a stored poster separately from the original
+video/audio URL. Missing temporal posters use a media glyph, without eager
+decoding or public optimization of private grants. `workspace-reference-mentions`
+projects only authored provider tokens using the submitted canonical URL order.
+`useComposerReferenceMentions` inserts them at the prompt cursor and requires an
+explicit review if a used token changes its asset association. Both retained
+single and multi-prompt text, and supported Kling token aliases, participate in
+that guard. Generic role labels (such as H3 portraits) are not prompt bindings.
+
+The specialized Kling element picker uses `kling-element-media-constraints.ts`
+for the same existing image minimum as server element validation. Its uploader
+retires model/mode or replaced-slot work and removes only pending initiating
+asset IDs; account changes cannot mutate another owner’s retained elements.
+
+`media-input-eligibility`, `workspace-upload-owner`, `reference-picker-dom` and
+`workspace-reference-mentions*` cover these boundaries. The model/slot matrix is
+a known-facts audit, not certification of every provider render or file codec.
+
 ### Milo Studio preview
 
 `studio-milo-preview.webp` is a real isolated connected-task capture from

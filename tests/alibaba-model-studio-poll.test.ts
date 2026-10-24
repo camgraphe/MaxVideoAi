@@ -37,6 +37,7 @@ test('Alibaba poll copies the expiring provider output before completing the exi
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const actions: string[] = [];
   const outputs: unknown[] = [];
+  const signedOutput = 'https://provider.example/temporary-output.mp4?X-Amz-Signature=output-private-signature&X-Amz-Credential=output-private-access&X-Amz-Expires=3600';
   const response = await runAlibabaModelStudioPoll({
     deps: {
       claimPollFn: allowGenerationPoll,
@@ -56,14 +57,15 @@ test('Alibaba poll copies the expiring provider output before completing the exi
           output: {
             task_id: baseJob.provider_job_id,
             task_status: 'SUCCEEDED',
-            video_url: 'https://provider.example/temporary-output.mp4?token=temporary',
+            video_url: signedOutput,
+            diagnostic: `Result ready at ${signedOutput}`,
           },
           usage: { duration: 15, input_video_duration: 5, output_video_duration: 10 },
         }),
       }),
       ensureFastStartVideoFn: async (payload) => {
         actions.push('copy');
-        assert.match(payload.videoUrl, /temporary-output/);
+        assert.equal(payload.videoUrl, signedOutput, 'output signing credentials are required until the durable copy succeeds');
         return 'https://cdn.maxvideoai.com/renders/job_alibaba_123-faststart.mp4';
       },
       detectVideoDimensionsFn: async () => ({ width: 1920, height: 1080 }),
@@ -90,6 +92,121 @@ test('Alibaba poll copies the expiring provider output before completing the exi
   const attempt = queries.find((entry) => /provider_cost_usd/.test(entry.sql));
   assert.equal(attempt?.params?.[0], 31);
   assert.equal(attempt?.params?.[4], 3);
+  assert.doesNotMatch(JSON.stringify({ queries, outputs }), /X-Amz-|output-private-signature|output-private-access/,
+    'persisted output diagnostics must not retain the temporary provider grant');
+});
+
+for (const engineId of ['wan-3', 'wan-3-prime']) {
+  test(`${engineId} input download failure explains the reference problem and strips inline and encoded grants`, async () => {
+    const queries: Array<{ sql: string; params?: unknown[] }> = [];
+    const job = { ...baseJob, engine_id: engineId, engine_label: engineId === 'wan-3' ? 'Wan 3' : 'Wan 3 Prime' };
+    const source = 'https://source.example/video-excerpts-private-v3-source.mp4?X-Amz-Signature=source-private-signature&X-Amz-Credential=source-private-access&X-Amz-Expires=3600';
+    let copies = 0;
+    const response = await runAlibabaModelStudioPoll({ deps: {
+      claimPollFn: allowGenerationPoll,
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+        if (/FROM provider_attempts/.test(sql)) return [{ id: 33, attempt_index: 1 }] as never;
+        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'reference_refund' }] as never;
+        return [] as never;
+      },
+      getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {
+        task_id: job.provider_job_id, task_status: 'FAILED', code: 'InvalidParameter',
+        message: `Failed to download ${source}`,
+        diagnostic: JSON.stringify({ source, encoded: encodeURIComponent(source), doubleEncoded: encodeURIComponent(encodeURIComponent(source)) }),
+      } }) }),
+      ensureFastStartVideoFn: async () => { copies++; throw new Error('There is no output to copy'); },
+      detectVideoDimensionsFn: async () => null,
+      ensureJobThumbnailFn: async () => null,
+      upsertLegacyJobOutputsFn: async () => { throw new Error('A rejected input cannot publish an output'); },
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    } });
+    assert.equal((await response.json()).updates, 1);
+    assert.equal(copies, 0);
+    const failed = queries.find(entry => /SET status = 'failed'/.test(entry.sql));
+    assert.match(String(failed?.params?.[1]), /could not read the reference media/i);
+    assert.doesNotMatch(String(failed?.params?.[1]), /render finished|output for download/i);
+    assert.equal(queries.filter(entry => /INSERT INTO app_receipts/.test(entry.sql)).length, 1);
+    assert.match(JSON.stringify(queries), /InvalidParameter/);
+    assert.doesNotMatch(JSON.stringify(queries), /X-Amz-|source-private-signature|source-private-access/,
+      'all persisted attempts, refunds and user messages must exclude temporary input credentials');
+  });
+
+  test(`${engineId} also removes encoded input grants from generic terminal error messages`, async () => {
+    const queries: Array<{ sql: string; params?: unknown[] }> = [];
+    const job = { ...baseJob, engine_id: engineId };
+    const signedSource = 'https://s.example/input.mp4?X-Amz-Signature=secret&X-Amz-Expires=3600';
+    const response = await runAlibabaModelStudioPoll({ deps: {
+      claimPollFn: allowGenerationPoll,
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+        if (/FROM provider_attempts/.test(sql)) return [{ id: 35, attempt_index: 1 }] as never;
+        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'bad_media_refund' }] as never;
+        return [] as never;
+      },
+      getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {
+        task_id: job.provider_job_id, task_status: 'FAILED', code: 'BadMedia',
+        message: `Bad media ${encodeURIComponent(signedSource)}`,
+      } }) }),
+      ensureFastStartVideoFn: async () => { throw new Error('There is no output to copy'); },
+      detectVideoDimensionsFn: async () => null,
+      ensureJobThumbnailFn: async () => null,
+      upsertLegacyJobOutputsFn: async () => { throw new Error('No output may be published'); },
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    } });
+    assert.equal((await response.json()).updates, 1);
+    assert.ok(queries.some(entry => /SET status = 'failed'/.test(entry.sql)));
+    assert.equal(queries.filter(entry => /INSERT INTO app_receipts/.test(entry.sql)).length, 1);
+    assert.match(JSON.stringify(queries), /BadMedia/);
+    assert.doesNotMatch(JSON.stringify(queries), /X-Amz-|secret/,
+      'generic failures must sanitize the user message and refund description as well as attempt diagnostics');
+  });
+}
+
+test('HappyHorse completion still copies the original output and accounts only for generated seconds', async () => {
+  const job = { ...baseJob, engine_id: 'happy-horse-1-1', engine_label: 'HappyHorse 1.1', duration_sec: 5,
+    settings_snapshot: { inputMode: 't2v', core: { durationSec: 5, resolution: '720p' } } };
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const providerUrl = 'https://provider.example/happy-horse-result.mp4?token=exact-output-token';
+  const copiedUrl = 'https://cdn.maxvideoai.com/renders/happy-horse-owned.mp4';
+  let copies = 0;
+  const response = await runAlibabaModelStudioPoll({ deps: {
+    claimPollFn: allowGenerationPoll,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+      if (/FROM provider_attempts/.test(sql)) return [{ id: 34, attempt_index: 1 }] as never;
+      if (/SET status = 'completed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+      return [] as never;
+    },
+    getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({
+      output: { task_id: job.provider_job_id, task_status: 'SUCCEEDED', video_url: providerUrl },
+      usage: { duration: 5, output_video_duration: 5 },
+    }) }),
+    ensureFastStartVideoFn: async payload => { copies++; assert.equal(payload.videoUrl, providerUrl); return copiedUrl; },
+    detectVideoDimensionsFn: async () => ({ width: 1280, height: 720 }),
+    ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/renders/happy-horse-thumb.jpg',
+    upsertLegacyJobOutputsFn: async payload => { assert.equal(payload.video_url, copiedUrl); },
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  } });
+  assert.equal((await response.json()).updates, 1);
+  assert.equal(copies, 1);
+  const completed = queries.find(entry => /SET status = 'completed'/.test(entry.sql));
+  assert.equal(completed?.params?.[1], copiedUrl);
+  const cost = JSON.parse(String(completed?.params?.[3]));
+  assert.equal(cost.provider_model, 'happyhorse-1.1-t2v');
+  assert.equal(cost.provider_cost_units, 5);
+  assert.equal(cost.provider_cost_usd, 0.7);
+  assert.equal(cost.input_video_duration_sec, 0);
+  assert.equal(cost.output_video_duration_sec, 5);
+  assert.equal(queries.filter(entry => /INSERT INTO app_receipts/.test(entry.sql)).length, 0);
 });
 
 test('Alibaba poll refunds a terminally failed paid-wallet job once', async () => {

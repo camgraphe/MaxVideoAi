@@ -112,10 +112,13 @@ test('real workspace source selection enables Edit and preserves unavailable sav
     await page.getByRole('button', { name: 'Disable Edit fixture' }).click();
     assert.equal(await page.locator('.app-generation-action').isDisabled(), true);
     assert.match(await page.locator('body').innerText(), /temporarily unavailable/);
-    assert.match(await page.locator('body').innerText(), /Owned source/);
-    assert.equal(await page.locator('[data-reference-command="collections"]').getAttribute('aria-disabled'), null, 'a saved source remains manageable');
-    await page.locator('[data-reference-command="collections"]').click();
-    await page.locator('[data-reference-role="video_url"]').click();
+    const savedSource = page.getByRole('button', { name: 'Manage · Source video · Owned source.mp4', exact: true });
+    await expect(savedSource).toBeVisible();
+    await expect(page.locator('.app-reference-selected-manage')).toHaveText('Source video');
+    await expect(savedSource).toBeEnabled(); // A saved source stays manageable when its provider is unavailable.
+    await savedSource.click();
+    await expect(page.locator('[data-reference-field="video_url"] video')).toHaveAttribute('src', 'https://example.test/display-preview.mp4');
+    await expect(page.locator('[data-reference-field="video_url"] video')).toHaveAttribute('aria-label', 'Owned source.mp4');
     await page.locator('[data-reference-field="video_url"] button').filter({ hasText: 'Remove' }).click();
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => document.querySelector('[data-mode]')?.textContent === 't2v');
