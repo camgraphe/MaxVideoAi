@@ -429,15 +429,21 @@ test('Luma Agents submission does not route HDR requests with fal-only options t
   );
 });
 
-test('Extend revalidates private lineage immediately before submit and never falls back to fal', async () => {
+test('Extend revalidates private lineage immediately before submit and never falls back to fal', async t => {
+  const warnings: unknown[][] = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args); });
   let directCalls=0, falCalls=0;
   const {queryFn}=createQueryRecorder();
   const {params}=baseParams({mode:'extend',falPayload:{...falPayload,mode:'extend',loop:false},
     lumaGenerationSource:{sourceJobId:'job-source',sourceOutputIdentity:'output',provider:'luma_agents_direct',providerModel:'ray-3.2',providerGenerationId:'secret',fingerprint:'old'},
     deps:{queryFn,getLumaAgentsClientFn:()=>({createGeneration:async()=>{directCalls++;return acceptedTask();},getGeneration:async()=>acceptedTask()}),
-      generateFalVideoFn:async()=>{falCalls++;throw new Error('must not fall back');}}});
+      submitFalGenerateTaskFn:async()=>{falCalls++;throw new Error('must not fall back');}}});
   const result=await submitLumaAgentsGenerateTask(params);
   assert.equal(result.ok,false);assert.equal(directCalls,0);assert.equal(falCalls,0);
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0][0], '[luma-agents] submit failed without fallback');
+  assert.match(JSON.stringify(warnings[0][1]), /REFERENCE_INVALID/);
+  assert.doesNotMatch(JSON.stringify(warnings), /secret/);
 });
 
 test('owned Extend submits one backward generation anchor and persists only redacted effective controls', async () => {

@@ -358,6 +358,8 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
           .filter((attachment) => {
             if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
             const slotId = attachment.slotId;
+            // Creation keyframes travel only as ordered slotted inputs; generic references are a different provider input.
+            if (options.selectedEngineId === 'luma-ray-3-2' && options.submissionMode === 't2v' && slotId === 'keyframe_urls') return false;
             if (slotId && effectivePrimaryAssetFieldIds.has(slotId)) return false;
             if (slotId && options.frameAssetFieldIds.has(slotId)) return false;
             if (!slotId) return activeReferenceSlots.size === 0;
