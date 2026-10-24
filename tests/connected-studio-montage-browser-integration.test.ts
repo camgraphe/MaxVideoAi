@@ -425,7 +425,9 @@ test('MCP montage opens the current conversation with private playback, durable 
     await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${newProjectId}`);
     await expect(page.getByRole('heading', { name: 'What would you like to do?', exact: true })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Message Milo', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Open film tools', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Open timeline', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Close film tools', exact: true }).click();
     assert.equal(createAttempts.length, 2);
     assert.deepEqual(createAttempts[0], createAttempts[1]);
     const receipt = await runtime.database.pool.query('SELECT project_id FROM studio_project_commands WHERE user_id=$1 AND idempotency_key=$2', [STUDIO_FIXTURE_OWNERS[0], createAttempts[0].idempotencyKey]);

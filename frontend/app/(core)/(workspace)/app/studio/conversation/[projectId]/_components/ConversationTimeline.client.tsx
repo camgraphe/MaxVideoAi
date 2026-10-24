@@ -18,7 +18,7 @@ import {consumeConversationMediaRenewal} from '@/lib/studio/conversation-preview
 import type {StudioProjectTimelineExport} from '@/server/timeline-exports/contracts';
 
 type Drag = {clip: WorkspaceTimelineItem;edge: 'start'|'end'|null;x: number;edit?: ConversationTimelineEdit};
-export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: (trigger: HTMLButtonElement) => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void}) {
+export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLibrary,insertion,exportAvailable = false,exportPending = false,exportJobs = [],onExportChange,visible = true}: {projectId: string;projectName: string;refreshKey: unknown;onOpenLibrary: (trigger: HTMLButtonElement) => void;insertion?: {key: string;asset: ImageLibraryAsset} | null;exportAvailable?: boolean;exportPending?: boolean;exportJobs?: StudioProjectTimelineExport[];onExportChange: () => void;visible?: boolean}) {
   const router = useRouter();
   const {dictionary,locale} = useI18n();
   const t = useCallback((en: string,fr: string) => locale === 'fr' ? fr : en,[locale]);
@@ -69,6 +69,9 @@ export function ConversationTimeline({projectId,projectName,refreshKey,onOpenLib
   function openMonitor() {setExpanded(true);if (!monitor) {renewalAttempts.current.clear();setLocalError(null);}setMonitor(true);}
   function seek(second: number) {playback.stopTimelinePlayback();playback.setPlayheadSec(Math.max(0,Math.min(duration,Math.round(second*fps)/fps)));openMonitor();}
   function closeMonitor() {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
+  useEffect(() => {
+    if (!visible) {playback.stopTimelinePlayback();setMonitor(false);renewalAttempts.current.clear();}
+  }, [visible, playback.stopTimelinePlayback]);
   function mediaFailure(item: WorkspaceTimelineItem) {
     playback.stopTimelinePlayback();
     if (consumeConversationMediaRenewal(item,renewalAttempts.current)) {
