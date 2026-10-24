@@ -153,8 +153,8 @@ test('Kling O3 keeps supported reference and frame combinations while source vid
     assert.equal(resolveKlingO3UnifiedMode({ engine: value, inputAssets: { video_url: [video] }, klingElements: [] }), 'v2v');
   }
   const fourK = engine('kling-o3-4k');
-  assert.equal(supportsKlingO3VideoToVideo(fourK), false);
-  assert.deepEqual(summary(fourK, 't2v').assetFields.map(({ field }) => field.id), ['image_urls', 'image_url', 'end_image_url']);
+  assert.equal(supportsKlingO3VideoToVideo(fourK), true);
+  assert.deepEqual(summary(fourK, 't2v').assetFields.map(({ field }) => field.id), ['image_urls', 'image_url', 'end_image_url', 'video_url']);
 });
 
 test('Veo exposes first/last controls in unified mode and reference fields only in reference mode', () => {

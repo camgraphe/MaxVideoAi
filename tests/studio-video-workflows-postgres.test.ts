@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {getDb,withDbTransaction,type TransactionQueryExecutor} from '../frontend/src/lib/db';
 import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
 import {addTopup,ProviderHarness,createServices,principal} from './helpers/mcp-paid-e2e-harness';
-import {workflowCatalog,workflowActor,workflowInput,workflowAction,workflowAssetIds,workflowReference} from './helpers/studio-video-workflow-fixtures';
+import {workflowCatalog,workflowActor,workflowInput,workflowAction,workflowAssetIds,workflowReference,workflowLumaSource,workflowLumaSourceRow} from './helpers/studio-video-workflow-fixtures';
 import {createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {studioMediaRequest,type StudioMediaFactories} from '../frontend/src/server/studio/conversation-media-generation';
 import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-types';
@@ -54,9 +54,17 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
-  await pg.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,status text);
+  await pg.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,status text,position int,url text,storage_url text);
+    CREATE TABLE provider_attempts(id bigserial PRIMARY KEY,job_id bigint,provider text,provider_model text,status text,provider_job_id text,request_snapshot jsonb);
     CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,size_bytes bigint,width int,height int,status text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text,thumb_url text,preview_url text);`);
   for(const ref of [...(['image','video','audio'] as const).map(kind=>workflowReference(kind,'source')),workflowReference('video','source',undefined,'luma-ray-3-2')]){await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata) VALUES($1,$1,$2,$3,$4,$5,$6,$7,$8,'ready',$9::jsonb)`,[ref.assetId,workflowActor.userId,ref.mediaKind,ref.storageUrl,ref.mimeType,ref.sizeBytes,ref.width,ref.height,JSON.stringify({durationSec:ref.durationSec,originalName:ref.originalName,mediaFacts:{source:'probe',durationSec:ref.durationSec,width:ref.width,height:ref.height}})]);}
+  const source=workflowLumaSource;
+  const sourceJob=(await pg.pool.query<{id:number}>(`INSERT INTO app_jobs(job_id,user_id,engine_id,surface,status,provider,provider_job_id,video_url)
+    VALUES($1,$2,'luma-ray-3-2','video','completed','luma_agents_direct',$3,$4) RETURNING id`,[source.sourceJobId,source.ownerId,workflowLumaSourceRow.provider_job_id,source.originalUrl])).rows[0];
+  await pg.pool.query(`INSERT INTO provider_attempts(job_id,provider,provider_model,status,provider_job_id,request_snapshot)
+    VALUES($1,'luma_agents_direct','ray-3.2','completed',$2,'{}')`,[sourceJob.id,workflowLumaSourceRow.provider_job_id]);
+  await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,status,position,url) VALUES($1,$2,$3,'video','ready',0,$4)`,[source.outputId,source.sourceJobId,source.ownerId,source.originalUrl]);
+  await pg.pool.query('UPDATE media_assets SET source_job_id=$1,source_output_id=$2 WHERE public_id=$3 AND user_id=$4',[source.sourceJobId,source.outputId,source.assetId,source.ownerId]);
   const catalog=await workflowCatalog();const provider=new ProviderHarness(pg.pool);
   const lasPricing=async(request:CanonicalGenerationRequest,tier:Parameters<typeof priceCanonicalGeneration>[1],deps:ExecutorGenerationPricingDependencies)=>
     priceCanonicalGenerationInExecutor(request,tier,{...deps,computeBillingSnapshot:async(context,options)=>{
@@ -95,7 +103,8 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       'SELECT provider FROM app_jobs WHERE job_id=$1',[quote.quoteId])).rows[0].provider,'byteplus_modelark','The LAS reservation uses the executable provider identity');
     const calls=provider.captures.filter(call=>call.quoteId===quote.quoteId);assert.equal(calls.length,1);const body=calls[0].body;
     assert.equal(body.engineId,candidate.engine.id);assert.equal(body.mode,toEngineGenerationMode(candidate.engine.id,mode));
-    for(const selected of action.references??[])assert.ok(JSON.stringify(body).includes(workflowReference(selected.ref.kind,selected.role,undefined,candidate.engine.id).storageUrl),'Selected owned media reaches actual dispatch projection');
+    if(candidate.engine.id==='luma-ray-3-2'&&mode==='extend'){assert.equal(request.sourceJobId,source.sourceJobId);assert.equal(request.sourceOutputId,source.outputId);assert.equal(body.sourceJobId,source.sourceJobId);assert.equal(body.sourceOutputId,source.outputId);assert.deepEqual(request.references,[]);}
+    else for(const selected of action.references??[])assert.ok(JSON.stringify(body).includes(workflowReference(selected.ref.kind,selected.role,undefined,candidate.engine.id).storageUrl),'Selected owned media reaches actual dispatch projection');
     const receipts=await pg.pool.query<{amount_cents:number}>(`SELECT amount_cents FROM app_receipts WHERE job_id=$1 AND type='charge'`,[quote.quoteId]);assert.deepEqual(receipts.rows.map(row=>row.amount_cents),[quote.price.amountCents]);
     totalCharge+=quote.price.amountCents;
   });

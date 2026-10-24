@@ -31,3 +31,19 @@ export function workflowResolved(request:CanonicalGenerationRequest,action:Extra
   const selection=action.references!.find(r=>r.ref.type==='asset'&&reference.kind==='asset'&&r.ref.assetId===reference.assetId&&r.role===reference.role)!;
   return workflowReference(selection.ref.kind,reference.role,reference.slot,request.engineId);
 });}
+
+// Explicit owned lineage fixture for the new generation-anchor workflow.
+export const workflowLumaSource = {
+  sourceJobId: 'workflow-luma-source', outputId: 'workflow-luma-source:video:0',
+  ownerId: workflowActor.userId, assetId: workflowLumaVideoId,
+  originalUrl: workflowReference('video', 'source', undefined, 'luma-ray-3-2').storageUrl,
+};
+export const workflowLumaSourceRow = {
+  owner_id: workflowLumaSource.ownerId, source_job_id: workflowLumaSource.sourceJobId,
+  engine_id: 'luma-ray-3-2', surface: 'video', status: 'completed', provider: 'luma_agents_direct',
+  provider_job_id: 'private-workflow-generation', attempt_id: 1, attempt_provider: 'luma_agents_direct',
+  attempt_model: 'ray-3.2', attempt_status: 'completed', attempt_provider_job_id: 'private-workflow-generation',
+  output_id: workflowLumaSource.outputId, output_owner: workflowLumaSource.ownerId, output_status: 'ready',
+  original_url: workflowLumaSource.originalUrl, output_url: workflowLumaSource.originalUrl,
+  asset_id: workflowLumaSource.assetId, asset_owner: workflowLumaSource.ownerId, asset_status: 'ready',
+};

@@ -103,26 +103,20 @@ test('resolveKlingO3UnifiedMode treats subject image elements as ref2v and subje
   );
 });
 
-test('Kling 3.0 Omni 4K reports source-video conflicts while Standard and Pro stay selectable', () => {
+test('Kling 3.0 Omni 4K supports source-video alongside Standard and Pro', () => {
   const standard = engine('kling-o3-standard');
   const pro = engine('kling-o3-pro');
   const fourK = engine('kling-o3-4k');
   const inputAssets = { video_url: [asset('video_url', 'video')] };
 
   assert.equal(getKlingO3UnsupportedVideoReason({ engine: pro, inputAssets, klingElements: [] }), null);
-  assert.match(
-    getKlingO3UnsupportedVideoReason({ engine: fourK, inputAssets, klingElements: [] }) ?? '',
-    /does not support source video/i
-  );
+  assert.equal(getKlingO3UnsupportedVideoReason({ engine: fourK, inputAssets, klingElements: [] }), null);
   assert.deepEqual(
     getKlingO3DisabledEngineReasons({
       engines: [standard, pro, fourK],
       inputAssets,
       klingElements: [],
     }),
-    {
-      'kling-o3-4k':
-        'Kling 3.0 Omni 4K does not support source video yet. Remove the source video or switch back to Standard/Pro.',
-    }
+    {}
   );
 });

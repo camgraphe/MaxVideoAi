@@ -173,3 +173,25 @@ test('proposal selectors cover actual canonical Element and Site guidance/orient
  assert.match(JSON.stringify(details.operations?.find(item=>item.operation==='kling-edit')),/720–3840/);
  assert.match(engine.modeCaps!.v2v!.notes!,/3-15s/);
 });
+
+import { cloneEngine } from '../frontend/src/lib/engines';
+test('operation capabilities clone without structuredClone and isolate every nested schema and UI object', () => {
+ const original = getFalEngineById('kling-o3-standard')!.engine;
+ const before = JSON.stringify(original.operationCaps);
+ const saved = globalThis.structuredClone;
+ try {
+  globalThis.structuredClone = undefined as never;
+  const cloned = cloneEngine(original);
+  function isolated(source: unknown, copy: unknown) {
+   if (!source || typeof source !== 'object') return;
+   assert.notEqual(copy, source);
+   for (const [key, value] of Object.entries(source)) isolated(value, (copy as Record<string, unknown>)[key]);
+  }
+  isolated(original.operationCaps, cloned.operationCaps);
+  const edit = cloned.operationCaps!['kling-edit']!;
+  edit.inputSchema.required![1].acceptedMimeTypes!.push('mutated');
+  edit.inputSchema.constraints!.ownedAssetModes!.push('t2v');
+  edit.ui.resolution!.push('mutated');
+  assert.equal(JSON.stringify(original.operationCaps), before);
+ } finally { globalThis.structuredClone = saved; }
+});

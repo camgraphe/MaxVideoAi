@@ -98,7 +98,7 @@ const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
 ]);
 const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
   'gemini-omni-flash', 'lumaRay2', 'lumaRay2_flash', 'luma-ray-3-2',
-  'kling-o3-standard', 'kling-o3-pro', 'happy-horse-1-0',
+  'kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k', 'happy-horse-1-0',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini', 'seedance-2-5',
   'wan-3', 'wan-3-prime', 'ltx-2-3',
 ]);

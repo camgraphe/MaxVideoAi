@@ -175,7 +175,10 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
   }
   try {
     const engine = resolveVideoOperationEngine(candidate.engine, toEngineGenerationMode(request.engineId, request.mode), request.operation);
-    candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
+    if (engine !== candidate.engine) {
+      const mode = toEngineGenerationMode(request.engineId, request.mode);
+      candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, [request.mode]: engine.modeCaps?.[mode] } };
+    }
   } catch { throw new AgentApiError('PARAMETER_INVALID', 'Invalid video operation.'); }
   if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');

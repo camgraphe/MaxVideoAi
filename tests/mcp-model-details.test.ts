@@ -338,7 +338,7 @@ test('real i2i model details honor requiredInModes even when the field is stored
   assert.deepEqual(textMode.references, []);
   assert.deepEqual(editMode.references, [
     {
-      type: 'image', roles: ['reference'], assetRequired: false, required: true, min: 1, max: 4,
+      type: 'image', description: 'Provide source images when using Edit mode.', roles: ['reference'], assetRequired: false, required: true, min: 1, max: 4,
       maxSizeMB: 25, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
       acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
     },
@@ -413,13 +413,13 @@ test('Luma Ray 2 V2V details explain source-derived duration and fixed pricing r
   assert.deepEqual(mode.aspectRatios, []);
   assert.deepEqual(mode.references, [
     {
-      type: 'video', roles: ['source'], assetRequired: true, required: true, min: 1, max: 1,
+      type: 'video', description: 'Upload the video to modify or reframe.', roles: ['source'], assetRequired: true, required: true, min: 1, max: 1,
       maxSizeMB: 500,
       acceptedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
       acceptedFileExtensions: ['mp4', 'mov', 'webm', 'm4v'],
     },
     {
-      type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 1, max: 1,
+      type: 'image', description: 'Optional still reference to steer styling or composition during modify or reframe.', roles: ['reference'], assetRequired: false, required: false, min: 1, max: 1,
       maxSizeMB: 10,
       acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
       acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
@@ -444,7 +444,7 @@ test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit key
   assert.ok(mode);
   assert.deepEqual(mode.references, [
     {
-      type: 'video', roles: ['source'], assetRequired: true,
+      type: 'video', description: 'Upload a video from your device or library, up to 18s. Modify follows the source timing; the price is calculated after import.', roles: ['source'], assetRequired: true,
       durationSec: { min: null, max: 18, combinedMax: null },
       maxSizeMB: 200,
       acceptedMimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'],
@@ -452,12 +452,12 @@ test('Luma Ray 3.2 V2V details distinguish one guide frame from ordered edit key
       required: true, min: 1, max: 1,
     },
     {
-      type: 'image', roles: ['first_frame'], assetRequired: false, required: false, min: 0, max: 1,
+      type: 'image', description: 'Optional single guide frame for Ray 3.2 Modify. Do not combine with multi-keyframes.', roles: ['first_frame'], assetRequired: false, required: false, min: 0, max: 1,
       maxSizeMB: 50, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
       acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
     },
     {
-      type: 'image', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 64,
+      type: 'image', description: 'Optional guide frames pinned to source-video frame indexes. Provide indexes below in the same order.', roles: ['reference'], assetRequired: false, required: false, min: 0, max: 64,
       maxSizeMB: 50, acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
       acceptedFileExtensions: ['jpg', 'jpeg', 'png', 'webp'],
     },

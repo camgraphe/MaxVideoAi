@@ -18,7 +18,7 @@ import {toolAssetRefSchema,type ToolAssetRef} from '../frontend/src/lib/toolbox/
 import {isWorkspaceModelCertifiedForBlock} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
 import {projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
-import {workflowCatalog,workflowAction,workflowInput,workflowActor,workflowReference,workflowResolved} from './helpers/studio-video-workflow-fixtures';
+import {workflowCatalog,workflowAction,workflowInput,workflowActor,workflowReference,workflowResolved,workflowLumaSource,workflowLumaSourceRow} from './helpers/studio-video-workflow-fixtures';
 
 const actor={authMethod:'studio-session' as const,userId:'workflow-owner',projectId:'workflow-project',clientId:null};
 const entries=listFalEngines();
@@ -42,7 +42,7 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),136,'Conversation qualification preserves every proven public tuple.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138,'Conversation qualification preserves every proven public tuple.');
   assert.equal(studio.find(e=>e.engine.id==='gemini-omni-flash')!.publicModes.includes('retake'),false,'Private interaction continuity remains excluded by the public catalog.');
   for(const candidate of studio){const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface==='video');for(const mode of details.modes){const canonical=projectAgentModelModeDetails(candidate,mode.mode);assert.deepEqual(mode.references.map(r=>[r.type,r.roles,r.required,r.min]),canonical.references.map(r=>[r.type,r.roles,r.required,r.min]));}}
 });
@@ -80,14 +80,19 @@ test('strict video schema scopes each asset identity to its exact reviewed media
   const tool=STUDIO_MEDIA_DIRECTOR_TOOLS.find(t=>t.name==='video_prepare')!;const original=structuredClone(tool.properties);
   const properties=studioToolReferenceProperties(tool.name,tool.properties,Object.keys(ids).map(k=>resolved(k as keyof typeof ids)));
   const validate=new AjvJsonSchemaValidator().getValidator({type:'object',additionalProperties:false,properties,required:Object.keys(properties)} as unknown as JsonSchemaType);
-  for(const kind of ['image','video','audio'] as const){const payload={reply:'Review.',prompt:'Continue the clip.',aspectRatio:'16:9',modelId:'wan-3',mode:'extend',settings:[],outputCount:1,source:ref(kind),references:[],assembleExtension:null};assert.equal(validate(payload).valid,true,kind);assert.equal(validate({...payload,source:{...ref(kind),assetId:ids[kind==='image'?'video':'image']}}).valid,false,'Wrong typed identity');assert.equal(validate({...payload,source:{...ref(kind),assetId:'ma_'+'f'.repeat(32)}}).valid,false,'Unattached');}
+  for(const kind of ['image','video','audio'] as const){const payload={reply:'Review.',prompt:'Continue the clip.',aspectRatio:'16:9',modelId:'wan-3',mode:'extend',operation:null,elements:null,settings:[],outputCount:1,source:ref(kind),references:[],assembleExtension:null};assert.equal(validate(payload).valid,true,kind);assert.equal(validate({...payload,source:{...ref(kind),assetId:ids[kind==='image'?'video':'image']}}).valid,false,'Wrong typed identity');assert.equal(validate({...payload,source:{...ref(kind),assetId:'ma_'+'f'.repeat(32)}}).valid,false,'Unattached');}
   assert.deepEqual(tool.properties,original);
 });
 test('every certified video tuple preserves its authored request and provider media fields',async t=>{
   const catalog=await workflowCatalog();const factories={video:()=>({catalog:async()=>catalog})} as unknown as StudioMediaFactories;
   for(const candidate of catalog)for(const mode of candidate.publicModes)await t.test(candidate.engine.id+' '+mode,async()=>{
     const action=workflowAction(candidate,mode);
-    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{resolveMedia:async(_userId,raw)=>{const ref=toolAssetRefSchema.parse(raw);const media=workflowReference(ref.kind,'source',undefined,candidate.engine.id);return {kind:media.mediaKind,url:media.storageUrl,mime:media.mimeType,width:media.width,height:media.height,durationSec:media.durationSec,sizeBytes:media.sizeBytes,originalName:media.originalName} as never;}}) as CanonicalGenerationRequest;
+    const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true,{lumaSourceExecutor:{query:async(sql,params)=>{
+      assert.equal(params?.[1],workflowActor.userId);
+      if(sql.includes('FROM media_assets')){assert.equal(params?.[0],workflowLumaSource.assetId);return [{source_job_id:workflowLumaSource.sourceJobId,source_output_id:workflowLumaSource.outputId}] as never;}
+      assert.equal(params?.[0],workflowLumaSource.sourceJobId);assert.equal(params?.[2],workflowLumaSource.assetId);return [workflowLumaSourceRow] as never;
+    }},resolveMedia:async(_userId,raw)=>{const ref=toolAssetRefSchema.parse(raw);const media=workflowReference(ref.kind,'source',undefined,candidate.engine.id);return {kind:media.mediaKind,url:media.storageUrl,mime:media.mimeType,width:media.width,height:media.height,durationSec:media.durationSec,sizeBytes:media.sizeBytes,originalName:media.originalName} as never;}}) as CanonicalGenerationRequest;
+    if(candidate.engine.id==='luma-ray-3-2'&&mode==='extend'){assert.equal(request.sourceJobId,workflowLumaSource.sourceJobId);assert.equal(request.sourceOutputId,workflowLumaSource.outputId);assert.deepEqual(request.references,[]);}
     const refs=workflowResolved(request,action);requireStudioGenerationRequest(request);validateCanonicalGenerationCapabilities(request,candidate,{resolvedReferences:refs});
     assert.equal(request.engineId,candidate.engine.id);assert.equal(request.mode,mode);
     for(const setting of action.settings??[])assert.equal(request.settings[setting.name],setting.value,setting.name);

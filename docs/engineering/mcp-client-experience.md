@@ -675,3 +675,20 @@ one intentional skip, then the curated evaluator). The instruction matrix report
 1,998 bytes maximum across 256 gate combinations; each tool description remains
 within the 2,000-byte budget. This records deterministic source validation, not
 plugin publication, deployment, paid render or real-host qualification.
+
+## Operation integration wording — 24 October 2026 source candidate
+
+The `prepare_generation` Elements field now says “no URLs or external subject
+IDs” instead of “no URLs/provider IDs”. This preserves the owned-reference-slot
+constraint while keeping the thin-adapter architecture guard distinct from
+provider implementation dependencies. No tool permissions, schema fields,
+validation rules, curated decisions or global instructions changed in this pass.
+
+The reviewed policy fingerprint is
+`fc54c23abe474ed87f05a127f8eb7f77103fb189f3a581d31751bf3e724818a5`.
+The fixture-contract hash and all 70 curated decisions are unchanged.
+`pnpm mcp:client:check` passes 175 tests with one intentional skip, followed by
+the deterministic selection evaluator. The instruction-budget check measures a
+maximum of 1,998 bytes across 256 gate combinations; descriptor budget checks
+also pass. These offline checks do not establish deployment, host refresh or
+real-host qualification.

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "evidenceKind": "curated-offline-policy-expectations",
-  "policyFingerprintSha256": "dd0aa60c98fc3026d3466cb055b7cab148b3fde93a4a105c8a9b6898e6b800c7",
+  "policyFingerprintSha256": "fc54c23abe474ed87f05a127f8eb7f77103fb189f3a581d31751bf3e724818a5",
   "fixtureContractSha256": "05f0fd68e1f8b0a403760bd68368a1cfeb73d85308750ffbc6808dc7e08cdb04",
   "policyCoverage": {
     "fixtureCount": 70,

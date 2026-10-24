@@ -976,7 +976,10 @@ export function validateCanonicalGenerationCapabilities(
 ): void {
   try {
     const engine = resolveVideoOperationEngine(candidate.engine, request.mode as Mode, request.operation);
-    candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, ...engine.modeCaps } };
+    if (engine !== candidate.engine) {
+      const mode = request.mode as Mode;
+      candidate = { ...candidate, engine, modeCaps: { ...candidate.modeCaps, [request.mode]: engine.modeCaps?.[mode] } };
+    }
   } catch { fail('operation'); }
   if (
     candidate.engine.id !== request.engineId

@@ -3,6 +3,7 @@ import { getModelRoster } from '@/lib/model-roster';
 import type {
   EngineCaps,
   EngineInputField,
+  EngineInputSchema,
   EngineModeUiCaps,
   ItemizationLine,
   PreflightResponse,
@@ -90,38 +91,48 @@ function cloneModeUiCaps(caps: EngineModeUiCaps): EngineModeUiCaps {
   };
 }
 
+// Constraints are authored plain data and may contain nested arrays/records.
+function cloneCapabilityData<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(cloneCapabilityData) as T;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, cloneCapabilityData(entry)])) as T;
+  }
+  return value;
+}
+
+function cloneInputSchema(schema: EngineInputSchema): EngineInputSchema {
+  return {
+    ...schema,
+    required: schema.required?.map(cloneInputField),
+    optional: schema.optional?.map(cloneInputField),
+    referenceBudget: schema.referenceBudget ? cloneCapabilityData(schema.referenceBudget) : undefined,
+    constraints: schema.constraints ? cloneCapabilityData(schema.constraints) : undefined,
+  };
+}
+
 function cloneInputField(field: EngineInputField): EngineInputField {
   return {
     ...field,
     modes: field.modes ? [...field.modes] : undefined,
     requiredInModes: field.requiredInModes ? [...field.requiredInModes] : undefined,
     values: field.values ? [...field.values] : undefined,
+    acceptedMimeTypes: field.acceptedMimeTypes ? [...field.acceptedMimeTypes] : undefined,
+    acceptedFileExtensions: field.acceptedFileExtensions ? [...field.acceptedFileExtensions] : undefined,
+    imageAspectRatio: field.imageAspectRatio ? { ...field.imageAspectRatio } : undefined,
   };
 }
 
 export function cloneEngine(engine: EngineCaps): EngineCaps {
   return {
     ...engine,
-    ...(engine.operationCaps ? { operationCaps: structuredClone(engine.operationCaps) } : {}),
+    ...(engine.operationCaps ? { operationCaps: Object.fromEntries(
+      Object.entries(engine.operationCaps).map(([operation, caps]) => [operation, caps ? {
+        ...caps, inputSchema: cloneInputSchema(caps.inputSchema), ui: cloneModeUiCaps(caps.ui),
+      } : caps])
+    ) } : {}),
     params: { ...engine.params },
     inputLimits: { ...engine.inputLimits },
-    inputSchema: engine.inputSchema
-      ? {
-          required: engine.inputSchema.required?.map(cloneInputField),
-          optional: engine.inputSchema.optional?.map(cloneInputField),
-          referenceBudget: engine.inputSchema.referenceBudget
-            ? {
-                ...engine.inputSchema.referenceBudget,
-                fieldIds: [...engine.inputSchema.referenceBudget.fieldIds],
-                ...(engine.inputSchema.referenceBudget.maxByType ? { maxByType: { ...engine.inputSchema.referenceBudget.maxByType } } : {}),
-                modes: engine.inputSchema.referenceBudget.modes
-                  ? [...engine.inputSchema.referenceBudget.modes]
-                  : undefined,
-              }
-            : undefined,
-          constraints: engine.inputSchema.constraints ? { ...engine.inputSchema.constraints } : undefined,
-        }
-      : undefined,
+    inputSchema: engine.inputSchema ? cloneInputSchema(engine.inputSchema) : undefined,
     providerMeta: engine.providerMeta ? { ...engine.providerMeta } : undefined,
     pricing: engine.pricing ? { ...engine.pricing } : undefined,
     pricingDetails: engine.pricingDetails

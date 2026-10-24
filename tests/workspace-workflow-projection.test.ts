@@ -88,7 +88,10 @@ test('live Kling O3 subjects choose reference mode and Modify preserves the requ
       assert.equal(live(id, { video_url: [asset('video_url', 'video', 5.558333)] }, { durationSec }).effectiveDurationSec, durationSec);
     }
   }
-  assert.ok(live('kling-o3-4k', { video_url: [asset('video_url', 'video', 7.2)] }).klingO3UnsupportedVideoReason);
+  const fourK = live('kling-o3-4k', { video_url: [asset('video_url', 'video', 7.2)] });
+  assert.equal(fourK.klingO3UnsupportedVideoReason, null);
+  assert.equal(fourK.submissionMode, 'v2v');
+  assert.equal(fourK.effectiveDurationSec, 5);
 });
 
 test('live LTX preserves manual retake and derives a2v duration from rounded source audio', () => {

@@ -131,7 +131,7 @@ const elementSlot = z.number().int().min(0).max(65);
 const klingOwnedElementsSchema = z.array(z.discriminatedUnion('kind', [
   z.object({kind:z.literal('images'),frontalSlot:elementSlot,referenceSlots:z.array(elementSlot).min(1).max(3)}).strict(),
   z.object({kind:z.literal('video'),videoSlot:elementSlot}).strict(),
-])).min(1).max(3).describe('Kling Modify only. Compose owned role=reference slots into subjects. Element slots must be assets; no URLs/provider IDs. Elements plus remaining guidance images: at most four.');
+])).min(1).max(3).describe('Kling Modify only. Compose owned role=reference slots into subjects. Element slots must be assets; no URLs or external subject IDs. Elements plus remaining guidance images: at most four.');
 
 export const prepareGenerationInputSchema = z.object({
   schemaVersion: z.literal(1).nullable().default(null),
