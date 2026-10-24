@@ -195,7 +195,10 @@ test('the specialized-mode audit verifies H3 Max owned-media modes are executabl
     .map((mode) => `${h3Max.id}:${mode}`)
     .sort();
 
-  assert.deepEqual(closed, ['minimax-h3-max:v2v']);
+  assert.deepEqual(closed, []);
+  assert.deepEqual(resolveAgentGenerationModeExecutability(h3Max.engine, 'v2v', {
+    bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: '', providerEnv: {},
+  }), { executable: false, reason: 'provider_credentials_missing' });
   for (const operation of ['h3-recast', 'h3-relight'] as const) {
     assert.equal(resolveAgentGenerationRequestExecutability(normalizeGenerationRequest({surface:'video',engineId:h3Max.id,mode:'v2v',operation,prompt:operation==='h3-recast'?'Edit the setting':'',settings:{resolution:'720p'}}), h3Max.engine, [], {
       bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: 'test-credential', providerEnv: {},
