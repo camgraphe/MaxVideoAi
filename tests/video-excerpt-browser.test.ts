@@ -42,7 +42,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
   for(const width of [1440,390,320]){
   await page.setViewportSize({width,height:1000});
   for(const action of ['Cancel','Escape','Apply']){
-   const opener=page.getByRole('button',{name:'Choose start and end',exact:true});
+   const opener=page.getByRole('button',{name:'Choose section',exact:true});
    const box=await opener.boundingBox();assert.ok(box);
    assert.equal(await opener.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'excerpt action must not be covered by Remove');
    await opener.focus();await page.keyboard.press('Enter');
@@ -56,7 +56,7 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
     await dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}).fill('1');
     await dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true}).fill('5');
    }
-   if(action==='Apply')await dialog.getByRole('button',{name:'Use excerpt',exact:true}).click();else if(action==='Cancel')await dialog.getByRole('button',{name:'Cancel',exact:true}).click();else await page.keyboard.press('Escape');
+   if(action==='Apply')await dialog.getByRole('button',{name:'Use this section',exact:true}).click();else if(action==='Cancel')await dialog.getByRole('button',{name:'Cancel',exact:true}).click();else await page.keyboard.press('Escape');
    mediaRequests.splice(0);
    await dialog.waitFor({state:'hidden',timeout:5000}).catch(async error=>{throw new Error(`${density}/${width}/${action}: ${await dialog.textContent()} / page errors ${pageErrors.join('; ')} / ${error}`);});
    assert.equal(await opener.evaluate(el=>document.activeElement===el),true,`${density}/${width}/${action}: closing returns focus to the current source action`);
@@ -66,16 +66,16 @@ test('both shared excerpt surfaces restore keyboard focus after Apply, Cancel an
   for(const change of ['source','model','account']){
    await page.reload();await page.waitForLoadState('networkidle');mediaRequests.length=0;
    await page.evaluate(()=>{(window as any).holdPreparation=true;});
-   let opener=page.getByRole('button',{name:'Choose start and end',exact:true});
+   let opener=page.getByRole('button',{name:'Choose section',exact:true});
    await opener.focus();await page.keyboard.press('Enter');
    let dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();mediaRequests.length=0;
    await dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}).fill('1');
    await dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true}).fill('5');
-   await dialog.getByRole('button',{name:'Use excerpt',exact:true}).click();
+   await dialog.getByRole('button',{name:'Use this section',exact:true}).click();
    await page.waitForFunction(()=>Boolean((window as any).finishPreparation));
    await page.evaluate(change=>(window as any).fixture.replace(change),change);
    await dialog.waitFor({state:'hidden'});
-   opener=page.getByRole('button',{name:'Choose start and end',exact:true});
+   opener=page.getByRole('button',{name:'Choose section',exact:true});
    await opener.focus();await page.keyboard.press('Enter');
    dialog=page.getByRole('dialog');await dialog.locator('video').waitFor();
    await page.waitForFunction(()=>document.querySelector('[role=dialog]')?.contains(document.activeElement));
@@ -116,7 +116,7 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    await page.goto(`http://127.0.0.1:${address.port}`);await page.waitForTimeout(150);
    assert.equal(mediaRequests,0,'opening alone never fetches source or thumbnails');
    const dialog=page.getByRole('dialog'), start=dialog.getByRole('spinbutton',{name:'Start (seconds)',exact:true}), end=dialog.getByRole('spinbutton',{name:'End (seconds)',exact:true});
-   assert.equal(await dialog.getByRole('button',{name:'Use excerpt',exact:true}).isDisabled(),true);
+   assert.equal(await dialog.getByRole('button',{name:'Use this section',exact:true}).isDisabled(),true);
    const track=dialog.locator('.video-excerpt-track');await track.scrollIntoViewIfNeeded();
    let box=await track.boundingBox();assert.ok(box);
    let grip=await dialog.locator('.video-excerpt-handle-start').boundingBox();assert.ok(grip);
@@ -127,7 +127,7 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    await page.mouse.move(grip.x+grip.width/2-15,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2-14,grip.y+grip.height/2);await page.mouse.up();
    assert.equal(Number(await start.inputValue()),Number((initialStart+60/box.width).toFixed(2)),'off-center mouse grab preserves offset');
    await end.fill('25');
-   await dialog.getByRole('button',{name:'Zoom to excerpt',exact:true}).click();
+   await dialog.getByRole('button',{name:'Zoom to section',exact:true}).click();
    const beforeRange=[await start.inputValue(),await end.inputValue()];
    assert.equal(await dialog.getByRole('button',{name:'Full view'}).getAttribute('aria-pressed'),'true');
    assert.deepEqual([await start.inputValue(),await end.inputValue()],beforeRange);
@@ -158,7 +158,7 @@ test('real frames, mouse/touch trim, seek, zoom and exact reset work at desktop 
    assert.ok(Number(await start.inputValue())<Number(await end.inputValue()));
    await dialog.getByRole('button',{name:'Whole video',exact:true}).click();
    assert.equal(await start.inputValue(),'0');assert.equal(await end.inputValue(),'60');
-   const apply=dialog.getByRole('button',{name:'Use excerpt',exact:true});await apply.scrollIntoViewIfNeeded();
+   const apply=dialog.getByRole('button',{name:'Use this section',exact:true});await apply.scrollIntoViewIfNeeded();
    const actionBox=await apply.boundingBox();assert.ok(actionBox);assert.ok(actionBox.y>=0&&actionBox.y+actionBox.height<=height);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    assert.equal(await dialog.evaluate(node=>node.scrollWidth>node.clientWidth+1),false);

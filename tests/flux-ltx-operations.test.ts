@@ -6,6 +6,28 @@ import { normalizeVideoOperation, resolveVideoOperationEngine } from '../fronten
 import { validateFluxLtxSource } from '../frontend/lib/flux-ltx-operations';
 import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
+import { validateGenerationMediaConstraints } from '../frontend/app/api/generate/_lib/generation-media-constraints';
+
+for (const [id, mode, operation] of [['flux-3', 'v2v', 'flux-fast-edit'], ['ltx-2-3', 'reframe', 'ltx23-reframe']] as const) {
+  test(`${operation} reuses missing stored dimensions from its existing qualified original probe`, async () => {
+    const engine = resolveVideoOperationEngine(getFalEngineById(id)!.engine, mode, operation);
+    const url = 'https://media.example.com/owned.mp4'; let probes = 0;
+    const result = await validateGenerationMediaConstraints({
+      engineId: id, mode, userId: 'owner', inputSchema: engine.inputSchema,
+      attachments: [{ assetId: 'asset', slotId: 'video_url', kind: 'video', url, name: 'x.mp4', type: 'video/mp4', size: 100 }],
+      referenceMediaItems: [{ fieldId: 'video_url', kind: 'video', url }],
+      deps: {
+        queryFn: async <T>() => [{ asset_id: 'asset', url, original_name: 'x.mp4', mime_type: 'video/mp4', size_bytes: 100, duration_sec: 6, width: null, height: null }] as T[],
+        inspectFluxLtxSourceFn: async (source, selectedOperation, owner) => {
+          assert.equal(source, url); assert.equal(selectedOperation, operation); assert.equal(owner, 'owner'); probes++;
+          return { kind: 'video', width: 1280, height: 720, durationSec: 5.558333, fps: 30, hasAudio: false, sizeBytes: 100, mimeType: 'video/mp4', videoCodec: 'h264', audioCodec: null, sourceSha256: 'byte-hash' };
+        },
+      },
+    });
+    assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(probes, 1);
+    if (result.ok) assert.deepEqual(result.trustedMediaReferences?.map(source => [source.width, source.height, source.durationSec]), [[1280, 720, 5.558333]]);
+  });
+}
 
 test('FAST is an explicit FLUX base operation with strict MP4, duration and byte bounds',()=>{
  assert.equal(normalizeVideoOperation('flux-3','v2v','flux-fast-edit'),'flux-fast-edit');

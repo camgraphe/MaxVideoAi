@@ -16,6 +16,7 @@ export type ReferenceAsset = {
   id: string;
   fieldId: string;
   previewUrl: string;
+  thumbnailUrl?: string | null;
   kind: 'image' | 'video' | 'audio';
   name: string;
   size: number;
@@ -74,7 +75,7 @@ export type AssetLibrarySource =
   | 'character'
   | 'angle'
   | 'upscale';
-export type AssetLibraryKind = 'image' | 'video';
+export type AssetLibraryKind = 'image' | 'video' | 'audio';
 
 export type AssetPickerTarget =
   | { kind: 'field'; field: EngineInputField; slotIndex?: number }
@@ -218,6 +219,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
     id: asset.id || `library_${Date.now().toString(36)}`,
     fieldId: field.id,
     previewUrl: field.type === 'video' ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url : asset.accessUrl ?? asset.url,
+    thumbnailUrl: asset.thumbnailAccessUrl ?? asset.thumbUrl ?? null,
     kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
     name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
     size: asset.size ?? 0,
@@ -630,6 +632,7 @@ export function buildComposerAttachments(
             size: asset.size,
             type: asset.type,
             previewUrl: asset.previewUrl,
+            thumbnailUrl: asset.thumbnailUrl,
             status: asset.status,
             error: asset.error,
           }

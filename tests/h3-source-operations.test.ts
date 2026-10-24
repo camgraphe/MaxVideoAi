@@ -82,7 +82,85 @@ test('media admission probes only exact owned source bytes and never trusts call
 });
 
 import { buildMinimaxH3MaxFalRequest } from '../frontend/src/lib/minimax-h3-max';
+for (const operation of ['h3-recast', 'h3-relight'] as const) {
+  for (const storedDimensions of [{ width: null, height: null }, { width: 16, height: 9 }]) {
+    test(`${operation} reuses owned videos with missing or stale dimensions from the existing byte probe (${storedDimensions.width})`, async () => {
+      const engine = resolveVideoOperationEngine(MINIMAX_H3_MAX_ENGINE, 'v2v', operation);
+      const url = 'https://media.example.com/owned.mp4';
+      let probes = 0;
+      const result = await validateGenerationMediaConstraints({
+        engineId: engine.id, mode: 'v2v', userId: 'owner', inputSchema: engine.inputSchema,
+        attachments: [{ assetId: 'asset', slotId: 'video_url', kind: 'video', url, name: 'x.mp4', type: 'video/mp4', size: 100, width: 1, height: 1 }],
+        referenceMediaItems: [{ fieldId: 'video_url', kind: 'video', url }],
+        deps: {
+          queryFn: async <T>() => [{ asset_id: 'asset', url, origin_url: null, original_name: 'x.mp4', mime_type: 'video/mp4', size_bytes: 100, duration_sec: 6, ...storedDimensions }] as T[],
+          inspectH3SourceFn: async (ownedUrl, actualOperation, owner) => {
+            assert.equal(ownedUrl, url); assert.equal(actualOperation, operation); assert.equal(owner, 'owner'); probes++;
+            return { kind: 'video', width: 1920, height: 1080, durationSec: 124 / 24, fps: 24, hasAudio: false, sizeBytes: 100, mimeType: 'video/mp4', videoCodec: 'h264', audioCodec: null, decodedFrameCount: 124, constantFrameRate: true, sourceSha256: 'byte-hash' };
+          },
+        },
+      });
+      assert.equal(result.ok, true, JSON.stringify(result));
+      assert.equal(probes, 1, 'reuse does not require a second download or a metadata write');
+      if (result.ok) {
+        assert.equal(result.trustedMediaReferences?.[0]?.width, 1920);
+        assert.equal(result.trustedMediaReferences?.[0]?.height, 1080);
+        assert.equal(result.trustedMediaReferences?.[0]?.durationSec, 124 / 24);
+      }
+    });
+  }
+}
 import { validateProviderSpecificConstraints } from '../frontend/src/server/video-generation/execution-constraints';
+test('invalid measured source dimensions cannot fall back to stored or caller claims', async () => {
+  const engine = resolveVideoOperationEngine(MINIMAX_H3_MAX_ENGINE, 'v2v', 'h3-recast');
+  const url = 'https://media.example.com/owned.mp4';
+  const result = await validateGenerationMediaConstraints({
+    engineId: engine.id, mode: 'v2v', userId: 'owner', inputSchema: engine.inputSchema,
+    attachments: [{ assetId: 'asset', slotId: 'video_url', kind: 'video', url, name: 'x.mp4', type: 'video/mp4', size: 100, width: 1920, height: 1080 }],
+    referenceMediaItems: [{ fieldId: 'video_url', kind: 'video', url }],
+    deps: {
+      queryFn: async <T>() => [{ asset_id: 'asset', url, original_name: 'x.mp4', mime_type: 'video/mp4', size_bytes: 100, width: 1920, height: 1080 }] as T[],
+      inspectH3SourceFn: async () => ({ kind: 'video', width: 0, height: 0, durationSec: 6, fps: 24, hasAudio: false, sizeBytes: 100, mimeType: 'video/mp4', videoCodec: 'h264', audioCodec: null, sourceSha256: 'byte-hash' }),
+    },
+  });
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.body.error, 'MEDIA_DIMENSIONS_UNVERIFIED');
+});
+
+import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
+test('a stale H3 form without an explicit action gets actionable guidance without a quote or inferred operation', async () => {
+  let quoted = false;
+  const response = await resolveMediaAwarePreflight({ userId: 'owner', request: {
+    engine: 'minimax-h3-max', mode: 'v2v', durationSec: 6, resolution: '768P', user: { memberTier: 'Member' },
+  } }, {
+    getConfiguredEngineFn: async () => MINIMAX_H3_MAX_ENGINE,
+    computeConfiguredPreflightFn: async () => { quoted = true; throw new Error('Missing operation must not quote'); },
+  });
+  assert.equal(response.ok, false);
+  assert.equal(response.error?.code, 'OPERATION_INVALID');
+  assert.match(response.error?.message ?? '', /Choose Replace characters or Change lighting/);
+  assert.match(response.error?.message ?? '', /save your prompt and reload/);
+  assert.equal(quoted, false);
+});
+test('H3 reused source with missing stored dimensions reaches quote using the existing measured duration', async () => {
+  const url = 'https://media.example.com/owned.mp4';
+  let quotes = 0;
+  const response = await resolveMediaAwarePreflight({ userId: 'owner', request: {
+    engine: 'minimax-h3-max', mode: 'v2v', operation: 'h3-recast', durationSec: 30, resolution: '768P',
+    inputs: [{ assetId: 'asset', slotId: 'video_url', kind: 'video', url }], user: { memberTier: 'Member' },
+  } }, {
+    getConfiguredEngineFn: async () => MINIMAX_H3_MAX_ENGINE,
+    computeConfiguredPreflightFn: async request => {
+      quotes++; assert.equal(request.durationSec, 5.558333); assert.equal(request.operation, 'h3-recast');
+      return { ok: true, total: 125 };
+    },
+    mediaConstraintDeps: {
+      queryFn: async <T>() => [{ asset_id: 'asset', url, original_name: 'x.mp4', mime_type: 'video/mp4', size_bytes: 100, duration_sec: null, width: null, height: null }] as T[],
+      inspectH3SourceFn: async () => ({ kind: 'video', width: 1920, height: 1080, durationSec: 5.558333, fps: 30, hasAudio: false, sizeBytes: 100, mimeType: 'video/mp4', videoCodec: 'h264', audioCodec: null, sourceSha256: 'byte-hash' }),
+    },
+  });
+  assert.equal(response.ok, true, JSON.stringify(response)); assert.equal(response.total, 125); assert.equal(quotes, 1);
+});
 test('reference keyframes and complete cross-modality order reach the exact mutually exclusive provider shape',()=>{
  const input={mode:'ref2v' as const,prompt:'Follow the reference sequence',durationSec:5,resolution:'768P',imageUrl:'start',endImageUrl:'end',middleImageUrl:'middle',middleFrameTime:2.5,referenceImageUrls:['image'],referenceVideoUrls:['video'],referenceAudioUrls:['audio'],referenceOrder:'video1,image1,audio1'};
  const {requestBody}=buildMinimaxH3MaxFalRequest(input);

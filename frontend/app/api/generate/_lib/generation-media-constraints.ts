@@ -370,14 +370,12 @@ export async function validateGenerationMediaConstraints(params: {
       });
     }
 
-    const trustedWidth = normalizeDimension(stored.width);
-    const trustedHeight = normalizeDimension(stored.height);
     const trustedReference: MinimaxH3MaxPricingReference = {
       kind: candidate.kind,
       fieldId: candidate.fieldId,
       url: candidate.url,
-      width: trustedWidth,
-      height: trustedHeight,
+      width: normalizeDimension(stored.width),
+      height: normalizeDimension(stored.height),
       durationSec: candidate.kind === 'video'
         ? videoDuration(stored.media_metadata ?? {}, stored.url, normalizeDurationSec(stored.duration_sec))
         : normalizeDurationSec(stored.duration_sec),
@@ -385,7 +383,7 @@ export async function validateGenerationMediaConstraints(params: {
     if (h3Operation && candidate.kind === 'video' && candidate.fieldId === 'video_url') {
       try {
         const measured = await (params.deps?.inspectH3SourceFn ?? inspectOwnedH3Source)(stored.url,h3Operation,params.userId);
-        Object.assign(trustedReference,{durationSec:measured.durationSec,fps:measured.fps,decodedFrameCount:measured.decodedFrameCount,constantFrameRate:measured.constantFrameRate,sourceSha256:measured.sourceSha256});
+        Object.assign(trustedReference,{durationSec:measured.durationSec,width:measured.width,height:measured.height,fps:measured.fps,decodedFrameCount:measured.decodedFrameCount,constantFrameRate:measured.constantFrameRate,sourceSha256:measured.sourceSha256});
       } catch (error) {
         if (error instanceof AgentApiError && error.retryable) return {ok:false,status:429,body:{ok:false,error:'RATE_LIMITED',message:error.message,field:candidate.fieldId,retryable:true},metric:{errorCode:'RATE_LIMITED',meta:{field:candidate.fieldId}}};
         return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This source could not be qualified for the selected H3 operation. Relight needs constant 24 fps and 17n+5 decoded frames; prepare a compatible copy.'});
@@ -399,6 +397,10 @@ export async function validateGenerationMediaConstraints(params: {
         return failure({error:'MEDIA_DURATION_UNVERIFIED',fieldId:candidate.fieldId,message:'This owned source does not satisfy the selected operation. Prepare a compatible copy and review its timing.'});}
     }
     trustedMediaReferences.push(trustedReference);
+    // Source operations already inspect owned original bytes. Their measured dimensions
+    // also qualify reused outputs whose older stored metadata is missing or stale.
+    const trustedWidth = normalizeDimension(trustedReference.width);
+    const trustedHeight = normalizeDimension(trustedReference.height);
     const imageRatio = validateImageAspectRatio(field, trustedWidth, trustedHeight);
     if (imageRatio !== 'valid') {
       return failure({

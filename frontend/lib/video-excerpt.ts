@@ -16,6 +16,18 @@ export type VideoExcerptLimits = Readonly<{
 }>;
 const positive = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
 
+/** Known source timing only; missing metadata is verified by the server, never guessed. */
+export function getMediaExcerptDurationIssue(
+  durationSec: number | null | undefined,
+  limits: Pick<VideoExcerptLimits, 'minDurationSec' | 'maxDurationSec'> | null | undefined,
+): 'too-short' | 'too-long' | null {
+  const duration = positive(durationSec);
+  if (duration === null || !limits) return null;
+  if (limits.minDurationSec !== null && duration < limits.minDurationSec) return 'too-short';
+  if (limits.maxDurationSec !== null && duration > limits.maxDurationSec) return 'too-long';
+  return null;
+}
+
 /** Model input policy only. Worker preparation budgets must never become generation limits. */
 export function getVideoExcerptLimits(engine: EngineCaps, mode: VideoSourceWorkflow): VideoExcerptLimits | null {
   if (!engine.modes.includes(mode) || engine.modeAvailability?.[mode]?.available === false) return null;

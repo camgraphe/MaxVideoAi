@@ -3,7 +3,8 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
-import type { EngineInputField } from '@/types/engines';
+import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { getMediaInputEligibility, getKlingElementMediaEligibility } from '@/lib/media-input-eligibility';
 import type { VideoGroup } from '@/types/video-groups';
 import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
 import type {
@@ -36,6 +37,8 @@ const WorkspaceAuthGateModal = dynamic<WorkspaceAuthGateModalProps>(
 );
 
 export function WorkspaceRuntimeModals({
+  engine,
+  mode,
   viewerGroup,
   onCloseViewer,
   onRefreshJob,
@@ -79,9 +82,13 @@ export function WorkspaceRuntimeModals({
   onRefreshAssets,
   onLoadMoreAssets,
   onSelectFieldAsset,
+  onImportFieldFile,
   onSelectKlingAsset,
+  onImportKlingFile,
   onDeleteAsset,
 }: {
+  engine?: EngineCaps;
+  mode?: Mode;
   viewerGroup: VideoGroup | null;
   onCloseViewer: () => void;
   onRefreshJob: (jobId: string) => Promise<void>;
@@ -125,7 +132,9 @@ export function WorkspaceRuntimeModals({
   onRefreshAssets: (options: { source: AssetLibrarySource; kind: AssetLibraryKind }) => void | Promise<void>;
   onLoadMoreAssets: () => void | Promise<void>;
   onSelectFieldAsset: (field: EngineInputField, asset: UserAsset, slotIndex?: number) => void | string | Promise<void | string>;
-  onSelectKlingAsset: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => void;
+  onImportFieldFile?: (field: EngineInputField, file: File, slotIndex?: number) => Promise<void | string>;
+  onSelectKlingAsset: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => void | string;
+  onImportKlingFile?: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, file: File) => Promise<void | string>;
   onDeleteAsset: (asset: UserAsset) => void | Promise<void>;
 }) {
   return (
@@ -171,15 +180,21 @@ export function WorkspaceRuntimeModals({
       ) : null}
       {assetPickerTarget ? (
         <AssetLibraryModal
+          onImportFile={assetPickerTarget.kind === 'field'
+            ? onImportFieldFile ? file => onImportFieldFile(assetPickerTarget.field, file, assetPickerTarget.slotIndex) : undefined
+            : onImportKlingFile ? file => onImportKlingFile(assetPickerTarget, file) : undefined}
+          getEligibility={assetPickerTarget.kind === 'field'
+            ? (asset, context) => getMediaInputEligibility({ asset, field: assetPickerTarget.field, engine, mode, context })
+            : asset => getKlingElementMediaEligibility(asset, assetPickerTarget.slot)}
           target={assetPickerTarget.kind === 'field' ? {
-            scope: `${JSON.stringify(assetPickerTarget.field)}:${assetPickerTarget.slotIndex ?? "append"}`,
+            scope: `${engine?.id}:${mode}:${JSON.stringify(assetPickerTarget.field)}:${assetPickerTarget.slotIndex ?? "append"}`,
             capacity: assetPickerTarget.field.maxCount,
             slotIndex: assetPickerTarget.slotIndex,
             role: assetPickerTarget.field.type === 'image' && (assetPickerTarget.field.maxCount ?? 1) === 1
               ? ['end_image_url', 'end_image', 'last_frame_url'].includes(assetPickerTarget.field.id) ? 'end'
                 : ['image_url', 'start_image_url', 'start_image', 'first_frame_url', 'input_image'].includes(assetPickerTarget.field.id) ? 'start' : undefined
               : undefined,
-          } : { scope: `${assetPickerTarget.elementId}:${assetPickerTarget.slot}:${assetPickerTarget.slotIndex ?? "append"}`, slotIndex: assetPickerTarget.slotIndex }}
+          } : { scope: `${engine?.id}:${mode}:${assetPickerTarget.elementId}:${assetPickerTarget.slot}:${assetPickerTarget.slotIndex ?? "append"}`, slotIndex: assetPickerTarget.slotIndex }}
           fieldLabel={
             assetPickerTarget.kind === 'field'
               ? assetPickerTarget.field.label ?? fieldFallbackLabel
@@ -206,7 +221,7 @@ export function WorkspaceRuntimeModals({
             if (assetPickerTarget.kind === 'field') {
               return onSelectFieldAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);
             }
-            onSelectKlingAsset(assetPickerTarget, asset);
+            return onSelectKlingAsset(assetPickerTarget, asset);
           }}
           onDelete={onDeleteAsset}
           deletingAssetId={assetDeletePendingId}

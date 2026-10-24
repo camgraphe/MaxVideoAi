@@ -102,7 +102,9 @@ export function WorkspaceAppReadyView({
     handleOpenAssetLibrary,
     handleOpenKlingAssetLibrary,
     handleSelectKlingLibraryAsset,
+    handleImportKlingLibraryFile,
     handleSelectLibraryAsset,
+    handleImportLibraryFile,
     inputAssets,
     isAssetLibraryLoading,
     isAssetLibraryLoadingMore,
@@ -453,6 +455,8 @@ export function WorkspaceAppReadyView({
           }}
         />} /> : null}
       <WorkspaceRuntimeModals
+        engine={selectedEngine}
+        mode={submissionMode}
         locale={uiLocale}
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
@@ -496,7 +500,9 @@ export function WorkspaceAppReadyView({
         onRefreshAssets={fetchAssetLibrary}
         onLoadMoreAssets={loadMoreAssetLibrary}
         onSelectFieldAsset={handleSelectLibraryAsset}
+        onImportFieldFile={handleImportLibraryFile}
         onSelectKlingAsset={handleSelectKlingLibraryAsset}
+        onImportKlingFile={handleImportKlingLibraryFile}
         onDeleteAsset={handleDeleteLibraryAsset}
       />
     </>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getKlingElementImageDimensionIssue } from '@/lib/kling-element-media-constraints';
 import type { CanonicalGenerationRequest } from '@/server/agent-api/generation-types';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
@@ -37,7 +38,7 @@ export function validateOwnedKlingElements(request: CanonicalGenerationRequest, 
       const media = matches[0];
       if (matches.length !== 1 || media.mediaKind !== (element.kind === 'video' ? 'video' : 'image')) throw new Error('Element asset media does not match.');
       if (!media.storageUrl.startsWith('https://') || !Number.isSafeInteger(media.width) || !Number.isSafeInteger(media.height) || Number(media.width) <= 0 || Number(media.height) <= 0) throw new Error('Element media requires verified dimensions.');
-      if (element.kind === 'images' && (Number(media.width) < 300 || Number(media.height) < 300)) throw new Error('Element images require at least 300 pixels on each side.');
+      if (element.kind === 'images' && getKlingElementImageDimensionIssue(media.width, media.height) === 'too-small') throw new Error('Element images require at least 300 pixels on each side.');
       if (!media.mimeType.startsWith(element.kind === 'images' ? 'image/' : 'video/')) throw new Error('Element media MIME does not match.');
       if (element.kind === 'video' && (!media.durationSec || media.durationSec <= 0 || !Number.isFinite(media.durationSec))) throw new Error('Element video requires verified timing.');
     }

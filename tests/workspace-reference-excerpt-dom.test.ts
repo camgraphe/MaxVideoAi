@@ -37,7 +37,7 @@ for (const kind of ['video', 'audio'] as const) test(`${kind} reference: shared 
     w.eval(await bundle); await w.fx.act(async () => w.fx.render());
     const image = { id: 'image', kind: 'image', name: 'image.png', type: 'image/png', size: 1, url: 'https://image.invalid/a', previewUrl: 'https://image.invalid/a', status: 'ready' };
     await w.fx.act(async () => w.probe.setInputAssets({ [fieldId]: [original], reference_image_urls: [image] }));
-    const choose = button('Choisir le début et la fin'); assert.ok(choose);
+    const choose = button('Choisir un passage'); assert.ok(choose);
     await w.fx.act(async () => choose.click());
     const dialog = w.document.querySelector('[role=dialog]'); assert.ok(dialog);
     assert.equal(dialog.querySelector(kind)?.getAttribute('preload'), 'none');
@@ -46,12 +46,12 @@ for (const kind of ['video', 'audio'] as const) test(`${kind} reference: shared 
     assert.equal(requests[0].url, `/api/uploads/${kind}/excerpt/source`);
     await w.fx.act(async () => button('Annuler').click());
     assert.equal(requests.length, 1, 'cancel creates no asset');
-    await w.fx.act(async () => button('Choisir le début et la fin').click());
+    await w.fx.act(async () => button('Choisir un passage').click());
     for (const [label, value] of [['Début (secondes)', '4'], ['Fin (secondes)', '9']]) {
       const input = w.document.querySelector(`input[aria-label="${label}"]`);
       await w.fx.act(async () => { Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype, 'value')!.set!.call(input, value); input.dispatchEvent(new w.Event('input', { bubbles: true })); });
     }
-    await w.fx.act(async () => button('Utiliser cet extrait').click());
+    await w.fx.act(async () => button('Utiliser ce passage').click());
     const request = requests.find(entry => !entry.url.endsWith('/source'));
     assert.equal(request.url, `/api/uploads/${kind}/excerpt`);
     assert.deepEqual(request.body, { source: ref, engineId: 'wan-3', mode: 'ref2v', fieldId, range: { startSec: 4, endSec: 9 } });

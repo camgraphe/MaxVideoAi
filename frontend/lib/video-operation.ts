@@ -133,6 +133,10 @@ export function filterVideoOperationValues(engine: EngineCaps, mode: Mode, value
 export function validateKlingEditSource(source: { durationSec?: number | null; width?: number | null; height?: number | null } | undefined): string | undefined {
   if (!source || typeof source.durationSec !== 'number' || !Number.isFinite(source.durationSec)
     || source.durationSec < 3 || source.durationSec > 15) return 'Kling Edit requires a verified 3–15 second source.';
+  return validateKlingEditSourceDimensions(source);
+}
+
+export function validateKlingEditSourceDimensions(source: { width?: number | null; height?: number | null }): string | undefined {
   if (![source.width, source.height].every(side => typeof side === 'number' && Number.isFinite(side) && side >= 720 && side <= 3840)) {
     return 'Kling Edit requires verified source dimensions between 720 and 3840 pixels on each side.';
   }

@@ -1,5 +1,5 @@
 import type { AssetFieldConfig } from '@/components/Composer';
-import { resolveEngineMediaFieldConstraint, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
+import { getMediaInputEligibility } from '@/lib/media-input-eligibility';
 import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import type { RecentOutputsResponse, LibraryKind } from '../library/_lib/library-page-helpers';
 import { buildReferenceAssetFromLibraryAsset, getLibraryAssetFieldMismatchMessage, tryInsertReferenceAsset, type ReferenceAsset, type UserAsset } from './workspace-assets';
@@ -39,27 +39,15 @@ export function resolveCurrentRecentAsset(
   return assets.find((asset) => asset.id === selection.id && asset.url === selection.url) ?? null;
 }
 
-export type RecentReferenceIssue = 'kind' | 'metadata' | 'duration' | 'size' | 'format' | 'field_limit' | 'reference_budget';
+export type RecentReferenceIssue = 'kind' | 'mode' | 'metadata' | 'duration' | 'size' | 'format' | 'aspect_ratio' | 'dimensions' | 'field_limit' | 'reference_budget';
 export function getRecentReferenceIssue(
   asset: UserAsset, entry: AssetFieldConfig, inputAssets: Record<string, (ReferenceAsset | null)[]>,
   schema: EngineInputSchema | null | undefined, mode: Mode, slotIndex?: number, engine?: EngineCaps,
 ): RecentReferenceIssue | null {
   const { field } = entry;
   if (getLibraryAssetFieldMismatchMessage(field, asset) || !['image', 'video', 'audio'].includes(field.type)) return 'kind';
-  if (asset.mime && !asset.mime.toLowerCase().startsWith(`${asset.kind}/`)) return 'format';
-  if (field.minDurationSec != null || field.maxDurationSec != null) {
-    if (!(typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec) && asset.durationSec > 0)) return 'metadata';
-    if ((field.minDurationSec != null && asset.durationSec < field.minDurationSec) || (field.maxDurationSec != null && asset.durationSec > field.maxDurationSec)) return 'duration';
-  }
-  const constraint = engine ? resolveEngineMediaFieldConstraint({ engine, field }) : {
-    maxSizeMB: field.maxSizeMB,
-    acceptedMimeTypes: field.acceptedMimeTypes ?? [],
-    acceptedFileExtensions: field.acceptedFileExtensions ?? [],
-  };
-  if (constraint.maxSizeMB != null && !(typeof asset.size === 'number' && Number.isFinite(asset.size) && asset.size > 0)) return 'metadata';
-  if (constraint.acceptedMimeTypes.length && !asset.mime) return 'metadata';
-  const validation = validateMediaFileAgainstConstraint({ name: asset.url, mimeType: asset.mime ?? '', sizeBytes: asset.size ?? 0, constraint });
-  if (!validation.ok) return validation.reason;
+  const eligibility = getMediaInputEligibility({ asset, field, engine, mode });
+  if (eligibility.status === 'blocked') return eligibility.issue ?? 'format';
   const insertion = tryInsertReferenceAsset(inputAssets, field, buildReferenceAssetFromLibraryAsset(field, asset), slotIndex, { inputSchema: schema, preferredMode: mode });
   return insertion.accepted ? null : insertion.reason;
 }

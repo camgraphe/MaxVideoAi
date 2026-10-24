@@ -163,7 +163,12 @@ export async function resolveMediaAwarePreflight(
     request.operation = normalizeVideoOperation(engine.id, request.mode, request.operation);
     engine = resolveVideoOperationEngine(engine, request.mode, request.operation);
   }
-  catch { return mediaPricingFailure('OPERATION_INVALID', 'Invalid video operation.'); }
+  catch {
+    const missingH3Action = engine.id === 'minimax-h3-max' && request.mode === 'v2v' && !request.operation;
+    return mediaPricingFailure('OPERATION_INVALID', missingH3Action
+      ? 'Choose Replace characters or Change lighting for this video. If that choice is missing, save your prompt and reload this page.'
+      : 'The selected video operation is unavailable. Choose an operation supported by this model.');
+  }
   if(request.operation==='flux-draft-enhance') {
     try { const userId=input.userId??await input.resolveUserId?.();
       if(!userId||(request.inputs?.length??0)>0) return mediaPricingFailure('REFERENCE_INVALID','Select one owned Draft generation.');

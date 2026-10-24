@@ -44,7 +44,7 @@ test('selector retains exact fractional full range, uses lazy manual playback an
     assert.equal(d.querySelectorAll('input[type=range]').length, 0);
     assert.equal(d.querySelectorAll('.video-excerpt-track').length, 1);
     assert.equal(d.querySelectorAll('.video-excerpt-handle[role=slider]').length, 2);
-    await f.click('Use excerpt');
+    await f.click('Use this section');
     assert.deepEqual(JSON.parse(JSON.stringify(f.w.applied)), [{ startSec: 0, endSec: 5.558333 }]);
   } finally {
     await f.dispose();
@@ -54,13 +54,13 @@ test('long source has no silent cut, exact numeric editing applies chosen range 
   const f = await mount(60);
   try {
     let apply = [...f.w.document.querySelectorAll('button')].find(
-      (e: any) => e.textContent === 'Use excerpt'
+      (e: any) => e.textContent === 'Use this section'
     ) as any;
     assert.equal(apply.disabled, true);
     await f.input('Start (seconds)', '20.125');
     await f.input('End (seconds)', '38.125');
     assert.equal(apply.disabled, false);
-    await f.click('Use excerpt');
+    await f.click('Use this section');
     assert.deepEqual(JSON.parse(JSON.stringify(f.w.applied)), [{ startSec: 20.125, endSec: 38.125 }]);
     await f.input('End (seconds)', '60.1');
     assert.equal(apply.disabled, true);
@@ -74,10 +74,10 @@ test('prepare failure is readable and Escape cancels through accessible modal', 
   const f = await mount(5, 'fr');
   try {
     f.w.failure = true;
-    await f.click('Utiliser cet extrait');
+    await f.click('Utiliser ce passage');
     assert.match(
       f.w.document.querySelector('[role=alert]').textContent,
-      /Impossible de préparer cet extrait/
+      /Impossible de préparer ce passage/
     );
     await f.w.fx.act(async () =>
       f.w.document
@@ -159,7 +159,7 @@ for (const density of ['workspace', 'default'])
       assert.match(generate().textContent, /1\.25/);
       await w.fx.act(async () =>
         buttons()
-          .find((button) => button.textContent === 'Choose start and end')
+          .find((button) => button.textContent === 'Choose section')
           .click()
       );
       assert.equal(generate().disabled, true);
@@ -189,7 +189,7 @@ test('every selected source retains an excerpt action beyond the compact summary
     await w.fx.act(async () => w.fx.render());
     assert.equal(
       [...w.document.querySelectorAll('button')].filter(
-        (button: any) => button.textContent === 'Choose start and end'
+        (button: any) => button.textContent === 'Choose section'
       ).length,
       4
     );
@@ -209,7 +209,7 @@ test('initial oversized source can play manually and loop finite in-source selec
     await f.w.fx.act(async () => video.dispatchEvent(new f.w.Event('play', { bubbles: true })));
     assert.equal(pauses, 0, 'full source preview must not require a model-valid excerpt first');
     assert.equal(
-      [...f.w.document.querySelectorAll('button')].find((b: any) => b.textContent === 'Use excerpt').disabled,
+      [...f.w.document.querySelectorAll('button')].find((b: any) => b.textContent === 'Use this section').disabled,
       true
     );
     await f.input('Start (seconds)', '20');
@@ -231,7 +231,7 @@ test('initial oversized source can play manually and loop finite in-source selec
 for (const [locale, apply, expected] of [
   [
     'en',
-    'Use excerpt',
+    'Use this section',
     {
       generic: /Unable to prepare/,
       network: /connection/,
@@ -242,7 +242,7 @@ for (const [locale, apply, expected] of [
   ],
   [
     'fr',
-    'Utiliser cet extrait',
+    'Utiliser ce passage',
     {
       generic: /Impossible de préparer/,
       network: /connexion/,
@@ -253,7 +253,7 @@ for (const [locale, apply, expected] of [
   ],
   [
     'es',
-    'Usar fragmento',
+    'Usar este fragmento',
     {
       generic: /No se pudo preparar/,
       network: /conexión/,
@@ -311,7 +311,7 @@ test('shared Composer waits for owned full-timeline access and never plays the g
  w.eval(await composerBundle);
  try{
   await w.fx.act(async()=>w.fx.render());
-  const choose=[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Choose start and end') as any;
+  const choose=[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Choose section') as any;
   await w.fx.act(async()=>choose.click());
   assert.equal(w.document.querySelector('[role=dialog] video'),null);
   assert.match(w.document.querySelector('[role=dialog]').textContent,/Opening original/);
@@ -341,15 +341,15 @@ test('timeline keyboard handles cannot cross, moves preserve length, zoom never 
     await key('.video-excerpt-selection', 'ArrowRight', true);
     assert.equal(value('Start'), 21);
     assert.equal(value('End'), 26);
-    await f.click('Zoom to excerpt');
+    await f.click('Zoom to section');
     assert.equal(d.querySelector('[aria-label="Full view"]').getAttribute('aria-pressed'), 'true');
     assert.equal(value('Start'), 21);
     assert.equal(value('End'), 26);
     await f.click('Whole video');
     assert.equal(value('Start'), 0);
     assert.equal(value('End'), 60.558333);
-    assert.equal(d.querySelector('[aria-label="Zoom to excerpt"]').getAttribute('aria-pressed'), 'false');
-    assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use excerpt').disabled,true);
+    assert.equal(d.querySelector('[aria-label="Zoom to section"]').getAttribute('aria-pressed'), 'false');
+    assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use this section').disabled,true);
     await key('.video-excerpt-handle-end', 'ArrowLeft', true);
     await key('.video-excerpt-handle-end', 'End');
     assert.equal(value('End'), 60.558333);
@@ -429,7 +429,7 @@ test('unavailable canvas leaves functional handles after an explicitly activated
   assert.equal(decoders[0].hasAttribute('src'),false);
   assert.equal(d.querySelectorAll('.video-excerpt-frames img').length,0);
   await f.input('Start (seconds)','20');await f.input('End (seconds)','25');
-  assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use excerpt').disabled,false);
+  assert.equal([...d.querySelectorAll('button')].find((b:any)=>b.textContent==='Use this section').disabled,false);
  }finally{await f.dispose();}
 });
 
@@ -499,19 +499,19 @@ test('Relight discloses chosen/actual timing and ending removal before Apply; FA
   await f.w.fx.act(async()=>{f.w.operation='h3-relight';f.w.fx.render();});
   const disclosure=f.w.document.querySelector('[data-testid="video-compatible-copy-disclosure"]');
   assert.match(disclosure.textContent,/24 fps.*selected 5.56 s.*actual ≈5.17 s.*124 frames.*≈0.39 s/);
-  assert.equal(f.w.applied.length,0);await f.click('Use excerpt');assert.equal(f.w.applied.length,1);
+  assert.equal(f.w.applied.length,0);await f.click('Use this section');assert.equal(f.w.applied.length,1);
   await f.w.fx.act(async()=>{f.w.operation='flux-fast-edit';f.w.duration=20;f.w.fx.render();});
   await f.input('End (seconds)','15');
-  const apply=[...f.w.document.querySelectorAll('button')].find((button:any)=>button.textContent==='Use excerpt') as any;
+  const apply=[...f.w.document.querySelectorAll('button')].find((button:any)=>button.textContent==='Use this section') as any;
   assert.equal(apply.disabled,true);await f.input('End (seconds)','14.9');assert.equal(apply.disabled,false);
   assert.match(f.w.document.querySelector('[data-testid="video-compatible-copy-disclosure"]').textContent,/whole video.*Original, framing and audio/);
  }finally{await f.dispose();}
 });
 
 for (const [locale, actual, removed, minimum, apply] of [
-  ['en', 'actual ≈5.17 s', 'Removes ≈0.39 s', '56 frames at 24 fps', 'Use excerpt'],
-  ['fr', 'durée réelle ≈5,17 s', '≈0,39 s retirée', '56 images à 24 images/s', 'Utiliser cet extrait'],
-  ['es', 'duración real ≈5,17 s', 'Se eliminan ≈0,39 s', '56 fotogramas a 24 fps', 'Usar fragmento'],
+  ['en', 'actual ≈5.17 s', 'Removes ≈0.39 s', '56 frames at 24 fps', 'Use this section'],
+  ['fr', 'durée réelle ≈5,17 s', '≈0,39 s retirée', '56 images à 24 images/s', 'Utiliser ce passage'],
+  ['es', 'duración real ≈5,17 s', 'Se eliminan ≈0,39 s', '56 fotogramas a 24 fps', 'Usar este fragmento'],
 ]) test(`${locale}: concise Relight disclosure keeps exact frame minimum and applied range`, async () => {
   const f = await mount(5.558333, locale);
   try {

@@ -155,6 +155,7 @@ export default function AppClientPage({
     showNotice: noticeState.showNotice,
   });
   const assets = useWorkspaceAssets({
+    locale: app.uiLocale,
     accountScope: confirmedAccount,
     userId: confirmedAccount,
     inputAssets: assetState.inputAssets,

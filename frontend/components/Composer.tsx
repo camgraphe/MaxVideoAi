@@ -15,6 +15,8 @@ import { ComposerGenerationActivity, GenerationSpinner } from '@/components/comp
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
 import { ComposerNotices } from '@/components/composer/ComposerNotices.client';
 import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
+import { useComposerReferenceMentions } from '@/components/composer/useComposerReferenceMentions';
+import { referenceMentionCopy } from '@/components/composer/workspace-reference-mentions';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { videoModifyCopy } from '@/lib/video-source-workflow';
@@ -89,6 +91,8 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
+  const mentionCopy = referenceMentionCopy(locale);
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -152,6 +156,7 @@ export function Composer({
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
+    referenceMentions.needsReview ||
     excerptEditorOpen || excerptNeedsRange ||
     isLoading ||
     isPricing ||
@@ -350,6 +355,7 @@ export function Composer({
         {beforeAssets}
         {workspaceDensity && assetFields.length > 0 ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
@@ -358,6 +364,11 @@ export function Composer({
           {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
           {afterAssets}
         </> : null}
+
+        {referenceMentions.needsReview ? <div className="app-reference-mention-review" role="alert">
+          <p>{mentionCopy.changed} <strong>{referenceMentions.changed.join(', ')}</strong></p>
+          <button type="button" onClick={referenceMentions.review}>{mentionCopy.reviewed}</button>
+        </div> : null}
 
         <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
@@ -433,7 +444,7 @@ export function Composer({
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
-                ref={textareaRef}
+                ref={referenceMentions.attachInput}
                 suppressHydrationWarning
               />
             )}

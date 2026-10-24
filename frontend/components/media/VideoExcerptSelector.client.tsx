@@ -9,9 +9,10 @@ import { VideoExcerptTimeline, excerptTime } from './VideoExcerptTimeline.client
 import { useVideoExcerptFilmstrip } from './useVideoExcerptFilmstrip';
 import { videoExcerptStyles } from './video-excerpt-styles';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
-import { videoExcerptCopy, videoExcerptFailureMessage } from '@/lib/video-excerpt-copy';
+import { videoExcerptCopy, videoExcerptDurationMessage, videoExcerptFailureMessage } from '@/lib/video-excerpt-copy';
 import {
   validateVideoExcerptRange,
+  getMediaExcerptDurationIssue,
   type VideoExcerptLimits,
   type VideoExcerptRange,
 } from '@/lib/video-excerpt';
@@ -98,6 +99,13 @@ export function VideoExcerptSelector({
   } catch {
     valid = false;
   }
+  const sourceTooShort = getMediaExcerptDurationIssue(durationSec, limits) === 'too-short';
+  const durationIssue = getMediaExcerptDurationIssue(range.endSec - range.startSec, limits);
+  const rangeMessage = sourceTooShort
+    ? videoExcerptDurationMessage('too-short', limits, locale, mediaKind)
+    : previewRange && durationIssue
+      ? videoExcerptDurationMessage(durationIssue, limits, locale, mediaKind, true)
+      : copy.invalid;
   const seek = (seconds: number) => {
     if (!previewUrl || busy || !Number.isFinite(seconds)) return;
     const next = Math.max(0, Math.min(durationSec, seconds));
@@ -212,7 +220,7 @@ export function VideoExcerptSelector({
           <div className="video-excerpt-duration" aria-live="polite"><span>{copy.length}</span><strong>{Number.isFinite(range.endSec-range.startSec) ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(range.endSec-range.startSec) : '—'} <small>s</small></strong></div>
         </div>
         <p className="video-excerpt-limits">{copy.limits}: {minimum} · {operation === 'flux-fast-edit' ? '<' : '≤'}{limits.maxDurationSec == null ? '∞' : limitNumber(limits.maxDurationSec)} s</p>
-        {!valid ? <p role="alert">{copy.invalid}</p> : null}
+        {!valid && !previewPending && !previewError ? <p role="alert">{rangeMessage}</p> : null}
         {error ? <p role="alert">{error}</p> : null}
         {copyNotice ? <p data-testid="video-compatible-copy-disclosure" role="status">{copyNotice}</p> : null}
         <p id={hintId}>{copy.quote}</p>

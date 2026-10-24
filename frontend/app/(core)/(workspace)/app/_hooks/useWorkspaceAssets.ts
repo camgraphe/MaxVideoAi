@@ -15,6 +15,7 @@ type UseWorkspaceAssetsOptions = {
   commitInputAssetMutation: CommitInputAssetMutation;
   engineId?: string | null;
   engine?: EngineCaps | null;
+  locale?: string;
   inputSchema?: EngineInputSchema | null;
   preferredMode: Mode;
   workflowCopy: {
@@ -34,6 +35,7 @@ export function useWorkspaceAssets({
   commitInputAssetMutation,
   engineId,
   engine,
+  locale,
   inputSchema = engine?.inputSchema,
   preferredMode,
   workflowCopy,
@@ -65,10 +67,13 @@ export function useWorkspaceAssets({
     setInputAssets,
   });
 
-  const { handleOpenAssetLibrary, handleSelectLibraryAsset, handleAssetAdd, handleAssetRemove } =
+  const { handleOpenAssetLibrary, handleSelectLibraryAsset, handleImportLibraryFile, handleAssetAdd, handleAssetRemove } =
     useWorkspaceReferenceAssets({
       accountScope,
       engineId,
+      engine,
+      locale,
+      assetPickerTarget,
       inputSchema,
       preferredMode,
       workflowCopy,
@@ -85,12 +90,16 @@ export function useWorkspaceAssets({
   const {
     handleOpenKlingAssetLibrary,
     handleSelectKlingLibraryAsset,
+    handleImportKlingLibraryFile,
     handleKlingElementAdd,
     handleKlingElementRemove,
     handleKlingElementAssetRemove,
     handleKlingElementAssetAdd,
   } = useWorkspaceKlingElementAssets({
     accountScope,
+    engineId,
+    preferredMode,
+    locale,
     showNotice,
     klingElements,
     setKlingElements,
@@ -122,7 +131,9 @@ export function useWorkspaceAssets({
     handleOpenAssetLibrary,
     handleOpenKlingAssetLibrary,
     handleSelectLibraryAsset,
+    handleImportLibraryFile,
     handleSelectKlingLibraryAsset,
+    handleImportKlingLibraryFile,
     handleAssetAdd,
     handleAssetRemove,
     handleKlingElementAdd,

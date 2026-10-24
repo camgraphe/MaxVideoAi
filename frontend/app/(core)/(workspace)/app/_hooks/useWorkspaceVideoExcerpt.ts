@@ -5,6 +5,7 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
 import {
   getMediaExcerptLimits,
+  getMediaExcerptDurationIssue,
   validateVideoExcerptRange,
   type VideoExcerptRange,
 } from '@/lib/video-excerpt';
@@ -129,6 +130,7 @@ export function useWorkspaceVideoExcerpt({
           source.status !== 'ready' ||
           !source.url ||
           !source.durationSec ||
+          getMediaExcerptDurationIssue(source.excerptSource?.durationSec ?? source.durationSec, limits) === 'too-short' ||
           !(source.ref || source.assetId)
         )
           return { state: previous };
@@ -186,6 +188,7 @@ export function useWorkspaceVideoExcerpt({
         url: source.url!,
         previewUrl: source.previewUrl,
         durationSec: source.durationSec!,
+        thumbnailUrl: source.thumbnailUrl,
         name: source.name,
         type: source.type,
         size: source.size,
@@ -246,6 +249,7 @@ export function useWorkspaceVideoExcerpt({
           ref: asset.ref,
           url: asset.url,
           previewUrl: asset.previewUrl ?? asset.url,
+          thumbnailUrl: asset.thumbUrl ?? null,
           durationSec: asset.durationSec,
           size: asset.size ?? source.size,
           type: asset.mime ?? (source.kind === 'audio' ? 'audio/wav' : 'video/mp4'),
