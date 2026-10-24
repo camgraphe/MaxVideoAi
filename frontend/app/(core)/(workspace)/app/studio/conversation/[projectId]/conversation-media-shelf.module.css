@@ -68,3 +68,13 @@
  .shelf .heading button {min-width:44px;min-height:44px;}
  .shelf[data-expanded="false"] .heading {top:18px;}
 }
+
+@media(max-width:767px) {
+  :global([data-studio-panel="references"]) .shelf {height:auto;}
+  :global([data-studio-panel="references"]) .heading {position:static;justify-content:flex-end;}
+  :global([data-studio-panel="references"]) .heading>button {display:none;}
+  :global([data-studio-panel="references"]) .content {height:auto;min-height:230px;padding:12px 4px;align-items:flex-start;}
+  :global([data-studio-panel="references"]) .card {transform:none;}
+  :global([data-studio-panel="references"]) .surface {max-height:180px;}
+  :global([data-studio-panel="references"]) .picker select {max-width:250px;font-size:16px;min-height:44px;}
+}

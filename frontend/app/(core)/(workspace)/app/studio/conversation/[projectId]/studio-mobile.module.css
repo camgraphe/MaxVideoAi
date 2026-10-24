@@ -1,0 +1,38 @@
+.mobileTools {display:none;}
+.desktopPanel {display:contents;color:inherit;}
+.panel {
+  position:fixed;top:var(--studio-mobile-top, 0px);
+  bottom:calc(100% - var(--studio-mobile-top, 0px) - var(--studio-mobile-height, 100dvh) + 8px);
+  width:calc(100% - 16px);max-width:600px;max-height: min(80dvh, calc(var(--studio-mobile-height, 100dvh) - 16px));
+  margin:auto auto 0;padding:12px 12px max(12px,env(safe-area-inset-bottom));
+  overflow:auto;overscroll-behavior:contain;border:1px solid var(--studio-line);border-radius:20px;
+  background:var(--studio-bg);color:var(--studio-text);box-shadow:0 16px 70px #0005;
+}
+.panel::backdrop {background:#0007;}
+.panelHeading {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;}
+.panelHeading h2 {font-size:16px;font-weight:550;margin:0;}
+.panelHeading button {display:grid;place-items:center;padding:0;}
+.referenceAttachments {display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.referenceAttachments button {display:flex;align-items:center;gap:8px;font-size:12px;}
+.referenceHint {font-size:12px;color:var(--studio-muted);margin:8px 0;}
+
+@media(max-width:767px) {
+  :global(.app-experience):has(.shell) {padding-bottom:0;}
+  .shell {
+    --app-bottom-nav-height:0px;
+    position:fixed;inset:var(--studio-mobile-top, 0px) 0 auto;
+    height:var(--studio-mobile-height, 100dvh);
+  }
+  .shell :global(.app-navigation-mobile) {display:none;}
+  .shell :global(.app-connected-header) {
+    position:absolute;top:6px;left:8px;width:44px;height:44px;min-height:0;
+    padding:0;border:0;background:transparent;
+  }
+  .shell :global(.app-header-actions), .shell :global(.app-site-trigger)>span:not(:global(.app-glyph)),
+  .shell :global(.app-site-trigger)>img {display:none;}
+  .shell :global(.app-site-trigger) {width:44px;height:44px;justify-content:center;padding:0;}
+  .shell :global(.app-site-trigger) > :global(.app-glyph) {display:block;width:22px;height:22px;margin:0;color:var(--app-ink);}
+  .mobileTools {display:flex;align-items:center;gap:4px;min-width:0;}
+  .mobileTools button {display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 10px;border:0;font-size:12px;}
+  .mobileTools .references {max-width:170px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+}
