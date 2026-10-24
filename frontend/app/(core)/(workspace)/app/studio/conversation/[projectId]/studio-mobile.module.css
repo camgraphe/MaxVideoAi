@@ -1,7 +1,9 @@
 .mobileTools {display:none;}
 .panel {
+  position:fixed;top:var(--studio-mobile-top, 0px);
+  bottom:calc(100% - var(--studio-mobile-top, 0px) - var(--studio-mobile-height, 100dvh) + 8px);
   width:calc(100% - 16px);max-width:600px;max-height: min(80dvh, calc(var(--studio-mobile-height, 100dvh) - 16px));
-  margin:auto auto 8px;padding:12px 12px max(12px,env(safe-area-inset-bottom));
+  margin:auto auto 0;padding:12px 12px max(12px,env(safe-area-inset-bottom));
   overflow:auto;overscroll-behavior:contain;border:1px solid var(--studio-line);border-radius:20px;
   background:var(--studio-bg);color:var(--studio-text);box-shadow:0 16px 70px #0005;
 }
