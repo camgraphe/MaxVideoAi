@@ -44,7 +44,7 @@ export function WorkspacePreviewDock({
   disabledEngineReasons,
   engineScores,
   engineScoreReviews,
-  modelReviewCommands,
+  modelReviewCommands, modelPicker,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -68,6 +68,7 @@ export function WorkspacePreviewDock({
   engineScores?: Record<string, number>;
   engineScoreReviews?: import('@/types/engines').EngineScoreReviews;
   modelReviewCommands?: ReactNode;
+  modelPicker?: import('@/components/ui/engine-select/model-picker-types').EnginePickerContext;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
   setViewerTarget: Dispatch<SetStateAction<WorkspaceViewerTarget>>;
@@ -75,6 +76,7 @@ export function WorkspacePreviewDock({
   const engineSettings = (
     <div className={styles.modelStrip}>
         <div className={styles.modelSelector}><EngineSettingsBar
+          picker={modelPicker}
           engines={engines}
           engineId={engineId}
           onEngineChange={onEngineChange}

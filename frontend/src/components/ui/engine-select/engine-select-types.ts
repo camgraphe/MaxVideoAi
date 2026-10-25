@@ -14,6 +14,7 @@ export interface EngineSelectProps {
   /** Optional action trigger; reuses the family browser without composer controls. */
   trigger?: { label: string; content: ReactNode; className?: string };
   selectedIds?: string[];
+  picker?: import('./model-picker-types').EnginePickerContext;
   engines: EngineCaps[];
   engineId: string;
   onEngineChange: (engineId: string) => void;
