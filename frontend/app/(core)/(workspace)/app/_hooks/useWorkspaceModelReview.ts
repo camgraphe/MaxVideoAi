@@ -8,6 +8,7 @@ import {
   prepareWorkspaceModelCandidate,
   type WorkspaceModelSetup,
 } from '../_lib/workspace-model-candidate';
+import { resolveWorkspaceWorkflow } from '../_lib/workspace-workflow-projection';
 import { buildWorkspacePreflightRequest } from '../_lib/workspace-preflight-request';
 import {
   decodeWorkspaceModelSetups,
@@ -180,7 +181,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     candidate && target && candidate.applicable && !candidate.blockingReasons.length
       ? buildWorkspacePreflightRequest({
           form: candidate.setup.form,
-          selectedEngine: target,
+          selectedEngine: candidate.engine,
           submissionMode: candidate.workflow.submissionMode,
           effectiveDurationSec: candidate.effectiveDurationSec,
           supportsAudioToggle: candidate.supportsAudioToggle,
@@ -196,6 +197,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     authChecked: Boolean(eligibleAccount),
   });
   const comparison = useWorkspaceModelAlternatives({
+    accountId: eligibleAccount,
     enabled: active && panel === 'compare' && !selection,
     current,
     engines,
@@ -380,7 +382,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     setSelection(null);
     return true;
   };
-  const switchModel = (engineId: string) => {
+  const switchModel = (engineId: string, preserveWorkflow = false) => {
     if (!mounted.current || latest.current.authScope !== authScope) return;
     const engine = engines.find(
       (entry) => entry.id === engineId && entry.availability !== 'paused',
@@ -410,6 +412,11 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       locale,
       currentEngine: engines.find((entry) => entry.id === source.form.engineId),
     });
+    if (preserveWorkflow && (prepared.removedReferences.length || prepared.setup.form.operation !== source.form.operation
+      || prepared.workflow.submissionMode !== resolveWorkspaceWorkflow({ engine: engines.find(entry => entry.id === source.form.engineId) ?? null, ...source }).submissionMode)) {
+      onModelSwitchNotice(workspaceModelReviewCopy(locale).incomplete);
+      return;
+    }
     const blockingReason = prepared.blockingReasons.find(({ scope }) => scope === 'apply');
     if (!prepared.applicable || blockingReason) {
       onModelSwitchNotice(
@@ -473,6 +480,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     canApply,
     requestModel,
     switchModel,
+    switchPickerModel: (id: string) => switchModel(id, true),
     close,
     apply,
     selectSavedSetup,
