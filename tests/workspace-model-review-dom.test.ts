@@ -30,6 +30,7 @@ async function mount({
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app', pretendToBeVisual: true });
   const previous = new Map<string, PropertyDescriptor | undefined>();
+  const fixtureScope = crypto.randomUUID();
   const requests: Array<{
     resolve: (response: Response) => void;
     reject: (error: Error) => void;
@@ -115,7 +116,7 @@ async function mount({
   let authRequests = 0;
   const notices: string[] = [];
   let accountId: string | null = 'a',
-    accessToken: string | null = 'token-a';
+    accessToken: string | null = `token-a-${fixtureScope}`;
   let recoverySetup: { modelId: string; updatedAt: number; setup: WorkspaceModelSetup } | null = null;
   let current!: ReturnType<typeof useWorkspaceModelReview>;
   const authRenders: Array<{
@@ -279,7 +280,7 @@ async function mount({
     async auth(id: string | null) {
       authStatus = id ? 'authed' : 'loggedOut';
       accountId = id;
-      accessToken = id ? `token-${id}` : null;
+      accessToken = id ? `token-${id}-${fixtureScope}` : null;
       await render();
     },
     async pending() {
@@ -850,10 +851,14 @@ test('comparison settings reprice within the dialog and discard quotes for earli
     assert.equal(f.setup.form.durationSec, 8);
     assert.equal(f.current.candidate, null);
     await f.tick();
+    assert.ok(f.requests.length <= 3, 'old and new quotes share at most three network slots');
+    for (let index = 0; index < oldRequestCount; index++) await f.respond(index, 9999);
     assert.ok(f.requests.length > oldRequestCount);
     assert.ok(f.requests.slice(oldRequestCount).some(request => (request.body as { durationSec: number }).durationSec === 8));
-    for (let index = 0; index < oldRequestCount; index++) await f.respond(index, 9999);
-    assert.ok(f.current.alternatives.every(alternative => alternative.price === null), 'late earlier prices stay hidden');
+    for (const alternative of f.current.alternatives) {
+      const unchanged = f.requests.slice(0, oldRequestCount).some(request => JSON.stringify(request.body) === JSON.stringify(alternative.request));
+      assert.equal(alternative.price, unchanged ? 99.99 : null, 'only identical canonical requests may reuse a late price');
+    }
     for (let index = oldRequestCount; index < f.requests.length; index++) await f.respond(index, 125);
     assert.ok(f.current.alternatives.some(alternative => alternative.price === 1.25));
     assert.deepEqual(f.writes, [], 'editing settings never applies a different model');
@@ -864,11 +869,12 @@ test('comparison settings reprice within the dialog and discard quotes for earli
 test('Escape closes a settings menu before closing Compare', async () => {
   const f = await mount();
   try {
-    await f.click('Compare');
+    await f.click('Compare'); await f.tick();
     const duration = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('button[aria-haspopup="listbox"]')]
       .find(button => button.textContent?.startsWith('Duration:'));
     assert.ok(duration);
     await act(async () => { duration.focus(); duration.click(); });
+    assert.ok(f.dom.window.document.querySelector('[role="listbox"]'), 'settings menu is open before Escape');
     await act(async () => duration.dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.equal(f.current.panel, 'compare');
     assert.equal(f.dom.window.document.querySelector('[role="listbox"]'), null);

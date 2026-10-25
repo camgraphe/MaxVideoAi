@@ -12,6 +12,7 @@ import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydr
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
 import { WorkspaceModelReviewCommands } from './WorkspaceModelReviewCommands';
+import { useWorkspaceModelPicker } from '../_hooks/useWorkspaceModelPicker';
 import { WorkspaceAppShell } from './WorkspaceAppShell';
 import { WorkspaceRecentReferences } from './WorkspaceRecentReferences.client';
 import { getKlingO3AssetState, supportsKlingO3VideoToVideo } from '../_lib/kling-o3-unified-workflow';
@@ -250,6 +251,9 @@ export function WorkspaceAppReadyView({
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
+  const modelPicker = useWorkspaceModelPicker({ current: currentSetup, engines, locale: uiLocale, memberTier: routeForm.memberTier,
+    accountId: app.authStatus === 'authed' ? app.user?.id ?? null : null,
+    accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null, disabledEngineReasons: modelReview.selectorDisabledReasons });
   const draftPreview = useSeedanceDraftLocalPreview({
     enabled: localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
@@ -314,7 +318,8 @@ export function WorkspaceAppReadyView({
         activeMode={activeMode}
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
-        handleEngineChange={modelReview.switchModel}
+        handleEngineChange={modelReview.switchPickerModel}
+        modelPicker={modelPicker}
         modelReviewCommands={
           <>
             {draftControls?.selected ? (

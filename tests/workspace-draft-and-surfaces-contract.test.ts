@@ -135,7 +135,8 @@ test('model review owns account-scoped snapshots and atomic application outside 
   const controller = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceModelReview.ts', 'utf8');
   const serializer = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups.ts', 'utf8');
   assert.match(ready, /useWorkspaceModelReview/);
-  assert.match(ready, /handleEngineChange=\{modelReview.switchModel\}/);
+  assert.match(ready, /handleEngineChange=\{modelReview.switchPickerModel\}/);
+  assert.match(controller, /switchPickerModel: \(id: string\) => switchModel\(id, true\)/);
   assert.match(ready, /onGuestEngineChange: composer.handleEngineChange/);
   assert.doesNotMatch(app + ready, /sessionStorage\.(getItem|setItem).*model-setups/);
   assert.match(controller, /prepareWorkspaceModelCandidate/);

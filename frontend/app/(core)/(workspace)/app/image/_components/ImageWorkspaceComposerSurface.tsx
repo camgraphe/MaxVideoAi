@@ -43,7 +43,8 @@ interface ImageWorkspaceComposerSurfaceProps {
   customImageWidth: string;
   enableWebSearch: boolean;
   engineCapsList: EngineCaps[];
-  estimatedCostAmount: number;
+  modelPicker?: import('@/components/ui/engine-select/model-picker-types').EnginePickerContext;
+  estimatedCostAmount: number | null;
   handleAddToLibrary: (url: string) => void;
   handleCopy: (url: string) => void;
   handleDownload: (url: string) => void;
@@ -138,7 +139,7 @@ export function ImageWorkspaceComposerSurface({
   customImageHeight,
   customImageWidth,
   enableWebSearch,
-  engineCapsList,
+  engineCapsList, modelPicker,
   estimatedCostAmount,
   handleAddToLibrary,
   handleCopy,
@@ -219,6 +220,7 @@ export function ImageWorkspaceComposerSurface({
   const engineSettings = (
     <div className="app-image-model-selector min-w-0">
       <EngineSelect
+              picker={modelPicker}
         engines={engineCapsList}
         engineId={selectedEngineId}
         onEngineChange={setEngineId}
@@ -289,6 +291,8 @@ export function ImageWorkspaceComposerSurface({
           prompt={prompt}
           onPromptChange={setPrompt}
           price={estimatedCostAmount}
+          isPricing={estimatedCostAmount === null && !composerError}
+          disableGenerate={estimatedCostAmount === null}
           currency={currency}
           isLoading={false}
           pendingGenerations={pendingGenerations}
