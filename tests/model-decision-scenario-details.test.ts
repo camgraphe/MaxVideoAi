@@ -7,7 +7,8 @@ import { buildCurrentModelDecisionData, refreshModelDecisionPricingScenarios } f
 import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry';
 import { buildDecisionPricingScenarios } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing';
 import type { PublicModelQuoteInput } from '../frontend/lib/pricing-public-model-contract';
-import { readModelDecisionInput } from './helpers/model-decision-content';
+import { readModelDecisionInput, buildModelDecisionDataFromContent } from './helpers/model-decision-content';
+import { prepareModelCommercialData, type ModelPagePricing } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-commercial-data';
 
 test('the existing Mini resolver selects actual defaults rather than the preset name', () => {
   const resolved = resolvePublicModelScenario({ modelId: 'seedance-2-0-mini', mode: 't2v', durationSec: 8, resolution: '480p' });
@@ -77,4 +78,29 @@ test('other templates retain their existing presentation and quote behavior', as
     async () => ({ status: 'exact', amountCents: 26, currency: 'USD', revision: 'current', scenarioLabel: 'current' }));
   assert.ok(data);
   assert.ok(data.pricing.scenarios.every(row => row.details === undefined && row.priceUnitLabel === undefined));
+});
+
+test('the production commercial-data path forwards the opt-in without adding quote requests', async () => {
+  for (const modelId of ['seedance-2-0-mini', 'seedance-2-5']) {
+    const entry = getFalEngineById(modelId)!;
+    const config = getModelPageTemplateConfig(entry.modelSlug)!;
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const calls: PublicModelQuoteInput[] = [];
+      const result = await prepareModelCommercialData({
+        engine: entry, locale,
+        pricing: Promise.resolve({ pricingEngine: entry.engine } as ModelPagePricing),
+        templateData: buildModelDecisionDataFromContent({ engine: entry, locale }), templateConfig: config,
+        quoteModel: async input => { calls.push(input); return {
+          status: 'exact', amountCents: 777, currency: 'USD', revision: 'controlled', scenarioLabel: 'controlled',
+        }; },
+      });
+      assert.ok(result.scenarios);
+      assert.equal(calls.length, modelId === 'seedance-2-0-mini' ? 5 : 4, 'existing card quotes plus one public offer');
+      for (const card of result.scenarios.filter(card => card.id !== 'max-duration')) {
+        assert.ok(card.details, `${modelId}/${locale}: production data contains the actual scenario`);
+        assert.ok(card.priceUnitLabel);
+        assert.doesNotMatch(card.note, /audio incl\./);
+      }
+    }
+  }
 });
