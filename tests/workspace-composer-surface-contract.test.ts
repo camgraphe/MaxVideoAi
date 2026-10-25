@@ -30,7 +30,8 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.doesNotMatch(appSource, /WorkspaceComposerSurface/);
   assert.match(readyViewSource, /import \{ WorkspaceComposerSurface \} from '\.\/WorkspaceComposerSurface';/);
   assert.match(readyViewSource, /<WorkspaceComposerSurface/);
-  assert.match(readyViewSource, /<WorkspaceComparisonSettings draftControls=\{draftControls\}/);
+  assert.doesNotMatch(readyViewSource, /<WorkspaceComparisonSettings/, 'price comparison belongs to the model picker');
+  assert.match(readyViewSource, /<WorkspaceModelReview savedOnly/, 'saved settings remain accessible without another comparison surface');
   assert.doesNotMatch(readyViewSource, /<CoreSettingsBar\b/);
 
   assert.doesNotMatch(appSource, /<Composer\b/);

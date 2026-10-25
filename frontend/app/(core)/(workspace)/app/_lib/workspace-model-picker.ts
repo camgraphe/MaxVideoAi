@@ -1,13 +1,16 @@
 import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import type { EngineCaps, PreflightRequest } from '@/types/engines';
 import type { EnginePickerOption } from '@/components/ui/engine-select/model-picker-types';
-import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from './workspace-model-candidate';
+import { type WorkspaceModelSetup } from './workspace-model-candidate';
 import { buildWorkspacePreflightRequest } from './workspace-preflight-request';
 import { resolveWorkspaceWorkflow } from './workspace-workflow-projection';
 import { workspaceModelReviewChangeRows } from './workspace-model-review-presentation';
 
+import { preparePickerScenario, pickerAudioControl, type PickerScenario } from './workspace-picker-scenario';
+
 type PickerPreparedOption = EnginePickerOption & { request: PreflightRequest | null; iterations: number };
-export function buildWorkspacePickerOptions({ current, engines, locale, memberTier, disabledEngineReasons }: {
+export function buildWorkspacePickerOptions({ current, engines, locale, memberTier, disabledEngineReasons, overrides }: {
+  overrides?: PickerScenario;
   current: WorkspaceModelSetup;
   engines: EngineCaps[];
   locale: string;
@@ -21,8 +24,7 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
   const missingSource = ['v2v', 'extend', 'retake', 'reframe'].includes(sourceMode)
     && !Object.values(current.inputAssets).flat().some(asset => asset?.kind === 'video' && asset.status === 'ready');
   return Object.fromEntries(engines.map(engine => {
-    const candidate = prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine,
-      restoreSetup: engine.id === current.form.engineId ? current : undefined });
+    const candidate = preparePickerScenario({ engine, current, locale, currentEngine, overrides });
     const applyBlock = candidate.blockingReasons.find(reason => reason.scope === 'apply');
     const modeChanged = candidate.workflow.submissionMode !== sourceMode
       || candidate.setup.form.operation !== current.form.operation;
@@ -34,9 +36,10 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
       ?? applyBlock?.message;
     const priceUnavailableReason = missingSource
       ? (fr ? 'Ajoutez une vidéo source pour estimer' : es ? 'Añade un vídeo de origen para estimar' : 'Add a source video to estimate') : undefined;
-    const activeAudio = candidate.supportsAudioToggle ? candidate.setup.form.audio : Boolean(engine.audio);
+    const audioControl = pickerAudioControl(candidate.setup, candidate.engine, locale);
+    const audioLabel = audioControl.options?.find(option => option.value === audioControl.value)?.label ?? audioControl.value;
     const summary = [Number.isFinite(candidate.effectiveDurationSec) ? `${candidate.effectiveDurationSec} s` : null,
-      candidate.setup.form.resolution?.toLowerCase(), activeAudio ? (fr ? 'Audio inclus' : es ? 'Audio incluido' : 'Audio included') : (fr ? 'Sans audio' : es ? 'Sin audio' : 'No audio'),
+      candidate.setup.form.resolution?.toLowerCase(), audioLabel,
       candidate.setup.form.iterations > 1 ? `×${candidate.setup.form.iterations}` : null].filter(Boolean).join(' · ');
     const settingLabels: Record<string, string> = fr ? { fps: 'Images par seconde', output_format: 'Format du fichier', enable_prompt_expansion: 'Amélioration du prompt' }
       : es ? { fps: 'Fotogramas por segundo', output_format: 'Formato del archivo', enable_prompt_expansion: 'Mejora del prompt' }
