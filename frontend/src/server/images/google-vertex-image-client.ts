@@ -1,3 +1,4 @@
+import { NANO21_MODEL_ID } from '@/lib/nano-banana-2-1';
 import {
   getGoogleVertexAccessToken,
   parseGoogleVertexServiceAccount,
@@ -64,19 +65,21 @@ export class GoogleVertexImageClient {
   }
 
   async generateContent(modelId: string, payload: GoogleVertexImagePayload): Promise<unknown> {
+    // A new Nano21 quote covers one native POST. Never retry ambiguous output.
+    const maxAttempts = modelId === NANO21_MODEL_ID ? 1 : GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS;
     let lastResponse: unknown = null;
-    for (let attempt = 0; attempt < GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS; attempt += 1) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       try {
         const response = await this.generateContentOnce(modelId, payload);
         lastResponse = response;
         const hasImages = extractGoogleVertexImages(response).length > 0;
         const responseSummary = summarizeGoogleVertexImageResponse(response);
-        const isLastAttempt = attempt === GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS - 1;
+        const isLastAttempt = attempt === maxAttempts - 1;
         if (hasImages || responseSummary.blockedForSafety || isLastAttempt) {
           return response;
         }
       } catch (error) {
-        const isLastAttempt = attempt === GOOGLE_VERTEX_IMAGE_MAX_ATTEMPTS - 1;
+        const isLastAttempt = attempt === maxAttempts - 1;
         if (!isRetryableGoogleVertexImageError(error) || isLastAttempt) throw error;
       }
       await waitForRetry(this.config.retryDelayMs ?? 500);
@@ -87,9 +90,9 @@ export class GoogleVertexImageClient {
   private async generateContentOnce(modelId: string, payload: GoogleVertexImagePayload): Promise<unknown> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.timeoutMs ?? 120_000);
-    const base = this.config.apiBaseUrl.replace(/\/+$/, '');
+    const base = modelId === NANO21_MODEL_ID ? 'https://aiplatform.googleapis.com' : this.config.apiBaseUrl.replace(/\/+$/, '');
     const url = `${base}/v1/projects/${encodeURIComponent(this.config.projectId)}/locations/${encodeURIComponent(
-      this.config.location
+      modelId === NANO21_MODEL_ID ? 'global' : this.config.location
     )}/publishers/google/models/${encodeURIComponent(modelId)}:generateContent`;
     try {
       const response = await (this.config.fetchFn ?? fetch)(url, {

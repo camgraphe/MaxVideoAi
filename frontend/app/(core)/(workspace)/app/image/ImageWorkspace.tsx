@@ -158,6 +158,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
     aspectRatio,
     referenceImageCount: combinedReferenceUrls.length,
+    thinkingLevel,
     customImageHeight,
     customImageWidth,
     enableWebSearch,

@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
@@ -159,6 +160,9 @@ const IMAGE_SETTING_KEYS = new Set([
   'seed',
   'style',
   'thinkingLevel',
+  'maxOutputTokens',
+  'systemInstruction',
+  'enableImageSearch',
   'watermark',
 ]);
 const SETTING_KEYS_BY_MODE: Record<CanonicalGenerationMode, ReadonlySet<string>> = {
@@ -481,7 +485,7 @@ function normalizeReferences(
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  const orderedRole = mode === 'extend'
+  const orderedRole = engineId === NANO21_ENGINE_ID && mode === 'i2i' ? 'reference' : mode === 'extend'
     ? 'source'
     : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft'].includes(engineId) || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
@@ -596,6 +600,19 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     references: normalizeReferences(input.references, mode, normalizeEngineId(input.engineId), normalizeEngineId(input.engineId) === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string'),
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
+  if (result.engineId === NANO21_ENGINE_ID) {
+    try {
+      assertNano21UnsupportedFields(result.settings);
+      const native = normalizeNano21Settings(result.settings as Parameters<typeof normalizeNano21Settings>[0]);
+      assertNano21Scenario({ ...native, mode: result.mode, referenceImageCount: result.references.length, outputCount: result.outputCount, aspectRatio: String(result.settings.aspectRatio ?? '1:1') });
+      if (result.references.some(reference => reference.kind !== 'asset' || reference.role !== 'reference')) throw new Error('Owned ordered image references are required.');
+      delete result.settings.enableWebSearch;
+      delete result.settings.enableImageSearch;
+      result.settings = { ...result.settings, resolution: native.imageSize.toLowerCase(), thinkingLevel: native.thinkingLevel.toLowerCase(),
+        maxOutputTokens: native.maxOutputTokens, aspectRatio: result.settings.aspectRatio ?? '1:1',
+        ...(native.enableWebSearch ? { enableWebSearch: true } : {}), ...(native.enableImageSearch ? { enableImageSearch: true } : {}) };
+    } catch { fail('settings', 'Unsupported Nano Banana 2.1 scenario.'); }
+  }
   try { validateOwnedKlingElements(result); } catch { fail('elements', 'Invalid owned Kling Element composition.'); }
   return result;
 }

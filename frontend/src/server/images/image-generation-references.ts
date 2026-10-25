@@ -1,3 +1,6 @@
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { ownedMediaStorageKeyForUrl } from '@/server/storage';
+import { query } from '@/lib/db';
 import type {
   CharacterReferenceSelection,
   ImageGenerationMode,
@@ -75,6 +78,18 @@ export async function prepareImageGenerationReferences({
     );
   }
 
+  if (engine.id === NANO21_ENGINE_ID && combinedImageUrls.length) {
+    if (combinedImageUrls.some(url => !ownedMediaStorageKeyForUrl({ url, userId }))) {
+      fail(mode, 'reference_not_owned', 'Import references into your own library before generation.', 400);
+    }
+    const owned = await query<{ url: string }>(
+      `SELECT url FROM user_assets WHERE user_id = $1 AND url = ANY($2::text[])
+       UNION SELECT url FROM media_assets WHERE user_id = $1 AND url = ANY($2::text[]) AND kind = 'image' AND status = 'ready' AND deleted_at IS NULL`,
+      [userId, combinedImageUrls]);
+    if (combinedImageUrls.some(url => !owned.some(row => row.url === url))) {
+      fail(mode, 'reference_not_owned', 'Reference media is unavailable for this account.', 400);
+    }
+  }
   const supportedReferenceFormats = getSupportedImageFormats(engine);
   let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
   if (supportedReferenceFormats.length && combinedImageUrls.length) {

@@ -35,6 +35,28 @@ export function parseGoogleVertexResponseId(payload: unknown): string | null {
   return typeof root?.responseId === 'string' ? root.responseId : null;
 }
 
+/** Modality counts are separate from inline parts and from the actual invoice. */
+export function parseGoogleVertexImageUsage(payload: unknown): {
+  inputTokens: number; outputTextTokens: number; outputImageTokens: number; thoughtsTokens: number;
+  listEstimateUsd: number; invoiceCostUsd: null; source: string; ratesCheckedAt: string; toolFeesIncluded: false;
+} | null {
+  const usage = asRecord(asRecord(payload)?.usageMetadata);
+  if (!usage || !Array.isArray(usage.candidatesTokensDetails)) return null;
+  const valid = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+  if (!valid(usage.promptTokenCount) || !valid(usage.thoughtsTokenCount)) return null;
+  const totals: Record<string, number> = { TEXT: 0, IMAGE: 0 };
+  for (const item of usage.candidatesTokensDetails) {
+    const detail = asRecord(item);
+    if (!detail || !['TEXT', 'IMAGE'].includes(String(detail.modality)) || !valid(detail.tokenCount)) return null;
+    totals[String(detail.modality)] += detail.tokenCount;
+  }
+  const inputTokens = usage.promptTokenCount;
+  const thoughtsTokens = usage.thoughtsTokenCount;
+  return { inputTokens, outputTextTokens: totals.TEXT, outputImageTokens: totals.IMAGE, thoughtsTokens,
+    listEstimateUsd: Number(((inputTokens * 1.5 + (totals.TEXT + thoughtsTokens) * 7.5 + totals.IMAGE * 30) / 1_000_000).toFixed(10)),
+    invoiceCostUsd: null, source: 'google-vertex-usage-metadata', ratesCheckedAt: '2026-10-25', toolFeesIncluded: false };
+}
+
 export function summarizeGoogleVertexImageResponse(payload: unknown): GoogleVertexImageResponseSummary {
   const root = asRecord(payload);
   const promptFeedback = asRecord(root?.promptFeedback);

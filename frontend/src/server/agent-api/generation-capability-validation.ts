@@ -114,6 +114,9 @@ const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   seed: 'seed',
   style: 'style',
   thinkingLevel: 'thinking_level',
+  maxOutputTokens: 'max_output_tokens',
+  systemInstruction: 'system_instruction',
+  enableImageSearch: 'enable_image_search',
 };
 
 export type ReferenceConstraintFailure =

@@ -22,12 +22,14 @@ type ImagePricingKey = [
   string,
   string,
   number,
+  string,
 ];
 
 export function useImageWorkspacePricing({
   customImageHeight,
   customImageWidth,
   enableWebSearch,
+  thinkingLevel,
   mode,
   numImages,
   quality,
@@ -41,6 +43,7 @@ export function useImageWorkspacePricing({
   customImageHeight: string;
   customImageWidth: string;
   enableWebSearch: boolean;
+  thinkingLevel?: string | null;
   mode: ImageGenerationMode;
   numImages: number;
   quality: string | null;
@@ -66,11 +69,13 @@ export function useImageWorkspacePricing({
       referenceSizeSignature,
       aspectRatio ?? '',
       referenceImageCount,
+      thinkingLevel ?? '',
     ];
   }, [
     customImageHeight,
     customImageWidth,
     enableWebSearch,
+    thinkingLevel,
     mode,
     numImages,
     quality,
@@ -100,6 +105,7 @@ export function useImageWorkspacePricing({
       ,
       requestAspectRatio,
       requestReferenceImageCount,
+      requestThinkingLevel,
     ]) => {
       const requestCustomImageSize =
         requestResolution === 'custom'
@@ -119,6 +125,7 @@ export function useImageWorkspacePricing({
           referenceImageCount: requestReferenceImageCount,
           quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
+          thinkingLevel: requestThinkingLevel || undefined,
         }),
       });
       const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;

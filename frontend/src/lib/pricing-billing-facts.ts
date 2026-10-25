@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, NANO21_BUDGET_POLICY_VERSION, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
@@ -104,6 +105,18 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (engine.id === NANO21_ENGINE_ID) {
+    if (currency !== 'USD') throw new Error('Nano Banana 2.1 supplier facts require USD.');
+    const settings = normalizeNano21Settings(context);
+    assertNano21Scenario({ ...settings, mode: context.mode, referenceImageCount: context.referenceImageCount, outputCount: durationSec, aspectRatio: context.aspectRatio });
+    const knownImageTokens = ({ '1K': 1120, '2K': 1680, '4K': 3780 } as const)[settings.imageSize];
+    const partialListUsd = (knownImageTokens * 30 + (context.referenceImageCount ?? 0) * 1120 * 1.5) / 1_000_000;
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: partialListUsd * 100,
+      base: { seconds: 1, rate: partialListUsd, unit: 'image', amountCents: partialListUsd * 100 },
+      meta: { providerCostKind: 'partial-list-image-components', providerCostIncomplete: true, providerListImageComponentsUsd: partialListUsd, providerInvoiceCostUsd: null, providerBudgetStatus: 'pending_review', providerConfiguredOutputTokenLimit: settings.maxOutputTokens,
+        providerInputImageTokens: (context.referenceImageCount ?? 0) * 1120, providerOutputImageTokens: knownImageTokens,
+        providerBudgetPolicyVersion: NANO21_BUDGET_POLICY_VERSION, effective_supplier_charge_verified: false } });
+  }
   if (['flux-3','flux-3-draft'].includes(engine.id) && context.mode==='ref2v') {
     const cents=engine.id==='flux-3-draft'?(resolution==='720p'?6:undefined):({'720p':17,'1080p':29} as Record<string,number>)[resolution??''];
     if(!cents||!Number.isSafeInteger(durationSec)||durationSec<5||durationSec>20||currency!=='USD')throw new Error('Unsupported keyframe pricing domain.');

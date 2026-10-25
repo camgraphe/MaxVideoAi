@@ -212,7 +212,7 @@ export function useImageGenerationRunner({
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
           thinkingLevel: hasThinkingLevelField
-            ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
+            ? ((thinkingLevel ?? undefined) as 'minimal' | 'medium' | 'high' | undefined)
             : undefined,
           limitGenerations: hasLimitGenerationsField ? limitGenerations : undefined,
           watermark: hasWatermarkField ? watermark : undefined,

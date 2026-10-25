@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { query } from '@/lib/db';
 import type { WalletReservation } from '@/server/generations/initial-job-reservation';
 
@@ -18,11 +19,17 @@ export function isAmbiguousImageProviderFailure(
 }
 
 export function shouldKeepImageProviderOutcomePending(params: {
+  engineId?: string;
   walletReservation: WalletReservation;
   hasTrustedQuotedBilling: boolean;
   error: unknown;
   providerJobId?: string;
 }): boolean {
+  if (params.engineId === NANO21_ENGINE_ID) {
+    const code = params.error && typeof params.error === 'object' && 'code' in params.error ? String(params.error.code) : '';
+    if (['GOOGLE_VERTEX_IMAGE_EMPTY_RESPONSE', 'google_vertex_image_safety_block'].includes(code)) return false;
+    return isAmbiguousImageProviderFailure(params.error, params.providerJobId);
+  }
   return params.walletReservation === 'already_reserved'
     && params.hasTrustedQuotedBilling
     && isAmbiguousImageProviderFailure(params.error, params.providerJobId);
