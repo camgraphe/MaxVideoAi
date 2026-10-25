@@ -41,7 +41,7 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
       : es ? { fps: 'Fotogramas por segundo', output_format: 'Formato del archivo', enable_prompt_expansion: 'Mejora del prompt' }
       : { fps: 'Frames per second', output_format: 'File format', enable_prompt_expansion: 'Prompt enhancement' };
     const changes = workspaceModelReviewChangeRows(candidate, currentEngine, engine, locale)
-      .filter(change => !['engineId', 'durationSec', 'durationOption', 'resolutionSupported', 'aspect_ratioSupported'].includes(change.field))
+      .filter(change => change.before !== change.after && !['engineId', 'durationSec', 'durationOption', 'resolutionSupported', 'aspect_ratioSupported'].includes(change.field))
       .map(change => ({ ...change, label: settingLabels[change.field.replace(/^extraInputValues\./, '')] ?? change.label }));
     const request = disabledReason || missingSource ? null : buildWorkspacePreflightRequest({
       form: candidate.setup.form, selectedEngine: engine, submissionMode: candidate.workflow.submissionMode,
