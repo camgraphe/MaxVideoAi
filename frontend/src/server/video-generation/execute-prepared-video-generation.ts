@@ -1,4 +1,3 @@
-import type { JobJourneyContext } from '@/server/generations/job-journey-context';
 import type { GeneratePayload } from '@/lib/fal';
 import { ensureUserPreferredCurrency } from '@/lib/currency';
 import type { ReferenceBudgetValuesByField } from '@/lib/reference-budget';
@@ -27,7 +26,7 @@ import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-reques
 import { persistReservedBytePlusLasExecutionSettings } from '@/server/byteplus-submission-state';
 
 export type ExecutePreparedVideoGenerationParams = {
-  journeyContext?: JobJourneyContext;
+  journeyContext?: import('@/server/generations/job-journey-context').JobJourneyContext;
   lumaGenerationSource?: import('@/server/agent-api/generation-luma-lineage').OwnedLumaGenerationSource;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   body: Record<string, unknown>;
