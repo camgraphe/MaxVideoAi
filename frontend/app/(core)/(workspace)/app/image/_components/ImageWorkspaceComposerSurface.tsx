@@ -245,33 +245,35 @@ export function ImageWorkspaceComposerSurface({
   return (
     <div className="app-image-workspace-surface flex flex-col gap-1">
       <WorkspaceCreationHeading media="image" />
-      {!compositePreviewEntry ? (
-        <>
-          <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
-          {starterPreview && starterNavigation
-            ? <ImageStarterPreview item={starterPreview} navigation={starterNavigation} />
-            : <WorkspaceEmptyPreview media="image" />}
-        </>
-      ) : (
-        <ImageCompositePreviewDock
-          density="workspace"
-          entry={compositePreviewEntry}
-          selectedIndex={selectedPreviewImageIndex}
-          onSelectIndex={setSelectedPreviewImageIndex}
-          onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
-          onDownload={handleDownload}
-          onCopyLink={handleCopy}
-          onEditImage={handleEditSelectedPreview}
-          onAddToLibrary={handleAddToLibrary}
-          onRemoveFromLibrary={handleRemoveFromLibrary}
-          isInLibrary={isInLibrary}
-          isSavingToLibrary={isSavingToLibrary}
-          isRemovingFromLibrary={isRemovingFromLibrary}
-          copiedUrl={copiedUrl}
-          showTitle={false}
-          engineSettings={engineSettings}
-        />
-      )}
+      {/* History can replace the preview without remounting the open model picker. */}
+      <div className="min-w-0">
+        <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
+        {!compositePreviewEntry ? (
+          <div className="mt-1">
+            {starterPreview && starterNavigation
+              ? <ImageStarterPreview item={starterPreview} navigation={starterNavigation} />
+              : <WorkspaceEmptyPreview media="image" />}
+          </div>
+        ) : (
+          <ImageCompositePreviewDock
+            density="workspace"
+            entry={compositePreviewEntry}
+            selectedIndex={selectedPreviewImageIndex}
+            onSelectIndex={setSelectedPreviewImageIndex}
+            onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
+            onDownload={handleDownload}
+            onCopyLink={handleCopy}
+            onEditImage={handleEditSelectedPreview}
+            onAddToLibrary={handleAddToLibrary}
+            onRemoveFromLibrary={handleRemoveFromLibrary}
+            isInLibrary={isInLibrary}
+            isSavingToLibrary={isSavingToLibrary}
+            isRemovingFromLibrary={isRemovingFromLibrary}
+            copiedUrl={copiedUrl}
+            showTitle={false}
+          />
+        )}
+      </div>
 
       <form onSubmit={handleRun} className="app-image-composer space-y-4">
         {statusMessage ? (
