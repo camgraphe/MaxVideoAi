@@ -228,6 +228,14 @@ lower activity sections retain the detailed tool, success and failure breakdowns
 
 - MCP accounts are distinct authenticated accounts observed in the audit or quote ledger
   before the reporting end. This is cumulative usage, not installation or signup attribution.
+  Only quotes with the persisted `auth_origin = 'oauth'` contribute to these accounts,
+  generation totals and the recent generation feed. Studio and Toolbox quotes remain
+  excluded even when they share a user, OAuth client ID or job with an MCP quote.
+  The notice reports excluded Studio, Toolbox and unknown-origin quote counts before
+  the reporting end, matching the cumulative account scope (not a count of jobs in the
+  selected window). Null or unrecognized origins never become MCP or client `other`.
+  If the quote-origin column is absent, this outcomes reader explicitly reports
+  unavailable totals and feed; it does not infer historical origins or install schema.
 - New signups using MCP match those accounts to synchronized `profiles.created_at` within
   the UTC window. A bounded server-only Auth lookup fills missing/unsynchronized profiles
   in memory; unresolved dates make this measure unavailable. It does
@@ -261,8 +269,8 @@ lower activity sections retain the detailed tool, success and failure breakdowns
   indicative historical fallback when event-time evidence is missing.
   Null client IDs and missing evidence remain unidentified; later observations never relabel
   an earlier generation through event-time evidence; the current OAuth registry fallback is
-  explicitly labeled as indicative. Old schemas continue to serve outcomes using the
-  available attribution.
+  explicitly labeled as indicative. Schemas missing client-family attribution continue
+  to use available evidence; quote-origin availability is checked independently.
 - Migration 48 admits `glama` in the Neon audit constraint without rewriting historical
   rows. Apply it before deploying runtime code that records this family; old `other`
   entries are not force-reclassified.
@@ -281,6 +289,8 @@ and work while the commercial funnel is disabled.
 Validation: `tests/admin-mcp-metrics-postgres.test.ts` exercises real PostgreSQL outcomes,
 window boundaries, multiple clients, ownership, missing profiles and legacy schemas;
 `tests/admin-mcp-outcomes.test.ts` covers failure handling and client-family normalization.
+`tests/admin-mcp-quote-origins-postgres.test.ts` covers mixed origins on the same account,
+quote-only accounts, conflicting newer quotes, exact ownership and missing-origin schemas.
 
 Auth metadata fallbacks use the existing Supabase admin client in
 `frontend/server/admin-mcp-auth-metadata.ts`: at most 100 requested identities per page,

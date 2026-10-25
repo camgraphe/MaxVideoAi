@@ -45,7 +45,7 @@ type UseWorkspaceGalleryActionsOptions = {
   sharedPrompt: string | null;
   selectedPreview: SelectedVideoPreview | null;
   compositeOverrideSummary: GroupSummary | null;
-  applyVideoSettingsFromTile: (tile: QuadPreviewTile) => void;
+  applyVideoSettingsFromTile: (tile: QuadPreviewTile) => boolean;
   hydrateVideoSettingsFromJob: (jobId: string | null | undefined) => Promise<void>;
   focusComposer: () => void;
   showNotice: (message: string) => void;
@@ -124,14 +124,14 @@ export function useWorkspaceGalleryActions({
       const jobId = tile.jobId ?? tile.id;
       switch (action) {
         case 'continue': {
-          applyVideoSettingsFromTile(tile);
+          if (!applyVideoSettingsFromTile(tile)) return;
           void hydrateVideoSettingsFromJob(jobId);
           setPrompt(tile.prompt);
           focusComposer();
           break;
         }
         case 'refine': {
-          applyVideoSettingsFromTile(tile);
+          if (!applyVideoSettingsFromTile(tile)) return;
           void hydrateVideoSettingsFromJob(jobId);
           setPrompt(`${tile.prompt}\n\n// refine here`);
           focusComposer();
@@ -153,8 +153,7 @@ export function useWorkspaceGalleryActions({
           break;
         }
         case 'open': {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(jobId);
+          if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(jobId);
           setActiveBatchId(tile.batchId);
           setViewMode('quad');
           setSelectedPreview({
@@ -225,7 +224,6 @@ export function useWorkspaceGalleryActions({
           ? renderGroup.items.find((item) => item.localKey === preferredHeroKey) ?? renderGroup.items[0]
           : renderGroup.items[0];
         if (!heroRender) return;
-        const heroJobId = heroRender.jobId ?? heroRender.id;
         if (action === 'compare') {
           emitClientMetric('compare_used', { batchId: group.id });
           showNotice('Compare view is coming soon.');
@@ -243,14 +241,10 @@ export function useWorkspaceGalleryActions({
           return;
         }
         if (action === 'continue') {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(heroJobId);
           handleQuadTileAction('continue', tile);
           return;
         }
         if (action === 'refine') {
-          applyVideoSettingsFromTile(tile);
-          void hydrateVideoSettingsFromJob(heroJobId);
           handleQuadTileAction('refine', tile);
           return;
         }
@@ -321,14 +315,11 @@ export function useWorkspaceGalleryActions({
         } catch {
           // ignore storage failures
         }
-        applyVideoSettingsFromTile(tile);
-        void hydrateVideoSettingsFromJob(heroJobId);
+        if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(heroJobId);
         return;
       }
 
       if (action === 'continue' || action === 'refine') {
-        applyVideoSettingsFromTile(tile);
-        void hydrateVideoSettingsFromJob(heroJobId);
         handleQuadTileAction(action, tile);
         return;
       }
