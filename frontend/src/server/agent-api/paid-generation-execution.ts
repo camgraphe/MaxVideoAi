@@ -28,6 +28,7 @@ import type { McpGenerationQuote } from './quote-repository';
 import type { ResolvedReference } from './reference-types';
 import { stableJson } from './generation-normalization';
 import { operationReservationDuration } from './operation-reservation-duration';
+import { resolveReservedVideoTiming, type ReservedVideoTiming } from './video-generation-timing';
 import {
   buildPaidVideoRequestBody,
   resolvePaidMembershipTier,
@@ -42,6 +43,7 @@ export type {
 } from './included-trial-generation-execution';
 
 export type PaidGenerationExecution = {
+  timing?: ReservedVideoTiming;
   lumaSourceFingerprint?: string;
   fluxDraftFingerprint?: string;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
@@ -298,9 +300,14 @@ export async function reservePaidGenerationInitialJob(
 ): Promise<PaidGenerationReservation> {
   const pricing = canonicalPricing(input);
   if (input.quote.request.surface === 'video') {
+    const params = videoInitialParams(input, pricing);
+    const timing = await resolveReservedVideoTiming(
+      input.candidate.engine, input.quote.request, params.jobInsert.durationSec, dependencies.executor,
+    );
+    Object.assign(params.jobInsert, timing);
     const created = await createInitialVideoJobInExecutor(
       dependencies.executor,
-      videoInitialParams(input, pricing),
+      params,
     );
     if (created.kind !== 'created'
       || !('walletChargeReserved' in created)
@@ -311,6 +318,7 @@ export async function reservePaidGenerationInitialJob(
       jobId: input.quote.quoteId,
       surface: 'video',
       execution: {
+        timing,
         surface: 'video',
         quoteId: input.quote.quoteId,
         userId: input.quote.userId,
@@ -382,7 +390,7 @@ function materializedImageReferenceUrls(
 }
 
 function paidRequestBody(execution: PaidGenerationExecution): Record<string, unknown> {
-  if (execution.surface === 'video') return buildPaidVideoRequestBody(execution);
+  if (execution.surface === 'video') return { ...buildPaidVideoRequestBody(execution), ...execution.timing };
   const settings = { ...execution.request.settings };
   const imageWidth = settings.imageWidth;
   const imageHeight = settings.imageHeight;
