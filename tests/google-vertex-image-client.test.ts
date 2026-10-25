@@ -2,6 +2,31 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { GoogleVertexImageClient } from '../frontend/src/server/images/google-vertex-image-client.ts';
+import { GoogleVertexImageError } from '../frontend/src/server/images/google-vertex-image-error.ts';
+
+test('Nano21 protocol errors carry only bounded printable parsed response IDs without raw payloads', async () => {
+  for (const responseId of ['known-provider-id', '', 'not\na-log-id', 'x'.repeat(513), { untrusted: 'object' }]) {
+    let posts = 0;
+    const client = new GoogleVertexImageClient({
+      projectId: 'demo-project', location: 'global', apiBaseUrl: 'https://aiplatform.googleapis.com',
+      serviceAccount: { client_email: 'svc@example.com', private_key: 'unused' },
+      getAccessTokenFn: async () => 'vertex-token',
+      fetchFn: async () => { posts += 1; return new Response(JSON.stringify({ responseId, candidates: [], privateFixture: 'do-not-retain' })); },
+    });
+    await assert.rejects(client.generateContent('gemini-nano-banana-2.1', {
+      contents: [{ role: 'user', parts: [{ text: 'test' }] }], generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+    }), error => {
+      assert.ok(error instanceof GoogleVertexImageError);
+      assert.equal(error.code, 'GOOGLE_VERTEX_IMAGE_PROTOCOL_ERROR');
+      assert.equal(error.submissionState, 'uncertain');
+      assert.equal(error.responseId, responseId === 'known-provider-id' ? responseId : null);
+      assert.equal(error.detail, null);
+      assert.equal(error.cause, undefined);
+      return true;
+    });
+    assert.equal(posts, 1);
+  }
+});
 
 test('calls Vertex generateContent with bearer authentication', async () => {
   const requests: Array<{ url: string; authorization: string | null }> = [];

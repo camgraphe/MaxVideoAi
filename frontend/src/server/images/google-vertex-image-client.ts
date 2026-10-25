@@ -6,7 +6,7 @@ import {
 } from '@/server/video-providers/google-vertex-auth';
 import { GoogleVertexImageError } from './google-vertex-image-error';
 import type { GoogleVertexImagePayload } from './google-vertex-image-payload';
-import { extractGoogleVertexImages, isValidatedGoogleVertexImageResponse, summarizeGoogleVertexImageResponse } from './google-vertex-image-response';
+import { extractGoogleVertexImages, isValidatedGoogleVertexImageResponse, parseGoogleVertexResponseId, summarizeGoogleVertexImageResponse } from './google-vertex-image-response';
 
 export type GoogleVertexImageClientConfig = {
   projectId: string;
@@ -135,6 +135,7 @@ export class GoogleVertexImageClient {
       if (nano21 && !isValidatedGoogleVertexImageResponse(json)) {
         throw new GoogleVertexImageError('Google Vertex image response was not a validated result; the outcome is uncertain.', {
           status: 502, code: 'GOOGLE_VERTEX_IMAGE_PROTOCOL_ERROR', submissionState: 'uncertain',
+          responseId: parseGoogleVertexResponseId(json),
         });
       }
       return json;

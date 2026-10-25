@@ -81,7 +81,8 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
       { name: 'accepted image followed by storage failure is durably paid and never resubmitted', id: 'storage-failed', kind: 'image', expectedPosts: 1, pending: true, responseId: IMAGE.responseId },
       { name: 'truncated HTTP200 JSON is uncertain rather than a definite empty refund', id: 'truncated-json', kind: 'truncated', expectedPosts: 1, pending: true },
       { name: 'interrupted HTTP200 body is uncertain rather than a definite empty refund', id: 'interrupted-body', kind: 'interrupted', expectedPosts: 1, pending: true },
-      { name: 'unrecognized HTTP200 object cannot prove an empty generation', id: 'invalid-envelope', kind: 'invalid', expectedPosts: 1, pending: true },
+      { name: 'unrecognized HTTP200 object retains its known response ID on the uncertain job', id: 'invalid-envelope', kind: 'invalid', expectedPosts: 1, pending: true, responseId: 'synthetic-protocol-response' },
+      { name: 'non-string response ID is refused while the invalid envelope remains uncertain', id: 'invalid-response-id', kind: 'invalid-id', expectedPosts: 1, pending: true },
       { name: 'validated definitive empty response keeps the original refund policy', id: 'definite-empty', kind: 'empty', expectedPosts: 1, pending: false, responseId: EMPTY.responseId },
       { name: 'validated safety response keeps the original refund policy', id: 'definite-safety', kind: 'safety', expectedPosts: 1, pending: false, responseId: SAFETY.responseId },
       { name: 'legacy Nano2 storage failure still uses its existing refund policy', id: 'legacy-storage', kind: 'image', expectedPosts: 1, pending: false, old: true, responseId: IMAGE.responseId },
@@ -96,7 +97,9 @@ test('reserved direct Vertex jobs preserve the real POST boundary, original char
         : scenario.kind === 'interrupted' ? new Response(new ReadableStream({ start(controller) {
           controller.enqueue(new TextEncoder().encode('{"candidates":[')); controller.error(new Error('synthetic interrupted body'));
         } }), { status: 200 })
-        : new Response(JSON.stringify(scenario.kind === 'empty' ? EMPTY : scenario.kind === 'safety' ? SAFETY : scenario.kind === 'invalid' ? {} : IMAGE));
+        : new Response(JSON.stringify(scenario.kind === 'empty' ? EMPTY : scenario.kind === 'safety' ? SAFETY
+          : scenario.kind === 'invalid' ? { responseId: scenario.responseId, candidates: [] }
+            : scenario.kind === 'invalid-id' ? { responseId: { untrusted: 'object' }, candidates: [] } : IMAGE));
       const entry = scenario.old ? legacy : nano;
       const pricing = { totalCents: 79, currency: 'USD', membershipTier: 'member',
         meta: { pricingMode: 'manual_tariff', customerTariffRevision: 7, syntheticFixture: true } } as PricingSnapshot;

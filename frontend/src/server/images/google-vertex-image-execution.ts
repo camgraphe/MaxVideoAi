@@ -284,6 +284,7 @@ export async function executeGoogleVertexImageGeneration(params: {
     console.error('[images] Google Vertex image generation failed', error);
     if (params.engine.id === NANO21_ENGINE_ID && (receivedImage
       || (error instanceof GoogleVertexImageError && error.submissionState === 'uncertain'))) {
+      if (error instanceof GoogleVertexImageError) providerJobId ??= error.responseId;
       const message = 'The image request outcome is uncertain. Keep this job ID for support; do not resubmit.';
       // This is the actual reserved direct-provider owner. Its caller's fallback
       // catch does not surround this call, so persist here before returning ambiguity.
