@@ -64,6 +64,7 @@ type WorkspaceAppShellProps = {
   composerSurface: ReactNode;
   previewSupplement?: ReactNode;
   modelReviewCommands?: ReactNode;
+  modelPicker?: PreviewDockProps['modelPicker'];
   recentMedia?: ReactNode;
   onOpenRecentMedia?: () => void;
   recentDropProps?: RecentReferenceDropProps;
@@ -105,7 +106,7 @@ export function WorkspaceAppShell({
   setViewerTarget,
   composerSurface,
   previewSupplement,
-  modelReviewCommands,
+  modelReviewCommands, modelPicker,
   recentMedia,
   onOpenRecentMedia,
   recentDropProps,
@@ -199,6 +200,7 @@ export function WorkspaceAppShell({
           modeLabelLocale={modeLabelLocale}
           onEngineChange={handleEngineChange}
           modelReviewCommands={modelReviewCommands}
+          modelPicker={modelPicker}
           onModeChange={handleModeChange}
           disabledEngineReasons={disabledEngineReasons}
           engineScores={engineScores}

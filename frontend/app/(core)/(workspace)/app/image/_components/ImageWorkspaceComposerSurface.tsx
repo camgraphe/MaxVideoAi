@@ -43,7 +43,8 @@ interface ImageWorkspaceComposerSurfaceProps {
   customImageWidth: string;
   enableWebSearch: boolean;
   engineCapsList: EngineCaps[];
-  estimatedCostAmount: number;
+  modelPicker?: import('@/components/ui/engine-select/model-picker-types').EnginePickerContext;
+  estimatedCostAmount: number | null;
   handleAddToLibrary: (url: string) => void;
   handleCopy: (url: string) => void;
   handleDownload: (url: string) => void;
@@ -138,7 +139,7 @@ export function ImageWorkspaceComposerSurface({
   customImageHeight,
   customImageWidth,
   enableWebSearch,
-  engineCapsList,
+  engineCapsList, modelPicker,
   estimatedCostAmount,
   handleAddToLibrary,
   handleCopy,
@@ -219,6 +220,7 @@ export function ImageWorkspaceComposerSurface({
   const engineSettings = (
     <div className="app-image-model-selector min-w-0">
       <EngineSelect
+              picker={modelPicker}
         engines={engineCapsList}
         engineId={selectedEngineId}
         onEngineChange={setEngineId}
@@ -243,33 +245,35 @@ export function ImageWorkspaceComposerSurface({
   return (
     <div className="app-image-workspace-surface flex flex-col gap-1">
       <WorkspaceCreationHeading media="image" />
-      {!compositePreviewEntry ? (
-        <>
-          <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
-          {starterPreview && starterNavigation
-            ? <ImageStarterPreview item={starterPreview} navigation={starterNavigation} />
-            : <WorkspaceEmptyPreview media="image" />}
-        </>
-      ) : (
-        <ImageCompositePreviewDock
-          density="workspace"
-          entry={compositePreviewEntry}
-          selectedIndex={selectedPreviewImageIndex}
-          onSelectIndex={setSelectedPreviewImageIndex}
-          onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
-          onDownload={handleDownload}
-          onCopyLink={handleCopy}
-          onEditImage={handleEditSelectedPreview}
-          onAddToLibrary={handleAddToLibrary}
-          onRemoveFromLibrary={handleRemoveFromLibrary}
-          isInLibrary={isInLibrary}
-          isSavingToLibrary={isSavingToLibrary}
-          isRemovingFromLibrary={isRemovingFromLibrary}
-          copiedUrl={copiedUrl}
-          showTitle={false}
-          engineSettings={engineSettings}
-        />
-      )}
+      {/* History can replace the preview without remounting the open model picker. */}
+      <div className="min-w-0">
+        <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
+        {!compositePreviewEntry ? (
+          <div className="mt-1">
+            {starterPreview && starterNavigation
+              ? <ImageStarterPreview item={starterPreview} navigation={starterNavigation} />
+              : <WorkspaceEmptyPreview media="image" />}
+          </div>
+        ) : (
+          <ImageCompositePreviewDock
+            density="workspace"
+            entry={compositePreviewEntry}
+            selectedIndex={selectedPreviewImageIndex}
+            onSelectIndex={setSelectedPreviewImageIndex}
+            onOpenModal={previewEntry ? () => handleOpenHistoryEntry(previewEntry) : undefined}
+            onDownload={handleDownload}
+            onCopyLink={handleCopy}
+            onEditImage={handleEditSelectedPreview}
+            onAddToLibrary={handleAddToLibrary}
+            onRemoveFromLibrary={handleRemoveFromLibrary}
+            isInLibrary={isInLibrary}
+            isSavingToLibrary={isSavingToLibrary}
+            isRemovingFromLibrary={isRemovingFromLibrary}
+            copiedUrl={copiedUrl}
+            showTitle={false}
+          />
+        )}
+      </div>
 
       <form onSubmit={handleRun} className="app-image-composer space-y-4">
         {statusMessage ? (
@@ -289,6 +293,8 @@ export function ImageWorkspaceComposerSurface({
           prompt={prompt}
           onPromptChange={setPrompt}
           price={estimatedCostAmount}
+          isPricing={estimatedCostAmount === null && !composerError}
+          disableGenerate={estimatedCostAmount === null}
           currency={currency}
           isLoading={false}
           pendingGenerations={pendingGenerations}

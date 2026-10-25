@@ -70,7 +70,7 @@ export function buildWorkspaceModelAlternatives({
       if (blocked && !includeBlocked) return [];
       const request = blocked ? null : buildWorkspacePreflightRequest({
         form: candidate.setup.form,
-        selectedEngine: engine,
+        selectedEngine: candidate.engine,
         submissionMode: candidate.workflow.submissionMode,
         effectiveDurationSec: candidate.effectiveDurationSec,
         supportsAudioToggle: candidate.supportsAudioToggle,

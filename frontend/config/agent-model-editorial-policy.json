@@ -50,5 +50,48 @@
     {"engineId": "flux-3", "level": "alternative", "rationale": "Consider when supported first/last frames or source-video continuation matter."},
     {"engineId": "flux-3-draft", "level": "alternative", "rationale": "Consider for compatible iteration, first/last-frame direction or continuation."},
     {"engineId": "pika-text-to-video", "level": "on_request", "rationale": "Use when the client explicitly asks for Pika and the exact executable settings fit."}
-  ]
+  ],
+  "workspaceSelection": {
+    "reviewedAt": "2026-10-25",
+    "source": "Approved MaxVideoAI model-picker review; editorial preference, not a measured ranking.",
+    "create": [
+      {
+        "group": "quality",
+        "ids": [
+          "seedance-2-5",
+          "wan-3-prime",
+          "kling-o3-pro"
+        ]
+      },
+      {
+        "group": "balanced",
+        "ids": [
+          "wan-3",
+          "flux-3-max"
+        ]
+      },
+      {
+        "group": "budget",
+        "ids": [
+          "minimax-h3"
+        ]
+      }
+    ],
+    "modify": [
+      {
+        "group": "quality",
+        "ids": [
+          "luma-ray-3-2",
+          "kling-o3-pro",
+          "wan-3-prime"
+        ]
+      },
+      {
+        "group": "balanced",
+        "ids": [
+          "wan-3"
+        ]
+      }
+    ]
+  }
 }

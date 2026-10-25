@@ -2,6 +2,7 @@ import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
 import { SEEDANCE_REFERENCE_AUDIO_FIELD_IDS } from '@/lib/seedance-workflow';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { getFalEngineById } from '@/src/config/falEngines';
 import type { EngineCaps } from '@/types/engines';
 import { buildAssetFieldIdSet, buildReferenceAudioFieldIds, reconcileReferenceAssets, type ReferenceAsset } from './workspace-assets';
@@ -49,6 +50,7 @@ export type WorkspaceModelCandidateReason = {
 };
 
 export type WorkspaceModelCandidate = {
+  engine: EngineCaps;
   setup: WorkspaceModelSetup;
   workflow: WorkspaceWorkflowProjection;
   composer: WorkspaceComposerFacts;
@@ -87,6 +89,11 @@ function referencesFor(setup: WorkspaceModelSetup, summary: WorkspaceInputSchema
 function referenceKey(reference: WorkspaceModelReference) {
   return JSON.stringify([reference.fieldId, reference.elementId, reference.index, reference.role, reference.asset.id,
   reference.asset.assetId, reference.asset.kind, reference.asset.url]);
+}
+
+function engineForSetup(engine: EngineCaps, form: FormState): EngineCaps {
+  return form.engineId === engine.id && form.operation && engine.operationCaps?.[form.operation]?.mode === form.mode
+    ? resolveVideoOperationEngine(engine, form.mode, form.operation) : engine;
 }
 
 function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflow: WorkspaceWorkflowProjection, summary: WorkspaceInputSchemaSummary, sourceSummary: WorkspaceInputSchemaSummary) {
@@ -158,7 +165,7 @@ function validateCandidate(engine: EngineCaps, setup: WorkspaceModelSetup, workf
 }
 
 /** Build an isolated preview. Never applies state, releases media, writes storage or requests a quote. */
-export function prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine, restoreSetup }: {
+export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, locale, currentEngine, restoreSetup }: {
   engine: EngineCaps;
   current: WorkspaceModelSetup;
   locale: string;
@@ -167,7 +174,9 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
   /** Validated saved seed; comparisons always remain relative to current. */
   restoreSetup?: WorkspaceModelSetup;
 }): WorkspaceModelCandidate {
-  const sourceEngine = currentEngine ?? getFalEngineById(current.form.engineId)?.engine ?? null;
+  let engine = targetEngine;
+  const currentBaseEngine = currentEngine ?? getFalEngineById(current.form.engineId)?.engine ?? null;
+  const sourceEngine = currentBaseEngine ? engineForSetup(currentBaseEngine, current.form) : null;
   const sourceWorkflow = resolveWorkspaceWorkflow({ engine: sourceEngine, ...current });
   const sourceComposer = resolveWorkspaceComposerFacts({ engine: sourceEngine, ...current, workflow: sourceWorkflow });
   const sourceSummary = schemaFor(sourceEngine, sourceWorkflow, locale);
@@ -178,10 +187,14 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
   }
   const seed = restoreSetup ?? current;
   if (restoreSetup && restoreSetup.form.engineId !== engine.id) blockingReasons.push({code: 'invalid-reference', scope: 'apply', message: 'Saved configuration belongs to another model.'});
-  const seedSummary = restoreSetup ? schemaFor(engine, resolveWorkspaceWorkflow({engine, ...restoreSetup}), locale) : sourceSummary;
   const requestedMode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: null, carryoverMode: current.form.mode });
   let setup: WorkspaceModelSetup = structuredClone(seed);
   if (!restoreSetup) setup.form = coerceFormStateForEngineChange(engine, requestedMode, setup.form);
+  if (setup.form.operation && engine.operationCaps?.[setup.form.operation]?.mode !== setup.form.mode) {
+    blockingReasons.push({ code: 'unsupported-workflow', scope: 'apply', message: 'The saved video operation is unavailable for this model.' });
+  }
+  engine = engineForSetup(engine, setup.form);
+  const seedSummary = restoreSetup ? schemaFor(engine, resolveWorkspaceWorkflow({ engine, ...restoreSetup }), locale) : sourceSummary;
   const initialWorkflow = resolveWorkspaceWorkflow({ engine, ...setup });
   if (initialWorkflow.klingO3UnsupportedVideoReason) blockingReasons.push({ code: 'unsupported-workflow', scope: 'apply', message: initialWorkflow.klingO3UnsupportedVideoReason });
   let stable = false;
@@ -241,7 +254,7 @@ export function prepareWorkspaceModelCandidate({ engine, current, locale, curren
     change(`extraInputValues.${fieldId}`, before, after, afterField ? 'adapted' : 'inactive');
   }
   return {
-    setup, workflow, composer, inputSchemaSummary, effectiveDurationSec: composer.effectiveDurationSec,
+    engine, setup, workflow, composer, inputSchemaSummary, effectiveDurationSec: composer.effectiveDurationSec,
     supportsAudioToggle: workflow.supportsAudioToggle, voiceControlEnabled: composer.voiceControlEnabled,
     changes, keptReferences, removedReferences, blockingReasons,
     applicable: !blockingReasons.some(({ scope }) => scope === 'apply'),

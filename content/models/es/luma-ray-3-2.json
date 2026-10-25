@@ -299,14 +299,14 @@
     },
     "media": {
       "caption": "Ejemplo Luma Ray 3.2",
-      "description": "Ruta Modify y Reframe para video Luma actual",
+      "description": "Mira este resultado y explora los ejemplos de abajo.",
       "renderLabel": "Ver render",
       "badges": [
         "Modify",
         "Reframe",
         "Video silencioso"
       ],
-      "altContext": "ejemplo Luma Ray 3.2 Modify y Reframe"
+      "altContext": "Ejemplo de video de Luma Ray 3.2"
     },
     "features": [
       {
@@ -466,7 +466,7 @@
     "modelSlug": "luma-ray-3-2",
     "section": {
       "title": "Ejemplos Luma Ray 3.2",
-      "intro": "Usa ejemplos para estudiar prompts Modify, cambios guiados por imágenes clave, ajustes Reframe y pruebas cortas complementarias.",
+      "intro": "Mira los resultados de abajo. Estos ejemplos todavía no muestran el antes y el después de una edición de video.",
       "defaultCtaLabel": "Ver todos los ejemplos Luma",
       "recreateLabel": "Recrear esta toma"
     },

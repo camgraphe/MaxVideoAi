@@ -52,6 +52,16 @@ test('explicit editorial requests cannot override any non-current lifecycle', ()
   }
 });
 
+test('workspace selections validate exact known IDs and reject duplicates within an operation', async () => {
+  const policy = await loadPolicy();
+  assert.ok(policy);
+  const workspaceSelection = { reviewedAt: '2026-10-25', source: 'Approved product decision', create: [{ group: 'balanced', ids: ['wan-3'] }], modify: [] };
+  const parsed = policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection }, new Set(['wan-3']));
+  assert.deepEqual(parsed.workspaceSelection?.create[0].ids, ['wan-3']);
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: { ...workspaceSelection, create: [{ group: 'quality', ids: ['future-model'] }] } }, new Set(['wan-3'])));
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: { ...workspaceSelection, create: [...workspaceSelection.create, ...workspaceSelection.create] } }, new Set(['wan-3'])));
+});
+
 test('editorial validation rejects fabricated scores, unknown versions and unclassified provenance', async () => {
   const policy = await loadPolicy();
   assert.ok(policy?.parseAgentModelEditorialPolicy);
