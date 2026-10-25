@@ -8,14 +8,18 @@ import { build } from 'esbuild';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 
-test('C10: both authenticated web routes ignore forged body/header origins; unauthenticated calls never execute', async t => {
+test('C10/C18: authenticated web contexts ignore client origins and consent; unauthenticated calls never execute', async t => {
   const directory = mkdtempSync(join(tmpdir(), 'journey-web-'));
   const state = { authorized: true, calls: [] as Array<Record<string, unknown>> };
   const globals = globalThis as typeof globalThis & { __journeyWebFixture?: typeof state };
   globals.__journeyWebFixture = state;
   const previousSha = process.env.VERCEL_GIT_COMMIT_SHA;
+  const previousFetch = globalThis.fetch;
+  let networkCalls = 0;
+  globalThis.fetch = async () => { networkCalls++; throw new Error('Unexpected network request in reservation boundary fixture'); };
   process.env.VERCEL_GIT_COMMIT_SHA = 'a'.repeat(40);
   t.after(() => {
+    globalThis.fetch = previousFetch;
     delete globals.__journeyWebFixture;
     if (previousSha === undefined) delete process.env.VERCEL_GIT_COMMIT_SHA;
     else process.env.VERCEL_GIT_COMMIT_SHA = previousSha;
@@ -55,17 +59,21 @@ test('C10: both authenticated web routes ignore forged body/header origins; unau
       entry_surface: 'mcp', entry_source: 'confirmed_actor', journey_version: 999, entry_release_sha: 'b'.repeat(40),
       journeyContext: { entrySurface: 'studio', entrySource: 'confirmed_actor', journeyVersion: 1, entryReleaseSha: 'b'.repeat(40) },
       metadata: { source: 'mcp' }, authOrigin: 'oauth' };
-    const req = () => new Request(`https://fixture.invalid/api/${media === 'video' ? '' : 'images/'}generate`, {
-      method: 'POST', headers: { 'content-type': 'application/json', 'x-entry-surface': 'mcp', 'x-entry-release-sha': 'b'.repeat(40) }, body: JSON.stringify(forged),
+    const req = (analytics = false) => new Request(`https://fixture.invalid/api/${media === 'video' ? '' : 'images/'}generate`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-entry-surface': 'mcp', 'x-entry-release-sha': 'b'.repeat(40),
+        cookie: `mv-consent=${encodeURIComponent(JSON.stringify({ version: '2026-07', timestamp: 1000, categories: { analytics, ads: false }, source: 'preferences' }))}` }, body: JSON.stringify(forged),
     });
-    const response = await routes[media](req());
-    assert.equal(response.status, 200);
-    assert.deepEqual(state.calls.at(-1)?.journeyContext, { entrySurface: 'generator', entrySource: 'web_route', journeyVersion: 1, entryReleaseSha: 'a'.repeat(40) });
-    assert.deepEqual(state.calls.at(-1)?.body, forged);
+    for (const analytics of [false, true]) {
+      const response = await routes[media](req(analytics));
+      assert.equal(response.status, 200);
+      assert.deepEqual(state.calls.at(-1)?.journeyContext, { entrySurface: 'generator', entrySource: 'web_route', journeyVersion: 1, entryReleaseSha: 'a'.repeat(40) });
+      assert.deepEqual(state.calls.at(-1)?.body, forged);
+    }
     state.authorized = false;
     const count = state.calls.length;
     assert.equal((await routes[media](req())).status, 401);
     assert.equal(state.calls.length, count);
     state.authorized = true;
   }
+  assert.equal(networkCalls, 0);
 });
