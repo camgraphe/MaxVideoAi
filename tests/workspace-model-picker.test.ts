@@ -16,10 +16,25 @@ function setup(id = 'wan-3-prime'): WorkspaceModelSetup {
 }
 test('approved recommendations preserve order and never invent absent models', () => {
   const groups = getPickerRecommendations(engines, 't2v');
-  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'wan-3-prime', 'kling-o3-pro'], ['wan-3', 'flux-3-max'], ['minimax-h3']]);
+  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'wan-3-prime', 'kling-o3-pro'], ['wan-3', 'flux-3-max'], ['seedance-2-0-mini', 'minimax-h3']]);
   assert.deepEqual(getPickerRecommendations([engine('wan-3')], 't2v').flatMap(group => group.ids), ['wan-3']);
   assert.deepEqual(getPickerRecommendations(engines, 't2i'), []);
   assert.ok(!getPickerRecommendations([{ ...engine('wan-3'), availability: 'paused' }], 't2v').length);
+});
+test('Create budgets lead with Mini only when that model and mode are admitted', () => {
+  const mini = engine('seedance-2-0-mini');
+  const budget = (catalogue: typeof engines, mode: 't2v' | 'i2v' | 'v2v') =>
+    getPickerRecommendations(catalogue, mode).find(group => group.group === 'budget')?.ids ?? [];
+  for (const mode of ['t2v', 'i2v'] as const) {
+    assert.deepEqual(budget(engines, mode), ['seedance-2-0-mini', 'minimax-h3']);
+    assert.deepEqual(budget(engines.filter(item => item.id !== mini.id), mode), ['minimax-h3']);
+    for (const excluded of [
+      { ...mini, availability: 'paused' as const },
+      { ...mini, modes: mini.modes.filter(value => value !== mode) },
+      { ...mini, modeAvailability: { [mode]: { available: false } } },
+    ]) assert.deepEqual(budget(engines.map(item => item.id === mini.id ? excluded : item), mode), ['minimax-h3']);
+  }
+  assert.deepEqual(budget(engines, 'v2v'), [], 'Create budget promotion does not add a Modify recommendation');
 });
 test('blank prompt can be estimated without mutating the draft or inventing a generation prompt', () => {
   const current = setup();
@@ -30,6 +45,31 @@ test('blank prompt can be estimated without mutating the draft or inventing a ge
   assert.equal(rows['wan-3'].request?.durationSec, 5);
   assert.deepEqual(current, before);
   assert.ok(!('prompt' in rows['wan-3'].request!));
+});
+test('Mini estimates retain text/image mode and pass the changed scenario to canonical pricing', () => {
+  for (const mode of ['t2v', 'i2v'] as const) {
+    const current = setup('seedance-2-0-mini');
+    current.form.mode = mode;
+    if (mode === 'i2v') current.inputAssets.image_url = [{
+      id: 'start', assetId: 'start', fieldId: 'image_url', kind: 'image', name: 'start', type: 'image/png',
+      size: 1024, status: 'ready', url: 'https://example.com/start.png', previewUrl: 'https://example.com/start.png',
+      width: 1280, height: 720,
+    }];
+    const before = structuredClone(current);
+    for (const durationSec of [5, 10]) {
+      const option = buildWorkspacePickerOptions({ current, engines, locale: 'fr', memberTier: 'Member',
+        overrides: { durationSec, resolution: '720p', aspectRatio: '16:9', audio: false },
+      })['seedance-2-0-mini'];
+      assert.equal(option.disabledReason, undefined);
+      assert.equal(option.request?.engine, 'seedance-2-0-mini');
+      assert.equal(option.request?.mode, mode);
+      assert.equal(option.request?.durationSec, durationSec);
+      assert.equal(option.request?.resolution, '720p');
+      assert.equal(option.request?.audio, false);
+      if (mode === 'i2v') assert.deepEqual(option.request?.inputs?.map(input => input.assetId), ['start']);
+    }
+    assert.deepEqual(current, before);
+  }
 });
 test('Kling and mandatory-audio H3 disclose the effective quote settings', () => {
   const rows = buildWorkspacePickerOptions({ current: setup(), engines, locale: 'fr', memberTier: 'Member' });

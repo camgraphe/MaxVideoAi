@@ -1,9 +1,9 @@
 .backdrop { position: fixed; inset: 0; z-index: 160; display: grid; place-items: center; padding: 12px; background: rgb(0 0 0 / .58); }
-.dialog { width: min(680px, 100%); max-height: calc(100dvh - 24px); display: flex; flex-direction: column; border: 1px solid var(--app-line, var(--border)); border-radius: 16px; background: var(--app-surface, var(--surface)); color: var(--text-primary); box-shadow: 0 24px 80px #0006; overflow: hidden; }
+.dialog { width: min(680px, 100%); height: min(740px, calc(100dvh - 24px)); max-height: calc(100dvh - 24px); display: flex; flex-direction: column; border: 1px solid var(--app-line, var(--border)); border-radius: 16px; background: var(--app-surface, var(--surface)); color: var(--text-primary); box-shadow: 0 24px 80px #0006; overflow: hidden; }
 .header { flex: none; padding: 14px 20px 0; }
 .titleLine { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .titleLine h2 { font-size: 18px; font-weight: 600; letter-spacing: -.02em; }
-.context { margin: 0 0 12px; font-size: 12px; color: var(--text-secondary); }
+.context { margin: 0; font-size: 13px; color: var(--text-primary); }
 .iconButton { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; background: transparent; border: 0; border-radius: 8px; color: var(--text-secondary); }
 .search { display: flex; align-items: center; gap: 9px; padding-left: 12px; min-height: 44px; border: 1px solid var(--app-line, var(--border)); border-radius: 8px; }
 .search input { min-width: 0; width: 100%; border: 0; outline: none; background: transparent; padding: 9px 0; font-size: 16px; }
@@ -11,7 +11,7 @@
 .tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--app-line, var(--border)); margin-top: 8px; }
 .tabs button { min-height: 44px; padding: 8px 0; border: 0; border-bottom: 2px solid transparent; background: transparent; font-size: 13px; color: var(--text-secondary); }
 .tabs button[aria-selected=true] { border-bottom-color: var(--app-accent, var(--brand)); color: var(--app-accent, var(--brand)); }
-.body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 12px 8px; scrollbar-gutter: stable; }
+.body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 12px 8px; scrollbar-gutter: stable; }
 .count { min-height: 28px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; font-size: 12px; color: var(--text-secondary); }
 .count label { display: flex; align-items: center; gap: 6px; min-height: 36px; }
 .group h3 { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin: 9px 8px 3px; }
@@ -37,17 +37,32 @@
 .children { padding: 0 0 8px 8px; }.empty { padding: 32px 8px; font-size: 14px; }
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex: none; padding: 12px 20px; border-top: 1px solid var(--app-line, var(--border)); }
 .footer p, .footer small, .note { font-size: 12px; line-height: 1.45; color: var(--text-secondary); }.footer small { display: block; margin-top: 3px; }
-.apply { min-height: 44px; min-width: 160px; max-width: 280px; padding: 9px 16px; border: 1px solid var(--app-accent, var(--brand)); border-radius: 8px; background: transparent; color: var(--app-accent, var(--brand)); font-size: 13px; font-weight: 550; }
+.apply { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; min-width: 160px; max-width: 280px; padding: 9px 16px; border: 1px solid var(--app-accent, var(--brand)); border-radius: 8px; background: var(--app-accent, var(--brand)); color: var(--on-brand); font-size: 14px; font-weight: 650; box-shadow: 0 2px 6px #0002; }
+.apply:not(:disabled):hover { background: color-mix(in srgb, var(--app-accent, var(--brand)) 90%, var(--text-primary)); }
+.apply > svg { flex: none; }
 .apply:disabled { opacity: .5; cursor: not-allowed; }.retry { font-size: 12px; text-decoration: underline; min-height: 32px; }
 .details { padding: 10px 8px 20px; font-size: 14px; }.back { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--text-secondary); }
 .detailTitle { display: flex; align-items: center; gap: 12px; margin: 20px 0; }.detailTitle h3 { font-size: 20px; font-weight: 550; }.detailTitle small { color: var(--text-secondary); font-size: 12px; }
 .changes { margin: 20px 0; }.changes > div { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--app-line, var(--border)); font-size: 13px; }.changes dt { color: var(--text-secondary); }.changes dd { display: flex; justify-content: end; flex-wrap: wrap; gap: 10px; text-align: right; overflow-wrap: anywhere; }.changes strong { color: var(--app-accent, var(--brand)); font-weight: 500; }
 .estimate { display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--app-line, var(--border)); border-radius: 8px; padding: 16px; margin-bottom: 18px; }.estimate strong { color: var(--app-accent, var(--brand)); }
-.dialog button:focus-visible, .dialog input:focus-visible { outline: 2px solid var(--app-accent, var(--brand)); outline-offset: 2px; }
+.dialog button:focus-visible, .dialog input:focus-visible, .dialog select:focus-visible { outline: 2px solid var(--app-accent, var(--brand)); outline-offset: 2px; }
 @media (max-width: 600px) {
-  .backdrop { padding: 8px; }.dialog { max-height: calc(100dvh - 16px); width: 100%; border-radius: 13px; }.header { padding: 8px 12px 0; }.body { padding-inline: 4px; scrollbar-gutter: auto; }.tabs { justify-content: space-between; gap: 10px; }.tabs button { flex: 1; }.choice { gap: 8px; min-height: 60px; padding-left: 8px; }.name { font-size: 13px; }.price { font-size: 12px; }.priceStatus { max-width: 76px; }.footer { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px max(10px, env(safe-area-inset-bottom)); }.apply { width: 100%; max-width: none; }.footer small { font-size: 11px; }.details { padding-inline: 10px; }
+  .backdrop { padding: 8px; }.dialog { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); width: 100%; border-radius: 13px; }.header { padding: 8px 12px 0; }.body { padding-inline: 4px; scrollbar-gutter: auto; }.tabs { justify-content: space-between; gap: 10px; }.tabs button { flex: 1; }.choice { gap: 8px; min-height: 60px; padding-left: 8px; }.name { font-size: 13px; }.price { font-size: 12px; }.priceStatus { max-width: 76px; }.footer { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px max(10px, env(safe-area-inset-bottom)); }.apply { width: 100%; max-width: none; }.footer small { font-size: 11px; }.details { padding-inline: 10px; }
 }
 @media (min-width: 601px) and (max-height: 760px) {
   .header { padding-top: 6px; }.context { margin-bottom: 6px; }.tabs { margin-top: 3px; }.group h3 { margin-top: 6px; }.choice { min-height: 51px; padding-block: 4px; }.footer { padding-block: 8px; }.count { min-height: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .dialog * { transition: none !important; scroll-behavior: auto !important; } }
+
+.priceContext { margin: 2px 0 10px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--app-accent, var(--brand)) 30%, transparent); border-radius: 9px; background: color-mix(in srgb, var(--app-accent, var(--brand)) 8%, var(--app-surface, var(--surface))); }
+.priceContextLabel { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-bottom: 2px; }
+.priceContextLabel > span { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--app-accent, var(--brand)); }
+.priceContextLabel small { font-size: 11px; color: var(--text-secondary); }
+.priceControls { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-block: 2px; }
+.priceChip { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 36px; border: 1px solid var(--app-line, var(--border)); border-radius: 7px; background: var(--app-surface, var(--surface)); color: var(--text-primary); font-size: 12px; font-weight: 500; }
+.priceChip > span:not(:global(.sr-only)) { padding: 8px; }
+.priceChip select { width: 100%; min-height: 36px; appearance: none; border: 0; border-radius: inherit; background: transparent; padding: 8px 24px 8px 9px; color: inherit; font: inherit; cursor: pointer; }
+.priceChip svg { position: absolute; right: 7px; pointer-events: none; color: var(--text-secondary); }
+.priceChip option { background: var(--app-surface, var(--surface)); color: var(--text-primary); }
+.priceContextNote { margin: 3px 0 0; font-size: 11px; color: var(--text-secondary); }
+@media (max-width: 600px) { .priceChip, .priceChip select { min-height: 44px; } .priceContext { margin-bottom: 8px; padding: 6px 8px; } }

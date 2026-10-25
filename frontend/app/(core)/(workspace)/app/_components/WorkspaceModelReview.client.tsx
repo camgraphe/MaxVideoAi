@@ -128,7 +128,7 @@ export function WorkspaceModelReview({
   currentCurrency,
   currentPricing,
   currentError,
-  comparisonSettings,
+  comparisonSettings, savedOnly = false,
 }: {
   review: Review;
   engines: EngineCaps[];
@@ -138,6 +138,7 @@ export function WorkspaceModelReview({
   currentPricing: boolean;
   currentError?: string;
   comparisonSettings?: ReactNode;
+  savedOnly?: boolean;
 }) {
   const copy = workspaceModelReviewCopy(locale);
   const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: review.close });
@@ -190,7 +191,7 @@ export function WorkspaceModelReview({
           </button>
         </header>
         <div className={styles.body}>
-          {review.panel === 'saved' ? <button type="button" className={styles.back} onClick={() => review.open('compare')}>{copy.backToAlternatives}</button> : null}
+          {review.panel === 'saved' && !savedOnly ? <button type="button" className={styles.back} onClick={() => review.open('compare')}>{copy.backToAlternatives}</button> : null}
           {review.error ? (
             <div role="alert">
               <p className={styles.status}>{copy[review.error]}</p>
@@ -261,8 +262,8 @@ export function WorkspaceModelReview({
                   comparisonSettings={comparisonSettings}
                 />
               ) : (
-                <button type="button" className={styles.back} onClick={() => review.open('compare')}>
-                  ← {copy.backToAlternatives}
+                <button type="button" className={styles.back} onClick={() => review.open(savedOnly ? 'saved' : 'compare')}>
+                  ← {savedOnly ? copy.saved : copy.backToAlternatives}
                 </button>
               )}
               {candidate && current && target ? (
