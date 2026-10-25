@@ -1,5 +1,7 @@
 'use client';
 import clsx from 'clsx';
+import dynamic from 'next/dynamic';
+import { traceModelPicker } from '@/lib/model-picker-diagnostics';
 import {
   useCallback,
   useEffect,
@@ -26,6 +28,7 @@ import {
 import { useEngineSelectDropdownState } from './engine-select/useEngineSelectDropdownState';
 import { useEngineSelectRegistry } from './engine-select/useEngineSelectRegistry';
 import type { EngineSelectProps } from './engine-select/engine-select-types';
+const EnginePickerDialog = dynamic(() => import('./engine-select/EnginePickerDialog.client').then(module => module.EnginePickerDialog), { ssr: false });
 export function EngineSelect({
   engines,
   engineId,
@@ -45,7 +48,7 @@ export function EngineSelect({
   controlPresentation = 'default',
   className,
   trigger,
-  selectedIds,
+  selectedIds, picker,
 }: EngineSelectProps) {
   const { t, locale } = useI18n();
   const copy = mergeEngineSelectCopy(t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as Partial<EngineSelectCopy>);
@@ -109,7 +112,7 @@ export function EngineSelect({
     triggerRef,
   } = useEngineSelectDropdownState({
     onEngineChange,
-    open,
+    open: open && !picker,
     selectedEngineId: selectedEngine?.id,
     setOpen,
     visibleEngines,
@@ -140,7 +143,7 @@ export function EngineSelect({
       id={triggerId}
       ref={triggerRef}
       type="button"
-      onClick={toggleOpen}
+      onClick={() => { if (picker && !open) traceModelPicker('open'); toggleOpen(); }}
       onKeyDown={handleTriggerKeyDown}
       className={clsx(
         'flex min-w-0 flex-1 items-center justify-between rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -176,7 +179,7 @@ export function EngineSelect({
       </svg>
     </button>
   );
-  const variantControl = showVariantSelector ? (
+  const variantControl = showVariantSelector && !picker ? (
     <EngineVariantControl
       bar={isBarVariant}
       compact={isCompact}
@@ -189,7 +192,12 @@ export function EngineSelect({
       variants={variantEngines}
     />
   ) : null;
-  const dropdown = open && portalElement && position ? (
+  const dropdown = picker && (open || browseOpen) ? (
+    <EnginePickerDialog engines={engines} engineId={engineId} mode={mode} locale={locale} registryMeta={registryMeta}
+      context={picker} disabledEngineReasons={disabledEngineReasons} onSelect={onEngineChange}
+      onClose={() => { setOpen(false); setBrowseOpen(false); }} initialAll={browseOpen}
+      showLegacy={showLegacy} onToggleLegacy={hasLegacyEngines ? () => setShowLegacy(previous => !previous) : undefined} />
+  ) : !picker && open && portalElement && position ? (
             <EngineSelectDropdown
               activeOptionId={activeOptionId}
               contentRef={contentRef}
@@ -372,7 +380,7 @@ export function EngineSelect({
           </div>
         ) : null}
       </div>
-      {browseOpen && (
+      {browseOpen && !picker && (
         <BrowseEnginesModal
           engines={engines}
           selectedEngineId={selectedEngine.id}

@@ -256,6 +256,7 @@ export function buildInitialWorkspaceFormState({
         ...base,
         engineId: engine.id,
         mode,
+        ...(storedFormRaw.operation !== undefined ? { operation: storedFormRaw.operation } : {}),
         durationSec:
           typeof storedFormRaw.durationSec === 'number' && Number.isFinite(storedFormRaw.durationSec)
             ? storedFormRaw.durationSec

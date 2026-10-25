@@ -10,6 +10,9 @@ import {
   resolveWorkspaceRequestParams,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-hydration';
 import type { StoredFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
+import { parseStoredForm } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
+import { listFalEngines } from '../frontend/src/config/falEngines';
+import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 
 function makeEngine(id: string, overrides: Partial<EngineCaps> = {}): EngineCaps {
   return {
@@ -47,6 +50,18 @@ test('workspace request params normalize aliases and preserve redirect target', 
   assert.equal(result.requestedEngineToken, 'pikatexttovideo');
   assert.equal(result.requestedMode, 'i2v');
   assert.equal(result.loginRedirectTarget, '/app?engine=pika-image-to-video&mode=i2v&job=+job_123+&from=vid_1');
+});
+test('refresh restores explicit video operations instead of the model default', () => {
+  for (const { engine } of listFalEngines()) for (const operation of Object.values(engine.operationCaps ?? {})) {
+    if (!operation) continue;
+    const stored = { ...coerceFormState(engine, operation.mode, null), operation: operation.operation,
+      extraInputValues: { keep_audio: false } };
+    const result = buildInitialWorkspaceFormState({ engines: [engine],
+      storedFormRaw: parseStoredForm(JSON.stringify(stored)), effectiveRequestedEngineId: null,
+      effectiveRequestedEngineToken: '', effectiveRequestedMode: null });
+    assert.equal(result.form?.operation, operation.operation, `${engine.id}/${operation.operation}`);
+    assert.deepEqual(result.form?.extraInputValues, { keep_audio: false });
+  }
 });
 
 test('engineId model links retain an explicit model through guest request parsing and form hydration', () => {

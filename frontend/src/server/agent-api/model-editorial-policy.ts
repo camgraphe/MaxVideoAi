@@ -20,6 +20,11 @@ const policySchema=z.object({
   reviewedAt: reviewDate,reviewAfterDays: z.number().int().min(1).max(365),
   provenance: z.array(provenanceSchema).min(1).max(4),
   entries: z.array(z.object({engineId: text,level: z.enum(['reference','alternative','on_request']),rationale: text}).strict()).min(1),
+  workspaceSelection: z.object({
+    reviewedAt: reviewDate, source: text,
+    create: z.array(z.object({ group: z.enum(['quality', 'balanced', 'budget']), ids: z.array(text).max(6) }).strict()).max(3),
+    modify: z.array(z.object({ group: z.enum(['quality', 'balanced', 'budget']), ids: z.array(text).max(6) }).strict()).max(3),
+  }).strict().optional(),
 }).strict();
 
 type EditorialPolicy=z.infer<typeof policySchema>;
@@ -47,6 +52,14 @@ export function parseAgentModelEditorialPolicy(value: unknown,knownEngineIds: Re
   for (const entry of parsed.entries) {
     if (!knownEngineIds.has(entry.engineId) || ids.has(entry.engineId)) throw new Error('[agent-model-editorial-policy] Unknown or duplicate exact engine ID');
     ids.add(entry.engineId);
+  }
+  for (const groups of [parsed.workspaceSelection?.create, parsed.workspaceSelection?.modify]) {
+    const selected = new Set<string>();
+    for (const group of groups ?? []) for (const id of group.ids) {
+      if (!knownEngineIds.has(id) || selected.has(id)) throw new Error('[agent-model-editorial-policy] Unknown or duplicate workspace model');
+      selected.add(id);
+    }
+    if (selected.size > 6) throw new Error('[agent-model-editorial-policy] At most six workspace recommendations');
   }
   if (!parsed.provenance.some(source=>source.kind==='product_decision')) throw new Error('[agent-model-editorial-policy] A product decision is required; vendor policy is not independent validation');
   if (parsed.provenance.some(source=>source.reviewedAt>parsed.reviewedAt)) throw new Error('[agent-model-editorial-policy] Source review cannot follow policy review');

@@ -10,6 +10,9 @@ import {
   MAX_WORKSPACE_MODEL_SETUP_BYTES,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import type { WorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-candidate';
+import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
+import { buildInitialWorkspaceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-hydration';
+import { parseStoredForm } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 export function fixtureSetup(): WorkspaceModelSetup {
   const engine = listFalEngines().find((e) => e.id === 'seedance-2-0')!.engine;
   return {
@@ -48,6 +51,42 @@ test('ready originals normalize temporary previews and snapshot arrays are isola
   setup.form.extraInputValues.changed = ['later'];
   assert.deepEqual(saved.setup.form.extraInputValues, {});
   assert.deepEqual(parseWorkspaceModelSetup(saved.setup), saved.setup);
+});
+test('saved setups retain each explicit video operation without changing legacy Reference identity', () => {
+  for (const { engine } of listFalEngines()) for (const operation of Object.values(engine.operationCaps ?? {})) {
+    if (!operation) continue;
+    const setup = fixtureSetup();
+    setup.form = { ...coerceFormState(engine, operation.mode, null), operation: operation.operation };
+    const saved = serializeWorkspaceModelSetup(setup);
+    assert.ok(saved.ok, `${engine.id}/${operation.operation}`);
+    assert.equal(saved.setup.form.operation, operation.operation, `${engine.id}/${operation.operation}`);
+    assert.equal(parseWorkspaceModelSetup(saved.setup)?.form.operation, operation.operation);
+  }
+  const legacy = fixtureSetup();
+  legacy.form = coerceFormState(listFalEngines().find(e => e.id === 'kling-o3-pro')!.engine, 'v2v', null);
+  const saved = serializeWorkspaceModelSetup(legacy);
+  assert.ok(saved.ok);
+  assert.equal(Object.hasOwn(saved.setup.form, 'operation'), false, 'omitted Reference stays omitted');
+});
+test('invalid or cross-model operations cannot enter saved setups', () => {
+  for (const operation of ['kling-edit', 'unknown', null]) {
+    const setup = fixtureSetup();
+    Object.assign(setup.form, { operation });
+    assert.deepEqual(serializeWorkspaceModelSetup(setup), { ok: false, error: 'invalid' });
+  }
+});
+test('every public video model preserves its selected Create, Modify and Extend settings through both draft formats', () => {
+  for (const engine of getBaseEnginesByCategory('video')) for (const mode of engine.modes) {
+    const setup = fixtureSetup();
+    setup.form = coerceFormState(engine, mode, null);
+    setup.form.extraInputValues = { remembered: 'authored setting', draft_mode: true };
+    const saved = serializeWorkspaceModelSetup(setup);
+    assert.ok(saved.ok, `${engine.id}/${mode}: active draft`);
+    assert.deepEqual(saved.setup.form, JSON.parse(JSON.stringify(setup.form)), `${engine.id}/${mode}: active draft preserves all fields`);
+    const restored = buildInitialWorkspaceFormState({ engines: [engine], storedFormRaw: parseStoredForm(JSON.stringify(setup.form)),
+      effectiveRequestedEngineId: null, effectiveRequestedEngineToken: '', effectiveRequestedMode: null });
+    assert.deepEqual(restored.form, setup.form, `${engine.id}/${mode}: legacy reload preserves all fields`);
+  }
 });
 test('incomplete and oversized setups refuse serialization without dropping references', () => {
   const setup = fixtureSetup();

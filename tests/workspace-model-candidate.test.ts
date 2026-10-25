@@ -148,6 +148,40 @@ test('candidate allows configuration-only manual retake when the required source
   assert.ok(candidate.blockingReasons.some(({ scope, code }) => scope === 'generation' && code === 'missing-input'));
   assert.deepEqual(candidate.setup.inputAssets, {});
 });
+test('saved H3 Relight retains its lighting sphere when validating restoration', () => {
+  const value = engine('minimax-h3-max');
+  const current = setup(value.id);
+  current.form = { ...coerceFormState(value, 'v2v', null), operation: 'h3-relight', resolution: '2K', aspectRatio: '9:16' };
+  current.prompt = '';
+  current.inputAssets = { video_url: [asset('video_url', 'video', 'source', 4.333333333333333)],
+    reference_image_url: [asset('reference_image_url', 'image', 'lighting-sphere')] };
+  const candidate = prepareWorkspaceModelCandidate({ engine: value, current, restoreSetup: current, locale: 'en' });
+  assert.equal(candidate.applicable, true);
+  assert.equal(candidate.setup.form.operation, 'h3-relight');
+  assert.equal(candidate.setup.form.resolution, '2K');
+  assert.deepEqual(candidate.setup.inputAssets, current.inputAssets);
+  assert.deepEqual(candidate.removedReferences, []);
+});
+for (const id of ['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']) test(`${id}: saved Edit is validated with Edit capabilities and source-audio choice`, () => {
+  const value = engine(id);
+  const current = setup(id);
+  current.form = { ...coerceFormState(value, 'v2v', null), operation: 'kling-edit', extraInputValues: { keep_audio: false } };
+  current.inputAssets = { video_url: [{ ...asset('video_url', 'video', 'source', 5.25), width: 720, height: 1280 }] };
+  const candidate = prepareWorkspaceModelCandidate({ engine: value, current, restoreSetup: current, locale: 'en' });
+  assert.equal(candidate.applicable, true);
+  assert.equal(candidate.workflow.capability?.durationPolicy, 'source_video');
+  assert.equal(candidate.setup.form.extraInputValues.keep_audio, false);
+  assert.deepEqual(candidate.setup.inputAssets, current.inputAssets);
+});
+test('an operation absent from the current catalog cannot silently restore as another operation', () => {
+  const value = engine('minimax-h3-max');
+  const current = setup(value.id);
+  current.form = { ...coerceFormState(value, 'v2v', null), operation: 'h3-relight' };
+  const withoutRelight = { ...value, operationCaps: { 'h3-recast': value.operationCaps!['h3-recast'] } };
+  const candidate = prepareWorkspaceModelCandidate({ engine: withoutRelight, current, restoreSetup: current, locale: 'en' });
+  assert.equal(candidate.applicable, false);
+  assert.ok(candidate.blockingReasons.some(reason => reason.scope === 'apply' && reason.code === 'unsupported-workflow'));
+});
 
 test('candidate preserves source video when switching to supported Kling 4K Modify', () => {
   const current = setup('kling-o3-pro', { inputAssets: { video_url: [asset('video_url', 'video', 'source', 7.2)] } });
