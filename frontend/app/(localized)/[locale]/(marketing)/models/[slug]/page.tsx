@@ -1,3 +1,4 @@
+import { listPublicNano21EditorialRecipes } from '@/lib/nano21-editorial-recipes';
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
 import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
@@ -33,6 +34,7 @@ import { buildModelPageSpecProjection } from './_lib/model-page-spec-projection'
 import { buildModelPagePriceProjection } from './_lib/model-page-pricing';
 import { requiresPinnedModelPromptingDemo } from './_lib/model-page-prompting-prompt-source';
 import {
+  projectNano21EditorialPageMedia,
   pickDemoMedia,
   pickHeroMedia,
   normalizeMediaUrl,
@@ -235,7 +237,10 @@ async function renderMarketingModelPage({
     },
   );
   const { benchmarkScoreSlugs, keySpecsMap, gallery } = await inputs.critical;
-  const { galleryVideos, preferredIds, managed: managedCuration } = gallery;
+  const { galleryVideos: playlistGalleryVideos, preferredIds, managed: managedCuration } = gallery;
+  const editorialImages = engine.modelSlug === 'nano-banana-2-1'
+    ? listPublicNano21EditorialRecipes().map(recipe => ({ recipe, media: projectNano21EditorialPageMedia(recipe) })) : [];
+  const galleryVideos = [...playlistGalleryVideos, ...editorialImages.filter(item => item.recipe.placement === 'example').map(item => item.media.example)];
   const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
   const modelName = localizedContent.marketingName ?? engine.marketingName;
   const fallbackMedia: FeaturedMedia = {
@@ -255,7 +260,8 @@ async function renderMarketingModelPage({
     label: modelName ?? 'Sora',
   };
 
-  let heroMedia = pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia, { preserveOrder: managedCuration });
+  let heroMedia = editorialImages.find(item => item.recipe.placement === 'hero')?.media.hero
+    ?? pickHeroMedia(galleryVideos, preferredIds.hero, fallbackMedia, { preserveOrder: managedCuration });
   if (!managedCuration && engine.modelSlug === 'kling-2-5-turbo') {
     const heroCandidate =
       galleryVideos.find((video) => video.aspectRatio === '16:9' && Boolean(video.videoUrl)) ??

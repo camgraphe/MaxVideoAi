@@ -54,6 +54,8 @@ type UseImageComposerPersistenceParams = {
   maskUrl: string;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
+  maxOutputTokens?: number | null;
+  setMaxOutputTokens?: Dispatch<SetStateAction<number | null>>;
   limitGenerations: boolean;
   watermark: boolean;
   persistableReferenceSlots: PersistedReferenceSlot[];
@@ -97,6 +99,8 @@ export function useImageComposerPersistence({
   maskUrl,
   enableWebSearch,
   thinkingLevel,
+  maxOutputTokens,
+  setMaxOutputTokens,
   limitGenerations,
   watermark,
   persistableReferenceSlots,
@@ -216,6 +220,7 @@ export function useImageComposerPersistence({
         const thinkingLevels = getImageFieldValues(engineMatch.engineCaps, 'thinking_level', nextMode);
         const defaultThinkingLevel =
           getImageFieldDefaultString(engineMatch.engineCaps, 'thinking_level', nextMode) ?? thinkingLevels[0] ?? null;
+        setMaxOutputTokens?.(engineMatch.id === 'nano-banana-2-1' ? parsed.maxOutputTokens ?? 32768 : null);
         setThinkingLevel(
           parsed.thinkingLevel && thinkingLevels.includes(parsed.thinkingLevel)
             ? parsed.thinkingLevel
@@ -281,6 +286,7 @@ export function useImageComposerPersistence({
     setSeed,
     setStyle,
     setThinkingLevel,
+    setMaxOutputTokens,
     setWatermark,
   ]);
 
@@ -304,6 +310,7 @@ export function useImageComposerPersistence({
       maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
       thinkingLevel,
+      ...(engineId === 'nano-banana-2-1' ? { maxOutputTokens } : {}),
       limitGenerations,
       watermark,
       referenceSlots: persistableReferenceSlots,
@@ -356,6 +363,7 @@ export function useImageComposerPersistence({
     storageHydrated,
     style,
     thinkingLevel,
+    maxOutputTokens,
     watermark,
   ]);
   return { storageHydrated };

@@ -1,6 +1,9 @@
 import type { EngineCaps } from '../../../types/engines';
 import { NANO21_ASPECT_RATIOS, NANO21_ENGINE_ID, NANO21_MODEL_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '../../lib/nano-banana-2-1';
 import type { RawFalEngineEntry } from './types';
+import { listPublicNano21EditorialRecipes } from '../../../lib/nano21-editorial-recipes';
+
+const authoredHero = listPublicNano21EditorialRecipes().find(recipe => recipe.placement === 'hero');
 
 const engine: EngineCaps = {
   id: NANO21_ENGINE_ID, label: 'Nano Banana 2.1', provider: 'Google', version: '2.1', status: 'live',
@@ -38,4 +41,5 @@ export const NANO_BANANA_2_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   defaultFalModelId: NANO21_MODEL_ID, type: 'image',
   seo: { title: 'Nano Banana 2.1 | MaxVideoAI', description: 'Google Vertex image generation and editing with up to 14 references, 1K to 4K output and three reasoning levels.', canonicalPath: '/models/nano-banana-2-1' },
   seoText: 'A separate Vertex AI image model. Customer pricing and public release require review.', prompts: [],
+  ...(authoredHero ? { media: { imagePath: authoredHero.media.display.url, videoUrl: authoredHero.media.original.url, altText: authoredHero.prompt } } : {}),
 }];

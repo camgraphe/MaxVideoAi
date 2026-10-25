@@ -57,6 +57,7 @@ export interface ImageWorkspaceCopy {
     enableWebSearchLabel: string;
     enableWebSearchHint: string;
     thinkingLevelLabel: string;
+    outputTokenLimitLabel: string;
     thinkingLevelHint: string;
     limitGenerationsLabel: string;
     limitGenerationsHint: string;
@@ -227,6 +228,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     enableWebSearchLabel: 'Web search',
     enableWebSearchHint: 'Ground the request with current web context when supported.',
     thinkingLevelLabel: 'Thinking level',
+    outputTokenLimitLabel: 'Output token limit',
     thinkingLevelHint: 'Increase reasoning depth when the engine supports it.',
     limitGenerationsLabel: 'Limit generations',
     limitGenerationsHint: 'Reduce extra exploratory generations when supported.',

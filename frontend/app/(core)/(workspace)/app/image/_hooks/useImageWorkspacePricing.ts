@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import useSWR from 'swr';
 
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { authFetch } from '@/lib/authFetch';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { buildCustomImageSize } from '../_lib/image-workspace-utils';
@@ -23,13 +24,17 @@ type ImagePricingKey = [
   string,
   number,
   string,
+  number | null,
+  string | null,
 ];
 
 export function useImageWorkspacePricing({
+  accountId,
   customImageHeight,
   customImageWidth,
   enableWebSearch,
   thinkingLevel,
+  maxOutputTokens,
   mode,
   numImages,
   quality,
@@ -40,10 +45,12 @@ export function useImageWorkspacePricing({
   aspectRatio,
   referenceImageCount,
 }: {
+  accountId?: string | null;
   customImageHeight: string;
   customImageWidth: string;
   enableWebSearch: boolean;
   thinkingLevel?: string | null;
+  maxOutputTokens?: number | null;
   mode: ImageGenerationMode;
   numImages: number;
   quality: string | null;
@@ -56,6 +63,8 @@ export function useImageWorkspacePricing({
 }) {
   const priceEstimateKey = useMemo<ImagePricingKey | null>(() => {
     if (!selectedEngineId) return null;
+    if (selectedEngineId === NANO21_ENGINE_ID && maxOutputTokens !== undefined
+      && (!Number.isSafeInteger(maxOutputTokens) || maxOutputTokens === null || maxOutputTokens < 1 || maxOutputTokens > 32768)) return null;
     return [
       'image-pricing',
       selectedEngineId,
@@ -70,12 +79,16 @@ export function useImageWorkspacePricing({
       aspectRatio ?? '',
       referenceImageCount,
       thinkingLevel ?? '',
+      selectedEngineId === NANO21_ENGINE_ID ? maxOutputTokens ?? null : null,
+      accountId ?? null,
     ];
   }, [
+    accountId,
     customImageHeight,
     customImageWidth,
     enableWebSearch,
     thinkingLevel,
+    maxOutputTokens,
     mode,
     numImages,
     quality,
@@ -106,6 +119,7 @@ export function useImageWorkspacePricing({
       requestAspectRatio,
       requestReferenceImageCount,
       requestThinkingLevel,
+      requestMaxOutputTokens,
     ]) => {
       const requestCustomImageSize =
         requestResolution === 'custom'
@@ -126,6 +140,7 @@ export function useImageWorkspacePricing({
           quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
           thinkingLevel: requestThinkingLevel || undefined,
+          maxOutputTokens: engineId === NANO21_ENGINE_ID ? requestMaxOutputTokens ?? undefined : undefined,
         }),
       });
       const payload = (await response.json().catch(() => null)) as PricingEstimateResponse | null;

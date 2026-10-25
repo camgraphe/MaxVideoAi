@@ -3743,6 +3743,7 @@
         "enableWebSearchLabel": "Web search",
         "enableWebSearchHint": "Ground the request with current web context when supported.",
         "thinkingLevelLabel": "Thinking level",
+        "outputTokenLimitLabel": "Output token limit",
         "thinkingLevelHint": "Increase reasoning depth when the engine supports it.",
         "limitGenerationsLabel": "Limit generations",
         "limitGenerationsHint": "Reduce extra exploratory generations when supported.",

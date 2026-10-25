@@ -1,4 +1,5 @@
 import { useEffect, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import { formatAspectRatioLabel } from '@/lib/image/aspectRatios';
 import {
   formatSupportedImageFormatsLabel,
@@ -44,6 +45,7 @@ type UseImageSettingsFieldsParams = {
   setResolution: Dispatch<SetStateAction<string | null>>;
   setSeed: Dispatch<SetStateAction<string>>;
   setStyle: Dispatch<SetStateAction<string | null>>;
+  setMaxOutputTokens?: Dispatch<SetStateAction<number | null>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
   setWatermark: Dispatch<SetStateAction<boolean>>;
 };
@@ -67,8 +69,13 @@ export function useImageSettingsFields({
   setSeed,
   setStyle,
   setThinkingLevel,
+  setMaxOutputTokens,
   setWatermark,
 }: UseImageSettingsFieldsParams) {
+  useEffect(() => {
+    setMaxOutputTokens?.(previous => selectedEngineCaps?.id === NANO21_ENGINE_ID
+      ? previous ?? NANO21_DEFAULT_MAX_OUTPUT_TOKENS : null);
+  }, [selectedEngineCaps?.id, setMaxOutputTokens]);
   const imageCountField = useMemo(
     () => getImageInputField(selectedEngineCaps ?? null, 'num_images', mode),
     [selectedEngineCaps, mode]

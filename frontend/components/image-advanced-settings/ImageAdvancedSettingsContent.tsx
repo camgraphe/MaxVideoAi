@@ -43,6 +43,7 @@ export type ImageAdvancedSettingsContentProps = {
     options: ControlOption[];
     onChange: (value: boolean) => void;
   };
+  tokenLimit?: { label: string; value: number | null; onChange: (value: number | null) => void };
   thinkingLevel?: {
     label: string;
     value: string;
@@ -95,6 +96,7 @@ export function ImageAdvancedSettingsContent({
   customImageSize,
   enableWebSearch,
   thinkingLevel,
+  tokenLimit,
   limitGenerations,
   watermark,
 }: ImageAdvancedSettingsContentProps) {
@@ -112,6 +114,16 @@ export function ImageAdvancedSettingsContent({
             onChange={(event) => seed.onChange(event.currentTarget.value)}
             className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
+        </label>
+      ) : null}
+      {tokenLimit ? (
+        <label className="flex min-w-0 flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{tokenLimit.label}</span>
+          <input type="number" inputMode="numeric" min={1} max={32768} step={1} required
+            value={tokenLimit.value ?? ''}
+            aria-invalid={tokenLimit.value === null || !Number.isSafeInteger(tokenLimit.value) || tokenLimit.value < 1 || tokenLimit.value > 32768}
+            onChange={event => tokenLimit.onChange(event.currentTarget.value === '' ? null : Number(event.currentTarget.value))}
+            className="h-10 rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
         </label>
       ) : null}
       {thinkingLevel ? (

@@ -4146,6 +4146,7 @@
         "enableWebSearchLabel": "Recherche web",
         "enableWebSearchHint": "Utilisez le contexte web actuel lorsque le modèle le permet.",
         "thinkingLevelLabel": "Niveau de raisonnement",
+        "outputTokenLimitLabel": "Limite de tokens de sortie",
         "thinkingLevelHint": "Augmentez la profondeur de raisonnement lorsque le modèle le permet.",
         "limitGenerationsLabel": "Limiter les générations",
         "limitGenerationsHint": "Réduisez les générations exploratoires supplémentaires lorsque cette option est disponible.",

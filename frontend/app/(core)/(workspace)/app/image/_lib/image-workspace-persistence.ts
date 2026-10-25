@@ -43,6 +43,9 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
     const maskUrl = typeof raw.maskUrl === 'string' ? raw.maskUrl : null;
     const enableWebSearch = raw.enableWebSearch === true;
     const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
+    if (raw.engineId === 'nano-banana-2-1' && raw.maxOutputTokens !== undefined
+      && (raw.maxOutputTokens === null || !Number.isSafeInteger(raw.maxOutputTokens) || raw.maxOutputTokens < 1 || raw.maxOutputTokens > 32768)) return null;
+    const maxOutputTokens = raw.engineId === 'nano-banana-2-1' ? raw.maxOutputTokens ?? 32768 : null;
     const limitGenerations = raw.limitGenerations === true;
     const watermark = raw.watermark === true;
     const referenceSlotsRaw = Array.isArray(raw.referenceSlots) ? raw.referenceSlots : [];
@@ -97,6 +100,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       maskUrl,
       enableWebSearch,
       thinkingLevel,
+      maxOutputTokens,
       limitGenerations,
       watermark,
       referenceSlots,
