@@ -42,7 +42,7 @@ test('Studio preserves seven image subjects using fourteen owned ready outputs w
  assert.equal(studioVideoActionSchema.safeParse(selected).success,true);
  assert.equal(imageTurnInputSchema.safeParse({...input,references:Array.from({length:STUDIO_CONVERSATION_MAX_ATTACHMENTS+1},(_,i)=>assetId(i))}).success,false);
  const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface!=='audio');
- assert.equal(details.maxReferences,39);assert.deepEqual(details.subjectReferenceAllowance,{attachedPoolLimit:10,maxSelectedReferences:50,additionalSource:'ready_project_outputs'});
+ assert.equal(details.maxReferences,43);assert.deepEqual(details.subjectReferenceAllowance,{attachedPoolLimit:STUDIO_CONVERSATION_MAX_ATTACHMENTS,maxSelectedReferences:43,additionalSource:'ready_project_outputs'});
  const request=await studioMediaRequest(actor,selected as never,input,factories,true,{
   readProjectMedia:async()=>outputs.map(ref=>({ref,name:'Subject view',durationSec:null})),
   resolveMedia:async(_owner,ref)=>({id:String(sourceIndex(ref as never)),ref,kind:'image',url:url(sourceIndex(ref as never)),thumbUrl:null,previewUrl:null,mime:'image/png',sizeBytes:1024,width:1280,height:720,durationSec:null,originalName:'view.png',originalAccess:{type:'external'}} as never),

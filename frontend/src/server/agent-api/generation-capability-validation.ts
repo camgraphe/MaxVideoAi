@@ -207,7 +207,8 @@ function validateVideoModeCaps(
     || !seedanceAutomaticDurationBounds(candidate.engine.id) || !caps.duration || !('options' in caps.duration)
     || !caps.duration.options.includes('auto'))) fail('durationOption');
   const sourceDurationPending = duration === undefined
-    && videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video';
+    && (videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video'
+      || (request.engineId === 'kling-v4' && request.mode === 'v2v'));
   if (!sourceDurationPending) {
     if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
     if (caps.frames) fail('durationSec');

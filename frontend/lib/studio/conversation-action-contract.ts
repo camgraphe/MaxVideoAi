@@ -88,7 +88,7 @@ type StudioAudioMode=Omit<AudioCapabilities['modes'][number],'variants'> & {
 };
 type StudioAudioOptions={readonly [K in keyof AudioCapabilities['options']]: readonly AudioCapabilities['options'][K][number][]};
 export type StudioCapabilityDetails =
-  | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_owned_media_or_ready_project_output'; outputCount: 1; maxReferences: number; subjectReferenceAllowance?:{attachedPoolLimit:10;maxSelectedReferences:50;additionalSource:'ready_project_outputs'}; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
+  | {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; surface: 'image' | 'video'; modes: readonly AgentModelModeDetails[]; referenceIdentity: 'attached_image_asset' | 'attached_owned_media_or_ready_project_output'; outputCount: 1; maxReferences: number; subjectReferenceAllowance?:{attachedPoolLimit:number;maxSelectedReferences:43;additionalSource:'ready_project_outputs'}; guidance: AgentModelGuidance | null; editorialGuidance?: AgentModelEditorialGuidance; promptingSources: readonly AgentModelPromptingSource[]}
   | {modelId: string; label: string; surface: 'audio'; defaults: AudioCapabilities['defaults']; modes: StudioAudioMode[]; options: StudioAudioOptions; references: ('source_video'|'voice_sample')[]; outputCount: 1};
 export type StudioProjectMedia = {ref: ToolAssetRef; name: string; durationSec: number | null}[];
 export type StudioActionResult =

@@ -11585,7 +11585,7 @@
       "keyframes": false,
       "params": {},
       "inputLimits": {
-        "promptMaxChars": 2500,
+        "promptMaxChars": 26000,
         "promptMaxCharsSource": "official",
         "imageMaxMB": 30,
         "videoMaxMB": 300,
@@ -11831,7 +11831,7 @@
           ]
         }
       },
-      "updatedAt": "2026-10-21T00:00:00Z",
+      "updatedAt": "2026-10-25T20:58:10Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "kling",

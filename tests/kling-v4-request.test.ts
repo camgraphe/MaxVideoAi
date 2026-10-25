@@ -54,7 +54,7 @@ test('unsupported controls and invalid provider boundaries fail before submissio
   for (const patch of [{ durationSec: 31 }, { durationSec: 2 }, { durationOption: '3.5' }, { resolution: '4k' }, { fps: 60 }, { seed: 42 }, { audio: false }, { voiceIds: ['voice'] }, { extraInputValues: { keyframes: [] } }]) {
     assert.throws(() => buildKlingV4FalRequest({ ...base, ...patch }), /Kling V4/i);
   }
-  for (const patch of [{ multi_prompt: [] }, { prompt: 'x'.repeat(2501) }, { video_urls: Array(6).fill(video) }, { elements: Array(4).fill({ video_url: video }) }, { elements: Array(4).fill({ frontal_image_url: image, reference_image_urls: [image], voice_id: 'v' }) }]) {
+  for (const patch of [{ multi_prompt: [] }, { prompt: 'x'.repeat(26001) }, { video_urls: Array(6).fill(video) }, { elements: Array(4).fill({ video_url: video }) }, { elements: Array(4).fill({ frontal_image_url: image, reference_image_urls: [image], voice_id: 'v' }) }]) {
     assert.ok(getKlingV4ConstraintViolation('ref2v', { prompt: base.prompt, duration: 5, resolution: '720p', image_urls: [image], ...patch }));
   }
 });

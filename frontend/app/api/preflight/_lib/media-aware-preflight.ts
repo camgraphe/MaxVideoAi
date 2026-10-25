@@ -355,6 +355,7 @@ export async function resolveMediaAwarePreflight(
       return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Reference metadata is required to calculate this price.');
     }
   }
+  if(engine.id==='kling-v4')inputVideoDurationSec=(processed.trustedMediaReferences??[]).filter(ref=>ref.kind==='video').reduce((sum,ref)=>sum+(ref.durationSec??NaN),0);
   const trustedMediaPricingFacts: TrustedPreflightMediaPricingFacts = {
     ...(seedanceSourceAspectRatio ? { seedanceSourceAspectRatio } : {}),
     ...(seedanceEditSource ? { seedanceEditSource } : {}),
@@ -395,7 +396,7 @@ export async function resolveMediaAwarePreflight(
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
   return computeConfiguredPreflightFn({ ...request, durationSec: operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
     ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec),
-    ...(needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
+    ...(engine.id==='kling-v4'?{hasVideoInput:Number(inputVideoDurationSec)>0}:needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
   }, {
     seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,

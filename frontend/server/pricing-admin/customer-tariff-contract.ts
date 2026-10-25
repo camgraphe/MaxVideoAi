@@ -50,7 +50,8 @@ export type CustomerTariffScenarioDetail = {
     outputVaries?: boolean;
     tariffCellId: string;
     prepared: boolean;
-    price: ManualTariffCell['price'];
+    price: ManualTariffCell['price'] | null;
+    klingV4Billable?: boolean;
     outputCents: number;
     inputCentsPerSecond: number;
     maxInputSeconds: number;
@@ -63,6 +64,7 @@ export type CustomerTariffChangeProposal =
   | { operation: 'create' | 'update'; scenarioId: string; customerCents: number }
   | { operation: 'create' | 'update'; scenarioId: string; scope: 'continuous_input'; price:
       { kind: 'preserve_current' } | { kind: 'linear_input'; outputCents: number; inputCentsPerSecond: number }
+      | { kind: 'kling_v4_billable'; customerCentsPerBillableSecond: number }
       | { kind: 'seedance_billable'; customerCentsPerBillableSecond: number }
       | { kind: 'linear_open'; outputCents: number; unitCents: number }
       | { kind: 'linear_video'; outputCentsPerSecond: number; inputCentsPerSecond: number } }
@@ -75,7 +77,7 @@ export type CustomerTariffChangePreview = {
   scenarioId: string;
   modelId: string;
   selector: ManualTariffSelector;
-  currentCents: number;
+  currentCents: number | null;
   proposedCents: number | null;
   currency: string;
   revision: number;

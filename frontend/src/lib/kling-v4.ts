@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { GeneratePayload } from '@/lib/fal-types';
-import { KLING_V4_ENDPOINTS } from '@/config/fal-engines/kling-v4';
+import { KLING_V4_ENDPOINTS, KLING_V4_PROMPT_MAX_CHARS } from '@/config/fal-engines/kling-v4';
 
-// fal public OpenAPI, retrieved 2026-10-21. Account access is a separate release gate.
+// fal public OpenAPI, verified 2026-10-25. Account access is a separate release gate.
 export { KLING_V4_ENDPOINTS };
 export type KlingV4Mode = keyof typeof KLING_V4_ENDPOINTS;
 export const isKlingV4EngineId = (id: string | null | undefined): boolean => id?.trim().toLowerCase() === 'kling-v4';
@@ -26,7 +26,7 @@ const referenceElement = z.object({
 });
 const shot = z.object({ prompt: z.string().trim().min(1).max(512), duration: z.number().int().min(1).max(30) }).strict();
 const common = {
-  prompt: z.string().trim().min(1).max(2500).optional(),
+  prompt: z.string().trim().min(1).max(KLING_V4_PROMPT_MAX_CHARS).optional(),
   multi_prompt: z.array(shot).min(1).optional(),
   duration,
   resolution: z.enum(['720p', '1080p']).optional(),
@@ -36,7 +36,7 @@ const schemas = {
   i2v: z.object({ ...common, start_image_url: url, end_image_url: url.optional() }).strict(),
   ref2v: z.object({ ...common, start_image_url: url.optional(), image_urls: z.array(url).max(10).optional(), video_urls: z.array(url).max(5).optional(),
     elements: z.array(referenceElement).max(7).optional(), aspect_ratio: z.enum(['auto', '16:9', '9:16', '1:1', '21:9']).optional() }).strict(),
-  v2v: z.object({ prompt: z.string().trim().min(1).max(2500), video_url: url, image_urls: z.array(url).max(10).optional(),
+  v2v: z.object({ prompt: z.string().trim().min(1).max(KLING_V4_PROMPT_MAX_CHARS), video_url: url, image_urls: z.array(url).max(10).optional(),
     elements: z.array(imageElement).max(7).optional(), duration: duration.optional(), resolution: common.resolution }).strict(),
 };
 

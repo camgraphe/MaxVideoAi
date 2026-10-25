@@ -7,7 +7,7 @@
   },
   "overview": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
   "pricingNotes": [
-    "Les devis clients restent désactivés pendant la qualification de l’accès et de la facturation.",
+    "Les devis clients restent désactivés en attente des tarifs revus et de la recette App, Studio et MCP.",
     "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite."
   ],
   "hero": {
@@ -37,7 +37,7 @@
     },
     {
       "q": "Puis-je générer avec Kling 4.0 dans MaxVideoAI maintenant ?",
-      "a": "La génération et les devis clients sont désactivés. La documentation du fournisseur ne prouve ni un accès opérationnel ni un résultat MaxVideoAI évalué."
+      "a": "La génération et les devis clients restent désactivés. Un essai API texte vers vidéo borné a réussi le 25 octobre 2026 ; il ne valide ni les références, ni Modify, ni les voix liées, ni la qualité artistique."
     },
     {
       "q": "Quelles durées et résolutions sont documentées ?",
@@ -81,7 +81,7 @@
       "Modifier une vidéo existante||Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références."
     ],
     "specTitle": "Contrôles documentés de Kling 4.0",
-    "specNote": "Documentation fournisseur relevée le 21 octobre 2026. L’accès, les sorties mesurées et l’exécution dans MaxVideoAI sont des contrôles distincts.",
+    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. Un essai d’accès texte vers vidéo a réussi ; les autres routes, l’exécution produit et la qualité artistique demandent une recette distincte.",
     "specSections": [
       {
         "title": "Texte vers vidéo",
@@ -227,7 +227,7 @@
     ],
     "pricingCopy": {
       "title": "Prix de Kling 4.0",
-      "subtitle": "Les devis clients restent désactivés pendant la qualification de l’accès et de la facturation.",
+      "subtitle": "Les devis clients restent désactivés en attente des tarifs revus et de la recette App, Studio et MCP.",
       "footnote": "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite.",
       "ctaLabel": "Lire les caractéristiques",
       "ctaHref": "#specs"

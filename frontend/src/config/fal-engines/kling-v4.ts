@@ -1,7 +1,8 @@
 import type { EngineCaps, EngineInputField } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
-// Provider schema captured 2026-10-21. Publication and execution remain independently closed.
+// Provider schema verified 2026-10-25. Publication and execution remain independently closed.
+export const KLING_V4_PROMPT_MAX_CHARS = 26000;
 export const KLING_V4_ID = 'kling-v4' as const;
 export const KLING_V4_MODES = ['t2v', 'i2v', 'ref2v', 'v2v'] as const;
 export const KLING_V4_ENDPOINTS = {
@@ -37,7 +38,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
   modes, maxDurationSec: 30, resolutions: [...KLING_V4_RESOLUTIONS],
   aspectRatios: [...KLING_V4_ASPECT_RATIOS], fps: [], audio: true,
   upscale4k: false, extend: false, motionControls: false, keyframes: false, params: {},
-  inputLimits: { promptMaxChars: 2500, promptMaxCharsSource: 'official', imageMaxMB: 30, videoMaxMB: 300, videoMaxDurationSec: 30.05 },
+  inputLimits: { promptMaxChars: KLING_V4_PROMPT_MAX_CHARS, promptMaxCharsSource: 'official', imageMaxMB: 30, videoMaxMB: 300, videoMaxDurationSec: 30.05 },
   inputSchema: {
     required: [
       { id: 'prompt', type: 'text', label: 'Prompt', modes, requiredInModes: ['v2v'], description: 'Generation accepts a prompt or multi-shot scenes. Video editing requires a prompt.' },
@@ -59,7 +60,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
   },
   // Source rates and input-video billing are owned by the dedicated pricing adapter.
   // An unpublished contract supplies neither a customer tariff nor a price hint.
-  updatedAt: '2026-10-21T00:00:00Z', ttlSec: 600,
+  updatedAt: '2026-10-25T20:58:10Z', ttlSec: 600,
   providerMeta: { provider: 'kling', modelSlug: KLING_V4_ENDPOINTS.t2v },
   brandId: 'kling', modeCaps,
 };

@@ -6,7 +6,7 @@ Prepared 2026-10-22 (Europe/Madrid), from main `28b0d14f6c0b59220b85b458427c670a
 
 Prepare a complete launch candidate in `codex/kling-v4-launch-prep`, using the FLUX launch quality bar. Adrien subsequently selected **fal first for the initial launch** on 22 October. This supersedes the earlier direct-first sequence; direct account recovery remains separate future work. Preserve previous Kling URLs, historical media, and owner-curated playlists. Produce normal localized model-page content, not a coming-soon page. Keep the candidate private and noindex until API access, paid qualification, media and pricing are verified.
 
-No production merge/deployment, live tariff activation, public admin/gallery changes, paid generation or voice creation is authorized in this preparation. No source or schema is evidence of account entitlement. No generated output is available yet; never borrow another model's output as V4 evidence.
+No production merge/deployment, live tariff activation, public admin/gallery changes, paid generation or voice creation is authorized in this preparation. No source or schema is evidence of account entitlement. A bounded T2V access test succeeded on 25 October; it is not a reviewed launch asset. Never borrow another model's output as V4 evidence.
 
 ## Architecture
 
@@ -16,7 +16,7 @@ No production merge/deployment, live tariff activation, public admin/gallery cha
 - Preserve provider acceptance before any fallback decision. A missing task ID after an ambiguous submission is not proof that nothing was accepted. Fallback must preserve every requested option or fail closed.
 - Enforce a closed release gate before billing/credentials/provider work, including trusted continuations and agent execution. Provider flags alone cannot qualify a release.
 - Consumer presentation comes from shared schemas, localized content and registry projections. Do not advertise unsupported controls, fabricated scores or absent media.
-- Prepare financial scenarios from normal list prices and the authorized 30% fal markup. Only canonical exact quotes can authorize later generation; candidate estimates never activate tariffs.
+- The October 21 markup matrix is historical preparation. Current retail must come only from separately reviewed canonical admin cells; no new sale amount or activation is approved.
 - Use the canonical owned-media importer, thumbnails, short previews, display renditions and launch-asset contract after real approved renders exist. Preserve originals and playlist order.
 
 ## Work and verification
@@ -33,7 +33,7 @@ No production merge/deployment, live tariff activation, public admin/gallery cha
 
 ## Launch blockers (must remain visible)
 
-1. The authenticated fal playground exposes an enabled Run button, but no paid execution or queue/API entitlement has been verified. Public fal copy still says API access is coming soon.
+1. A bounded fal T2V 3s/720p access trial succeeded on 25 October. References, I2V, Modify, voices, full App/Studio/MCP flows and artistic quality are still unqualified. Four current fal contracts exist; Extend remains unavailable.
 2. Direct V4 request/polling and fallback parity must be verified before adding that later provider; they no longer block initial fal-only qualification.
 3. No approved paid qualification, rendered scenes, factual scores, owned thumbnails/previews or playable marketing assets exist.
 4. No active V4 customer tariff or production pricing coverage is authorized.
@@ -42,6 +42,10 @@ No production merge/deployment, live tariff activation, public admin/gallery cha
 Account recovery remains unresolved. The SOCIETE investigation ties historical API purchases to the inaccessible mailbox and found no migration proof. A read-only console check confirmed the alternative existing account has zero purchased packs and no displayed API keys. The admin Google flow was first-time consent and was cancelled. The working local legacy credentials prove authentication only, without identifying their mailbox or V4 access. Preserve existing keys/accounts; resolve the historical account before submitting an early-access request against an assumed owner. Private identity evidence stays outside the PR.
 
 Refresh this ledger with actual results; a prepared candidate is not an activated product.
+
+## Current integration — 25 October 2026
+
+See [current contracts and integration](INTEGRATION-2026-10-25.md). This section supersedes older access and static markup assumptions while retaining their historical evidence. Customer tariffs, publication and paid execution remain closed for every actor, including admins.
 
 ## Offline completion phase
 

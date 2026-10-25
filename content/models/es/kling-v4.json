@@ -7,7 +7,7 @@
   },
   "overview": "Kling 4.0 reúne dirección de escenas, generación guiada por referencias y edición de video. Piensa en la acción, el encuadre y el sonido juntos, y elige el modo adecuado para el material disponible.",
   "pricingNotes": [
-    "Los presupuestos para clientes siguen desactivados mientras se verifica el acceso y la facturación.",
+    "Los presupuestos siguen desactivados hasta revisar las tarifas y validar App, Studio y MCP.",
     "Las tarifas del proveedor no son un precio de MaxVideoAI. Cada generación requerirá un presupuesto actual y una aprobación explícita."
   ],
   "hero": {
@@ -37,7 +37,7 @@
     },
     {
       "q": "¿Puedo generar con Kling 4.0 en MaxVideoAI ahora?",
-      "a": "La generación y los presupuestos para clientes están desactivados. La documentación del proveedor no acredita acceso operativo ni un resultado evaluado de MaxVideoAI."
+      "a": "La generación y los presupuestos siguen desactivados. Una prueba API limitada de texto a vídeo tuvo éxito el 25 de octubre de 2026; no valida referencias, Modify, voces vinculadas ni calidad artística."
     },
     {
       "q": "¿Qué duraciones y resoluciones están documentadas?",
@@ -81,7 +81,7 @@
       "Editar un video existente||El modo de edición recibe un video fuente y un prompt, con imágenes y elementos visuales opcionales. Sus entradas son distintas de las de generación por referencias."
     ],
     "specTitle": "Controles documentados de Kling 4.0",
-    "specNote": "Documentación del proveedor consultada el 21 de octubre de 2026. El acceso, las salidas medidas y la ejecución en MaxVideoAI requieren verificaciones independientes.",
+    "specNote": "Contratos del proveedor verificados el 25 de octubre de 2026. Una prueba de acceso de texto a vídeo tuvo éxito; las demás rutas, la ejecución del producto y la calidad artística requieren validación adicional.",
     "specSections": [
       {
         "title": "Texto a video",
@@ -227,7 +227,7 @@
     ],
     "pricingCopy": {
       "title": "Precios de Kling 4.0",
-      "subtitle": "Los presupuestos para clientes siguen desactivados mientras se verifica el acceso y la facturación.",
+      "subtitle": "Los presupuestos siguen desactivados hasta revisar las tarifas y validar App, Studio y MCP.",
       "footnote": "Las tarifas del proveedor no son un precio de MaxVideoAI. Cada generación requerirá un presupuesto actual y una aprobación explícita.",
       "ctaLabel": "Leer las especificaciones",
       "ctaHref": "#specs"

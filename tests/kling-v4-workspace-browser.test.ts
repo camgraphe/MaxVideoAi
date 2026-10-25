@@ -111,8 +111,8 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     await page.waitForFunction(()=>document.querySelector('[data-mode]')?.textContent==='t2v');
     assert.equal(await page.getByRole('textbox',{name:'Scene 1 prompt'}).inputValue(),'First shot');
     await page.getByRole('button',{name:'Multi-prompt on',exact:true}).click();
-    await page.locator('textarea').first().fill('x'.repeat(2501));
-    assert.match(await page.locator('body').innerText(),/2501\/2500/);
+    await page.locator('textarea').first().fill('x'.repeat(26001));
+    assert.match(await page.locator('body').innerText(),/26001\/26000/);
     assert.equal(await page.locator('.app-generation-action').isDisabled(),true);
     await page.locator('textarea').first().fill('An authored scene.');
     assert.equal(await page.locator('body').innerText().then(text=>/CFG|Shot type|Voice IDs/.test(text)),false);

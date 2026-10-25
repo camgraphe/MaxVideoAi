@@ -1,5 +1,7 @@
 # Kling 4.0 pricing preparation
 
+Current 25 October integration: [INTEGRATION-2026-10-25.md](INTEGRATION-2026-10-25.md) supersedes static markup proposals as runtime pricing. Supplier LIST facts and exact admin selectors are implemented; no customer cell is selected or activated.
+
 Status: **offline preparation; no active tariff, customer quote, provider generation, database write or pricing-admin publication**. Source date is 2026-10-21 UTC; preparation continued on 2026-10-22 in Europe/Madrid. The latest user decision selects fal for initial qualification, with normal fal price plus 30% markup as the customer-authoring basis. Direct recovery/qualification is a later independent route. This document preserves that intent without changing current policy or installing tariff cells.
 
 [Provider evidence](provider-evidence-2026-10-21.md) owns the exact schema/access qualifications. [Prepared matrix](pricing-matrix-2026-10-21.json) contains 1,624 integer input/output rows and 10 fractional-source examples, calculated through `packages/pricing/src/canonical.ts#quoteCanonicalPricing`. Its explicit flags keep execution, activation and current customer pricing false. No runtime candidate estimator was added: account-level paid behavior and billing precision remain unqualified, and the existing canonical package already supplies the required offline commercial calculation.
@@ -44,7 +46,7 @@ Source seconds must be measured from exact owned server-resolved media. Client d
 
 The formula is documented; the supplier's fractional-second quantization, duplicate-source charging and invoice rounding are not. The matrix exhausts the integer source domain from 3 through 30, and includes samples around equal-input/output boundaries plus fractional media. It does **not** certify every continuous-source transition or an effective charged amount. The schema's nullable Edit duration defaults to measured source length, but its explicit parameter is integer; the effective output/fractional-source mapping still needs a provider contract and qualification.
 
-New direct API design is distinguished by versioned paths and a generic new callback shape. Direct V4 submit/poll routes and exact options were absent from the public index consulted. A free account query separately returned HTTP200/code0 and no packages in the queried window; it proves neither entitlement nor a discounted rate. Fal has published schemas but still says API coming soon. Same published rates do not make the two transports interchangeable: direct voice/element IDs, additional edit videos and keyframe control cannot be sent to fal by analogy.
+New direct API design is distinguished by versioned paths and a generic new callback shape. Direct V4 submit/poll routes and exact options were absent from the public index consulted. A free account query separately returned HTTP200/code0 and no packages in the queried window; it proves neither entitlement nor a discounted rate. The 21 October prelaunch copy said API coming soon; that access assumption is superseded by the successful bounded T2V test on 25 October. Same published rates do not make the two transports interchangeable: direct voice/element IDs, additional edit videos and keyframe control cannot be sent to fal by analogy.
 
 ## Required work before any tariff activation
 

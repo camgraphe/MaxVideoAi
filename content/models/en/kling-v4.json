@@ -7,7 +7,7 @@
   },
   "overview": "Kling 4.0 brings scene direction, reference-guided generation and video editing into one model family. Plan the action, framing and sound together; use the mode that matches the material you already have.",
   "pricingNotes": [
-    "Customer quotes remain disabled while access and billing are qualified.",
+    "Customer quotes remain disabled pending reviewed tariffs and App, Studio and MCP release qualification.",
     "Published provider rates are not a MaxVideoAI customer price. A current quote and explicit approval will be required for each generation."
   ],
   "hero": {
@@ -37,7 +37,7 @@
     },
     {
       "q": "Can I generate with Kling 4.0 on MaxVideoAI now?",
-      "a": "Generation and customer quotes are currently disabled. Published provider documentation does not establish operational access or a reviewed MaxVideoAI result."
+      "a": "Generation and customer quotes remain disabled. One bounded text-to-video API test succeeded on 25 October 2026; it does not validate references, Modify, voice binding or artistic quality."
     },
     {
       "q": "What durations and resolutions are documented?",
@@ -227,7 +227,7 @@
     ],
     "pricingCopy": {
       "title": "Kling 4.0 pricing",
-      "subtitle": "Customer quotes remain disabled while access and billing are qualified.",
+      "subtitle": "Customer quotes remain disabled pending reviewed tariffs and App, Studio and MCP release qualification.",
       "footnote": "Published provider rates are not a MaxVideoAI customer price. A current quote and explicit approval will be required for each generation.",
       "ctaLabel": "Read the specifications",
       "ctaHref": "#specs"

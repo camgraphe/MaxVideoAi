@@ -1,3 +1,4 @@
+import { KLING_V4_PROMPT_MAX_CHARS } from '@/config/fal-engines/kling-v4';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
@@ -615,7 +616,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   const engineId = normalizeEngineId(input.engineId);
   const settings = normalizeSettings(input.settings, mode, engineId);
   const noPrompt = operation === 'ltx23-reframe' || operation === 'flux-draft-enhance';
-  const prompt = normalizeText((final || noPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? 2500 : MAX_CANONICAL_PROMPT_CHARS, true);
+  const prompt = normalizeText((final || noPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? KLING_V4_PROMPT_MAX_CHARS : MAX_CANONICAL_PROMPT_CHARS, true);
   if (engineId === 'kling-v4' && prompt && Array.isArray(settings.multiPrompt)) fail('prompt', 'Choose a prompt or shot plan, exclusively.');
   if (!prompt && !final && !noPrompt && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
