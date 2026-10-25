@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, ChevronDown, Search, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, Search, X } from 'lucide-react';
 import { traceModelPicker } from '@/lib/model-picker-diagnostics';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
@@ -129,7 +129,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
       <footer className={styles.footer}><div><p>{view === 'confirm' || ((draft.id !== engineId || context?.hasChanges) && option?.changes.length) ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
         <button type="button" className={styles.apply} disabled={draft.key !== contextKey || Boolean(disabled(view === 'detail' ? detailId ?? draft.id : draft.id))}
           onClick={() => apply(view === 'detail' && detailId ? detailId : draft.id)}>
-          {view === 'confirm' ? copy.confirm : `${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}
+          <span>{view === 'confirm' ? copy.confirm : `${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}</span><ArrowRight size={17} aria-hidden="true" />
         </button>
       </footer>
     </div>

@@ -37,7 +37,9 @@
 .children { padding: 0 0 8px 8px; }.empty { padding: 32px 8px; font-size: 14px; }
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex: none; padding: 12px 20px; border-top: 1px solid var(--app-line, var(--border)); }
 .footer p, .footer small, .note { font-size: 12px; line-height: 1.45; color: var(--text-secondary); }.footer small { display: block; margin-top: 3px; }
-.apply { min-height: 44px; min-width: 160px; max-width: 280px; padding: 9px 16px; border: 1px solid var(--app-accent, var(--brand)); border-radius: 8px; background: transparent; color: var(--app-accent, var(--brand)); font-size: 13px; font-weight: 550; }
+.apply { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; min-width: 160px; max-width: 280px; padding: 9px 16px; border: 1px solid var(--app-accent, var(--brand)); border-radius: 8px; background: var(--app-accent, var(--brand)); color: var(--on-brand); font-size: 14px; font-weight: 650; box-shadow: 0 2px 6px #0002; }
+.apply:not(:disabled):hover { background: color-mix(in srgb, var(--app-accent, var(--brand)) 90%, var(--text-primary)); }
+.apply > svg { flex: none; }
 .apply:disabled { opacity: .5; cursor: not-allowed; }.retry { font-size: 12px; text-decoration: underline; min-height: 32px; }
 .details { padding: 10px 8px 20px; font-size: 14px; }.back { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; color: var(--text-secondary); }
 .detailTitle { display: flex; align-items: center; gap: 12px; margin: 20px 0; }.detailTitle h3 { font-size: 20px; font-weight: 550; }.detailTitle small { color: var(--text-secondary); font-size: 12px; }

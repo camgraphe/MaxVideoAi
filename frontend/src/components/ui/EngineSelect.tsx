@@ -172,7 +172,7 @@ export function EngineSelect({
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
-        className={clsx('h-5 w-5 shrink-0 text-text-muted transition-transform', picker && 'rounded-full bg-[var(--app-accent)] p-0.5 text-white', open && 'rotate-180')}
+        className={clsx('h-5 w-5 shrink-0 text-text-muted transition-transform', picker && 'rounded-full bg-[var(--app-accent)] p-0.5 text-[var(--on-brand)]', open && 'rotate-180')}
         fill="none"
       >
         <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
