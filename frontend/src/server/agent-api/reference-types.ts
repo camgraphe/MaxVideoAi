@@ -12,10 +12,10 @@ export type ResolvedReference = {
   width: number | null;
   height: number | null;
   durationSec: number | null;
-  /** Exact measured cadence, supplied only by the owned video probe. */
-  fps?: number;
   mimeType: string;
   sizeBytes?: number | null;
+  /** Exact measured cadence, supplied only by the owned video probe. */
+  fps?: number;
   decodedFrameCount?: number;
   constantFrameRate?: boolean;
   sourceSha256?: string;

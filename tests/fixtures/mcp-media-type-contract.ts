@@ -87,7 +87,6 @@ type ExpectedResolvedReference = {
   width: number | null;
   height: number | null;
   durationSec: number | null;
-  fps?: number;
   mimeType: string;
   sizeBytes?: number | null;
   fps?: number;
@@ -106,7 +105,6 @@ type ExpectedResolvedReferenceKeys =
   | 'width'
   | 'height'
   | 'durationSec'
-  | 'fps'
   | 'mimeType'
   | 'sizeBytes'
   | 'fps'

@@ -1617,6 +1617,7 @@ const prepareAdapterImports = new Set([
   '@modelcontextprotocol/sdk/server/mcp.js', 'zod/v4',
   '@/server/agent-api/principal', '@/server/agent-api/generation-types',
   '@/server/mcp/server', '@/server/mcp/optional-tool-input', '@/server/mcp/tool-result',
+  '@/lib/video-operation', '@/lib/generation-reference-limits',
 ]);
 function assertPrepareAdapterBoundary(source: string): void {
   const tree = ts.createSourceFile('prepare-generation.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -1624,6 +1625,15 @@ function assertPrepareAdapterBoundary(source: string): void {
     if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
       assert.ok(ts.isStringLiteral(node.moduleSpecifier) && prepareAdapterImports.has(node.moduleSpecifier.text),
         `Unexpected adapter dependency: ${node.moduleSpecifier.getText(tree)}`);
+      const pureSchemaOwner = node.moduleSpecifier.text === '@/lib/video-operation' ? 'VIDEO_OPERATIONS'
+        : node.moduleSpecifier.text === '@/lib/generation-reference-limits' ? 'MAX_GENERATION_REFERENCES' : null;
+      if (pureSchemaOwner) {
+        assert.ok(ts.isImportDeclaration(node) && node.importClause && !node.importClause.name
+          && node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)
+          && node.importClause.namedBindings.elements.length === 1
+          && (node.importClause.namedBindings.elements[0].propertyName?.text ?? node.importClause.namedBindings.elements[0].name.text) === pureSchemaOwner,
+          'Only the reviewed pure schema constant may cross this adapter boundary');
+      }
     }
     assert.equal(ts.isImportEqualsDeclaration(node), false, 'Import-equals can bypass the reviewed dependency list');
     if (ts.isCallExpression(node)) {
@@ -1653,6 +1663,9 @@ test('adapter boundary permits provider guidance but rejects executable dependen
   assert.doesNotThrow(() => assertPrepareAdapterBoundary(`const schema = z.string().describe('Never pass provider voice IDs.');`));
   for (const source of [
     `import { submit as run } from '@/server/video-providers';`,
+    `import { resolveVideoOperationEngine } from '@/lib/video-operation';`,
+    `import * as operations from '@/lib/video-operation';`,
+    `export { VIDEO_OPERATIONS } from '@/lib/video-operation';`,
     `import * as ledger from '@/server/wallet';`,
     `export { createJob as run } from '@/server/jobs';`,
     `const mod = import('@/server/video-providers');`,

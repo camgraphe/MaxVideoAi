@@ -30,7 +30,7 @@ import {
   getReadOnlyConfiguredEngineIncludingRuntimePrivate,
 } from '@/server/agent-api/read-only-engine-catalog';
 import type { EngineCaps, PreflightRequest, PreflightResponse } from '@/types/engines';
-import { parsePreflightRequestPayload } from './preflight-request';
+import { parsePreflightRequestPayload, type AppPreflightRequest } from './preflight-request';
 import type { LaunchCanaryRequestContext } from '@/server/model-launch-canary-request';
 import { resolveAgentGenerationModeExecutability } from '@/server/agent-runtime/model-executability';
 import { validateRuntimeRequestSettings } from '@/app/api/generate/_lib/runtime-schema-options';
@@ -80,6 +80,7 @@ function hasClientDeclaredMediaPricingFacts(request: PreflightRequest): boolean 
       Object.prototype.hasOwnProperty.call(extra, 'referenceImageCount')
       || Object.prototype.hasOwnProperty.call(extra, 'inputAudioDurationSec')
       || Object.prototype.hasOwnProperty.call(extra, 'inputVideoDurationSec')
+      || Object.prototype.hasOwnProperty.call(extra, 'inheritedDurationSec')
       || Object.prototype.hasOwnProperty.call(extra, 'verifiedReferenceTokenCount')
       || Object.prototype.hasOwnProperty.call(extra, 'referenceTokenBudget')
       || Object.prototype.hasOwnProperty.call(extra, 'seedanceSourceAspectRatio')
@@ -115,14 +116,16 @@ function hasValidPersistedReferenceRoles(engine: EngineCaps, request: PreflightR
   return request.inputs.every((reference) => activeMediaFields.get(reference.slotId) === reference.kind);
 }
 
-export async function resolveMediaAwarePreflight(
-  input: {
-    request: PreflightRequest;
+type MediaAwarePreflightInput = {
+    request: AppPreflightRequest;
     trustedSeedanceWorkflow?: PreparedSeedanceWorkflow;
     userId?: string | null;
     resolveUserId?: () => Promise<string | null>;
     launchCanaryContext?: LaunchCanaryRequestContext | null;
-  },
+};
+
+export async function resolveMediaAwarePreflight(
+  input: MediaAwarePreflightInput,
   dependencies: MediaAwarePreflightDependencies = {},
 ): Promise<PreflightResponse> {
   const parsedRequest = parsePreflightRequestPayload(input.request);
@@ -131,6 +134,20 @@ export async function resolveMediaAwarePreflight(
   if (isKlingV4ReleaseBlocked(request.engine)) {
     return mediaPricingFailure('ENGINE_UNAVAILABLE', 'This model is not available for generation.');
   }
+  return resolveAdmittedMediaAwarePreflight({...input,request},dependencies);
+}
+
+/** Internal read-only continuation after HTTP admission. It never opens the public release gate. */
+export async function resolveAdmittedMediaAwarePreflight(
+  input: MediaAwarePreflightInput,
+  dependencies: MediaAwarePreflightDependencies = {},
+): Promise<PreflightResponse> {
+  const parsedRequest = parsePreflightRequestPayload(input.request);
+  if (!parsedRequest.ok) return parsedRequest.response;
+  const sourceDurationRequested = parsedRequest.request.engine === 'kling-v4'
+    && parsedRequest.request.mode === 'v2v' && parsedRequest.request.durationSec === undefined;
+  // Admission placeholder only. Owned source facts must replace it before any quotation.
+  const request: PreflightRequest = {...parsedRequest.request,durationSec:parsedRequest.request.durationSec ?? 3};
   if (request.seedanceWorkflow && !input.trustedSeedanceWorkflow) {
     return mediaPricingFailure('SEEDANCE_DRAFT_UNAVAILABLE', 'An owned Draft workflow is required.');
   }
@@ -355,11 +372,24 @@ export async function resolveMediaAwarePreflight(
       return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Reference metadata is required to calculate this price.');
     }
   }
-  if(engine.id==='kling-v4')inputVideoDurationSec=(processed.trustedMediaReferences??[]).filter(ref=>ref.kind==='video').reduce((sum,ref)=>sum+(ref.durationSec??NaN),0);
+  let inheritedDurationSec: number | undefined;
+  if (engine.id === 'kling-v4') {
+    inputVideoDurationSec = (processed.trustedMediaReferences ?? []).filter(ref => ref.kind === 'video')
+      .reduce((sum,ref) => sum + (ref.durationSec ?? NaN), 0);
+    if (sourceDurationRequested) {
+      const sources = (processed.trustedMediaReferences ?? []).filter(ref => ref.kind === 'video' && ref.fieldId === 'video_url');
+      const seconds = sources[0]?.durationSec;
+      if (sources.length !== 1 || typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 3 || seconds > 30.05) {
+        return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED','One exact owned source duration is required for Kling 4 Modify.');
+      }
+      inheritedDurationSec = seconds;
+    }
+  }
   const trustedMediaPricingFacts: TrustedPreflightMediaPricingFacts = {
     ...(seedanceSourceAspectRatio ? { seedanceSourceAspectRatio } : {}),
     ...(seedanceEditSource ? { seedanceEditSource } : {}),
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
+    ...(inheritedDurationSec !== undefined ? { inheritedDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
     ...(needsReferenceImageCount
       ? { referenceImageCount: processed.references.normalizedReferenceImages.length }
@@ -394,7 +424,7 @@ export async function resolveMediaAwarePreflight(
     return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Kling Edit requires a verified 3–15 second source.');
   }
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
-  return computeConfiguredPreflightFn({ ...request, durationSec: operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
+  return computeConfiguredPreflightFn({ ...request, durationSec: inheritedDurationSec ?? operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
     ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec),
     ...(engine.id==='kling-v4'?{hasVideoInput:Number(inputVideoDurationSec)>0}:needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),

@@ -84,7 +84,6 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
     'width',
     'height',
     'durationSec',
-    'fps',
     'mimeType',
     'sizeBytes',
     'fps',

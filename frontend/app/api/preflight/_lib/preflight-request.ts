@@ -83,7 +83,7 @@ const preflightRequestSchema = z.object({
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),
   mode: z.enum(modes),
-  durationSec: z.number().finite().positive().max(3_600),
+  durationSec: z.number().finite().positive().max(3_600).optional(),
   durationOption: z.union([z.number().finite().positive().max(3_600), z.literal('auto')]).optional(),
   resolution: z.enum(resolutions).optional(),
   aspectRatio: z.enum(aspectRatios).optional(),
@@ -98,6 +98,10 @@ const preflightRequestSchema = z.object({
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
  }).strict().superRefine((request, context) => {
+  if (request.durationSec === undefined
+    && (request.engine !== 'kling-v4' || request.mode !== 'v2v' || request.durationOption !== undefined)) {
+    context.addIssue({code:z.ZodIssueCode.custom,path:['durationSec'],message:'An explicit duration is required for this model and mode.'});
+  }
   // The transport ceiling does not widen Seedance's separate admission contract.
   if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
     context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
@@ -111,9 +115,16 @@ type PreflightRequestFailure = {
   response: PreflightResponse;
 };
 
+/** Only the current V4 Modify transport admits source-duration omission. */
+export type AppPreflightRequest = PreflightRequest | (
+  Omit<PreflightRequest, 'engine' | 'mode' | 'durationSec'> & {
+    engine: 'kling-v4'; mode: 'v2v'; durationSec?: number;
+  }
+);
+
 type PreflightRequestSuccess = {
   ok: true;
-  request: PreflightRequest;
+  request: AppPreflightRequest;
 };
 
 export type PreflightRequestParseResult = PreflightRequestSuccess | PreflightRequestFailure;
@@ -157,7 +168,10 @@ export function parsePreflightRequestPayload(payload: unknown): PreflightRequest
   if (!parsed.success) {
     return failure(400, 'PREFLIGHT_REQUEST_INVALID', 'Invalid preflight request.');
   }
-  return { ok: true, request: parsed.data };
+  if (parsed.data.durationSec === undefined) {
+    return {ok:true,request:{...parsed.data,engine:'kling-v4',mode:'v2v'}};
+  }
+  return { ok: true, request: {...parsed.data,durationSec:parsed.data.durationSec} };
 }
 
 type PreflightBodyRequest = Pick<Request, 'headers' | 'text'> & {
