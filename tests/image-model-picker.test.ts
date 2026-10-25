@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { prepareImagePickerOption } from '../frontend/app/(core)/(workspace)/app/image/_lib/image-model-picker';
+import { formatImageSizeLabel } from '../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-utils';
 
 const engine = listFalEngines().find(entry => entry.id === 'nano-banana-2')!.engine;
 const current = { mode: 't2i' as const, numImages: 1, resolution: '2k', aspectRatio: '1:1', quality: null, enableWebSearch: false,
@@ -24,7 +25,7 @@ test('image candidate does not discard excess references or switch operations', 
 test('unsupported image resolution is disclosed before applying its canonical fallback', () => {
   const option = prepareImagePickerOption(engine, { ...current, resolution: 'not-a-resolution' }, 'fr');
   assert.notEqual(option.request.resolution, 'not-a-resolution');
-  assert.ok(option.changes.some(change => change.before === 'not-a-resolution' && change.after === option.request.resolution));
+  assert.ok(option.changes.some(change => change.before === 'NOT-A-RESOLUTION' && change.after === formatImageSizeLabel(option.request.resolution!)));
 });
 
 test('image advanced setting resets are disclosed before applying the same normalized values', () => {

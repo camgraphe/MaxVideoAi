@@ -3,7 +3,7 @@ import type { ImageGenerationMode } from '@/types/image-generation';
 import { clampRequestedImageCount, getAspectRatioOptions, getDefaultAspectRatio, getDefaultResolution, getImageFieldDefaultNumber, getImageFieldDefaultString, getImageFieldValues, getImageInputField, getReferenceConstraints, getResolutionOptions } from '@/lib/image/inputSchema';
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { PickerChange } from '@/components/ui/engine-select/model-picker-types';
-import { buildCustomImageSize, resolveSeedreamMaxOutputImages } from './image-workspace-utils';
+import { buildCustomImageSize, formatImageSizeLabel, formatQualityLabel, resolveSeedreamMaxOutputImages } from './image-workspace-utils';
 
 export type ImagePickerSettings = {
   mode: ImageGenerationMode; numImages: number; resolution: string | null; aspectRatio: string | null; quality: string | null;
@@ -45,12 +45,13 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
   const names = fr ? { outputFormat: 'Format du fichier', background: 'Arrière-plan', style: 'Style', thinkingLevel: 'Réflexion', seed: 'Graine', limitGenerations: 'Limiter les générations', watermark: 'Filigrane', customImageWidth: 'Largeur', customImageHeight: 'Hauteur', resolution: 'Résolution', aspectRatio: 'Format', quality: 'Qualité', enableWebSearch: 'Recherche web', numImages: 'Images' }
     : es ? { outputFormat: 'Formato del archivo', background: 'Fondo', style: 'Estilo', thinkingLevel: 'Razonamiento', seed: 'Semilla', limitGenerations: 'Limitar generaciones', watermark: 'Marca de agua', customImageWidth: 'Anchura', customImageHeight: 'Altura', resolution: 'Resolución', aspectRatio: 'Formato', quality: 'Calidad', enableWebSearch: 'Búsqueda web', numImages: 'Imágenes' }
     : { outputFormat: 'File format', background: 'Background', style: 'Style', thinkingLevel: 'Thinking', seed: 'Seed', limitGenerations: 'Limit generations', watermark: 'Watermark', customImageWidth: 'Width', customImageHeight: 'Height', resolution: 'Resolution', aspectRatio: 'Aspect ratio', quality: 'Quality', enableWebSearch: 'Web search', numImages: 'Images' };
-  const display = (value: unknown) => value == null ? '—' : typeof value === 'boolean' ? (value ? (fr ? 'Activée' : es ? 'Activada' : 'On') : (fr ? 'Désactivée' : es ? 'Desactivada' : 'Off')) : String(value);
-  const changes: PickerChange[] = (Object.keys(settings) as Array<keyof typeof settings>).flatMap(key => !Object.hasOwn(current, key) || settings[key] === current[key] || (['customImageWidth', 'customImageHeight'].includes(key) && current.resolution !== 'custom' && settings.resolution !== 'custom') ? [] : [{ label: names[key], before: display(current[key]), after: display(settings[key]) }]);
+  const display = (value: unknown, key: keyof typeof settings) => value == null ? '—' : typeof value === 'boolean' ? (value ? (fr ? 'Activée' : es ? 'Activada' : 'On') : (fr ? 'Désactivée' : es ? 'Desactivada' : 'Off'))
+    : key === 'resolution' ? formatImageSizeLabel(String(value)) : key === 'quality' ? formatQualityLabel(String(value)) : value === 'auto' ? 'Auto' : String(value);
+  const changes: PickerChange[] = (Object.keys(settings) as Array<keyof typeof settings>).flatMap(key => !Object.hasOwn(current, key) || settings[key] === current[key] || (['customImageWidth', 'customImageHeight'].includes(key) && current.resolution !== 'custom' && settings.resolution !== 'custom') ? [] : [{ label: names[key], before: display(current[key], key), after: display(settings[key], key) }]);
   return {
     settings, changes, disabledReason,
     priceUnavailableReason: missingSource ? (fr ? 'Ajoutez une image source pour estimer' : es ? 'Añade una imagen para estimar' : 'Add a source image to estimate') : undefined,
-    summary: [settings.resolution, settings.aspectRatio, `${settings.numImages} image${settings.numImages > 1 ? 's' : ''}`].filter(Boolean).join(' · '),
+    summary: [settings.resolution && formatImageSizeLabel(settings.resolution), settings.aspectRatio === 'auto' ? 'Auto' : settings.aspectRatio, `${settings.numImages} image${settings.numImages > 1 ? 's' : ''}`].filter(Boolean).join(' · '),
     request: { engineId: engine.id, mode, numImages: settings.numImages, resolution: settings.resolution ?? undefined, aspectRatio: settings.aspectRatio ?? undefined,
       quality: settings.quality ?? undefined, enableWebSearch: settings.enableWebSearch || undefined, referenceImageCount: current.referenceImageCount,
       referenceImageSizes: current.readyReferenceSizes.length ? current.readyReferenceSizes : undefined,

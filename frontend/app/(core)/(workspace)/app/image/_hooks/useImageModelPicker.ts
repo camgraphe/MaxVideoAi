@@ -7,6 +7,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { EnginePickerContext } from '@/components/ui/engine-select/model-picker-types';
 import type { PricingEstimateResponse } from '../_lib/image-workspace-types';
 import { prepareImagePickerOption, type ImagePickerSettings } from '../_lib/image-model-picker';
+import { formatImageSizeLabel } from '../_lib/image-workspace-utils';
 
 type Prepared = ReturnType<typeof prepareImagePickerOption>['settings'];
 export function useImageModelPicker({ engines, engineId, accountId, settings, apply }: {
@@ -28,7 +29,7 @@ export function useImageModelPicker({ engines, engineId, accountId, settings, ap
     },
   }]));
   const context: EnginePickerContext = { key: modelEstimateKey([accountId, engineId, settings]), scope: `image:${accountId ?? 'guest'}`,
-    label: [settings.mode === 'i2i' ? (locale === 'fr' ? 'Modifier une image' : locale === 'es' ? 'Editar imagen' : 'Edit image') : 'Image', settings.resolution, settings.aspectRatio, `×${settings.numImages}`].filter(Boolean).join(' · '),
+    label: [settings.mode === 'i2i' ? (locale === 'fr' ? 'Modifier une image' : locale === 'es' ? 'Editar imagen' : 'Edit image') : 'Image', settings.resolution && formatImageSizeLabel(settings.resolution), settings.aspectRatio === 'auto' ? 'Auto' : settings.aspectRatio, `×${settings.numImages}`].filter(Boolean).join(' · '),
     mode: settings.mode, options, onOpenChange: setOpen };
   return { context, select: (id: string) => { const next = prepared[id]; if (next && !next.disabledReason) apply(id, next.settings); } };
 }
