@@ -156,6 +156,7 @@ export function EngineSelect({
       )}
       aria-haspopup="dialog"
       aria-expanded={open}
+      aria-label={picker ? `${locale.startsWith('fr') ? 'Changer de modèle' : locale.startsWith('es') ? 'Cambiar modelo' : 'Change model'} : ${selectedMeta?.marketingName ?? selectedEngine.label}` : undefined}
     >
       <div className={clsx('flex min-w-0 items-center', controlPresentation === 'workspace' ? 'gap-2' : 'gap-4')}>
         <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
@@ -172,10 +173,10 @@ export function EngineSelect({
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
-        className={clsx('h-5 w-5 shrink-0 text-text-muted transition-transform', picker && 'rounded-full bg-[var(--app-accent)] p-0.5 text-[var(--on-brand)]', open && 'rotate-180')}
+        className={clsx('shrink-0 transition-transform', picker ? 'h-7 w-7 rounded-full bg-[var(--app-accent)] p-1 text-[var(--on-brand)]' : 'h-5 w-5 text-text-muted', open && 'rotate-180')}
         fill="none"
       >
-        <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={picker ? 'm5 7.5 5 5 5-5' : 'm6 8 4 4 4-4'} stroke="currentColor" strokeWidth={picker ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );

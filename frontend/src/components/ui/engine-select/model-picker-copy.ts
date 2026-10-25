@@ -5,7 +5,7 @@ const en = {
   back: 'Back to models', confirm: 'Confirm settings', before: 'Before applying', settings: 'Review the settings to apply. Your prompt and references are kept.',
   estimate: 'Estimate with these settings', priceNote: 'Estimates in USD. The final price is checked before generation.', pending: 'Estimating…', error: 'Price unavailable', retry: 'Retry prices',
   model: 'model', models: 'models', family: 'family', families: 'families', empty: 'No matching model', loading: 'Preparing options…', unavailable: 'Unavailable for this operation',
-  preserved: 'Applied only after confirmation.', changes: 'Settings to confirm', legacy: 'Older models', adjusted: 'Uses', supported: 'Supported operations', resolutions: 'Resolutions',
+  preserved: 'Click a model to use it.', changes: 'Settings apply with your chosen model.', legacy: 'Older models', adjusted: 'Uses', supported: 'Supported operations', resolutions: 'Resolutions',
 };
 const fr: typeof en = {
   priceBasis: 'Prix pour', effectiveSettings: 'Les réglages effectifs figurent sous chaque modèle.',
@@ -14,7 +14,7 @@ const fr: typeof en = {
   back: 'Revenir aux modèles', confirm: 'Confirmer les réglages', before: 'Avant d’appliquer', settings: 'Vérifiez les réglages à appliquer. Votre description et vos références sont conservées.',
   estimate: 'Estimation avec ces réglages', priceNote: 'Estimations en USD. Le prix final est vérifié avant génération.', pending: 'Estimation…', error: 'Prix indisponible', retry: 'Réessayer les prix',
   model: 'modèle', models: 'modèles', family: 'famille', families: 'familles', empty: 'Aucun modèle correspondant', loading: 'Préparation des options…', unavailable: 'Indisponible pour cette opération',
-  preserved: 'Choix appliqué uniquement après confirmation.', changes: 'Réglages à confirmer', legacy: 'Anciens modèles', adjusted: 'Avec', supported: 'Opérations disponibles', resolutions: 'Résolutions',
+  preserved: 'Cliquez sur un modèle pour l’utiliser.', changes: 'Réglages appliqués avec le modèle choisi.', legacy: 'Anciens modèles', adjusted: 'Avec', supported: 'Opérations disponibles', resolutions: 'Résolutions',
 };
 const es: typeof en = {
   priceBasis: 'Precios para', effectiveSettings: 'Cada modelo indica sus ajustes efectivos.',
@@ -23,7 +23,7 @@ const es: typeof en = {
   back: 'Volver a los modelos', confirm: 'Confirmar ajustes', before: 'Antes de aplicar', settings: 'Revisa los ajustes que se aplicarán. Se conservan tu descripción y tus referencias.',
   estimate: 'Estimación con estos ajustes', priceNote: 'Estimaciones en USD. Se verifica el precio final antes de generar.', pending: 'Estimando…', error: 'Precio no disponible', retry: 'Reintentar precios',
   model: 'modelo', models: 'modelos', family: 'familia', families: 'familias', empty: 'Ningún modelo coincide', loading: 'Preparando opciones…', unavailable: 'No disponible para esta operación',
-  preserved: 'Se aplica solo después de confirmar.', changes: 'Ajustes por confirmar', legacy: 'Modelos anteriores', adjusted: 'Con', supported: 'Operaciones disponibles', resolutions: 'Resoluciones',
+  preserved: 'Pulsa un modelo para usarlo.', changes: 'Los ajustes se aplican con el modelo elegido.', legacy: 'Modelos anteriores', adjusted: 'Con', supported: 'Operaciones disponibles', resolutions: 'Resoluciones',
 };
 export function modelPickerCopy(locale: string) { return locale.startsWith('fr') ? fr : locale.startsWith('es') ? es : en; }
 export type ModelPickerCopy = typeof en;

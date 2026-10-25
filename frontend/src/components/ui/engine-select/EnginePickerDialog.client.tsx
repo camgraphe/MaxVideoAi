@@ -37,7 +37,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId)).map(group => group.id)));
   const contextKey = context?.key ?? `${engineId}:${activeMode}`;
   const [draft, setDraft] = useState({ key: contextKey, id: engineId });
-  const [view, setView] = useState<'list' | 'detail' | 'confirm'>('list');
+  const [view, setView] = useState<'list' | 'detail'>('list');
   const [detailId, setDetailId] = useState<string | null>(null);
   const onOpenChange = useRef(context?.onOpenChange);
   onOpenChange.current = context?.onOpenChange;
@@ -59,8 +59,8 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const visibleIds = useVisiblePickerModels(bodyRef, renderedIds);
   const pricingIds = view === 'list' ? visibleIds : [view === 'detail' ? detailId ?? draft.id : draft.id];
   const requests: Record<string, PickerEstimateRequest> = {};
-  for (const id of pricingIds) { const request = context?.options[id]?.estimate; if (request) requests[id] = request; }
-  const pricing = useModelPickerEstimates(context?.scope ?? null, requests);
+  for (const [id, option] of Object.entries(context?.options ?? {})) { if (option.estimate) requests[id] = option.estimate; }
+  const pricing = useModelPickerEstimates(context?.scope ?? null, requests, pricingIds);
   const labels = (id: string) => registryMeta?.meta.get(id)?.marketingName ?? engines.find(engine => engine.id === id)?.label ?? id;
   const disabled = (id: string) => disabledEngineReasons?.[id] ?? context?.options[id]?.disabledReason
     ?? (context && !context.options[id] ? copy.loading : !context && !engines.find(engine => engine.id === id)?.modes.includes(activeMode) ? copy.unavailable : undefined);
@@ -80,10 +80,6 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   function apply(id = draft.id) {
     if (draft.key !== contextKey || !engines.some(engine => engine.id === id) || disabled(id)) return;
     if (id === engineId && !context?.hasChanges) { onClose(); return; }
-    if (view !== 'confirm' && context?.options[id]?.changes.length) {
-      if (view === 'list') returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 };
-      setDraft({ key: contextKey, id }); setView('confirm'); return;
-    }
     if (context?.onApply) { if (!context.onApply(id)) return; }
     else onSelect(id);
     onClose();
@@ -92,7 +88,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
     const engine = engines.find(item => item.id === id);
     return engine ? <EnginePickerRow key={id} engine={engine} label={labels(id)} option={context?.options[id]} chosen={draft.id === id} current={engineId === id}
       disabled={disabled(id)} quote={pricing.rows[id]} showPrice={Boolean(context)} locale={locale} copy={copy}
-      onChoose={() => setDraft({ key: contextKey, id })} onInspect={() => { returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 }; setDetailId(id); setView('detail'); }} /> : null;
+      onChoose={() => apply(id)} onInspect={() => { returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 }; setDetailId(id); setView('detail'); }} /> : null;
   };
   const hasError = Object.values(pricing.rows).some(value => value.error);
   return createPortal(<div className={`app-experience ${styles.backdrop}`} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
@@ -119,17 +115,16 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
           {searching && !filtered.length ? <p className={styles.empty}>{copy.empty}</p> : null}
         </> : displayEngine ? <div className={styles.details}>
           <button type="button" className={styles.back} onClick={back}><ArrowLeft size={16} />{copy.back}</button>
-          <div className={styles.detailTitle}><EngineIcon engine={displayEngine} size={36} /><div>{view === 'confirm' ? <small>{copy.before}</small> : null}<h3 ref={detailRef} tabIndex={-1}>{labels(displayEngine.id)}</h3></div></div>
-          {view === 'confirm' ? <><p>{copy.settings}</p><dl className={styles.changes}>{displayOption?.changes.map((change, index) => <div key={`${change.label}-${index}`}><dt>{change.label}</dt><dd><span>{change.before}</span><span aria-hidden="true">→</span><strong>{change.after}</strong></dd></div>)}</dl></>
-            : <><p>{displayOption?.summary || displayEngine.provider}</p><dl className={styles.changes}><div><dt>{copy.supported}</dt><dd>{displayEngine.modes.map(value => getModeLabel(displayEngine.id, value, locale)).join(' · ')}</dd></div><div><dt>{copy.resolutions}</dt><dd>{displayEngine.resolutions.join(' · ')}</dd></div></dl>{disabled(displayEngine.id) ? <p>{disabled(displayEngine.id)}</p> : null}</>}
+          <div className={styles.detailTitle}><EngineIcon engine={displayEngine} size={36} /><h3 ref={detailRef} tabIndex={-1}>{labels(displayEngine.id)}</h3></div>
+          <p>{displayOption?.summary || displayEngine.provider}</p><dl className={styles.changes}><div><dt>{copy.supported}</dt><dd>{displayEngine.modes.map(value => getModeLabel(displayEngine.id, value,locale)).join(' · ')}</dd></div><div><dt>{copy.resolutions}</dt><dd>{displayEngine.resolutions.join(' · ')}</dd></div></dl>{disabled(displayEngine.id) ? <p>{disabled(displayEngine.id)}</p> : null}
           {context ? <div className={styles.estimate}><span>{copy.estimate}</span><strong>{displayPrice ?? displayOption?.priceUnavailableReason ?? (pricing.rows[displayEngine.id]?.error ? copy.error : displayOption?.estimate ? copy.pending : '—')}</strong></div> : null}
           <p className={styles.note}>{context ? copy.priceNote : copy.preserved}</p>
         </div> : null}
       </div>
-      <footer className={styles.footer}><div><p>{view === 'confirm' || ((draft.id !== engineId || context?.hasChanges) && option?.changes.length) ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
+      <footer className={styles.footer}><div><p>{context?.hasChanges && option?.changes.length ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
         <button type="button" className={styles.apply} disabled={draft.key !== contextKey || Boolean(disabled(view === 'detail' ? detailId ?? draft.id : draft.id))}
           onClick={() => apply(view === 'detail' && detailId ? detailId : draft.id)}>
-          <span>{view === 'confirm' ? copy.confirm : `${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}</span><ArrowRight size={17} aria-hidden="true" />
+          <span>{`${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}</span><ArrowRight size={17} aria-hidden="true" />
         </button>
       </footer>
     </div>
