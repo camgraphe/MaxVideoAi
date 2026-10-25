@@ -16,7 +16,7 @@ export const imageThumbFallbackSelect = (jobAlias: string) => `
 `;
 
 export const videoOutputDimensionSelect = (jobAlias: string, column: 'width' | 'height') =>
-  `SELECT jo.${column} FROM job_outputs jo WHERE jo.job_id = ${jobAlias}.job_id AND jo.kind = 'video' AND jo.status <> 'deleted' AND jo.width IS NOT NULL AND jo.height IS NOT NULL ORDER BY jo.position ASC, jo.created_at ASC LIMIT 1`;
+  `SELECT COALESCE((to_jsonb(${jobAlias})->>'marketing_output_${column}')::integer, (SELECT jo.${column} FROM job_outputs jo WHERE jo.job_id = ${jobAlias}.job_id AND jo.kind = 'video' AND jo.status <> 'deleted' AND jo.width IS NOT NULL AND jo.height IS NOT NULL ORDER BY jo.position ASC, jo.created_at ASC LIMIT 1))`;
 
 export const BASE_SELECT = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
@@ -31,10 +31,16 @@ export const BASE_SELECT = `
   FROM app_jobs
 `;
 
+/** Only the single-video reuse reader needs the complete independent recipe. */
+export const BASE_SELECT_FOR_REUSE = BASE_SELECT.replace(
+  'FROM app_jobs',
+  ", to_jsonb(app_jobs)->'marketing_recreation_snapshot' AS recreation_snapshot FROM app_jobs",
+);
+
 export const BASE_SELECT_WITH_SETTINGS = `
   SELECT job_id, user_id, engine_id, engine_label, duration_sec, prompt,
          COALESCE(NULLIF(thumb_url, ''), (${imageThumbFallbackSelect('app_jobs')})) AS thumb_url,
-         video_url,
+         video_url, to_jsonb(app_jobs)->'marketing_recreation_snapshot' AS recreation_snapshot,
          to_jsonb(app_jobs)->>'preview_video_url' AS preview_video_url,
          to_jsonb(app_jobs)->'keyframe_urls' AS keyframe_urls,
          aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,

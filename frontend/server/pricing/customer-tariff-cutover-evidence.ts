@@ -7,6 +7,7 @@ import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import { SEEDANCE_LAS_INITIALIZATION_POLICY } from './seedance-las-authoring';
+import { newVideoTariffFamily } from '@/lib/pricing-audit/video-operation-tariff-inventory';
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -25,7 +26,8 @@ export function collectCustomerTariffCutoverCheckpoints() {
   const ordinary = [...new Map([...current, ...archived].map(scenario => [scenario.id, scenario])).values()];
   const currentStatus = (scenario: typeof ordinary[number]) => isSeedance25LasInputPricing(scenario.modelId, scenario.selector.mode)
     && scenario.context.resolution === '1080p' ? 'unavailable' as const : 'quoted' as const;
-  const rows = ordinary.map(scenario => ({ key: `ordinary:${scenario.id}`, kind: 'ordinary' as const, scenario, currentStatus: currentStatus(scenario) }));
+  const rows = ordinary.map(scenario => { const kind = newVideoTariffFamily(scenario.context) ? 'new_offer' as const : 'ordinary' as const;
+    return { key: `${kind}:${scenario.id}`, kind, scenario, currentStatus: currentStatus(scenario) }; });
   // Historical initial cutover owns only the original T2V stages. Multimodal
   // stages have their own fingerprinted clone-current-price initialization.
   const workflows = seedanceWorkflowScenarios(ordinary.filter(s => s.context.mode === 't2v'))
@@ -108,8 +110,8 @@ export function assertCustomerTariffCutoverRelease(release: CustomerTariffCutove
     }
     if (row.status) throw new Error('A supported current quote cannot be archived as unavailable.');
     if (typeof row.customerCents !== 'number' || !Number.isSafeInteger(row.customerCents) || row.customerCents < 0 || row.currency !== 'USD') throw new Error('Invalid candidate amount.');
-    if (scenario.kind === 'local_workflow') {
-      if (row.beforeCents !== null || changes.has(row.key)) throw new Error('Local workflow is a separate new offer.');
+    if (scenario.kind === 'local_workflow' || scenario.kind === 'new_offer') {
+      if (row.beforeCents !== null || changes.has(row.key)) throw new Error('An additive offer has no historical amount.');
       continue;
     }
     if (!Number.isSafeInteger(row.beforeCents) || row.beforeCents! < 0) throw new Error('Actual deployed baseline is incomplete.');

@@ -13,6 +13,7 @@ const engineAdvancedPath = join(root, 'frontend/components/settings-controls/set
 const advancedPanelPath = join(root, 'frontend/components/settings-controls/SettingsAdvancedPanel.tsx');
 const typesPath = join(root, 'frontend/components/settings-controls/settings-control-types.ts');
 const stateHookPath = join(root, 'frontend/components/settings-controls/useSettingsControlState.ts');
+const booleanChoicePath = join(root, 'frontend/components/settings-controls/SettingsBooleanChoice.tsx');
 
 const controlsSource = readFileSync(controlsPath, 'utf8');
 const partsSource = readFileSync(partsPath, 'utf8');
@@ -33,6 +34,7 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.ok(existsSync(advancedPanelPath), 'advanced panel rendering should live in a focused module');
   assert.ok(existsSync(typesPath), 'settings controls props contract should live in a focused module');
   assert.ok(existsSync(stateHookPath), 'settings control derived state should live in a focused hook');
+  assert.ok(existsSync(booleanChoicePath), 'boolean state presentation has one shared owner');
 
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
   assert.match(controlsSource, /from '@\/components\/settings-controls\/settings-control-duration'/);
@@ -43,6 +45,9 @@ test('settings controls delegates reusable control parts and duration helpers', 
   assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-generic-fields'/);
   assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-engine-advanced'/);
   assert.match(advancedPanelSource, /from '@\/components\/settings-controls\/settings-control-parts'/);
+  for (const source of [advancedPanelSource, engineAdvancedSource, genericFieldsSource]) {
+    assert.match(source, /<SettingsBooleanChoice\b/, 'advanced boolean choices share visual and accessibility state');
+  }
 });
 
 test('settings controls does not regain extracted ownership', () => {

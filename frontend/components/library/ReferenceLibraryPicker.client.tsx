@@ -7,6 +7,8 @@ import { compactMediaSource } from './media-action-copy';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { referencePickerCopy } from './reference-picker-copy';
 import type { AssetBrowserAsset, AssetLibraryBrowserProps } from './AssetLibraryBrowser';
+import type { MediaInputEligibility } from '@/lib/media-input-eligibility';
+import { mediaInputEligibilityMessage } from './media-input-eligibility-copy';
 
 export type ReferencePickerSelection = {
   scope: string;
@@ -15,6 +17,7 @@ export type ReferencePickerSelection = {
   onConfirm?: (asset: AssetBrowserAsset) => void | string | boolean | Promise<void | string | boolean>;
   selectedIds?: ReadonlySet<string>;
   isDisabled?: (asset: AssetBrowserAsset) => boolean;
+  getEligibility?: (asset: AssetBrowserAsset) => MediaInputEligibility;
   onToggle?: (asset: AssetBrowserAsset) => void;
 };
 
@@ -23,15 +26,20 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
   const { assets, selection, locale = 'en', source, sourceLabels, availableSources, onSourceChange, onClose, closeLabel, title, subtitle, headerActions, error, isLoading, emptyLabel, emptySearchLabel, renderAssetMeta, hasMore, isLoadingMore, loadMoreLabel = 'Load more', onLoadMore } = props;
   const copy = referencePickerCopy(locale);
   const [query, setQuery] = useState('');
+  const [compatibility, setCompatibility] = useState('compatible');
   const [chosen, setChosen] = useState<{ id: string; url: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const inFlight = useRef(false);
   const searchId = useId();
   const sourceId = useId();
+  const compatibilityId = useId();
   const busy = confirming || Boolean(selection.busy);
   const immediate = Boolean(selection.onToggle);
-  const filtered = assets.filter(asset => [asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
+  const eligibility = new Map(assets.map(asset => [asset, selection.getEligibility?.(asset)]));
+  const isDisabled = (asset: AssetBrowserAsset) => Boolean(selection.isDisabled?.(asset) || eligibility.get(asset)?.status === 'blocked');
+  const filtered = assets.filter(asset => (compatibility === 'all' || eligibility.get(asset)?.status !== 'blocked')
+    && [asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
   const selected = assets.find(asset => asset.id === chosen?.id && asset.url === chosen.url);
   const loadMoreControl = hasMore && onLoadMore ? <div className="flex flex-col items-center gap-2 pt-4">
     {query.trim() ? <p role="status" className="text-center text-xs text-text-secondary">{copy.searchMore}</p> : null}
@@ -41,7 +49,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
     if (chosen && !assets.some(asset => asset.id === chosen.id && asset.url === chosen.url)) setChosen(null);
   }, [assets, chosen]);
   const confirm = async () => {
-    if (!selected || isLoading || busy || inFlight.current || selection.isDisabled?.(selected)) return;
+    if (!selected || isLoading || busy || inFlight.current || isDisabled(selected)) return;
     inFlight.current = true;
     setConfirming(true);
     selection.onBusyChange?.(true);
@@ -68,6 +76,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
       <input id={searchId} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={copy.search} />
       <label htmlFor={sourceId} className="sr-only">{copy.source}</label>
       <select id={sourceId} value={source} onChange={event => onSourceChange(event.target.value as typeof source)}>{availableSources.map(option => <option key={option} value={option}>{compactMediaSource(option, locale, sourceLabels[option] ?? option)}</option>)}</select>
+      {selection.getEligibility ? <><label htmlFor={compatibilityId} className="sr-only">{copy.compatibility}</label><select id={compatibilityId} data-compatibility-filter value={compatibility} onChange={event => setCompatibility(event.target.value)}><option value="compatible">{copy.compatible}</option><option value="all">{copy.allMedia}</option></select></> : null}
       <div className="app-picker-import">{headerActions}</div>
     </fieldset>
     <div className="app-picker-body app-scroll-surface">
@@ -77,23 +86,26 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
         <div className="app-picker-grid">
           {filtered.map((asset, index) => {
             const active = immediate ? selection.selectedIds?.has(asset.id) : selected?.id === asset.id;
-            return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || selection.isDisabled?.(asset)}
+            const result = eligibility.get(asset);
+            const message = result ? mediaInputEligibilityMessage(result, locale) : null;
+            return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || isDisabled(asset)}
               aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
               onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
-              <span className="app-picker-cover">
-                {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
+              <span className="app-picker-cover" data-media-kind={asset.kind}>
+                {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbnailAccessUrl ?? asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
                 <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
               </span>
               <span className="app-picker-card-meta"><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>
+              {message ? <span className="px-2 pb-2 text-xs text-text-secondary">{message}</span> : null}
             </button>;
           })}
         </div>
         {loadMoreControl}
-      </> : <><p className="app-picker-empty">{query.trim() ? emptySearchLabel : emptyLabel}</p>{loadMoreControl}</>}
+      </> : <><p className="app-picker-empty">{query.trim() ? emptySearchLabel : selection.getEligibility && compatibility !== 'all' && assets.length > 0 ? copy.noCompatible : emptyLabel}</p>{loadMoreControl}</>}
     </div>
     <footer className="app-picker-footer">
       <div className="app-picker-selection" aria-live="polite">{immediate ? <span>{selection.selectedIds?.size ?? 0} · {copy.instant}</span> : selected ? <><span>{copy.selected} · {selected.width && selected.height ? `${selected.width} × ${selected.height}` : workspaceReferenceCopy(locale).kinds[selected.kind]}</span><button type="button" disabled={busy} onClick={() => setChosen(null)}>{copy.clear}</button></> : <span>{copy.empty}</span>}</div>
-      <div className="app-picker-footer-actions"><button type="button" disabled={busy} onClick={onClose}>{immediate ? copy.done : copy.cancel}</button>{!immediate ? <button type="button" className="app-picker-use" disabled={!selected || busy || isLoading || selection.isDisabled?.(selected)} onClick={() => void confirm()}>{busy ? copy.busy : copy.use}</button> : null}</div>
+      <div className="app-picker-footer-actions"><button type="button" disabled={busy} onClick={onClose}>{immediate ? copy.done : copy.cancel}</button>{!immediate ? <button type="button" className="app-picker-use" disabled={!selected || busy || isLoading || isDisabled(selected)} onClick={() => void confirm()}>{busy ? copy.busy : copy.use}</button> : null}</div>
     </footer>
   </div>;
 }

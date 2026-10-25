@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
@@ -10,6 +10,7 @@ import { useImageWorkspaceDisplayState } from './_hooks/useImageWorkspaceDisplay
 import { useImageGallerySelection } from './_hooks/useImageGallerySelection';
 import { useImageGenerationRunner } from './_hooks/useImageGenerationRunner';
 import { useImageWorkspaceHistory } from './_hooks/useImageWorkspaceHistory';
+import { useImageModelPicker } from './_hooks/useImageModelPicker';
 import { useImageWorkspacePricing } from './_hooks/useImageWorkspacePricing';
 import { useImageSettingsFields } from './_hooks/useImageSettingsFields';
 import { useImageWorkspaceDesktopLayout } from './_hooks/useImageWorkspaceDesktopLayout';
@@ -398,8 +399,17 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     supportsCharacterReferences,
   });
+  const pickerSettings = useMemo(() => ({ mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, seed, limitGenerations, watermark,
+    referenceIndices: displayedReferenceSlots.flatMap((slot, index) => slot ? [index] : []),
+    customImageWidth, customImageHeight, referenceImageCount: combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes }),
+    [mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, seed, limitGenerations, watermark, displayedReferenceSlots, customImageWidth, customImageHeight, combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes]);
+  const modelPicker = useImageModelPicker({ engines: engineCapsList, engineId, accountId, settings: pickerSettings,
+    apply: (id, settings) => { setEngineId(id); setResolution(settings.resolution); setAspectRatio(settings.aspectRatio);
+      setQuality(settings.quality); setEnableWebSearch(settings.enableWebSearch); setNumImages(settings.numImages); setOutputFormat(settings.outputFormat); setBackground(settings.background); setStyle(settings.style);
+      setThinkingLevel(settings.thinkingLevel); setSeed(settings.seed); setLimitGenerations(settings.limitGenerations); setWatermark(settings.watermark);
+      setCustomImageWidth(settings.customImageWidth); setCustomImageHeight(settings.customImageHeight); } });
   const composerActionProps = guardComposerActions({
-    setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId,
+    setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId: modelPicker.select,
     setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
     setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setWatermark,
     handleEditSelectedPreview, handleReferenceFile, handleReferenceUrl, handleRemoveReferenceSlot, handleRun,
@@ -447,6 +457,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               copiedUrl={copiedUrl}
               currency={estimatedCostCurrency}
               engineCapsList={engineCapsList}
+              modelPicker={modelPicker.context}
               estimatedCostAmount={estimatedCostAmount}
               handleAddToLibrary={handleAddToLibrary}
               handleCopy={handleCopy}

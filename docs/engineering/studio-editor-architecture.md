@@ -1,10 +1,71 @@
 # Studio architecture
 
+## Source continuity correction — 22 October 2026 candidate
+
+Full-source `assemble` clips may omit or pass null for `startFrame` and
+`durationFrames`. The existing revisioned command owner derives consecutive
+visual positions and floors the remaining measured source duration to whole
+sequence frames; images retain the five-second default and audio layers from
+zero. Explicit excerpt frames retain their existing meaning. Qualification,
+atomic receipts, ownership, manual revisions and track locks remain authoritative.
+For an original plus a separately delivered continuation, assemble both once;
+when the original is already on the timeline, append only the continuation.
+Generation completion alone does not establish an assembled sequence or MP4.
+
+For continuation-only extension modes, preparation freezes a deterministic
+assembly plan before quoting: sequence/revision, original identity, original
+URL/type/MIME hash, measured duration and known size facts. Legacy approximate
+durations do not masquerade as measured facts; qualification can refine them.
+The mode capability
+`extensionOutput: continuation` currently certifies Wan 3 only, based on the
+reviewed original and separate five-second production continuation. Other modes
+retain explicit assembly. A whole original at the correct sequence boundary is
+kept once; trimmed, displaced or ambiguous edits decline automatic planning.
+The director sets `assembleExtension: false` for an explicit continuation-only
+request or a request to leave the timeline alone; that choice persists in the draft.
+
+After an explicitly confirmed generation completes, the conversation hook calls
+the same-origin extension POST with only the turn request ID. The server derives
+the accepted quote and ready output from the account/project, then applies the
+canonical idempotent command. Original validation repeats under source/project
+locks after any qualification retry. A changed original or project revision
+blocks assembly. A completed job may precede its output projection: only the
+explicit retryable not-ready state retries, with five bounded delays totaling
+56 seconds. Other failures expose a manual retry or ask for a fresh source/edit
+review. Reopening the conversation resumes a pending plan; GET remains read-only.
+No extra assistant call, generation or charge is made, and MP4 export stays gated.
+
+Studio pricing accepts the same exact ready project-output references as video
+preparation. Read-only pricing aliases resolve through current project and media
+ownership checks without promoting outputs or writing library copies. Attached
+library assets still require attachment. The aliases are pricing-local and never
+become saved generation references. Confirmation continues through the canonical
+owned-asset generation boundary. Quote cards distinguish new text generation,
+source-guided regeneration and extension; director guidance must not substitute
+text-only creation for a failed source edit without agreement.
+
+Local qualification covers the one-request quote/confirmation/completion flow,
+five-second original/continuation assembly, fractional source boundaries,
+source replacement during qualification, manual revision conflicts, receipt
+replay, delayed output readiness, account isolation and project-output pricing
+without library writes. Production deployment and live assistant qualification
+are separate from these deterministic checks.
+
 The isolated 2026-10-06 task-budget candidate is documented in [Studio task budgets](studio-task-budgets.md); this link does not establish production activation.
 
 Reviewed 2026-10-05. Studio has one public conversational interface. The private React Flow Canvas, its templates and local-only project management were retired at the owner's request. Its personal saved projects are deleted without migration; current chats and MCP montages remain supported.
 
 ## Public presentation and current availability
+
+Studio presents its assistant as **Milo**. The composer’s Standard / Max controls
+open the existing assistance review dialog: Standard maps to `gpt-6-luna` and Max
+to `gpt-6.1-sol`. The information button opens settings and credits; technical
+model names remain available in pricing details. These are presentation names,
+not new model identities, task profiles, defaults or financial policy versions.
+Opening a mode does not select it, enable purchased usage or buy credits. Those
+actions retain their explicit confirmations and revision checks. Welcome starters
+only fill an editable draft; reference selection and media-side tools keep their
+existing behavior.
 
 The owner approved removing Studio's beta presentation on 2026-10-05. Marketing and navigation present Studio's creative conversation, image/video/audio creation, references, timeline editing and individual original-media access. Keep Sol/Luna assistance and media-generation quotes distinct, with their existing explicit spending confirmations. The production check at 2026-10-05T13:18:40Z confirmed assistance enabled under `studio-credits-2026-10-05-v2`: included monthly Sol credits precede purchased cumulative packs from the wallet; Luna has no monthly quota and retains request limits and sponsored availability. Marketing uses these current terms without hardcoded tariffs. The legacy one-time allowance uses introductory wording only when historical policy renders that interface; its frozen contracts remain unchanged. See [Studio assistance economics](studio-assistance-economics.md).
 
@@ -282,3 +343,49 @@ unknown acceptance is never retried: status reports `needsAttention`, and durabl
 reconciliation refunds once after one hour while retaining its audit. Temporary
 provider audio is cleaned after terminal state; owned sequence source audio remains
 available with the document. Apply migrations 70/72/73 explicitly before release.
+
+
+### Modify and Extend capability parity (23 October 2026 candidate)
+
+Studio's visual capability details project canonical per-mode settings, duration
+policy, reference capacities and extension output semantics. The shared attachment
+transport ceiling is 66; it does not replace individual model/role or combined
+reference limits. Image-generation selection retains its existing limit. Do not
+reintroduce a blanket eight-reference clamp for Modify/Extend. Their request paths
+retain owned attachment identity and canonical validation/quote approval.
+
+Recognizable-person notes for Seedance come from `video-workflow-capabilities.ts`
+and render on the quote card in its locale. They remain informational, including
+on Extend, and must not disable the paid confirmation control. Model-discovery
+notes let Studio mention the restriction before preparing a quote. Modify owner
+preferences carry their single-trial scope in mode details; Extend has no inherited
+quality ranking.
+
+## Mobile conversation space — 2026-10-25
+
+Authenticated conversation routes use the route-local `studio-mobile.module.css`
+shell below 768px. The existing app-menu trigger shares the Studio heading;
+its full menu retains navigation, connections, preferences and wallet access.
+The surrounding header actions and bottom navigation are hidden only within
+that shell. Desktop and guest entry retain their existing layouts.
+
+`useStudioMobileLayout` owns the mobile breakpoint subscription and visual viewport
+height/offset for the iPhone keyboard, with listener/style cleanup on exit. It
+does not reflow the shell during pinch zoom. The composer remains 16px on mobile
+and bounds its height against the visible viewport.
+
+`ConversationMobilePanel` presents the existing reference shelf and film timeline
+in native modal sheets on mobile, with Escape and trigger-focus restoration.
+The same dialog becomes a nonmodal presentation wrapper with `display: contents`
+on desktop. Its subtree remains mounted across breakpoints so a retained insertion
+cannot replay after rotation or resizing. The film stays mounted
+while its sheet is closed, but `ConversationTimeline.visible` stops playback and
+closes the monitor. Reference IDs, attachment session storage, preview grants,
+timeline persistence, generation confirmation and assistance policy stay with
+their existing owners. The references trigger counts attachments to the next
+message, not all historic shelf media.
+
+Mobile completed task receipts can expand from their summary; consumed credits
+remain in that summary. Tasks with errors, reserved credits or recovery actions
+retain the full presentation. Milo's compact mode trigger opens the existing
+settings/credits dialog without changing the selected model.

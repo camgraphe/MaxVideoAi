@@ -40,7 +40,7 @@ test('exact model inspection is scoped, gated, non-spending and shares canonical
     assert.deepEqual(mode.duration,canonical.duration);
     assert.deepEqual(mode.resolutions,canonical.resolutions);
     assert.deepEqual(mode.settings,canonical.settings.filter(setting=>setting.type!=='multi_prompt'&&!['documentUrl','webpageUrl'].includes(setting.key)));
-    assert.deepEqual(mode.references,canonical.references.map(reference=>({...reference,max: Math.min(reference.max ?? 8,8)})));
+    assert.deepEqual(mode.references,['v2v','extend'].includes(mode.mode)?canonical.references:canonical.references.map(reference=>({...reference,max: Math.min(reference.max ?? 8,8)})));
     assert.ok(mode.settings.every(setting=>!['documentUrl','webpageUrl'].includes(setting.key)),'The model cannot supply external media URLs.');
   }
   assert.deepEqual(details.data.guidance,getAgentModelGuidance('wan-3'));

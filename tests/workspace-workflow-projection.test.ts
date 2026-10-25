@@ -14,8 +14,9 @@ function asset(fieldId: string, kind: ReferenceAsset['kind'], durationSec?: numb
     url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}`, status: 'ready', durationSec };
 }
 function live(id: string, inputAssets: Record<string, (ReferenceAsset | null)[]> = {}, patch: Partial<FormState> = {}, klingElements: KlingElementState[] = [], onFormChange?: (form: FormState | null) => void) {
-  const engine = listFalEngines().find((entry) => entry.id === id)?.engine;
-  assert.ok(engine, id);
+  const entry = listFalEngines().find((entry) => entry.id === id);
+  assert.ok(entry, id);
+  const engine = { ...entry.engine, modeCaps: Object.fromEntries(entry.modes.map(({ mode, ui }) => [mode, ui])) };
   const form: FormState = { engineId: id, mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: true, extraInputValues: {}, ...patch };
   let result: ReturnType<typeof useWorkspaceComposerState> | undefined;
   function Harness() {
@@ -76,13 +77,21 @@ test('live Veo first/last promotion preserves implicit i2v and submits fl2v', ()
   assert.equal(result.submissionMode, 'fl2v');
 });
 
-test('live Kling O3 subjects choose reference mode and video sources control effective duration', () => {
+test('live Kling O3 subjects choose reference mode and Modify preserves the requested output duration', () => {
   const subject = { id: 'subject', frontal: asset('frontal', 'image'), references: [], video: null } as KlingElementState;
   assert.equal(live('kling-o3-pro', {}, {}, [subject]).submissionMode, 'ref2v');
   const source = live('kling-o3-pro', { video_url: [asset('video_url', 'video', 7.2)] });
   assert.equal(source.submissionMode, 'v2v');
-  assert.equal(source.effectiveDurationSec, 8);
-  assert.ok(live('kling-o3-4k', { video_url: [asset('video_url', 'video', 7.2)] }).klingO3UnsupportedVideoReason);
+  assert.equal(source.effectiveDurationSec, 5);
+  for (const id of ['kling-o3-standard', 'kling-o3-pro']) {
+    for (const durationSec of [3, 6, 15]) {
+      assert.equal(live(id, { video_url: [asset('video_url', 'video', 5.558333)] }, { durationSec }).effectiveDurationSec, durationSec);
+    }
+  }
+  const fourK = live('kling-o3-4k', { video_url: [asset('video_url', 'video', 7.2)] });
+  assert.equal(fourK.klingO3UnsupportedVideoReason, null);
+  assert.equal(fourK.submissionMode, 'v2v');
+  assert.equal(fourK.effectiveDurationSec, 5);
 });
 
 test('live LTX preserves manual retake and derives a2v duration from rounded source audio', () => {
@@ -127,4 +136,25 @@ test('pure composer facts preserve current Kling multi-prompt and voice behavior
   const turbo = listFalEngines().find((entry) => entry.id === 'kling-3-turbo-pro')!.engine;
   const turboWorkflow = resolveWorkspaceWorkflow({ engine: turbo, form: { ...form, engineId: turbo.id }, inputAssets: {}, klingElements: [] });
   assert.equal(turboWorkflow.supportsKlingV3Controls, false, 'schema multi-prompt availability must not expand existing family controls');
+});
+
+test('Ray 3.2 Reframe keeps selected output duration while Modify inherits source timing', () => {
+  const engine = listFalEngines().find(entry => entry.id === 'luma-ray-3-2')!.engine;
+  for (const [submissionMode, expected] of [['reframe', 10], ['v2v', 8]] as const) {
+    const facts = resolveWorkspaceComposerFacts({ engine, form: { durationSec: 10 } as FormState,
+      workflow: { submissionMode, supportsKlingV3Controls: false, supportsKlingV3VoiceControl: false,
+        primaryAudioDurationSec: null, primaryVideoDurationSec: 8 }, prompt: 'Change the room',
+      multiPromptEnabled: false, multiPromptScenes: [], voiceIdsInput: '' });
+    assert.equal(facts.effectiveDurationSec, expected);
+  }
+});
+
+test('Seedance 2.0 Modify keeps the full requested output duration independently of the source', () => {
+  for (const id of ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini']) {
+    for (const durationSec of [4, 6, 15]) {
+      const result = live(id, { video_url: [asset('video_url', 'video', 5.558333)] }, { mode: 'v2v', durationSec });
+      assert.equal(result.submissionMode, 'v2v');
+      assert.equal(result.effectiveDurationSec, durationSec, id);
+    }
+  }
 });

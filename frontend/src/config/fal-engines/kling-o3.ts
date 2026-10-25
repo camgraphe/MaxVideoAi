@@ -1,3 +1,4 @@
+import { buildKlingOperationCaps } from '../../../lib/video-operation';
 import type { EngineCaps, Resolution } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
@@ -12,6 +13,7 @@ type KlingO3Tier = {
   versionLabel: string;
   variantLabel: string;
   resolution: Resolution;
+  modifyResolution?: Resolution;
   basePerSecondCents: number;
   audioOffDiscountCents?: number;
   referenceImageLimit: number;
@@ -30,6 +32,7 @@ const TIERS: KlingO3Tier[] = [
     versionLabel: '3.0 Omni Standard',
     variantLabel: 'Standard',
     resolution: '1080p',
+    modifyResolution: '720p',
     basePerSecondCents: 12.6,
     audioOffDiscountCents: -4.2,
     referenceImageLimit: 4,
@@ -67,6 +70,7 @@ const TIERS: KlingO3Tier[] = [
     variantLabel: '4K',
     resolution: '4k',
     basePerSecondCents: 42,
+    videoInputPerSecondCents: 42,
     referenceImageLimit: 7,
     defaultModelSlug: 'fal-ai/kling-video/o3/4k/text-to-video',
     mediaVideoUrl:
@@ -100,6 +104,8 @@ function buildPricingNotes(tier: KlingO3Tier) {
 
 function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
   const hasVideoToVideo = supportsVideoToVideo(tier);
+  const modifyResolution = tier.modifyResolution ?? tier.resolution;
+  const resolutions = [...new Set([tier.resolution, ...(hasVideoToVideo ? [modifyResolution] : [])])];
   return {
     id: tier.id,
     label: tier.label,
@@ -111,6 +117,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
     region: 'global',
     modes: hasVideoToVideo ? ['t2v', 'i2v', 'ref2v', 'v2v'] : ['t2v', 'i2v', 'ref2v'],
     maxDurationSec: 15,
+    // Model-wide defaults describe generation; Modify has its own mode resolution.
     resolutions: [tier.resolution],
     aspectRatios: [...KLING_O3_ASPECT_RATIOS],
     fps: [24],
@@ -125,7 +132,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
       ...(hasVideoToVideo
         ? {
             videoMaxMB: 200,
-            videoMaxDurationSec: 10,
+            videoMaxDurationSec: tier.id === 'kling-o3-4k' ? 15 : 10,
             videoCodecs: ['mp4', 'mov'],
           }
         : {}),
@@ -164,7 +171,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
                 maxCount: 1,
                 source: 'either' as const,
                 minDurationSec: 3,
-                maxDurationSec: 10,
+                maxDurationSec: tier.id === 'kling-o3-4k' ? 15 : 10,
               },
             ]
           : []),
@@ -176,12 +183,14 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
           label: 'Reference / storyboard images',
           description:
             'Reference images guide style, appearance, storyboard direction, or video-edit styling without forcing the first image to appear as the opening frame. Refer to them as @Image1, @Image2, etc.',
-          modes: hasVideoToVideo ? ['ref2v', 'v2v'] : ['ref2v'],
+          modes: hasVideoToVideo && tier.id !== 'kling-o3-4k' ? ['ref2v', 'v2v'] : ['ref2v'],
           minCount: 0,
           maxCount: tier.referenceImageLimit,
           source: 'either',
           slotLabelPattern: '@Image{n}',
         },
+        ...(tier.id === 'kling-o3-4k' ? [{ id: 'image_urls', type: 'image' as const, label: 'Reference images',
+          modes: ['v2v' as const], minCount: 0, maxCount: 4, source: 'either' as const, slotLabelPattern: '@Image{n}' }] : []),
         {
           id: 'start_image_url',
           type: 'image',
@@ -214,7 +223,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
           id: 'resolution',
           type: 'enum',
           label: 'Resolution',
-          values: [tier.resolution],
+          values: resolutions,
           default: tier.resolution,
         },
         {
@@ -260,6 +269,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
         default: tier.basePerSecondCents,
         byResolution: {
           [tier.resolution]: tier.basePerSecondCents,
+          ...(hasVideoToVideo ? { [modifyResolution]: tier.basePerSecondCents } : {}),
         },
       },
       addons: tier.audioOffDiscountCents
@@ -275,6 +285,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
       base: Number((tier.basePerSecondCents / 100).toFixed(3)),
       byResolution: {
         [tier.resolution]: Number((tier.basePerSecondCents / 100).toFixed(3)),
+        ...(hasVideoToVideo ? { [modifyResolution]: Number((tier.basePerSecondCents / 100).toFixed(3)) } : {}),
       },
       currency: 'USD',
       notes: buildPricingNotes(tier),
@@ -324,13 +335,14 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
             v2v: {
               modes: ['v2v'] as const,
               duration: { options: [...KLING_O3_DURATION_OPTIONS], default: 5 },
-              resolution: [tier.resolution],
+              durationPolicy: 'requested' as const,
+              resolution: [modifyResolution],
               resolutionLocked: true,
               aspectRatio: [...KLING_O3_ASPECT_RATIOS],
               maxUploadMB: 200,
               audioToggle: false,
               notes:
-                'Video-to-video reference/edit workflow from one 3-10s source clip, optional @Image references, Kling Elements, and keep-audio control.',
+                `Video-to-video Reference workflow from one ${tier.id === 'kling-o3-4k' ? '3-15s' : '3-10s'} source clip, optional @Image references, Kling Elements, and keep-audio control.`,
             },
           }
         : {}),
@@ -340,6 +352,7 @@ function buildKlingO3Engine(tier: KlingO3Tier): EngineCaps {
 
 function buildKlingO3RegistryEntry(tier: KlingO3Tier): RawFalEngineEntry {
   const engine = buildKlingO3Engine(tier);
+  engine.operationCaps = buildKlingOperationCaps(engine);
   return {
     id: tier.id,
     marketingName: tier.label,

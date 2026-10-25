@@ -418,4 +418,31 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.deepEqual(await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false}),{...disabledPage,related:[]});
   });
 
+  await t.test('ready marketing publication retains catalog order, approved watch slug and editorial output after deleting its source', async () => {
+    const previousFlag = process.env.MARKETING_MEDIA_ENABLED;
+    try {
+      await postgres.pool.query(readFileSync('neon/migrations/78_marketing_media.sql', 'utf8'));
+      await postgres.pool.query("UPDATE video_seo_pages SET seo_status='approved' WHERE video_id='kling-21'");
+      const beforePage = await reader.getVideoWatchPageDataById('kling-dance-film', {includeRelated:false});
+      const beforeCatalog = await reader.listExamplesPage({sort:'date-desc',limit:24,offset:0});
+      await postgres.pool.query(`INSERT INTO marketing_media(video_id,copy_id,state,source_fingerprint,source_snapshot,source_record,publication,recreation_snapshot,attempt_id,copied_by)
+        SELECT job_id,gen_random_uuid(),'ready','fixture','{}','{}',to_jsonb(j)||jsonb_build_object('user_id',NULL,'video_url','https://media.maxvideoai.com/marketing-media/site-copy.mp4'),
+        jsonb_build_object('schemaVersion',1,'surface','video','engineId',engine_id,'inputMode','t2v','prompt',prompt,'core','{}'::jsonb,'refs','{}'::jsonb),gen_random_uuid(),'admin'
+        FROM app_jobs j WHERE job_id='kling-21'`);
+      process.env.MARKETING_MEDIA_ENABLED='1';
+      await postgres.pool.query("DELETE FROM app_jobs WHERE job_id='kling-21'");
+      const afterPage = await reader.getVideoWatchPageDataById('kling-dance-film', {includeRelated:false});
+      const afterCatalog = await reader.listExamplesPage({sort:'date-desc',limit:24,offset:0});
+      assert.equal(afterPage?.isEligible,beforePage?.isEligible);
+      assert.equal(afterPage?.video.id,'kling-21');
+      assert.equal(afterPage?.signals.title,beforePage?.signals.title);
+      assert.equal(afterPage?.entry.canonicalSlug,beforePage?.entry.canonicalSlug);
+      assert.equal((await reader.getExampleWatchDetail('kling-21')).watchHref,'/video/kling-dance-film');
+      assert.equal(afterCatalog.total,beforeCatalog.total);
+      assert.deepEqual(afterCatalog.items.map((video:any)=>video.id),beforeCatalog.items.map((video:any)=>video.id));
+    } finally {
+      if(previousFlag===undefined)delete process.env.MARKETING_MEDIA_ENABLED;else process.env.MARKETING_MEDIA_ENABLED=previousFlag;
+    }
+  });
+
 });

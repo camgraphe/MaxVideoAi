@@ -402,3 +402,13 @@ test('Luma Ray 3.2 snapshot rejects missing or unsupported public pricing dimens
     /Luma Ray 3.2 supports 540p, 720p, or 1080p/
   );
 });
+
+
+test('Modify retail reference scales its source tariff class without changing existing 5s and 10s amounts', async () => {
+  for (const [durationSec, baseCents] of [[5, 108], [6, 130], [9, 195], [10, 216], [18, 389]]) {
+    const snapshot = await computePricingSnapshot({ engine: getEngine('luma-ray-3-2'), mode: 'v2v',
+      durationSec, durationOption: '5s', resolution: '720p', currency: 'USD' });
+    assert.equal(snapshot.base.amountCents, baseCents);
+    assert.equal(snapshot.base.seconds, durationSec);
+  }
+});

@@ -33,13 +33,14 @@ test('Studio rejects ambiguous prompts, fractional shots, mismatching totals and
 
 test('Studio preserves seven image subjects using fourteen owned ready outputs without enlarging the chat attachment pool',async()=>{
  const {imageTurnInputSchema}=await import('../frontend/src/lib/studio/image-conversation-contract');
+ const {STUDIO_CONVERSATION_MAX_ATTACHMENTS}=await import('../frontend/lib/studio/conversation-creation-contract');
  const outputs=Array.from({length:14},(_,index)=>({type:'job-output' as const,kind:'image' as const,jobId:'job',outputId:String(index)}));
  const assetId=(index:number)=>'ma_'+index.toString(16).padStart(32,'0');
  const url=(index:number)=>`https://media.example/subject-${index}.png`;
  const sourceIndex=(ref:typeof outputs[number]|{type:'asset';assetId:string})=>ref.type==='asset'?parseInt(ref.assetId.slice(3),16):Number(ref.outputId);
  const selected={...action,prompt:'Seven actors meet',shotPlan:null,mode:'ref2v',references:outputs.map(ref=>({ref,role:'reference',slot:null})),subjects:Array.from({length:7},(_,i)=>({kind:'image',frontalReferenceSlot:i*2,referenceSlots:[i*2+1]}))};
  assert.equal(studioVideoActionSchema.safeParse(selected).success,true);
- assert.equal(imageTurnInputSchema.safeParse({...input,references:outputs.map((_,i)=>assetId(i))}).success,false);
+ assert.equal(imageTurnInputSchema.safeParse({...input,references:Array.from({length:STUDIO_CONVERSATION_MAX_ATTACHMENTS+1},(_,i)=>assetId(i))}).success,false);
  const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface!=='audio');
  assert.equal(details.maxReferences,39);assert.deepEqual(details.subjectReferenceAllowance,{attachedPoolLimit:10,maxSelectedReferences:50,additionalSource:'ready_project_outputs'});
  const request=await studioMediaRequest(actor,selected as never,input,factories,true,{

@@ -20,6 +20,7 @@ import { customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/li
 type PrimitiveValue = string | number | boolean | null | undefined;
 
 type GeneratePayload = {
+  operation?: import('@/lib/video-operation').VideoOperation;
   jobId?: string;
   seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engineId: string;
@@ -119,10 +120,11 @@ function toPrimitiveArray(value: unknown): PrimitiveValue[] | undefined {
 
 export async function runPreflight(
   payload: PreflightRequest,
-  options?: { accessToken?: string | null },
+  options?: { accessToken?: string | null; signal?: AbortSignal },
 ): Promise<PreflightResponse> {
   const response = await authFetch('/api/preflight', {
     method: 'POST',
+    signal: options?.signal,
     headers: {
       'Content-Type': 'application/json',
       ...(options?.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),

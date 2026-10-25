@@ -196,7 +196,7 @@ test("a completed creation stays ready while Studio answers another message", as
   try {
     const text = view.dom.window.document.body.textContent ?? "";
     assert.match(text, /Creation ready/);
-    assert.doesNotMatch(text, /Studio is working/);
+    assert.doesNotMatch(text, /Milo is working/);
     assert.equal(buttonMatching(view.dom.window.document, /Create|Renew|Retry/i), null);
   } finally { await view.close(); }
 });
@@ -347,3 +347,23 @@ test("local QA with sufficient test funds labels the balance without implying a 
     await view.close();
   }
 });
+
+for (const mode of ['v2v', 'extend'] as const) for (const locale of ['fr', 'en'] as const) {
+  test(`Seedance ${mode} quote shows a localized advisory without blocking confirmation (${locale})`, async () => {
+    const turn = makeTurn({ modelLabel: 'Seedance 2.5', summary: {
+      ...quote.summary, surface: 'video', engineId: 'seedance-2-5', mode,
+      settings: { durationSec: 6, resolution: '720p', aspectRatio: '9:16' },
+    } });
+    const view = await mountCard({ turn, locale });
+    try {
+      const doc = view.dom.window.document;
+      assert.match(doc.querySelector('[role="note"]')?.textContent ?? '',
+        locale === 'fr' ? /personne reconnaissable/ : /recognizable person/);
+      const create = buttonMatching(doc, /Créer la vidéo|Create video|Prolonger le clip|Extend clip/i);
+      assert.ok(create);
+      assert.equal(create.disabled, false);
+      await act(async () => create.click());
+      assert.equal(view.confirms, 1);
+    } finally { await view.close(); }
+  });
+}

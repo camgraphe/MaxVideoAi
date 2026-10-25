@@ -7,11 +7,11 @@ import { useMemo } from 'react';
 import { useSeedanceDraftLocalPreview } from '../_hooks/useSeedanceDraftLocalPreview';
 import { SeedanceDraftLocalPreviewResult } from './SeedanceDraftLocalPreviewResult.client';
 import dynamic from 'next/dynamic';
-import { WorkspaceComparisonSettings } from './WorkspaceComparisonSettings';
 import type { useWorkspaceDraftHydration } from '../_hooks/useWorkspaceDraftHydration';
 import { WorkspaceActiveDraftStatus } from './WorkspaceActiveDraftStatus';
 import { useWorkspaceModelReview } from '../_hooks/useWorkspaceModelReview';
 import { WorkspaceModelReviewCommands } from './WorkspaceModelReviewCommands';
+import { useWorkspaceModelPicker } from '../_hooks/useWorkspaceModelPicker';
 import { WorkspaceAppShell } from './WorkspaceAppShell';
 import { WorkspaceRecentReferences } from './WorkspaceRecentReferences.client';
 import { getKlingO3AssetState, supportsKlingO3VideoToVideo } from '../_lib/kling-o3-unified-workflow';
@@ -90,6 +90,8 @@ export function WorkspaceAppReadyView({
     fetchAssetLibrary,
     loadMoreAssetLibrary,
     handleAssetAdd,
+    handlePrepareVideoExcerpt,
+    handleVideoExcerptEditorChange,
     handleAssetLibrarySourceChange,
     handleAssetRemove,
     handleDeleteLibraryAsset,
@@ -100,7 +102,9 @@ export function WorkspaceAppReadyView({
     handleOpenAssetLibrary,
     handleOpenKlingAssetLibrary,
     handleSelectKlingLibraryAsset,
+    handleImportKlingLibraryFile,
     handleSelectLibraryAsset,
+    handleImportLibraryFile,
     inputAssets,
     isAssetLibraryLoading,
     isAssetLibraryLoadingMore,
@@ -246,6 +250,9 @@ export function WorkspaceAppReadyView({
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,
   });
+  const modelPicker = useWorkspaceModelPicker({ applyScenario: modelReview.applyPickerScenario, current: currentSetup, engines, locale: uiLocale, memberTier: routeForm.memberTier,
+    accountId: app.authStatus === 'authed' ? app.user?.id ?? null : null,
+    accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null, disabledEngineReasons: modelReview.selectorDisabledReasons });
   const draftPreview = useSeedanceDraftLocalPreview({
     enabled: localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
@@ -310,15 +317,16 @@ export function WorkspaceAppReadyView({
         activeMode={activeMode}
         engineModeOptions={engineModeOptions}
         modeLabelLocale={uiLocale}
-        handleEngineChange={modelReview.switchModel}
+        handleEngineChange={modelReview.switchPickerModel}
+        modelPicker={modelPicker}
         modelReviewCommands={
           <>
             {draftControls?.selected ? (
               <div className="relative">
                 <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--app-accent-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--app-accent)]">Mode Draft</span>
-                <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />
+                <WorkspaceModelReviewCommands savedOnly review={modelReview} locale={uiLocale} />
               </div>
-            ) : <WorkspaceModelReviewCommands review={modelReview} locale={uiLocale} />}
+            ) : <WorkspaceModelReviewCommands savedOnly review={modelReview} locale={uiLocale} />}
             <WorkspaceActiveDraftStatus draft={activeDraft} locale={uiLocale} openRecovery={() => modelReview.open('saved')} />
           </>
         }
@@ -331,6 +339,7 @@ export function WorkspaceAppReadyView({
         setViewerTarget={setViewerTarget}
         composerSurface={
           <WorkspaceComposerSurface
+            sourceAccount={workflowAccount}
             localDraftPreview={draftControls}
             selectedEngine={selectedEngine}
             form={form}
@@ -365,6 +374,8 @@ export function WorkspaceAppReadyView({
             composerWorkflowNotice={composerWorkflowNotice}
             pendingGenerations={pendingGenerations}
             handleAssetAdd={handleAssetAdd}
+            handlePrepareVideoExcerpt={handlePrepareVideoExcerpt}
+            handleVideoExcerptEditorChange={handleVideoExcerptEditorChange}
             handleAssetRemove={handleAssetRemove}
             handleOpenAssetLibrary={handleOpenAssetLibrary}
             showNotice={showNotice}
@@ -423,31 +434,15 @@ export function WorkspaceAppReadyView({
         </div> : <SeedanceDraftLocalPreviewResult preview={draftPreview} />}
       />}
       </WorkspaceRecentReferences>
-      {modelReview.panel ? <WorkspaceModelReview review={modelReview} engines={engines} locale={uiLocale}
+      {modelReview.panel ? <WorkspaceModelReview savedOnly review={modelReview} engines={engines} locale={uiLocale}
         currentPrice={draftWorkflow.selected ? draftWorkflow.price : price}
         currentCurrency={draftWorkflow.selected ? draftWorkflow.currency : currency}
         currentPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
         currentError={draftWorkflow.selected ? draftWorkflow.error : preflightError}
-        comparisonSettings={<WorkspaceComparisonSettings draftControls={draftControls}
-          density="comparison" engine={selectedEngine} mode={submissionMode} caps={capability}
-          durationSec={multiPromptActive ? multiPromptTotalSec : form.durationSec}
-          durationOption={form.durationOption ?? null} onDurationChange={handleDurationChange}
-          numFrames={form.numFrames} onNumFramesChange={handleFramesChange}
-          resolution={form.resolution} onResolutionChange={handleResolutionChange}
-          aspectRatio={form.aspectRatio} onAspectRatioChange={handleAspectRatioChange}
-          fps={form.fps} onFpsChange={handleFpsChange}
-          showAudioControl={supportsAudioToggle} audioEnabled={form.audio}
-          audioControlDisabled={voiceControlEnabled}
-          audioControlNote={voiceControlEnabled ? 'Audio locked by voice control' : undefined}
-          onAudioChange={audio => setForm(current => current ? { ...current, audio } : current)}
-          durationManaged={multiPromptActive}
-          durationManagedLabel={`Duration managed by multi-prompt · ${multiPromptTotalSec}s`}
-          iterations={form.iterations} onIterationsChange={iterations => {
-            setForm(current => current ? { ...current, iterations } : current);
-            if (iterations <= 1) setViewMode('single');
-          }}
-        />} /> : null}
+        /> : null}
       <WorkspaceRuntimeModals
+        engine={selectedEngine}
+        mode={submissionMode}
         locale={uiLocale}
         viewerGroup={viewerGroup}
         onCloseViewer={() => setViewerTarget(null)}
@@ -491,7 +486,9 @@ export function WorkspaceAppReadyView({
         onRefreshAssets={fetchAssetLibrary}
         onLoadMoreAssets={loadMoreAssetLibrary}
         onSelectFieldAsset={handleSelectLibraryAsset}
+        onImportFieldFile={handleImportLibraryFile}
         onSelectKlingAsset={handleSelectKlingLibraryAsset}
+        onImportKlingFile={handleImportKlingLibraryFile}
         onDeleteAsset={handleDeleteLibraryAsset}
       />
     </>

@@ -927,6 +927,13 @@ Billing facts now apply the same idempotent mode-specific engine rate projection
 
 Manual duration and `output_seconds` now project the factual billed quantity, retaining requested/automatic/inherited timing in the context. Reviewed automatic Flux, LTX 2.5 and Seedance modes cover their normalized integer classes. Source-timed Ray Reframe, Happy Horse edit and LTX 2.3 audio modes use their existing factual bounds; unbounded Luma Ray 2 Modify timing remains a unit-tariff gate. Explicit public durations still respect numeric catalog choices; `durationOption: auto` selects automatic billing classes without publishing unsupported explicit durations.
 
+The October 22 Ray 3.2 correction restricts new Reframe outputs to explicit 5s/10s,
+independent of its verified source (at most 10s). Studio preserves the selected or
+default output duration. The audit collector retains all historical 1..30s Reframe
+tariff classes for complete cutover/replay coverage; the public quote resolver
+rejects those historical durations outside 5s/10s. This does not remove tariff
+cells, rewrite paid snapshots, or reduce the exhaustive financial matrix.
+
 Ray 3.2 SDR, HDR and HDR + EXR are separate supported tariff variants. Validated generation extras now feed the same priced-effect projection as preflight and direct checkout. Captured direct payments bind HDR/EXR, with missing historical flags retaining SDR semantics. This fixes an existing advanced-effect final-billing omission: at 5s/720p, SDR stays 130 cents, HDR is 260 and HDR + EXR is 390 under the current default rule. Historical paid snapshots are unchanged; this correction is explicitly separate from a zero-delta manual cutover. Unsupported 540p/10s HDR and EXR without HDR remain unavailable.
 
 The private timing capture contains 18,287 quotes with zero quote gaps and 14 remaining capability gates. Global activation and existing prepared data remain unchanged. Production parity is still a distinct release gate.
@@ -1218,3 +1225,112 @@ requires an exact owned document/source preparation and durable job confirmation
 Included exports do not debit the wallet or create charge/refund receipts. Earlier
 accepted paid exports retain historical billing; earlier unaccepted paid quotes
 expire on confirmation. General Studio timeline export prices and quotas are unchanged.
+
+
+### Luma Modify source timing — 2026-10-22 candidate
+
+Modify accepts verified owned sources up to 18s, including fractional phone
+recordings. Web preflight, canonical estimates, locked repricing and execution
+all derive the same proposed customer tariff quantity: `max(5, ceil(source))`.
+The 5s minimum and existing 5s/10s reference amounts remain stable. The candidate
+extends the commercial reference proportionally to classes 6–9 and 11–18; this
+is not a verified provider charging formula. Provider payloads omit duration so
+that rounding changes no source bytes or timing. The collector enumerates these
+classes for review; no production tariff cell or activation state is changed.
+An active manual grid without the selected class still fails closed.
+
+Published direct supplier estimates stay limited to documented 5s/10s scenarios.
+Other lengths retain unknown supplier cost. Observed qualification invoices
+(5.558s at 720p: $1.08; 8.4s and 17.52s at 360p: $0.54 each) are dated evidence
+only. Live qualification, complete tariff review and the production lifecycle
+canary remain distinct release requirements. Reframe is unchanged by this slice.
+
+### Bounded Modify tariff initialization — 2026-10-23 proposal
+
+`server/pricing/modify-tariffs.ts` prepares exactly 49 missing SDR cells. It reuses
+the Kling resolution preparation owner to copy the 13 current 1080p Modify
+amounts into distinct 720p selectors. The original selectors remain untouched.
+Luma's 36 missing source classes use the existing canonical commercial reference
+projection and effective database policy, frozen as literal customer cents. Its
+six current 5s/10s anchors must still be 94/188 (540p), 141/281 (720p), and
+281/562 (1080p), and the canonical projection must reproduce each anchor.
+Intermediate Luma supplier cost remains **unknown**; this authoring operation
+does not establish provider billing or margin. Existing HDR/EXR cells, anchors,
+historical prices, paid jobs and receipts remain unchanged.
+
+Proposed Luma customer cents from the existing canonical policy:
+
+| Source tariff class | 540p | 720p | 1080p |
+| --- | ---: | ---: | ---: |
+| 6s | 113 | 169 | 337 |
+| 7s | 132 | 197 | 394 |
+| 8s | 150 | 225 | 450 |
+| 9s | 169 | 253 | 506 |
+| 11s | 206 | 309 | 618 |
+| 12s | 225 | 337 | 674 |
+| 13s | 244 | 366 | 731 |
+| 14s | 263 | 394 | 787 |
+| 15s | 281 | 422 | 843 |
+| 16s | 300 | 450 | 899 |
+| 17s | 319 | 478 | 955 |
+| 18s | 337 | 506 | 1011 |
+
+The reviewed Kling 3–15s source amounts are respectively 50, 66, 82, 99, 115,
+132, 148, 164, 181, 197, 214, 229 and 246 cents. The fresh receipt must show the
+actual current source amounts; this table does not override the active database.
+
+The standalone maintenance CLI requires a clean committed candidate published on
+the explicitly named `--release-branch codex/marketing-media`. A clean detached
+worktree at that exact candidate is supported; unrelated untracked files never
+qualify for a cleanliness exception. The CLI compares remote `main` to fetched
+`origin/main` and requires that commit to be an ancestor of the candidate. Fetch
+`origin main` before preparing a release and follow `docs/deployment/github-vercel.md`.
+Keep the explicitly selected environment file and receipt outside the checkout.
+These are operational examples, not evidence that prices were activated:
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json frontend/scripts/initialize-modify-tariffs.ts preview --environment /private/release.env --actor ADMIN_UUID --candidate FULL_40_CHARACTER_SHA --release-branch codex/marketing-media --review /private/modify-review.json
+pnpm exec tsx --tsconfig frontend/tsconfig.json frontend/scripts/initialize-modify-tariffs.ts apply --environment /private/release.env --actor ADMIN_UUID --candidate FULL_40_CHARACTER_SHA --release-branch codex/marketing-media --review /private/modify-review.json --pr PR_NUMBER --approve-fingerprint REVIEWED_64_CHARACTER_FINGERPRINT
+```
+
+Preview uses a repeatable-read, read-only transaction and exclusively creates a
+0600 receipt containing all prices, unknown-cost disclosure, target identity,
+actor, candidate, named release branch, complete source-state/policy hash, revision and fingerprint.
+Apply requires review of that exact proposal, operational authorization and
+an open PR in `camgraphe/MaxVideoAi` on the named branch with successful
+`Quality CI` on the exact candidate. Git and PR fences run again before commit.
+It locks the administrator,
+tariff state, cells/history and policy tables, reproduces the fingerprint, inserts
+only missing cells through the canonical store, verifies all 49 persisted quotes
+and unchanged old rows, and appends one pricing event in the same transaction.
+Any failure rolls the transaction back. A changed source, policy, revision,
+candidate, existing target selector or candidate ID blocks the operation.
+
+The event target is `modify:bounded-source-class-initialization`; inspect it
+before retrying an interrupted command. A completed initialization cannot be
+repeated. Subsequent price changes use reviewed admin operations; never delete
+active cells or deactivate the entire grid to undo this bounded addition. No
+route, build or deployment invokes the writer. The quote reader continues to fail
+closed until the required cells exist. The PG17 integration contract exercises
+stale review, administrator checks, concurrent-write locks, partial-insert/audit
+failure rollback, persisted quotes and preservation of the anchors and HDR/EXR.
+
+
+### Video operation tariff ownership — 2026-10-24
+
+The operation inventory is additive: 26,982 historical monetary checkpoints remain,
+with 89 separately classified new offers (76 fixed cells and 13 continuous classes).
+New-offer proposals carry `beforeCents: null`; they are never described as preserved
+historical charges. `video-operation-tariff-inventory.ts` owns enumeration;
+`video-operation-continuous-tariff.ts` compiles exact canonical cent transitions;
+`video-operation-tariffs.ts` owns missing-only transactional maintenance.
+See [the operation maintenance guide](video-operation-tariffs.md) for scope,
+reference settlement precision, release fences and rollback.
+
+Only the new source-operation identities use the canonical standard nearest
+reference subtotal for settlement. The raw published reference estimate and its
+unverified-invoice metadata remain intact. Existing manual tariffs retain their
+upward normalization and historical amounts. This is not a provider invoice claim
+or a new retail markup. Runtime reads literal cells/bands. MCP/Studio reservation
+keeps exact source seconds in the canonical snapshot and projects only the legacy
+integer job display column; caller duration cannot replace a trusted source quantity.

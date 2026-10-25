@@ -34,3 +34,4 @@
 .rename input:focus{outline:1px solid var(--studio-accent);outline-offset:1px;}
 .rename button{width:36px!important;height:40px!important;border:0!important;background:transparent!important;}
 .rename small{flex-basis:100%;padding:4px 10px;line-height:1.5;}
+@media(max-width:767px){.trigger.trigger{min-width:44px;padding:0!important;border:0!important;}.trigger>span{display:none;}}

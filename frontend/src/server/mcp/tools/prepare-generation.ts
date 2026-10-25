@@ -1,3 +1,5 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
+import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
@@ -7,18 +9,28 @@ import type { MaxVideoAiMcpServices } from '@/server/mcp/server';
 import { omitNullishToolInput } from '@/server/mcp/optional-tool-input';
 import { runAgentTool } from '@/server/mcp/tool-result';
 
-const referenceRole = z.enum(['source', 'reference', 'first_frame', 'last_frame', 'mask']);
+const referenceRole = z.enum(['source', 'reference', 'first_frame', 'middle_frame', 'last_frame', 'mask']);
 const referenceMediaKind = z.enum(['image', 'video', 'audio']);
 const reference = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole }).strict(),
+  z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole, slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).optional() }).strict(),
   z.object({
     kind: z.literal('https'),
     url: z.string(),
     role: referenceRole,
     mediaKind: referenceMediaKind,
+    slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).optional(),
   }).strict(),
 ]);
 export const canonicalSettingsSchema = z.object({
+  keepAudio: z.boolean().nullable().default(null),
+  safetyTolerance: z.number().int().min(0).max(4).nullable().default(null),
+  audioSetting: z.string().trim().min(1).max(128).nullable().default(null),
+  personGeneration: z.string().trim().min(1).max(128).nullable().default(null),
+  compressionQuality: z.string().trim().min(1).max(128).nullable().default(null),
+  promptAudioDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptCameraDirection: z.string().trim().min(1).max(4096).nullable().default(null),
+  promptEditInstruction: z.string().trim().min(1).max(4096).nullable().default(null),
+
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),
     durationSec: z.number().int().min(1).max(30),
@@ -26,7 +38,7 @@ export const canonicalSettingsSchema = z.object({
     'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; otherwise send null or omit it. Omit the top-level prompt text content for this form.',
   ),
   durationSec: z.number().int().min(1).max(86_400).nullable().default(null).describe(
-    'For video modes, use the exact key settings.durationSec for the requested duration in seconds; never send settings.duration. Send null when not applicable.',
+    'Use settings.durationSec for requested output seconds. When get_model_details reports source_video duration, omit it or send null; the owned source supplies timing. Never use settings.duration.',
   ),
   documentUrl: z.string().url().max(4_096).nullable().default(null).describe(
     'Public HTTPS document reference; use only when reported by get_model_details. Mutually exclusive with webpageUrl and requires prompt expansion.',
@@ -54,10 +66,17 @@ export const canonicalSettingsSchema = z.object({
   cropStartX: z.number().nullable().default(null),
   cropStartY: z.number().nullable().default(null),
   editDepthBlur: z.number().nullable().default(null),
+  extendDirection: z.enum(['forward', 'backward']).nullable().default(null),
+  editControlMode: z.enum(['automatic', 'manual']).nullable().default(null),
+  editPoseMode: z.enum(['default', 'on', 'off']).nullable().default(null),
+  editDepthMode: z.enum(['default', 'on', 'off']).nullable().default(null),
+  editNormalsMode: z.enum(['default', 'on', 'off']).nullable().default(null),
+  editTrajectoryMode: z.enum(['default', 'on', 'off']).nullable().default(null),
+  editFaceMode: z.enum(['default', 'on', 'off']).nullable().default(null),
   editFace: z.boolean().nullable().default(null),
   editKeyframeIndexes: z.string().max(4_096).nullable().default(null),
   reasoningLevel: z.enum(['low', 'high']).nullable().default(null),
-  keyframeIndexes: z.string().max(128).nullable().default(null).describe(
+  keyframeIndexes: z.string().max(4096).nullable().default(null).describe(
     'Use only when model details report keyframeIndexes. Unique integer frame positions, comma-separated in the same order as image references; FLUX 3 Max uses 24 fps and accepts 0 through durationSec × 24 inclusive.',
   ),
   editNormalsAugmentation: z.number().nullable().default(null),
@@ -86,6 +105,9 @@ export const canonicalSettingsSchema = z.object({
     'Use only when get_model_details reports a background setting for the selected image model.',
   ),
   outputFormat: z.string().trim().min(1).max(64).nullable().default(null),
+  middleFrameTime: z.number().positive().max(15).nullable().default(null),
+  referenceOrder: z.string().max(128).nullable().default(null),
+  enhanceRealism: z.boolean().nullable().default(null),
   promptExpansionMode: z.enum(['disabled', 'balanced', 'quality']).nullable().default(null).describe(
     'Use only when get_model_details reports the promptExpansionMode setting for the selected mode.',
   ),
@@ -100,7 +122,6 @@ export const canonicalSettingsSchema = z.object({
   startTimeSec: z.number().min(0).nullable().default(null),
   style: z.string().trim().min(1).max(64).nullable().default(null),
   thinkingLevel: z.string().trim().min(1).max(64).nullable().default(null),
-  watermark: z.boolean().nullable().default(null),
 }).strict().describe(
   'Canonical MaxVideoAI settings only. Read the selected mode from get_model_details and include only compatible fields.',
 );
@@ -114,17 +135,27 @@ export const canonicalSubjectSchema = z.discriminatedUnion('kind', [
     referenceSlots: z.array(z.number().int().min(0).max(49)).min(1).max(3)}).strict(),
   z.object({kind: z.literal('video'), referenceSlot: z.number().int().min(0).max(49)}).strict(),
 ]);
+const elementSlot = z.number().int().min(0).max(65);
+const klingOwnedElementsSchema = z.array(z.discriminatedUnion('kind', [
+  z.object({kind:z.literal('images'),frontalSlot:elementSlot,referenceSlots:z.array(elementSlot).min(1).max(3)}).strict(),
+  z.object({kind:z.literal('video'),videoSlot:elementSlot}).strict(),
+])).min(1).max(3).describe('Kling Modify only. Compose owned role=reference slots into subjects. Element slots must be assets; no URLs or external subject IDs. Elements plus remaining guidance images: at most four.');
+
 export const prepareGenerationInputSchema = z.object({
   schemaVersion: z.literal(1).nullable().default(null),
   surface: z.enum(['video', 'image']),
   engineId: z.string(),
+  elements: klingOwnedElementsSchema.nullable().optional(),
+  sourceJobId: z.string().min(1).max(255).nullable().default(null),
+  sourceOutputId: z.string().min(1).max(255).nullable().default(null),
+  operation: z.enum(VIDEO_OPERATIONS).nullable().default(null),
   mode: z.enum(CANONICAL_GENERATION_MODES).nullable().default(null),
   prompt: z.string().nullable().default(null),
   seedanceWorkflow: seedanceWorkflowSchema.nullable().default(null).describe(
     'Seedance 2.5 native Draft only: draft selects finalizable 480p; final uses an owned ready draftJobId and inherits creative facts. Omit for ordinary generation. For final, omit mode, prompt, settings and references.',
   ),
   settings: canonicalSettingsSchema.nullable().default(null),
-  references: z.array(reference).nullable().default(null),
+  references: z.array(reference).max(MAX_GENERATION_REFERENCES).nullable().default(null),
   subjects: z.array(canonicalSubjectSchema).min(1).max(7).nullable().default(null).describe(
     'Only when model details report subjects: ordered image/video subjects linked to zero-based role=reference positions in references. Subject references must be owned assets. Voice bindings are unavailable; never pass provider voice IDs.',
   ),
@@ -136,10 +167,11 @@ export const prepareGenerationInputSchema = z.object({
 function normalizePrepareGenerationInput(
   input: z.output<typeof prepareGenerationInputSchema>,
 ) {
-  return omitNullishToolInput({
-    ...input,
+  const { elements, ...rest } = input;
+  return { ...omitNullishToolInput({
+    ...rest,
     settings: input.settings === null ? null : omitNullishToolInput(input.settings),
-  });
+  }), ...(elements ? {elements} : {}) };
 }
 
 export function registerPrepareGenerationTool(

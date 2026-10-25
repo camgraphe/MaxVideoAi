@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
+import type { ModelDecisionScenarioDetails } from './model-decision-scenario-details';
 
 import { getImagePresetQuote, getPresetQuote, type VideoPriceScenario } from '../../../pricing/_lib/pricingHubData';
 import type {
@@ -15,6 +16,8 @@ export type ModelDecisionPricingScenario = {
   value: string;
   note: string;
   badge?: string;
+  details?: ModelDecisionScenarioDetails;
+  priceUnitLabel?: string;
 };
 
 const SCENARIO_COPY: Record<
@@ -65,6 +68,7 @@ const SCENARIO_COPY: Record<
     storyboardPass: 'Storyboard pass',
     singleEdit: 'Single edit',
     standardPreview: 'Standard preview',
+    longPreview: 'Longer preview',
     eightSeconds720p: '8s · 720p',
     tenSeconds1080p: '10s · 1080p',
     tenSeconds1080pDraft: '10s · 1080p draft',
@@ -143,6 +147,7 @@ const SCENARIO_COPY: Record<
     storyboardPass: 'Prévisualisation du storyboard',
     singleEdit: 'Retouche simple',
     standardPreview: 'Aperçu standard',
+    longPreview: 'Aperçu long',
     eightSeconds720p: '8 s · 720p',
     tenSeconds1080p: '10 s · 1080p',
     tenSeconds1080pDraft: '10 s · 1080p brouillon',
@@ -221,6 +226,7 @@ const SCENARIO_COPY: Record<
     storyboardPass: 'Vista previa del storyboard',
     singleEdit: 'Edición simple',
     standardPreview: 'Vista previa estándar',
+    longPreview: 'Vista previa larga',
     eightSeconds720p: '8 s · 720p',
     tenSeconds1080p: '10 s · 1080p',
     tenSeconds1080pDraft: '10 s · 1080p borrador',

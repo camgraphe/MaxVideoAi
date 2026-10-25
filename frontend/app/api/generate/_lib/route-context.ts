@@ -1,3 +1,4 @@
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import { isKlingV4ReleaseBlocked } from '@/server/video-generation/kling-v4-release-policy';
 import { randomUUID } from 'crypto';
@@ -91,7 +92,10 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
   providerEnv?: VideoProviderRoutingEnv;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
 }): GenerateRouteContextResult {
-  const { body, engine, jobId, mode, providerEnv } = params;
+  const { body, jobId, mode, providerEnv } = params;
+  let engine = params.engine;
+  try { engine = resolveVideoOperationEngine(engine, mode, body.operation); }
+  catch { return { ok: false, status: 400, body: { ok: false, error: 'Invalid operation' } }; }
   if (isKlingV4ReleaseBlocked(engine.id)) {
     return { ok: false, status: 503, body: { ok: false, error: 'KLING_V4_NOT_QUALIFIED' } };
   }
@@ -141,7 +145,7 @@ export function resolveTrustedPaidGenerateRouteContext(params: {
 
   let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
     ? { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: false, env: providerEnv });
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, operation: body.operation, isAdmin: false, env: providerEnv });
   if (shouldRouteKlingDirectSourceElementsToFal({
     providerRoutingPlan,
     elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
@@ -238,7 +242,7 @@ export async function resolveGenerateRouteContext(params: {
   }
 
   const publicEngine = await boundaries.getConfiguredEngine(requestedEngineId);
-  const engine =
+  let engine =
     publicEngine ??
     (isBytePlusSeedanceHiddenEngine(requestedEngineId) || isPrivateRuntimeEngineId(requestedEngineId)
       ? await boundaries.getConfiguredEngineIncludingHidden(requestedEngineId)
@@ -300,6 +304,9 @@ export async function resolveGenerateRouteContext(params: {
     : engine.modes.includes('t2v')
       ? 't2v'
       : engine.modes[0] ?? 't2v';
+
+  try { engine = resolveVideoOperationEngine(engine, mode, body.operation); }
+  catch { return { ok: false, status: 400, body: { ok: false, error: 'Invalid operation' } }; }
 
   if (isMinimaxH3MaxEngineId(engine.id) && !isMinimaxH3MaxRuntimeModeAvailable(mode)) {
     return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
@@ -395,7 +402,7 @@ export async function resolveGenerateRouteContext(params: {
   }
   let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
     ? ({ kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false } as const)
-    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: isAdminForDirectProvider });
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, operation: body.operation, isAdmin: isAdminForDirectProvider });
   if (
     shouldRouteKlingDirectSourceElementsToFal({
       providerRoutingPlan,

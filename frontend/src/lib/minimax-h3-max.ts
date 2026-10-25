@@ -1,3 +1,5 @@
+import { orderedH3References, validateH3MiddleFrame } from '../../lib/h3-reference-controls';
+import { isH3SourceOperation, buildH3SourceRequest } from '../../lib/h3-source-operations';
 import {
   MINIMAX_H3_MAX_ENDPOINTS,
   MINIMAX_H3_MAX_ID,
@@ -28,6 +30,9 @@ export type MinimaxH3MaxRequestInput = {
   seed?: number;
   imageUrl?: string | null;
   endImageUrl?: string | null;
+  middleImageUrl?: string;
+  middleFrameTime?: number;
+  referenceOrder?: string;
   references?: readonly MinimaxH3MaxReference[];
   referenceImageUrls?: readonly string[];
   referenceVideoUrls?: readonly string[];
@@ -47,6 +52,9 @@ export type NormalizedMinimaxH3MaxRequest = {
   seed?: number;
   imageUrl?: string;
   endImageUrl?: string;
+  middleImageUrl?: string;
+  middleFrameTime?: number;
+  referenceOrder?: string;
   references: GroupedReferences;
 };
 
@@ -55,7 +63,7 @@ export function isMinimaxH3MaxEngineId(id: string | null | undefined): boolean {
 }
 
 export function isMinimaxH3MaxRuntimeModeAvailable(mode: string | null | undefined): boolean {
-  return mode === 't2v' || mode === 'i2v' || mode === 'ref2v';
+  return mode === 't2v' || mode === 'i2v' || mode === 'ref2v' || mode === 'v2v';
 }
 
 export function resolveMinimaxH3MaxEndpoint(mode: MinimaxH3MaxMode): string {
@@ -113,7 +121,7 @@ export function normalizeMinimaxH3MaxRequest(
   if (input.mode === 'i2v' && !imageUrl && !endImageUrl) {
     throw new Error('MiniMax H3 Max image-to-video requires a start or end image.');
   }
-  if (input.mode !== 'i2v' && (imageUrl || endImageUrl)) {
+  if (input.mode !== 'i2v' && input.mode !== 'ref2v' && (imageUrl || endImageUrl)) {
     throw new Error('MiniMax H3 Max start and end images are only valid for image-to-video.');
   }
 
@@ -135,13 +143,16 @@ export function normalizeMinimaxH3MaxRequest(
   if (references.video.length > 3) throw new Error('MiniMax H3 Max supports up to 3 reference videos.');
   if (references.audio.length > 3) throw new Error('MiniMax H3 Max supports up to 3 reference audio clips.');
   if (referenceCount > 12) throw new Error('MiniMax H3 Max supports up to 12 references total.');
-  if (input.mode === 'ref2v' && referenceCount === 0) {
+  if (input.mode === 'ref2v' && referenceCount === 0 && !imageUrl && !endImageUrl) {
     throw new Error('MiniMax H3 Max reference-to-video requires at least one image, video, or audio reference.');
   }
   if (input.mode !== 'ref2v' && referenceCount > 0) {
     throw new Error('MiniMax H3 Max references are only valid for reference-to-video.');
   }
 
+  validateH3MiddleFrame({mode:input.mode,start:imageUrl,end:endImageUrl,middle:input.middleImageUrl,time:input.middleFrameTime,duration:durationSec,resolution});
+  if (input.referenceOrder && input.mode!=='ref2v') throw new Error('Reference ordering requires reference mode.');
+  orderedH3References(input.referenceOrder,references);
   const targetAudioUrl = input.targetAudioUrl?.trim();
   if (targetAudioUrl && input.mode === 'ref2v') throw new Error('Use reference audio in reference-to-video mode.');
   if (input.seed !== undefined && (!Number.isInteger(input.seed) || input.seed < 0 || input.seed > 2147483647)) throw new Error('Seed must be an integer from 0 to 2147483647.');
@@ -156,6 +167,8 @@ export function normalizeMinimaxH3MaxRequest(
     ...(aspectRatio ? { aspectRatio } : {}),
     ...(imageUrl ? { imageUrl } : {}),
     ...(endImageUrl ? { endImageUrl } : {}),
+    ...(input.middleImageUrl ? {middleImageUrl:input.middleImageUrl,middleFrameTime:input.middleFrameTime} : {}),
+    ...(input.referenceOrder ? {referenceOrder:input.referenceOrder} : {}),
     references,
   };
 }
@@ -176,9 +189,12 @@ export function buildMinimaxH3MaxFalRequest(input: MinimaxH3MaxRequestInput): {
   if (request.seed !== undefined) requestBody.seed = request.seed;
   if (request.imageUrl) requestBody.image_url = request.imageUrl;
   if (request.endImageUrl) requestBody.end_image_url = request.endImageUrl;
-  if (request.references.image.length) requestBody.reference_image_urls = request.references.image;
-  if (request.references.video.length) requestBody.reference_video_urls = request.references.video;
-  if (request.references.audio.length) requestBody.reference_audio_urls = request.references.audio;
+  if (request.middleImageUrl) { requestBody.middle_image_url=request.middleImageUrl; requestBody.middle_frame_time=request.middleFrameTime; }
+  const ordered = orderedH3References(request.referenceOrder,request.references);
+  if (ordered) requestBody.reference_conditions=ordered;
+  if (!ordered && request.references.image.length) requestBody.reference_image_urls = request.references.image;
+  if (!ordered && request.references.video.length) requestBody.reference_video_urls = request.references.video;
+  if (!ordered && request.references.audio.length) requestBody.reference_audio_urls = request.references.audio;
 
   return {
     model: resolveMinimaxH3MaxEndpoint(request.mode),
@@ -207,6 +223,17 @@ export function buildMinimaxH3MaxFalRequestFromPayload(payload: GeneratePayload)
   model: string;
   requestBody: Record<string, unknown>;
 } {
+  if (payload.mode === 'v2v') {
+    if (!isH3SourceOperation(payload.operation)) throw new Error('Choose Recast or Relight explicitly.');
+    const values = payload.extraInputValues ?? {};
+    const urls = (slot: string) => (payload.inputs ?? []).filter(item=>item.slotId===slot).map(item=>item.url??item.dataUrl??'');
+    return { model: `minimax/h3-max/${payload.operation.slice(3)}`, requestBody: buildH3SourceRequest({
+      operation: payload.operation, videoUrl: urls('video_url')[0] ?? '',
+      ...(payload.operation === 'h3-recast' ? {portraitUrls:urls('reference_image_urls'), enhanceRealism: values.enhance_realism as boolean | undefined} : {lightingImageUrl:urls('reference_image_url')[0]}),
+      prompt:payload.prompt, resolution:payload.resolution??undefined, aspectRatio:payload.aspectRatio??undefined,
+      seed:payload.seed ?? values.seed as number | undefined, enableSafetyChecker:values.enable_safety_checker as boolean | undefined,
+    }) };
+  }
   const mode = (payload.mode ?? 't2v') as MinimaxH3MaxMode;
   const extraInputValues = payload.extraInputValues ?? {};
   const firstImage = (slotId: string) => payloadAttachmentUrls(payload, slotId)[0];
@@ -225,6 +252,9 @@ export function buildMinimaxH3MaxFalRequestFromPayload(payload: GeneratePayload)
     targetAudioUrl: firstImage('target_audio_url'),
     imageUrl: firstImage('image_url') ?? payload.imageUrl,
     endImageUrl: firstImage('end_image_url') ?? payload.endImageUrl,
+    middleImageUrl:firstImage('middle_image_url'),
+    middleFrameTime:typeof extraInputValues.middle_frame_time==='number'?extraInputValues.middle_frame_time:undefined,
+    referenceOrder:typeof extraInputValues.reference_order==='string'?extraInputValues.reference_order:undefined,
     referenceImageUrls: [...payloadAttachmentUrls(payload, 'reference_image_urls'), ...(mode === 'ref2v' ? payload.referenceImages ?? [] : [])],
     referenceVideoUrls: payloadAttachmentUrls(payload, 'reference_video_urls'),
     referenceAudioUrls: payloadAttachmentUrls(payload, 'reference_audio_urls'),

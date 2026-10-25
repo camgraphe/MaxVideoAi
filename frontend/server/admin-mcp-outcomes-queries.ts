@@ -7,6 +7,7 @@ export type McpOutcomeRelations = {
   profiles: boolean;
   funnel: boolean;
   clientFamily: boolean;
+  quoteAuthOrigin: boolean;
 };
 
 const REPORTED_CLIENTS_SQL = MCP_CLIENT_FAMILIES
@@ -23,7 +24,10 @@ export const MCP_OUTCOME_RELATIONS_SQL = `/* admin-mcp:outcome-relations */
     to_regclass('public.mcp_funnel_events') IS NOT NULL AS funnel,
     EXISTS (SELECT 1 FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = 'mcp_audit_events'
-        AND column_name = 'client_family') AS "clientFamily"`;
+        AND column_name = 'client_family') AS "clientFamily",
+    EXISTS (SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'mcp_generation_quotes'
+        AND column_name = 'auth_origin') AS "quoteAuthOrigin"`;
 
 export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): string {
   const reportedClients = relations.clientFamily
@@ -75,7 +79,8 @@ export function buildMcpGenerationItemsSql(relations: McpOutcomeRelations): stri
          ORDER BY evidence.priority, evidence.observed_at DESC, evidence.client
          LIMIT 1
       ) identity ON TRUE
-     WHERE job.created_at >= $1
+     WHERE quote.auth_origin = 'oauth'
+       AND job.created_at >= $1
        AND job.created_at < $2
        AND job.surface IN ('video', 'image')
      ORDER BY job.job_id, quote.created_at DESC, quote.oauth_client_id DESC
@@ -105,6 +110,13 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
     ), auth_clients AS (
       SELECT * FROM jsonb_to_recordset($3::jsonb -> 'clients') AS c(oauth_client_id text, family text)
     ), client_evidence AS (${reportedClients} ${landingClients}),
+    excluded_quote_origins AS (
+      SELECT COUNT(*) FILTER (WHERE auth_origin = 'studio-session') AS studio,
+             COUNT(*) FILTER (WHERE auth_origin = 'toolbox-session') AS toolbox,
+             COUNT(*) FILTER (WHERE auth_origin IS NULL
+               OR auth_origin NOT IN ('oauth', 'studio-session', 'toolbox-session')) AS unknown
+        FROM mcp_generation_quotes WHERE created_at < $2
+    ),
     account_activity AS (
       SELECT created_at AS observed_at, user_id, oauth_client_id
         FROM mcp_audit_events
@@ -112,7 +124,8 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
          (event_type IN ('connection_initialized', 'tool_discovery') AND outcome = 'success')
          OR event_type = 'tool_call')
       UNION ALL
-      SELECT created_at, user_id, oauth_client_id FROM mcp_generation_quotes WHERE created_at < $2
+      SELECT created_at, user_id, oauth_client_id FROM mcp_generation_quotes
+       WHERE created_at < $2 AND auth_origin = 'oauth'
     ), latest_accounts AS (
       SELECT MAX(observed_at) AS observed_at, user_id, oauth_client_id
         FROM account_activity GROUP BY user_id, oauth_client_id
@@ -122,7 +135,8 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
              job.surface, job.job_id, job.status
         FROM mcp_generation_quotes quote
         JOIN app_jobs job ON job.job_id = quote.job_id AND job.user_id = quote.user_id
-       WHERE job.created_at >= $1 AND job.created_at < $2
+       WHERE quote.auth_origin = 'oauth'
+         AND job.created_at >= $1 AND job.created_at < $2
          AND job.surface IN ('video', 'image')
        ORDER BY job.job_id, quote.created_at DESC, quote.oauth_client_id DESC
     ), facts AS (
@@ -151,6 +165,9 @@ export function buildMcpOutcomesSql(relations: McpOutcomeRelations): string {
         ${relations.profiles ? 'LEFT JOIN profiles profile ON profile.id::text = facts.user_id' : ''}
     )
     SELECT COALESCE(client, 'all') AS client,
+      (SELECT studio FROM excluded_quote_origins) AS studio_quotes_excluded,
+      (SELECT toolbox FROM excluded_quote_origins) AS toolbox_quotes_excluded,
+      (SELECT unknown FROM excluded_quote_origins) AS unknown_origin_quotes_excluded,
       COUNT(DISTINCT user_id) FILTER (WHERE kind = 'account')::bigint AS accounts,
       (ARRAY_AGG(DISTINCT user_id) FILTER (WHERE kind = 'account' AND NOT profile_known))[1:101] AS missing_user_ids,
       (ARRAY_AGG(DISTINCT oauth_client_id) FILTER (WHERE client = 'other' AND oauth_client_id IS NOT NULL))[1:101] AS unknown_client_ids,

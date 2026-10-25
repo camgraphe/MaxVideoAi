@@ -8,6 +8,7 @@ import StudioPreviewAccess from "../../_components/StudioPreviewAccess.client";
 import StudioImageConversation from "./StudioImageConversation.client";
 import {assertTimelineExportWorkerLauncherConfigured} from '@/server/timeline-exports/ecs-runner';
 import {loadStudioExampleEntry} from '@/server/studio-example-entry';
+import mobileStyles from './studio-mobile.module.css';
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -41,7 +42,7 @@ export default async function StudioConversationPage({
   let exportAvailable = false;
   if (exportsEnabled) {try {assertTimelineExportWorkerLauncherConfigured();exportAvailable = true;} catch {/* No export control without a configured canonical renderer. */}}
   return (
-    <div className="flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] flex-col overflow-hidden bg-bg">
+    <div data-studio-mobile-shell={access.ok && project ? '' : undefined} className={`flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] flex-col overflow-hidden bg-bg ${access.ok && project ? mobileStyles.shell : ''}`}>
       <HeaderBar localQa={localQa} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row">
         <AppSidebar />

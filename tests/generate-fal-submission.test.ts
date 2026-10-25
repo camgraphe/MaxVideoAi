@@ -81,6 +81,7 @@ test('markJobAwaitingFal updates the running job and records provider queue cont
 test('submitFalGenerateTask returns generation results and persists request ids', async () => {
   const payload: GeneratePayload = { engineId: 'seedance-2-0', prompt: 'test', mode: 't2v' };
   const persisted: string[] = [];
+  const proof = {version:1 as const,engineId:'flux-3-draft' as const,mode:'t2v' as const,endpoint:'blackforestlabs/flux-3/text-to-video/draft',requestSha256:'a'.repeat(64)};
   const result = await withMutedFalLogs(() => submitFalGenerateTask({
     userId: 'owner',
     falPayload: payload,
@@ -95,14 +96,15 @@ test('submitFalGenerateTask returns generation results and persists request ids'
     walletChargeReserved: false,
     getLastProviderJobId: () => null,
     setLastProviderJobId: () => undefined,
-    persistProviderJobId: async (providerJobId) => {
+    persistProviderJobId: async (providerJobId, submissionProof) => {
+      assert.deepEqual(submissionProof,proof);
       await new Promise<void>((resolve) => setImmediate(resolve));
       persisted.push(providerJobId);
     },
     logMetricFn: () => undefined,
     deps: {
       generateVideoFn: async (_payload, hooks) => {
-        await hooks?.onRequestId?.('fal_request_123');
+        await hooks?.onRequestId?.('fal_request_123',proof);
         return {
           provider: 'fal',
           thumbUrl: '/thumb.svg',

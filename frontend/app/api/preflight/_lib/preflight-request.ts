@@ -1,9 +1,10 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { z } from 'zod';
 
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 
 export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
-export const MAX_PREFLIGHT_INPUTS = 50;
+export const MAX_PREFLIGHT_INPUTS = 66;
 
 const modes = [
   't2v',
@@ -75,6 +76,9 @@ const ownedKlingSubject = z.union([
 ]);
 
 const preflightRequestSchema = z.object({
+  sourceJobId: z.string().min(1).max(255).optional(),
+  sourceOutputId: z.string().min(1).max(255).optional(),
+  operation: z.enum(VIDEO_OPERATIONS).optional(),
   seedanceWorkflow: z.discriminatedUnion('step', [z.object({ step: z.literal('draft') }).strict(),
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),
@@ -93,9 +97,13 @@ const preflightRequestSchema = z.object({
   elements: z.array(ownedKlingSubject).max(7).optional(),
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
-}).strict().refine(request => request.elements === undefined
-  || (request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode)
-    && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)));
+ }).strict().superRefine((request, context) => {
+  // The transport ceiling does not widen Seedance's separate admission contract.
+  if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
+    context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
+  if (request.elements !== undefined && !(request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
+    context.addIssue({code:z.ZodIssueCode.custom,path:['elements'],message:'Unsupported Kling subject composition.'});
+});
 
 type PreflightRequestFailure = {
   ok: false;

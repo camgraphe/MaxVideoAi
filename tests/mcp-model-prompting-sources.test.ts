@@ -36,7 +36,7 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   for (const record of records) {
     assert.match(record.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.match(record.url, /^https:\/\//);
-    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15)$/);
+    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15|10-22)$/);
     assert.ok(record.modelIds.length >= 1);
     assert.ok(record.modes.length >= 1);
     assert.ok(Object.isFrozen(record));
@@ -112,4 +112,15 @@ test('prompting-source parser fails closed for unknown fields, models, modes, an
     knownEngineIds,
     new Map([['veo-3-1', new Set(['t2v', 'i2v'])]]),
   ));
+});
+
+
+test('Ray 3.2 prompting points to Agents per-mode guides while Ray 2 retains legacy docs', () => {
+  const current = getAgentModelPromptingSources('luma-ray-3-2');
+  assert.deepEqual(current.map(source => ({ url: source.url, modes: source.modes })), [
+    { url: 'https://docs.agents.lumalabs.ai/guides/videos/generation/', modes: ['t2v', 'i2v'] },
+    { url: 'https://docs.agents.lumalabs.ai/guides/videos/editing/', modes: ['v2v'] },
+    { url: 'https://docs.agents.lumalabs.ai/guides/videos/reframing/', modes: ['reframe'] },
+  ]);
+  assert.equal(getAgentModelPromptingSources('lumaRay2')[0]?.url, 'https://docs.lumalabs.ai/docs/video-generation');
 });

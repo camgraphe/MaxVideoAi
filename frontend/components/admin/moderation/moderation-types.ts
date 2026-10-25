@@ -1,3 +1,5 @@
+import type { ModerationSurface as AdminModerationSurface } from '@/lib/admin/moderation-filters';
+
 export type PlaylistOption = {
   id: string;
   name: string;
@@ -12,7 +14,7 @@ export type PlaylistTag = {
 
 export type PublicationState = 'published' | 'private' | 'legacy-mismatch';
 export type ModerationBucket = 'not-published' | 'published' | 'all';
-export type ModerationSurface = 'video' | 'image' | 'audio' | 'character' | 'angle';
+export type ModerationSurface = AdminModerationSurface;
 export type ModerationViewMode = 'wall' | 'table';
 
 export type ModerationVideo = {
@@ -27,6 +29,8 @@ export type ModerationVideo = {
   prompt: string;
   thumbUrl?: string;
   videoUrl?: string;
+  originalUrl?: string;
+  canPublish?: boolean;
   aspectRatio?: string;
   createdAt: string;
   visibility: 'public' | 'private';

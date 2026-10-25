@@ -25,7 +25,7 @@ test('Draft request preparation shares workspace media ordering, roles, validati
   assert.equal(result.ok, true);
   if (!result.ok) return;
   assert.deepEqual(result.payload.inputs?.map(item => [item.slotId, item.assetId]), [['video_url', 'source'], ['image_urls', 'ref']]);
-  assert.deepEqual(result.payload.extraInputValues, { output_format: 'mov', return_last_frame: true, watermark: true });
+  assert.deepEqual(result.payload.extraInputValues, { output_format: 'mov' });
   assert.equal(result.payload.durationOption, 'auto');
   assert.deepEqual(result.preflightInputs, [
     { assetId: 'source', slotId: 'video_url', kind: 'video', url: 'https://cdn.example/source.mp4' },

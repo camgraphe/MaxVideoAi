@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import ffmpeg from '../frontend/node_modules/@ffmpeg-installer/ffmpeg';
+import {ensureExecutableFfmpegPath} from '../frontend/server/ffmpeg-runtime';
 import {getDb,withDbTransaction,type TransactionQueryExecutor} from '../frontend/src/lib/db';
 import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
 import {addTopup,ProviderHarness,createServices,principal} from './helpers/mcp-paid-e2e-harness';
-import {workflowCatalog,workflowActor,workflowInput,workflowAction,workflowAssetIds,workflowReference} from './helpers/studio-video-workflow-fixtures';
+import {workflowCatalog,workflowActor,workflowInput,workflowAction,workflowAssetIds,workflowReference,workflowLumaSource,workflowLumaSourceRow} from './helpers/studio-video-workflow-fixtures';
 import {createStudioVideoGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {studioMediaRequest,type StudioMediaFactories} from '../frontend/src/server/studio/conversation-media-generation';
 import type {CanonicalGenerationRequest} from '../frontend/src/server/agent-api/generation-types';
@@ -24,6 +31,12 @@ import {loadEffectiveCustomerTariffState} from '../frontend/server/pricing/custo
 import {continuousInputTariffSelector} from '../frontend/src/lib/pricing-manual-scenario';
 import {collectSellableManualTariffCoverage} from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import {customerTariffCellId} from '../frontend/server/pricing/customer-tariff-seed';
+import {videoOperationTariffIdentity} from '../frontend/lib/video-operation';
+import {prepareVideoOperationTariffs} from '../frontend/server/pricing/video-operation-tariffs';
+import {operationTariffState,operationPolicy,operationIdentity} from './helpers/video-operation-tariff-fixture';
+import {qualifyFluxDraftPair} from '../frontend/server/flux-draft-cache';
+import {resolveFluxDraftOrigin,persistQualifiedFluxDraftSource} from '../frontend/server/flux-draft-cache-store';
+import {publicMediaTransport} from '../frontend/server/public-media-transport';
 import {ENV} from '../frontend/src/lib/env';
 
 test('all certified video tuples share MCP exact price, owned payload and one-attempt confirmed dispatch',async t=>{
@@ -51,17 +64,51 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
     {kind:'unit_components',rounding:'up',components:[{id:'retail',rounding:'none',flatCents:123.018,
       terms:[{unit:'input_video_seconds',centsPerUnit:30.7545,includedUnits:0}]}]},
   ]);
+  const operationTariffs=await prepareVideoOperationTariffs({...operationIdentity,state:operationTariffState(),policy:operationPolicy});
+  for(const cell of operationTariffs.cells)await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+    VALUES($1,$2,$3,$4,'USD','2026-10-02',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
-  await pg.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,status text);
+  await pg.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,status text,position int,url text,storage_url text,metadata jsonb);
+    CREATE TABLE provider_attempts(id bigserial PRIMARY KEY,job_id bigint,provider text,provider_model text,status text,provider_job_id text,request_snapshot jsonb);
     CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,size_bytes bigint,width int,height int,status text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text,thumb_url text,preview_url text);`);
-  for(const kind of ['image','video','audio'] as const){const ref=workflowReference(kind,'source');await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata) VALUES($1,$2,$3,$1,$4,$5,$6,$7,$8,'ready',$9::jsonb)`,[kind,workflowAssetIds[kind],workflowActor.userId,ref.storageUrl,ref.mimeType,ref.sizeBytes,ref.width,ref.height,JSON.stringify({durationSec:ref.durationSec,originalName:ref.originalName,mediaFacts:{source:'probe',durationSec:ref.durationSec,width:ref.width,height:ref.height}})]);}
+  for(const ref of [...(['image','video','audio'] as const).map(kind=>workflowReference(kind,'source')),workflowReference('video','source',undefined,'luma-ray-3-2')]){await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,size_bytes,width,height,status,metadata) VALUES($1,$1,$2,$3,$4,$5,$6,$7,$8,'ready',$9::jsonb)`,[ref.assetId,workflowActor.userId,ref.mediaKind,ref.storageUrl,ref.mimeType,ref.sizeBytes,ref.width,ref.height,JSON.stringify({durationSec:ref.durationSec,originalName:ref.originalName,mediaFacts:{source:'probe',durationSec:ref.durationSec,width:ref.width,height:ref.height}})]);}
+  const source=workflowLumaSource;
+  const sourceJob=(await pg.pool.query<{id:number}>(`INSERT INTO app_jobs(job_id,user_id,engine_id,surface,status,provider,provider_job_id,video_url)
+    VALUES($1,$2,'luma-ray-3-2','video','completed','luma_agents_direct',$3,$4) RETURNING id`,[source.sourceJobId,source.ownerId,workflowLumaSourceRow.provider_job_id,source.originalUrl])).rows[0];
+  await pg.pool.query(`INSERT INTO provider_attempts(job_id,provider,provider_model,status,provider_job_id,request_snapshot)
+    VALUES($1,'luma_agents_direct','ray-3.2','completed',$2,'{}')`,[sourceJob.id,workflowLumaSourceRow.provider_job_id]);
+  await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,status,position,url) VALUES($1,$2,$3,'video','ready',0,$4)`,[source.outputId,source.sourceJobId,source.ownerId,source.originalUrl]);
+  await pg.pool.query('UPDATE media_assets SET source_job_id=$1,source_output_id=$2 WHERE public_id=$3 AND user_id=$4',[source.sourceJobId,source.outputId,source.assetId,source.ownerId]);
+  await pg.pool.query(readFileSync('neon/migrations/79_flux_draft_cache_sources.sql','utf8'));
+  await pg.pool.query(readFileSync('neon/migrations/80_flux_draft_origin_provenance.sql','utf8'));
+  const draftUrl=workflowReference('video','source').storageUrl;
+  const draftJob=(await pg.pool.query<{id:number}>(`INSERT INTO app_jobs(job_id,user_id,engine_id,surface,status,provider,provider_job_id,video_url)
+    VALUES('workflow-draft-source',$1,'flux-3-draft','video','completed','fal','draft-provider-request',$2) RETURNING id`,[workflowActor.userId,draftUrl])).rows[0];
+  await pg.pool.query(`INSERT INTO provider_attempts(job_id,provider,provider_model,status,provider_job_id,request_snapshot)
+    VALUES($1,'fal','blackforestlabs/flux-3/image-to-video/draft','completed','draft-provider-request','{}')`,[draftJob.id]);
+  await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,status,position,url,metadata)
+    VALUES('workflow-draft-output','workflow-draft-source',$1,'video','ready',0,$2,$3)`,[workflowActor.userId,draftUrl,{mediaFacts:{original:{url:draftUrl,sha256:'a'.repeat(64)}}}]);
+  await pg.pool.query(`UPDATE media_assets SET source_job_id='workflow-draft-source',source_output_id='workflow-draft-output' WHERE public_id=$1`,[workflowAssetIds.video]);
+  const draftOrigin=await resolveFluxDraftOrigin({userId:workflowActor.userId,sourceJobId:'workflow-draft-source',sourceOutputId:'workflow-draft-output'});
+  const paired=qualifyFluxDraftPair(draftOrigin,{providerRequestId:'draft-provider-request',providerVideoUrl:'https://v3.fal.media/draft.mp4',cacheUrl:'https://v3.fal.media/cache.bin',
+    ownedSha256:draftOrigin.outputSha256,videoIdentity:'fixture-video',ownedVideoIdentity:'fixture-video',audioIdentity:null,ownedAudioIdentity:null,durationSec:10.041667,fps:24,decodedFrameCount:241});
+  await withDbTransaction(executor=>persistQualifiedFluxDraftSource(paired,executor));
+  const mediaDirectory=await mkdtemp(join(tmpdir(),'operation-workflow-media-'));
+  t.after(()=>rm(mediaDirectory,{recursive:true,force:true}));
+  const videoFile=join(mediaDirectory,'source.mp4');
+  await promisify(execFile)(await ensureExecutableFfmpegPath(ffmpeg.path),['-v','error','-f','lavfi','-i','color=c=blue:s=1920x1080:r=24:d=6','-c:v','libx264','-threads','1','-pix_fmt','yuv420p','-y',videoFile]);
+  const sourceBytes=await readFile(videoFile);let servedSourceBytes=sourceBytes;
+  // Local bytes exercise real source probes; only HTTPS transport/cache reachability is stubbed.
+
+  t.mock.method(publicMediaTransport,'lookupHost',async()=>[{address:'8.8.8.8',family:4}]);
+  t.mock.method(publicMediaTransport,'openPinnedHttps',async(url:URL)=>{assert.ok([paired.cacheUrl,draftUrl].includes(url.href));const bytes=url.href===paired.cacheUrl?Buffer.from([1]):servedSourceBytes;return {statusCode:200,headers:{'content-type':url.href===paired.cacheUrl?'application/octet-stream':'video/mp4','content-length':String(bytes.length)},body:(async function*(){yield bytes;})()};});
   const catalog=await workflowCatalog();const provider=new ProviderHarness(pg.pool);
   const lasPricing=async(request:CanonicalGenerationRequest,tier:Parameters<typeof priceCanonicalGeneration>[1],deps:ExecutorGenerationPricingDependencies)=>
     priceCanonicalGenerationInExecutor(request,tier,{...deps,computeBillingSnapshot:async(context,options)=>{
       // This broad legacy matrix keeps its existing ModelArk policy fixture.
-      // LAS alone uses the real stored reviewed cell, through the canonical
+      // LAS and new operation offers use real stored reviewed cells, through the canonical
       // calculator's existing explicit fixture reader. Dedicated LAS paid-flow
       // tests exercise the default production reader and actual provider client.
       const state=await loadEffectiveCustomerTariffState(deps.executor);
@@ -69,10 +116,11 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       const [raw]=await deps.executor.query<{active:boolean}>('SELECT active FROM app_customer_tariff_state WHERE singleton=TRUE');
       return computeCanonicalBillingSnapshot(context,{...options,loadCustomerTariffState:async()=>({...state,active:raw.active})});
     }});
-  const preparePrice:PrepareGenerationDependencies['priceGeneration']=async(request,tier,refs)=>request.engineId==='seedance-2-5'&&request.mode==='v2v'
-    ?withDbTransaction(executor=>lasPricing(request,tier,{executor,candidate:catalog.find(c=>c.engine.id===request.engineId)!,resolvedReferences:refs.resolvedReferences}))
+  const hasReviewedTariff=(request:CanonicalGenerationRequest)=>Boolean(videoOperationTariffIdentity(request.engineId,request.mode,request.operation))||(request.engineId==='veo-3-1'&&request.mode==='i2v'&&[4,6].includes(Number(request.settings.durationSec)))||(request.engineId==='seedance-2-5'&&request.mode==='v2v');
+  const preparePrice:PrepareGenerationDependencies['priceGeneration']=async(request,tier,refs)=>hasReviewedTariff(request)
+    ?withDbTransaction(executor=>lasPricing(request,tier,{executor,candidate:catalog.find(c=>c.engine.id===request.engineId)!,resolvedReferences:refs.resolvedReferences,fluxDraftSource:refs.fluxDraftSource}))
     :priceCanonicalGeneration(request,tier,undefined,refs);
-  const confirmPrice:ConfirmGenerationDependencies['priceGeneration']=async(request,tier,deps)=>request.engineId==='seedance-2-5'&&request.mode==='v2v'
+  const confirmPrice:ConfirmGenerationDependencies['priceGeneration']=async(request,tier,deps)=>hasReviewedTariff(request)
     ?lasPricing(request,tier,deps):priceCanonicalGenerationInExecutor(request,tier,deps);
   const executable=()=>({executable:true as const,reason:'available' as const});
   const options={enabled:true,prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,priceGeneration:preparePrice},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,priceGeneration:confirmPrice}};
@@ -95,11 +143,27 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       'SELECT provider FROM app_jobs WHERE job_id=$1',[quote.quoteId])).rows[0].provider,'byteplus_modelark','The LAS reservation uses the executable provider identity');
     const calls=provider.captures.filter(call=>call.quoteId===quote.quoteId);assert.equal(calls.length,1);const body=calls[0].body;
     assert.equal(body.engineId,candidate.engine.id);assert.equal(body.mode,toEngineGenerationMode(candidate.engine.id,mode));
-    for(const selected of action.references??[])assert.ok(JSON.stringify(body).includes(workflowReference(selected.ref.kind,selected.role).storageUrl),'Selected owned media reaches actual dispatch projection');
+    if(candidate.engine.id==='luma-ray-3-2'&&mode==='extend'){assert.equal(request.sourceJobId,source.sourceJobId);assert.equal(request.sourceOutputId,source.outputId);assert.equal(body.sourceJobId,source.sourceJobId);assert.equal(body.sourceOutputId,source.outputId);assert.deepEqual(request.references,[]);}
+    else if(request.operation==='flux-draft-enhance'){assert.equal(request.sourceJobId,'workflow-draft-source');assert.equal(request.sourceOutputId,'workflow-draft-output');assert.deepEqual(request.references,[]);
+      const stored=(await pg.pool.query('SELECT pricing_snapshot FROM app_jobs WHERE job_id=$1',[quote.quoteId])).rows[0];assert.equal(stored.pricing_snapshot.base.seconds,10.041667,'Paired Draft quantity remains distinct from the ordinary 6s media metadata');}
+    else for(const selected of action.references??[])assert.ok(JSON.stringify(body).includes(workflowReference(selected.ref.kind,selected.role,undefined,candidate.engine.id).storageUrl),'Selected owned media reaches actual dispatch projection');
     const receipts=await pg.pool.query<{amount_cents:number}>(`SELECT amount_cents FROM app_receipts WHERE job_id=$1 AND type='charge'`,[quote.quoteId]);assert.deepEqual(receipts.rows.map(row=>row.amount_cents),[quote.price.amountCents]);
     totalCharge+=quote.price.amountCents;
   });
   assert.equal((await pg.pool.query<{total:number}>(`SELECT sum(amount_cents)::int AS total FROM app_receipts WHERE user_id=$1 AND type='charge'`,[workflowActor.userId])).rows[0].total,totalCharge);
+  await t.test('new source-operation confirmation rejects changed bytes at an unchanged owned URL before debit',async()=>{
+    const candidate=catalog.find(c=>c.engine.id==='flux-3')!;
+    const request=await studioMediaRequest(workflowActor,workflowAction(candidate,'v2v'),workflowInput,factories,true) as CanonicalGenerationRequest;
+    const prepared=await service.prepare(request);const dispatches=provider.captures.length;
+    // A valid MP4 with an extra trailing byte preserves timing but changes its bound hash.
+    servedSourceBytes=Buffer.concat([sourceBytes,Buffer.from([0])]);
+    try {
+      await assert.rejects(service.confirm({quoteId:prepared.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});
+      assert.equal(provider.captures.length,dispatches);
+      assert.equal((await pg.pool.query("SELECT count(*)::int AS n FROM app_receipts WHERE job_id=$1 AND type='charge'",[prepared.quoteId])).rows[0].n,0);
+      assert.equal((await pg.pool.query('SELECT url FROM media_assets WHERE public_id=$1',[workflowAssetIds.video])).rows[0].url,draftUrl);
+    } finally {servedSourceBytes=sourceBytes;}
+  });
   await t.test('canonical source facts are reread after the strict confirmation lock',async()=>{
     const request={schemaVersion:1 as const,surface:'video' as const,engineId:'wan-3',mode:'i2v' as const,prompt:'Keep this exact image.',settings:{durationSec:5,resolution:'720p',aspectRatio:'16:9',audio:false},references:[{kind:'asset' as const,assetId:workflowAssetIds.image,role:'first_frame' as const}],outputCount:1};
     const quote=await service.prepare(request);const before=provider.captures.length;

@@ -33,6 +33,63 @@ const baseJob = {
   created_at: new Date(Date.now() - 60_000).toISOString(),
 };
 
+test('Luma polling strips echoed private input grants from attempt snapshots while copying the exact output URL', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const inputGrant = 'https://media.example/user-assets/owner/source.mp4?X-Amz-Signature=INPUT_SECRET&X-Amz-Expires=3600';
+  const outputGrant = 'https://providers.lumalabs.ai/output.mp4?X-Amz-Signature=OUTPUT_GRANT';
+  let copied = false;
+  await runLumaAgentsPoll({ deps: {
+    claimPollFn: allowGenerationPoll,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [baseJob] as never;
+      if (/FROM provider_attempts/.test(sql)) return [{ id: 23, attempt_index: 1 }] as never;
+      if (/SET status = 'completed'/.test(sql)) return [{ job_id: baseJob.job_id }] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn: () => ({ getGeneration: async () => ({ id: 'gen_luma_123', state: 'completed',
+      source: { url: inputGrant }, details: encodeURIComponent(inputGrant), output: [{ type: 'video', url: outputGrant }] }) }),
+    ensureFastStartVideoFn: async ({ videoUrl }) => { assert.equal(videoUrl, outputGrant); copied = true; return 'https://media.maxvideoai.com/renders/completed.mp4'; },
+    detectVideoDimensionsFn: async () => ({ width: 1280, height: 720 }),
+    ensureJobThumbnailFn: async () => 'https://media.maxvideoai.com/renders/thumb.jpg',
+    upsertLegacyJobOutputsFn: async () => undefined,
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  } });
+  assert.equal(copied, true);
+  assert.ok(queries.some(entry => /UPDATE provider_attempts/.test(entry.sql)));
+  assert.doesNotMatch(JSON.stringify(queries), /INPUT_SECRET/);
+});
+
+test('Luma completion mirrors persisted EXR settings into attempt and job cost', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const job = { ...baseJob, duration_sec: 5, settings_snapshot: { inputMode: 'v2v',
+    core: { resolution: '720p' }, advanced: { extraInputValues: { hdr: true, exr_export: 'true' } } } };
+  await runLumaAgentsPoll({ deps: {
+    claimPollFn: allowGenerationPoll,
+    queryFn: async (sql, params) => {
+      queries.push({ sql, params });
+      if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+      if (/FROM provider_attempts/.test(sql)) return [{ id: 23, attempt_index: 1 }] as never;
+      if (/SET status = 'completed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn: () => ({ getGeneration: async () => ({ id: 'gen_luma_123', state: 'completed',
+      output: [{ type: 'video', url: 'https://providers.lumalabs.ai/output.mp4' }] }) }),
+    ensureFastStartVideoFn: async () => 'https://media.maxvideoai.com/renders/completed.mp4',
+    detectVideoDimensionsFn: async () => ({ width: 1280, height: 720 }),
+    ensureJobThumbnailFn: async () => 'https://media.maxvideoai.com/renders/thumb.jpg',
+    upsertLegacyJobOutputsFn: async () => undefined,
+    generateAndPersistJobPreviewVideoFn: async () => null,
+    generateAndPersistJobKeyframesFn: async () => [],
+  } });
+  const completed = queries.find(entry => /SET status = 'completed'/.test(entry.sql));
+  assert.ok(completed);
+  assert.equal(JSON.parse(String(completed.params?.[3])).provider_cost_usd, 3.24);
+  const attempt = queries.find(entry => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
+  assert.equal(attempt?.params?.[4], 3.24);
+});
+
 test('Luma Agents poll copies provider output before marking the job completed', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const outputs: unknown[] = [];
@@ -374,4 +431,25 @@ test('Luma Agents polling is isolated from Fal APIs and exposed through a cron r
   assert.match(readFileSync(routePath, 'utf8'), /x-luma-agents-poll-token/);
   assert.match(readFileSync(routePath, 'utf8'), /runLumaAgentsPoll/);
   assert.match(readFileSync(vercelConfigPath, 'utf8'), /luma-agents-poll/);
+});
+
+test('Extend bills five seconds but persists measured output timing without assuming timeline assembly', async () => {
+  const job={...baseJob,duration_sec:5,settings_snapshot:{inputMode:'extend',sourceJobId:'job-source',core:{resolution:'720p'}}};
+  let measured=false;
+  await runLumaAgentsPoll({deps:{
+    claimPollFn:allowGenerationPoll,
+    queryFn:async(sql)=>{
+      if(/FROM app_jobs/.test(sql)&&/provider = \$1/.test(sql))return [job] as never;
+      if(/FROM provider_attempts/.test(sql))return [{id:23,attempt_index:1}] as never;
+      if(/SET status = 'completed'/.test(sql))return [{job_id:job.job_id}] as never;
+      return [] as never;
+    },
+    getLumaAgentsClientFn:()=>({getGeneration:async()=>({id:job.provider_job_id,state:'completed',output:[{type:'video',url:'https://provider.example/out.mp4'}]})}),
+    ensureFastStartVideoFn:async()=> 'https://media.example/out.mp4',detectVideoDimensionsFn:async()=>({width:1280,height:720}),
+    ensureJobThumbnailFn:async()=> 'https://media.example/thumb.jpg',
+    upsertLegacyJobOutputsFn:async(output)=>{assert.equal(output.duration_sec,null);},
+    hydrateOwnedVideoMediaFactsFn:async(input)=>{assert.equal(input.ref.type,'job-output');assert.equal(input.expectedUrl,'https://media.example/out.mp4');measured=true;return {} as never;},
+    generateAndPersistJobPreviewVideoFn:async()=>null,generateAndPersistJobKeyframesFn:async()=>[],
+  }});
+  assert.equal(measured,true);
 });

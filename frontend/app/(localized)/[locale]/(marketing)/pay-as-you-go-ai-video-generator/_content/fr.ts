@@ -216,7 +216,7 @@ export const frPayAsYouGoContent = {
     budgetTemplate: "Vous prévoyez trois essais ? Avec un devis inchangé de {unitPrice}, trois générations terminées consommeraient {totalPrice} de crédits média.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio désactivé.",
     budgetCaveat: "C’est une illustration de budget, sans garantie que trois essais donnent le résultat souhaité. Les crédits média consommés sont distincts de la recharge minimale, à partir de 10 $. Des réglages ou tarifs différents nécessitent un nouveau devis.",
-    studioAssistance: "Vous utilisez Studio ? Sol consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
+    studioAssistance: "Vous utilisez Studio ? Milo Max consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
     studioLinkLabel: "Ouvrir Studio",
     creditNotes: {
       "title": "Validité des crédits avant de recharger",
@@ -230,8 +230,8 @@ export const frPayAsYouGoContent = {
           "body": "Ils n’ont pas de valeur monétaire et ne sont pas remboursables. Consultez les conditions de validité de l’offre ; si elles ne sont pas précisées, contactez l’assistance avant de leur appliquer les règles des crédits média ou de Studio."
         },
         {
-          "title": "Crédits d’assistance Studio",
-          "body": "GPT-6.1 Sol inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Sol achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. GPT-6 Luna n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+          "title": "Crédits d’assistance Milo",
+          "body": "Milo Max (GPT-6.1 Sol) inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Max achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Standard (GPT-6 Luna) n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
         }
       ],
       "links": {

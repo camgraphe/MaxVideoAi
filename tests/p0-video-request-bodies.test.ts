@@ -410,7 +410,7 @@ test('paid MCP provider slots are selected from each active P0 schema', () => {
   });
 });
 
-test('all 27 P0 engine modes have exact whole site and paid MCP request bodies', () => {
+test('all 31 P0 engine modes have exact whole site and paid MCP request bodies', () => {
   const p0Ids = new Set([
     'wan-3', 'wan-3-prime', 'ltx-2-5-fast', 'ltx-2-5-pro',
     'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
@@ -418,7 +418,7 @@ test('all 27 P0 engine modes have exact whole site and paid MCP request bodies',
   const cases = listFalEngines()
     .filter((entry) => p0Ids.has(entry.id))
     .flatMap((entry) => entry.modes.map(({ mode, falModelId }) => ({ entry, mode, falModelId })));
-  assert.equal(cases.length, 27);
+  assert.equal(cases.length, 31);
 
   for (const { entry, mode, falModelId } of cases) {
     const isWan = entry.id === 'wan-3' || entry.id === 'wan-3-prime';
@@ -426,6 +426,28 @@ test('all 27 P0 engine modes have exact whole site and paid MCP request bodies',
     const isGrok = entry.id === 'grok-imagine-video-1-5';
     const isFlux = entry.id === 'flux-3' || entry.id === 'flux-3-draft';
     assert.equal(isWan || isLtx || isGrok || isFlux, true, entry.id);
+
+    if(isFlux && mode==='v2v') {
+      const enhance=entry.id==='flux-3-draft';
+      const operation=enhance?'flux-draft-enhance':'flux-fast-edit';
+      const resolution=enhance?'1080p':'720p';
+      const request:CanonicalGenerationRequest={schemaVersion:1,surface:'video',engineId:entry.id,mode,operation,
+        prompt:enhance?'':prompt,settings:{resolution},references:enhance?[]:[{kind:'https',url:videoUrl,role:'source',mediaKind:'video'}],outputCount:1,
+        ...(enhance?{sourceJobId:'owned-native-draft',sourceOutputId:'owned-output'}:{})};
+      const body=buildPaidVideoRequestBody({quoteId:`quote-${entry.id}-${mode}`,request,engine:entry.engine,canonicalPricing:{membershipTier:'member'}});
+      assert.deepEqual(body,{...paidBase(entry.id,mode,{resolution}),operation,prompt:request.prompt,
+        ...(enhance?{sourceJobId:'owned-native-draft',sourceOutputId:'owned-output'}:{videoUrl,inputs:[{kind:'video',slotId:'video_url',url:videoUrl}]})});
+      const payload:GeneratePayload={engineId:entry.id,mode,operation,prompt:request.prompt,resolution,...(!enhance?{videoUrl}:{})};
+      if(enhance)assert.throws(()=>buildFalGenerationRequest(payload,falModelId),/server-resolved paired cache/);
+      // Private proof represents the server qualifier seam, never a public request field.
+      const trusted=enhance?{trustedFluxDraftCache:{url:'https://v3.fal.media/cache.bin',fingerprint:'qualified-pair'}}:{};
+      const expected={model:enhance?'blackforestlabs/flux-3/draft-enhance':'blackforestlabs/flux-3/edit-video',
+        requestBody:enhance?{draft_cache_url:'https://v3.fal.media/cache.bin',safety_tolerance:2}:{prompt,video_url:videoUrl,safety_tolerance:2}};
+      assert.deepEqual(buildFalGenerationRequest({...payload,...trusted},falModelId),expected);
+      assert.deepEqual(buildFalGenerationRequest({...body,...trusted} as GeneratePayload,falModelId),expected);
+      assert.doesNotMatch(JSON.stringify(body),/draft_cache_url|trustedFluxDraftCache|qualified-pair/);
+      continue;
+    }
 
     const settings: CanonicalGenerationRequest['settings'] = isWan
       ? { durationSec: 5, resolution: '720p', aspectRatio: 'auto', audio: true }
@@ -578,6 +600,12 @@ test('all 27 P0 engine modes have exact whole site and paid MCP request bodies',
             { kind: 'image', slotId: 'end_image_url', url: endUrl },
           ],
         });
+      } else if (mode === 'ref2v') {
+        settings.keyframeIndexes='0,120';
+        payload.referenceImages=[startUrl,endUrl];payload.extraInputValues={keyframe_indexes:'0,120'};
+        Object.assign(expectedSite,{safety_tolerance:2,keyframes:[{image_url:startUrl,frame_index:0},{image_url:endUrl,frame_index:120}]});
+        references.push({kind:'https',url:startUrl,role:'reference',mediaKind:'image'},{kind:'https',url:endUrl,role:'reference',mediaKind:'image'});
+        Object.assign(expectedPaid,{extraInputValues:{keyframe_indexes:'0,120'},referenceImages:[startUrl,endUrl],inputs:[{kind:'image',slotId:'reference_image_urls',url:startUrl},{kind:'image',slotId:'reference_image_urls',url:endUrl}]});
       } else if (mode === 'extend') {
         payload.inputs = [attachment('video', 'video_url', videoUrl)];
         expectedSite.video_url = videoUrl;

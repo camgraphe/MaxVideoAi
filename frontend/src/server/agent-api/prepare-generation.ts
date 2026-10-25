@@ -1,3 +1,7 @@
+import { prepareOwnedFluxDraftSource } from '@/server/prepare-flux-draft-source';
+import { validateGenerationPricingCapabilities } from './generation-pricing-read';
+import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import {videoWorkflowNotices,type VideoWorkflowNotice} from '@/lib/video-workflow-capabilities';
 import { readSeedanceWorkflowPrices, type SeedanceWorkflowPrices } from './seedance-workflow-prices';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import {customerDisplayPrice,type CustomerDisplayPrice} from '@/lib/customer-price-presentation';
@@ -77,6 +81,7 @@ export type PrepareGenerationInput = Omit<
 };
 
 export type PreparedGeneration = {
+  notices?: readonly VideoWorkflowNotice[];
   seedanceWorkflowPrices?: SeedanceWorkflowPrices;
   sourceVideoOutput?: import('@/lib/seedance-edit-source').SeedanceEditSourceFacts;
   quoteId: string;
@@ -99,6 +104,8 @@ type QuoteInsertDependencies = {
 };
 
 export type PrepareGenerationDependencies = {
+  prepareFluxDraftSource?: typeof prepareOwnedFluxDraftSource;
+  resolveFluxLineage?: typeof import('./generation-flux-lineage').resolveCanonicalFluxLineage;
   paidGenerationEnabled(): boolean;
   getAccountRestriction(userId: string): Promise<AccountRestriction>;
   listPublicEngines(): Promise<AgentPublicGenerationEngine[]>;
@@ -314,6 +321,15 @@ export async function prepareGenerationForActor(
   }
   if (originalTrialCandidate && !prospectiveTrial) requirePaidGeneration(dependencies);
 
+  if (request.operation === 'flux-draft-enhance') {
+    const entry=(await dependencies.listPublicEngines()).find(candidate=>candidate.engine.id===request!.engineId);
+    if(!entry)throw new AgentApiError('ENGINE_UNAVAILABLE','This model is unavailable.');
+    const engine=resolveVideoOperationEngine(entry.engine,'v2v',request.operation);
+    validateGenerationPricingCapabilities(request,{...entry,engine,modeCaps:{...entry.modeCaps,v2v:engine.modeCaps?.v2v}});
+    if(!request.sourceJobId||request.references.length)throw new AgentApiError('REFERENCE_REQUIRED','Choose one owned native Draft generation.');
+    await (dependencies.prepareFluxDraftSource??prepareOwnedFluxDraftSource)({userId:principal.userId,sourceJobId:request.sourceJobId,sourceOutputId:request.sourceOutputId});
+  }
+
   const {pricing, pricingSnapshot: verifiedPricingSnapshot, resolvedReferences, catalogRevision, request: verifiedRequest, resolvedEngine} = await readGenerationPricing(request, principal, dependencies);
   request = verifiedRequest;
   const pricingSnapshot = bindStudioReferenceSnapshot(verifiedPricingSnapshot, principal, resolvedReferences);
@@ -427,6 +443,7 @@ export async function prepareGenerationForActor(
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
+    ...(videoWorkflowNotices(request.engineId,request.mode).length ? {notices:videoWorkflowNotices(request.engineId,request.mode)} : {}),
     ...(pricing.pricingSnapshot.meta && typeof pricing.pricingSnapshot.meta === 'object'
       && (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource
       ? { sourceVideoOutput: (pricing.pricingSnapshot.meta as Record<string, unknown>).seedanceEditSource as import('@/lib/seedance-edit-source').SeedanceEditSourceFacts } : {}),

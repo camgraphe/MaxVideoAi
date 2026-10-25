@@ -3,9 +3,9 @@
   "versionLabel": "3",
   "seo": {
     "title": "FLUX 3 Video Generator: Frames, Images and Extension",
-    "description": "Plan FLUX 3 Video text, image, first-and-last-frame and extension workflows with exact input boundaries, production prompting and canonical mode pricing."
+    "description": "Create FLUX 3 videos from text, images or 1–10 timed keyframes, extend a source clip, or use FAST Edit with a compatible short MP4."
   },
-  "overview": "FLUX 3 Video is the current production route in the new FLUX video family. It supports prompt-only generation, opening-image animation, exact first-and-last-frame guidance and source-video extension. Black Forest Labs owns FLUX; MaxVideoAI distributes these launch endpoints through Fal rather than a direct Black Forest Labs route.",
+  "overview": "FLUX 3 Video supports text, opening-image, first-and-last-frame, timed-keyframe and native Extend workflows. FAST Edit is a separate 720p source-video operation; it is not the FLUX 3 Max quality tier. Black Forest Labs owns FLUX; MaxVideoAI distributes these endpoints through Fal.",
   "decision": {
     "modelSlug": "flux-3",
     "hero": {
@@ -17,7 +17,7 @@
         "first and last frames",
         "extend a short source clip"
       ],
-      "paragraph": "Choose FLUX 3 when a production brief needs one of four explicit workflows. First-and-last-frame mode requires both anchors; extend mode requires an eligible source video and uses its own canonical rate facts. Black Forest Labs owns the model family, while Fal distributes MaxVideoAI execution for this launch.",
+      "paragraph": "Choose text, an opening image, both boundary frames, 1–10 timed keyframes, or native Extend. FAST Edit changes a compatible source at 720p while inheriting its timing, framing and audio. Each workflow has its own inputs and current quote.",
       "primaryCta": {
         "label": "Generate with FLUX 3",
         "href": "/app?engine=flux-3"
@@ -62,7 +62,6 @@
       "description": "FLUX 3 videos with their prompts and settings",
       "renderLabel": "Review accepted output",
       "badges": [
-        "Four workflows",
         "720p",
         "1080p"
       ],
@@ -70,8 +69,8 @@
     },
     "features": [
       {
-        "title": "Four explicit generation modes",
-        "body": "Text, image, first-and-last-frame and extension each keep their own required inputs. The product does not rename keyframes or draft enhancement as generic supported modes.",
+        "title": "Creation, keyframes and source operations",
+        "body": "Create from text or images, bridge two required frames, or place 1–10 ordered keyframes at unique integer positions from 0 through requested seconds × 24. That indexing rule is not a promise about output cadence.",
         "tone": "reference"
       },
       {
@@ -132,6 +131,14 @@
       {
         "title": "Video extension",
         "body": "Use an eligible source clip and continue its established motion, camera, identity and atmosphere."
+      },
+      {
+        "title": "Keyframes",
+        "body": "Use 1–10 ordered images and unique frame positions from 0 through requested seconds × 24. Choose 5–20 whole seconds; first-and-last-frame mode still requires both anchors."
+      },
+      {
+        "title": "FAST Edit",
+        "body": "FAST Edit uses an MP4 strictly shorter than 15 seconds and smaller than 50 MB. Output is 720p and inherits measured source timing, framing and audio. Prepare a compatible copy for MOV or HEVC and review its actual duration."
       }
     ],
     "pricingCopy": {
@@ -143,7 +150,7 @@
     },
     "meta": {
       "title": "FLUX 3 Video Model, Frame Control and Extend Pricing",
-      "description": "Evaluate FLUX 3 text, image, first-last-frame and extend modes, source limits, prompt structure, safety and canonical mode-aware quotes."
+      "description": "Create FLUX 3 videos from text, images or 1–10 timed keyframes, extend a source clip, or use FAST Edit with a compatible short MP4."
     }
   },
   "prompting": {
@@ -184,7 +191,7 @@
     "tabNotes": [
       {
         "tabId": "mode",
-        "body": "The canonical launch supports fl2v, not a generic keyframe sequence with arbitrary intermediate frames."
+        "body": "Keyframes is a separate workflow with 1–10 indexed images; first-and-last-frame still requires both anchors."
       },
       {
         "tabId": "transition",
@@ -202,8 +209,8 @@
       "Review rights, consent, safety, unintended text and watermarks before approval."
     ],
     "engineWhy": [
-      "FLUX 3 separates first-last-frame control from ordinary image animation.",
-      "A dedicated extension route preserves source-video ownership and pricing context.",
+      "Create from text or images, bridge two required frames, or place 1–10 ordered keyframes at unique integer positions from 0 through requested seconds × 24. That indexing rule is not a promise about output cadence.",
+      "FAST Edit uses an MP4 strictly shorter than 15 seconds and smaller than 50 MB. Output is 720p and inherits measured source timing, framing and audio. Prepare a compatible copy for MOV or HEVC and review its actual duration.",
       "Standard output supports 720p and 1080p for review and production decisions."
     ],
     "demo": {

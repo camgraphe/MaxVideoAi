@@ -233,6 +233,7 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         falModelId: SEEDANCE_2_ENDPOINTS.fast.v2v,
         ui: {
           modes: ['v2v'],
+          durationPolicy: 'requested',
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
           resolution: ['480p', '720p'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],

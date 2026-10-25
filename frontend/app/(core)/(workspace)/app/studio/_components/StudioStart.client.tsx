@@ -40,7 +40,7 @@ export function StudioStart({accountKey,unavailable=false,starter,exampleId,cont
   return <section className={styles.studio} data-tone={resolvedTheme==='light'?'olive':'charcoal'} aria-label={locale==='fr'?'Studio conversationnel':'Conversational Studio'}>
     <header className={styles.header}><div><h1>Studio<span className={styles.headerDot}>.</span></h1></div></header>
     <div className={styles.canvas}><div className={styles.conversation} data-empty="true">
-      <div className={styles.log}><ConversationWelcome locale={locale==='fr'?'fr':'en'} hasDraft onDraft={()=>{}} onReference={()=>{}}/></div>
+      <div className={styles.log}><ConversationWelcome locale={locale==='fr'?'fr':'en'} hasDraft onDraft={()=>{}}/></div>
       <ImageConversationComposer text="" onTextChange={()=>{}} onSend={()=>{}} blocked readOnly libraryTrigger={libraryTrigger} onOpenLibrary={()=>{}} locale={locale==='fr'?'fr':'en'}/>
       {unavailable||creation.error?<div className={styles.error} role="alert"><p>{unavailable?copy.unavailable:copy[creation.error!]}</p><button onClick={()=>unavailable?router.refresh():open()}>{copy.retry}</button></div>:<p className={styles.footnote} role="status">{copy.opening}</p>}
     </div></div>

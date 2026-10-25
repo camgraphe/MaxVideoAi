@@ -64,6 +64,15 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
     ],
     optional: [
       {
+        id: 'end_image_url',
+        type: 'image',
+        label: 'End image',
+        modes: ['i2v'],
+        minCount: 0,
+        maxCount: 1,
+        source: 'either',
+      },
+      {
         id: 'duration',
         type: 'enum',
         label: 'Duration (seconds)',
@@ -74,6 +83,7 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
         id: 'aspect_ratio',
         type: 'enum',
         label: 'Aspect ratio',
+        modes: ['t2v'],
         values: ['16:9', '9:16', '1:1'],
         default: '16:9',
       },
@@ -101,15 +111,11 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
         id: 'cfg_scale',
         type: 'number',
         label: 'CFG scale',
+        modes: ['t2v'],
         min: 0,
         max: 1,
         step: 0.05,
         default: 0.5,
-      },
-      {
-        id: 'seed',
-        type: 'number',
-        label: 'Seed',
       },
     ],
     constraints: {

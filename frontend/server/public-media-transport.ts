@@ -103,7 +103,7 @@ export function headerValue(
 export async function openPublicHttpsResponse(
   source: string,
   dependencies: ReferenceFileDownloaderDependencies = { lookupHost: lookupPublicHost, openPinnedHttps },
-  options?: { signal?: AbortSignal; timeoutMs?: number },
+  options?: { signal?: AbortSignal; timeoutMs?: number; redirect?: 'follow' | 'error' },
 ): Promise<ReferenceHttpsResponse> {
   let url = parseHttpsUrl(source);
   for (let redirectsRemaining = 3; ; redirectsRemaining -= 1) {
@@ -120,6 +120,7 @@ export async function openPublicHttpsResponse(
     const response = await dependencies.openPinnedHttps(url, addresses[0], options);
     if ([301, 302, 303, 307, 308].includes(response.statusCode)) {
       try {
+        if (options?.redirect==='error') throw new AgentApiError('REFERENCE_INVALID', 'The host file redirect is not permitted.');
         const location = headerValue(response.headers, 'location');
         if (!location || redirectsRemaining < 1) {
           throw new AgentApiError('REFERENCE_INVALID', 'The host file redirect is invalid.');

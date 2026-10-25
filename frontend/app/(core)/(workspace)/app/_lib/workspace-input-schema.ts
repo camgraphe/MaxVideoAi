@@ -19,6 +19,7 @@ import {
 } from './workspace-engine-helpers';
 import type { FormState } from './workspace-form-state';
 import { getEngineModeUnavailableMessage, isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 
 export type WorkspaceInputFieldEntry = {
   field: EngineInputField;
@@ -151,6 +152,11 @@ export function summarizeWorkspaceInputSchema({
       })
     : null;
   const appliesToMode = (field: EngineInputField) => {
+    // Source-video workflows keep their own inputs, including supported optional references.
+    // Cross-mode creation fields must not leak into Modify, Extend or Reframe.
+    if (isVideoSourceWorkflow(activeMode)) return !field.modes?.length || field.modes.includes(activeMode);
+    if ((selectedEngine?.id === 'wan-3' || selectedEngine?.id === 'wan-3-prime')
+      && selectedEngine.modes.includes('ref2v') && ['file_url', 'web_url'].includes(field.id) && field.modes?.includes('ref2v')) return true;
     if (allowsMultimodalReferences
       && (field.type === 'image' || field.type === 'video' || field.type === 'audio')
       && field.modes?.some((mode) => selectedEngine?.modes.includes(mode))) return true;
@@ -266,7 +272,16 @@ export function summarizeWorkspaceInputSchema({
         return;
       }
       if (localizedField.type === 'image' || localizedField.type === 'video' || localizedField.type === 'audio') {
-        if (isUnifiedKlingO3 && localizedField.id === 'start_image_url') {
+        // Mode-specific definitions can share a slot; cross-mode entry still renders one picker.
+        const existingIndex = assetFields.findIndex(({ field: existing }) => existing.id === localizedField.id);
+        if (existingIndex >= 0) {
+          const existing = assetFields[existingIndex].field;
+          const priority = (candidate: EngineInputField) => !candidate.modes?.length || candidate.modes.includes(activeMode)
+            ? 2 : !isVideoSourceWorkflow(activeMode) && candidate.modes.some(mode => !isVideoSourceWorkflow(mode)) ? 1 : 0;
+          if (priority(localizedField) <= priority(existing)) return;
+          assetFields.splice(existingIndex, 1);
+        }
+        if (isUnifiedKlingO3 && !isVideoSourceWorkflow(activeMode) && localizedField.id === 'start_image_url') {
           return;
         }
         const role = resolveAssetFieldRole(localizedField, required);
@@ -302,7 +317,8 @@ export function summarizeWorkspaceInputSchema({
   ingest(schema.required, 'required');
   ingest(schema.optional, 'optional');
 
-  const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : true;
+  const operationPromptRequired = selectedEngine.activeVideoOperation ? selectedEngine.operationCaps?.[selectedEngine.activeVideoOperation]?.promptRequired : undefined;
+  const promptRequired = promptField ? isRequired(promptField, promptFieldOrigin ?? 'optional') : operationPromptRequired ?? true;
   const negativePromptRequired = negativePromptField
     ? isRequired(negativePromptField, negativePromptOrigin ?? 'optional')
     : false;

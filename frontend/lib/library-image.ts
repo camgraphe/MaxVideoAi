@@ -1,4 +1,6 @@
-export type LibraryImageMedia = {
+import type { MediaReadAccess } from './media-read-access';
+
+export type LibraryImageMedia = MediaReadAccess & {
   url: string;
   thumbUrl?: string | null;
   kind?: 'image' | 'video' | 'audio' | null;

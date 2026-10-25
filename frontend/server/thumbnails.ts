@@ -49,6 +49,7 @@ function isCaptureEnabled(): boolean {
 }
 
 type EnsureThumbnailOptions = {
+  storeImage?: (data: Buffer) => Promise<UploadResult>;
   jobId: string;
   userId?: string | null;
   videoUrl: string;
@@ -83,6 +84,7 @@ export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promi
 
   try {
     const upload = await captureThumbnailFromVideo({
+      storeImage: options.storeImage,
       jobId,
       userId: userId ?? undefined,
       videoUrl,
@@ -98,6 +100,7 @@ export async function ensureJobThumbnail(options: EnsureThumbnailOptions): Promi
 }
 
 async function captureThumbnailFromVideo(params: {
+  storeImage?: (data: Buffer) => Promise<UploadResult>;
   jobId: string;
   userId?: string;
   videoUrl: string;
@@ -155,6 +158,7 @@ async function captureThumbnailFromVideo(params: {
       return null;
     }
 
+    if (params.storeImage) return params.storeImage(imageBuffer);
     const upload = await uploadImageToStorage({
       data: imageBuffer,
       mime: 'image/jpeg',

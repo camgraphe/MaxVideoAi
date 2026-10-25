@@ -1,3 +1,7 @@
+import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
+import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
+import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
+import { normalizeVideoOperation, usesOperationReferenceSettlement } from '@/lib/video-operation';
 import {
   computePricingDefinitionFacts,
   type PricingFacts,
@@ -100,6 +104,52 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (['flux-3','flux-3-draft'].includes(engine.id) && context.mode==='ref2v') {
+    const cents=engine.id==='flux-3-draft'?(resolution==='720p'?6:undefined):({'720p':17,'1080p':29} as Record<string,number>)[resolution??''];
+    if(!cents||!Number.isSafeInteger(durationSec)||durationSec<5||durationSec>20||currency!=='USD')throw new Error('Unsupported keyframe pricing domain.');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:durationSec*cents},factsMetadata:{manualTariffAudio:null},
+      meta:{pricing_model:'flux_keyframes',operation:'flux-keyframes',provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false}});
+  }
+  if (isFluxLtxSourceOperation(context.operation)) {
+    const bounds=fluxLtxDurationBounds(context.operation);
+    if (!Number.isFinite(durationSec)||durationSec<=0||(bounds.maxExclusive?durationSec>=bounds.max:durationSec>bounds.max)||currency!=='USD') throw new Error('Unsupported source operation pricing domain.');
+    const cents=fluxLtxReferenceRate(context.operation,resolution??'');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:Math.ceil(durationSec*cents)},factsMetadata:{manualTariffAudio:null},
+      meta:{pricing_model:'flux_ltx_source_operation',operation:context.operation,provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false,input_video_seconds:durationSec,pricing_basis:context.operation==='flux-draft-enhance'?'measured_owned_draft_duration':'measured_source_duration'}});
+  }
+  if (engine.id === 'luma-ray-3-2' && context.mode === 'extend') {
+    const amount = ({ '540p': 15, '720p': 30, '1080p': 120 } as Record<string, number>)[resolution ?? ''];
+    if (!amount || durationSec !== 5 || currency !== 'USD') throw new Error('Unsupported Luma fixed extension block.');
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: amount,
+      base: { seconds: 5, rate: amount / 500, unit: 'sec', amountCents: amount },
+      meta: { pricing_model: 'luma_fixed_extend', provider_cost_source: 'luma_single_keyframe_extend_public_price',
+        fixed_extension_seconds: 5, output_layout: 'unverified' } });
+  }
+  if (engine.id === 'minimax-h3-max' && context.mode === 'v2v' && isH3SourceOperation(context.operation)) {
+    const min = context.operation === 'h3-recast' ? 5 : 56/24, max = context.operation === 'h3-recast' ? 30 : 15;
+    if (!Number.isFinite(durationSec) || durationSec < min || durationSec > max || currency !== 'USD') throw new Error('Unsupported H3 source pricing domain.');
+    const cents = h3OperationRate(context.operation,resolution??'');
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:durationSec*cents,
+      base:{seconds:durationSec,rate:cents/100,unit:'sec',amountCents:Math.ceil(durationSec*cents)},
+      meta:{pricing_model:'h3_source_operation',operation:context.operation,provider_cost_source:'dated_public_endpoint_rate_2026_10_24',effective_supplier_charge_verified:false,input_video_seconds:durationSec,reference_included:true} });
+  }
+  const operationRate = klingOperationPublishedRate(engine.id, context.mode ?? 't2v', context.operation);
+  if (operationRate) {
+    if (!Number.isFinite(durationSec) || durationSec < 3 || durationSec > 15) throw new Error('Unsupported Kling operation duration.');
+    const expectedResolution = engine.id === 'kling-o3-standard' ? '720p' : engine.id === 'kling-o3-pro' ? '1080p' : '4k';
+    if (resolution !== expectedResolution) throw new Error('Unsupported Kling operation resolution.');
+    if (currency !== 'USD') throw new Error('Kling operation reference rates are documented in USD only.');
+    const amount = durationSec * operationRate.centsPerSecond;
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: amount,
+      base: { seconds: durationSec, rate: operationRate.centsPerSecond / 100, unit: 'sec', amountCents: Math.ceil(amount) },
+      meta: { pricing_model: 'kling_fal_operation', videoOperation: operationRate,
+        provider_cost_source: 'dated_public_endpoint_rate', effective_supplier_charge_verified: false,
+        output_duration_sec: durationSec },
+    });
+  }
+
   const mode = context.mode ?? 't2v';
 
   if (engine.id === 'gemini-omni-flash') {
@@ -271,7 +321,7 @@ function buildBillingPricingFactsInternal(
       hdr: booleanAddon(context.addons?.hdr),
       exrExport: booleanAddon(context.addons?.exr_export ?? context.addons?.exrExport),
     });
-    const seconds = mode === 'reframe' ? durationSec : reference.breakdown.duration === '10s' ? 10 : 5;
+    const seconds = reference.breakdown.durationSec;
     return resultFromFacts({
       engineId: engine.id,
       currency,
@@ -520,10 +570,16 @@ function buildBillingPricingFactsInternal(
 
 /** The factual owner identifies whether requested orientation changes the billing amount. */
 export function buildBillingPricingFacts(context: PricingContext, pricingDetails: EnginePricingDetails | undefined, currency: string): BillingPricingFacts {
+  const operation = normalizeVideoOperation(context.engine.id, context.mode ?? 't2v', context.operation);
+  if (operation !== context.operation) context = { ...context, operation };
   const engine = applyEngineVariantPricing(context.engine, context.mode);
   const effectiveContext = normalizeSeedancePricingContext(engine === context.engine ? context : { ...context, engine });
   const details = engine === context.engine ? pricingDetails : engine.pricingDetails;
   const result = buildBillingPricingFactsInternal(effectiveContext, details, currency);
+  if (usesOperationReferenceSettlement(context.engine.id, context.mode ?? 't2v', context.operation)) {
+    result.meta = { ...result.meta, supplierReferenceSettlementRounding: 'nearest',
+      supplierReferenceExactCents: result.facts.vendorSubtotalExactCents, effective_supplier_charge_verified: false };
+  }
   const identityFacts = { ...result.meta, ...result.facts.metadata };
   const tokenBreakdown = engine.id === 'gemini-omni-flash'
     ? result.meta.cost_breakdown_usd as { outputTokens: number; inputImageTokens: number; inputVideoTokens: number } : undefined;

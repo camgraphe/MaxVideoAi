@@ -1,4 +1,5 @@
 import type { WorkspaceModelSetup } from './workspace-model-candidate';
+import { normalizeVideoOperation } from '@/lib/video-operation';
 
 export const MAX_WORKSPACE_MODEL_SETUP_BYTES = 1024 * 1024;
 export type WorkspaceModelSetupError = 'invalid' | 'incomplete' | 'oversized';
@@ -163,6 +164,7 @@ export function serializeWorkspaceModelSetup(
         .filter((key) => f[key] !== undefined)
         .map((key) => [key, f[key]]),
     );
+    if (f.operation !== undefined) form.operation = normalizeVideoOperation(f.engineId, f.mode, f.operation);
     const inputAssets = Object.fromEntries(
       Object.entries(value.inputAssets).map(([field, entries]) => {
         if (!field.trim() || !Array.isArray(entries)) throw new Error('invalid');

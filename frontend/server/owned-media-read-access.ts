@@ -1,4 +1,5 @@
-import { createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
+import { canReadMarketingFile } from '@/server/marketing-media/access';
+import { createSignedDownloadUrl, extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from './storage-read';
 
 /** Transient server read access; callers persist the original URL, never this grant. */
 export async function createOwnedMediaReadUrl(
@@ -17,7 +18,10 @@ export async function createOwnedMediaReadUrl(
     throw new Error('MEDIA_NOT_AVAILABLE');
   }
   const key = input.userId ? ownedMediaStorageKeyForUrl({ url: input.url, userId: input.userId }) : null;
-  if (!key) throw new Error('MEDIA_NOT_AVAILABLE');
+  if (!key) {
+    if (storageKey.startsWith('marketing-media/') && await canReadMarketingFile(input.url, input.userId)) return input.url;
+    throw new Error('MEDIA_NOT_AVAILABLE');
+  }
   const requestedTtl = input.expiresInSeconds ?? 300;
   const expiresInSeconds = Number.isFinite(requestedTtl) ? Math.min(3600, Math.max(1, Math.trunc(requestedTtl))) : 300;
   return (dependencies.sign ?? createSignedDownloadUrl)(key, { expiresInSeconds, ...(input.method === 'HEAD' ? { method: 'HEAD' as const } : {}), ...(input.downloadFilename ? { downloadFilename: input.downloadFilename } : {}) });

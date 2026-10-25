@@ -62,6 +62,9 @@ test('targeted engine links stay authoritative over stored drafts', () => {
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return null;/);
   assert.doesNotMatch(engineModeHookSource, /if\s*\(\s*hasStoredFormRef\.current\s*\)\s*return;\s*setForm/);
   assert.match(engineModeHookSource, /candidate\?\.engineId !== nextState\.engineId/);
+  assert.match(appSource, /requestedWorkflow: draft.requestedWorkflow/);
+  const composerSource = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState.ts', 'utf8');
+  assert.match(composerSource, /useWorkspaceEngineModeState\(\{[\s\S]*?requestedWorkflow,/);
 
   assert.doesNotMatch(appSource, /suppressGuidedSampleAutoApply/);
 });
@@ -132,7 +135,8 @@ test('model review owns account-scoped snapshots and atomic application outside 
   const controller = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceModelReview.ts', 'utf8');
   const serializer = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups.ts', 'utf8');
   assert.match(ready, /useWorkspaceModelReview/);
-  assert.match(ready, /handleEngineChange=\{modelReview.switchModel\}/);
+  assert.match(ready, /handleEngineChange=\{modelReview.switchPickerModel\}/);
+  assert.match(controller, /switchPickerModel: \(id: string\) => switchModel\(id, true\)/);
   assert.match(ready, /onGuestEngineChange: composer.handleEngineChange/);
   assert.doesNotMatch(app + ready, /sessionStorage\.(getItem|setItem).*model-setups/);
   assert.match(controller, /prepareWorkspaceModelCandidate/);

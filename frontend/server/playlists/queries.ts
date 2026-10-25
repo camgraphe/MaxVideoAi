@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { query } from '@/lib/db';
 import {
   mapPlaylistItemRow,
@@ -9,7 +10,7 @@ import { comparePlaylists } from './runtime-meta';
 import type { PlaylistItemRecord, PlaylistRecord } from './types';
 
 export async function listPlaylistRows(whereClause = '', params?: ReadonlyArray<unknown>): Promise<PlaylistSummaryRow[]> {
-  return query<PlaylistSummaryRow>(
+  return marketingVideoReader({ query }).query<PlaylistSummaryRow>(
     `SELECT
         p.id,
         p.slug,
@@ -81,7 +82,7 @@ export async function getPlaylistBySlug(slug: string): Promise<PlaylistRecord | 
 }
 
 export async function getPlaylistItems(playlistId: string): Promise<PlaylistItemRecord[]> {
-  const rows = await query<PlaylistItemRow>(
+  const rows = await marketingVideoReader({ query }).query<PlaylistItemRow>(
     `SELECT
         pi.playlist_id,
         pi.video_id,

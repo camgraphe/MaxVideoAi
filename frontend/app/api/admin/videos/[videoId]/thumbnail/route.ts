@@ -1,3 +1,6 @@
+import { revalidateMarketingPublication } from '@/server/marketing-media/revalidate';
+import { refreshMarketingThumbnail } from '@/server/marketing-media/thumbnail';
+import { MarketingMediaError } from '@/server/marketing-media/snapshot';
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -58,6 +61,9 @@ export async function POST(req: NextRequest, props: RouteParams) {
   const seekSec = typeof payload.seekSec === 'number' && Number.isFinite(payload.seekSec) ? Math.max(0, payload.seekSec) : 0;
 
   try {
+    const marketingThumb = await refreshMarketingThumbnail(videoId, seekSec);
+    if (marketingThumb) await revalidateMarketingPublication(videoId);
+    if (marketingThumb) return NextResponse.json({ ok: true, thumbUrl: marketingThumb, seekSec });
     await ensureBillingSchema();
     const rows = await query<ThumbnailRow>(
       `SELECT job_id, user_id, surface, video_url, audio_url,
@@ -145,6 +151,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
       seekSec,
     });
   } catch (error) {
+    if (error instanceof MarketingMediaError) return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
     console.error('[admin/videos/:id/thumbnail] failed', error);
     return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }

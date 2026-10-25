@@ -1,3 +1,5 @@
+import { canonicalOperationSourceDuration } from './generation-operation-facts';
+import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { resolveSeedance25ModelArkEditSource } from '@/server/seedance-edit-source';
 import { seedanceSourcePricingAspectRatio } from '@/lib/seedance-option-pricing';
@@ -63,12 +65,14 @@ export type ExecutorGenerationPricingDependencies = {
   /** Server-only billing product adapter; ordinary generation uses the canonical model owner. */
   computeBillingSnapshot?: typeof computeCanonicalBillingSnapshot;
   seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
+  fluxDraftSource?: import('@/server/flux-draft-cache').QualifiedFluxDraftSource;
 };
 
 export type GenerationPricingReferenceContext = Readonly<{
   resolvedReferences?: readonly ResolvedReference[];
   resolvedEngine?: EngineCaps;
   seedanceFinalFacts?: SeedanceWorkflowMediaFacts;
+  fluxDraftSource?: import('@/server/flux-draft-cache').QualifiedFluxDraftSource;
 }>;
 
 const defaultDependencies: GenerationPricingDependencies = {
@@ -364,6 +368,7 @@ export async function priceCanonicalGeneration(
 ): Promise<GenerationPricingResult> {
   membershipTier = LIVE_MEMBERSHIP_POLICY.tier;
   if (request.surface === 'video') {
+    const lumaModifyDurationSec = assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     if (referenceContext.resolvedEngine && referenceContext.resolvedEngine.id !== request.engineId) {
       throw new Error('Canonical pricing engine mismatch.');
     }
@@ -374,7 +379,8 @@ export async function priceCanonicalGeneration(
     const result = await dependencies.computeVideoPreflight({
       engine: request.engineId,
       mode: engineMode,
-      durationSec: requiredPositiveInteger(settings, 'durationSec'),
+      ...(request.operation ? { operation: request.operation } : {}),
+      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
       ...(settings.durationOption === 'auto' ? { durationOption: 'auto' } : {}),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
@@ -449,9 +455,10 @@ export async function priceCanonicalGenerationWithBilling(
   if (engine.id !== request.engineId) throw new Error('Canonical pricing engine mismatch.');
   let snapshot: PricingSnapshot;
   if (request.surface === 'video') {
+    const lumaModifyDurationSec = assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
-    const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
+    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
     const seedanceEditSource = canonicalSeedanceEditSource(request, referenceContext);
     const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, referenceContext);
     const resolution = requiredString(request.settings, 'resolution');
@@ -466,6 +473,7 @@ export async function priceCanonicalGenerationWithBilling(
     };
     snapshot = await computeBillingSnapshot({
       engine: pricingEngine,
+      ...(request.operation ? { operation: request.operation } : {}),
       durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
       resolution,
       aspectRatio: seedanceEditSource?.pricingAspectRatio ?? optionalString(request.settings, 'aspectRatio'),

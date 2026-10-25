@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { HelpCircle, ArrowDown, X, ImagePlus } from "lucide-react";
+import { HelpCircle, ArrowDown, X, ImagePlus, Images, Clapperboard } from "lucide-react";
 import {canResumeAssistanceRequest,canStartAssistanceFollowupWithoutChoice} from './_lib/conversation-assistance';
 import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
+import {useConversationExtensions} from './_hooks/useConversationExtensions';
 import {ConversationExportQuote} from "./_components/ConversationExportQuote.client";
 import {ConversationTask} from './_components/ConversationTask.client';
 import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_PROFILES} from '@/lib/studio/task-budget-contract';
@@ -16,6 +17,9 @@ import {
   type ImageLibraryAsset,
 } from "./_components/ImageReferenceLibrary.client";
 import styles from "./image-conversation.module.css";
+import mobileStyles from './studio-mobile.module.css';
+import {useStudioMobileLayout} from './_hooks/useStudioMobileLayout';
+import {ConversationMobilePanel} from './_components/ConversationMobilePanel.client';
 import {useI18n} from '@/lib/i18n/I18nProvider';
 import {ConversationMedia} from './_components/ConversationMedia.client';
 import {ConversationTimeline} from './_components/ConversationTimeline.client';
@@ -61,6 +65,7 @@ function StudioImageConversationWorkspace({
   const locale = appLocale === 'fr' ? 'fr' : 'en';
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const studio = useImageConversation(projectId, accountKey, projectName, locale);
+  const extensions=useConversationExtensions(projectId,accountKey,studio.conversation.turns,editingEnabled===true,studio.refresh);
   const assistance=useStudioAssistance(accountKey,studio.busy);
   const tasksEnabled=studio.conversation.taskPolicyVersion===STUDIO_TASK_POLICY_VERSION;
   const assistanceLoading=tasksEnabled&&!assistance.status;
@@ -72,8 +77,13 @@ function StudioImageConversationWorkspace({
   const [followupNotice,setFollowupNotice]=useState(false);
   const assistanceBlocked=!!assistance.status?.enabled&&!assistance.status.canContinue;
   const recoveredUsage=canResumeAssistanceRequest(studio.assistanceAction,assistance.status,assistance.error);
-  const luna=assistance.status?.enabled&&assistance.status.mode==='sponsored_luna';
   const exports = useConversationExports(projectId,exportsEnabled);
+  const root = useRef<HTMLElement>(null);
+  const mobile = useStudioMobileLayout(root);
+  const [mobilePanel, setMobilePanel] = useState<'references' | 'film' | null>(null);
+  const referencesTrigger = useRef<HTMLButtonElement>(null);
+  const filmTrigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {if (!mobile) setMobilePanel(null);}, [mobile]);
   const [help, setHelp] = useState(false);
   const [following, setFollowing] = useState(true);
   const helpTrigger = useRef<HTMLButtonElement>(null);
@@ -111,6 +121,13 @@ function StudioImageConversationWorkspace({
     if (follow.current && (studio.conversation.turns.length || studio.pending))
       bottom.current?.scrollIntoView({ block: "end", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }, [studio.conversation, studio.pending, studio.busy,exports.jobs]);
+  useEffect(() => {
+    const element = log.current;
+    if (!mobile || !element) return;
+    const observer = new ResizeObserver(() => {if (follow.current) element.scrollTop = element.scrollHeight;});
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [mobile]);
   function openReferences(trigger: HTMLButtonElement) {libraryOpener.current=trigger;setLibraryPurpose('reference');setLibrary(true);}
   function startDraft(value: string) {
     if (!text.trim()) setText(value);
@@ -157,6 +174,8 @@ function StudioImageConversationWorkspace({
     <section
       className={styles.studio}
       data-tone={tone}
+      ref={root}
+      data-mobile-chat={mobile}
       aria-label={t('Conversational Studio', 'Studio conversationnel')}
     >
       <header className={styles.header}>
@@ -165,7 +184,6 @@ function StudioImageConversationWorkspace({
           <span>{studio.conversation.projectName}</span>
         </div>
         <div className={styles.headerActions}>
-          <StudioAssistance tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
           <button ref={helpTrigger} aria-label={t('Studio help','Aide Studio')} onClick={() => setHelp(true)}><HelpCircle size={18}/></button>
           <ConversationProjects accountKey={accountKey} currentProjectId={projectId} locale={locale} onRename={id=>{if(id===projectId)void studio.refresh();}}/>
         </div>
@@ -177,11 +195,12 @@ function StudioImageConversationWorkspace({
         onDrop={event=>{if(event.dataTransfer.types.includes('Files')){event.preventDefault();dragDepth.current=0;setDropping(false);if(studio.loading){shelf.setError(t('Your workspace is opening. Try dropping your media again in a moment.','Votre espace s’ouvre. Déposez à nouveau vos médias dans un instant.'));return;}void shelf.upload(Array.from(event.dataTransfer.files));}}}>
         {dropping&&<div className={styles.dropSurface}><ImagePlus size={28}/><span>{t('Bring it into the conversation','Ajoutez-le à la conversation')}</span><small>{t('Drop your media here','Déposez vos médias ici')}</small></div>}
         <div className={styles.conversation} data-empty={!studio.conversation.turns.length && !studio.pending && !studio.loading && !studio.error}>
+          <div className={styles.history}>
           <div
             ref={log}
             className={styles.log}
             role="log"
-            aria-label={t('Conversation with Studio', 'Conversation avec Studio')}
+            aria-label={t('Conversation with Milo', 'Conversation avec Milo')}
             aria-live="polite"
             onScroll={() => {
               const el = log.current;
@@ -192,7 +211,7 @@ function StudioImageConversationWorkspace({
             }}
           >
             {studio.loading && <div className={styles.loading} role="status"><span className={styles.loadingMark}/>{t('Opening your workspace…','Ouverture de votre espace…')}</div>}
-            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} onReference={openReferences} hasDraft={!!text.trim()}/>}
+            {!studio.loading && !studio.error && !studio.conversation.turns.length && !studio.pending && <ConversationWelcome locale={locale} onDraft={startDraft} hasDraft={!!text.trim()}/>}
             {studio.conversation.turns.map((turn) => (
               <article key={turn.requestId} className={styles.turn}>
                 <p className={styles.userMessage}>{turn.message}</p>
@@ -219,9 +238,11 @@ function StudioImageConversationWorkspace({
                     {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
-                {turn.task&&<ConversationTask task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
+                {turn.task&&<ConversationTask compact={mobile} task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 <ImageQuoteCard
                   turn={turn}
+                  assemblyError={extensions.errors[turn.requestId]}
+                  onRetryAssembly={()=>extensions.retry(turn.requestId)}
                   busy={studio.busy}
                   localQa={localQa}
                   locale={locale}
@@ -278,12 +299,13 @@ function StudioImageConversationWorkspace({
             {studio.busy && (
               <p className={styles.thinking} role="status">
                 <span />
-                {t('Studio is working…', 'Studio travaille…')}
+                {t('Milo is working…', 'Milo travaille…')}
               </p>
             )}
             <div ref={bottom} />
           </div>
-          {!following && <button className={styles.jumpLatest} onClick={() => {follow.current = true;setFollowing(true);bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={14}/>{t('Latest message','Dernier message')}</button>}
+          {!following && <button className={styles.jumpLatest} aria-label={t('Latest message','Dernier message')} onClick={() => {follow.current = true;setFollowing(true);if(mobile)log.current?.scrollTo({top:log.current.scrollHeight,behavior:'instant'});else bottom.current?.scrollIntoView({block:'end',behavior:'instant'});}}><ArrowDown size={16}/><span>{t('Latest message','Dernier message')}</span></button>}
+          </div>
           {(studio.error || studio.canResumePending) && (
             <div className={styles.error} role="alert">
               <p>
@@ -339,6 +361,7 @@ function StudioImageConversationWorkspace({
             onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
             onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>
           <ImageConversationComposer
+            compact={mobile}
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
@@ -348,13 +371,23 @@ function StudioImageConversationWorkspace({
             locale={locale}
           />
           </div>
-          <p className={styles.footnote} role={luna?'status':undefined}>
-            {luna?<>{t('You’re using Luna. For more detailed responses, return to GPT‑6.1 Sol. ','Vous utilisez Luna. Pour des réponses plus abouties, retrouvez GPT‑6.1 Sol. ')}<button type="button" onClick={()=>setBudgetPrompt(value=>value+1)}>{t('Top up Sol','Recharger Sol')}</button>.</>:t('Drop a reference. Follow an idea.', 'Déposez une référence. Suivez une idée.')}
-          </p>
+          <div className={styles.composerTools}>
+            <div className={mobileStyles.mobileTools}>
+              {!!shelf.items.length && <button type="button" ref={referencesTrigger} className={mobileStyles.references} aria-haspopup="dialog" aria-label={t(`References · ${references.length} attached`, `Références · ${references.length} jointes`)} onClick={() => setMobilePanel('references')}><Images size={17}/><span>{references.length} {t('attached', 'jointes')}</span></button>}
+              {editingEnabled && <button type="button" ref={filmTrigger} aria-haspopup="dialog" aria-label={t('Open film tools', 'Ouvrir les outils du film')} title={t('Film tools', 'Outils du film')} onClick={() => setMobilePanel('film')}><Clapperboard size={18}/></button>}
+            </div>
+          <StudioAssistance tasksEnabled={tasksEnabled} {...assistance} locale={locale} conversationBusy={studio.busy} onChoice={afterAssistanceChoice} openSignal={budgetPrompt}/>
+          </div>
+          <p className={styles.footnote}>{t('Review the price before each generation.', 'Vérifiez le prix avant chaque génération.')}</p>
         </div>
-        <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={mention} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>setTimelineInsertion({key:crypto.randomUUID(),asset}):undefined}/>
+        <ConversationMobilePanel mobile={mobile} open={mobilePanel === 'references'} title={t('References', 'Références')} closeLabel={t('Close references', 'Fermer les références')} kind="references" trigger={referencesTrigger} onClose={() => setMobilePanel(null)}>
+          <ConversationMediaShelf projectId={projectId} items={shelf.items} selectedId={shelf.selectedId} expanded={mobile ? mobilePanel === 'references' : shelf.expanded} attachedIds={references.map(ref=>ref.assetId)} locale={locale} onSelect={shelf.setSelectedId} onToggle={()=>shelf.setExpanded(current=>!current)} onMention={item=>{mention(item);if(mobile){setMobilePanel(null);requestAnimationFrame(()=>composerRegion.current?.querySelector('textarea')?.focus());}}} onAttach={shelf.attach} onDetach={detach} onInsert={editingEnabled?asset=>{setTimelineInsertion({key:crypto.randomUUID(),asset});if(mobile)setMobilePanel('film');}:undefined}/>
+          {mobile && <><p className={mobileStyles.referenceHint}>{t('Attached to your next message', 'Jointes à votre prochain message')}</p><div className={mobileStyles.referenceAttachments}>{references.map(ref=><button key={ref.assetId} type="button" onClick={()=>detach(ref)} aria-label={t('Remove ', 'Retirer ')+ref.label}>{ref.label}<X size={14}/></button>)}{!references.length && <p className={mobileStyles.referenceHint}>{t('No references attached', 'Aucune référence jointe')}</p>}</div></>}
+        </ConversationMobilePanel>
       </div>
-      {editingEnabled && <ConversationTimeline projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>}
+      {editingEnabled && <ConversationMobilePanel mobile={mobile} open={mobilePanel === 'film'} title={t('Film tools', 'Outils du film')} closeLabel={t('Close film tools', 'Fermer les outils du film')} kind="film" trigger={filmTrigger} onClose={() => setMobilePanel(null)}>
+        <ConversationTimeline visible={!mobile || mobilePanel === 'film'} projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>
+      </ConversationMobilePanel>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
       {library && (
         <ImageReferenceLibrary

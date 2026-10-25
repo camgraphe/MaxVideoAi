@@ -1,5 +1,8 @@
 import {verifyResolvedGenerationReferencesForActor} from '@/server/agent-api/resolve-generation-references';
 import type {KlingV4OwnedMediaDependencies} from '@/app/api/generate/_lib/kling-v4-owned-media';
+import {isH3SourceOperation} from '@/lib/h3-source-operations';
+import {qualifyH3SourceReference} from '@/server/agent-api/h3-source-reference';
+import {qualifyFluxLtxSourceReference} from '@/server/agent-api/flux-ltx-source-reference';
 import { isWorkspaceModelCertifiedForBlock, isStudioConversationVideoModeCertified } from "@/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification";
 import {recordedStudioOutputDuration,recordedStudioSourceVideoOutput} from './conversation-quote-facts';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
@@ -150,11 +153,14 @@ function createStudioVisualGenerationService(
         // must never supply stale URL/duration facts to pricing or dispatch.
         const asset=executor?await resolveOwned(actor,reference.assetId,{executor}):observed;
         if (surface==='image'&&asset.mediaKind !== "image") throw new Error("IMAGE_REQUIRED");
-        references.push({
+        const ownedReference = {
           ...asset,
           role: reference.role,
           ...(reference.slot === undefined ? {} : { slot: reference.slot }),
-        });
+        };
+        references.push(isH3SourceOperation(request.operation)
+          ? await qualifyH3SourceReference(ownedReference,request.operation,actor.userId)
+          : await qualifyFluxLtxSourceReference(ownedReference,request.operation,actor.userId));
       } catch {
         throw new AgentApiError(
           "REFERENCE_INVALID",
@@ -228,10 +234,10 @@ function createStudioVisualGenerationService(
     walletSummary: () =>
       (prepareDeps.getWalletSummary ?? getWalletSummary)(actor.userId),
     catalog,
-    async compare(input:GenerationPriceComparisonInput) {
+    async compare(input:GenerationPriceComparisonInput,resolvePricingReferences=resolveReferences) {
       if(!options.enabled||input.surface!==surface) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio comparisons are unavailable for this surface.');
       return compareGenerationPrices(input,actor,{
-        listPublicEngines:catalog,resolveGenerationReferences:request=>resolveReferences(request),
+        listPublicEngines:catalog,resolveGenerationReferences:request=>resolvePricingReferences(request),
         resolveMembershipPricing:prepareDeps.resolveMembershipPricing??(async userId=>(await getUserMembershipStatus(userId)).pricing),
         priceGeneration:prepareDeps.priceGeneration??((request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)),
         resolveRequestExecutability:(request,candidate,references)=>{
@@ -240,7 +246,7 @@ function createStudioVisualGenerationService(
         },
       });
     },
-    async estimate(input: PrepareGenerationInput): Promise<StudioPricingEstimate> {
+    async estimate(input: PrepareGenerationInput,resolvePricingReferences=resolveReferences): Promise<StudioPricingEstimate> {
       if (!options.enabled) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio estimates are unavailable.');
       let request: CanonicalGenerationRequest;
       try {request=normalizeGenerationRequest(input);} catch (error) {
@@ -257,7 +263,7 @@ function createStudioVisualGenerationService(
       }
       if (request.surface!==surface) throw new AgentApiError('ENGINE_UNAVAILABLE','This model is not available in this Studio catalog.');
       const {pricing}=await readGenerationPricing(request,actor,{
-        listPublicEngines:catalog,resolveGenerationReferences:request=>resolveReferences(request),
+        listPublicEngines:catalog,resolveGenerationReferences:request=>resolvePricingReferences(request),
         resolveMembershipPricing:prepareDeps.resolveMembershipPricing ?? (async userId=>(await getUserMembershipStatus(userId)).pricing),
         priceGeneration:prepareDeps.priceGeneration ?? ((request,tier,context)=>priceCanonicalGeneration(request,tier,undefined,context)),
         resolveRequestExecutability:prepareDeps.resolveRequestExecutability ?? ((request,candidate,references)=>resolveAgentGenerationRequestExecutability(request,candidate.engine,references)),

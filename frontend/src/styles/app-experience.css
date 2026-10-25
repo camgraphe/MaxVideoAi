@@ -379,19 +379,32 @@
 @media (max-width: 640px) {
   .app-experience .app-reference-commands .app-reference-command { padding-inline: 6px; }
   .app-experience .app-reference-command-label { max-width: 52px; white-space: normal; text-align: left; line-height: 1.15; }
+  .app-experience [data-extension-workflow="true"] .app-reference-command-label { max-width: 100px; }
 }
 .app-experience .app-reference-restrictions { display: grid; gap: 2px; margin-top: 4px; color: var(--app-muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
 .app-experience .app-reference-restrictions p { margin: 0; }
 .app-experience .app-reference-required { margin-top: 4px; font-size: 11px; color: var(--app-muted); overflow-wrap: anywhere; }
 .app-experience .app-reference-selected-summary { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 6px; }
-.app-experience .app-reference-selected-item { position: relative; display: inline-flex; min-width: 0; max-width: 180px; }
-.app-experience .app-reference-selected-manage { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 180px; padding-right: 36px !important; }
+.app-experience .app-reference-selected-item { position: relative; display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; padding: 3px 34px 3px 3px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--app-panel); }
+.app-experience .app-workspace-references .app-reference-selected-manage { display: inline-flex; align-items: center; gap: 7px; min-width: 0; padding: 0 4px 0 0; border: 0; background: transparent; }
 .app-experience .app-reference-selected-manage > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-experience .app-workspace-references .app-reference-selected-mention { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--app-accent); }
+.app-experience .app-reference-selected-mention small { font-size: 10px; color: var(--app-muted); }
+.app-experience .app-reference-selected-duration { flex: none; padding-inline: 3px; color: var(--app-muted); font-size: 11px; }
 .app-experience .app-reference-selected-item > .app-reference-selected-remove { position: absolute; top: 50%; right: 4px; display: grid; place-items: center; width: 28px; min-width: 28px; height: 28px; min-height: 28px !important; padding: 0; transform: translateY(-50%); border: 0; border-radius: 50%; background: transparent; color: var(--app-muted); opacity: .62; }
 .app-experience .app-reference-selected-item > .app-reference-selected-remove:hover, .app-experience .app-reference-selected-item > .app-reference-selected-remove:focus-visible { background: var(--surface-2); color: var(--app-ink); opacity: 1; }
+/* Excerpt actions share the selected source row; reserve the remove button's space. */
+.app-experience .app-reference-selected-item:has(> .video-excerpt-trigger) { flex-wrap: wrap; max-width: 100%; }
+.app-experience .app-reference-selected-item > .video-excerpt-trigger { flex: none; white-space: nowrap; min-height: 44px; }
 .app-experience .app-reference-selected-remove > span { font-size: 18px; line-height: 1; }
-.app-experience .app-reference-selected-summary img { width: 28px; height: 28px; object-fit: cover; border-radius: 3px; }
+.app-experience .app-reference-thumbnail { position: relative; display: inline-grid; flex: none; place-items: center; width: 56px; height: 44px; overflow: hidden; border-radius: 5px; background: var(--surface-2); color: var(--app-muted); }
+.app-experience .app-reference-thumbnail > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-height: 100%; object-fit: cover; }
+.app-experience .app-reference-thumbnail-kind { position: absolute; bottom: 2px; right: 2px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 3px; background: rgb(0 0 0 / .65); color: white; }
+.app-experience .app-reference-thumbnail-kind svg { width: 12px; height: 12px; }
+.app-experience .app-reference-command-media .app-reference-thumbnail { width: 20px; height: 20px; }
 .app-experience .app-reference-selected-summary small { max-width: 100px; overflow-wrap: anywhere; }
+.app-experience .app-reference-mention-review { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--surface-2); font-size: 12px; }
+.app-experience .app-reference-mention-review button { justify-self: start; min-height: 44px; color: var(--app-accent); text-decoration: underline; }
 .app-experience.app-reference-modal-layer { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / .45); }
 .app-experience .app-reference-popup { width: min(620px, 100%); min-width: 0; max-height: calc(100dvh - 32px); padding: 16px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--app-panel); box-shadow: 0 20px 60px rgb(0 0 0 / .2); }
 .app-experience .app-reference-popup > .app-reference-heading { justify-content: space-between; }
@@ -468,6 +481,30 @@
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .app-experience .app-rail-caption > span { flex-shrink: 0; color: var(--app-muted); font-size: 11px; }
 .app-experience .app-rail-media-card > div:first-child > button { min-height: 44px; padding-inline: 10px; font-size: 12px; }
+/* Compact gallery actions: feedback stays inside the fixed visual button. */
+.app-experience .app-rail-media-card > div:first-child button.app-gallery-icon-action { position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 44px; min-width: 32px; min-height: 44px; padding: 0; border: 0; background: transparent; outline: none; box-shadow: none; transform: none; cursor: pointer; }
+.app-experience .app-gallery-action-face { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid rgb(78 70 52 / .14); border-radius: 6px; background: rgb(250 249 242 / .94); color: #494532; backdrop-filter: blur(6px); transition: background-color .12s ease, color .12s ease; }
+.app-experience .app-gallery-action-face svg { width: 14px; height: 14px; stroke-width: 1.65; }
+.app-experience .app-gallery-icon-action:is(:hover, :focus, [aria-expanded="true"]) .app-gallery-action-face { background: #e4dcc6; color: #534326; }
+.app-experience .app-gallery-icon-action:focus-visible .app-gallery-action-face { background: #7b6a45; color: #fffdf5; }
+.app-experience .app-gallery-icon-action:active .app-gallery-action-face { background: #6d5e3f; color: #fffdf5; }
+.app-experience .app-gallery-icon-action:disabled { cursor: wait; }
+.app-experience .app-gallery-icon-action:disabled .app-gallery-action-face { opacity: .65; }
+.app-experience .app-rail-media-card > div:first-child button.app-gallery-menu-action { position: absolute; right: 4px; top: 4px; width: 44px; min-width: 44px; }
+.app-experience .app-gallery-menu-action .app-gallery-action-face { width: 30px; height: 30px; border-radius: 7px; }
+.app-experience .app-gallery-continuation-actions { position: absolute; right: 4px; bottom: 0; display: flex; opacity: 0; pointer-events: none; transition: opacity .14s ease; }
+.app-experience .app-rail-media-card > div:first-child:is(:hover, :focus-within) .app-gallery-continuation-actions,
+.app-experience .app-gallery-continuation-actions[data-feedback] { opacity: 1; pointer-events: auto; }
+.app-experience .app-gallery-action-tooltip { position: absolute; right: 0; bottom: 43px; z-index: 20; visibility: hidden; opacity: 0; white-space: nowrap; padding: 5px 8px; border-radius: 5px; background: #302d25; color: #fffdf5; font-size: 11px; font-weight: 500; line-height: 1.4; pointer-events: none; }
+.app-experience .app-gallery-icon-action:is(:hover, :focus):not([data-tooltip-dismissed]) .app-gallery-action-tooltip { visibility: visible; opacity: 1; }
+.app-experience .app-gallery-menu-action .app-gallery-action-tooltip { right: 43px; top: 9px; bottom: auto; }
+.app-experience .app-gallery-action-error { position: absolute; bottom: 44px; right: 0; z-index: 21; width: 184px; padding: 8px; border: 1px solid var(--app-line); border-radius: 6px; background: var(--surface); color: var(--app-ink); font-size: 11px; line-height: 1.4; }
+@media (hover: none), (pointer: coarse), (max-width: 639px) {
+  .app-experience .app-gallery-continuation-actions { opacity: 1; pointer-events: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-experience .app-gallery-continuation-actions, .app-experience .app-gallery-action-face { transition: none; }
+}
 @media (min-width: 720px) and (max-width: 767px) {
   .app-experience .app-results-rail .app-gallery-rail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .app-experience .app-results-rail .app-gallery-rail-grid > :not([hidden]) ~ :not([hidden]) { margin-top: 0; }
@@ -517,8 +554,10 @@
 .app-experience .app-picker-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-content: start; gap: 10px; }
 .app-experience .app-picker-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; text-align: left; border: 1px solid var(--app-line); background: var(--app-canvas); color: var(--app-ink); }
 .app-experience .app-picker-card[aria-pressed="true"] { border-color: var(--app-accent); box-shadow: 0 0 0 2px var(--app-accent); background: var(--app-accent-soft); }
-.app-experience .app-picker-cover { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--app-canvas); }
-.app-experience .app-picker-cover img { width: 100%; height: 100%; object-fit: cover; }
+.app-experience .app-picker-cover { position: relative; display: grid; place-items: center; flex: none; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--app-canvas); }
+/* Bound replaced images to the cover: intrinsic portrait height must not size a WebKit grid track. */
+.app-experience .app-picker-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.app-experience .app-picker-cover[data-media-kind="video"] img { object-fit: contain; }
 .app-experience .app-picker-cover > svg { width: 36px; height: 36px; color: var(--app-muted); }
 .app-experience .app-picker-check { position: absolute; right: 8px; top: 8px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--app-panel); color: var(--app-ink); box-shadow: 0 1px 5px rgb(0 0 0 / .2); }
 .app-experience [aria-pressed="true"] .app-picker-check { background: var(--app-accent); color: var(--on-brand); }

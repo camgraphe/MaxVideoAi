@@ -2,6 +2,19 @@ import type { AppLocale } from '@/i18n/locales';
 
 // Exact capability phrases only: unknown values keep their original meaning.
 const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
+  'recast / relight; specialized source tools': { fr: 'Recast / Relight ; outils spécialisés sur vidéo source', es: 'Recast / Relight; herramientas especializadas sobre video de origen' },
+  'fast edit; source timing and framing': { fr: 'FAST Edit ; durée et cadrage de la source', es: 'FAST Edit; duración y encuadre del origen' },
+  'enhance draft; owned paired draft cache': { fr: 'Enhance Draft ; cache apparié d’un Draft de votre compte', es: 'Enhance Draft; caché emparejada de un Draft de tu cuenta' },
+  'reference / edit; source timing and framing for edit': { fr: 'Reference / Edit ; durée et cadrage hérités pour Edit', es: 'Reference / Edit; duración y encuadre heredados para Edit' },
+  'modify / reframe / owned-generation extend': { fr: 'Modify / Reframe / Extend depuis une génération de votre compte', es: 'Modify / Reframe / Extend desde una generación propia' },
+  'generate 5s/10s; modify source up to 18s; reframe source up to 10s; extend five new seconds': { fr: 'Génération 5s/10s ; source Modify jusqu’à 18s ; source Reframe jusqu’à 10s ; Extend : cinq nouvelles secondes', es: 'Generación 5s/10s; origen Modify hasta 18s; origen Reframe hasta 10s; Extend: cinco segundos nuevos' },
+  'start image, first/last frames, or 1–10 indexed keyframe images': { fr: 'Image de départ, première/dernière image ou 1–10 images clés indexées', es: 'Imagen inicial, primera/última imagen o 1–10 fotogramas clave indexados' },
+  'native extend; fast edit': { fr: 'Extend natif ; FAST Edit', es: 'Extend nativo; FAST Edit' },
+  'native draft extend; enhance requires an owned paired draft cache': { fr: 'Extend natif de Draft ; Enhance exige un cache Draft apparié de votre compte', es: 'Extend nativo de Draft; Enhance exige una caché Draft emparejada propia' },
+  '720p native draft; 1080p paired-cache enhance': { fr: 'Draft natif 720p ; Enhance avec cache apparié 1080p', es: 'Draft nativo 720p; Enhance con caché emparejada 1080p' },
+  'extend / retake / reframe': { fr: 'Extend / Retake / Reframe', es: 'Extend / Retake / Reframe' },
+  'generate 6–10s; audio/extend/retake up to 20s; reframe source up to 60s': { fr: 'Génération 6–10s ; Audio/Extend/Retake jusqu’à 20s ; source Reframe jusqu’à 60s', es: 'Generación 6–10s; Audio/Extend/Retake hasta 20s; origen Reframe hasta 60s' },
+  '4k on t2v/i2v generate; reframe 720p/1080p; other workflow-specific limits': { fr: '4K en génération texte/image ; Reframe 720p/1080p ; autres limites selon le workflow', es: '4K en generación de texto/imagen; Reframe 720p/1080p; otros límites según el flujo' },
   'edit, extend, and conversational refine': { fr: 'modification, extension et retouches par conversation', es: 'edición, extensión y refinamiento mediante conversación' },
   'extend from one source video': { fr: 'extension à partir d’une vidéo source', es: 'extensión a partir de un video de origen' },
   'short source video for edit; previous interaction id for refine': { fr: 'courte vidéo source pour la modification ; interaction précédente pour les retouches par conversation', es: 'video de origen corto para editar; interacción anterior para refinar mediante conversación' },

@@ -25,11 +25,11 @@ test('Seedance 2.5 Draft is one 480p provider task with the original creative in
   assert.deepEqual(draft.content.map((item) => item.type), ['text', 'image_url', 'image_url']);
 });
 
-test('Final uses owned output choices without resending its original media', () => {
+test('Final retains owned MOV output but never reactivates retired switches from old Drafts', () => {
   const result = buildSeedance25FinalRequest({ modelId: 'owned-model', draftProviderTaskId: 'owned-task',
     outputFormat: 'mov', returnLastFrame: true, watermark: true });
   assert.deepEqual(result, { model: 'owned-model', content: [{ type: 'draft_task', draft_task: { id: 'owned-task' } }],
-    resolution: '1080p', watermark: true, output_format: 'mov', return_last_frame: true });
+    resolution: '1080p', watermark: false, output_format: 'mov' });
 });
 
 test('Seedance 2.5 Draft rejects non-480p and unsupported duration', () => {

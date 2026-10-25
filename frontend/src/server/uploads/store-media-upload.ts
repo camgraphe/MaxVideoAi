@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { deleteStorageObjectByUrl, uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
+import type { PrivateMediaStorageScope } from '@/server/private-media-storage';
 import {
   claimStorageObjectProducer,
   renewStorageObjectProducer,
@@ -65,9 +66,14 @@ export type StoreMediaUploadInput = {
   fileName: string;
   declaredMime: string | null;
   bytes: Buffer;
+  /** Server-authored provenance; measured facts always take precedence. */
+  metadata?: Record<string, unknown>;
+  /** Bounded server-authored namespace for stable distinct derivative identity. */
+  contentAddressedNamespace?: string;
   referenceEligibility?: 'workspace' | 'mcp';
   storageAcl?: string | null;
   storageCacheControl?: string;
+  privateStorageScope?: PrivateMediaStorageScope;
   cleanupObjects?: {
     beforeUpload(entry: { objectRole: 'final' | 'thumbnail'; objectKey: string; safeToDelete: boolean }): Promise<void>;
     retain(objectKey: string): Promise<void>;
@@ -189,7 +195,9 @@ function createStoreMediaUploadService(
         fileName: input.fileName,
         userId: input.userId,
         prefix: 'user-assets',
+        privateStorageScope: input.privateStorageScope,
         contentAddressed: true,
+        ...(input.contentAddressedNamespace ? { contentAddressedNamespace: input.contentAddressedNamespace } : {}),
         ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
         ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
         beforeUpload: async (objectKey: string) => {
@@ -232,6 +240,7 @@ function createStoreMediaUploadService(
             data: input.bytes,
             userId: input.userId,
             fileName: input.fileName,
+            privateStorageScope: input.privateStorageScope,
             ...(input.storageAcl !== undefined ? { acl: input.storageAcl } : {}),
             ...(input.storageCacheControl !== undefined ? { cacheControl: input.storageCacheControl } : {}),
             ...(input.cleanupObjects ? {
@@ -247,6 +256,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const metadata = {
+        ...input.metadata,
         mediaFacts,
         originalName: input.fileName,
         kind: mediaKind,
@@ -254,7 +264,7 @@ function createStoreMediaUploadService(
         ...(previewUrl ? { thumbUrl: previewUrl } : {}),
       };
       const legacyAssetId = await dependencies.recordUserAsset({
-        assetId: `ua_${createHash('sha256').update(`${input.userId}:${mediaKind}:`).update(input.bytes).digest('hex').slice(0, 32)}`,
+        assetId: `ua_${createHash('sha256').update(`${input.userId}:${mediaKind}:${input.contentAddressedNamespace ? `prepared:${input.contentAddressedNamespace}:` : ''}`).update(input.bytes).digest('hex').slice(0, 32)}`,
         userId: input.userId,
         url: upload.url,
         mime: probe.canonicalMime,
@@ -268,6 +278,7 @@ function createStoreMediaUploadService(
       await renewProducerClaim();
       producerCheckpoint();
       const canonicalAsset = await dependencies.ensureReusableAsset({
+        ...(input.privateStorageScope ? { allowRemoteThumbnailFallback: false } : {}),
         userId: input.userId,
         url: upload.url,
         kind: mediaKind,
@@ -278,7 +289,7 @@ function createStoreMediaUploadService(
         sizeBytes: input.bytes.length,
         durationSec: duration.durationSec,
         thumbUrl: previewUrl,
-        metadata: { originalName: input.fileName, mediaFacts },
+        metadata: { ...input.metadata, originalName: input.fileName, mediaFacts },
       });
       producerCheckpoint();
       await renewProducerClaim();

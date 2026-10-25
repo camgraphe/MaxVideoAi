@@ -13,6 +13,7 @@ export function useWorkspaceAssetState(accountScope: string | null = 'legacy') {
   const scopeRef = useRef(accountScope);
   const [, setReactInputAssets] = useState<WorkspaceInputAssetState>({});
   const inputAssetsRef = useRef<WorkspaceInputAssetState>({});
+  const inputAssetMutationRevision = useRef(0);
 
   if (scopeRef.current !== accountScope) {
     scopeRef.current = accountScope;
@@ -39,6 +40,7 @@ export function useWorkspaceAssetState(accountScope: string | null = 'legacy') {
       const result = mutation(valid() ? inputAssetsRef.current : {});
       if (!valid()) return result;
       if (result.state !== inputAssetsRef.current) {
+        inputAssetMutationRevision.current += 1;
         inputAssetsRef.current = result.state;
         setReactInputAssets(result.state);
       }
@@ -51,6 +53,7 @@ export function useWorkspaceAssetState(accountScope: string | null = 'legacy') {
     inputAssets:
       scopeRef.current === accountScope && accountScope !== null ? inputAssetsRef.current : {},
     inputAssetsRef,
+    inputAssetMutationRevision: inputAssetMutationRevision.current,
     setInputAssets,
     commitInputAssetMutation,
   };

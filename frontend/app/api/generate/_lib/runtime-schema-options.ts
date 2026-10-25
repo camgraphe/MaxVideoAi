@@ -133,7 +133,10 @@ export function validateRuntimeRequestSettings(input: {
   const capability = input.engine.modeCaps?.[input.mode]
     ?? deriveRuntimeSchemaCaps(input.engine.inputSchema, input.mode);
 
-  if (input.durationSec !== undefined) {
+  // Source-timed operations validate owned media later; the UI duration is not a selection.
+  const inheritsSourceTiming = (Boolean(input.engine.activeVideoOperation) && capability?.durationPolicy === 'source_video')
+    || (input.engine.id === 'luma-ray-3-2' && input.mode === 'v2v');
+  if (input.durationSec !== undefined && !inheritsSourceTiming) {
     if (!capability?.duration) return failure('durationSec', input.durationSec, []);
     const decision = durationAllowed(input.durationSec, capability.duration, input.engine.maxDurationSec);
     if (!decision.valid) return failure('durationSec', input.durationSec, decision.allowed);

@@ -1,3 +1,4 @@
+import { buildH3OperationCaps } from '../../../lib/h3-source-operations';
 import type { AspectRatio, EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
@@ -40,13 +41,16 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
     },
   ],
   optional: [
+    {id:'middle_image_url',type:'image',...IMAGE_UPLOAD,label:'Middle frame',description:'Requires start and end frames and native 480P or 768P.',modes:['ref2v'],minCount:0,maxCount:1,source:'either'},
+    {id:'middle_frame_time',type:'number',label:'Middle frame time (seconds)',modes:['ref2v'],min:0,max:15,step:1/24},
+    {id:'reference_order',type:'text',label:'Reference order',description:'Optional complete order, for example video1,image1,audio1. List every attached reference exactly once. Leave empty to use the separate image/video/audio lists.',modes:['ref2v']},
     {
       id: 'image_url',
       type: 'image',
       ...IMAGE_UPLOAD,
       label: 'Start image',
       description: 'First frame; supply a start image, an end image, or both.',
-      modes: ['i2v'],
+      modes: ['i2v','ref2v'],
       minCount: 0,
       maxCount: 1,
       source: 'either',
@@ -57,7 +61,7 @@ const inputSchema: NonNullable<EngineCaps['inputSchema']> = {
       ...IMAGE_UPLOAD,
       label: 'End image',
       description: 'Final frame; may be supplied alone or with a start image.',
-      modes: ['i2v'],
+      modes: ['i2v','ref2v'],
       minCount: 0,
       maxCount: 1,
       source: 'either',
@@ -196,7 +200,7 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
-  modes: [...MINIMAX_H3_MAX_MODES],
+  modes: [...MINIMAX_H3_MAX_MODES, 'v2v'],
   maxDurationSec: 15,
   resolutions: [...MINIMAX_H3_MAX_RESOLUTIONS],
   aspectRatios: [...MINIMAX_H3_MAX_TEXT_ASPECT_RATIOS, 'auto'],
@@ -248,6 +252,15 @@ export const MINIMAX_H3_MAX_ENGINE: EngineCaps = {
   modeCaps,
 };
 
+MINIMAX_H3_MAX_ENGINE.operationCaps = buildH3OperationCaps();
+const recastSchema = MINIMAX_H3_MAX_ENGINE.operationCaps['h3-recast']!.inputSchema;
+MINIMAX_H3_MAX_ENGINE.inputSchema = { ...inputSchema,
+  required: [...(inputSchema.required ?? []), ...(recastSchema.required ?? [])],
+  optional: [...(inputSchema.optional ?? []), ...(recastSchema.optional ?? [])],
+  constraints: {...inputSchema.constraints, ownedAssetModes:[...MINIMAX_H3_MAX_MODES,'v2v']},
+};
+MINIMAX_H3_MAX_ENGINE.modeCaps = { ...modeCaps, v2v: { modes: ['v2v'], durationPolicy: 'source_video', resolution: ['768P','1080P'], audioToggle: false, notes: 'Choose Recast or Relight; these are specialized source operations.' } };
+
 export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: MINIMAX_H3_MAX_ID,
   marketingName: 'MiniMax H3 Max',
@@ -259,11 +272,11 @@ export const MINIMAX_H3_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   logoPolicy: 'textOnly',
   billingNote: 'Review your fixed quote before generation, based on the selected mode, duration, resolution, and references.',
   engine: MINIMAX_H3_MAX_ENGINE,
-  modes: MINIMAX_H3_MAX_MODES.map((mode) => ({
+  modes: [...MINIMAX_H3_MAX_MODES.map((mode) => ({
     mode,
     falModelId: MINIMAX_H3_MAX_ENDPOINTS[mode],
     ui: modeCaps[mode]!,
-  })),
+  })), { mode: 'v2v', falModelId: 'minimax/h3-max/recast', ui: MINIMAX_H3_MAX_ENGINE.modeCaps.v2v! }],
   defaultFalModelId: MINIMAX_H3_MAX_ENDPOINTS.t2v,
   seo: {
     title: 'MiniMax H3 Max – 1080P Video, References and Audio',

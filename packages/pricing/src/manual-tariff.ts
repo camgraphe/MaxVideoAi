@@ -108,6 +108,8 @@ export function quoteCanonicalManualTariff(input: {
   at: string;
   versionedCells: readonly ManualTariffCell[];
   databaseCells: readonly ManualTariffCell[];
+  /** Trusted authoring/settlement choice. Existing tariffs retain upward normalization. */
+  referenceSubtotalRounding?: 'nearest';
 }): ManualTariffQuote {
   const { facts, selector, quantities } = input;
   const cell = resolveManualTariffCell(input);
@@ -135,7 +137,8 @@ export function quoteCanonicalManualTariff(input: {
   if (!Number.isSafeInteger(customerTotalCents) || customerTotalCents < 0) {
     throw new ManualTariffError('invalid_cell', 'Manual customer total is outside the supported cent range.');
   }
-  const vendorSubtotalCents = Math.ceil(facts.vendorSubtotalExactCents - 1e-9);
+  const vendorSubtotalCents = input.referenceSubtotalRounding === 'nearest'
+    ? Math.round(facts.vendorSubtotalExactCents) : Math.ceil(facts.vendorSubtotalExactCents - 1e-9);
   if (customerTotalCents < vendorSubtotalCents) {
     throw new ManualTariffError('below_cost', 'A below-cost tariff needs a separate settlement policy.');
   }

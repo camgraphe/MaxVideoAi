@@ -98,7 +98,9 @@ test('unrecognized canonical validation fields never publish arbitrary names, su
     assert.ok(originalCaps);
     const caps={...originalCaps};
     Object.defineProperty(caps,'aspectRatio',{get:()=>{throw error;}});
-    const deps={...dependencies(),listPublicEngines:async()=>[{...wan,modeCaps:{...wan.modeCaps,t2v:caps}}]};
+    const candidate={...wan,modeCaps:{...wan.modeCaps,t2v:caps}};
+    assert.throws(()=>validateCanonicalGenerationCapabilities(request,candidate),actual=>actual===error, 'Omitted operation preserves the canonical candidate caps');
+    const deps={...dependencies(),listPublicEngines:async()=>[candidate]};
     const result=await failure(request,deps);
     assert.equal(result.error.code,'PARAMETER_INVALID');
     assert.equal(result.error.nextAction,null);

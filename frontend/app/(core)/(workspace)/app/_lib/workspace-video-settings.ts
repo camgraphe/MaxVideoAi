@@ -1,5 +1,7 @@
+import { normalizeVideoOperation } from '@/lib/video-operation';
+import { snapshotReferenceInputs } from './workspace-snapshot-reference-inputs';
 import { resolveExampleResolution } from './workspace-example-resolution';
-import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
+import { resolveRecalledWorkspaceEngine } from './workspace-recall-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile } from '@/components/QuadPreviewPanel';
@@ -10,8 +12,6 @@ import {
   coerceFormState,
   getPreferredEngineMode,
   isModeValue,
-  matchesEngineToken,
-  normalizeEngineToken,
   resolveAudioDefault,
   resolveBooleanFieldDefault,
 } from './workspace-engine-helpers';
@@ -23,6 +23,9 @@ type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
 
 type VideoSettingsRecord = {
+  sourceJobId?: unknown;
+  sourceOutputId?: unknown;
+  operation?: unknown;
   schemaVersion?: unknown;
   surface?: unknown;
   engineId?: unknown;
@@ -75,6 +78,7 @@ export type ResolvedVideoSettingsSnapshot = {
     scenes: MultiPromptScene[];
   };
   formValues: {
+    operation?: import('@/lib/video-operation').VideoOperation;
     durationSec?: number;
     durationOption?: number | string;
     numFrames?: number;
@@ -189,7 +193,7 @@ function readSnapshotInputAssets(value: unknown): Record<string, (ReferenceAsset
       url,
       width,
       height,
-      ...(typeof attachment.durationSec === 'number' ? { durationSec: attachment.durationSec } : {}),
+      durationSec: readFiniteNumber(attachment.durationSec) ?? null,
       assetId,
       status: 'ready',
     };
@@ -214,13 +218,7 @@ export function resolveVideoSettingsSnapshot(
   }
 
   const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
-  const snapshotToken = snapshotEngineId ? normalizeEngineToken(snapshotEngineId) : null;
-  const engine =
-    getArchivedWorkspaceEngine(snapshotEngineId) ??
-    (snapshotEngineId ? options.engineMap.get(snapshotEngineId) : null) ??
-    (snapshotToken ? options.engines.find((candidate) => matchesEngineToken(candidate, snapshotToken)) : null) ??
-    options.engines[0] ??
-    null;
+  const engine = resolveRecalledWorkspaceEngine(snapshotEngineId, options.engines, options.engineMap);
   if (!engine) {
     throw new Error('No engines available to apply this snapshot');
   }
@@ -248,6 +246,7 @@ export function resolveVideoSettingsSnapshot(
       scenes: multiPromptScenes ?? [options.createFallbackScene()],
     },
     formValues: {
+      ...(record.operation !== undefined ? { operation: normalizeVideoOperation(engine.id, mode, record.operation) } : {}),
       durationSec: readFiniteNumber(core.durationSec),
       durationOption:
         typeof core.durationOption === 'number' || typeof core.durationOption === 'string'
@@ -273,9 +272,9 @@ export function resolveVideoSettingsSnapshot(
       seed: readInteger(advanced.seed) ?? null,
       cameraFixed: typeof advanced.cameraFixed === 'boolean' ? advanced.cameraFixed : undefined,
       safetyChecker: typeof advanced.safetyChecker === 'boolean' ? advanced.safetyChecker : undefined,
-      extraInputValues: coerceStoredExtraInputValues(advanced.extraInputValues) ?? {},
+      extraInputValues: { ...(coerceStoredExtraInputValues(advanced.extraInputValues) ?? {}), ...(typeof record.sourceJobId === 'string' ? { source_job_id: record.sourceJobId } : {}), ...(typeof record.sourceOutputId === 'string' ? { source_output_id: record.sourceOutputId } : {}) },
     },
-    inputAssets: Object.prototype.hasOwnProperty.call(refs, 'inputs') ? readSnapshotInputAssets(refs.inputs) : null,
+    inputAssets: readSnapshotInputAssets(snapshotReferenceInputs(refs, engine, mode)),
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')
       ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement, engine.id === 'kling-v4')
       : null,
@@ -289,6 +288,7 @@ export function buildVideoSettingsFormState(
   const { engine, mode, formValues } = snapshot;
   const candidate: FormState = {
     engineId: engine.id,
+    ...(formValues.operation ? { operation: formValues.operation } : {}),
     mode,
     durationSec: typeof formValues.durationSec === 'number' ? formValues.durationSec : previous?.durationSec ?? 4,
     durationOption:

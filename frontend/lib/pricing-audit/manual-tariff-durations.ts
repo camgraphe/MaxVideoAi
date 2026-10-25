@@ -14,6 +14,14 @@ export function manualTariffDurations(entry: FalEngineEntry, mode: Mode, duratio
   values: DurationValue[]; incomplete: boolean;
 } {
   const max = entry.engine.maxDurationSec;
+  if (entry.id === 'luma-ray-3-2' && mode === 'v2v') {
+    return { values: Array.from({ length: 14 }, (_, index) => ({ durationSec: index + 5 })), incomplete: false };
+  }
+  // Keep the reviewed 1..30s Reframe tariff cells in historical cutover/replay
+  // coverage. Current provider admission is independently restricted to 5s/10s.
+  if (entry.id === 'luma-ray-3-2' && mode === 'reframe') {
+    return { values: Array.from({ length: 30 }, (_, index) => ({ durationSec: index + 1 })), incomplete: false };
+  }
   if (duration && 'options' in duration) {
     const numeric = [...new Set(duration.options.map(numericTariffDuration).filter((v): v is number => v !== null))];
     const values: DurationValue[] = numeric.map(durationSec => ({ durationSec }));

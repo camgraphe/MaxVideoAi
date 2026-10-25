@@ -1,3 +1,4 @@
+import { STUDIO_CONVERSATION_MAX_ATTACHMENTS } from '../frontend/lib/studio/conversation-creation-contract';
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getFalEngineById } from "../frontend/src/config/falEngines";
@@ -91,7 +92,7 @@ test("turn input schema rejects blank/oversized messages, excess or malformed re
   assert.throws(() =>
     imageTurnInputSchema.parse({
       ...valid,
-      references: Array.from({ length: 11 }, (_, index) =>
+      references: Array.from({ length: STUDIO_CONVERSATION_MAX_ATTACHMENTS+1 }, (_, index) =>
         `ma_${String(index).padStart(32, "a")}`,
       ),
     }),

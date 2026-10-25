@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
+import { SettingsBooleanChoice } from './SettingsBooleanChoice';
 import type { Mode } from '@/types/engines';
 
 type SettingsEngineAdvancedLayout = 'compact' | 'panel';
@@ -150,40 +151,14 @@ export function SettingsSeedanceAdvancedControls({
         />
         <span className="text-[11px] text-text-muted">Use -1 for random.</span>
       </label>
-      <label className={fieldClass}>
+      <div className={fieldClass}>
         <span className={labelClass}>Camera fixed</span>
-        <div className="flex flex-wrap gap-2">
-          {[true, false].map((option) => (
-            <Button
-              key={option ? 'camera-on' : 'camera-off'}
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => onCameraFixedChange?.(option)}
-              className={clsx(toggleButtonClass, activeToggleClass(option === cameraFixed))}
-            >
-              {option ? 'On' : 'Off'}
-            </Button>
-          ))}
-        </div>
-      </label>
-      <label className={fieldClass}>
+        <SettingsBooleanChoice label="Camera fixed" value={cameraFixed} onChange={onCameraFixedChange} />
+      </div>
+      <div className={fieldClass}>
         <span className={labelClass}>Safety checker</span>
-        <div className="flex flex-wrap gap-2">
-          {[true, false].map((option) => (
-            <Button
-              key={option ? 'safety-on' : 'safety-off'}
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => onSafetyCheckerChange?.(option)}
-              className={clsx(toggleButtonClass, activeToggleClass(option === safetyChecker))}
-            >
-              {option ? 'On' : 'Off'}
-            </Button>
-          ))}
-        </div>
-      </label>
+        <SettingsBooleanChoice label="Safety checker" value={safetyChecker} onChange={onSafetyCheckerChange} />
+      </div>
     </>
   );
 

@@ -1,4 +1,5 @@
 'use client';
+import {videoDurationPolicy,videoInheritsSourceFraming,videoSourceDurationLabel,videoModifySettingsCopy} from '@/lib/video-workflow-capabilities';
 
 import clsx from 'clsx';
 import { useMemo, type ReactNode } from 'react';
@@ -8,6 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
 import { seedanceEditSourceLabel } from '@/lib/seedance-edit-source-copy';
+import { videoExtensionCopy } from '@/lib/video-extension';
 import { parseDurationOptionValue, matchesDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
 
 interface CoreSettingsBarProps {
@@ -155,12 +157,12 @@ function ControlIcon({ kind }: { kind: CoreControlKind }) {
   );
 }
 
-function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean, controlName: string) {
+function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean, controlName: string, visibleName = false) {
   const showIcon = !compact || !['iterations', 'fps'].includes(kind);
   return (
     <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
       {showIcon ? <ControlIcon kind={kind} /> : null}
-      <span className="sr-only">{controlName}: </span>
+      <span className={visibleName ? undefined : 'sr-only'}>{controlName}: </span>
       <span className="block truncate leading-none">{label}</span>
     </span>
   );
@@ -176,6 +178,9 @@ function InlineSelectControl({
   compact = false,
   comparison = false,
   action = false,
+  controlLabel,
+  readOnly = false,
+  visibleName = false,
 }: {
   kind: CoreControlKind;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
@@ -186,17 +191,26 @@ function InlineSelectControl({
   compact?: boolean;
   comparison?: boolean;
   action?: boolean;
+  controlLabel?: string;
+  readOnly?: boolean;
+  visibleName?: boolean;
 }) {
   const { t } = useI18n();
   const names = {duration:'Duration',resolution:'Resolution',aspect:'Format',audio:'Audio',iterations:'Outputs',fps:'Frame rate',hdr:'HDR'};
-  const controlName = t(`workspace.header.controlLabels.${kind}`, names[kind]) ?? names[kind];
+  const controlName = controlLabel ?? t(`workspace.header.controlLabels.${kind}`, names[kind]) ?? names[kind];
   if (!options.length) return null;
+  if (readOnly) {
+    const label = options.find(option => option.value === value)?.label ?? options[0].label;
+    return <span className="inline-flex min-h-11 items-center gap-1.5 px-2.5 text-xs text-text-secondary sm:min-h-9" title={controlName}>
+      {createInlineLabel(kind, label, compact, controlName, visibleName)}
+    </span>;
+  }
   return (
     <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', action && 'app-output-count', className)}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label), compact, controlName),
+          label: createInlineLabel(kind, String(option.label), compact, controlName, visibleName),
         }))}
         value={value}
         onChange={onChange}
@@ -278,6 +292,11 @@ export function CoreSettingsBar({
   durationManagedLabel,
 }: CoreSettingsBarProps) {
   const { t, locale } = useI18n();
+  const extensionWorkflow = mode === 'extend';
+  const modifyWorkflow = mode === 'v2v';
+  const modifyCopy = videoModifySettingsCopy(locale);
+  const extensionCopy = videoExtensionCopy(locale);
+  const sourceDuration = videoDurationPolicy(engine,mode,caps)==='source_video';
   const inheritsSourceVideo = engine.modeAvailability?.[mode]?.inheritsSourceVideo === true;
   const workspaceDensity = density !== 'default';
   const comparisonDensity = density === 'comparison';
@@ -300,10 +319,10 @@ export function CoreSettingsBar({
 
   const isLtxFastLong = (engine.id === 'ltx-2-fast' || engine.id === 'ltx-2-3-fast') && durationSec > 10;
   const resolutionOptions = useMemo(() => {
-    const base = caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
+    const base = extensionWorkflow ? caps?.resolution ?? [] : caps?.resolution?.length ? caps.resolution : engine.resolutions;
     if (isLtxFastLong) return base.filter((value) => value === '1080p');
     return base;
-  }, [caps?.resolution, engine.resolutions, isLtxFastLong]);
+  }, [caps?.resolution, engine.resolutions, isLtxFastLong, extensionWorkflow]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {
@@ -321,7 +340,7 @@ export function CoreSettingsBar({
     if (isLtxFastLong) return base.filter((value) => value === 25);
     return base;
   }, [caps?.fps, engine.fps, isLtxFastLong]);
-  const resolvedDurationManagedLabel = durationManagedLabel ?? (inheritsSourceVideo ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
+  const resolvedDurationManagedLabel = sourceDuration ? (inheritsSourceVideo ? durationManagedLabel ?? seedanceEditSourceLabel(undefined,locale) : videoSourceDurationLabel(locale)) : durationManagedLabel ?? (inheritsSourceVideo ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
 
   const durationOptions =
     frameOptions && frameOptions.length
@@ -377,10 +396,10 @@ export function CoreSettingsBar({
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
-  const showFpsControl = fpsOptions.length > 1 || isLtxFastLong;
+  const showFpsControl = (fpsOptions.length > 1 || isLtxFastLong) && (!(extensionWorkflow || modifyWorkflow) || caps?.fps !== undefined);
   const modeCanExposeNativeAudio = caps?.audioToggle ?? true;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioControl && modeCanExposeNativeAudio;
-  const showAudioInlineControl = showAudioControl || audioIncluded;
+  const showAudioInlineControl = (showAudioControl || audioIncluded) && (!(extensionWorkflow || modifyWorkflow) || caps?.audioToggle === true);
   const audioSelectLocked = audioIncluded || !showAudioControl || audioControlDisabled;
   const audioValue = audioIncluded ? true : showAudioControl ? Boolean(audioEnabled) : false;
   const audioOptions = [
@@ -412,7 +431,7 @@ export function CoreSettingsBar({
           workspaceDensity ? 'w-full flex-wrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
-        {durationManaged || inheritsSourceVideo ? (
+        {durationManaged || sourceDuration ? (
           <div
             className={clsx(
               'inline-flex items-center rounded-full border border-dashed border-border bg-surface-glass-60 font-semibold uppercase tracking-micro text-text-muted',
@@ -425,6 +444,9 @@ export function CoreSettingsBar({
         ) : frameOptions || (enumeratedDurationOptions && enumeratedDurationOptions.length) ? (
           <InlineSelectControl
             kind="duration"
+            controlLabel={extensionWorkflow ? extensionCopy.duration : modifyWorkflow ? modifyCopy.duration : undefined}
+            visibleName={modifyWorkflow}
+            readOnly={(extensionWorkflow || modifyWorkflow) && durationOptions.length === 1}
             options={durationOptions}
             value={durationValue}
             compact={workspaceDensity}
@@ -440,6 +462,8 @@ export function CoreSettingsBar({
         ) : durationRange ? (
           <InlineSelectControl
             kind="duration"
+            controlLabel={extensionWorkflow ? extensionCopy.duration : modifyWorkflow ? modifyCopy.duration : undefined}
+            visibleName={modifyWorkflow}
             options={durationRangeOptions}
             value={durationSec}
             compact={workspaceDensity}
@@ -451,6 +475,7 @@ export function CoreSettingsBar({
         {showResolutionControl ? (
           <InlineSelectControl
             kind="resolution"
+            readOnly={(extensionWorkflow || modifyWorkflow) && (resolutionLocked || resolutionOptionsList.length === 1)}
             options={resolutionOptionsList}
             value={resolution}
             compact={workspaceDensity}
@@ -472,9 +497,12 @@ export function CoreSettingsBar({
           />
         ) : null}
 
-        {showAspectControl && !inheritsSourceVideo ? (
+        {showAspectControl && !videoInheritsSourceFraming(engine,mode) ? (
           <InlineSelectControl
             kind="aspect"
+            controlLabel={modifyWorkflow ? modifyCopy.format : undefined}
+            visibleName={modifyWorkflow}
+            readOnly={(extensionWorkflow || modifyWorkflow) && aspectOptionsList.length === 1}
             options={aspectOptionsList}
             value={aspectRatio}
             compact={workspaceDensity}
@@ -497,6 +525,9 @@ export function CoreSettingsBar({
         {showAudioInlineControl ? (
           <InlineSelectControl
             kind="audio"
+            controlLabel={modifyWorkflow ? modifyCopy.audio : undefined}
+            visibleName={modifyWorkflow}
+            readOnly={(extensionWorkflow || modifyWorkflow) && audioSelectLocked}
             options={audioOptions}
             value={audioValue}
             compact={workspaceDensity}

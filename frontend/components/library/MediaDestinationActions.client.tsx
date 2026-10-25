@@ -1,65 +1,74 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, SquarePen } from 'lucide-react';
 import { FEATURES } from '@/content/feature-flags';
 import { useRouter } from 'next/navigation';
 import { authFetch } from '@/lib/authFetch';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { stageMediaHandoff, supportsMediaDestination, discoverableMediaToolDestinations, MEDIA_TOOL_DESTINATIONS, type MediaDestination } from '@/lib/media-handoff';
 import { creatorCopy } from '@/components/tools/creator/creator-copy';
+import { getVideoContinuationEngine, resolveMediaContinuationOriginal, type VideoContinuationMode } from '@/lib/video-continuation';
+import { useVideoContinuationEngines } from './useVideoContinuationEngines';
 import { mediaActionCopy } from './media-action-copy';
+import { GalleryActionButton } from './GalleryActionButton.client';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 const StudioMediaAction = dynamic(() => import('./StudioMediaAction.client').then(module => module.StudioMediaAction));
-export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId, presentation = 'default' }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null; presentation?: 'default' | 'creator' }) {
+export function MediaDestinationActions({ asset, userId, locale, onNavigate, sourceEngineId, presentation = 'default' }: { asset: AssetBrowserAsset; userId?: string | null; locale: string; onNavigate?: () => void; sourceEngineId?: string | null; presentation?: 'default' | 'creator' | 'gallery' }) {
   const router = useRouter();
   const copy = mediaActionCopy(locale);
-  const [error, setError] = useState(false);
-  const [pending, setPending] = useState(false);
-  const scope = JSON.stringify([userId, asset.id, asset.url]);
+  const [action, setAction] = useState<{ scope: string; pending: boolean; error: boolean } | null>(null);
+  const engines = useVideoContinuationEngines(userId, asset.kind === 'video');
+  const extendEngine = getVideoContinuationEngine(engines, asset, 'extend', sourceEngineId);
+  const modifyEngine = getVideoContinuationEngine(engines, asset, 'v2v', sourceEngineId);
+  const scope = JSON.stringify([userId, asset.id, asset.url, sourceEngineId]);
+  const pending = action?.scope === scope && action.pending;
+  const error = action?.scope === scope && action.error;
   const scopeRef = useRef(scope);
   scopeRef.current = scope;
   const active = useRef(true);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   if (!userId) return null;
-  const open = async (destination: MediaDestination, extend = false) => {
-    setPending(true); setError(false);
+  const open = async (destination: MediaDestination, continuation?: VideoContinuationMode) => {
+    setAction({ scope, pending: true, error: false });
     try {
-      let original = asset;
-      if (asset.source === 'gallery') {
-        const params = new URLSearchParams({ kind: asset.kind, jobId: asset.jobId ?? '', limit: '60' });
-        const response = await authFetch(`/api/media-library/recent-outputs?${params}`, { signal: AbortSignal.timeout(10_000) });
-        const payload = await response.json();
-        const found = response.ok && payload?.ok && Array.isArray(payload.outputs) ? payload.outputs.find((entry: AssetBrowserAsset & { status?: string }) => entry.url === asset.url && entry.kind === asset.kind && ['ready', 'completed', 'succeeded'].includes(entry.status ?? '')) : null;
-        if (!found) throw new Error('Original is not ready');
-        original = { ...asset, ...found, url: asset.url, sourceOutputId: found.id, source: 'recent' };
-      }
+      const original = await resolveMediaContinuationOriginal(asset, authFetch);
       if (!active.current || scopeRef.current !== scope) return;
       let suffix = '';
-      if (extend) {
-        const [{ listFalEngines }, { resolveRuntimeEngineInput }] = await Promise.all([import('@/config/falEngines'), import('@/config/model-runtime')]);
-        const available = listFalEngines().filter(entry => {
-          const runtime = resolveRuntimeEngineInput(entry.id);
-          // Veo extension expects a Veo source. Unknown uploads use a general clip extender.
-          return entry.engine.modes.includes('extend') && entry.engine.availability !== 'paused' && runtime?.lifecycle === 'current' && runtime.publication.app.published && (!entry.id.startsWith('veo-') || sourceEngineId?.startsWith('veo-'));
-        });
-        const model = available.find(entry => entry.id === sourceEngineId) ?? available.find(entry => entry.id === 'seedance-2-5') ?? available[0];
-        if (!model) throw new Error('No extension model available');
-        suffix = `&engine=${encodeURIComponent(model.id)}&mode=extend`;
+      if (continuation) {
+        const model = getVideoContinuationEngine(engines, original, continuation, sourceEngineId);
+        if (!model) throw new Error('No continuation model available');
+        suffix = `&engine=${encodeURIComponent(model.id)}&mode=${continuation}`;
       }
       if (!active.current || scopeRef.current !== scope) return;
       router.push(stageMediaHandoff(window.sessionStorage, userId, original, destination, crypto.randomUUID()) + suffix); onNavigate?.();
-    } catch { if (active.current && scopeRef.current === scope) setError(true); }
-    finally { if (active.current && scopeRef.current === scope) setPending(false); }
+    } catch { if (active.current && scopeRef.current === scope) setAction({ scope, pending: false, error: true }); }
+    finally { if (active.current && scopeRef.current === scope) setAction(current => current?.scope === scope ? { ...current, pending: false } : current); }
   };
   const fr = locale.startsWith('fr'), es = locale.startsWith('es');
+  const extendLabel = fr ? 'Prolonger la vidéo' : es ? 'Extender vídeo' : 'Extend video';
+  const modifyLabel = fr ? 'Modifier la vidéo' : es ? 'Modificar vídeo' : 'Modify video';
+  if (presentation === 'gallery') {
+    if (!extendEngine && !modifyEngine) return null;
+    return <div className="app-gallery-continuation-actions" role="group" aria-label={copy.actions} aria-busy={pending} data-feedback={pending || error || undefined}>
+      {extendEngine ? <GalleryActionButton label={extendLabel} disabled={pending} onClick={event => { event.stopPropagation(); void open('video', 'extend'); }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5H4v14h8M8 9v6l4-3-4-3M14 12h7m-3-3 3 3-3 3" /></svg>
+      </GalleryActionButton> : null}
+      {modifyEngine ? <GalleryActionButton label={modifyLabel} disabled={pending} onClick={event => { event.stopPropagation(); void open('video', 'v2v'); }}>
+        <SquarePen aria-hidden="true" />
+      </GalleryActionButton> : null}
+      {pending ? <span role="status" className="sr-only">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}
+      {error ? <p role="alert" className="app-gallery-action-error">{copy.error}</p> : null}
+    </div>;
+  }
   const toolLabels = fr ? ['Agrandir', 'Changer l’angle', 'Retirer le fond', 'Restaurer', 'Réduire le bruit', 'Corriger le flou', 'Fluidifier'] : es ? ['Ampliar', 'Cambiar ángulo', 'Quitar fondo', 'Restaurar', 'Reducir ruido', 'Corregir desenfoque', 'Suavizar movimiento'] : ['Upscale', 'Change angle', 'Remove background', 'Restore video', 'Denoise', 'Fix motion blur', 'Smooth motion'];
   const creatorLabels = creatorCopy(locale).titles;
   const destinations = discoverableMediaToolDestinations(asset).filter(destination => destination !== 'upscale');
   const toolButton = (destination: typeof MEDIA_TOOL_DESTINATIONS[number]) => <button key={destination} type="button" disabled={pending} onClick={() => void open(destination)}><AppGlyph name="tools" /><span>{destination in creatorLabels ? creatorLabels[destination as keyof typeof creatorLabels] : toolLabels[MEDIA_TOOL_DESTINATIONS.indexOf(destination)]}</span></button>;
   const primaryTransforms = <>
     <button type="button" disabled={pending} onClick={() => void open('video')}><AppGlyph name="video" /><span>{asset.kind === 'image' ? copy.animate : (fr ? 'Utiliser comme référence' : es ? 'Usar como referencia' : 'Use as reference')}</span></button>
-    {asset.kind === 'video' ? <button type="button" disabled={pending} onClick={() => void open('video', true)}><AppGlyph name="video" /><span>{fr ? 'Prolonger la vidéo' : es ? 'Extender vídeo' : 'Extend video'}</span></button> : null}
+    {extendEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'extend')}><AppGlyph name="video" /><span>{extendLabel}</span></button> : null}
+    {modifyEngine ? <button type="button" disabled={pending} onClick={() => void open('video', 'v2v')}><AppGlyph name="video" /><span>{modifyLabel}</span></button> : null}
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
   </>;

@@ -27,6 +27,7 @@ import {
 } from "./image-conversation-director";
 import { runMeteredImageDirector } from "./image-model-usage";
 import { runStudioImageActions, resumeStudioImageAction } from "./conversation-image-run";
+import {readStudioExtensionAssembly} from './conversation-extension-assembly';
 import type { StudioResponseCreator } from "./conversation-director";
 import {
   claimImageTurn,
@@ -227,6 +228,7 @@ export function createImageConversationService(
       ...(turn.draft_json?.exportQuote ? {exportQuote: turn.draft_json.exportQuote} : {}),
       ...(turn.draft_json?.analysisQuote ? {analysisQuote:turn.draft_json.analysisQuote} : {}),
       ...(turn.draft_json?.continuation ? {continuation: turn.draft_json.continuation} : {}),
+      ...(turn.draft_json?.extensionAssembly?{extensionAssembly:await readStudioExtensionAssembly(actor,turn.request_id,turn.draft_json.extensionAssembly)}:{}),
       state: expiredLease ? "failed" : turn.state,
       retryable: expiredLease || turn.state === "failed",
       quote: quote
@@ -347,7 +349,7 @@ export function createImageConversationService(
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (hasDraftCreation(draft) && !useActions) {
           if (dependencies.actionsEnabled) {
-            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled});
+            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled:dependencies.editingEnabled});
           } else {
           const request = imageRequestFromDraft(
             draft,

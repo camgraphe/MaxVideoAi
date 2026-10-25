@@ -136,7 +136,7 @@
     },
     {
       "q": "Quels modes sont supportés ?",
-      "a": "Texte → Vidéo et Image → Vidéo dans une seule carte. Pas de first/last frame dans ce routage."
+      "a": "Texte-vers-vidéo et image-vers-vidéo sont disponibles. En image-vers-vidéo, fournissez l’image de départ et éventuellement une image de fin pour guider l’arrivée. Cela reste distinct de la modification vidéo-vers-vidéo."
     },
     {
       "q": "Kling 2.6 Pro reste-t-il utile pour l image-vers-video et les plans courts avec dialogue ?",
@@ -338,7 +338,7 @@
       },
       {
         "title": "Image de départ",
-        "body": "Utilisez une image pour cadrage produit, identité ou composition d’ouverture."
+        "body": "Le mode image-vers-vidéo accepte une image de départ et une image de fin facultative. Celle-ci définit la limite finale, pas un jeu distinct de références de style."
       },
       {
         "title": "Cue audio",
@@ -429,7 +429,8 @@
     "globalPrinciples": [
       "Un sujet, une action, un mouvement caméra.",
       "Indiquez la lumière et la sensation de lentille.",
-      "Ajoutez des cues sonores courts ou un dialogue si l’audio est on."
+      "Ajoutez des cues sonores courts ou un dialogue si l’audio est on.",
+      "Le mode image-vers-vidéo accepte une image de départ et une image de fin facultative. Celle-ci définit la limite finale, pas un jeu distinct de références de style."
     ],
     "engineWhy": [
       "Le mode audio gère bien une ambiance simple et des lignes courtes.",

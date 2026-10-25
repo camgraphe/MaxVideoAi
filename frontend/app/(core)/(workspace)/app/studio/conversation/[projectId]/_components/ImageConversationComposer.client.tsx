@@ -15,6 +15,7 @@ export function ImageConversationComposer({
   locale = 'en',
   readOnly = false,
   libraryLabel,
+  compact = false,
 }: {
   text: string;
   onTextChange: (text: string) => void;
@@ -25,6 +26,7 @@ export function ImageConversationComposer({
   locale?: ConversationLocale | 'es';
   readOnly?: boolean;
   libraryLabel?: string;
+  compact?: boolean;
 }) {
   const t = (en: string, fr: string, es=en) => locale === 'fr' ? fr : locale === 'es' ? es : en;
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -34,16 +36,21 @@ export function ImageConversationComposer({
   const resizeTextarea = useCallback(() => {
     const element = textarea.current;
     if (!element) return;
-    const maxHeight = Math.max(45, Math.min(160, window.innerHeight * 0.22));
+    const viewportHeight = compact ? window.visualViewport?.height ?? window.innerHeight : window.innerHeight;
+    const maxHeight = Math.max(45, Math.min(160, viewportHeight * 0.22));
     element.style.height = "45px";
     element.style.height = `${Math.max(45, Math.min(element.scrollHeight, maxHeight))}px`;
-  }, []);
+  }, [compact]);
 
   useLayoutEffect(resizeTextarea, [resizeTextarea, text]);
   useEffect(() => {
     window.addEventListener("resize", resizeTextarea);
-    return () => window.removeEventListener("resize", resizeTextarea);
-  }, [resizeTextarea]);
+    if (compact) window.visualViewport?.addEventListener("resize", resizeTextarea);
+    return () => {
+      window.removeEventListener("resize", resizeTextarea);
+      if (compact) window.visualViewport?.removeEventListener("resize", resizeTextarea);
+    };
+  }, [compact, resizeTextarea]);
 
   return (
     <><form
@@ -65,11 +72,11 @@ export function ImageConversationComposer({
       <textarea
         ref={textarea}
         rows={1}
-        aria-label={t('Message Studio', 'Message à Studio', 'Mensaje a Studio')}
+        aria-label={t('Message Milo', 'Message à Milo', 'Mensaje a Milo')}
         value={text}
         readOnly={readOnly}
         onChange={(event) => onTextChange(event.target.value)}
-        placeholder={t('Describe your idea…', 'Décrivez votre idée…', 'Describe tu idea…')}
+        placeholder={compact ? t('Message Milo…', 'Écrivez à Milo…', 'Escribe a Milo…') : t('Tell Milo what you have in mind…', 'Dites à Milo ce que vous avez en tête…', 'Cuéntale a Milo lo que tienes en mente…')}
         maxLength={4000}
         aria-invalid={tooLong || undefined}
         aria-describedby={tooLong ? lengthNoticeId : undefined}
@@ -90,7 +97,7 @@ export function ImageConversationComposer({
         className={styles.send}
         type="submit"
         disabled={!canSend}
-        aria-label={t('Send to Studio', 'Envoyer à Studio', 'Enviar a Studio')}
+        aria-label={t('Send to Milo', 'Envoyer à Milo', 'Enviar a Milo')}
       >
         <ArrowUp size={20} />
       </button>

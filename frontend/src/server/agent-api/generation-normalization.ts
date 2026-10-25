@@ -1,3 +1,7 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { klingOwnedElementsSchema, validateOwnedKlingElements } from '@/lib/kling-owned-elements';
+import { normalizeVideoOperation } from '@/lib/video-operation';
 import { createHash } from 'node:crypto';
 
 import type {
@@ -25,7 +29,8 @@ export const MAX_CANONICAL_PROMPT_CHARS = 12_000;
 export const MAX_CANONICAL_SETTING_COUNT = 64;
 export const MAX_CANONICAL_SETTING_STRING_CHARS = 4_096;
 export const MAX_CANONICAL_SETTINGS_JSON_BYTES = 16_384;
-export const MAX_CANONICAL_REFERENCES = 50;
+export {MAX_GENERATION_REFERENCES as MAX_CANONICAL_REFERENCES} from '@/lib/generation-reference-limits';
+import {MAX_GENERATION_REFERENCES as MAX_CANONICAL_REFERENCES} from '@/lib/generation-reference-limits';
 export const MAX_CANONICAL_REFERENCE_URL_CHARS = MAX_CONTROLLED_REFERENCE_URL_CHARS;
 
 const MAX_ENGINE_ID_CHARS = 128;
@@ -39,18 +44,24 @@ const ROLE_SET = new Set<CanonicalGenerationReferenceRole>([
   'source',
   'reference',
   'first_frame',
+  'middle_frame',
   'last_frame',
   'mask',
 ]);
 const ROLE_ORDER: Record<CanonicalGenerationReferenceRole, number> = {
   source: 0,
   first_frame: 1,
+  middle_frame: 1.5,
   last_frame: 2,
   reference: 3,
   mask: 4,
 };
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
+  'operation',
+  'sourceJobId',
+  'sourceOutputId',
+  'elements',
   'surface',
   'engineId',
   'mode',
@@ -69,6 +80,15 @@ const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const VIDEO_SETTING_KEYS = new Set([
+  'keepAudio',
+  'safetyTolerance',
+  'audioSetting',
+  'personGeneration',
+  'compressionQuality',
+  'promptAudioDirection',
+  'promptCameraDirection',
+  'promptEditInstruction',
+
   'outputFormat',
   'returnLastFrame',
   'watermark',
@@ -92,6 +112,9 @@ const VIDEO_SETTING_KEYS = new Set([
   'negativePrompt',
   'numFrames',
   'promptExpansionMode',
+  'enhanceRealism',
+  'middleFrameTime',
+  'referenceOrder',
   'resolution',
   'reframeGridPositionX',
   'reframeGridPositionY',
@@ -106,11 +129,18 @@ const VIDEO_SETTING_KEYS = new Set([
   'sourcePositionY',
   'startTimeSec',
   'extendPosition',
+  'extendDirection',
   'modifyStrength',
   'multiPrompt',
   'exrExport',
   'editDepthBlur',
   'editFace',
+  'editControlMode',
+  'editPoseMode',
+  'editDepthMode',
+  'editNormalsMode',
+  'editTrajectoryMode',
+  'editFaceMode',
   'editKeyframeIndexes',
   'reasoningLevel',
   'keyframeIndexes',
@@ -360,7 +390,7 @@ function normalizeSettings(
   if (Buffer.byteLength(stableJson(ordered), 'utf8') > maxSettingsBytes) {
     fail('settings', 'settings exceeds the canonical size limit.');
   }
-  return ordered;
+  return withoutRetiredOutputControls(ordered);
 }
 
 function normalizeReferenceRole(value: unknown, index: number): CanonicalGenerationReferenceRole {
@@ -458,12 +488,13 @@ function normalizeReferences(
   value: unknown,
   mode: CanonicalGenerationMode,
   engineId: string,
+  explicitH3Order = false,
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
   const orderedRole = mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || (['flux-3-max','kling-v4'].includes(engineId) && mode === 'ref2v')
+    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4'].includes(engineId) || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
   let nextOrderedSlot = 0;
@@ -575,23 +606,39 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
   if (seedanceWorkflow && !['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode)) fail('seedanceWorkflow', 'Unsupported Draft mode.');
   assertSurfaceMode(surface, mode);
 
-  const settings = normalizeSettings(input.settings, mode, normalizeEngineId(input.engineId));
+  let operation;
+  try { operation = normalizeVideoOperation(normalizeEngineId(input.engineId), mode, input.operation); }
+  catch { fail('operation', 'Unsupported operation for this engine and mode.'); }
+  const sourceJobId = input.sourceJobId === undefined ? undefined : normalizeText(input.sourceJobId, 'sourceJobId', 255, false);
+  const sourceOutputId = input.sourceOutputId === undefined ? undefined : normalizeText(input.sourceOutputId, 'sourceOutputId', 255, false);
+  if ((sourceJobId || sourceOutputId) && (!((input.engineId === 'luma-ray-3-2' && mode === 'extend') || operation === 'flux-draft-enhance') || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
   const engineId = normalizeEngineId(input.engineId);
-  const prompt = normalizeText(final && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? 2500 : MAX_CANONICAL_PROMPT_CHARS, true);
+  const settings = normalizeSettings(input.settings, mode, engineId);
+  const noPrompt = operation === 'ltx23-reframe' || operation === 'flux-draft-enhance';
+  const prompt = normalizeText((final || noPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? 2500 : MAX_CANONICAL_PROMPT_CHARS, true);
   if (engineId === 'kling-v4' && prompt && Array.isArray(settings.multiPrompt)) fail('prompt', 'Choose a prompt or shot plan, exclusively.');
-  if (!prompt && !final && !Array.isArray(settings.multiPrompt)) {
+  if (!prompt && !final && !noPrompt && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
   }
+  if ((operation === 'h3-relight' || noPrompt) && prompt) fail('prompt','This operation does not accept a prompt.');
+  if (operation === 'h3-recast' && prompt.length > 2000) fail('prompt','Recast supports at most 2000 characters.');
   if (seedanceWorkflow?.step === 'draft') {
     if (settings.resolution !== undefined && settings.resolution !== '480p') fail('resolution', 'Native Draft requires 480p.');
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }
-  const references = normalizeReferences(input.references, mode, engineId);
+  const references = normalizeReferences(input.references, mode, engineId, engineId === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string');
   const subjects = normalizeSubjects(input.subjects, engineId, mode, references);
-  return {
+  let elements;
+  try { elements = input.elements === undefined ? undefined : klingOwnedElementsSchema.parse(input.elements); }
+  catch { fail('elements', 'Invalid owned Kling Element composition.'); }
+  const result: CanonicalGenerationRequest = {
     schemaVersion: 1,
     ...(subjects ? {subjects} : {}),
+    ...(sourceJobId ? { sourceJobId } : {}),
+    ...(sourceOutputId ? { sourceOutputId } : {}),
+    ...(elements ? {elements} : {}),
+    ...(operation ? { operation } : {}),
     ...(seedanceWorkflow ? { seedanceWorkflow } : {}),
     surface,
     engineId: normalizeEngineId(input.engineId),
@@ -601,6 +648,8 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     references,
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
+  try { validateOwnedKlingElements(result); } catch { fail('elements', 'Invalid owned Kling Element composition.'); }
+  return result;
 }
 
 export function serializeCanonicalGenerationRequest(request: CanonicalGenerationRequest): string {

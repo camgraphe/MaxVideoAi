@@ -1,3 +1,6 @@
+import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
+import { isH3SourceOperation } from '../../lib/h3-source-operations';
+import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import type { ManualTariffSelector, PricingFacts } from '@maxvideoai/pricing';
 
 import type { PricingContext } from '@/lib/pricing-context';
@@ -21,6 +24,24 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (isFluxLtxSourceOperation(selector.operation)) {
+    const identity=videoOperationTariffIdentity(selector.engineId,selector.mode,selector.operation), bounds=fluxLtxDurationBounds(selector.operation),seconds=Number(selector.durationSec);
+    if (!identity||identity.endpoint!==selector.endpoint||identity.transport!==selector.transport||!Number.isFinite(seconds)||seconds<=0||(bounds.maxExclusive?seconds>=bounds.max:seconds>bounds.max)) throw new Error('Invalid source operation tariff identity or duration.');
+    return {...selector,durationSec:'continuous'};
+  }
+  if (isH3SourceOperation(selector.operation)) {
+    const identity = videoOperationTariffIdentity(selector.engineId,selector.mode,selector.operation);
+    const seconds=Number(selector.durationSec), min=selector.operation==='h3-recast'?5:56/24, max=selector.operation==='h3-recast'?30:15;
+    if (!identity || selector.transport!==identity.transport || selector.endpoint!==identity.endpoint || !Number.isFinite(seconds) || seconds<min || seconds>max) throw new Error('Invalid H3 operation tariff identity or duration.');
+    return {...selector,durationSec:'continuous'};
+  }
+  if (selector.operation === 'kling-edit') {
+    const identity = videoOperationTariffIdentity(selector.engineId, selector.mode, selector.operation);
+    const seconds = Number(selector.durationSec);
+    if (!identity || selector.transport !== identity.transport || selector.endpoint !== identity.endpoint
+      || !Number.isFinite(seconds) || seconds < 3 || seconds > 15) throw new Error('Invalid Kling Edit tariff identity or duration.');
+    return { ...selector, durationSec: 'continuous' };
+  }
   if (supportsSeedanceInputTariff(selector.engineId, selector.mode, selector.billingInputType)) {
     if (selector.inputVideoDurationSec === undefined) return null;
     validateSeedanceInputTariffDuration(selector.engineId, Number(selector.inputVideoDurationSec));
@@ -70,14 +91,17 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);
-  const factualAspect = facts.metadata?.manualTariffAspectRatio;
+  // These new endpoint rates depend only on tier/output seconds. Reference orientation
+  // and guidance/Element member counts remain request facts, not separate tariff classes.
+  const operationIdentity = videoOperationTariffIdentity(facts.engineId, context.mode ?? 't2v', context.operation);
+  const factualAspect = operationIdentity ? null : facts.metadata?.manualTariffAspectRatio;
   const pricedAspect = factualAspect === null ? null
     : typeof factualAspect === 'string' ? factualAspect : context.aspectRatio ?? 'default';
   // These factual owners price 0/1 references differently; neither count can alias a default cell.
   const pricedReferences = (isGptImage25EngineId(facts.engineId) && context.mode === 'i2i')
     || isLumaAgentsImageEngineId(facts.engineId)
     || (isMinimaxH3EngineId(facts.engineId) && context.mode === 'ref2v');
-  const projectedMedia = facts.metadata?.manualTariffMedia as ManualTariffMedia | undefined;
+  const projectedMedia = operationIdentity ? {} : facts.metadata?.manualTariffMedia as ManualTariffMedia | undefined;
   const media = projectedMedia ?? context;
   const factualAudio = facts.metadata?.manualTariffAudio;
   const audio = factualAudio === null ? undefined : typeof factualAudio === 'boolean' ? factualAudio : context.addons?.audio;
@@ -86,6 +110,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   const selector: ManualTariffSelector = {
     engineId: facts.engineId,
     mode: context.mode ?? 't2v',
+    ...operationIdentity,
     resolution: gptImage ? resolveGptImage2PricingTier(context.resolution, context.customImageSize).billingKey : context.resolution,
     durationSec: String(billedDuration),
     ...(context.workflowStep ? { workflowStep: context.workflowStep } : {}),
@@ -114,6 +139,8 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
+    ...(operationIdentity?.operation === 'kling-edit' || isH3SourceOperation(operationIdentity?.operation) || isFluxLtxSourceOperation(operationIdentity?.operation)
+      ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,
     ...(media.inputVideoDurationSec !== undefined || (isWan3EngineId(facts.engineId) && context.mode === 'ref2v')
       ? { input_video_seconds: media.inputVideoDurationSec ?? 0 } : {}),

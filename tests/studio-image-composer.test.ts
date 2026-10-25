@@ -103,10 +103,10 @@ test("composer sends on Enter, preserves Shift+Enter and IME composition, and op
       '[aria-label="Ouvrir la bibliothèque"]',
     )!;
     const send = view.dom.window.document.querySelector<HTMLButtonElement>(
-      '[aria-label="Envoyer à Studio"]',
+      '[aria-label="Envoyer à Milo"]',
     )!;
-    assert.equal(textarea.getAttribute("aria-label"), "Message à Studio");
-    assert.equal(textarea.placeholder, "Décrivez votre idée…");
+    assert.equal(textarea.getAttribute("aria-label"), "Message à Milo");
+    assert.equal(textarea.placeholder, "Dites à Milo ce que vous avez en tête…");
     assert.equal(textarea.maxLength, 4000);
     assert.equal(send.disabled, true);
     assert.equal(view.libraryTrigger, library);
@@ -186,7 +186,7 @@ test("composer grows with content, remeasures on viewport resize, and shrinks wh
 test("composer prevents keyboard and form submissions while busy or blank, and defaults to English", async () => {
   const view = await mountComposer({blocked: true});
   try {
-    assert.equal(view.textarea.getAttribute("aria-label"), "Message Studio");
+    assert.equal(view.textarea.getAttribute("aria-label"), "Message Milo");
     await view.changeText("Keep this draft while the current work finishes");
     const event = new view.dom.window.KeyboardEvent("keydown", {key:"Enter",bubbles:true,cancelable:true});
     await act(async () => view.textarea.dispatchEvent(event));

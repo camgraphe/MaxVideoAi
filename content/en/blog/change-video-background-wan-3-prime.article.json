@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "change-video-background-wan-3-prime",
+  "publication": {
+    "articleId": "12a09ea8-780c-4df5-8b61-c79292c8399b",
+    "version": 1,
+    "digest": "403f5397e62d73c197b6cfe1ae4682233a62f19fa67badebf6be95bb4782747f",
+    "publishedAt": "2026-10-25T18:41:10.670Z"
+  },
+  "article": {
+    "locale": "en",
+    "audience": "en",
+    "slug": "change-video-background-wan-3-prime",
+    "title": "How to Change Your Video Background with AI | Wan 3 Prime",
+    "description": "Take one talking clip from a home office to a spacecraft or an underwater observatory. Follow the source selection, settings and exact prompts from our Wan 3 Prime Modify tutorial.",
+    "keywords": [
+      "change video background with AI",
+      "Wan 3 Prime",
+      "Modify Video",
+      "video to video"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "wan-cockpit",
+        "presentation": "single",
+        "alt": "The speaking presenter in an orbital cockpit, with Earth visible through the windows.",
+        "caption": "Earth fills the windows while the speaker keeps his gray T-shirt. Compare his face and delivery with the original clip."
+      },
+      {
+        "id": "opening",
+        "type": "text",
+        "heading": "Keep the performance. Give it another place.",
+        "paragraphs": [
+          {
+            "text": "A speaker sits at a desk and delivers a short line. In one version, Earth fills the window behind him. In another, a manta ray passes through the blue beyond an underwater observatory. Both edits begin with the same six-second video excerpt.",
+            "sourceIds": []
+          },
+          {
+            "text": "This walkthrough uses Wan 3 Prime Modify in MaxVideoAI. Our example starts from a generated source video; you can follow the same steps with your own footage.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Watch the complete tutorial on YouTube.",
+                "href": "https://www.youtube.com/watch?v=qKrPvZj_dL0"
+              }
+            ],
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "source-choice",
+        "type": "text",
+        "heading": "Start with the sentence and the gesture",
+        "paragraphs": [
+          {
+            "text": "The useful unit is a complete action. Keep the beginning and end of the spoken line, together with the hand movement that accompanies it. A tightly trimmed fragment can leave the model without the setup or the finish you want to preserve.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "source-frame",
+        "type": "media",
+        "assetId": "wan-original",
+        "presentation": "single",
+        "alt": "Presenter wearing a gray T-shirt in the home-office source clip.",
+        "caption": "The source supplies the seated pose, framing, spoken line and hand movement that the edit is asked to preserve."
+      },
+      {
+        "id": "choose-excerpt",
+        "type": "steps",
+        "heading": "Choose the part you actually want to edit",
+        "steps": [
+          {
+            "title": "Open the editing route",
+            "body": "In the Video workspace, choose Wan 3 Prime, then Modify Video. Open Video to modify and upload your clip, or choose an existing video from Media."
+          },
+          {
+            "title": "Keep the whole moment",
+            "body": "Click Choose section. Move the handles around the complete sentence and hand movement, preview the selection, then click Use excerpt. The example selects six seconds; it does not require a separate duration-setting step."
+          }
+        ]
+      },
+      {
+        "id": "excerpt-frame",
+        "type": "media",
+        "assetId": "wan-excerpt",
+        "presentation": "single",
+        "alt": "Choose section dialog showing a six-second selection and the Use excerpt button.",
+        "caption": "Keep the complete sentence and hand gesture inside the selection, then preview it before choosing Use excerpt."
+      },
+      {
+        "id": "settings",
+        "type": "text",
+        "heading": "Use the settings shown, then read your own price",
+        "paragraphs": [
+          {
+            "text": "The example uses 16:9, 720p and Audio On. In Options, Prompt expansion is Off.",
+            "sourceIds": []
+          },
+          {
+            "text": "The amount visible in this demonstration is USD 2.19. Check the current quote beside Modify video after choosing your own source and settings.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "settings-frame",
+        "type": "media",
+        "assetId": "wan-settings",
+        "presentation": "single",
+        "alt": "Modify Video controls showing 720p, 16:9, generated audio On and a displayed price of USD 2.19.",
+        "caption": "Choose the output format, resolution and audio setting before reviewing the price."
+      },
+      {
+        "id": "prompt-direction",
+        "type": "text",
+        "heading": "Write the change and the preservation rule separately",
+        "paragraphs": [
+          {
+            "text": "The cockpit prompt asks for a flight deck with architectural depth and Earth beyond a panoramic window. It also specifies what should remain: the speaker, gray T-shirt, seated position, camera, expression, mouth movement, gesture and spoken English line.",
+            "sourceIds": []
+          },
+          {
+            "text": "The slow Earth drift belongs behind the speaker. It should not ask his body or the camera to invent a new performance. Read preservation wording as a direction to review against the source, not a promise of exact identity or lip sync.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "prompt-cockpit",
+        "type": "prompt",
+        "heading": "Exact prompt used: cockpit",
+        "template": "Edit the supplied six-second source clip. Keep exactly the same man: his facial structure, age, short brown hairstyle, clean-shaven face, skin texture and body proportions. Preserve the original seated position, framing, camera, expression, mouth movements, hand gesture and performance timing. Keep the original spoken English line and voice in sync; add no words, music or other voices. Keep him slightly left of center, with uncluttered space on the right for a graphic added later. Replace the home interior with the spectacular flight deck of an orbital spacecraft. A huge panoramic window behind him reveals Earth's luminous curved horizon, blue oceans and white cloud systems against deep black space. Strong architectural depth, brushed metal ribs and restrained amber console lights make this unmistakably a real spaceship, not a normal office. Earth drifts very slowly beyond the window while the camera remains as in the source. Keep his original gray T-shirt unchanged. Natural readable face lighting; cinematic, photorealistic materials. No helmet, face covering, new people, cuts, captions, readable screens, logos or graphics. The complete orbital environment is already visible in the first frame.",
+        "note": "You can leave the space on the right empty; no graphic is needed for this edit."
+      },
+      {
+        "id": "generate-review",
+        "type": "steps",
+        "heading": "Generate, then check the part that matters",
+        "steps": [
+          {
+            "title": "Confirm the current request",
+            "body": "Paste the full prompt and check the displayed price before starting Modify video. Wait for the result to finish."
+          },
+          {
+            "title": "Review in motion and with sound",
+            "body": "Compare the face, mouth timing, hand movement and framing with the original. Play the complete sentence. A convincing background is only one part of the edit."
+          },
+          {
+            "title": "Save the version you want",
+            "body": "Open the finished result and use the download icon. Keep the original excerpt so a new variation can start from it."
+          }
+        ]
+      },
+      {
+        "id": "underwater-variation",
+        "type": "text",
+        "heading": "For a second world, return to the original",
+        "paragraphs": [
+          {
+            "text": "The underwater version starts from the original six-second excerpt again, using the same recorded settings. It is a separate generation, not a second step applied to the cockpit result.",
+            "sourceIds": []
+          },
+          {
+            "text": "This prompt also changes the gray T-shirt to a beige expedition jacket. That makes it a background-and-wardrobe variation. The manta ray is placed behind the speaker's shoulder, clear of his face and hand.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "underwater-frame",
+        "type": "media",
+        "assetId": "wan-underwater",
+        "presentation": "single",
+        "alt": "Presenter in a beige jacket in a blue underwater observatory, with a manta ray beyond the glass.",
+        "caption": "The underwater version changes the wardrobe too. Keep the manta ray behind the speaker, clear of his face."
+      },
+      {
+        "id": "prompt-underwater",
+        "type": "prompt",
+        "heading": "Exact prompt used: underwater",
+        "template": "Edit the supplied six-second source clip. Keep exactly the same man: his facial structure, age, short brown hairstyle, clean-shaven face, skin texture and body proportions. Preserve the original seated position, framing, camera, expression, mouth movements, hand gesture and performance timing. Keep the original spoken English line and voice in sync; add no words, music or other voices. Keep him slightly left of center, with uncluttered space on the right for a graphic added later. Replace the home interior with a panoramic glass observatory deep under the ocean. Huge curved windows and substantial circular structural ribs surround him; beyond the glass is open turquoise water fading into dark blue depth, not a room or an aquarium wall. One large manta ray glides slowly past the window behind his right shoulder during the existing hand gesture; keep its silhouette clearly readable and behind the glass, never overlapping his face or hand. Soft moving water caustics touch the architecture while the man's face stays naturally lit and consistent. Replace only his gray T-shirt with a simple light beige expedition jacket with a clean collar and fitted sleeves, without badges or writing. Keep the source body shape and arm motion. Cinematic photorealism, immense underwater depth, no helmet, masks, other people, cuts, captions, readable screens, logos or graphics. The underwater environment is unmistakable from the first frame.",
+        "note": "Start again from the original excerpt for this variation."
+      },
+      {
+        "id": "review-limits",
+        "type": "text",
+        "heading": "What to watch before calling the edit finished",
+        "paragraphs": [
+          {
+            "text": "Check the boundaries around the hands and shoulders, the face across the full line, and whether the new environment remains stable while the subject moves. Listen for altered words, an additional voice or a change in timing.",
+            "sourceIds": []
+          },
+          {
+            "text": "This workflow creates a new finished scene. It does not produce a transparent cutout for compositing. Identity, clothing and lip sync can vary, even when the prompt asks to preserve them.",
+            "sourceIds": []
+          },
+          {
+            "text": "Audio is optional on this route. Switch it on for a spoken clip and review the complete line.",
+            "sourceIds": [
+              "wan-model"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "try-it",
+        "type": "conclusion",
+        "heading": "Try it with one complete moment",
+        "paragraphs": [
+          "Pick a short clip whose performance you want to keep. Decide what stays, choose one new environment, then use the original and the result side by side for your review."
+        ],
+        "cta": {
+          "label": "Open Wan 3 Prime on MaxVideoAI",
+          "href": "https://maxvideoai.com/models/wan-3-prime"
+        }
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "wan-model",
+      "title": "Wan 3 Prime on MaxVideoAI",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/wan-3-prime",
+      "retrievedAt": "2026-10-25"
+    },
+    {
+      "id": "wan-tutorial-video",
+      "title": "How to Change Your Video Background with AI | Wan 3 Prime",
+      "publisher": "MaxVideoAI / YouTube",
+      "url": "https://www.youtube.com/watch?v=qKrPvZj_dL0",
+      "retrievedAt": "2026-10-25",
+      "publishedAt": "2026-10-25"
+    }
+  ],
+  "assets": [
+    {
+      "id": "wan-cockpit",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "faa70dbd88e72571e0f242a6bd8471a60fd13bbfbc7f790ac2d8908f97dfcc81",
+      "url": "https://media.maxvideoai.com/editorial/published/faa70dbd88e72571e0f242a6bd8471a60fd13bbfbc7f790ac2d8908f97dfcc81.webp"
+    },
+    {
+      "id": "wan-underwater",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "c97c24b1d8f5243c93d23f8ade329506e8ade1875dda46c50dbd536fd114c644",
+      "url": "https://media.maxvideoai.com/editorial/published/c97c24b1d8f5243c93d23f8ade329506e8ade1875dda46c50dbd536fd114c644.webp"
+    },
+    {
+      "id": "wan-original",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "342ce41275cd26918f7424bfa489f78e339014fefe7ccf782807546a55b075a1",
+      "url": "https://media.maxvideoai.com/editorial/published/342ce41275cd26918f7424bfa489f78e339014fefe7ccf782807546a55b075a1.webp"
+    },
+    {
+      "id": "wan-settings",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "8b44bcf04109e32cafbb9fd9f3b1b5e3fcc94cd5b39c7aa80465b297718ba6b0",
+      "url": "https://media.maxvideoai.com/editorial/published/8b44bcf04109e32cafbb9fd9f3b1b5e3fcc94cd5b39c7aa80465b297718ba6b0.webp"
+    },
+    {
+      "id": "wan-excerpt",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "fc3d794a35e6452dbb2f26e05023bc96d5caabd97d3d036360a72ad4c060781f",
+      "url": "https://media.maxvideoai.com/editorial/published/fc3d794a35e6452dbb2f26e05023bc96d5caabd97d3d036360a72ad4c060781f.webp"
+    }
+  ]
+}

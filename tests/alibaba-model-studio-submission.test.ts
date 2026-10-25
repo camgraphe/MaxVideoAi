@@ -316,3 +316,83 @@ test('Alibaba submission does not fallback on moderation or authentication error
     assert.equal(falCalls, 0);
   }
 });
+
+for (const engineId of ['wan-3', 'wan-3-prime']) {
+  for (const mode of ['v2v', 'extend', 'ref2v'] as const) {
+    test(`${engineId} ${mode} sends a temporary grant without changing reusable inputs or price`, async () => {
+      const { queries, queryFn } = createQueryRecorder();
+      const canonical = 'https://private.example/media-assets/user_123/video-excerpts-private-v3-source.mp4';
+      const signed = `${canonical}?X-Amz-Signature=transport-secret`;
+      const original = { ...falPayload, engineId, mode, videoUrl: canonical,
+        inputs: [{ kind: 'video', slotId: 'video_url', url: canonical, name: 'source.mp4', type: 'video/mp4', size: 5000, durationSec: 6 }] };
+      const before = structuredClone(original);
+      let submitted = 0;
+      const { params } = baseParams({ engineId, mode, durationSec: 6, falPayload: original, deps: {
+        queryFn,
+        createOwnedMediaReadUrlFn: async (input: { url: string; userId?: string; expiresInSeconds?: number }) => {
+          assert.equal(input.url, canonical); assert.equal(input.userId, 'user_123'); assert.equal(input.expiresInSeconds, 3600);
+          return signed;
+        },
+        getAlibabaModelStudioClientFn: () => ({ createVideo: async (payload: { input: { media: { url: string }[] }; parameters: { duration: number } }) => {
+          submitted++;
+          assert.equal(payload.input.media[0].url, signed); assert.equal(payload.parameters.duration, 6);
+          return { ...acceptedTask(), raw: { output: { task_id: 'task_alibaba_123' }, message: `Read ${signed}`, nested: encodeURIComponent(signed) } };
+        }, getTask: async () => acceptedTask() }),
+      } });
+      const result = await submitAlibabaModelStudioGenerateTask(params);
+      assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(submitted, 1);
+      assert.deepEqual(original, before); assert.deepEqual(result.body.pricing, params.pricing);
+      assert.doesNotMatch(JSON.stringify({ queries, result }), /X-Amz|transport-secret/);
+    });
+  }
+}
+
+test('Wan local media access failures neither submit nor invoke Fal fallback', async () => {
+  for (const message of ['MEDIA_NOT_AVAILABLE', 'network timeout signing']) {
+    const { queryFn } = createQueryRecorder();
+    let providerCalls = 0;
+    let fallbackCalls = 0;
+    const { params } = baseParams({ mode: 'i2v', imageUrl: 'https://private.example/other-owner/image.png', deps: {
+      queryFn,
+      createOwnedMediaReadUrlFn: async () => { throw new Error(message); },
+      getAlibabaModelStudioClientFn: () => ({ createVideo: async () => { providerCalls++; return acceptedTask(); }, getTask: async () => acceptedTask() }),
+      submitFalGenerateTaskFn: async () => { fallbackCalls++; throw new Error('unexpected fallback'); },
+    } });
+    const result = await submitAlibabaModelStudioGenerateTask(params);
+    assert.equal(result.ok, false); assert.equal(providerCalls, 0); assert.equal(fallbackCalls, 0);
+    assert.equal(result.body.error, message === 'MEDIA_NOT_AVAILABLE' ? 'REFERENCE_INVALID' : 'REFERENCE_ACCESS_FAILED');
+  }
+});
+
+test('Wan retryable provider errors are sanitized and Fal receives canonical inputs', async () => {
+  const { queries, queryFn } = createQueryRecorder();
+  const canonical = 'https://private.example/media-assets/user_123/image.png';
+  const signed = `${canonical}?X-Amz-Signature=fallback-secret`;
+  let fallbackCalls = 0;
+  const { params } = baseParams({ mode: 'i2v', imageUrl: canonical, falPayload: { ...falPayload, mode: 'i2v', imageUrl: canonical }, deps: {
+    queryFn, createOwnedMediaReadUrlFn: async () => signed,
+    getAlibabaModelStudioClientFn: () => ({ createVideo: async () => { throw new AlibabaModelStudioError(`Failed ${signed}`, {
+      status: 429, body: { message: `Failed ${signed}`, nested: encodeURIComponent(signed) },
+    }); }, getTask: async () => acceptedTask() }),
+    submitFalGenerateTaskFn: async (input: { falPayload: GeneratePayload }) => {
+      fallbackCalls++; assert.equal(input.falPayload.imageUrl, canonical);
+      return { ok: true, generationResult: { provider: 'fal', thumbUrl: '/thumb.svg' } };
+    },
+  } });
+  const result = await submitAlibabaModelStudioGenerateTask(params);
+  assert.equal(result.ok, true); assert.equal(fallbackCalls, 1);
+  assert.doesNotMatch(JSON.stringify({ queries, result }), /X-Amz|fallback-secret/);
+});
+
+test('HappyHorse direct submission remains unchanged and never enters Wan media access', async () => {
+  const { queryFn } = createQueryRecorder();
+  const canonical = 'https://media.example/horse.png';
+  const { params } = baseParams({ engineId: 'happy-horse-1-1', mode: 'i2v', imageUrl: canonical, deps: {
+    queryFn, createOwnedMediaReadUrlFn: async () => { throw new Error('must not sign'); },
+    getAlibabaModelStudioClientFn: () => ({ createVideo: async (payload: { input: { media: { url: string }[] } }) => {
+      assert.equal(payload.input.media[0].url, canonical); return acceptedTask();
+    }, getTask: async () => acceptedTask() }),
+  } });
+  const result = await submitAlibabaModelStudioGenerateTask(params);
+  assert.equal(result.ok, true, JSON.stringify(result));
+});

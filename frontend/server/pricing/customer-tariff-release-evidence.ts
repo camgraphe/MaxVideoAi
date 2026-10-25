@@ -66,7 +66,9 @@ export async function prepareLocalCustomerTariffRelease(input: ReviewedInput & {
     scenarioHash: customerTariffScenarioHash(input.scenarios),
     candidateCellCount: cells.length, checkedScenarios: audit.checkedScenarios,
     quotedScenarios: audit.quotedScenarios,
-    unchangedScenarios: audit.quotedScenarios - audit.approvedPriceChanges.length - audit.seedancePriceChanges.length - audit.seedanceLasPriceChanges.length,
+    newOfferScenarios: input.baseline.rows.filter(row => row.initialization?.kind === 'new_offer').length,
+    unchangedScenarios: audit.quotedScenarios - input.baseline.rows.filter(row => row.initialization?.kind === 'new_offer').length
+      - audit.approvedPriceChanges.length - audit.seedancePriceChanges.length - audit.seedanceLasPriceChanges.length,
     approvedPriceChanges: audit.approvedPriceChanges,
     seedancePriceChanges: audit.seedancePriceChanges, approvedSeedanceMarginPolicy: audit.approvedSeedanceMarginPolicy,
     seedanceLasPriceChanges: audit.seedanceLasPriceChanges, approvedSeedanceLasPolicy: audit.approvedSeedanceLasPolicy,

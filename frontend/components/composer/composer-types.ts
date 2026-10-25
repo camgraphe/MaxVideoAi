@@ -1,3 +1,4 @@
+import type { VideoExcerptRange } from '@/lib/video-excerpt';
 import type { Ref, ReactNode } from 'react';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { PendingGeneration } from '@/lib/pending-generations';
@@ -61,8 +62,11 @@ export interface ComposerProps {
   negativePromptRequired?: boolean;
   assetFields: AssetFieldConfig[];
   referenceAuthAction?: { label: string; href: string };
+  subjectReferences?: { hasSubjects: boolean; content: ReactNode };
   assets: Record<string, (ComposerAttachment | null)[]>;
   onAssetAdd?: (field: EngineInputField, file: File, slotIndex?: number, meta?: AssetUploadMeta) => void;
+  onPrepareVideoExcerpt?: (field: EngineInputField, index: number, range: VideoExcerptRange) => Promise<void>;
+  onVideoExcerptEditorChange?: (field: EngineInputField, index: number, open: boolean) => void | Promise<string | void>;
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
@@ -91,6 +95,7 @@ export interface ComposerProps {
     error?: string | null;
   } | null;
   extraFields?: ReactNode;
+  beforeAssets?: React.ReactNode;
   afterAssets?: ReactNode;
   disableGenerate?: boolean;
   workflowNotice?: string | null;

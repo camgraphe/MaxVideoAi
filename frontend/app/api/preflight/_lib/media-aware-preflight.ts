@@ -1,3 +1,12 @@
+import { isFluxLtxSourceOperation, validateFluxLtxSource } from '@/lib/flux-ltx-operations';
+import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
+import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
+import { isH3SourceOperation, validateH3Source } from '@/lib/h3-source-operations';
+import { resolveOwnedLumaGenerationSource, lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
+import { buildLumaAgentsVideoPayload } from '@/server/video-providers/luma-agents/payload';
+import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
+import { normalizeVideoOperation, resolveVideoOperationEngine, validateKlingEditSource } from '@/lib/video-operation';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec } from '@/lib/luma-source-video';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
 import { calculateMinimaxH3MaxReferenceTokenBudget } from '@/lib/minimax-h3-max-pricing';
 import { getWan3InputVideoDurationSec } from '@/lib/wan3-pricing';
@@ -38,6 +47,7 @@ type MediaConstraintDependencies = Parameters<
 >[0]['mediaConstraintDeps'];
 
 export type MediaAwarePreflightDependencies = {
+  lineageExecutor?: import('@/lib/db').QueryExecutor;
   getConfiguredEngineFn?: typeof getReadOnlyConfiguredEngine;
   getConfiguredEngineIncludingHiddenFn?: typeof getReadOnlyConfiguredEngineIncludingRuntimePrivate;
   computeConfiguredPreflightFn?: (
@@ -151,8 +161,42 @@ export async function resolveMediaAwarePreflight(
   const privateEngine = !publicEngine && canAccessPrivate
     ? await getConfiguredEngineIncludingHiddenFn(request.engine)
     : undefined;
-  const engine = publicEngine ?? privateEngine;
+  let engine = publicEngine ?? privateEngine;
   if (!engine) return computeConfiguredPreflightFn(request, { bootstrap: false });
+  try {
+    request.operation = normalizeVideoOperation(engine.id, request.mode, request.operation);
+    engine = resolveVideoOperationEngine(engine, request.mode, request.operation);
+  }
+  catch {
+    const missingH3Action = engine.id === 'minimax-h3-max' && request.mode === 'v2v' && !request.operation;
+    return mediaPricingFailure('OPERATION_INVALID', missingH3Action
+      ? 'Choose Replace characters or Change lighting for this video. If that choice is missing, save your prompt and reload this page.'
+      : 'The selected video operation is unavailable. Choose an operation supported by this model.');
+  }
+  if(request.operation==='flux-draft-enhance') {
+    try { const userId=input.userId??await input.resolveUserId?.();
+      if(!userId||(request.inputs?.length??0)>0) return mediaPricingFailure('REFERENCE_INVALID','Select one owned Draft generation.');
+      const source=await resolveOwnedFluxDraftSource({userId,sourceJobId:request.sourceJobId??String(request.extraInputValues?.source_job_id??''),sourceOutputId:request.sourceOutputId,executor:dependencies.lineageExecutor});
+      const result=await computeConfiguredPreflightFn({...request,durationSec:source.durationSec,resolution:'1080p'},{resolvedEngine:engine,bootstrap:false});
+      return {...result,...(result.pricing?{pricing:{...result.pricing,...fluxDraftQuoteBinding(source)}}:{})};
+    } catch {return mediaPricingFailure('REFERENCE_INVALID','The paired Draft cache is unavailable.');}
+  }
+  if (engine.id === 'luma-ray-3-2' && request.mode === 'extend') {
+    try {
+      const validation = validateExtraInputValues({ engine, mode: request.mode, rawExtraInputValues: request.extraInputValues ?? null });
+      if (!validation.ok) return mediaPricingFailure(validation.body.error, validation.body.message);
+      const userId = input.userId ?? await input.resolveUserId?.();
+      if (!userId) return mediaPricingFailure('AUTH_REQUIRED', 'Sign in to select your source generation.');
+      const source = await resolveOwnedLumaGenerationSource({ actor: { userId },
+        sourceJobId: request.sourceJobId ?? String(validation.values.source_job_id ?? ''), expectedOutputId: request.sourceOutputId, executor: dependencies.lineageExecutor });
+      buildLumaAgentsVideoPayload({ engineId: engine.id, mode: 'extend', prompt: 'Preflight validation', durationSec: request.durationSec,
+        durationOption: request.durationOption, resolution: request.resolution, loop: request.loop,
+        referenceImageUrls: request.inputs?.length ? ['unexpected-reference'] : [], extraInputValues: validation.values,
+        trustedGenerationSource: source, extendDirection: validation.values.extend_direction as 'forward' | 'backward' | undefined });
+      const result = await computeConfiguredPreflightFn(request, { resolvedEngine: engine, bootstrap: false });
+      return { ...result, ...(result.pricing ? { pricing: { ...result.pricing, ...lumaLineageQuoteBinding(source, validation.values.extend_direction) } } : {}) };
+    } catch { return mediaPricingFailure('REFERENCE_INVALID', 'The source generation or extension settings are not available.'); }
+  }
   const finalFacts = input.trustedSeedanceWorkflow?.finalFacts;
   if (finalFacts) {
     return computeConfiguredPreflightFn({ ...request, mode: finalFacts.mode, durationSec: finalFacts.durationSec,
@@ -213,6 +257,7 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
+  const needsLumaSourceTiming = isLumaSourceVideoMode(engine.id, request.mode);
   const needsReferenceTokenBudget = engine.id === 'minimax-h3-max' && request.mode === 'ref2v';
   const needsWanVideoDuration = (engine.id === 'wan-3' || engine.id === 'wan-3-prime')
     && (request.mode === 'v2v' || request.mode === 'extend' || request.inputs?.some((reference) => reference.kind === 'video') === true);
@@ -225,8 +270,8 @@ export async function resolveMediaAwarePreflight(
   const needsSeedanceSourceAspect = Boolean(seedanceAutomaticDurationBounds(engine.id)
     && (isSeedanceAdaptiveAspect(request.aspectRatio) || (engine.id === 'seedance-2-5' && ['i2v', 'extend'].includes(request.mode)))
     && ['i2v', 'v2v', 'extend'].includes(request.mode));
-  if (!needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration && !needsSeedanceSourceAspect) {
-    const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p' });
+  if (!needsLumaSourceTiming && !needsReferenceTokenBudget && !needsReferenceImageCount && !needsInputAudioDuration && !needsTrustedOwnedMedia && !needsWanVideoDuration && !needsSeedanceReferenceDuration && !needsSeedanceSourceAspect) {
+  const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p' });
     return computeConfiguredPreflightFn({ ...request, durationSec: priced.durationSec }, {
       seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,
       resolvedEngine: engine,
@@ -267,10 +312,16 @@ export async function resolveMediaAwarePreflight(
       : 'Required media pricing facts could not be verified.';
     return mediaPricingFailure(code, message, {
       field: body.field,
+      ...(body.retryable === true ? {retryable:true} : {}),
       ...(typeof body.durationSec === 'number' ? { durationSec: body.durationSec } : {}),
       ...(typeof body.maxDurationSec === 'number' ? { maxDurationSec: body.maxDurationSec } : {}),
     });
   }
+
+  const lumaTimingError = validateLumaSourceVideoTiming({ engineId: engine.id, mode: request.mode,
+    sourceDurationSec: processed.trustedDurationSecByField.video_url?.length === 1
+      ? processed.trustedDurationSecByField.video_url[0] : undefined, durationSec: request.durationSec });
+  if (lumaTimingError) return mediaPricingFailure('SOURCE_VIDEO_DURATION_UNSUPPORTED', lumaTimingError);
 
   let referenceTokenBudget: number | undefined;
   let inputVideoDurationSec: number | undefined;
@@ -327,8 +378,23 @@ export async function resolveMediaAwarePreflight(
     );
   }
 
+  const operationSeconds = (request.operation === 'kling-edit' || isH3SourceOperation(request.operation) || isFluxLtxSourceOperation(request.operation)) ? processed.trustedDurationSecByField.video_url?.[0] : undefined;
+  if (isFluxLtxSourceOperation(request.operation)) {
+    const sourceError = validateFluxLtxSource(request.operation, (processed.trustedMediaReferences ?? []).find(reference => reference.kind === 'video' && reference.fieldId === 'video_url'));
+    if (sourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', sourceError);
+  }
+  if (isH3SourceOperation(request.operation)) {
+    const sourceError = validateH3Source(request.operation,(processed.trustedMediaReferences ?? []).find(reference=>reference.kind==='video'&&reference.fieldId==='video_url'));
+    if (sourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED',sourceError);
+  }
+  const operationSourceError = request.operation === 'kling-edit' ? validateKlingEditSource((processed.trustedMediaReferences ?? []).find(reference => reference.kind === 'video' && reference.fieldId === 'video_url')) : undefined;
+  if (operationSourceError) return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', operationSourceError);
+  if (request.operation === 'kling-edit' && (typeof operationSeconds !== 'number' || !Number.isFinite(operationSeconds) || operationSeconds < 3 || operationSeconds > 15)) {
+    return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED', 'Kling Edit requires a verified 3–15 second source.');
+  }
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
-  return computeConfiguredPreflightFn({ ...request, durationSec: priced.durationSec,
+  return computeConfiguredPreflightFn({ ...request, durationSec: operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
+    ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec),
     ...(needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
   }, {

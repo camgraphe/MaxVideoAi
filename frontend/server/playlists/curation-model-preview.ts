@@ -1,3 +1,4 @@
+import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import type { QueryExecutor } from '@/lib/db';
 import { getFalEngineBySlug } from '@/config/falEngines';
 import { resolveCuration, type CurationDraft, type CurationItem } from '@/lib/admin/playlist-curation';
@@ -15,7 +16,7 @@ export type CurationSourceState = { is_public: boolean; managed: boolean };
 async function readPublicMedia(db: QueryExecutor, ids: string[]) {
   if (!ids.length) return new Map<string, ReturnType<typeof mapGalleryVideoRow>>();
   // Match getPublicVideosByIds, including its legacy nullable-indexable behavior.
-  const rows = await db.query<VideoRow>(`${BASE_SELECT} WHERE job_id=ANY($1::text[])
+  const rows = await marketingVideoReader(db).query<VideoRow>(`${BASE_SELECT} WHERE job_id=ANY($1::text[])
     AND visibility='public' AND COALESCE(indexable,TRUE)`, [ids]);
   return new Map(rows.map(row => [row.job_id, mapGalleryVideoRow(row)]));
 }
@@ -49,7 +50,7 @@ export async function readEffectiveModelPageGallery(
   let examples: ReturnType<typeof mapGalleryVideoRow>[] = [];
   let managed = false;
   for (const key of modelExamplePlaylistKeys(modelSlug)) {
-    const source = sources ? sources.get(key) : (await db.query<CurationSourceState>(
+    const source = sources ? sources.get(key) : (await marketingVideoReader(db).query<CurationSourceState>(
       `SELECT p.is_public,${curationAvailable ? 'c.playlist_id IS NOT NULL' : 'false'} AS managed FROM playlists p
        ${curationAvailable ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : ''} WHERE p.slug=$1`, [key],
     ))[0];

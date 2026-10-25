@@ -6,8 +6,8 @@
     "description": "Utilisez Luma Ray 3.2 dans MaxVideoAI pour Modify de vidéo source, Reframe vidéo IA, images guides, sorties silencieuses 5 s / 10 s, prompts, exemples et tarifs.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 3.2 doit surtout être présenté dans MaxVideoAI comme une route vidéo Luma orientée retouche : modifier un clip source, guider certains moments avec image guide ou images clés, puis recadrer un plan validé avec Reframe. Texte vers vidéo et image vers vidéo restent disponibles pour des tests de mouvement Luma courts, mais Ray 3.2 ne génère pas d’audio natif ni de lip sync.",
-  "pricingNotes": "Toutes les routes Ray 3.2 gardent le devis client MaxVideoAI aligné sur la référence Fal avec la marge configurée, y compris Modify et Reframe. Le routage interne ne change pas le prix affiché au client avant génération.",
+  "overview": "Luma Ray 3.2 doit surtout être présenté dans MaxVideoAI comme une route vidéo Luma orientée retouche : modifier un clip source, guider certains moments avec image guide ou images clés, puis recadrer un plan validé avec Reframe. Texte vers vidéo et image vers vidéo restent disponibles pour des tests de mouvement Luma courts, mais Ray 3.2 ne génère pas d’audio natif ni de lip sync. Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Luma directe admissible de votre compte ; un import ne fournit pas cette provenance.",
+  "pricingNotes": "Génération, Modify et Reframe conservent leurs règles de devis. Extend direct possède son devis pour cinq nouvelles secondes. Vérifiez le total MaxVideoAI actuel avant chaque opération ; le tarif de référence fournisseur n’est pas le prix client.",
   "hero": {
     "title": "Luma Ray 3.2 - Modify et Reframe pour la vidéo Luma actuelle",
     "intro": "Partez d’une vidéo source lorsque le timing fonctionne déjà, puis utilisez Modify pour changer le rendu visuel ou guider certains moments, ou Reframe pour produire des livrables verticaux, carrés, paysage et ultrawide. La génération depuis prompt ou image reste utile pour des tests courts et silencieux.",
@@ -64,7 +64,7 @@
     },
     {
       "label": "Durée",
-      "body": "Génération en 5 s ou 10 s; clips sources jusqu’à la limite configurée pour Modify/Reframe"
+      "body": "La génération texte/image utilise 5s ou 10s lorsque les réglages le permettent. Modify accepte une source jusqu’à 18s et reprend sa durée ; Reframe accepte jusqu’à 10s avec un choix de sortie distinct de 5s/10s. Extend facture cinq nouvelles secondes, pas la durée totale du fichier retourné."
     },
     {
       "label": "Résolution",
@@ -76,7 +76,7 @@
     },
     {
       "label": "Guides",
-      "body": "Une image de départ pour image vers vidéo, image guide ou jusqu’à 64 images clés indexées pour Modify"
+      "body": "Une image de départ pour image vers vidéo, image guide ou jusqu’à 64 images clés indexées pour Modify. La création accepte aussi jusqu’à 64 images clés ordonnées avec indices entiers uniques positifs ou nuls ; elles sont distinctes des images clés Modify."
     },
     {
       "label": "Vidéo source",
@@ -84,7 +84,7 @@
     },
     {
       "label": "Prix",
-      "body": "Génération, Modify et Reframe utilisent la même logique de devis client basée sur la référence Fal avec marge MaxVideoAI"
+      "body": "Génération, Modify et Reframe conservent leurs règles de devis. Extend direct possède son devis pour cinq nouvelles secondes. Vérifiez le total MaxVideoAI actuel avant chaque opération ; le tarif de référence fournisseur n’est pas le prix client."
     }
   ],
   "promptStructure": {
@@ -134,7 +134,7 @@
   "faqs": [
     {
       "q": "Que prend en charge Luma Ray 3.2 dans MaxVideoAI ?",
-      "a": "La page met surtout en avant Modify de vidéo source, Reframe, images guides et images clés, avec aussi texte vers vidéo et image vers vidéo pour créer un court clip Luma silencieux."
+      "a": "La page met surtout en avant Modify de vidéo source, Reframe, images guides et images clés, avec aussi texte vers vidéo et image vers vidéo pour créer un court clip Luma silencieux. Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Ray 3.2 terminée admissible de votre compte. La provenance Luma directe originale est obligatoire ; un import ou une copie MP4 publique ne la remplace pas. Aucune image clé supplémentaire ni assemblage automatique avec l’original n’est promis."
     },
     {
       "q": "Quand Ray 3.2 est-il le meilleur choix ?",
@@ -196,7 +196,7 @@
       "Sortie silencieuse||Ray 3.2 reste vidéo seule dans MaxVideoAI, donc l’audio se prépare ensuite."
     ],
     "specTitle": "Caractéristiques Ray 3.2",
-    "specNote": "Ces caractéristiques décrivent la surface MaxVideoAI Ray 3.2 pour génération, Modify et Reframe.",
+    "specNote": "Réglages de génération et limites des opérations sur source diffèrent. Extend exige une provenance admissible de votre compte et son propre devis exact.",
     "specSections": [
       {
         "title": "Surface Modify et Reframe",
@@ -208,7 +208,7 @@
           "Reframe pour les variantes de ratio de livraison.",
           "Text-to-video pour les tests de mouvement silencieux depuis prompt.",
           "Image vers vidéo lorsqu’une image d’ouverture doit ancrer le clip.",
-          "Durées 5 s et 10 s.",
+          "La génération texte/image utilise 5s ou 10s lorsque les réglages le permettent. Modify accepte une source jusqu’à 18s et reprend sa durée ; Reframe accepte jusqu’à 10s avec un choix de sortie distinct de 5s/10s. Extend facture cinq nouvelles secondes, pas la durée totale du fichier retourné.",
           "Sorties 540p, 720p et 1080p."
         ]
       },
@@ -217,8 +217,8 @@
         "items": [
           "MaxVideoAI garde les demandes Ray 3.2 sur des réglages pris en charge.",
           "La capacité fournisseur peut varier aux heures de pointe.",
-          "Tous les modes publics Ray 3.2 gardent le devis client de référence Fal avec marge.",
-          "Le routage interne ne change pas le prix affiché au client."
+          "Génération, Modify et Reframe conservent leurs règles de devis. Extend direct possède son devis pour cinq nouvelles secondes. Vérifiez le total MaxVideoAI actuel avant chaque opération ; le tarif de référence fournisseur n’est pas le prix client.",
+          "Réglages de génération et limites des opérations sur source diffèrent. Extend exige une provenance admissible de votre compte et son propre devis exact."
         ]
       }
     ],
@@ -231,7 +231,7 @@
       "Charger une vidéo source pour Modify ou Reframe.",
       "Pour Modify, ajouter image guide ou images clés si certains moments doivent être dirigés.",
       "Pour Reframe, choisir le ratio cible et la priorité sujet.",
-      "Définir 5 s ou 10 s quand le mode le permet.",
+      "La génération texte/image utilise 5s ou 10s lorsque les réglages le permettent. Modify accepte une source jusqu’à 18s et reprend sa durée ; Reframe accepte jusqu’à 10s avec un choix de sortie distinct de 5s/10s. Extend facture cinq nouvelles secondes, pas la durée totale du fichier retourné.",
       "Choisir 540p, 720p ou 1080p.",
       "Utiliser prompt seul ou image de départ seulement pour générer un nouveau clip.",
       "Vérifier le prix exact puis générer."
@@ -249,7 +249,8 @@
       "Résolutions : 540p, 720p et 1080p.",
       "La sortie Ray 3.2 est silencieuse dans MaxVideoAI.",
       "Ce n’est pas le meilleur choix généraliste lorsque l’audio natif, le dialogue ou le lip sync sont prioritaires.",
-      "La capacité fournisseur peut varier aux heures de pointe."
+      "La capacité fournisseur peut varier aux heures de pointe.",
+      "Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Ray 3.2 terminée admissible de votre compte. La provenance Luma directe originale est obligatoire ; un import ou une copie MP4 publique ne la remplace pas. Aucune image clé supplémentaire ni assemblage automatique avec l’original n’est promis."
     ],
     "safetyTitle": "Sécurité et ressemblance",
     "safetyRules": [
@@ -272,7 +273,7 @@
         "Reframe",
         "sorties silencieuses"
       ],
-      "paragraph": "Utilisez Ray 3.2 quand une vidéo source a déjà le bon timing : changez le traitement visuel avec Modify, guidez certains moments avec une image ou des images clés, ou recadrez le plan validé avec Reframe. Le texte-vers-video et l’image-vers-video restent utiles comme routes complémentaires pour des tests courts et silencieux.",
+      "paragraph": "Utilisez Ray 3.2 quand une vidéo source a déjà le bon timing : changez le traitement visuel avec Modify, guidez certains moments avec une image ou des images clés, ou recadrez le plan validé avec Reframe. Le texte-vers-video et l’image-vers-video restent utiles comme routes complémentaires pour des tests courts et silencieux. Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Luma directe admissible de votre compte ; un import ne fournit pas cette provenance.",
       "primaryCta": {
         "label": "Générer avec Luma Ray 3.2",
         "href": "/app?engine=luma-ray-3-2"
@@ -298,14 +299,14 @@
     },
     "media": {
       "caption": "Exemple Luma Ray 3.2",
-      "description": "Route Modify et Reframe pour la vidéo Luma actuelle",
+      "description": "Regardez ce rendu, puis explorez les exemples ci-dessous.",
       "renderLabel": "Voir le rendu",
       "badges": [
         "Modify",
         "Reframe",
         "Vidéo silencieuse"
       ],
-      "altContext": "exemple Luma Ray 3.2 Modify et Reframe"
+      "altContext": "Exemple vidéo Luma Ray 3.2"
     },
     "features": [
       {
@@ -337,6 +338,11 @@
         "title": "Sortie silencieuse",
         "body": "Ray 3.2 produit la vidéo seule dans MaxVideoAI; ajoutez musique, voix ou sound design ensuite.",
         "tone": "price"
+      },
+      {
+        "title": "Extend",
+        "body": "Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Ray 3.2 terminée admissible de votre compte. La provenance Luma directe originale est obligatoire ; un import ou une copie MP4 publique ne la remplace pas. Aucune image clé supplémentaire ni assemblage automatique avec l’original n’est promis.",
+        "tone": "duration"
       }
     ],
     "decisionCards": [
@@ -368,7 +374,7 @@
     "referenceWorkflows": [
       {
         "title": "Vidéo source",
-        "body": "Chargez un clip MP4, MOV ou WebM propre quand Modify ou Reframe doivent préserver le timing source."
+        "body": "La génération texte/image utilise 5s ou 10s lorsque les réglages le permettent. Modify accepte une source jusqu’à 18s et reprend sa durée ; Reframe accepte jusqu’à 10s avec un choix de sortie distinct de 5s/10s. Extend facture cinq nouvelles secondes, pas la durée totale du fichier retourné."
       },
       {
         "title": "Modify",
@@ -385,12 +391,20 @@
       {
         "title": "Génération complémentaire",
         "body": "Utilisez texte ou image de départ seulement pour créer un nouveau clip court et silencieux avant retouche."
+      },
+      {
+        "title": "Extend",
+        "body": "Extend ajoute cinq nouvelles secondes vers l’avant ou l’arrière depuis une génération Ray 3.2 terminée admissible de votre compte. La provenance Luma directe originale est obligatoire ; un import ou une copie MP4 publique ne la remplace pas. Aucune image clé supplémentaire ni assemblage automatique avec l’original n’est promis."
+      },
+      {
+        "title": "Contrôles Modify",
+        "body": "Pour Modify, choisissez l’interprétation automatique ou les contrôles manuels de force et de signaux. Une image guide et les images clés Modify sont des alternatives. La création multi-images clés est une entrée distincte et ne se mélange pas à Extend."
       }
     ],
     "pricingCopy": {
       "title": "Prix Luma Ray 3.2 en un coup d’oeil",
       "subtitle": "Totaux Ray 3.2 par preset avec prix affichés MaxVideoAI de référence; prix exact avant génération.",
-      "footnote": "Toutes les routes Ray 3.2 gardent le même devis client MaxVideoAI basé sur la référence Fal avec la marge configurée; l’exécution directe ne change pas le prix client.",
+      "footnote": "Génération, Modify et Reframe conservent leurs règles de devis. Extend direct possède son devis pour cinq nouvelles secondes. Vérifiez le total MaxVideoAI actuel avant chaque opération ; le tarif de référence fournisseur n’est pas le prix client.",
       "ctaLabel": "Voir tous les tarifs",
       "maxDurationNote": "Jusqu’à 1080p",
       "ctaHref": "/fr/tarifs#luma-ray-3-2-pricing"
@@ -415,7 +429,8 @@
       "Un seul objectif de retouche par clip source.",
       "Séparez clairement ce qui reste et ce qui change.",
       "10 s seulement lorsque l’action a besoin de temps.",
-      "Utilisez la génération seulement lorsqu’aucun clip source n’existe encore."
+      "Utilisez la génération seulement lorsqu’aucun clip source n’existe encore.",
+      "Pour Modify, choisissez l’interprétation automatique ou les contrôles manuels de force et de signaux. Une image guide et les images clés Modify sont des alternatives. La création multi-images clés est une entrée distincte et ne se mélange pas à Extend."
     ],
     "engineWhy": [
       "Les vidéos sources rendent Modify et Reframe utiles quand le timing est déjà validé.",
@@ -451,7 +466,7 @@
     "modelSlug": "luma-ray-3-2",
     "section": {
       "title": "Exemples Luma Ray 3.2",
-      "intro": "Servez-vous des exemples pour étudier prompts Modify, changements guidés par images clés, réglages Reframe et tests courts complémentaires.",
+      "intro": "Regardez les rendus ci-dessous. Ces exemples ne montrent pas encore de comparaison avant/après d’une vidéo modifiée.",
       "defaultCtaLabel": "Voir tous les exemples Luma",
       "recreateLabel": "Recréer ce plan"
     },

@@ -12,7 +12,7 @@ failed, canceled, missing or unexpectedly skipped required jobs.
 | --- | --- | --- |
 | Fast checks | Exposure guard, catalogue/roster audits, TypeScript, ESLint, image alt checks and fast validation files | Every run |
 | Database and media integration | Disposable PostgreSQL, real FFmpeg tests and three isolated Studio route integrations | Runtime/UI changes; financial changes; full runs |
-| Exhaustive financial cutovers | Both complete cutover/rollback tests, including all 26,818 canonical quote checkpoints | Tariff/billing changes and explicit commercial inputs; full runs |
+| Exhaustive financial cutovers | Both complete cutover/rollback tests, including all 26,982 historical canonical quote checkpoints and 89 separately labeled new-offer proposals (27,071 total) | Tariff/billing changes and explicit commercial inputs; full runs |
 | Browser | Connected Studio, editorial media, prompting tabs and admin smoke | UI/layout/translation changes; runtime/financial changes; full runs |
 
 These lanes run in parallel. The initial financial migration's complete matrix is
@@ -22,6 +22,26 @@ including when exhaustive cutovers are not selected. The fast lane requires no
 PostgreSQL, FFmpeg or Chromium installation. Full runs occur daily at 03:23 UTC and
 on manual dispatch of Quality CI. Network source checks and the optional remote
 runtime audit run on these full runs as non-blocking audits.
+
+The exhaustive tariff and database/media lanes use Ubuntu 24.04, keeping their validation toolchain
+stable during the `ubuntu-latest` migration to 26.04. The 2026-10-22 release checks
+observed prolonged dependency downloads on the new image. The shared PostgreSQL
+17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
+not change coverage or the aggregate Quality CI gate.
+
+The browser lane installs Chromium and WebKit so the mobile prompt and Modify navigation regressions run against both engines. It uses Ubuntu 24.04 and has a 40-minute total budget. On the
+2026-10-23 candidate, tool/browser installation consumed over 12 minutes before
+the tests, so the former 25-minute limit canceled the still-progressing browser
+suite before admin smoke. All browser tests and the admin suite remain required.
+The same run exposed a stale initial-cutover test total: the reviewed Luma Modify
+expansion adds 36 cells (12 extra duration classes × 3 resolutions) to the 128
+FLUX Max cells and historical 26,818 checkpoints. The exhaustive fixture asserts
+these expansions before replay and preserves all monetary and rollback checks.
+
+The fast job has a 30-minute limit, including setup, audits, type checking and
+lint. Its 1,300+ tools-free test files include complete pricing projections;
+the former 20-minute job limit canceled a still-progressing suite on hosted
+runners. This time allowance does not change lane selection or test coverage.
 
 ## Change selection and conservative fallback
 
@@ -140,6 +160,11 @@ CI runs. A new PR push cancels obsolete validation for that PR. Main, nightly an
 manual runs use separate concurrency groups and do not cancel the PR's check.
 Before merge, wait for Quality CI on the latest candidate and follow the normal
 production alignment checks in `docs/deployment/github-vercel.md`.
+
+On the Milo release candidate, Ubuntu 26.04 spent nearly 22 minutes installing
+PostgreSQL/FFmpeg before the database/media job reached its 25-minute limit.
+Pinning that lane to the same stable image preserves both the complete integration
+suite and the isolated Studio route checks; it does not turn a timeout into a pass.
 
 `frontend/next.config.js` explicitly enables `experimental.webpackBuildWorker`
 because next-intl adds a custom Webpack hook, which disables Next 15's automatic

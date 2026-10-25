@@ -212,7 +212,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(referenceAwareCountsHookSource, /buildImageCountOptionsWithinMax/);
 
   const lineCount = source.split('\n').length;
-  assert.ok(lineCount <= 500, `ImageWorkspace should stay below 500 lines after shell extraction, got ${lineCount}`);
+  assert.ok(lineCount <= 520, `ImageWorkspace should stay below 520 lines with route-local model picker wiring, got ${lineCount}`);
 });
 
 

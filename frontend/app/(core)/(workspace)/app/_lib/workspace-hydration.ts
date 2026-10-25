@@ -1,3 +1,4 @@
+import { VIDEO_OPERATIONS, type VideoOperation } from '@/lib/video-operation';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import { LOGIN_LAST_TARGET_KEY, LOGIN_SKIP_ONBOARDING_KEY } from '@/lib/auth-storage';
@@ -17,6 +18,13 @@ import { buildWorkspaceStorageKey, STORAGE_KEYS } from './workspace-storage';
 
 type SearchParamsLike = Pick<URLSearchParams, 'get' | 'toString'> | null | undefined;
 
+export type WorkspaceWorkflowRequest = {
+  engineToken: string;
+  mode: Mode;
+  mediaToken: string | null;
+  operation?: VideoOperation;
+};
+
 export type WorkspaceRequestParams = {
   fromVideoId: string | null;
   requestedJobId: string | null;
@@ -24,6 +32,7 @@ export type WorkspaceRequestParams = {
   requestedMode: Mode | null;
   resolvedRequestedEngineId: string | null;
   requestedEngineToken: string;
+  requestedWorkflow: WorkspaceWorkflowRequest | null;
   searchString: string;
   loginRedirectTarget: string;
 };
@@ -85,6 +94,10 @@ export function resolveWorkspaceRequestParams(
     requestedMode,
     resolvedRequestedEngineId,
     requestedEngineToken,
+    requestedWorkflow: requestedEngineToken && requestedMode
+      ? { engineToken: requestedEngineToken, mode: requestedMode, mediaToken: readTrimmedParam(searchParams, 'media'),
+        ...(VIDEO_OPERATIONS.includes(readTrimmedParam(searchParams, 'operation') as VideoOperation) ? {operation:readTrimmedParam(searchParams, 'operation') as VideoOperation} : {}) }
+      : null,
     searchString,
     loginRedirectTarget: searchString ? `${base}?${searchString}` : base,
   };
@@ -244,6 +257,7 @@ export function buildInitialWorkspaceFormState({
         ...base,
         engineId: engine.id,
         mode,
+        ...(storedFormRaw.operation !== undefined ? { operation: storedFormRaw.operation } : {}),
         durationSec:
           typeof storedFormRaw.durationSec === 'number' && Number.isFinite(storedFormRaw.durationSec)
             ? storedFormRaw.durationSec

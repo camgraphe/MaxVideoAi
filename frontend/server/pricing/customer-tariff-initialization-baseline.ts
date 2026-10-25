@@ -6,11 +6,13 @@ import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import { isSeedance25LasInputPricing } from '@/server/byteplus-las-tariff';
 import { computeCanonicalBillingSnapshot } from './quote-billing';
 import { resolveServerBillingPolicy } from './resolve-pricing-policy';
+import { newVideoTariffFamily } from '@/lib/pricing-audit/video-operation-tariff-inventory';
 
-/** Initial maintenance capture of the archived token-era customer basis only.
- * This private reconstruction cannot authorize a current LAS quote or charge. */
+/** Maintenance-only historical reconstruction or explicitly labeled new-offer
+ * proposal. Neither branch authorizes a live quote without an active tariff. */
 export async function computeCustomerTariffInitializationBaseline(context: PricingContext, policyInput: PricingPolicyOverrideLoadResult) {
-  if (!isSeedance25LasInputPricing(context.engine.id, context.mode)) {
+  const newOfferFamily = newVideoTariffFamily(context);
+  if (!newOfferFamily && !isSeedance25LasInputPricing(context.engine.id, context.mode)) {
     return computeCanonicalBillingSnapshot(context, { pricingPolicy: { loadOverrides: async () => policyInput },
       loadCustomerTariffState: async () => ({ status: 'loaded', active: false, revision: 0, databaseCells: [], versionedCells: [] }) });
   }
@@ -24,5 +26,6 @@ export async function computeCustomerTariffInitializationBaseline(context: Prici
     scenario: { id: `historical-initialization:${context.engine.id}:${context.resolution}`, engineId: context.engine.id,
       mode: context.mode, resolution: context.resolution, membershipTier: 'member', discountPercent: 0 } });
   return projectCanonicalQuoteToSnapshot({ quote, base: billing.base, addons: billing.addons, vendorAccountId,
-    meta: { ...billing.meta, historicalReconstruction: true, quoteRequired: true } });
+    meta: { ...billing.meta, ...(newOfferFamily ? { tariffInitialization: { kind: 'new_offer', family: newOfferFamily, beforeCents: null } }
+      : { historicalReconstruction: true }), quoteRequired: true } });
 }

@@ -81,6 +81,7 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     'frontend/app/api/studio/projects/[projectId]/image-conversation/confirm/route.ts',
     'frontend/app/api/studio/conversation-projects/route.ts',
     'frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/conversation-timeline/extension/route.ts',
     'frontend/app/api/studio/projects/[projectId]/reference-previews/route.ts',
     'frontend/app/api/studio/projects/[projectId]/analyses/route.ts',
     'frontend/app/api/studio/projects/[projectId]/analyses/[analysisId]/route.ts',
@@ -113,7 +114,7 @@ test('Studio is discoverable while conversations and APIs retain shared account 
   assert.match(editingHandler,/resolveStudioApiAccess/);
   assert.match(editingHandler,/if \(!access.ok\)/);
   assert.match(editingHandler,/studioConversationEditingEnabled/);
-  for (const path of ['frontend/app/api/studio/conversation-projects/route.ts','frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts']) assert.match(read(path),/handleStudioConversationEditing/);
+  for (const path of ['frontend/app/api/studio/conversation-projects/route.ts','frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts','frontend/app/api/studio/projects/[projectId]/conversation-timeline/extension/route.ts']) assert.match(read(path),/handleStudioConversationEditing/);
   const referencePreviewsHandler = read('frontend/app/api/studio/_lib/studio-reference-previews-handler.ts');
   assert.match(referencePreviewsHandler,/resolveStudioApiAccess/);
   assert.match(referencePreviewsHandler,/if \(!access.ok\)/);

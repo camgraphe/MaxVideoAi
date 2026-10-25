@@ -10,6 +10,8 @@ import type {
 } from 'react';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
+import type { ComposerProps } from '@/components/composer/composer-types';
+import { VideoExcerptControl } from '@/components/media/VideoExcerptControl.client';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import {
   DEFAULT_VISIBLE_KEYFRAME_COUNT,
@@ -32,7 +34,7 @@ const PROVIDER_KEYFRAME_SLOT_LIMIT = 64;
 const COMPACT_TIMELINE_SLOT_WIDTH = 122;
 const MIN_TIMELINE_WIDTH = 680;
 
-export type LumaRay32KeyframeEditorProps = {
+export type LumaRay32KeyframeEditorProps = Pick<ComposerProps, 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange'> & {
   engine: EngineCaps;
   caps?: EngineModeUiCaps;
   form: FormState;
@@ -59,13 +61,15 @@ export function LumaRay32KeyframeEditor({
   assetFields,
   inputAssets,
   onAssetAdd,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
   onAssetRemove,
   onOpenLibrary,
   onNotice,
   disabledReason,
   uiLocale = 'en',
 }: LumaRay32KeyframeEditorProps) {
-  const isFluxMax = engine.id === 'flux-3-max';
+  const isFluxMax = engine.id.startsWith('flux-3');
   const slotIndexesFieldId = isFluxMax ? 'keyframe_slot_indexes' : 'edit_keyframe_slot_indexes';
   const indexesFieldId = isFluxMax ? 'keyframe_indexes' : 'edit_keyframe_indexes';
   const imageFieldId = isFluxMax ? 'reference_image_urls' : 'edit_keyframe_urls';
@@ -77,9 +81,15 @@ export function LumaRay32KeyframeEditor({
   const sourceVideoEntry = useMemo(() => getFieldEntry(assetFields, 'video_url'), [assetFields]);
   const guideFrameEntry = useMemo(() => getFieldEntry(assetFields, 'start_image_url'), [assetFields]);
   const keyframeEntry = useMemo(() => getFieldEntry(assetFields, imageFieldId), [assetFields, imageFieldId]);
-  const durationSec = isFluxMax ? Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5)) : form.durationOption === '10s' || form.durationOption === 10 || form.durationSec === 10 ? 10 : 5;
+  const selectedSourceDuration = sourceVideoEntry
+    ? inputAssets[sourceVideoEntry.field.id]?.find(asset => asset?.kind === 'video' && asset.status === 'ready')?.durationSec
+    : undefined;
+  const sourceDuration = typeof selectedSourceDuration === 'number' && Number.isFinite(selectedSourceDuration)
+    && selectedSourceDuration > 0 && selectedSourceDuration <= 18 ? selectedSourceDuration : undefined;
+  const durationSec = isFluxMax ? Math.max(5, Math.min(20, Number(form.durationOption ?? form.durationSec) || 5))
+    : sourceDuration ?? (form.durationOption === '10s' || form.durationOption === 10 || form.durationSec === 10 ? 10 : 5);
   const fps = isFluxMax ? 24 : Number.isFinite(form.fps) ? Math.max(1, Math.trunc(form.fps)) : 24;
-  const maxFrameIndex = Math.max(1, durationSec * fps - (isFluxMax ? 0 : 1));
+  const maxFrameIndex = Math.max(1, Math.floor(durationSec * fps) - (isFluxMax ? 0 : 1));
   const maxKeyframeSlots = Math.min(
     isFluxMax ? 10 : PROVIDER_KEYFRAME_SLOT_LIMIT,
     maxFrameIndex + 1,
@@ -362,11 +372,13 @@ export function LumaRay32KeyframeEditor({
   const filledKeyframeCount = keyframeSlots.filter((slot) => Boolean(keyframeAssets[slot.assetSlot])).length;
 
   return (
-    <section className="space-y-4 rounded-[24px] border border-border/60 bg-surface-2/70 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
+    <section data-testid="video-keyframe-editor" data-engine-id={engine.id} className="space-y-4 rounded-[24px] border border-border/60 bg-surface-2/70 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-text-primary">{isFluxMax ? `FLUX 3 Max · ${keyframesLabel}` : 'Ray 3.2 Modify'}</p>
-          <p className="text-xs text-text-muted">{durationSec}s @ {fps}fps</p>
+          <p className="text-sm font-semibold text-text-primary">{isFluxMax ? `${engine.label} · ${keyframesLabel}` : 'Ray 3.2 Modify'}</p>
+          <p className="text-xs text-text-muted">{isFluxMax ? `${durationSec}s @ ${fps}fps`
+            : sourceDuration != null ? `${uiLocale === 'fr' ? 'Vidéo source' : uiLocale === 'es' ? 'Vídeo original' : 'Source video'} · ${sourceDuration}s`
+            : uiLocale === 'fr' ? 'Importez une vidéo pour régler les images clés' : uiLocale === 'es' ? 'Importa un vídeo para ajustar los fotogramas clave' : 'Import a video to set keyframes'}</p>
         </div>
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
           <span>{filledKeyframeCount}/{keyframeSlots.length} {isFluxMax ? keyframesLabel : 'modified'}</span>
@@ -378,21 +390,31 @@ export function LumaRay32KeyframeEditor({
       </div>
 
       {sourceVideoEntry && sourceVideoField ? <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(220px,0.8fr)]">
-        <AssetDropzone
-          engine={engine}
-          caps={caps}
-          field={sourceVideoField}
-          required={sourceVideoEntry.required}
-          role={sourceVideoEntry.role}
-          assets={sourceVideoAssets}
-          density="compact"
-          disabled={Boolean(disabledReason)}
-          disabledReason={disabledReason}
-          onSelect={onAssetAdd}
-          onRemove={onAssetRemove}
-          onError={onNotice}
-          onOpenLibrary={onOpenLibrary}
-        />
+        <div className="min-w-0 space-y-2">
+          <AssetDropzone
+            engine={engine}
+            caps={caps}
+            field={sourceVideoField}
+            required={sourceVideoEntry.required}
+            role={sourceVideoEntry.role}
+            assets={sourceVideoAssets}
+            density="compact"
+            allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt)}
+            disabled={Boolean(disabledReason)}
+            disabledReason={disabledReason}
+            onSelect={onAssetAdd}
+            onRemove={onAssetRemove}
+            onError={onNotice}
+            onOpenLibrary={onOpenLibrary}
+          />
+          {sourceVideoAssets.map((asset, index) => asset && (asset.status === 'ready' || asset.excerptEditing) ? (
+            <VideoExcerptControl
+              key={`${engine.id}:v2v:${sourceVideoField.id}:${index}`}
+              engine={engine} field={sourceVideoField} index={index} asset={asset} mode="v2v" locale={uiLocale}
+              onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange}
+            />
+          ) : null)}
+        </div>
         {guideFrameField ? (
           <AssetDropzone
             engine={engine}

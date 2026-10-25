@@ -52,6 +52,36 @@ test('explicit editorial requests cannot override any non-current lifecycle', ()
   }
 });
 
+test('workspace selections validate exact known IDs and reject duplicates within an operation', async () => {
+  const policy = await loadPolicy();
+  assert.ok(policy);
+  const workspaceSelection = { reviewedAt: '2026-10-25', source: 'Approved product decision', create: [{ group: 'balanced', ids: ['wan-3'] }], modify: [] };
+  const parsed = policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection }, new Set(['wan-3']));
+  assert.deepEqual(parsed.workspaceSelection?.create[0].ids, ['wan-3']);
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: { ...workspaceSelection, create: [{ group: 'quality', ids: ['future-model'] }] } }, new Set(['wan-3'])));
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: { ...workspaceSelection, create: [...workspaceSelection.create, ...workspaceSelection.create] } }, new Set(['wan-3'])));
+});
+
+test('workspace validation admits seven reviewed Create picks while retaining bounded operation shortlists', async () => {
+  const policy = await loadPolicy();
+  assert.ok(policy);
+  const groups = [
+    { group: 'quality', ids: ['seedance-2-5', 'wan-3-prime', 'kling-o3-pro'] },
+    { group: 'balanced', ids: ['wan-3', 'flux-3-max'] },
+    { group: 'budget', ids: ['seedance-2-0-mini', 'minimax-h3'] },
+  ];
+  const known = new Set(groups.flatMap(group => group.ids).concat('veo-3-1'));
+  const workspaceSelection = { reviewedAt: '2026-10-25', source: 'Approved product decision', create: groups, modify: [] };
+  const parsed = policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection }, known);
+  assert.equal(parsed.workspaceSelection?.create.flatMap(group => group.ids).length, 7);
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: {
+    ...workspaceSelection, create: groups.map(group => group.group === 'budget' ? { ...group, ids: [...group.ids, 'veo-3-1'] } : group),
+  } }, known));
+  assert.throws(() => policy.parseAgentModelEditorialPolicy({ ...fixture(), workspaceSelection: {
+    ...workspaceSelection, create: [], modify: groups,
+  } }, known));
+});
+
 test('editorial validation rejects fabricated scores, unknown versions and unclassified provenance', async () => {
   const policy = await loadPolicy();
   assert.ok(policy?.parseAgentModelEditorialPolicy);

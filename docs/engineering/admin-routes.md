@@ -124,6 +124,45 @@ Move out of `page.tsx`:
 - support/action rails
 - SWR or URL state hooks
 
+## Moderation tool filters
+
+Moderation keeps Video, Image and Audio on the primary line. A collapsed Tools
+control exposes Upscale, Background removal, Character, Storyboard, Angle,
+Restore video, Denoise, Fix blur, Smooth motion, Subtitles, Lip Sync, Product Photo
+Editor, Product Video Editor and Motion Transfer. The selected tool stays in
+the context label when the panel is collapsed; publication buckets and paging
+retain that filter. Selecting a primary media type closes the panel.
+
+`frontend/lib/admin/moderation-filters.ts` owns the shared filter identities and
+labels. `frontend/server/admin-moderation-filters.ts` owns the SQL projection,
+including legacy tool prefixes and the individual `settings_snapshot.toolId`
+values in settings or the canonical pricing snapshot. Creator operations may
+retain an Image/Video job surface; they are selected by their persisted tool ID.
+Subtitles includes rendered exports, rather than transcription-only documents.
+`admin-moderation-creator-results.ts` overlays finalized creator results through
+their exact operation/quote/job owner join, rather than showing the intermediate
+model render. It uses the existing owned-media access projection with four
+concurrent reads and never falls back to inaccessible private originals.
+The authenticated pending-media route
+retains publication buckets, hidden/failure exclusions, pagination and response
+mapping. The filters do not publish media or change customer visibility.
+Creator filters reject failed finalizations before pagination, even when the
+underlying model job is completed. Their finalized-file views are read-only:
+publishing the intermediate `app_jobs` media must not be offered as publishing
+the reviewed final asset. Subtitles projects its saved export reference through
+the same owned-media access owner, including the real export thumbnail.
+Tool GIF exports stored in `video_url` render as unoptimized animated images in
+the wall, inspector and table. The inspector retains an original-file link for
+formats the browser cannot decode; originals and stored thumbnails are unchanged.
+
+`tests/admin-moderation-filters-postgres.test.ts` exercises real stored job
+shapes on disposable PostgreSQL; `tests/admin-moderation-tools-browser.test.ts`
+checks the actual header's selection, keyboard disclosure, pending state and
+mobile layout. Publication failures and incidents remain in Jobs.
+The catalog coverage guard includes both `TOOLBOX` and `CREATOR_TOOLBOX` so a
+released tool cannot silently lose its moderation filter. Creator-result tests
+exercise final/private output presentation separately from stored source jobs.
+
 ## Detail Pages
 
 `DELETE /api/admin/videos/[videoId]` retains its admin authorization and mutation
@@ -189,6 +228,14 @@ lower activity sections retain the detailed tool, success and failure breakdowns
 
 - MCP accounts are distinct authenticated accounts observed in the audit or quote ledger
   before the reporting end. This is cumulative usage, not installation or signup attribution.
+  Only quotes with the persisted `auth_origin = 'oauth'` contribute to these accounts,
+  generation totals and the recent generation feed. Studio and Toolbox quotes remain
+  excluded even when they share a user, OAuth client ID or job with an MCP quote.
+  The notice reports excluded Studio, Toolbox and unknown-origin quote counts before
+  the reporting end, matching the cumulative account scope (not a count of jobs in the
+  selected window). Null or unrecognized origins never become MCP or client `other`.
+  If the quote-origin column is absent, this outcomes reader explicitly reports
+  unavailable totals and feed; it does not infer historical origins or install schema.
 - New signups using MCP match those accounts to synchronized `profiles.created_at` within
   the UTC window. A bounded server-only Auth lookup fills missing/unsynchronized profiles
   in memory; unresolved dates make this measure unavailable. It does
@@ -222,8 +269,8 @@ lower activity sections retain the detailed tool, success and failure breakdowns
   indicative historical fallback when event-time evidence is missing.
   Null client IDs and missing evidence remain unidentified; later observations never relabel
   an earlier generation through event-time evidence; the current OAuth registry fallback is
-  explicitly labeled as indicative. Old schemas continue to serve outcomes using the
-  available attribution.
+  explicitly labeled as indicative. Schemas missing client-family attribution continue
+  to use available evidence; quote-origin availability is checked independently.
 - Migration 48 admits `glama` in the Neon audit constraint without rewriting historical
   rows. Apply it before deploying runtime code that records this family; old `other`
   entries are not force-reclassified.
@@ -242,6 +289,8 @@ and work while the commercial funnel is disabled.
 Validation: `tests/admin-mcp-metrics-postgres.test.ts` exercises real PostgreSQL outcomes,
 window boundaries, multiple clients, ownership, missing profiles and legacy schemas;
 `tests/admin-mcp-outcomes.test.ts` covers failure handling and client-family normalization.
+`tests/admin-mcp-quote-origins-postgres.test.ts` covers mixed origins on the same account,
+quote-only accounts, conflicting newer quotes, exact ownership and missing-origin schemas.
 
 Auth metadata fallbacks use the existing Supabase admin client in
 `frontend/server/admin-mcp-auth-metadata.ts`: at most 100 requested identities per page,

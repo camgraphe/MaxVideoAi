@@ -22,7 +22,7 @@ export const editStudioTimelineToolInputSchema = z.object({
     z.object({kind:z.literal('subtitles'),clipId,documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),
     z.object({kind:z.literal('sequence-subtitles'),documentId:z.string().min(1).max(200).nullable(),revision:z.number().int().positive().optional()}).strict(),
     z.object({kind: z.literal('insert'),ref: studioTimelineAssetRefSchema,startFrame: frame,durationFrames: frame.positive(),sourceInFrame:frame.optional()}).strict(),
-    z.object({kind:z.literal('assemble'),clips:z.array(z.object({ref:studioTimelineAssetRefSchema,startFrame:frame,durationFrames:frame.positive(),sourceInFrame:frame.optional()}).strict()).min(1).max(12)}).strict(),
+    z.object({kind:z.literal('assemble'),clips:z.array(z.object({ref:studioTimelineAssetRefSchema,startFrame:frame.nullable().optional(),durationFrames:frame.positive().nullable().optional(),sourceInFrame:frame.optional()}).strict()).min(1).max(12)}).strict(),
   ]),
 }).strict();
 

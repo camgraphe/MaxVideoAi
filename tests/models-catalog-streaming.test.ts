@@ -130,6 +130,8 @@ test('catalogue streams the complete stable hero before prices and reveals exact
         const noveltyBadges=[...final.window.document.querySelectorAll('#models-grid [data-model-novelty="new"]')];
         for(const badge of noveltyBadges)assert.equal(badge.textContent,dictionary.nav.badges.new,`${locale}: localized novelty badge`);
         if(scope!=='image') {
+          assert.equal(cards.find((card:any)=>card.id==='flux-3-draft')?.stats.maxResolution,'720p','Draft discovery must retain native creation resolution, independent of paired Enhance');
+          assert.equal(cards.find((card:any)=>card.id==='minimax-h3-max')?.stats.maxDuration,'15s','Relight/Recast source limits cannot replace H3 Max creation timing');
           const maxCard=[...final.window.document.querySelectorAll('#models-grid article')].find(card=>card.querySelector('h3')?.textContent==='FLUX 3 Max');
           assert.ok(maxCard,'The new current model must be visible in the initial catalogue cards');
           assert.equal(maxCard.querySelector('[data-model-novelty="new"]')?.textContent,dictionary.nav.badges.new);

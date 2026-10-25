@@ -158,9 +158,13 @@ aspect pricing uses the highest current exact tariff among the six documented
 formats, or the verified source class when framing is inherited. Unsupported
 arbitrary inherited framing fails closed until its pricing domain is reviewed.
 
-Seedance output settings map `outputFormat`, `returnLastFrame` and `watermark`
-to the shared creative input schema. MOV selection belongs to 2.5. Original
-downloads, full compatible playback and the reusable last-frame JPEG remain
+Seedance output settings expose `outputFormat` through the shared creative input
+schema; MOV selection belongs to 2.5. Optional AI watermark and return-last-frame
+controls were retired on 2026-10-24 across the site, MCP and Studio. Saved/reused
+values are dropped before new submission, including native Draft finalization.
+BytePlus video/image payloads force optional watermark off and omit last-frame
+extraction. Provider-required provenance markers are unaffected. Existing original
+downloads, compatible playback and already-produced last-frame JPEGs remain
 distinct owned artifacts. P0 and P1 modes continue to derive settings,
 references, prices and paid request bodies from the site execution owners.
 
@@ -210,3 +214,94 @@ require the unrelated t2v mode to be enabled. Ordinary `publicModes` remain
 unchanged; the workflow capability adapter projects ModelArk mode caps separately.
 The public-engine policy stays a pure leaf. Current native mode readiness also
 participates in quote catalog revisions.
+
+
+## Modify / Extend parity — 23 October 2026 candidate
+
+The web controls, canonical model details and Studio use
+`lib/video-workflow-capabilities.ts` for source timing and framing. Modify can
+inherit measured duration (Omni/Luma and Seedance 2.5 ModelArk) or request its own
+output duration (including Seedance 2.5 LAS); Extend retains each model's declared
+output duration and continuation/combined-output contract. Canonical preparation
+resolves omitted inherited duration from an owned, verified source before pricing.
+The integer dispatch placeholder must not replace fractional source pricing facts.
+
+The canonical settings and paid request adapter also carry Kling `keepAudio`,
+Veo `audioSetting`, `personGeneration`, `compressionQuality` and Omni prompt audio,
+camera and edit-direction controls as free text, plus FLUX Extend safety tolerance. Only settings declared for that model and mode
+are accepted. Studio preserves the canonical per-role Modify/Extend reference
+capacities; the shared transport ceiling is 66 (64 Luma keyframes, guide and source),
+while per-model counts, combined budgets and source checks remain authoritative.
+
+Seedance's recognizable-person advisory is shared by web reference controls,
+canonical details/prepared quotes and Studio quote cards, including Extend. It is
+informational and does not disable a mode. The four paid reference trials all
+returned the provider's person-reference rejection; this is not proof that every
+future reference will be rejected.
+
+`config/video-modify-review.json` records the owner's preference from one iPhone
+noir-edit trial: Luma, Wan 3 Prime, Kling Pro, Wan 3, Kling Standard, Omni. Live mode
+details expose its basis and scope. Recommendations use it only for Modify, after
+explicit choices and requested priorities, with the existing availability and
+capability filters and a 90-day review window. It does not publish admin models,
+rank Extend, certify identity preservation or establish relative prices.
+
+`tests/video-workflow-surface-parity.test.ts` covers discovery, Studio projection,
+canonical requests and paid-body forwarding; the composer DOM matrix covers every
+authored Extend mode. Host catalog refresh after server delivery is separate from
+these source checks; no installed plugin release is implied.
+
+## Kling Omni operations (2026-10-24)
+
+`v2v` keeps its historical Reference meaning when `operation` is omitted.
+Explicit `kling-reference` has the same Standard/Pro tariff selector; it does not
+rewrite omitted-operation canonical JSON or historical receipts. `kling-edit`
+selects a full source-timed schema: owned 3–15s source, required prompt, optional
+reference images and `keepAudio`, with no requested duration or aspect ratio.
+The shared operation details project those inputs to Site, MCP and Studio.
+Standard/Pro/4K Edit and new 4K Reference select their verified fal endpoints;
+there is no Kling Extend or inferred direct 4K route. Legacy Reference keeps its
+conservative 3–10s contract; this change does not widen direct transport limits.
+
+New operations bind operation, fal endpoint and trusted source metadata to the
+quote. They require separate active reviewed customer tariffs, even when the
+legacy pricing policy is active. Missing cells fail closed. The read-only
+`server/pricing/kling-operation-tariff-proposal.ts` prepares 16 exact selector
+classes (three fractional source-second Edit classes and thirteen requested
+3–15s 4K Reference classes), tied to the loaded tariff revision. It neither
+copies Reference retail prices nor writes or activates cells. The dated public
+supplier rates are Standard Edit $0.126/s, Pro Edit $0.168/s, and 4K $0.42/s;
+they are published endpoint reference rates, not verified effective invoices.
+Generic Standard/Pro $0.14 base metadata does not replace them.
+
+Site retains its existing owned Kling Elements. Canonical MCP and Studio now
+compose Elements with typed `elements` entries: `{kind: "images", frontalSlot,
+referenceSlots}` (one to three supporting slots), or `{kind: "video", videoSlot}`.
+Slots are the zero-based ordered `role: "reference"` entries and must resolve to
+owned assets, never HTTPS references or provider IDs. Studio uses its existing
+attached-library and ready-project-output checks and promotion owner. Element
+slots are removed from ordinary guidance images; at most three Elements and four
+Elements plus guidance images are allowed. Every member is owner-resolved again
+at confirmation, and its exact resolved metadata is quote-bound to prevent media
+substitution. Stored intents and canonical requests retain the typed composition.
+The MCP schema and Studio director/pricing schemas expose the same composition;
+model operation details describe it. No second ownership or grant path exists.
+
+### Operation discovery and source-fact handoff
+
+Mode discovery evaluates the authored operation alternatives through the real
+provider routing and credential gates. An available alternative publishes the
+mode; request admission still checks only the selected operation. FLUX source
+operations and H3 Recast/Relight require explicit operation identity. Historical
+Kling Reference omission and inferred standard LTX 2.3 Reframe remain unchanged.
+
+Owned-source validation returns its qualified facts through both the attachment
+and trusted-reference projections. A byte probe supersedes stored duration for
+FAST/LTX and H3; later duration-limit checks must consume that projection rather
+than reload stored timing. Site preflight normalizes inferred operations before
+selecting exact source seconds, matching execution and canonical quotation.
+`tests/video-operation-source-seams.test.ts` connects the executable catalogue,
+prepare admission, normalized attachments, Site preflight, source execution guard
+and canonical customer billing with only storage/probe/policy I/O substituted.
+It includes credential rejection, source identity mismatch, busy/invalid probes,
+missing stored timing, fractional customer-cent transitions and strict FAST bounds.

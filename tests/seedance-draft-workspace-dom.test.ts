@@ -9,7 +9,7 @@ import { useSeedanceDraftWorkflow } from '../frontend/app/(core)/(workspace)/app
 import { SeedanceDraftLocalPreviewMode } from '../frontend/app/(core)/(workspace)/app/_components/SeedanceDraftLocalPreviewMode.client';
 import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-form-state';
 
-test('creator Draft uses its own quote, locks 480p, and recovers one persisted job after an ambiguous response', async () => {
+for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const) test(`${mode}: creator Draft uses its own quote, locks 480p, and recovers one persisted job after an ambiguous response`, async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
   const quotes: any[] = [], submissions: any[] = [];
@@ -21,15 +21,16 @@ test('creator Draft uses its own quote, locks 480p, and recovers one persisted j
     },
   })) { previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value }); }
   let result: ReturnType<typeof useSeedanceDraftWorkflow>;
-  const form = { engineId: 'seedance-2-5', mode: 'ref2v', durationSec: 5, durationOption: 'auto', resolution: '720p', aspectRatio: 'auto', audio: true, fps: 24, iterations: 1,
+  const form = { engineId: 'seedance-2-5', mode, durationSec: 5, durationOption: 'auto', resolution: '720p', aspectRatio: 'auto', audio: true, fps: 24, iterations: 1,
     extraInputValues: { output_format: 'mov', return_last_frame: true, watermark: true } } as FormState;
-  const inputs = [{ name: 'owned.mp4', type: 'video/mp4', size: 100, kind: 'video' as const, slotId: 'video_urls', assetId: 'owned-video', url: 'https://cdn.example/video.mp4' },
+  const sourceSlot = mode === 'ref2v' ? 'video_urls' : mode === 'v2v' ? 'video_url' : 'extension_source_videos';
+  const inputs = mode === 't2v' ? [] : mode === 'i2v' ? [{ name:'owned.png',type:'image/png',size:100,kind:'image' as const,slotId:'image_url',assetId:'owned-image',url:'https://cdn.example/image.png' }] : [{ name: 'owned.mp4', type: 'video/mp4', size: 100, kind: 'video' as const, slotId: sourceSlot, assetId: 'owned-video', url: 'https://cdn.example/video.mp4' },
     { name: 'owned.mp3', type: 'audio/mp3', size: 100, kind: 'audio' as const, slotId: 'audio_urls', assetId: 'owned-audio', url: 'https://cdn.example/audio.mp3' }];
   const preflightInputs = inputs.map(({ assetId, slotId, kind, url }) => ({ assetId, slotId, kind, url }));
   function Fixture() {
     const [value, setValue] = React.useState(form);
-    result = useSeedanceDraftWorkflow({ enabled: true, form: value, engineId: value.engineId, mode: 'ref2v', prompt: 'A valley',
-      preparedPayload: { engineId: value.engineId, mode: 'ref2v', prompt: 'A valley', inputs, extraInputValues: value.extraInputValues }, preflightInputs,
+    result = useSeedanceDraftWorkflow({ enabled: true, form: value, engineId: value.engineId, mode, prompt: 'A valley',
+      preparedPayload: { engineId: value.engineId, mode, prompt: 'A valley', inputs, extraInputValues: value.extraInputValues }, preflightInputs,
       account: { userId: 'owner', token: 'fixture-token' }, showNotice: () => {}, onResolutionChange: (resolution: string) => setValue(current => ({ ...current, resolution })) });
     return null;
   }
@@ -42,7 +43,7 @@ test('creator Draft uses its own quote, locks 480p, and recovers one persisted j
     assert.equal(result!.price, 1.29);
     assert.equal(quotes.at(-1)?.seedanceWorkflow.step, 'draft');
     assert.equal(quotes.at(-1)?.resolution, '480p');
-    assert.equal(quotes.at(-1)?.mode, 'ref2v');
+    assert.equal(quotes.at(-1)?.mode, mode);
     assert.deepEqual(quotes.at(-1)?.inputs, preflightInputs);
     assert.deepEqual(quotes.at(-1)?.extraInputValues, { output_format: 'mov', return_last_frame: true, watermark: true });
     assert.equal(quotes.at(-1)?.durationOption, 'auto');
@@ -53,7 +54,7 @@ test('creator Draft uses its own quote, locks 480p, and recovers one persisted j
     assert.equal(dom.window.localStorage.getItem('seedance-active-draft:owner'), id);
     assert.equal(result!.draftId, id);
     assert.deepEqual(submissions[0].body.seedanceWorkflow, { step: 'draft' });
-    assert.equal(submissions[0].body.mode, 'ref2v');
+    assert.equal(submissions[0].body.mode, mode);
     assert.deepEqual(submissions[0].body.inputs, inputs);
     assert.deepEqual(submissions[0].body.extraInputValues, { output_format: 'mov', return_last_frame: true, watermark: true });
     assert.equal(submissions[0].body.durationOption, 'auto');

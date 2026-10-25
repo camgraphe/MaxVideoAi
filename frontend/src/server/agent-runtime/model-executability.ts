@@ -1,3 +1,4 @@
+import { videoOperationEndpoint } from '@/lib/video-operation';
 import {
   isBytePlusModelArkEnabled,
   isBytePlusLasExecutionEnabled,
@@ -165,6 +166,23 @@ export function resolveAgentGenerationModeExecutability(
   options?: { nativeSeedanceWorkflow: true },
 ): AgentGenerationExecutabilityDecision {
   if (isKlingV4ReleaseBlocked(engine.id)) return { executable: false, reason: 'provider_disabled' };
+  // Discovery asks whether any supported operation can run. Request admission
+  // still normalizes the caller's explicit operation and rejects ambiguity.
+  const operations = Object.values(engine.operationCaps ?? {}).filter(caps => caps?.mode === mode);
+  const decisions = [undefined, ...operations.map(caps => caps!.operation)].map(operation =>
+    resolveAgentGenerationModeOperationExecutability(engine, mode, environment, options, operation));
+  return decisions.find(decision => decision.executable)
+    ?? decisions.find(decision => decision.reason !== 'profile_invalid')
+    ?? decisions[0]!;
+}
+
+function resolveAgentGenerationModeOperationExecutability(
+  engine: EngineCaps,
+  mode: Mode,
+  environment: AgentGenerationExecutabilityEnvironment,
+  options?: { nativeSeedanceWorkflow: true },
+  operation?: import('@/lib/video-operation').VideoOperation,
+): AgentGenerationExecutabilityDecision {
   if (isBytePlusSeedreamEngine(engine)) {
     return resolveAgentGenerationEngineExecutability(engine, environment);
   }
@@ -201,6 +219,7 @@ export function resolveAgentGenerationModeExecutability(
       const routingPlan = resolveVideoProviderRoutingPlan({
         engineId: engine.id,
         mode,
+        operation,
         isAdmin: false,
         env: providerEnv,
       });
@@ -291,7 +310,7 @@ function lumaRequestPayload(
     ...(typeof settings.aspectRatio === 'string' ? { aspectRatio: settings.aspectRatio } : {}),
     ...(typeof settings.resolution === 'string' ? { resolution: settings.resolution } : {}),
     ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
-    ...(referenceImages.length
+    ...(referenceImages.length && request.mode !== 't2v' && request.mode !== 'v2v'
       ? { referenceImages: referenceImages.map((_, index) => `https://references.invalid/${index}.png`) }
       : {}),
     ...(hasEndImage ? { endImageUrl: 'https://references.invalid/end.png' } : {}),
@@ -305,10 +324,18 @@ export function resolveAgentGenerationRequestExecutability(
   resolvedReferences: readonly ResolvedReference[] = [],
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
 ): AgentGenerationExecutabilityDecision {
+  try {
+    if (videoOperationEndpoint(request.engineId, request.mode, request.operation)) return credentialDecision(configured(environment.falApiKey));
+  } catch { return { executable: false, reason: 'profile_invalid' }; }
   if (request.engineId === 'seedance-2-5' && request.seedanceWorkflow) {
     return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment, { nativeSeedanceWorkflow: true });
   }
   if (request.surface === 'video' && isLumaAgentsVideoEngine(engine.id)) {
+    if (request.mode === 't2v' && request.references.some(reference => reference.role === 'reference')) {
+      const route = resolveVideoProviderRoutingPlan({ engineId: engine.id, mode: request.mode, isAdmin: false,
+        env: environment.providerEnv ?? process.env });
+      if (route.kind !== 'luma_agents_direct_primary') return { executable: false, reason: 'provider_disabled' };
+    }
     const providerEnv = environment.providerEnv ?? process.env;
     const support = resolveLumaAgentsVideoSupport({
       engineId: engine.id,
@@ -324,7 +351,7 @@ export function resolveAgentGenerationRequestExecutability(
         : { executable: false, reason: 'profile_invalid' };
     }
   }
-  return resolveAgentGenerationModeExecutability(engine, request.mode as Mode, environment);
+  return resolveAgentGenerationModeOperationExecutability(engine, request.mode as Mode, environment, undefined, request.operation);
 }
 
 export function isAgentGenerationEngineExecutable(engine: EngineCaps): boolean {

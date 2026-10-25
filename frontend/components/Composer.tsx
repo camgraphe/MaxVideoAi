@@ -13,7 +13,13 @@ import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPr
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { ComposerGenerationActivity, GenerationSpinner } from '@/components/composer/ComposerGenerationActivity.client';
 import { ComposerGenerationQuote } from '@/components/composer/ComposerGenerationQuote.client';
+import { ComposerPromptHeader } from '@/components/composer/ComposerPromptHeader.client';
+import { ComposerNotices, ComposerReferenceMentionNotice, ComposerSoraImageNotice } from '@/components/composer/ComposerNotices.client';
+import { useComposerVideoSourceWorkflow } from '@/components/composer/useComposerVideoSourceWorkflow';
+import { useComposerReferenceMentions } from '@/components/composer/useComposerReferenceMentions';
 import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-generation';
+import { videoExtensionCopy } from '@/lib/video-extension';
+import { videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -53,9 +59,11 @@ export function Composer({
   negativePromptField,
   negativePromptRequired = false,
   assetFields,
-  referenceAuthAction,
+  referenceAuthAction, subjectReferences,
   assets,
   onAssetAdd,
+  onPrepareVideoExcerpt,
+  onVideoExcerptEditorChange,
   onAssetRemove,
   onNotice,
   onOpenLibrary,
@@ -71,6 +79,7 @@ export function Composer({
   promotedActions,
   multiPrompt,
   extraFields,
+  beforeAssets,
   afterAssets,
   disableGenerate,
   workflowNotice,
@@ -82,6 +91,8 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
+  const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -124,15 +135,15 @@ export function Composer({
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
   const formattedPrice = useMemo(() => {
-    if (price == null || isPricing || preflight?.ok === false) return null;
+    if (price == null || isPricing || excerptEditorOpen || excerptNeedsRange || (videoSourceWorkflow && extensionSourceState !== 'ready') || preflight?.ok === false) return null;
     try {
       return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(price);
     } catch {
       return `${currency} ${price.toFixed(2)}`;
     }
-  }, [price, currency, isPricing, preflight?.ok]);
+  }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
   const promptLabel = promptField?.label ?? 'Prompt';
-  const promptDescription = promptField?.description;
+  const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
@@ -144,8 +155,11 @@ export function Composer({
   const missingRequiredAsset = hasMissingRequiredComposerAsset(assetFields, assets);
   const isGenerateDisabled =
     Boolean(disableGenerate) ||
+    referenceMentions.needsReview ||
+    excerptEditorOpen || excerptNeedsRange ||
     isLoading ||
     isPricing ||
+    (videoSourceWorkflow && extensionSourceState !== 'ready') ||
     promptTooLong ||
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
@@ -184,7 +198,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
+  const promptPlaceholderValue = videoSourceWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -223,7 +237,7 @@ export function Composer({
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
-    : generateLabel ?? composerCopy.button.idle;
+    : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
 
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
@@ -269,7 +283,7 @@ export function Composer({
                             onClick={handleGenerateClick}
                           >
                             <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
-                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing}>{formattedPrice ? (
+                            <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing} waitingLabel={extensionQuoteStatus}>{formattedPrice ? (
                               <span
                                 className={clsx(
                                   'app-generation-price relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
@@ -308,7 +322,7 @@ export function Composer({
       )}
     >
       <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
               <div className="app-mode-switch flex flex-wrap gap-2">
@@ -317,6 +331,7 @@ export function Composer({
                   return (
                     <Button
                       key={entry.mode ?? 'base'}
+                      data-composer-mode={entry.mode ?? 'create'}
                       type="button"
                       size="sm"
                       variant={active ? 'primary' : 'outline'}
@@ -332,37 +347,27 @@ export function Composer({
                 })}
               </div>
             ) : null}
-            {(promptDescription || workflowNotice || error) && (
-              <div className="space-y-1">
-                {promptDescription ? <p className="text-[12px] text-text-muted">{promptDescription}</p> : null}
-                {workflowNotice ? (
-                  <div className="rounded-input border border-border bg-surface-glass-80 px-3 py-2 text-[12px] text-text-secondary dark:border-white/8 dark:bg-white/[0.04] dark:text-white/70">
-                    {workflowNotice}
-                  </div>
-                ) : null}
-                {error ? (
-                  <div
-                    role="alert"
-                    className="rounded-input border border-error-border bg-error-bg px-3 py-2 text-[13px] whitespace-pre-line text-error"
-                  >
-                    {error}
-                  </div>
-                ) : null}
-              </div>
-            )}
+            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
           </div>
         </div>
 
-        {workspaceDensity && assetFields.length > 0 ? <>
+        {beforeAssets}
+        {workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
           <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
-            referenceAuthAction={referenceAuthAction}
+            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? referenceMentions.insert : undefined}
+            extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
+            referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
+            onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
-          {showSoraImageWarning ? <p className="text-xs text-text-muted" role="note">Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected. OpenAI</p> : null}
+          {showSoraImageWarning ? <ComposerSoraImageNotice workspace /> : null}
           {afterAssets}
         </> : null}
 
-        <div className="space-y-3">
+        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
+          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
+
+        <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
               className={clsx(
                 'app-prompt-surface overflow-visible rounded-[28px] border bg-surface dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.94),rgba(19,28,38,0.98))]',
@@ -374,15 +379,9 @@ export function Composer({
               'app-prompt-heading flex items-start justify-between px-4',
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
-              <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
-                {multiPromptEnabled ? <h2 id={`${promptId}-heading`} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</h2> : <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>}
-                {typeof promptMaxChars === 'number' ? (
-                  <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
-                    {promptCharCount}/{promptMaxChars}
-                  </div>
-                ) : null}
-              </div>
-              <div className={clsx(
+              <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} prompt={prompt} onPromptChange={onPromptChange}
+                promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale} />
+              {multiPrompt || promotedActions?.length ? <div className={clsx(
                 'flex items-center justify-end',
                 workspaceDensity ? 'min-w-0 flex-wrap gap-1.5' : 'flex-wrap gap-2'
               )}>
@@ -416,7 +415,7 @@ export function Composer({
                     <span className="whitespace-nowrap">{action.label}</span>
                   </Button>
                 ))}
-              </div>
+              </div> : null}
             </div>
             {multiPromptEnabled && multiPrompt ? (
               <ComposerMultiPromptEditor multiPrompt={multiPrompt} labelledBy={`${promptId}-heading`} />
@@ -436,7 +435,7 @@ export function Composer({
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
-                ref={textareaRef}
+                ref={referenceMentions.attachInput}
                 suppressHydrationWarning
               />
             )}
@@ -453,16 +452,12 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              <ComposerReferenceFields orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+              <ComposerReferenceFields videoSourceWorkflow={videoSourceWorkflow} orderedAssetFields={orderedAssetFields} engine={engine} caps={caps} assets={assets}
+                onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
                 onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
                 onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
             </div>
-            {showSoraImageWarning ? (
-              <p className="text-[12px] text-text-muted" role="note">
-                Real people — including public figures — cannot be generated. Input images with faces of humans are currently rejected.{' '}
-                <span className="font-semibold uppercase tracking-micro text-[11px] text-text-muted">OpenAI</span>
-              </p>
-            ) : null}
+            {showSoraImageWarning ? <ComposerSoraImageNotice /> : null}
             {afterAssets}
           </div>
         ) : null}

@@ -90,7 +90,7 @@ test('Kling 3.0 Omni model prompt lab uses route-specific O3 prompt structures',
       assert.match(tabCopy, /@Image1/);
       if (slug === 'kling-o3-4k') {
         assert.match(tabCopy, /4K/);
-        assert.match(tabCopy, /Do not use @Video1|Ne pas utiliser @Video1|No usar @Video1/);
+        assert.match(tabCopy, /omit @Video1|omettez @Video1|omite @Video1/);
       } else {
         assert.match(tabCopy, /@Video1/);
         assert.match(tabCopy, /keep_audio/);
@@ -203,24 +203,30 @@ test('Kling 3.0 Omni Standard and Pro model pages expose source-video V2V distin
   }
 });
 
-test('Kling 3.0 Omni 4K stays reference-first and does not claim source-video V2V', () => {
+test('Kling 3.0 Omni 4K publishes fal Reference and Edit alongside native image workflows', () => {
   const engine = getEngine('kling-o3-4k');
 
   assert.deepEqual(
     engine.modes.map((mode) => mode.mode),
-    ['t2v', 'i2v', 'ref2v']
+    ['t2v', 'i2v', 'ref2v', 'v2v']
   );
-  assert.equal(engine.type, 'textImageReference');
-  assert.equal(hasInputField(engine, 'video_url'), undefined);
-  assert.equal(hasInputField(engine, 'keep_audio'), undefined);
-  assert.doesNotMatch(engine.seo.title, /video-to-video|V2V/i);
-  assert.doesNotMatch(engine.seo.description, /video-to-video|V2V/i);
+  assert.equal(engine.type, 'textImageReferenceVideoEdit');
+  assert.ok(hasInputField(engine, 'video_url'));
+  assert.equal(engine.modes.some(mode => mode.mode === 'extend'), false);
+  assert.ok(hasInputField(engine, 'keep_audio'));
+  assert.match(engine.seo.title, /video-to-video|V2V/i);
+  assert.match(engine.seo.description, /video-to-video|V2V/i);
 
   for (const locale of LOCALES) {
     const { text } = readModelContent(locale, 'kling-o3-4k');
     assert.match(text, /4K/i, `kling-o3-4k/${locale} should keep native 4K positioning`);
     assert.match(text, /@Image1/i, `kling-o3-4k/${locale} should expose reference image anchors`);
-    assert.match(text, /not.*video-to-video|pas.*video-to-video|sin.*video-to-video|no.*V2V/i, `kling-o3-4k/${locale} should state that source-video V2V is not the 4K route`);
+    assert.match(text, /Reference/);
+    assert.match(text, /Edit/);
+    assert.match(text, /3–15/);
+    assert.match(text, /720.*3840/);
+    assert.match(text, /fal/);
+    assert.doesNotMatch(text, /No V2V|Pas de V2V|Sin V2V|does not support source-video|ne supporte pas le source-video|No soporta source-video/i);
   }
 });
 

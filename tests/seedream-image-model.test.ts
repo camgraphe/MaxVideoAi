@@ -62,7 +62,7 @@ test('Seedream 5.0 Lite is registered as a public ByteDance image model', () => 
     'jpeg',
     'png',
   ]);
-  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'watermark')?.type, 'boolean');
+  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'watermark'), undefined);
   assert.equal(entry.surfaces.app.enabled, true);
   assert.equal(entry.surfaces.modelPage.indexable, true);
   assert.equal(entry.surfaces.modelPage.includeInSitemap, true);

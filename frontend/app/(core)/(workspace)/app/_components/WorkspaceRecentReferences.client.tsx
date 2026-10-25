@@ -5,12 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import { useMediaHandoff } from '@/components/library/useMediaHandoff';
 import { RecentMediaList } from '@/components/library/RecentMediaList.client';
 import { recentMediaCopy } from '@/components/library/recent-media-copy';
+import { getMediaInputEligibility } from '@/lib/media-input-eligibility';
 import type { AssetFieldConfig } from '@/components/Composer';
 import type { EngineCaps, EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 import { useWorkspaceRecentMetadata } from '../_hooks/useWorkspaceRecentMetadata';
 import { useWorkspaceRecentMedia } from '../_hooks/useWorkspaceRecentMedia';
 import { getWorkspaceReferenceFields, type WorkspaceReferenceAvailability } from '../_lib/workspace-reference-fields';
-import { getRecentReferenceIssue, RECENT_MEDIA_DRAG_TYPE, resolveCurrentRecentAsset } from '../_lib/workspace-recent-media';
+import { RECENT_MEDIA_DRAG_TYPE, resolveCurrentRecentAsset } from '../_lib/workspace-recent-media';
 import type { ReferenceAsset, UserAsset } from '../_lib/workspace-assets';
 import { WorkspaceRecentRoleDialog } from './WorkspaceRecentRoleDialog.client';
 
@@ -37,10 +38,14 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   const [selection, setSelection] = useState<Selection | null>(null);
   const drag = useRef<{ selection: Selection; token: string } | null>(null);
   const copy = recentMediaCopy(locale);
-  const eligibleFields = getWorkspaceReferenceFields(fields, availability);
+  // The custom editor owns the composer picker, but an incoming video still
+  // needs its source role in this confirmation dialog.
+  const eligibleFields = getWorkspaceReferenceFields(fields, handoff.asset?.kind === 'video'
+    ? { ...availability, showLumaRay32KeyframeEditor: false }
+    : availability);
   const selected = handoff.asset ?? (selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null);
   const metadataNeeded = Boolean(selected && eligibleFields.some((entry) => !entry.disabled && entry.field.type === selected.kind &&
-    getRecentReferenceIssue(selected, entry, inputAssets, inputSchema, mode, undefined, engine) === 'metadata'));
+    getMediaInputEligibility({ asset: selected, field: entry.field, engine, mode }).status === 'unverified'));
   const metadata = useWorkspaceRecentMetadata(selected, userId, metadataNeeded);
   const choose = (asset: UserAsset) => {
     if (feed.scope) setSelection({ scope: feed.scope, id: asset.id, url: asset.url, engineId });

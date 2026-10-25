@@ -153,7 +153,14 @@ test('P1 details expose only the actually executable canary modes and shared cap
   }
 
   const h3 = await getAgentModelDetails('minimax-h3-max', catalogDeps);
-  assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(h3.modes.map(({ mode }) => mode), ['t2v', 'i2v', 'ref2v', 'v2v']);
+  assert.deepEqual(h3.modes.find(({ mode }) => mode === 'v2v')?.operations
+    ?.map(({ operation, durationPolicy }) => ({ operation, durationPolicy })), [
+    { operation: 'h3-recast', durationPolicy: 'source_video' },
+    { operation: 'h3-relight', durationPolicy: 'source_video' },
+  ]);
+  assert.deepEqual(h3.modes.flatMap(({ operations }) => operations?.map(({ operation }) => operation) ?? []),
+    ['h3-recast', 'h3-relight'], 'deferred H3 Extend, Insert and Reframe must not be advertised');
   assert.ok(h3.modes[0]?.settings.some((setting) =>
     setting.key === 'promptExpansionMode'
     && setting.default === 'balanced'
@@ -264,9 +271,18 @@ test('the website route enforces Gemini owned-media provenance and trusted file 
     inputSchema: engine.inputSchema,
     attachments,
     referenceMediaItems,
-    deps: { queryFn: async <T>() => storedRows as T[] },
+    deps: { queryFn: async <T>(_sql: string, params?: readonly unknown[]) => {
+      assert.deepEqual(params, ['p1-media-user', ['asset-first', 'asset-last'], [firstUrl, lastUrl]]);
+      return storedRows as T[];
+    } },
   });
-  assert.deepEqual(validated, { ok: true });
+  assert.deepEqual(validated, {
+    ok: true,
+    trustedMediaReferences: [
+      { kind: 'image', fieldId: 'image_url', url: firstUrl, width: 1280, height: 720, durationSec: null },
+      { kind: 'image', fieldId: 'end_image_url', url: lastUrl, width: 1280, height: 720, durationSec: null },
+    ],
+  });
 
   const missingTrustedSize = await validateGenerationMediaConstraints({
     engineId: engine.id,

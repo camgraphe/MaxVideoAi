@@ -1,3 +1,4 @@
+import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -140,10 +141,10 @@ export function useSettingsControlState({
   }, [focusRefs?.duration, frameOptions, enumeratedDurationOptions, durationRange]);
 
   const resolutionOptions = useMemo(() => {
-    const base = caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
+    const base = mode === 'extend' ? caps?.resolution ?? [] : caps?.resolution && caps.resolution.length ? caps.resolution : engine.resolutions;
     if (isLtxFastLong) return base.filter((value) => value === '1080p');
     return base;
-  }, [caps?.resolution, engine.resolutions, isLtxFastLong]);
+  }, [caps?.resolution, engine.resolutions, isLtxFastLong, mode]);
 
   const aspectOptions = useMemo(() => {
     if (caps) {
@@ -155,9 +156,10 @@ export function useSettingsControlState({
   const resolutionLocked = Boolean(caps?.resolutionLocked);
   const showResolutionControl = resolutionOptions.length > 0;
   const showAspectControl = aspectOptions.length > 0;
-  const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean');
+  const sourceWorkflow = mode === 'v2v' || mode === 'extend';
+  const showAudioToggle = Boolean(showAudioControl && typeof audioEnabled === 'boolean' && (!sourceWorkflow || caps?.audioToggle === true));
   const canToggleAudio = Boolean(onAudioChange) && !audioControlDisabled;
-  const modeCanExposeNativeAudio = caps?.audioToggle ?? true;
+  const modeCanExposeNativeAudio = sourceWorkflow ? caps?.audioToggle === true : caps?.audioToggle ?? true;
   const audioIncluded = Boolean(engine.audio) && mode !== 'r2v' && !showAudioToggle && modeCanExposeNativeAudio;
   const resolvedDurationManagedLabel = durationManagedLabel ?? (engine.modeAvailability?.[mode]?.inheritsSourceVideo
     ? seedanceEditSourceLabel(undefined, locale) : controlsCopy.duration.managed);
@@ -179,7 +181,7 @@ export function useSettingsControlState({
       showKlingV3Controls ||
       showSeedanceControls ||
       showSafetyCheckerControl ||
-      engine.params.cfg_scale ||
+      supportsVideoCfgScaleControl(engine, mode) ||
       hasGenericAdvancedFields
   );
 

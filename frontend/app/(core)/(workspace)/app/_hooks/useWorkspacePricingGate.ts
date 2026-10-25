@@ -4,7 +4,9 @@ import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
+import { getVideoExcerptLimits, mediaExcerptNeedsSelection } from '@/lib/video-excerpt';
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
+import { getVideoWorkflowSourceField, getVideoWorkflowSourceState, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import { getWorkspaceKlingV4MediaError } from '../_lib/workspace-kling-v4-media';
@@ -99,8 +101,13 @@ export function useWorkspacePricingGate({
   const elementError = elementValidation && !elementValidation.ok ? elementValidation.message
     : selectedEngine?.id === 'kling-v4' ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements }) : null;
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
+  const waitingForExcerpt = selectedEngine && mediaExcerptNeedsSelection(selectedEngine, submissionMode, inputAssets);
+  const ownedGenerationRequired = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'extend') || form?.operation === 'flux-draft-enhance';
+  const waitingForVideoSource = (ownedGenerationRequired && !form?.extraInputValues.source_job_id) || isVideoSourceWorkflow(submissionMode)
+    && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
+    && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage && !elementError ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
       effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets, klingElements,
     }) : null,

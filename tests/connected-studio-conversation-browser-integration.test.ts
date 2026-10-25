@@ -33,7 +33,11 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     browser = await startStudioConnectedBrowserFixture({runtime,browserName});
     const owned = await browser.newContext(session,{viewport: {width: 1440,height: 900},locale: 'en-US',reducedMotion: 'reduce'});
     const page = owned.page;
+    async function openFilm(target=page) {
+      if(target.viewportSize()!.width<768&&!await target.getByRole('dialog',{name:'Film tools',exact:true}).isVisible())await target.getByRole('button',{name:'Open film tools',exact:true}).click();
+    }
     async function setTheme(dark:boolean) {
+      if(await page.getByRole('dialog',{name:'Film tools',exact:true}).isVisible())await page.getByRole('button',{name:'Close film tools',exact:true}).click();
       await expect(page.getByLabel('Loading account',{exact:true})).toHaveCount(0);
       await expect(async()=>{
         if(!await page.getByRole('dialog',{name:'MaxVideoAI',exact:true}).isVisible())await page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).click();
@@ -104,6 +108,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(dialog).toHaveCount(0);
       await expect(page.getByRole('button',{name: 'Open library',exact: true})).toBeFocused();
       await page.unroute(endpoint);
+      await openFilm();
       await page.getByRole('button',{name:'Add library media to film',exact:true}).click();
       await expect(dialog.getByRole('button',{name:'Add to timeline',exact:true})).toBeDisabled();
       await page.keyboard.press('Escape');
@@ -114,7 +119,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2,{timeout: 45000});
     const cookies = page.getByRole('button',{name: 'Reject all',exact: true});
     if (await cookies.isVisible()) await cookies.click();
-    await expect(page.getByRole('heading',{name:'What shall we create?'})).toBeVisible();
+    await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible();
     const namingBefore=(await runtime.database.pool.query('SELECT name,revision FROM studio_projects WHERE id=$1',[project.projectId])).rows[0];
     await page.getByRole('button',{name:'Projects',exact:true}).click();
     const projectsDialog=page.getByRole('dialog',{name:'Your projects',exact:true});
@@ -127,12 +132,24 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('section[aria-label="Conversational Studio"] > header').getByText('Native Studio film',{exact:true})).toBeVisible();
     const namingAfter=(await runtime.database.pool.query('SELECT name,revision FROM studio_projects WHERE id=$1',[project.projectId])).rows[0];
     assert.equal(namingAfter.name,'Native Studio film');assert.equal(namingAfter.revision,namingBefore.revision);
-    const message = page.getByRole('textbox',{name:'Message Studio',exact:true});
-    await page.getByRole('button',{name:'Shape a prompt',exact:false}).click();
-    await expect(message).toBeFocused();
-    await expect(message).toHaveValue('Help me write a prompt for ');
-    await expect(page.getByRole('button',{name:'Explore an idea',exact:false})).toHaveCount(0);
-    await message.fill('');
+    const message = page.getByRole('textbox',{name:'Message Milo',exact:true});
+    const starterRequests:string[]=[];
+    const recordStarterRequest=(request:import('@playwright/test').Request)=>{if(request.method()==='POST'&&request.url().includes('/api/studio/'))starterRequests.push(new URL(request.url()).pathname);};
+    page.on('request',recordStarterRequest);
+    for(const [label,draft] of [
+      ['Create a video','I’d like to create a video of '],
+      ['Develop an idea','Help me develop an idea for '],
+      ['Extend a clip','I’d like to extend a clip. '],
+      ['Edit an image','I’d like to edit an image. '],
+    ]){
+      await page.getByRole('button',{name:label,exact:true}).click();
+      await expect(message).toBeFocused();
+      await expect(message).toHaveValue(draft);
+      await expect(page.getByRole('button',{name:label,exact:true})).toHaveCount(0);
+      await message.fill('');
+    }
+    page.off('request',recordStarterRequest);
+    assert.deepEqual(starterRequests,[],'Starters only edit a draft; they never submit a conversation or generation');
     await page.getByRole('button',{name:'Studio help',exact:true}).click();
     await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
     await proof('help-desktop');
@@ -192,9 +209,9 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await shelf.getByRole('button',{name:'Open media',exact:true}).click();
     await page.setViewportSize({width:390,height:844});
     await expect(message).toBeVisible();
-    await expect(shelf.getByRole('button',{name:'Open media',exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'References · 2 attached',exact:true})).toBeVisible();
     await proof('media-dock-mobile-compact');
-    await shelf.getByRole('button',{name:'Open media',exact:true}).click();
+    await page.getByRole('button',{name:'References · 2 attached',exact:true}).click();
     await expect(shelf.getByRole('button',{name:'Mention in message',exact:true})).toBeVisible();
     await shelf.getByRole('button',{name:'Preview Image 2',exact:true}).click();
     await expect.poll(async()=>{const b=await shelf.locator('[data-media-card][data-selected="true"]').boundingBox();return !!b&&b.x>=0&&b.x+b.width<=390;}).toBe(true);
@@ -208,6 +225,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await proof('media-dock-mobile');
     await page.getByRole('button',{name:'Remove Image 1',exact:true}).click();
     await page.getByRole('button',{name:'Remove Image 2',exact:true}).click();
+    await page.getByRole('button',{name:'Close references',exact:true}).click();
     await message.fill('');
     await page.setViewportSize({width:1440,height:900});
     await page.reload({waitUntil:'domcontentloaded'});
@@ -225,6 +243,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     await expect(page.locator('video[data-playback-item-id]')).toHaveCount(0);
+    await openFilm();
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
     const video = page.locator('video[data-playback-item-id="montage-clip-01"]');
     await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).readyState),{timeout: 20000}).toBeGreaterThanOrEqual(2);
@@ -253,14 +272,16 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item="montage-clip-01"]')).toHaveAttribute('data-timeline-duration','1');
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
     await page.setViewportSize({width: 390,height: 844});
+    await openFilm();
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
-    await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
+    await expect(page.getByRole('textbox',{name: 'Message Milo',exact: true})).toBeVisible();
     const geometry = await page.evaluate(() => {
       const chat = document.querySelector('textarea')!.getBoundingClientRect();
       const monitor = document.querySelector('[aria-label="Film monitor"]')!.getBoundingClientRect();
       return {chatBottom: chat.bottom,chatTop: chat.top,monitorTop: monitor.top,monitorHeight: monitor.height,width: document.documentElement.scrollWidth,viewport: window.innerWidth};
     });
-    assert.ok(geometry.chatBottom <= geometry.monitorTop,'Chat composer stays above the compact monitor.');
+    const filmBounds=await page.getByRole('dialog',{name:'Film tools',exact:true}).boundingBox();
+    assert.ok(filmBounds&&filmBounds.y>=0&&filmBounds.y+filmBounds.height<=844,'Film tools fit in an on-demand mobile sheet.');
     assert.ok(geometry.chatTop >= 0);
     assert.ok(geometry.monitorHeight <= 112);
     assert.equal(geometry.width,geometry.viewport,'The mobile document does not overflow horizontally.');
@@ -274,6 +295,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-tone]')).toHaveAttribute('data-tone','olive');
     await expect(page.locator('html')).not.toHaveAttribute('data-theme','dark');
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+    await openFilm();
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
     await expect(page.getByLabel('Audio volume',{exact: true})).toHaveValue('0');
     await page.getByRole('button',{name: 'Collapse monitor',exact: true}).first().click();
@@ -302,6 +324,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       // Replay this actual owned projection to guarantee a same-URL renewal, independent of wall-clock seconds.
       if (!permanent) await retryPage.route(runtime.browserOrigin+'/api/studio/projects/'+project.projectId+'/conversation-timeline?preview=1',route => route.fulfill({json: originalProjection}));
       retryPage.on('request',request => {if (request.url().includes('/conversation-timeline?preview=1')) renewalReads++;});
+      await openFilm(retryPage);
       await retryPage.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
       if (permanent) {
         await expect(retryPage.getByText('This clip could not be played. Reopen the monitor to retry, or remove it from the film.',{exact: true})).toBeVisible();
@@ -321,6 +344,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await runtime.database.pool.query('UPDATE media_assets SET deleted_at=NOW() WHERE public_id=$1',[STUDIO_CONNECTED_ASSET_IDS.b]);
     await page.reload({waitUntil: 'domcontentloaded'});
     await expect(page.locator('[data-timeline-item]')).toHaveCount(2);
+    await openFilm();
     await page.getByRole('button',{name: 'Select clip Pattern B',exact: true}).click();
     await expect(page.getByText('Media unavailable. You can remove this clip.',{exact: true}).first()).toBeVisible();
     await expect(page.getByLabel('Film monitor',{exact: true})).toHaveCount(0);
@@ -343,7 +367,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
-      await expect(page.getByRole('textbox',{name: 'Message Studio',exact: true})).toBeVisible();
+      await expect(page.getByRole('textbox',{name: 'Message Milo',exact: true})).toBeVisible();
       await expect(page.getByRole('button',{name:'Projects',exact:true})).toBeVisible();
       await page.getByRole('button',{name:'Studio help',exact:true}).click();
       await expect(page.getByRole('dialog',{name:'Make it yours.',exact:true})).toBeVisible();
@@ -361,9 +385,15 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.getByRole('button',{name:'Rename Native Studio film',exact:true})).toBeFocused();
     await expect(page.getByRole('dialog',{name:'Your projects',exact:true})).toBeVisible();
     await proof('projects-entry');
+    const previousProjectId=new URL(page.url()).pathname.split('/').at(-1);
+    const creation=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/studio/conversation-projects' && response.request().method()==='POST');
     await page.getByRole('button',{name:'New conversation',exact:true}).click();
-    await expect(page).toHaveURL(/\/app\/studio\/conversation\/project_/,{timeout:30000});
-    await expect(page.getByRole('heading',{name:'What shall we create?'})).toBeVisible();
+    const response=await creation;
+    assert.equal(response.status(),200);
+    const newConversation=await response.json();
+    assert.equal(newConversation.ok,true);assert.ok(newConversation.result.projectId);assert.notEqual(newConversation.result.projectId,previousProjectId);
+    await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${newConversation.result.projectId}`,{timeout:30000});
+    await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
     await proof('empty-workspace');
     assert.deepEqual(errors,[]);

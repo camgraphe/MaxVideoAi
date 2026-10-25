@@ -23,6 +23,7 @@ type QualityWorkflow = {
     if?: string;
     steps: WorkflowStep[];
     'timeout-minutes'?: number;
+    'runs-on'?: string;
   }>;
 };
 
@@ -57,6 +58,31 @@ test('superseded PR validation is canceled independently from nightly and main v
   assert.match(workflow.concurrency.group, /github.event.pull_request.number/);
   assert.match(workflow.concurrency.group, /github.event_name/);
   assert.equal(workflow.concurrency['cancel-in-progress'], "${{ github.event_name == 'pull_request' }}");
+});
+
+test('database and tariff validation retain their full suites on the stable validation image', () => {
+  const workflow = YAML.parse(readFileSync(workflowPath, 'utf8')) as QualityWorkflow;
+  for (const [name, suites] of [['tariffs', ['tariffs']], ['integration', ['integration', 'studio']]] as const) {
+    const job = workflow.jobs[name];
+    assert.equal(job['runs-on'], 'ubuntu-24.04');
+    assert.ok(job.steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
+    for (const suite of suites) {
+      assert.ok(job.steps.some(step => step.run === `pnpm run test:validate -- --suite ${suite}`));
+    }
+  }
+});
+
+test('media and browser validation retain their full coverage on the stable toolchain image', () => {
+  const workflow = YAML.parse(readFileSync(workflowPath, 'utf8')) as QualityWorkflow;
+  for (const name of ['integration', 'browser']) {
+    assert.equal(workflow.jobs[name]['runs-on'], 'ubuntu-24.04');
+    assert.ok(workflow.jobs[name].steps.some(step => step.uses === './.github/actions/setup-validation-tools'));
+  }
+  assert.ok(workflow.jobs.integration.steps.some(step => step.run === 'pnpm run test:validate -- --suite integration'));
+  assert.ok(workflow.jobs.integration.steps.some(step => step.run === 'pnpm run test:validate -- --suite studio'));
+  assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:validate -- --suite browser'));
+  assert.ok(workflow.jobs.browser.steps.some(step => step.run === 'pnpm run test:admin-smoke'));
+  assert.equal(workflow.jobs.browser['timeout-minutes'], 40);
 });
 
 test('production Lighthouse measurements run daily or manually instead of racing every main push', () => {

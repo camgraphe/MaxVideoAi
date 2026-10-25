@@ -3,9 +3,9 @@
   "versionLabel": "3",
   "seo": {
     "title": "Generador de video con IA FLUX 3: imágenes, transición y extensión",
-    "description": "Usa FLUX 3 para texto, animación de imagen, transición entre dos imágenes o extensión de video, con prompts y cotizaciones canónicas."
+    "description": "Crea con FLUX 3 desde texto, imágenes o 1–10 fotogramas clave indexados, extiende un clip o usa FAST Edit con un MP4 corto compatible."
   },
-  "overview": "FLUX 3 es la ruta de producción actual de la familia de video FLUX. Cubre texto a video, imagen a video, transición entre primera y última imagen y extensión de un clip. Black Forest Labs es propietario del modelo; MaxVideoAI distribuye estos endpoints mediante Fal en el lanzamiento, sin afirmar una conexión directa con el propietario.",
+  "overview": "FLUX 3 Video ofrece texto, imagen inicial, primera y última imagen, fotogramas clave indexados y Extend nativo. FAST Edit es una operación separada sobre video de origen a 720p; no es el nivel FLUX 3 Max. Black Forest Labs es propietario de FLUX; MaxVideoAI usa estos endpoints mediante Fal.",
   "decision": {
     "modelSlug": "flux-3",
     "hero": {
@@ -17,7 +17,7 @@
         "dos imágenes de anclaje",
         "prolongar un video"
       ],
-      "paragraph": "Elige FLUX 3 cuando el brief requiera un flujo de producción actual con anclajes visuales o continuidad de clip explícitos. Los cuatro modos tienen entradas distintas: primera y última imagen exige dos cuadros, mientras extensión parte de un video fuente. Black Forest Labs posee FLUX y Fal distribuye la ejecución usada aquí.",
+      "paragraph": "Elige texto, imagen inicial, ambas imágenes límite, 1–10 fotogramas clave indexados o Extend nativo. FAST Edit modifica un origen compatible a 720p y hereda su duración, encuadre y audio. Cada flujo tiene sus entradas y cotización actual.",
       "primaryCta": {
         "label": "Generar con FLUX 3",
         "href": "/app?engine=flux-3"
@@ -62,7 +62,6 @@
       "description": "Vídeos FLUX 3 con sus prompts y ajustes",
       "renderLabel": "Revisar el render aceptado",
       "badges": [
-        "Cuatro flujos",
         "720p",
         "1080p"
       ],
@@ -70,8 +69,8 @@
     },
     "features": [
       {
-        "title": "Cuatro flujos explícitos",
-        "body": "Elige texto, imagen, primera y última imagen o extensión según el medio disponible. Cada modo hace visibles sus entradas obligatorias antes de generar.",
+        "title": "Creación, fotogramas clave y operaciones de origen",
+        "body": "Crea desde texto o imágenes, conecta dos imágenes obligatorias o coloca 1–10 fotogramas ordenados en posiciones enteras únicas desde 0 hasta segundos solicitados × 24. Esta indexación no garantiza la cadencia de salida.",
         "tone": "reference"
       },
       {
@@ -132,6 +131,14 @@
       {
         "title": "Control responsable",
         "body": "Revisa derechos, consentimiento, seguridad, texto, marcas y continuidad antes de aceptar el resultado."
+      },
+      {
+        "title": "Fotogramas clave",
+        "body": "Usa 1–10 imágenes ordenadas y posiciones únicas desde 0 hasta segundos solicitados × 24. Elige 5–20 segundos enteros; primera/última imagen sigue exigiendo ambas imágenes."
+      },
+      {
+        "title": "FAST Edit",
+        "body": "FAST Edit exige un MP4 estrictamente inferior a 15 segundos y 50 MB. La salida es 720p y hereda la duración medida, el encuadre y el audio del origen. Prepara una copia compatible para MOV o HEVC y revisa su duración real."
       }
     ],
     "pricingCopy": {
@@ -143,7 +150,7 @@
     },
     "meta": {
       "title": "Modelo de video con IA FLUX 3, transiciones y precios",
-      "description": "Evalúa FLUX 3 para texto, imagen, doble anclaje y extensión con preparación de fuentes, seguridad, alternativa Draft y cotizaciones canónicas."
+      "description": "Crea con FLUX 3 desde texto, imágenes o 1–10 fotogramas clave indexados, extiende un clip o usa FAST Edit con un MP4 corto compatible."
     }
   },
   "prompting": {
@@ -184,7 +191,7 @@
     "tabNotes": [
       {
         "tabId": "mode",
-        "body": "Un modo bien elegido elimina instrucciones incompatibles con las fuentes realmente disponibles."
+        "body": "Los fotogramas clave son un flujo separado con 1–10 imágenes indexadas; primera/última imagen sigue exigiendo ambas imágenes."
       },
       {
         "tabId": "transition",
@@ -202,8 +209,8 @@
       "Confirma derechos de fuentes, consentimiento y seguridad antes de generar."
     ],
     "engineWhy": [
-      "FLUX 3 reúne cuatro flujos sin ocultar sus entradas distintas.",
-      "El modo de dos imágenes aporta un objetivo visual explícito a la transición.",
+      "Crea desde texto o imágenes, conecta dos imágenes obligatorias o coloca 1–10 fotogramas ordenados en posiciones enteras únicas desde 0 hasta segundos solicitados × 24. Esta indexación no garantiza la cadencia de salida.",
+      "FAST Edit exige un MP4 estrictamente inferior a 15 segundos y 50 MB. La salida es 720p y hereda la duración medida, el encuadre y el audio del origen. Prepara una copia compatible para MOV o HEVC y revisa su duración real.",
       "La extensión conserva la continuidad de un clip en lugar de partir de una imagen aislada."
     ],
     "demo": {

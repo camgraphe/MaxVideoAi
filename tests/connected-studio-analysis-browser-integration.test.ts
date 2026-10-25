@@ -56,13 +56,13 @@ test('analysis review works on desktop/mobile and only explicit confirmation que
     assert.equal(response.status(),200,JSON.stringify(await response.json()));
     assert.equal(analysisResponse.status(),200,JSON.stringify(await analysisResponse.json()));
     const card=page.getByRole('region',{name:'Media analysis'});
-    await expect(card).toBeVisible();await expect(card.getByRole('button',{name:/Analyse with Sol 6.1/})).toBeEnabled();
+    await expect(card).toBeVisible();await expect(card.getByRole('button',{name:/Analyse with Milo Max/})).toBeEnabled();
     assert.equal((await analysis.read(quote.analysisId)).state,'prepared','Rendering and GETs cannot queue or charge analysis');
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     const evidence=join(process.cwd(),'.superpowers/sdd/2026-10-06-studio-media-analysis/browser');await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,'analysis-mobile.png'),fullPage:true});
     const confirmed=page.waitForResponse(response=>response.url().endsWith(`/api/studio/projects/${project.projectId}/analyses/${quote.analysisId}`)&&response.request().method()==='POST',{timeout:30_000});
-    await card.getByRole('button',{name:/Analyse with Sol 6.1/}).click();
+    await card.getByRole('button',{name:/Analyse with Milo Max/}).click();
     const confirmationResponse=await confirmed;
     assert.equal(confirmationResponse.status(),200,JSON.stringify(await confirmationResponse.json()));
     await expect(card.getByText('Analysis in progress. Your media is preserved.')).toBeVisible();

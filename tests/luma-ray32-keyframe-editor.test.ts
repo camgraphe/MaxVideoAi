@@ -43,8 +43,8 @@ test('Luma Ray 3.2 keyframe placeholders route through the Media import flow', (
   );
   assert.match(
     assetLibraryModalSource,
-    /const importAccept = assetType === 'video' \? 'video\/\*' : 'image\/\*';/,
-    'asset library import must keep image uploads available for keyframe slots'
+    /accept=\{importAccept\}/,
+    'the file input must use the active media kind (rendered image/video/audio acceptance is covered by reference-picker-dom)'
   );
   assert.match(
     assetLibraryModalSource,

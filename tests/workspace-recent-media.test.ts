@@ -8,16 +8,17 @@ import { getWorkspaceReferenceFields, type WorkspaceReferenceAvailability } from
 import { buildReferenceAssetFromLibraryAsset, getLibraryAssetFieldMismatchMessage, settleReferenceAssetReservation, tryInsertReferenceAsset, type UserAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import type { AssetFieldConfig } from '../frontend/components/Composer';
 import type { EngineCaps, EngineInputSchema } from '../frontend/types/engines';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 const original = 'https://private.example/source.png?sig=AbC%2F12&token=Exact';
 const output: RecentOutput = { id: 'out_1', jobId: 'job_1', url: original, kind: 'image', thumbUrl: 'https://private.example/thumbnail.png?sig=thumb', previewUrl: 'https://private.example/preview.mp4', status: 'ready', mime: 'image/png' };
 const entry: AssetFieldConfig = { field: { id: 'start', type: 'image', label: 'Start', maxCount: 1, maxSizeMB: 10 }, required: true };
 const asset = (): UserAsset => projectRecentMedia({ ok: true, outputs: [output] }, 'image')[0];
 const available: WorkspaceReferenceAvailability = { inputAssets: {}, isUnifiedSeedance: false, isUnifiedKlingO3: false, klingO3VideoToVideoSupported: true, hasAnyVideoInput: false, guestUploadLockedReason: null, workflowCopy: { clearReferencesToUseStartEnd: 'clear refs', clearStartEndToUseReferences: 'clear frames' }, showOmniStudioPanel: false, showLumaRay32KeyframeEditor: false };
 
-test('real recent DTO preserves original kind/identity and becomes eligible only after exact owned metadata', () => {
+test('real recent DTO preserves original identity and unknown facts remain selectable pending validation', () => {
   const recent = asset();
   assert.equal(recent.url, original); assert.equal(recent.thumbUrl, output.thumbUrl); assert.equal(recent.sourceOutputId, output.id);
-  assert.equal(getRecentReferenceIssue(recent, entry, {}, undefined, 'i2v'), 'metadata');
+  assert.equal(getRecentReferenceIssue(recent, entry, {}, undefined, 'i2v'), null);
   const resolved = mergeRecentMetadata(recent, 'owner', { id: output.id, userId: 'owner', kind: 'image', url: original, size: 4096, mime: 'image/png' });
   assert.ok(resolved);
   assert.equal(getRecentReferenceIssue(resolved, entry, {}, undefined, 'i2v'), null);
@@ -57,7 +58,7 @@ test('roles honor kind, format, duration, size, per-role capacity and shared bud
   const videoEntry: AssetFieldConfig = { field: { id: 'video', type: 'video', label: 'Video', minDurationSec: 2, maxDurationSec: 10 }, required: false };
   const video = { ...image, kind: 'video' as const, mime: 'video/mp4', durationSec: 11 };
   assert.equal(getRecentReferenceIssue(video, videoEntry, {}, undefined, 'v2v'), 'duration');
-  assert.equal(getRecentReferenceIssue({ ...video, durationSec: NaN }, videoEntry, {}, undefined, 'v2v'), 'metadata');
+  assert.equal(getRecentReferenceIssue({ ...video, durationSec: NaN }, videoEntry, {}, undefined, 'v2v'), null);
   assert.equal(getRecentReferenceIssue({ ...video, durationSec: 5 }, videoEntry, {}, undefined, 'v2v'), null);
   const state = { start: [existing] };
   assert.equal(getRecentReferenceIssue(image, entry, state, undefined, 'i2v'), 'field_limit');
@@ -114,7 +115,7 @@ test('selected media names accept relative sources and never expose signed queri
 test('recent eligibility shares engine fallback size and format policy with uploaded references', () => {
   const engine = { inputSchema: { constraints: { maxImageSizeMB: 2, supportedFormats: ['png'] } }, inputLimits: {} } as EngineCaps;
   const noFieldLimit = { ...entry, field: { ...entry.field, maxSizeMB: undefined } };
-  assert.equal(getRecentReferenceIssue(asset(), noFieldLimit, {}, engine.inputSchema, 'i2v', undefined, engine), 'metadata');
+  assert.equal(getRecentReferenceIssue(asset(), noFieldLimit, {}, engine.inputSchema, 'i2v', undefined, engine), null);
   assert.equal(getRecentReferenceIssue({ ...asset(), size: 3 * 1024 * 1024 }, noFieldLimit, {}, engine.inputSchema, 'i2v', undefined, engine), 'size');
   assert.equal(getRecentReferenceIssue({ ...asset(), size: 4096 }, noFieldLimit, {}, engine.inputSchema, 'i2v', undefined, engine), null);
   assert.equal(getRecentReferenceIssue({ ...asset(), url: 'https://media.example/image.gif', mime: 'image/gif', size: 4096 }, noFieldLimit, {}, engine.inputSchema, 'i2v', undefined, engine), 'format');
@@ -125,11 +126,21 @@ test('normal unsaved video and audio DTOs become usable through owned metadata w
     const url = `https://media.example/original.${extension}?signed=Exact%2F`;
     const projected = projectRecentMedia({ ok: true, outputs: [{ ...output, kind, mime, url, durationSec: 5 }] }, kind)[0];
     const field: AssetFieldConfig = { field: { id: kind, label: kind, type: kind, maxCount: 1, maxSizeMB: 20, minDurationSec: 2, maxDurationSec: 10, acceptedMimeTypes: [mime], acceptedFileExtensions: [extension] }, required: true };
-    assert.equal(getRecentReferenceIssue(projected, field, {}, undefined, 'v2v'), 'metadata');
+    assert.equal(getRecentReferenceIssue(projected, field, {}, undefined, 'v2v'), null);
     const enriched = mergeRecentMetadata(projected, 'owner', { id: output.id, userId: 'owner', kind, url, size: 100_000, mime });
     assert.ok(enriched);
     assert.equal(getRecentReferenceIssue(enriched, field, {}, undefined, 'v2v'), null);
     assert.equal(buildReferenceAssetFromLibraryAsset(field.field, enriched).url, url);
     assert.equal(enriched.durationSec, 5);
   }
+});
+
+test('long source remains selectable for a section but a source shorter than model minimum is blocked', () => {
+  const engine = listFalEngines().find(entry => entry.id === 'minimax-h3-max')!.engine;
+  const field = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])]
+    .find(field => field.type === 'video' && field.modes?.includes('v2v'))!;
+  assert.ok(field);
+  const video = { ...asset(), url: 'https://media.example/generated.mp4?sig=Exact', kind: 'video' as const, mime: 'video/mp4', size: 4096, durationSec: 20 };
+  assert.equal(getRecentReferenceIssue(video, { field, required: true }, {}, engine.inputSchema, 'v2v', undefined, engine), null);
+  assert.equal(getRecentReferenceIssue({ ...video, durationSec: 4 }, { field, required: true }, {}, engine.inputSchema, 'v2v', undefined, engine), 'duration');
 });

@@ -13,6 +13,7 @@ import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails'
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
+import { removeGeneratedVideoAudio } from '@/server/media/generated-video-audio';
 import {
   buildUserFacingRefundDescription,
   toUserFacingFailureMessage,
@@ -66,6 +67,7 @@ type GoogleVertexOmniPollDeps = {
   getGoogleVertexOmniClientFn?: typeof getGoogleVertexOmniClient;
   isStorageConfiguredFn?: typeof isStorageConfigured;
   uploadFileBufferFn?: typeof uploadFileBuffer;
+  removeGeneratedVideoAudioFn?: typeof removeGeneratedVideoAudio;
   ensureJobThumbnailFn?: typeof ensureJobThumbnail;
   upsertLegacyJobOutputsFn?: typeof upsertLegacyJobOutputs;
   generateAndPersistJobPreviewVideoFn?: typeof generateAndPersistJobPreviewVideo;
@@ -296,6 +298,7 @@ async function copyGoogleOmniOutputToStorage(params: {
   job: GoogleVertexOmniPendingJob;
   isStorageConfiguredFn: typeof isStorageConfigured;
   uploadFileBufferFn: typeof uploadFileBuffer;
+  removeGeneratedVideoAudioFn: typeof removeGeneratedVideoAudio;
 }): Promise<string | null> {
   if (!params.isStorageConfiguredFn()) return null;
   const source = params.output.data
@@ -308,9 +311,13 @@ async function copyGoogleOmniOutputToStorage(params: {
       : null;
   if (!source?.data.length) return null;
 
+  const data = params.job.has_audio === false
+    ? await params.removeGeneratedVideoAudioFn(source.data)
+    : source.data;
+
   const upload = await params.uploadFileBufferFn({
-    data: source.data,
-    mime: source.mime || 'video/mp4',
+    data,
+    mime: params.job.has_audio === false ? 'video/mp4' : source.mime || 'video/mp4',
     userId: params.job.user_id ?? undefined,
     prefix: 'renders',
     fileName: `${params.job.job_id}-google-omni.mp4`,
@@ -325,6 +332,7 @@ export async function runGoogleVertexOmniPoll(options: { jobId?: string; deps?: 
   const getGoogleVertexOmniClientFn = deps.getGoogleVertexOmniClientFn ?? getGoogleVertexOmniClient;
   const isStorageConfiguredFn = deps.isStorageConfiguredFn ?? isStorageConfigured;
   const uploadFileBufferFn = deps.uploadFileBufferFn ?? uploadFileBuffer;
+  const removeGeneratedVideoAudioFn = deps.removeGeneratedVideoAudioFn ?? removeGeneratedVideoAudio;
   const ensureJobThumbnailFn = deps.ensureJobThumbnailFn ?? ensureJobThumbnail;
   const upsertLegacyJobOutputsFn = deps.upsertLegacyJobOutputsFn ?? upsertLegacyJobOutputs;
   const generateAndPersistJobPreviewVideoFn =
@@ -453,6 +461,7 @@ export async function runGoogleVertexOmniPoll(options: { jobId?: string; deps?: 
         job,
         isStorageConfiguredFn,
         uploadFileBufferFn,
+        removeGeneratedVideoAudioFn,
       }).catch((error) => {
         console.warn('[google-vertex-omni-poll] output copy failed', { jobId: job.job_id, error });
         return null;

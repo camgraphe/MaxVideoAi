@@ -68,6 +68,10 @@ test('atomic local cutover rejects stale certificates, preserves staged evidence
       approvedSeedanceLasPolicy: 'reviewed_2_5x_las_list',
       policy, sourceTariffRevision: 0, sourceTariffStateHash, codeRevision: 'test-code', factualEnvironmentHash: 'test-env', approvedGptImage25ReferenceFloor });
     assert.equal(release.report.remainingCoverageGaps.length, 0);
+    assert.equal(release.report.newOfferScenarios, 89);
+    assert.equal(baseline.rows.filter(row => row.initialization?.kind === 'new_offer').length, 89);
+    assert.ok(baseline.rows.filter(row => row.initialization).every(row => row.initialization!.beforeCents === null));
+    assert.equal(collectCustomerTariffCutoverCheckpoints().filter(row => row.kind !== 'new_offer').length, 26982);
     const run = (candidate = release, fingerprint = release.report.fingerprint, bindings = release.report.bindings) => withDbTransaction(e =>
       activateLocalCustomerTariffs(e, { release: candidate, fingerprint, currentBindings: bindings, actorId: actor }));
     await assert.rejects(run(release, 'old-browser'), /stale/i);

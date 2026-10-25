@@ -258,6 +258,7 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
   if (
     (options.submissionMode === 'extend' || options.submissionMode === 'retake') &&
     options.referenceVideoUrls.length === 0
+    && !(options.selectedEngineId === 'luma-ray-3-2' && options.submissionMode === 'extend' && options.extraInputValues?.source_job_id)
   ) {
     return options.extendOrRetakeSourceVideoMessage;
   }

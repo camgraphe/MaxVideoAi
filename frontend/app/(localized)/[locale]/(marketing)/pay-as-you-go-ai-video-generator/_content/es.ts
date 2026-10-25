@@ -216,7 +216,7 @@ export const esPayAsYouGoContent = {
     budgetTemplate: "¿Planeas tres intentos? Con una cotización sin cambios de {unitPrice}, tres generaciones completadas consumirían {totalPrice} en créditos de medios.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio desactivado.",
     budgetCaveat: "Es una ilustración de presupuesto, no una garantía de obtener el resultado deseado en tres intentos. Los créditos consumidos son distintos de la recarga mínima, que empieza en $10. Otros ajustes o precios requieren una nueva cotización.",
-    studioAssistance: "¿Usas Studio? Sol utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
+    studioAssistance: "¿Usas Studio? Milo Max utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
     studioLinkLabel: "Abrir Studio",
     creditNotes: {
       "title": "Validez de los créditos antes de recargar",
@@ -230,8 +230,8 @@ export const esPayAsYouGoContent = {
           "body": "No tienen valor en efectivo y no son reembolsables. Consulta las condiciones de validez de la oferta; si no se indican, pregunta a soporte antes de aplicar las reglas de los créditos de medios o de Studio."
         },
         {
-          "title": "Créditos de asistencia de Studio",
-          "body": "GPT-6.1 Sol incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Sol comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. GPT-6 Luna no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+          "title": "Créditos de asistencia de Milo",
+          "body": "Milo Max (GPT-6.1 Sol) incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Max comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Standard (GPT-6 Luna) no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
         }
       ],
       "links": {

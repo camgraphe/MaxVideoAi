@@ -1,5 +1,6 @@
 import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
+import { filterVideoOperationValues } from '@/lib/video-operation';
 import type { EngineCaps, Mode, PreflightRequest } from '@/types/engines';
 import type { FormState } from './workspace-form-state';
 import type { ReferenceAsset } from './workspace-assets';
@@ -30,6 +31,10 @@ export function buildWorkspacePreflightRequest({
   const mediaError = isKlingV4 ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements }) : null;
   if (mediaError) throw new Error(mediaError);
   const activeAssets = isKlingV4 ? getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets) : inputAssets;
+  const extraInputValues = filterVideoOperationValues(selectedEngine, submissionMode, form.extraInputValues);
+  const allowedMedia = new Set([...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])]
+    .filter(field => !field.modes?.length || field.modes.includes(submissionMode)).map(field => field.id));
+  const quoteAssets = form.operation || selectedEngine.id === 'luma-ray-3-2' ? Object.fromEntries(Object.entries(activeAssets).filter(([field]) => allowedMedia.has(field))) : activeAssets;
   const capability = selectedEngine.modeCaps?.[submissionMode];
   // Match generation: the editor's frame clock is not an unsupported provider control.
   const shouldSendFps = !capability
@@ -46,14 +51,19 @@ export function buildWorkspacePreflightRequest({
     fieldId: 'aspect_ratio',
     mode: submissionMode,
   });
-  // Duration enums retain string values in the form; preflight expects numeric seconds or auto.
-  const durationOption = isKlingV4 ? effectiveDurationSec : typeof form.durationOption === 'string' && /^\d+(?:\.\d+)?$/.test(form.durationOption.trim())
-    ? Number(form.durationOption)
+  // Duration controls retain provider enums such as "5s"; the API accepts seconds or auto.
+  const durationSeconds = typeof form.durationOption === 'string'
+    ? form.durationOption.trim().match(/^(\d+(?:\.\d+)?)s?$/)
+    : null;
+  const durationOption = isKlingV4 ? effectiveDurationSec : durationSeconds
+    ? Number(durationSeconds[1])
     : form.durationOption;
 
   return {
     engine: form.engineId,
+    ...(form.operation ? { operation: form.operation } : {}),
     mode: submissionMode,
+    ...((form.operation === 'flux-draft-enhance' || (form.engineId === 'luma-ray-3-2' && submissionMode === 'extend')) && form.extraInputValues.source_job_id ? {sourceJobId:String(form.extraInputValues.source_job_id),...(form.extraInputValues.source_output_id ? {sourceOutputId:String(form.extraInputValues.source_output_id)} : {})} : {}),
     durationSec: effectiveDurationSec,
     ...(durationOption !== undefined && durationOption !== null ? { durationOption } : {}),
     ...(shouldSendResolution
@@ -68,8 +78,8 @@ export function buildWorkspacePreflightRequest({
     ...(voiceControlEnabled ? { voiceControl: true } : {}),
     // Max tariffs depend on mode, duration and resolution, not reference media.
     // Keep URL-only public recipes in generation without inventing owned asset IDs for a quote.
-    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(activeAssets),
-    ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
+    inputs: selectedEngine.id === 'flux-3-max' ? [] : buildWorkspacePreflightInputs(quoteAssets),
+    ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(elements?.ok && elements.klingElementsPayload ? { elements: elements.klingElementsPayload } : {}),
     user: { memberTier },
   };

@@ -19,7 +19,8 @@ export function prepareModelCommercialData({ engine, locale, pricing, templateDa
   const result = pricing.then(async ({ pricingEngine }) => {
     const [scenarios, publicOffer] = await Promise.all([
       templateData && templateConfig
-        ? refreshModelDecisionPricingScenarios(engine, locale, templateData.pricing.scenarios, templateConfig.pricing.presets, quoteModel)
+        ? refreshModelDecisionPricingScenarios(engine, locale, templateData.pricing.scenarios, templateConfig.pricing.presets, quoteModel,
+          { showScenarioDetails: templateConfig.pricing.showScenarioDetails })
         : null,
       resolveCurrentModelPublicOffer(engine, pricingEngine, quoteModel),
     ]);

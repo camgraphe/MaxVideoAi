@@ -1,3 +1,4 @@
+import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
 import { AgentApiError } from "@/server/agent-api/errors";
@@ -42,11 +43,11 @@ export const compareGenerationPricesInputSchema = z
               "last_frame",
               "mask",
             ]),
-            slot: z.number().int().min(0).max(31).nullable().default(null),
+            slot: z.number().int().min(0).max(MAX_GENERATION_REFERENCES-1).nullable().default(null),
           })
           .strict(),
       )
-      .max(32)
+      .max(MAX_GENERATION_REFERENCES)
       .nullable()
       .default(null),
     baselineModelId: z
@@ -69,7 +70,7 @@ export const compareGenerationPricesInputSchema = z
     candidateModelIds: z
       .array(z.string().trim().min(1).max(128))
       .min(1)
-      .max(32)
+      .max(MAX_GENERATION_REFERENCES)
       .nullable()
       .default(null)
       .describe(

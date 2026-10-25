@@ -1,5 +1,6 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import type { EngineInputSchema } from '@/types/engines';
+import { VIDEO_MEDIA_FIELD_CANDIDATES } from '@/lib/video-input-schema';
 import {
   evaluateReferenceBudget,
   resolveEngineReferenceBudget,
@@ -26,10 +27,10 @@ const ENGINE_REF2V_LIMITS = listFalEngines().reduce<Record<string, Ref2vLimits>>
   const requiredFields = entry.engine.inputSchema?.required ?? [];
   const optionalFields = entry.engine.inputSchema?.optional ?? [];
   const fields = [...requiredFields, ...optionalFields];
-  const findField = (type: 'image' | 'video' | 'audio', ids: string[]) =>
+  const findField = (type: 'image' | 'video' | 'audio', ids: readonly string[]) =>
     fields.find((field) => field.type === type && field.modes?.includes('ref2v') && ids.includes(field.id));
 
-  const imageField = findField('image', ['image_urls', 'reference_image_urls']);
+  const imageField = findField('image', VIDEO_MEDIA_FIELD_CANDIDATES.referenceImage);
   if (!imageField) return acc;
 
   const videoField = findField('video', ['video_urls', 'reference_video_urls']);
@@ -414,7 +415,9 @@ export function validateModeMediaInputs(params: {
     }
   }
 
-  if (normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake') {
+  // Owned generation anchors are resolved separately before reservation; they are never upload URLs.
+  if ((normalizedMode === 'v2v' || normalizedMode === 'reframe' || normalizedMode === 'extend' || normalizedMode === 'retake')
+    && !(engineId === 'luma-ray-3-2' && normalizedMode === 'extend')) {
     const configuredExtendSource =
       normalizedMode === 'extend' ? ENGINE_EXTEND_SOURCE_VIDEO_LIMITS[engineId] : undefined;
     const extensionSources = configuredExtendSource
@@ -584,21 +587,27 @@ function validateRef2vInputs(engineId: string, payload: Record<string, unknown>)
   };
   const referenceImageUrls = normalizeStringArray(payload['reference_image_urls']);
   const genericImageUrls = normalizeStringArray(payload['image_urls']);
+  const schemaImageUrls = normalizeStringArray(payload[configured.imageFieldId]);
   const referenceVideoUrls = normalizeStringArray(payload['reference_video_urls']);
   const genericVideoUrls = normalizeStringArray(payload['video_urls']);
   const referenceAudioUrls = normalizeStringArray(payload['reference_audio_urls']);
   const genericAudioUrls = normalizeStringArray(payload['audio_urls']);
-  const imageUrls = referenceImageUrls.length ? referenceImageUrls : genericImageUrls;
+  const imageUrls = schemaImageUrls.length
+    ? schemaImageUrls
+    : referenceImageUrls.length
+      ? referenceImageUrls
+      : genericImageUrls;
   const videoUrls = referenceVideoUrls.length ? referenceVideoUrls : genericVideoUrls;
   const audioUrls = referenceAudioUrls.length ? referenceAudioUrls : genericAudioUrls;
   const startImageUrls = normalizeStringArray(payload['start_image_url']);
   const endImageUrls = normalizeStringArray(payload['end_image_url']);
-  const imageFieldId =
-    referenceImageUrls.length ||
-    payload['reference_image_urls'] !== undefined ||
-    configured.imageFieldId === 'reference_image_urls'
+  const imageFieldId = schemaImageUrls.length
+    ? configured.imageFieldId
+    : referenceImageUrls.length ||
+        payload['reference_image_urls'] !== undefined ||
+        configured.imageFieldId === 'reference_image_urls'
       ? 'reference_image_urls'
-      : 'image_urls';
+      : configured.imageFieldId;
   const videoFieldId =
     referenceVideoUrls.length ||
     payload['reference_video_urls'] !== undefined ||

@@ -383,19 +383,21 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     : null;
   const primaryAttachment = firstFrameAttachment ?? schemaPrimaryAttachment;
   const referenceImageCandidates = inputsPayload
-    ? inputsPayload
-        .filter((attachment) => {
-          if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-          const slotId = attachment.slotId;
-          if (slotId && effectivePrimaryAssetFieldIds.has(slotId)) return false;
-          if (slotId && options.frameAssetFieldIds.has(slotId)) return false;
-          if (!slotId) return activeReferenceSlots.size === 0;
-          if (activeReferenceSlots.size === 0) {
-            return !effectivePrimaryAssetFieldIds.has(slotId);
-          }
-          return activeReferenceSlots.has(slotId);
-        })
-        .map((attachment) => attachment.url)
+    ?         inputsPayload
+          .filter((attachment) => {
+            if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
+            const slotId = attachment.slotId;
+            // Creation keyframes travel only as ordered slotted inputs; generic references are a different provider input.
+            if (options.selectedEngineId === 'luma-ray-3-2' && options.submissionMode === 't2v' && slotId === 'keyframe_urls') return false;
+            if (slotId && effectivePrimaryAssetFieldIds.has(slotId)) return false;
+            if (slotId && options.frameAssetFieldIds.has(slotId)) return false;
+            if (!slotId) return activeReferenceSlots.size === 0;
+            if (activeReferenceSlots.size === 0) {
+              return !effectivePrimaryAssetFieldIds.has(slotId);
+            }
+            return activeReferenceSlots.has(slotId);
+          })
+          .map((attachment) => attachment.url)
     : [];
   // V4 prompt tokens identify ordered occurrences, including repeated references.
   // Keep direct URLs identical to the attachment projection before the server merges them.

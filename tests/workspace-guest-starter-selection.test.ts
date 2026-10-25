@@ -28,7 +28,7 @@ function mount(overrides: { guestStarterReady?: boolean; prompt?: string; recent
       guestStarterReady: true, prompt: '', initialPreviewGroup, provider: 'fal',
       renderGroups: new Map(), batchHeroes: {}, fallbackEngineId: 'wan-3-prime',
       sharedPrompt: null, selectedPreview: null, compositeOverrideSummary: null,
-      applyVideoSettingsFromTile: noop, hydrateVideoSettingsFromJob: async id => { if (id) hydrated.push(id); },
+      applyVideoSettingsFromTile: () => true, hydrateVideoSettingsFromJob: async id => { if (id) hydrated.push(id); },
       focusComposer: noop, showNotice: noop, writeScopedStorage: noop, setPrompt: noop, setActiveGroupId: noop,
       setViewMode: noop, setActiveBatchId: noop, setBatchHeroes: noop,
       setSelectedPreview: value => { if (value && typeof value !== 'function') selected.push(value); },

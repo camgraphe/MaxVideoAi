@@ -66,3 +66,12 @@ test('a video edit displays recorded output timing rather than an ignored reques
   assert.match(shown.settings,/3\.25 s/);
   assert.doesNotMatch(shown.settings,/(^| · )3 s/);
 });
+
+test('video quotes distinguish a new text generation, regenerated visuals and a separate continuation',()=>{
+  const base={surface:'video' as const,engineId:'wan-3',prompt:'The same scene with a walking captain',settings:{durationSec:5,resolution:'720p'},references:[],outputCount:1,schemaVersion:1 as const};
+  const extension=conversationQuotePresentation({...base,mode:'extend'},'en');
+  assert.match(extension.operation??'',/separate.*continuation/i);
+  assert.match(extension.operation??'',/assembl/i);
+  assert.match(conversationQuotePresentation({...base,mode:'v2v'},'en').operation??'',/regenerat.*visual/i);
+  assert.match(conversationQuotePresentation({...base,mode:'t2v'},'fr').operation??'',/nouvelle.*description/i);
+});

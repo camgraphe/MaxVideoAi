@@ -44,14 +44,14 @@ function parameters(name: string, ids: string[]) {
   return name === 'image_prepare'
     ? {reply: 'Review the quote.', prompt: 'A quiet product image.', aspectRatio: '16:9', modelId: null,
       mode: null, settings: null, outputCount: 1, references: selected}
-    : {surface: 'image', modelId: 'gpt-image-2', mode: 'i2i', settings: [], outputCount: 1, references: selected};
+    : {surface: 'image', modelId: 'gpt-image-2', mode: 'i2i', operation: null, elements: null, settings: [], outputCount: 1, references: selected};
 }
 function compile(properties: Readonly<Record<string, unknown>>) {
   return new AjvJsonSchemaValidator().getValidator({type: 'object', additionalProperties: false,
     properties, required: Object.keys(properties)} as JsonSchemaType);
 }
 function videoParameters(source: unknown = null, selected: unknown[] = []) {
-  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', source, references: selected, shotPlan: null, subjects: null};
+  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', operation: null, elements: null, source, references: selected,assembleExtension:null,shotPlan:null,subjects:null};
 }
 function asset(assetId: string) {
   return {type: 'asset', assetId, kind: 'image'};
@@ -201,4 +201,16 @@ test('strict video tool uses explicit null for unused shot/subject fields and pr
   assert.equal(validate({...populated,shotPlan:[{prompt:'Scene',durationSec:1.5}]}).valid,false);
   assert.equal(validate({...populated,subjects:[{...populated.subjects[0],voiceId:'arbitrary'}]}).valid,false);
   assert.equal(validate({...populated,subjects:[{kind:'video',referenceSlot:0}]}).valid,true);
+});
+for (const name of ['video_prepare', 'pricing_read']) test(`${name} accepts explicit Edit and scoped owned element slots without external identities`, () => {
+  const tool = tools.find(tool => tool.name === name)!;
+  const validate = compile(studioToolReferenceProperties(name, tool.properties, references));
+  const selected = [imageA, imageB].map((id, slot) => ({ref: asset(id), role: 'reference', slot}));
+  const payload = {...(name === 'video_prepare' ? videoParameters(null, selected) : parameters(name, [])),
+    modelId: 'kling-o3-pro', mode: 'v2v', operation: 'kling-edit', elements: [{kind: 'images', frontalSlot: 0, referenceSlots: [1]}], references: selected};
+  assert.equal(validate(payload).valid, true);
+  assert.equal(validate({...payload, operation: 'unknown'}).valid, false);
+  assert.equal(validate({...payload, elements: [{kind: 'images', frontalSlot: 0, referenceSlots: [1], providerId: 'external'}]}).valid, false);
+  assert.equal(validate({...payload, references: [{...selected[0], ref: asset(foreign)}, selected[1]]}).valid, false);
+  assert.equal(validate({...payload, references: [{...selected[0], ref: asset(video)}, selected[1]]}).valid, false);
 });

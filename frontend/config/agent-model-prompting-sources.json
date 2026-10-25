@@ -94,9 +94,36 @@
     "provider": "Luma",
     "title": "Luma video generation guide",
     "url": "https://docs.lumalabs.ai/docs/video-generation",
-    "modelIds": ["lumaRay2", "lumaRay2_flash", "luma-ray-3-2"],
+    "modelIds": ["lumaRay2", "lumaRay2_flash"],
     "modes": ["t2v", "i2v", "v2v", "reframe"],
     "reviewedAt": "2026-08-28"
+  },
+  {
+    "id": "luma-agents-generation",
+    "provider": "Luma",
+    "title": "Luma Agents video generation guide",
+    "url": "https://docs.agents.lumalabs.ai/guides/videos/generation/",
+    "modelIds": ["luma-ray-3-2"],
+    "modes": ["t2v", "i2v"],
+    "reviewedAt": "2026-10-22"
+  },
+  {
+    "id": "luma-agents-editing",
+    "provider": "Luma",
+    "title": "Luma Agents Modify video guide",
+    "url": "https://docs.agents.lumalabs.ai/guides/videos/editing/",
+    "modelIds": ["luma-ray-3-2"],
+    "modes": ["v2v"],
+    "reviewedAt": "2026-10-22"
+  },
+  {
+    "id": "luma-agents-reframing",
+    "provider": "Luma",
+    "title": "Luma Agents video Reframe guide",
+    "url": "https://docs.agents.lumalabs.ai/guides/videos/reframing/",
+    "modelIds": ["luma-ray-3-2"],
+    "modes": ["reframe"],
+    "reviewedAt": "2026-10-22"
   },
   {
     "id": "alibaba-wan-video-prompting",

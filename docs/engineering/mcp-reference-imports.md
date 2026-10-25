@@ -57,7 +57,8 @@ not filenames, object keys, user identifiers, or raw storage errors.
 ### Measured video geometry
 
 The shared `probeMediaBuffer` upload probe reads width and height from the first
-non-cover-art video stream. `store-media-upload.ts` carries these measured values
+non-cover-art video stream, applying its display-matrix rotation (or legacy rotate tag)
+to report the displayed orientation without changing source bytes. `store-media-upload.ts` carries these measured values
 to `user_assets`, canonical `media_assets`, the upload result, and `mediaFacts`.
 Audio and unverified geometry retain no dimensions. Never fill dimensions from
 the requested output aspect ratio, browser claims, or thumbnail size.

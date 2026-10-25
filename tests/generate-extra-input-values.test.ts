@@ -56,7 +56,8 @@ const veoGoogleDirectExtraFields = {
 
 test('generate route delegates extra input validation', () => {
   assert.ok(existsSync(helperPath), 'extra input validation should live in the generate route _lib folder');
-  assert.match(serviceSource, /generate\/_lib\/extra-input-values/);
+  assert.match(serviceSource, /prepare-generation-lineage/);
+  assert.match(readFileSync(join(root,'frontend/src/server/video-generation/prepare-generation-lineage.ts'),'utf8'), /generate\/_lib\/extra-input-values/);
   assert.doesNotMatch(routeSource, /function normalizeFieldId\(/, 'field id normalization belongs in extra-input-values.ts');
   assert.doesNotMatch(routeSource, /STANDARD_INPUT_FIELD_IDS/, 'standard input exclusion belongs in extra-input-values.ts');
   assert.doesNotMatch(routeSource, /applicableSchemaFields/, 'extra schema field selection belongs in extra-input-values.ts');

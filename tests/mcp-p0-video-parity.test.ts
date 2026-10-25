@@ -15,7 +15,7 @@ const expectedModes = new Map<string, readonly string[]>([
   ['wan-3', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']], ['wan-3-prime', ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']],
   ['ltx-2-5-fast', ['t2v', 'i2v', 'a2v']], ['ltx-2-5-pro', ['t2v', 'i2v', 'a2v']],
   ['grok-imagine-video-1-5', ['t2v', 'i2v', 'ref2v']],
-  ['flux-3', ['t2v', 'i2v', 'fl2v', 'extend']], ['flux-3-draft', ['t2v', 'i2v', 'fl2v', 'extend']],
+  ['flux-3', ['t2v', 'i2v', 'fl2v', 'extend', 'ref2v', 'v2v']], ['flux-3-draft', ['t2v', 'i2v', 'fl2v', 'extend', 'ref2v', 'v2v']],
 ]);
 const entries = listFalEngines();
 const byId = new Map(entries.map((entry) => [entry.id, entry.engine]));
@@ -65,7 +65,7 @@ test('published P0 models enumerate normally and no longer require staging canar
   assert.equal(details.links.examples, null);
 });
 
-test('all 27 P0 modes expose numeric duration choices from canonical engine schemas', async () => {
+test('all 31 P0 modes expose numeric duration choices from canonical engine schemas', async () => {
   let modes = 0;
   for (const id of P0) {
     const details = await getAgentModelDetails(id, deps);
@@ -75,7 +75,7 @@ test('all 27 P0 modes expose numeric duration choices from canonical engine sche
       assert.ok(mode.duration === null || mode.duration.options === null || mode.duration.options.every(Number.isFinite), `${id}:${mode.mode}`);
     }
   }
-  assert.equal(modes, 27);
+  assert.equal(modes, 31);
   assert.deepEqual((await listPublicAgentGenerationEngines(deps)).filter((entry) => P0.includes(entry.engine.id as never)).map((entry) => entry.engine.id).sort(), [...P0].sort());
 });
 

@@ -5,7 +5,10 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { useWorkspacePricingGate } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate';
+import { listFalEngines } from '../frontend/src/config/falEngines';
 
+import {coerceFormState} from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
+import {resolveVideoOperationEngine} from '../frontend/lib/video-operation';
 type Options = Parameters<typeof useWorkspacePricingGate>[0];
 async function mount() {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
@@ -27,7 +30,7 @@ async function mount() {
   const { useWorkspacePricingGate: useGate } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate');
   let options = {
     accessToken: 'fixture-a', authChecked: true, locale: 'en', memberTier: 'Member', setMemberTier: () => {},
-    topUpCopy: {}, selectedEngine: { id: 'seedance-2-0', modeCaps: {} }, submissionMode: 't2v',
+    topUpCopy: {}, selectedEngine: { id: 'seedance-2-0', modes: ['t2v'], modeCaps: {} }, submissionMode: 't2v',
     form: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: false, extraInputValues: {} },
     effectiveDurationSec: 5, supportsAudioToggle: false, voiceControlEnabled: false, inputAssets: {},
   } as Options;
@@ -52,6 +55,61 @@ async function mount() {
 }
 function masked(fixture: Awaited<ReturnType<typeof mount>>) {
   assert.ok(fixture.observed.every(value => value.preflight === null && value.price === null));
+}
+test('Extend waits for an uploaded source before pricing and revokes the quote when it is removed', async () => {
+  const f = await mount();
+  try {
+    const engine = listFalEngines().find(entry => entry.id === 'wan-3')!.engine;
+    await f.update({ selectedEngine: engine, submissionMode: 'extend',
+      form: { ...f.options.form!, engineId: engine.id, mode: 'extend' } });
+    await f.tick();
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.current.isPricing, false);
+    assert.equal(f.current.preflightError, undefined);
+    const source = { id: 'source', fieldId: 'video_url', kind: 'video', name: 'source.mp4',
+      type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
+    await f.update({ inputAssets: { video_url: [source] } });
+    await f.tick(); assert.equal(f.requests.length, 0);
+    await f.update({ inputAssets: { video_url: [{ ...source, status: 'ready', url: 'https://example.com/source.mp4' }] } });
+    await f.tick(); assert.equal(f.requests.length, 1);
+    await f.respond(0); assert.equal(f.current.price, 1.25);
+    await f.update({ inputAssets: {} });
+    masked(f); await f.tick(); assert.equal(f.requests.length, 1);
+    assert.equal(f.current.preflightError, undefined);
+  } finally { await f.dispose(); }
+});
+for (const { id, engine } of listFalEngines().filter(entry => entry.modes.some(({ mode }) => mode === 'v2v'))) {
+test(`${id}: Modify prices only a ready source and removes the previous quote immediately`, async () => {
+  const f = await mount();
+  try {
+    const form=coerceFormState(engine,'v2v',null);
+    const projected=resolveVideoOperationEngine(engine,'v2v',form.operation);
+    await f.update({ selectedEngine: { ...projected, modeAvailability: { ...projected.modeAvailability, v2v: { available: true, reason: 'available' } } }, submissionMode: 'v2v',form });
+    await f.tick();
+    assert.equal(f.requests.length, 0);
+    assert.equal(f.current.isPricing, false);
+    assert.equal(f.current.preflightError, undefined);
+    if(id==='flux-3-draft') {
+      await f.update({inputAssets:{video_url:[{kind:'video',name:'upload.mp4',size:1,type:'video/mp4',status:'ready',url:'https://example.com/upload.mp4'}] as never}});
+      await f.tick();assert.equal(f.requests.length,0,'an upload cannot supply native Draft authority');
+      await f.update({form:{...form,extraInputValues:{source_job_id:'owned-native-draft',source_output_id:'owned-output'}}});
+      await f.tick();assert.equal(f.requests.length,1);
+      await f.respond(0);assert.equal(f.current.price,1.25);
+      await f.update({form});masked(f);await f.tick();assert.equal(f.requests.length,1);
+      return;
+    }
+    const source = { id: 'source', fieldId: 'video_url', kind: 'video', name: 'source.mp4',
+      type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
+    await f.update({ inputAssets: { video_url: [source] } });
+    await f.tick(); assert.equal(f.requests.length, 0);
+    await f.update({ inputAssets: { video_url: [{ ...source, status: 'ready', url: 'https://example.com/source.mp4' }] } });
+    await f.tick(); assert.equal(f.requests.length, 1);
+    await f.respond(0); assert.equal(f.current.price, 1.25);
+    await f.update({ inputAssets: {} });
+    masked(f); await f.tick(); assert.equal(f.requests.length, 1);
+    assert.equal(f.current.preflightError, undefined);
+  } finally { await f.dispose(); }
+});
 }
 test('Edit availability immediately revokes its quote and requests a fresh quote when restored', async () => {
   const f = await mount();

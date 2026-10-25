@@ -47,7 +47,7 @@ test('a fresh guest opens the first video with its prompt once, then can advance
     promptValue = prompt; preview = selectedPreview; edit = setPrompt;
     gallery = useWorkspaceGalleryActions({ provider: 'fal', renderGroups: new Map(), batchHeroes: {}, fallbackEngineId: 'wan-3',
       prompt, guestStarterReady: ready, recentJobs: [first.hero.job!, second.hero.job!], sharedPrompt: null, selectedPreview, compositeOverrideSummary: summary,
-      applyVideoSettingsFromTile: tile => setPrompt(tile.prompt), hydrateVideoSettingsFromJob: async () => {},
+      applyVideoSettingsFromTile: tile => { setPrompt(tile.prompt); return true; }, hydrateVideoSettingsFromJob: async () => {},
       focusComposer: noop, showNotice: noop, writeScopedStorage: noop, setPrompt, setActiveGroupId: noop,
       setViewMode: noop, setActiveBatchId: noop, setBatchHeroes: noop, setSelectedPreview,
       setCompositeOverride: noop, setCompositeOverrideSummary: setSummary, setSharedPrompt: noop,

@@ -141,8 +141,8 @@
       "a": "5 or 10 seconds in 16:9, 9:16 or 1:1 for both text and image runs."
     },
     {
-      "q": "Can I upload more than one reference image?",
-      "a": "No. One image per render. Combine references into one board if needed and describe the camera path clearly."
+      "q": "Can I use a start and end image?",
+      "a": "Yes. In image-to-video, supply the start image and optionally an end image to guide the landing frame. This is distinct from video-to-video editing."
     },
     {
       "q": "How is Kling priced?",
@@ -295,8 +295,8 @@
         "a": "5 or 10 seconds; 16:9, 9:16, 1:1 for text and image runs."
       },
       {
-        "q": "Can I upload multiple images?",
-        "a": "One image per render. Merge references into a single board if needed."
+        "q": "Can I use a start and end image?",
+        "a": "Yes. In image-to-video, supply the start image and optionally an end image to guide the landing frame. This is distinct from video-to-video editing."
       },
       {
         "q": "How is Kling priced?",
@@ -433,7 +433,7 @@
       },
       {
         "title": "Single image",
-        "body": "Use one still when subject shape, product framing or composition should anchor the clip."
+        "body": "Image-to-video accepts a start image and an optional end image. The end image is a boundary frame, not a separate style-reference stack."
       },
       {
         "title": "Negative prompt",
@@ -513,7 +513,8 @@
     "globalPrinciples": [
       "One subject, one action, one camera move.",
       "Use concrete nouns and settings.",
-      "Add a short negative prompt for text/logos/extra people."
+      "Add a short negative prompt for text/logos/extra people.",
+      "Image-to-video accepts a start image and an optional end image. The end image is a boundary frame, not a separate style-reference stack."
     ],
     "engineWhy": [
       "Short, physical actions read best in 5-10s.",

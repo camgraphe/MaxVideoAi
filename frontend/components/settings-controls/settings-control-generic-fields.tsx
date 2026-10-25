@@ -1,5 +1,6 @@
+import { lumaEditStrategy, visibleLumaEditField } from '@/lib/luma-edit-controls';
 import type { EngineInputField } from '@/types/engines';
-import { Button } from '@/components/ui/Button';
+import { SettingsBooleanChoice } from './SettingsBooleanChoice';
 
 interface SettingsGenericAdvancedFieldsProps {
   fields: Array<{ field: EngineInputField; required: boolean }>;
@@ -12,14 +13,16 @@ export function SettingsGenericAdvancedFields({
   values,
   onChange,
 }: SettingsGenericAdvancedFieldsProps) {
+  const lumaControls = fields.some(({ field }) => field.id === 'edit_control_mode');
+  const displayValues = lumaControls ? { ...values, edit_control_mode: lumaEditStrategy(values), edit_face_mode: values.edit_face_mode ?? (values.edit_face === true ? 'on' : 'default') } : values;
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {fields.map(({ field, required }) => (
+      {fields.filter(({ field }) => !lumaControls || visibleLumaEditField(field.id, displayValues)).map(({ field, required }) => (
         <SettingsGenericAdvancedField
           key={field.id}
           field={field}
           required={required}
-          value={values[field.id] ?? field.default ?? ''}
+          value={displayValues[field.id] ?? field.default ?? ''}
           onChange={onChange}
         />
       ))}
@@ -39,11 +42,6 @@ function SettingsGenericAdvancedField({
   onChange?: (field: EngineInputField, value: unknown) => void;
 }) {
   const label = `${field.label}${required ? ' *' : ''}`;
-  const toggleButtonClass = 'min-h-0 h-auto px-3 py-1.5 text-[13px]';
-  const activeToggleClass = (active: boolean) =>
-    active
-      ? 'border-brand bg-brand text-on-brand'
-      : 'border-hairline bg-surface text-text-secondary hover:border-text-muted hover:bg-surface-2';
 
   if (field.type === 'boolean') {
     const active =
@@ -56,24 +54,11 @@ function SettingsGenericAdvancedField({
             : false;
 
     return (
-      <label className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{label}</span>
-        <div className="flex flex-wrap gap-2">
-          {[true, false].map((option) => (
-            <Button
-              key={`${field.id}-${option ? 'on' : 'off'}`}
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => onChange?.(field, option)}
-              className={`${toggleButtonClass} ${activeToggleClass(option === active)}`}
-            >
-              {option ? 'On' : 'Off'}
-            </Button>
-          ))}
-        </div>
+        <SettingsBooleanChoice label={label} value={active} onChange={option => onChange?.(field, option)} />
         {field.description ? <span className="text-xs text-text-muted">{field.description}</span> : null}
-      </label>
+      </div>
     );
   }
   if (field.type === 'enum') {

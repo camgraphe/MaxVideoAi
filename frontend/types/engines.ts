@@ -215,8 +215,12 @@ export type EngineModeDurationCaps =
     };
 
 export interface EngineModeUiCaps {
+  /** Verified artifact layout; absent modes require manual continuity review. */
+  extensionOutput?:'continuation'|'combined';
   modes: Mode[];
   duration?: EngineModeDurationCaps;
+  /** Explicit source/output timing contract for source-video workflows. */
+  durationPolicy?: 'requested' | 'source_video';
   frames?: number[];
   resolution?: string[];
   resolutionLocked?: boolean;
@@ -235,6 +239,9 @@ export type EngineModeAvailability = Readonly<{
 }>;
 
 export interface EngineCaps {
+  /** Effective client projection; request validation still resolves the canonical catalog. */
+  activeVideoOperation?: import('@/lib/video-operation').VideoOperation;
+  operationCaps?: Partial<Record<import('@/lib/video-operation').VideoOperation, import('@/lib/video-operation').VideoOperationCaps>>;
   id: string;
   label: string;
   provider: string;
@@ -293,6 +300,9 @@ export interface EnginesResponse {
 }
 
 export interface PreflightRequest {
+  sourceJobId?: string;
+  sourceOutputId?: string;
+  operation?: import('@/lib/video-operation').VideoOperation;
   seedanceWorkflow?: { step: 'draft' } | { step: 'final'; draftJobId: string };
   engine: string;
   mode: Mode;

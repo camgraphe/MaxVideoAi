@@ -141,8 +141,10 @@ Final preparation runs before route transport gating. Only this server-resolved
 context selects ModelArk when ordinary Edit is configured for LAS. A hash of the
 owned creative and billing snapshot is rechecked under a shared parent-row lock
 inside the wallet/reservation transaction. Final provider content remains the
-owned `draft_task` alone, with 1080p and the original output-format, returned-frame
-and watermark choices. The expiry, uncertain-acknowledgement and exact-refund
+owned `draft_task` alone, with 1080p and the original output-format choice. As of
+2026-10-24, optional watermark is always off and return-last-frame is no longer
+requested, including when the owned Draft saved either option as true. Existing
+last-frame artifacts remain readable. The expiry, uncertain-acknowledgement and exact-refund
 retry rules above remain unchanged. Multimodal workflow prices require explicit
 active stage cells; no missing stage can fall back to ordinary pricing.
 

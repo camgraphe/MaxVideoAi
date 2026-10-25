@@ -44,7 +44,9 @@ jobs:
   fast:
     name: Fast checks
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Includes type/lint checks and 1,300+ tools-free test files with full pricing projections.
+    # Preserve their coverage while allowing the suite to finish on hosted runners.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -72,7 +74,8 @@ jobs:
     name: Database and media integration
     needs: plan
     if: ${{ needs.plan.outputs.integration == 'true' }}
-    runs-on: ubuntu-latest
+    # Match the validated PostgreSQL/FFmpeg image; 26.04 package downloads timed out before tests.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Checkout
@@ -90,8 +93,9 @@ jobs:
     name: Exhaustive financial cutovers
     needs: plan
     if: ${{ needs.plan.outputs.tariffs == 'true' }}
-    runs-on: ubuntu-latest
-    # Preserve all 26,818 canonical quotes and atomic failure/recovery checks.
+    # Keep the validated toolchain stable during the ubuntu-latest 26.04 migration.
+    runs-on: ubuntu-24.04
+    # Preserve the complete current-registry quote matrix and atomic failure/recovery checks.
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -109,8 +113,8 @@ jobs:
     if: ${{ needs.plan.outputs.browser == 'true' }}
     # Playwright 1.59.1 supports Ubuntu 24.04; ubuntu-latest can resolve to 26.04.
     runs-on: ubuntu-24.04
-    # Connected browser tests take ~11 minutes before the admin smoke suite starts.
-    timeout-minutes: 25
+    # Tool/browser installation can take 12 minutes before the complete browser and admin suites.
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -119,7 +123,7 @@ jobs:
       - uses: ./.github/actions/setup-project
       - uses: ./.github/actions/setup-validation-tools
       - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate connected Studio browser
         run: pnpm run test:validate -- --suite browser
       - name: Smoke test admin

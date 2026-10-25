@@ -14,6 +14,7 @@ export async function makeModelPagePricingHarness({
   const modelPricingPath = resolve(sourceRoot, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts');
   const modelInputsPath = resolve(sourceRoot, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-inputs.ts');
   const timingPath = resolve(sourceRoot, 'frontend/server/public-page-timing.ts');
+  const scenarioPath = resolve(sourceRoot, 'frontend/server/pricing/quote-public-model-scenario.ts');
   const directory = await mkdtemp(join(tmpdir(), 'model-page-pricing-'));
   let source = await readFile(routePath, 'utf8');
   if (includeUnusedUnitQuote) {
@@ -24,6 +25,7 @@ export async function makeModelPagePricingHarness({
   }
   const requireFrontend = createRequire(resolve(sourceRoot, 'frontend/package.json'));
   const fixture = `
+    export {resolvePublicModelScenario} from ${JSON.stringify(scenarioPath)};
     export const calls = [];
     export const readers = [];
     export const exampleQuoteCalls = [], publicReads = [], publicIdReads = [], playlistReads = [];
@@ -139,6 +141,7 @@ export async function makeModelPagePricingHarness({
       define: { 'process.env.NODE_ENV': '"test"' },
       plugins: [{ name: 'model-pricing-io', setup(builder) {
         builder.onResolve({ filter: /.*/ }, args => {
+          if (args.namespace === 'controlled' && args.path === scenarioPath) return { path: scenarioPath, namespace: 'file' };
           if (args.path === 'server-only' || args.path.endsWith('.css')) return {path:'empty',namespace:'controlled'};
           if (args.path === '@/server/model-keyframe-demo') return {path:'keyframe-demo',namespace:'keyframe-fixture'};
           if (executeInputs && args.importer.endsWith('/model-page-inputs.ts')) {

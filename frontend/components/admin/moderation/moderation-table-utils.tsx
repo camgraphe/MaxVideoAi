@@ -1,7 +1,9 @@
+import { PRIMARY_MODERATION_FILTERS, TOOL_MODERATION_FILTERS } from '@/lib/admin/moderation-filters';
 import type { ReactNode } from 'react';
+import { normalizeMediaUrl } from '@/lib/media';
+import { isOptimizablePublicMediaUrl } from '@/lib/media-helpers';
 import type {
   ModerationBucket,
-  ModerationSurface,
   ModerationVideo,
   PublicationState,
 } from '@/components/admin/moderation/moderation-types';
@@ -14,13 +16,19 @@ export const BUCKET_OPTIONS: Array<{ id: ModerationBucket; label: string; helper
   { id: 'all', label: 'All', helper: 'Everything in the editorial publication queue' },
 ];
 
-export const SURFACE_OPTIONS: Array<{ id: ModerationSurface; label: string }> = [
-  { id: 'video', label: 'Video' },
-  { id: 'image', label: 'Image' },
-  { id: 'audio', label: 'Audio' },
-  { id: 'character', label: 'Character' },
-  { id: 'angle', label: 'Angle' },
-];
+export const SURFACE_OPTIONS = PRIMARY_MODERATION_FILTERS;
+export const TOOL_SURFACE_OPTIONS = TOOL_MODERATION_FILTERS;
+
+export function getModerationPreviewUrls(video: Pick<ModerationVideo, 'videoUrl' | 'thumbUrl' | 'originalUrl'>) {
+  const normalize = (url?: string) => url ? url.includes('?') ? url : normalizeMediaUrl(url) ?? url : undefined;
+  const mediaUrl = normalize(video.videoUrl);
+  const originalUrl = normalize(video.originalUrl) ?? mediaUrl;
+  const thumbUrl = normalize(video.thumbUrl);
+  // Tool GIF exports are stored in video_url, but require an image element.
+  const animatedImageUrl = mediaUrl && /\.gif$/i.test(mediaUrl.split(/[?#]/, 1)[0]) ? mediaUrl : undefined;
+  return { originalUrl, thumbUrl, animatedImageUrl, videoUrl: animatedImageUrl ? undefined : mediaUrl,
+    unoptimizedThumbnail: Boolean(thumbUrl && !isOptimizablePublicMediaUrl(thumbUrl)) };
+}
 
 export function compareChronologically(
   a: Pick<ModerationVideo, 'createdAt' | 'id'>,

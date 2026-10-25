@@ -261,7 +261,7 @@ test('evaluator accepts the reviewed Max settings contract and rejects unsupport
   for (const settings of [
     { ...request.settings, reasoningLevel: 'medium' },
     { ...request.settings, keyframeIndexes: [120, 0] },
-    { ...request.settings, keyframeIndexes: '0'.repeat(129) },
+    { ...request.settings, keyframeIndexes: '0'.repeat(4097) },
     { ...request.settings, reasoning_level: 'high' },
     { ...request.settings, keyframe_indexes: '120,0' },
   ]) {

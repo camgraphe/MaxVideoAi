@@ -1,3 +1,4 @@
+import {readStudioCreditCompletion} from './assistance-credit-budget';
 import {studioConversationLanguage} from './conversation-language';
 import {assertStudioTaskExecution,setStudioTaskPhase,type StudioTaskExecution} from "./tasks/execution";
 import {StudioTaskStop} from "./tasks/policy";
@@ -42,15 +43,21 @@ import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
 import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
 import {studioGreetingReply} from './conversation-intent';
+import {planStudioExtensionAssembly,studioExtensionSourceSnapshot} from './conversation-extension-assembly';
+import {readStudioConversationTimeline} from './conversation-timeline';
 
 async function prepareMediaAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references:ResolvedReference[];
-  referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;
+  referenceFingerprint: string; enabled: boolean; factories: StudioMediaFactories;editingEnabled?:boolean;
 }, action: StudioMediaIntent, callId: string) {
   const {actor, turn, factories} = options;
   const selection = await validateStudioMediaRequest(actor, action, options.input, factories, options.enabled,{reviewedReferences:options.references});
-  if (!turn.draft_json) await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action}, options.referenceFingerprint);
+  if (!turn.draft_json) {
+    const source=selection.extensionSource;
+    const extensionAssembly=source&&options.editingEnabled&&selection.extensionOutput==='continuation'?planStudioExtensionAssembly(action,(await readStudioConversationTimeline(actor)).data,source.mediaFacts?.source==='probe'?source.mediaFacts.durationSec??null:null,studioExtensionSourceSnapshot(source)):undefined;
+    await persistImageDraft(actor, turn, {reply: action.reply, image: null, media: action,...(extensionAssembly?{extensionAssembly}:{})}, options.referenceFingerprint);
+  }
   const request = await selection.materialize();
   const onQuotePrepared = async (quote: McpGenerationQuote<CanonicalGenerationRequest | CanonicalAudioRequest>, executor: TransactionQueryExecutor) => {
     await attachImageQuote(actor, turn, quote.quoteId, executor);
@@ -66,7 +73,7 @@ async function prepareMediaAction(options: {
 export async function resumeStudioImageAction(options: {
   actor: StudioGenerationActor; turn: StoredImageTurn; input: ImageTurnInput;
   references: ResolvedReference[]; referenceFingerprint: string; enabled: boolean; factory: ImageGenerationFactory;
-  factories?: StudioMediaFactories; mediaEnabled?: boolean;
+  factories?: StudioMediaFactories; mediaEnabled?: boolean;editingEnabled?:boolean;
 }) {
   const {actor, turn, factory} = options;
   const draft = turn.draft_json;
@@ -232,16 +239,16 @@ export async function runStudioImageActions(options: {
         params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
         params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
-        params.instructions=(params.instructions??'')+'\nStudio has continued this task with sponsored GPT-6 Luna because the next Sol call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
+        params.instructions=(params.instructions??'')+'\nMilo has continued this task in Standard (GPT-6 Luna) because the next Max call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       const outputTokens=params.max_output_tokens??2200;
-      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens};
+      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
       return {policy,inputTokens,outputTokens,lunaFallback};
-    }} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
+    },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;if(readStudioCreditCompletion(call.pricing_snapshot))checkpointOptions?.onCreditCompletion?.();}} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;

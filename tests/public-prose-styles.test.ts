@@ -60,7 +60,13 @@ test('native public prose equals the effective slate/width cascade and emits no 
   assert.equal(root['max-width'], 'none');
   const expected = new Map([...before].filter(([selector]) => selector === '.prose' || /^\.prose[\s:]/.test(selector)));
   expected.set('.prose', root);
-  const actual = new Map([...after].map(([selector, values]) => {
+  const scrollSelector = (selector: string) => selector.includes('.mcp-docs-table-scroll');
+  assert.deepEqual([...after.keys()].filter(scrollSelector), [
+    '.public-prose .mcp-docs-table-scroll', '.public-prose :where(h2, h3, h4) + .mcp-docs-table-scroll',
+    '.public-prose .mcp-docs-table-scroll > table',
+    '.public-prose .mcp-docs-table-scroll:focus-visible',
+  ], 'only the dedicated MCP wrappers may extend the existing typography surface');
+  const actual = new Map([...after].filter(([selector]) => !scrollSelector(selector)).map(([selector, values]) => {
     assert.match(selector, /^\.public-prose(?=[\s:.\[]|$)/, 'reader must not leak reset or unrelated rules');
     return [selector.replace(/\.public-prose\b/g, '.prose'), values];
   }));
@@ -74,7 +80,7 @@ test('native public prose equals the effective slate/width cascade and emits no 
   // Comparing selector maps alone cannot detect reordered overlapping rules.
   // Keep the complete descendant sequence, including literal .prose references
   // that Tailwind's @apply preserves inside :where().
-  assert.deepEqual(rules(scoped).filter(rule => rule.selector.startsWith('.public-prose '))
+  assert.deepEqual(rules(scoped).filter(rule => rule.selector.startsWith('.public-prose ') && !scrollSelector(rule.selector))
     .map(rule => ({ ...rule, selector: rule.selector.replace(/^\.public-prose/, '.prose') })),
   rules(legacy).filter(rule => rule.selector.startsWith('.prose ')));
   assert.ok(Buffer.byteLength(scoped) < 20 * 1024);

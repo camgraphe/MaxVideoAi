@@ -269,3 +269,9 @@ test('request option helper keeps video mode narrowing explicit', () => {
   assert.equal(isVideoMode('t2i'), false);
   assert.equal(isVideoMode('unknown'), false);
 });
+
+test('Ray 3.2 Extend preserves explicit loop for forward validation instead of silently disabling it', () => {
+  const result=buildGenerateRequestOptions({engine:registeredEngine('luma-ray-3-2'),mode:'extend',isBytePlusV1a:false,
+    body:{prompt:'Continue',durationSec:5,resolution:'720p',loop:true,sourceJobId:'job-owned'}});
+  assert.equal(result.ok,true);if(result.ok)assert.equal(result.options.loop,true);
+});

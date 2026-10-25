@@ -79,7 +79,8 @@ test('new-clip durations exclude extensions and retain mode-specific limits', ()
   assert.equal(omni.maxDuration, '10 s');
   assert.equal(veo.maxDuration, '8 s');
   assert.deepEqual(veo.generationDurations?.find(x => x.mode === 't2v')?.seconds, [4, 6, 8]);
-  assert.deepEqual(veo.generationDurations?.find(x => x.mode === 'i2v')?.seconds, [8]);
+  assert.deepEqual(veo.generationDurations?.find(x => x.mode === 'i2v')?.seconds, [4, 6, 8]);
+  assert.deepEqual(veo.generationDurations?.find(x => x.mode === 'ref2v')?.seconds, [8]);
   assert.equal(veo.extensionDuration, '7 s');
   assert.equal(omni.generationDurations?.some(x => ['v2v', 'refine', 'extend'].includes(x.mode)), false);
 });

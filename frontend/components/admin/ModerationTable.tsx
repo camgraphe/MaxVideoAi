@@ -215,6 +215,7 @@ export function ModerationTable({
       if (isFailedVideo(video)) {
         return null;
       }
+      if (video.canPublish === false) return <span className="text-xs text-text-muted">View only</span>;
       const compact = options?.compact ?? false;
       const baseClass = compact
         ? 'h-8 rounded-md px-2.5 text-[11px] font-semibold uppercase tracking-micro'
@@ -222,6 +223,7 @@ export function ModerationTable({
 
       return (
         <>
+          {surface === 'video' ? <a className={baseClass} href={`/admin/marketing-media?videoId=${encodeURIComponent(video.id)}`}>Marketing copy</a> : null}
           {video.isPublishedOnSite ? (
             <Button
               type="button"

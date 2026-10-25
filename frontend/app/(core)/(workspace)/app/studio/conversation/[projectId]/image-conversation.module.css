@@ -116,6 +116,7 @@
   min-height: 0;
   min-width: 0;
 }
+.history {display:contents;}
 .log {
   flex: 1;
   overflow: auto;
@@ -130,7 +131,7 @@
 .headerDot {color:var(--studio-accent);}
 .welcome h2 {font-size:clamp(27px,2.5vw,36px);line-height:1.25;letter-spacing:-1.15px;margin:0;font-weight:400;}
 .welcome h2 span {font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:400;color:var(--studio-accent);}
-.welcome > p {font-size:12px;line-height:1.7;color:var(--studio-muted);margin:0;max-width:340px;}
+.welcome > p {font-size:12px;line-height:1.7;color:var(--studio-muted);margin:0;max-width:480px;}
 .starters {display:flex;justify-content:center;flex-wrap:wrap;gap:2px 12px;margin-top:7px;}
 .studio .starters button {display:flex;gap:6px;align-items:center;min-height:36px;padding:4px 0;border:0;border-radius:0;background:transparent;font-size:11px;color:var(--studio-muted);}
 .starters button:hover {color:var(--studio-text);}
@@ -318,9 +319,9 @@
 .footnote button:focus-visible {outline:2px solid var(--studio-accent);outline-offset:3px;border-radius:2px;}
 .footnote {
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--studio-muted);
-  margin: 12px 0 0;
+  margin: 6px 0 0;
   flex-shrink: 0;
 }
 .thinking {
@@ -472,3 +473,25 @@
 }
 
 .assistanceNote {margin:8px 0;color:var(--studio-muted);font-size:11px;line-height:1.65;}.assistanceNote button{font-size:11px;padding:3px 8px;border:0;text-decoration:underline;text-underline-offset:3px;min-height:36px;color:var(--studio-accent);}
+
+/* The phone conversation owns the viewport; supporting surfaces open in sheets. */
+@media(max-width:767px) {
+  .header {min-height:56px;flex-shrink:0;padding:6px 12px 6px 60px;gap:8px;}
+  .header h1 {font-size:18px;letter-spacing:-.5px;}
+  .header > div:first-child > span {font-size:10px;margin-top:3px;max-width:100%;}
+  .headerActions {gap:0;}
+  .headerActions > button {min-width:44px;min-height:44px;}
+  .canvas {padding:0 12px max(4px,env(safe-area-inset-bottom));gap:0;}
+  .conversation {width:100%;}
+  .conversation[data-empty="true"] {padding-bottom:0;}
+  .history {position:relative;display:flex;flex-direction:column;flex:1;min-height:0;}
+  .conversation[data-empty="true"] .history {flex:0 1 auto;}
+  .log {min-height:0;padding:12px 4px 16px;}
+  .attachments {display:none;}
+  .composer {padding:5px;gap:6px;border-radius:24px;}
+  .composer textarea {font-size:16px;padding:10px 0;line-height:24px;}
+  .composerTools {display:flex;align-items:center;justify-content:space-between;flex-shrink:0;min-height:44px;}
+  .conversation > .footnote {display:none;}
+  .studio .jumpLatest {bottom:12px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;justify-content:center;}
+  .jumpLatest span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+}

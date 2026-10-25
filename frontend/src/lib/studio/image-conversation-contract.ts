@@ -32,7 +32,7 @@ export const imageTurnInputSchema = z
   })
   .strict().superRefine((input, context) => {
     const ids = [...input.references, ...(input.attachments ?? []).map(ref => ref.type === 'asset' ? ref.assetId : ref.outputId)];
-    if (ids.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: 'Attach up to ten distinct references.'});
+    if (ids.length > STUDIO_CONVERSATION_MAX_ATTACHMENTS || new Set(ids).size !== ids.length) context.addIssue({code: z.ZodIssueCode.custom, message: `Attach up to ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} distinct references.`});
     const labels = new Set<string>();
     const mentionedIds = new Set<string>();
     for (const [index, mention] of (input.referenceMentions ?? []).entries()) {
@@ -50,12 +50,19 @@ export const studioContinuationSchema = z.object({
   completedEdits: z.number().int().min(0).max(24),
   lastError: z.object({code: z.string().min(1).max(80),message: z.string().min(1).max(800)}).strict().optional(),
 }).strict();
+export const studioExtensionAssemblyPlanSchema=z.object({
+  sequenceId:z.string().min(1).max(200),expectedRevision:z.number().int().nonnegative(),fps:z.number().int().min(1).max(60),
+  source:toolAssetRefSchema.refine(ref=>ref.kind==='video'),includeSource:z.boolean(),position:z.enum(['before','after']),
+  sourceOriginalHash:z.string().regex(/^[a-f0-9]{64}$/),sourceDurationSec:z.number().positive().nullable(),sourceSizeBytes:z.number().int().positive().nullable(),
+}).strict();
+export type StudioExtensionAssemblyPlan=z.infer<typeof studioExtensionAssemblyPlanSchema>;
 export const imageDraftSchema = z
   .object({
     reply: z.string().min(1).max(2400).transform(projectStudioReply),
     image: imageSelectionSchema.nullable(),
     media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
+    extensionAssembly:studioExtensionAssemblyPlanSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
     analysisQuote:studioPreparedAnalysisSchema.optional(),
   })
@@ -76,6 +83,7 @@ export type ImageConversationTurn = {
   exportQuote?: StudioPreparedExport;
   analysisQuote?:StudioPreparedAnalysis;
   continuation?: z.infer<typeof studioContinuationSchema>;
+  extensionAssembly?:{state:'pending'|'saved'|'blocked';durationSec?:number};
   state: "thinking" | "ready" | "failed";
   retryable: boolean;
   quote:

@@ -43,6 +43,7 @@ test('Luma Agents registry uses direct provider metadata with fal fallback model
     'luma-ray-3-2': [
       'luma/agent/ray/v3.2/text-to-video',
       'luma/agent/ray/v3.2/image-to-video',
+      'luma/agent/ray/v3.2/generation-anchor',
       'luma/agent/ray/v3.2/video-edit',
       'luma/agent/ray/v3.2/reframe',
     ],
@@ -101,13 +102,13 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   const entry = byId('luma-ray-3-2');
   assert.equal(entry.category, 'video');
   assert.equal(entry.family, 'luma');
-  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe']);
-  assert.equal(entry.engine.extend, false);
+  assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe', 'extend']);
+  assert.equal(entry.engine.extend, true);
   assert.equal(entry.engine.keyframes, true);
   assert.equal(entry.engine.motionControls, true);
   assert.equal(entry.engine.upscale4k, false);
   assert.equal(entry.engine.audio, false);
-  assert.equal(entry.engine.maxDurationSec, 30);
+  assert.equal(entry.engine.maxDurationSec, 10);
   assert.equal(entry.surfaces.compare.includeInHub, true);
   assert.deepEqual(entry.surfaces.compare.publishedPairs, [
     'seedance-2-0',
@@ -119,7 +120,7 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   ]);
 
   assert.deepEqual(field(entry, 'duration').values, ['5s', '10s']);
-  assert.deepEqual(field(entry, 'duration').modes, ['t2v', 'i2v', 'v2v']);
+  assert.deepEqual(field(entry, 'duration').modes, ['t2v', 'i2v', 'reframe']);
   assert.deepEqual(field(entry, 'resolution').values, ['540p', '720p', '1080p']);
   assert.deepEqual(field(entry, 'aspect_ratio').values, ['9:16', '3:4', '1:1', '4:3', '16:9', '21:9']);
   assert.deepEqual(field(entry, 'aspect_ratio').modes, ['t2v', 'i2v', 'reframe']);
@@ -127,7 +128,10 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   assert.deepEqual(field(entry, 'hdr').modes, ['t2v', 'i2v', 'v2v']);
   assert.deepEqual(field(entry, 'exr_export').modes, ['t2v', 'i2v', 'v2v']);
   assert.deepEqual(field(entry, 'image_url').requiredInModes, ['i2v']);
-  assert.deepEqual(field(entry, 'video_url').requiredInModes, ['v2v', 'reframe']);
+  assert.deepEqual(field(entry, 'video_url').requiredInModes, ['v2v']);
+  assert.equal(field(entry, 'video_url').maxDurationSec, 18);
+  const reframeSource = entry.engine.inputSchema?.required?.find(field => field.id === 'video_url' && field.modes?.includes('reframe'));
+  assert.equal(reframeSource?.maxDurationSec, 10);
   assert.deepEqual(field(entry, 'end_image_url').modes, ['i2v']);
   assert.deepEqual(field(entry, 'start_image_url').modes, ['v2v']);
   assert.deepEqual(field(entry, 'edit_keyframe_urls').modes, ['v2v']);

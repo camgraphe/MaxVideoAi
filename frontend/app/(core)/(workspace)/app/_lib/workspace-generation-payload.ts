@@ -1,3 +1,7 @@
+import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
+import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
+import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { effectiveLumaEditValues } from '@/lib/luma-edit-controls';
 import type { runGenerate } from '@/lib/api';
 import { toLumaRay2DurationLabel } from '@/lib/luma-ray2';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -71,7 +75,17 @@ function schemaSupportsField(inputSchema: EngineCaps['inputSchema'] | null | und
 export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
 ): WorkspaceGeneratePayloadBuildResult {
+  options = { ...options, extraInputValues: withoutRetiredOutputControls(options.extraInputValues) };
   const requestMode = options.submissionMode as Mode;
+  if (options.form.engineId === 'luma-ray-3-2') options = { ...options, extraInputValues: effectiveLumaEditValues(Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])].some(field => field.id === key && (!field.modes || field.modes.includes(requestMode)))))) };
+  if (options.form.operation || options.form.engineId === 'luma-ray-3-2') {
+    const fields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])]
+      .filter(field => !field.modes?.length || field.modes.includes(requestMode));
+    const allowed = new Set(fields.map(field => field.id));
+    options = { ...options, extraInputValues: Object.fromEntries(Object.entries(options.extraInputValues).filter(([key]) => allowed.has(key))),
+      inputsPayload: options.inputsPayload?.filter(input => !input.slotId || allowed.has(input.slotId)),
+      ...((options.form.operation === 'kling-edit' || isH3SourceOperation(options.form.operation) || isFluxLtxSourceOperation(options.form.operation) || (options.form.engineId === 'luma-ray-3-2' && requestMode === 'extend')) ? { referenceImageUrls: [], primaryImageUrl: undefined, primaryAudioUrl: undefined, endImageUrl: undefined, multiPromptPayload: undefined, shotType: 'customize' as const } : {}) };
+  }
   const shouldSendAspectRatio = workspaceModeSupportsRequestField({
     inputSchema: options.inputSchema,
     capability: options.capability,
@@ -119,9 +133,11 @@ export function buildWorkspaceGeneratePayload(
 
   const payload: WorkspaceGeneratePayload = {
     engineId: options.selectedEngineId,
-    prompt: options.selectedEngineId === 'kling-v4' && options.multiPromptPayload?.length ? '' : options.trimmedPrompt,
+    prompt: (options.selectedEngineId === 'kling-v4' && options.multiPromptPayload?.length) || options.form.operation && !schemaSupportsField(options.inputSchema, 'prompt', requestMode) ? '' : options.trimmedPrompt,
     mode: options.submissionMode,
-    durationSec: resolvedDurationSeconds,
+    ...(options.form.operation ? { operation: options.form.operation } : {}),
+    ...((options.form.operation === 'kling-edit' || isH3SourceOperation(options.form.operation) || isFluxLtxSourceOperation(options.form.operation)) ? {} : { durationSec: resolvedDurationSeconds }),
+    ...((options.form.operation === 'flux-draft-enhance' || (options.form.engineId === 'luma-ray-3-2' && requestMode === 'extend')) && options.form.extraInputValues.source_job_id ? {sourceJobId:String(options.form.extraInputValues.source_job_id),...(options.form.extraInputValues.source_output_id ? {sourceOutputId:String(options.form.extraInputValues.source_output_id)} : {})} : {}),
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },
     cfgScale: options.selectedEngineId !== 'kling-v4' && typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
@@ -129,7 +145,7 @@ export function buildWorkspaceGeneratePayload(
       ? { variant: options.selectedEngineId === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
       : {}),
     ...(shouldSendDuration ? { durationOption: resolvedDurationLabel } : {}),
-    ...(options.form.numFrames != null ? { numFrames: options.form.numFrames } : {}),
+    ...(shouldSendDuration && options.form.numFrames != null ? { numFrames: options.form.numFrames } : {}),
     ...(shouldSendResolution ? { resolution: resolvedResolution } : {}),
     ...(shouldSendFps ? { fps: options.form.fps } : {}),
     ...(shouldSendAspectRatio ? { aspectRatio: options.form.aspectRatio } : {}),

@@ -19,7 +19,7 @@ test('restoring Seedance Auto retains its choice and maximum pricing duration', 
   }
 });
 
-test('Seedance settings visibly offer Auto and submit output switches without unsupported seed controls', async () => {
+test('Seedance settings retain Auto and MOV while hiding retired output switches and unsupported seed controls', async () => {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://maxvideoai.test/app', pretendToBeVisual: true });
   dom.window.HTMLElement.prototype.scrollIntoView = () => {};
   const globals = { React, window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
@@ -58,13 +58,9 @@ test('Seedance settings visibly offer Auto and submit output switches without un
       assert.equal(durations.at(-1),'auto');
       await render(true);
       assert.doesNotMatch(dom.window.document.body.textContent ?? '', /Seed|Lock seed/i);
-      for (const label of [...dom.window.document.querySelectorAll('label')]) {
-        if (/dernière image|Filigrane/.test(label.textContent ?? '')) {
-          await act(async () => label.querySelector<HTMLButtonElement>('button')!.click());
-        }
-      }
-      assert.equal(values.return_last_frame, true);
-      assert.equal(values.watermark, true);
+      assert.doesNotMatch(dom.window.document.body.textContent ?? '', /dernière image|Filigrane|Return last frame|AI watermark/i);
+      assert.equal(values.return_last_frame, undefined);
+      assert.equal(values.watermark, undefined);
       const format = dom.window.document.querySelector('select');
       if (engineId === 'seedance-2-5') {
         assert.ok(format);

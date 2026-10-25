@@ -41,7 +41,7 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
   const mocks: Record<string, string> = {
     '@/lib/db': `export const query=(...args)=>globalThis.audioLibraryFixture.query(...args);`,
     '@/lib/schema': `export const ensureMediaLibrarySchema=async()=>{};`,
-    '@/server/storage': `export const recordUserAsset=async()=>{}; export const uploadFileBuffer=async({data})=>{globalThis.audioLibraryFixture.uploaded=data;return {url:'https://fixture.example/saved.wav'}}; export const uploadImageToStorage=async()=>{throw Error('Unexpected image')};`,
+    '@/server/storage': `export const recordUserAsset=async()=>{}; export const uploadFileBuffer=async({data})=>{globalThis.audioLibraryFixture.uploaded=data;return {url:'https://fixture.example/saved.wav'}}; export const uploadImageToStorage=async()=>{throw Error('Unexpected image')}; export const extractStorageKeyFromUrl=()=>{throw Error('Unexpected video storage key read')};`,
     '@/server/owned-media-read-access': `export const createOwnedMediaReadUrl=async({url})=>url;`,
     '@/server/upload-thumbnails': `export const createUploadVideoThumbnail=async()=>{throw Error('Unexpected video')};`,
     '@/server/media/generated-video-facts': `export const measureGeneratedVideoBuffer=async()=>{throw Error('Unexpected video')};`,

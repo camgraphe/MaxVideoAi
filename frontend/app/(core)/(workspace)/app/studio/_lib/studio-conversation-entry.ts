@@ -6,8 +6,8 @@ export function studioProjectEntryUrl(project: {id: string;persistenceMode?: str
 
 const ENGLISH_ENTRY_COPY = {
   eyebrow: 'YOUR CREATIVE WORKSPACE',
-  title: 'What would you like to create?',
-  description: 'Explore an idea, shape a prompt, or create with your media. Start a conversation and take it as far as you need.',
+  title: 'What would you like to do?',
+  description: 'Just describe your idea. Milo handles the prompts and tools.',
   open: 'Open Studio',
   opening: 'Opening Studio…',
   retry: 'Try again',
@@ -22,8 +22,8 @@ export function studioConversationEntryCopy(locale: string): typeof ENGLISH_ENTR
   if (locale !== 'fr') return ENGLISH_ENTRY_COPY;
   return {
     eyebrow: 'VOTRE ESPACE CRÉATIF',
-    title: 'Qu’avez-vous envie de créer ?',
-    description: 'Explorez une idée, affinez un prompt ou créez avec vos médias. Lancez une conversation et avancez à votre rythme.',
+    title: 'Qu’avez-vous envie de faire ?',
+    description: 'Décrivez simplement votre idée. Milo s’occupe des prompts et des outils.',
     open: 'Ouvrir Studio',
     opening: 'Ouverture de Studio…',
     retry: 'Réessayer',

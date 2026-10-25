@@ -1,9 +1,9 @@
-import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
+import type { EngineCaps, EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 
 export const VIDEO_MEDIA_FIELD_CANDIDATES = Object.freeze({
   firstFrame: ['first_frame_url', 'start_image_url', 'image_url'],
   lastFrame: ['last_frame_url', 'end_image_url'],
-  referenceImage: ['image_urls', 'reference_images', 'reference_image_urls'],
+  referenceImage: ['image_urls', 'reference_images', 'reference_image_urls', 'reference_image_url'],
   referenceVideo: ['video_urls', 'reference_video_urls'],
   referenceAudio: ['audio_urls', 'reference_audio_urls'],
   sourceAudio: ['audio_url'],
@@ -115,4 +115,17 @@ export function getVideoSchemaControlConstraintViolation(params: {
     return { field: 'duration', maxDurationSec: resolutionMax };
   }
   return null;
+}
+
+/** Older engines may declare CFG only in params; explicit schema mode restrictions win. */
+export function supportsVideoCfgScaleControl(engine: EngineCaps, mode: Mode): boolean {
+  if (!engine.params?.cfg_scale) return false;
+  const declaredFields = [
+    ...(engine.inputSchema?.required ?? []),
+    ...(engine.inputSchema?.optional ?? []),
+  ];
+  if (!declaredFields.some((field) => field.id === 'cfg_scale')) return true;
+  return Boolean(resolveActiveVideoInputField({
+    inputSchema: engine.inputSchema, mode, candidateFieldIds: ['cfg_scale'],
+  }));
 }

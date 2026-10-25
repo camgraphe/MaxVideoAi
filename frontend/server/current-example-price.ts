@@ -76,15 +76,23 @@ function executableContext(video: GalleryVideo, entry: FalEngineEntry, durationS
 function exactContext(video: GalleryVideo, entry: FalEngineEntry): PricingContext | null {
   const settings = record(video.settingsSnapshot);
   const core = record(settings?.core);
+  if (!settings || !core) return null;
+  // Recorded provenance is not a pricing control, but it must describe this video.
+  const metadataKeys = ['schemaVersion', 'surface', 'engineId', 'prompt'];
+  if (metadataKeys.some((key) => key in settings) && (
+    settings.schemaVersion !== 1 || settings.surface !== 'video' ||
+    typeof settings.engineId !== 'string' || resolveRuntimeEngineInput(settings.engineId)?.id !== entry.id ||
+    settings.prompt !== video.prompt
+  )) return null;
   const mode = settings?.inputMode;
   const durationSec = positiveNumber(core?.durationSec);
   const resolution = core?.resolution;
   const aspectRatio = core?.aspectRatio;
   // Unknown saved controls may affect price. A same-model reference is safer
   // than claiming that an incomplete projection reproduces the old render.
-  const knownSettings = new Set(['inputMode', 'core', 'refs']);
+  const knownSettings = new Set(['inputMode', 'core', 'refs', ...metadataKeys]);
   const knownCore = new Set(['durationSec', 'resolution', 'aspectRatio', 'audio']);
-  if (!settings || !core || typeof mode !== 'string' || !entry.engine.modes.includes(mode as Mode) ||
+  if (typeof mode !== 'string' || !entry.engine.modes.includes(mode as Mode) ||
       Object.keys(settings).some((key) => !knownSettings.has(key)) ||
       Object.keys(core).some((key) => !knownCore.has(key)) ||
       mode !== 't2v' || durationSec == null || durationSec !== video.durationSec ||

@@ -1,3 +1,5 @@
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
+import { klingOwnedElementsSchema, klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
 import type {SeedanceEditSourceFacts} from '@/lib/seedance-edit-source';
 import {z} from 'zod';
 import {conversationSettingsSchema,STUDIO_CONVERSATION_MAX_ATTACHMENTS} from './conversation-creation-contract';
@@ -13,16 +15,19 @@ export type StudioFilmPricePlan={
 export type StudioPriceComparison=GenerationPriceComparison & {filmDurationSec?:number;filmPlans?:StudioFilmPricePlan[]};
 
 export const studioPricingReadSchema=z.object({
+  elements: klingOwnedElementsSchema.nullable().optional(),
+  operation:z.enum(VIDEO_OPERATIONS).nullable().optional(),
   action:z.literal('pricing.read'),surface:z.enum(['image','video']),modelId:z.string().trim().min(1).max(128),
   mode:z.enum(CANONICAL_GENERATION_MODES),settings:conversationSettingsSchema,
-  references:z.array(conversationMediaReferenceSchema.refine(selection=>selection.ref.type==='asset','Attach saved library media before pricing it.')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
+  references:z.array(conversationMediaReferenceSchema).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS),
   outputCount:z.literal(1),
 }).strict();
 export type StudioPricingEstimate=Readonly<{
+  operation?: import('@/lib/video-operation').VideoOperation;
   modelId:string;surface:'image'|'video';mode:string;settings:Readonly<Record<string,string|number|boolean|null>>;
   outputCount:1;outputDurationSec?:number;sourceVideoOutput?:SeedanceEditSourceFacts;referenceCount:number;price:Readonly<CustomerDisplayPrice>;estimatedAt:string;quoteRequired:true;
 }>;
-export const studioPricingCompareSchema=studioPricingReadSchema.omit({action:true,modelId:true}).extend({
+export const studioPricingCompareSchema=studioPricingReadSchema.omit({action:true,modelId:true,elements:true}).extend({
   action:z.literal('pricing.compare'),prompt:z.string().trim().min(1).max(3000),
   filmDurationSec:z.number().positive().max(1200).nullable().optional(),
   baselineModelId:z.string().trim().min(1).max(128).nullable(),
@@ -33,11 +38,11 @@ export const STUDIO_PRICING_COMPARE_TOOL={action:'pricing.compare',name:'pricing
   surface:{type:'string',enum:['image','video']},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},prompt:{type:'string',minLength:1,maxLength:3000},
   filmDurationSec:{type:['number','null'],minimum:0.001,maximum:1200,description:'Total finished film duration for a multi-clip request. The server prices several complete supported cut plans and returns a terminal reply in this call. Keep this separate from component durationSec. Null for a single asset or price comparison. Preserve any explicitly selected model using candidateModelIds.'},
   settings:{type:'array',maxItems:32,description:'Explicit request constraints only; preserve resolution, framing and audio requirements. Single-clip video comparisons need concrete durationSec. For filmDurationSec planning, omit durationSec unless the client explicitly fixed each component length; never guess a shot duration. Leave unspecified resolution out to compare disclosed supported presets. Do not invent unsupported constraints.',items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},
-  references:{...conversationMediaReferencesProperties(false),type:'array',maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS},
+  references:{...conversationMediaReferencesProperties(),type:'array',maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS},
   baselineModelId:{type:['string','null']},baselineSettings:{type:['array','null'],maxItems:32,description:'For resolution/duration changes, preserve the original quote settings here to reprice the original configuration and calculate savings. Null uses the current scenario.',items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},candidateModelIds:{type:['array','null'],minItems:1,maxItems:32,items:{type:'string'}},outputCount:{type:'integer',enum:[1]},
 }} as const;
-export const STUDIO_PRICING_DIRECTOR_TOOL={action:'pricing.read',name:'pricing_read',description:'Read the current MaxVideoAI customer estimate for ONE exact supported image/video scenario. Use settings from model_details and explicitly attached saved media references only, with exact kind and supported roles. No quote is created/replaced, no spending or media promotion. Compare current like-for-like estimates before a budget recommendation; a fresh prepare quote and client confirmation are still required. Audio generation and unsaved project outputs are not supported here.',properties:{
-  surface:{type:'string',enum:['image','video']},modelId:{type:'string'},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},
+export const STUDIO_PRICING_DIRECTOR_TOOL={action:'pricing.read',name:'pricing_read',description:'Read the current MaxVideoAI customer estimate for ONE exact supported image/video scenario. Use settings from model_details and attached saved media or exact ready project outputs from media_read, with exact kind and supported roles. No quote is created/replaced, no spending or media promotion. Compare current like-for-like estimates before a budget recommendation; a fresh prepare quote and client confirmation are still required. Project output pricing is read-only and never saves a library copy. Audio generation is not supported here.',properties:{
+  surface:{type:'string',enum:['image','video']},modelId:{type:'string'},elements:klingOwnedElementsProperty,operation:{type:['string','null'],enum:[...VIDEO_OPERATIONS,null]},mode:{type:'string',enum:[...CANONICAL_GENERATION_MODES]},
   settings:{type:'array',description:'Supply an exact scenario: always include resolution from mode.resolutions in model_details. Include aspectRatio only when mode.aspectRatios is nonempty; otherwise omit it because framing comes from the source. For video, also include durationSec (seconds) from mode.duration, never duration. Include audio only when mode.audio is optional. Other setting names and values come from mode.settings. Explicit imageWidth/imageHeight also require resolution custom. Do not rely on prepare defaults for an estimate.',maxItems:32,items:{type:'object',additionalProperties:false,required:['name','value'],properties:{name:{type:'string'},value:{type:['string','number','boolean','null']}}}},
-  references:{...conversationMediaReferencesProperties(false),type:'array',maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS},outputCount:{type:'integer',enum:[1]},
+  references:{...conversationMediaReferencesProperties(),type:'array',maxItems:STUDIO_CONVERSATION_MAX_ATTACHMENTS},outputCount:{type:'integer',enum:[1]},
 }} as const;

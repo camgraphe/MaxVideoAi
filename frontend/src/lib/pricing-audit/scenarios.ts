@@ -57,7 +57,9 @@ function addEngineDefaultScenarios(rows: PricingAuditScenario[], entry: ReturnTy
   const engine = entry.engine;
   const durationSec = resolveDuration(engine);
   const resolution = resolveResolution(engine);
-  const mode = entry.modes[0]?.mode ?? (entry.category === 'image' ? 't2i' : 't2v');
+  // Catalog display ordering must not replace the historical creation checkpoint.
+  const creationMode = entry.category === 'image' ? 't2i' : 't2v';
+  const mode = entry.modes.find((candidate) => candidate.mode === creationMode)?.mode ?? entry.modes[0]?.mode ?? creationMode;
   const equivalenceKey = `${entry.id}:${mode}:${durationSec}:${resolution}:member`;
   const compatibilityProfile = compatibilityProfileForEngine(entry.id);
 

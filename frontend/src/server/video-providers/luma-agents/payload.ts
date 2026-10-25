@@ -13,6 +13,7 @@ import {
 } from './constants';
 
 type LumaAgentsFrame = { url: string };
+type LumaAgentsAnchor = LumaAgentsFrame | { generation_id: string };
 type LumaAgentsSource = { generation_id: string } | { url: string; media_type: string } | { data: string; media_type: string };
 type LumaAgentsEditStrength = (typeof LUMA_AGENTS_RAY_32_EDIT_STRENGTHS)[number];
 type LumaAgentsPoseStrength = Exclude<(typeof LUMA_AGENTS_RAY_32_POSE_STRENGTHS)[number], 'off'>;
@@ -44,8 +45,10 @@ export type LumaAgentsVideoOptions = {
   resolution: LumaAgentsRay32DirectResolution;
   duration?: LumaAgentsRay32DirectDuration;
   loop?: boolean;
-  start_frame?: LumaAgentsFrame;
-  end_frame?: LumaAgentsFrame;
+  start_frame?: LumaAgentsAnchor;
+  end_frame?: LumaAgentsAnchor;
+  keyframes?: LumaAgentsFrame[];
+  keyframe_indexes?: number[];
   edit?: LumaAgentsVideoEdit;
   source_position?: LumaAgentsSourcePosition;
   hdr?: boolean;
@@ -104,7 +107,7 @@ function normalizeDuration(params: {
     if (normalized === '10' || normalized === '10s') return '10s';
   }
   if (typeof raw === 'number' && Number.isFinite(raw)) {
-    const duration = Math.trunc(raw);
+    const duration = raw;
     if (duration === 5) return '5s';
     if (duration === 10) return '10s';
   }
@@ -142,7 +145,7 @@ function assertNoReferenceImages(referenceImageUrls: string[] | null | undefined
 
 function applyCompatibilityRules(params: {
   type: LumaAgentsGenerationType;
-  duration: LumaAgentsRay32DirectDuration;
+  duration?: LumaAgentsRay32DirectDuration;
   resolution: LumaAgentsRay32DirectResolution;
   aspectRatio?: string;
   loop: boolean;
@@ -241,7 +244,7 @@ function parseKeyframeIndexes(value: unknown): number[] {
   if (Array.isArray(value)) {
     return value.map((entry) => {
       const parsed = numberValue(entry);
-      if (parsed === null || parsed < 0) {
+      if (parsed === null || !Number.isInteger(parsed) || parsed < 0) {
         invalidRequest('Luma Ray 3.2 keyframe indexes must be non-negative numbers.', 'LUMA_AGENTS_KEYFRAME_INDEX_INVALID');
       }
       return Math.trunc(parsed);
@@ -251,7 +254,7 @@ function parseKeyframeIndexes(value: unknown): number[] {
   if (!text) return [];
   return text.split(',').map((entry) => {
     const parsed = numberValue(entry.trim());
-    if (parsed === null || parsed < 0) {
+    if (parsed === null || !Number.isInteger(parsed) || parsed < 0) {
       invalidRequest('Luma Ray 3.2 keyframe indexes must be non-negative numbers.', 'LUMA_AGENTS_KEYFRAME_INDEX_INVALID');
     }
     return Math.trunc(parsed);
@@ -281,6 +284,14 @@ function buildEditControls(extra: Record<string, unknown>): LumaAgentsVideoEditC
   }
   if (booleanValue(extra.edit_face)) {
     controls.face = { enabled: true };
+  }
+  for (const signal of ['pose', 'depth', 'normals', 'trajectory', 'face'] as const) {
+    const mode = cleanString(extra[`edit_${signal}_mode`]);
+    if (!mode) continue; // Legacy false/off meant omission, not disabled.
+    if (!['default', 'on', 'off'].includes(mode)) invalidRequest('Unsupported signal mode.');
+    if (mode === 'default') delete controls[signal];
+    else if (mode === 'off') controls[signal] = { enabled: false };
+    else controls[signal] = { ...controls[signal], enabled: true };
   }
   return Object.keys(controls).length ? controls : undefined;
 }
@@ -312,13 +323,16 @@ function buildVideoEdit(params: {
     });
   }
 
+  const strategy = cleanString(params.extra.edit_control_mode);
+  if (strategy && strategy !== 'automatic' && strategy !== 'manual') invalidRequest('Unsupported edit control mode.');
+  if (strategy === 'automatic' && (controls || strength !== 'auto')) {
+    invalidRequest('Automatic scheduling cannot be combined with manual strength or controls.');
+  }
   const edit: LumaAgentsVideoEdit = {};
-  if (controls) {
-    edit.controls = controls;
-  } else if (strength === 'auto') {
-    edit.auto_controls = true;
-  } else {
-    edit.strength = strength as Exclude<LumaAgentsEditStrength, 'auto'>;
+  if (strategy === 'automatic' || (!strategy && strength === 'auto' && !controls)) edit.auto_controls = true;
+  else {
+    if (strength !== 'auto') edit.strength = strength as Exclude<LumaAgentsEditStrength, 'auto'>;
+    if (controls) edit.controls = controls;
   }
 
   if (params.keyframeUrls.length > 0) {
@@ -363,8 +377,10 @@ export function buildLumaAgentsVideoPayload(params: {
   referenceImageUrls?: string[] | null;
   extraInputValues?: Record<string, unknown> | null;
   advancedDirectOnlyEnabled?: boolean;
+  trustedGenerationSource?: { providerGenerationId: string };
+  extendDirection?: 'forward' | 'backward';
 }): LumaAgentsVideoPayload {
-  if (params.mode === 'extend') {
+  if (params.mode === 'extend' && !params.trustedGenerationSource) {
     invalidRequest(
       'Luma Ray 3.2 direct does not support extend mode.',
       'LUMA_AGENTS_EXTEND_UNSUPPORTED'
@@ -380,13 +396,10 @@ export function buildLumaAgentsVideoPayload(params: {
     invalidRequest('Prompt is required for Luma Agents video generation.', 'LUMA_AGENTS_PROMPT_REQUIRED');
   }
 
-  const duration =
-    route.type === 'video_reframe'
-      ? LUMA_AGENTS_DEFAULT_VIDEO_DURATION
-      : normalizeDuration({
-          durationOption: params.durationOption,
-          durationSec: params.durationSec,
-        });
+  const duration = route.type === 'video_edit' ? undefined : normalizeDuration({
+    durationOption: route.type === 'video' ? params.durationOption : undefined,
+    durationSec: params.durationSec,
+  });
   const resolution = normalizeResolution(params.resolution);
   const aspectRatio = validateAspectRatio(params.aspectRatio);
   const extra = params.extraInputValues ?? {};
@@ -400,6 +413,14 @@ export function buildLumaAgentsVideoPayload(params: {
   const sourceVideoUrl = cleanString(params.videoUrl);
   const keyframeUrls = (params.keyframeUrls ?? []).map(cleanString).filter((url): url is string => Boolean(url));
   const source = buildSource({ extra, sourceVideoUrl, sourceVideoMimeType: params.sourceVideoMimeType });
+  if (params.mode === 'extend') {
+    if ((params.extendDirection != null && !['forward', 'backward'].includes(params.extendDirection)) || !params.trustedGenerationSource?.providerGenerationId || source || startFrameUrl || endFrameUrl || keyframeUrls.length
+      || extra.keyframe_indexes || extra.edit_keyframe_indexes || hdr || exrExport || duration !== '5s'
+      || (params.extendDirection === 'backward' && loop)) invalidRequest('Extend requires one generation anchor, SDR, five seconds and forward-only loop.');
+    return { model: route.providerModel, type: 'video', prompt, ...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
+      video: { resolution, duration: '5s', ...(loop ? { loop: true } : {}),
+        [params.extendDirection === 'backward' ? 'end_frame' : 'start_frame']: { generation_id: params.trustedGenerationSource.providerGenerationId } } };
+  }
   const edit = route.type === 'video_edit' ? buildVideoEdit({ extra, startFrameUrl, keyframeUrls }) : undefined;
   const sourcePosition = route.type === 'video_reframe' ? buildSourcePosition(extra) : undefined;
 
@@ -430,10 +451,17 @@ export function buildLumaAgentsVideoPayload(params: {
   const video: LumaAgentsVideoOptions = {
     resolution,
   };
-  if (route.type !== 'video_reframe') video.duration = duration;
+  if (duration) video.duration = duration;
   if (loop && route.type === 'video') video.loop = true;
   if (startFrameUrl && route.type !== 'video_reframe') video.start_frame = { url: startFrameUrl };
   if (endFrameUrl && route.type === 'video') video.end_frame = { url: endFrameUrl };
+  if (route.type === 'video' && (keyframeUrls.length || extra.keyframe_indexes)) {
+    const indexes = parseKeyframeIndexes(extra.keyframe_indexes);
+    if (keyframeUrls.length < 1 || keyframeUrls.length > 64 || indexes.length !== keyframeUrls.length
+      || new Set(indexes).size !== indexes.length) invalidRequest('Creation requires 1–64 keyframes with unique indexes.');
+    video.keyframes = keyframeUrls.map(url => ({ url }));
+    video.keyframe_indexes = indexes;
+  }
   if (edit && route.type === 'video_edit') video.edit = edit;
   if (sourcePosition && route.type === 'video_reframe') video.source_position = sourcePosition;
   if (hdr) video.hdr = true;
@@ -446,5 +474,18 @@ export function buildLumaAgentsVideoPayload(params: {
     ...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
     ...(source ? { source } : {}),
     video,
+  };
+}
+
+/** Summarize built fields only. This is builder evidence until the submission owner marks it submitted. */
+export function summarizeLumaEffectiveControls(payload: LumaAgentsVideoPayload) {
+  const edit = payload.video.edit;
+  return {
+    evidence: 'built_payload' as const,
+    strategy: edit ? (edit.auto_controls ? 'automatic' : 'manual') : 'not_applicable',
+    strength: edit?.strength ?? null,
+    signals: edit?.controls ?? {},
+    keyframeCount: edit?.keyframes?.length ?? payload.video.keyframes?.length ?? 0,
+    startFrame: Boolean(payload.video.start_frame), endFrame: Boolean(payload.video.end_frame),
   };
 }

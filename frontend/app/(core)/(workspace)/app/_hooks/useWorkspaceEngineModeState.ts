@@ -1,11 +1,14 @@
+import { isKlingO3EngineId } from '../_lib/kling-o3-unified-workflow';
+import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import { getKlingO3DisabledEngineReasons } from '../_lib/kling-o3-unified-workflow';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
+import type { WorkspaceWorkflowRequest } from '../_lib/workspace-hydration';
 import { resolveWorkspaceWorkflow, type WorkspaceWorkflowProjection } from '../_lib/workspace-workflow-projection';
 import {
   buildComposerModeToggles,
@@ -20,6 +23,7 @@ import {
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { getWorkspaceMediaFields, workspaceAssetsSupportMode } from '../_lib/workspace-multimodal-workflow';
+import { useWorkspaceSourceModeAssets } from './useWorkspaceSourceModeAssets';
 
 type ShotType = 'customize' | 'intelligent';
 
@@ -41,10 +45,12 @@ type UseWorkspaceEngineModeStateOptions = {
   form: FormState | null;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  setInputAssets?: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
   klingElements: KlingElementState[];
   shotType: ShotType;
   setShotType: Dispatch<SetStateAction<ShotType>>;
   effectiveRequestedEngineToken: string | null;
+  requestedWorkflow?: WorkspaceWorkflowRequest | null;
   authChecked: boolean;
   hydratedForScope: string | null;
   storageScope: string;
@@ -96,6 +102,7 @@ function hasFormStateChanged(previous: FormState, next: FormState): boolean {
   return (
     previous.engineId !== next.engineId ||
     previous.mode !== next.mode ||
+    previous.operation !== next.operation ||
     previous.durationSec !== next.durationSec ||
     previous.durationOption !== next.durationOption ||
     previous.numFrames !== next.numFrames ||
@@ -117,10 +124,12 @@ export function useWorkspaceEngineModeState({
   form,
   setForm,
   inputAssets,
+  setInputAssets,
   klingElements,
   shotType,
   setShotType,
   effectiveRequestedEngineToken,
+  requestedWorkflow = null,
   authChecked,
   hydratedForScope,
   storageScope,
@@ -139,9 +148,12 @@ export function useWorkspaceEngineModeState({
     return engines.find((engine) => matchesEngineToken(engine, effectiveRequestedEngineToken)) ?? null;
   }, [engines, effectiveRequestedEngineToken]);
 
+  const capabilityEngine = useMemo(() => resolveSelectedWorkspaceEngine({engines,form,engineOverride}),[engines,form,engineOverride]);
   const selectedEngine = useMemo<EngineCaps | null>(() => {
-    return resolveSelectedWorkspaceEngine({ engines, form, engineOverride });
-  }, [engines, form, engineOverride]);
+    const engine = capabilityEngine;
+    if (!engine || !form?.operation) return engine;
+    return resolveVideoOperationEngine(engine, form.mode, form.operation);
+  }, [capabilityEngine, form]);
   const {
     supportsKlingV3Controls,
     supportsKlingV3VoiceControl,
@@ -168,9 +180,13 @@ export function useWorkspaceEngineModeState({
     capability,
     supportsAudioToggle,
   } = useMemo(
-    () => resolveWorkspaceWorkflow({ engine: selectedEngine, form, inputAssets, klingElements }),
-    [selectedEngine, form, inputAssets, klingElements]
+    () => resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEngine, form, inputAssets, klingElements }),
+    [selectedEngine, capabilityEngine, form, inputAssets, klingElements]
   );
+
+  const prepareModeAssets = useWorkspaceSourceModeAssets({
+    engine: capabilityEngine, mode: activeManualMode ?? undefined, scope: storageScope, assets: inputAssets, setAssets: setInputAssets,
+  });
 
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
@@ -192,9 +208,10 @@ export function useWorkspaceEngineModeState({
     if (form.mode === implicitMode) return;
     setForm((current) => {
       if (!current || current.mode === implicitMode) return current;
-      return coerceFormState(selectedEngine, implicitMode, { ...current, mode: implicitMode });
+      return coerceFormState(engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine, implicitMode, { ...current, mode: implicitMode,
+        ...(isUnifiedKlingO3 && implicitMode === 'v2v' ? {operation:'kling-reference'} : {}) });
     });
-  }, [activeManualMode, form, implicitMode, selectedEngine, setForm]);
+  }, [activeManualMode, form, implicitMode, selectedEngine, setForm, engines, isUnifiedKlingO3]);
 
   useEffect(() => {
     if (!supportsKlingV3Controls) return;
@@ -281,6 +298,33 @@ export function useWorkspaceEngineModeState({
     });
   }, [engineOverride, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
 
+  const appliedWorkflowRequestRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestedWorkflow) {
+      appliedWorkflowRequestRef.current = null;
+      return;
+    }
+    if (!authChecked || hydratedForScope !== storageScope || !form) return;
+    const requestKey = JSON.stringify([storageScope, requestedWorkflow.engineToken, requestedWorkflow.mode, requestedWorkflow.mediaToken, requestedWorkflow.operation]);
+    if (appliedWorkflowRequestRef.current === requestKey) return;
+    const engine = engines.find((entry) => matchesEngineToken(entry, requestedWorkflow.engineToken));
+    if (!engine) return;
+    // Same-engine navigation still selects a workflow. Consume it once so later user
+    // choices survive rerenders, while another gallery card (media token) applies again.
+    appliedWorkflowRequestRef.current = requestKey;
+    setForm((current) => {
+      if (!current) return current;
+      const mode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: requestedWorkflow.mode, carryoverMode: current.mode });
+      let operation;
+      const requestedOperation = requestedWorkflow.operation ?? (!isKlingO3EngineId(engine.id)
+        ? Object.values(engine.operationCaps ?? {}).find(value => value.mode === mode && value.defaultForMode)?.operation
+        : undefined);
+      try { operation = normalizeVideoOperation(engine.id, mode, requestedOperation); } catch { return current; }
+      if (current.engineId === engine.id && current.mode === mode && current.operation === operation) return current;
+      return coerceFormStateForEngineChange(engine, mode, {...current,operation});
+    });
+  }, [authChecked, engines, form, hydratedForScope, requestedWorkflow, setForm, storageScope]);
+
   useEffect(() => {
     const pinnedToken = requestedEngineOverrideTokenRef.current;
     if (!pinnedToken) return;
@@ -313,22 +357,22 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode)) return;
-      const nextMode = getPreferredEngineMode(selectedEngine, mode);
-      setForm((current) => coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null));
+      if (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
+      const nextMode = getPreferredEngineMode(capabilityEngine, mode);
+      setForm((current) => coerceFormState(capabilityEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
-    [selectedEngine, setForm, workspaceExecutableModes]
+    [selectedEngine, capabilityEngine, setForm, workspaceExecutableModes]
   );
 
   const composerModeToggles = useMemo(
     () =>
       buildComposerModeToggles({
-        selectedEngine,
+        selectedEngine:capabilityEngine,
         audioWorkflowLocked,
         uiLocale,
         workflowCopy,
       }),
-    [audioWorkflowLocked, selectedEngine, uiLocale, workflowCopy]
+    [audioWorkflowLocked, capabilityEngine, uiLocale, workflowCopy]
   );
 
   const showRetakeWorkflowAction = Boolean(selectedEngine?.id === 'ltx-2-3' && selectedEngine.modes.includes('retake'));
@@ -355,13 +399,15 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(selectedEngine, mode))) return;
-      const nextMode = mode ?? implicitMode;
-      setForm((current) =>
-        coerceFormState(selectedEngine, nextMode, current ? { ...current, mode: nextMode } : null)
-      );
+      if (mode && (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
+      const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
+      const nextAssets = prepareModeAssets(mode);
+      const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,
+        inputAssets: nextAssets, klingElements }).implicitMode;
+      setForm((current) => coerceFormState(base, nextMode, current ? { ...current, mode: nextMode,
+        ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null));
     },
-    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes]
+    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3, prepareModeAssets, form, klingElements]
   );
 
   const formEngineId = form?.engineId;

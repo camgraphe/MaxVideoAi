@@ -5,7 +5,7 @@
     "title": "MiniMax H3 Max : vidéo 1080P, références et audio",
     "description": "Générez des vidéos MiniMax H3 Max de 5 à 15 secondes depuis un texte, des images clés ou des références multimodales, jusqu’en 1080P avec audio natif."
   },
-  "overview": "Créez des vidéos de 5 à 15 secondes depuis un texte, une image de début ou de fin, ou des références combinées. H3 Max propose le 480P, le 768P et le 1080P, l’expansion du prompt, l’audio natif et une bande-son facultative en modes texte et image.",
+  "overview": "Créez des vidéos de 5 à 15 secondes depuis un texte, une image de début ou de fin, ou des références combinées. H3 Max propose le 480P, le 768P et le 1080P, l’expansion du prompt, l’audio natif et une bande-son facultative en modes texte et image. Recast et Relight sont des opérations distinctes sur source ; seul Relight ajoute le 2K. Les nouveaux Extend, Insert et Reframe restent en attente.",
   "decision": {
     "modelSlug": "minimax-h3-max",
     "hero": {
@@ -15,7 +15,7 @@
       "subtitleHighlights": [
         "Donnez vie à plus d’idées"
       ],
-      "paragraph": "MiniMax H3 Max crée des vidéos de 5 à 15 secondes depuis un texte, des images clés ou des références image, vidéo et audio, en 480P, 768P ou 1080P. Utilisez-le sur le site ou via MCP. Générez l’audio natif ou fournissez une bande-son en modes texte et image ; choisissez MiniMax H3 pour la 2K ou la 4K.",
+      "paragraph": "MiniMax H3 Max crée des vidéos de 5 à 15 secondes depuis un texte, des images clés ou des références image, vidéo et audio, en 480P, 768P ou 1080P. Utilisez-le sur le site ou via MCP. Générez l’audio natif ou fournissez une bande-son en modes texte et image ; choisissez MiniMax H3 pour la création en 2K ou 4K. Recast et Relight sont des opérations distinctes sur source ; seul Relight ajoute le 2K. Les nouveaux Extend, Insert et Reframe restent en attente.",
       "primaryCta": {
         "label": "Générer avec MiniMax H3 Max",
         "href": "/app?engine=minimax-h3-max"
@@ -75,6 +75,16 @@
         "title": "Audio natif ou votre bande-son",
         "body": "Générez dialogues, ambiance, musique et effets, ou fournissez une bande-son en modes texte et image. Le mode références accepte aussi l’audio seul.",
         "tone": "audio"
+      },
+      {
+        "title": "Recast / Relight",
+        "body": "Les vidéos de référence guident un nouveau clip de 5–15 secondes ; elles ne sont pas directement modifiées. Recast et Relight se sélectionnent séparément et reprennent la durée de la source.",
+        "tone": "reference"
+      },
+      {
+        "title": "Extend / Insert / Reframe",
+        "body": "H3 Max Extend, Insert et Reframe restent en attente et ne peuvent pas être activés dans cette version. Recast et Relight sont des outils spécialisés sur source, distincts de la création avec références mixtes.",
+        "tone": "duration"
       }
     ],
     "decisionCards": [
@@ -111,6 +121,18 @@
       {
         "title": "Audio natif ou bande-son fournie",
         "body": "Utilisez une bande-son en mode texte ou image, ou des références audio en mode références. Décrivez dialogues, ambiance et sons synchronisés dans le prompt."
+      },
+      {
+        "title": "Recast",
+        "body": "Recast remplace les personnes avec 1–4 portraits ordonnés, associés de gauche à droite dans chaque plan. Utilisez une source de 5–30 secondes, avec des plans de 15 secondes maximum, et une sortie 768P ou 1080P. Mouvement, durée, coupes et audio de la source guident le remplacement ; vérifiez le résultat sans supposer une identité préservée."
+      },
+      {
+        "title": "Relight",
+        "body": "Relight utilise une image de sphère lumineuse sans prompt. Préparez une source constante à 24 i/s avec 17n+5 images décodées, au moins 56 images et 15 secondes maximum. Vérifiez toute fin retirée pendant la préparation. Relight conserve durée préparée et audio, avec une sortie 480P, 768P, 1080P ou 2K."
+      },
+      {
+        "title": "Extend / Insert / Reframe",
+        "body": "H3 Max Extend, Insert et Reframe restent en attente et ne peuvent pas être activés dans cette version. Recast et Relight sont des outils spécialisés sur source, distincts de la création avec références mixtes."
       }
     ],
     "pricingCopy": {
@@ -151,7 +173,9 @@
     ],
     "globalPrinciples": [
       "Une action lisible par plan.",
-      "Répétez uniquement les repères de continuité indispensables."
+      "Répétez uniquement les repères de continuité indispensables.",
+      "Les vidéos de référence guident un nouveau clip de 5–15 secondes ; elles ne sont pas directement modifiées. Recast et Relight se sélectionnent séparément et reprennent la durée de la source.",
+      "H3 Max Extend, Insert et Reframe restent en attente et ne peuvent pas être activés dans cette version. Recast et Relight sont des outils spécialisés sur source, distincts de la création avec références mixtes."
     ],
     "engineWhy": [
       "Créez des vidéos de 5 à 15 secondes depuis un texte, une image de début ou de fin, ou des références combinées. H3 Max propose le 480P, le 768P et le 1080P, l’expansion du prompt, l’audio natif et une bande-son facultative en modes texte et image."

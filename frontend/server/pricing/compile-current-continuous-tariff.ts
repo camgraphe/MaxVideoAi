@@ -15,6 +15,7 @@ import { supportsSeedanceInputTariff } from '@/lib/seedance-input-tariff';
 import { seedanceInputTariffBasis, validateSeedanceInputTariffDomain } from './seedance-input-tariff';
 import { validateMonotoneContinuousTariffDomain } from './continuous-tariff-domain';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
+import { isOperationContinuousTariff, compileOperationContinuousTariffPrice, validateOperationContinuousTariffDomain } from './video-operation-continuous-tariff';
 
 export async function compileCurrentContinuousTariffPrice(scenario: ManualTariffCoverageScenario, rules: PricingPolicyOverrideLoadResult) {
   if (rules.status !== 'loaded') throw new Error('Effective pricing rules are unavailable');
@@ -23,7 +24,8 @@ export async function compileCurrentContinuousTariffPrice(scenario: ManualTariff
   const facts = buildBillingPricingFacts(scenario.context, scenario.context.engine.pricingDetails, 'USD');
   const profile = getVersionedPricingPolicy().compatibilityProfiles.find(p => p.id === (policy.rule.compatibilityProfile ?? facts.compatibilityProfileId));
   if (!profile) throw new Error('Current price rounding is unavailable');
-  const compile = isOpenQuantityTariff(scenario.modelId, scenario.selector.mode) ? compileOpenQuantityTariffPrice
+  const compile = isOperationContinuousTariff(scenario.context) ? compileOperationContinuousTariffPrice
+    : isOpenQuantityTariff(scenario.modelId, scenario.selector.mode) ? compileOpenQuantityTariffPrice
     : scenario.modelId === 'gemini-omni-flash' ? compileOmniContinuousTariffPrice
     : ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) ? compileLtx25AudioContinuousTariffPrice : compileWan3ContinuousTariffPrice;
   return compile({ context: scenario.context, policy, compatibilityProfile: profile });
@@ -32,6 +34,7 @@ export async function compileCurrentContinuousTariffPrice(scenario: ManualTariff
 
 /** Migration and admin authoring share the same reviewed whole-domain guard. */
 export function validateCurrentContinuousTariffDomain(input: { context: PricingContext; price: ManualTariffPrice }) {
+  if (isOperationContinuousTariff(input.context)) return validateOperationContinuousTariffDomain(input);
   if (supportsSeedanceInputTariff(input.context.engine.id, input.context.mode ?? '', input.context.hasVideoInput ? 'video_input' : undefined)) {
     if (input.context.engine.providerMeta?.provider === 'fal') {
       const basis = seedanceInputTariffBasis(input.context);

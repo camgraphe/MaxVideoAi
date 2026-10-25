@@ -1,3 +1,4 @@
+import {videoWorkflowPreference,currentVideoWorkflowPreferenceRank} from '@/lib/video-workflow-review';
 import {
   listAgentModelCandidates,
   type AgentModelCandidate,
@@ -75,6 +76,11 @@ function describeCandidate(
   const tradeoffs: string[] = [];
   const guidance = getAgentModelGuidance(model.id);
 
+  const workflowPreference=input.mode?videoWorkflowPreference(model.id,input.mode):undefined;
+  if(workflowPreference&&Number.isFinite(currentVideoWorkflowPreferenceRank(model.id,input.mode))){
+    reasons.push(`Owner's Modify preference #${workflowPreference.rank}, reviewed ${workflowPreference.reviewedAt}.`);
+    tradeoffs.push(workflowPreference.scope);
+  }
   if (input.mode) reasons.push(`Supports the requested ${input.mode} mode.`);
   if (input.aspectRatio) reasons.push(`Supports the requested ${input.aspectRatio} aspect ratio.`);
   if (input.resolution) reasons.push(`Supports the requested ${input.resolution} resolution.`);
@@ -199,12 +205,16 @@ export async function recommendAgentModels(
     .sort((a, b) =>
       Number(preferredModelIds.has(b.candidate.model.id)) - Number(preferredModelIds.has(a.candidate.model.id)) ||
       b.score - a.score ||
+      currentVideoWorkflowPreferenceRank(a.candidate.model.id,input.mode)-currentVideoWorkflowPreferenceRank(b.candidate.model.id,input.mode) ||
       editorialPreference(b.editorial) - editorialPreference(a.editorial) ||
       Number(Boolean(input.useCase && getAgentModelGuidance(b.candidate.model.id)?.bestFor.includes(input.useCase))) - Number(Boolean(input.useCase && getAgentModelGuidance(a.candidate.model.id)?.bestFor.includes(input.useCase))) ||
       reviewedFitDiscoveryRank(a.candidate, input) - reviewedFitDiscoveryRank(b.candidate, input) ||
       a.candidate.model.id.localeCompare(b.candidate.model.id)
     );
-  const ranked = selectDiverseShortlist(rankedCandidates, 3);
+  // A reviewed Modify preference must not be reordered merely to vary families.
+  const hasCurrentWorkflowPreference = rankedCandidates.some(({ candidate }) =>
+    Number.isFinite(currentVideoWorkflowPreferenceRank(candidate.model.id, input.mode)));
+  const ranked = hasCurrentWorkflowPreference ? rankedCandidates.slice(0, 3) : selectDiverseShortlist(rankedCandidates, 3);
 
   return {
     recommendations: ranked.map(({ candidate, editorial }, index) => ({

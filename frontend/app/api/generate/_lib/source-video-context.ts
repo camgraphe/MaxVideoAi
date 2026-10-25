@@ -1,8 +1,15 @@
+import { isFluxLtxSourceOperation, validateFluxLtxSource } from '@/lib/flux-ltx-operations';
+import { isH3SourceOperation, validateH3Source, type H3SourceFacts } from '@/lib/h3-source-operations';
+import { validateKlingEditSource } from '@/lib/video-operation';
+import { isLumaSourceVideoMode, validateLumaSourceVideoTiming, lumaModifyTariffDurationSec, LUMA_MODIFY_SOURCE_MAX_SEC, LUMA_REFRAME_SOURCE_MAX_SEC } from '@/lib/luma-source-video';
 import type { Mode } from '@/types/engines';
 import { resolveSourceVideoDurationSec } from './attachment-references';
 import type { NormalizedAttachment } from './attachments';
 
 type SourceVideoContextParams = {
+  operation?: import('@/lib/video-operation').VideoOperation;
+  engineId?: string;
+  trustedSourceVideo?: H3SourceFacts & { url: string; durationSec?: number | null; width?: number | null; height?: number | null; mimeType?: string; sizeBytes?: number };
   mode: Mode;
   attachments: NormalizedAttachment[];
   sourceInputVideoUrl?: string;
@@ -41,6 +48,27 @@ type SourceVideoContextResult =
     };
 
 export function resolveGenerateSourceVideoContext(params: SourceVideoContextParams): SourceVideoContextResult {
+  if (params.operation === 'kling-edit' || isH3SourceOperation(params.operation) || isFluxLtxSourceOperation(params.operation)) {
+    const seconds = params.trustedSourceVideo?.url === params.sourceInputVideoUrl ? params.trustedSourceVideo?.durationSec : undefined;
+    const sourceError = isFluxLtxSourceOperation(params.operation) ? validateFluxLtxSource(params.operation,params.trustedSourceVideo) : isH3SourceOperation(params.operation) ? validateH3Source(params.operation,params.trustedSourceVideo) : validateKlingEditSource(params.trustedSourceVideo);
+    if (sourceError || typeof seconds !== 'number') return {
+      ok: false, status: 422, body: { ok: false, error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', message: sourceError ?? 'Kling Edit requires a verified source.' },
+      metric: { errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', meta: { sourceDurationSec: seconds ?? null, maxDurationSec: 15, mode: params.mode } } };
+    return { ok: true, durationSec: seconds, durationLabel: `${seconds}s`, hasVideoInput: true };
+  }
+  if (isLumaSourceVideoMode(params.engineId, params.mode)) {
+    const sourceDurationSec = params.trustedSourceVideo?.url === params.sourceInputVideoUrl
+      ? params.trustedSourceVideo?.durationSec : undefined;
+    const message = validateLumaSourceVideoTiming({ engineId: params.engineId, mode: params.mode,
+      sourceDurationSec, durationSec: params.fallbackDurationSec });
+    if (message) return { ok: false, status: 422,
+      body: { ok: false, error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', message },
+      metric: { errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED', meta: {
+        sourceDurationSec: sourceDurationSec ?? null, mode: params.mode,
+        maxDurationSec: params.mode === 'v2v' ? LUMA_MODIFY_SOURCE_MAX_SEC : LUMA_REFRAME_SOURCE_MAX_SEC } } };
+    const durationSec = params.mode === 'v2v' ? lumaModifyTariffDurationSec(sourceDurationSec!) : params.fallbackDurationSec;
+    return { ok: true, durationSec, durationLabel: `${durationSec}s`, hasVideoInput: true };
+  }
   const sourceVideoDuration = resolveSourceVideoDurationSec({
     mode: params.mode,
     attachments: params.attachments,

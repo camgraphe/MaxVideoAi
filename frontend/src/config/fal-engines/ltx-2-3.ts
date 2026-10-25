@@ -1,3 +1,4 @@
+import { buildFluxLtxOperationCaps } from '../../../lib/flux-ltx-operations';
 import type { EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
 
@@ -10,7 +11,7 @@ const LTX_2_3_ENGINE: EngineCaps = {
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'a2v', 'extend', 'retake'],
+  modes: ['t2v', 'i2v', 'a2v', 'extend', 'retake', 'reframe'],
   maxDurationSec: 20,
   resolutions: ['1080p', '1440p', '4k'],
   aspectRatios: ['16:9', '9:16'],
@@ -21,6 +22,7 @@ const LTX_2_3_ENGINE: EngineCaps = {
   motionControls: false,
   keyframes: false,
   params: {},
+  operationCaps: {'ltx23-reframe':buildFluxLtxOperationCaps('ltx23-reframe')},
   inputLimits: {
     imageMaxMB: 25,
     videoMaxMB: 30,
@@ -141,8 +143,8 @@ const LTX_2_3_ENGINE: EngineCaps = {
         id: 'guidance_scale',
         type: 'number',
         label: 'Guidance scale',
-        description: 'Adjust prompt adherence for LTX 2.3.',
-        modes: ['i2v', 'a2v'],
+        description: 'Adjust prompt adherence for audio-to-video.',
+        modes: ['a2v'],
         min: 1,
         max: 50,
       },
@@ -250,6 +252,7 @@ export const LTX_2_3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     logoPolicy: 'textOnly',
     engine: LTX_2_3_ENGINE,
     modes: [
+      {mode:'reframe',falModelId:'fal-ai/ltx-2.3/reframe',ui:buildFluxLtxOperationCaps('ltx23-reframe').ui},
       {
         mode: 't2v',
         falModelId: 'fal-ai/ltx-2.3/text-to-video',

@@ -1,9 +1,10 @@
+import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 
 export const STUDIO_CONVERSATION_MAX_REFERENCES=8;
 /** The attachment pool precedes model selection; generation keeps its own mode limit. */
-export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=10;
+export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=MAX_GENERATION_REFERENCES;
 
 export const conversationAspectRatioSchema = z.string().regex(/^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/);
 const settingValue = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);
@@ -14,7 +15,7 @@ export function conversationSelectionSettings(values: z.infer<typeof conversatio
 }
 export const conversationReferenceSchema = z.object({
   ref: toolAssetRefSchema.refine(ref => ref.kind === 'image', 'Only image generation references are qualified.'),
-  role: z.enum(['reference','source','first_frame','last_frame','mask']),
+  role: z.enum(['reference','source','first_frame','middle_frame','last_frame','mask']),
   slot: z.number().int().min(0).max(49).nullable().optional(),
 }).strict();
 const selection = {
@@ -49,7 +50,7 @@ export const conversationCreationPromptProperty={type:'string',description:'Writ
 export function conversationReferencesProperties(jobOutputs: boolean) {
   return {type: ['array','null'], items: {type: 'object', additionalProperties: false, required: ['ref','role','slot'], properties: {
     ref: jobOutputs ? {anyOf: [conversationImageRefProperties,conversationJobImageRefProperties]} : conversationImageRefProperties,
-    role: {type: 'string',enum: ['reference','source','first_frame','last_frame','mask']},
+    role: {type: 'string',enum: ['reference','source','first_frame','middle_frame','last_frame','mask']},
     slot: {type: 'null',description: 'Use null for these Studio modes. Image labels and positions are not ordered reference slots.'},
   }}};
 }

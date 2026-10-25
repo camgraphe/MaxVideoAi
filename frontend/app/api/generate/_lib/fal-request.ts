@@ -54,6 +54,7 @@ export function buildFalInputs(attachments: NormalizedAttachment[]): GenerateAtt
 }
 
 export function buildFalRequestParts(params: {
+  operation?: import('@/lib/video-operation').VideoOperation;
   attachments: NormalizedAttachment[];
   engineId: string;
   prompt: string;
@@ -123,6 +124,7 @@ export function buildFalRequestParts(params: {
 
   const falPayload: GeneratePayload = {
     engineId: params.engineId,
+    ...(params.operation ? { operation: params.operation } : {}),
     prompt: params.prompt,
     mode: params.mode,
     apiKey: typeof params.apiKey === 'string' ? params.apiKey : undefined,
