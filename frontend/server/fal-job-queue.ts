@@ -11,19 +11,32 @@ export async function resolveFalJobQueue(
 ) {
   const client = dependencies.client ?? getFalClient();
   const queryFn = dependencies.queryFn ?? query;
-  // Only V4 writes receipt identities in this wave. Other providers keep their contracts.
+  // Legacy requires a matching server-owned ID-only enqueue, not an absent log.
+  // The job marker commits with every new V4 accepted association, before logging.
   const rows = job.engineId === 'kling-v4'
-    ? await queryFn<{ receipt: unknown }>(
-      `SELECT payload->'falQueueReceipt' AS receipt FROM fal_queue_log
-         WHERE job_id = $1 AND provider_job_id = $2 AND engine_id = $3
-           AND provider = 'fal' AND status = 'enqueue' AND payload ? 'falQueueReceipt'
-         ORDER BY created_at ASC, id ASC LIMIT 1`,
+    ? await queryFn<{ receipt: unknown; receipt_present: boolean; receipt_required: boolean; legacy_enqueued: boolean }>(
+      `SELECT proof.receipt, proof.id IS NOT NULL AS receipt_present,
+           COALESCE(j.settings_snapshot ? 'falQueueReceiptRequired', FALSE) AS receipt_required,
+           EXISTS (SELECT 1 FROM fal_queue_log legacy
+             WHERE legacy.job_id = j.job_id AND legacy.provider_job_id = j.provider_job_id
+               AND legacy.engine_id = j.engine_id AND legacy.provider = 'fal' AND legacy.status = 'enqueue'
+               AND NOT (legacy.payload ? 'falQueueReceipt')
+               AND NOT (legacy.payload ? 'falQueueReceiptRequired')) AS legacy_enqueued
+         FROM app_jobs j
+         LEFT JOIN LATERAL (
+           SELECT id, payload->'falQueueReceipt' AS receipt FROM fal_queue_log
+             WHERE job_id = j.job_id AND provider_job_id = j.provider_job_id AND engine_id = j.engine_id
+               AND provider = 'fal' AND status = 'enqueue' AND payload ? 'falQueueReceipt'
+             ORDER BY created_at ASC, id ASC LIMIT 1
+         ) proof ON TRUE
+         WHERE j.job_id = $1 AND j.provider_job_id = $2 AND j.engine_id = $3 AND j.provider = 'fal'`,
       [job.jobId, job.requestId, job.engineId],
-    ).catch(() => [{ receipt: null }]) : [];
-  // A failed receipt read is unavailable evidence, never proof of a legacy job.
-  // Defer the refusal to status/result so callers keep their existing retry semantics.
-  if (!rows.length) {
-    // Legacy ID-only jobs have no receipt. Do not replace or resubmit them.
+    ).catch(() => []) : [];
+  const evidence = rows[0];
+  // Missing/failed ownership or receipt reads refuse inside status/result so the
+  // recovery callers retain their existing pending/retry behavior.
+  if (job.engineId !== 'kling-v4' || (evidence?.receipt_present === false
+    && evidence.receipt_required === false && evidence.legacy_enqueued === true)) {
     return {
       status: () => client.queue.status(job.legacyModel, { requestId: job.requestId }),
       result: () => client.queue.result(job.legacyModel, { requestId: job.requestId }),
@@ -32,7 +45,7 @@ export async function resolveFalJobQueue(
   // An invalid new receipt must not silently become a legacy fallback.
   const fetchFn = dependencies.fetchFn ?? fetch;
   const read = async (kind: 'statusUrl' | 'responseUrl'): Promise<Record<string, unknown>> => {
-    const receipt = readFalQueueReceipt(rows[0].receipt, job.requestId);
+    const receipt = readFalQueueReceipt(evidence?.receipt, job.requestId);
     const url = receipt[kind]!;
     const response = await fetchFn(url, {
       method: 'GET', redirect: 'error', headers: { Authorization: `Key ${ENV.FAL_API_KEY}` },

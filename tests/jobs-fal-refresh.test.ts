@@ -75,7 +75,7 @@ async function fixture(row = job(), receipt?: unknown) {
       if (sql.includes("payload->'falQueueReceipt'")) {
         if (state.receiptReadError) throw state.receiptReadError;
         assert.equal(params[0],row.job_id); assert.equal(params[1],row.provider_job_id);
-        return receipt === undefined ? [] : [{receipt}];
+        return receipt === undefined ? [] : [{receipt, receipt_present: true, receipt_required: true, legacy_enqueued: false}];
       }
       assert.match(sql, /^SELECT /, 'manual refresh must not use a failure write fallback');
       assert.equal(params.length, 1);

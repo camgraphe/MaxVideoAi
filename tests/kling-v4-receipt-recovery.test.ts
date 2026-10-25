@@ -25,9 +25,9 @@ test('accepted V4 receipt is durably associated with its actual provider job bef
   const previousKey = ENV.FAL_API_KEY;
   process.env.DATABASE_URL = db.databaseUrl; ENV.FAL_API_KEY = 'offline-only';
   try {
-    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY, provider TEXT, provider_job_id TEXT, updated_at TIMESTAMPTZ);
+    await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY, provider TEXT, provider_job_id TEXT, engine_id TEXT, settings_snapshot JSONB, updated_at TIMESTAMPTZ);
       CREATE TABLE fal_queue_log(id BIGSERIAL PRIMARY KEY,job_id TEXT,provider TEXT,provider_job_id TEXT,engine_id TEXT,status TEXT,payload JSONB,created_at TIMESTAMPTZ DEFAULT NOW());
-      INSERT INTO app_jobs(job_id) VALUES ('owned-job');`);
+      INSERT INTO app_jobs(job_id,engine_id) VALUES ('owned-job','kling-v4');`);
     const queryFn = async(sql:string,params?:unknown[]) => (await db.pool.query(sql,params)).rows;
     const tracker = createProviderJobTracker({jobId:'owned-job',providerKey:'fal',engineId:'kling-v4',prompt:'Offline',inputSummary,queryFn});
     let posts = 0;
@@ -70,7 +70,11 @@ test('accepted V4 receipt is durably associated with its actual provider job bef
     assert.equal(persisted.falQueueReceipt.cancelUrl,receipt.cancel_url);
     const visible=mapRecentGenerationRecordToWeb({job_id:'owned-job',engine_id:'kling-v4',surface:'video',status:'queued',provider_job_id:requestId,settings_snapshot:{},...persisted} as never);
     assert.equal(JSON.stringify(visible).includes('queue.fal.run'),false);
-    // No receipt means the explicit historical fallback; no attempt to submit again.
+    // A real matching historical job and ID-only enqueue establish compatibility.
+    await db.pool.query(`INSERT INTO app_jobs(job_id,engine_id,provider,provider_job_id)
+      VALUES ('old-job','kling-v4','fal','old-request');
+      INSERT INTO fal_queue_log(job_id,engine_id,provider,provider_job_id,status,payload)
+      VALUES ('old-job','kling-v4','fal','old-request','enqueue','{"provider":"fal","engineId":"kling-v4"}');`);
     const legacy=await resolveFalJobQueue({jobId:'old-job',engineId:'kling-v4',requestId:'old-request',legacyModel:endpoint});
     await legacy.status(); assert.equal(legacyReads,1); assert.equal(posts,1);
     // Persisted invalid receipt is never downgraded into that legacy fallback.
@@ -80,7 +84,7 @@ test('accepted V4 receipt is durably associated with its actual provider job bef
       {...recorded,endpoint:'kling/v4/text-to-video'},
       {requestId,endpoint,metadataState:'missing'},
     ]) {
-      await db.pool.query("UPDATE fal_queue_log SET payload = jsonb_build_object('falQueueReceipt', $1::jsonb)",[JSON.stringify(invalid)]);
+      await db.pool.query("UPDATE fal_queue_log SET payload = jsonb_build_object('falQueueReceipt', $1::jsonb) WHERE job_id='owned-job'",[JSON.stringify(invalid)]);
       const blocked=await resolveFalJobQueue({jobId:'owned-job',engineId:'kling-v4',requestId,legacyModel:endpoint});
       await assert.rejects(blocked.status(),/receipt metadata/);
       await refreshStaleFalJobs({rows:[{job_id:'owned-job',provider_job_id:requestId,engine_id:'kling-v4',surface:'video',provider:'fal',status:'queued'} as never],shouldRefreshStaleFalJobs:true,userId:'owner'});
@@ -124,7 +128,7 @@ test('accepted IDs survive malformed/missing URL metadata with exactly one POST 
 
 test('caller tracking metadata is refused at canonical request and settings admission',()=>{
   const raw={surface:'video',engineId:'kling-v4',mode:'t2v',prompt:'Offline',settings:{durationSec:5,resolution:'720p'},references:[]};
-  for(const name of ['falQueueReceipt','status_url','response_url','cancel_url','providerJobId']) {
+  for(const name of ['falQueueReceipt','falQueueReceiptRequired','status_url','response_url','cancel_url','providerJobId']) {
     assert.throws(()=>normalizeGenerationRequest({...raw,[name]:receipt}));
     assert.throws(()=>normalizeGenerationRequest({...raw,settings:{...raw.settings,[name]:receipt}}));
   }

@@ -88,6 +88,12 @@ export async function markJobAwaitingFal(params: {
            progress = GREATEST(progress, $2),
            message = COALESCE($3::text, message),
            provider_job_id = COALESCE($4, provider_job_id),
+           settings_snapshot = CASE
+             WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($4, provider_job_id) IS NOT NULL
+               THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{falQueueReceiptRequired}',
+                 jsonb_build_object('requestId', COALESCE($4, provider_job_id)), true)
+             ELSE settings_snapshot
+           END,
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
@@ -346,6 +352,12 @@ export async function submitFalGenerateTask(params: {
              message = $2,
              provisional = FALSE,
              provider_job_id = COALESCE($3, provider_job_id),
+             settings_snapshot = CASE
+               WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($3, provider_job_id) IS NOT NULL
+                 THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{falQueueReceiptRequired}',
+                   jsonb_build_object('requestId', COALESCE($3, provider_job_id)), true)
+               ELSE settings_snapshot
+             END,
              payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
              updated_at = NOW()
          WHERE job_id = $1`,

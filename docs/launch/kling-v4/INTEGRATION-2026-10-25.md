@@ -40,13 +40,25 @@ job detail, background poll and webhook completion) read that identity after res
 Only HTTPS queue.fal.run paths for the selected V4 endpoint or its observed kling/v4
 parent, bound to the exact request ID, are accepted; redirects, credentials, query
 strings and mismatches are refused. New receipts with missing/invalid metadata keep
-the accepted ID without resubmitting or silently using legacy paths. Old ID-only
-jobs retain their existing SDK fallback. Cancel URLs are retained; there is no
+the accepted ID without resubmitting or silently using legacy paths. Each new
+accepted association atomically adds `falQueueReceiptRequired: { requestId }` to
+server-owned job execution settings; the final/deferred/failure writers preserve
+this requirement. No receipt URL enters these settings or the paid snapshot.
+A failed receipt INSERT or exit before that INSERT therefore leaves recovery
+pending, with no SDK reconstruction. Historical ID-only fallback requires a
+matching job/provider/request/engine and a server-owned enqueue without either
+receipt or requirement evidence. Missing/read-failed evidence refuses recovery;
+it does not establish legacy. Cancel URLs are retained; there is no
 existing V4 cancel workflow and no new cancellation feature is added.
 
 Offline PG17 and real recovery-owner tests use a full-endpoint receipt path different
 from SDK reconstruction, continue HTTP 202/IN_PROGRESS to COMPLETED/result, and
-assert a single submission. This does not qualify a provider mode or account.
+assert a single submission. Separate PG17 fault injection covers receipt INSERT
+failure, the committed association before that INSERT, final snapshot replacement,
+deferred association and atomic-write rollback. Paid amounts, quote snapshots and
+ledger rows remain unchanged. If every database write fails before association,
+no durable ID can be guaranteed across process loss; accepted work must not be
+resubmitted to repair that gap. This does not qualify a provider mode or account.
 
 ## Tariff preparation and release boundary
 

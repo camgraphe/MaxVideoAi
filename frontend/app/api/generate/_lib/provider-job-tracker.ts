@@ -22,6 +22,8 @@ export function createProviderJobTracker(params: {
 }): ProviderJobTracker {
   let lastProviderJobId: string | null = null;
   const receiptRequestIds = new Set<string>();
+  const receiptRequirementRequestIds = new Set<string>();
+  const requiresReceipt = params.providerKey === 'fal' && params.engineId === 'kling-v4';
   const nativeDraftProofRequestIds = new Set<string>();
   const queryFn = params.queryFn ?? query;
   const now = params.now ?? (() => new Date());
@@ -36,14 +38,31 @@ export function createProviderJobTracker(params: {
     // A queue status can arrive before onEnqueue or an immediate-result callback.
     // Seeing its ID must not suppress the first authoritative native Draft proof.
     const needsNativeDraftProof = nativeDraftSubmission && !nativeDraftProofRequestIds.has(requestId);
-    const receipt = params.providerKey === 'fal' && params.engineId === 'kling-v4' && falQueueReceipt?.requestId === requestId
+    const needsReceiptRequirement = requiresReceipt && !receiptRequirementRequestIds.has(requestId);
+    const receipt = requiresReceipt && falQueueReceipt?.requestId === requestId
       ? falQueueReceipt : undefined;
     const needsReceipt = receipt && !receiptRequestIds.has(requestId);
-    if (!requestId || (lastProviderJobId === requestId && !needsNativeDraftProof && !needsReceipt)) return;
+    if (!requestId || (lastProviderJobId === requestId && !needsNativeDraftProof && !needsReceipt && !needsReceiptRequirement)) return;
     if (nativeDraftSubmission) nativeDraftProofRequestIds.add(requestId);
     lastProviderJobId = requestId;
     try {
-      await queryFn(
+      // The accepted association and its requirement commit as one statement. The
+      // diagnostic receipt log may fail or never run without proving legacy.
+      if (requiresReceipt) {
+        const rows = await queryFn(
+          `UPDATE app_jobs
+           SET provider = $3, provider_job_id = $2,
+               settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb),
+                 '{falQueueReceiptRequired}', jsonb_build_object('requestId', $2::text), true),
+               updated_at = NOW()
+           WHERE job_id = $1 AND engine_id = 'kling-v4'
+             AND (provider_job_id IS NULL OR provider_job_id = $2)
+           RETURNING job_id`,
+          [params.jobId, requestId, params.providerKey]
+        );
+        if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Accepted Fal identity persistence deferred.');
+        receiptRequirementRequestIds.add(requestId);
+      } else await queryFn(
         `UPDATE app_jobs
          SET provider = $3, provider_job_id = $2, updated_at = NOW()
          WHERE job_id = $1
@@ -70,6 +89,7 @@ export function createProviderJobTracker(params: {
           promptLength: params.prompt.length,
           inputSummary: params.inputSummary,
           ...(nativeDraftSubmission ? {nativeDraftSubmission} : {}),
+          ...(requiresReceipt ? { falQueueReceiptRequired: true } : {}),
           ...(receipt ? { falQueueReceipt: receipt } : {}),
         }),
         ]
