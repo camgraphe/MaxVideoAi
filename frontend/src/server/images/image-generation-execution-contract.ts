@@ -1,3 +1,4 @@
+import type { JobJourneyContext } from '@/server/generations/job-journey-context';
 import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type {
@@ -24,6 +25,7 @@ type ImageGenerationReservationOptions =
     });
 
 export type ExecuteImageGenerationOptions = {
+  journeyContext?: JobJourneyContext;
   userId: string;
   body: Partial<ImageGenerationRequest>;
   settingsSnapshot?: unknown;

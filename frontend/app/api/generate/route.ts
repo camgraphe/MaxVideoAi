@@ -1,3 +1,4 @@
+import { buildWebJobJourneyContext } from '@/server/generations/job-journey-context';
 import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 export const runtime = 'nodejs';
 
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
   if (pricingPolicyError) return pricingPolicyError;
 
   const result = await executeVideoGeneration({
+    journeyContext: buildWebJobJourneyContext(),
     req,
     body,
     routeContext: routeContext.context,

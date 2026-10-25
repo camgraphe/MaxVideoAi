@@ -9,15 +9,18 @@ test('C05–C09: migration, immutable snapshots, reservations and financial roll
   const pg = await startDisposablePostgres('journey-context');
   const previousUrl = process.env.DATABASE_URL;
   process.env.DATABASE_URL = pg.databaseUrl;
+  let legacyClient: Awaited<ReturnType<typeof pg.pool.connect>> | undefined;
   t.after(async () => {
     const { getDb } = await import('../frontend/src/lib/db');
     await getDb().end();
     if (previousUrl === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = previousUrl;
+    legacyClient?.release();
+    legacyClient = undefined;
     await pg.cleanup();
   });
   const migration = readFileSync('neon/migrations/81_job_journey_context.sql', 'utf8');
-  const legacyClient = await pg.pool.connect();
+  legacyClient = await pg.pool.connect();
 
   await legacyClient.query(`CREATE SCHEMA legacy; SET search_path TO legacy;
     CREATE TABLE app_jobs(job_id text PRIMARY KEY, status text, progress integer);
@@ -40,6 +43,7 @@ test('C05–C09: migration, immutable snapshots, reservations and financial roll
   }
   await legacyClient.query('SET search_path TO public');
   legacyClient.release();
+  legacyClient = undefined;
   // Actual baseline CREATE TABLE, followed by the explicit migration, matches fresh bootstrap ownership.
   const bootstrap = readFileSync('frontend/src/lib/schema/billing-core-schema.ts', 'utf8');
   const createJobs = bootstrap.match(/CREATE TABLE IF NOT EXISTS app_jobs \([\s\S]*?\n      \);/)![0];
@@ -68,6 +72,10 @@ test('C05–C09: migration, immutable snapshots, reservations and financial roll
     const reserve = (jobId: string, context = contextA) => transaction(executor => media === 'video'
       ? createInitialVideoJobInExecutor(executor, { ...videoParams(jobId), jobInsert: { ...videoParams(jobId).jobInsert, journeyContext: context } })
       : createInitialImageJobInExecutor(executor, { ...imageParams(jobId), journeyContext: context }));
+    const legacyId = `legacy-${media}`;
+    await pg.pool.query('INSERT INTO app_jobs(job_id,user_id) VALUES ($1,$2)', [legacyId, 'user-1']);
+    assert.equal((await reserve(legacyId)).kind, 'existing_job');
+    assert.equal((await pg.pool.query('SELECT journey_version FROM app_jobs WHERE job_id=$1', [legacyId])).rows[0].journey_version, null);
     const jobId = `race-${media}`;
     const results = await Promise.all([reserve(jobId), reserve(jobId, contextB)]);
     assert.deepEqual(results.map(r => r.kind).sort(), ['created', 'existing_job']);
@@ -91,5 +99,13 @@ test('C05–C09: migration, immutable snapshots, reservations and financial roll
     const malformed = { ...contextA, journeyVersion: 2 } as typeof contextA;
     await assert.rejects(reserve(`malformed-${media}`, malformed), /journey context/i);
     assert.equal((await pg.pool.query('SELECT count(*) FROM app_receipts WHERE job_id=$1', [`malformed-${media}`])).rows[0].count, '0');
+  }
+  await pg.pool.query('ALTER TABLE app_jobs DROP COLUMN entry_release_sha CASCADE');
+  for (const media of ['video', 'image'] as const) {
+    const jobId = `unmigrated-${media}`;
+    await assert.rejects(transaction(executor => media === 'video'
+      ? createInitialVideoJobInExecutor(executor, videoParams(jobId))
+      : createInitialImageJobInExecutor(executor, imageParams(jobId))), /entry_release_sha/);
+    assert.equal((await pg.pool.query('SELECT count(*) FROM app_receipts WHERE job_id=$1', [jobId])).rows[0].count, '0');
   }
 });

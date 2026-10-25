@@ -1,3 +1,4 @@
+import type { JobJourneyContext } from '@/server/generations/job-journey-context';
 import { prepareGenerationLineage } from './prepare-generation-lineage';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { lumaLineageQuoteBinding } from '@/server/agent-api/generation-luma-lineage';
@@ -37,6 +38,7 @@ export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-g
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
 
 export type ExecuteVideoGenerationOptions = {
+  journeyContext?: JobJourneyContext;
   seedanceWorkflow?: PreparedSeedanceWorkflow;
   req: NextRequest;
   body: Record<string, unknown>;
@@ -460,6 +462,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       seedanceEditSource, seedanceSourceAspectRatio, attachments: processedAttachments, trustedMediaReferences: attachmentProcessing.trustedMediaReferences ?? [] }) };
 
   return executePreparedVideoGeneration({
+    journeyContext: params.journeyContext,
     lumaGenerationSource,
     body,
     routeContext,

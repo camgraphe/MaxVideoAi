@@ -1,3 +1,4 @@
+import type { JobJourneyContext } from '@/server/generations/job-journey-context';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
 
@@ -119,6 +120,7 @@ export type PaidGenerationSubmissionDependencies = {
 };
 
 export type ReservePaidGenerationInput = {
+  journeyContext: JobJourneyContext;
   quote: McpGenerationQuote;
   candidate: AgentPublicGenerationEngine;
   pricingSnapshot: Record<string, unknown>;
@@ -217,6 +219,7 @@ function videoInitialParams(
     preferredCurrency: preferredCurrency(quote.currency),
     resolvedCurrencyLower: preferredCurrency(quote.currency),
     jobInsert: {
+      journeyContext: input.journeyContext,
       jobId: quote.quoteId,
       userId: quote.userId,
       engineId: quote.request.engineId,
@@ -264,6 +267,7 @@ function imageInitialParams(
   const fee = platformFee(pricing);
   const vendorAccountId = vendorAccount(pricing);
   return {
+    journeyContext: input.journeyContext,
     userId: quote.userId,
     mode: quote.request.mode === 'i2i' ? 'i2i' : 't2i',
     jobId: quote.quoteId,

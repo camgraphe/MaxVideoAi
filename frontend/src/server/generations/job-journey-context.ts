@@ -7,21 +7,25 @@ export type JobJourneyContext = Readonly<{
   journeyVersion: 1;
   entryReleaseSha: string | null;
 }>;
-export type JobJourneyEnv = Pick<NodeJS.ProcessEnv, 'VERCEL_GIT_COMMIT_SHA'>;
+export type JobJourneyEnv = Readonly<{ VERCEL_GIT_COMMIT_SHA?: string }>;
 
 const RELEASE_SHA = /^[0-9a-f]{40}$/;
+
+function currentServerEnv(): JobJourneyEnv {
+  return { VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA };
+}
 
 function serverRelease(env: JobJourneyEnv): string | null {
   const sha = env.VERCEL_GIT_COMMIT_SHA;
   return typeof sha === 'string' && RELEASE_SHA.test(sha) ? sha : null;
 }
 
-export function buildWebJobJourneyContext(env: JobJourneyEnv = process.env): JobJourneyContext {
+export function buildWebJobJourneyContext(env: JobJourneyEnv = currentServerEnv()): JobJourneyContext {
   return Object.freeze({ entrySurface: 'generator', entrySource: 'web_route', journeyVersion: 1,
     entryReleaseSha: serverRelease(env) });
 }
 
-export function buildConfirmedJobJourneyContext(actor: GenerationActor, env: JobJourneyEnv = process.env): JobJourneyContext {
+export function buildConfirmedJobJourneyContext(actor: GenerationActor, env: JobJourneyEnv = currentServerEnv()): JobJourneyContext {
   requireGenerationActor(actor);
   const entrySurface = actor.authMethod === 'studio-session' ? 'studio'
     : actor.authMethod === 'toolbox-session' ? 'tool' : 'mcp';
@@ -29,7 +33,7 @@ export function buildConfirmedJobJourneyContext(actor: GenerationActor, env: Job
     entryReleaseSha: serverRelease(env) });
 }
 
-export function normalizeJobJourneyContext(context: JobJourneyContext | undefined, env: JobJourneyEnv = process.env): JobJourneyContext {
+export function normalizeJobJourneyContext(context: JobJourneyContext | undefined, env: JobJourneyEnv = currentServerEnv()): JobJourneyContext {
   if (context === undefined) return Object.freeze({ entrySurface: 'unknown', entrySource: 'unknown',
     journeyVersion: 1, entryReleaseSha: serverRelease(env) });
   if (!context || context.journeyVersion !== 1

@@ -1,3 +1,4 @@
+import { buildWebJobJourneyContext } from '@/server/generations/job-journey-context';
 import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 import { CUSTOMER_TARIFF_REVISION_HEADER } from '@/lib/customer-tariff-revision';
 export const runtime = 'nodejs';
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
       }
     }
     const result = await executeImageGeneration({
+      journeyContext: buildWebJobJourneyContext(),
       userId,
       body,
       walletReservation: 'reserve',
