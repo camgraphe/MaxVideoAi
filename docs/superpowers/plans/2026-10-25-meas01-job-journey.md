@@ -30,9 +30,9 @@ Files: new `frontend/src/server/generations/job-journey-context.ts`, `neon/migra
 
 Interface: readonly `JobJourneyContext`, web/confirmed builders and strict normalizer; optional `journeyContext` on writers. Missing internal argument means unknown/unknown/1 and validated server SHA or null.
 
-- [ ] RED: helper mapping/validation, SQL coherence, legacy immutability and rollback tests.
-- [ ] Add migration and CREATE TABLE columns, normalize before financial reservation and insert atomically.
-- [ ] GREEN: unit and disposable PostgreSQL tests, including repeat migration and fresh bootstrap.
+- [x] RED: helper mapping/validation, SQL coherence, legacy immutability and rollback tests.
+- [x] Add migration and CREATE TABLE columns, normalize before financial reservation and insert atomically.
+- [x] GREEN: unit and disposable PostgreSQL tests, including repeat migration and fresh bootstrap.
 
 ## Task 2: authenticated boundaries
 
@@ -40,9 +40,9 @@ Files: video/image web routes, execution option transports, `confirm-generation.
 
 Interface: optional `journeyContext` travels separately from body; required context in `ReservePaidGenerationInput`, built only after quote ownership/actor validation for wallet reservation.
 
-- [ ] RED: forged payloads, same account/all actors/media, legacy quote, duplicate confirmation and ownership denial.
-- [ ] Propagate web and actor context; continuations retain stored values.
-- [ ] GREEN: acquired route/confirmation/integration tests and synthetic C01–C14.
+- [x] RED: forged payloads, same account/all actors/media, legacy quote, duplicate confirmation and ownership denial.
+- [x] Propagate web and actor context; continuations retain stored values.
+- [x] GREEN: acquired route/confirmation/integration tests and synthetic C01–C14.
 
 ## Task 3: aggregate and delivery
 
@@ -50,7 +50,7 @@ Files: `docs/engineering/job-journey-context.md`, checked-in SQL and collector, 
 
 Interface: read-only collector accepts UTC [start,end) and static admin exclusions; checks required schema, returns aggregate rows or unavailable. Exact user/job raw wallet quote evidence; no OAuth default.
 
-- [ ] RED: C15–C18 projection fixtures, exclusions, bounds, missing schema and unknown/conflict.
-- [ ] Implement versioned SQL/collector and migration-first runbook, preserving evidence layers.
-- [ ] GREEN: focused financial/consent tests, TypeScript, lint/exposure/diff check and feasible build.
-- [ ] Independent review; fix significant findings with regression tests; commit and draft PR, attach to chat.
+- [x] RED: C15–C18 projection fixtures, exclusions, bounds, missing schema and unknown/conflict.
+- [x] Implement versioned SQL/collector and migration-first runbook, preserving evidence layers.
+- [x] GREEN: focused financial/consent tests, TypeScript, lint/exposure/diff check and feasible build.
+- [x] Independent review; fix significant findings with regression tests; commit and draft PR, attach to chat.

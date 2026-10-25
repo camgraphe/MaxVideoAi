@@ -75,6 +75,11 @@ A later separately authorized delivery follows `docs/deployment/github-vercel.md
 1. Reconcile current main and concurrent migrations; review the committed migration.
 2. Rehearse on disposable/staging PostgreSQL. The ALTER/constraint validation locks
    `app_jobs`; measure its duration before choosing the live application window.
+   **Before applying**, inspect any existing journey columns, CHECK, trigger and
+   function definitions and compare them with the committed contract. Missing
+   objects are expected on a legacy database. An unexpected existing definition
+   must stop delivery before mutation: this migration replaces the function and
+   trigger, so a post-apply check alone cannot detect prior drift.
 3. Apply this explicit migration through the authorized migration procedure using a
    direct database connection, before either host runs the new writer. For a bounded
    migration invocation, use `psql "$JOURNEY_DATABASE_URL" --single-transaction -v

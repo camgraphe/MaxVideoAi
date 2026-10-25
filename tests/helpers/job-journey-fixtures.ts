@@ -84,4 +84,3 @@ export function imageParams(jobId = 'job-image-1') {
     walletReservation: 'reserve' as const,
   };
 }
-
