@@ -2,6 +2,7 @@ import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { readMcpAuthMetadata, type McpAuthMetadata } from './admin-mcp-auth-metadata';
 import type { AdminMcpRange } from '@/server/admin-mcp-metrics';
 import type { McpClientFamily } from '@/server/mcp/client-family';
+import { mcpQuoteOriginNotices } from './admin-mcp-origin-notices';
 import {
   buildMcpOutcomesSql,
   buildMcpGenerationItemsSql,
@@ -54,6 +55,9 @@ export type AdminMcpOutcomes = {
 };
 type OutcomeRow = {
   client: string;
+  studio_quotes_excluded: string | number | null;
+  toolbox_quotes_excluded: string | number | null;
+  unknown_origin_quotes_excluded: string | number | null;
   accounts: string | number | null;
   new_signups: string | number | null;
   missing_profiles: string | number | null;
@@ -79,7 +83,6 @@ type GenerationItemRow = {
   created_at: string | null;
   client: string | null;
 };
-
 function count(value: string | number | null): number {
   if (value == null) throw new Error('Missing MCP outcome count.');
   const result = Number(value);
@@ -127,6 +130,9 @@ export async function loadAdminMcpOutcomes(
     if (!relations?.audit || !relations.quotes || !relations.jobs) {
       return unavailable('MCP account and generation statistics require the audit, generation quote and job tables.');
     }
+    if (!relations.quoteAuthOrigin) {
+      return { ...unavailable('MCP quote origin is unavailable in this schema; account and generation attribution is unavailable until the origin schema is installed.'), generations: null };
+    }
     const sql = buildMcpOutcomesSql(relations);
     const emptyMetadata: McpAuthMetadata = { profiles: [], clients: [] };
     let metadata = emptyMetadata;
@@ -140,10 +146,14 @@ export async function loadAdminMcpOutcomes(
       }
     }
     if (!total) throw new Error('Missing MCP outcome totals.');
+    const originNotices = mcpQuoteOriginNotices(
+      count(total.studio_quotes_excluded), count(total.toolbox_quotes_excluded), count(total.unknown_origin_quotes_excluded),
+    );
     const registrationsAvailable = count(total.missing_profiles) === 0;
     const metadataJson = JSON.stringify(metadata);
     const empty: OutcomeRow = {
       client: '', accounts: 0, missing_profiles: 0, new_signups: 0,
+      studio_quotes_excluded: 0, toolbox_quotes_excluded: 0, unknown_origin_quotes_excluded: 0,
       generators: 0, submitted: 0, videos: 0, failed: 0, pending: 0,
       image_generators: 0, images_submitted: 0, images: 0, image_failed: 0, image_pending: 0,
     };
@@ -176,6 +186,7 @@ export async function loadAdminMcpOutcomes(
       })),
       generations,
       notices: [
+        ...originNotices,
         ...(!registrationsAvailable ? ['New signup counts are unavailable because some registration dates could not be read from synchronized profiles or account records.'] : []),
         ...(!relations.clientFamily ? ['Per-connection application recording starts after the client-family audit schema is installed. Historical attribution uses connection links and current registered OAuth application names where available.'] : []),
         ...(generationNotice ? [generationNotice] : []),

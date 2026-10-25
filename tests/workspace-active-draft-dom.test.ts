@@ -17,6 +17,9 @@ import {
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import { resolveVideoOperationEngine } from '../frontend/lib/video-operation';
+import { useWorkspaceGalleryActions } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions';
+import type { LocalRenderGroup } from '../frontend/app/(core)/(workspace)/app/_lib/render-persistence';
+import type { GroupSummary } from '../frontend/types/groups';
 import {
   resolveWorkspaceComposerFacts,
   resolveWorkspaceWorkflow,
@@ -30,6 +33,8 @@ async function mount({
   stored = null as string | null,
   unavailable = false,
   initialAuth = 'authed',
+  locale = 'en',
+  galleryRenderGroups = new Map<string, LocalRenderGroup>(),
 } = {}) {
   let engines = allEngines;
   let authStatus = initialAuth,
@@ -187,6 +192,7 @@ async function mount({
     const videoSettings = useWorkspaceVideoSettings({
       ...route,
       ...assets,
+      locale,
       accountScope: confirmed ?? (authStatus === 'loggedOut' ? 'public' : null),
       activeDraftReady: hydration.ready,
       hasActiveSetup: hydration.hasActiveSetup,
@@ -213,6 +219,15 @@ async function mount({
       setSelectedPreview: noop,
       setNotice: showNotice,
     } as any);
+    const galleryActions = useWorkspaceGalleryActions({
+      provider: 'fal', renderGroups: galleryRenderGroups, batchHeroes: {}, fallbackEngineId: 'seedance-2-0',
+      sharedPrompt: null, selectedPreview: null, compositeOverrideSummary: null,
+      applyVideoSettingsFromTile: videoSettings.applyVideoSettingsFromTile,
+      hydrateVideoSettingsFromJob: videoSettings.hydrateVideoSettingsFromJob,
+      focusComposer: noop, showNotice, writeScopedStorage: writeStorage, setPrompt: route.setPrompt,
+      setActiveGroupId: noop, setViewMode: noop, setActiveBatchId: noop, setBatchHeroes: noop,
+      setSelectedPreview: noop, setCompositeOverride: noop, setCompositeOverrideSummary: noop, setSharedPrompt: noop,
+    });
     current = {
       ...route,
       ...assets,
@@ -221,6 +236,7 @@ async function mount({
       referenceHandlers,
       klingHandlers,
       videoSettings,
+      galleryActions,
     };
     renders.push({
       authStatus,
@@ -1060,4 +1076,120 @@ for (const departure of ['edit', 'selection', 'account'] as const) {
       assert.equal(view.current.prompt, expected);
     } finally { await view.close(); }
   });
+}
+
+
+for (const [locale, notice] of [
+  ['en', 'This model is currently unavailable. Your settings have not been changed. Choose another model to continue.'],
+  ['fr', 'Ce modèle est actuellement indisponible. Vos paramètres n’ont pas été modifiés. Choisissez un autre modèle pour continuer.'],
+  ['es', 'Este modelo no está disponible actualmente. Tus ajustes no se han cambiado. Elige otro modelo para continuar.'],
+]) {
+  test(`unavailable recall leaves the complete draft untouched and explains the refusal in ${locale}`, async () => {
+    const view = await mount({ locale });
+    try {
+      await act(async () => {
+        view.current.setPrompt('My current prompt');
+        view.current.setNegativePrompt('My negative prompt');
+        view.current.setInputAssets({ image_url: [media('image_url')] });
+      });
+      const before = snapshot(view);
+      const storedBefore = view.storage.getItem(workspaceActiveDraftKey('a'));
+      const firstRecallRender = view.renders.length;
+      for (const engineId of ['pika-text-to-video', 'pika-image-to-video', 'wan-3']) {
+        await act(async () => view.current.videoSettings.applyVideoSettingsSnapshot({
+          schemaVersion: 1, surface: 'video', engineId, inputMode: 'i2v',
+          prompt: 'Do not copy this prompt', negativePrompt: 'Do not copy this either',
+          core: { durationSec: 5, resolution: '1080p' },
+          refs: { inputs: [] },
+        }));
+        assert.deepEqual(snapshot(view), before);
+        assert.equal(view.storage.getItem(workspaceActiveDraftKey('a')), storedBefore);
+        assert.equal(view.notices.at(-1), notice);
+      }
+      await act(async () => view.current.videoSettings.applyVideoSettingsFromTile({
+        id: 'legacy-pika', engineId: 'pika-image-to-video', prompt: 'Legacy unavailable prompt',
+        durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
+      }));
+      assert.deepEqual(snapshot(view), before);
+      assert.equal(view.notices.at(-1), notice);
+      assert.ok(view.renders.slice(firstRecallRender).every(render => render.prompt === before.prompt && render.form.engineId === before.form.engineId));
+      // A human may still deliberately recall an available model afterward.
+      await act(async () => view.current.videoSettings.applyVideoSettingsFromTile({
+        id: 'available', engineId: 'kling-3-pro', prompt: 'My explicit new choice',
+        durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
+      }));
+      assert.equal(view.current.form.engineId, 'kling-3-pro');
+      assert.equal(view.current.prompt, 'My explicit new choice');
+    } finally { await view.close(); }
+  });
+}
+
+test('authenticated legacy job response rejects unavailable Pika before changing the draft', async () => {
+  const view = await mount();
+  try {
+    await act(async () => view.current.setPrompt('Keep my draft'));
+    const before = snapshot(view);
+    // The real server mapper derives this snapshot when a legacy job has none stored.
+    const { mapGenerationStatusRecordToWeb } = await import('../frontend/src/server/generations/generation-status');
+    const payload = mapGenerationStatusRecordToWeb({
+      job_id: 'job_legacy_pika', engine_id: 'pika-image-to-video', engine_label: 'Pika',
+      surface: 'video', settings_snapshot: null, prompt: 'Legacy job prompt', duration_sec: 5,
+      status: 'completed', video_url: 'https://assets.test/legacy.mp4',
+    } as Parameters<typeof mapGenerationStatusRecordToWeb>[0]);
+    await act(async () => { void view.current.videoSettings.hydrateVideoSettingsFromJob('job_legacy_pika'); });
+    const request = view.requests.at(-1)!;
+    assert.equal(request.url, '/api/jobs/job_legacy_pika');
+    await act(async () => request.resolve(new Response(JSON.stringify(payload))));
+    assert.deepEqual(snapshot(view), before);
+    assert.match(view.notices.at(-1)!, /currently unavailable/);
+  } finally { await view.close(); }
+});
+
+
+for (const source of ['history', 'active'] as const) {
+  for (const action of ['continue', 'refine'] as const) {
+    for (const available of [false, true]) {
+      test(`${source} gallery ${action} ${available ? 'applies available settings once' : 'preserves the draft after refusal'}`, async () => {
+        const engineId = available ? 'kling-3-pro' : 'pika-image-to-video';
+        const hero: GroupSummary['hero'] = {
+          id: 'recall-output', jobId: 'job_recall', engineId, engineLabel: engineId,
+          prompt: 'Gallery recall prompt', durationSec: 5, createdAt: '2026-10-01',
+          source: 'job', status: 'completed', videoUrl: 'https://assets.test/output.mp4',
+        };
+        const group: GroupSummary = {
+          id: 'recall-group', source, count: 1, totalPriceCents: null, createdAt: hero.createdAt,
+          hero, members: [hero], previews: [],
+        };
+        const render = {
+          ...hero, id: 'job_recall', localKey: 'local-recall', batchId: group.id,
+          iterationIndex: 0, iterationCount: 1, aspectRatio: '16:9',
+        };
+        const renderGroups = new Map([[group.id, {
+          id: group.id, items: [render], iterationCount: 1, readyCount: 1,
+          totalPriceCents: null, currency: 'USD', groupId: group.id,
+        }]]) as Map<string, LocalRenderGroup>;
+        const view = await mount({ galleryRenderGroups: renderGroups });
+        try {
+          await act(async () => {
+            view.current.setPrompt('Keep my existing prompt');
+            view.current.setInputAssets({ image_url: [media('image_url')] });
+          });
+          const before = snapshot(view);
+          const storedBefore = view.storage.getItem(workspaceActiveDraftKey('a'));
+          const initialRequests = view.requests.length;
+          await act(async () => view.current.galleryActions.handleGalleryGroupAction(group, action));
+          if (!available) {
+            assert.deepEqual(snapshot(view), before);
+            assert.equal(view.storage.getItem(workspaceActiveDraftKey('a')), storedBefore);
+            assert.match(view.notices.at(-1)!, /currently unavailable/);
+            assert.equal(view.requests.length, initialRequests, 'no detail hydration may follow a refused recall');
+          } else {
+            assert.equal(view.current.form.engineId, engineId);
+            assert.equal(view.current.prompt, 'Gallery recall prompt' + (action === 'refine' ? '\n\n// refine here' : ''));
+            assert.equal(view.requests.length, initialRequests + 1, 'hydrate a successful recall only once');
+          }
+        } finally { await view.close(); }
+      });
+    }
+  }
 }
