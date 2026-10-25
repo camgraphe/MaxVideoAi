@@ -77,8 +77,18 @@ export function ModelDecisionPricingCard({ pricing, offer = null, locale = 'en' 
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
-                    <p className="text-2xl font-semibold leading-none text-[#071126] dark:text-white sm:text-[27px]">{scenario.value}</p>
+                  <div
+                    className={[
+                      'flex flex-col items-start gap-1 sm:flex-row sm:items-center',
+                      scenario.priceUnitLabel ? 'sm:flex-wrap sm:gap-x-3' : 'sm:gap-3',
+                    ].join(' ')}
+                  >
+                    <p className="text-2xl font-semibold leading-none text-[#071126] dark:text-white sm:text-[27px]">
+                      {scenario.value}
+                      {scenario.priceUnitLabel ? (
+                        <span className="mt-1 block text-xs font-medium leading-5 text-[#52627a] dark:text-white/60">{scenario.priceUnitLabel}</span>
+                      ) : null}
+                    </p>
                     {scenario.badge ? (
                       <span className="rounded-full bg-[#071126] px-2.5 py-1 text-[0.68rem] font-semibold leading-none text-white shadow-sm dark:bg-white dark:text-[#071126] sm:px-3 sm:text-xs">
                         {scenario.badge}
