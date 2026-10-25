@@ -1,7 +1,7 @@
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import { snapshotReferenceInputs } from './workspace-snapshot-reference-inputs';
 import { resolveExampleResolution } from './workspace-example-resolution';
-import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
+import { resolveRecalledWorkspaceEngine } from './workspace-recall-engine';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { QuadPreviewTile } from '@/components/QuadPreviewPanel';
@@ -12,8 +12,6 @@ import {
   coerceFormState,
   getPreferredEngineMode,
   isModeValue,
-  matchesEngineToken,
-  normalizeEngineToken,
   resolveAudioDefault,
   resolveBooleanFieldDefault,
 } from './workspace-engine-helpers';
@@ -269,13 +267,7 @@ export function resolveVideoSettingsSnapshot(
   }
 
   const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
-  const snapshotToken = snapshotEngineId ? normalizeEngineToken(snapshotEngineId) : null;
-  const engine =
-    getArchivedWorkspaceEngine(snapshotEngineId) ??
-    (snapshotEngineId ? options.engineMap.get(snapshotEngineId) : null) ??
-    (snapshotToken ? options.engines.find((candidate) => matchesEngineToken(candidate, snapshotToken)) : null) ??
-    options.engines[0] ??
-    null;
+  const engine = resolveRecalledWorkspaceEngine(snapshotEngineId, options.engines, options.engineMap);
   if (!engine) {
     throw new Error('No engines available to apply this snapshot');
   }

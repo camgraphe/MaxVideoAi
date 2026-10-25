@@ -46,6 +46,7 @@ import {
 } from '../_lib/workspace-video-settings';
 import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
 import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy';
+import { UnavailableVideoSettingsEngineError, unavailableVideoSettingsCopy } from '../_lib/workspace-recall-engine';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
@@ -256,11 +257,14 @@ export function useWorkspaceVideoSettings({
           focusComposer();
         });
       } catch (error) {
-        setNotice(error instanceof Error ? error.message : 'Failed to apply settings.');
+        setNotice(error instanceof UnavailableVideoSettingsEngineError
+          ? unavailableVideoSettingsCopy(locale)
+          : error instanceof Error ? error.message : 'Failed to apply settings.');
       }
     },
     [
       valid,
+      locale,
       engineMap,
       engines,
       focusComposer,
