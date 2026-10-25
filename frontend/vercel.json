@@ -1,0 +1,7 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "codex/meas01-static-bootstrap-517": false
+    }
+  }
+}
