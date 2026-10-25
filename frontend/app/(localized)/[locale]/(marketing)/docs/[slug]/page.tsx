@@ -13,6 +13,7 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 import { buildDocsTechArticleJsonLd } from '../_lib/docs-article-jsonld';
+import { wrapMcpDocsTables } from '../_lib/docs-table-scroll';
 import {
   filterDocsEntriesForPublication,
   filterDocsEntriesForStaticParams,
@@ -262,7 +263,9 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
-        <div className="public-prose prose" dangerouslySetInnerHTML={{ __html: doc.content }} />
+        <div className="public-prose prose" dangerouslySetInnerHTML={{
+          __html: doc.slug === 'mcp' ? wrapMcpDocsTables(doc.content, locale) : doc.content,
+        }} />
         {relatedDocs.length ? (
           <p className="text-sm text-text-muted">
             <Link href="/docs" className="underline underline-offset-2 hover:text-text-primary">
