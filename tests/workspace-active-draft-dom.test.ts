@@ -360,6 +360,27 @@ const media = (fieldId: string, kind: 'image' | 'video' | 'audio' = 'image', ind
   height: kind === 'audio' ? null : 360,
   durationSec: kind === 'image' ? null : 7.25,
 });
+test('authenticated Kling Modify survives remount with its explicit Edit identity and original source', async () => {
+  const view = await mount();
+  try {
+    const engine = allEngines.find(e => e.id === 'kling-o3-pro')!;
+    for (const withSource of [false, true]) {
+      const source = { ...media('video_url', 'video'), width: 720, height: 1280 };
+      await act(async () => {
+        view.current.setForm({ ...coerceFormState(engine, 'v2v', null), operation: 'kling-edit',
+          extraInputValues: { keep_audio: false } });
+        view.current.setInputAssets(withSource ? { video_url: [source] } : {});
+        view.current.setPrompt('Keep the person and change the background');
+      });
+      await view.remount();
+      assert.equal(view.current.form.operation, 'kling-edit');
+      assert.equal(view.current.form.extraInputValues.keep_audio, false);
+      assert.deepEqual(view.current.inputAssets, withSource ? { video_url: [source] } : {});
+      assert.equal(view.current.prompt, 'Keep the person and change the background');
+    }
+    assert.equal(view.libraryWrites, 0);
+  } finally { await view.close(); }
+});
 const snapshot = (view: Awaited<ReturnType<typeof mount>>) => {
   const {
     form,
