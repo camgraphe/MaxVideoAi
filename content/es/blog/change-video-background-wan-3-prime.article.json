@@ -1,0 +1,285 @@
+{
+  "schemaVersion": 1,
+  "canonicalSlug": "change-video-background-wan-3-prime",
+  "publication": {
+    "articleId": "12a09ea8-780c-4df5-8b61-c79292c8399b",
+    "version": 1,
+    "digest": "403f5397e62d73c197b6cfe1ae4682233a62f19fa67badebf6be95bb4782747f",
+    "publishedAt": "2026-10-25T18:41:10.670Z"
+  },
+  "article": {
+    "locale": "es",
+    "audience": "es-419",
+    "slug": "change-video-background-wan-3-prime",
+    "title": "Cómo cambiar el fondo de tu video con IA | Wan 3 Prime",
+    "description": "Lleva un clip hablado de una oficina en casa a una nave espacial o un observatorio submarino. Sigue la selección del fragmento, los ajustes y los prompts exactos del tutorial de Wan 3 Prime Modify.",
+    "keywords": [
+      "cambiar el fondo de un video con IA",
+      "Wan 3 Prime",
+      "Modify Video",
+      "video a video"
+    ],
+    "blocks": [
+      {
+        "id": "editorial-hero",
+        "type": "media",
+        "assetId": "wan-cockpit",
+        "presentation": "single",
+        "alt": "El presentador habla en la cabina de una nave orbital, con la Tierra visible por las ventanas.",
+        "caption": "La Tierra llena las ventanas y el presentador conserva su camiseta gris. Compara su rostro y su forma de hablar con el clip original."
+      },
+      {
+        "id": "opening",
+        "type": "text",
+        "heading": "Conserva la interpretación. Cambia de escenario.",
+        "paragraphs": [
+          {
+            "text": "Un presentador está sentado frente a su escritorio y dice una frase breve. En una versión, la Tierra ocupa la ventana que tiene detrás. En otra, una mantarraya pasa por el azul de un observatorio submarino. Ambas ediciones parten del mismo fragmento de video de seis segundos.",
+            "sourceIds": []
+          },
+          {
+            "text": "Este tutorial usa Wan 3 Prime Modify en MaxVideoAI. En el ejemplo partimos de un video generado; puedes seguir los mismos pasos con tu propio material.",
+            "sourceIds": []
+          },
+          {
+            "spans": [
+              {
+                "text": "Ver el tutorial completo en YouTube.",
+                "href": "https://www.youtube.com/watch?v=qKrPvZj_dL0"
+              }
+            ],
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "source-choice",
+        "type": "text",
+        "heading": "Conserva la frase y el gesto completos",
+        "paragraphs": [
+          {
+            "text": "Lo útil es una acción completa. Incluye el principio y el final de la frase, junto con el movimiento de la mano que la acompaña. Un fragmento demasiado recortado puede dejar al modelo sin el inicio o el cierre del movimiento que quieres conservar.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "source-frame",
+        "type": "media",
+        "assetId": "wan-original",
+        "presentation": "single",
+        "alt": "El presentador con camiseta gris en la oficina en casa del clip original.",
+        "caption": "El video original aporta la postura sentada, el encuadre, la frase y el movimiento de la mano que se pide conservar."
+      },
+      {
+        "id": "choose-excerpt",
+        "type": "steps",
+        "heading": "Elige el fragmento que quieres editar",
+        "steps": [
+          {
+            "title": "Abre la modalidad de edición",
+            "body": "En el espacio Video, elige Wan 3 Prime y luego Modify Video. Abre Video to modify y sube tu clip, o elige un video que ya tengas en Media."
+          },
+          {
+            "title": "Conserva el momento completo",
+            "body": "Haz clic en Choose section. Ajusta los extremos de la selección para incluir toda la frase y el gesto de la mano, revisa la vista previa y haz clic en Use excerpt. El ejemplo selecciona seis segundos; no requiere ajustar la duración por separado."
+          }
+        ]
+      },
+      {
+        "id": "excerpt-frame",
+        "type": "media",
+        "assetId": "wan-excerpt",
+        "presentation": "single",
+        "alt": "Ventana Choose section con una selección de seis segundos y el botón Use excerpt.",
+        "caption": "Incluye la frase y el gesto completos en la selección y revisa la vista previa antes de elegir Use excerpt."
+      },
+      {
+        "id": "settings",
+        "type": "text",
+        "heading": "Revisa los ajustes y después el precio de tu edición",
+        "paragraphs": [
+          {
+            "text": "El ejemplo usa 16:9, 720p y Audio On. En Options, Prompt expansion está en Off.",
+            "sourceIds": []
+          },
+          {
+            "text": "El importe visible en esta demostración es USD 2.19. Revisa la cotización vigente junto a Modify video después de elegir tu video y tus ajustes.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "settings-frame",
+        "type": "media",
+        "assetId": "wan-settings",
+        "presentation": "single",
+        "alt": "Controles de Modify Video con 720p, 16:9, audio generado en On y un importe visible de USD 2.19.",
+        "caption": "Elige el formato de salida, la resolución y el audio antes de revisar el precio."
+      },
+      {
+        "id": "prompt-direction",
+        "type": "text",
+        "heading": "Separa lo que cambia de lo que debe conservarse",
+        "paragraphs": [
+          {
+            "text": "El prompt de la cabina pide una nave con profundidad arquitectónica y la Tierra al otro lado de una ventana panorámica. También indica qué debe permanecer: el presentador, la camiseta gris, la postura sentada, la cámara, la expresión, los movimientos de la boca, el gesto y la frase original en inglés.",
+            "sourceIds": []
+          },
+          {
+            "text": "El movimiento lento de la Tierra ocurre detrás del presentador. El prompt no debe pedirle otra interpretación ni un movimiento de cámara distinto. Las instrucciones de conservación sirven como puntos de revisión frente al original; no garantizan una identidad o una sincronización labial exactas.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "prompt-cockpit",
+        "type": "prompt",
+        "heading": "Prompt exacto utilizado: cabina espacial",
+        "template": "Edit the supplied six-second source clip. Keep exactly the same man: his facial structure, age, short brown hairstyle, clean-shaven face, skin texture and body proportions. Preserve the original seated position, framing, camera, expression, mouth movements, hand gesture and performance timing. Keep the original spoken English line and voice in sync; add no words, music or other voices. Keep him slightly left of center, with uncluttered space on the right for a graphic added later. Replace the home interior with the spectacular flight deck of an orbital spacecraft. A huge panoramic window behind him reveals Earth's luminous curved horizon, blue oceans and white cloud systems against deep black space. Strong architectural depth, brushed metal ribs and restrained amber console lights make this unmistakably a real spaceship, not a normal office. Earth drifts very slowly beyond the window while the camera remains as in the source. Keep his original gray T-shirt unchanged. Natural readable face lighting; cinematic, photorealistic materials. No helmet, face covering, new people, cuts, captions, readable screens, logos or graphics. The complete orbital environment is already visible in the first frame.",
+        "note": "Puedes dejar vacío el espacio de la derecha; no hace falta agregar un gráfico para esta edición."
+      },
+      {
+        "id": "generate-review",
+        "type": "steps",
+        "heading": "Genera y revisa lo que importa",
+        "steps": [
+          {
+            "title": "Confirma la solicitud actual",
+            "body": "Pega el prompt completo y revisa el precio antes de iniciar Modify video. Espera a que termine la generación."
+          },
+          {
+            "title": "Revisa el movimiento y el sonido",
+            "body": "Compara el rostro, la sincronización de la boca, el movimiento de la mano y el encuadre con el original. Reproduce la frase completa. Un fondo convincente es solo una parte de la edición."
+          },
+          {
+            "title": "Guarda la versión que prefieras",
+            "body": "Abre el resultado terminado y usa el ícono de descarga. Conserva el fragmento original para empezar desde ahí cuando hagas otra variación."
+          }
+        ]
+      },
+      {
+        "id": "underwater-variation",
+        "type": "text",
+        "heading": "Para el segundo escenario, vuelve al original",
+        "paragraphs": [
+          {
+            "text": "La versión submarina vuelve a partir del fragmento original de seis segundos, con los mismos ajustes mostrados. Es una generación aparte, no una segunda edición del resultado de la nave.",
+            "sourceIds": []
+          },
+          {
+            "text": "Este prompt también cambia la camiseta gris por una chaqueta de expedición beige. Por eso varían tanto el fondo como la ropa. La mantarraya se sitúa detrás del hombro del presentador, sin tapar su rostro ni su mano.",
+            "sourceIds": []
+          }
+        ]
+      },
+      {
+        "id": "underwater-frame",
+        "type": "media",
+        "assetId": "wan-underwater",
+        "presentation": "single",
+        "alt": "Presentador con chaqueta beige en un observatorio submarino azul, con una mantarraya al otro lado del vidrio.",
+        "caption": "La versión submarina también cambia la ropa. Mantén la mantarraya detrás del presentador, sin taparle el rostro."
+      },
+      {
+        "id": "prompt-underwater",
+        "type": "prompt",
+        "heading": "Prompt exacto utilizado: observatorio submarino",
+        "template": "Edit the supplied six-second source clip. Keep exactly the same man: his facial structure, age, short brown hairstyle, clean-shaven face, skin texture and body proportions. Preserve the original seated position, framing, camera, expression, mouth movements, hand gesture and performance timing. Keep the original spoken English line and voice in sync; add no words, music or other voices. Keep him slightly left of center, with uncluttered space on the right for a graphic added later. Replace the home interior with a panoramic glass observatory deep under the ocean. Huge curved windows and substantial circular structural ribs surround him; beyond the glass is open turquoise water fading into dark blue depth, not a room or an aquarium wall. One large manta ray glides slowly past the window behind his right shoulder during the existing hand gesture; keep its silhouette clearly readable and behind the glass, never overlapping his face or hand. Soft moving water caustics touch the architecture while the man's face stays naturally lit and consistent. Replace only his gray T-shirt with a simple light beige expedition jacket with a clean collar and fitted sleeves, without badges or writing. Keep the source body shape and arm motion. Cinematic photorealism, immense underwater depth, no helmet, masks, other people, cuts, captions, readable screens, logos or graphics. The underwater environment is unmistakable from the first frame.",
+        "note": "Vuelve a empezar desde el fragmento original para esta variación."
+      },
+      {
+        "id": "review-limits",
+        "type": "text",
+        "heading": "Qué revisar antes de dar por terminada la edición",
+        "paragraphs": [
+          {
+            "text": "Mira los contornos de las manos y los hombros, el rostro durante toda la frase y la estabilidad del entorno mientras se mueve el presentador. Escucha si cambian las palabras, aparece otra voz o se altera el ritmo.",
+            "sourceIds": []
+          },
+          {
+            "text": "Este proceso crea una nueva escena de video terminada. No produce un recorte con fondo transparente para composición. La identidad, la ropa y la sincronización labial pueden variar aunque el prompt pida conservarlas.",
+            "sourceIds": []
+          },
+          {
+            "text": "El audio es opcional en esta modalidad. Actívalo para un clip hablado y revisa la frase completa.",
+            "sourceIds": [
+              "wan-model"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "try-it",
+        "type": "conclusion",
+        "heading": "Prueba con un momento completo",
+        "paragraphs": [
+          "Elige un clip corto cuya interpretación quieras conservar. Decide qué se mantiene, elige un nuevo entorno y compara el original y el resultado lado a lado."
+        ],
+        "cta": {
+          "label": "Abrir Wan 3 Prime en MaxVideoAI",
+          "href": "https://maxvideoai.com/models/wan-3-prime"
+        }
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "wan-model",
+      "title": "Wan 3 Prime on MaxVideoAI",
+      "publisher": "MaxVideoAI",
+      "url": "https://maxvideoai.com/models/wan-3-prime",
+      "retrievedAt": "2026-10-25"
+    },
+    {
+      "id": "wan-tutorial-video",
+      "title": "How to Change Your Video Background with AI | Wan 3 Prime",
+      "publisher": "MaxVideoAI / YouTube",
+      "url": "https://www.youtube.com/watch?v=qKrPvZj_dL0",
+      "retrievedAt": "2026-10-25",
+      "publishedAt": "2026-10-25"
+    }
+  ],
+  "assets": [
+    {
+      "id": "wan-cockpit",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "faa70dbd88e72571e0f242a6bd8471a60fd13bbfbc7f790ac2d8908f97dfcc81",
+      "url": "https://media.maxvideoai.com/editorial/published/faa70dbd88e72571e0f242a6bd8471a60fd13bbfbc7f790ac2d8908f97dfcc81.webp"
+    },
+    {
+      "id": "wan-underwater",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "c97c24b1d8f5243c93d23f8ade329506e8ade1875dda46c50dbd536fd114c644",
+      "url": "https://media.maxvideoai.com/editorial/published/c97c24b1d8f5243c93d23f8ade329506e8ade1875dda46c50dbd536fd114c644.webp"
+    },
+    {
+      "id": "wan-original",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "342ce41275cd26918f7424bfa489f78e339014fefe7ccf782807546a55b075a1",
+      "url": "https://media.maxvideoai.com/editorial/published/342ce41275cd26918f7424bfa489f78e339014fefe7ccf782807546a55b075a1.webp"
+    },
+    {
+      "id": "wan-settings",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "8b44bcf04109e32cafbb9fd9f3b1b5e3fcc94cd5b39c7aa80465b297718ba6b0",
+      "url": "https://media.maxvideoai.com/editorial/published/8b44bcf04109e32cafbb9fd9f3b1b5e3fcc94cd5b39c7aa80465b297718ba6b0.webp"
+    },
+    {
+      "id": "wan-excerpt",
+      "kind": "verified-capture",
+      "width": 1440,
+      "height": 810,
+      "sha256": "fc3d794a35e6452dbb2f26e05023bc96d5caabd97d3d036360a72ad4c060781f",
+      "url": "https://media.maxvideoai.com/editorial/published/fc3d794a35e6452dbb2f26e05023bc96d5caabd97d3d036360a72ad4c060781f.webp"
+    }
+  ]
+}
