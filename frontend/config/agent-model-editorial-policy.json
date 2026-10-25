@@ -53,7 +53,7 @@
   ],
   "workspaceSelection": {
     "reviewedAt": "2026-10-25",
-    "source": "Approved MaxVideoAI model-picker review; editorial preference, not a measured ranking.",
+    "source": "Approved MaxVideoAI model-picker review; editorial preference, not a measured ranking. Seedance Mini leads the compatible Create budget group by product decision after the 2026-10-25 tariff review; prices remain scenario-specific live quotes.",
     "create": [
       {
         "group": "quality",
@@ -73,6 +73,7 @@
       {
         "group": "budget",
         "ids": [
+          "seedance-2-0-mini",
           "minimax-h3"
         ]
       }
