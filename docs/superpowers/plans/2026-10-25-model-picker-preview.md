@@ -32,32 +32,32 @@
 
 Files: new `frontend/lib/model-picker-estimates.ts`, shared quote hook and `tests/model-picker-estimates.test.ts`.
 Interface: an estimate queue with canonical keys, success-only TTL cache, leases for queued cancellation, deduplication and account/revision invalidation; returns amount/currency and timing.
-- [ ] Write/run failing tests for maximum concurrency, deduplication, TTL, cancellation, stale revision and error retry.
-- [ ] Implement the service; preserve generation preflight ownership.
-- [ ] Run focused tests, record evidence and commit.
+- [x] Write/run failing tests for maximum concurrency, deduplication, TTL, cancellation, stale revision and error retry.
+- [x] Implement the service; preserve generation preflight ownership.
+- [x] Run focused tests, record evidence and commit.
 
 ### Task 2: Context and editorial adapters
 
 Files: existing `agent-model-editorial-policy.json`; new browser policy projection and video/image picker adapter modules; focused behavior tests.
 Interface: `EnginePickerContext` supplies context text, per-model settings/changes/eligibility and estimate descriptors; adapter preparation never mutates a live draft.
-- [ ] Test exact approved ordering, absent/unavailable models, blank prompt, source preservation, operation mismatch and explicit setting changes.
-- [ ] Implement using real registry, workspace candidate preparation and existing image estimate contracts.
-- [ ] Connect comparison to the shared estimate service and verify existing behavior tests.
+- [x] Test exact approved ordering, absent/unavailable models, blank prompt, source preservation, operation mismatch and explicit setting changes.
+- [x] Implement using real registry, workspace candidate preparation and existing image estimate contracts.
+- [x] Connect comparison to the shared estimate service and verify existing behavior tests.
 
 ### Task 3: Shared responsive dialog
 
 Files: lazy `EnginePickerDialog.client.tsx`, focused state/row/copy/CSS modules, EngineSelect integration, DOM tests.
 Interface: controlled current model + optional context; emits chosen model only on apply, visible IDs only while open; all families and detail view share one dialog.
-- [ ] Add failing DOM tests for cancel, confirmation, search/families, focus, stale selection and price states.
-- [ ] Implement FR/EN/ES copy, approved groups, readable mobile rows, compact short-height layout and 44 px information targets.
-- [ ] Verify inherited EngineSelect contracts and preserve explicit multi-selection comparison browser behavior.
+- [x] Add failing DOM tests for cancel, confirmation, search/families, focus, stale selection and price states.
+- [x] Implement FR/EN/ES copy, approved groups, readable mobile rows, compact short-height layout and 44 px information targets.
+- [x] Verify inherited EngineSelect contracts and preserve explicit multi-selection comparison browser behavior.
 
 ### Task 4: Workspace integration
 
 Files: WorkspaceAppReadyView, shell/dock/EngineSettingsBar prop wiring, image composer wiring and route-local adapters; related contracts.
-- [ ] Wire video and image pricing context without moving orchestrator responsibilities.
-- [ ] Reuse existing application transaction; confirm changed settings once, block reference loss/mode changes.
-- [ ] Verify selected defaults/memory/link/project priority and existing workspace/image tests.
+- [x] Wire video and image pricing context without moving orchestrator responsibilities.
+- [x] Reuse existing application transaction; confirm changed settings once, block reference loss/mode changes.
+- [x] Verify selected defaults/memory/link/project priority and existing workspace/image tests.
 
 ### Task 5: Preview and evidence
 

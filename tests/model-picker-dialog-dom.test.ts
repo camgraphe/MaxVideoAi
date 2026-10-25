@@ -39,7 +39,10 @@ test('dialog keeps selection provisional, confirms differences, searches closed 
     await act(async () => { render(); await new Promise(resolve => setTimeout(resolve, 20)); });
     await click('Choisir MiniMax H3');
     assert.equal(chosen, null);
+    const scrollBody = dom.window.document.querySelector<HTMLElement>('.body')!;
+    scrollBody.scrollTop = 180;
     await click('Utiliser MiniMax H3');
+    assert.equal(scrollBody.scrollTop, 0, 'confirmation starts at the top so its back button remains visible on small screens');
     assert.match(dom.window.document.body.textContent ?? '', /Sans audio.*Audio inclus/s);
     assert.equal(chosen, null);
     await click('Revenir aux modèles');
@@ -50,6 +53,7 @@ test('dialog keeps selection provisional, confirms differences, searches closed 
       search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
     });
     assert.ok(dom.window.document.querySelector('[data-model-id="kling-o3-pro"]'));
+    assert.match(dom.window.document.body.textContent ?? '', /1 modèle · 1 famille/);
     await click('Effacer la recherche');
     assert.equal(dom.window.document.activeElement, search);
     await click('Notre sélection');

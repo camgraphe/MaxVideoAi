@@ -42,9 +42,15 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   onOpenChange.current = context?.onOpenChange;
   useEffect(() => { traceModelPicker('ready'); onOpenChange.current?.(true); return () => { traceModelPicker('close'); onOpenChange.current?.(false); }; }, []);
   useEffect(() => { setDraft({ key: contextKey, id: engineId }); setView('list'); }, [contextKey, engineId]);
-  useEffect(() => { if (view !== 'list') detailRef.current?.focus(); }, [view, detailId]);
+  useEffect(() => {
+    if (view === 'list') return;
+    if (bodyRef.current) bodyRef.current.scrollTop = 0;
+    detailRef.current?.focus({ preventScroll: true });
+  }, [view, detailId]);
   const filtered = useMemo(() => filterEngineFamilyGroups({ groups: familyGroups, query, registryMeta }), [familyGroups, query, registryMeta]);
   const searching = Boolean(query.trim());
+  const modelCount = searching || tab === 'all' ? filtered.reduce((sum, group) => sum + group.engines.length, 0) : groups.flatMap(group => group.ids).length;
+  const modelCountLabel = `${modelCount} ${modelCount === 1 ? copy.model : copy.models}`;
   const renderedIds = view !== 'list' ? [] : searching || tab === 'all'
     ? filtered.flatMap(group => searching || expanded.has(group.id) ? group.engines.map(engine => engine.id) : [])
     : groups.flatMap(group => group.ids);
@@ -72,7 +78,10 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   function apply(id = draft.id) {
     if (draft.key !== contextKey || !engines.some(engine => engine.id === id) || disabled(id)) return;
     if (id === engineId) { onClose(); return; }
-    if (view !== 'confirm' && context?.options[id]?.changes.length) { setDraft({ key: contextKey, id }); setView('confirm'); return; }
+    if (view !== 'confirm' && context?.options[id]?.changes.length) {
+      if (view === 'list') returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 };
+      setDraft({ key: contextKey, id }); setView('confirm'); return;
+    }
     onSelect(id);
     onClose();
   }
@@ -98,7 +107,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
       </header>
       <div ref={bodyRef} className={styles.body} id={panelId} role={view === 'list' ? 'tabpanel' : undefined} aria-labelledby={view === 'list' ? `${panelId}-${tab}` : undefined}>
         {view === 'list' ? <>
-          <div className={styles.count}>{searching || tab === 'all' ? `${filtered.reduce((sum, group) => sum + group.engines.length, 0)} ${copy.models} · ${filtered.length} ${copy.families}` : `${groups.flatMap(group => group.ids).length} ${copy.models}`}
+          <div className={styles.count}>{searching || tab === 'all' ? `${modelCountLabel} · ${filtered.length} ${filtered.length === 1 ? copy.family : copy.families}` : modelCountLabel}
             {tab === 'all' && onToggleLegacy ? <label><input type="checkbox" checked={showLegacy} onChange={onToggleLegacy} />{copy.legacy}</label> : null}</div>
           {!searching && tab === 'selected' ? groups.map(group => <section key={group.group} className={styles.group}><h3>{copy[group.group]}</h3>{group.ids.map(row)}</section>)
             : filtered.map(group => <section key={group.id} className={styles.family}><button type="button" className={styles.familyButton} aria-expanded={searching || expanded.has(group.id)} aria-controls={`${panelId}-${group.id}`} onClick={() => setExpanded(previous => { const next = new Set(previous); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; })}>
