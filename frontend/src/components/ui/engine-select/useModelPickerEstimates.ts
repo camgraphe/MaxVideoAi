@@ -34,12 +34,13 @@ function queueFor(scope: string) {
 }
 
 export type PickerQuoteState = { quote?: ModelEstimate; error?: boolean; elapsedMs?: number };
-export function useModelPickerEstimates(scope: string | null, requests: Record<string, PickerEstimateRequest>) {
+export function useModelPickerEstimates(scope: string | null, requests: Record<string, PickerEstimateRequest>, visibleIds?: string[]) {
   const [revision, setRevision] = useState(0);
-  const key = JSON.stringify([scope, revision, Object.entries(requests).map(([id, request]) => [id, request.key]).sort()]);
-  const latest = useRef(requests);
-  latest.current = requests;
-  const [observed, setObserved] = useState<{ key: string; rows: Record<string, PickerQuoteState> } | null>(null);
+  const visible = visibleIds ? new Set(visibleIds) : null;
+  const key = JSON.stringify([scope, revision, Object.entries(requests).filter(([id]) => !visible || visible.has(id)).map(([id, request]) => [id, request.key]).sort()]);
+  const latest = useRef({ scope, revision, requests });
+  latest.current = { scope, revision, requests };
+  const [observed, setObserved] = useState<{ scope: string; revision: number; rows: Record<string, { requestKey: string; value: PickerQuoteState }> } | null>(null);
   useEffect(() => {
     const refresh = (event: Event) => {
       refreshQueues(event);
@@ -52,26 +53,47 @@ export function useModelPickerEstimates(scope: string | null, requests: Record<s
     if (!scope) return;
     let canceled = false;
     const leases: Array<{ release: () => void }> = [];
+    // Capture the committed request identities. A later render must not put another
+    // account's loader into the queue owned by this effect.
+    const scheduled = (JSON.parse(key)[2] as Array<[string, string]>).flatMap(([id, requestKey]) => {
+      const request = latest.current.requests[id];
+      return request?.key === requestKey ? [{ id, request }] : [];
+    });
     const timer = window.setTimeout(() => {
+      if (latest.current.scope !== scope || latest.current.revision !== revision) return;
       const queue = queueFor(scope);
-      for (const [id, request] of Object.entries(latest.current)) {
+      for (const { id, request } of scheduled) {
+        if (latest.current.requests[id]?.key !== request.key) continue;
         const start = performance.now();
         const lease = queue.acquire(request.key, request.load);
         leases.push(lease);
         traceModelPicker('acquire', { id, ...queue.stats() });
         const publish = (value: PickerQuoteState) => {
-          if (canceled) return;
+          if (canceled || latest.current.scope !== scope || latest.current.revision !== revision || latest.current.requests[id]?.key !== request.key) return;
           traceModelPicker('settled', { id, elapsedMs: Math.round(performance.now() - start), ok: Boolean(value.quote), ...queue.stats() });
-          setObserved(previous => ({ key, rows: { ...(previous?.key === key ? previous.rows : {}), [id]: value } }));
+          setObserved(previous => ({ scope, revision, rows: {
+            ...(previous?.scope === scope && previous.revision === revision ? previous.rows : {}),
+            [id]: { requestKey: request.key, value },
+          } }));
         };
         lease.promise.then(quote => publish({ quote, elapsedMs: performance.now() - start }))
           .catch(error => { if (error?.name !== 'AbortError') publish({ error: true }); });
       }
     }, 200);
     return () => { canceled = true; window.clearTimeout(timer); leases.forEach(lease => lease.release()); };
-  }, [scope, key]);
+  }, [scope, key, revision]);
+  const rows: Record<string, PickerQuoteState> = {};
+  if (scope) for (const [id, request] of Object.entries(requests)) {
+    const previous = observed?.scope === scope && observed.revision === revision ? observed.rows[id] : undefined;
+    const value = previous?.requestKey === request.key ? previous.value : undefined;
+    const cached = queues.get(scope)?.peek(request.key);
+    // Visibility controls scheduling, never the identity of a resolved result.
+    // An expired quote is refreshed on re-entry; errors replace that prior value.
+    if (cached) rows[id] = { ...value, quote: cached, error: undefined };
+    else if (value) rows[id] = value;
+  }
   return {
-    rows: observed?.key === key ? observed.rows : {},
+    rows,
     retry: () => setRevision(value => value + 1),
     stats: () => scope ? queueFor(scope).stats() : null,
   };
