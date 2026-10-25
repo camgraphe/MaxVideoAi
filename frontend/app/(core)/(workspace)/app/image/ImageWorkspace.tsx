@@ -216,7 +216,9 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   const { applyImageSettingsSnapshot, librarySource, recipeBlocked } = useImageWorkspaceQueryHydration({
     engines,
     accountId, storageHydrated,
-    composerSignature: JSON.stringify([engineId, mode, prompt, numImages, aspectRatio, resolution, thinkingLevel, maxOutputTokens, persistableReferenceSlots]),
+    composerSignature: JSON.stringify([engineId, mode, prompt, numImages, aspectRatio, resolution, customImageWidth, customImageHeight,
+      seed, quality, outputFormat, background, style, maskUrl, enableWebSearch, thinkingLevel, maxOutputTokens, limitGenerations, watermark,
+      displayedReferenceSlots, selectedPreviewEntryId, selectedPreviewImageIndex]),
     genericError: resolvedCopy.errors.generic,
     searchParams,
     setAspectRatio,
@@ -243,7 +245,6 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setThinkingLevel, setMaxOutputTokens,
     setWatermark,
   });
-
   const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
     accountId,
     aspectRatio,
@@ -363,7 +364,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     previewEntry, starterPreview, starterNavigation, selectStarter,
   } = useImageWorkspaceDisplayState({
     guestStarter: { ready: !accountId && storageHydrated && !hasAnyReferenceSelection &&
-      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool'), prompt, setPrompt },
+      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool') && !searchParams?.has('recipe'), prompt, setPrompt },
     error,
     historyEntries,
     numImages,
@@ -372,7 +373,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     pricingSnapshot,
     selectedEngine,
     selectedPreviewEntryId,
-    suppressDefaultPreview: librarySource === 'storyboard',
+    suppressDefaultPreview: librarySource === 'storyboard' || searchParams?.has('recipe'),
   });
   const {
     copiedUrl,

@@ -34,7 +34,7 @@ export function useImageWorkspaceDisplayState({
   guestStarter,
 }: UseImageWorkspaceDisplayStateArgs) {
   const [selectedStarter, setSelectedStarter] = useState<StarterMedia | null>(null);
-  const collection = useStarterMedia('image', Boolean(guestStarter?.ready || selectedStarter));
+  const collection = useStarterMedia('image', !suppressDefaultPreview && Boolean(guestStarter?.ready || selectedStarter));
   const starterItems = selectedStarter && !collection.some(item => item.id === selectedStarter.id)
     ? [selectedStarter, ...collection] : collection;
   const guestStarterApplied = useRef(false);

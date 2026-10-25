@@ -51,11 +51,22 @@ From the repository root:
 pnpm exec tsx --tsconfig frontend/tsconfig.json scripts/preview-nano21-editorial.ts /absolute/private-draft.json /absolute/private-review.html
 ```
 
-The command only reads local files and creates a new mode-0600 HTML file. It
-decodes the images, requires the selected original to match an inline image part
-in the native response, computes the hashes and embeds the supplied display image
-for offline review. It omits local paths and native response content. It rejects
-public/.next directories, including symlinks, and refuses to overwrite output.
+The command only reads local files and creates a new mode-0600 HTML file. It fully
+decodes single-frame still pixels, with local review budgets of 32 MiB per image,
+128 MiB for the supplied response, 16,777,216 pixels per image and 10 seconds per pixel
+decode. These are review resource budgets, not provider capabilities or media-count
+quotas. Animated/multipage inputs are refused. It requires the selected original
+bytes to occur in an inline image part in the supplied response, computes the hashes
+and embeds the supplied display image for offline review. It omits local paths and
+response content. It checks both the normalized supplied path and canonical real
+path for public/.next directories, including inward/outward symlinks, and refuses
+to overwrite output.
+
+The HTML separates declared model/version, settings and date from measured local
+hashes, dimensions/MIME and supplied-response byte membership. Membership does not
+authenticate the request, provider/model identity, settings/date, finish reason,
+usage, display-to-original transformation or artistic acceptance. Those claims
+require separate evidence and review.
 The HTML is explicitly a private draft review, not a public record or a finished
 marketing example. Do not commit it or its private inputs.
 

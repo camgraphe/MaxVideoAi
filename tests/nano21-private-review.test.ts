@@ -7,7 +7,7 @@ import sharp from 'sharp';
 import { buildNano21PrivateReview, assertPrivateReviewPath } from '../scripts/lib/nano21-editorial-review';
 import { nano21EditorialFixture } from './helpers/nano21-editorial-fixture';
 
-test('private draft review measures supplied bytes and native lineage without leaking file paths or response data', async () => {
+test('private draft review measures supplied bytes and response membership without leaking file paths or response data', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'nano21-private-review-'));
   try {
     const bytes = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#123456' } }).png().toBuffer();
