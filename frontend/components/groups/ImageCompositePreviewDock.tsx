@@ -280,7 +280,7 @@ export function ImageCompositePreviewDock({
           : 'rounded-card border border-border bg-surface-glass-80 shadow-card'
       )}
     >
-      <header
+      {engineSettings || showTitle ? <header
         className={clsx(
           workspaceDensity ? 'app-model-strip app-image-model-strip' : 'border-b border-hairline px-4 py-3'
         )}
@@ -301,7 +301,7 @@ export function ImageCompositePreviewDock({
             {headerTitle}
           </div>
         )}
-      </header>
+      </header> : null}
 
       <div className={workspaceDensity ? 'app-image-preview-body px-0 py-0' : 'px-4 py-4'}>
         <div className="app-image-preview-stack flex flex-col items-center">

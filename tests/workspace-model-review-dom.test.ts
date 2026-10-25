@@ -24,11 +24,13 @@ async function mount({
   locale = 'en',
   emptyPrompt = false,
   mixedCatalogue = false,
+  operationCatalogue = false,
 } = {}) {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app', pretendToBeVisual: true });
   const previous = new Map<string, PropertyDescriptor | undefined>();
+  const fixtureScope = crypto.randomUUID();
   const requests: Array<{
     resolve: (response: Response) => void;
     reject: (error: Error) => void;
@@ -96,7 +98,7 @@ async function mount({
   const { I18nProvider } = await import('../frontend/lib/i18n/I18nProvider');
   const { CoreSettingsBar } = await import('../frontend/components/CoreSettingsBar');
   const engines = listFalEngines()
-    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')))
+    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')) || (operationCatalogue && e.id === 'minimax-h3-max'))
     .map((e) => e.engine);
   let setup: WorkspaceModelSetup = {
     form: coerceFormState(engines.find((e) => e.id === 'seedance-2-0')!, 't2v', null),
@@ -114,7 +116,7 @@ async function mount({
   let authRequests = 0;
   const notices: string[] = [];
   let accountId: string | null = 'a',
-    accessToken: string | null = 'token-a';
+    accessToken: string | null = `token-a-${fixtureScope}`;
   let recoverySetup: { modelId: string; updatedAt: number; setup: WorkspaceModelSetup } | null = null;
   let current!: ReturnType<typeof useWorkspaceModelReview>;
   const authRenders: Array<{
@@ -278,7 +280,7 @@ async function mount({
     async auth(id: string | null) {
       authStatus = id ? 'authed' : 'loggedOut';
       accountId = id;
-      accessToken = id ? `token-${id}` : null;
+      accessToken = id ? `token-${id}-${fixtureScope}` : null;
       await render();
     },
     async pending() {
@@ -849,10 +851,14 @@ test('comparison settings reprice within the dialog and discard quotes for earli
     assert.equal(f.setup.form.durationSec, 8);
     assert.equal(f.current.candidate, null);
     await f.tick();
+    assert.ok(f.requests.length <= 3, 'old and new quotes share at most three network slots');
+    for (let index = 0; index < oldRequestCount; index++) await f.respond(index, 9999);
     assert.ok(f.requests.length > oldRequestCount);
     assert.ok(f.requests.slice(oldRequestCount).some(request => (request.body as { durationSec: number }).durationSec === 8));
-    for (let index = 0; index < oldRequestCount; index++) await f.respond(index, 9999);
-    assert.ok(f.current.alternatives.every(alternative => alternative.price === null), 'late earlier prices stay hidden');
+    for (const alternative of f.current.alternatives) {
+      const unchanged = f.requests.slice(0, oldRequestCount).some(request => JSON.stringify(request.body) === JSON.stringify(alternative.request));
+      assert.equal(alternative.price, unchanged ? 99.99 : null, 'only identical canonical requests may reuse a late price');
+    }
     for (let index = oldRequestCount; index < f.requests.length; index++) await f.respond(index, 125);
     assert.ok(f.current.alternatives.some(alternative => alternative.price === 1.25));
     assert.deepEqual(f.writes, [], 'editing settings never applies a different model');
@@ -863,11 +869,12 @@ test('comparison settings reprice within the dialog and discard quotes for earli
 test('Escape closes a settings menu before closing Compare', async () => {
   const f = await mount();
   try {
-    await f.click('Compare');
+    await f.click('Compare'); await f.tick();
     const duration = [...f.dom.window.document.querySelectorAll<HTMLButtonElement>('button[aria-haspopup="listbox"]')]
       .find(button => button.textContent?.startsWith('Duration:'));
     assert.ok(duration);
     await act(async () => { duration.focus(); duration.click(); });
+    assert.ok(f.dom.window.document.querySelector('[role="listbox"]'), 'settings menu is open before Escape');
     await act(async () => duration.dispatchEvent(new f.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.equal(f.current.panel, 'compare');
     assert.equal(f.dom.window.document.querySelector('[role="listbox"]'), null);
@@ -995,6 +1002,28 @@ test('displaced active draft is visible through rendered Configurations and Canc
     assert.equal(f.setup.voiceIdsInput, previous.voiceIdsInput);
     await act(async () => f.current.removeSavedSetup(previous.form.engineId));
     assert.notEqual(f.current.savedSetups[0]?.saved?.setup.prompt, previous.prompt);
+  } finally { await f.dispose(); }
+});
+test('restored Relight configuration quotes its lighting image and selected framing', async () => {
+  const f = await mount({ operationCatalogue: true });
+  try {
+    const engine = listFalEngines().find(e => e.id === 'minimax-h3-max')!.engine;
+    const previous = structuredClone(f.setup);
+    previous.form = { ...coerceFormState(engine, 'v2v', null), operation: 'h3-relight', resolution: '480P', aspectRatio: '9:16' };
+    previous.prompt = '';
+    const ref = (fieldId: string, kind: 'video' | 'image') => ({ id: fieldId, assetId: fieldId, fieldId, kind,
+      status: 'ready' as const, name: fieldId, type: kind === 'video' ? 'video/mp4' : 'image/png', size: 1024,
+      width: 720, height: 1280, durationSec: kind === 'video' ? 107 / 24 : null,
+      url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}` });
+    previous.inputAssets = { video_url: [ref('video_url', 'video')], reference_image_url: [ref('reference_image_url', 'image')] };
+    await f.recovery(previous);
+    await act(async () => f.current.selectSavedSetup(engine.id));
+    await f.tick();
+    const request = f.requests.at(-1)?.body as { operation: string; aspectRatio: string; inputs: Array<{ assetId: string }> };
+    assert.ok(request, 'complete restored Relight setup requests a quote');
+    assert.equal(request.operation, 'h3-relight');
+    assert.equal(request.aspectRatio, '9:16');
+    assert.deepEqual(request.inputs.map(input => input.assetId).sort(), ['reference_image_url', 'video_url']);
   } finally { await f.dispose(); }
 });
 
