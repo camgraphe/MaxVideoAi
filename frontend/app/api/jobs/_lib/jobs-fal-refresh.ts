@@ -155,7 +155,7 @@ export async function refreshStaleFalJobs({
         })) as Record<string, unknown> | null;
 
       if (!statusInfo) {
-        await markJobFailed('Fal job status unavailable (possibly expired).');
+        // A failed status read does not establish a terminal provider outcome.
         continue;
       }
 
@@ -177,12 +177,7 @@ export async function refreshStaleFalJobs({
         continue;
       }
 
-      if (!state && !jobRow.video_url) {
-        await markJobFailed(providerError ?? 'Fal could not locate this job.');
-        continue;
-      }
-
-      if (state && !COMPLETED_STATES.has(state)) {
+      if (!state || !COMPLETED_STATES.has(state)) {
         continue;
       }
 
