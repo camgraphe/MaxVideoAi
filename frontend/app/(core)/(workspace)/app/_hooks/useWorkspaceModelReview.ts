@@ -180,7 +180,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
     candidate && target && candidate.applicable && !candidate.blockingReasons.length
       ? buildWorkspacePreflightRequest({
           form: candidate.setup.form,
-          selectedEngine: target,
+          selectedEngine: candidate.engine,
           submissionMode: candidate.workflow.submissionMode,
           effectiveDurationSec: candidate.effectiveDurationSec,
           supportsAudioToggle: candidate.supportsAudioToggle,
