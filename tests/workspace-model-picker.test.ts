@@ -64,3 +64,40 @@ test('runtime-unavailable modes are neither promoted nor estimated', () => {
   assert.ok(option.disabledReason);
   assert.equal(option.request, null);
 });
+
+for (const resolution of ['480P', '2K']) test(`the picker retains ${resolution} Relight, its lighting image and framing`, () => {
+  const current = setup('minimax-h3-max');
+  current.form = { ...coerceFormState(engine('minimax-h3-max'), 'v2v', null), operation: 'h3-relight', resolution, aspectRatio: '9:16' };
+  const reference = (fieldId: string, kind: 'video' | 'image') => ({
+    id: fieldId, assetId: fieldId, fieldId, kind, status: 'ready' as const, name: fieldId,
+    type: kind === 'video' ? 'video/mp4' : 'image/png', size: 1024, width: 720, height: 1280,
+    durationSec: kind === 'video' ? 107 / 24 : null,
+    url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}`,
+  });
+  current.inputAssets = { video_url: [reference('video_url', 'video')], reference_image_url: [reference('reference_image_url', 'image')] };
+  const before = structuredClone(current);
+  const option = buildWorkspacePickerOptions({ current, engines, locale: 'fr', memberTier: 'Member' })['minimax-h3-max'];
+  assert.equal(option.disabledReason, undefined);
+  assert.ok(option.request, 'the complete Relight setup can be estimated');
+  assert.equal(option.request.operation, 'h3-relight');
+  assert.deepEqual(option.request.inputs?.map(input => input.assetId).sort(), ['reference_image_url', 'video_url']);
+  assert.equal(option.request.resolution, resolution);
+  assert.equal(option.request.aspectRatio, '9:16');
+  assert.deepEqual(current, before);
+});
+
+for (const id of ['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']) test(`${id}: the Edit picker quote keeps source timing and omits generated framing`, () => {
+  const current = setup(id);
+  current.form = { ...coerceFormState(engine(id), 'v2v', null), operation: 'kling-edit', aspectRatio: '16:9', extraInputValues: { keep_audio: false } };
+  current.inputAssets = { video_url: [{ id: 'source', assetId: 'source', fieldId: 'video_url', kind: 'video', name: 'source', type: 'video/mp4', size: 1, status: 'ready',
+    url: 'https://example.com/source.mp4', previewUrl: 'https://example.com/source.mp4', durationSec: 5.25, width: 720, height: 1280 }] };
+  const before = structuredClone(current);
+  const option = buildWorkspacePickerOptions({ current, engines, locale: 'en', memberTier: 'Member' })[id];
+  assert.equal(option.disabledReason, undefined);
+  assert.ok(option.request);
+  assert.equal(option.request.operation, 'kling-edit');
+  assert.equal(option.request.durationSec, 5.25);
+  assert.equal(option.request.aspectRatio, undefined);
+  assert.deepEqual(option.request.inputs?.map(input => input.assetId), ['source']);
+  assert.deepEqual(current, before);
+});

@@ -21,7 +21,8 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
   const missingSource = ['v2v', 'extend', 'retake', 'reframe'].includes(sourceMode)
     && !Object.values(current.inputAssets).flat().some(asset => asset?.kind === 'video' && asset.status === 'ready');
   return Object.fromEntries(engines.map(engine => {
-    const candidate = prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine });
+    const candidate = prepareWorkspaceModelCandidate({ engine, current, locale, currentEngine,
+      restoreSetup: engine.id === current.form.engineId ? current : undefined });
     const applyBlock = candidate.blockingReasons.find(reason => reason.scope === 'apply');
     const modeChanged = candidate.workflow.submissionMode !== sourceMode
       || candidate.setup.form.operation !== current.form.operation;
@@ -44,7 +45,7 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
       .filter(change => change.before !== change.after && !['engineId', 'durationSec', 'durationOption', 'resolutionSupported', 'aspect_ratioSupported'].includes(change.field))
       .map(change => ({ ...change, label: settingLabels[change.field.replace(/^extraInputValues\./, '')] ?? change.label }));
     const request = disabledReason || missingSource ? null : buildWorkspacePreflightRequest({
-      form: candidate.setup.form, selectedEngine: engine, submissionMode: candidate.workflow.submissionMode,
+      form: candidate.setup.form, selectedEngine: candidate.engine, submissionMode: candidate.workflow.submissionMode,
       effectiveDurationSec: candidate.effectiveDurationSec, supportsAudioToggle: candidate.supportsAudioToggle,
       voiceControlEnabled: candidate.voiceControlEnabled, inputAssets: candidate.setup.inputAssets, memberTier,
     });
