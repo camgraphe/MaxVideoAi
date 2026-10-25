@@ -19,6 +19,8 @@ The migration recovers all available historical successful completion logs (earl
 
 Admin timing averages/P95 in `generate-metrics.ts` remain the separate legacy log-based reading. Public benchmarks and their minimum-job/distinct-user privacy thresholds remain separate and unchanged. Neither estimates nor more observations guarantee that each successive prediction is more accurate; provider congestion and model updates can still change waiting times.
 
+MCP and Studio video confirmations resolve the same matrix and `getRenderEta` policy in `agent-api/video-generation-timing.ts` through the existing reservation transaction. Paid and included-trial jobs persist their estimate at creation and carry that exact value into provider continuation, so the final job update cannot erase it. Optional observation reads use a savepoint: an unavailable timing schema falls back to the existing approximate estimate without aborting the quote/wallet transaction. Images retain their existing behavior. This does not backfill estimates for earlier jobs or add estimates to the public MCP response contract.
+
 ### Rollout and verification
 
 Apply migration 45 explicitly through the Neon migration workflow before deploying the new reader. There is no schema bootstrap or historical repair in GET requests. The migration can be replayed safely; deploy rollback can leave the collector in place without changing existing job readers. Test a production branch copy before promoting schema changes. The repository change alone does not install a migration or deploy production code.
