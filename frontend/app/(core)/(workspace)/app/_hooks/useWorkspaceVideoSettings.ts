@@ -46,6 +46,7 @@ import {
 } from '../_lib/workspace-video-settings';
 import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
 import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy';
+import { UnavailableVideoSettingsEngineError, unavailableVideoSettingsCopy } from '../_lib/workspace-recall-engine';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
@@ -203,7 +204,7 @@ export function useWorkspaceVideoSettings({
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
-      if (!valid()) return;
+      if (!valid()) return false;
       pendingRecallRef.current = null;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
@@ -255,12 +256,17 @@ export function useWorkspaceVideoSettings({
         queueMicrotask(() => {
           focusComposer();
         });
+        return true;
       } catch (error) {
-        setNotice(error instanceof Error ? error.message : 'Failed to apply settings.');
+        setNotice(error instanceof UnavailableVideoSettingsEngineError
+          ? unavailableVideoSettingsCopy(locale)
+          : error instanceof Error ? error.message : 'Failed to apply settings.');
+        return false;
       }
     },
     [
       valid,
+      locale,
       engineMap,
       engines,
       focusComposer,
@@ -315,9 +321,9 @@ export function useWorkspaceVideoSettings({
   const applyVideoSettingsFromTile = useCallback(
     (tile: QuadPreviewTile) => {
       try {
-        applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile));
+        return applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile));
       } catch {
-        // ignore
+        return false;
       }
     },
     [applyVideoSettingsSnapshot],
@@ -351,8 +357,8 @@ export function useWorkspaceVideoSettings({
           : 'This configuration is no longer available with this model. Choose your settings in the app.');
       // Do not hydrate the original job: it would replace the chosen model and may restore private inputs.
     } else {
-      applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
-      if (!hasPublishedRecreationSnapshot(sharedVideoSettings)) void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+      const applied = applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
+      if (applied && !hasPublishedRecreationSnapshot(sharedVideoSettings)) void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
     }
     if (imported?.videoId === sharedVideoSettings.id && imported.generation === valid) {
       setCommittingSharedImport(imported);
