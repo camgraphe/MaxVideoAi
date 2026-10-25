@@ -24545,10 +24545,18 @@
               "t2v",
               "i2v",
               "ref2v",
-              "v2v",
               "extend"
             ],
             "default": true
+          },
+          {
+            "id": "enable_prompt_expansion",
+            "type": "boolean",
+            "label": "Prompt expansion",
+            "modes": [
+              "v2v"
+            ],
+            "default": false
           }
         ],
         "constraints": {
@@ -25268,10 +25276,18 @@
               "t2v",
               "i2v",
               "ref2v",
-              "v2v",
               "extend"
             ],
             "default": true
+          },
+          {
+            "id": "enable_prompt_expansion",
+            "type": "boolean",
+            "label": "Prompt expansion",
+            "modes": [
+              "v2v"
+            ],
+            "default": false
           }
         ],
         "constraints": {

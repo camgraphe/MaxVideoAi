@@ -30,7 +30,7 @@ Wan 3 Standard and Prime share the same authored capability schema. Reference mo
 
 Reference audio is limited to MP3 and WAV. Keep the authored field formats aligned with the direct adapter so M4A and other unsupported uploads fail with a clear format message before wallet reservation. The adapter retains a specific MP3/WAV message for requests that bypass that early check.
 
-The workspace prompt-expansion control maps to Alibaba `prompt_extend`. Fal's `enable_safety_checker` has no documented direct Alibaba equivalent and remains transport-specific rather than a public cross-provider option.
+The workspace prompt-expansion control maps to Alibaba `prompt_extend`. Wan 3 and Prime default this control to off in Modify (`v2v`) so editing uses the authored prompt without automatic rewriting. Explicit on/off choices remain authoritative; creation, reference generation and extension retain their existing on default. The direct adapter applies the same Modify default when a caller omits the control. Fal's `enable_safety_checker` has no documented direct Alibaba equivalent and remains transport-specific rather than a public cross-provider option.
 
 Alibaba's smart duration (`duration=-1`) is deliberately not exposed. MaxVideoAI quotes and reserves an exact customer amount before submission, while smart duration makes the billed output length unknown at quote time. Keep the explicit 2–30 second duration until a separately reviewed estimate-and-reconciliation billing contract exists.
 
