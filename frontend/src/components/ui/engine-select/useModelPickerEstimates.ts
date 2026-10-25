@@ -8,7 +8,18 @@ import type { PickerEstimateRequest } from './model-picker-types';
 
 const queues = new Map<string, ModelEstimateQueue>();
 const refreshed = new WeakSet<Event>();
+const watchedWindows = new WeakSet<Window>();
+function refreshQueues(event: Event) {
+  if (refreshed.has(event)) return;
+  refreshed.add(event);
+  for (const queue of queues.values()) queue.clear();
+}
 function queueFor(scope: string) {
+  // The cache outlives the dialog, so its invalidation listener must also outlive it.
+  if (!watchedWindows.has(window)) {
+    watchedWindows.add(window);
+    window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refreshQueues);
+  }
   let queue = queues.get(scope);
   if (!queue) {
     if (queues.size >= 4) {
@@ -31,10 +42,7 @@ export function useModelPickerEstimates(scope: string | null, requests: Record<s
   const [observed, setObserved] = useState<{ key: string; rows: Record<string, PickerQuoteState> } | null>(null);
   useEffect(() => {
     const refresh = (event: Event) => {
-      if (!refreshed.has(event)) {
-        refreshed.add(event);
-        for (const queue of queues.values()) queue.clear();
-      }
+      refreshQueues(event);
       setRevision(value => value + 1);
     };
     window.addEventListener(CUSTOMER_PRICING_REFRESH_EVENT, refresh);

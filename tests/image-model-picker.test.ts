@@ -26,3 +26,21 @@ test('unsupported image resolution is disclosed before applying its canonical fa
   assert.notEqual(option.request.resolution, 'not-a-resolution');
   assert.ok(option.changes.some(change => change.before === 'not-a-resolution' && change.after === option.request.resolution));
 });
+
+test('image advanced setting resets are disclosed before applying the same normalized values', () => {
+  const option = prepareImagePickerOption(engine, { ...current, outputFormat: 'not-a-format', style: 'not-a-style', background: 'not-a-background',
+    thinkingLevel: 'not-a-level', seed: '42.5', limitGenerations: true, watermark: true }, 'fr');
+  assert.ok(option.changes.some(change => change.before === 'not-a-format'));
+  assert.ok(option.changes.some(change => change.before === 'not-a-style'));
+  assert.notEqual(option.settings.outputFormat, 'not-a-format');
+  assert.notEqual(option.settings.style, 'not-a-style');
+});
+
+test('sparse reference slots cannot be truncated by a lower-capacity target', () => {
+  const limited = structuredClone(engine);
+  for (const field of [...(limited.inputSchema?.required ?? []), ...(limited.inputSchema?.optional ?? [])]) {
+    if (field.id === 'image_urls') field.maxCount = 4;
+  }
+  const option = prepareImagePickerOption(limited, { ...current, mode: 'i2i', referenceImageCount: 2, selectedReferenceCount: 2, referenceIndices: [0, 5] }, 'fr');
+  assert.ok(option.disabledReason);
+});

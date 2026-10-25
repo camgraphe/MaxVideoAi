@@ -1,3 +1,4 @@
+import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import type { EngineCaps, PreflightRequest } from '@/types/engines';
 import type { EnginePickerOption } from '@/components/ui/engine-select/model-picker-types';
 import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from './workspace-model-candidate';
@@ -25,6 +26,7 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
     const modeChanged = candidate.workflow.submissionMode !== sourceMode
       || candidate.setup.form.operation !== current.form.operation;
     const disabledReason = disabledEngineReasons?.[engine.id]
+      ?? (!isEngineModeRuntimeAvailable(engine, sourceMode) ? (fr ? 'Mode temporairement indisponible' : es ? 'Modo no disponible temporalmente' : 'Mode temporarily unavailable') : undefined)
       ?? (engine.availability === 'paused' ? (fr ? 'Indisponible' : es ? 'No disponible' : 'Unavailable') : undefined)
       ?? (candidate.removedReferences.length ? (fr ? 'Incompatible avec vos références' : es ? 'Incompatible con tus referencias' : 'Incompatible with your references') : undefined)
       ?? (modeChanged ? (fr ? 'Autre opération requise' : es ? 'Requiere otra operación' : 'Requires a different operation') : undefined)

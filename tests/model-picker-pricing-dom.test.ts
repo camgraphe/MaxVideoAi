@@ -48,6 +48,11 @@ test('visible quote lifecycle shares pending work, cancels queued work, and isol
     await resolve(200); await resolve(200);
     assert.ok(Object.values(latest.rows).every(row => row.quote?.amount === 200));
     assert.equal(latest.stats()?.peakActive, 3);
+    await act(async () => root.render(null));
+    dom.window.dispatchEvent(new dom.window.Event(CUSTOMER_PRICING_REFRESH_EVENT));
+    const beforeReopen = calls; await render(); await tick();
+    assert.equal(calls, beforeReopen + 3, 'tariff changes also clear image-only caches while the dialog is unmounted');
+    await resolve(300); await resolve(300);
   } finally {
     await act(async () => root.unmount());
     await resolve(100);

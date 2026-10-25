@@ -55,3 +55,12 @@ test('missing Modify source produces a truthful prerequisite instead of quoting 
   assert.equal(rows['luma-ray-3-2'].request, null);
   assert.match(rows['luma-ray-3-2'].priceUnavailableReason ?? '', /source/i);
 });
+
+test('runtime-unavailable modes are neither promoted nor estimated', () => {
+  const unavailable = { ...engine('seedance-2-5'), modeAvailability: { t2v: { available: false } } };
+  const catalogue = engines.map(item => item.id === unavailable.id ? unavailable : item);
+  assert.ok(!getPickerRecommendations(catalogue, 't2v').flatMap(group => group.ids).includes(unavailable.id));
+  const option = buildWorkspacePickerOptions({ current: setup(), engines: catalogue, locale: 'fr', memberTier: 'Member' })[unavailable.id];
+  assert.ok(option.disabledReason);
+  assert.equal(option.request, null);
+});

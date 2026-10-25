@@ -1,12 +1,14 @@
 import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
-import { clampRequestedImageCount, getAspectRatioOptions, getDefaultAspectRatio, getDefaultResolution, getImageFieldDefaultString, getImageFieldValues, getImageInputField, getReferenceConstraints, getResolutionOptions } from '@/lib/image/inputSchema';
+import { clampRequestedImageCount, getAspectRatioOptions, getDefaultAspectRatio, getDefaultResolution, getImageFieldDefaultNumber, getImageFieldDefaultString, getImageFieldValues, getImageInputField, getReferenceConstraints, getResolutionOptions } from '@/lib/image/inputSchema';
+import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { PickerChange } from '@/components/ui/engine-select/model-picker-types';
 import { buildCustomImageSize, resolveSeedreamMaxOutputImages } from './image-workspace-utils';
 
 export type ImagePickerSettings = {
   mode: ImageGenerationMode; numImages: number; resolution: string | null; aspectRatio: string | null; quality: string | null;
-  maskUrl?: string; enableWebSearch: boolean; customImageWidth: string; customImageHeight: string;
+  referenceIndices?: number[]; outputFormat?: string | null; background?: string | null; style?: string | null; thinkingLevel?: string | null;
+  seed?: string; limitGenerations?: boolean; watermark?: boolean; maskUrl?: string; enableWebSearch: boolean; customImageWidth: string; customImageHeight: string;
   referenceImageCount: number; selectedReferenceCount: number; readyReferenceSizes: Array<{ width?: number | null; height?: number | null }>;
 };
 export function prepareImagePickerOption(engine: EngineCaps, current: ImagePickerSettings, locale: string) {
@@ -14,8 +16,18 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
   const { mode } = current;
   const choose = (field: string, value: string | null, choices: string[], fallback: string | null) =>
     !getImageInputField(engine, field, mode) || !choices.length ? null : value && choices.includes(value) ? value : fallback;
+  const optional = (field: string, value: string | null | undefined) => { const choices = getImageFieldValues(engine, field, mode);
+    return choose(field, value ?? null, choices, getImageFieldDefaultString(engine, field, mode) ?? choices[0] ?? null); };
+  const hasCustomSize = getImageInputField(engine, 'image_width', mode) && getImageInputField(engine, 'image_height', mode);
   const qualityOptions = getImageFieldValues(engine, 'quality', mode);
   const settings = {
+    outputFormat: optional('output_format', current.outputFormat), background: optional('background', current.background),
+    style: optional('style', current.style), thinkingLevel: optional('thinking_level', current.thinkingLevel),
+    seed: !getImageInputField(engine, 'seed', mode) ? '' : current.seed?.trim() && Number.isFinite(Number(current.seed)) ? String(Math.round(Number(current.seed))) : String(getImageFieldDefaultNumber(engine, 'seed', mode) ?? ''),
+    limitGenerations: Boolean(getImageInputField(engine, 'limit_generations', mode)) && Boolean(current.limitGenerations),
+    watermark: Boolean(getImageInputField(engine, 'watermark', mode)) && Boolean(current.watermark),
+    customImageWidth: hasCustomSize ? current.customImageWidth.trim() ? current.customImageWidth : String(getImageFieldDefaultNumber(engine, 'image_width', mode) ?? GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultWidth) : '',
+    customImageHeight: hasCustomSize ? current.customImageHeight.trim() ? current.customImageHeight : String(getImageFieldDefaultNumber(engine, 'image_height', mode) ?? GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultHeight) : '',
     resolution: choose('resolution', current.resolution, getResolutionOptions(engine, mode), getDefaultResolution(engine, mode)),
     aspectRatio: choose('aspect_ratio', current.aspectRatio, getAspectRatioOptions(engine, mode), getDefaultAspectRatio(engine, mode)),
     quality: choose('quality', current.quality, qualityOptions, getImageFieldDefaultString(engine, 'quality', mode) ?? qualityOptions[0] ?? null),
@@ -28,13 +40,13 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
     ? (fr ? 'Indisponible pour cette opération' : es ? 'No disponible para esta operación' : 'Unavailable for this operation')
     : current.maskUrl && !getImageInputField(engine, 'mask_url', mode) ? (fr ? 'Incompatible avec votre masque' : es ? 'Incompatible con tu máscara' : 'Incompatible with your mask')
     : current.selectedReferenceCount > current.referenceImageCount ? (fr ? 'Attendez la préparation des références' : es ? 'Espera a que se preparen las referencias' : 'Wait for references to finish preparing')
-    : current.referenceImageCount > references.max || (current.referenceImageCount > 0 && !getImageInputField(engine, 'image_urls', mode))
+    : (current.referenceIndices?.some(index => index >= references.max) ?? false) || current.referenceImageCount > references.max || (current.referenceImageCount > 0 && !getImageInputField(engine, 'image_urls', mode))
       ? (fr ? 'Incompatible avec vos références' : es ? 'Incompatible con tus referencias' : 'Incompatible with your references') : undefined;
-  const names = fr ? { resolution: 'Résolution', aspectRatio: 'Format', quality: 'Qualité', enableWebSearch: 'Recherche web', numImages: 'Images' }
-    : es ? { resolution: 'Resolución', aspectRatio: 'Formato', quality: 'Calidad', enableWebSearch: 'Búsqueda web', numImages: 'Imágenes' }
-    : { resolution: 'Resolution', aspectRatio: 'Aspect ratio', quality: 'Quality', enableWebSearch: 'Web search', numImages: 'Images' };
+  const names = fr ? { outputFormat: 'Format du fichier', background: 'Arrière-plan', style: 'Style', thinkingLevel: 'Réflexion', seed: 'Graine', limitGenerations: 'Limiter les générations', watermark: 'Filigrane', customImageWidth: 'Largeur', customImageHeight: 'Hauteur', resolution: 'Résolution', aspectRatio: 'Format', quality: 'Qualité', enableWebSearch: 'Recherche web', numImages: 'Images' }
+    : es ? { outputFormat: 'Formato del archivo', background: 'Fondo', style: 'Estilo', thinkingLevel: 'Razonamiento', seed: 'Semilla', limitGenerations: 'Limitar generaciones', watermark: 'Marca de agua', customImageWidth: 'Anchura', customImageHeight: 'Altura', resolution: 'Resolución', aspectRatio: 'Formato', quality: 'Calidad', enableWebSearch: 'Búsqueda web', numImages: 'Imágenes' }
+    : { outputFormat: 'File format', background: 'Background', style: 'Style', thinkingLevel: 'Thinking', seed: 'Seed', limitGenerations: 'Limit generations', watermark: 'Watermark', customImageWidth: 'Width', customImageHeight: 'Height', resolution: 'Resolution', aspectRatio: 'Aspect ratio', quality: 'Quality', enableWebSearch: 'Web search', numImages: 'Images' };
   const display = (value: unknown) => value == null ? '—' : typeof value === 'boolean' ? (value ? (fr ? 'Activée' : es ? 'Activada' : 'On') : (fr ? 'Désactivée' : es ? 'Desactivada' : 'Off')) : String(value);
-  const changes: PickerChange[] = (Object.keys(settings) as Array<keyof typeof settings>).flatMap(key => settings[key] === current[key] ? [] : [{ label: names[key], before: display(current[key]), after: display(settings[key]) }]);
+  const changes: PickerChange[] = (Object.keys(settings) as Array<keyof typeof settings>).flatMap(key => !Object.hasOwn(current, key) || settings[key] === current[key] || (['customImageWidth', 'customImageHeight'].includes(key) && current.resolution !== 'custom' && settings.resolution !== 'custom') ? [] : [{ label: names[key], before: display(current[key]), after: display(settings[key]) }]);
   return {
     settings, changes, disabledReason,
     priceUnavailableReason: missingSource ? (fr ? 'Ajoutez une image source pour estimer' : es ? 'Añade una imagen para estimar' : 'Add a source image to estimate') : undefined,
@@ -42,6 +54,6 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
     request: { engineId: engine.id, mode, numImages: settings.numImages, resolution: settings.resolution ?? undefined, aspectRatio: settings.aspectRatio ?? undefined,
       quality: settings.quality ?? undefined, enableWebSearch: settings.enableWebSearch || undefined, referenceImageCount: current.referenceImageCount,
       referenceImageSizes: current.readyReferenceSizes.length ? current.readyReferenceSizes : undefined,
-      customImageSize: settings.resolution === 'custom' ? buildCustomImageSize(current.customImageWidth, current.customImageHeight) : null },
+      customImageSize: settings.resolution === 'custom' ? buildCustomImageSize(settings.customImageWidth, settings.customImageHeight) : null },
   };
 }

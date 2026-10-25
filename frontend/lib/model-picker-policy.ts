@@ -1,3 +1,4 @@
+import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import policy from '@/config/agent-model-editorial-policy.json';
 import { getRuntimeModelById } from '@/config/model-runtime';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -10,7 +11,7 @@ export function getPickerRecommendations(engines: EngineCaps[], mode: Mode): Pic
     ? policy.workspaceSelection.create : mode === 'v2v' ? policy.workspaceSelection.modify : [];
   const eligible = new Set(engines.filter(engine => {
     const runtime = getRuntimeModelById(engine.id);
-    return engine.availability !== 'paused' && engine.modes.includes(mode)
+    return engine.availability !== 'paused' && engine.modes.includes(mode) && isEngineModeRuntimeAvailable(engine, mode)
       && (!runtime || (runtime.lifecycle === 'current' && runtime.publication.app.published));
   }).map(engine => engine.id));
   return selection.flatMap(entry => {
