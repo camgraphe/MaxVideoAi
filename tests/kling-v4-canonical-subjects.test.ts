@@ -7,8 +7,8 @@ import {prepareGenerationInputSchema} from '../frontend/src/server/mcp/tools/pre
 import {KLING_V4_ENGINE} from '../frontend/src/config/fal-engines/kling-v4';
 import type {ResolvedReference} from '../frontend/src/server/agent-api/reference-types';
 const candidate={engine:KLING_V4_ENGINE,surface:'video' as const,publicModes:KLING_V4_ENGINE.modes,modeCaps:KLING_V4_ENGINE.modeCaps!};
-const references=Array.from({length:14},(_,index)=>({kind:'asset',assetId:`subject-${index}`,role:'reference'}));
-const subjects=Array.from({length:7},(_,index)=>({kind:'image',frontalReferenceSlot:index*2,referenceSlots:[index*2+1]}));
+const references=Array.from({length:28},(_,index)=>({kind:'asset',assetId:`subject-${index}`,role:'reference'}));
+const subjects=Array.from({length:7},(_,index)=>({kind:'image',frontalReferenceSlot:index*4,referenceSlots:[index*4+1,index*4+2,index*4+3]}));
 const raw=(patch:Record<string,unknown>={})=>({surface:'video',engineId:'kling-v4',mode:'ref2v',prompt:'The seven subjects meet',settings:{durationSec:5,resolution:'1080p',aspectRatio:'16:9'},references,subjects,...patch});
 const request=()=>normalizeGenerationRequest(raw());
 const facts=():ResolvedReference[]=>request().references.map(ref=>({assetId:ref.kind==='asset'?ref.assetId:'',role:ref.role,slot:ref.slot,mediaKind:'image',storageUrl:`https://media.example/${ref.kind==='asset'?ref.assetId:''}.png`,width:1280,height:720,durationSec:null,mimeType:'image/png',sizeBytes:1024}));
@@ -18,7 +18,7 @@ test('seven canonical subjects retain ordered owned identities in hashes and pai
  assert.notEqual(hashCanonicalGenerationRequest(current),hashCanonicalGenerationRequest(normalizeGenerationRequest(raw({subjects:[...subjects].reverse()}))));
  const body=buildPaidVideoRequestBody({request:current,resolvedReferences:resolved,engine:KLING_V4_ENGINE,quoteId:'test',canonicalPricing:{membershipTier:'member'}});
  const elements=body.elements as {frontalAssetId:string;referenceAssetIds:string[];frontalImageUrl:string}[];
- assert.equal(elements.length,7);assert.equal(elements[0].frontalAssetId,'subject-0');assert.deepEqual(elements[6].referenceAssetIds,['subject-13']);
+ assert.equal(elements.length,7);assert.equal(elements[0].frontalAssetId,'subject-0');assert.deepEqual(elements[6].referenceAssetIds,['subject-25','subject-26','subject-27']);
  assert.equal(body.referenceImages,undefined);assert.equal((body.inputs as unknown[]).length,0);
  assert.throws(()=>buildPaidVideoRequestBody({request:current,resolvedReferences:resolved.slice(1),engine:KLING_V4_ENGINE,quoteId:'test',canonicalPricing:{membershipTier:'member'}}));
 });

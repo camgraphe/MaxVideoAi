@@ -19,24 +19,38 @@ export function getWorkspaceKlingV4ActiveAssets(
 }
 
 /** Early editor feedback only. The server must resolve ownership and measured facts again. */
-export function getWorkspaceKlingV4MediaError({ mode, inputAssets, klingElements }: {
+export function getWorkspaceKlingV4MediaError({ mode, inputAssets, klingElements, locale = 'en' }: {
   mode: Mode;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   klingElements: KlingElementState[];
+  locale?: string;
 }): string | null {
   if (mode !== 'ref2v') return null;
+  const language = locale.toLowerCase().split('-')[0];
+  const localized = (en: string, fr: string, es: string) => language === 'fr' ? fr : language === 'es' ? es : en;
   const referenceAssets = Object.values(getWorkspaceKlingV4ActiveAssets(mode, inputAssets)).flat().filter(Boolean);
   const subjectAssets = klingElements.flatMap((element) =>
     [element.frontal, ...element.references, element.video].filter(Boolean));
-  // Conservative launch limit: each visual occurrence, including every subject view, counts.
-  // Precise provider counting is a qualification prerequisite, not inferred from schema maxima.
-  if (referenceAssets.length + subjectAssets.length > 15) {
-    return 'Kling 4.0 currently allows at most 15 visual assets, counting each subject view and each reference occurrence. Remove assets before generating.';
-  }
+  const flatImageCount = referenceAssets.filter(asset => asset?.kind === 'image').length;
+  const flatVideoCount = referenceAssets.filter(asset => asset?.kind === 'video').length;
+  if (flatImageCount > 10) return localized(
+    'Kling 4.0 allows up to ten flat images, including the opening image. Subject views have separate limits.',
+    'Kling 4.0 accepte dix images de référence, image initiale comprise. Les vues des sujets ont leurs propres limites.',
+    'Kling 4.0 admite diez imágenes de referencia, incluida la inicial. Las vistas de sujetos tienen límites propios.',
+  );
+  if (flatVideoCount > 5) return localized(
+    'Kling 4.0 allows up to five flat reference videos.',
+    'Kling 4.0 accepte cinq vidéos de référence.',
+    'Kling 4.0 admite cinco vídeos de referencia.',
+  );
   const knownVideoSeconds = [...referenceAssets, ...subjectAssets].reduce((sum, asset) =>
     sum + (asset?.kind === 'video' && typeof asset.durationSec === 'number' && Number.isFinite(asset.durationSec) ? asset.durationSec : 0), 0);
   if (knownVideoSeconds > 30) {
-    return 'Kling 4.0 reference videos and video subjects share a 30-second total limit.';
+    return localized(
+      'Kling 4.0 reference videos and video subjects share a 30-second total limit.',
+      'Les vidéos de référence et les sujets vidéo Kling 4.0 partagent une limite totale de 30 secondes.',
+      'Los vídeos de referencia y los sujetos de vídeo Kling 4.0 comparten un límite total de 30 segundos.',
+    );
   }
   return null;
 }

@@ -26,11 +26,27 @@ unavailable in App, Studio and MCP: no trusted owned fal voice registry is part 
 this change, and caller voice IDs are rejected. Fal documents up to three voiced
 reference subjects; Modify exposes no voice binding.
 
-The existing fal queue owners are retained. An offline test exercises the installed
-SDK against all four endpoint IDs: its owner/app normalization uses the historical
-`kling/v4/requests/<id>` parent paths. HTTP 202 with `IN_PROGRESS` remains the same
-request; no second POST occurs. This is transport evidence with an injected fetch,
-not a provider or account test.
+The API budgets are independent: ten flat images (opening image included), five
+flat videos, and seven subjects with one frontal plus one to three additional views
+per image subject. Explicit subject slots do not consume flat budgets. The 43/39
+Studio transport envelopes are derived from those shapes, not vendor headline
+limits. The current captured fal schema has no combined fifteen-source cap. Kling's
+web guide describes fifteen logical assets, counting an element once; that web UI
+policy must not be imposed on the API's nested views.
+
+V4 submission retains the accepted request ID and validated status/result/cancel
+URLs in the existing server-owned enqueue log. Recovery owners (manual refresh,
+job detail, background poll and webhook completion) read that identity after restart.
+Only HTTPS queue.fal.run paths for the selected V4 endpoint or its observed kling/v4
+parent, bound to the exact request ID, are accepted; redirects, credentials, query
+strings and mismatches are refused. New receipts with missing/invalid metadata keep
+the accepted ID without resubmitting or silently using legacy paths. Old ID-only
+jobs retain their existing SDK fallback. Cancel URLs are retained; there is no
+existing V4 cancel workflow and no new cancellation feature is added.
+
+Offline PG17 and real recovery-owner tests use a full-endpoint receipt path different
+from SDK reconstruction, continue HTTP 202/IN_PROGRESS to COMPLETED/result, and
+assert a single submission. This does not qualify a provider mode or account.
 
 ## Tariff preparation and release boundary
 

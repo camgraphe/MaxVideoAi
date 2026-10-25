@@ -48,11 +48,11 @@ test('Kling V4 returns trusted dimensions, ordered views and exact source facts'
   assert.equal(result.trustedMediaReferences?.[0]?.url, original('frame'));
 });
 test('Kling V4 preserves seven owned image subjects without silently dropping views', async () => {
-  const elements = Array.from({ length: 7 }, (_, i) => imageElement(`actor${i}`));
-  const rows = elements.flatMap(element => [row(element.frontalAssetId!), row(element.referenceAssetIds![0])]);
+  const elements = Array.from({ length: 7 }, (_, i) => ({ ...imageElement(`actor${i}`), referenceAssetIds: [0,1,2].map(j => `actor${i}-view${j}`), referenceImageUrls: [0,1,2].map(j => original(`actor${i}-view${j}`)) }));
+  const rows = elements.flatMap(element => [row(element.frontalAssetId!), ...element.referenceAssetIds!.map(row)]);
   const result = await validate({ mode: 'ref2v', elements, rows });
   assert.equal(result.ok, true);
-  if (result.ok) assert.equal(result.trustedMediaReferences?.length, 14);
+  if (result.ok) assert.equal(result.trustedMediaReferences?.length, 28);
 });
 
 const videoUrl = 'https://media.maxvideoai.com/user-assets/source.mp4';

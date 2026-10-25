@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { resolveGenerateRouteContext, resolveTrustedPaidGenerateRouteContext } from '../frontend/app/api/generate/_lib/route-context';
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
-import { resolveAgentGenerationModeExecutability } from '../frontend/src/server/agent-runtime/model-executability';
+import { resolveAgentGenerationModeExecutability, resolveAgentGenerationRequestExecutability } from '../frontend/src/server/agent-runtime/model-executability';
 import { generateVideo } from '../frontend/src/lib/fal';
 
 test('V4 preparation cannot reach configuration, pricing, billing, canary or providers', async () => {
@@ -25,5 +25,12 @@ test('V4 preparation cannot reach configuration, pricing, billing, canary or pro
     assert.equal(preflight.ok, false);
     assert.equal(preflight.error?.code, 'ENGINE_UNAVAILABLE');
     await assert.rejects(generateVideo(request), /KLING_V4_NOT_QUALIFIED/);
+  }
+});
+
+test('request executability also refuses restored V4 requests with configured offline credentials', () => {
+  const engine = getFalEngineById('kling-v4')!.engine;
+  for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v'] as const) {
+    assert.deepEqual(resolveAgentGenerationRequestExecutability({surface:'video',engineId:'kling-v4',mode,prompt:'Offline',settings:{},references:[]}, engine, [], {bytePlusEnabled:false,falApiKey:'offline-only'}), {executable:false,reason:'provider_disabled'});
   }
 });

@@ -1,3 +1,4 @@
+import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { captureCompletedFalDraftCache } from './fal-webhook-draft-cache';
 import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
@@ -171,7 +172,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     try {
       const falModel = (await resolveFalModelId(effectiveEngineId)) ?? effectiveEngineId;
       const falClient = getFalClient();
-      const queueResult = await falClient.queue.result(falModel, { requestId });
+      const queue = await resolveFalJobQueue({jobId:job.job_id,engineId:effectiveEngineId,
+        requestId,legacyModel:falModel},{client:falClient});
+      const queueResult = await queue.result();
       finalPayload = queueResult?.data ?? finalPayload ?? queueResult ?? null;
       if (!media.videoUrl && queueResult && typeof queueResult === 'object') {
         const fallbackMedia = extractMediaUrls(queueResult);

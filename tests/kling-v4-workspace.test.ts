@@ -98,10 +98,10 @@ test('V4 saved mode remains selected when runtime availability is closed', async
   assert.equal(resolveWorkspaceWorkflow({engine:blocked,form:form('v2v'),inputAssets:{},klingElements:[]}).submissionMode,'v2v');
 });
 
-test('V4 rejects wrong-kind subjects and aggregate reference overflow without clipping the request', () => {
+test('V4 rejects wrong-kind subjects and shared video overflow while separating flat images', () => {
   assert.equal(prepare({klingElements:[{...subject('wrong-kind'),frontal:asset('video-front','video')}]}).ok,false);
   const images=[asset('extra-1'),asset('extra-2')].map(value=>({...value,fieldId:'image_urls',type:'image/png',size:1234}));
-  assert.equal(prepare({klingElements:Array.from({length:7},(_,i)=>subject(String(i))),inputAssets:{image_urls:images},inputSchemaSummary:{assetFields:[{field:{id:'image_urls',type:'image',label:'References'}}]}}).ok,false);
+  assert.equal(prepare({klingElements:Array.from({length:7},(_,i)=>subject(String(i))),inputAssets:{image_urls:images},inputSchemaSummary:{assetFields:[{field:{id:'image_urls',type:'image',label:'References'}}]}}).ok,true);
   const videos=Array.from({length:5},(_,i)=>({...asset(`ref-video-${i}`,'video'),fieldId:'video_urls',type:'video/mp4',size:1234,durationSec:5}));
   assert.equal(prepare({klingElements:Array.from({length:3},(_,i)=>subject(String(i),true)),inputAssets:{video_urls:videos},inputSchemaSummary:{assetFields:[{field:{id:'video_urls',type:'video',label:'References'}}]}}).ok,false);
 });
@@ -113,4 +113,11 @@ test('V4 recreation rejects malformed subject arrays rather than filtering or re
   for(const element of [null, {frontalImageUrl:'https://owned.test/front',referenceImageUrls:['', 'https://owned.test/angle'],referenceAssetIds:['bad','good']}, {videoUrl:'https://owned.test/video',voiceId:44}]) {
     assert.throws(()=>resolveVideoSettingsSnapshot({schemaVersion:1,surface:'video',engineId:'kling-v4',inputMode:'ref2v',refs:{elements:[element]}},options));
   }
+});
+
+test('V4 App admits seven complete image subjects above fifteen views without dropping membership', () => {
+  const elements = Array.from({length:7}, (_,i) => ({...subject(String(i)), references:[0,1,2].map(j=>asset(`${i}-view${j}`))}));
+  const result = prepare({klingElements:elements});
+  assert.ok(result.ok);
+  if (result.ok) assert.deepEqual(result.klingElementsPayload?.map(e=>e.referenceAssetIds),elements.map(e=>e.references.map(a=>a!.assetId)));
 });

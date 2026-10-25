@@ -1,3 +1,4 @@
+import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import { query } from '@/lib/db';
 import type { FalInputSummary } from './fal-request';
@@ -7,7 +8,7 @@ type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
 export type ProviderJobTracker = {
   getLastProviderJobId: () => string | null;
   setLastProviderJobId: (requestId: string | null | undefined) => void;
-  persistProviderJobId: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => Promise<void>;
+  persistProviderJobId: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission, falQueueReceipt?: FalQueueReceipt) => Promise<void>;
 };
 
 export function createProviderJobTracker(params: {
@@ -20,6 +21,7 @@ export function createProviderJobTracker(params: {
   queryFn?: QueryFn;
 }): ProviderJobTracker {
   let lastProviderJobId: string | null = null;
+  const receiptRequestIds = new Set<string>();
   const nativeDraftProofRequestIds = new Set<string>();
   const queryFn = params.queryFn ?? query;
   const now = params.now ?? (() => new Date());
@@ -30,11 +32,14 @@ export function createProviderJobTracker(params: {
     }
   };
 
-  const persistProviderJobId = async (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => {
+  const persistProviderJobId = async (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission, falQueueReceipt?: FalQueueReceipt) => {
     // A queue status can arrive before onEnqueue or an immediate-result callback.
     // Seeing its ID must not suppress the first authoritative native Draft proof.
     const needsNativeDraftProof = nativeDraftSubmission && !nativeDraftProofRequestIds.has(requestId);
-    if (!requestId || (lastProviderJobId === requestId && !needsNativeDraftProof)) return;
+    const receipt = params.providerKey === 'fal' && params.engineId === 'kling-v4' && falQueueReceipt?.requestId === requestId
+      ? falQueueReceipt : undefined;
+    const needsReceipt = receipt && !receiptRequestIds.has(requestId);
+    if (!requestId || (lastProviderJobId === requestId && !needsNativeDraftProof && !needsReceipt)) return;
     if (nativeDraftSubmission) nativeDraftProofRequestIds.add(requestId);
     lastProviderJobId = requestId;
     try {
@@ -65,9 +70,11 @@ export function createProviderJobTracker(params: {
           promptLength: params.prompt.length,
           inputSummary: params.inputSummary,
           ...(nativeDraftSubmission ? {nativeDraftSubmission} : {}),
+          ...(receipt ? { falQueueReceipt: receipt } : {}),
         }),
         ]
       );
+      if (receipt) receiptRequestIds.add(requestId);
     } catch (error) {
       console.warn('[queue-log] failed to record enqueue event', { jobId: params.jobId, requestId }, error);
     }

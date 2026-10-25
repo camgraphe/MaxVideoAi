@@ -324,6 +324,9 @@ export function resolveAgentGenerationRequestExecutability(
   resolvedReferences: readonly ResolvedReference[] = [],
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
 ): AgentGenerationExecutabilityDecision {
+  if (isKlingV4ReleaseBlocked(engine.id) || isKlingV4ReleaseBlocked(request.engineId)) {
+    return { executable: false, reason: 'provider_disabled' };
+  }
   try {
     if (videoOperationEndpoint(request.engineId, request.mode, request.operation)) return credentialDecision(configured(environment.falApiKey));
   } catch { return { executable: false, reason: 'profile_invalid' }; }

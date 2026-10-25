@@ -55,7 +55,8 @@ export const KLING_V4_ENGINE: EngineCaps = {
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: ['t2v'], values: [...KLING_V4_ASPECT_RATIOS], default: '16:9' },
       { id: 'aspect_ratio', type: 'enum', label: 'Aspect ratio', modes: ['ref2v'], values: ['auto', ...KLING_V4_ASPECT_RATIOS], default: '16:9' },
     ],
-    referenceBudget: { fieldIds: ['image_url', 'image_urls', 'video_urls'], modes: ['ref2v'], maxTotal: 15, countUniqueUrls: false, maxByType: { image: 10, video: 5 } },
+    // Flat fields only: 10 images + 5 videos; explicitly bound subject views are separate.
+    referenceBudget: { fieldIds: ['image_url', 'image_urls', 'video_urls'], modes: ['ref2v'], maxTotal: 10 + 5, countUniqueUrls: false, maxByType: { image: 10, video: 5 } },
     constraints: { ownedAssetModes: ['i2v', 'ref2v', 'v2v'], minImageSidePx: 300, maxImageSizeMB: 30, maxVideoSizeMB: 300, maxCombinedVideoDurationSec: 30, combinedDurationModes: ['ref2v'] },
   },
   // Source rates and input-video billing are owned by the dedicated pricing adapter.

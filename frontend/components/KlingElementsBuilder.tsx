@@ -263,6 +263,16 @@ export function KlingElementsBuilder({
   const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
   const isV4 = variant !== 'legacy';
   const isV4Edit = variant === 'kling-v4-edit';
+  const v4SubjectGuidance = locale === 'fr'
+    ? `Jusqu’à sept sujets${isV4Edit ? ' image pour Modify.' : ', dont trois sujets vidéo au maximum.'} Chaque sujet image comprend une vue principale et une à trois vues complémentaires. Les voix restent indisponibles sans liaison propriétaire vérifiée.`
+    : locale === 'es'
+      ? `Hasta siete sujetos${isV4Edit ? ' de imagen para Modify.' : ', con un máximo de tres sujetos de vídeo.'} Cada sujeto de imagen incluye una vista frontal y de una a tres vistas adicionales. Las voces no están disponibles sin una vinculación de propiedad verificada.`
+      : `Up to seven subjects${isV4Edit ? '; image subjects only for Modify.' : ', including at most three video subjects.'} Each image subject needs a frontal image and one to three additional views. Voices remain unavailable without a verified owned binding.`;
+  const v4ReferenceGuidance = isV4Edit ? '' : locale === 'fr'
+    ? ' Les dix images (image initiale comprise) et cinq vidéos de référence sont distinctes des vues des sujets. Les vidéos partagent une limite de 30 secondes.'
+    : locale === 'es'
+      ? ' Las diez imágenes (incluida la inicial) y cinco vídeos de referencia tienen límites distintos de las vistas de sujetos. Los vídeos comparten un límite de 30 segundos.'
+      : ' Up to ten flat images (including the opening image) and five reference videos, separately from subject views. Videos share a 30-second total limit.';
   const videoCount = elements.filter((element) => element.video).length;
   const referenceSlots = useMemo(() => Math.max(1, maxReferenceImages), [maxReferenceImages]);
 
@@ -290,7 +300,7 @@ export function KlingElementsBuilder({
           + Subject
         </Button>
       </div>
-      {isV4 ? <p className="text-xs text-text-muted">Up to seven subjects{isV4Edit ? '; image subjects only for Edit.' : ', including at most three video subjects.'} Voices require an owned fal voice binding. Voice selection is unavailable until a verified binding can be selected.{!isV4Edit ? ' Use at most 15 visual assets across references and subject views.' : ''}</p> : null}
+      {isV4 ? <p className="text-xs text-text-muted">{v4SubjectGuidance}{v4ReferenceGuidance}</p> : null}
       <div className="space-y-4">
         {elements.map((element, index) => (
           <div key={element.id} className="rounded-input border border-border bg-surface-2 p-3">

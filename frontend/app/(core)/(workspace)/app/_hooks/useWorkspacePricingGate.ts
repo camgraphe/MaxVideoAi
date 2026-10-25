@@ -99,7 +99,7 @@ export function useWorkspacePricingGate({
     selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
   }) : null;
   const elementError = elementValidation && !elementValidation.ok ? elementValidation.message
-    : selectedEngine?.id === 'kling-v4' ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements }) : null;
+    : selectedEngine?.id === 'kling-v4' ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements, locale }) : null;
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
   const waitingForExcerpt = selectedEngine && mediaExcerptNeedsSelection(selectedEngine, submissionMode, inputAssets);
   const ownedGenerationRequired = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'extend') || form?.operation === 'flux-draft-enhance';

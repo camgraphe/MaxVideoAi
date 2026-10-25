@@ -1,3 +1,4 @@
+import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import {nativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import type { QueueStatus } from '@fal-ai/client';
 import { ENV } from '@/lib/env';
@@ -64,12 +65,19 @@ async function generateViaFal(
     console.warn('[fal] No webhook URL configured; relying on polling only.');
   }
   let enqueuedRequestId: string | undefined;
+  let queueReceipt: FalQueueReceipt | undefined;
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
-    if (payload.submissionMode === 'enqueue') {
-      enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId);
+    if (payload.submissionMode === 'enqueue' || payload.engineId === 'kling-v4') {
+      enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId, fetch,
+        payload.engineId === 'kling-v4' ? async (requestId, receipt) => {
+          // Preserve the accepted identity before persistence can fail. Never resubmit it.
+          enqueuedRequestId = requestId;
+          queueReceipt = receipt;
+          await hooks?.onRequestId?.(requestId, submissionProof, receipt);
+        } : undefined);
       if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
-      await hooks?.onRequestId?.(enqueuedRequestId, submissionProof);
+      if (!queueReceipt) await hooks?.onRequestId?.(enqueuedRequestId, submissionProof);
       return {
         provider,
         thumbUrl: fallbackThumb,
@@ -137,7 +145,7 @@ async function generateViaFal(
     }
     (falError as { originalError?: unknown }).originalError = error;
     if (fallbackProviderJobId && hooks?.onRequestId) {
-      Promise.resolve(hooks.onRequestId(fallbackProviderJobId, submissionProof)).catch((hookError) => {
+      Promise.resolve(hooks.onRequestId(fallbackProviderJobId, submissionProof, queueReceipt)).catch((hookError) => {
         console.warn('[fal] onRequestId hook failed after error', hookError);
       });
     }

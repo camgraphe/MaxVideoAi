@@ -61,6 +61,15 @@ export async function validateKlingV4OwnedMedia(params: {
       && a.slotId === item.fieldId && a.kind === item.kind)[occurrence];
     return { ...item, url: item.url.trim(), assetId: attachment?.assetId?.trim() };
   });
+  // Flat references have independent per-kind limits. Canonical references are
+  // already role/subject-bound by capability validation; here every original is
+  // still checked, including every nested subject view and video occurrence.
+  const flatImages = candidates.filter(item => ['image_url', 'image_urls'].includes(item.fieldId));
+  const flatVideos = candidates.filter(item => item.fieldId === 'video_urls');
+  if (['ref2v', 'v2v'].includes(params.mode) && flatImages.length > 10) {
+    return rejected('image_urls', 'Use at most ten flat images, including the opening image. Subject views have their own limits.');
+  }
+  if (flatVideos.length > 5) return rejected('video_urls', 'Use at most five flat reference videos.');
   const elements = params.elements ?? [];
   if (elements.length > 7 || (elements.length && !['ref2v', 'v2v'].includes(params.mode))) {
     return rejected('elements', 'Kling 4 subjects require reference generation or video editing, with at most seven subjects.');
@@ -83,9 +92,6 @@ export async function validateKlingV4OwnedMedia(params: {
       element.referenceImageUrls.forEach((url, view) => candidates.push({ fieldId, kind: 'image', url: url.trim(), assetId: element.referenceAssetIds![view]?.trim() }));
     }
   }
-  // Fal's mixed-limit wording is not fully qualified. Count every visual source,
-  // including subject views, conservatively; never silently truncate a request.
-  if (params.mode === 'ref2v' && candidates.length > 15) return rejected('references', 'This Kling 4 request exceeds the current 15-visual-source limit, including subject views.');
   if (!candidates.length) return { ok: true, trustedDurationSecByField: {}, trustedMediaReferences: [] };
   if (candidates.some(c => !c.assetId || !validReferenceMediaUrl(c.url) || !['image', 'video'].includes(c.kind))) {
     return rejected('references', 'Use owned original images or videos from your media library.');

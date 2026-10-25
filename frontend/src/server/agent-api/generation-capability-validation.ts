@@ -837,13 +837,15 @@ function validateReferenceBudget(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
   selectedFields: readonly (readonly EngineInputField[])[],
+  subjectSlots: ReadonlyMap<number, 'image' | 'video'>,
 ): void {
   const budget = candidate.engine.inputSchema?.referenceBudget;
   const engineMode = toEngineGenerationMode(candidate.engine.id, request.mode);
   if (!budget || (budget.modes?.length && !budget.modes.includes(engineMode))) return;
   const budgetFieldIds = new Set(budget.fieldIds);
-  const budgetReferences = request.references.filter((_, index) =>
-    selectedFields[index]?.some((field) => budgetFieldIds.has(field.id)));
+  const budgetReferences = request.references.filter((reference, index) =>
+    !(reference.role === 'reference' && reference.slot !== undefined && subjectSlots.has(reference.slot))
+    && selectedFields[index]?.some((field) => budgetFieldIds.has(field.id)));
   const count = budget.countUniqueUrls
     ? new Set(budgetReferences.map(referenceSourceIdentity)).size
     : budgetReferences.length;
@@ -997,7 +999,7 @@ function validateReferences(
       && selectedFields[index]?.length===1 && selectedFields[index][0].type==='image');
     if (flatImages.length>10) fail('references','reference_invalid');
   }
-  validateReferenceBudget(request, candidate, selectedFields);
+  validateReferenceBudget(request, candidate, selectedFields, subjectKinds);
   validateCombinedReferenceDurations(request, candidate, options);
 }
 
