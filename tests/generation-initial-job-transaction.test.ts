@@ -373,6 +373,8 @@ test('concurrent video reservations serialize on one job id in disposable Postgr
     VALUES ('user-1', 'topup', 1000, 'USD', 'test topup');
   `);
 
+  await admin.query(readFileSync('neon/migrations/81_job_journey_context.sql', 'utf8'));
+
   const previousDatabaseUrl = process.env.DATABASE_URL;
   process.env.DATABASE_URL = `postgresql://postgres@localhost/postgres?host=${encodeURIComponent(socketDirectory)}`;
   const first = new Client({

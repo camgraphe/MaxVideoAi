@@ -1,3 +1,4 @@
+import { normalizeJobJourneyContext, type JobJourneyContext } from '@/server/generations/job-journey-context';
 import { type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
@@ -22,6 +23,7 @@ type ExistingImageChargeRow = {
 };
 
 type ProvisionalImageJobInsert = {
+  journeyContext?: JobJourneyContext;
   userId: string;
   jobId: string;
   surface: JobSurface;
@@ -54,6 +56,7 @@ export type AtomicImageJobResult =
     };
 
 async function insertProvisionalImageJob(executor: QueryExecutor, params: ProvisionalImageJobInsert) {
+  const context = normalizeJobJourneyContext(params.journeyContext);
   await executor.query(
     `INSERT INTO app_jobs (
        job_id,
@@ -94,10 +97,14 @@ async function insertProvisionalImageJob(executor: QueryExecutor, params: Provis
        stripe_charge_id,
        visibility,
        indexable,
-       provisional
+       provisional,
+       entry_surface,
+       entry_source,
+       journey_version,
+       entry_release_sha
      )
      VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb,$30::jsonb,$31::jsonb,$32,$33,$34,$35,$36,$37,$38,$39
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb,$30::jsonb,$31::jsonb,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43
      )`,
     [
       params.jobId,
@@ -139,11 +146,16 @@ async function insertProvisionalImageJob(executor: QueryExecutor, params: Provis
       params.visibility,
       params.indexable,
       true,
+      context.entrySurface,
+      context.entrySource,
+      context.journeyVersion,
+      context.entryReleaseSha,
     ]
   );
 }
 
 export type CreateImageInitialJobParams = {
+  journeyContext?: JobJourneyContext;
   auditPricingSnapshot?: unknown;
   userId: string;
   mode: ImageGenerationMode;
@@ -236,6 +248,7 @@ export async function createInitialImageJobInExecutor(
   }
 
 
+  const journeyContext = normalizeJobJourneyContext(params.journeyContext);
   const existingRefunds = await executor.query<{ id: number }>(
     `SELECT id
        FROM app_receipts
@@ -360,6 +373,7 @@ export async function createInitialImageJobInExecutor(
   if (walletChargeMode === 'included') await validateInitialImageTariffRevision(executor, params);
   const paymentStatus = walletChargeMode === 'included' ? (params.includedPaymentStatus ?? 'included') : 'paid_wallet';
   await insertProvisionalImageJob(executor, {
+    journeyContext,
     userId: params.userId,
     jobId: params.jobId,
     surface: params.surface,

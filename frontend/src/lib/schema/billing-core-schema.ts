@@ -218,7 +218,11 @@ export async function ensureBillingCoreSchema(): Promise<void> {
         featured BOOLEAN DEFAULT FALSE,
         featured_order INTEGER DEFAULT 0,
         legacy_migrated BOOLEAN DEFAULT FALSE,
-        provisional BOOLEAN DEFAULT FALSE
+        provisional BOOLEAN DEFAULT FALSE,
+        entry_surface TEXT,
+        entry_source TEXT,
+        journey_version SMALLINT,
+        entry_release_sha TEXT
       );
     `);
 
