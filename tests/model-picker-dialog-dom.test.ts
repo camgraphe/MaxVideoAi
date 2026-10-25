@@ -69,6 +69,25 @@ test('dialog keeps selection provisional, confirms differences, searches closed 
     await click('Confirmer les réglages');
     assert.equal(chosen, 'minimax-h3');
     assert.equal(closed, true);
+    // A scenario can change settings while keeping the current model.
+    chosen = null; closed = false;
+    context.key = 'fresh-scenario';
+    context.hasChanges = true;
+    context.scenarioKey = 'duration-10';
+    context.controls = [{ id: 'durationSec', label: 'Durée', value: '10', options: [{ value: '5', label: '5 s' }, { value: '10', label: '10 s' }] }];
+    context.options['wan-3-prime'].changes = [{ label: 'Durée', before: '5 s', after: '10 s' }];
+    let accept = false;
+    context.onApply = () => accept;
+    await act(async () => render());
+    assert.ok(dom.window.document.querySelector('select[aria-label="Prix pour — Durée"]'));
+    await click('Utiliser Wan 3 Prime');
+    assert.equal(closed, false);
+    await click('Confirmer les réglages');
+    assert.equal(closed, false, 'a rejected transactional apply must keep the dialog open');
+    accept = true;
+    await click('Confirmer les réglages');
+    assert.equal(closed, true);
+    assert.equal(chosen, null, 'the contextual transaction must not fall through to a plain model switch');
     await act(async () => root.unmount());
     assert.equal(dom.window.document.activeElement?.id, 'opener');
   } finally {

@@ -1053,3 +1053,34 @@ test('incomplete candidates stay in Compare as cards and the family picker exclu
     assert.deepEqual(f.setup, before); assert.equal(f.writes.length, 0);
   } finally { await f.dispose(); }
 });
+
+test('picker scenario applies current-model settings transactionally and snapshots the prior setup', async () => {
+  const f = await mount();
+  try {
+    const before = structuredClone(f.setup);
+    let applied = false;
+    await act(async () => { applied = f.current.applyPickerScenario(before.form.engineId, before, { durationSec: 10, iterations: 2 }); });
+    assert.equal(applied, true);
+    assert.equal(f.setup.form.durationSec, 10);
+    assert.equal(f.setup.form.iterations, 2);
+    assert.equal(f.setup.prompt, before.prompt);
+    const saved = decodeWorkspaceModelSetups(f.storage.getItem(workspaceModelSetupsKey('a')), 'a');
+    assert.equal(saved.entries[before.form.engineId]?.setup.form.durationSec, before.form.durationSec);
+  } finally { await f.dispose(); }
+});
+
+test('picker scenario refuses stale source and account callbacks without changing any draft setter', async () => {
+  const f = await mount();
+  try {
+    const source = structuredClone(f.setup);
+    const apply = f.current.applyPickerScenario;
+    await f.edit({ prompt: 'An updated prompt' });
+    await act(async () => { assert.equal(apply(source.form.engineId, source, { durationSec: 10 }), false); });
+    assert.equal(f.writes.length, 0);
+    const updated = structuredClone(f.setup);
+    const oldAccountApply = f.current.applyPickerScenario;
+    await f.auth('b');
+    await act(async () => { assert.equal(oldAccountApply(updated.form.engineId, updated, { durationSec: 10 }), false); });
+    assert.equal(f.writes.length, 0);
+  } finally { await f.dispose(); }
+});

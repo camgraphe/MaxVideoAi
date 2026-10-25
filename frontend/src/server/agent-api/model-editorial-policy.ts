@@ -53,13 +53,13 @@ export function parseAgentModelEditorialPolicy(value: unknown,knownEngineIds: Re
     if (!knownEngineIds.has(entry.engineId) || ids.has(entry.engineId)) throw new Error('[agent-model-editorial-policy] Unknown or duplicate exact engine ID');
     ids.add(entry.engineId);
   }
-  for (const groups of [parsed.workspaceSelection?.create, parsed.workspaceSelection?.modify]) {
+  for (const [groups, limit] of [[parsed.workspaceSelection?.create, 7], [parsed.workspaceSelection?.modify, 6]] as const) {
     const selected = new Set<string>();
     for (const group of groups ?? []) for (const id of group.ids) {
       if (!knownEngineIds.has(id) || selected.has(id)) throw new Error('[agent-model-editorial-policy] Unknown or duplicate workspace model');
       selected.add(id);
     }
-    if (selected.size > 6) throw new Error('[agent-model-editorial-policy] At most six workspace recommendations');
+    if (selected.size > limit) throw new Error(`[agent-model-editorial-policy] At most ${limit} workspace recommendations`);
   }
   if (!parsed.provenance.some(source=>source.kind==='product_decision')) throw new Error('[agent-model-editorial-policy] A product decision is required; vendor policy is not independent validation');
   if (parsed.provenance.some(source=>source.reviewedAt>parsed.reviewedAt)) throw new Error('[agent-model-editorial-policy] Source review cannot follow policy review');
