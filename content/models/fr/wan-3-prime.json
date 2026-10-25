@@ -44,15 +44,15 @@
       ]
     },
     "media": {
-      "caption": "Galerie de preuves Wan 3 Prime",
-      "description": "Les sorties Prime vérifiées paraîtront après acceptation",
-      "renderLabel": "Examiner le rendu accepté",
+      "caption": "Wan 3 Prime en action",
+      "description": "Regardez ce rendu pour voir si son style convient à votre scène.",
+      "renderLabel": "Voir le rendu complet",
       "badges": [
         "Cinq modes",
         "Jusqu’en 1080p",
         "Audio natif"
       ],
-      "altContext": "exemple de production Wan 3 Prime accepté"
+      "altContext": "Exemple vidéo Wan 3 Prime"
     },
     "features": [
       {
@@ -227,8 +227,8 @@
     "modelSlug": "wan-3-prime",
     "showWhenEmpty": false,
     "section": {
-      "title": "Exemples Wan 3 Prime vérifiés",
-      "intro": "La galerie Prime reste absente jusqu'à ce que deux sorties durables passent la revue éditoriale.",
+      "title": "Exemples Wan 3 Prime",
+      "intro": "Explorez les exemples ci-dessous et ouvrez un rendu pour voir le résultat complet.",
       "defaultCtaLabel": "Voir tous les exemples Wan",
       "recreateLabel": null
     },
