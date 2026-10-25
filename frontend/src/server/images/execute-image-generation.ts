@@ -568,12 +568,11 @@ export async function executeImageGeneration({
         } satisfies ImageGenerationResponse;
       } catch (error) {
         console.error('[images] Fal generation failed', error);
-        const pendingProviderJobId = providerJobId ?? (error instanceof ImageGenerationExecutionError ? error.extras?.providerJobId : undefined);
         if (shouldKeepImageProviderOutcomePending({
-          engineId: engine.id, walletReservation, hasTrustedQuotedBilling: Boolean(trustedQuotedBilling),
-          error, providerJobId: pendingProviderJobId,
+          walletReservation, hasTrustedQuotedBilling: Boolean(trustedQuotedBilling),
+          error, providerJobId,
         })) {
-          await markImageProviderOutcomeAmbiguous(jobId, pendingProviderJobId);
+          await markImageProviderOutcomeAmbiguous(jobId, providerJobId);
           fail(
             mode,
             'provider_outcome_ambiguous',
@@ -584,7 +583,7 @@ export async function executeImageGeneration({
               engineId: billingEngineId,
               engineLabel: billingEngineLabel,
               jobId,
-              providerJobId: pendingProviderJobId,
+              providerJobId,
               paymentStatus: imagePaymentStatus,
             },
           );

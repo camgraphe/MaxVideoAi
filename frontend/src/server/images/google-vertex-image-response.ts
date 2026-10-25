@@ -35,6 +35,30 @@ export function parseGoogleVertexResponseId(payload: unknown): string | null {
   return typeof root?.responseId === 'string' ? root.responseId : null;
 }
 
+/** A parsed object alone cannot establish that an accepted POST produced no image. */
+export function isValidatedGoogleVertexImageResponse(payload: unknown): boolean {
+  const root = asRecord(payload);
+  if (!root) return false;
+  if (summarizeGoogleVertexImageResponse(payload).blockedForSafety) return true;
+  if (!Array.isArray(root.candidates) || !root.candidates.length) return false;
+  const candidates = root.candidates.map(asRecord);
+  if (candidates.some(candidate => !candidate)) return false;
+  for (const candidate of candidates) {
+    const parts = asRecord(candidate?.content)?.parts;
+    if (!Array.isArray(parts)) return false;
+    for (const part of parts) {
+      const value = asRecord(part);
+      const inline = asRecord(value?.inlineData);
+      if (inline) {
+        if (typeof inline.mimeType !== 'string' || !inline.mimeType.startsWith('image/')
+          || typeof inline.data !== 'string' || !Buffer.from(inline.data, 'base64').length) return false;
+      } else if (typeof value?.text !== 'string') return false;
+    }
+  }
+  return extractGoogleVertexImages(payload).length > 0
+    || candidates.every(candidate => ['STOP', 'MAX_TOKENS'].includes(String(candidate?.finishReason)));
+}
+
 /** Modality counts are separate from inline parts and from the actual invoice. */
 export function parseGoogleVertexImageUsage(payload: unknown): {
   inputTokens: number; outputTextTokens: number; outputImageTokens: number; thoughtsTokens: number;

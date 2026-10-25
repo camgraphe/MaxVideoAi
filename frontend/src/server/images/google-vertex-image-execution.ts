@@ -19,7 +19,7 @@ import {
   summarizeGoogleVertexImageResponse,
   parseGoogleVertexImageUsage,
 } from './google-vertex-image-response';
-import { shouldKeepImageProviderOutcomePending } from './image-provider-failure-policy';
+import { markImageProviderOutcomeAmbiguous } from './image-provider-failure-policy';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
 import type { PendingReceipt } from './image-generation-receipts';
@@ -168,6 +168,7 @@ export async function executeGoogleVertexImageGeneration(params: {
   const modelId = params.engine.providerMeta?.modelSlug ?? params.engine.id;
   let providerJobId: string | null = null;
   let lastProviderResponse: unknown = null;
+  let receivedImage = false;
 
   try {
     assertGoogleVertexImageAvailable(params.engine);
@@ -202,7 +203,9 @@ export async function executeGoogleVertexImageGeneration(params: {
           }
         );
       }
-      inlineImages.push(...extractGoogleVertexImages(providerResponse));
+      const images = extractGoogleVertexImages(providerResponse);
+      receivedImage ||= images.length > 0;
+      inlineImages.push(...images);
     }
 
     if (!inlineImages.length) {
@@ -279,10 +282,21 @@ export async function executeGoogleVertexImageGeneration(params: {
     } satisfies ImageGenerationResponse;
   } catch (error) {
     console.error('[images] Google Vertex image generation failed', error);
-    if (params.engine.id === NANO21_ENGINE_ID && shouldKeepImageProviderOutcomePending({
-      engineId: params.engine.id, walletReservation: 'reserve', hasTrustedQuotedBilling: false, error, providerJobId: providerJobId ?? undefined,
-    })) {
-      throw new ImageGenerationExecutionError('Provider acceptance is still being verified.', {
+    if (params.engine.id === NANO21_ENGINE_ID && (receivedImage
+      || (error instanceof GoogleVertexImageError && error.submissionState === 'uncertain'))) {
+      const message = 'The image request outcome is uncertain. Keep this job ID for support; do not resubmit.';
+      // This is the actual reserved direct-provider owner. Its caller's fallback
+      // catch does not surround this call, so persist here before returning ambiguity.
+      try {
+        await markImageProviderOutcomeAmbiguous(params.jobId, providerJobId ?? undefined, {
+          providerMode: GOOGLE_VERTEX_IMAGE_PROVIDER_MODE, userId: params.userId, message, strict: true,
+        });
+      } catch (persistenceError) {
+        // Never refund an uncertain submitted outcome because a status write failed.
+        // The original job/receipt remain the recovery identity, not a new POST.
+        console.warn('[images] unable to persist Vertex outcome evidence', { jobId: params.jobId, providerJobId }, persistenceError);
+      }
+      throw new ImageGenerationExecutionError(message, {
         mode: params.mode, status: 503, code: 'provider_outcome_ambiguous',
         extras: { jobId: params.jobId, providerJobId: providerJobId ?? undefined, paymentStatus: 'paid_wallet' },
       });

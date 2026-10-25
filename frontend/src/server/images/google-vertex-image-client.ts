@@ -6,7 +6,7 @@ import {
 } from '@/server/video-providers/google-vertex-auth';
 import { GoogleVertexImageError } from './google-vertex-image-error';
 import type { GoogleVertexImagePayload } from './google-vertex-image-payload';
-import { extractGoogleVertexImages, summarizeGoogleVertexImageResponse } from './google-vertex-image-response';
+import { extractGoogleVertexImages, isValidatedGoogleVertexImageResponse, summarizeGoogleVertexImageResponse } from './google-vertex-image-response';
 
 export type GoogleVertexImageClientConfig = {
   projectId: string;
@@ -88,6 +88,8 @@ export class GoogleVertexImageClient {
   }
 
   private async generateContentOnce(modelId: string, payload: GoogleVertexImagePayload): Promise<unknown> {
+    const nano21 = modelId === NANO21_MODEL_ID;
+    let imagePostStarted = false;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.timeoutMs ?? 120_000);
     const base = modelId === NANO21_MODEL_ID ? 'https://aiplatform.googleapis.com' : this.config.apiBaseUrl.replace(/\/+$/, '');
@@ -95,27 +97,57 @@ export class GoogleVertexImageClient {
       modelId === NANO21_MODEL_ID ? 'global' : this.config.location
     )}/publishers/google/models/${encodeURIComponent(modelId)}:generateContent`;
     try {
+      // Complete local/auth preparation before crossing the image POST boundary.
+      const accessToken = await this.accessToken();
+      const body = JSON.stringify(payload);
+      const headerValues = { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' };
+      const headers = nano21 ? new Headers(headerValues) : headerValues;
+      if (nano21 && controller.signal.aborted) {
+        throw new GoogleVertexImageError('Google Vertex image preparation timed out before submission.', {
+          code: 'GOOGLE_VERTEX_IMAGE_TIMEOUT', submissionState: 'not_submitted',
+        });
+      }
+      imagePostStarted = true;
       const response = await (this.config.fetchFn ?? fetch)(url, {
         method: 'POST',
-        headers: { authorization: `Bearer ${await this.accessToken()}`, 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers,
+        body,
         signal: controller.signal,
       });
-      const json = await response.json().catch(() => null);
+      let json: unknown;
+      try { json = await response.json(); }
+      catch {
+        if (nano21 && response.ok) {
+          throw new GoogleVertexImageError('Google Vertex image response could not be read; the outcome is uncertain.', {
+            status: 502, code: 'GOOGLE_VERTEX_IMAGE_PROTOCOL_ERROR', submissionState: 'uncertain',
+          });
+        }
+        json = null;
+      }
       if (!response.ok) {
         throw new GoogleVertexImageError(`Google Vertex image request failed (${response.status}).`, {
           status: response.status,
           code: 'GOOGLE_VERTEX_IMAGE_HTTP_ERROR',
           detail: json,
+          ...(nano21 ? { submissionState: response.status >= 500 ? 'uncertain' as const : 'definitive' as const } : {}),
+        });
+      }
+      if (nano21 && !isValidatedGoogleVertexImageResponse(json)) {
+        throw new GoogleVertexImageError('Google Vertex image response was not a validated result; the outcome is uncertain.', {
+          status: 502, code: 'GOOGLE_VERTEX_IMAGE_PROTOCOL_ERROR', submissionState: 'uncertain',
         });
       }
       return json;
     } catch (error) {
-      if (error instanceof GoogleVertexImageError) throw error;
+      if (error instanceof GoogleVertexImageError) {
+        if (nano21 && error.submissionState === undefined) error.submissionState = imagePostStarted ? 'uncertain' : 'not_submitted';
+        throw error;
+      }
       const timedOut = error instanceof Error && error.name === 'AbortError';
       throw new GoogleVertexImageError(timedOut ? 'Google Vertex image request timed out.' : 'Google Vertex image network error.', {
         code: timedOut ? 'GOOGLE_VERTEX_IMAGE_TIMEOUT' : 'GOOGLE_VERTEX_IMAGE_NETWORK_ERROR',
         cause: error,
+        ...(nano21 ? { submissionState: imagePostStarted ? 'uncertain' as const : 'not_submitted' as const } : {}),
       });
     } finally {
       clearTimeout(timer);

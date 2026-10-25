@@ -14,7 +14,6 @@ import { resolveImageGenerationRequestContext } from '../frontend/src/server/ima
 import { priceCanonicalGeneration, priceCanonicalGenerationWithBilling } from '../frontend/src/server/agent-api/generation-pricing';
 import { parseModelDecisionContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content';
 import { readFileSync } from 'node:fs';
-import { shouldKeepImageProviderOutcomePending } from '../frontend/src/server/images/image-provider-failure-policy';
 import { prepareImagePickerOption } from '../frontend/app/(core)/(workspace)/app/image/_lib/image-model-picker';
 import { assertNano21Scenario, normalizeNano21Settings } from '../frontend/src/lib/nano-banana-2-1';
 import * as coverage from '../frontend/lib/pricing-audit/manual-tariff-coverage';
@@ -73,16 +72,6 @@ test('Nano21 reference, native budget and closed search boundaries are enforced 
     { mode: 't2i', enableWebSearch: true }, { mode: 't2i', enableImageSearch: true }]) {
     assert.throws(() => assertNano21Scenario(input));
   }
-});
-
-test('Nano21 ambiguous POST stays on its paid job while definite empty/safety results remain failures', () => {
-  const pending = (code: string, status: number) => shouldKeepImageProviderOutcomePending({
-    engineId: 'nano-banana-2-1', walletReservation: 'reserve', hasTrustedQuotedBilling: false, error: { code, status },
-  } as Parameters<typeof shouldKeepImageProviderOutcomePending>[0]);
-  assert.equal(pending('GOOGLE_VERTEX_IMAGE_NETWORK_ERROR', 502), true);
-  assert.equal(pending('GOOGLE_VERTEX_IMAGE_TIMEOUT', 502), true);
-  assert.equal(pending('GOOGLE_VERTEX_IMAGE_EMPTY_RESPONSE', 502), false);
-  assert.equal(pending('google_vertex_image_safety_block', 422), false);
 });
 
 test('forcing a closed Nano21 web model never substitutes a live model', () => {
@@ -185,7 +174,7 @@ test('Nano 2.1 fixes only its request region to global and never retries an ambi
   const client = new GoogleVertexImageClient({ projectId: 'existing', location: 'europe-west4',
     apiBaseUrl: 'https://europe-west4-aiplatform.googleapis.com', serviceAccount: { client_email: 'test@example.com', private_key: 'unused' },
     getAccessTokenFn: async () => 'test', retryDelayMs: 0,
-    fetchFn: async url => { urls.push(String(url)); return new Response(JSON.stringify({ candidates: [] })); } });
+    fetchFn: async url => { urls.push(String(url)); return new Response(JSON.stringify({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: 'No image' }] } }] })); } });
   const payload = buildGoogleVertexImagePayload({ prompt: 'A still' });
   await client.generateContent('gemini-nano-banana-2.1', payload);
   assert.equal(urls.length, 1);
