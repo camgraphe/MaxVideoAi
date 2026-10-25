@@ -77,6 +77,16 @@ Stale audio expiry and explicitly requested Fal refresh keep their existing
 status-reconciliation behavior. They are separate from schema/output repair and
 must retain account ownership and payment safeguards.
 
+The manual Fal refresh in `jobs-fal-refresh.ts` preserves the current row when
+the queue status read throws, returns no response, or has no usable state. It
+does not write a failure or fetch a result for those unconfirmed observations;
+a later refresh can retry the same provider request. Explicit terminal states
+retain their existing failure/refund eligibility, and recognized completion
+states still enter the normal webhook result projection. This does not change
+polling deadlines, financial settlement, or result-fetch error handling.
+`tests/jobs-fal-refresh.test.ts` exercises these branches with synthetic provider
+and persistence boundaries without connecting to external services.
+
 Audio expiration treats the feed snapshot only as a candidate. The route-local
 `jobs-stale-audio.ts` helper locks the current owned row and checks its current
 surface, active status, missing media and last-update age again. It returns `true`
