@@ -5,6 +5,7 @@ import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request';
+import { resolveWorkspaceWorkflow } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
 
 function options(): WorkspacePreflightRequestOptions {
   return {
@@ -20,6 +21,20 @@ test('request preserves supported fields and one-output semantics', () => {
   assert.deepEqual(buildWorkspacePreflightRequest(options()), {
     engine: 'seedance-2-0', mode: 't2v', durationSec: 7, resolution: '720p', aspectRatio: '16:9', fps: 24, seedLocked: true, loop: false, inputs: [], user: { memberTier: 'Member' },
   });
+});
+for (const id of ['kling-o3-standard', 'kling-o3-pro', 'kling-o3-4k']) test(`${id}: removing a Reference source does not throw before inferred Create mode synchronizes`, () => {
+  const engine = getFalEngineById(id)!.engine;
+  const form = { ...coerceFormState(engine, 'v2v', null), operation: 'kling-reference' as const };
+  for (const [fieldId, mode] of [[null, 't2v'], ['image_urls', 'ref2v'], ['image_url', 'i2v']] as const) {
+    const inputAssets = fieldId ? { [fieldId]: [{ id: 'image', fieldId, assetId: 'image', kind: 'image', status: 'ready',
+      url: 'https://example.com/original.png' } as ReferenceAsset] } : {};
+    const workflow = resolveWorkspaceWorkflow({ engine, form, inputAssets, klingElements: [] });
+    assert.equal(workflow.submissionMode, mode);
+    const before = structuredClone(form);
+    const request = buildWorkspacePreflightRequest({ ...options(), form, selectedEngine: engine, inputAssets, submissionMode: workflow.submissionMode });
+    assert.equal(request.mode, mode);
+    assert.deepEqual(form, before);
+  }
 });
 test('workspace sends Auto duration to preflight instead of quoting a stale numeric hint', () => {
   const input = options();

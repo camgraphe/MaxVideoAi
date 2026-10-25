@@ -24,6 +24,7 @@ async function mount({
   locale = 'en',
   emptyPrompt = false,
   mixedCatalogue = false,
+  operationCatalogue = false,
 } = {}) {
   process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://maxvideoai-test.supabase.co';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
@@ -96,7 +97,7 @@ async function mount({
   const { I18nProvider } = await import('../frontend/lib/i18n/I18nProvider');
   const { CoreSettingsBar } = await import('../frontend/components/CoreSettingsBar');
   const engines = listFalEngines()
-    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')))
+    .filter((e) => ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'ltx-2-3'].includes(e.id) || (mixedCatalogue && e.engine.modes.includes('t2i')) || (operationCatalogue && e.id === 'minimax-h3-max'))
     .map((e) => e.engine);
   let setup: WorkspaceModelSetup = {
     form: coerceFormState(engines.find((e) => e.id === 'seedance-2-0')!, 't2v', null),
@@ -995,6 +996,28 @@ test('displaced active draft is visible through rendered Configurations and Canc
     assert.equal(f.setup.voiceIdsInput, previous.voiceIdsInput);
     await act(async () => f.current.removeSavedSetup(previous.form.engineId));
     assert.notEqual(f.current.savedSetups[0]?.saved?.setup.prompt, previous.prompt);
+  } finally { await f.dispose(); }
+});
+test('restored Relight configuration quotes its lighting image and selected framing', async () => {
+  const f = await mount({ operationCatalogue: true });
+  try {
+    const engine = listFalEngines().find(e => e.id === 'minimax-h3-max')!.engine;
+    const previous = structuredClone(f.setup);
+    previous.form = { ...coerceFormState(engine, 'v2v', null), operation: 'h3-relight', resolution: '480P', aspectRatio: '9:16' };
+    previous.prompt = '';
+    const ref = (fieldId: string, kind: 'video' | 'image') => ({ id: fieldId, assetId: fieldId, fieldId, kind,
+      status: 'ready' as const, name: fieldId, type: kind === 'video' ? 'video/mp4' : 'image/png', size: 1024,
+      width: 720, height: 1280, durationSec: kind === 'video' ? 107 / 24 : null,
+      url: `https://example.com/${fieldId}`, previewUrl: `https://example.com/${fieldId}` });
+    previous.inputAssets = { video_url: [ref('video_url', 'video')], reference_image_url: [ref('reference_image_url', 'image')] };
+    await f.recovery(previous);
+    await act(async () => f.current.selectSavedSetup(engine.id));
+    await f.tick();
+    const request = f.requests.at(-1)?.body as { operation: string; aspectRatio: string; inputs: Array<{ assetId: string }> };
+    assert.ok(request, 'complete restored Relight setup requests a quote');
+    assert.equal(request.operation, 'h3-relight');
+    assert.equal(request.aspectRatio, '9:16');
+    assert.deepEqual(request.inputs.map(input => input.assetId).sort(), ['reference_image_url', 'video_url']);
   } finally { await f.dispose(); }
 });
 

@@ -16,12 +16,13 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
+import { resolveVideoOperationEngine } from '../frontend/lib/video-operation';
 import {
   resolveWorkspaceComposerFacts,
   resolveWorkspaceWorkflow,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-workflow-projection';
 const allEngines = listFalEngines()
-  .filter((e) => ['seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'ltx-2-3'].includes(e.id))
+  .filter((e) => ['seedance-2-0', 'kling-3-pro', 'kling-o3-pro', 'ltx-2-3', 'minimax-h3-max'].includes(e.id))
   .map((e) => e.engine);
 const noop = () => {};
 const jobs: never[] = [];
@@ -138,7 +139,9 @@ async function mount({
       accessToken,
       locale: 'en',
     } as any);
-    const selectedEngine = engines.find((e) => e.id === route.form?.engineId) ?? null;
+    const baseEngine = engines.find((e) => e.id === route.form?.engineId) ?? null;
+    const selectedEngine = baseEngine && route.form?.operation
+      ? resolveVideoOperationEngine(baseEngine, route.form.mode, route.form.operation) : baseEngine;
     const workflow = resolveWorkspaceWorkflow({
       engine: selectedEngine,
       form: route.form,
@@ -359,6 +362,47 @@ const media = (fieldId: string, kind: 'image' | 'video' | 'audio' = 'image', ind
   width: kind === 'audio' ? null : 640,
   height: kind === 'audio' ? null : 360,
   durationSec: kind === 'image' ? null : 7.25,
+});
+test('authenticated Kling Modify survives remount with its explicit Edit identity and original source', async () => {
+  const view = await mount();
+  try {
+    const engine = allEngines.find(e => e.id === 'kling-o3-pro')!;
+    for (const withSource of [false, true]) {
+      const source = { ...media('video_url', 'video'), width: 720, height: 1280 };
+      await act(async () => {
+        view.current.setForm({ ...coerceFormState(engine, 'v2v', null), operation: 'kling-edit',
+          extraInputValues: { keep_audio: false } });
+        view.current.setInputAssets(withSource ? { video_url: [source] } : {});
+        view.current.setPrompt('Keep the person and change the background');
+      });
+      await view.remount();
+      assert.equal(view.current.form.operation, 'kling-edit');
+      assert.equal(view.current.form.extraInputValues.keep_audio, false);
+      assert.deepEqual(view.current.inputAssets, withSource ? { video_url: [source] } : {});
+      assert.equal(view.current.prompt, 'Keep the person and change the background');
+    }
+    assert.equal(view.libraryWrites, 0);
+  } finally { await view.close(); }
+});
+test('authenticated H3 Relight restores its own lighting image, resolution and source', async () => {
+  const view = await mount();
+  try {
+    const engine = allEngines.find(e => e.id === 'minimax-h3-max')!;
+    const assets = { video_url: [media('video_url', 'video')], reference_image_url: [media('reference_image_url')] };
+    await act(async () => {
+      view.current.setForm({ ...coerceFormState(engine, 'v2v', null), operation: 'h3-relight', resolution: '480P', aspectRatio: '9:16' });
+      view.current.setInputAssets(assets);
+      view.current.setPrompt('');
+    });
+    await view.remount();
+    assert.equal(view.current.form.operation, 'h3-relight');
+    assert.equal(view.current.form.resolution, '480P');
+    assert.equal(view.current.form.aspectRatio, '9:16');
+    assert.deepEqual(view.current.inputAssets, assets);
+    assert.equal(view.current.prompt, '');
+    assert.equal(view.current.hydration.ready, true);
+    assert.equal(view.libraryWrites, 0);
+  } finally { await view.close(); }
 });
 const snapshot = (view: Awaited<ReturnType<typeof mount>>) => {
   const {
