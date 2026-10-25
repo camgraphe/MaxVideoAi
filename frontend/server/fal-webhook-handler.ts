@@ -480,10 +480,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
         .replace(/\s+/g, ' ')
         .trim()
     : null;
-  const engineIdForUpdate =
-    effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
-  const engineLabelForUpdate =
-    effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
+  const engineIdForUpdate = effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
+  const engineLabelForUpdate = effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
   const explicitAutoRefundEligibility = (() => {
     if (typeof payload.auto_refund_eligible === 'boolean') return payload.auto_refund_eligible;
     if (typeof payload.autoRefundEligible === 'boolean') return payload.autoRefundEligible;
@@ -639,7 +637,6 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   });
 
   const normalizedLogStatus = normalizeFalQueueLogStatus(nextStatus ?? statusInfo.status ?? payload.status);
-
   try {
     await query(
       `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
