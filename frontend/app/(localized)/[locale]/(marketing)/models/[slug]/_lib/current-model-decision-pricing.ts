@@ -1,7 +1,7 @@
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
-import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
+import { quotePublicModelScenario, resolvePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
 
 import { formatCurrencyForLocale } from '../../../pricing/_lib/pricingPageContent';
 import { getPricingHubCopy } from '../../../pricing/_lib/pricingHubCopy';
@@ -9,6 +9,7 @@ import type { ModelDecisionPricingScenario } from './model-page-decision-pricing
 import { buildModelDecisionData } from './model-page-decision-data';
 import { getModelPageTemplateConfig } from './model-page-template-registry';
 import type { ModelPagePricingPreset } from './model-page-template-types';
+import { formatModelDecisionScenarioDetails, modelDecisionScenarioCopy, modelDecisionScenarioDetails } from './model-decision-scenario-details';
 
 function scenarioInput(entry: FalEngineEntry, preset: ModelPagePricingPreset): PublicModelQuoteInput | null {
   if (typeof preset.fixedValueKey === 'string') return null;
@@ -39,6 +40,7 @@ export async function refreshModelDecisionPricingScenarios(
   scenarios: ModelDecisionPricingScenario[],
   presets: ModelPagePricingPreset[],
   quote: (input: PublicModelQuoteInput) => Promise<PublicModelQuote> = quotePublicModelScenario,
+  { showScenarioDetails = false }: { showScenarioDetails?: boolean } = {},
 ): Promise<ModelDecisionPricingScenario[]> {
   const byId = new Map(presets.map((preset) => [preset.id, preset]));
   return Promise.all(scenarios.map(async (scenario) => {
@@ -46,10 +48,17 @@ export async function refreshModelDecisionPricingScenarios(
     if (!preset || typeof preset.fixedValueKey === 'string') return scenario;
     const input = scenarioInput(entry, preset);
     const current = input ? await quote(input) : { status: 'unavailable' as const };
+    const resolved = showScenarioDetails && input ? resolvePublicModelScenario(input) : null;
+    const details = resolved ? modelDecisionScenarioDetails(resolved.context) : null;
     const note = /(?:\$\s*\d|\d[.,]\d{2}\s*\$)/.test(scenario.note) &&
       typeof preset.imageResolution === 'string'
       ? neutralImageNote(locale, preset.quantity ?? 1) : scenario.note;
-    return { ...scenario, note, value: current.status === 'exact'
+    return { ...scenario,
+      note: showScenarioDetails ? details ? formatModelDecisionScenarioDetails(details, locale)
+        : modelDecisionScenarioCopy(locale).unavailable : note,
+      ...(details ? { details, priceUnitLabel: current.status === 'exact'
+        ? modelDecisionScenarioCopy(locale).perVideo : undefined } : {}),
+      value: current.status === 'exact' && (!showScenarioDetails || details)
       ? formatCurrencyForLocale(locale, current.currency, current.amountCents / 100)
       : getPricingHubCopy(locale).liveQuote };
   }));
@@ -64,6 +73,7 @@ export async function buildCurrentModelDecisionData(
   return { config, data: data && config
     ? { ...data, pricing: { ...data.pricing,
       scenarios: await refreshModelDecisionPricingScenarios(entry, locale,
-        data.pricing.scenarios, config.pricing.presets, quote) } }
+        data.pricing.scenarios, config.pricing.presets, quote,
+        { showScenarioDetails: config.pricing.showScenarioDetails }) } }
     : data };
 }

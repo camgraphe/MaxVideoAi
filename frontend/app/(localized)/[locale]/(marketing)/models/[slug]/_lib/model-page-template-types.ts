@@ -82,6 +82,7 @@ export type ModelPageTemplateConfig = {
   };
   pricing: {
     enabled?: boolean;
+    showScenarioDetails?: boolean;
     anchorHref: string;
     presets: ModelPagePricingPreset[];
   };

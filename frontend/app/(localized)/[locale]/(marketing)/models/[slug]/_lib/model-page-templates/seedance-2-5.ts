@@ -19,6 +19,7 @@ export const seedance25TemplateConfig: ModelPageTemplateConfig = {
     ],
   },
   pricing: {
+    showScenarioDetails: true,
     enabled: true,
     anchorHref: '#pricing',
     presets: [
