@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import sharp from 'sharp';
 import { createFalClient } from '@fal-ai/client';
 import { verifyExternalFalEvidence, verifyImportJournal } from '../frontend/server/external-fal-import/evidence';
 import { importDigest, parseExternalFalImport } from '../frontend/server/external-fal-import/contract';
@@ -113,4 +115,63 @@ test('installed Fal SDK recovery uses only the two exact GET URLs and preserves 
   assert.equal(calls.length, 2);
   assert.equal((records[0] as { requestIdHeader: null }).requestIdHeader, null);
   assert.deepEqual(calls, [resultUrl + '/status?logs=0', resultUrl]);
+});
+
+test('Kling evidence binds poster and short silent preview hashes and rejects a substituted or audible preview', async () => {
+  const original = readFileSync('tests/fixtures/studio-media/pattern-a.mp4');
+  const preview = execFileSync('ffmpeg', ['-v', 'error', '-i', 'tests/fixtures/studio-media/pattern-a.mp4', '-t', '2', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']);
+  const poster = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#123456' } }).webp().toBuffer();
+  const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+  const requestId = '01a15b12-7619-7060-8be6-f69e46ed0cf1';
+  const endpoint = 'kling/v4/text-to-video';
+  const providerInput = { prompt: 'A film.', duration: 5, resolution: '1080p', aspect_ratio: '16:9' };
+  const result = { requestId, data: { video: { url: 'https://fal.media/original.mp4' } } };
+  const journal = Buffer.from([{ event: 'submission_started', endpoint, input: providerInput }, { event: 'accepted', requestId },
+    { event: 'recovered', requestId, status: 'COMPLETED', result }].map(value => JSON.stringify(value)).join('\n'));
+  const base = fixture();
+  const input = parseExternalFalImport({ ...base.input, engineId: 'kling-v4', endpoint, providerInput, videoSha256: digest(original),
+    evidenceSha256: digest(journal), media: { poster: { url: base.asset.thumb_url, sha256: digest(poster) },
+      preview: { url: 'https://media.maxvideoai.com/preview.mp4', sha256: digest(preview) } } });
+  const asset = { ...base.asset, preview_url: 'https://media.maxvideoai.com/preview.mp4' };
+  const deps = { ...base.deps, journal,
+    provider: { status: async () => ({ status: 'COMPLETED', request_id: requestId }), result: async () => result },
+    fetcher: (async (url: unknown) => new Response(String(url).endsWith('.webp') ? poster : String(url).endsWith('/preview.mp4') ? preview : original)) as typeof fetch };
+  // Strip audio from a real fixture for the card role; the original retains its audio.
+  const verified = await verifyExternalFalEvidence(input, [asset], deps);
+  assert.equal(verified.display?.poster.sha256, digest(poster));
+  assert.equal(verified.display?.preview.sha256, digest(preview));
+  assert.equal(verified.display?.preview.hasAudio, false);
+  await assert.rejects(verifyExternalFalEvidence(input, [asset], { ...deps,
+    fetcher: (async (url: unknown) => new Response(String(url).endsWith('.webp') ? Buffer.from('substituted') : original)) as typeof fetch }), /HASH/);
+  if (input.engineId !== 'kling-v4') throw new Error('test fixture');
+  await assert.rejects(verifyExternalFalEvidence({ ...input, media: { ...input.media, preview: { ...input.media.preview, sha256: digest(original) } } }, [asset], { ...deps,
+    fetcher: (async (url: unknown) => new Response(String(url).endsWith('.webp') ? poster : original)) as typeof fetch }), /SHORT_AND_SILENT/);
+  await assert.rejects(verifyExternalFalEvidence(input, [{ ...asset, preview_url: 'https://media.maxvideoai.com/other.mp4' }], deps), /PREVIEW/);
+});
+
+test('Kling imports accepted Edit sources within media tolerance without expanding the reference-video budget', async () => {
+  const original = readFileSync('tests/fixtures/studio-media/pattern-a.mp4');
+  const preview = execFileSync('ffmpeg', ['-v', 'error', '-i', 'tests/fixtures/studio-media/pattern-a.mp4', '-t', '2', '-an', '-c:v', 'copy', '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']);
+  const source = execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=720x720:r=30', '-frames:v', '901', '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-f', 'mp4', '-movflags', 'frag_keyframe+empty_moov', 'pipe:1']);
+  const poster = await sharp({ create: { width: 64, height: 36, channels: 3, background: '#123456' } }).webp().toBuffer();
+  const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex');
+  const base = fixture(), requestId = base.requestId;
+  const sourceUrl = 'https://fal.media/source.mp4';
+  for (const mode of ['v2v', 'ref2v'] as const) {
+    const endpoint = mode === 'v2v' ? 'kling/v4/video-to-video/edit' : 'kling/v4/reference-to-video';
+    const providerInput = { prompt: 'A film.', duration: 5, ...(mode === 'v2v' ? { video_url: sourceUrl } : { video_urls: [sourceUrl] }) };
+    const result = { requestId, data: { video: { url: 'https://fal.media/original.mp4' } } };
+    const journal = Buffer.from([{ event: 'submission_started', endpoint, input: providerInput }, { event: 'accepted', requestId },
+      { event: 'recovered', requestId, status: 'COMPLETED', result }].map(value => JSON.stringify(value)).join('\n'));
+    const sourceAsset = { ...base.asset, public_id: 'ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', url: 'https://media.maxvideoai.com/source.mp4', size_bytes: source.length };
+    const input = parseExternalFalImport({ ...base.input, engineId: 'kling-v4', mode, endpoint, providerInput,
+      videoSha256: digest(original), evidenceSha256: digest(journal), references: [{ slotId: mode === 'v2v' ? 'video_url' : 'video_urls.0', kind: 'video',
+        providerUrl: sourceUrl, assetId: sourceAsset.public_id, sha256: digest(source) }],
+      media: { poster: { url: base.asset.thumb_url, sha256: digest(poster) }, preview: { url: 'https://media.maxvideoai.com/preview.mp4', sha256: digest(preview) } } });
+    const deps = { ...base.deps, journal, provider: { status: async () => ({ status: 'COMPLETED', request_id: requestId }), result: async () => result },
+      fetcher: (async (url: unknown) => new Response(String(url).endsWith('/source.mp4') ? source : String(url).endsWith('.webp') ? poster : String(url).endsWith('/preview.mp4') ? preview : original)) as typeof fetch };
+    const verify = () => verifyExternalFalEvidence(input, [{ ...base.asset, preview_url: 'https://media.maxvideoai.com/preview.mp4' }, sourceAsset], deps);
+    if (mode === 'v2v') assert.ok((await verify()).referenceProofs.length === 1);
+    else await assert.rejects(verify(), /REFERENCE_VIDEO_DURATION_LIMIT/);
+  }
 });

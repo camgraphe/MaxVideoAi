@@ -445,6 +445,7 @@ async function confirmationTransaction(
         quote.request,
         catalogRevision,
         membership,
+        resolvedReferences,
       ), ...generationOperationQuoteBinding(quote.request, resolvedReferences,fluxDraftSource), ...lumaLineageQuoteBinding(lumaSource, quote.request.settings.extendDirection), ...fluxDraftQuoteBinding(fluxDraftSource), ...seedanceWorkflowQuoteBinding(inherited.workflow) }, principal, resolvedReferences);
     } catch {
       if (includedTrial) trialNotEligible();

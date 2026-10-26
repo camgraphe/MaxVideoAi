@@ -1,3 +1,4 @@
+import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { query } from '@/lib/db';
 import { resolveFalModelId } from '@/lib/fal-catalog';
 import { getFalClient } from '@/lib/fal-client';
@@ -147,8 +148,9 @@ export async function refreshStaleFalJobs({
       }
 
       const falModel = (await resolveFalModelId(engineIdForLookup)) ?? engineIdForLookup;
-      const statusInfo = (await falClient.queue
-        .status(falModel, { requestId: jobRow.provider_job_id! })
+      const queue = await resolveFalJobQueue({jobId:jobRow.job_id,engineId:engineIdForLookup,
+        requestId:jobRow.provider_job_id!,legacyModel:falModel},{client:falClient});
+      const statusInfo = (await queue.status()
         .catch((error: unknown) => {
           console.warn('[api/jobs] fal status fetch failed', jobRow.job_id, error);
           return null;
@@ -181,7 +183,7 @@ export async function refreshStaleFalJobs({
         continue;
       }
 
-      const queueResult = await falClient.queue.result(falModel, { requestId: jobRow.provider_job_id! });
+      const queueResult = await queue.result();
       if (!queueResult) {
         await markJobFailed(providerError ?? 'Fal returned no result for this job.');
         continue;

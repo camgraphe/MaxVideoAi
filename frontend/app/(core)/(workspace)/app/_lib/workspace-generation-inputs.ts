@@ -1,3 +1,5 @@
+import { getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
+import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, Mode, PreflightMediaInput } from '@/types/engines';
@@ -123,19 +125,21 @@ function buildAttachmentPayload(
   };
 }
 
-function buildKlingElementsPayload(
+export function buildKlingElementsPayload(
   options: Pick<
     PrepareGenerationInputsOptions,
     'selectedEngineId' | 'supportsKlingV3Controls' | 'submissionMode' | 'klingElements'
   >
 ): GenerationInputPreparationResult {
+  const isKlingV4 = options.selectedEngineId === 'kling-v4';
+  const supportsKlingV4Elements = isKlingV4 && (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
   const supportsKlingO3Elements =
     options.selectedEngineId.startsWith('kling-o3-') &&
     (options.submissionMode === 'ref2v' || options.submissionMode === 'v2v');
   const supportsKling3Elements =
     !options.selectedEngineId.startsWith('kling-o3-') &&
     (options.submissionMode === 'i2v' || options.submissionMode === 'ref2v');
-  if (!options.supportsKlingV3Controls || (!supportsKlingO3Elements && !supportsKling3Elements)) {
+  if (!supportsKlingV4Elements && (!options.supportsKlingV3Controls || (!supportsKlingO3Elements && !supportsKling3Elements))) {
     return {
       ok: true,
       primaryAttachment: null,
@@ -152,13 +156,26 @@ function buildKlingElementsPayload(
     const frontal = element.frontal;
     const references = element.references.filter((asset): asset is KlingElementAsset => Boolean(asset));
     const video = element.video;
-    const hasAnyAsset = Boolean(frontal || references.length || video);
+    const hasAnyAsset = Boolean(frontal || references.length || video || (isKlingV4 && element.voiceId));
     if (!hasAnyAsset) {
       continue;
     }
 
+    if (isKlingV4 && element.voiceId !== undefined) {
+      return { ok: false, message: 'This subject voice is not a verified owned fal binding. Remove the subject and recreate it without a voice before generating.' };
+    }
+    if (isKlingV4 && (references.length > 3 || (video && (frontal || references.length)))) {
+      return { ok: false, message: 'Each Kling 4.0 subject uses one video OR a frontal image with 1–3 reference images.' };
+    }
+    if (isKlingV4 && options.submissionMode === 'v2v' && video) {
+      return { ok: false, message: 'Kling 4.0 Edit accepts image subjects only. Remove video subjects or switch to Reference to video.' };
+    }
+    if (isKlingV4 && (frontal?.kind === 'video' || references.some((asset) => asset.kind !== 'image') || (video && video.kind !== 'video'))) {
+      return { ok: false, message: 'Subject image views must be images, and a video subject must use video.' };
+    }
     const assetsToCheck = [frontal, ...references, video].filter(Boolean) as KlingElementAsset[];
     for (const asset of assetsToCheck) {
+      if (isKlingV4 && !asset.assetId?.trim()) return { ok: false, message: 'Kling 4.0 subject references must be saved in your owned media library. Select them again from the library.' };
       if (asset.status === 'uploading') {
         return { ok: false, message: 'Please wait for reference uploads to finish before generating.' };
       }
@@ -195,7 +212,9 @@ function buildKlingElementsPayload(
     });
   }
 
-  if (videoCount > 1) {
+  if (isKlingV4 && collected.length > 7) return { ok: false, message: 'Kling 4.0 supports at most seven subjects.' };
+  if (isKlingV4 && videoCount > 3) return { ok: false, message: 'Kling 4.0 supports at most three video subjects.' };
+  if (!isKlingV4 && videoCount > 1) {
     return { ok: false, message: 'Only one subject reference can include a video reference.' };
   }
 
@@ -211,6 +230,15 @@ function buildKlingElementsPayload(
 }
 
 export function prepareGenerationInputs(options: PrepareGenerationInputsOptions): GenerationInputPreparationResult {
+  const isKlingV4 = options.selectedEngineId === 'kling-v4';
+  if (isKlingV4) {
+    const mediaError = getWorkspaceKlingV4MediaError({ mode: options.submissionMode, inputAssets: options.inputAssets, klingElements: options.klingElements });
+    if (mediaError) return { ok: false, message: mediaError };
+    if (options.multiPromptActive && options.submissionMode === 'v2v') return { ok: false, message: 'Kling 4.0 Edit does not support a shot plan.' };
+    const shots = getWorkspaceMultiPromptState({ active: options.multiPromptActive, scenes: options.multiPromptScenes, minDurationSec: 3, maxDurationSec: 30, strictIntegerDurations: true });
+    if (shots.invalid) return { ok: false, message: shots.error! };
+    if (!options.multiPromptActive && (!Number.isInteger(options.form.durationSec) || options.form.durationSec < 3 || options.form.durationSec > 30)) return { ok: false, message: 'Kling 4.0 output duration must be 3–30 whole seconds.' };
+  }
   const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
   if (((!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields))
       || (options.selectedEngineId === 'seedance-2-5' && options.submissionMode === 'v2v'))
@@ -258,6 +286,8 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
 
   Object.entries(options.inputAssets).forEach(([fieldId, items]) => {
     if (ignoreKlingO3FrameAssets && isKlingO3FrameFieldId(fieldId)) return;
+    // V4 keeps other modes' media in the draft; only the active fields are submitted.
+    if (isKlingV4) return;
     if (orderedAttachments.some((entry) => entry.field.id === fieldId)) return;
     const field = fieldIndex.get(fieldId);
     if (!field) return;
@@ -352,9 +382,8 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
       ) ?? null
     : null;
   const primaryAttachment = firstFrameAttachment ?? schemaPrimaryAttachment;
-  const referenceImageUrls = inputsPayload
-    ? uniqueValues(
-        inputsPayload
+  const referenceImageCandidates = inputsPayload
+    ?         inputsPayload
           .filter((attachment) => {
             if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
             const slotId = attachment.slotId;
@@ -369,8 +398,10 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
             return activeReferenceSlots.has(slotId);
           })
           .map((attachment) => attachment.url)
-      )
     : [];
+  // V4 prompt tokens identify ordered occurrences, including repeated references.
+  // Keep direct URLs identical to the attachment projection before the server merges them.
+  const referenceImageUrls = isKlingV4 ? referenceImageCandidates : uniqueValues(referenceImageCandidates);
   let referenceVideoUrls = inputsPayload
     ? uniqueValues(
         inputsPayload
@@ -456,7 +487,9 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     }
   }
 
-  const multiPromptPayload = options.multiPromptActive
+  const multiPromptPayload = options.multiPromptActive && isKlingV4
+    ? options.multiPromptScenes.map((scene) => ({ prompt: scene.prompt, duration: scene.duration }))
+    : options.multiPromptActive
     ? options.multiPromptScenes
         .filter((scene) => scene.prompt.trim().length)
         .map((scene) => ({ prompt: scene.prompt.trim(), duration: Math.round(scene.duration || 0) }))

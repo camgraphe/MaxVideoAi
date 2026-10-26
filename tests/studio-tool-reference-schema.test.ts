@@ -51,7 +51,7 @@ function compile(properties: Readonly<Record<string, unknown>>) {
     properties, required: Object.keys(properties)} as JsonSchemaType);
 }
 function videoParameters(source: unknown = null, selected: unknown[] = []) {
-  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', operation: null, elements: null, source, references: selected,assembleExtension:null};
+  return {...parameters('image_prepare', []), modelId: 'wan-3', mode: 'i2v', operation: null, elements: null, source, references: selected,assembleExtension:null,shotPlan:null,subjects:null};
 }
 function asset(assetId: string) {
   return {type: 'asset', assetId, kind: 'image'};
@@ -187,6 +187,21 @@ test('video asset enums are immutable and do not retain images from an earlier c
   assert.equal(validate(videoParameters(null, [frame(asset(imageB))])).valid, true);
 });
 
+
+test('strict video tool uses explicit null for unused shot/subject fields and preserves bounded structured branches', () => {
+  const validate=compile(videoTool.properties);
+  const legacy=videoParameters();
+  assert.equal(validate(legacy).valid,true);
+  for(const field of ['shotPlan','subjects'] as const){
+    const missing={...legacy};delete (missing as Partial<typeof legacy>)[field];
+    assert.equal(validate(missing).valid,false,`Strict tools require ${field}; unused means null`);
+  }
+  const populated={...legacy,modelId:'kling-v4',mode:'ref2v',prompt:'',shotPlan:[{prompt:'The actor walks.',durationSec:3}],subjects:[{kind:'image',frontalReferenceSlot:0,referenceSlots:[1]}],references:[{ref:asset(imageA),role:'reference',slot:0},{ref:asset(imageB),role:'reference',slot:1}]};
+  assert.equal(validate(populated).valid,true);
+  assert.equal(validate({...populated,shotPlan:[{prompt:'Scene',durationSec:1.5}]}).valid,false);
+  assert.equal(validate({...populated,subjects:[{...populated.subjects[0],voiceId:'arbitrary'}]}).valid,false);
+  assert.equal(validate({...populated,subjects:[{kind:'video',referenceSlot:0}]}).valid,true);
+});
 for (const name of ['video_prepare', 'pricing_read']) test(`${name} accepts explicit Edit and scoped owned element slots without external identities`, () => {
   const tool = tools.find(tool => tool.name === name)!;
   const validate = compile(studioToolReferenceProperties(name, tool.properties, references));

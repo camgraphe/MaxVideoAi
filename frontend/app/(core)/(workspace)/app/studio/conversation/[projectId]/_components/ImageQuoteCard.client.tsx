@@ -1,6 +1,8 @@
 "use client";
 import {videoWorkflowNotices} from '@/lib/video-workflow-capabilities';
 import { useEffect, useState } from "react";
+import {StudioShotPlanEditor} from "./StudioShotPlanEditor.client";
+import type {CanonicalGenerationMultiPromptScene} from "@/server/agent-api/generation-types";
 import type { ImageConversationTurn } from "@/lib/studio/image-conversation-contract";
 import {
   canConfirmImageQuote,
@@ -16,6 +18,7 @@ export function ImageQuoteCard({
   onConfirm,
   onRenew,
   onRefresh,
+  onEditShotPlan,
   localQa = false,
   locale = 'fr',
 }: {
@@ -26,10 +29,13 @@ export function ImageQuoteCard({
   onConfirm: () => void;
   onRenew: () => void;
   onRefresh: () => void;
+  onEditShotPlan?: (shots:CanonicalGenerationMultiPromptScene[])=>void;
   localQa?: boolean;
   locale?: ConversationLocale;
 }) {
+  const [editingShots,setEditingShots]=useState(false);
   const [now, setNow] = useState(Date.now());
+  useEffect(()=>setEditingShots(false),[turn.quote?.quoteId]);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 10000);
     return () => clearInterval(timer);
@@ -39,7 +45,7 @@ export function ImageQuoteCard({
   const t = (en: string, fr: string) => locale === 'fr' ? fr : en;
   const presentation = conversationQuotePresentation(quote.summary, locale, quote.outputDurationSec, quote.summary.surface === 'video' ? quote.sourceVideoOutput : undefined);
   const referenceCount = quote.summary.references.length;
-  const ready = canConfirmImageQuote(quote, now, busy);
+  const ready = !editingShots && canConfirmImageQuote(quote, now, busy);
   const walletState = imageQuoteWalletState(quote);
   const expired =
     quote.state === "expired" ||
@@ -75,6 +81,9 @@ export function ImageQuoteCard({
         <summary>{t('View direction and settings', 'Voir la direction et les réglages')}</summary>
         <p style={{whiteSpace:'pre-wrap'}}>{presentation.direction}</p>
       </details>
+      {quote.summary.surface==='video'&&quote.summary.engineId==='kling-v4'&&Array.isArray(quote.summary.settings.multiPrompt)&&onEditShotPlan&&quote.state==='prepared'&&<StudioShotPlanEditor
+        key={quote.quoteId} engineId={quote.summary.engineId} shots={quote.summary.settings.multiPrompt} locale={locale} busy={busy}
+        onEditing={()=>setEditingShots(true)} onDraft={onEditShotPlan}/>}
       {(quote.state === 'prepared' || expired) && (
         <p className={styles.muted}>
           {t('Want a different model, resolution, duration or budget? Ask for a new quote to compare prices and possible savings.',
@@ -89,7 +98,7 @@ export function ImageQuoteCard({
             : formatMoney(quote.wallet!.amountCents, quote.wallet!.currency)}
         </p>
       )}
-      {ready ? (
+      {editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.')}</p> : ready ? (
         <>
           <button className={styles.primary} onClick={onConfirm}>
             {presentation.create} · {price}

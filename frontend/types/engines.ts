@@ -317,6 +317,7 @@ export interface PreflightRequest {
   hasVideoInput?: boolean;
   voiceControl?: boolean;
   inputs?: PreflightMediaInput[];
+  elements?: import('../src/lib/video-provider-elements').MaxVideoProviderElement[];
   extraInputValues?: Record<string, unknown>;
   user?: {
     memberTier?: string;

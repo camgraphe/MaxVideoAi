@@ -26,6 +26,7 @@ export type StudioDirectorResponse = Pick<Response, 'id' | 'model' | 'status' | 
 export type StudioResponseCreator = (params: ResponseCreateParamsNonStreaming) => Promise<StudioDirectorResponse>;
 export type StudioDirectorContext = {
   message: string;
+  shotPlanRevision?:ImageTurnInput['shotPlanRevision'];
   locale?: ImageTurnInput['locale'];
   referenceFingerprint?:string;
   references: ResolvedReference[];
@@ -107,7 +108,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         {role: 'user' as const, content: studioHistoryMessage(turn)},
         ...(turn.reply ? [{role: 'assistant' as const, content: projectStudioReply(turn.reply).slice(0, 2400)}] : []),
       ]),
-      {role: 'user', content: [{type: 'input_text', text: context.message}, ...studioReferenceInputContent(context.references, context.referenceMentions)]},
+      {role: 'user', content: [{type: 'input_text', text: context.message}, ...(context.shotPlanRevision?[{type:'input_text' as const,text:'Exact client-authored shot plan revision. Preserve model, mode, total and every ordered shot; use video_prepare.shotPlan, empty prompt, and settings.durationSec. Prepare a new quote and wait for client confirmation: '+JSON.stringify(context.shotPlanRevision)}]:[]), ...studioReferenceInputContent(context.references, context.referenceMentions)]},
     ];
     const solOutput=new WeakSet<object>();
     const lunaInput=():ResponseInputItem[]=>input.flatMap((item):ResponseInputItem[]=>{

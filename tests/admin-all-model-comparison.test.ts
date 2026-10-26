@@ -6,18 +6,20 @@ import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-aud
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios.ts';
 import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 
-test('admin comparison inventory contains every app-published model, including pricing-hidden legacy Luma', () => {
+test('admin comparison inventory contains published models and the explicitly gated V4 tariff candidate', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
   assert.equal(expected.length, 49);
-  assert.equal(rows.length, expected.length);
-  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set(expected.map((model) => model.id)));
+  assert.equal(rows.length, expected.length + 1);
+  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id),'kling-v4']));
+  assert.deepEqual(rows.filter(({entry})=>!expected.some(model=>model.id===entry.id)).map(({entry})=>entry.id),['kling-v4']);
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2_flash'));
   assert.equal(new Set(expected.map((model) => model.family)).size, 15);
   assert.ok(rows.every(({ scenario }) => scenario.durationSec && scenario.resolution && scenario.mode));
-  const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.map(({ scenario }) => scenario) });
+  const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.filter(({entry})=>expected.some(model=>model.id===entry.id)).map(({ scenario }) => scenario) });
   assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 49);
+  assert.throws(()=>quoteCanonicalAdminScenarios({databaseRules:[],scenarios:[rows.find(({entry})=>entry.id==='kling-v4')!.scenario]}),/Pricing definition not found/,'V4 cannot acquire an old percentage-policy price');
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
 });
 

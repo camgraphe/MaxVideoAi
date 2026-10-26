@@ -121,6 +121,13 @@
           "modelPlaylistSlug": "examples-flux-3-max"
         }
       ]
+    },
+    {
+      "waveId": "kling-v4",
+      "sourceManifest": "docs/model-launch/kling-v4-video-example-pack.json",
+      "sourceStatus": "missing",
+      "sourceDigest": null,
+      "models": []
     }
   ],
   "models": [

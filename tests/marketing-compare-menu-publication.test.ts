@@ -219,8 +219,10 @@ test('comparison menu bounds canonical comparison work to editorial candidates e
     const menu = countLocaleComparisons(() => buildMarketingCompareMenu(models));
     t.diagnostic(`${name}: full graph ${expanded.result.length} canonical pairs / ${expanded.calls} localeCompare calls; menu ${menu.result.length} entries / ${menu.calls} localeCompare calls.`);
     assert.deepEqual(menu.result, EDITORIAL_COMPARISONS);
-    assert.ok(menu.calls <= EDITORIAL_COMPARISONS.length,
-      `${name}: menu should canonicalize at most its ${EDITORIAL_COMPARISONS.length} candidates; observed ${menu.calls} localeCompare calls`);
+    // One additional prepared V4 pair is filtered out of the live publication graph.
+    const candidateCount = EDITORIAL_COMPARISONS.length + 1;
+    assert.ok(menu.calls <= candidateCount,
+      `${name}: menu should canonicalize at most its ${candidateCount} candidates; observed ${menu.calls} localeCompare calls`);
     assert.ok(expanded.calls > menu.calls, `${name}: the bounded menu avoids full graph canonicalization and sorting`);
   }
 });

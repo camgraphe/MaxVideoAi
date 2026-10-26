@@ -156,7 +156,8 @@ export function consumeWorkspaceOnboardingSkipIntent(fromVideoId: string | null)
 export function parseStoredMultiPromptScenes(
   value: string | null,
   createLocalId: (prefix: string) => string,
-  createFallbackScene: () => MultiPromptScene
+  createFallbackScene: () => MultiPromptScene,
+  preserveExactDuration = false
 ): MultiPromptScene[] {
   if (!value) return [createFallbackScene()];
   try {
@@ -166,7 +167,7 @@ export function parseStoredMultiPromptScenes(
       .map((scene) => ({
         id: typeof scene.id === 'string' ? scene.id : createLocalId('scene'),
         prompt: typeof scene.prompt === 'string' ? scene.prompt : '',
-        duration: typeof scene.duration === 'number' && Number.isFinite(scene.duration) ? Math.round(scene.duration) : 5,
+        duration: typeof scene.duration === 'number' && Number.isFinite(scene.duration) ? preserveExactDuration ? scene.duration : Math.round(scene.duration) : 5,
       }))
       .filter((scene) => scene.prompt.length || scene.duration);
     return sanitized.length ? sanitized : [createFallbackScene()];

@@ -322,7 +322,9 @@ export async function computeConfiguredPreflight(
       workflowStep: options.seedanceWorkflowStep,
       operation: request.operation,
       engine: pricingEngine,
-      durationSec: seedanceEditSource?.billedDurationSec ?? durationSec,
+      durationSec: seedanceEditSource?.billedDurationSec
+        ?? (engine.id === 'kling-v4' && request.mode === 'v2v' ? inheritedDurationSec : undefined)
+        ?? durationSec,
       resolution: effectiveResolution,
       aspectRatio: seedanceEditSource?.pricingAspectRatio ?? request.aspectRatio,
       mode: request.mode,

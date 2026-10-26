@@ -22,6 +22,7 @@ import {
 } from '@/server/video-providers/luma-agents/model-map';
 import { resolveVideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { ENV } from '@/lib/env';
+import { isKlingV4ReleaseBlocked } from '@/server/video-generation/kling-v4-release-policy';
 import type { CanonicalGenerationRequest } from '@/server/agent-api/generation-types';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 import { parseGoogleVertexServiceAccount } from '@/server/video-providers/google-vertex-auth';
@@ -164,6 +165,7 @@ export function resolveAgentGenerationModeExecutability(
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
   options?: { nativeSeedanceWorkflow: true },
 ): AgentGenerationExecutabilityDecision {
+  if (isKlingV4ReleaseBlocked(engine.id)) return { executable: false, reason: 'provider_disabled' };
   // Discovery asks whether any supported operation can run. Request admission
   // still normalizes the caller's explicit operation and rejects ambiguity.
   const operations = Object.values(engine.operationCaps ?? {}).filter(caps => caps?.mode === mode);
@@ -229,8 +231,8 @@ function resolveAgentGenerationModeOperationExecutability(
       }
       if (routingPlan.kind === 'kling_direct_primary') {
         return credentialDecision(
-          configured(providerEnv.KLING_ACCESS_KEY)
-          && configured(providerEnv.KLING_SECRET_KEY),
+          configured(providerEnv.KLING_API_KEY)
+          || (configured(providerEnv.KLING_ACCESS_KEY) && configured(providerEnv.KLING_SECRET_KEY)),
         );
       }
       if (routingPlan.kind === 'luma_agents_direct_primary') {
@@ -322,6 +324,9 @@ export function resolveAgentGenerationRequestExecutability(
   resolvedReferences: readonly ResolvedReference[] = [],
   environment: AgentGenerationExecutabilityEnvironment = defaultEnvironment(),
 ): AgentGenerationExecutabilityDecision {
+  if (isKlingV4ReleaseBlocked(engine.id) || isKlingV4ReleaseBlocked(request.engineId)) {
+    return { executable: false, reason: 'provider_disabled' };
+  }
   try {
     if (videoOperationEndpoint(request.engineId, request.mode, request.operation)) return credentialDecision(configured(environment.falApiKey));
   } catch { return { executable: false, reason: 'profile_invalid' }; }

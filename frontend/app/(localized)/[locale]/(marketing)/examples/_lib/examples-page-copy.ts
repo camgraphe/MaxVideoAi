@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { buildCompareHref, buildModelHref } from './examples-route-utils';
 
 type PaginationDictionary = {
@@ -186,6 +187,7 @@ export function buildExamplesNextStepLinks({
       ['ltx-2-3-fast-vs-ltx-2-3-pro', 'LTX 2.3 Fast vs Pro'],
     ],
     kling: [
+      ['kling-o3-pro-vs-kling-v4', 'Kling 3.0 Omni Pro vs Kling 4.0'],
       ['kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'],
       ['kling-3-pro-vs-minimax-h3', 'Kling 3 Pro vs MiniMax H3'],
       ['kling-3-pro-vs-veo-3-1', 'Kling 3 Pro vs Veo 3.1'],
@@ -216,7 +218,10 @@ export function buildExamplesNextStepLinks({
     ],
   };
   const selected = comparisons[family];
-  if (selected) return selected.map(([slug, label]) => comparisonLink(slug, label));
+  if (selected) return selected
+    .filter(([slug]) => isPublishedComparisonSlug(slug))
+    .slice(0, 4)
+    .map(([slug, label]) => comparisonLink(slug, label));
   return [
     { href: buildModelHref(appLocale, 'seedance-2-5'), label: 'Seedance 2.5', modelSlug: 'seedance-2-5' },
     { href: buildModelHref(appLocale, 'minimax-h3'), label: 'MiniMax H3', modelSlug: 'minimax-h3' },

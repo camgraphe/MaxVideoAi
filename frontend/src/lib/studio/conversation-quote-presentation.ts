@@ -52,6 +52,10 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
         voice ? request.settings.seedAudioOutputFormat : request.settings.musicModel, request.settings.mood,
         request.settings.musicEnabled===false ? t('no music','sans musique') : ''].filter(Boolean).join(' · ')};
   }
+  const subjects = request.subjects?.map((subject,index)=>{
+    const slots=subject.kind==='video'?[subject.referenceSlot]:[subject.frontalReferenceSlot,...subject.referenceSlots];
+    return `${t('Subject','Sujet')} ${index+1} · ${subject.kind==='video'?t('video','vidéo'):t('image views','vues image')} · ${t('reference positions','positions des références')} ${slots.map(slot=>slot+1).join(', ')}`;
+  }).join('\n');
   const video = request.surface === 'video';
   const fluxMax = video && isFlux3MaxEngineId(request.engineId);
   const keyframeIndexes = fluxMax && request.mode === 'ref2v' ? parseFlux3MaxKeyframeIndexes(request.settings.keyframeIndexes) : null;
@@ -78,7 +82,10 @@ export function conversationQuotePresentation(request: NonNullable<ImageConversa
       : request.mode==='t2v'
         ? t('This quote creates a new video from your description.','Ce devis crée une nouvelle vidéo à partir de votre description.') : '';
   return {title: video ? videoTitle : t('Image', 'Une image'),operation, create: video ? request.mode==='extend' ? t('Extend clip','Prolonger le clip') : t('Create video', 'Créer la vidéo') : t('Create image', 'Créer l’image'),
-    direction: request.prompt,
+    direction: [Array.isArray(request.settings.multiPrompt)
+      ? request.settings.multiPrompt.map((shot,index)=>`${t('Shot','Plan')} ${index+1} · ${shot.durationSec} s\n${shot.prompt}`).join('\n\n')
+      : request.prompt, subjects].filter(Boolean).join('\n\n'),
+
     referenceSummary,
     settings: [video&&sourceVideoOutput?seedanceEditSourceLabel(sourceVideoOutput,locale):request.settings.aspectRatio, dimensions,dimensions&&request.settings.resolution==='custom'?'':request.settings.resolution,
       segment || (video && duration && !sourceVideoOutput ? `${duration} s` : ''),

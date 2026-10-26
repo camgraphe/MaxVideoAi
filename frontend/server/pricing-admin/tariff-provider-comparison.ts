@@ -41,6 +41,7 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
       routeConfigured = false;
     }
   }
+  if(entry.id==='kling-v4')routeConfigured=false; // Separate product release approval remains closed.
   const sandbox = process.env.PRICING_SANDBOX === '1';
   if (sandbox) routeConfigured = false;
   return { ...providerComparisonInputFromScenario({

@@ -1,3 +1,4 @@
+import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import type { QueueStatus } from '@fal-ai/client';
 import type { SoraRequest } from '@/lib/sora';
@@ -70,6 +71,6 @@ export type GenerateResult = {
 };
 
 export type GenerateHooks = {
-  onRequestId?: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission) => void | Promise<void>;
+  onRequestId?: (requestId: string, nativeDraftSubmission?: NativeFluxDraftSubmission, falQueueReceipt?: FalQueueReceipt) => void | Promise<void>;
   onQueueUpdate?: (status: QueueStatus) => void | Promise<void>;
 };

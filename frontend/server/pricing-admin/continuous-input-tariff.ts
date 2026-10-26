@@ -55,6 +55,13 @@ export async function continuousInputTariffDetail(scenario: ManualTariffCoverage
   const seedance = scenario.context.engine.providerMeta?.provider !== 'fal'
     && supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType);
   if (seedance && !cell) return undefined;
+  if(scenario.modelId==='kling-v4') {
+    const price=cell?.price??null;
+    if(price)validateCurrentContinuousTariffDomain({context:scenario.context,price});
+    return {kind:'video',klingV4Billable:true,tariffCellId:identity.id,prepared:cell?.source==='database',price,
+      outputCents:0,inputCentsPerSecond:price?.kind==='unit_terms'?price.terms[0].centsPerUnit:0,
+      minInputSeconds:3,maxInputSeconds:scenario.selector.mode==='v2v'?30.05:30,outputVaries:scenario.selector.mode==='v2v'};
+  }
   const price = cell?.price ?? await compileCurrentContinuousTariffPrice(scenario, rules);
   if (price.kind === 'fixed') throw new PricingAdminError('unsupported_scenario', 'Continuous source pricing requires unit amounts');
   const terms = price.kind === 'unit_terms' || price.kind === 'unit_bands' ? price.terms : price.components.flatMap(c => c.terms);
@@ -119,6 +126,9 @@ export async function prepareContinuousInputTariffChange(input: {
     if (proposal.price?.kind === 'preserve_current') {
       if (state.active && !current) throw new PricingAdminError('unsupported_scenario', 'No current continuous tariff');
       price = state.active ? current!.price : await compileCurrentContinuousTariffPrice(scenario, input.policy);
+    } else if (proposal.price?.kind === 'kling_v4_billable') {
+      if(scenario.modelId!=='kling-v4')throw new PricingAdminError('invalid_payload','This model has no Kling V4 billable-second tariff.');
+      price={kind:'unit_terms',rounding:'up',terms:[{unit:'billable_seconds',centsPerUnit:proposal.price.customerCentsPerBillableSecond}]};
     } else if (proposal.price?.kind === 'seedance_billable') {
       if (!seedance) throw new PricingAdminError('invalid_payload', 'This model has no Seedance billable-second tariff.');
       try { price = seedanceInputTariffPriceFromRate(scenario.context, proposal.price.customerCentsPerBillableSecond); }

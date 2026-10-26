@@ -1,0 +1,69 @@
+{
+  "slug": "kling-o3-pro-vs-kling-v4",
+  "en": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 3.0 Omni Pro: Shots & References",
+      "description": "Compare Kling 4.0 and Kling 3.0 Omni Pro: multi-shot prompts, image references, source-video editing and workflow limits. Keep the right mode for each shot.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Choose the workflow before the version",
+      "body": "Kling 4.0 separates text generation, first/last-frame generation, reference-guided generation and video editing. Its generation contract supports 3–30 seconds at 720p or 1080p, with structured multi-shot prompts when you need an explicit shot plan. Kling 3.0 Omni Pro remains a reference workflow for images that should guide a scene without becoming its opening frame, and for editing a 3–10 second source video with an option to preserve its soundtrack. Check source constraints and audio behavior for the selected mode; an editing input is not a first frame. A newer version alone does not establish better motion or character consistency. Compare finished examples and criterion-level evidence, then review a quote for the same duration, resolution and mode."
+    },
+    "primaryLinksTitle": "Explore both workflows",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Kling 3.0 Omni Pro"
+      }
+    ]
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 3.0 Omni Pro : plans et références",
+      "description": "Comparez Kling 4.0 et Kling 3.0 Omni Pro : découpage multi-plans, images de référence, modification vidéo et limites propres à chaque mode.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Choisir le parcours avant la version",
+      "body": "Kling 4.0 distingue génération depuis du texte, images de début/fin, génération guidée par références et modification vidéo. Son contrat de génération prévoit 3 à 30 secondes en 720p ou 1080p, avec des prompts multi-plans structurés pour définir un découpage précis. Kling 3.0 Omni Pro conserve son parcours de références visuelles qui guident une scène sans devenir son premier plan, et de modification d’une vidéo source de 3 à 10 secondes avec conservation facultative de sa bande-son. Vérifiez les contraintes des sources et le comportement audio du mode choisi : une vidéo à modifier n’est pas une image de début. Le numéro de version ne suffit pas à prouver de meilleurs mouvements ou une meilleure cohérence des personnages. Comparez les rendus et les évaluations par critère, puis les devis à durée, résolution et mode identiques."
+    },
+    "primaryLinksTitle": "Explorer les deux parcours",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Kling 3.0 Omni Pro"
+      }
+    ]
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 3.0 Omni Pro: planos y referencias",
+      "description": "Compara Kling 4.0 y Kling 3.0 Omni Pro: prompts de varios planos, imágenes de referencia, edición de vídeo y límites de cada modo.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Elige el flujo antes que la versión",
+      "body": "Kling 4.0 separa la generación desde texto, los fotogramas inicial/final, la generación con referencias y la edición de vídeo. Su contrato de generación admite de 3 a 30 segundos en 720p o 1080p, con prompts estructurados de varios planos para definir el montaje. Kling 3.0 Omni Pro mantiene su flujo de imágenes de referencia que guían una escena sin convertirse en el primer fotograma, y la edición de un vídeo de origen de 3 a 10 segundos con la opción de conservar su sonido. Comprueba las restricciones de las fuentes y el audio del modo elegido: un vídeo para editar no es un fotograma inicial. Una versión más reciente no demuestra por sí sola mejores movimientos ni mayor consistencia de personajes. Compara los resultados y las evaluaciones por criterio, y después las cotizaciones con la misma duración, resolución y modo."
+    },
+    "primaryLinksTitle": "Explorar ambos flujos",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Kling 3.0 Omni Pro"
+      }
+    ]
+  }
+}

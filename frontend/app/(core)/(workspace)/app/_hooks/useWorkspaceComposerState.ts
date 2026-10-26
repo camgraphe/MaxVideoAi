@@ -233,10 +233,10 @@ export function useWorkspaceComposerState({
   const safetyCheckerValue = typeof form?.safetyChecker === 'boolean' ? form.safetyChecker : true;
 
   useEffect(() => {
-    if (!supportsKlingV3Controls && multiPromptEnabled) {
+    if (selectedEngine?.id !== 'kling-v4' && !supportsKlingV3Controls && multiPromptEnabled) {
       setMultiPromptEnabled(false);
     }
-  }, [supportsKlingV3Controls, multiPromptEnabled, setMultiPromptEnabled]);
+  }, [selectedEngine?.id, supportsKlingV3Controls, multiPromptEnabled, setMultiPromptEnabled]);
 
   useEffect(() => {
     if (!voiceControlEnabled) return;
@@ -251,8 +251,9 @@ export function useWorkspaceComposerState({
       if (multiPromptActive) return;
       setForm((current) => {
         if (!current) return current;
-        const numeric = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.]/g, ''));
-        const durationSec = raw === 'auto' && isUnifiedSeedance && selectedEngine
+        const numeric = typeof raw === 'number' ? raw : selectedEngine?.id === 'kling-v4'
+          ? Number(raw) : Number(String(raw).replace(/[^\d.]/g, ''));
+        const durationSec = selectedEngine?.id === 'kling-v4' ? numeric : raw === 'auto' && isUnifiedSeedance && selectedEngine
           ? selectedEngine.maxDurationSec
           : Number.isFinite(numeric) ? Math.max(1, Math.round(numeric)) : current.durationSec;
         return {

@@ -116,6 +116,7 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
+  { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
   { slug: 'kling-3-turbo-pro', label: 'Kling 3 Turbo Pro' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
@@ -132,9 +133,10 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
   return MODEL_MENU_CANDIDATES
     .filter(({ slug }) => {
       const model = bySlug.get(slug);
-      if (!model?.publication.model.published || model.lifecycle === 'retired' || model.lifecycle === 'deep_legacy') return false;
+      if (!model?.publication.model.published || !model.publication.model.indexable || model.lifecycle === 'retired' || model.lifecycle === 'deep_legacy') return false;
       if (model.lifecycle !== 'legacy' || !model.successorId) return true;
-      return byId.get(model.successorId)?.publication.model.published !== true;
+      const successor = byId.get(model.successorId);
+      return !successor?.publication.model.published || !successor.publication.model.indexable;
     })
     .slice(0, 11)
     .map((item) => {
@@ -165,6 +167,7 @@ const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.i
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  { slug: 'kling-o3-pro-vs-kling-v4', label: 'Kling 4.0 vs Kling 3.0 Omni Pro' },
   { slug: 'minimax-h3-vs-seedance-2-5', label: 'MiniMax H3 vs Seedance 2.5' },
   { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs H3 Max' },
   { slug: 'kling-3-pro-vs-seedance-2-5', label: 'Kling 3 Pro vs Seedance 2.5' },

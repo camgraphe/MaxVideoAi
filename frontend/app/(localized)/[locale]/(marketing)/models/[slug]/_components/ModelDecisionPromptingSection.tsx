@@ -17,6 +17,7 @@ import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
+import { isPlayableVideoUrl } from '../_lib/model-page-media';
 import { SECTION_SCROLL_MARGIN } from '../_lib/model-page-specs';
 import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 import { ModelDecisionDemoMedia } from './ModelDecisionDemoMedia.client';
@@ -32,7 +33,9 @@ const REFERENCE_ICONS = [FileText, ImageIcon, Film, AudioLines, Link2] as const 
 export function ModelDecisionPromptingSection({
   viewModel,
 }: ModelDecisionPromptingSectionProps) {
-  const { demo, ui } = viewModel;
+  const { ui } = viewModel;
+  const demo = viewModel.demo && (isPlayableVideoUrl(viewModel.demo.videoSrc) || viewModel.demo.posterSrc)
+    ? viewModel.demo : null;
 
   return (
     <section id={viewModel.id} className={`model-prompt-studio ${SECTION_SCROLL_MARGIN} space-y-4`}>

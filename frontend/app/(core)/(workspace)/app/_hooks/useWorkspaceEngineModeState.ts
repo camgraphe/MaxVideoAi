@@ -357,7 +357,7 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)) return;
+      if (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
       const nextMode = getPreferredEngineMode(capabilityEngine, mode);
       setForm((current) => coerceFormState(capabilityEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
@@ -399,7 +399,7 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
+      if (mode && (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
       const nextAssets = prepareModeAssets(mode);
       const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,

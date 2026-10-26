@@ -508,6 +508,11 @@ export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
     name: asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image'),
     status: 'ready',
     url: asset.url,
+    width: asset.width ?? null,
+    height: asset.height ?? null,
+    size: asset.size ?? null,
+    durationSec: asset.durationSec ?? null,
+    type: asset.mime ?? null,
   };
 }
 

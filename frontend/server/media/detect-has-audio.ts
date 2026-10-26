@@ -11,6 +11,8 @@ const execFileAsync = promisify(execFile);
 type DetectOptions = {
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** Keep measured cadence and reject missing cadence for strict provider contracts. */
+  requireExactFrameRate?: boolean;
 };
 
 type DetectBufferOptions = DetectOptions & {
@@ -396,7 +398,9 @@ export async function detectVideoMetadata(
     const height = Number(stream?.height);
     const streamDuration = Number(stream?.duration);
     const durationSec = Number.isFinite(streamDuration) && streamDuration > 0 ? streamDuration : Number(parsed.format?.duration);
-    const fps = parseFrameRate(stream?.r_frame_rate ?? '') ?? 30;
+    const measuredFps = parseFrameRate(stream?.r_frame_rate ?? '');
+    if (options.requireExactFrameRate && measuredFps === null) return null;
+    const fps = measuredFps ?? 30;
     if (
       !Number.isFinite(width) ||
       !Number.isFinite(height) ||
@@ -411,7 +415,7 @@ export async function detectVideoMetadata(
       width: Math.round(width),
       height: Math.round(height),
       durationSec,
-      fps: Math.max(1, Math.round(fps)),
+      fps: options.requireExactFrameRate ? fps : Math.max(1, Math.round(fps)),
     };
   } catch (error) {
     const reason =

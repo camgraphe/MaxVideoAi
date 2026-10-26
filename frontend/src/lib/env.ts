@@ -140,6 +140,7 @@ export const ENV = {
   ),
   KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED: getOptionalEnv('KLING_DIRECT_ELEMENT_REGISTRATION_ENABLED', 'false'),
   KLING_DIRECT_ADMIN_ONLY: getOptionalEnv('KLING_DIRECT_ADMIN_ONLY', 'true'),
+  KLING_API_KEY: getOptionalEnv('KLING_API_KEY'),
   KLING_ACCESS_KEY: getOptionalEnv('KLING_ACCESS_KEY'),
   KLING_SECRET_KEY: getOptionalEnv('KLING_SECRET_KEY'),
   KLING_API_BASE_URL: getOptionalEnv('KLING_API_BASE_URL', 'https://api-singapore.klingai.com'),
