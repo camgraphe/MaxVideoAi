@@ -66,7 +66,12 @@ export async function persistFinalVideoJobUpdate(params: {
          visibility = $19,
          indexable = $20,
          message = $21,
-         settings_snapshot = $22::jsonb,
+         settings_snapshot = CASE
+           WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($10, provider_job_id) IS NOT NULL
+             THEN jsonb_set(COALESCE($22::jsonb, '{}'::jsonb), '{falQueueReceiptRequired}',
+               jsonb_build_object('requestId', COALESCE($10, provider_job_id)), true)
+           ELSE $22::jsonb
+         END,
          mcp_trial_outcome_disposition = CASE
            WHEN $16 <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
            WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')

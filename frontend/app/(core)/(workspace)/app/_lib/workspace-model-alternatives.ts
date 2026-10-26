@@ -76,6 +76,7 @@ export function buildWorkspaceModelAlternatives({
         supportsAudioToggle: candidate.supportsAudioToggle,
         voiceControlEnabled: candidate.voiceControlEnabled,
         inputAssets: candidate.setup.inputAssets,
+          klingElements: candidate.setup.klingElements,
         memberTier,
       });
       return [{ engine, candidate, request, index }];

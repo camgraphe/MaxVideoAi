@@ -16,8 +16,7 @@ import { isSoraEngineId, type SoraRequest } from '@/lib/sora';
 import type { EngineCaps, Mode } from '@/types/engines';
 import { normalizeBytePlusOptions } from './request-options-byteplus';
 import {
-  normalizeGenerationElements,
-  normalizeMultiPrompt,
+  normalizeGenerationControls,
   normalizeSeed,
   normalizeStringArray,
   trimString,
@@ -115,7 +114,9 @@ export function buildGenerateRequestOptions(params: {
   try { engine = resolveVideoOperationRequestEngine(engine, mode, body); }
   catch { return { ok: false, status: 400, body: { ok: false, error: 'Invalid operation' } }; }
   const prompt = String(body.prompt || '');
-  const multiPrompt = normalizeMultiPrompt(body.multiPrompt);
+  const controls = normalizeGenerationControls(body, engine.id);
+  if (!controls.ok) return {ok:false, status:400, body:{ok:false, error:controls.error}};
+  const {multiPrompt, elements} = controls;
   const multiPromptTotalSec = multiPrompt
     ? multiPrompt.reduce((sum: number, entry: MultiPromptEntry) => sum + (entry.duration || 0), 0)
     : 0;
@@ -175,7 +176,6 @@ export function buildGenerateRequestOptions(params: {
   if (voiceControl) {
     audioEnabled = true;
   }
-  const elements = normalizeGenerationElements(body.elements);
   const endImageUrl =
     typeof body.endImageUrl === 'string' && body.endImageUrl.trim().length ? body.endImageUrl.trim() : null;
   const rawAudioUrl =
@@ -197,7 +197,7 @@ export function buildGenerateRequestOptions(params: {
     : null;
   let aspectRatio =
     rawAspectRatio && fallbackAspectRatio
-      ? rawAspectRatio === 'auto' && !isBytePlusV1a
+      ? rawAspectRatio === 'auto' && !isBytePlusV1a && !(engine.id === 'kling-v4' && mode === 'ref2v')
         ? fallbackAspectRatio
         : rawAspectRatio
       : rawAspectRatio ?? fallbackAspectRatio ?? null;

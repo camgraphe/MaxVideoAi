@@ -25,7 +25,7 @@ export async function readStudioConversationBody(req: NextRequest) {
       const item = await reader.read();
       if (item.done) break;
       size += item.value.byteLength;
-      if (size > 24000) {
+      if (size > 96000) {
         await reader.cancel();
         throw new Error("BODY_TOO_LARGE");
       }
@@ -34,7 +34,14 @@ export async function readStudioConversationBody(req: NextRequest) {
   } finally {
     reader.releaseLock();
   }
-  return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
+  const text=Buffer.concat(chunks).toString("utf8");
+  if(size>24000){
+    let parsed:unknown;
+    try{parsed=JSON.parse(text);}catch{throw new Error('BODY_TOO_LARGE');}
+    if(!parsed||typeof parsed!=='object'||!('shotPlanRevision' in parsed))throw new Error('BODY_TOO_LARGE');
+    return parsed;
+  }
+  return JSON.parse(text) as unknown;
 }
 export async function handleStudioImageConversation(
   req: NextRequest,

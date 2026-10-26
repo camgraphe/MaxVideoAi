@@ -14,8 +14,8 @@ import {readMediaFacts} from '@/lib/media-identity';
 import {ZodError} from 'zod';
 import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import type {ImageTurnInput} from '@/lib/studio/image-conversation-contract';
-import type {StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
-import {conversationSelectionSettings} from '@/lib/studio/conversation-creation-contract';
+import {studioShotPlanSchema, type StudioMediaIntent} from '@/lib/studio/conversation-media-contract';
+import {conversationSelectionSettings,STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import type {StudioProjectMedia} from '@/lib/studio/conversation-action-contract';
 import {studioReferenceFingerprint,type StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {AgentApiError} from '@/server/agent-api/errors';
@@ -25,7 +25,7 @@ import {createStudioAudioGenerationService} from './audio-generation-service';
 import {resolveStudioMedia,type StudioResolvedMedia} from './media-resolver';
 import type {CanonicalGenerationRequest} from '@/server/agent-api/generation-types';
 import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization';
-import {GenerationNormalizationError, normalizeGenerationRequest} from '@/server/agent-api/generation-normalization';
+import {GenerationNormalizationError, normalizeGenerationRequest,stableJson} from '@/server/agent-api/generation-normalization';
 import {GenerationCapabilityError, validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
@@ -165,7 +165,7 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
     ? resolutionField.default : details.resolutions[0];
   return {
     ...Object.fromEntries(details.settings.filter(setting => setting.default !== null).map(setting => [setting.key, setting.default])),
-    ...(details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
+    ...(!(candidate.engine.id === 'kling-v4' && mode === 'v2v') && details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
     resolution: legacy ? '480p' : resolution,
     ...(details.aspectRatios.length ? {aspectRatio} : {}),
     ...(details.audio === 'optional' ? {audio: legacy ? false : true} : {}),
@@ -178,13 +178,23 @@ function comparableReference(reference:ResolvedReference):ResolvedReference{cons
 function mediaReference(media:StudioResolvedMedia,identity:Pick<ResolvedReference,'assetId'|'role'|'slot'>):ResolvedReference {
   return {...identity,mediaKind:media.kind,storageUrl:media.url,mimeType:media.mime,width:media.width??media.mediaFacts?.width??null,height:media.height??media.mediaFacts?.height??null,durationSec:media.durationSec??media.mediaFacts?.durationSec??null,sizeBytes:media.sizeBytes,originalName:media.originalName};
 }
+// FPS is added by exact owned-original verification after review. Compare all previously
+// observed facts, then bind the complete enriched fingerprint to preparation.
+function matchesReviewedReference(previous:ResolvedReference,current:ResolvedReference):boolean {
+  const comparableCurrent={...current};
+  if(previous.fps===undefined)delete comparableCurrent.fps;
+  return sameReferenceFacts(previous,comparableCurrent);
+}
 function sameReferenceFacts(previous:ResolvedReference,current:ResolvedReference):boolean{return studioReferenceFingerprint([comparableReference(previous)])===studioReferenceFingerprint([comparableReference(current)]);}
 
 /** Validate selection and owned sources before any draft or library write. */
 export async function validateStudioMediaRequest(actor: StudioGenerationActor, action: StudioMediaIntent, input: ImageTurnInput, factories: StudioMediaFactories, enabled: boolean, dependencies: StudioMotionSourceDependencies = {}):Promise<ValidatedStudioMediaRequest> {
+  if(input.shotPlanRevision && action.action!=='video.prepare')throw new StudioPreparationInputError('PARAMETER_INVALID','The revised shot plan requires a new video quote.');
   if(action.action!=='video.prepare')return validateStudioAudioRequest(actor,action,input,factories.audio,enabled,{readProjectMedia:dependencies.readProjectMedia??readStudioProjectMedia,resolveMedia:dependencies.resolveMedia});
   const settings = canonicalPreparation(() => conversationSelectionSettings(action.settings),true);
   if (action.action === 'video.prepare') {
+    const shotPlan = action.shotPlan == null ? undefined : canonicalPreparation(() => studioShotPlanSchema.parse(action.shotPlan), true);
+    if (shotPlan && action.prompt.trim()) throw new StudioPreparationInputError('PARAMETER_INVALID', 'Choose a prompt or shot plan, exclusively.');
     // Recover saved director intents without rewriting their immutable draft.
     // The canonical API remains strict and accepts only durationSec.
     if (Object.hasOwn(settings, 'duration')) {
@@ -201,8 +211,14 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     if(Object.hasOwn(settings,'documentUrl')||Object.hasOwn(settings,'webpageUrl'))throw new StudioPreparationInputError('PARAMETER_INVALID','Select owned media references; external document and webpage URLs are not Studio inputs.');
     const sourceSelection=selections.find(selection=>selection.role==='source');
     const mode = action.mode ?? (sourceSelection?.ref.kind==='video'?'v2v':sourceSelection?.ref.kind==='audio'?'a2v':action.source || selections.some(selection => ['source', 'first_frame', 'last_frame'].includes(selection.role)) ? 'i2v' : selections.length ? 'ref2v' : 't2v');
+    const revision=input.shotPlanRevision;
+    if(revision&&(action.modelId!==revision.modelId||mode!==revision.mode||stableJson(shotPlan??null)!==stableJson(revision.shots)
+      ||(settings.durationSec!==undefined&&settings.durationSec!==revision.durationSec)))
+      throw new StudioPreparationInputError('PARAMETER_INVALID','Preserve the exact model, mode, duration and ordered shots from the client revision.');
     if (mode==='ref2v' && !selections.length)
       throw new AgentApiError('REFERENCE_REQUIRED','Reference-to-video requires attached or ready project reference media.');
+    if (selections.length > (action.modelId==='kling-v4'?50:STUDIO_CONVERSATION_MAX_ATTACHMENTS))
+      throw new StudioPreparationInputError('REFERENCE_INVALID','Too many selected references for this Studio model.');
     const catalog = await factories.video(actor, {enabled}).catalog();
     let candidate = catalog.find(entry => entry.surface === 'video' && entry.engine.id === (action.modelId ?? 'wan-3'));
     if (!candidate) throw new StudioPreparationInputError('ENGINE_UNAVAILABLE', 'The selected video model is unavailable in this Studio workflow.');
@@ -248,7 +264,9 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     let derivedSettings:Record<string,number>={};
     const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
       const request = normalizeGenerationRequest({schemaVersion: 1, surface: 'video', engineId: candidate.engine.id, mode, prompt: action.prompt, ...(operation ? { operation: operation } : {}), ...(action.elements ? {elements:action.elements}:{}),
-        settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings, ...settings},
+        settings: {...videoDefaults(candidate, mode, action.aspectRatio, legacy),...derivedSettings,
+          ...(shotPlan ? {multiPrompt:shotPlan,durationSec:shotPlan.reduce((total,shot)=>total+shot.durationSec,0)} : {}), ...settings},
+        ...(action.subjects == null ? {} : {subjects:action.subjects}),
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
           ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});
       validateCanonicalGenerationCapabilities(request, candidate,{resolvedReferences});
@@ -343,7 +361,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           // All measured fields, source hash and role/slot stay bound to the original.
           const previous={...resolvedReferences[index],assetId:assetIds[index],...(promotions[index].promoted??{})};
           const next=current.find(reference=>reference.assetId===previous.assetId&&reference.role===previous.role&&reference.slot===previous.slot);
-          if(!next||studioReferenceFingerprint([comparableReference(previous)])!==studioReferenceFingerprint([comparableReference(next)]))
+          if(!next||!matchesReviewedReference(previous,next))
             throw new AgentApiError('REFERENCE_INVALID','The selected references changed before quote preparation. Send a new message to review them again.');
           if(next && nativeImageHashes.has(index) && await (dependencies.hashH3Image??hashH3PromotionImage)(next.storageUrl,actor.userId)!==nativeImageHashes.get(index))
             throw new AgentApiError('REFERENCE_INVALID','The promoted image bytes changed before quote preparation.');

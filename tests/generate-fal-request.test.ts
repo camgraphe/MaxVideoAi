@@ -7,6 +7,8 @@ import { buildFalInputs, buildFalRequestParts } from '../frontend/app/api/genera
 import { resolveFalModelSlug } from '../frontend/src/lib/fal-model-helpers';
 import { buildFalGenerationRequest } from '../frontend/src/lib/fal-request-body';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
+import { buildKlingV4FalRequest } from '../frontend/src/lib/kling-v4';
+import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -68,6 +70,30 @@ function baseFalRequest(overrides: Partial<Parameters<typeof buildFalRequestPart
     ...overrides,
   });
 }
+
+test('Kling V4 image generation passes the shared generate payload builder without a synthetic V3 shot type', () => {
+  const imageUrl = 'https://media.maxvideoai.com/opening.png';
+  const { falPayload } = baseFalRequest({ engineId: 'kling-v4', mode: 'i2v', needsImage: true,
+    initialImageUrl: imageUrl, supportsAspectRatio: false, supportsFps: false,
+    attachments: [attachment({ kind: 'image', slotId: 'image_url', url: imageUrl, assetId: 'owned' })] });
+  const built = buildKlingV4FalRequest(falPayload);
+  assert.equal(built.model, 'kling/v4/image-to-video');
+  assert.equal(built.requestBody.start_image_url, imageUrl);
+  assert.equal(built.requestBody.shot_type, undefined);
+  assert.throws(() => buildKlingV4FalRequest({ ...falPayload, shotType: 'customize' }), /shotType/);
+});
+
+test('Kling V4 repeated image references preserve @Image positions across the generate route chain', () => {
+  for (const mode of ['ref2v', 'v2v'] as const) {
+    const images = ['a', 'a', 'b'].map(id => attachment({ kind: 'image', slotId: 'image_urls', assetId: id, url: `https://media.maxvideoai.com/${id}.png` }));
+    const attachments = mode === 'v2v' ? [...images, attachment({ kind: 'video', slotId: 'video_url', assetId: 'source', url: 'https://media.maxvideoai.com/source.mp4' })] : images;
+    const references = deriveGenerationAttachmentReferences({ attachments, engineId: 'kling-v4', mode, referenceImages: images.map(image => image.url) });
+    const { falPayload } = baseFalRequest({ engineId: 'kling-v4', mode, attachments, normalizedReferenceImages: references.normalizedReferenceImages,
+      supportsAspectRatio: mode === 'ref2v', supportsFps: false });
+    assert.deepEqual(buildKlingV4FalRequest(falPayload).requestBody.image_urls, images.map(image => image.url));
+    assert.equal(references.referenceMediaItems.filter(item => item.kind === 'image').length, 3);
+  }
+});
 
 test('generate route delegates Fal request building', () => {
   assert.ok(existsSync(helperPath), 'Fal request building should live in the generate route _lib folder');

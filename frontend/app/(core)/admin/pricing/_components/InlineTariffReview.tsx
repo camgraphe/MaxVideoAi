@@ -12,7 +12,7 @@ export function InlineTariffReview({ editor, disabled }: { editor: CustomerTarif
     {editor.notice ? <p role="status" className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-xs text-emerald-900">{editor.notice}</p> : null}
     {editor.preview ? <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2.5 text-xs" aria-label="Review this exact price">
       <p className="font-bold text-text-primary">Review this exact price</p>
-      <p className="mt-1">{decisionUsd(editor.preview.currentCents / 100)} → <strong>{editor.preview.proposedCents == null ? 'Remove prepared price' : decisionUsd(editor.preview.proposedCents / 100)}</strong></p>
+      <p className="mt-1">{decisionUsd(editor.preview.currentCents == null ? null : editor.preview.currentCents / 100)} → <strong>{editor.preview.proposedCents == null ? 'Remove prepared price' : decisionUsd(editor.preview.proposedCents / 100)}</strong></p>
       <p className="mt-1 text-[10px] text-text-secondary">{editor.displayed ? formatProviderComparisonScenario(editor.displayed.supplierComparison) : ''}</p>
       {editor.preview.warnings.map(warning => <p key={warning} className="mt-1 text-[10px] text-amber-900">{warning}</p>)}
       {editor.preview.continuousInputRange ? <p className="mt-1 text-[10px] text-text-secondary">{editor.preview.continuousInputRange.unbounded

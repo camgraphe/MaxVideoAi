@@ -9,6 +9,8 @@ import type { JobRow } from '../frontend/app/api/jobs/_lib/jobs-route-types';
 // Exercise the real manual-refresh owner without importing DB, provider or payment runtimes.
 const frontend = resolve('frontend');
 const stubs: Record<string, string> = {
+  '@fal-ai/client': 'export class ApiError extends Error { constructor(value) { super(value.message); Object.assign(this, value); } }',
+  '@/lib/env': 'export const ENV = { FAL_API_KEY: "offline-only" };',
   '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
   '@/lib/fal-catalog': 'export const resolveFalModelId = async () => "fal-ai/synthetic-video";',
   '@/lib/fal-client': 'export const getFalClient = () => ({queue: fixture.queue});',
@@ -42,12 +44,14 @@ function job(overrides: Partial<JobRow> = {}): JobRow {
   };
 }
 
-async function fixture(row = job()) {
+async function fixture(row = job(), receipt?: unknown) {
+  const reads: string[] = [];
   const updates: Array<Record<string, unknown>> = [];
   const calls: Array<{ method: string; model: string; requestId: string }> = [];
   const queries: Array<{ sql: string; params: unknown[] }> = [];
   let stored = structuredClone(row);
   const state = {
+    receiptReadError: null as Error | null,
     status: async (): Promise<unknown> => ({ status: 'IN_PROGRESS' }),
     result: async (): Promise<unknown> => ({ data: { video: { url: 'https://example.test/generated.mp4' } } }),
   };
@@ -68,6 +72,11 @@ async function fixture(row = job()) {
     },
     query: async (sql: string, params: unknown[] = []) => {
       queries.push({ sql, params });
+      if (sql.includes("payload->'falQueueReceipt'")) {
+        if (state.receiptReadError) throw state.receiptReadError;
+        assert.equal(params[0],row.job_id); assert.equal(params[1],row.provider_job_id);
+        return receipt === undefined ? [] : [{receipt, receipt_present: true, receipt_required: true, legacy_enqueued: false}];
+      }
       assert.match(sql, /^SELECT /, 'manual refresh must not use a failure write fallback');
       assert.equal(params.length, 1);
       assert.equal(JSON.stringify(params[0]), '["synthetic-job"]');
@@ -76,10 +85,14 @@ async function fixture(row = job()) {
   };
   const module = { exports: {} as { refreshStaleFalJobs: typeof refreshStaleFalJobs } };
   runInNewContext((await bundle).outputFiles[0].text, {
-    module, exports: module.exports, fixture: boundary, console: { info() {}, warn() {} },
+    module, exports: module.exports, fixture: boundary, URL, AbortSignal,
+    fetch: async(url:string,init:RequestInit)=>{
+      reads.push(url); assert.equal(init.method,'GET'); assert.equal(init.redirect,'error');
+      return new Response(JSON.stringify(url.endsWith('/status') ? await state.status() : (await state.result() as {data:unknown}).data),{status: url.endsWith('/status') ? 202 : 200});
+    }, console: { info() {}, warn() {} },
   });
   return {
-    state, updates, calls, queries,
+    state, updates, calls, queries, reads,
     refresh: (rows = [row], enabled = true) => module.exports.refreshStaleFalJobs({
       rows, shouldRefreshStaleFalJobs: enabled, userId: 'synthetic-owner',
     }),
@@ -175,4 +188,30 @@ test('manual Fal refresh only contacts eligible Fal video jobs when explicitly r
   assert.equal(f.calls.length, 0);
   assert.equal(f.updates.length, 0);
   assert.equal(f.queries.length, 0);
+});
+
+
+test('manual recovery follows persisted V4 receipt through 202, completion and result without SDK reconstruction',async()=>{
+  const base='https://queue.fal.run/kling/v4/reference-to-video/requests/synthetic-request';
+  const receipt={requestId:'synthetic-request',endpoint:'kling/v4/reference-to-video',metadataState:'verified',statusUrl:base+'/status',responseUrl:base,cancelUrl:base+'/cancel'};
+  const row=job({engine_id:'kling-v4'});
+  const f=await fixture(row,receipt);
+  assert.equal((await f.refresh())[0].status,'running'); assert.equal(f.updates.length,0);
+  f.state.status=async()=>({status:'COMPLETED',request_id:'synthetic-request'});
+  const completed=await f.refresh();
+  assert.equal(completed[0].status,'COMPLETED');
+  assert.equal(f.updates.length,1); assert.equal(f.updates[0].request_id,'synthetic-request');
+  assert.equal((f.updates[0].result as {data:{video:{url:string}}}).data.video.url,'https://example.test/generated.mp4');
+  assert.deepEqual(f.reads,[base+'/status',base+'/status',base]);
+  assert.equal(f.calls.length,0);
+  assert.equal(row.final_price_cents,100); assert.equal(row.payment_status,'paid_wallet');
+});
+
+test('receipt-store read failure preserves the accepted job and never falls back to an SDK request',async()=>{
+  const row=job({engine_id:'kling-v4'});
+  const f=await fixture(row);
+  f.state.receiptReadError=new Error('Temporary receipt store read failure');
+  const recovered=await f.refresh();
+  assert.equal(recovered[0].status,'running');
+  assert.equal(f.updates.length,0); assert.equal(f.calls.length,0); assert.equal(f.reads.length,0);
 });

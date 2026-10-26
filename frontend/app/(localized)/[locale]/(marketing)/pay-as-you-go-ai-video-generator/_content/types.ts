@@ -4,6 +4,7 @@ export const PAYG_ICON_IDS = [
 export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 
 export const PAYG_PRICE_LOOKUP_IDS = [
+  'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro',
   'ltx-2-5-fast',
@@ -22,6 +23,7 @@ export const PAYG_PRICE_LOOKUP_IDS = [
 export type PaygPriceLookupId = (typeof PAYG_PRICE_LOOKUP_IDS)[number];
 
 export const PAYG_EXAMPLE_COST_IDS = [
+  'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-pro',
   'wan-3-prime',
@@ -37,6 +39,7 @@ export const PAYG_EXAMPLE_COST_IDS = [
 export type PaygExampleCostId = (typeof PAYG_EXAMPLE_COST_IDS)[number];
 
 export const PAYG_SUPPORTED_MODEL_IDS = [
+  'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'seedance-2-5',
   'seedance-2-0',

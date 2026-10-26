@@ -196,6 +196,8 @@ export function useWorkspaceKlingElementAssets({
         kind: slot === 'video' ? 'video' : 'image',
         status: 'uploading' as const,
         url: undefined as string | undefined,
+        size: file.size,
+        type: file.type,
       };
 
       if (!valid()) return;
@@ -243,7 +245,7 @@ export function useWorkspaceKlingElementAssets({
                 if (!response.ok || !payload?.ok) {
                   throw createUploadFailure('image', response.status, payload, 'Upload failed');
                 }
-                return payload.asset as { id: string; url: string; name?: string };
+                return payload.asset as { id: string; url: string; name?: string; width?: number | null; height?: number | null; size?: number | null; mime?: string | null; durationSec?: number };
               })();
           if (!current()) {
             revokeKlingAssetPreview(baseAsset);
@@ -261,6 +263,11 @@ export function useWorkspaceKlingElementAssets({
                   ...asset,
                   status: 'ready' as const,
                   assetId: assetResponse.id,
+                  width: assetResponse.width ?? null,
+                  height: assetResponse.height ?? null,
+                  size: assetResponse.size ?? file.size,
+                  type: assetResponse.mime ?? file.type,
+                  ...(typeof assetResponse.durationSec === 'number' ? { durationSec: assetResponse.durationSec } : {}),
                   url: assetResponse.url,
                   previewUrl: assetResponse.url || asset.previewUrl,
                   name: assetResponse.name ?? asset.name,

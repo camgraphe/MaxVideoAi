@@ -96,7 +96,7 @@ function engineForSetup(engine: EngineCaps, form: FormState): EngineCaps {
     ? resolveVideoOperationEngine(engine, form.mode, form.operation) : engine;
 }
 
-function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflow: WorkspaceWorkflowProjection, summary: WorkspaceInputSchemaSummary, sourceSummary: WorkspaceInputSchemaSummary) {
+function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflow: WorkspaceWorkflowProjection, summary: WorkspaceInputSchemaSummary, sourceSummary: WorkspaceInputSchemaSummary, preserveV4Draft: boolean) {
   const fields = summary.assetFields.map(({ field }) => field);
   const byId = new Map(summary.assetFields.map((entry) => [entry.field.id, entry]));
   const sourceById = new Map(sourceSummary.assetFields.map((entry) => [entry.field.id, entry]));
@@ -111,7 +111,9 @@ function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflo
     })];
   }));
   // No release callback: preparation must never revoke a live draft's previews.
-  const inputAssets = reconcileReferenceAssets(compatible, fields, resolveEngineReferenceBudget(engine.inputSchema, workflow.submissionMode));
+  const inputAssets = preserveV4Draft
+    ? setup.inputAssets
+    : reconcileReferenceAssets(compatible, fields, resolveEngineReferenceBudget(engine.inputSchema, workflow.submissionMode));
   const extraInputValues: Record<string, unknown> = {};
   for (const { field } of [...summary.promotedFields, ...summary.secondaryFields]) {
     const value = normalizeExtraInputValue(field, setup.form.extraInputValues[field.id]);
@@ -121,8 +123,8 @@ function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflo
   const cfgParam = engine.params?.cfg_scale;
   return {
     ...setup, form: { ...form, extraInputValues }, inputAssets,
-    klingElements: workflow.supportsKlingV3Controls ? setup.klingElements : [],
-    multiPromptEnabled: workflow.supportsKlingV3Controls && setup.multiPromptEnabled,
+    klingElements: (workflow.supportsKlingV3Controls || engine.id === 'kling-v4') ? setup.klingElements : [],
+    multiPromptEnabled: (workflow.supportsKlingV3Controls || engine.id === 'kling-v4') && setup.multiPromptEnabled,
     shotType: !workflow.supportsKlingV3Controls || workflow.activeMode === 'i2v' ? 'customize' as const : setup.shotType,
     cfgScale: cfgParam ? setup.cfgScale ?? cfgParam.default : null,
   };
@@ -187,6 +189,7 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   }
   const seed = restoreSetup ?? current;
   if (restoreSetup && restoreSetup.form.engineId !== engine.id) blockingReasons.push({code: 'invalid-reference', scope: 'apply', message: 'Saved configuration belongs to another model.'});
+  const preserveV4Draft = engine.id === 'kling-v4' && seed.form.engineId === engine.id;
   const requestedMode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: null, carryoverMode: current.form.mode });
   let setup: WorkspaceModelSetup = structuredClone(seed);
   if (!restoreSetup) setup.form = coerceFormStateForEngineChange(engine, requestedMode, setup.form);
@@ -200,7 +203,7 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   let stable = false;
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const workflow = resolveWorkspaceWorkflow({ engine, ...setup });
-    const next = normalizedSetup(setup, engine, workflow, schemaFor(engine, workflow, locale), seedSummary);
+    const next = normalizedSetup(setup, engine, workflow, schemaFor(engine, workflow, locale), seedSummary, preserveV4Draft);
     if (JSON.stringify(next) === JSON.stringify(setup)) { setup = next; stable = true; break; }
     setup = next;
   }

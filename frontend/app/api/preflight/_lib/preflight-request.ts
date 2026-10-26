@@ -66,6 +66,15 @@ const persistedReferenceSchema = z.object({
   }),
 }).strict();
 
+const ownedId = z.string().trim().min(1).max(256);
+const ownedUrl = z.string().trim().url().max(2_048);
+const ownedKlingSubject = z.union([
+  z.object({ frontalAssetId: ownedId, frontalImageUrl: ownedUrl,
+    referenceAssetIds: z.array(ownedId).min(1).max(3), referenceImageUrls: z.array(ownedUrl).min(1).max(3),
+    id: ownedId.optional() }).strict().refine(s => s.referenceAssetIds.length === s.referenceImageUrls.length),
+  z.object({ videoAssetId: ownedId, videoUrl: ownedUrl, id: ownedId.optional() }).strict(),
+]);
+
 const preflightRequestSchema = z.object({
   sourceJobId: z.string().min(1).max(255).optional(),
   sourceOutputId: z.string().min(1).max(255).optional(),
@@ -74,7 +83,7 @@ const preflightRequestSchema = z.object({
     z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^\S+$/u) }).strict()]).optional(),
   engine: z.string().trim().min(1).max(128),
   mode: z.enum(modes),
-  durationSec: z.number().finite().positive().max(3_600),
+  durationSec: z.number().finite().positive().max(3_600).optional(),
   durationOption: z.union([z.number().finite().positive().max(3_600), z.literal('auto')]).optional(),
   resolution: z.enum(resolutions).optional(),
   aspectRatio: z.enum(aspectRatios).optional(),
@@ -85,13 +94,19 @@ const preflightRequestSchema = z.object({
   hasVideoInput: z.boolean().optional(),
   voiceControl: z.boolean().optional(),
   inputs: z.array(persistedReferenceSchema).max(MAX_PREFLIGHT_INPUTS).optional(),
+  elements: z.array(ownedKlingSubject).max(7).optional(),
   extraInputValues: extraInputValuesSchema.optional(),
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
-}).strict().superRefine((request, context) => {
-  // The transport ceiling accommodates 64 Ray keyframes plus guide/source; it does
-  // not widen Seedance's independently bounded 50-reference admission contract.
+ }).strict().superRefine((request, context) => {
+  if (request.durationSec === undefined
+    && (request.engine !== 'kling-v4' || request.mode !== 'v2v' || request.durationOption !== undefined)) {
+    context.addIssue({code:z.ZodIssueCode.custom,path:['durationSec'],message:'An explicit duration is required for this model and mode.'});
+  }
+  // The transport ceiling does not widen Seedance's separate admission contract.
   if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
     context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
+  if (request.elements !== undefined && !(request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
+    context.addIssue({code:z.ZodIssueCode.custom,path:['elements'],message:'Unsupported Kling subject composition.'});
 });
 
 type PreflightRequestFailure = {
@@ -100,9 +115,16 @@ type PreflightRequestFailure = {
   response: PreflightResponse;
 };
 
+/** Only the current V4 Modify transport admits source-duration omission. */
+export type AppPreflightRequest = PreflightRequest | (
+  Omit<PreflightRequest, 'engine' | 'mode' | 'durationSec'> & {
+    engine: 'kling-v4'; mode: 'v2v'; durationSec?: number;
+  }
+);
+
 type PreflightRequestSuccess = {
   ok: true;
-  request: PreflightRequest;
+  request: AppPreflightRequest;
 };
 
 export type PreflightRequestParseResult = PreflightRequestSuccess | PreflightRequestFailure;
@@ -146,7 +168,10 @@ export function parsePreflightRequestPayload(payload: unknown): PreflightRequest
   if (!parsed.success) {
     return failure(400, 'PREFLIGHT_REQUEST_INVALID', 'Invalid preflight request.');
   }
-  return { ok: true, request: parsed.data };
+  if (parsed.data.durationSec === undefined) {
+    return {ok:true,request:{...parsed.data,engine:'kling-v4',mode:'v2v'}};
+  }
+  return { ok: true, request: {...parsed.data,durationSec:parsed.data.durationSec} };
 }
 
 type PreflightBodyRequest = Pick<Request, 'headers' | 'text'> & {

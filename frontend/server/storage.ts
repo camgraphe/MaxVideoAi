@@ -1,3 +1,4 @@
+export { isAllowedAssetHost } from './asset-url-policy';
 import { StorageUploadError, buildObjectKey, isStorageKeyWithinUserPrefix, getObjectKeySizeBytes, MAX_SAFE_OBJECT_KEY_BYTES } from './storage-keys';
 export { StorageUploadError, buildObjectKey, isStorageKeyWithinUserPrefix } from './storage-keys';
 import { extractObjectKeyFromUrl } from './storage-read';
@@ -371,18 +372,6 @@ export async function deleteUserAsset(params: { assetId: string; userId: string 
   }
 
   return 'deleted';
-}
-
-const ALLOWED_HOSTS = buildHostAllowList();
-
-export function isAllowedAssetHost(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
-    return ALLOWED_HOSTS.has(parsed.host);
-  } catch {
-    return false;
-  }
 }
 
 export async function probeImageUrl(

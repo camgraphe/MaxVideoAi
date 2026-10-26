@@ -59,8 +59,8 @@ export function useCustomerTariffEditor(selection: TariffEditorSelection | null,
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const editable = Boolean(enabled && !scenarioLoading && !scenarioError && !inventoryError
-    && inventory?.databaseStatus === 'loaded' && exact?.supplierComparison.customerQuote != null
-    && exact?.currentCents != null && exact.currency === 'USD');
+    && inventory?.databaseStatus === 'loaded' && exact?.currency === 'USD'
+    && (exact.modelId === 'kling-v4' || (exact.supplierComparison.customerQuote != null && exact.currentCents != null)));
   const historyUrl = enabled && inventory?.databaseStatus === 'loaded' && exact
     ? `/api/admin/pricing/tariffs/history?targetId=${encodeURIComponent(exact.continuousInputTariff?.tariffCellId ?? exact.tariffCellId)}` : null;
   const { data: history, error: historyError, mutate: mutateHistory } = useSWR(historyUrl, readHistory);

@@ -62,6 +62,7 @@ export const esPayAsYouGoContent = {
     },
     footer: 'Happy Horse 1.1 y Seedance 2 Mini son lo bastante recientes como para probarlos directamente, en lugar de evaluarlos solo con rankings de modelos anteriores.',
     models: {
+      'kling-v4': { family: 'Kling', title: 'Kling 4.0 para planificar planos y referencias visuales', body: 'Planifica una escena de 3 a 30 segundos con un prompt y duración por plano, guíala con imágenes o sujetos de video, o edita un clip existente. La salida es 720p o 1080p; el audio nativo se dirige mediante el prompt.' },
       'gemini-omni-flash': { family: 'Google Gemini', title: 'Gemini Omni Flash 1.1 para creación multimodal rápida', body: 'Usa Gemini Omni Flash 1.1 con texto, imagen, video y referencias cuando importen la iteración rápida, el audio nativo o la dirección multi-shot.' },
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro para salida 1080p detallada', body: 'Elige Turbo Pro para movimiento 1080p pulido, detalle de producto, guía por imagen y secuencias multi-shot.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard para borradores 720p eficientes', body: 'Elige Turbo Standard para iterar más rápido en 720p con movimiento coherente, guía por imagen y pruebas multi-shot.' },
@@ -185,6 +186,7 @@ export const esPayAsYouGoContent = {
     },
     openRowLabel: 'Abrir fila de precios',
     items: {
+      'kling-v4': { query: 'precio de Kling 4.0', title: 'Precio de Kling 4.0 según el modo', body: 'Revisa el modo, la duración de salida y la resolución. En los flujos de referencias y edición, la duración del video aportado también influye en el presupuesto; compara las mismas entradas.' },
       'gemini-omni-flash': { query: 'precio de Gemini Omni Flash 1.1', title: 'Consulta el precio de Gemini Omni Flash 1.1', body: 'Consulta la ruta directa de Google para video multimodal rápido, audio nativo y flujos multi-shot.' },
       'kling-3-turbo-pro': { query: 'precio de Kling 3 Turbo Pro', title: 'Consulta el precio de Kling 3.0 Turbo Pro', body: 'Consulta la ruta Turbo 1080p detallada para generación con texto, imagen y multi-shot.' },
       'kling-3-turbo-standard': { query: 'precio de Kling 3 Turbo Standard', title: 'Consulta el precio de Kling 3.0 Turbo Standard', body: 'Consulta la ruta Turbo 720p eficiente para generación con texto, imagen y multi-shot.' },
@@ -241,6 +243,7 @@ export const esPayAsYouGoContent = {
       }
     },
     labels: {
+      'kling-v4': 'Escena de texto a video con Kling 4.0',
       'gemini-omni-flash': 'Prueba multimodal con Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Prueba 1080p con Kling 3.0 Turbo Pro',
       'kling-3-turbo-standard': 'Borrador con Kling 3.0 Turbo Standard',

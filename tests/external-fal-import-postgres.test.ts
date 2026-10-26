@@ -157,6 +157,61 @@ test('a real external result imports atomically once, privately, with no financi
   assert.equal((await db.pool.query('SELECT metadata FROM job_outputs WHERE id=$1', [importedKeyframe.outputId])).rows[0].metadata.mediaFacts.durationSec, 16.041667);
   for (const table of ['app_receipts','fal_queue_log','provider_attempts','app_generate_metrics','generation_timing_samples'])
     assert.equal((await db.pool.query(`SELECT count(*)::int n FROM ${table}`)).rows[0].n, 0, table);
+  // Kling uses the same owner/idempotency/payment boundary, with explicit display roles and no FLUX defaults.
+  const klingInput = { schemaVersion: 1, ownerUserId: owner, engineId: 'kling-v4', mode: 'ref2v',
+    endpoint: 'kling/v4/reference-to-video', providerRequestId: '44444444-4444-4444-8444-444444444444',
+    providerInput: { multi_prompt: [{ prompt: 'First scene', duration: 2 }, { prompt: 'Last scene', duration: 3 }],
+      duration: 5, resolution: '1080p', aspect_ratio: '16:9', video_urls: ['https://fal.media/reference.mp4'],
+      elements: [{ frontal_image_url: references[0].providerUrl, reference_image_urls: [references[1].providerUrl] }] },
+    videoAssetId: 'ma_' + 'f'.repeat(32), videoSha256: 'f'.repeat(64), evidenceSha256: 'e'.repeat(64),
+    references: [{ slotId: 'video_urls.0', kind: 'video', providerUrl: 'https://fal.media/reference.mp4', assetId: 'ma_' + 'd'.repeat(32), sha256: 'd'.repeat(64) },
+      { ...references[0], slotId: 'elements.0.frontal_image_url', kind: 'image' },
+      { ...references[1], slotId: 'elements.0.reference_image_urls.0', kind: 'image' }],
+    media: { poster: { url: 'https://media.maxvideoai.com/kling-poster.webp', sha256: 'c'.repeat(64) },
+      preview: { url: 'https://media.maxvideoai.com/kling-preview.mp4', sha256: 'b'.repeat(64) } } };
+  await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,thumb_url,preview_url,mime_type,width,height,size_bytes,source,status)
+    VALUES ('kling-video',$1,$2,'video',$3,$4,$5,'video/mp4',1280,704,100,'upload','ready')`,
+    [klingInput.videoAssetId,owner,videoUrl,klingInput.media.poster.url,klingInput.media.preview.url]);
+  await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,width,height,size_bytes,source,status)
+    VALUES ('kling-ref-video',$1,$2,'video','https://media.maxvideoai.com/ref.mp4','video/mp4',1280,704,100,'upload','ready')`,
+    [klingInput.references[0].assetId,owner]);
+  const klingEvidence = { ...await deps.verifyEvidence(),
+    display: { poster: { ...klingInput.media.poster, width: 1280, height: 704, sizeBytes: 10 },
+      preview: { ...klingInput.media.preview, width: 640, height: 352, sizeBytes: 10, durationSec: 2, hasAudio: false } },
+    referenceProofs: klingInput.references.map(ref => ({ assetId: ref.assetId, providerSha256: ref.sha256, durableSha256: ref.sha256, transform: 'none' as const })) };
+  klingEvidence.video.sha256 = klingInput.videoSha256;
+  klingEvidence.video.mediaFacts.original.sha256 = klingInput.videoSha256;
+  const klingDeps = { ...deps, verifyEvidence: async () => klingEvidence };
+  await assert.rejects(verifyExternalFalImport({ ...klingInput, ownerUserId: '22222222-2222-4222-8222-222222222222' }, klingDeps), /OWNER/);
+  await assert.rejects(verifyExternalFalImport(klingInput, { ...klingDeps, actorUserId: '22222222-2222-4222-8222-222222222222' }), /ADMIN/);
+  const klingVerified = await verifyExternalFalImport(klingInput, klingDeps);
+  const applyKling = () => withDbTransaction(executor => applyExternalFalImport(klingVerified, {
+    executor, actorUserId: owner, approvedPlanSha256: klingVerified.planSha256 }), { pool: db.pool });
+  const klingResults = await Promise.all([applyKling(), applyKling()]);
+  assert.equal(klingResults.filter(value => value.created).length, 1);
+  assert.equal(Object.isFrozen(klingVerified.input.providerInput), true);
+  await assert.rejects(verifyExternalFalImport({ ...klingInput, providerInput: { ...klingInput.providerInput,
+    multi_prompt: [{ prompt: 'Changed scene', duration: 2 }, { prompt: 'Last scene', duration: 3 }] } }, klingDeps), /CONFLICT/);
+  const klingRow = (await db.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [klingResults[0].jobId])).rows[0];
+  assert.equal(klingRow.engine_id, 'kling-v4'); assert.equal(klingRow.engine_label, 'Kling 4.0');
+  assert.equal(klingRow.visibility, 'private'); assert.equal(klingRow.indexable, false);
+  assert.equal(klingRow.payment_status, 'external_not_billed'); assert.equal(klingRow.final_price_cents, null);
+  assert.equal(klingRow.preview_video_url, klingInput.media.preview.url);
+  assert.deepEqual(klingRow.settings_snapshot.externalImport.providerInput, klingInput.providerInput);
+  assert.deepEqual(klingRow.settings_snapshot.advanced.multiPrompt, klingInput.providerInput.multi_prompt);
+  assert.equal(klingRow.settings_snapshot.core.fps, null); assert.equal(klingRow.settings_snapshot.core.audio, null);
+  assert.deepEqual(klingRow.settings_snapshot.refs.videoUrls, ['https://media.maxvideoai.com/ref.mp4']);
+  assert.equal(klingRow.settings_snapshot.refs.elements[0].frontalAssetId, references[0].assetId);
+  assert.equal(klingRow.settings_snapshot.refs.elements[0].frontalImageUrl, `https://media.maxvideoai.com/user-assets/${owner}/k1.png`);
+  const klingOutput = (await db.pool.query('SELECT * FROM job_outputs WHERE id=$1', [klingResults[0].outputId])).rows[0];
+  assert.equal(klingOutput.preview_url, klingInput.media.preview.url); assert.equal(klingOutput.thumb_url, klingInput.media.poster.url);
+  await db.pool.query("UPDATE job_outputs SET preview_url='https://media.maxvideoai.com/changed.mp4' WHERE id=$1", [klingResults[0].outputId]);
+  await assert.rejects(applyKling(), /OUTPUT_CONFLICT/);
+  await db.pool.query('UPDATE job_outputs SET preview_url=$2 WHERE id=$1', [klingResults[0].outputId,klingInput.media.preview.url]);
+  await db.pool.query("UPDATE media_assets SET preview_url='https://media.maxvideoai.com/changed.mp4' WHERE public_id=$1", [klingInput.videoAssetId]);
+  await assert.rejects(applyKling(), /DISPLAY|CHANGED/);
+  for (const table of ['app_receipts','fal_queue_log','provider_attempts','app_generate_metrics','generation_timing_samples'])
+    assert.equal((await db.pool.query(`SELECT count(*)::int n FROM ${table}`)).rows[0].n, 0, table);
   // A native job continues contributing normally.
   await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,engine_id,provider,surface,status,video_url,created_at)
     VALUES ('native',$1,'flux-3-max','fal','video','completed','real.mp4',now()-interval '2 minutes')`, [owner]);

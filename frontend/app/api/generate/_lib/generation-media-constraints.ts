@@ -19,7 +19,7 @@ import type { EngineInputSchema, Mode } from '@/types/engines';
 import type { NormalizedAttachment } from './generation-attachment-types';
 import { MINIMAX_H3_ENGINE } from '@/src/config/fal-engines/minimax-h3';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
-import { detectMediaDuration, detectVideoDimensions } from '@/server/media/detect-has-audio';
+import { detectMediaDuration, detectVideoDimensions, detectVideoMetadata } from '@/server/media/detect-has-audio';
 import { isManagedStorageUrl } from '@/server/provider-output-policy';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
 
@@ -174,6 +174,7 @@ export async function validateGenerationMediaConstraints(params: {
     queryFn?: QueryFn;
     detectVideoDimensionsFn?: typeof detectVideoDimensions;
     detectMediaDurationFn?: typeof detectMediaDuration;
+    detectVideoMetadataFn?: typeof detectVideoMetadata;
   };
 }): Promise<GenerationMediaConstraintValidationResult> {
   const engine =
