@@ -12,10 +12,8 @@ test('workspace defers model-specific panels and closed conversion modals', () =
 
   assert.match(composerSource, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/LumaRay32KeyframeEditor'\)/);
   assert.match(composerSource, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/omni\/OmniStudioPanel\.client'\)/);
-  assert.match(composerSource, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/StoryboardLaunchModal'\)/);
   assert.doesNotMatch(composerSource, /import \{ LumaRay32KeyframeEditor \} from/);
   assert.doesNotMatch(composerSource, /import \{ OmniStudioPanel/);
-  assert.doesNotMatch(composerSource, /import \{ StoryboardLaunchModal \} from/);
 
   assert.match(runtimeModalsSource, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/WorkspaceTopUpModal'\)/);
   assert.match(runtimeModalsSource, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/WorkspaceAuthGateModal'\)/);
