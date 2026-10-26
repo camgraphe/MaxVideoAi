@@ -238,6 +238,10 @@ export function Composer({
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
     : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
+  // Keep requested values saved, but do not present them as a configured result
+  // until the required source is usable. Create's optional references stay independent.
+  const sourceSettingsPending = Boolean(videoSourceWorkflow &&
+    (extensionSourceState !== 'ready' || excerptNeedsRange || excerptEditorOpen));
 
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
@@ -249,7 +253,7 @@ export function Composer({
                       'app-composer-settings-group min-w-0 flex-1',
                       workspaceDensity && 'app-composer-settings-inline'
                     )}>
-                      {settingsBar}
+                      {!sourceSettingsPending ? settingsBar : null}
                       {workspaceDensity ? optionsControl : null}
                       {workspaceDensity ? generateControl : null}
                     </div>

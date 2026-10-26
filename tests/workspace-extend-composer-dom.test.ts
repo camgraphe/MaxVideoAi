@@ -10,6 +10,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import { CoreSettingsBar } from '../frontend/components/CoreSettingsBar';
 import type { ComposerProps } from '../frontend/components/Composer';
+import { getVideoExcerptLimits } from '../frontend/lib/video-excerpt';
 
 import { OwnedGenerationSourcePicker } from '../frontend/app/(core)/(workspace)/app/_components/OwnedGenerationSourcePicker.client';
 const noop = () => {};
@@ -65,6 +66,7 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       if (id.startsWith('seedance-2-')) assert.match(doc.querySelector('[role="note"]')?.textContent ?? '', /recognizable person/);
       assert.match(doc.querySelector('.app-generation-quote > .relative')?.textContent ?? '', /Add a video/);
       assert.equal(doc.querySelector<HTMLButtonElement>('.app-generation-action')!.disabled, true);
+      assert.equal(doc.querySelector('[data-settings-density]'), null, 'result settings wait for the required source');
       const commands = [...doc.querySelectorAll<HTMLButtonElement>('[data-reference-command]')];
       assert.equal(commands[0].dataset.referenceCommand, source.field.id);
       assert.doesNotMatch(commands.map(button => button.textContent).join(' '), /Start frame|End frame/);
@@ -76,6 +78,11 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       await act(async () => library.click());
       assert.deepEqual(libraryCalls, [[source.field.id, 0]]);
       assert.equal(doc.activeElement, commands[0]);
+      const limits = getVideoExcerptLimits(engine, 'extend');
+      const sourceDurationSec = Math.min(limits?.maxDurationSec ?? 5, Math.max(limits?.minDurationSec ?? 1, 5));
+      await render({ [source.field.id]: [{ kind: 'video', name: 'source.mp4', size: 1, type: 'video/mp4',
+        url: 'https://example.invalid/source.mp4', previewUrl: '/source.mp4', status: 'ready', durationSec: sourceDurationSec }] });
+      assert.ok(doc.querySelector('[data-settings-density]'), 'all supported settings return with a ready source');
       const settingButton = (label: string) => [...doc.querySelectorAll<HTMLButtonElement>('[data-settings-density] button')].find(button => button.textContent?.startsWith(label));
       if (caps.duration && 'options' in caps.duration && caps.duration.options.length === 1) {
         assert.equal(settingButton('Generated duration'), undefined, 'fixed 7s is not a selector');
@@ -90,6 +97,7 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       }
       await render({ [source.field.id]: [{ kind: 'video', name: 'source.mp4', size: 1, type: 'video/mp4', previewUrl: 'blob:source', status: 'uploading' }] });
       assert.match(doc.body.textContent ?? '', /Uploading your video/);
+      assert.equal(doc.querySelector('[data-settings-density]'), null);
       await render({ [source.field.id]: [{ kind: 'video', name: 'source.mp4', size: 1, type: 'video/mp4', previewUrl: '/source.mp4', status: 'ready' }] }, 'The uploaded video is too long.');
       assert.equal(doc.querySelector('[role="alert"]')?.textContent, 'The uploaded video is too long.');
       assert.doesNotMatch(doc.body.textContent ?? '', /Upload the video to extend/);

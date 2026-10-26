@@ -70,7 +70,7 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.match(composerSource, /workspaceDensity && 'app-composer-settings-inline'/);
   assert.match(composerSource, /workspaceDensity[\s\S]*app-composer-toolbar-layout flex gap-3/);
-  assert.match(composerSource, /\{settingsBar\}[\s\S]*workspaceDensity \? optionsControl/, 'Options participates in the settings group');
+  assert.match(composerSource, /\{!sourceSettingsPending \? settingsBar : null\}\s*\{workspaceDensity \? optionsControl : null\}/, 'Options remains in the settings group outside the source-readiness mask');
   assert.match(composerSource, /workspaceDensity \? 'app-composer-submit' : 'lg:items-end'/);
   assert.match(videoComposerSource, /optionsControl=\{showOptionsControl \? <WorkspaceOptionsButton[\s\S]*<CoreSettingsBar/);
   assert.match(imageSurfaceSource, /optionsControl=[\s\S]*<ImageSettingsBar/);
@@ -79,7 +79,7 @@ test('video and image composers opt into one responsive workspace density contra
 
 test('workspace quantity controls stay with settings while generate owns the right edge', () => {
   assert.match(composerTypesSource, /generateControl\?: ReactNode/);
-  assert.match(composerSource, /\{settingsBar\}[\s\S]*workspaceDensity \? optionsControl[\s\S]*workspaceDensity \? generateControl/);
+  assert.match(composerSource, /\{!sourceSettingsPending \? settingsBar : null\}\s*\{workspaceDensity \? optionsControl : null\}\s*\{workspaceDensity \? generateControl : null\}/);
   assert.match(composerSource, /app-generation-controls[\s\S]*!workspaceDensity \? generateControl[\s\S]*<Button/);
   assert.match(videoComposerSource, /generateControl=\{[\s\S]*<CoreIterationsControl[\s\S]*iterations=\{form\.iterations\}/);
   assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
