@@ -51,7 +51,8 @@ test('real gallery SQL preserves only the recorded mode through the card, media 
     const [row] = (await db.pool.query(BASE_SELECT)).rows;
     for (const value of [undefined, null, '', 'unknown-mode', { inputMode: 't2v' }]) {
       const unknown = mapGalleryVideoRow({ ...row, generation_mode: value, duration_sec: Number(row.duration_sec) });
-      assert.equal(unknown.generationMode, null);
+      assert.equal(unknown.generationMode, undefined);
+      assert.equal(Object.hasOwn(unknown, 'generationMode'), false, 'old public row shapes stay unchanged');
       const demoMedia = toFeaturedMedia(toGalleryCard(unknown), true);
       const file = 'content/models/fr/kling-v4.json';
       const content = parseModelPromptingContent(JSON.parse(readFileSync(file, 'utf8')).prompting, 'kling-v4', 'fr', file);

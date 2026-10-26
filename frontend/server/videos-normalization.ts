@@ -73,6 +73,7 @@ function formatPromptExcerpt(prompt: string, maxLength = 160): string {
 
 export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
   const requestedResolution = publicExampleRequestedResolution(row.requested_resolution);
+  const generationMode = publicExampleGenerationMode(row.generation_mode);
   const historicalPrice = row.final_price_cents == null ? findLaunchExamplePrice({
     jobId: row.job_id,
     engineId: row.engine_id,
@@ -95,7 +96,7 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     outputWidth: typeof row.output_width === 'number' && Number.isFinite(row.output_width) ? row.output_width : null,
     outputHeight: typeof row.output_height === 'number' && Number.isFinite(row.output_height) ? row.output_height : null,
     ...(requestedResolution ? { requestedResolution } : {}),
-    generationMode: publicExampleGenerationMode(row.generation_mode),
+    ...(generationMode ? { generationMode } : {}),
     createdAt: row.created_at,
     visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
     indexable: Boolean(row.indexable ?? true),
