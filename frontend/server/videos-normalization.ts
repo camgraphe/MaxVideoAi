@@ -1,7 +1,7 @@
 import { normalizeMediaUrl } from '@/lib/media';
-import { publicExampleRequestedResolution } from '@/lib/example-recreation';
+import { publicExampleGenerationMode, publicExampleRequestedResolution } from '@/lib/example-recreation';
 import { normalizeJobKeyframeUrls, type JobKeyframeUrls } from '@/server/video-keyframes';
-import type { PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot } from '@/types/engines';
 import { findLaunchExamplePrice } from './launch-example-pricing';
 
 export type VideoRow = {
@@ -19,6 +19,7 @@ export type VideoRow = {
   output_width?: number | null;
   output_height?: number | null;
   requested_resolution?: string | null;
+  generation_mode?: unknown;
   has_audio: boolean | null;
   can_upscale: boolean | null;
   created_at: string;
@@ -50,6 +51,7 @@ export type GalleryVideo = {
   outputWidth?: number | null;
   outputHeight?: number | null;
   requestedResolution?: string;
+  generationMode?: Mode | null;
   createdAt: string;
   visibility: 'public' | 'private';
   indexable: boolean;
@@ -71,6 +73,7 @@ function formatPromptExcerpt(prompt: string, maxLength = 160): string {
 
 export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
   const requestedResolution = publicExampleRequestedResolution(row.requested_resolution);
+  const generationMode = publicExampleGenerationMode(row.generation_mode);
   const historicalPrice = row.final_price_cents == null ? findLaunchExamplePrice({
     jobId: row.job_id,
     engineId: row.engine_id,
@@ -93,6 +96,7 @@ export function mapGalleryVideoRow(row: VideoRow): GalleryVideo {
     outputWidth: typeof row.output_width === 'number' && Number.isFinite(row.output_width) ? row.output_width : null,
     outputHeight: typeof row.output_height === 'number' && Number.isFinite(row.output_height) ? row.output_height : null,
     ...(requestedResolution ? { requestedResolution } : {}),
+    ...(generationMode ? { generationMode } : {}),
     createdAt: row.created_at,
     visibility: (row.visibility ?? 'public') === 'private' ? 'private' : 'public',
     indexable: Boolean(row.indexable ?? true),
