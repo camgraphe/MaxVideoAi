@@ -66,7 +66,7 @@ test('batch boundaries keep one transactional price owner and no runtime coeffic
   const planner = readFileSync(base + 'planner.ts', 'utf8');
   assert.match(planner, /computeCanonicalBillingSnapshot/); assert.match(planner, /validateCurrentContinuousTariffDomain/);
   assert.doesNotMatch(planner, /withDbTransaction|\.query\(/);
-  const migration = readFileSync('neon/migrations/81_customer_tariff_batches.sql', 'utf8');
+  const migration = readFileSync('neon/migrations/84_customer_tariff_batches.sql', 'utf8');
   assert.match(migration, /DEFAULT FALSE/); assert.doesNotMatch(migration, /INSERT INTO app_customer_tariff_cells/);
 });
 

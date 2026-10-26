@@ -21,7 +21,7 @@ export async function withTariffBatchFixture(work: (f: { db: Awaited<ReturnType<
   try {
     assert.match((await db.pool.query('SHOW server_version')).rows[0].server_version, /^17\./);
     await createPaidGenerationTestSchema(db.pool);
-    for (const file of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql', '81_customer_tariff_batches.sql']) {
+    for (const file of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql', '84_customer_tariff_batches.sql']) {
       await db.pool.query(readFileSync(`neon/migrations/${file}`, 'utf8'));
     }
     assert.equal((await db.pool.query('SELECT enabled FROM app_tariff_batch_control')).rows[0].enabled, false);

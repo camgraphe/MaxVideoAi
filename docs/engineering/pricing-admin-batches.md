@@ -7,7 +7,7 @@ canonical billing owners remain authoritative. No runtime coefficient is added.
 
 ## Admission and compatibility
 
-Migration `81_customer_tariff_batches.sql` adds a disabled control row, a durable
+Migration `84_customer_tariff_batches.sql` adds a disabled control row, a durable
 operation journal and immutable receipts. It writes no tariffs. PostgreSQL 17 is
 required (the executor uses its transaction timeout). Installation and activation
 are separate release decisions; normal Git/Quality CI/Vercel delivery rules apply.
