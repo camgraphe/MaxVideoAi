@@ -88,3 +88,24 @@ export function buildModelExamplePreviewAlts({
     };
   }));
 }
+
+
+export type ModelExamplesPostGalleryLinks = {
+  ctaHref: string;
+  exampleHref: string;
+  guideHref: string;
+};
+
+export function resolveModelExamplesLinks(modelSlug: string): {
+  imageWorkspaceHref: string;
+  postGalleryLinks: ModelExamplesPostGalleryLinks | null;
+} {
+  return {
+    imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(modelSlug)}`,
+    postGalleryLinks: modelSlug === 'wan-3-prime' ? {
+      ctaHref: '/app?engine=wan-3-prime',
+      exampleHref: 'https://www.youtube.com/watch?v=qKrPvZj_dL0',
+      guideHref: '/blog/change-video-background-wan-3-prime',
+    } : null,
+  };
+}

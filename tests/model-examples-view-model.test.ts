@@ -631,3 +631,20 @@ test('static poster manifest keys exactly match migrated models with fallback it
     [['one', '']],
   );
 });
+
+
+test('post-gallery accompaniment joins exact-locale copy with runtime links and never borrows missing copy', () => {
+  const copy = { title: 'Change the setting', example: 'An accepted source and result.', method: 'Select the mode and review a quote.', limitation: 'Review the whole result.', ctaLabel: 'Open this model', exampleLinkLabel: 'Watch the example', guideLinkLabel: 'Read the guide' };
+  const links = { ctaHref: '/app?engine=fixture-model', exampleHref: 'https://www.youtube.com/watch?v=fixture', guideHref: '/blog/fixture-guide' };
+  const parse = (postGallery: typeof copy | null) => parseModelExamplesContent({ ...videoContent(), postGallery }, 'fixture-model', 'en');
+  const build = (postGallery: typeof copy | null, destinations: typeof links | null) => buildModelExamplesViewModel(videoInput({ content: parse(postGallery), postGalleryLinks: destinations }));
+  assert.deepEqual(build(copy, links).postGallery, { ...copy, ...links });
+  assert.equal(build(null, links).postGallery, null, 'an untranslated region must stay absent');
+  assert.equal(build(copy, null).postGallery, null, 'copy must not invent missing runtime destinations');
+  const original = buildModelExamplesViewModel(videoInput());
+  const projected = build(copy, links);
+  const { postGallery: _newRegion, ...unchanged } = projected;
+  const { postGallery: _absentRegion, ...baseline } = original;
+  assert.deepEqual(unchanged, baseline, 'gallery media, links, copy and criteria retain their projection');
+  assert.throws(() => parse({ ...copy, title: '' }), /postGallery.title/);
+});

@@ -43,6 +43,10 @@ function structuralSignature(
   options: { nullableStringPaths: readonly string[] },
   currentPath = '',
 ): unknown {
+  if (currentPath === 'postGallery') {
+    assert.ok(value === null || (value && typeof value === 'object' && !Array.isArray(value)), currentPath);
+    return 'nullable-locale-accompaniment';
+  }
   if (options.nullableStringPaths.includes(currentPath)) {
     assert.ok(value === null || typeof value === 'string', currentPath);
     return 'nullable-string';
@@ -281,5 +285,14 @@ test('P0 model Examples content is backed by two exact durable playlist assets',
         modelId,
       );
     }
+  }
+});
+
+
+test('optional post-gallery content is explicitly absent in untranslated Wan locales', () => {
+  for (const locale of LOCALES) {
+    const content = parseModelExamplesContent(readDocument(locale, 'wan-3-prime').examples, 'wan-3-prime', locale);
+    if (locale === 'en') assert.ok(content.postGallery);
+    else assert.equal(content.postGallery, null);
   }
 });

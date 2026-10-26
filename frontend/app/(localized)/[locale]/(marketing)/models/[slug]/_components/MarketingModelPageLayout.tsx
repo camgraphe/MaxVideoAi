@@ -68,7 +68,7 @@ import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-
 import { parseModelExamplesContent } from '../_lib/model-page-examples-content';
 import { getModelExamplesUiCopy } from '../_lib/model-page-examples-ui-copy';
 import { resolveModelExampleFallbackPosters } from '../_lib/model-page-example-media';
-import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../_lib/model-page-examples-runtime-policy';
+import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy, resolveModelExamplesLinks } from '../_lib/model-page-examples-runtime-policy';
 import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 import { buildModelKeyframeDemoViewModel } from '../_lib/model-page-keyframe-demo';
 import { loadModelKeyframeDemo } from '@/server/model-keyframe-demo';
@@ -344,7 +344,7 @@ export async function MarketingModelPageLayout({
     galleryPreviewAlts,
     fallbackPosters,
     examplesLinkHref,
-    imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(engine.modelSlug)}`,
+    ...resolveModelExamplesLinks(engine.modelSlug),
   });
   const keyframeDemo = examplesContent.keyframeDemo ? buildModelKeyframeDemoViewModel(
     await loadModelKeyframeDemo(engine.modelSlug), examplesContent.keyframeDemo, locale, engine.surfaces.app.enabled,

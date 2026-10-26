@@ -2,6 +2,7 @@ import type { ModelExamplesViewModel } from '../_lib/model-page-examples-view-mo
 import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
 import { SECTION_SCROLL_MARGIN } from '../_lib/model-page-specs';
 import { UIIcon } from '@/components/ui/UIIcon';
+import { ModelExamplesPostGallery } from './ModelExamplesPostGallery';
 import { ModelDecisionExamplesGallery } from './ModelDecisionExamplesGallery.client';
 
 export function ModelDecisionExamplesSection({
@@ -23,6 +24,8 @@ export function ModelDecisionExamplesSection({
           emptyLabel={viewModel.decision.emptyLabel}
           noPreviewLabel={viewModel.decision.noPreviewLabel}
         />
+
+        <ModelExamplesPostGallery content={viewModel.postGallery} />
 
         <div className="mt-4 grid grid-cols-2 rounded-xl border border-slate-200 bg-white/70 dark:border-white/10 dark:bg-white/[0.035] lg:grid-cols-5">
           {viewModel.proofItems.map((item, index) => (
