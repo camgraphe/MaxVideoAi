@@ -1,3 +1,5 @@
+import type { Mode } from '@/types/engines';
+
 export type ExampleGalleryVideo = {
   id: string;
   href: string;
@@ -12,6 +14,7 @@ export type ExampleGalleryVideo = {
   outputWidth?: number | null;
   outputHeight?: number | null;
   durationSec: number;
+  generationMode?: Mode | null;
   hasAudio: boolean;
   heroPosterUrl?: string | null;
   optimizedPosterUrl?: string | null;

@@ -1,5 +1,6 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
+import type { Mode } from '@/types/engines';
 
 import type { FeaturedMedia } from './model-page-media';
 import type { ModelPromptingContent } from './model-page-prompting-content';
@@ -129,6 +130,13 @@ function buildDemoViewModel(
   const mediaLabel = input.demoMedia?.label?.trim();
   const matchesEditorialRecipe = mediaPrompt === demo.prompt;
   const title = usesReviewedMedia && mediaLabel && !matchesEditorialRecipe ? mediaLabel : demo.title;
+  const mediaModeLabels: Partial<Record<Mode, string>> = {
+    t2v: ui.textToVideo,
+    i2v: ui.imageToVideo,
+    ref2v: ui.referenceToVideo,
+    v2v: ui.videoToVideo,
+  };
+  const mediaMode = input.demoMedia?.generationMode;
 
   return {
     title,
@@ -136,7 +144,9 @@ function buildDemoViewModel(
     prompt: mediaPrompt || demo.prompt,
     notes: demo.notes,
     summary: usesReviewedMedia ? null : demo.summary,
-    modeLabel: usesReviewedMedia ? ui.textToVideo : presentation.modeLabel,
+    modeLabel: usesReviewedMedia
+      ? mediaMode && mediaModeLabels[mediaMode] || ui.videoGeneration
+      : presentation.modeLabel,
     outputLabel: presentation.outputLabel,
     durationLabel: usesReviewedMedia
       ? formatMediaDuration(input.demoMedia, input.locale)

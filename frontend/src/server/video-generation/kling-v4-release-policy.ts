@@ -1,12 +1,14 @@
 import { isKlingV4EngineId } from '@/lib/kling-v4';
+import { getRuntimeModelById } from '@/config/model-runtime';
 
 /**
- * Closed preparation gate, independent of UI visibility and provider credentials.
- * The 2026-10-25 T2V access trial succeeded; reviewed customer tariffs and product QA are still required.
- * Remove only with the signed-off qualification in docs/launch/kling-v4/PLAN.md.
+ * App publication owns the reviewed functional release for every actor.
+ * Marketing/indexation remains independent; credentials never bypass this gate.
+ * The authored App flag stays closed until tariffs and product QA are signed off.
  */
 export function isKlingV4ReleaseBlocked(engineId: string | null | undefined): boolean {
-  return isKlingV4EngineId(engineId);
+  return isKlingV4EngineId(engineId)
+    && getRuntimeModelById('kling-v4')?.publication.app.published !== true;
 }
 
 export function assertKlingV4ReleaseReady(engineId: string): void {

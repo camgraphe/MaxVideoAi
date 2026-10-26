@@ -1,3 +1,14 @@
+import type { Mode } from '@/types/engines';
+
+const PUBLIC_EXAMPLE_MODES: ReadonlySet<string> = new Set([
+  't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'a2v', 'extend', 'retake', 'reframe', 't2i', 'i2i',
+]);
+
+/** Expose a recorded mode token, never infer it from a prompt or a model family. */
+export function publicExampleGenerationMode(value: unknown): Mode | null {
+  return typeof value === 'string' && PUBLIC_EXAMPLE_MODES.has(value) ? value as Mode : null;
+}
+
 /** Public comparison contract. Prices are deliberately absent: generation always requotes. */
 export type ExampleRecreationSettings = {
   durationSec: number;
