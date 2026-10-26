@@ -173,3 +173,80 @@ change playlists, enroll watch pages or modify generation tariffs.
 
 Tests use disposable PostgreSQL and a local real MP4 fixture; read-only production
 checks are operator evidence, never a substitute for transaction regression tests.
+
+## NINE-01 native evidence profile
+
+Kling imports may explicitly select `evidenceProfile: nine01-native-v1`. It covers
+the nine actual NINE-01 base operation IDs and the separately completed bank
+operation `NINE-01-FAL-OPTION-01`. It is not a general S3 URL allowlist, another
+generation route, or an automatic choice between base and retake. Each manifest
+binds one real provider identity, candidate and result. The option uses canonical
+scene `K4-JANITOR-US` and distinct dependency `K4-JANITOR-US-OPTION-01`; its proof
+cannot borrow the base acceptance. No operation OPTION-02 is admitted by this
+profile without a later explicit contract revision.
+
+For this profile, `--journal` points to a private JSON evidence bundle rather than
+a rewritten JSONL journal. `evidenceSha256` hashes the exact bundle bytes. The
+strict bundle contains schemaVersion1, profile, ownerUserId, operationId, sceneId
+(the staging dependency ID), and a `files` object of `{path,sha256}` proofs:
+
+- journal: an exact immutable snapshot of the original hash-chained operator log;
+- request, submissionStarted, accepted, acceptedResponse, status, result and validation:
+  the original native files of exactly the selected operation;
+- grants: the historical reference grant output;
+- stagingRegistry, stagingManifest and stagingState: the authorized staging graph.
+
+These are real existing private files, not fixture values or newly invented
+accepted/recovered entries. The reader validates raw file hashes and original
+event positions, one genuine submission/acceptance/result, endpoint/body identity,
+COMPLETED native identity, exact reference order and the original master/result
+hashes. Nano events cannot establish Kling evidence. Base native files retain
+their original names and values. The bundle's compact summary records source
+hashes/positions without putting source file paths, object keys or grants in the
+new summary. It becomes part of immutable externalImport provenance and the exact
+plan digest. A native profile without its verified native source proof is refused.
+
+The source-only `loadNine01NativeEvidence` API accepts the actual identity subset
+without library IDs. It can qualify local source evidence before uploads exist;
+that does not replace a full manifest, DB ownership verification, live provider
+GETs, dry-run, apply, playback or public acceptance.
+
+### Explicit separate source storage
+
+The private staging source bucket is independent of the owned media storage used
+by `--env-file`. Native dry-run/apply requires `--native-source-config` pointing to
+an existing private JSON configuration with bucket, region, accessKeyId and
+secretAccessKey. Other producer metadata such as publicBases is not used as an
+endpoint or URL authority. The source signer uses only these explicit credentials
+and the derived HTTPS AWS regional endpoint; no process environment swap,
+credential discovery or arbitrary endpoint is allowed. The source target's
+fingerprint must match the authorized staging registration/manifest. Keep the
+configuration private and do not copy its values into a report or command line.
+
+For each selected image, the verifier reconstructs its exact content-hash key
+under editorial/drafts/launch-media/nine-01 and the authorized owner token. The
+app owner, registration owner, reference hash, local source master, native image
+receipt hash, historical grant, staged object state and input slot must agree.
+Current source recovery uses a new five-minute signed GET for that exact object;
+it never fetches an arbitrary historical URL. The generated URL is independently
+checked against the bound bucket, region, path, method/expiry signature shape and
+current time before a bounded no-redirect GET. Original source reads are capped
+at20MiB, matching the staging owner. Existing video/poster/preview limits and
+owned durable byte/pixel checks continue unchanged.
+
+Historical grants must have been valid at the recorded submission. Their later
+expiry does not invalidate a completed generation if the exact retained object
+can still be read and matches its original hash. The accepted provider input and
+historical URL stay unchanged. A missing, substituted or prematurely deleted
+source object refuses admission; there is no fallback to a new generation or to
+an unverified copy. The ordinary fal.media source path retains its existing guard
+and cannot opt into private storage merely by receiving a source configuration.
+
+Keep temporary objects, native masters and all source snapshots through actual
+source verification, dry-run/apply and acceptance of durable owned copies. Normal
+library reads and recreation use those owned copies after adoption. Strict
+operator re-verification/replay still reads the retained source evidence, so
+cleanup needs an explicit owner decision documenting which checks will remain
+possible. This code performs no cleanup, upload, paid generation, public curation,
+tariff change or migration. The existing private-then-public playlist flow is
+unchanged.

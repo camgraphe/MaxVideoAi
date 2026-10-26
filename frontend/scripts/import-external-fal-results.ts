@@ -7,7 +7,7 @@ import { externalFalImportPlan, parseExternalFalImport } from '../server/externa
 
 function flags(args: string[]) {
   const parsed: Record<string, string> = {};
-  const allowed = new Set(['--mode','--manifest','--journal','--env-file','--fal-env-file','--actor-user-id','--approve-plan-sha256','--expect-database-sha256','--out']);
+  const allowed = new Set(['--mode','--manifest','--journal','--env-file','--fal-env-file','--native-source-config','--actor-user-id','--approve-plan-sha256','--expect-database-sha256','--out']);
   for (let index = 0; index < args.length; index += 2) {
     const [key, value] = args.slice(index, index + 2);
     if (!allowed.has(key) || !value || value.startsWith('--') || parsed[key]) throw new Error('INVALID_ARGUMENTS');
@@ -48,7 +48,14 @@ async function main() {
   const dbUrl = new URL(env.DATABASE_URL);
   const databaseSha256 = createHash('sha256').update(dbUrl.hostname + dbUrl.pathname).digest('hex');
   const actorUserId = required(args, '--actor-user-id');
-  const journal = await readFile(required(args, '--journal'));
+  const nativeProfile = input.engineId === 'kling-v4' && input.evidenceProfile === 'nine01-native-v1';
+  const nativeFiles = nativeProfile ? await import('../server/external-fal-import/nine01-evidence') : undefined;
+  const journal = nativeProfile
+    ? await nativeFiles!.readPrivateNativeFile(required(args, '--journal'), 1024 * 1024)
+    : await readFile(required(args, '--journal'));
+  const nativeSource = nativeProfile ? (await import('../server/external-fal-import/private-staging-source')).createNine01PrivateSourcePorts(
+    nativeFiles!.parsePrivateNativeJson(await nativeFiles!.readPrivateNativeFile(required(args, '--native-source-config'), 64 * 1024)),
+  ) : undefined;
   const [{ createFalClient }, db, owner, evidence] = await Promise.all([
     import('@fal-ai/client'), import('../src/lib/db'), import('../server/external-fal-import'), import('../server/external-fal-import/evidence'),
   ]);
@@ -62,7 +69,7 @@ async function main() {
     try {
       await client.query('BEGIN READ ONLY');
       verified = await owner.verifyExternalFalImport(input, { actorUserId, executor: db.createQueryExecutor(client),
-        verifyEvidence: (manifest, assets) => evidence.verifyExternalFalEvidence(manifest, assets, { journal,
+        verifyEvidence: (manifest, assets) => evidence.verifyExternalFalEvidence(manifest, assets, { journal, nativeSource,
           onProviderEvidence: value => { providerEvidence = value; },
           provider: { status: (endpoint, requestId) => provider.queue.status(endpoint, { requestId, logs: false }),
             result: (endpoint, requestId) => provider.queue.result(endpoint, { requestId }) } }) });
@@ -77,12 +84,13 @@ async function main() {
           durableSha256: ref.storedRepresentation?.sha256 ?? ref.sha256,
           proof: verified.evidence.referenceProofs?.find(proof => proof.assetId === ref.assetId),
           url: verified.assets.find(asset => asset.public_id === ref.assetId)!.url })) },
+      ...(verified.evidence.nativeSourceEvidence ? { nativeSourceEvidence: verified.evidence.nativeSourceEvidence } : {}),
       measured: verified.evidence.video, resolvedSeed: verified.evidence.resolvedSeed ?? null });
     if (required(args, '--expect-database-sha256') !== databaseSha256) throw new Error('IMPORT_DATABASE_APPROVAL_MISMATCH');
     const result = await db.withDbTransaction(executor => owner.applyExternalFalImport(verified, {
       executor, actorUserId, approvedPlanSha256: required(args, '--approve-plan-sha256'),
     }));
     await report({ ...plan, ...result, verified: true, planSha256: verified.planSha256, databaseSha256, providerRecovery });
-  } finally { await db.getDb().end(); }
+  } finally { nativeSource?.close?.(); await db.getDb().end(); }
 }
 main().catch(error => { process.stderr.write((error instanceof Error ? error.message : 'IMPORT_FAILED') + '\n'); process.exitCode = 1; });

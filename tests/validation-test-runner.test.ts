@@ -51,6 +51,14 @@ test('CI suites partition every validation file without losing expensive financi
   assert.ok(plan.integration.includes('tests/public-video-renditions-real-media.test.ts'));
   assert.ok(plan.integration.includes('tests/external-fal-import-evidence.test.ts'), 'Media evidence probes real video bytes with an external media tool');
   assert.equal(plan.fast.includes('tests/external-fal-import-evidence.test.ts'), false);
+  for (const file of [
+    'tests/external-fal-nine01-evidence.test.ts',
+    'tests/external-fal-nine01-adversarial.test.ts',
+    'tests/external-fal-nine01-cli.test.ts',
+  ]) {
+    assert.ok(plan.integration.includes(file), `${file} imports the real FFmpeg-backed native evidence fixture`);
+    assert.equal(plan.fast.includes(file), false);
+  }
   assert.ok(plan.integration.includes('tests/admin-customer-tariff-service-postgres.test.ts'));
   assert.ok(plan.integration.includes('tests/preflight-media-pricing.test.ts'), 'LAS preflight uses a real PostgreSQL fixture');
   assert.equal(plan.fast.includes('tests/preflight-media-pricing.test.ts'), false);

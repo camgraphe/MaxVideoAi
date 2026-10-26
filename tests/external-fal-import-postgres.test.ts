@@ -14,6 +14,8 @@ import { linkFalJob } from '../frontend/server/admin-job-tools';
 import { updateJobFromFalWebhook } from '../frontend/server/fal-webhook-handler';
 import { mapGalleryVideoRow } from '../frontend/server/videos-normalization';
 import { listLibraryAssetPage } from '../frontend/server/media-library/asset-listing';
+import type { NativeSourceEvidence } from '../frontend/server/external-fal-import/nine01-evidence';
+import { signedFixtureUrl } from './helpers/nine01-native-evidence-fixture';
 
 test('a real external result imports atomically once, privately, with no financial or generation events', { timeout: 90_000 }, async t => {
   const db = await startDisposablePostgres('external-fal-import');
@@ -184,6 +186,8 @@ test('a real external result imports atomically once, privately, with no financi
   const klingDeps = { ...deps, verifyEvidence: async () => klingEvidence };
   await assert.rejects(verifyExternalFalImport({ ...klingInput, ownerUserId: '22222222-2222-4222-8222-222222222222' }, klingDeps), /OWNER/);
   await assert.rejects(verifyExternalFalImport(klingInput, { ...klingDeps, actorUserId: '22222222-2222-4222-8222-222222222222' }), /ADMIN/);
+  await assert.rejects(verifyExternalFalImport({ ...klingInput, evidenceProfile: 'nine01-native-v1' }, klingDeps), /NATIVE_SOURCE_PROOF/,
+    'a native evidence profile cannot silently adopt a legacy verifier result without its bound source proof');
   const klingVerified = await verifyExternalFalImport(klingInput, klingDeps);
   const applyKling = () => withDbTransaction(executor => applyExternalFalImport(klingVerified, {
     executor, actorUserId: owner, approvedPlanSha256: klingVerified.planSha256 }), { pool: db.pool });
@@ -210,6 +214,39 @@ test('a real external result imports atomically once, privately, with no financi
   await db.pool.query('UPDATE job_outputs SET preview_url=$2 WHERE id=$1', [klingResults[0].outputId,klingInput.media.preview.url]);
   await db.pool.query("UPDATE media_assets SET preview_url='https://media.maxvideoai.com/changed.mp4' WHERE public_id=$1", [klingInput.videoAssetId]);
   await assert.rejects(applyKling(), /DISPLAY|CHANGED/);
+  // A native source profile stores its compact evidence inside immutable provenance, never as a paid receipt.
+  const nativeReferences = references.slice(0, 2).map((ref, index) => ({ ...ref, kind: 'image' as const, slotId: `image_urls.${index}`,
+    providerUrl: signedFixtureUrl(`editorial/drafts/launch-media/nine-01/${'a'.repeat(32)}/REF${index + 1}-${ref.sha256}.png`) }));
+  const nativeVideoUrl = `https://media.maxvideoai.com/user-assets/${owner}/native-source.mp4`;
+  const nativeInput = { ...klingInput, evidenceProfile: 'nine01-native-v1', providerRequestId: '55555555-5555-4555-8555-555555555555',
+    videoAssetId: 'ma_' + '9'.repeat(32), videoSha256: '6'.repeat(64), evidenceSha256: '5'.repeat(64), references: nativeReferences,
+    providerInput: { prompt: 'A complete native film.', duration: 20, resolution: '720p', aspect_ratio: '16:9', image_urls: nativeReferences.map(ref => ref.providerUrl) } };
+  await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,thumb_url,preview_url,mime_type,width,height,size_bytes,source,status)
+    VALUES ('native-source-video',$1,$2,'video',$3,$4,$5,'video/mp4',1280,704,100,'upload','ready')`,
+  [nativeInput.videoAssetId, owner, nativeVideoUrl, nativeInput.media.poster.url, nativeInput.media.preview.url]);
+  const nativeProof: NativeSourceEvidence = { profile: 'nine01-native-v1', bundleSha256: nativeInput.evidenceSha256,
+    journalSha256: '1'.repeat(64), journalHeadSha256: '2'.repeat(64), operationId: 'NINE-01-FAL-01-BASE',
+    sceneId: 'K4-JANITOR-US', dependencyId: 'K4-JANITOR-US', candidateRole: 'base', eventSequences: [2, 3, 4, 5, 6],
+    sourceFiles: ['journal', 'request', 'submissionStarted', 'accepted', 'acceptedResponse', 'status', 'result', 'validation',
+      'grants', 'stagingRegistry', 'stagingManifest', 'stagingState'].map(role => ({ role, sha256: '3'.repeat(64) })),
+    stagingManifestSha256: '4'.repeat(64), targetFingerprintSha256: '7'.repeat(64), references: nativeReferences.map(ref => ({
+      slotId: ref.slotId, sourceSha256: ref.sha256, objectKeySha256: '8'.repeat(64), historicalUrlSha256: '9'.repeat(64), nativeImageReceiptSha256: 'a'.repeat(64) })) };
+  const nativeEvidence = { ...klingEvidence, nativeSourceEvidence: nativeProof,
+    referenceProofs: nativeReferences.map(ref => ({ assetId: ref.assetId, providerSha256: ref.sha256, durableSha256: ref.sha256, transform: 'none' as const })),
+    video: { ...klingEvidence.video, sha256: nativeInput.videoSha256, mediaFacts: { ...klingEvidence.video.mediaFacts,
+      durationSec: 20.042, videoDurationSec: 20.042, audioDurationSec: 20.04, containerDurationSec: 20.042, original: { url: nativeVideoUrl, sha256: nativeInput.videoSha256, sizeBytes: 100 } } } };
+  const nativeVerified = await verifyExternalFalImport(nativeInput, { ...deps, verifyEvidence: async () => nativeEvidence });
+  const importedNative = await withDbTransaction(executor => applyExternalFalImport(nativeVerified, {
+    executor, actorUserId: owner, approvedPlanSha256: nativeVerified.planSha256 }), { pool: db.pool });
+  const nativeRow = (await db.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [importedNative.jobId])).rows[0];
+  assert.deepEqual(nativeRow.settings_snapshot.externalImport.nativeSourceEvidence, nativeProof);
+  assert.deepEqual(nativeRow.settings_snapshot.externalImport.providerInput, nativeInput.providerInput);
+  assert.equal(nativeRow.payment_status, 'external_not_billed'); assert.equal(nativeRow.final_price_cents, null);
+  await assert.rejects(db.pool.query(`UPDATE app_jobs SET settings_snapshot=jsonb_set(settings_snapshot,
+    '{externalImport,nativeSourceEvidence,bundleSha256}', '"changed"') WHERE job_id=$1`, [importedNative.jobId]), /immutable/i);
+  const changedProofPlan = await verifyExternalFalImport(nativeInput, { ...deps, verifyEvidence: async () => ({ ...nativeEvidence,
+    nativeSourceEvidence: { ...nativeProof, journalHeadSha256: 'b'.repeat(64) } }) });
+  assert.notEqual(changedProofPlan.planSha256, nativeVerified.planSha256);
   for (const table of ['app_receipts','fal_queue_log','provider_attempts','app_generate_metrics','generation_timing_samples'])
     assert.equal((await db.pool.query(`SELECT count(*)::int n FROM ${table}`)).rows[0].n, 0, table);
   // A native job continues contributing normally.

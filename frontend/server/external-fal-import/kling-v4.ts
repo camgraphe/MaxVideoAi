@@ -16,6 +16,7 @@ const input = z.object({ prompt: z.string().nullish(), multi_prompt: z.array(z.o
   video_url: url.optional(), elements: z.array(element).nullish() }).strict();
 const mediaRole = z.object({ url: durableUrl, sha256: sha }).strict();
 const schema = z.object({ schemaVersion: z.literal(1), ownerUserId: z.string().uuid(), engineId: z.literal('kling-v4'),
+  evidenceProfile: z.literal('nine01-native-v1').optional(),
   mode: z.enum(['t2v', 'i2v', 'ref2v', 'v2v']), endpoint: z.string(), providerRequestId: z.string().uuid(), providerInput: input,
   videoAssetId: assetId, videoSha256: sha, evidenceSha256: sha,
   media: z.object({ poster: mediaRole, preview: mediaRole }).strict(),
