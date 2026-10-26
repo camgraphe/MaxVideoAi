@@ -23,6 +23,39 @@ const pagePath = join(routeRoot, 'page.tsx');
 const jsonLdPath = join(routeRoot, '_lib/payg-jsonld.ts');
 const locales = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 
+test('authored showcase copy applies only to the exact video identity and preserves media and navigation', () => {
+  const id = 'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f';
+  const video = {
+    id,
+    engineId: 'ltx-2-3-fast',
+    engineLabel: 'LTX 2.3 Fast',
+    durationSec: 10,
+    prompt: 'A female racer beside a motorcycle in a neon tunnel',
+    promptExcerpt: 'A female racer beside a motorcycle in a neon tunnel',
+    thumbUrl: '/existing-poster.jpg',
+    videoUrl: '/existing-video.mp4',
+    previewVideoUrl: '/existing-preview.mp4',
+  } as GalleryVideo;
+
+  for (const locale of locales) {
+    const copy = getPayAsYouGoContent(locale).showcase.runtime;
+    const authored = { title: 'Pinned editorial title', useCase: 'Pinned editorial caption' };
+    const scopedCopy = { ...copy, videoOverrides: { [id]: authored } };
+    const baseline = buildPayAsYouGoShowcaseVideo(video, locale, copy);
+    assert.deepEqual(buildPayAsYouGoShowcaseVideo(video, locale, scopedCopy), {
+      ...baseline,
+      ...authored,
+    });
+
+    const otherVideo = { ...video, id: 'another-video-with-the-same-prompt' };
+    assert.deepEqual(
+      buildPayAsYouGoShowcaseVideo(otherVideo, locale, scopedCopy),
+      buildPayAsYouGoShowcaseVideo(otherVideo, locale, copy),
+      'a matching prompt or model must not spread authored copy to a different video',
+    );
+  }
+});
+
 function read(path: string): string {
   return readFileSync(path, 'utf8');
 }

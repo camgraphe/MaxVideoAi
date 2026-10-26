@@ -293,6 +293,12 @@ export const esPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
+      videoOverrides: {
+        'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f': {
+          title: 'Una piloto entre neones',
+          useCase: 'Una piloto, una moto, un túnel de neón. Explora el prompt de esta escena de diez segundos.',
+        },
+      },
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Render de ejemplo con {engine}',

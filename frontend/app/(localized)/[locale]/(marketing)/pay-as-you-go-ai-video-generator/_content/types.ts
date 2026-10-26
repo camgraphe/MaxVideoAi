@@ -6,8 +6,7 @@ export type PaygIconId = (typeof PAYG_ICON_IDS)[number];
 export const PAYG_PRICE_LOOKUP_IDS = [
   'kling-v4',
   'gemini-omni-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
-  'ltx-2-5-pro',
-  'ltx-2-5-fast',
+  'ltx-2-5-pro', 'ltx-2-5-fast',
   'wan-3-prime',
   'wan-3',
   'grok-imagine-video-1-5',
@@ -160,6 +159,7 @@ export type PayAsYouGoContent = {
       engineImageAltSuffix: string;
     };
     runtime: {
+      videoOverrides?: Record<string, { title: string; useCase: string }>;
       defaultEngineLabel: string;
       defaultTitleEngineLabel: string;
       defaultTitleTemplate: string;
