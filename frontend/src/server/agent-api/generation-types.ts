@@ -65,6 +65,11 @@ export type CanonicalGenerationReference =
       slot?: number;
     };
 
+/** Ordered subjects refer only to owned canonical role=reference slots. Voice bindings are not yet qualified. */
+export type CanonicalGenerationSubject =
+  | { kind: 'image'; frontalReferenceSlot: number; referenceSlots: number[] }
+  | { kind: 'video'; referenceSlot: number };
+
 export type GenerationFundingMode = 'wallet' | 'trial';
 
 export type IncludedTrialFundingSnapshot = Readonly<{
@@ -88,6 +93,7 @@ export type CanonicalGenerationRequest = {
   prompt: string;
   settings: Record<string, CanonicalGenerationSettingValue>;
   references: CanonicalGenerationReference[];
+  subjects?: CanonicalGenerationSubject[];
   outputCount: number;
   seedanceWorkflow?: SeedanceGenerationWorkflow;
 };

@@ -1,3 +1,4 @@
+import {klingV4TariffScenarios} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import {
   resolvePricingPolicy,
   type PricingPolicyRule,
@@ -44,7 +45,7 @@ import {
 export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
   const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
   return listFalEngines().flatMap((entry) => {
-    if (!appPublished.has(entry.id)) return [];
+    if (!appPublished.has(entry.id) && entry.id !== 'kling-v4') return [];
     const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
       && scenario.surface === 'billing' && scenario.membershipTier === 'member'
       && scenario.id.startsWith(`billing:${entry.id}:`));
@@ -261,7 +262,7 @@ export async function loadPricingPolicyInventory(
 
   const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
   const coverageByModel = new Map<string, ReturnType<typeof collectSellableManualTariffCoverage>['scenarios']>();
-  for (const candidate of collectSellableManualTariffCoverage().scenarios) {
+  for (const candidate of [...collectSellableManualTariffCoverage().scenarios,...klingV4TariffScenarios()]) {
     const bucket = coverageByModel.get(candidate.modelId) ?? [];
     bucket.push(candidate);
     coverageByModel.set(candidate.modelId, bucket);

@@ -88,7 +88,7 @@ export async function computeCanonicalBillingSnapshot(
       { ...context, aspectRatio: highest.meta?.billed_aspect_ratio as string }, 'highest_current_tariff') } };
   }
   assertSeedanceWorkflowPricing(context);
-  const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
+  const pricingDetails = context.engine.pricingDetails ?? (context.engine.id === 'kling-v4' ? undefined : await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
       engineId: context.engine.id,
@@ -109,7 +109,8 @@ export async function computeCanonicalBillingSnapshot(
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
-  if (requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  const requiresKlingV4Tariff = context.engine.id === 'kling-v4';
+  if (requiresNano21Tariff || requiresKlingV4Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -148,6 +149,7 @@ export async function computeCanonicalBillingSnapshot(
     }
   }
   if (requiresNano21Tariff) throw new CustomerTariffUnavailableError('An active reviewed Nano Banana 2.1 customer tariff is required.');
+  if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
   if (requiresOperationTariff) throw new CustomerTariffUnavailableError('A separate active reviewed video operation tariff is required.');
   if (requiresEditTariff) throw new CustomerTariffUnavailableError(`An active reviewed ${requiresLasTariff ? 'LAS' : 'ModelArk'} Edit customer tariff is required.`);
   if (context.workflowStep) throw new CustomerTariffUnavailableError('A separate active Draft workflow tariff is required.');

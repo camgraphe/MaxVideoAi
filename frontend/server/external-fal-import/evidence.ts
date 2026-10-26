@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import sharp from 'sharp';
 import { canonicalImportJson, importDigest, type ExternalFalImport } from './contract';
 import type { ImportAsset, ImportEvidence } from '../external-fal-import';
 import { probeExternalImportVideo } from './probe';
@@ -109,20 +110,48 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
   const fetcher = options.fetcher ?? fetch;
   const readUrl = options.readUrl ?? createOwnedMediaReadUrl;
   const video = assets.find(asset => asset.public_id === input.videoAssetId)!;
-  const providerBytes = await readBytes(providerVideoUrl, fetcher);
+  const maximum = input.engineId === 'kling-v4' ? 300 * 1024 * 1024 : MAX_MEDIA_BYTES;
+  const providerBytes = await readBytes(providerVideoUrl, fetcher, maximum);
   assertDigest(providerBytes, input.videoSha256, 'provider-video');
-  const durableBytes = await readBytes(await readUrl({ url: video.url, userId: input.ownerUserId }), fetcher);
+  const durableBytes = await readBytes(await readUrl({ url: video.url, userId: input.ownerUserId }), fetcher, maximum);
   assertDigest(durableBytes, input.videoSha256, 'durable-video');
-  await readBytes(await readUrl({ url: video.thumb_url!, userId: input.ownerUserId }), fetcher, 8 * 1024 * 1024);
+  const posterBytes = await readBytes(await readUrl({ url: video.thumb_url!, userId: input.ownerUserId }), fetcher, 8 * 1024 * 1024);
+  let display: ImportEvidence['display'];
+  if (input.engineId === 'kling-v4') {
+    if (video.thumb_url !== input.media.poster.url || video.preview_url !== input.media.preview.url
+      || [input.media.poster.url, input.media.preview.url].includes(video.url)) throw new Error('IMPORT_KLING_PREVIEW_OR_POSTER_MISMATCH');
+    assertDigest(posterBytes, input.media.poster.sha256, 'poster');
+    const poster = await sharp(posterBytes, { failOn: 'error', limitInputPixels: 40_000_000 }).metadata();
+    if (!poster.width || !poster.height || (poster.pages ?? 1) !== 1 || !['webp', 'png', 'jpeg'].includes(poster.format ?? '')) throw new Error('IMPORT_KLING_POSTER_INVALID');
+    // Decode the entire image, rather than accepting a readable header alone.
+    await sharp(posterBytes, { failOn: 'error', limitInputPixels: 40_000_000 }).raw().toBuffer();
+    const previewBytes = await readBytes(await readUrl({ url: input.media.preview.url, userId: input.ownerUserId }), fetcher, 20 * 1024 * 1024);
+    assertDigest(previewBytes, input.media.preview.sha256, 'preview');
+    const preview = await probeExternalImportVideo(previewBytes, { url: input.media.preview.url, sha256: input.media.preview.sha256, sizeBytes: previewBytes.length });
+    if (preview.hasAudio || preview.mediaFacts.durationSec > 6) throw new Error('IMPORT_KLING_PREVIEW_MUST_BE_SHORT_AND_SILENT');
+    display = { poster: { ...input.media.poster, width: poster.width, height: poster.height, sizeBytes: posterBytes.length },
+      preview: { ...input.media.preview, width: preview.width, height: preview.height, hasAudio: preview.hasAudio,
+        durationSec: preview.mediaFacts.durationSec, sizeBytes: previewBytes.length } };
+  }
   const referenceProofs = [];
+  let referenceVideoDuration = 0;
   for (const reference of input.references) {
     const asset = assets.find(candidate => candidate.public_id === reference.assetId)!;
-    const original = await readBytes(providerMediaUrl(reference.providerUrl), fetcher, 20 * 1024 * 1024);
-    const stored = await readBytes(await readUrl({ url: asset.url, userId: input.ownerUserId }), fetcher, 20 * 1024 * 1024);
+    const isVideo = input.engineId === 'kling-v4' && 'kind' in reference && reference.kind === 'video';
+    const referenceMaximum = isVideo ? 300 * 1024 * 1024 : input.engineId === 'kling-v4' ? 30 * 1024 * 1024 : 20 * 1024 * 1024;
+    const original = await readBytes(providerMediaUrl(reference.providerUrl), fetcher, referenceMaximum);
+    const stored = await readBytes(await readUrl({ url: asset.url, userId: input.ownerUserId }), fetcher, referenceMaximum);
+    if (isVideo) {
+      const measured = await probeExternalImportVideo(stored, { url: asset.url, sha256: reference.sha256, sizeBytes: stored.length });
+      if (measured.mediaFacts.durationSec < 3 || measured.mediaFacts.durationSec > 30.05) throw new Error('IMPORT_KLING_SOURCE_VIDEO_DURATION_LIMIT');
+      referenceVideoDuration += measured.mediaFacts.durationSec;
+    }
     referenceProofs.push(await verifyExternalReferenceCopies(reference, original, stored));
   }
+  if (input.engineId === 'kling-v4' && input.mode === 'ref2v' && referenceVideoDuration > 30) throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
   const measured = await probeExternalImportVideo(durableBytes, { url: video.url, sha256: input.videoSha256, sizeBytes: durableBytes.length });
-  return { referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),
+  if (display && display.preview.durationSec > measured.mediaFacts.durationSec + 0.1) throw new Error('IMPORT_KLING_PREVIEW_LONGER_THAN_ORIGINAL');
+  return { ...(display ? { display } : {}), referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),
     ...(Number.isSafeInteger(response.data?.seed) ? { resolvedSeed: response.data!.seed! } : {}),
     video: { sha256: input.videoSha256, sizeBytes: durableBytes.length, ...measured } };
 }

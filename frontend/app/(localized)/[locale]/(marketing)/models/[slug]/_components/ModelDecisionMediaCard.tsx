@@ -42,6 +42,7 @@ export function ModelDecisionMediaCard({
   const [leadingBadge, durationBadge, ratioBadge] = getHeroMediaBadges(media, badges, audioBadgeLabel);
   const LeadingBadgeIcon = media.hasAudio ? Volume2 : ImageIcon;
   const videoSrc = isPlayableVideoUrl(media.videoUrl) ? media.videoUrl : null;
+  const hasDisplayMedia = Boolean(videoSrc || posterSrc);
 
   return (
     <figure data-media-kind={videoSrc ? 'video' : 'image'} className="relative overflow-hidden rounded-[24px] border border-[#cfdaea] bg-[#171716] shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:border-white/10 dark:shadow-[0_28px_90px_rgba(0,0,0,0.48)]">
@@ -102,12 +103,12 @@ export function ModelDecisionMediaCard({
         </div>
       </div>
 
-      <figcaption className="border-t border-white/[0.12] bg-[#171716] px-4 py-3 text-white sm:absolute sm:bottom-4 sm:left-4 sm:max-w-[min(310px,calc(100%-150px))] sm:rounded-[10px] sm:border sm:border-white/[0.14] sm:bg-[#171716]/70 sm:shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:backdrop-blur-md">
+      {hasDisplayMedia ? <figcaption className="border-t border-white/[0.12] bg-[#171716] px-4 py-3 text-white sm:absolute sm:bottom-4 sm:left-4 sm:max-w-[min(310px,calc(100%-150px))] sm:rounded-[10px] sm:border sm:border-white/[0.14] sm:bg-[#171716]/70 sm:shadow-[0_14px_34px_rgba(0,0,0,0.24)] sm:backdrop-blur-md">
         <p className="text-sm font-semibold leading-tight">{label}</p>
         <p className="mt-0.5 text-xs leading-5 text-white/74">{description}</p>
-      </figcaption>
+      </figcaption> : null}
 
-      {media.href ? (
+      {hasDisplayMedia && media.href ? (
         <Link
           href={media.href}
           prefetch={false}

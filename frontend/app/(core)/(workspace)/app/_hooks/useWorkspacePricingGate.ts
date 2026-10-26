@@ -8,6 +8,9 @@ import { getVideoExcerptLimits, mediaExcerptNeedsSelection } from '@/lib/video-e
 import { getEngineModeUnavailableMessage } from '@/lib/engine-mode-availability';
 import { getVideoWorkflowSourceField, getVideoWorkflowSourceState, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
+import type { KlingElementState } from '@/components/KlingElementsBuilder';
+import { getWorkspaceKlingV4MediaError } from '../_lib/workspace-kling-v4-media';
+import { buildKlingElementsPayload } from '../_lib/workspace-generation-inputs';
 import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
 import type { ReferenceAsset } from '../_lib/workspace-assets';
@@ -42,6 +45,7 @@ type UseWorkspacePricingGateOptions = {
   voiceControlEnabled: boolean;
   submissionMode: Mode;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
+  klingElements?: KlingElementState[];
 };
 
 type UseWorkspacePricingGateResult = {
@@ -89,7 +93,13 @@ export function useWorkspacePricingGate({
   voiceControlEnabled,
   submissionMode,
   inputAssets,
+  klingElements = [],
 }: UseWorkspacePricingGateOptions): UseWorkspacePricingGateResult {
+  const elementValidation = selectedEngine?.id === 'kling-v4' ? buildKlingElementsPayload({
+    selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
+  }) : null;
+  const elementError = elementValidation && !elementValidation.ok ? elementValidation.message
+    : selectedEngine?.id === 'kling-v4' ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements, locale }) : null;
   const modeUnavailableMessage = getEngineModeUnavailableMessage(selectedEngine, submissionMode, locale);
   const waitingForExcerpt = selectedEngine && mediaExcerptNeedsSelection(selectedEngine, submissionMode, inputAssets);
   const ownedGenerationRequired = (selectedEngine?.id === 'luma-ray-3-2' && submissionMode === 'extend') || form?.operation === 'flux-draft-enhance';
@@ -97,16 +107,16 @@ export function useWorkspacePricingGate({
     && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
     && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
   const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt ? buildWorkspacePreflightRequest({
+    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
-      effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets,
+      effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets, klingElements,
     }) : null,
     iterations: form?.iterations ?? 1,
     accessToken,
     authChecked,
     locale,
   });
-  const preflightError = modeUnavailableMessage ?? quoteError;
+  const preflightError = modeUnavailableMessage ?? elementError ?? quoteError;
   const [topUpModal, setTopUpModal] = useState<TopUpModalState>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);

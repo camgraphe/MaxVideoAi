@@ -229,6 +229,7 @@ export function buildComposerModeToggles({
   workflowCopy: WorkspaceWorkflowCopy;
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
+  if (selectedEngine.id === 'kling-v4') return selectedEngine.modes.map((mode) => ({ mode, label: getEngineModeLabel(selectedEngine.id, mode, uiLocale) }));
   const explicitModes: readonly Mode[] = selectedEngine.id.startsWith('flux-3')
     ? ['ref2v', 'v2v', 'extend']
     : isLumaRay2EngineId(selectedEngine.id) || isLumaRay32EngineId(selectedEngine.id)
@@ -354,6 +355,8 @@ export function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldI
 }
 
 export function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
+  // A closed V4 mode still owns its saved draft; generation availability is checked separately.
+  if (engine.id === 'kling-v4' && candidate && engine.modes.includes(candidate)) return candidate;
   if (candidate && isWorkspaceModeAvailable(engine, candidate)) return candidate;
   return getDefaultEngineMode(engine);
 }
@@ -416,6 +419,11 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   const previousFps = resetFastDefaultsOnEngineSwitch ? null : previous?.fps ?? null;
 
   const durationResult = (() => {
+    // A restored V4 request is authoritative, including invalid values that the editor must report.
+    // A stale single-shot option must never override a saved shot-plan total.
+    if (engine.id === 'kling-v4' && previous?.engineId === engine.id) {
+      return { durationSec: previous.durationSec, durationOption: previous.durationSec, numFrames: null };
+    }
     const prevOption = previousDurationOption;
     const prevSeconds = previousDurationSec;
     const prevFrames = previousNumFrames;

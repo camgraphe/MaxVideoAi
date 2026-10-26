@@ -25,6 +25,12 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (selector.engineId === 'kling-v4' && selector.billingInputType === 'video_input') {
+    const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
+    if (!['ref2v','v2v'].includes(selector.mode) || !Number.isFinite(input) || input < 3 || input > (selector.mode === 'v2v' ? 30.05 : 30)
+      || !Number.isFinite(output) || output < 3 || output > 30.05) throw new Error('Invalid Kling V4 source/output timing.');
+    return {...selector,inputVideoDurationSec:'continuous',...(selector.mode === 'v2v' ? {durationSec:'continuous'} : {})};
+  }
   if (isFluxLtxSourceOperation(selector.operation)) {
     const identity=videoOperationTariffIdentity(selector.engineId,selector.mode,selector.operation), bounds=fluxLtxDurationBounds(selector.operation),seconds=Number(selector.durationSec);
     if (!identity||identity.endpoint!==selector.endpoint||identity.transport!==selector.transport||!Number.isFinite(seconds)||seconds<=0||(bounds.maxExclusive?seconds>=bounds.max:seconds>bounds.max)) throw new Error('Invalid source operation tariff identity or duration.');
@@ -152,6 +158,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
+    ...(facts.engineId === 'kling-v4' ? {billable_seconds:Number(facts.metadata?.billable_seconds ?? (context.hasVideoInput ? Math.max((context.inputVideoDurationSec ?? 0)+billedDuration,2*billedDuration) : billedDuration))} : {}),
     ...(operationIdentity?.operation === 'kling-edit' || isH3SourceOperation(operationIdentity?.operation) || isFluxLtxSourceOperation(operationIdentity?.operation)
       ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,

@@ -26,7 +26,8 @@ export function projectStudioQuoteDirections(turns:readonly StoredImageTurn[]):S
       else{
         const script=media.action==='audio.prepare'?media.settings?.find(setting=>setting.name==='script')?.value:undefined;
         const lyrics=media.action==='audio.prepare'?media.settings?.find(setting=>setting.name==='lyrics')?.value:undefined;
-        text=[media.prompt,typeof script==='string'?`Narration: ${script}`:'',typeof lyrics==='string'?`Lyrics: ${lyrics}`:''].filter(Boolean).join('\n\n');
+        const shotDirection=media.action==='video.prepare'?media.shotPlan?.map((shot,index)=>`Shot ${index+1} · ${shot.durationSec} s\n${shot.prompt}`).join('\n\n'):undefined;
+        text=[shotDirection??media.prompt,typeof script==='string'?`Narration: ${script}`:'',typeof lyrics==='string'?`Lyrics: ${lyrics}`:''].filter(Boolean).join('\n\n');
       }
     }
     if(!text)continue;

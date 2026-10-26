@@ -10,7 +10,37 @@ export type MultiPromptEntry = {
 
 export type GenerationElement = MaxVideoProviderElement;
 
-export function normalizeMultiPrompt(value: unknown): MultiPromptEntry[] | null {
+export function normalizeGenerationControls(body: Record<string, unknown>, engineId: string) {
+  try {
+    const multiPrompt = normalizeMultiPrompt(body.multiPrompt, engineId);
+    const elements = normalizeGenerationElements(body.elements, engineId);
+    if (engineId === 'kling-v4' && multiPrompt) {
+      const total = multiPrompt.reduce((sum, scene) => sum + scene.duration, 0);
+      if ([body.durationSec, body.duration, body.durationOption].some(value => value != null && Number(value) !== total)) {
+        throw new Error('Kling V4 shot durations must equal the requested duration.');
+      }
+    }
+    return {ok:true as const, multiPrompt, elements};
+  } catch (error) {
+    return {ok:false as const, error:error instanceof Error ? error.message : 'Invalid generation inputs.'};
+  }
+}
+
+export function normalizeMultiPrompt(value: unknown, engineId?: string): MultiPromptEntry[] | null {
+  if (engineId === 'kling-v4' && value !== undefined && value !== null) {
+    if (!Array.isArray(value) || !value.length || value.length > 30) throw new Error('Kling V4 requires a non-empty shot plan within thirty seconds.');
+    const scenes = Array.from(value).map(entry => {
+      if (!entry || typeof entry !== 'object' || typeof entry.prompt !== 'string'
+        || !entry.prompt.trim() || entry.prompt.trim().length > 512
+        || !Number.isInteger(entry.duration) || entry.duration < 1 || entry.duration > 30) {
+        throw new Error('Kling V4 shot prompts require 1–512 characters and whole-second durations from 1 through 30.');
+      }
+      return {prompt: entry.prompt.trim(), duration: entry.duration as number};
+    });
+    const total = scenes.reduce((sum, scene) => sum + scene.duration, 0);
+    if (total < 3 || total > 30) throw new Error('Kling V4 shot durations must total 3–30 seconds.');
+    return scenes;
+  }
   if (!Array.isArray(value)) return null;
   const entries = value
     .map((entry: unknown) => {
@@ -69,13 +99,19 @@ function pickStringArray(record: Record<string, unknown>, ...keys: string[]): st
   return undefined;
 }
 
-export function normalizeGenerationElements(value: unknown): GenerationElement[] | null {
+export function normalizeGenerationElements(value: unknown, engineId?: string): GenerationElement[] | null {
+  if (engineId === 'kling-v4' && value != null && (!Array.isArray(value) || value.length > 7
+    || Array.from(value).some(entry => !entry || typeof entry !== 'object' || Array.isArray(entry)))) {
+    throw new Error('Kling V4 elements must be an array of at most seven subjects.');
+  }
   if (!Array.isArray(value)) return null;
   const elements = value
     .map((entry: unknown) => {
       if (!entry || typeof entry !== 'object') return null;
       const record = entry as Record<string, unknown>;
+      if (engineId === 'kling-v4') assertKlingV4ElementFields(record);
       const element: GenerationElement = {
+        ...(engineId === 'kling-v4' ? {voiceId: pickString(record, 'voiceId', 'voice_id')} : {}),
         id: pickString(record, 'id'),
         frontalImageUrl: pickString(record, 'frontalImageUrl', 'frontal_image_url'),
         frontalAssetId: pickString(record, 'frontalAssetId', 'frontal_asset_id'),
@@ -87,9 +123,27 @@ export function normalizeGenerationElements(value: unknown): GenerationElement[]
       return element;
     })
     .filter((entry: GenerationElement | null): entry is GenerationElement => Boolean(entry));
-  const normalized = normalizeMaxVideoProviderElements(elements);
+  const normalized = normalizeMaxVideoProviderElements(elements, {engineId});
 
   return normalized.length ? normalized : null;
+}
+
+function assertKlingV4ElementFields(record: Record<string, unknown>): void {
+  // Validate the authored representation before the legacy pickers trim/filter it.
+  for (const key of ['id', 'voiceId', 'voice_id', 'frontalImageUrl', 'frontal_image_url',
+    'frontalAssetId', 'frontal_asset_id', 'videoUrl', 'video_url', 'videoAssetId', 'video_asset_id']) {
+    const value = record[key];
+    if (value != null && (typeof value !== 'string' || !value.trim())) {
+      throw new Error(`Kling V4 element ${key} must be a non-empty string.`);
+    }
+  }
+  for (const key of ['referenceImageUrls', 'reference_image_urls', 'referenceAssetIds', 'reference_asset_ids']) {
+    const value = record[key];
+    if (value != null && (!Array.isArray(value) || value.length < 1 || value.length > 3
+      || Array.from(value).some(item => typeof item !== 'string' || !item.trim()))) {
+      throw new Error(`Kling V4 element ${key} must contain one through three non-empty strings.`);
+    }
+  }
 }
 
 export function trimString(value: unknown): string | null {

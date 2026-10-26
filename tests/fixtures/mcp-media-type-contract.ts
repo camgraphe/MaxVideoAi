@@ -126,6 +126,9 @@ type _ResolvedReferenceShapeIsExact = Assert<
 type _ResolvedReferenceKeysAreExact = Assert<
   Equal<keyof ResolvedReference, ExpectedResolvedReferenceKeys>
 >;
+type _ResolvedReferenceCadenceIsOptionalNumber = Assert<
+  Equal<ResolvedReference['fps'], number | undefined>
+>;
 type _ResolvedReferenceRoleIsExact = Assert<
   Equal<ResolvedReference['role'], ExpectedReferenceRole>
 >;

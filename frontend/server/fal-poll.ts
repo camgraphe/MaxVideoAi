@@ -1,3 +1,4 @@
+import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
@@ -203,8 +204,9 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
       }
 
       const falModel = (await resolveFalModelId(engineIdForLookup)) ?? engineIdForLookup;
-      const statusInfo = (await falClient.queue
-        .status(falModel, { requestId: job.provider_job_id })
+      const queue = await resolveFalJobQueue({jobId:job.job_id,engineId:engineIdForLookup,
+        requestId:job.provider_job_id,legacyModel:falModel},{client:falClient,queryFn:query});
+      const statusInfo = (await queue.status()
         .catch((error: unknown) => {
           console.warn('[fal-poll] fal status fetch failed', job.job_id, sanitizeProviderMediaDiagnostics(error));
           return null;
@@ -286,9 +288,9 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
         continue;
       }
 
-      let result: Awaited<ReturnType<typeof falClient.queue.result>>;
+      let result: Awaited<ReturnType<typeof queue.result>>;
       try {
-        result = await falClient.queue.result(falModel, { requestId: job.provider_job_id });
+        result = await queue.result();
       } catch (error) {
         const failure = error as { status?: number; body?: { detail?: unknown } } | null;
         // COMPLETED is the queue state, not proof of successful inference. A

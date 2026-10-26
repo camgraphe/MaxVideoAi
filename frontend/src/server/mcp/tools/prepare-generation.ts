@@ -33,8 +33,8 @@ export const canonicalSettingsSchema = z.object({
 
   multiPrompt: z.array(z.object({
     prompt: z.string().trim().min(1).max(512),
-    durationSec: z.number().int().min(1).max(15),
-  }).strict()).min(1).max(6).nullable().default(null).describe(
+    durationSec: z.number().int().min(1).max(30),
+  }).strict()).min(1).max(30).nullable().default(null).describe(
     'Kling multi-shot scenes. Use only when get_model_details reports the multiPrompt setting; otherwise send null or omit it. Omit the top-level prompt text content for this form.',
   ),
   durationSec: z.number().int().min(1).max(86_400).nullable().default(null).describe(
@@ -130,6 +130,11 @@ export const seedanceWorkflowSchema = z.discriminatedUnion('step', [
   z.object({ step: z.literal('final'), draftJobId: z.string().min(1).max(255).regex(/^[A-Za-z0-9][A-Za-z0-9._:-]*$/u) }).strict(),
 ]);
 
+export const canonicalSubjectSchema = z.discriminatedUnion('kind', [
+  z.object({kind: z.literal('image'), frontalReferenceSlot: z.number().int().min(0).max(49),
+    referenceSlots: z.array(z.number().int().min(0).max(49)).min(1).max(3)}).strict(),
+  z.object({kind: z.literal('video'), referenceSlot: z.number().int().min(0).max(49)}).strict(),
+]);
 const elementSlot = z.number().int().min(0).max(65);
 const klingOwnedElementsSchema = z.array(z.discriminatedUnion('kind', [
   z.object({kind:z.literal('images'),frontalSlot:elementSlot,referenceSlots:z.array(elementSlot).min(1).max(3)}).strict(),
@@ -151,6 +156,9 @@ export const prepareGenerationInputSchema = z.object({
   ),
   settings: canonicalSettingsSchema.nullable().default(null),
   references: z.array(reference).max(MAX_GENERATION_REFERENCES).nullable().default(null),
+  subjects: z.array(canonicalSubjectSchema).min(1).max(7).nullable().default(null).describe(
+    'Only when model details report subjects: ordered image/video subjects linked to zero-based role=reference positions in references. Subject references must be owned assets. Voice bindings are unavailable; never pass provider voice IDs.',
+  ),
   outputCount: z.number().int().min(1).max(15).nullable().default(null).describe(
     'Number of outputs. Video must use 1. Image limits are model-specific; read outputCount from get_model_details.',
   ),

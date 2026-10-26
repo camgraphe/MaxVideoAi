@@ -40,7 +40,7 @@ export function isPlayableVideoUrl(src: string | null | undefined): boolean {
 }
 
 export function getHeroMediaBadges(media: FeaturedMedia, authored: string[], audioBadgeLabel: string): Array<string | null> {
-  if (!isPlayableVideoUrl(media.videoUrl)) return authored;
+  if (!isPlayableVideoUrl(media.videoUrl)) return media.posterUrl ? authored : [];
   return [
     media.hasAudio ? audioBadgeLabel : null,
     typeof media.durationSec === 'number' && media.durationSec > 0 ? `${media.durationSec}s` : null,

@@ -11490,6 +11490,773 @@
     }
   },
   {
+    "engineId": "kling-v4",
+    "modelSlug": "kling-v4",
+    "marketingName": "Kling 4.0",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "4.0",
+    "availability": "paused",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "kling-v4",
+      "label": "Kling 4.0",
+      "provider": "Kling by Kuaishou",
+      "version": "4.0",
+      "status": "maintenance",
+      "availability": "paused",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v"
+      ],
+      "maxDurationSec": 30,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "21:9"
+      ],
+      "fps": [],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 26000,
+        "promptMaxCharsSource": "official",
+        "imageMaxMB": 30,
+        "videoMaxMB": 300,
+        "videoMaxDurationSec": 30.05
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "description": "Generation accepts a prompt or multi-shot scenes. Video editing requires a prompt."
+          },
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "id": "image_url",
+            "engineParam": "start_image_url",
+            "type": "image",
+            "label": "Opening image",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ]
+          },
+          {
+            "source": "either",
+            "minCount": 1,
+            "maxCount": 1,
+            "maxSizeMB": 300,
+            "minDurationSec": 3,
+            "maxDurationSec": 30.05,
+            "id": "video_url",
+            "type": "video",
+            "label": "Video to edit",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "multi_prompt",
+            "type": "text",
+            "label": "Shot plan",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "description": "Use a prompt or a shot plan. Each scene has 1–512 prompt characters and 1–30 whole seconds; the scene durations must equal the requested 3–30 seconds. No separate provider scene-count cap is documented."
+          },
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "id": "end_image_url",
+            "type": "image",
+            "label": "Ending image",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 10,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "description": "The reference-generation opening image also counts toward the image limit."
+          },
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 5,
+            "maxSizeMB": 300,
+            "minDurationSec": 3,
+            "maxDurationSec": 30.05,
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "Reference videos and video elements share a 30-second total limit."
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 30
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "21:9"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "16:9",
+              "9:16",
+              "1:1",
+              "21:9"
+            ],
+            "default": "16:9"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "image_url",
+            "image_urls",
+            "video_urls"
+          ],
+          "modes": [
+            "ref2v"
+          ],
+          "maxTotal": 15,
+          "countUniqueUrls": false,
+          "maxByType": {
+            "image": 10,
+            "video": 5
+          }
+        },
+        "constraints": {
+          "ownedAssetModes": [
+            "i2v",
+            "ref2v",
+            "v2v"
+          ],
+          "minImageSidePx": 300,
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 300,
+          "maxCombinedVideoDurationSec": 30,
+          "combinedDurationModes": [
+            "ref2v"
+          ]
+        }
+      },
+      "updatedAt": "2026-10-25T20:58:10Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "kling/v4/text-to-video"
+      },
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        },
+        "v2v": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "Editing follows source framing; the provider can inherit source duration when omitted. No FPS or audio switch is documented."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "kling/v4/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "kling/v4/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "kling/v4/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–30 whole seconds. Native audio is described in the prompt. No FPS or audio switch is documented."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "kling/v4/video-to-video/edit",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "Editing follows source framing; the provider can inherit source duration when omitted. No FPS or audio switch is documented."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "happy-horse-1-1",
     "modelSlug": "happy-horse-1-1",
     "marketingName": "Happy Horse 1.1",

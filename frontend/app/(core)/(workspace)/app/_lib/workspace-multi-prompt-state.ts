@@ -19,6 +19,7 @@ export function getWorkspaceMultiPromptState(params: {
   scenes: MultiPromptSceneLike[];
   minDurationSec: number;
   maxDurationSec: number;
+  strictIntegerDurations?: boolean;
 }): WorkspaceMultiPromptState {
   const totalDurationSec = params.scenes.reduce((sum, scene) => sum + (scene.duration || 0), 0);
   const base = {
@@ -40,6 +41,10 @@ export function getWorkspaceMultiPromptState(params: {
       invalid: true,
       error: `Multi-prompt requires a prompt per scene and total duration between ${params.minDurationSec}s and ${params.maxDurationSec}s.`,
     };
+  }
+
+  if (params.strictIntegerDurations && params.scenes.some((scene) => !Number.isInteger(scene.duration) || scene.duration < 1 || scene.duration > 30)) {
+    return { ...base, invalid: true, error: 'Each Kling 4.0 scene needs 1–30 whole seconds; fractions are not supported.' };
   }
 
   const overflowingSceneIndex = params.scenes.findIndex(

@@ -513,6 +513,45 @@
       "successorSlug": null
     },
     {
+      "id": "kling-v4",
+      "slug": "kling-v4",
+      "family": "kling",
+      "category": "video",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": false
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": false
+        },
+        "pricing": {
+          "published": false
+        },
+        "sitemap": {
+          "published": false
+        }
+      },
+      "lifecycle": "current",
+      "successorId": null,
+      "successorSlug": null
+    },
+    {
       "id": "kling-3-pro",
       "slug": "kling-3-pro",
       "family": "kling",

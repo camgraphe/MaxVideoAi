@@ -62,14 +62,14 @@ function signature(value: unknown): unknown {
   return typeof value;
 }
 
-test('all 55 executable model documents expose strict decision content in every locale', () => {
+test('all 56 normal-template model documents expose strict decision content in every locale', () => {
   const expectedFiles = listModelPageTemplateSlugs().map((slug) => `${slug}.json`).sort();
   const completeInventory = [
     ...expectedFiles,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
     ...listBuildOnlyPrivateFalEngines().map(entry => `${entry.modelSlug}.json`),
   ].sort();
-  assert.equal(expectedFiles.length, 55);
+  assert.equal(expectedFiles.length, 56);
   for (const locale of LOCALES) {
     assert.deepEqual(files(locale), completeInventory, `${locale} model inventory`);
     for (const fileName of expectedFiles) {

@@ -1,5 +1,17 @@
 # Pricing Engine
 
+## Kling 4 tariff preparation (2026-10-25)
+
+The V4 candidate remains closed to spending for every actor. Its factual supplier
+owner, `src/lib/kling-v4-pricing.ts`, distinguishes output-only usage from verified
+aggregate video usage. The latter bills `max(input + output, 2 * output)`; exact
+fractional seconds remain quantities. The admin-only V4 inventory uses the same
+canonical selectors and revisioned cells as billing, including continuous
+`billable_seconds` authoring. No-video and video-input selectors cannot alias.
+Inactive or missing V4 cells refuse a quote; no legacy policy can supply a retail
+amount. No cell is seeded or activated by this integration. See the
+[current release and QA boundary](../launch/kling-v4/INTEGRATION-2026-10-25.md).
+
 ## Fixed image tool product reservations
 
 Character Builder prices come from its billing products, independently of the

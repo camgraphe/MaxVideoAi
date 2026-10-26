@@ -7,6 +7,8 @@ import { build } from 'esbuild';
 test('real webhook persists the same content refusal in job, output, refund and audit log', async () => {
   const frontend = path.join(process.cwd(), 'frontend');
   const stubs: Record<string, string> = {
+  '@fal-ai/client': 'export class ApiError extends Error { constructor(value) { super(value.message); Object.assign(this, value); } }',
+  '@/lib/env': 'export const ENV = { FAL_API_KEY: "offline-only" };',
     '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
     './fal-webhook-draft-cache': 'export const captureCompletedFalDraftCache = async () => {};',
     './fal-webhook-refunds': 'export const maybeAutoRefundWalletCharge = async (...args) => fixture.refunds.push(args);',

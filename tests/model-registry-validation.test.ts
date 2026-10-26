@@ -217,7 +217,7 @@ test('retired lifecycle and replacement retirement remain one canonical contract
 });
 
 test('canonical registry validates the committed document', () => {
-  assert.equal(validateModelRegistryDocument(valid).models.length, 56 + UNPUBLISHED_FAL_ENGINE_REGISTRY.length);
+  assert.equal(validateModelRegistryDocument(valid).models.length, 57 + UNPUBLISHED_FAL_ENGINE_REGISTRY.length);
 });
 
 test('published model pages require localized content in en, fr, and es', () => {

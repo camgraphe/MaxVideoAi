@@ -1,4 +1,5 @@
 import { NANO21_ENGINE_ID, NANO21_BUDGET_POLICY_VERSION, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
+import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from './kling-v4-pricing';
 import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
@@ -116,6 +117,16 @@ function buildBillingPricingFactsInternal(
       meta: { providerCostKind: 'partial-list-image-components', providerCostIncomplete: true, providerListImageComponentsUsd: partialListUsd, providerInvoiceCostUsd: null, providerBudgetStatus: 'pending_review', providerConfiguredOutputTokenLimit: settings.maxOutputTokens,
         providerInputImageTokens: (context.referenceImageCount ?? 0) * 1120, providerOutputImageTokens: knownImageTokens,
         providerBudgetPolicyVersion: NANO21_BUDGET_POLICY_VERSION, effective_supplier_charge_verified: false } });
+  }
+  if (engine.id === 'kling-v4') {
+    if (currency !== 'USD') throw new Error('Kling V4 supplier rates are documented in USD only.');
+    const usage = klingV4PricingUsage(context);
+    return resultFromFacts({engineId:engine.id,currency,vendorSubtotalExactCents:usage.supplierExactCents,
+      base:{seconds:usage.outputDurationSec,rate:usage.supplierExactCents/100/usage.outputDurationSec,unit:'sec',amountCents:Math.ceil(usage.supplierExactCents)},
+      meta:{pricing_model:'kling_v4_fal_public_list',provider_cost_source:KLING_V4_PRICING_SOURCE,
+        provider_cost_checked_at:'2026-10-25',effective_supplier_charge_verified:false,
+        input_video_duration_sec:usage.inputVideoDurationSec,output_duration_sec:usage.outputDurationSec,
+        billable_seconds:usage.billableSeconds,has_video_input:usage.hasVideoInput}});
   }
   if (['flux-3','flux-3-draft'].includes(engine.id) && context.mode==='ref2v') {
     const cents=engine.id==='flux-3-draft'?(resolution==='720p'?6:undefined):({'720p':17,'1080p':29} as Record<string,number>)[resolution??''];

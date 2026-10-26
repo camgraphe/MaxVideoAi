@@ -305,3 +305,14 @@ prepare admission, normalized attachments, Site preflight, source execution guar
 and canonical customer billing with only storage/probe/policy I/O substituted.
 It includes credential rejection, source identity mismatch, busy/invalid probes,
 missing stored timing, fractional customer-cent transitions and strict FAST bounds.
+
+## Kling 4 gated integration (2026-10-25)
+
+The current V4 schema supports t2v, i2v, ref2v and v2v/Modify, never native
+Extend. Main prompts allow 26,000 characters, shots 512. Shared preparation,
+Studio and paid projection preserve exact owned references and optional Modify
+source-duration inheritance. Voices remain explicitly unavailable without an
+owned fal binding. The all-actor release gate and unpublished executable surfaces
+remain closed pending reviewed tariffs and product QA. The offline/isolated
+component evidence and its limits are in
+[the integration record](../launch/kling-v4/INTEGRATION-2026-10-25.md).

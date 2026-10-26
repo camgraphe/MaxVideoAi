@@ -1,3 +1,4 @@
+import {STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import {getRuntimeModelById} from '@/config/model-runtime';
 import type {StudioCapabilityDetails,StudioImageCapability} from '@/lib/studio/conversation-action-contract';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
@@ -15,10 +16,11 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
       const canonical=projectAgentModelModeDetails(candidate,mode);
       const maxReferences=studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode);
       return {...canonical,outputCount: {min: 1,max: 1,default: 1},
-        settings: canonical.settings.filter(setting => setting.type !== 'multi_prompt'&&!['documentUrl','webpageUrl'].includes(setting.key)),
+        settings: canonical.settings.filter(setting => !['documentUrl','webpageUrl'].includes(setting.key)),
         references: canonical.references.filter(reference => candidate.surface==='video'||reference.type === 'image').map(reference=>({...reference,
           max: candidate.surface==='video' && (mode==='v2v'||mode==='extend') ? reference.max : Math.min(reference.max ?? maxReferences,maxReferences)}))};
     }),
+    ...(candidate.engine.id==='kling-v4'?{subjectReferenceAllowance:{attachedPoolLimit:STUDIO_CONVERSATION_MAX_ATTACHMENTS,maxSelectedReferences:43 as const,additionalSource:'ready_project_outputs' as const}}:{}),
     referenceIdentity: candidate.surface === 'image' ? 'attached_image_asset' : 'attached_owned_media_or_ready_project_output',
     outputCount: 1,maxReferences: Math.max(...candidate.publicModes.map(mode=>studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode))),guidance: getAgentModelGuidance(candidate.engine.id),
     editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),
