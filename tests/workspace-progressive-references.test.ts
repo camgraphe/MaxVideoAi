@@ -30,7 +30,7 @@ test('workspace media has semantic sibling actions, manual readers and exact sou
   assert.match(manager, /WorkspaceReferencePopup/);
   assert.match(manager, /flushSync\(\(\) => setActiveCommand\(null\)\)/);
   assert.doesNotMatch(manager, /<span><AppGlyph name="reference" \/>\{copy\.title\}/);
-  assert.match(manager, /<span className="app-reference-command-media"><AppGlyph name="reference" \/><\/span>/);
+  assert.match(manager, /<span className="app-reference-command-media"><WorkspaceComposerGlyph name="reference" \/><\/span>/);
   const popup = readFileSync('frontend/components/composer/WorkspaceReferencePopup.client.tsx', 'utf8');
   assert.match(popup, /useAccessibleModal/);
   assert.match(popup, /aria-modal="true"/);
