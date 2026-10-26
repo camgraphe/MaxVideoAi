@@ -229,3 +229,24 @@ test('failed page refresh persists across reads and retries without any financia
   assert.deepEqual(await counts(db), before);
   assert.deepEqual((await confirm(p)).receipt, failed.receipt);
 }));
+
+test('all 226 real replacements remain atomic after fifty historical versions per class', async () => fixture(async ({ db }) => {
+  const created = await confirm(await previewTariffBatch(proposal(226), actor));
+  assert.equal(created.status, 'committed');
+  await db.pool.query(`INSERT INTO app_customer_tariff_cell_versions
+    (tariff_id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision, updated_by)
+    SELECT id, selector_key, selector_json, price_json, currency,
+      '2026-01-01'::timestamptz + n * interval '1 day', '2026-01-02'::timestamptz + n * interval '1 day',
+      revision + n * 226, updated_by
+    FROM app_customer_tariff_cells CROSS JOIN generate_series(0, 49) n`);
+  await db.pool.query('UPDATE app_customer_tariff_cells SET revision = revision + 11300');
+  await db.pool.query('UPDATE app_customer_tariff_state SET revision = 11526');
+  const started = performance.now();
+  const p = await previewTariffBatch(proposal(226, '1.60', 'replace_selected'), actor);
+  assert.equal(p.plan.counts.update, 226);
+  const result = await confirm(p);
+  assert.equal(result.status, 'committed'); assert.equal(result.receipt?.revisionAfter, 11752);
+  assert.equal((await counts(db)).versions, '11526');
+  console.log(JSON.stringify({ measurement: '226-updates-with-11300-same-model-history', elapsedMs: performance.now() - started,
+    lockDurationMs: result.receipt!.lockDurationMs }));
+}));

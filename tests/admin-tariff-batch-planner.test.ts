@@ -112,3 +112,18 @@ test('scheduled prices and future exact exceptions require review before an imme
   const c = await buildTariffBatchPlan({ proposal: proposal([continuous.selector]), state: { ...state, databaseCells: [exception] }, policy });
   assert.equal(c.counts.conflict, 1);
 });
+
+test('full-model replacement remains bounded after fifty historical versions per selected class', async () => {
+  const initial = await buildTariffBatchPlan({ proposal: proposal(klingBatchClasses().map(c => c.selector)), state, policy });
+  const current = initial.rows.map((r, i) => ({ ...r.proposedCell!, version: i + 1 }));
+  const history = current.flatMap(cell => Array.from({ length: 50 }, (_, i) => ({ ...cell,
+    version: 1000 + i, effectiveFrom: new Date(Date.UTC(2026, 0, i + 1)).toISOString(),
+    effectiveUntil: new Date(Date.UTC(2026, 0, i + 2)).toISOString() })));
+  const started = performance.now();
+  const result = await buildTariffBatchPlan({ proposal: { ...proposal(current.map(c => c.selector)), intent: 'replace_selected',
+    pricing: { kind: 'list_multiplier', multiplier: '1.60' } }, state: { ...state, databaseCells: [...history, ...current] }, policy });
+  const elapsedMs = performance.now() - started;
+  assert.equal(result.counts.update, 226);
+  console.log(JSON.stringify({ measurement: 'same-model-11526-rows-planner', elapsedMs }));
+  assert.ok(elapsedMs < 3000, `Planner must leave room within the 5-second transaction: ${elapsedMs}ms`);
+});

@@ -39,7 +39,7 @@ already committed prices.
 - `planner.ts` resolves actual effective cells from a complete model-scoped snapshot (including every exact exception and historical/future interval), preserves their stable IDs, quotes
   through `computeCanonicalBillingSnapshot`, and validates continuous domains
   through `validateCurrentContinuousTariffDomain`. Unavailable state never means
-  missing. Exact active exceptions and scheduled future prices block a continuous batch edit. The selected-model loader remains in the canonical tariff store and validates unknown ownership rather than assuming it is absent.
+  missing. Exact active exceptions and scheduled future prices block a continuous batch edit. The selected-model loader remains in the canonical tariff store and validates unknown ownership rather than assuming it is absent. The planner indexes the loaded rows once by canonical selector, retaining every interval for that key and all noncanonical exceptions. Quote resolution therefore avoids rescanning unrelated history for each class.
 - `service.ts` owns durable preview, claim, apply, status and reconciliation.
   `store.ts` owns operation SQL; existing tariff and event stores own prices and
   immutable per-cell history. Routes delegate through `http.ts`, which requires

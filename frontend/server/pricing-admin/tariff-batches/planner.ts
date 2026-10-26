@@ -35,6 +35,18 @@ export async function buildTariffBatchPlan(input: {
   if (!state.active) throw new PricingAdminError('unsupported_scenario', 'An active tariff registry is required.');
   const at = input.at ?? new Date().toISOString();
   const classes = klingBatchClasses(), byKey = new Map(classes.map(row => [row.key, row]));
+  const index = (cells: ManualTariffCell[]) => {
+    const grouped = new Map<string, ManualTariffCell[]>();
+    for (const cell of cells) {
+      const key = batchSelectorKey(cell.selector), bucket = grouped.get(key) ?? [];
+      bucket.push(cell); grouped.set(key, bucket);
+    }
+    return grouped;
+  };
+  const databaseByKey = index(state.databaseCells), versionedByKey = index(state.versionedCells);
+  // Noncanonical exact exceptions still participate in every relevant continuous
+  // class check. Historical versions of ordinary classes need not be rescanned.
+  const exceptions = [...databaseByKey, ...versionedByKey].filter(([key]) => !byKey.has(key)).flatMap(([, cells]) => cells);
   const selections = proposal.intent === 'rollback' ? proposal.selectors.map(selector => ({ selector, price: undefined })) : proposal.selections;
   const rows: TariffBatchRow[] = [];
   for (const selection of [...selections].sort((a, b) => batchSelectorKey(a.selector).localeCompare(batchSelectorKey(b.selector)))) {
@@ -45,9 +57,10 @@ export async function buildTariffBatchPlan(input: {
       supplierListCents: klingV4PricingUsage(definition.scenario.context).supplierExactCents };
     rows.push(row);
     try {
-      const previous = currentCell(definition, state, at);
+      const selectedState = { ...state, databaseCells: databaseByKey.get(key) ?? [], versionedCells: versionedByKey.get(key) ?? [] };
+      const previous = currentCell(definition, selectedState, at);
       row.previousCell = previous;
-      const all = [...state.databaseCells, ...state.versionedCells];
+      const all = [...selectedState.databaseCells, ...selectedState.versionedCells, ...exceptions];
       if (previous?.effectiveUntil || all.some(cell => Date.parse(cell.effectiveFrom) > Date.parse(at)
         && (batchSelectorKey(cell.selector) === key || (definition.selector.billingInputType === 'video_input'
           && Object.entries(definition.selector).every(([name, value]) => value === 'continuous' ? cell.selector[name] !== undefined : cell.selector[name] === value))))) {
@@ -59,7 +72,7 @@ export async function buildTariffBatchPlan(input: {
       }
       if (previous && previous.currency !== 'USD') throw new Error('The current price currency is not USD.');
       if (previous) row.currentCents = (await computeCanonicalBillingSnapshot(definition.scenario.context, {
-        loadCustomerTariffState: async () => state, pricingPolicy: { loadOverrides: async () => policy },
+        loadCustomerTariffState: async () => selectedState, pricingPolicy: { loadOverrides: async () => policy },
       })).totalCents;
       let desired;
       if (proposal.intent === 'rollback') {
@@ -77,7 +90,7 @@ export async function buildTariffBatchPlan(input: {
         selector: definition.selector, source: 'database', version: state.revision + 1, currency: 'USD',
         effectiveFrom: previous?.effectiveFrom ?? '2026-10-01T00:00:00.000Z', price: desired };
       validateCustomerTariffCell(proposedCell);
-      const candidate = { ...state, databaseCells: [...state.databaseCells.filter(cell => cell.id !== proposedCell.id), proposedCell] };
+      const candidate = { ...selectedState, databaseCells: [...selectedState.databaseCells.filter(cell => cell.id !== proposedCell.id), proposedCell] };
       const quote = await computeCanonicalBillingSnapshot(definition.scenario.context, {
         loadCustomerTariffState: async () => candidate, pricingPolicy: { loadOverrides: async () => policy },
       });
