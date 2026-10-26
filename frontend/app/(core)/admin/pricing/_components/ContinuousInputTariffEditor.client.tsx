@@ -32,7 +32,10 @@ export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, ou
       scope: 'continuous_input', price });
   const inputClass = 'mt-1 h-8 w-full rounded-md border border-[#cbb9ff] bg-surface px-2 text-sm tabular-nums text-text-primary';
   if(tariff.klingV4Billable) {
-    const rate=v4Rate.trim()?Number(v4Rate)*100:NaN;
+    // Shift the decimal before conversion so $0.141 stays exactly 14.1 cents.
+    const enteredRate = v4Rate.trim() ? Number(v4Rate) : NaN;
+    const [mantissa, exponent = '0'] = enteredRate.toString().split('e');
+    const rate = Number(`${mantissa}e${Number(exponent) + 2}`);
     const validRate=Number.isFinite(rate)&&rate>0;
     const billable=Math.max(inputSeconds+outputSeconds,2*outputSeconds);
     return <div className="mt-2 space-y-2" aria-label="Kling 4 billable-second tariff">
