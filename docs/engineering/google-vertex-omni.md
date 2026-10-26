@@ -98,6 +98,16 @@ Poller responsibilities:
 - Complete the `app_jobs` row and update the latest `provider_attempts` snapshot.
 - Mark unresolved jobs for manual review after 45 minutes without retrying, rerouting, or automatically refunding them. Confirmed terminal provider failures still use the standard idempotent wallet refund flow.
 
+Terminal Interactions failures may expose `errors[]` rather than the legacy
+`error` or `message` fields. The response normalizer owns reading the supplier
+code and message. The poller retains those two diagnostic fields on the provider
+attempt, without copying the interaction's prompt, input media or reasoning into
+the failure snapshot. A `safety` code projects fixed Google moderation guidance
+through the shared EN/FR/ES generation-failure messages. It never authorizes a
+resubmission or fallback; the existing terminal-failure refund remains unchanged.
+`tests/google-vertex-omni-failures.test.ts` covers this production response shape,
+the public guidance and the terminal polling/refund boundary.
+
 ## Pricing And Cost Estimate
 
 The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.

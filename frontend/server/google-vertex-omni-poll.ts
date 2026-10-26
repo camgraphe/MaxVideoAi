@@ -172,7 +172,8 @@ async function markJobFailed(
   job: GoogleVertexOmniPendingJob,
   message: string,
   providerStatus: string | null,
-  queryFn: QueryFn
+  queryFn: QueryFn,
+  providerFailure?: Pick<NormalizedVideoProviderTask, 'errorCode' | 'message'>
 ) {
   const userMessage = toUserFacingFailureMessage(message);
   const rows = await queryFn<{ job_id: string }>(
@@ -205,10 +206,14 @@ async function markJobFailed(
   if (attempt) {
     await markProviderAttemptFailed({
       attemptId: attempt.id,
-      errorCode: providerStatus,
+      errorCode: providerFailure?.errorCode ?? providerStatus,
       errorClass: 'provider_terminal_failure',
       fallbackEligible: false,
-      responseSnapshot: { providerStatus, message: userMessage },
+      responseSnapshot: {
+        providerStatus,
+        message: userMessage,
+        ...(providerFailure ? { errorCode: providerFailure.errorCode ?? null, providerMessage: providerFailure.message } : {}),
+      },
       queryFn,
     });
   }
@@ -435,9 +440,12 @@ export async function runGoogleVertexOmniPoll(options: { jobId?: string; deps?: 
       if (task.status === 'failed') {
         const failed = await markJobFailed(
           job,
-          task.message ?? 'The render failed before producing a usable output.',
+          task.errorCode === 'safety'
+            ? 'Google blocked this request during safety checks.'
+            : task.message ?? 'The render failed before producing a usable output.',
           task.rawStatus,
-          queryFn
+          queryFn,
+          task
         );
         if (failed) updates += 1;
         continue;
