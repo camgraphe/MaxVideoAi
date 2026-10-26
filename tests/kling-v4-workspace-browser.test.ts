@@ -95,7 +95,7 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     assert.equal(await page.locator('input[accept="video/*"]').count(),7,'each empty R2V subject can use a video; selections share the three-video limit');
     await page.getByRole('button',{name:'Restore three video subjects',exact:true}).click();
     assert.equal(await page.locator('input[accept="video/*"]:disabled').count(),4,'three selected video subjects disable adding a fourth');
-    assert.match(await page.locator('body').innerText(),/owned fal voice binding/i);
+    assert.match(await page.locator('body').innerText(),/Voices remain unavailable without a verified owned binding/i);
     assert.equal(await page.locator('input[placeholder*="voice" i]').count(),0);
     await page.getByRole('button',{name:'Fixture v2v',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('[data-mode]')?.textContent==='v2v');
