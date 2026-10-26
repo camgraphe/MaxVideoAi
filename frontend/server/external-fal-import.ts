@@ -5,11 +5,13 @@ import { upsertJobOutputs } from './media-library/job-outputs';
 import { EXTERNAL_FAL_IMPORT_ORIGIN } from './app-job-origin';
 import { klingV4ImportSettings } from './external-fal-import/kling-v4';
 import { externalFalImportPlan, importDigest, parseExternalFalImport, type ExternalFalImport } from './external-fal-import/contract';
+import type { NativeSourceEvidence } from './external-fal-import/nine01-evidence';
 
 export type ImportAsset = { preview_url?: string | null; id: string; public_id: string; user_id: string; kind: string; url: string; thumb_url: string | null;
   mime_type: string | null; width: number | null; height: number | null; size_bytes: number | string | null;
   source_job_id: string | null; source_output_id: string | null; status: string; deleted_at: string | null };
 export type ImportEvidence = { referenceProofs?: ExternalReferenceProof[]; providerResultSha256: string; providerVideoUrl: string; verifiedAt: string; resolvedSeed?: number;
+  nativeSourceEvidence?: NativeSourceEvidence;
   display?: { poster: { url: string; sha256: string; sizeBytes: number; width: number; height: number };
     preview: { url: string; sha256: string; sizeBytes: number; width: number; height: number; durationSec: number; hasAudio: boolean } };
   video: { sha256: string; sizeBytes: number; width: number; height: number; hasAudio: boolean; mediaFacts: GeneratedVideoFacts } };
@@ -91,6 +93,11 @@ export async function verifyExternalFalImport(value: unknown, deps: { actorUserI
   const assets = await loadAssets(input, deps.executor);
   await inspectExisting(input, plan, deps.executor);
   const evidence = await deps.verifyEvidence(input, assets);
+  const nativeProfile = input.engineId === 'kling-v4' && input.evidenceProfile === 'nine01-native-v1';
+  if (nativeProfile ? !evidence.nativeSourceEvidence || evidence.nativeSourceEvidence.profile !== 'nine01-native-v1'
+    || evidence.nativeSourceEvidence.bundleSha256 !== input.evidenceSha256 : evidence.nativeSourceEvidence !== undefined) {
+    throw new Error('IMPORT_NATIVE_SOURCE_PROOF_REQUIRED_OR_MISMATCH');
+  }
   const video = evidence.video;
   const proofIdentity = (evidence.referenceProofs ?? []).map(proof => ({ assetId: proof.assetId, providerSha256: proof.providerSha256,
     durableSha256: proof.durableSha256, transform: proof.transform }));
@@ -107,7 +114,9 @@ export async function verifyExternalFalImport(value: unknown, deps: { actorUserI
     || evidence.display.preview.sha256 !== input.media.preview.sha256 || evidence.display.preview.hasAudio !== false
     || !(evidence.display.preview.durationSec > 0 && evidence.display.preview.durationSec <= Math.min(6, video.mediaFacts.durationSec + 0.1)))) throw new Error('IMPORT_KLING_DISPLAY_EVIDENCE_MISMATCH');
   const verified = { input, plan, actorUserId: deps.actorUserId, assets, evidence, migrationReady: ready,
-    planSha256: importDigest({ plan, actorUserId: deps.actorUserId, assets: stableAssetFacts(assets), providerResultSha256: evidence.providerResultSha256, video, ...(evidence.display ? { display: evidence.display } : {}), ...(input.references.length ? { referenceProofs: evidence.referenceProofs } : {}) }) };
+    planSha256: importDigest({ plan, actorUserId: deps.actorUserId, assets: stableAssetFacts(assets), providerResultSha256: evidence.providerResultSha256, video,
+      ...(evidence.nativeSourceEvidence ? { nativeSourceEvidence: evidence.nativeSourceEvidence } : {}),
+      ...(evidence.display ? { display: evidence.display } : {}), ...(input.references.length ? { referenceProofs: evidence.referenceProofs } : {}) }) };
   verifiedPlans.add(verified);
   return freezeDeep(verified);
 }
@@ -117,6 +126,7 @@ function settingsForImport(verified: VerifiedImport) {
   const externalImport = { schemaVersion: 1, manifestSha256: plan.manifestSha256, evidenceSha256: input.evidenceSha256,
     provider: 'fal', endpoint: input.endpoint, providerRequestId: input.providerRequestId, providerInput: input.providerInput,
     providerResultSha256: evidence.providerResultSha256, providerVideoUrl: evidence.providerVideoUrl,
+    ...(evidence.nativeSourceEvidence ? { nativeSourceEvidence: evidence.nativeSourceEvidence } : {}),
     requestedSeed: 'seed' in input.providerInput ? input.providerInput.seed ?? null : null, resolvedSeed: evidence.resolvedSeed ?? null,
     verifiedAt: evidence.verifiedAt, importedAt: new Date().toISOString(), importedBy: verified.actorUserId,
     videoAssetId: input.videoAssetId, videoSha256: input.videoSha256, references: input.references, referenceProofs: evidence.referenceProofs ?? [],

@@ -5,6 +5,8 @@ import type { ImportAsset, ImportEvidence } from '../external-fal-import';
 import { probeExternalImportVideo } from './probe';
 import { verifyExternalReferenceCopies } from './reference-copies';
 import { createOwnedMediaReadUrl } from '../owned-media-read-access';
+import { loadNine01NativeEvidence } from './nine01-evidence';
+import type { PrivateSourcePorts } from './private-staging-source';
 
 const MAX_MEDIA_BYTES = 80 * 1024 * 1024;
 export function verifyImportJournal(input: ExternalFalImport, journal: Buffer) {
@@ -85,8 +87,12 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
   fetcher?: typeof fetch;
   readUrl?: typeof createOwnedMediaReadUrl;
   onProviderEvidence?: (value: ExternalFalProviderEvidence) => void;
+  nativeSource?: PrivateSourcePorts;
 }): Promise<ImportEvidence> {
-  const recordedDataSha256 = verifyImportJournal(input, options.journal);
+  const nativeProfile = input.engineId === 'kling-v4' && input.evidenceProfile === 'nine01-native-v1';
+  if (nativeProfile && !options.nativeSource) throw new Error('IMPORT_NINE01_TRUSTED_SOURCE_REQUIRED');
+  const native = nativeProfile ? await loadNine01NativeEvidence(input, options.journal, options.nativeSource!.target) : undefined;
+  const recordedDataSha256 = native?.resultDataSha256 ?? verifyImportJournal(input, options.journal);
   const status = await options.provider.status(input.endpoint, input.providerRequestId);
   if (status.status !== 'COMPLETED') throw new Error('IMPORT_PROVIDER_NOT_COMPLETED');
   if (status.request_id !== input.providerRequestId) throw new Error('IMPORT_PROVIDER_STATUS_REQUEST_ID_MISMATCH');
@@ -139,7 +145,11 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
     const asset = assets.find(candidate => candidate.public_id === reference.assetId)!;
     const isVideo = input.engineId === 'kling-v4' && 'kind' in reference && reference.kind === 'video';
     const referenceMaximum = isVideo ? 300 * 1024 * 1024 : input.engineId === 'kling-v4' ? 30 * 1024 * 1024 : 20 * 1024 * 1024;
-    const original = await readBytes(providerMediaUrl(reference.providerUrl), fetcher, referenceMaximum);
+    let original: Buffer;
+    if (native) {
+      if (!('slotId' in reference)) throw new Error('IMPORT_NINE01_REFERENCE_BINDING');
+      original = await native.readReference(reference, options.nativeSource!, fetcher);
+    } else original = await readBytes(providerMediaUrl(reference.providerUrl), fetcher, referenceMaximum);
     const stored = await readBytes(await readUrl({ url: asset.url, userId: input.ownerUserId }), fetcher, referenceMaximum);
     if (isVideo) {
       const measured = await probeExternalImportVideo(stored, { url: asset.url, sha256: reference.sha256, sizeBytes: stored.length });
@@ -151,7 +161,8 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
   if (input.engineId === 'kling-v4' && input.mode === 'ref2v' && referenceVideoDuration > 30) throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
   const measured = await probeExternalImportVideo(durableBytes, { url: video.url, sha256: input.videoSha256, sizeBytes: durableBytes.length });
   if (display && display.preview.durationSec > measured.mediaFacts.durationSec + 0.1) throw new Error('IMPORT_KLING_PREVIEW_LONGER_THAN_ORIGINAL');
-  return { ...(display ? { display } : {}), referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),
+  return { ...(display ? { display } : {}), ...(native ? { nativeSourceEvidence: native.summary } : {}),
+    referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),
     ...(Number.isSafeInteger(response.data?.seed) ? { resolvedSeed: response.data!.seed! } : {}),
     video: { sha256: input.videoSha256, sizeBytes: durableBytes.length, ...measured } };
 }
