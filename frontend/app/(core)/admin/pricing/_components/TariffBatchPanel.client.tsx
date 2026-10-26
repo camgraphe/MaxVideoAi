@@ -33,6 +33,10 @@ export function TariffBatchPanel() {
         {(controller.error || parseError) && <AdminNotice tone="error">{parseError ?? controller.error}</AdminNotice>}
         {pending && <AdminNotice tone="warning">Confirmation outcome pending. Read the saved operation or reconcile it before starting another batch.</AdminNotice>}
         {operation && <p role="status" className="font-semibold">{controller.uncertain ? 'Outcome unknown' : ({ previewed: 'Preview ready', accepted: 'Outcome pending', committed: 'Committed', not_applied: 'Not applied' }[operation.status])}</p>}
+        {operation?.status === 'committed' && operation.refreshStatus === 'pending' && <AdminNotice tone="warning">
+          {operation.refreshError ?? 'Prices committed. Public page refresh is pending.'}
+          <AdminActionButton disabled={busy} onClick={() => void controller.refreshPages()}>Retry page refresh</AdminActionButton>
+        </AdminNotice>}
         {operation?.failure && <AdminNotice tone="warning">{operation.failure}</AdminNotice>}
         {operation?.operationalWarnings?.map(warning => <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>)}
         {controller.recoveryId && <div className="flex flex-wrap gap-2">

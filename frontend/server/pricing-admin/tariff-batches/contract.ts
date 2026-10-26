@@ -70,6 +70,8 @@ export type TariffBatchOperation = {
   plan: TariffBatchPlan;
   receipt: TariffBatchReceipt | null;
   failure: string | null;
+  refreshStatus: 'not_required' | 'pending' | 'complete';
+  refreshError: string | null;
   operationalWarnings?: string[];
 };
 

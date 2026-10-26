@@ -48,6 +48,11 @@ export async function buildTariffBatchPlan(input: {
       const previous = currentCell(definition, state, at);
       row.previousCell = previous;
       const all = [...state.databaseCells, ...state.versionedCells];
+      if (previous?.effectiveUntil || all.some(cell => Date.parse(cell.effectiveFrom) > Date.parse(at)
+        && (batchSelectorKey(cell.selector) === key || (definition.selector.billingInputType === 'video_input'
+          && Object.entries(definition.selector).every(([name, value]) => value === 'continuous' ? cell.selector[name] !== undefined : cell.selector[name] === value))))) {
+        throw new Error('A scheduled or future tariff requires explicit review.');
+      }
       if (!previous && all.some(cell => batchSelectorKey(cell.selector) === key)) throw new Error('A closed or future tariff requires explicit review.');
       if (definition.selector.billingInputType === 'video_input' && all.some(cell => overlap(definition, cell, at))) {
         throw new Error('Review the exact tariff exception before changing this continuous class.');

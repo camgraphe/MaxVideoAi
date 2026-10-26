@@ -195,3 +195,37 @@ test('a lost COMMIT response is recovered from the original durable receipt with
   assert.deepEqual((await confirm(p)).receipt, result.receipt);
   assert.deepEqual(await counts(f.db), { revision: '2', cells: '2', versions: '0', events: '2', receipts: '1' });
 }));
+
+test('a full selected batch stays bounded with a large unrelated active and historical grid', async () => fixture(async ({ db }) => {
+  for (let start = 1; start <= 27000; start += 500) await db.pool.query(`INSERT INTO app_customer_tariff_cells
+    (id, selector_key, selector_json, price_json, currency, effective_from, revision, updated_by)
+    SELECT 'synthetic-grid-' || n, 'synthetic-grid-' || n,
+      jsonb_build_object('engineId','synthetic-unrelated','mode','t2v','durationSec',n::text),
+      '{"kind":"fixed","customerCents":999}'::jsonb, 'USD', '2026-10-01', 1, $1::uuid
+    FROM generate_series($2::int, $3::int) n`, [actor, start, start + 499]);
+  await db.pool.query(`INSERT INTO app_customer_tariff_cell_versions
+    (tariff_id, selector_key, selector_json, price_json, currency, effective_from, effective_until, revision, updated_by)
+    SELECT id, selector_key, selector_json, price_json, currency, '2026-09-01', effective_from, 1, updated_by FROM app_customer_tariff_cells`);
+  const start = performance.now();
+  const p = await previewTariffBatch(proposal(226), actor);
+  const done = await confirm(p);
+  assert.equal(done.status, 'committed'); assert.equal(done.receipt?.changes.length, 226);
+  const resume = await previewTariffBatch(proposal(226), actor);
+  assert.equal(resume.plan.counts.unchanged, 226);
+  assert.equal((await confirm(resume)).status, 'committed');
+  console.log(JSON.stringify({ measurement: '226-with-54000-unrelated-rows', elapsedMs: performance.now() - start, lockDurationMs: done.receipt!.lockDurationMs }));
+}));
+
+test('failed page refresh persists across reads and retries without any financial replay', async () => fixture(async ({ db }) => {
+  const { refreshTariffBatchPages } = await import('../frontend/server/pricing-admin/tariff-batches/service');
+  const p = await previewTariffBatch(proposal(), actor);
+  const failed = await confirmTariffBatch(p.id, p.fingerprint, actor, () => { throw Error('cache unavailable'); });
+  assert.equal(failed.status, 'committed'); assert.equal(failed.refreshStatus, 'pending');
+  const saved = await readTariffBatch(p.id, actor); assert.equal(saved.refreshStatus, 'pending'); assert.match(saved.refreshError!, /refresh/i);
+  const before = await counts(db); let calls = 0;
+  const refreshed = await refreshTariffBatchPages(p.id, actor, () => { calls++; });
+  assert.equal(refreshed.refreshStatus, 'complete'); assert.equal(calls, 1);
+  assert.equal((await readTariffBatch(p.id, actor)).refreshStatus, 'complete');
+  assert.deepEqual(await counts(db), before);
+  assert.deepEqual((await confirm(p)).receipt, failed.receipt);
+}));

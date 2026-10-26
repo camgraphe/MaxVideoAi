@@ -7,14 +7,14 @@ export type StoredTariffBatch = TariffBatchOperation & { proposal: TariffBatchPr
 type Raw = {
   id: string; actor_id: string; status: TariffBatchOperation['status']; epoch: number; fingerprint: string;
   created_at: Date; expires_at: Date; plan_json: TariffBatchOperation['plan']; proposal_json: TariffBatchProposal;
-  source_id: string; target_id: string; receipt_json: TariffBatchReceipt | null; failure: string | null;
+  source_id: string; target_id: string; receipt_json: TariffBatchReceipt | null; failure: string | null; refresh_status: 'pending' | 'complete' | null; refresh_error: string | null;
 };
-const columns = `o.*, r.receipt_json`;
-const from = `app_tariff_batch_operations o LEFT JOIN app_tariff_batch_receipts r ON r.operation_id = o.id`;
+const columns = `o.*, r.receipt_json, f.status AS refresh_status, f.last_error AS refresh_error`;
+const from = `app_tariff_batch_operations o LEFT JOIN app_tariff_batch_receipts r ON r.operation_id = o.id LEFT JOIN app_tariff_batch_refresh f ON f.operation_id = o.id`;
 function map(row: Raw): StoredTariffBatch {
   return { id: row.id, actorId: row.actor_id, status: row.status, epoch: row.epoch, fingerprint: row.fingerprint,
     createdAt: row.created_at.toISOString(), expiresAt: row.expires_at.toISOString(), plan: row.plan_json,
-    receipt: row.receipt_json, failure: row.failure, proposal: row.proposal_json, sourceId: row.source_id, targetId: row.target_id };
+    receipt: row.receipt_json, failure: row.failure, refreshStatus: row.refresh_status ?? 'not_required', refreshError: row.refresh_error, proposal: row.proposal_json, sourceId: row.source_id, targetId: row.target_id };
 }
 export function publicTariffBatch(operation: StoredTariffBatch): TariffBatchOperation {
   const { proposal: _proposal, sourceId: _source, targetId: _target, ...publicOperation } = operation;

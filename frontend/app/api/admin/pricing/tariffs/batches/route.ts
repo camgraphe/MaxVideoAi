@@ -5,7 +5,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   return tariffBatchHttp(req, false, async actorId => {
-    const options = await tariffBatchOptions();
-    return { ...options, operations: options.enabled ? await listTariffBatches(actorId) : [] };
+    const options = await tariffBatchOptions().catch(() => ({ enabled: false as const, classes: [],
+      unavailableMessage: 'Batch creation is unavailable for this deployment. Saved operations can still be checked.' }));
+    return { actorId, ...options, operations: options.enabled ? await listTariffBatches(actorId) : [] };
   });
 }

@@ -10,7 +10,9 @@ export function tariffBatchIdentity(): TariffBatchIdentity | null {
     // Development admission is restricted to a local Unix socket, never a remote database.
     try {
       const url = new URL(process.env.DATABASE_URL ?? '');
-      if (url.hostname !== 'localhost' || !url.searchParams.get('host')?.startsWith('/')) return null;
+      const hosts = url.searchParams.getAll('host');
+      if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.hostname !== 'localhost' || hosts.length !== 1
+        || !hosts[0]?.startsWith('/') || [...url.searchParams.keys()].some(key => key !== 'host')) return null;
     } catch { return null; }
     sourceId = process.env.PRICING_ADMIN_BATCHES_SOURCE_ID ?? '';
   }

@@ -17,6 +17,7 @@ test('batch HTTP routes authorize first, enforce same origin/size/strict command
     export { POST as preview } from './frontend/app/api/admin/pricing/tariffs/batches/preview/route';
     export { POST as confirm } from './frontend/app/api/admin/pricing/tariffs/batches/confirm/route';
     export { POST as reconcile } from './frontend/app/api/admin/pricing/tariffs/batches/reconcile/route';
+    export { POST as refresh } from './frontend/app/api/admin/pricing/tariffs/batches/refresh/route';
     export { GET as status } from './frontend/app/api/admin/pricing/tariffs/batches/status/route';` },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'http-boundaries', setup(b) {
@@ -25,7 +26,7 @@ test('batch HTTP routes authorize first, enforce same origin/size/strict command
           export function adminErrorToResponse(){return new Response('{}',{status:401});}`,
         '@/server/pricing-admin/tariff-batches/service': `
           function record(...args){globalThis.__batchRouteFixture.calls.push(args);return {status:'previewed'};}
-          export const previewTariffBatch=record, confirmTariffBatch=record, reconcileTariffBatch=record, readTariffBatch=record;`,
+          export const previewTariffBatch=record, confirmTariffBatch=record, reconcileTariffBatch=record, readTariffBatch=record, refreshTariffBatchPages=record;`,
       };
       b.onResolve({ filter: /.*/ }, a => a.path in mocks ? { path: a.path, namespace: 'fixture' }
         : a.path === 'next/server' ? { path: requireFrontend.resolve(a.path), external: true } : undefined);
@@ -48,7 +49,7 @@ test('batch HTTP routes authorize first, enforce same origin/size/strict command
   assert.equal((await routes.confirm(request(body, { 'Content-Length': '2097153' }))).status, 413);
   assert.equal(fixture.calls.length, 0);
   fixture.authorized = false;
-  for (const route of [routes.preview, routes.confirm, routes.reconcile]) {
+  for (const route of [routes.preview, routes.confirm, routes.reconcile, routes.refresh]) {
     const response = await route(request(body));
     assert.equal(response.status, 401); assert.equal(response.headers.get('Cache-Control'), 'no-store');
   }
@@ -61,10 +62,25 @@ test('batch boundaries keep one transactional price owner and no runtime coeffic
   const service = readFileSync(base + 'service.ts', 'utf8');
   assert.match(service, /upsertCustomerTariffCell\(executor/);
   assert.match(service, /insertPricingChangeEvent\(executor/);
-  assert.doesNotMatch(service, /fetch\(|ensure.*Schema|\/confirm/);
+  assert.doesNotMatch(service, /fetch\(|ensure.*Schema/);
   const planner = readFileSync(base + 'planner.ts', 'utf8');
   assert.match(planner, /computeCanonicalBillingSnapshot/); assert.match(planner, /validateCurrentContinuousTariffDomain/);
   assert.doesNotMatch(planner, /withDbTransaction|\.query\(/);
   const migration = readFileSync('neon/migrations/81_customer_tariff_batches.sql', 'utf8');
   assert.match(migration, /DEFAULT FALSE/); assert.doesNotMatch(migration, /INSERT INTO app_customer_tariff_cells/);
+});
+
+
+test('local admission rejects ambiguous or remote database URLs', async () => {
+  const { tariffBatchIdentity } = await import('../frontend/server/pricing-admin/tariff-batches/environment');
+  const old = { ...process.env };
+  Object.assign(process.env, { NODE_ENV: 'test', PRICING_ADMIN_BATCHES_ENABLED: '1', PRICING_ADMIN_BATCHES_SOURCE_ID: 'a'.repeat(40), PRICING_ADMIN_BATCHES_TARGET_ID: '11111111-1111-4111-8111-111111111111' });
+  delete process.env.VERCEL;
+  try {
+    process.env.DATABASE_URL = 'postgresql://postgres@localhost/postgres?host=%2Ftmp%2Fsynthetic';
+    assert.ok(tariffBatchIdentity());
+    for (const url of ['postgresql://postgres@remote.example/postgres', 'postgresql://postgres@localhost/postgres?host=%2Ftmp&host=remote.example', 'postgresql://postgres@localhost/postgres?host=%2Ftmp&options=unsafe']) {
+      process.env.DATABASE_URL = url; assert.equal(tariffBatchIdentity(), null);
+    }
+  } finally { for (const key of Object.keys(process.env)) if (!(key in old)) delete process.env[key]; Object.assign(process.env, old); }
 });

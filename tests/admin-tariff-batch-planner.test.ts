@@ -100,3 +100,15 @@ test('compiled continuous rates retain approved fractional totals and upward cen
     }
   }
 });
+
+test('scheduled prices and future exact exceptions require review before an immediate batch', async () => {
+  const first = await buildTariffBatchPlan({ proposal: proposal(), state, policy });
+  const current = { ...first.rows[0].proposedCell!, source: 'versioned' as const, id: 'authored-current' };
+  const future = { ...current, source: 'database' as const, id: 'future-price', effectiveFrom: '2099-01-01T00:00:00.000Z' };
+  const p = await buildTariffBatchPlan({ proposal: proposal(), state: { ...state, databaseCells: [future], versionedCells: [current] }, policy });
+  assert.equal(p.counts.conflict, 1); assert.match(p.rows[0].issue!, /future|scheduled/i);
+  const continuous = klingBatchClasses().find(c => c.selector.mode === 'ref2v' && c.selector.billingInputType === 'video_input')!;
+  const exception = { ...future, selector: { ...continuous.selector, inputVideoDurationSec: '3' } };
+  const c = await buildTariffBatchPlan({ proposal: proposal([continuous.selector]), state: { ...state, databaseCells: [exception] }, policy });
+  assert.equal(c.counts.conflict, 1);
+});

@@ -23,7 +23,7 @@ test('native batch UI applies one real transaction and recovers a lost response 
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig,
     content: [...tailwindConfig.content.map((p: string) => join(frontend, p)), { raw: source, extension: 'tsx' }],
   })]).process(styles.join('\n').replace(/@(import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
-  const posts: string[] = []; let dropConfirm = true;
+  const posts: string[] = []; let dropConfirm = true; let currentActor = actor;
   const server = createServer(async (req, res) => {
     try {
       if (req.url?.startsWith('/api/')) {
@@ -31,14 +31,14 @@ test('native batch UI applies one real transaction and recovers a lost response 
         const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString()) : null;
         if (req.method === 'POST') posts.push(req.url);
         const path = req.url.split('?')[0]; let payload;
-        if (path.endsWith('/preview')) payload = { operation: await previewTariffBatch(body, actor) };
+        if (path.endsWith('/preview')) payload = { operation: await previewTariffBatch(body, currentActor) };
         else if (path.endsWith('/confirm')) {
-          payload = { operation: await confirmTariffBatch(body.operationId, body.fingerprint, actor, () => {}) };
+          payload = { operation: await confirmTariffBatch(body.operationId, body.fingerprint, currentActor, () => {}) };
           // A gateway loses the successful body. Unlike a bare socket close, this prevents Chromium's automatic transport retry.
           if (dropConfirm) { dropConfirm = false; res.statusCode = 503; res.end(''); return; }
-        } else if (path.endsWith('/status')) payload = { operation: await readTariffBatch(new URL(req.url, 'http://localhost').searchParams.get('operationId')!, actor) };
-        else if (path.endsWith('/reconcile')) payload = { operation: await reconcileTariffBatch(body.operationId, actor) };
-        else payload = { enabled: true, classes: klingBatchClasses().map(({ key, selector }) => ({ key, selector })), operations: await listTariffBatches(actor) };
+        } else if (path.endsWith('/status')) payload = { operation: await readTariffBatch(new URL(req.url, 'http://localhost').searchParams.get('operationId')!, currentActor) };
+        else if (path.endsWith('/reconcile')) payload = { operation: await reconcileTariffBatch(body.operationId, currentActor) };
+        else payload = { actorId: currentActor, enabled: true, classes: klingBatchClasses().map(({ key, selector }) => ({ key, selector })), operations: await listTariffBatches(currentActor) };
         res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ ok: true, ...payload })); return;
       }
       res.setHeader('Content-Type', req.url === '/fixture.js' ? 'text/javascript' : req.url === '/fixture.css' ? 'text/css' : 'text/html');
@@ -81,12 +81,23 @@ test('native batch UI applies one real transaction and recovers a lost response 
     await page.getByRole('button', { name: 'Preview rollback', exact: true }).first().click();
     await page.getByText('0 create · 1 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
     assert.equal(posts.filter(p => p.endsWith('/confirm')).length, 2, 'rollback is preview-only until explicit confirmation');
+    await page.getByText('Complete before and after plan', {exact: true}).click();
+    assert.match(await page.locator('[data-batch-plan]').innerText(), /"previousCell"/);
+    assert.match(await page.locator('[data-batch-plan]').innerText(), /"version"/);
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `no document overflow at ${width}`);
       if (process.env.TARIFF_BATCH_EVIDENCE_DIR) { await mkdir(process.env.TARIFF_BATCH_EVIDENCE_DIR, { recursive: true });
         await page.screenshot({ path: join(process.env.TARIFF_BATCH_EVIDENCE_DIR, `batch-${width}.png`), fullPage: true }); }
     }
+    const firstActorSaved = await page.evaluate(actor => localStorage.getItem(`admin.tariff-batch.operation.v1.${actor}`), actor);
+    assert.ok(firstActorSaved);
+    currentActor = '22222222-2222-4222-8222-222222222222';
+    await page.reload();
+    await page.locator('summary').filter({hasText: /^Tariff batches$/}).click();
+    await page.getByRole('button', {name: 'Select all 226 classes', exact: true}).waitFor();
+    assert.equal(await page.getByText(/Confirmation outcome pending/).count(), 0);
+    assert.equal(await page.evaluate(actor => localStorage.getItem(`admin.tariff-batch.operation.v1.${actor}`), actor), firstActorSaved);
     assert.deepEqual(errors, []);
   } finally { await browser.close(); await new Promise<void>(done => server.close(() => done())); }
 }));

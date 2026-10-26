@@ -17,11 +17,15 @@ export function TariffBatchReview({ operation }: { operation: TariffBatchOperati
         <tbody>{plan.rows.map(row => <tr key={row.key} data-batch-review-row className="border-t border-border">
           <td className="p-3">{row.selector.mode} · {row.selector.resolution} · {row.selector.durationSec === 'continuous' ? 'source duration' : `${row.selector.durationSec}s`}<br />{row.selector.billingInputType === 'video_input' ? 'With video input' : 'Without video input'}</td>
           <td className="p-3">{row.currentCents === null && row.action === 'create' ? 'Missing' : money(row.currentCents)}</td><td className="p-3">{money(row.proposedCents)}<br /><span className="text-xs text-text-secondary">Supplier LIST: {money(row.supplierListCents)}</span></td>
-          <td className="p-3">{literal(row.proposedCell?.price as TariffBatchPrice | undefined)}{row.domain && <p className="text-xs text-text-secondary">All valid source durations through {row.domain.maxInputSeconds}s checked.</p>}</td>
+          <td className="p-3"><p>Before: {row.previousCell ? JSON.stringify(row.previousCell.price) : row.action === 'create' ? 'Missing' : 'Unavailable'}</p><p>After: {literal(row.proposedCell?.price as TariffBatchPrice | undefined)}</p>{row.domain && <p className="text-xs text-text-secondary">All valid source durations through {row.domain.maxInputSeconds}s checked.</p>}</td>
           <td className="p-3">{row.action}{row.issue && <p className="max-w-64 text-xs text-red-600">{row.issue}</p>}</td>
         </tr>)}</tbody>
       </table>
     </div>
+    <details className="text-sm"><summary className="cursor-pointer">Complete before and after plan</summary>
+      <p className="my-2 text-text-secondary">Includes exact selectors, original expressions, IDs, sources, versions and effective intervals. Proposed versions and dates are placeholders; commit assigns the actual server versions and timestamps.</p>
+      <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-all text-xs" data-batch-plan>{JSON.stringify(plan, null, 2)}</pre>
+    </details>
     {receipt && <p className="text-sm">{receipt.changes.length} prices committed. Revision {receipt.revisionBefore} → {receipt.revisionAfter}. {receipt.committedAt}</p>}
     <details className="text-sm"><summary className="cursor-pointer">Operation evidence</summary><p className="break-all">ID: {operation.id}<br />Fingerprint: {operation.fingerprint}<br />Preview expires: {operation.expiresAt}</p>
       {receipt && <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify(receipt, null, 2)}</pre>}</details>

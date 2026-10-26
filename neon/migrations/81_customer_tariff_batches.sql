@@ -32,6 +32,17 @@ CREATE TABLE app_tariff_batch_receipts (
   receipt_json JSONB NOT NULL CHECK (jsonb_typeof(receipt_json) = 'object'),
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
+-- Complete model-scoped reads include both exact and continuous selectors.
+CREATE INDEX app_customer_tariff_cells_model_idx ON app_customer_tariff_cells ((selector_json->>'engineId'));
+CREATE INDEX app_customer_tariff_versions_model_idx ON app_customer_tariff_cell_versions ((selector_json->>'engineId'));
+-- Operational refresh state is deliberately separate from immutable financial evidence.
+CREATE TABLE app_tariff_batch_refresh (
+  operation_id UUID PRIMARY KEY REFERENCES app_tariff_batch_receipts(operation_id),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'complete')),
+  attempts INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  last_error TEXT,
+  refreshed_at TIMESTAMPTZ
+);
 CREATE FUNCTION preserve_tariff_batch_receipt() RETURNS trigger AS $$
 BEGIN RAISE EXCEPTION 'tariff batch receipt is immutable'; END;
 $$ LANGUAGE plpgsql;

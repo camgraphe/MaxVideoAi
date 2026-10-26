@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
+import { query, withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
 import { loadPricingPolicyOverridesWithExecutor, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
-import { loadEffectiveCustomerTariffState, upsertCustomerTariffCell } from '@/server/pricing/customer-tariff-store';
+import { loadCustomerTariffModelState, upsertCustomerTariffCell } from '@/server/pricing/customer-tariff-store';
 import { insertPricingChangeEvent } from '../event-store';
 import type { PricingChangeJsonValue } from '@/lib/admin/pricing-change-contract';
 import { PricingAdminError } from '../errors';
@@ -29,7 +29,7 @@ function fingerprint(operation: Omit<StoredTariffBatch, 'fingerprint'> | StoredT
 }
 async function currentPlan(executor: TransactionQueryExecutor, proposal: StoredTariffBatch['proposal'], actorId: string) {
   const policy = await loadPricingPolicyOverridesWithExecutor(executor, { lock: true });
-  const state = await loadEffectiveCustomerTariffState(executor);
+  const state = await loadCustomerTariffModelState(executor, proposal.modelId);
   const rollbackReceipt = proposal.intent === 'rollback' ? (await getStoredTariffBatch(proposal.sourceOperationId, actorId, executor)).receipt : null;
   return { policy, plan: await buildTariffBatchPlan({ proposal, state, policy, rollbackReceipt }) };
 }
@@ -43,7 +43,7 @@ export async function previewTariffBatch(value: unknown, actorId: string): Promi
     const createdAt = new Date().toISOString();
     const operation: StoredTariffBatch = { id: randomUUID(), actorId, status: 'previewed', epoch: 0, fingerprint: '',
       createdAt, expiresAt: new Date(Date.parse(createdAt) + TARIFF_BATCH_TTL_MS).toISOString(),
-      plan, proposal, ...identity, receipt: null, failure: null };
+      plan, proposal, ...identity, receipt: null, failure: null, refreshStatus: 'not_required', refreshError: null };
     operation.fingerprint = fingerprint(operation, plan, policy);
     await insertTariffBatch(executor, operation);
     return publicTariffBatch(operation);
@@ -118,8 +118,9 @@ export async function applyTariffBatch(id: string, actorId: string, epoch: numbe
       plan, changes, lockDurationMs: Math.ceil(performance.now() - lockedAt) };
     if (receipt.lockDurationMs > TRANSACTION_BUDGET_MS) throw new Error('Tariff batch transaction budget exceeded.');
     await executor.query('INSERT INTO app_tariff_batch_receipts (operation_id, receipt_json) VALUES ($1, $2::jsonb)', [id, JSON.stringify(receipt)]);
+    if (changes.length) await executor.query('INSERT INTO app_tariff_batch_refresh (operation_id) VALUES ($1)', [id]);
     await executor.query("UPDATE app_tariff_batch_operations SET status = 'committed' WHERE id = $1", [id]);
-    return { ...publicTariffBatch(operation), status: 'committed', receipt };
+    return { ...publicTariffBatch(operation), status: 'committed', receipt, refreshStatus: changes.length ? 'pending' : 'not_required', refreshError: null };
   });
 }
 /** A row lock proves no live apply owns the operation; the increment fences any late handler. */
@@ -143,8 +144,24 @@ export async function confirmTariffBatch(id: string, expectedFingerprint: string
   try { operation = await applyTariffBatch(id, actorId, claim.operation.epoch); }
   catch { operation = await reconcileTariffBatch(id, actorId); }
   if (operation.status === 'committed' && operation.receipt?.changes.length) {
-    try { revalidate(operation.plan.modelId); }
-    catch { return { ...operation, operationalWarnings: ['Prices committed. Public page refresh failed; do not submit the batch again.'] }; }
+    try { return await refreshTariffBatchPages(id, actorId, revalidate); }
+    catch { return { ...operation, operationalWarnings: ['Prices committed. Page refresh is pending; retry page refresh only.'] }; }
   }
   return operation;
+}
+/** Idempotent operational retry: never calls the tariff mutation/confirmation path. */
+export async function refreshTariffBatchPages(id: string, actorId: string,
+  revalidate: (modelId: string) => void = revalidateCustomerTariffChangeSurfaces): Promise<TariffBatchOperation> {
+  const operation = await readTariffBatch(id, actorId);
+  if (operation.status !== 'committed') throw new PricingAdminError('invalid_payload', 'Only committed batches can refresh public pages.');
+  if (operation.refreshStatus !== 'pending') return operation;
+  try {
+    revalidate(operation.plan.modelId);
+    await query("UPDATE app_tariff_batch_refresh SET status = 'complete', attempts = attempts + 1, last_error = NULL, refreshed_at = clock_timestamp() WHERE operation_id = $1", [id]);
+    return { ...operation, refreshStatus: 'complete', refreshError: null };
+  } catch {
+    const message = 'Prices committed. Public page refresh failed; retry page refresh only.';
+    await query("UPDATE app_tariff_batch_refresh SET attempts = attempts + 1, last_error = $2 WHERE operation_id = $1 AND status = 'pending'", [id, message]).catch(() => undefined);
+    return { ...operation, refreshError: message, operationalWarnings: [message] };
+  }
 }

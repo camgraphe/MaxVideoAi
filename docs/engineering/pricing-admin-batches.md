@@ -36,16 +36,16 @@ already committed prices.
   a 1–10 multiplier with at most six fractional digits, or explicit fixed/unit
   prices. HTTP bodies are limited to 2 MiB. Client actor, timestamps, currency,
   target IDs, expiry and routing properties are rejected.
-- `planner.ts` resolves actual effective cells, preserves their stable IDs, quotes
+- `planner.ts` resolves actual effective cells from a complete model-scoped snapshot (including every exact exception and historical/future interval), preserves their stable IDs, quotes
   through `computeCanonicalBillingSnapshot`, and validates continuous domains
   through `validateCurrentContinuousTariffDomain`. Unavailable state never means
-  missing. Exact active exceptions block a continuous batch edit.
+  missing. Exact active exceptions and scheduled future prices block a continuous batch edit. The selected-model loader remains in the canonical tariff store and validates unknown ownership rather than assuming it is absent.
 - `service.ts` owns durable preview, claim, apply, status and reconciliation.
   `store.ts` owns operation SQL; existing tariff and event stores own prices and
   immutable per-cell history. Routes delegate through `http.ts`, which requires
   admin authorization before reading the body and same-origin JSON for mutations.
-- Route-local React components render selection, complete review and recovery.
-  The hook stores only the operation UUID in versioned browser storage. History
+- Route-local React components render selection, complete review (including inspectable previous/proposed expressions, provenance, versions and intervals) and recovery.
+  The hook stores only the operation UUID in versioned browser storage scoped to the authenticated administrator. History
   lists fetch 50 compact summaries; receipt details load on demand.
 
 A preview persists a server-created operation UUID, actor, normalized proposal,
@@ -69,7 +69,7 @@ Waits are capped at one second, statements and the complete PostgreSQL transacti
 at five seconds. A failure rolls back the entire financial transaction. These are
 qualification bounds, not permission to lengthen production timeouts. Revalidation
 runs once after commit; a failure warns that prices committed and must not be
-submitted again. It does not undo or mutate the immutable receipt.
+submitted again. It does not undo or mutate the immutable receipt. A pending refresh record commits with the receipt; its operational outcome survives reload. The authorized same-origin refresh endpoint retries only invalidation, including when price admission is disabled. It never re-enters confirmation or writes financial history.
 
 A duplicate confirmation reads the existing operation. Status is read-only.
 Reconciliation takes the operation row with `NOWAIT`: a live executor returns
