@@ -198,6 +198,42 @@ function failedTurn(message = googleFailure, paymentStatus: NonNullable<ImageCon
   return turn;
 }
 
+for (const [locale, label, meaning, examples, uncertainty] of [
+  ['en', 'Understand this refusal', /wording.*meaning.*reference media/i, /sexually explicit.*graphic violence.*hate.*minors/i, /does not.*exact.*guarantee/i],
+  ['fr', 'Comprendre ce refus', /formulation.*sens.*médias de référence/i, /sexuel explicite.*violence graphique.*haine.*mineurs/i, /ne précise pas.*garantit pas/i],
+  ['es', 'Entender este rechazo', /redacción.*significado.*medios de referencia/i, /sexual explícito.*violencia gráfica.*odio.*menores/i, /no siempre.*garantiza/i],
+] as const) {
+  test(`Google moderation help explains content checks without guessing the trigger (${locale})`, async () => {
+    const view = await mountCard({ turn: failedTurn(), locale });
+    try {
+      const help = [...view.dom.window.document.querySelectorAll('details')].find(details => details.querySelector('summary')?.textContent === label);
+      assert.ok(help, 'a click/tap disclosure accompanies the Google refusal');
+      assert.equal(help.open, false, 'long help stays collapsed initially');
+      assert.match(help.textContent ?? '', meaning);
+      assert.match(help.textContent ?? '', examples);
+      assert.match(help.textContent ?? '', uncertainty);
+      const policy = help.querySelector('a');
+      assert.equal(new URL(policy?.href ?? '').hostname, 'policies.google.com');
+      assert.doesNotMatch(help.textContent ?? '', /fixture-failed-job|sensitive words|refund|rembours|reembols/i);
+      assert.equal(view.confirms + view.renewals + view.refreshes, 0);
+    } finally { await view.close(); }
+  });
+}
+
+test('unknown, technical and other-provider failures never acquire Google moderation guidance', async () => {
+  for (const message of [
+    'MaxVideoAI could not complete this render.',
+    'This request was blocked by safety checks.',
+    'The reference image is too small.',
+    '{"message":"Google blocked this request during safety checks."}',
+    'https://provider.invalid/Google blocked this request during safety checks.',
+  ]) {
+    const view = await mountCard({ turn: failedTurn(message), locale: 'en' });
+    try { assert.equal(view.dom.window.document.querySelector('[data-safety-guidance]'), null); }
+    finally { await view.close(); }
+  }
+});
+
 for (const [locale, moderation, revise, nextQuote, refunded] of [
   ['en', /Google.*safety checks/, /Review the prompt/, /new quote/, /refunded to your wallet/],
   ['fr', /Google.*modération/, /Vérifiez le prompt/, /nouveau devis/, /remboursé sur votre wallet/],

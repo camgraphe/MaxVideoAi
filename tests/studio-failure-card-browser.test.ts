@@ -34,6 +34,8 @@ test('the real Studio route preserves safe failure explanations, locale and term
         await expect(status.nth(1)).not.toContainText(refund);
         await expect(status.nth(2)).toContainText(unknown);
         await expect(status.nth(2)).not.toContainText(/Google|modération|moderación|safety/);
+        await expect(cards.locator('[data-safety-guidance]')).toHaveCount(2);
+        await expect(cards.nth(2).locator('[data-safety-guidance]')).toHaveCount(0);
         for(const text of await status.allTextContents()){
           assert.match(text,next);
           assert.doesNotMatch(text,/fixture-job|fixture-interaction|request_id|provider_job_id|https?:\/\/|Responsible AI/);
@@ -48,11 +50,25 @@ test('the real Studio route preserves safe failure explanations, locale and term
       await page.goto(fixture.origin+'/?locale='+locale);
       const cards=await check(page);
       if(proof)for(let index=0;index<3;index++)await cards.nth(index).screenshot({path:join(proof,'captures',`${locale}-${['moderation-refunded','moderation-not-refunded','reason-unavailable'][index]}.png`)});
+      const help=cards.nth(0).locator('[data-safety-guidance]');
+      const helpSummary=help.locator('summary');
+      await expect(help).not.toHaveAttribute('open','');
+      await helpSummary.focus();await helpSummary.press('Enter');
+      await expect(help).toHaveAttribute('open','');
+      for(const paragraph of await help.locator('p').all())await expect(paragraph).toBeVisible();
+      await expect(help.getByRole('link')).toHaveAttribute('href','https://policies.google.com/terms/generative-ai/use-policy?hl='+locale);
+      if(proof)await cards.nth(0).screenshot({path:join(proof,'captures',`${locale}-safety-help-expanded.png`)});
+      await helpSummary.press('Space');await expect(help).not.toHaveAttribute('open','');
+      await page.setViewportSize({width:390,height:1000});
+      await helpSummary.click();await expect(help).toHaveAttribute('open','');
+      for(const paragraph of await help.locator('p').all())await expect(paragraph).toBeVisible();
+      if(proof)await cards.nth(0).screenshot({path:join(proof,'captures',`${locale}-safety-help-mobile.png`)});
+      await helpSummary.click();await expect(help).not.toHaveAttribute('open','');
       await page.reload();await check(page);
       await page.close();page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
       await page.goto(fixture.origin+'/?locale='+locale);await check(page);
       assert.deepEqual(errors,[]);
-      observations.push({locale,card:true,reloaded:true,reopened:true,refundOnlyWhenPersisted:true,unknownReasonNotReconstructed:true,mutations:0});
+      observations.push({locale,card:true,reloaded:true,reopened:true,refundOnlyWhenPersisted:true,unknownReasonNotReconstructed:true,safetyHelpKeyboard:true,safetyHelpMobile:true,mutations:0});
       await context.close();
     }
     if(proof)await writeFile(join(proof,'browser-observations.json'),JSON.stringify({scope:'Real route, real journal hook and quote card with synthetic stored records; unrelated panels and remote boundaries isolated.',observations,authenticatedCustomerFlowVerified:false},null,2)+'\n');
