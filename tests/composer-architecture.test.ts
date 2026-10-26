@@ -12,6 +12,7 @@ const promotedActionIconPath = join(root, 'frontend/components/composer/Composer
 const generationQuotePath = join(root, 'frontend/components/composer/ComposerGenerationQuote.client.tsx');
 const noticesPath = join(root, 'frontend/components/composer/ComposerNotices.client.tsx');
 const promptHeaderPath = join(root, 'frontend/components/composer/ComposerPromptHeader.client.tsx');
+const modeSwitchPath = join(root, 'frontend/components/composer/ComposerModeSwitch.client.tsx');
 
 const composerSource = readFileSync(composerPath, 'utf8');
 const composerTypesSource = readFileSync(composerTypesPath, 'utf8');
@@ -20,8 +21,8 @@ const multiPromptEditorSource = readFileSync(multiPromptEditorPath, 'utf8');
 const promotedActionIconSource = readFileSync(promotedActionIconPath, 'utf8');
 const noticesSource = readFileSync(noticesPath, 'utf8');
 
-test('composer delegates copy, contracts, multi-prompt, promoted action icon, quote, and notice presentation ownership', () => {
-  for (const path of [composerPath, composerTypesPath, composerCopyPath, multiPromptEditorPath, promotedActionIconPath, generationQuotePath, noticesPath]) {
+test('composer delegates copy, contracts, modes, multi-prompt, promoted action icon, quote, and notice presentation ownership', () => {
+  for (const path of [composerPath, composerTypesPath, composerCopyPath, multiPromptEditorPath, promotedActionIconPath, generationQuotePath, noticesPath, modeSwitchPath]) {
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
@@ -30,6 +31,8 @@ test('composer delegates copy, contracts, multi-prompt, promoted action icon, qu
   assert.match(composerSource, /<ComposerPromotedActionIcon/, 'Composer should compose the focused promoted action icon');
   assert.match(composerSource, /<ComposerGenerationQuote workspace=\{workspaceDensity\}/, 'workspace quote presentation belongs in the focused owner');
   assert.match(composerSource, /<ComposerNotices /, 'Composer should delegate guidance and error presentation');
+  assert.match(composerSource, /<ComposerModeSwitch modes=\{visibleModeToggles\}/, 'mode presentation has a focused owner');
+  assert.doesNotMatch(composerSource, /app-mode-switch|data-composer-mode/, 'mode control markup belongs in ComposerModeSwitch');
   assert.doesNotMatch(composerSource, /role="alert"/, 'notice severity belongs in ComposerNotices');
   assert.match(composerSource, /<ComposerReferenceMentionNotice\b/, 'reference review presentation belongs in the notice owner');
   assert.match(noticesSource, /export function ComposerReferenceMentionNotice\b/, 'the notice owner presents changed reference associations');
