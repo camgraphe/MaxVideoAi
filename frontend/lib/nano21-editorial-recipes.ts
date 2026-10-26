@@ -21,7 +21,7 @@ export const nano21EditorialRecipeFields = z.object({
   modelId: z.literal('gemini-nano-banana-2.1'), version: z.literal('2.1'), mode: z.literal('t2i'),
   promptLanguage: z.literal('en'), prompt: z.string().min(1).max(12000).refine(value => value.trim() === value),
   settings: z.object({ resolution: z.literal('1k'), aspectRatio: z.literal('16:9'), thinkingLevel: z.literal('medium'),
-    candidateCount: z.literal(1), numImages: z.literal(1), maxOutputTokens: z.literal(4096),
+    candidateCount: z.literal(1), numImages: z.literal(1), maxOutputTokens: z.union([z.literal(4096), z.literal(32768)]),
     enableWebSearch: z.literal(false), enableImageSearch: z.literal(false),
   }).strict(),
   references: z.tuple([]),
@@ -66,7 +66,7 @@ export function buildNano21EditorialSnapshot(recipe: Nano21EditorialRecipe) {
   const accepted = nano21EditorialRecipeSchema.parse(recipe);
   return { schemaVersion: 1, surface: 'image', engineId: accepted.engineId, inputMode: accepted.mode,
     prompt: accepted.prompt, core: { numImages: 1, resolution: '1k', aspectRatio: '16:9', thinkingLevel: 'medium',
-      maxOutputTokens: 4096, enableWebSearch: false }, refs: { imageUrls: [], characterReferences: [] } };
+      maxOutputTokens: accepted.settings.maxOutputTokens, enableWebSearch: false }, refs: { imageUrls: [], characterReferences: [] } };
 }
 
 export function nano21EditorialRecipeHref(id: string): string {

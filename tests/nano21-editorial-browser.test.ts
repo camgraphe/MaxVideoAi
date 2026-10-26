@@ -60,8 +60,9 @@ function Fixture(){
 createRoot(document.getElementById('root')).render(<Fixture/>);
 `;
 
-test('ID hydration, current exact-cap quote and real image runner preserve 4096 without automatic or external generation', async () => {
-  const recipe = nano21EditorialFixture();
+for (const explicitCap of [4096, 32768] as const) test(`ID hydration, current exact-cap quote and real image runner preserve ${explicitCap} without automatic or external generation`, async () => {
+  const recipe = nano21EditorialFixture(explicitCap);
+  const otherCap = explicitCap === 4096 ? 32768 : 4096;
   const engine = listBuildOnlyPrivateFalEngines().find(row => row.id === recipe.engineId)!.engine;
   const dictionary = JSON.parse(await readFile(join(frontend, 'messages/en.json'), 'utf8'));
   const bundle = await build({ stdin: { contents: fixture, loader: 'tsx', resolveDir: frontend }, write: false, outdir: '/nano21-editorial-fixture',
@@ -94,7 +95,8 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
       const body = JSON.parse(raw); res.setHeader('content-type', 'application/json');
       if (path === '/api/images/estimate') {
         estimates.push(body);
-        const available = quotesOpen && body.maxOutputTokens === 4096;
+        const available = (quotesOpen && body.maxOutputTokens === explicitCap)
+          || (!quotesOpen && explicitCap === 32768 && body.maxOutputTokens === 4096);
         res.statusCode = available ? 200 : 503;
         res.end(JSON.stringify(available ? { ok: true, pricing: { totalCents: 77, currency: 'USD', meta: { pricingMode: 'manual_tariff', customerTariffRevision: revision } } }
           : { ok: false, error: 'synthetic_missing_exact_cell' })); return;
@@ -115,7 +117,8 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
   const address = server.address(); assert.ok(address && typeof address !== 'string');
   const url = `http://127.0.0.1:${address.port}`;
   const browser = await chromium.launch({ headless: true });
-  const evidence = process.env.NANO21_EDITORIAL_EVIDENCE_DIR;
+  const evidenceRoot = process.env.NANO21_EDITORIAL_EVIDENCE_DIR;
+  const evidence = evidenceRoot ? join(evidenceRoot, String(explicitCap)) : undefined;
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 950 } });
     page.setDefaultTimeout(8000);
@@ -137,14 +140,16 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
       };
     });
     await page.goto(`${url}/?recipe=${recipe.id}`);
-    await page.waitForFunction(() => document.querySelector('[data-state]')?.textContent?.includes('"cap":4096'));
+    await page.waitForFunction(value => { const state = JSON.parse(document.querySelector('[data-state]')?.textContent ?? '{}');
+      return state.cap === value || Boolean(state.error); }, explicitCap);
     const state = JSON.parse(await page.locator('[data-state]').innerText());
     assert.deepEqual([state.engine, state.prompt, state.cap, state.resolution, state.aspect, state.thinking],
-      [recipe.engineId, recipe.prompt, 4096, '1k', '16:9', 'medium']);
+      [recipe.engineId, recipe.prompt, explicitCap, '1k', '16:9', 'medium']);
     const generate = page.locator('.app-generation-action');
     await page.getByRole('alert').filter({hasText:'Price unavailable'}).waitFor();
     assert.equal(await generate.isDisabled(), true); assert.equal(submissions.length, 0);
-    assert.equal(estimates.at(-1)!.maxOutputTokens, 4096);
+    assert.equal(estimates.at(-1)!.maxOutputTokens, explicitCap);
+    assert.ok(estimates.every(body => body.maxOutputTokens === explicitCap), 'recipe hydration never quotes the other cap implicitly');
     quotesOpen = true;
     await page.evaluate(() => window.dispatchEvent(new Event('pricing:refresh-required')));
     await page.waitForFunction(() => !document.querySelector<HTMLButtonElement>('.app-generation-action')?.disabled);
@@ -155,11 +160,11 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
     await page.waitForFunction(() => !document.querySelector<HTMLButtonElement>('.app-generation-action')?.disabled);
     await page.getByRole('button', {name:'Options',exact:true}).click();
     const cap = page.getByLabel('Output token limit');
-    await cap.waitFor(); assert.equal(await cap.inputValue(), '4096');
-    await cap.fill('32768');
+    await cap.waitFor(); assert.equal(await cap.inputValue(), String(explicitCap));
+    await cap.fill(String(otherCap));
     await page.getByRole('alert').filter({hasText:'Price unavailable'}).waitFor();
     assert.equal(await generate.isDisabled(), true);
-    await cap.fill('4096');
+    await cap.fill(String(explicitCap));
     await page.waitForFunction(() => !document.querySelector<HTMLButtonElement>('.app-generation-action')?.disabled);
     assert.equal(submissions.length, 0, 'hydration, login and quote changes never generate');
     await generate.click().catch(async error=>{process.stderr.write(JSON.stringify({estimates,submissions,state:await page.locator('[data-state]').innerText(),body:await page.locator('body').innerText()}));throw error;});
@@ -170,9 +175,9 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
     await page.waitForFunction(() => document.querySelector('[data-state]')?.textContent?.includes('"error":null'));
     assert.equal(submissions.length, 2); assert.equal(submissions[0].revision, '11'); assert.equal(submissions[1].revision, '12');
     for (const entry of submissions) assert.deepEqual([entry.body.engineId, entry.body.prompt, entry.body.maxOutputTokens, entry.body.numImages, entry.body.thinkingLevel, entry.body.resolution, entry.body.aspectRatio],
-      [recipe.engineId, recipe.prompt, 4096, 1, 'medium', '1k', '16:9']);
+      [recipe.engineId, recipe.prompt, explicitCap, 1, 'medium', '1k', '16:9']);
     assert.deepEqual(nativePayloads, [{ contents: [{ role: 'user', parts: [{ text: recipe.prompt }] }],
-      generationConfig: { responseModalities: ['TEXT','IMAGE'], candidateCount: 1, maxOutputTokens: 4096,
+      generationConfig: { responseModalities: ['TEXT','IMAGE'], candidateCount: 1, maxOutputTokens: explicitCap,
         thinkingConfig: { thinkingLevel: 'MEDIUM' }, imageConfig: { aspectRatio: '16:9', imageSize: '1K' } } }]);
     assert.ok(estimates.some(body=>body.maxOutputTokens===32768)); assert.ok(estimates.some(body=>body.maxOutputTokens===4096));
     if (evidence) {
@@ -202,6 +207,6 @@ test('ID hydration, current exact-cap quote and real image runner preserve 4096 
       assert.equal(submissions.length, 3);
     }
     assert.deepEqual(failures, []); assert.deepEqual(externalRequests, []);
-    if (evidence) await writeFile(join(evidence,'synthetic-capture.json'),JSON.stringify({synthetic:true,realProviderRequests:0,charges:0,estimates,submissions,nativePayloads},null,2));
+    if (evidence) await writeFile(join(evidence,'synthetic-capture.json'),JSON.stringify({synthetic:true,explicitRecipeCap:explicitCap,realProviderRequests:0,charges:0,estimates,submissions,nativePayloads},null,2));
   } finally { await browser.close(); server.closeAllConnections(); await new Promise<void>(resolve=>server.close(()=>resolve())); }
 });

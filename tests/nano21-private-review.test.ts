@@ -4,6 +4,7 @@ import { mkdtemp, writeFile, rm, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { JSDOM } from 'jsdom';
 import { buildNano21PrivateReview, assertPrivateReviewPath } from '../scripts/lib/nano21-editorial-review';
 import { nano21EditorialFixture } from './helpers/nano21-editorial-fixture';
 
@@ -17,10 +18,16 @@ test('private draft review measures supplied bytes and response membership witho
     const fixture = nano21EditorialFixture();
     const draft = { ...fixture, status: 'draft', media: { originalFile, displayFile }, provenance: {
       kind: 'external_vertex', location: 'global', generatedAt: fixture.provenance.generatedAt, responseFile } };
-    const html = await buildNano21PrivateReview(draft);
-    assert.match(html, /Private Nano21 draft review/); assert.match(html, /data:image\/png;base64,/);
-    assert.match(html, /4096/); assert.match(html, /responseSha256/); assert.match(html, /&quot;width&quot;: 64/);
-    assert.equal(html.includes(directory), false); assert.equal(html.includes('must-never-appear'), false);
+    for (const explicitCap of [4096, 32768] as const) {
+      const html = await buildNano21PrivateReview({ ...draft, settings: { ...draft.settings, maxOutputTokens: explicitCap } });
+      const dom = new JSDOM(html);
+      const declared = JSON.parse(dom.window.document.querySelector('[data-declared-facts]')!.textContent!);
+      assert.equal(declared.settings.maxOutputTokens, explicitCap);
+      assert.match(html, /Private Nano21 draft review/); assert.match(html, /data:image\/png;base64,/);
+      assert.match(html, /responseSha256/); assert.match(html, /&quot;width&quot;: 64/);
+      assert.equal(html.includes(directory), false); assert.equal(html.includes('must-never-appear'), false);
+      dom.window.close();
+    }
     await assert.rejects(() => buildNano21PrivateReview({ ...draft, status: 'accepted' }));
     await writeFile(responseFile, JSON.stringify({ candidates: [] }));
     await assert.rejects(() => buildNano21PrivateReview(draft), /selected original/);

@@ -15,7 +15,8 @@ test('only one accepted exact Nano21 t2i recipe can resolve; drafts, conflicting
   assert.equal(resolve(recipe).prompt, recipe.prompt);
   for (const record of [
     { ...recipe, status: 'draft' }, { ...recipe, engineId: 'nano-banana-2' }, { ...recipe, mode: 'i2i' },
-    { ...recipe, settings: { ...recipe.settings, maxOutputTokens: 32768 } },
+    { ...recipe, settings: { ...recipe.settings, maxOutputTokens: 8192 } },
+    ...[undefined, null, '32768'].map(maxOutputTokens => ({ ...recipe, settings: { ...recipe.settings, maxOutputTokens } })),
     { ...recipe, settings: { ...recipe.settings, systemInstruction: 'hidden' } },
     { ...recipe, references: ['https://example.com/ref.png'] }, { ...recipe, ownerId: 'private-user' },
     { ...recipe, jobId: 'fake-job' }, { ...recipe, providerResponse: { secret: 'private' } },
@@ -33,8 +34,9 @@ test('only one accepted exact Nano21 t2i recipe can resolve; drafts, conflicting
   assert.equal(entry.media, undefined, 'no placeholder or historical Nano2 media');
 });
 
-test('one authored source projects still hero, exact prompt, settings and ID handoff with no job, price or video', () => {
-  const recipe = nano21EditorialFixture();
+for (const explicitCap of [4096, 32768] as const) test(`an authored ${explicitCap} production recipe projects its exact settings and ID handoff without a job, price or video`, () => {
+  const recipe = nano21EditorialFixture(explicitCap);
+  assert.equal(resolveNano21EditorialRecipe(recipe.id, [recipe], true).settings.maxOutputTokens, explicitCap);
   const { hero, example } = projectNano21EditorialPageMedia(recipe);
   assert.deepEqual([hero.posterUrl, hero.prompt, hero.videoUrl, hero.href],
     [recipe.media.display.url, recipe.prompt, null, '/app/image?recipe=nano21-synthetic-fixture']);
@@ -42,7 +44,7 @@ test('one authored source projects still hero, exact prompt, settings and ID han
     [recipe.prompt, '/app/image?recipe=nano21-synthetic-fixture', null, null]);
   const snapshot = buildNano21EditorialSnapshot(recipe);
   assert.deepEqual(snapshot, { schemaVersion: 1, surface: 'image', engineId: 'nano-banana-2-1', inputMode: 't2i', prompt: recipe.prompt,
-    core: { numImages: 1, resolution: '1k', aspectRatio: '16:9', thinkingLevel: 'medium', maxOutputTokens: 4096, enableWebSearch: false },
+    core: { numImages: 1, resolution: '1k', aspectRatio: '16:9', thinkingLevel: 'medium', maxOutputTokens: explicitCap, enableWebSearch: false },
     refs: { imageUrls: [], characterReferences: [] } });
   assert.doesNotMatch(JSON.stringify({ hero, example, snapshot }), /ownerId|providerResponse|billing|jobId|responseSha256/);
 });

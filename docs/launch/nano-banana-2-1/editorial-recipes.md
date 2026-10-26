@@ -7,8 +7,13 @@ uploads, adopts an application job, changes a tariff, or publishes a model.
 
 The authored record is intentionally limited to Nano Banana 2.1 t2i: exact English
 prompt, `gemini-nano-banana-2.1`, version 2.1, global Vertex, 1K, 16:9, MEDIUM,
-candidateCount 1, numImages 1, maxOutputTokens 4096, no tools, system instruction,
-or references. The schema rejects extra fields. Native response/account/billing
+candidateCount 1, numImages 1, an explicit maxOutputTokens of 4096 or 32768, no tools,
+system instruction or references. The historical production recipe uses 4096;
+the latest NINE-01 source packet explicitly uses 32768. Each accepted record keeps
+its supplied cap through private review, hydration, estimates and the generation
+body. Neither cap defaults to or aliases the other; absent/other caps are refused.
+This source support grants no customer price-profile or generation approval.
+The schema rejects extra fields. Native response/account/billing
 data belongs in private production evidence, never in the public JSON.
 
 An accepted public record requires its real generation and acceptance dates,
