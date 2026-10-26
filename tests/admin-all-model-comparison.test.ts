@@ -6,13 +6,13 @@ import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-aud
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios.ts';
 import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 
-test('admin comparison inventory contains published models and the explicitly gated V4 tariff candidate', () => {
+test('admin comparison inventory contains published models and the explicitly gated V4 and Nano tariff candidates', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
   assert.equal(expected.length, 49);
-  assert.equal(rows.length, expected.length + 1);
-  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id),'kling-v4']));
-  assert.deepEqual(rows.filter(({entry})=>!expected.some(model=>model.id===entry.id)).map(({entry})=>entry.id),['kling-v4']);
+  assert.equal(rows.length, expected.length + 2);
+  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id),'kling-v4','nano-banana-2-1']));
+  assert.deepEqual(rows.filter(({entry})=>!expected.some(model=>model.id===entry.id)).map(({entry})=>entry.id),['kling-v4','nano-banana-2-1']);
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2_flash'));
   assert.equal(new Set(expected.map((model) => model.family)).size, 15);

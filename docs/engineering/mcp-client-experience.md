@@ -1,3 +1,22 @@
+## 2026-10-26 — Exact Nano candidate settings at the MCP boundary (offline)
+
+The shared strict preparation/comparison settings schema accepts `maxOutputTokens`
+(integer 1–32768) and `systemInstruction` (at most 4096 characters). Canonical
+model admission still decides compatibility; Nano search remains closed and
+its publication flags remain false. Explicit 4096 and 32768 stay different exact
+scenarios through registered MCP tools, canonical pricing and native payloads.
+No new commercial profile, approved amount or provider qualification follows.
+
+The offline policy collector measures unchanged global instructions (1551 UTF-8
+bytes), preparation description (1639 bytes) and maximum description (1927 bytes).
+Preparation schema is 13802 bytes; comparison schema is 19217 bytes. Removing
+only these two properties reproduces prior fingerprint
+`df9e437fc8a14fb347a6526b6cb5cde522186167478aa946e40f7c6bdb25aaef`;
+the reviewed additive schema yields
+`86291d646c60b8e9fc79e1bc38141a37fff997d51850ca1a89a95ae522b7894a`.
+Only the curated policy fingerprint changes; its decisions and fixture contract
+remain unchanged. These local checks establish no release or real-host refresh.
+
 ## 2026-10-22 — Kling V4 canonical owned subjects (offline candidate)
 
 `prepare_generation` now accepts optional ordered `subjects`, scoped by canonical validation to Kling V4 reference/edit modes. Each image/video subject points to existing zero-based `role=reference` slots; every subject reference must be an owned asset. The complete ordered request participates in the existing quote hash and stored confirmation snapshot. The seven-subject, three-video-subject envelope rejects overflow, unsupported modes and unknown fields. No arbitrary element URL or provider voice ID is accepted. Voice binding remains unavailable until a server-owned fal issuance/provenance registry can bind owner, provider account, source and returned voice ID.
