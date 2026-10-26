@@ -1,75 +1,69 @@
-# Kling 4 functional opening preparation — 26 October 2026
+# Kling4 functional opening candidate — 26 October2026
 
-This candidate prepares the functional opening and fixes the demo's generation
-mode. It does not activate Kling 4, create tariffs, import media, change playlists
-or authorize a generation. The price-field correction remains separately
-reviewable in PR538 at `60b1a3b12`.
+This branch prepares functional access in App, Studio and MCP. It sets canonical
+App publication totrue and the existing engine metadata tolive/available. This is
+a reviewed release candidate, **not an authorization to merge or activate it in
+production**. The currently delivered closed preparation isPR539/main4ad0b4c84.
 
-## Functional release and marketing are independent
+## Functional access and marketing
 
-`publication.app.published` is the canonical functional release decision for App,
-Studio and MCP. The shared V4 release policy now reads that authored projection
-instead of an unconditional V4 block. The flag is still **false**, for every
-actor; credentials, admin access and restored requests cannot bypass it. Current
-engine metadata also stays `maintenance` / `paused` and its registry card stays
-`paused`.
+Four existing fal modes are proposed: text-to-video, image-to-video,
+reference-to-video and video editing (Modify). Their current contracts, owned
+references, exact source durations, request validation and durable recovery keep
+their existing owners. Flash, Extend and unqualified voice binding stay absent.
+No new provider, environment switch, transport fallback or paid test is introduced.
 
-A future functional activation must set App publication and change those existing
-engine availability values together, regenerate the registry projections and run
-the release qualification. A separate non-applied patch is kept in the dated
-operator packet. It is not part of this branch's active configuration.
+Model indexation, examples, comparisons, public Pricing and sitemap remain closed.
+The model route stays published/noindex. No media IDs, gallery, playlist ordering,
+Camgraph import, homepage hero or public videoSEO entry is fabricated or changed.
+The first functional release does not depend on new films or marketing adoption.
 
-Model indexation, examples, comparisons, public Pricing and sitemap publication
-stay closed. Functional access does not require a fabricated gallery or a media
-import. Stored engine configuration may retain an operational pause; check its
-real state before opening rather than overwriting an operator's settings.
+## Prices are a separate native-admin operation
 
-The canonical price owner still refuses missing, inactive or invalid tariffs.
-Opening discovery never creates a price, bypasses owned-reference validation,
-changes quote confirmation or makes an unqualified mode available. Offline tests
-exercise the real catalogue/details and executable-mode owners with the proposed
-future availability profile, and the five approved price examples through the
-canonical calculator. No cell is persisted.
+No customer amount is authored by this branch. Missing or inactive tariffs still
+block the canonical quote before billing/provider execution. The approved226
+create-only classes must be installed and verified through the normal admin
+preview/confirmation workflow before release. The operator's fixed-field mapping
+is prepared from the already approved integer amount, not the unrounded LIST rate.
+The existing fixed editor uses half-up rounding; continuous V4 rates retain their
+exact decimal unit_terms/up semantics.
 
-## Recorded mode on the existing model demo
+The exact decimal input correction is already delivered throughPR539, which
+contains the replay ofPR538. The native rate recipe succeeded. The current native
+lot is stopped at5 previews/0 confirmations/0 cells after a cancelled141c/142c
+fixed preview. Its amended attempt bound and resumed writes need the corresponding
+whole-lot decision. This branch never resolves that approval by changing code.
 
-The normal gallery SQL extracts only the recorded `inputMode` token, including
-public marketing copies. The normalizer validates it; `GalleryVideo`, the card
-and `FeaturedMedia` carry that single token. The full settings/reference snapshot
-does not become a public gallery prop.
+## Qualified shared timing inventory
 
-The pure localized Prompt Lab view-model uses that recorded mode. A reviewed
-`ref2v` clip is labelled reference-to-video in EN/FR/ES. Missing or unknown modes
-get a neutral video-generation label; neither prompt wording nor model identity
-can manufacture T2V. The original prompt, original video, duration, aspect and
-audio presentation remain with their existing owners.
+Public tariff coverage now uses the same reviewed V4 source/output timing
+contexts as the admin preparation. Once App publication istrue, the old generic
+collector attempted video-input facts without verified source seconds and threw.
+The shared pure context owner supplies the established3s representative source
+for video classes and both reference-input classes. Continuous source duration
+coverage remains explicit. The admin does not append those scenarios twice once
+they are public. No customer price is calculated or persisted by this inventory.
 
-No player, autoplay policy, playlist selector, curation order or publication
-predicate changes. The singer and THE NEXT ONE choices remain acquired but are
-not represented by invented public jobs or URLs. The real submitted tram prompt
-is a test fixture; all database/media identities in tests are explicitly offline
-fixtures and never launch assets.
+## Qualification and rollback
 
-## Evidence and outstanding release dependencies
+The actual published profile is tested through the catalogue/details and mode
+executability owners, with local dependencies and canonical prices. Closed and
+rollback tests explicitly set Appfalse in their disposable test process and
+restore it. Direct generateVideo calls in those tests only run inside the closed
+fixture, before any configuration, billing, canary or provider work. No new test
+is allowed to contact an actual provider.
 
-- Real PostgreSQL tests cover SQL → normalization → card → media → localized
-  demo, and the existing public-copy overlay without exposing private settings.
-- Release-profile tests keep the authored state closed, exercise four executable
-  mode schemas/catalogue entries with local dependencies, refuse missing tariffs,
-  and check 118/236/177/216/323 cents in the real canonical quote calculator.
-- Existing closed-release, preflight, Prompt Lab architecture and media-coherence
-  tests remain applicable. Their results do not certify a live paid MCP render.
-- PR538 still needs its own coordinated integration before the remaining native
-  tariff lot. Limits remain448 native previews and226 confirmations; no additional
-  tariff POST is made while the rate-field defect remains in production.
-- Camgraph's existing1USD decision remains pending. Its import conditions the
-  marketing media, not this local functional preparation. No upload/import/apply.
-- Film owns prompts and artistic review. One future MCP operator will be
-  coordinated after actual model availability and an approved exact quote. The
-  five new films do not block preparation of this opening.
+Before merge: current-main CI/Preview and final review; all226 native prices and
+five examples118/236/177/216/323c verified; actual stored engine configuration
+checked; a concrete functional-opening decision with exact source and effects.
+After delivery: both domains at the merged Git commit, normal App/Studio/MCP
+catalogue/details/quote checks, stale quote refusal and existing recovery paths.
+A future paid end-to-end render needs its own approved exact quote; its result is
+not claimed by these offline tests.
 
-The final public decision must carry its exact current-main candidate, qualified
-CI/Preview, installed prices, actual executable modes, publication effects and
-rollback. Reclosing App publication blocks new V4 submissions for every actor;
-accepted jobs, durable recovery identities, originals and paid history remain.
-No public activation or production delivery is authorized by this document.
+Rollback closes App publication and restores maintenance/paused metadata through
+ordinary Git delivery, with projections regenerated. Keep active tariffs, accepted
+jobs, provider receipts, owned originals and paid history. Do not delete an active
+tariff or resubmit an uncertain provider job. Film owns prompts/artistic review;
+one future coordinated MCP operator will execute only after a fresh approved
+quote. Camgraph1USD remains pending for marketing adoption.

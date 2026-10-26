@@ -7,6 +7,7 @@ import {loadCustomerTariffScenarioDetail,previewCustomerTariffChange,confirmCust
 import {isKlingV4ReleaseBlocked} from '../frontend/src/server/video-generation/kling-v4-release-policy';
 
 test('canonical admin can preview and stage the new V4 class without an old retail amount; stale confirmation fails',async()=>{
+ const blockedBefore=isKlingV4ReleaseBlocked('kling-v4');
  const db=await startDisposablePostgres('kling-v4-admin');
  const previous={DATABASE_URL:process.env.DATABASE_URL,NODE_ENV:process.env.NODE_ENV,PRICING_SANDBOX:process.env.PRICING_SANDBOX};
  Object.assign(process.env,{DATABASE_URL:db.databaseUrl,NODE_ENV:'development',PRICING_SANDBOX:'1'});
@@ -24,7 +25,7 @@ test('canonical admin can preview and stage the new V4 class without an old reta
   await confirmCustomerTariffChange(proposal,preview.fingerprint,'11111111-1111-4111-8111-111111111111',()=>{});
   const staged=await loadCustomerTariffScenarioDetail('kling-v4',detail.selector);
   assert.equal(staged.currentCents,null);assert.equal(staged.continuousInputTariff?.prepared,true);
-  assert.equal((await loadCustomerTariffHistory()).length,1);assert.equal(isKlingV4ReleaseBlocked('kling-v4'),true);
+  assert.equal((await loadCustomerTariffHistory()).length,1);assert.equal(isKlingV4ReleaseBlocked('kling-v4'),blockedBefore,'a tariff edit does not change functional publication');
  }finally{
   await getDb().end().catch(()=>undefined);await db.cleanup();
   for(const [key,value]of Object.entries(previous))if(value===undefined)delete process.env[key];else process.env[key]=value;

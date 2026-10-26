@@ -6,6 +6,7 @@ import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib
 import * as appPreflight from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { computeConfiguredPreflight } from '../frontend/src/server/engines';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import { withClosedKlingV4Release } from './helpers/kling-v4-release-profile';
 
 const sourceUrl='https://media.maxvideoai.com/user-assets/offline-source.mp4';
 const source={assetId:'source',slotId:'video_url',kind:'video' as const,url:sourceUrl};
@@ -66,6 +67,6 @@ test('actual App owned-media and canonical preflight quote source5.25 on omissio
  const forged=await resolveAdmitted({request:reserved.request,userId:'offline-owner'},dependencies);
  assert.equal(forged.error?.code,'PRICING_MEDIA_FACTS_UNTRUSTED');assert.equal(contexts.length,2);
 
- const gated=await appPreflight.resolveMediaAwarePreflight({request:parsedOmission.request,userId:'offline-owner'},dependencies);
- assert.equal(gated.error?.code,'ENGINE_UNAVAILABLE');assert.equal(contexts.length,2,'the public release gate remains closed');
+ const gated=await withClosedKlingV4Release(()=>appPreflight.resolveMediaAwarePreflight({request:parsedOmission.request,userId:'offline-owner'},dependencies));
+ assert.equal(gated.error?.code,'ENGINE_UNAVAILABLE');assert.equal(contexts.length,2,'the closed rollback fixture must not reach price');
 });

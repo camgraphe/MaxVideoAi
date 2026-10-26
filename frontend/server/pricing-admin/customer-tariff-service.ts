@@ -36,7 +36,8 @@ import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
 
 function adminTariffCoverage() {
   const coverage = collectSellableManualTariffCoverage();
-  return { ...coverage, scenarios: [...coverage.scenarios, ...klingV4TariffScenarios(), ...seedanceWorkflowScenarios(coverage.scenarios)] };
+  const preparedKling = coverage.scenarios.some(scenario => scenario.modelId === 'kling-v4') ? [] : klingV4TariffScenarios();
+  return { ...coverage, scenarios: [...coverage.scenarios, ...preparedKling, ...seedanceWorkflowScenarios(coverage.scenarios)] };
 }
 
 const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',

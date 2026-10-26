@@ -1,20 +1,9 @@
-import { KLING_V4_ENGINE, KLING_V4_MODES, KLING_V4_DURATIONS, KLING_V4_RESOLUTIONS } from '@/config/fal-engines/kling-v4';
 import { buildManualTariffCoverageScenario, type ManualTariffCoverageScenario } from './manual-tariff-coverage';
+import { klingV4TariffContexts } from './kling-v4-tariff-contexts';
 
-/** Admin preparation only. This inventory neither publishes V4 nor supplies a customer amount. */
+/** Qualified admin timing classes; this inventory neither publishes V4 nor supplies a customer amount. */
 export function klingV4TariffScenarios(): ManualTariffCoverageScenario[] {
-  return KLING_V4_MODES.flatMap(mode => KLING_V4_RESOLUTIONS.flatMap(resolution =>
-    KLING_V4_DURATIONS.flatMap(duration => {
-      const videoInputClasses = mode === 'ref2v' ? [false, true] : [mode === 'v2v'];
-      return videoInputClasses.map(hasVideoInput => buildManualTariffCoverageScenario({
-        engine: KLING_V4_ENGINE,
-        mode,
-        resolution,
-        durationSec: Number(duration),
-        hasVideoInput,
-        ...(hasVideoInput ? { inputVideoDurationSec: 3 } : {}),
-      }, `kling-v4:${mode}:${resolution}`));
-    })));
+  return klingV4TariffContexts().map(({ context, capabilityKey }) => buildManualTariffCoverageScenario(context, capabilityKey));
 }
 
 export function withKlingV4TariffInput(

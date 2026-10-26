@@ -579,7 +579,7 @@
     "successorId": null,
     "successorSlug": null,
     "versionLabel": "4.0",
-    "availability": "paused",
+    "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
       "modelPage": {

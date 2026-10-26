@@ -34,7 +34,7 @@ const modeCaps: NonNullable<EngineCaps['modeCaps']> = Object.fromEntries(modes.m
 
 export const KLING_V4_ENGINE: EngineCaps = {
   id: KLING_V4_ID, label: 'Kling 4.0', provider: 'Kling by Kuaishou', version: '4.0',
-  status: 'maintenance', availability: 'paused', latencyTier: 'standard', queueDepth: 0, region: 'global',
+  status: 'live', availability: 'available', latencyTier: 'standard', queueDepth: 0, region: 'global',
   modes, maxDurationSec: 30, resolutions: [...KLING_V4_RESOLUTIONS],
   aspectRatios: [...KLING_V4_ASPECT_RATIOS], fps: [], audio: true,
   upscale4k: false, extend: false, motionControls: false, keyframes: false, params: {},
@@ -68,7 +68,7 @@ export const KLING_V4_ENGINE: EngineCaps = {
 
 export const KLING_V4_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   id: KLING_V4_ID, marketingName: 'Kling 4.0', cardTitle: 'Kling 4.0', provider: 'Kling by Kuaishou',
-  brandId: 'kling', versionLabel: '4.0', availability: 'paused', logoPolicy: 'logoAllowed',
+  brandId: 'kling', versionLabel: '4.0', availability: 'available', logoPolicy: 'logoAllowed',
   engine: KLING_V4_ENGINE,
   modes: modes.map(mode => ({ mode, falModelId: KLING_V4_ENDPOINTS[mode], ui: modeCaps[mode]! })),
   defaultFalModelId: KLING_V4_ENDPOINTS.t2v,

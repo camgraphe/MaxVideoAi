@@ -11523,7 +11523,7 @@
       ]
     },
     "versionLabel": "4.0",
-    "availability": "paused",
+    "availability": "available",
     "logoPolicy": "logoAllowed",
     "lifecycle": "current",
     "successorId": null,
@@ -11543,7 +11543,7 @@
         "includeInHub": false
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
         "includeInEstimator": false
@@ -11555,8 +11555,8 @@
       "label": "Kling 4.0",
       "provider": "Kling by Kuaishou",
       "version": "4.0",
-      "status": "maintenance",
-      "availability": "paused",
+      "status": "live",
+      "availability": "available",
       "latencyTier": "standard",
       "queueDepth": 0,
       "region": "global",

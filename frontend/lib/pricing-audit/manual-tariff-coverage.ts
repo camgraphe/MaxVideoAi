@@ -12,6 +12,7 @@ import { getBytePlusSeedanceModeResolutions } from '@/lib/byteplus-mode-capabili
 import { resolveBytePlusTransport } from '@/server/video-providers/byteplus-modelark-transport';
 import { seedanceAutomaticDurationBounds, isSeedanceAdaptiveAspect } from '@/lib/seedance-option-pricing';
 import { hasOperationTariffInventory, videoOperationTariffContexts } from './video-operation-tariff-inventory';
+import { klingV4TariffContexts } from './kling-v4-tariff-contexts';
 
 export type ManualTariffCoverageScenario = {
   id: string;
@@ -93,6 +94,17 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
     const entry = getFalEngineById(model.id);
     if (!entry) {
       gaps.push({ modelId: model.id, reason: 'No executable engine catalog entry' });
+      continue;
+    }
+    if (model.id === 'kling-v4') {
+      for (const { context, capabilityKey } of klingV4TariffContexts()) {
+        if (scope.mode !== undefined && context.mode !== scope.mode) continue;
+        scenarios.push(buildManualTariffCoverageScenario(context, capabilityKey));
+      }
+      for (const mode of ['ref2v', 'v2v']) {
+        if (scope.mode !== undefined && mode !== scope.mode) continue;
+        gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
+      }
       continue;
     }
     for (const modeConfig of entry.modes) {

@@ -12,21 +12,19 @@ import { prepareContinuousInputTariffChange } from '../frontend/server/pricing-a
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
 
-test('functional release follows App publication independently of marketing; authored production state stays closed', async () => {
+test('functional publication exposes four qualified modes independently of marketing and supports closed rollback', async () => {
   const model = getRuntimeModelById('kling-v4')!;
-  assert.equal(model.publication.app.published, false);
-  assert.equal(isKlingV4ReleaseBlocked('kling-v4'), true);
+  assert.equal(model.publication.app.published, true);
+  assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
   const original = model.publication.app.published;
   try {
-    // Simulate a future reviewed registry in this disposable test process only.
-    model.publication.app.published = true;
     assert.equal(model.publication.model.indexable, false);
     assert.equal(model.publication.examples.published, false);
     assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
     assert.doesNotThrow(() => assertKlingV4ReleaseReady('kling-v4'));
-    // The non-applied opening patch also changes the existing paused engine metadata.
-    const engine = { ...getFalEngineById('kling-v4')!.engine,
-      status: 'live' as const, availability: 'available' as const };
+    const engine = getFalEngineById('kling-v4')!.engine;
+    assert.equal(engine.status, 'live');
+    assert.equal(engine.availability, 'available');
     const deps = { listEngines: async () => [engine], surfaceByEngineId: () => 'video' as const,
       isModeExecutable: (selected: typeof engine, mode: Parameters<typeof resolveAgentGenerationModeExecutability>[1]) =>
         resolveAgentGenerationModeExecutability(selected, mode,
@@ -77,5 +75,5 @@ test('functional release follows App publication independently of marketing; aut
     assert.equal(isKlingV4ReleaseBlocked('kling-3-pro'), false);
     assert.equal(isKlingV4ReleaseBlocked(undefined), false);
   } finally { model.publication.app.published = original; }
-  assert.equal(isKlingV4ReleaseBlocked('kling-v4'), true);
+  assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
 });
