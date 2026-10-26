@@ -582,3 +582,11 @@ the budget.
 - Record screenshots/observations and precise limitations in the release report; a
   passing source contract is not a browser or production check. Review the committed
   branch before any separate production merge/deployment procedure.
+
+### Optional exact tariff batches
+
+The gated Tariff batches section shares the existing pricing cockpit and canonical
+customer tariff store. Durable server previews, one atomic confirmation, per-cell
+history and fenced recovery are specified in [pricing-admin-batches.md](pricing-admin-batches.md).
+Migration 81 and the admission flags default off; this feature does not publish a
+model, enable generation or change a runtime pricing policy.

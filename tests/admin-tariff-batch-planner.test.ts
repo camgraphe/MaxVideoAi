@@ -86,3 +86,17 @@ test('unsupported classes and below-reference explicit prices are blocked by rea
   assert.equal(plan.rows[0].action, 'conflict');
   assert.equal(plan.counts.create, 0);
 });
+
+test('compiled continuous rates retain approved fractional totals and upward cent rounding across the domain', async () => {
+  const { evaluateManualTariffPrice } = await import('../packages/pricing/src/manual-tariff-price');
+  const { compileKlingBatchPrice } = await import('../frontend/server/pricing-admin/tariff-batches/kling');
+  for (const [resolution, rateHundredths, example] of [['720p', 1410, 216], ['1080p', 2115, 323]] as const) {
+    const row = klingBatchClasses().find(c => c.selector.mode === 'ref2v' && c.selector.resolution === resolution && c.selector.billingInputType === 'video_input')!;
+    const price = compileKlingBatchPrice(row, '1.50');
+    assert.equal(evaluateManualTariffPrice(price, { billable_seconds: 15.25 }).customerTotalCents, example);
+    for (let hundredths = 600; hundredths <= 6000; hundredths += 17) {
+      const actual = evaluateManualTariffPrice(price, { billable_seconds: hundredths / 100 }).customerTotalCents;
+      assert.equal(actual, Math.ceil(hundredths * rateHundredths / 10000), `${resolution} ${hundredths}/100 seconds`);
+    }
+  }
+});

@@ -1,7 +1,7 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { PricingAdminError } from '../errors';
 import { batchUuid } from './input';
-import type { TariffBatchOperation, TariffBatchProposal, TariffBatchReceipt } from './contract';
+import type { TariffBatchOperation, TariffBatchProposal, TariffBatchReceipt, TariffBatchSummary } from './contract';
 
 export type StoredTariffBatch = TariffBatchOperation & { proposal: TariffBatchProposal; sourceId: string; targetId: string };
 type Raw = {
@@ -26,9 +26,11 @@ export async function getStoredTariffBatch(id: string, actorId: string, executor
   if (!row) throw new PricingAdminError('missing_target', 'Tariff batch not found.');
   return map(row);
 }
-export async function listStoredTariffBatches(actorId: string): Promise<TariffBatchOperation[]> {
-  const rows = await query<Raw>(`SELECT ${columns} FROM ${from} WHERE o.actor_id = $1 ORDER BY o.created_at DESC, o.id DESC LIMIT 50`, [batchUuid(actorId)]);
-  return rows.map(row => publicTariffBatch(map(row)));
+export async function listStoredTariffBatches(actorId: string): Promise<TariffBatchSummary[]> {
+  const rows = await query<{ id: string; status: TariffBatchOperation['status']; created_at: Date; plan: TariffBatchSummary['plan'] }>(
+    `SELECT id, status, created_at, jsonb_build_object('reason', plan_json->'reason', 'counts', plan_json->'counts') AS plan
+     FROM app_tariff_batch_operations WHERE actor_id = $1 ORDER BY created_at DESC, id DESC LIMIT 50`, [batchUuid(actorId)]);
+  return rows.map(row => ({ id: row.id, status: row.status, createdAt: row.created_at.toISOString(), plan: row.plan }));
 }
 export async function insertTariffBatch(executor: QueryExecutor, operation: StoredTariffBatch): Promise<void> {
   await executor.query(`INSERT INTO app_tariff_batch_operations

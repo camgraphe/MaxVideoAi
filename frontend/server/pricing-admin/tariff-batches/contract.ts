@@ -72,3 +72,7 @@ export type TariffBatchOperation = {
   failure: string | null;
   operationalWarnings?: string[];
 };
+
+export type TariffBatchSummary = Pick<TariffBatchOperation, 'id' | 'status' | 'createdAt'> & {
+  plan: Pick<TariffBatchPlan, 'reason' | 'counts'>;
+};
