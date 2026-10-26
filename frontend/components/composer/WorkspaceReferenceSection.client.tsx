@@ -8,6 +8,7 @@ import { useId, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import { AppGlyph } from '@/components/app/AppGlyph';
+import { WorkspaceComposerGlyph } from './WorkspaceComposerGlyph';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { ComposerProps } from './composer-types';
@@ -104,18 +105,20 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
             aria-label={asset ? `${copy[command]} · ${asset.name}` : undefined} aria-describedby={availability.addDisabled ? restrictionId : undefined} aria-haspopup="dialog" aria-expanded={activeCommand === entry.field.id} title={entry.disabled ? entry.disabledReason ?? copy.unavailable : copy[command]}
             onClick={(event) => { if (availability.canOpen) open(entry.field.id, event.currentTarget); }}>
             <span className="app-reference-command-media">
-              {asset?.kind === 'image' ? <ReferenceThumbnail asset={asset} /> : <AppGlyph name={command} />}
+              {asset?.kind === 'image' ? <ReferenceThumbnail asset={asset} /> : <WorkspaceComposerGlyph name={command} />}
               {asset?.status === 'uploading' ? <small className="app-reference-command-status" role="status">…<span className="sr-only">{assetCopy.uploading}</span></small> : asset?.status === 'error' ? <small className="app-reference-command-status" role="alert">!<span className="sr-only">{asset.error ?? assetCopy.uploadFailed}</span></small> : null}
             </span><span className="app-reference-command-label">{copy[command]}</span>
             {!asset && entry.required ? <small>{copy.required}</small> : null}
+            {!asset && !availability.addDisabled ? <WorkspaceComposerGlyph name="add" className="app-reference-command-add" /> : null}
           </button>;
         })}
         {collections.length || subjectReferences ? <button ref={(node) => { if (node) commandRefs.current.set('collections', node); else commandRefs.current.delete('collections'); }} type="button" className={`app-reference-command${collectionAvailability.addDisabled && !subjectReferences ? ' is-add-disabled' : ''}`} data-reference-command="collections"
           data-add-disabled={collectionAvailability.addDisabled && !subjectReferences || undefined} aria-disabled={!collectionAvailability.canOpen && !subjectReferences || undefined}
           aria-label={collectionAvailability.addDisabled && selectedCollections.length ? copy.manage : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.add} aria-describedby={[collectionRequired.length ? requiredId : null, collections.some((entry) => entry.disabled) ? restrictionId : null].filter(Boolean).join(' ') || undefined} aria-haspopup="dialog" aria-expanded={activeCommand === 'collections'} onClick={(event) => { if (collectionAvailability.canOpen || subjectReferences) open('collections', event.currentTarget); }}>
-          <span className="app-reference-command-media"><AppGlyph name="reference" /></span>
+          <span className="app-reference-command-media"><WorkspaceComposerGlyph name="reference" /></span>
           <span className="app-reference-command-label">{sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title}</span>
-          <span aria-hidden="true">{collectionAvailability.addDisabled && selectedCollections.length ? selectedCollections.length : '+'}</span>
+          {collectionAvailability.addDisabled && selectedCollections.length ? <span className="app-reference-command-count" aria-hidden="true">{selectedCollections.length}</span>
+            : !collectionAvailability.addDisabled || subjectReferences ? <WorkspaceComposerGlyph name="add" className="app-reference-command-add" /> : null}
         </button> : null}
         {assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null)}
     </div>
