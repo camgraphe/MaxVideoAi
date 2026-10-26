@@ -12,6 +12,10 @@ reference-to-video and video editing (Modify). Their current contracts, owned
 references, exact source durations, request validation and durable recovery keep
 their existing owners. Flash, Extend and unqualified voice binding stay absent.
 No new provider, environment switch, transport fallback or paid test is introduced.
+Conversation's separate certification includes these four modes; the retired
+Canvas certification does not expand. Restored workspace duration options keep
+their original representation when they match the saved total, while a stale
+single-shot option cannot replace a saved shot-plan total.
 
 Model indexation, examples, comparisons, public Pricing and sitemap remain closed.
 The model route stays published/noindex. No media IDs, gallery, playlist ordering,
@@ -52,6 +56,20 @@ rollback tests explicitly set Appfalse in their disposable test process and
 restore it. Direct generateVideo calls in those tests only run inside the closed
 fixture, before any configuration, billing, canary or provider work. No new test
 is allowed to contact an actual provider.
+
+The two exhaustive historical cutover rehearsals use the closed V4 fixture,
+preserving their historical catalogue and amounts. Active coverage separately
+asserts all280 added scenarios. The full Studio/MCP disposable-PostgreSQL matrix
+includes all four V4 modes, stored fixture tariffs and injected video probes,
+with exact-price parity and one simulated dispatch after confirmation. These
+local fixtures neither initialize nor replace the native production tariffs.
+
+The first hosted validation attempt exposed stale catalogue expectations and
+the missing Conversation certification. Its database lane exhausted25minutes
+after22minutes31seconds installing tools from the Azure Ubuntu archive. The
+reviewed transport-only action selects the official Ubuntu archive while
+retaining signatures, packages, tool versions, tests and timeouts. Its actual
+hosted result must be recorded before claiming the new CI succeeded.
 
 Before merge: current-main CI/Preview and final review; all226 native prices and
 five examples118/236/177/216/323c verified; actual stored engine configuration

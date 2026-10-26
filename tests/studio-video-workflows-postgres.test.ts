@@ -38,6 +38,10 @@ import {qualifyFluxDraftPair} from '../frontend/server/flux-draft-cache';
 import {resolveFluxDraftOrigin,persistQualifiedFluxDraftSource} from '../frontend/server/flux-draft-cache-store';
 import {publicMediaTransport} from '../frontend/server/public-media-transport';
 import {ENV} from '../frontend/src/lib/env';
+import {klingV4TariffScenarios} from '../frontend/lib/pricing-audit/kling-v4-tariff-scenario';
+import {prepareContinuousInputTariffChange} from '../frontend/server/pricing-admin/continuous-input-tariff';
+import {resolveGenerationReferencesForActor} from '../frontend/src/server/agent-api/resolve-generation-references';
+import {resolveOwnedReferenceAssetForActor} from '../frontend/src/server/agent-api/reference-assets';
 
 test('all certified video tuples share MCP exact price, owned payload and one-attempt confirmed dispatch',async t=>{
   assert.equal(process.env.DATABASE_URL,undefined,'Disposable DB only');
@@ -67,6 +71,19 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
   const operationTariffs=await prepareVideoOperationTariffs({...operationIdentity,state:operationTariffState(),policy:operationPolicy});
   for(const cell of operationTariffs.cells)await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
     VALUES($1,$2,$3,$4,'USD','2026-10-02',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
+  // New V4 offers have no legacy policy price. Seed only the four selected local
+  // fixture classes, using real canonical tariff compilation for Modify's curve.
+  const klingFixtures=klingV4TariffScenarios().filter(s=>s.context.resolution==='720p'&&s.context.durationSec===3
+    &&(s.context.mode!=='ref2v'||!s.context.hasVideoInput));
+  assert.equal(klingFixtures.length,4);
+  for(const scenario of klingFixtures){
+    const cell=scenario.context.mode==='v2v'?(await prepareContinuousInputTariffChange({scenario,
+      state:operationTariffState(),policy:operationPolicy,proposal:{operation:'create',scenarioId:scenario.id,
+        scope:'continuous_input',price:{kind:'kling_v4_billable',customerCentsPerBillableSecond:14.1}}})).proposedCell!
+      :{id:`fixture-${scenario.id}`,selector:scenario.selector,price:{kind:'fixed',customerCents:71}};
+    await pg.pool.query(`INSERT INTO app_customer_tariff_cells(id,selector_key,selector_json,price_json,currency,effective_from,revision,updated_by)
+      VALUES($1,$2,$3,$4,'USD','2026-10-02',1,$5)`,[cell.id,JSON.stringify(Object.entries(cell.selector).sort(([a],[b])=>a.localeCompare(b))),cell.selector,cell.price,operationIdentity.actorId]);
+  }
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE,revision=1');
   await pg.pool.query(readFileSync('neon/migrations/53_studio_media_generation_scope.sql','utf8'));
   await addTopup(pg.pool,workflowActor.userId,10000000);
@@ -116,24 +133,32 @@ test('all certified video tuples share MCP exact price, owned payload and one-at
       const [raw]=await deps.executor.query<{active:boolean}>('SELECT active FROM app_customer_tariff_state WHERE singleton=TRUE');
       return computeCanonicalBillingSnapshot(context,{...options,loadCustomerTariffState:async()=>({...state,active:raw.active})});
     }});
-  const hasReviewedTariff=(request:CanonicalGenerationRequest)=>Boolean(videoOperationTariffIdentity(request.engineId,request.mode,request.operation))||(request.engineId==='veo-3-1'&&request.mode==='i2v'&&[4,6].includes(Number(request.settings.durationSec)))||(request.engineId==='seedance-2-5'&&request.mode==='v2v');
+  const hasReviewedTariff=(request:CanonicalGenerationRequest)=>request.engineId==='kling-v4'||Boolean(videoOperationTariffIdentity(request.engineId,request.mode,request.operation))||(request.engineId==='veo-3-1'&&request.mode==='i2v'&&[4,6].includes(Number(request.settings.durationSec)))||(request.engineId==='seedance-2-5'&&request.mode==='v2v');
   const preparePrice:PrepareGenerationDependencies['priceGeneration']=async(request,tier,refs)=>hasReviewedTariff(request)
     ?withDbTransaction(executor=>lasPricing(request,tier,{executor,candidate:catalog.find(c=>c.engine.id===request.engineId)!,resolvedReferences:refs.resolvedReferences,fluxDraftSource:refs.fluxDraftSource}))
     :priceCanonicalGeneration(request,tier,undefined,refs);
   const confirmPrice:ConfirmGenerationDependencies['priceGeneration']=async(request,tier,deps)=>hasReviewedTariff(request)
     ?lasPricing(request,tier,deps):priceCanonicalGenerationInExecutor(request,tier,deps);
   const executable=()=>({executable:true as const,reason:'available' as const});
-  const options={enabled:true,prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,priceGeneration:preparePrice},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,priceGeneration:confirmPrice}};
+  const klingMedia={detectVideoMetadataFn:async()=>({width:1920,height:1080,durationSec:6,fps:24})};
+  const prepareReferences:PrepareGenerationDependencies['resolveGenerationReferences']=(request,actor)=>resolveGenerationReferencesForActor(request,actor,
+    {resolveOwnedReferenceAsset:resolveOwnedReferenceAssetForActor,klingV4MediaDependencies:klingMedia});
+  const confirmReferences:ConfirmGenerationDependencies['resolveGenerationReferences']=(request,actor,{executor})=>resolveGenerationReferencesForActor(request,actor,
+    {resolveOwnedReferenceAsset:(current,id)=>resolveOwnedReferenceAssetForActor(current,id,{executor}),klingV4MediaDependencies:klingMedia});
+  const options={enabled:true,referenceDependencies:{klingV4Media:klingMedia},prepareDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,priceGeneration:preparePrice},confirmDependencies:{listPublicEngines:async()=>catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,priceGeneration:confirmPrice}};
   const service=createStudioVideoGenerationService(workflowActor,options);
   const factories={video:()=>service} as unknown as StudioMediaFactories;
   const mcp=createServices({publicEngines:catalog,resolveRequestExecutability:executable,submitPaidGeneration:provider.submit,
-    preparePriceGeneration:preparePrice,confirmPriceGeneration:confirmPrice});
+    preparePriceGeneration:preparePrice,confirmPriceGeneration:confirmPrice,
+    prepareResolveGenerationReferences:prepareReferences,confirmResolveGenerationReferences:confirmReferences});
   let totalCharge=0;
   for(const candidate of catalog)for(const mode of candidate.publicModes)await t.test(candidate.engine.id+' '+mode,async()=>{
     const action=workflowAction(candidate,mode);const request=await studioMediaRequest(workflowActor,action,workflowInput,factories,true) as CanonicalGenerationRequest;
     const before=provider.captures.length;const quote=await service.prepare(request);const oauthQuote=await mcp.prepareGeneration!(request,principal(workflowActor.userId));
     assert.deepEqual(quote.summary,oauthQuote.summary,'Same canonical request');assert.equal(quote.requestHash,oauthQuote.requestHash);assert.deepEqual(quote.price,oauthQuote.price,'Same real persisted tariff and owned facts');
     assert.ok(Number.isSafeInteger(quote.price.amountCents)&&quote.price.amountCents>0);assert.equal(provider.captures.length,before,'Preparation never dispatches');
+    if(candidate.engine.id==='kling-v4')assert.equal(quote.price.amountCents,mode==='v2v'?127:71,
+      'V4 uses its stored native fixture price and the measured 6-second Modify source');
     if(candidate.engine.id==='seedance-2-5'&&mode==='v2v')assert.equal(quote.price.amountCents,308,'LAS quotes the measured 6-second source plus 4-second output from its reviewed literal tariff');
     await assert.rejects(mcp.confirmGeneration!({quoteId:quote.quoteId,confirmed:true},principal(workflowActor.userId)),{code:'QUOTE_EXPIRED'});
     await assert.rejects(createStudioVideoGenerationService({...workflowActor,projectId:'other'},options).confirm({quoteId:quote.quoteId,confirmed:true}),{code:'QUOTE_EXPIRED'});

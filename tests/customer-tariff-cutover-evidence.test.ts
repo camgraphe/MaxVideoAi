@@ -7,14 +7,15 @@ import { ENV } from '../frontend/src/lib/env';
 
 test('cutover derives all ordinary, workflow and real input duration checkpoints with unique identities', () => {
   const cases = collectCustomerTariffCutoverCheckpoints();
-  assert.equal(cases.filter(row => row.kind === 'ordinary' && row.scenario.modelId !== 'flux-3-max').length, 20158);
+  assert.equal(cases.filter(row => row.kind === 'ordinary' && !['flux-3-max','kling-v4'].includes(row.scenario.modelId)).length, 20158);
   assert.equal(cases.filter(row => row.scenario.modelId === 'flux-3-max').length, 128);
-  assert.equal(cases.filter(row => row.kind === 'ordinary').length, 20286);
+  assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
+  assert.equal(cases.filter(row => row.kind === 'ordinary').length, 20286 + 280);
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
   assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
   assert.equal(cases.filter(row => row.kind === 'new_offer').length, 89);
-  assert.equal(cases.filter(row => row.kind !== 'new_offer').length, 26982);
-  assert.equal(cases.length, 27071);
+  assert.equal(cases.filter(row => row.kind !== 'new_offer').length, 26982 + 280);
+  assert.equal(cases.length, 27071 + 280);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
   const lumaModify = cases.filter(row => row.kind === 'ordinary' && row.scenario.modelId === 'luma-ray-3-2' && row.scenario.context.mode === 'v2v');
   assert.deepEqual([...new Set(lumaModify.map(row => row.scenario.context.durationSec))].sort((a, b) => a - b),

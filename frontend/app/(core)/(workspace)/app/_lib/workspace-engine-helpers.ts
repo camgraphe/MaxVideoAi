@@ -422,7 +422,9 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
     // A restored V4 request is authoritative, including invalid values that the editor must report.
     // A stale single-shot option must never override a saved shot-plan total.
     if (engine.id === 'kling-v4' && previous?.engineId === engine.id) {
-      return { durationSec: previous.durationSec, durationOption: previous.durationSec, numFrames: null };
+      const durationOption = previous.durationOption != null && Number(previous.durationOption) === previous.durationSec
+        ? previous.durationOption : previous.durationSec;
+      return { durationSec: previous.durationSec, durationOption, numFrames: null };
     }
     const prevOption = previousDurationOption;
     const prevSeconds = previousDurationSec;
