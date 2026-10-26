@@ -16,7 +16,8 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
       const canonical=projectAgentModelModeDetails(candidate,mode);
       const maxReferences=studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode);
       return {...canonical,outputCount: {min: 1,max: 1,default: 1},
-        settings: canonical.settings.filter(setting => !['documentUrl','webpageUrl'].includes(setting.key)),
+        settings: canonical.settings.filter(setting => !['documentUrl','webpageUrl'].includes(setting.key)
+          && (setting.type !== 'multi_prompt' || candidate.engine.id === 'kling-v4')),
         references: canonical.references.filter(reference => candidate.surface==='video'||reference.type === 'image').map(reference=>({...reference,
           max: candidate.surface==='video' && (mode==='v2v'||mode==='extend') ? reference.max : Math.min(reference.max ?? maxReferences,maxReferences)}))};
     }),
