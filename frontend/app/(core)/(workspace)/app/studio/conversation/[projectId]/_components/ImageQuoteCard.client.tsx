@@ -9,7 +9,7 @@ import {
   imageQuoteWalletState,
 } from "@/lib/studio/image-quote-ui";
 import styles from "../image-conversation.module.css";
-import {conversationFailurePresentation, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
+import {conversationFailurePresentation, conversationGoogleSafetyHelp, conversationQuotePresentation, type ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
 import {formatCustomerAmount} from '@/lib/customer-price-presentation';
 export function ImageQuoteCard({
   assemblyError,onRetryAssembly,
@@ -43,6 +43,7 @@ export function ImageQuoteCard({
   const quote = turn.quote;
   if (!quote) return null;
   const failed = turn.generation?.status === 'failed';
+  const safetyHelp = conversationGoogleSafetyHelp(turn.generation, locale);
   const t = (en: string, fr: string, es: string) => locale === 'fr' ? fr : locale === 'es' ? es : en;
   const presentation = conversationQuotePresentation(quote.summary, locale, quote.outputDurationSec, quote.summary.surface === 'video' ? quote.sourceVideoOutput : undefined);
   const referenceCount = quote.summary.references.length;
@@ -99,7 +100,16 @@ export function ImageQuoteCard({
             : formatMoney(quote.wallet!.amountCents, quote.wallet!.currency)}
         </p>
       )}
-      {failed ? <p className={styles.muted} role="status">{conversationFailurePresentation(turn.generation, locale)}</p> : editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.', "Envía la solicitud revisada para preparar un nuevo presupuesto antes de confirmar.")}</p> : ready ? (
+      {failed ? <>
+        <p className={styles.muted} role="status">{conversationFailurePresentation(turn.generation, locale)}</p>
+        {safetyHelp && <details data-safety-guidance>
+          <summary>{safetyHelp.label}</summary>
+          <p>{safetyHelp.explanation}</p>
+          <p>{safetyHelp.examples}</p>
+          <p>{safetyHelp.next}</p>
+          <a href={safetyHelp.policyUrl} target="_blank" rel="noopener noreferrer">{safetyHelp.policy}</a>
+        </details>}
+      </> : editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.', "Envía la solicitud revisada para preparar un nuevo presupuesto antes de confirmar.")}</p> : ready ? (
         <>
           <button className={styles.primary} onClick={onConfirm}>
             {presentation.create} · {price}

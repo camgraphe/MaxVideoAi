@@ -119,6 +119,17 @@ stale quote readiness or expiration. The real-route browser fixture in
 refresh/reopening and the Spanish locale boundary using synthetic records; it
 does not establish access to an authenticated customer's production history.
 
+For an explicitly known Google moderation refusal, `conversationGoogleSafetyHelp`
+adds a collapsed native disclosure with fixed EN/FR/ES guidance. It covers prompt
+wording/meaning, reference media, generated content and illustrative prohibited
+content categories; it never identifies a particular word or reference as the
+cause, or promises that rewording will pass. Other failures and unknown historical
+reasons do not receive Google guidance. Keyboard and mobile disclosure behavior
+are covered by the same synthetic browser fixture. The content is based on
+[Google's Omni documentation](https://ai.google.dev/gemini-api/docs/omni) and
+[Generative AI Prohibited Use Policy](https://policies.google.com/terms/generative-ai/use-policy),
+reviewed on October 26, 2026. This is explanatory copy, not a change to provider filters.
+
 ## Pricing And Cost Estimate
 
 The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.

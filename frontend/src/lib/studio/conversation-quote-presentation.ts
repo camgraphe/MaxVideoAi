@@ -5,6 +5,43 @@ import type {ImageConversationTurn} from './image-conversation-contract';
 import {isFlux3MaxEngineId,parseFlux3MaxKeyframeIndexes} from '@/lib/flux-3-max';
 import {getGenerationFailureFallbackMessage,getKnownGenerationFailureMessage} from '@/lib/generation-failure-messages';
 export type ConversationLocale = 'en' | 'fr' | 'es';
+function safeFailureMessage(message: string | null | undefined): string | null {
+  return message && !/https?:\/\/|gs:\/\/|[{}]/i.test(message) ? message : null;
+}
+
+/** General policy guidance only; a safety refusal does not identify the triggering element. */
+export function conversationGoogleSafetyHelp(
+  generation: ImageConversationTurn['generation'],
+  locale: ConversationLocale,
+) {
+  if (generation?.status !== 'failed'
+    || !/^Google blocked this request during safety checks\./i.test(safeFailureMessage(generation.message) ?? '')) return null;
+  const copy = {
+    en: {
+      label: 'Understand this refusal',
+      explanation: 'Google may assess the wording and meaning of the prompt, reference media and generated content.',
+      examples: 'Avoid sexually explicit content, graphic violence, hate or harassment, exploitation of minors, and instructions for dangerous or illegal acts.',
+      next: 'Describe a permitted scene clearly and remove problematic content from the prompt and references. Google does not always identify the exact trigger; rewording does not guarantee acceptance.',
+      policy: 'Google content rules',
+    },
+    fr: {
+      label: 'Comprendre ce refus',
+      explanation: 'Google peut analyser la formulation et le sens du prompt, les médias de référence et le contenu généré.',
+      examples: 'À éviter : contenu sexuel explicite, violence graphique, haine ou harcèlement, exploitation de mineurs et instructions d’actes dangereux ou illégaux.',
+      next: 'Décrivez clairement une scène autorisée et retirez les éléments problématiques du prompt et des références. Google ne précise pas toujours l’élément en cause ; reformuler ne garantit pas l’acceptation.',
+      policy: 'Règles Google sur les contenus',
+    },
+    es: {
+      label: 'Entender este rechazo',
+      explanation: 'Google puede analizar la redacción y el significado del prompt, los medios de referencia y el contenido generado.',
+      examples: 'Evita el contenido sexual explícito, la violencia gráfica, el odio o el acoso, la explotación de menores y las instrucciones para actos peligrosos o ilegales.',
+      next: 'Describe claramente una escena permitida y elimina los elementos problemáticos del prompt y las referencias. Google no siempre indica el motivo exacto; reformular no garantiza la aceptación.',
+      policy: 'Normas de contenido de Google',
+    },
+  }[locale];
+  return {...copy, policyUrl: `https://policies.google.com/terms/generative-ai/use-policy?hl=${locale}`};
+}
+
 export function conversationFailurePresentation(
   generation: ImageConversationTurn['generation'],
   locale: ConversationLocale,
@@ -44,8 +81,7 @@ export function conversationFailurePresentation(
       refund: ' El pago se ha reembolsado a tu monedero.', next: ' Un nuevo intento requiere un nuevo presupuesto.',
     },
   }[locale];
-  const message = generation?.message;
-  const safeMessage = message && !/https?:\/\/|gs:\/\/|[{}]/i.test(message) ? message : null;
+  const safeMessage = safeFailureMessage(generation?.message);
   const known = getKnownGenerationFailureMessage({
     message:safeMessage,
     failureCode:generation?.failureCode,locale,
