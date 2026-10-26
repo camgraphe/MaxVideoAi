@@ -36,6 +36,7 @@ export async function persistFailedImageGeneration(params: {
   resolution: string;
   style?: string | null;
   thinkingLevel: string | null;
+  providerUsage?: unknown;
 }, deps: { queryFn?: ImageGenerationQuery; recordRefundReceiptFn?: typeof recordRefundReceipt } = {}) {
   const {
     characterReferenceCount,
@@ -159,6 +160,7 @@ export async function persistFailedImageGeneration(params: {
         engineId,
         'failed',
         JSON.stringify({
+          ...(params.providerUsage ? { providerUsage: params.providerUsage } : {}),
           request: {
             mode,
             numImages,

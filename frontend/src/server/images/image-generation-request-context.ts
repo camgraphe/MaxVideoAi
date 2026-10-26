@@ -90,9 +90,7 @@ export function resolveImageGenerationRequestContext(
 }
 
 function getImageEngine(engineId?: string | null): ImageEngineEntry | null {
-  if (engineId && IMAGE_ENGINE_MAP.has(engineId)) {
-    return IMAGE_ENGINE_MAP.get(engineId) ?? null;
-  }
+  if (engineId) return IMAGE_ENGINE_MAP.get(engineId) ?? null;
   if (DEFAULT_IMAGE_ENGINE_ID && IMAGE_ENGINE_MAP.has(DEFAULT_IMAGE_ENGINE_ID)) {
     return IMAGE_ENGINE_MAP.get(DEFAULT_IMAGE_ENGINE_ID) ?? null;
   }

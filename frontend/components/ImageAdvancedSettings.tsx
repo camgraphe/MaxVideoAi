@@ -28,14 +28,15 @@ export function ImageAdvancedSettings({
   customImageSize,
   enableWebSearch,
   thinkingLevel,
+  tokenLimit,
   limitGenerations,
   watermark,
 }: ImageAdvancedSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const expanded = open ?? isOpen;
   const hasContent = useMemo(
-    () => Boolean(background || seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || limitGenerations || watermark),
-    [background, customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
+    () => Boolean(background || seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || tokenLimit || limitGenerations || watermark),
+    [background, customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, tokenLimit, watermark]
   );
 
   if (!hasContent) return null;
@@ -69,6 +70,7 @@ export function ImageAdvancedSettings({
           customImageSize={customImageSize}
           enableWebSearch={enableWebSearch}
           thinkingLevel={thinkingLevel}
+          tokenLimit={tokenLimit}
           limitGenerations={limitGenerations}
           watermark={watermark}
         />

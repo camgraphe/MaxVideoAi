@@ -117,6 +117,8 @@ interface ImageWorkspaceComposerSurfaceProps {
   showThinkingLevelControl: boolean;
   showWatermarkControl: boolean;
   statusMessage: string | null;
+  maxOutputTokens?: number | null;
+  setMaxOutputTokens?: (value: number | null) => void;
   thinkingLevel: string | null;
   thinkingLevelSelectOptions: ControlOption[];
   watermark: boolean;
@@ -214,6 +216,8 @@ export function ImageWorkspaceComposerSurface({
   showWatermarkControl,
   statusMessage,
   thinkingLevel,
+  maxOutputTokens,
+  setMaxOutputTokens,
   thinkingLevelSelectOptions,
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
@@ -410,6 +414,8 @@ export function ImageWorkspaceComposerSurface({
                       }
                     : undefined
                 }
+                tokenLimit={selectedEngineId === 'nano-banana-2-1' && setMaxOutputTokens
+                  ? { label: resolvedCopy.composer.outputTokenLimitLabel, value: maxOutputTokens ?? null, onChange: setMaxOutputTokens } : undefined}
                 thinkingLevel={
                   showThinkingLevelControl
                     ? {

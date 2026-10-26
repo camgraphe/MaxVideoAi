@@ -4,6 +4,7 @@ import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
 
 const LABELS: Record<string, string> = {
   workflowStep: 'Generation workflow',
+  thinkingLevel: 'Thinking level', maxOutputTokens: 'Output token limit',
   mode: 'Generation mode', resolution: 'Resolution', durationSec: 'Duration (seconds)',
   aspectRatio: 'Aspect ratio', audio: 'Audio', quality: 'Quality', inputImageCount: 'Input images',
   inputVideoDurationSec: 'Input video (seconds)', inheritedDurationSec: 'Inherited video (seconds)',

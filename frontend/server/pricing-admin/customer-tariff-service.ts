@@ -1,3 +1,5 @@
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { privateCandidateTariffScenarios } from './private-candidate-tariffs';
 import {CustomerTariffUnavailableError} from '@/server/pricing/resolve-customer-tariff';
 import {klingV4TariffScenarios,withKlingV4TariffInput,resolveKlingV4TariffScenarioId} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { createHash } from 'node:crypto';
@@ -36,10 +38,10 @@ import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
 
 function adminTariffCoverage() {
   const coverage = collectSellableManualTariffCoverage();
-  return { ...coverage, scenarios: [...coverage.scenarios, ...klingV4TariffScenarios(), ...seedanceWorkflowScenarios(coverage.scenarios)] };
+  return { ...coverage, scenarios: [...coverage.scenarios, ...klingV4TariffScenarios(), ...privateCandidateTariffScenarios(), ...seedanceWorkflowScenarios(coverage.scenarios)] };
 }
 
-const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
+const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality', 'thinkingLevel', 'maxOutputTokens',
   'referenceImageCount', 'inputImageCount', 'billingInputType', 'inputVideoDurationSec', 'inheritedDurationSec', 'inputAudioDurationSec',
   'referenceTokenBudget', 'voiceControl', 'loop', 'hdr', 'exrExport'] as const;
 
@@ -312,10 +314,11 @@ async function buildPreview(
     throw new PricingAdminError('unsupported_scenario', 'Active customer tariffs cannot be deleted');
   }
   const scenario = scenarioById(proposal.scenarioId);
+  const requiresExactCandidateTariff = scenario.modelId === 'kling-v4' || scenario.modelId === NANO21_ENGINE_ID;
   let currentCents:number|null;
   try { currentCents=await quoteCurrent(scenario,policy,state); }
   catch(error) {
-    if(scenario.modelId==='kling-v4'&&((!state.active&&error instanceof CustomerTariffUnavailableError)
+    if(requiresExactCandidateTariff&&((!state.active&&error instanceof CustomerTariffUnavailableError)
       ||(error instanceof ManualTariffError&&error.code==='missing_cell')))currentCents=null;
     else throw error;
   }
@@ -380,7 +383,7 @@ async function buildPreview(
     currency: 'USD', effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z',
     price: { kind: 'fixed', customerCents: proposedCents },
   };
-  if ((state.active || scenario.modelId === 'kling-v4') && proposedCell) {
+  if ((state.active || requiresExactCandidateTariff) && proposedCell) {
     await quoteCurrent(scenario, policy, { ...state, active:true,
       databaseCells: [...state.databaseCells.filter((cell) => cell.id !== id), proposedCell] });
   }

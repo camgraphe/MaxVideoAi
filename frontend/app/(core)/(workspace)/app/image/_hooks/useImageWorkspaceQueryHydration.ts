@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { normalizeNano21Settings, NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { buildNano21EditorialSnapshot, getPublicNano21EditorialRecipe } from '@/lib/nano21-editorial-recipes';
 import { authFetch } from '@/lib/authFetch';
 import {
   clampRequestedImageCount,
@@ -33,10 +35,15 @@ import { IMAGE_STORYBOARD_PRESET } from '../_lib/image-workspace-storyboard';
 
 type SearchParamsReader = {
   get(name: string): string | null;
+  getAll?(name: string): string[];
 } | null | undefined;
 
 interface UseImageWorkspaceQueryHydrationParams {
   engines: ImageEngineOption[];
+  accountId?: string | null;
+  composerSignature?: string;
+  storageHydrated?: boolean;
+  setMaxOutputTokens?: Dispatch<SetStateAction<number | null>>;
   genericError: string;
   searchParams: SearchParamsReader;
   setAspectRatio: Dispatch<SetStateAction<string | null>>;
@@ -66,6 +73,10 @@ interface UseImageWorkspaceQueryHydrationParams {
 
 export function useImageWorkspaceQueryHydration({
   engines,
+  accountId,
+  composerSignature,
+  storageHydrated = true,
+  setMaxOutputTokens,
   genericError,
   searchParams,
   setAspectRatio,
@@ -92,6 +103,12 @@ export function useImageWorkspaceQueryHydration({
   setThinkingLevel,
   setWatermark,
 }: UseImageWorkspaceQueryHydrationParams) {
+  const latest = useRef({ accountId, composerSignature });
+  latest.current = { accountId, composerSignature };
+  const [appliedRecipeKey, setAppliedRecipeKey] = useState<string | null>(null);
+  const hydratedRecipeRef = useRef<string | null>(null);
+  const recipeId = searchParams?.get('recipe');
+  const hasRecipe = recipeId !== null && recipeId !== undefined;
   const hydratedJobRef = useRef<string | null>(null);
 
   const requestedJobId = useMemo(() => {
@@ -115,16 +132,19 @@ export function useImageWorkspaceQueryHydration({
     return trimmed.length ? trimmed : null;
   }, [searchParams]);
 
+  const recipeKey = JSON.stringify([recipeId, requestedJobId, requestedTool, requestedEngineId,
+    ...['recipe', 'engine', 'job', 'tool'].map(name => searchParams?.getAll?.(name))]);
+
   useEffect(() => {
-    if (!requestedEngineId) return;
+    if (hasRecipe || !requestedEngineId) return;
     const engineMatch = findImageEngine(engines, requestedEngineId);
     if (!engineMatch) return;
     setEngineId(engineMatch.id);
     setMode((previous) => (engineMatch.modes.includes(previous) ? previous : engineMatch.modes[0] ?? 't2i'));
-  }, [engines, requestedEngineId, setEngineId, setMode]);
+  }, [engines, hasRecipe, requestedEngineId, setEngineId, setMode]);
 
   useEffect(() => {
-    if (requestedTool !== IMAGE_STORYBOARD_PRESET.tool) return;
+    if (hasRecipe || requestedTool !== IMAGE_STORYBOARD_PRESET.tool) return;
     const engineMatch = findImageEngine(engines, IMAGE_STORYBOARD_PRESET.engineId);
     if (!engineMatch) return;
     setEngineId(engineMatch.id);
@@ -136,7 +156,7 @@ export function useImageWorkspaceQueryHydration({
     setPrompt(IMAGE_STORYBOARD_PRESET.prompt);
     setNumImages(1);
     setReferenceSlots(() => Array(MAX_REFERENCE_SLOTS).fill(null) as Array<ReferenceSlotValue | null>);
-  }, [engines, requestedTool, setEngineId, setMode, setNumImages, setPrompt, setReferenceSlots]);
+  }, [engines, hasRecipe, requestedTool, setEngineId, setMode, setNumImages, setPrompt, setReferenceSlots]);
 
   const applyImageSettingsSnapshot = useCallback(
     (snapshot: unknown, { selectJobId }: { selectJobId?: string } = {}) => {
@@ -161,6 +181,16 @@ export function useImageWorkspaceQueryHydration({
       const snapshotEngineId = typeof record.engineId === 'string' ? record.engineId : null;
       const engineMatch = snapshotEngineId ? findImageEngine(engines, snapshotEngineId) : null;
       const snapshotMode = record.inputMode === 't2i' || record.inputMode === 'i2i' ? record.inputMode : null;
+      if (snapshotEngineId === NANO21_ENGINE_ID && !engineMatch) throw new Error('This image recipe model is unavailable.');
+      const snapshotCore = record.core && typeof record.core === 'object' ? record.core as Record<string, unknown> : {};
+      if (snapshotEngineId === NANO21_ENGINE_ID && snapshotCore.maxOutputTokens !== undefined
+        && (!Number.isSafeInteger(snapshotCore.maxOutputTokens) || Number(snapshotCore.maxOutputTokens) < 1 || Number(snapshotCore.maxOutputTokens) > 32768)) {
+        throw new Error('Invalid Nano Banana 2.1 maxOutputTokens snapshot.');
+      }
+      const tokenCap = snapshotEngineId === NANO21_ENGINE_ID
+        ? normalizeNano21Settings({ maxOutputTokens: snapshotCore.maxOutputTokens as number | undefined }).maxOutputTokens
+        : null;
+      setMaxOutputTokens?.(tokenCap);
       if (engineMatch) {
         setEngineId(engineMatch.id);
         if (snapshotMode) {
@@ -211,7 +241,8 @@ export function useImageWorkspaceQueryHydration({
       const styleRaw = typeof core.style === 'string' ? core.style : null;
       const maskUrlRaw = typeof core.maskUrl === 'string' ? core.maskUrl : null;
       const enableWebSearchRaw = core.enableWebSearch === true;
-      const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
+      const thinkingLevelRaw = typeof core.thinkingLevel === 'string'
+        ? snapshotEngineId === NANO21_ENGINE_ID ? core.thinkingLevel.toLowerCase() : core.thinkingLevel : null;
       const limitGenerationsRaw = core.limitGenerations === true;
       const watermarkRaw = core.watermark === true;
       if (engineMatch) {
@@ -357,36 +388,61 @@ export function useImageWorkspaceQueryHydration({
       setSelectedPreviewImageIndex,
       setStyle,
       setThinkingLevel,
+      setMaxOutputTokens,
       setWatermark,
     ]
   );
 
   useEffect(() => {
-    if (!requestedJobId) return;
-    if (hydratedJobRef.current === requestedJobId) return;
-    hydratedJobRef.current = requestedJobId;
+    if (!storageHydrated || !hasRecipe) return;
+    const key = recipeKey;
+    if (hydratedRecipeRef.current === key) return;
+    hydratedRecipeRef.current = key;
+    try {
+      if (requestedJobId || requestedTool || (requestedEngineId && requestedEngineId !== NANO21_ENGINE_ID)
+        || ['recipe', 'engine', 'job', 'tool'].some(name => (searchParams?.getAll?.(name).length ?? 0) > 1)) {
+        throw new Error('The image recipe conflicts with the requested job, tool or model.');
+      }
+      const recipe = getPublicNano21EditorialRecipe(recipeId ?? '');
+      if (!findImageEngine(engines, recipe.engineId)) throw new Error('This image recipe model is unavailable.');
+      applyImageSettingsSnapshot(buildNano21EditorialSnapshot(recipe));
+      setAppliedRecipeKey(key);
+      setError(null);
+      setStatusMessage(null);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : genericError);
+    }
+  }, [accountId, applyImageSettingsSnapshot, engines, genericError, hasRecipe, recipeId, recipeKey, requestedEngineId,
+    requestedJobId, requestedTool, searchParams, setError, setStatusMessage, storageHydrated]);
+
+  useEffect(() => {
+    if (hasRecipe || !storageHydrated || !requestedJobId) return;
+    const key = JSON.stringify([accountId, requestedJobId]);
+    if (hydratedJobRef.current === key) return;
+    hydratedJobRef.current = key;
+    let cancelled = false;
+    const started = latest.current;
+    const controller = new AbortController();
+    const isCurrent = () => !cancelled && latest.current.accountId === started.accountId
+      && latest.current.composerSignature === started.composerSignature;
     setError(null);
     setStatusMessage(null);
-    void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`)
+    void authFetch(`/api/jobs/${encodeURIComponent(requestedJobId)}`, { signal: controller.signal })
       .then(async (response) => {
         const payload = (await response.json().catch(() => null)) as
-          | {
-              ok?: boolean;
-              error?: string;
-              settingsSnapshot?: unknown;
-            }
-          | null;
-        if (!response.ok || !payload?.ok) {
-          throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
-        }
+          | { ok?: boolean; error?: string; settingsSnapshot?: unknown } | null;
+        if (!isCurrent()) return;
+        if (!response.ok || !payload?.ok) throw new Error(payload?.error ?? `Failed to load job (${response.status})`);
         applyImageSettingsSnapshot(payload.settingsSnapshot, { selectJobId: requestedJobId });
       })
       .catch((error) => {
-        setError(error instanceof Error ? error.message : genericError);
+        if (isCurrent()) setError(error instanceof Error ? error.message : genericError);
       });
-  }, [applyImageSettingsSnapshot, genericError, requestedJobId, setError, setStatusMessage]);
+    return () => { cancelled = true; controller.abort(); if (hydratedJobRef.current === key) hydratedJobRef.current = null; };
+  }, [accountId, applyImageSettingsSnapshot, genericError, hasRecipe, requestedJobId, setError, setStatusMessage, storageHydrated]);
 
   return {
+    recipeBlocked: hasRecipe && appliedRecipeKey !== recipeKey,
     applyImageSettingsSnapshot,
     librarySource:
       requestedTool === IMAGE_STORYBOARD_PRESET.tool ? IMAGE_STORYBOARD_PRESET.librarySource : 'generated',

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, type Dispatch, type FormEvent, type SetStateAction } from 'react';
+import { useCallback, useLayoutEffect, useRef, type Dispatch, type FormEvent, type SetStateAction } from 'react';
+import { NANO21_ENGINE_ID, normalizeNano21Settings } from '@/lib/nano-banana-2-1';
 import { runImageGeneration } from '@/lib/api';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { getDefaultAspectRatio } from '@/lib/image/inputSchema';
@@ -31,6 +32,8 @@ import type {
 } from '../_lib/image-workspace-types';
 
 interface UseImageGenerationRunnerParams {
+  accountId?: string | null;
+  blocked?: boolean;
   aspectRatio: string | null;
   background: string | null;
   combinedReferenceUrls: string[];
@@ -74,11 +77,14 @@ interface UseImageGenerationRunnerParams {
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   thinkingLevel: string | null;
+  maxOutputTokens?: number | null;
   watermark: boolean;
 }
 
 export function useImageGenerationRunner({
   pricingSnapshot,
+  accountId,
+  blocked,
   aspectRatio,
   background,
   combinedReferenceUrls,
@@ -121,18 +127,35 @@ export function useImageGenerationRunner({
   setSelectedPreviewImageIndex,
   setStatusMessage,
   thinkingLevel,
+  maxOutputTokens,
   watermark,
 }: UseImageGenerationRunnerParams) {
+  const mounted = useRef(true);
+  const activeAccount = useRef(accountId);
+  activeAccount.current = accountId;
+  const requests = useRef(new Set<AbortController>());
+  useLayoutEffect(() => {
+    mounted.current = true;
+    const activeRequests = requests.current;
+    return () => {
+      mounted.current = false;
+      for (const controller of activeRequests) controller.abort();
+      activeRequests.clear();
+    };
+  }, [accountId]);
   return useCallback(
     async (event?: FormEvent<HTMLFormElement> | null) => {
       event?.preventDefault();
-      if (!selectedEngine) return;
+      if (blocked || !selectedEngine) return;
+      const startedAccount = accountId;
       if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
         setAuthModalOpen(true);
         return;
       }
       const { supabase } = await import('@/lib/supabaseClient');
       const { data } = await supabase.auth.getSession();
+      if (!mounted.current || activeAccount.current !== startedAccount) return;
+      if (accountId && data.session?.user?.id !== accountId) return;
       if (!data.session?.access_token) {
         setAuthModalOpen(true);
         return;
@@ -175,6 +198,9 @@ export function useImageGenerationRunner({
         ...prev,
       ]);
       let keepActiveGroup = false;
+      const controller = new AbortController();
+      requests.current.add(controller);
+      const isCurrent = () => !controller.signal.aborted && activeAccount.current === startedAccount;
       try {
         const appliedAspectRatio = hasAspectRatioField
           ? aspectRatio ?? getDefaultAspectRatio(selectedEngine.engineCaps, mode) ?? undefined
@@ -185,6 +211,10 @@ export function useImageGenerationRunner({
           const parsed = Number(trimmed);
           return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
         })();
+        if (selectedEngine.id === NANO21_ENGINE_ID) {
+          if (maxOutputTokens === null) throw new Error('Enter a valid output token limit.');
+          normalizeNano21Settings({ maxOutputTokens });
+        }
         const shouldSendImageUrls = shouldSendImageReferenceUrlsForMode(selectedEngine.engineCaps, mode);
         const response = await runImageGeneration({
           jobId: pendingId,
@@ -211,12 +241,14 @@ export function useImageGenerationRunner({
           style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
+          maxOutputTokens: selectedEngine.id === NANO21_ENGINE_ID ? maxOutputTokens ?? undefined : undefined,
           thinkingLevel: hasThinkingLevelField
-            ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
+            ? ((thinkingLevel ?? undefined) as 'minimal' | 'medium' | 'high' | undefined)
             : undefined,
           limitGenerations: hasLimitGenerationsField ? limitGenerations : undefined,
           watermark: hasWatermarkField ? watermark : undefined,
-        }, pricingSnapshot);
+        }, pricingSnapshot, { accessToken: data.session.access_token, signal: controller.signal });
+        if (!isCurrent()) return;
         const entry: HistoryEntry = {
           id: response.jobId ?? response.requestId ?? crypto.randomUUID(),
           jobId: response.jobId ?? response.requestId ?? null,
@@ -256,14 +288,18 @@ export function useImageGenerationRunner({
         }
         void mutateJobs();
       } catch (err) {
+        if (!isCurrent()) return;
         setError(err instanceof Error ? err.message : resolvedCopy.errors.generic);
       } finally {
-        if (!keepActiveGroup) {
+        requests.current.delete(controller);
+        if (isCurrent() && !keepActiveGroup) {
           setPendingGroups((prev) => prev.filter((group) => group.id !== pendingId));
         }
       }
     },
     [
+      accountId,
+      blocked,
       aspectRatio,
       background,
       combinedReferenceUrls,
@@ -310,6 +346,7 @@ export function useImageGenerationRunner({
       setSelectedPreviewImageIndex,
       setStatusMessage,
       thinkingLevel,
+      maxOutputTokens,
       watermark,
     ]
   );

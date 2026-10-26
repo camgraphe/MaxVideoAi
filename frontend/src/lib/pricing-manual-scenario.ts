@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, NANO21_MODEL_ID, NANO21_BUDGET_POLICY_VERSION, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation } from '../../lib/h3-source-operations';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
@@ -94,6 +95,18 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (facts.engineId === NANO21_ENGINE_ID) {
+    const settings = normalizeNano21Settings(context);
+    assertNano21Scenario({ ...settings, mode: context.mode, referenceImageCount: context.referenceImageCount,
+      outputCount: context.durationSec, aspectRatio: context.aspectRatio });
+    return { selector: { engineId: NANO21_ENGINE_ID, mode: context.mode!, resolution: settings.imageSize,
+      aspectRatio: context.aspectRatio ?? '1:1', thinkingLevel: settings.thinkingLevel,
+      referenceImageCount: String(context.referenceImageCount ?? 0), requestedOutputImageCount: '1', candidateCount: '1',
+      maxOutputTokens: String(settings.maxOutputTokens), enableWebSearch: String(settings.enableWebSearch),
+      enableImageSearch: String(settings.enableImageSearch), providerModelId: NANO21_MODEL_ID, location: 'global',
+      maxPromptChars: '12000', maxSystemInstructionChars: '4096', budgetPolicyVersion: NANO21_BUDGET_POLICY_VERSION },
+      quantities: { output_units: 1, reference_images: context.referenceImageCount ?? 0 } };
+  }
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);

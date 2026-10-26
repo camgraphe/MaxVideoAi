@@ -34,7 +34,10 @@ export interface ImageGenerationRequest {
   style?: string;
   maskUrl?: string;
   enableWebSearch?: boolean;
-  thinkingLevel?: 'minimal' | 'high';
+  thinkingLevel?: 'minimal' | 'medium' | 'high';
+  maxOutputTokens?: number;
+  systemInstruction?: string;
+  enableImageSearch?: boolean;
   limitGenerations?: boolean;
   watermark?: boolean;
   engineId?: string;

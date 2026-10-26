@@ -1,3 +1,4 @@
+import { listBuildOnlyPrivateFalEngines } from '../scripts/lib/private-engine-catalog-projection';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -66,6 +67,7 @@ test('all 56 normal-template model documents expose strict decision content in e
   const completeInventory = [
     ...expectedFiles,
     ...listPrelaunchModelPageTemplateSlugs().map((slug) => `${slug}.json`),
+    ...listBuildOnlyPrivateFalEngines().map(entry => `${entry.modelSlug}.json`),
   ].sort();
   assert.equal(expectedFiles.length, 56);
   for (const locale of LOCALES) {

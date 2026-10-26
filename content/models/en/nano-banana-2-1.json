@@ -1,0 +1,126 @@
+{
+  "marketingName": "Nano Banana 2.1",
+  "versionLabel": "2.1",
+  "seo": {
+    "title": "Nano Banana 2.1 | MaxVideoAI",
+    "description": "Text-to-image and image editing through Google Vertex AI."
+  },
+  "overview": "Nano Banana 2.1 is a separate image model with 1K, 2K and 4K output, fourteen aspect ratios and up to fourteen ordered references for edits. MINIMAL, MEDIUM and HIGH reasoning are supported; MEDIUM is the default.",
+  "hero": {
+    "title": "Nano Banana 2.1",
+    "intro": "Text-to-image and image editing through Google Vertex AI.",
+    "badge": "1K / 2K / 4K · MINIMAL / MEDIUM / HIGH",
+    "ctaPrimary": {
+      "label": "Open image workspace",
+      "href": "/app/image?engine=nano-banana-2-1"
+    }
+  },
+  "tips": {
+    "title": "Availability and limits",
+    "items": [
+      "This candidate is prepared for review. Public availability and customer prices are not activated. Video, PDF, multi-turn conversations and search are outside this first image release.",
+      "Availability requires a reviewed customer tariff for the selected size, reasoning, reference count and token budget. Search remains unavailable pending a separate budget and tariff."
+    ]
+  },
+  "pricingNotes": [
+    "Customer prices come from current approved tariffs. Provider token estimates are not customer quotes."
+  ],
+  "decision": {
+    "modelSlug": "nano-banana-2-1",
+    "hero": {
+      "eyebrow": "GOOGLE IMAGE MODEL",
+      "title": "Nano Banana 2.1",
+      "subtitle": "Text-to-image and image editing through Google Vertex AI.",
+      "subtitleHighlights": [
+        "Google Vertex AI",
+        "1K / 2K / 4K"
+      ],
+      "paragraph": "Nano Banana 2.1 is a separate image model with 1K, 2K and 4K output, fourteen aspect ratios and up to fourteen ordered references for edits. MINIMAL, MEDIUM and HIGH reasoning are supported; MEDIUM is the default.",
+      "primaryCta": {
+        "label": "Open image workspace",
+        "href": "/app/image?engine=nano-banana-2-1"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "View pricing",
+          "href": "/pricing"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Nano Banana 2.1 image workflow",
+      "description": "Text-to-image and image editing through Google Vertex AI.",
+      "renderLabel": "View image",
+      "badges": [
+        "1K / 2K / 4K",
+        "MINIMAL / MEDIUM / HIGH"
+      ],
+      "altContext": "Nano Banana 2.1 image workflow"
+    },
+    "features": [
+      {
+        "title": "1K, 2K and 4K",
+        "body": "Choose the output size and one of fourteen documented aspect ratios. No seed, sampling or native mask control is offered.",
+        "tone": "quality"
+      },
+      {
+        "title": "Owned image references",
+        "body": "Attach one to fourteen owned images in the intended order and explain what each should preserve or change.",
+        "tone": "reference"
+      },
+      {
+        "title": "Reasoning",
+        "body": "Choose minimal, medium or high. Reasoning usage varies and is separate from image output tokens.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Exact quote before generation",
+        "body": "Availability requires a reviewed customer tariff for the selected size, reasoning, reference count and token budget. Search remains unavailable pending a separate budget and tariff.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Nano Banana 2 remains available",
+        "body": "Nano Banana 2 retains its own model identity, settings and history.",
+        "cta": {
+          "label": "View Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Describe the subject, action, setting, framing and lighting. Select the aspect ratio, size and reasoning level."
+      },
+      {
+        "title": "Owned image references",
+        "body": "Attach one to fourteen owned images in the intended order and explain what each should preserve or change."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Exact quote before generation",
+      "subtitle": "Availability requires a reviewed customer tariff for the selected size, reasoning, reference count and token budget. Search remains unavailable pending a separate budget and tariff.",
+      "footnote": "Customer prices come from current approved tariffs. Provider token estimates are not customer quotes.",
+      "ctaLabel": "View pricing",
+      "ctaHref": "/pricing",
+      "maxDurationNote": "Up to 4K"
+    },
+    "meta": {
+      "title": "Nano Banana 2.1 | MaxVideoAI",
+      "description": "Text-to-image and image editing through Google Vertex AI."
+    }
+  },
+  "custom": {
+    "prelaunch": {
+      "status": "candidate",
+      "checkedAt": "2026-10-25",
+      "publication": "closed_pending_review"
+    }
+  }
+}

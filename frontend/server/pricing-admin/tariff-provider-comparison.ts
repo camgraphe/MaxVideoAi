@@ -1,3 +1,4 @@
+import { privateCandidateTariffEntries } from './private-candidate-tariffs';
 import { getFalEngineById } from '@/config/falEngines';
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { resolveVideoProviderRoutingPlan } from '@/server/video-providers/router';
@@ -10,7 +11,8 @@ import { ENV } from '@/lib/env';
 
 /** Uses the same route policy as generation. A disabled direct route never silently becomes Fal. */
 export function providerComparisonForTariffScenario(scenario: ManualTariffCoverageScenario): ProviderCostComparisonInput {
-  const entry = getFalEngineById(scenario.modelId);
+  const entry = getFalEngineById(scenario.modelId)
+    ?? privateCandidateTariffEntries().find(candidate => candidate.id === scenario.modelId);
   if (!entry) throw new Error('Unknown supplier comparison model');
   const { context } = scenario;
   const declared = entry.engine.providerMeta?.provider;
@@ -41,7 +43,7 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
       routeConfigured = false;
     }
   }
-  if(entry.id==='kling-v4')routeConfigured=false; // Separate product release approval remains closed.
+  if(entry.id==='kling-v4' || privateCandidateTariffEntries().some(candidate => candidate.id === entry.id))routeConfigured=false; // Separate product release approval remains closed.
   const sandbox = process.env.PRICING_SANDBOX === '1';
   if (sandbox) routeConfigured = false;
   return { ...providerComparisonInputFromScenario({

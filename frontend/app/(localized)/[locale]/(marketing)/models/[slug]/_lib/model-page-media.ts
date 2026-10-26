@@ -5,6 +5,22 @@ import type { GalleryVideo } from '@/server/videos';
 import type { CurrentExamplePrice } from '@/server/current-example-price';
 import type { AppLocale } from '@/i18n/locales';
 import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
+import { nano21EditorialRecipeSchema, nano21EditorialRecipeHref, type Nano21EditorialRecipe } from '@/lib/nano21-editorial-recipes';
+
+/** Still-image authored media, with no app job or video identity. */
+export function projectNano21EditorialPageMedia(input: Nano21EditorialRecipe): { hero: FeaturedMedia; example: ExampleGalleryVideo } {
+  const recipe = nano21EditorialRecipeSchema.parse(input);
+  const href = nano21EditorialRecipeHref(recipe.id);
+  return {
+    hero: { id: recipe.id, prompt: recipe.prompt, videoUrl: null, posterUrl: recipe.media.display.url,
+      href, label: 'Nano Banana 2.1', aspectRatio: '16:9', hasAudio: false },
+    example: { id: recipe.id, href, engineLabel: 'Nano Banana 2.1', engineIconId: recipe.engineId, engineBrandId: 'google',
+      priceLabel: null, prompt: recipe.prompt, promptFull: recipe.prompt, aspectRatio: '16:9', durationSec: 0, hasAudio: false,
+      outputWidth: recipe.media.original.width, outputHeight: recipe.media.original.height,
+      optimizedPosterUrl: buildOptimizedPosterUrl(recipe.media.display.url), rawPosterUrl: recipe.media.display.url,
+      videoUrl: null, recreateHref: href },
+  };
+}
 
 export type FeaturedMedia = {
   id: string | null;

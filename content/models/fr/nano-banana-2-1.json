@@ -1,0 +1,126 @@
+{
+  "marketingName": "Nano Banana 2.1",
+  "versionLabel": "2.1",
+  "seo": {
+    "title": "Nano Banana 2.1 | MaxVideoAI",
+    "description": "Génération et retouche d’images via Google Vertex AI."
+  },
+  "overview": "Nano Banana 2.1 est un modèle image distinct : sorties 1K, 2K et 4K, quatorze ratios et jusqu’à quatorze références ordonnées pour les retouches. Les niveaux MINIMAL, MEDIUM et HIGH sont pris en charge ; MEDIUM est la valeur par défaut.",
+  "hero": {
+    "title": "Nano Banana 2.1",
+    "intro": "Génération et retouche d’images via Google Vertex AI.",
+    "badge": "1K / 2K / 4K · MINIMAL / MEDIUM / HIGH",
+    "ctaPrimary": {
+      "label": "Ouvrir l’espace image",
+      "href": "/app/image?engine=nano-banana-2-1"
+    }
+  },
+  "tips": {
+    "title": "Disponibilité et limites",
+    "items": [
+      "Ce candidat est préparé pour revue. La disponibilité publique et les prix clients ne sont pas activés. Vidéo, PDF, conversations multi-tours et recherche sont hors de cette première version image.",
+      "La disponibilité exige un tarif client revu couvrant taille, raisonnement, nombre de références et budget de tokens. La recherche reste fermée en attendant un budget et un tarif dédiés."
+    ]
+  },
+  "pricingNotes": [
+    "Les prix clients viennent des tarifs approuvés en vigueur. Les estimations de tokens fournisseur ne sont pas des devis clients."
+  ],
+  "decision": {
+    "modelSlug": "nano-banana-2-1",
+    "hero": {
+      "eyebrow": "MODÈLE IMAGE GOOGLE",
+      "title": "Nano Banana 2.1",
+      "subtitle": "Génération et retouche d’images via Google Vertex AI.",
+      "subtitleHighlights": [
+        "Google Vertex AI",
+        "1K / 2K / 4K"
+      ],
+      "paragraph": "Nano Banana 2.1 est un modèle image distinct : sorties 1K, 2K et 4K, quatorze ratios et jusqu’à quatorze références ordonnées pour les retouches. Les niveaux MINIMAL, MEDIUM et HIGH sont pris en charge ; MEDIUM est la valeur par défaut.",
+      "primaryCta": {
+        "label": "Ouvrir l’espace image",
+        "href": "/app/image?engine=nano-banana-2-1"
+      },
+      "secondaryCta": {
+        "label": "Voir les tarifs",
+        "href": "/fr/tarifs"
+      },
+      "quickLinks": [
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Parcours image Nano Banana 2.1",
+      "description": "Génération et retouche d’images via Google Vertex AI.",
+      "renderLabel": "Voir l’image",
+      "badges": [
+        "1K / 2K / 4K",
+        "MINIMAL / MEDIUM / HIGH"
+      ],
+      "altContext": "Parcours image Nano Banana 2.1"
+    },
+    "features": [
+      {
+        "title": "1K, 2K et 4K",
+        "body": "Choisissez la taille et l’un des quatorze ratios documentés. Aucun contrôle de seed, d’échantillonnage ou de masque natif n’est proposé.",
+        "tone": "quality"
+      },
+      {
+        "title": "Références image possédées",
+        "body": "Joignez une à quatorze images de votre bibliothèque dans l’ordre voulu et précisez ce que chacune doit préserver ou modifier.",
+        "tone": "reference"
+      },
+      {
+        "title": "Raisonnement",
+        "body": "Choisissez minimal, medium ou high. L’usage du raisonnement varie et reste distinct des tokens de sortie image.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Devis exact avant génération",
+        "body": "La disponibilité exige un tarif client revu couvrant taille, raisonnement, nombre de références et budget de tokens. La recherche reste fermée en attendant un budget et un tarif dédiés.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Nano Banana 2 reste disponible",
+        "body": "Nano Banana 2 conserve son identité, ses réglages et son historique.",
+        "cta": {
+          "label": "Voir Nano Banana 2",
+          "href": "/fr/modeles/nano-banana-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texte vers image",
+        "body": "Décrivez sujet, action, décor, cadrage et lumière. Choisissez ratio, taille et niveau de raisonnement."
+      },
+      {
+        "title": "Références image possédées",
+        "body": "Joignez une à quatorze images de votre bibliothèque dans l’ordre voulu et précisez ce que chacune doit préserver ou modifier."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Devis exact avant génération",
+      "subtitle": "La disponibilité exige un tarif client revu couvrant taille, raisonnement, nombre de références et budget de tokens. La recherche reste fermée en attendant un budget et un tarif dédiés.",
+      "footnote": "Les prix clients viennent des tarifs approuvés en vigueur. Les estimations de tokens fournisseur ne sont pas des devis clients.",
+      "ctaLabel": "Voir les tarifs",
+      "ctaHref": "/fr/tarifs",
+      "maxDurationNote": "Jusqu’à 4K"
+    },
+    "meta": {
+      "title": "Nano Banana 2.1 | MaxVideoAI",
+      "description": "Génération et retouche d’images via Google Vertex AI."
+    }
+  },
+  "custom": {
+    "prelaunch": {
+      "status": "candidate",
+      "checkedAt": "2026-10-25",
+      "publication": "closed_pending_review"
+    }
+  }
+}

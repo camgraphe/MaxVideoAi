@@ -48,6 +48,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   const [style, setStyle] = useState<string | null>(null);
   const [maskUrl, setMaskUrl] = useState<string>('');
   const [enableWebSearch, setEnableWebSearch] = useState(false);
+  const [maxOutputTokens, setMaxOutputTokens] = useState<number | null>(null);
   const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
   const [limitGenerations, setLimitGenerations] = useState(false);
   const [watermark, setWatermark] = useState(false);
@@ -115,7 +116,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setResolution,
     setSeed,
     setStyle,
-    setThinkingLevel,
+    setThinkingLevel, setMaxOutputTokens,
     setWatermark,
   });
   const {
@@ -155,20 +156,6 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     supportedReferenceFormatsLabel,
     toolsEnabled,
   });
-  const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
-    aspectRatio,
-    referenceImageCount: combinedReferenceUrls.length,
-    customImageHeight,
-    customImageWidth,
-    enableWebSearch,
-    mode,
-    numImages,
-    quality,
-    readyReferenceSizes,
-    referenceSizeSignature,
-    resolution,
-    selectedEngineId: selectedEngine?.id,
-  });
   const { historyEntries, isImageJob, mutateJobs, pendingGroups, setPendingGroups } = useImageWorkspaceHistory({
     engines,
     localHistory,
@@ -201,7 +188,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     style,
     maskUrl,
     enableWebSearch,
-    thinkingLevel,
+    thinkingLevel, maxOutputTokens,
     limitGenerations,
     watermark,
     persistableReferenceSlots,
@@ -220,14 +207,18 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setStyle,
     setMaskUrl,
     setEnableWebSearch,
-    setThinkingLevel,
+    setThinkingLevel, setMaxOutputTokens,
     setLimitGenerations,
     setWatermark,
     setReferenceSlots,
   });
 
-  const { applyImageSettingsSnapshot, librarySource } = useImageWorkspaceQueryHydration({
+  const { applyImageSettingsSnapshot, librarySource, recipeBlocked } = useImageWorkspaceQueryHydration({
     engines,
+    accountId, storageHydrated,
+    composerSignature: JSON.stringify([engineId, mode, prompt, numImages, aspectRatio, resolution, customImageWidth, customImageHeight,
+      seed, quality, outputFormat, background, style, maskUrl, enableWebSearch, thinkingLevel, maxOutputTokens, limitGenerations, watermark,
+      displayedReferenceSlots, selectedPreviewEntryId, selectedPreviewImageIndex]),
     genericError: resolvedCopy.errors.generic,
     searchParams,
     setAspectRatio,
@@ -251,8 +242,24 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setSelectedPreviewEntryId,
     setSelectedPreviewImageIndex,
     setStatusMessage,
-    setThinkingLevel,
+    setThinkingLevel, setMaxOutputTokens,
     setWatermark,
+  });
+  const { pricingError, pricingSnapshot } = useImageWorkspacePricing({
+    accountId,
+    aspectRatio,
+    referenceImageCount: combinedReferenceUrls.length,
+    thinkingLevel, maxOutputTokens,
+    customImageHeight,
+    customImageWidth,
+    enableWebSearch,
+    mode,
+    numImages,
+    quality,
+    readyReferenceSizes,
+    referenceSizeSignature,
+    resolution,
+    selectedEngineId: recipeBlocked ? null : selectedEngine?.id,
   });
 
   const handleEditSelectedPreview = useCallback(
@@ -284,6 +291,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
   });
 
   const handleRun = useImageGenerationRunner({
+    accountId,
+    blocked: recipeBlocked,
     pricingSnapshot,
     aspectRatio,
     background,
@@ -326,7 +335,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setSelectedPreviewEntryId,
     setSelectedPreviewImageIndex,
     setStatusMessage,
-    thinkingLevel,
+    thinkingLevel, maxOutputTokens,
     watermark,
   });
 
@@ -355,7 +364,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     previewEntry, starterPreview, starterNavigation, selectStarter,
   } = useImageWorkspaceDisplayState({
     guestStarter: { ready: !accountId && storageHydrated && !hasAnyReferenceSelection &&
-      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool'), prompt, setPrompt },
+      !searchParams?.get('job') && !searchParams?.get('engine') && !searchParams?.get('tool') && !searchParams?.has('recipe'), prompt, setPrompt },
     error,
     historyEntries,
     numImages,
@@ -364,7 +373,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     pricingSnapshot,
     selectedEngine,
     selectedPreviewEntryId,
-    suppressDefaultPreview: librarySource === 'storyboard',
+    suppressDefaultPreview: librarySource === 'storyboard' || searchParams?.has('recipe'),
   });
   const {
     copiedUrl,
@@ -399,19 +408,19 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     supportsCharacterReferences,
   });
-  const pickerSettings = useMemo(() => ({ mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, seed, limitGenerations, watermark,
+  const pickerSettings = useMemo(() => ({ mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, maxOutputTokens, seed, limitGenerations, watermark,
     referenceIndices: displayedReferenceSlots.flatMap((slot, index) => slot ? [index] : []),
     customImageWidth, customImageHeight, referenceImageCount: combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes }),
-    [mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, seed, limitGenerations, watermark, displayedReferenceSlots, customImageWidth, customImageHeight, combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes]);
+    [mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, maxOutputTokens, seed, limitGenerations, watermark, displayedReferenceSlots, customImageWidth, customImageHeight, combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes]);
   const modelPicker = useImageModelPicker({ engines: engineCapsList, engineId, accountId, settings: pickerSettings,
     apply: (id, settings) => { setEngineId(id); setResolution(settings.resolution); setAspectRatio(settings.aspectRatio);
       setQuality(settings.quality); setEnableWebSearch(settings.enableWebSearch); setNumImages(settings.numImages); setOutputFormat(settings.outputFormat); setBackground(settings.background); setStyle(settings.style);
-      setThinkingLevel(settings.thinkingLevel); setSeed(settings.seed); setLimitGenerations(settings.limitGenerations); setWatermark(settings.watermark);
+      setThinkingLevel(settings.thinkingLevel); setMaxOutputTokens(settings.maxOutputTokens); setSeed(settings.seed); setLimitGenerations(settings.limitGenerations); setWatermark(settings.watermark);
       setCustomImageWidth(settings.customImageWidth); setCustomImageHeight(settings.customImageHeight); } });
   const composerActionProps = guardComposerActions({
     setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId: modelPicker.select,
     setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
-    setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setWatermark,
+    setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setMaxOutputTokens, setWatermark,
     handleEditSelectedPreview, handleReferenceFile, handleReferenceUrl, handleRemoveReferenceSlot, handleRun,
     handleLibrarySelect, toggleCharacterReference, selectStarter,
   });
@@ -424,7 +433,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     aspectRatio, aspectRatioSelectOptions, background, backgroundSelectOptions, booleanSelectOptions,
     customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, numImages,
     outputFormat, outputFormatSelectOptions, quality, qualitySelectOptions, resolution, resolutionSelectOptions,
-    seed, style, styleSelectOptions, thinkingLevel, thinkingLevelSelectOptions, watermark,
+    seed, style, styleSelectOptions, thinkingLevel, thinkingLevelSelectOptions, maxOutputTokens, watermark,
   };
 
   if (!storageHydrated) return <ImageWorkspaceLoadingState />;

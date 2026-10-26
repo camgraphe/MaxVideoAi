@@ -1,3 +1,4 @@
+import { UNPUBLISHED_FAL_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/registry';
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -216,7 +217,7 @@ test('retired lifecycle and replacement retirement remain one canonical contract
 });
 
 test('canonical registry validates the committed document', () => {
-  assert.equal(validateModelRegistryDocument(valid).models.length, 57);
+  assert.equal(validateModelRegistryDocument(valid).models.length, 57 + UNPUBLISHED_FAL_ENGINE_REGISTRY.length);
 });
 
 test('published model pages require localized content in en, fr, and es', () => {

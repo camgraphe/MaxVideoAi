@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import {canonicalKlingV4PricingFacts} from './generation-kling-v4-pricing-facts';
 import { canonicalOperationSourceDuration } from './generation-operation-facts';
 import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
@@ -418,6 +419,8 @@ export async function priceCanonicalGeneration(
     referenceImageSizes: canonicalImageReferenceSizes(request, referenceContext),
     ...(customImageSize ? { customImageSize } : {}),
     enableWebSearch: request.settings.enableWebSearch === true,
+    ...(request.engineId === NANO21_ENGINE_ID ? { thinkingLevel: optionalString(settings, 'thinkingLevel') as ImageGenerationRequest['thinkingLevel'],
+      maxOutputTokens: Number(settings.maxOutputTokens ?? NANO21_DEFAULT_MAX_OUTPUT_TOKENS), systemInstruction: optionalString(settings, 'systemInstruction'), enableImageSearch: settings.enableImageSearch === true } : {}),
     membershipTier,
   });
   return validatePricingResult(result.pricing, membershipTier);
@@ -504,12 +507,15 @@ export async function priceCanonicalGenerationWithBilling(
       ? request.mode === 'i2i'
         ? Math.max(0, imageReferences.length - 1)
         : imageReferences.length
-      : isGptImage25EngineId(engine.id) && request.mode === 'i2i'
+      : engine.id === NANO21_ENGINE_ID || isGptImage25EngineId(engine.id) && request.mode === 'i2i'
         ? imageReferences.length
         : undefined;
     snapshot = await computeBillingSnapshot({
       engine,
       durationSec: request.outputCount,
+      ...(engine.id === NANO21_ENGINE_ID ? { thinkingLevel: optionalString(request.settings, 'thinkingLevel'),
+        maxOutputTokens: Number(request.settings.maxOutputTokens ?? NANO21_DEFAULT_MAX_OUTPUT_TOKENS), systemInstruction: optionalString(request.settings, 'systemInstruction'),
+        enableWebSearch: request.settings.enableWebSearch === true, enableImageSearch: request.settings.enableImageSearch === true } : {}),
       resolution: requiredString(request.settings, 'resolution'),
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
       mode: request.mode as ImageGenerationMode,

@@ -1,5 +1,18 @@
 # Pricing Engine
 
+## Private Nano 2.1 tariff preparation (2026-10-26)
+
+The admin inventory materializes the existing build-only Nano definition through
+`pricing-admin/private-candidate-tariffs.ts`, independently of public/executable
+admission. Exact default-cap scenarios expose thinking level, framing, resolution
+and owned reference count; the output cap stays 32768. First-cell preview may
+report no current price, but validates the proposed exact cell through canonical
+billing before the normal revision-bound confirmation and immutable audit event.
+Staging keeps inactive tariffs unavailable for charging. Missing active exact
+cells also refuse charging until an independently confirmed cell exists. No
+customer amount, activation or alternative commercial budget profile is authored.
+
+
 ## Kling 4 tariff preparation (2026-10-25)
 
 The V4 candidate remains closed to spending for every actor. Its factual supplier

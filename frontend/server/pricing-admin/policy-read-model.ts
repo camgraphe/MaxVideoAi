@@ -1,3 +1,4 @@
+import { privateCandidateTariffEntries, privateCandidateTariffScenarios } from './private-candidate-tariffs';
 import {klingV4TariffScenarios} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import {
   resolvePricingPolicy,
@@ -44,8 +45,10 @@ import {
 
 export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
   const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
-  return listFalEngines().flatMap((entry) => {
-    if (!appPublished.has(entry.id) && entry.id !== 'kling-v4') return [];
+  const privateCandidates = privateCandidateTariffEntries();
+  const privateIds = new Set(privateCandidates.map(entry => entry.id));
+  return [...listFalEngines(), ...privateCandidates].flatMap((entry) => {
+    if (!appPublished.has(entry.id) && entry.id !== 'kling-v4' && !privateIds.has(entry.id)) return [];
     const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
       && scenario.surface === 'billing' && scenario.membershipTier === 'member'
       && scenario.id.startsWith(`billing:${entry.id}:`));
@@ -80,6 +83,7 @@ export function selectRepresentativeTariffScenario(
     ?? (typeof scenario.input.aspectRatio === 'string' && scenario.input.aspectRatio !== 'auto' ? scenario.input.aspectRatio : undefined)
     ?? (entry.engine.aspectRatios.includes('16:9') ? '16:9' : entry.engine.aspectRatios.includes('1:1') ? '1:1' : undefined);
   const defaultQuality = fields.find((field) => field.id === 'quality' && typeof field.default === 'string')?.default;
+  const defaultThinking = fields.find((field) => field.id === 'thinking_level' && typeof field.default === 'string')?.default;
   const resolution = isGptImageFamilyEngineId(entry.id)
     ? resolveGptImage2PricingTier(scenario.resolution).billingKey : scenario.resolution;
   let chosen: ManualTariffCoverageScenario | null = null;
@@ -88,9 +92,10 @@ export function selectRepresentativeTariffScenario(
     const selector = candidate.selector;
     const score = (selector.mode === scenario.mode ? 0 : 10_000)
       + (selector.resolution.toLowerCase() === resolution?.toLowerCase() ? 0 : 1_000)
-      + Math.abs(Number(selector.durationSec) - (scenario.durationSec ?? 1)) * 10
+      + Math.abs(Number(selector.durationSec ?? candidate.context.durationSec) - (scenario.durationSec ?? 1)) * 10
       + (defaultAspect && selector.aspectRatio !== defaultAspect ? 4 : 0)
       + (defaultQuality && selector.quality !== defaultQuality ? 3 : 0)
+      + (defaultThinking && selector.thinkingLevel?.toLowerCase() !== String(defaultThinking).toLowerCase() ? 3 : 0)
       + (scenario.input.audio === false && selector.audio === 'true' ? 2 : 0);
     if (score < best) { chosen = candidate; best = score; }
   }
@@ -262,7 +267,7 @@ export async function loadPricingPolicyInventory(
 
   const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
   const coverageByModel = new Map<string, ReturnType<typeof collectSellableManualTariffCoverage>['scenarios']>();
-  for (const candidate of [...collectSellableManualTariffCoverage().scenarios,...klingV4TariffScenarios()]) {
+  for (const candidate of [...collectSellableManualTariffCoverage().scenarios,...klingV4TariffScenarios(),...privateCandidateTariffScenarios()]) {
     const bucket = coverageByModel.get(candidate.modelId) ?? [];
     bucket.push(candidate);
     coverageByModel.set(candidate.modelId, bucket);
