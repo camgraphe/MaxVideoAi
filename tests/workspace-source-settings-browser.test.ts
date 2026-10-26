@@ -15,7 +15,7 @@ test('source settings stay truthful across reload, recall, upload, model/mode sw
   const waitForModify = async (page: Page) => expect(page.locator('[data-mode="v2v"]')).toHaveAttribute('aria-pressed', 'true');
   try {
     for (const name of ['chromium', 'webkit'] as const) {
-      const browser = await (name === 'chromium' ? chromium : webkit).launch({ headless: true }); browsers.push(browser);
+      const browser = name === 'chromium' ? await chromium.launch({ headless: true }) : await webkit.launch({ headless: true }); browsers.push(browser);
       for (const width of [390, 1440]) {
         const page = await browser.newPage({ viewport: { width, height: 1000 }, hasTouch: width === 390 });
         const entry = { name, width, page, errors: [] as string[], external: [] as string[], posts: [] as string[] };
