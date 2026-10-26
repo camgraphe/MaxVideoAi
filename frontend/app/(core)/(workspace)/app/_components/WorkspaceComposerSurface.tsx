@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
-import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
+import { Composer, type MultiPromptScene } from '@/components/Composer';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
 import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
@@ -51,7 +51,6 @@ import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prom
 import { supportsWorkspaceMultiPrompt } from '../_hooks/useWorkspaceEngineModeState';
 import type { LumaRay32KeyframeEditorProps } from './LumaRay32KeyframeEditor';
 import type { OmniStudioPanelProps } from './omni/OmniStudioPanel.client';
-import type { StoryboardLaunchModalProps } from './StoryboardLaunchModal';
 
 const LumaRay32KeyframeEditor = dynamic<LumaRay32KeyframeEditorProps>(
   () => import('./LumaRay32KeyframeEditor').then((mod) => mod.LumaRay32KeyframeEditor),
@@ -60,11 +59,6 @@ const LumaRay32KeyframeEditor = dynamic<LumaRay32KeyframeEditorProps>(
 
 const OmniStudioPanel = dynamic<OmniStudioPanelProps>(
   () => import('./omni/OmniStudioPanel.client').then((mod) => mod.OmniStudioPanel),
-  { ssr: false }
-);
-
-const StoryboardLaunchModal = dynamic<StoryboardLaunchModalProps>(
-  () => import('./StoryboardLaunchModal').then((mod) => mod.StoryboardLaunchModal),
   { ssr: false }
 );
 
@@ -165,11 +159,6 @@ type WorkspaceComposerSurfaceProps = {
   handleOpenKlingAssetLibrary: (elementId: string, slot: 'frontal' | 'reference' | 'video', slotIndex?: number) => void;
   setViewMode: Dispatch<SetStateAction<'single' | 'quad'>>;
 };
-
-function isStoryboardLaunchEngine(engineId: string): boolean {
-  const normalized = engineId.toLowerCase();
-  return normalized.includes('seedance') || normalized.includes('kling');
-}
 
 const LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS = new Set(['edit_keyframe_indexes']);
 const HDR_FIELD_ID = 'hdr';
@@ -296,7 +285,6 @@ export function WorkspaceComposerSurface({
   const localDraftPreview = candidateDraftControls?.available ? candidateDraftControls : undefined;
   const draftCopy = getSeedanceDraftCopy(uiLocale);
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const [storyboardModalOpen, setStoryboardModalOpen] = useState(false);
   const klingO3AssetState = useMemo(
     () => getKlingO3AssetState({ inputAssets, klingElements }),
     [inputAssets, klingElements]
@@ -394,34 +382,15 @@ export function WorkspaceComposerSurface({
     },
     [handleExtraInputValueChange, hdrFieldEntry]
   );
-  const storyboardLaunchAction = useMemo<ComposerPromotedAction | null>(() => {
-    if (!['t2v', 'i2v', 'ref2v', 'fl2v'].includes(submissionMode) || !isStoryboardLaunchEngine(selectedEngine.id)) return null;
-    const tooltip =
-      uiLocale === 'fr'
-        ? 'Ouvre le Storyboarder avant de générer avec Seedance ou Kling.'
-        : uiLocale === 'es'
-          ? 'Abre Storyboarder antes de generar con Seedance o Kling.'
-          : 'Open Storyboarder before generating with Seedance or Kling.';
-    return {
-      id: 'storyboard-launch',
-      label: 'Storyboard',
-      tooltip,
-      active: false,
-      icon: 'sparkles',
-      onToggle: () => setStoryboardModalOpen(true),
-    };
-  }, [selectedEngine.id, submissionMode, uiLocale]);
   const composerPromotedActions = useMemo(
-    () => {
-      const actions = buildComposerPromotedActions({
+    () =>
+      buildComposerPromotedActions({
         form,
         promotedFields: inputSchemaSummary.promotedFields,
         uiLocale,
         onToggle: handleExtraInputValueChange,
-      });
-      return storyboardLaunchAction ? [storyboardLaunchAction, ...actions] : actions;
-    },
-    [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, storyboardLaunchAction, uiLocale]
+      }),
+    [form, handleExtraInputValueChange, inputSchemaSummary.promotedFields, uiLocale]
   );
 
   useEffect(() => {
@@ -753,14 +722,6 @@ export function WorkspaceComposerSurface({
           </fieldset>
         }
       />
-      {storyboardModalOpen ? (
-        <StoryboardLaunchModal
-          open
-          selectedEngineId={selectedEngine.id}
-          selectedEngineLabel={selectedEngine.label}
-          onClose={() => setStoryboardModalOpen(false)}
-        />
-      ) : null}
     </>
   );
 }
