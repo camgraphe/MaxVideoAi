@@ -708,7 +708,7 @@ export function WorkspaceComposerSurface({
             {!localDraftPreview.live ? <p className="mt-1 text-[10px] text-text-muted">{draftCopy.prototype}</p> : null}
           </div>
         ) : undefined}
-        settingsBar={
+        settingsBar={ownedGenerationRequired && !form.extraInputValues.source_job_id ? undefined : (
           <>
             <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? draftCopy.lockTitle : undefined}>
               <CoreSettingsBar
@@ -741,7 +741,7 @@ export function WorkspaceComposerSurface({
               />
             </fieldset>
           </>
-        }
+        )}
         generateControl={
           <fieldset disabled={localDraftPreview?.selected} className="contents" title={localDraftPreview?.selected ? 'Un seul Draft à la fois' : undefined}>
             <CoreIterationsControl
