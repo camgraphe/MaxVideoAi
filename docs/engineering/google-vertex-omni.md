@@ -108,6 +108,17 @@ resubmission or fallback; the existing terminal-failure refund remains unchanged
 `tests/google-vertex-omni-failures.test.ts` covers this production response shape,
 the public guidance and the terminal polling/refund boundary.
 
+Studio's creation card projects only fixed public failure messages through
+`conversationFailurePresentation`, including the available moderation reason and
+the other known public journal failures. Unknown historical reasons stay
+explicitly unavailable; no prompt, supplier payload or lost cause is reconstructed.
+The card receives the app's EN/FR/ES locale and confirms a wallet refund only from
+the persisted `refunded_wallet` status. A failed generation takes priority over
+stale quote readiness or expiration. The real-route browser fixture in
+`tests/studio-failure-card-browser.test.ts` checks these messages, read-only journal
+refresh/reopening and the Spanish locale boundary using synthetic records; it
+does not establish access to an authenticated customer's production history.
+
 ## Pricing And Cost Estimate
 
 The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.

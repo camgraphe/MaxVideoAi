@@ -245,7 +245,7 @@ function StudioImageConversationWorkspace({
                   onRetryAssembly={()=>extensions.retry(turn.requestId)}
                   busy={studio.busy}
                   localQa={localQa}
-                  locale={locale}
+                  locale={appLocale === 'es' ? 'es' : locale}
                   onRefresh={() => void studio.refresh()}
                   onEditShotPlan={(shots)=>{
                     const summary=turn.quote!.summary;
