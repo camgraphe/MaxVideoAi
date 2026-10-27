@@ -1,4 +1,5 @@
 import { listNano21EditorialImages } from '@/lib/nano21-editorial-images';
+import { buildHeroMetaLines } from '../_lib/model-page-hero-specs';
 import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
@@ -173,19 +174,9 @@ export async function MarketingModelPageLayout({
   const heroFormat = heroMedia.aspectRatio ?? keySpecValues?.aspectRatios ?? 'Data pending';
   const heroResolution = keySpecValues?.maxResolution ?? 'Data pending';
   const heroOutputFormat = keySpecValues?.outputFormats ?? 'Data pending';
-  const heroMetaLines = (
-    isImageEngine
-      ? [
-          { label: heroMetaLabels.price, value: heroPrice },
-          { label: resolveSpecRowLabel(locale, 'maxResolution', true), value: heroResolution },
-          { label: heroMetaLabels.format, value: heroOutputFormat },
-        ]
-      : [
-          { label: heroMetaLabels.price, value: heroPrice },
-          { label: heroMetaLabels.duration, value: heroDuration },
-          { label: heroMetaLabels.format, value: heroFormat },
-        ]
-  ).filter((line) => Boolean(line.value));
+  const heroMetaLines = buildHeroMetaLines({ isImageEngine, labels: heroMetaLabels, price: heroPrice,
+    resolutionLabel: resolveSpecRowLabel(locale, 'maxResolution', true), resolution: heroResolution,
+    outputFormat: heroOutputFormat, duration: heroDuration, aspectRatio: heroFormat });
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
