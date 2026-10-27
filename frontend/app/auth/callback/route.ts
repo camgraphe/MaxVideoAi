@@ -56,6 +56,7 @@ export async function GET(req: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const state = requestUrl.searchParams.get('state');
   const providerError = requestUrl.searchParams.get('error');
+  const signupFlow = requestUrl.searchParams.get('flow') === 'signup';
   const nextParam = requestUrl.searchParams.get('next');
   const nextPath = sanitizeNextPath(nextParam);
 
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest) {
   if (providerError || code) {
     const loginUrl = buildLoginRedirect(requestUrl.origin, nextPath);
     if (providerError) {
-      loginUrl.searchParams.set('authError', 'oauth_callback_failed');
+      loginUrl.searchParams.set('authError', signupFlow ? 'signup_link_failed' : 'oauth_callback_failed');
       return markAuthRedirectResponse(NextResponse.redirect(loginUrl));
     }
     if (!code) {
@@ -87,6 +88,7 @@ export async function GET(req: NextRequest) {
     }
 
     loginUrl.searchParams.set('code', code);
+    if (signupFlow) loginUrl.searchParams.set('flow', 'signup');
     if (state) {
       loginUrl.searchParams.set('state', state);
     }

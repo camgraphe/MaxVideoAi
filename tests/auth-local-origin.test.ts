@@ -45,6 +45,15 @@ test('provider errors stay on the same local login instead of losing their origi
   assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
 });
 
+test('expired signup links return to local sign-in with a confirmation-specific error and the original destination', async () => {
+  const response = await GET(new NextRequest(
+    'https://maxvideoai.com/auth/callback?flow=signup&next=%2Fapp%2Fstudio&error=access_denied&error_code=otp_expired',
+  ));
+  assert.equal(response.headers.get('location'),
+    'https://maxvideoai.com/login?mode=signin&next=%2Fapp%2Fstudio&authError=signup_link_failed');
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+});
+
 test('IPv6 loopback callbacks preserve their browser origin too', async () => {
   const response = await GET(new NextRequest(
     'http://[::1]:3210/auth/callback?next=%2Fadmin%2Fplaylists',

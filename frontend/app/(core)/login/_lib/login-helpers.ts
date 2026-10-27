@@ -55,21 +55,21 @@ export function getBrowserAuthRedirectOrigin(): string {
   return window.location.origin;
 }
 
-export function buildAuthCallbackRedirect(origin: string, nextPath: string, locale?: Locale): string | undefined {
+export function buildAuthCallbackRedirect(origin: string, nextPath: string, locale?: Locale, flow?: 'signup' | 'recovery'): string | undefined {
   const trimmed = origin.trim();
   if (!trimmed) return undefined;
   const base = trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
-  // Local Auth allows one-level paths; /login already owns direct PKCE exchange.
-  // Returning to the same origin also preserves the locally stored verifier.
+  // Google keeps the local direct exchange; email links use the callback so
+  // confirmation errors and recovery proof reach their dedicated branches.
   try {
     const hostname = new URL(base).hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]') {
+    if (!flow && (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]')) {
       return `${base}/login?mode=signin&next=${encodeURIComponent(sanitizeNextPath(nextPath))}${locale ? `&lang=${locale}` : ''}`;
     }
   } catch {
     // Preserve the existing fallback for callers without a parseable origin.
   }
-  return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}${locale ? `&lang=${locale}` : ''}`;
+  return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}${locale ? `&lang=${locale}` : ''}${flow ? `&flow=${flow}` : ''}`;
 }
 
 export function markPendingGoogleLogin(

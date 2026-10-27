@@ -29,7 +29,7 @@ const QUERY_PARAM_STRIP_PREFIXES = [
 const QUERY_PARAM_ALLOWLISTS = {
   examples: new Set(['sort', 'engine', 'page']),
   contact: new Set(['submitted', 'error', 'error_code']),
-  login: new Set(['next', 'mode', 'authError', 'code', 'state']),
+  login: new Set(['next', 'mode', 'authError', 'code', 'state', 'flow']),
   video: new Set(['from']),
   compare: new Set(['order']),
 };
