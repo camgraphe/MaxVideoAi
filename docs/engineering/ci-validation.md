@@ -13,7 +13,7 @@ failed, canceled, missing or unexpectedly skipped required jobs.
 | Fast checks | Exposure guard, catalogue/roster audits, TypeScript, ESLint, image alt checks and fast validation files | Every run |
 | Database and media integration | Disposable PostgreSQL, real FFmpeg tests and three isolated Studio route integrations | Runtime/UI changes; financial changes; full runs |
 | Exhaustive financial cutovers | Both complete cutover/rollback tests, including all 26,982 historical canonical quote checkpoints and 89 separately labeled new-offer proposals (27,071 total) | Tariff/billing changes and explicit commercial inputs; full runs |
-| Browser | Connected Studio, editorial media, prompting tabs and admin smoke | UI/layout/translation changes; runtime/financial changes; full runs |
+| Browser (two partitions) | Connected Studio, editorial media, prompting tabs and admin smoke once on partition 2 | UI/layout/translation changes; runtime/financial changes; full runs |
 
 These lanes run in parallel. The initial financial migration's complete matrix is
 preserved; no quote sampling or assertions were removed. Fast pricing, canonical
@@ -29,8 +29,21 @@ observed prolonged dependency downloads on the new image. The shared PostgreSQL
 17/FFmpeg setup and the complete tariff suite remain required; the runner pin does
 not change coverage or the aggregate Quality CI gate.
 
-The browser lane installs Chromium and WebKit so the mobile prompt and Modify navigation regressions run against both engines. It uses Ubuntu 24.04 and has a 40-minute total budget. On the
-2026-10-23 candidate, tool/browser installation consumed over 12 minutes before
+The browser lane runs two independent standard Ubuntu 24.04 jobs, each installing
+Chromium and WebKit so the mobile prompt and Modify navigation regressions run
+against both engines. Each job retains its 40-minute total budget. The matrix uses
+`fail-fast: false`, so a failed partition does not cancel its sibling. Files run
+sequentially within each partition (`--test-concurrency=1`), with separate VM
+checkouts, ports and disks. The runner alternates files in the original Browser
+manifest order between `1/2` and `2/2`; the 46-file baseline becomes 23 + 23. This
+balances file counts without claiming equal durations or a measured speedup.
+Admin smoke runs once after partition 2 succeeds, with its existing configuration,
+variables and retries. Its failure-report upload is also limited to partition 2,
+preserving the existing artifact name, path and default retention. The `Quality CI`
+gate waits for the aggregate Browser matrix result as well as the other required
+lanes; a failed, canceled, missing or unexpectedly skipped partition cannot pass.
+
+On the 2026-10-23 candidate, tool/browser installation consumed over 12 minutes before
 the tests, so the former 25-minute limit canceled the still-progressing browser
 suite before admin smoke. All browser tests and the admin suite remain required.
 The same run exposed a stale initial-cutover test total: the reviewed Luma Modify
@@ -109,9 +122,23 @@ pnpm run test:validate -- --suite integration
 pnpm run test:validate -- --suite tariffs
 pnpm run test:validate -- --suite studio
 pnpm run test:validate -- --suite browser
+pnpm run test:validate -- --suite browser --shard 1/2
+pnpm run test:validate -- --suite browser --shard 2/2
 pnpm test:admin-smoke
 node scripts/run-validation-tests.mjs --plan
+node scripts/run-validation-tests.mjs --suite browser --shard 1/2 --plan
 ```
+
+Browser without `--shard` still runs its complete manifest, and the default
+`test:validate` command preserves the complete standard suite followed by the four
+isolated Studio integrations. A leading pnpm passthrough `--` remains supported.
+Only Browser accepts `--shard`, with exactly `1/2` or `2/2`; missing, malformed,
+duplicate or misplaced shard options fail before tool bootstrap. Empty selections
+fail before bootstrap or test launch so Node cannot discover unrelated tests.
+`--plan` never starts tools or tests. Its existing suite arrays remain complete;
+`browserShards` exposes both lists keyed by `1/2` and `2/2`, and `selection` reports
+`suite`, nullable `shard` and the explicit `files` that would run. Their disjoint
+union is the complete `browser` list.
 
 ### Local PostgreSQL version selection
 
@@ -133,8 +160,12 @@ Focused tests use the same resolver through `tests/helpers/disposable-postgres.t
 legacy fixtures that own their lifecycle use its `testPostgresCommand` helper.
 Database initialization, startup and cleanup use the selected absolute executable
 paths. Manual PATH prefixes are no longer needed, including for direct `tsx --test`
-runs. The fast suite and `--plan` do not require PostgreSQL. The toolchain regression
-uses executable doubles and stays in the fast suite.
+runs. The fast suite and `--plan` do not require PostgreSQL. The named tools-free
+exceptions `tests/test-postgres-toolchain.test.ts` and
+`tests/ci-ubuntu-mirror.test.ts` stay fast: they use executable version doubles
+and temporary APT text fixtures respectively, without running real validation
+tools or installation commands. The transport fixture executes only the action's
+Python against its temporary source files.
 
 This selection only affects test child processes. It does not change shell startup
 files, Homebrew links or running services, and never connects to an inherited
@@ -247,9 +278,12 @@ settings. It is included in the pre-audit `pnpm cwv:check` gate.
 - `tests/ci-validation-policy.test.ts` executes selection against real temporary
   Git histories and verifies gate success/failure behavior.
 - `tests/validation-test-runner.test.ts` proves every root validation file occurs
-  in exactly one CI suite and retains the original complete local test plan.
+  in exactly one CI suite, retains the original complete local test plan, and
+  checks Browser partition coverage, determinism, explicit sequential arguments,
+  strict CLI rejection and empty-selection/bootstrap boundaries.
 - `tests/quality-ci-contract.test.ts` locks the required gate name/dependencies,
-  full Git history, conditional jobs, concurrency and scheduled Lighthouse.
+  full Git history, conditional jobs, the two-partition Browser matrix, admin/report
+  ownership, aggregate failure handling, concurrency and scheduled Lighthouse.
 
 The shared toolchain lives in `.github/actions/setup-project/action.yml`.
 PostgreSQL 17 and FFmpeg installation live in

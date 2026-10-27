@@ -252,15 +252,35 @@ export function buildPaidVideoRequestBody(
   const extraInputValues = projectExtraInputValues(settings);
   validateOwnedKlingElements(execution.request, execution.resolvedReferences);
   const allReferences = materializeReferences(execution);
-  const references = allReferences.filter(ref => !isElementReference(ref, execution.request.elements));
+
   const elementMedia = (slot: number) => allReferences.find(ref => ref.role === 'reference' && ref.slot === slot)!;
   const elements = execution.request.elements?.map(element => element.kind === 'video'
     ? { videoUrl: elementMedia(element.videoSlot).url, videoAssetId: elementMedia(element.videoSlot).assetId }
     : { frontalImageUrl: elementMedia(element.frontalSlot).url, frontalAssetId: elementMedia(element.frontalSlot).assetId,
       referenceImageUrls: element.referenceSlots.map(slot => elementMedia(slot).url), referenceAssetIds: element.referenceSlots.map(slot => elementMedia(slot).assetId) });
+  const materialized = allReferences;
+  const subjectSlots = new Set<number>();
+  const subjectReference = (slot: number, kind: 'image' | 'video') => {
+    const reference = materialized.find(reference => reference.role === 'reference' && reference.slot === slot);
+    if (!reference?.assetId || reference.kind !== kind) throw new Error('A verified owned subject reference is required before provider submission.');
+    subjectSlots.add(slot);
+    return reference;
+  };
+  const v4Elements = execution.request.subjects?.map(subject => {
+    if (execution.request.engineId !== 'kling-v4' || !['ref2v', 'v2v'].includes(execution.request.mode)) throw new Error('Unsupported subjects.');
+    if (subject.kind === 'video') {
+      const video = subjectReference(subject.referenceSlot, 'video');
+      return {videoUrl: video.url, videoAssetId: video.assetId};
+    }
+    const front = subjectReference(subject.frontalReferenceSlot, 'image');
+    const views = subject.referenceSlots.map(slot => subjectReference(slot, 'image'));
+    return {frontalImageUrl: front.url, frontalAssetId: front.assetId,
+      referenceImageUrls: views.map(view => view.url), referenceAssetIds: views.map(view => view.assetId!)};
+  });
+  const references = allReferences.filter(ref => !isElementReference(ref, execution.request.elements)).filter(reference => reference.role !== 'reference' || reference.slot === undefined || !subjectSlots.has(reference.slot));
   const body: Record<string, unknown> = {
     engineId: execution.request.engineId,
-    ...(elements ? {elements} : {}),
+    ...(elements || v4Elements ? {elements: v4Elements ?? elements} : {}),
     ...(execution.request.sourceJobId ? { sourceJobId: execution.request.sourceJobId, sourceOutputId: execution.request.sourceOutputId } : {}),
     ...(execution.request.operation ? { operation: execution.request.operation } : {}),
     mode: toEngineGenerationMode(execution.request.engineId, execution.request.mode),
@@ -271,6 +291,7 @@ export function buildPaidVideoRequestBody(
     ...settings,
     ...(Object.keys(extraInputValues).length ? { extraInputValues } : {}),
     ...(multiPrompt?.length ? { multiPrompt } : {}),
+
     ...(execution.request.seedanceWorkflow ? { seedanceWorkflow: execution.request.seedanceWorkflow, iterationCount: 1 } : {}),
     inputs: [],
   };
@@ -364,7 +385,7 @@ export function buildPaidVideoRequestBody(
     const audio = audioReferences.map(({ url }) => url);
     const hasDocumentReference = typeof extraInputValues.file_url === 'string'
       || typeof extraInputValues.web_url === 'string';
-    if (!referenceMedia.length && !start.length && !(execution.engine.id==='minimax-h3-max' && end.length) && !hasDocumentReference) invalidModeReferences();
+    if (!referenceMedia.length && !start.length && !(execution.engine.id==='minimax-h3-max' && end.length) && !hasDocumentReference && !elements?.length && !v4Elements?.length) invalidModeReferences();
     if (start[0]) body.imageUrl = start[0].url;
     if (end[0]) body.endImageUrl = end[0].url;
     if (images.length) body.referenceImages = images;
@@ -389,7 +410,7 @@ export function buildPaidVideoRequestBody(
       ...(middle[0] && middleFieldId ? [input(middle[0],middleFieldId)] : []),
       ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
-      ...(imageFieldId && imageFieldId !== 'image_urls'
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'kling-v4')
         ? referenceMedia.filter((reference) => reference.kind === 'image')
           .map((reference) => input(reference, imageFieldId))
         : []),
@@ -442,7 +463,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'seedance-2-5')
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];

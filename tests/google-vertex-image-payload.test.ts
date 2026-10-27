@@ -24,6 +24,27 @@ test('builds a Vertex generateContent image request with inline and GCS referenc
   assert.deepEqual(payload.generationConfig.imageConfig, { aspectRatio: '16:9', imageSize: '2K' });
 });
 
+test('maps the admitted Nano2 thinking levels to the exact Vertex REST enum', () => {
+  for (const [thinkingLevel, wireLevel] of [['minimal', 'MINIMAL'], ['high', 'HIGH']] as const) {
+    const payload = buildGoogleVertexImagePayload({ prompt: 'Product image', thinkingLevel });
+    assert.deepEqual(payload.generationConfig, {
+      responseModalities: ['TEXT', 'IMAGE'],
+      thinkingConfig: { thinkingLevel: wireLevel },
+    });
+  }
+});
+
+test('omits unset thinking controls and rejects levels outside the current Nano2 contract', () => {
+  for (const thinkingLevel of [undefined, null]) {
+    assert.deepEqual(buildGoogleVertexImagePayload({ prompt: 'Product image', thinkingLevel }).generationConfig, {
+      responseModalities: ['TEXT', 'IMAGE'],
+    });
+  }
+  for (const thinkingLevel of ['medium', 'low', 'HIGH', '', ' high ']) {
+    assert.throws(() => buildGoogleVertexImagePayload({ prompt: 'Product image', thinkingLevel }), /thinking level/i);
+  }
+});
+
 test('extracts inline images from Vertex candidates', () => {
   const images = extractGoogleVertexImages({
     responseId: 'response-1',

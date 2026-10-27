@@ -67,6 +67,74 @@ test('a complete old Kling render shows its current exact quote, not the old pai
   assert.equal(calls[0]?.durationSec, 5);
 });
 
+function recordedMini(overrides: Record<string, unknown> = {}): GalleryVideo {
+  const input = video({
+    id: 'fixture-mini-created-21-days-earlier',
+    engineId: 'seedance-2-0-mini',
+    engineLabel: 'Mini',
+    createdAt: '2026-10-04T16:00:00Z',
+    hasAudio: false,
+    finalPriceCents: 95,
+  });
+  return { ...input, settingsSnapshot: {
+    schemaVersion: 1, surface: 'video', engineId: input.engineId, prompt: input.prompt,
+    inputMode: 't2v',
+    core: { durationSec: 5, resolution: '720p', audio: false, aspectRatio: '16:9' },
+    refs: {},
+    ...overrides,
+  } };
+}
+
+test('recorded metadata preserves an old Mini scenario through current price decreases and increases', async () => {
+  const input = recordedMini();
+  const before = structuredClone(input);
+  for (const cents of [39, 139]) {
+    const calls: PricingContext[] = [];
+    const result = await quoteCurrentExamplePrice(input, { quote: currentQuote(calls, cents) });
+    assert.deepEqual(result, {
+      kind: 'exact', modelId: 'seedance-2-0-mini', amountCents: cents,
+      currency: 'USD', scenarioLabel: 'Text to video · 5s · 720p',
+    });
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].resolution, '720p');
+    assert.equal(calls[0].aspectRatio, '16:9');
+    assert.equal(calls[0].durationSec, 5);
+    assert.deepEqual(input, before, 'current display must not rewrite saved settings or the historical charge');
+  }
+});
+
+test('recorded model metadata accepts an alias for the same published identity', async () => {
+  const result = await quoteCurrentExamplePrice(recordedMini({ engineId: 'dreamina-seedance-2-0-mini' }), {
+    quote: currentQuote([], 39),
+  });
+  assert.equal(result.kind, 'exact');
+});
+
+test('partial or mismatched recorded metadata never claims an exact recreation price', async () => {
+  for (const override of [
+    { schemaVersion: 2 }, { surface: 'image' }, { engineId: 'seedance-2-5' },
+    { prompt: 'A different recorded prompt' }, { engineId: undefined }, { schemaVersion: undefined },
+  ]) {
+    const result = await quoteCurrentExamplePrice(recordedMini(override), { quote: currentQuote([], 39) });
+    assert.equal(result.kind, 'reference', JSON.stringify(override));
+  }
+});
+
+test('recorded provenance cannot fill missing resolution or discard unknown priced controls', async () => {
+  for (const override of [
+    { core: { durationSec: 5, audio: false, aspectRatio: '16:9' } },
+    { core: { durationSec: 5, resolution: '720p', audio: false, aspectRatio: '16:9', quality: 'premium' } },
+    { advanced: { upscale: true } },
+  ]) {
+    const result = await quoteCurrentExamplePrice(recordedMini(override), { quote: currentQuote([], 39) });
+    assert.equal(result.kind, 'reference');
+  }
+  const unavailable = await quoteCurrentExamplePrice(recordedMini(), {
+    quote: async () => { throw new Error('current pricing unavailable'); },
+  });
+  assert.deepEqual(unavailable, { kind: 'unavailable', modelId: 'seedance-2-0-mini' });
+});
+
 test('unmapped quality or add-on settings cannot be labeled as an exact current price', async () => {
   const calls: PricingContext[] = [];
   const result = await quoteCurrentExamplePrice(video({

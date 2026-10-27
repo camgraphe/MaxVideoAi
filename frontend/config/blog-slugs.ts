@@ -1,6 +1,11 @@
 export type BlogSlugLocale = 'en' | 'fr' | 'es';
 
 export const BLOG_SLUGS_BY_CANONICAL = {
+  "change-video-background-wan-3-prime": {
+    en: "change-video-background-wan-3-prime",
+    fr: "change-video-background-wan-3-prime",
+    es: "change-video-background-wan-3-prime",
+  },
   "website-images-30-second-social-ad-chatgpt-work-maxvideoai": {
     en: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",
     fr: "website-images-30-second-social-ad-chatgpt-work-maxvideoai",

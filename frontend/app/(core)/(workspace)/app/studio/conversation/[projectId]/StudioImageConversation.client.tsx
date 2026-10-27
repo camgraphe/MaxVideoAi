@@ -88,6 +88,7 @@ function StudioImageConversationWorkspace({
   const [following, setFollowing] = useState(true);
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const composerRegion = useRef<HTMLDivElement>(null);
+  const [shotPlanRevision,setShotPlanRevision]=useState<ImageTurnInput['shotPlanRevision']>();
   const [text, setText] = useState(() => example?buildExampleRequest(example,appLocale,'studio'):studioMarketingStarterMessage(starter,appLocale));
   useEffect(()=>{
     const draft=parseStudioGuestDraft(consumeGuestCreationFromLocation('/app/studio'));
@@ -148,7 +149,7 @@ function StudioImageConversationWorkspace({
   function detach(item:ShelfMedia) {shelf.detach(item.assetId);setText(current=>removeMediaMention(current,item.label));}
   function afterAssistanceChoice() {
     if(studio.pending&&studio.assistanceAction?.safeToStartNewRequest) {
-      setText(studio.pending.message);shelf.restore(studio.pending);studio.discardPending();
+      setText(studio.pending.message);setShotPlanRevision(studio.pending.shotPlanRevision);shelf.restore(studio.pending);studio.discardPending();
     } else if(studio.pending&&studio.assistanceAction?.canStartFollowup) {
       studio.discardPending();setFollowupNotice(true);
     }
@@ -158,13 +159,14 @@ function StudioImageConversationWorkspace({
     const input:ImageTurnInput = {
       requestId: crypto.randomUUID(),
       message: text,
+      ...(shotPlanRevision?{shotPlanRevision}:{}),
       locale:appLocale,
       ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
-    setText("");setFollowupNotice(false);
+    setText("");setShotPlanRevision(undefined);setFollowupNotice(false);
     follow.current = true;
     await studio.submit(input);
   }
@@ -236,23 +238,35 @@ function StudioImageConversationWorkspace({
                     {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
-                {turn.task&&<ConversationTask compact={mobile} task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
+                {turn.task&&<ConversationTask compact={mobile} task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 <ImageQuoteCard
                   turn={turn}
                   assemblyError={extensions.errors[turn.requestId]}
                   onRetryAssembly={()=>extensions.retry(turn.requestId)}
                   busy={studio.busy}
                   localQa={localQa}
-                  locale={locale}
+                  locale={appLocale === 'es' ? 'es' : locale}
                   onRefresh={() => void studio.refresh()}
+                  onEditShotPlan={(shots)=>{
+                    const summary=turn.quote!.summary;
+                    if(summary.surface!=='video'||summary.engineId!=='kling-v4'||!['t2v','i2v','ref2v'].includes(summary.mode))return;
+                    setShotPlanRevision({modelId:'kling-v4',mode:summary.mode as 't2v'|'i2v'|'ref2v',durationSec:shots.reduce((sum,shot)=>sum+shot.durationSec,0),shots});
+                    const settings:Record<string,unknown>={...summary.settings,durationSec:shots.reduce((sum,shot)=>sum+shot.durationSec,0)};
+                    delete settings.multiPrompt;
+                    const instruction=locale==='fr'?'Prépare un nouveau devis avec ce plan de séquences exact. Conserve les références et leur ordre. Attends ma confirmation après le devis.':'Prepare a new quote with this exact shot plan. Preserve references and their order. Wait for my confirmation after the quote.';
+                    setText(`${instruction}\n${JSON.stringify({modelId:summary.engineId,mode:summary.mode,settings,references:summary.references,...(summary.subjects?{subjects:summary.subjects}:{})})}`);
+                    shelf.restore(imageTurnRetryInput(turn));
+                    composerRegion.current?.querySelector('textarea')?.focus();
+                  }}
                   onConfirm={() =>
                     void studio.confirm(turn.requestId, turn.quote!.quoteId)
                   }
                   onRenew={() => {
-                    if(tasksEnabled){setText(turn.message);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();return;}
+                    if(tasksEnabled){setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();return;}
                     void studio.submit({
                       requestId: crypto.randomUUID(),
                       message: turn.message,
+                      ...(turn.shotPlanRevision?{shotPlanRevision:turn.shotPlanRevision}:{}),
                       references: turn.references,
                       ...(turn.referenceMentions ? {referenceMentions:turn.referenceMentions} : {}),
                       ...(turn.attachments ? {attachments: turn.attachments} : {}),
@@ -313,6 +327,7 @@ function StudioImageConversationWorkspace({
                     onClick={() => {
                       const saved = studio.pending!;
                       setText(saved.message);
+                      setShotPlanRevision(saved.shotPlanRevision);
                       shelf.restore(saved);
                       studio.discardPending();
                     }}
@@ -341,6 +356,7 @@ function StudioImageConversationWorkspace({
           )}
           {shelf.uploading&&<p className={styles.mediaStatus} role="status">{t('Importing your media…','Import de vos médias…')}</p>}
           {shelf.error&&<p className={styles.mediaStatus} role="alert">{shelf.error}</p>}
+          {shotPlanRevision&&<p className={styles.mediaStatus} role="status">{t('Revised shot plan','Plan de séquences révisé')} · {shotPlanRevision.shots.length} {t('shots','plans')} · {shotPlanRevision.durationSec} s <button type="button" onClick={()=>setShotPlanRevision(undefined)}>{t('Remove plan','Retirer le plan')}</button></p>}
           <div ref={composerRegion} className={styles.composerRegion}
             onDragOver={event=>{if(event.dataTransfer.types.includes(MEDIA_SHELF_DRAG_TYPE)){event.preventDefault();event.dataTransfer.dropEffect='copy';}}}
             onDrop={event=>{const item=readShelfDrag(event.dataTransfer,shelf.items);if(item){event.preventDefault();event.stopPropagation();mention(item);}}}>

@@ -20,6 +20,7 @@ import { PricingPolicyTable } from './PricingPolicyTable';
 import { ProviderPriceComparisonTable } from './ProviderPriceComparisonTable';
 import { ProductPricingTable } from './ProductPricingTable.client';
 import { ProductPolicyEditor } from './ProductPolicyEditor.client';
+import { TariffBatchPanel } from './TariffBatchPanel.client';
 
 export function AdminPricingCockpit() {
   const controller = useAdminPricingCockpitController();
@@ -64,6 +65,8 @@ export function AdminPricingCockpit() {
           </AdminActionButton>
         }
       />
+
+      <TariffBatchPanel />
 
       <div className="grid grid-cols-3 gap-1 border-b border-hairline sm:flex" role="tablist" aria-label="Pricing sections">
         {([

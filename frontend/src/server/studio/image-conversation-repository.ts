@@ -155,6 +155,7 @@ export async function claimImageTurn(
       ))[0];
       if (!renewal || !hasDraftCreation(renewal.draft_json) || !renewal.quote_id
         || renewal.input_json.message !== parsed.message
+        || stableJson(renewal.input_json.shotPlanRevision ?? null) !== stableJson(parsed.shotPlanRevision ?? null)
         || stableJson(renewal.input_json.references) !== stableJson(parsed.references)
         || stableJson(renewal.input_json.attachments ?? []) !== stableJson(parsed.attachments ?? [])
         || stableJson(renewal.input_json.referenceMentions ?? []) !== stableJson(parsed.referenceMentions ?? []))

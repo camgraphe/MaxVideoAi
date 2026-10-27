@@ -52,15 +52,15 @@
     {"engineId": "pika-text-to-video", "level": "on_request", "rationale": "Use when the client explicitly asks for Pika and the exact executable settings fit."}
   ],
   "workspaceSelection": {
-    "reviewedAt": "2026-10-25",
-    "source": "Approved MaxVideoAI model-picker review; editorial preference, not a measured ranking.",
+    "reviewedAt": "2026-10-27",
+    "source": "Approved picker decisions: Create quality order Seedance 2.5, Kling 4, Wan 3 Prime (2026-10-27). Mini retains first compatible Create budget position (2026-10-25); estimates remain scenario-specific canonical quotes.",
     "create": [
       {
         "group": "quality",
         "ids": [
           "seedance-2-5",
-          "wan-3-prime",
-          "kling-o3-pro"
+          "kling-v4",
+          "wan-3-prime"
         ]
       },
       {
@@ -73,6 +73,7 @@
       {
         "group": "budget",
         "ids": [
+          "seedance-2-0-mini",
           "minimax-h3"
         ]
       }

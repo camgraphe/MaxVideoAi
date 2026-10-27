@@ -11,6 +11,7 @@ export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, ou
   editor: CustomerTariffEditor; disabled: boolean; inputSeconds: number; outputSeconds: number;
 }) {
   const tariff = editor.exact?.continuousInputTariff;
+  const [v4Rate,setV4Rate]=useState(tariff?.klingV4Billable && tariff.price ? String(tariff.inputCentsPerSecond/100) : '');
   const [output, setOutput] = useState(String(Number(((tariff?.outputCents ?? 0) / 100 / outputSeconds).toFixed(9))));
   const [source, setSource] = useState(String(Number(((tariff?.inputCentsPerSecond ?? 0) / 100 * (tariff?.kind === 'tokens' ? 1000 : 1)).toFixed(9))));
   if (!tariff || !editor.exact) return null;
@@ -30,6 +31,24 @@ export function ContinuousInputTariffEditor({ editor, disabled, inputSeconds, ou
     void editor.requestPreview(undefined, { operation: tariff.prepared ? 'update' : 'create', scenarioId: editor.exact!.scenarioId,
       scope: 'continuous_input', price });
   const inputClass = 'mt-1 h-8 w-full rounded-md border border-[#cbb9ff] bg-surface px-2 text-sm tabular-nums text-text-primary';
+  if(tariff.klingV4Billable) {
+    // Shift the decimal before conversion so $0.141 stays exactly 14.1 cents.
+    const enteredRate = v4Rate.trim() ? Number(v4Rate) : NaN;
+    const [mantissa, exponent = '0'] = enteredRate.toString().split('e');
+    const rate = Number(`${mantissa}e${Number(exponent) + 2}`);
+    const validRate=Number.isFinite(rate)&&rate>0;
+    const billable=Math.max(inputSeconds+outputSeconds,2*outputSeconds);
+    return <div className="mt-2 space-y-2" aria-label="Kling 4 billable-second tariff">
+      <label className="block text-[10px] text-text-secondary">Customer · USD / billable second
+        <input aria-label="Kling 4 customer price per billable second (USD)" type="number" min="0" step="any" value={v4Rate} disabled={locked}
+          onInput={event=>{setV4Rate(event.currentTarget.value);editor.cancelPreview();}} className={inputClass}/>
+      </label>
+      <p className="text-xs">{billable} billable seconds · proposed total <strong>{decisionUsd(validRate?Math.ceil(rate*billable-1e-9)/100:null)}</strong></p>
+      <p className="text-[10px] text-text-secondary">The larger of source + output and twice output determines the quantity. No customer rate is suggested. Preview and explicit confirmation are required; model execution remains closed.</p>
+      <AdminActionButton type="button" size="sm" variant="primary" disabled={locked||!validRate}
+        onClick={()=>preview({kind:'kling_v4_billable',customerCentsPerBillableSecond:rate})}>Preview billable-second price</AdminActionButton>
+    </div>;
+  }
   if (tariff.unbounded) {
     const tokens = tariff.kind === 'tokens';
     const unitCents = source.trim() ? Number(source) * 100 / (tokens ? 1000 : 1) : NaN;

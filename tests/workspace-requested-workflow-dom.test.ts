@@ -40,7 +40,7 @@ async function mount(initialEngine = 'wan-3') {
       tokenRef.current = request.requestedEngineToken;
       modeRef.current = request.requestedMode;
     }, [request.resolvedRequestedEngineId, request.requestedEngineToken, request.requestedMode]);
-    workflow = useWorkspaceEngineModeState({ ...route, engines, inputAssets: assets,
+    workflow = useWorkspaceEngineModeState({ ...route, engines, inputAssets: assets, setInputAssets: update => { assets = typeof update === 'function' ? update(assets) : update; },
       effectiveRequestedEngineToken: request.requestedEngineToken, requestedWorkflow: request.requestedWorkflow,
       authChecked: ready, hydratedForScope: ready ? 'owner' : null, storageScope: 'owner',
       preserveStoredDraftRef: React.useRef(false), requestedEngineOverrideIdRef: engineRef,
@@ -74,6 +74,21 @@ async function mount(initialEngine = 'wan-3') {
     },
   };
 }
+
+for (const sourceMode of ['v2v', 'extend'] as const) test(`manual other-engine selection leaves ${sourceMode} for Create, while current engine selection preserves it`, async () => {
+  const view = await mount('wan-3');
+  try {
+    await act(async () => view.workflow.handleComposerModeToggle(sourceMode));
+    await view.source('ready');
+    await act(async () => view.workflow.handleEngineChange('wan-3'));
+    assert.equal(view.workflow.submissionMode, sourceMode);
+    await act(async () => view.workflow.handleEngineChange('wan-3-prime'));
+    assert.equal(view.route.form?.engineId, 'wan-3-prime');
+    assert.equal(view.workflow.activeManualMode, null);
+    assert.equal(view.workflow.submissionMode, 't2v');
+    assert.equal(view.route.prompt, 'Keep this authored prompt');
+  } finally { await view.close(); }
+});
 
 test('same-model gallery Extend stays selected through source preparation and quote readiness', async () => {
   const view = await mount();
@@ -217,6 +232,8 @@ for (const id of ['kling-o3-standard','kling-o3-pro','kling-o3-4k']) test(`${id}
   assert.equal(view.route.form?.operation,'kling-edit');
   await view.source('ready');
   await act(async()=>view.workflow.handleComposerModeToggle(null));
+  assert.equal(view.workflow.submissionMode,'t2v','the explicit Modify source is parked when returning to Create');
+  await view.source('ready');
   assert.equal(view.route.form?.operation,'kling-reference');
   assert.equal(view.workflow.activeManualMode,null);assert.equal(view.workflow.submissionMode,'v2v');
   await view.clearSources();assert.equal(view.workflow.submissionMode,'t2v');

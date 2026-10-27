@@ -2,17 +2,19 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, ChevronDown, Search, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, Search, X } from 'lucide-react';
 import { traceModelPicker } from '@/lib/model-picker-diagnostics';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { getPickerRecommendations } from '@/lib/model-picker-policy';
+import { getEngineSelectPromotionRank } from '@/lib/engine-family-priority';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { EngineRegistryMeta } from './engine-select-types';
 import type { EnginePickerContext, PickerEstimateRequest } from './model-picker-types';
 import { buildEngineFamilyGroups, getModeLabel } from './engine-select-helpers';
 import { filterEngineFamilyGroups } from './engine-select-catalogue';
 import { modelPickerCopy } from './model-picker-copy';
+import { PickerPriceContext } from './PickerPriceContext';
 import { EnginePickerRow, pickerPrice } from './EnginePickerRow';
 import { useModelPickerEstimates } from './useModelPickerEstimates';
 import { useVisiblePickerModels } from './useVisiblePickerModels';
@@ -33,15 +35,16 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const groups = useMemo(() => getPickerRecommendations(engines, activeMode), [engines, activeMode]);
   const [tab, setTab] = useState<'selected' | 'all'>(() => initialAll || !groups.length ? 'all' : 'selected');
   const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId)).map(group => group.id)));
+  const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId || getEngineSelectPromotionRank(engine.id) !== Number.MAX_SAFE_INTEGER)).map(group => group.id)));
   const contextKey = context?.key ?? `${engineId}:${activeMode}`;
   const [draft, setDraft] = useState({ key: contextKey, id: engineId });
-  const [view, setView] = useState<'list' | 'detail' | 'confirm'>('list');
+  const [view, setView] = useState<'list' | 'detail'>('list');
   const [detailId, setDetailId] = useState<string | null>(null);
   const onOpenChange = useRef(context?.onOpenChange);
   onOpenChange.current = context?.onOpenChange;
   useEffect(() => { traceModelPicker('ready'); onOpenChange.current?.(true); return () => { traceModelPicker('close'); onOpenChange.current?.(false); }; }, []);
   useEffect(() => { setDraft({ key: contextKey, id: engineId }); setView('list'); }, [contextKey, engineId]);
+  useEffect(() => { setView('list'); }, [context?.scenarioKey]);
   useEffect(() => {
     if (view === 'list') return;
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
@@ -57,8 +60,8 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const visibleIds = useVisiblePickerModels(bodyRef, renderedIds);
   const pricingIds = view === 'list' ? visibleIds : [view === 'detail' ? detailId ?? draft.id : draft.id];
   const requests: Record<string, PickerEstimateRequest> = {};
-  for (const id of pricingIds) { const request = context?.options[id]?.estimate; if (request) requests[id] = request; }
-  const pricing = useModelPickerEstimates(context?.scope ?? null, requests);
+  for (const [id, option] of Object.entries(context?.options ?? {})) { if (option.estimate) requests[id] = option.estimate; }
+  const pricing = useModelPickerEstimates(context?.scope ?? null, requests, pricingIds);
   const labels = (id: string) => registryMeta?.meta.get(id)?.marketingName ?? engines.find(engine => engine.id === id)?.label ?? id;
   const disabled = (id: string) => disabledEngineReasons?.[id] ?? context?.options[id]?.disabledReason
     ?? (context && !context.options[id] ? copy.loading : !context && !engines.find(engine => engine.id === id)?.modes.includes(activeMode) ? copy.unavailable : undefined);
@@ -77,26 +80,23 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   }
   function apply(id = draft.id) {
     if (draft.key !== contextKey || !engines.some(engine => engine.id === id) || disabled(id)) return;
-    if (id === engineId) { onClose(); return; }
-    if (view !== 'confirm' && context?.options[id]?.changes.length) {
-      if (view === 'list') returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 };
-      setDraft({ key: contextKey, id }); setView('confirm'); return;
-    }
-    onSelect(id);
+    if (id === engineId && !context?.hasChanges) { onClose(); return; }
+    if (context?.onApply) { if (!context.onApply(id)) return; }
+    else onSelect(id);
     onClose();
   }
   const row = (id: string) => {
     const engine = engines.find(item => item.id === id);
     return engine ? <EnginePickerRow key={id} engine={engine} label={labels(id)} option={context?.options[id]} chosen={draft.id === id} current={engineId === id}
       disabled={disabled(id)} quote={pricing.rows[id]} showPrice={Boolean(context)} locale={locale} copy={copy}
-      onChoose={() => setDraft({ key: contextKey, id })} onInspect={() => { returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 }; setDetailId(id); setView('detail'); }} /> : null;
+      onChoose={() => apply(id)} onInspect={() => { returnTo.current = { id, scroll: bodyRef.current?.scrollTop ?? 0 }; setDetailId(id); setView('detail'); }} /> : null;
   };
   const hasError = Object.values(pricing.rows).some(value => value.error);
   return createPortal(<div className={`app-experience ${styles.backdrop}`} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <div ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onDialogKeyDown}>
       <header className={styles.header}>
         <div className={styles.titleLine}><h2 id={titleId} data-modal-initial-focus="true" tabIndex={-1}>{copy.title}</h2><button type="button" className={styles.iconButton} aria-label={copy.close} onClick={onClose}><X size={20} /></button></div>
-        <p className={styles.context}>{context?.label || getModeLabel(engineId, activeMode, locale)}</p>
+        <PickerPriceContext context={context} copy={copy} fallback={getModeLabel(engineId, activeMode, locale)} editable={view === 'list'} onRetry={view === 'list' && hasError ? pricing.retry : undefined} />
         {view === 'list' ? <><div className={styles.search}><Search size={17} /><input ref={searchRef} type="search" value={query} aria-label={copy.search} placeholder={copy.search} onChange={event => setQuery(event.target.value)} />
           {query ? <button type="button" className={styles.iconButton} aria-label={copy.clear} onClick={() => { setQuery(''); searchRef.current?.focus(); }}><X size={16} /></button> : null}</div>
           <div className={styles.tabs} role="tablist" aria-label={copy.title}>
@@ -116,19 +116,18 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
           {searching && !filtered.length ? <p className={styles.empty}>{copy.empty}</p> : null}
         </> : displayEngine ? <div className={styles.details}>
           <button type="button" className={styles.back} onClick={back}><ArrowLeft size={16} />{copy.back}</button>
-          <div className={styles.detailTitle}><EngineIcon engine={displayEngine} size={36} /><div>{view === 'confirm' ? <small>{copy.before}</small> : null}<h3 ref={detailRef} tabIndex={-1}>{labels(displayEngine.id)}</h3></div></div>
-          {view === 'confirm' ? <><p>{copy.settings}</p><dl className={styles.changes}>{displayOption?.changes.map((change, index) => <div key={`${change.label}-${index}`}><dt>{change.label}</dt><dd><span>{change.before}</span><span aria-hidden="true">→</span><strong>{change.after}</strong></dd></div>)}</dl></>
-            : <><p>{displayOption?.summary || displayEngine.provider}</p><dl className={styles.changes}><div><dt>{copy.supported}</dt><dd>{displayEngine.modes.map(value => getModeLabel(displayEngine.id, value, locale)).join(' · ')}</dd></div><div><dt>{copy.resolutions}</dt><dd>{displayEngine.resolutions.join(' · ')}</dd></div></dl>{disabled(displayEngine.id) ? <p>{disabled(displayEngine.id)}</p> : null}</>}
+          <div className={styles.detailTitle}><EngineIcon engine={displayEngine} size={36} /><h3 ref={detailRef} tabIndex={-1}>{labels(displayEngine.id)}</h3></div>
+          <p>{displayOption?.summary || displayEngine.provider}</p><dl className={styles.changes}><div><dt>{copy.supported}</dt><dd>{displayEngine.modes.map(value => getModeLabel(displayEngine.id, value,locale)).join(' · ')}</dd></div><div><dt>{copy.resolutions}</dt><dd>{displayEngine.resolutions.join(' · ')}</dd></div></dl>{disabled(displayEngine.id) ? <p>{disabled(displayEngine.id)}</p> : null}
           {context ? <div className={styles.estimate}><span>{copy.estimate}</span><strong>{displayPrice ?? displayOption?.priceUnavailableReason ?? (pricing.rows[displayEngine.id]?.error ? copy.error : displayOption?.estimate ? copy.pending : '—')}</strong></div> : null}
           <p className={styles.note}>{context ? copy.priceNote : copy.preserved}</p>
         </div> : null}
       </div>
-      <footer className={styles.footer}><div><p>{view === 'confirm' || (draft.id !== engineId && option?.changes.length) ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
+      {view === 'detail' ? <footer className={styles.footer}><div><p>{context?.hasChanges && option?.changes.length ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
         <button type="button" className={styles.apply} disabled={draft.key !== contextKey || Boolean(disabled(view === 'detail' ? detailId ?? draft.id : draft.id))}
           onClick={() => apply(view === 'detail' && detailId ? detailId : draft.id)}>
-          {view === 'confirm' ? copy.confirm : `${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}
+          <span>{`${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}</span><ArrowRight size={17} aria-hidden="true" />
         </button>
-      </footer>
+      </footer> : null}
     </div>
   </div>, document.body);
 }

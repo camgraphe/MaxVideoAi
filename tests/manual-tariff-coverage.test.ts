@@ -10,6 +10,7 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import type { PricingContext } from '../frontend/src/lib/pricing-context';
+import { klingV4TariffScenarios } from '../frontend/lib/pricing-audit/kling-v4-tariff-scenario';
 
 function assertChargingCell(context: PricingContext) {
   const facts = buildBillingPricingFacts(context, context.engine.pricingDetails, 'USD').facts;
@@ -99,16 +100,29 @@ test('legacy Luma loop selectors are covered without inventing loop for edit mod
   }
 });
 
-test('coverage follows all 49 app-published models in 15 families, including pricing-hidden legacy variants', () => {
+test('coverage follows all 51 app-published models in 15 families, including Kling4, Nano21 and pricing-hidden legacy variants', () => {
   const coverage = collectSellableManualTariffCoverage();
   const published = listRuntimeModels().filter((model) => model.publication.app.published);
-  assert.equal(published.length, 49);
+  assert.equal(published.length, 51);
+  assert.ok(published.some(model => model.id === 'kling-v4'));
+  assert.ok(published.some(model => model.id === 'nano-banana-2-1'));
   assert.equal(coverage.scenarios.filter((scenario) => scenario.modelId === 'flux-3-max').length, 128);
   assert.equal(new Set(published.map((model) => model.family)).size, 15);
   assert.deepEqual(new Set(coverage.scenarios.map((scenario) => scenario.modelId)), new Set(published.map((model) => model.id)));
   assert.ok(coverage.scenarios.some((scenario) => scenario.modelId === 'lumaRay2'));
   assert.ok(coverage.scenarios.some((scenario) => scenario.modelId === 'lumaRay2_flash'));
   assert.equal(new Set(coverage.scenarios.map((scenario) => scenario.id)).size, coverage.scenarios.length);
+});
+
+test('published Kling4 coverage preserves every qualified source/output timing class', () => {
+  const actual = collectSellableManualTariffCoverage({ modelId: 'kling-v4' });
+  const qualified = klingV4TariffScenarios();
+  assert.equal(actual.scenarios.length, 280);
+  assert.deepEqual(new Map(actual.scenarios.map(row => [row.id, row.quantities])),
+    new Map(qualified.map(row => [row.id, row.quantities])));
+  for (const mode of ['ref2v', 'v2v']) {
+    assert.ok(actual.gaps.some(gap => gap.reason.startsWith(`${mode}:`) && gap.reason.includes('continuous')));
+  }
 });
 
 test('finite price-changing duration, resolution and audio boundaries are distinct; continuous options remain gaps', () => {

@@ -1,3 +1,5 @@
+import {canonicalKlingV4PricingFacts} from './generation-kling-v4-pricing-facts';
+import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import { canonicalOperationSourceDuration } from './generation-operation-facts';
 import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
@@ -307,6 +309,7 @@ function canonicalVideoTrustedMediaPricingFacts(
     ...(inputVideoDurationSec !== undefined ? { inputVideoDurationSec } : {}),
     ...(referenceTokenBudget !== undefined ? { referenceTokenBudget } : {}),
     ...canonicalOmniPricingFacts(request,context.resolvedReferences),
+    ...canonicalKlingV4PricingFacts(request,context.resolvedReferences),
   };
 }
 
@@ -380,7 +383,7 @@ export async function priceCanonicalGeneration(
       engine: request.engineId,
       mode: engineMode,
       ...(request.operation ? { operation: request.operation } : {}),
-      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
+      durationSec: canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? canonicalKlingV4PricingFacts(request,referenceContext.resolvedReferences).inheritedDurationSec ?? requiredPositiveInteger(settings, 'durationSec'),
       ...(settings.durationOption === 'auto' ? { durationOption: 'auto' } : {}),
       resolution: requiredString(settings, 'resolution') as PreflightRequest['resolution'],
       ...(aspectRatio === undefined
@@ -416,6 +419,8 @@ export async function priceCanonicalGeneration(
     referenceImageSizes: canonicalImageReferenceSizes(request, referenceContext),
     ...(customImageSize ? { customImageSize } : {}),
     enableWebSearch: request.settings.enableWebSearch === true,
+    ...(request.engineId === NANO21_ENGINE_ID ? { thinkingLevel: optionalString(settings, 'thinkingLevel') as ImageGenerationRequest['thinkingLevel'],
+      maxOutputTokens: Number(settings.maxOutputTokens ?? NANO21_DEFAULT_MAX_OUTPUT_TOKENS), systemInstruction: optionalString(settings, 'systemInstruction'), enableImageSearch: settings.enableImageSearch === true } : {}),
     membershipTier,
   });
   return validatePricingResult(result.pricing, membershipTier);
@@ -458,7 +463,7 @@ export async function priceCanonicalGenerationWithBilling(
     const lumaModifyDurationSec = assertCanonicalLumaSourceTiming(request, referenceContext.resolvedReferences);
     const engineMode = toEngineGenerationMode(engine.id, request.mode);
     const pricingEngine = applyEngineVariantPricing(engine, engineMode);
-    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
+    const durationSec = canonicalOperationSourceDuration(request, referenceContext.resolvedReferences, referenceContext.fluxDraftSource) ?? lumaModifyDurationSec ?? canonicalKlingV4PricingFacts(request,referenceContext.resolvedReferences).inheritedDurationSec ?? requiredPositiveInteger(request.settings, 'durationSec');
     const seedanceEditSource = canonicalSeedanceEditSource(request, referenceContext);
     const seedanceSourceAspectRatio = seedanceEditSource ? undefined : canonicalSeedanceSourceAspect(request, referenceContext);
     const resolution = requiredString(request.settings, 'resolution');
@@ -487,6 +492,7 @@ export async function priceCanonicalGenerationWithBilling(
       ...(seedanceSourceAspectRatio ? { seedanceSourceAspectRatio } : {}),
       referenceTokenBudget: canonicalReferenceTokenBudget(request, referenceContext),
       ...canonicalOmniPricingFacts(request,referenceContext.resolvedReferences),
+      ...canonicalKlingV4PricingFacts(request,referenceContext.resolvedReferences),
       membershipTier,
       loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
       durationOption: request.settings.durationOption === 'auto' ? 'auto' : isLumaRay2EngineId(engine.id)
@@ -501,12 +507,15 @@ export async function priceCanonicalGenerationWithBilling(
       ? request.mode === 'i2i'
         ? Math.max(0, imageReferences.length - 1)
         : imageReferences.length
-      : isGptImage25EngineId(engine.id) && request.mode === 'i2i'
+      : engine.id === NANO21_ENGINE_ID || isGptImage25EngineId(engine.id) && request.mode === 'i2i'
         ? imageReferences.length
         : undefined;
     snapshot = await computeBillingSnapshot({
       engine,
       durationSec: request.outputCount,
+      ...(engine.id === NANO21_ENGINE_ID ? { thinkingLevel: optionalString(request.settings, 'thinkingLevel'),
+        maxOutputTokens: Number(request.settings.maxOutputTokens ?? NANO21_DEFAULT_MAX_OUTPUT_TOKENS), systemInstruction: optionalString(request.settings, 'systemInstruction'),
+        enableWebSearch: request.settings.enableWebSearch === true, enableImageSearch: request.settings.enableImageSearch === true } : {}),
       resolution: requiredString(request.settings, 'resolution'),
       aspectRatio: optionalString(request.settings, 'aspectRatio'),
       mode: request.mode as ImageGenerationMode,

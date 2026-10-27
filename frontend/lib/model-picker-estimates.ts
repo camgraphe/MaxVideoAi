@@ -84,6 +84,11 @@ export function createModelEstimateQueue({ concurrency = 3, ttlMs = 60_000, maxE
   }
   return {
     acquire,
+    // A render can reuse a fresh quote without scheduling work or extending its lifetime.
+    peek(key: string) {
+      const cached = cache.get(key);
+      return cached && now() - cached.at < ttlMs ? cached.quote : undefined;
+    },
     clear() {
       revision++;
       cache.clear();

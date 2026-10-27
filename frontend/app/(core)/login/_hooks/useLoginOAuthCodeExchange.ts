@@ -47,13 +47,15 @@ export function useLoginOAuthCodeExchange({
     const params = new URLSearchParams(window.location.search);
     const oauthCode = params.get('code');
     const authError = params.get('authError');
-    if (!oauthCode && authError !== 'oauth_callback_failed') return;
+    const signupFlow = params.get('flow') === 'signup';
+    if (!oauthCode && authError !== 'oauth_callback_failed' && authError !== 'signup_link_failed') return;
 
     const cleanAuthQuery = () => {
       const cleanUrl = new URL(window.location.href);
       cleanUrl.searchParams.delete('code');
       cleanUrl.searchParams.delete('state');
       cleanUrl.searchParams.delete('authError');
+      cleanUrl.searchParams.delete('flow');
       cleanUrl.searchParams.delete('error');
       cleanUrl.searchParams.delete('error_description');
       cleanUrl.searchParams.delete('redirect_to');
@@ -63,11 +65,11 @@ export function useLoginOAuthCodeExchange({
     const localizedCopy = AUTH_COPY[detectLocale()] ?? authCopy;
     setMode('signin');
 
-    if (authError === 'oauth_callback_failed') {
+    if (authError === 'oauth_callback_failed' || authError === 'signup_link_failed') {
       cleanAuthQuery();
       clearPendingGoogleLogin();
       setStatus(null);
-      setError(localizedCopy.oauthCallbackError);
+      setError(authError === 'signup_link_failed' ? localizedCopy.feedback.signupLinkFailed : localizedCopy.oauthCallbackError);
       return;
     }
 
@@ -100,7 +102,7 @@ export function useLoginOAuthCodeExchange({
           oauthCodeExchangeStartedRef.current = false;
           clearPendingGoogleLogin();
           setStatus(null);
-          setError(localizedCopy.oauthCallbackError);
+          setError(signupFlow ? localizedCopy.feedback.signupLinkFailed : localizedCopy.oauthCallbackError);
           return;
         }
         persistGoogleAuthCompleted(data.session.user?.created_at, data.session.user?.app_metadata, data.session.user?.id, data.session.access_token);
@@ -116,7 +118,7 @@ export function useLoginOAuthCodeExchange({
         oauthCodeExchangeStartedRef.current = false;
         clearPendingGoogleLogin();
         setStatus(null);
-        setError(localizedCopy.oauthCallbackError);
+        setError(signupFlow ? localizedCopy.feedback.signupLinkFailed : localizedCopy.oauthCallbackError);
       });
 
     return () => {

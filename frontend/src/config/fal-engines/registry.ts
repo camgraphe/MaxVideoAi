@@ -18,6 +18,7 @@ import { KLING_3_4K_FAL_ENGINE_REGISTRY } from './kling-3-4k';
 import { KLING_O3_FAL_ENGINE_REGISTRY } from './kling-o3';
 import { KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY } from './kling-3-turbo-standard';
 import { KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY } from './kling-3-turbo-pro';
+import { KLING_V4_FAL_ENGINE_REGISTRY } from './kling-v4';
 import { HAPPY_HORSE_FAL_ENGINE_REGISTRY } from './happy-horse';
 import { SEEDANCE_1_5_FAL_ENGINE_REGISTRY } from './seedance-1-5';
 import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
@@ -46,6 +47,7 @@ import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
 import { NANO_BANANA_LITE_FAL_ENGINE_REGISTRY } from './nano-banana-lite';
 import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
 import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
+import { NANO_BANANA_2_1_FAL_ENGINE_REGISTRY } from './nano-banana-2-1';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
 import { GPT_IMAGE_2_5_FAL_ENGINE_REGISTRY } from './gpt-image-2-5';
 import { SEEDREAM_FAL_ENGINE_REGISTRY } from './seedream';
@@ -73,6 +75,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...KLING_O3_FAL_ENGINE_REGISTRY,
   ...KLING_3_TURBO_STANDARD_FAL_ENGINE_REGISTRY,
   ...KLING_3_TURBO_PRO_FAL_ENGINE_REGISTRY,
+  ...KLING_V4_FAL_ENGINE_REGISTRY,
   ...HAPPY_HORSE_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_1_5_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY,
@@ -93,6 +96,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...NANO_BANANA_LITE_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_PRO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_2_FAL_ENGINE_REGISTRY,
+  ...NANO_BANANA_2_1_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_5_FAL_ENGINE_REGISTRY,
   ...SEEDREAM_FAL_ENGINE_REGISTRY,

@@ -24,6 +24,8 @@ const schema = z.object({
     intro: nonEmpty,
     defaultCtaLabel: nonEmpty.nullable(),
     recreateLabel: nonEmpty.nullable(),
+    afterGallery: nonEmpty.nullable().optional(),
+    videoWorkflowLabel: nonEmpty.nullable().optional(),
   }).strict(),
   filters: z.array(z.object({ id: filterId, label: nonEmpty }).strict()).min(1),
   proofItems: z.array(z.object({
@@ -40,6 +42,10 @@ const schema = z.object({
     alt: nonEmpty,
     tags: z.array(filterId).min(1),
   }).strict()).nullable(),
+  postGallery: z.object({
+    title: nonEmpty, example: nonEmpty, method: nonEmpty, limitation: nonEmpty,
+    ctaLabel: nonEmpty, exampleLinkLabel: nonEmpty, guideLinkLabel: nonEmpty,
+  }).strict().nullable().optional(),
   keyframeDemo: z.object({
     title: nonEmpty, intro: nonEmpty, imagesLabel: nonEmpty, timelineLabel: nonEmpty, resultLabel: nonEmpty,
     promptLabel: nonEmpty, frameLabel: nonEmpty, secondsLabel: nonEmpty, recreateLabel: nonEmpty, limitation: nonEmpty,

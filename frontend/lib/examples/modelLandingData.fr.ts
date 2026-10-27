@@ -1,6 +1,14 @@
 import { getEvergreenExampleFamilyCopy } from './family-overview';
 import type { CanonicalExampleModelSlug, LocalizedModelDescriptor } from '@/lib/examples/modelLandingTypes';
 
+// Appliqué après validation de la publication et des médias dans la famille Kling.
+export const FR_KLING_V4_ADDITION = {
+  summary: 'Kling 4.0 ajoute des scènes de 3 à 30 secondes en 720p ou 1080p, un prompt et une durée par plan, des références de sujets image ou vidéo et un mode distinct d’édition sur vidéo source. Les exemples Kling précédents gardent leur modèle d’origine et leurs réglages.',
+  promptPatterns: 'Avec Kling 4.0, choisissez un prompt unique ou décrivez chaque plan avec sa durée. Donnez un rôle clair à chaque référence et dirigez les dialogues, ambiances et effets dans le prompt. Le découpage multi-plans ne s’applique pas à l’édition vidéo.',
+  strengthsLimits: 'Kling 4.0 est limité au 720p et au 1080p dans ce parcours ; il ne reprend pas les options 4K des autres variantes Kling. L’audio natif n’a pas d’interrupteur. Vérifiez le rôle des références et chaque raccord avant de reprendre un réglage.',
+  faq: [{ question: 'Comment comparer Kling 4.0 aux exemples Kling précédents ?', answer: 'Conservez le nom du modèle, le prompt et les réglages associés à chaque clip d’origine. Kling 4.0 propose des générations de 3 à 30 secondes, des prompts avec durée par plan, des références visuelles et l’édition d’une vidéo source en 720p ou 1080p. Les versions précédentes ont leurs propres limites. Comparez les clips complets à réglages équivalents et vérifiez un nouveau devis avant de générer.' }],
+} satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
+
 export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
     "metaTitle": "Exemples historiques Sora | MaxVideoAI",
@@ -164,11 +172,12 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   ltx: {
     ...getEvergreenExampleFamilyCopy('fr', 'LTX'),
+    sectionTitles: ['Prompts sur les modèles LTX', 'Forces et limites par modèle', 'Combien coûterait votre version ?'],
     summary:
       "LTX 2.5 Pro et Fast occupent le premier plan. Les exemples LTX 2.3 et LTX 2 conservent leur modèle d’origine pour comparer les générations sans confondre leurs capacités.",
     promptPatterns: "Décrivez le sujet, l’action, le mouvement de caméra et le style visuel. En image-vers-vidéo, expliquez comment la scène doit s’animer depuis l’image de départ. Gardez ce point de départ et ne changez qu’une consigne à la fois.",
     strengthsLimits: "Comparez tout le clip entre Pro et Fast : le mouvement suit-il le prompt et le sujet reste-t-il cohérent ? Utilisez la même image pour vos essais image-vers-vidéo. Un exemple réussi est un point de départ, pas la garantie d’un résultat identique. Reframe de LTX 2.3 standard accepte une source jusqu’à 60 secondes en 720p ou 1080p sans prompt et conserve sa durée. Cette opération ne se transfère pas à LTX 2.3 Fast ni à LTX 2.5 Fast/Pro.",
-    pricingNotes: "Précisez le modèle, le mode, la durée, la résolution et les options audio disponibles pour comparer les coûts. La fiche conserve le tarif actuel estimé de l’exemple ; consultez le devis actuel dans le studio avant de générer votre version.",
+    pricingNotes: "Le prix affiché est une estimation actuelle pour une nouvelle génération, pas le coût du rendu d’origine. Ouvrez l’exemple pour retrouver ses réglages enregistrés ; confirmez vos propres réglages et le devis dans l’application.",
     faq: [
       {
         question: "Où trouver des exemples de prompts LTX 2.3 ?",

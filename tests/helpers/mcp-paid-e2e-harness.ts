@@ -87,6 +87,8 @@ export function createServices(options: {
   resolveRequestExecutability?: () => AgentGenerationExecutabilityDecision;
   preparePriceGeneration?: PrepareGenerationDependencies['priceGeneration'];
   confirmPriceGeneration?: ConfirmGenerationDependencies['priceGeneration'];
+  prepareResolveGenerationReferences?: PrepareGenerationDependencies['resolveGenerationReferences'];
+  confirmResolveGenerationReferences?: ConfirmGenerationDependencies['resolveGenerationReferences'];
 } = {}): MaxVideoAiMcpServices {
   const publicEngines = options.publicEngines ?? catalog;
   const publicCatalogDependencies = {
@@ -113,6 +115,7 @@ export function createServices(options: {
           ?? (() => ({ executable: true, reason: 'available' })),
         ...(options.prepareNow ? { now: options.prepareNow } : {}),
         ...(options.preparePriceGeneration ? { priceGeneration: options.preparePriceGeneration } : {}),
+        ...(options.prepareResolveGenerationReferences ? { resolveGenerationReferences: options.prepareResolveGenerationReferences } : {}),
       },
     ),
     confirmGeneration: createConfirmGenerationService(
@@ -125,6 +128,7 @@ export function createServices(options: {
           ?? (() => ({ executable: true, reason: 'available' })),
         submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
         ...(options.confirmPriceGeneration ? { priceGeneration: options.confirmPriceGeneration } : {}),
+        ...(options.confirmResolveGenerationReferences ? { resolveGenerationReferences: options.confirmResolveGenerationReferences } : {}),
       },
     ),
     getGenerationStatus: (input, identity) => getAgentGenerationStatus(input, identity),

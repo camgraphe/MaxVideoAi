@@ -42,7 +42,10 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138+6,'Conversation qualification preserves every proven public tuple.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138+6+4,'Conversation qualification preserves every proven public tuple.');
+  assert.deepEqual(studio.find(e=>e.engine.id==='kling-v4')!.publicModes,['t2v','i2v','ref2v','v2v']);
+  assert.equal(isWorkspaceModelCertifiedForBlock({modelId:'kling-v4',presetId:'generate-video',workflowType:'text_to_video'}),false,
+    'Conversation publication does not widen the retired Canvas certification.');
   assert.equal(studio.find(e=>e.engine.id==='gemini-omni-flash')!.publicModes.includes('retake'),false,'Private interaction continuity remains excluded by the public catalog.');
   for(const candidate of studio){const details=studioVisualCapabilityDetails(candidate);assert.ok(details.surface==='video');for(const mode of details.modes){const canonical=projectAgentModelModeDetails(candidate,mode.mode);assert.deepEqual(mode.references.map(r=>[r.type,r.roles,r.required,r.min]),canonical.references.map(r=>[r.type,r.roles,r.required,r.min]));}}
 });
@@ -80,7 +83,7 @@ test('strict video schema scopes each asset identity to its exact reviewed media
   const tool=STUDIO_MEDIA_DIRECTOR_TOOLS.find(t=>t.name==='video_prepare')!;const original=structuredClone(tool.properties);
   const properties=studioToolReferenceProperties(tool.name,tool.properties,Object.keys(ids).map(k=>resolved(k as keyof typeof ids)));
   const validate=new AjvJsonSchemaValidator().getValidator({type:'object',additionalProperties:false,properties,required:Object.keys(properties)} as unknown as JsonSchemaType);
-  for(const kind of ['image','video','audio'] as const){const payload={reply:'Review.',prompt:'Continue the clip.',aspectRatio:'16:9',modelId:'wan-3',mode:'extend',operation:null,elements:null,settings:[],outputCount:1,source:ref(kind),references:[],assembleExtension:null};assert.equal(validate(payload).valid,true,kind);assert.equal(validate({...payload,source:{...ref(kind),assetId:ids[kind==='image'?'video':'image']}}).valid,false,'Wrong typed identity');assert.equal(validate({...payload,source:{...ref(kind),assetId:'ma_'+'f'.repeat(32)}}).valid,false,'Unattached');}
+  for(const kind of ['image','video','audio'] as const){const payload={reply:'Review.',prompt:'Continue the clip.',aspectRatio:'16:9',modelId:'wan-3',mode:'extend',operation:null,elements:null,settings:[],outputCount:1,source:ref(kind),references:[],assembleExtension:null,shotPlan:null,subjects:null};assert.equal(validate(payload).valid,true,kind);assert.equal(validate({...payload,source:{...ref(kind),assetId:ids[kind==='image'?'video':'image']}}).valid,false,'Wrong typed identity');assert.equal(validate({...payload,source:{...ref(kind),assetId:'ma_'+'f'.repeat(32)}}).valid,false,'Unattached');}
   assert.deepEqual(tool.properties,original);
 });
 test('every certified video tuple preserves its authored request and provider media fields',async t=>{

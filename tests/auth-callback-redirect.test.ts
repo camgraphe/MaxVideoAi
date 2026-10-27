@@ -46,7 +46,7 @@ test('OAuth callback exchanges PKCE on the server before using the browser fallb
 test('login query cleanup preserves OAuth fallback state', () => {
   assert.match(
     middlewareContractSource,
-    /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"]\]\)/,
+    /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"],\s*['"]flow['"]\]\)/,
     'middleware must not strip OAuth state from /login callback URLs'
   );
 });
@@ -140,12 +140,12 @@ test('login page protects Google PKCE from duplicate starts and host drift', () 
   );
   assert.match(
     loginControllerSource,
-    /if \(passwordSubmission\.pending\.current \|\| googleOAuthStartedRef\.current\) return;/,
+    /if \(passwordSubmission\.pending\.current \|\| confirmationResendPendingRef\.current \|\| googleOAuthStartedRef\.current\) return;/,
     'Google OAuth should ignore repeated clicks once a PKCE flow has started'
   );
   assert.match(
     loginSurfaceSource,
-    /disabled=\{isGoogleOAuthStarting \|\| isPasswordSubmitting\}/,
+    /disabled=\{!isAuthReady \|\| isGoogleOAuthStarting \|\| isPasswordSubmitting \|\| isConfirmationResending\}/,
     'the Google button should be disabled while the OAuth URL is being created'
   );
   assert.match(

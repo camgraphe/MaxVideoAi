@@ -1,6 +1,8 @@
+import {CustomerTariffUnavailableError} from '@/server/pricing/resolve-customer-tariff';
+import {klingV4TariffScenarios,withKlingV4TariffInput,resolveKlingV4TariffScenarioId} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { createHash } from 'node:crypto';
 
-import { resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
+import { ManualTariffError, resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 
 import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
@@ -34,7 +36,8 @@ import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
 
 function adminTariffCoverage() {
   const coverage = collectSellableManualTariffCoverage();
-  return { ...coverage, scenarios: [...coverage.scenarios, ...seedanceWorkflowScenarios(coverage.scenarios)] };
+  const preparedKling = coverage.scenarios.some(scenario => scenario.modelId === 'kling-v4') ? [] : klingV4TariffScenarios();
+  return { ...coverage, scenarios: [...coverage.scenarios, ...preparedKling, ...seedanceWorkflowScenarios(coverage.scenarios)] };
 }
 
 const SCENARIO_DIMENSIONS = ['workflowStep', 'mode', 'resolution', 'durationSec', 'aspectRatio', 'audio', 'quality',
@@ -48,6 +51,7 @@ export function chooseCustomerTariffScenario(
   if (!scenarios.length) throw new PricingAdminError('unsupported_scenario', 'This model has no supported tariff scenarios');
   let candidates = [...scenarios];
   const choices: CustomerTariffScenarioChoice[] = [];
+  let klingV4Input: number | undefined;
   let decimalInputDuration: number | undefined;
   let seedanceInputDuration: number | undefined;
   let decimalAudioDuration: number | undefined;
@@ -96,6 +100,14 @@ export function chooseCustomerTariffScenario(
       candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
       continue;
     }
+    if (key === 'inputVideoDurationSec' && candidates[0].modelId === 'kling-v4') {
+      klingV4Input = Number(requested[key] ?? options[0]);
+      try { withKlingV4TariffInput(candidates[0],klingV4Input); }
+      catch { throw new PricingAdminError('unsupported_scenario','Enter verified Kling V4 source seconds.'); }
+      choices.push({key,value:String(klingV4Input),options:[],range:{minInclusive:3,max:candidates[0].selector.mode==='v2v'?30.05:30}});
+      candidates=candidates.filter(row=>row.selector[key]===options[0]);
+      continue;
+    }
     if (key === 'inputVideoDurationSec' && candidates.every(candidate =>
       supportsSeedanceInputTariff(candidate.modelId, candidate.selector.mode, candidate.selector.billingInputType))) {
       try {
@@ -131,7 +143,7 @@ export function chooseCustomerTariffScenario(
   if (candidates.length !== 1 || !candidates[0]) {
     throw new PricingAdminError('ambiguous_selector', 'Tariff selector does not resolve to one supported scenario');
   }
-  return { scenario: seedanceInputDuration !== undefined ? withSeedanceTariffInputDuration(candidates[0], seedanceInputDuration)
+  return { scenario: klingV4Input !== undefined ? withKlingV4TariffInput(candidates[0],klingV4Input) : seedanceInputDuration !== undefined ? withSeedanceTariffInputDuration(candidates[0], seedanceInputDuration)
     : openQuantity !== undefined ? withOpenTariffQuantity(candidates[0], openQuantity)
     : omniSource !== undefined || omniInherited !== undefined ? withOmniTariffMedia(candidates[0], {
     inputVideoDurationSec: omniSource ?? 0, ...(omniInherited === undefined ? {} : { inheritedDurationSec: omniInherited }) })
@@ -160,7 +172,7 @@ export async function loadCustomerTariffScenarioDetail(
   } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
-  const continuousInputTariff = (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+  const continuousInputTariff = ((scenario.modelId === 'kling-v4' && scenario.selector.billingInputType === 'video_input') || supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
     || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType)
     || isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
     || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) || supportsOmniTariffMedia(scenario.modelId, scenario.selector.mode))
@@ -185,7 +197,7 @@ function scenarioById(id: string): ManualTariffCoverageScenario {
   const coverage = adminTariffCoverage().scenarios;
   const modelId = new URLSearchParams(id.replaceAll('|', '&')).get('engineId');
   const scenario = coverage.find(candidate => candidate.modelId === modelId && candidate.id === id)
-    ?? resolveSeedanceTariffScenarioId(coverage, id) ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
+    ?? resolveKlingV4TariffScenarioId(coverage,id) ?? resolveSeedanceTariffScenarioId(coverage, id) ?? resolveWan3TariffScenarioId(coverage, id) ?? resolveLtx25AudioTariffScenarioId(coverage, id) ?? resolveOmniTariffScenarioId(coverage, id) ?? resolveOpenTariffScenarioId(coverage, id);
   if (!scenario) throw new PricingAdminError('unsupported_scenario', 'Unknown or unsupported tariff scenario');
   return scenario;
 }
@@ -301,7 +313,13 @@ async function buildPreview(
     throw new PricingAdminError('unsupported_scenario', 'Active customer tariffs cannot be deleted');
   }
   const scenario = scenarioById(proposal.scenarioId);
-  const currentCents = await quoteCurrent(scenario, policy, state);
+  let currentCents:number|null;
+  try { currentCents=await quoteCurrent(scenario,policy,state); }
+  catch(error) {
+    if(scenario.modelId==='kling-v4'&&((!state.active&&error instanceof CustomerTariffUnavailableError)
+      ||(error instanceof ManualTariffError&&error.code==='missing_cell')))currentCents=null;
+    else throw error;
+  }
   if ('scope' in proposal && proposal.scope === 'continuous_input') {
     const prepared = await prepareContinuousInputTariffChange({ proposal, scenario, state, policy, executor });
     const previewBase = { ...prepared, operation: proposal.operation, scenarioId: scenario.id, modelId: scenario.modelId,
@@ -323,7 +341,7 @@ async function buildPreview(
     throw new PricingAdminError('invalid_payload', 'Tariff operation does not match the current cell');
   }
   // The first DB override must retain the authored effective price for an append-only rollback.
-  const previousCell = previousDatabaseCell ?? (state.active ? resolveManualTariffCell({
+  const previousCell = previousDatabaseCell ?? (state.active && currentCents !== null ? resolveManualTariffCell({
     selector: scenario.selector, at: new Date().toISOString(),
     databaseCells: state.databaseCells, versionedCells: state.versionedCells,
   }) : null);
@@ -363,8 +381,8 @@ async function buildPreview(
     currency: 'USD', effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z',
     price: { kind: 'fixed', customerCents: proposedCents },
   };
-  if (state.active && proposedCell) {
-    await quoteCurrent(scenario, policy, { ...state,
+  if ((state.active || scenario.modelId === 'kling-v4') && proposedCell) {
+    await quoteCurrent(scenario, policy, { ...state, active:true,
       databaseCells: [...state.databaseCells.filter((cell) => cell.id !== id), proposedCell] });
   }
   const previewBase = {

@@ -17,6 +17,7 @@ import {
   getComposerWorkflowNotice,
   getPreferredEngineModeForEngineRequest,
   getPreferredEngineMode,
+  getWorkspaceCreateMode,
   isWorkspaceModeAvailable,
   matchesEngineToken,
   resolveSelectedWorkspaceEngine,
@@ -189,8 +190,8 @@ export function useWorkspaceEngineModeState({
   });
 
   const klingO3DisabledEngineReasons = useMemo(
-    () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
-    [engines, inputAssets, klingElements]
+    () => getKlingO3DisabledEngineReasons({ engines: engines.filter(engine => engine.id === form?.engineId), inputAssets, klingElements }),
+    [engines, form?.engineId, inputAssets, klingElements]
   );
 
   useEffect(() => {
@@ -232,28 +233,29 @@ export function useWorkspaceEngineModeState({
   const handleEngineChange = useCallback(
     (engineId: string) => {
       const nextEngine = engines.find((entry) => entry.id === engineId);
-      if (!nextEngine) return;
+      if (!nextEngine || nextEngine.id === form?.engineId) return;
       const disabledReason = klingO3DisabledEngineReasons[nextEngine.id];
       if (disabledReason) {
         showNotice(disabledReason);
         return;
       }
+      const createMode = getWorkspaceCreateMode(nextEngine);
+      if (!createMode) { showNotice(uiLocale === 'fr' ? 'Créer est indisponible pour ce modèle.' : uiLocale === 'es' ? 'Crear no está disponible para este modelo.' : 'Create is unavailable for this model.'); return; }
+      prepareModeAssets(null);
       requestedEngineOverrideIdRef.current = null;
       requestedEngineOverrideTokenRef.current = null;
       requestedModeOverrideRef.current = null;
       preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = current ?? null;
-        const nextMode = getPreferredEngineModeForEngineRequest({
-          engine: nextEngine,
-          requestedMode: null,
-          carryoverMode: candidate?.mode ?? null,
-        });
-        return coerceFormStateForEngineChange(nextEngine, nextMode, candidate);
+        return coerceFormStateForEngineChange(nextEngine, createMode, candidate ? { ...candidate, operation: undefined } : null);
       });
     },
     [
       engines,
+      form?.engineId,
+      prepareModeAssets,
+      uiLocale,
       klingO3DisabledEngineReasons,
       preserveStoredDraftRef,
       requestedEngineOverrideIdRef,
@@ -357,7 +359,7 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)) return;
+      if (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
       const nextMode = getPreferredEngineMode(capabilityEngine, mode);
       setForm((current) => coerceFormState(capabilityEngine, nextMode, current ? { ...current, mode: nextMode } : null));
     },
@@ -399,7 +401,7 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (!capabilityEngine || !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
+      if (mode && (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
       const nextAssets = prepareModeAssets(mode);
       const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,

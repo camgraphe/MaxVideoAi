@@ -174,7 +174,7 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
   if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
     return undefined;
   }
-  if (isKlingO3EngineId(engine.id)) {
+  if (isKlingO3EngineId(engine.id) || engine.id === 'kling-v4') {
     return undefined;
   }
   if (engine.id === 'veo-3-1') {
@@ -354,6 +354,8 @@ export function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldI
 }
 
 export function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
+  // A closed V4 mode still owns its saved draft; generation availability is checked separately.
+  if (engine.id === 'kling-v4' && candidate && engine.modes.includes(candidate)) return candidate;
   if (candidate && isWorkspaceModeAvailable(engine, candidate)) return candidate;
   return getDefaultEngineMode(engine);
 }
@@ -365,6 +367,12 @@ export function getDefaultEngineMode(engine: EngineCaps): Mode {
   const availableMode = engine.modes.find((mode) => isWorkspaceModeAvailable(engine, mode));
   if (availableMode) return availableMode;
   return engine.modes[0] ?? 't2v';
+}
+
+/** An explicit model choice starts Create; saved drafts and deep links keep their own mode policy. */
+export function getWorkspaceCreateMode(engine: EngineCaps): Mode | null {
+  const creationModes: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
+  return creationModes.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
 }
 
 export function getPreferredEngineModeForEngineRequest({
@@ -416,6 +424,13 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   const previousFps = resetFastDefaultsOnEngineSwitch ? null : previous?.fps ?? null;
 
   const durationResult = (() => {
+    // A restored V4 request is authoritative, including invalid values that the editor must report.
+    // A stale single-shot option must never override a saved shot-plan total.
+    if (engine.id === 'kling-v4' && previous?.engineId === engine.id) {
+      const durationOption = previous.durationOption != null && Number(previous.durationOption) === previous.durationSec
+        ? previous.durationOption : previous.durationSec;
+      return { durationSec: previous.durationSec, durationOption, numFrames: null };
+    }
     const prevOption = previousDurationOption;
     const prevSeconds = previousDurationSec;
     const prevFrames = previousNumFrames;

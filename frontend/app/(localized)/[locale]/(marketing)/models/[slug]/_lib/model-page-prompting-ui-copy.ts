@@ -20,6 +20,10 @@ export type ModelPromptingUiCopy = {
   viewRender: string;
   usePrompt: string;
   textToVideo: string;
+  imageToVideo: string;
+  referenceToVideo: string;
+  videoToVideo: string;
+  videoGeneration: string;
   audioOn: string;
   audioOff: string;
   silent: string;
@@ -27,9 +31,9 @@ export type ModelPromptingUiCopy = {
 };
 
 const COPY: Record<AppLocale, ModelPromptingUiCopy> = {
-  en: { tipPrefix: 'Tip', source: 'Source: ', global: 'Prompt writing tips', quirks: 'What to keep in mind', subject: 'Subject', action: 'Action', camera: 'Camera', style: 'Style', audio: 'Audio', output: 'Output', viewFull: 'View full render', showPrompt: 'View full prompt', copyPrompt: 'Copy prompt', copyTemplate: 'Copy template', copied: 'Copied', example: 'EXAMPLE', viewRender: 'View example render', usePrompt: 'Use this prompt', textToVideo: 'Text-to-video', audioOn: 'Audio on', audioOff: 'Audio off', silent: 'Silent', demoPreview: 'Demo preview.' },
-  fr: { tipPrefix: 'Astuce', source: 'Source : ', global: 'Conseils de rédaction', quirks: 'À savoir pour ce modèle', subject: 'Sujet', action: 'Action', camera: 'Caméra', style: 'Style', audio: 'Audio', output: 'Sortie', viewFull: 'Voir le rendu complet', showPrompt: 'Voir le prompt complet', copyPrompt: 'Copier le prompt', copyTemplate: 'Copier le modèle de prompt', copied: 'Copié', example: 'EXEMPLE', viewRender: 'Voir l’exemple', usePrompt: 'Utiliser ce prompt', textToVideo: 'Texte-vers-vidéo', audioOn: 'Audio activé', audioOff: 'Audio désactivé', silent: 'Silencieux', demoPreview: 'Aperçu de démonstration.' },
-  es: { tipPrefix: 'Consejo', source: 'Fuente: ', global: 'Consejos para escribir prompts', quirks: 'Qué tener en cuenta', subject: 'Sujeto', action: 'Acción', camera: 'Cámara', style: 'Estilo', audio: 'Audio', output: 'Salida', viewFull: 'Ver resultado completo', showPrompt: 'Ver prompt completo', copyPrompt: 'Copiar prompt', copyTemplate: 'Copiar plantilla', copied: 'Copiado', example: 'EJEMPLO', viewRender: 'Ver ejemplo', usePrompt: 'Usar este prompt', textToVideo: 'Texto a video', audioOn: 'Audio activado', audioOff: 'Audio desactivado', silent: 'Sin audio', demoPreview: 'Vista previa de demostración.' },
+  en: { tipPrefix: 'Tip', source: 'Source: ', global: 'Prompt writing tips', quirks: 'What to keep in mind', subject: 'Subject', action: 'Action', camera: 'Camera', style: 'Style', audio: 'Audio', output: 'Output', viewFull: 'View full render', showPrompt: 'View full prompt', copyPrompt: 'Copy prompt', copyTemplate: 'Copy template', copied: 'Copied', example: 'EXAMPLE', viewRender: 'View example render', usePrompt: 'Use this prompt', textToVideo: 'Text-to-video', imageToVideo: 'Image-to-video', referenceToVideo: 'Reference-to-video', videoToVideo: 'Video-to-video', videoGeneration: 'Video generation', audioOn: 'Audio on', audioOff: 'Audio off', silent: 'Silent', demoPreview: 'Demo preview.' },
+  fr: { tipPrefix: 'Astuce', source: 'Source : ', global: 'Conseils de rédaction', quirks: 'À savoir pour ce modèle', subject: 'Sujet', action: 'Action', camera: 'Caméra', style: 'Style', audio: 'Audio', output: 'Sortie', viewFull: 'Voir le rendu complet', showPrompt: 'Voir le prompt complet', copyPrompt: 'Copier le prompt', copyTemplate: 'Copier le modèle de prompt', copied: 'Copié', example: 'EXEMPLE', viewRender: 'Voir l’exemple', usePrompt: 'Utiliser ce prompt', textToVideo: 'Texte-vers-vidéo', imageToVideo: 'Image-vers-vidéo', referenceToVideo: 'Vidéo guidée par références', videoToVideo: 'Vidéo-vers-vidéo', videoGeneration: 'Génération vidéo', audioOn: 'Audio activé', audioOff: 'Audio désactivé', silent: 'Silencieux', demoPreview: 'Aperçu de démonstration.' },
+  es: { tipPrefix: 'Consejo', source: 'Fuente: ', global: 'Consejos para escribir prompts', quirks: 'Qué tener en cuenta', subject: 'Sujeto', action: 'Acción', camera: 'Cámara', style: 'Estilo', audio: 'Audio', output: 'Salida', viewFull: 'Ver resultado completo', showPrompt: 'Ver prompt completo', copyPrompt: 'Copiar prompt', copyTemplate: 'Copiar plantilla', copied: 'Copiado', example: 'EJEMPLO', viewRender: 'Ver ejemplo', usePrompt: 'Usar este prompt', textToVideo: 'Texto a video', imageToVideo: 'Imagen a vídeo', referenceToVideo: 'Vídeo guiado por referencias', videoToVideo: 'Vídeo a vídeo', videoGeneration: 'Generación de vídeo', audioOn: 'Audio activado', audioOff: 'Audio desactivado', silent: 'Sin audio', demoPreview: 'Vista previa de demostración.' },
 };
 
 export function getModelPromptingUiCopy(locale: AppLocale): ModelPromptingUiCopy {

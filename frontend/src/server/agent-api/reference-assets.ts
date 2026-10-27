@@ -1,6 +1,7 @@
 import { videoDuration } from '@/lib/generated-video-media-facts';
 import { query, type QueryExecutor } from '@/lib/db';
-import { isAllowedAssetHost } from '@/server/storage';
+import { validReferenceMediaUrl } from '@/server/asset-url-policy';
+export { validReferenceMediaUrl } from '@/server/asset-url-policy';
 
 import { AgentApiError } from "./errors";
 import type { AgentPrincipal } from "./principal";
@@ -74,31 +75,6 @@ function originalNameMetadata(value: unknown): string | null {
     name.length <= 1_024
     ? name.trim()
     : null;
-}
-
-/** Pure URL admissibility only; callers must separately establish row and storage-object ownership. */
-export function validReferenceMediaUrl(value: unknown): value is string {
-  if (
-    typeof value !== "string" ||
-    value.length < 1 ||
-    value.length > 4_096 ||
-    !isAllowedAssetHost(value)
-  ) {
-    return false;
-  }
-  try {
-    const parsed = new URL(value);
-    return (
-      parsed.protocol === "https:" &&
-      parsed.username.length === 0 &&
-      parsed.password.length === 0 &&
-      parsed.hash.length === 0 &&
-      (parsed.port.length === 0 || parsed.port === "443") &&
-      parsed.pathname !== "/"
-    );
-  } catch {
-    return false;
-  }
 }
 
 function durationMetadata(

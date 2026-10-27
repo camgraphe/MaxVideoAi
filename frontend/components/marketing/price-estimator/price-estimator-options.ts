@@ -8,6 +8,9 @@ import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { GPT_IMAGE_2_5_PRICE_TABLE_EXACT_CENTS, type GptImage25Quality } from '@/lib/image/gptImage2';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { calculateNano21ListImageComponents } from '@/lib/nano-banana-2-1-pricing';
+import customerTariffs from '../../../config/customer-tariffs.json';
 
 export type MemberTier = 'Member' | 'Plus' | 'Pro';
 
@@ -66,6 +69,10 @@ const PER_IMAGE_ENGINE_CONFIG = new Map<
   string,
   { rates: Array<{ value: string; label: string; rate: number }> }
 >([
+  [NANO21_ENGINE_ID, { rates: ['1k', '2k', '4k'].map(value => ({ value, label: value.toUpperCase(),
+    // Only the known LIST image component; this is not the provider invoice.
+    rate: calculateNano21ListImageComponents({ resolution: value, mode: 't2i', durationSec: 1 }, 'USD').partialListUsd,
+  })) }],
   ['gpt-image-2-5-flare', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
   ['gpt-image-2-5-sunburst', { rates: GPT_IMAGE_25_ESTIMATOR_RATES }],
   [
@@ -143,6 +150,14 @@ function quoteCanonicalUnitRate(params: {
   unit: 'image' | 'sec';
   pricingRules?: PricingRuleLite[];
 }) {
+  if (params.engineId === NANO21_ENGINE_ID) {
+    // These option hints do not replace the estimator's effective API quote.
+    // Never derive Nano's fixed customer amount from a partial supplier cost.
+    const cell = customerTariffs.cells.find(row => row.selector.engineId === NANO21_ENGINE_ID
+      && row.selector.mode === 't2i' && row.selector.resolution === params.resolution.toUpperCase());
+    if (!cell || cell.price.kind !== 'fixed') throw new Error('Missing Nano21 fixed image tariff.');
+    return cell.price.customerCents / 100;
+  }
   const facts = buildPublicUnitPricingFacts({
     engineId: params.engineId,
     currency: params.currency,

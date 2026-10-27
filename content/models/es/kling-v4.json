@@ -1,0 +1,393 @@
+{
+  "marketingName": "Kling 4.0",
+  "versionLabel": "4.0",
+  "seo": {
+    "title": "Kling 4.0 — dirigir la escena, las referencias y el sonido | MaxVideoAI",
+    "description": "Explora Kling 4.0: videos de 3 a 30 segundos, 720p y 1080p, planos temporizados, audio nativo, referencias de imagen y video y edición."
+  },
+  "overview": "Kling 4.0 reúne dirección de escenas, generación guiada por referencias y edición de video. Piensa en la acción, el encuadre y el sonido juntos, y elige el modo adecuado para el material disponible.",
+  "pricingNotes": [
+    "Kling 4.0 está disponible en la App, Studio y mediante MCP. El presupuesto actual depende del modo y los materiales elegidos.",
+    "Las tarifas del proveedor no son un precio de MaxVideoAI. Revisa el presupuesto actual y aprueba explícitamente cada generación."
+  ],
+  "hero": {
+    "title": "Kling 4.0 — dirigir la escena, las referencias y el sonido",
+    "intro": "Kling 4.0 reúne dirección de escenas, generación guiada por referencias y edición de video. Piensa en la acción, el encuadre y el sonido juntos, y elige el modo adecuado para el material disponible.",
+    "badge": "3–30 s · 720p / 1080p",
+    "ctaPrimary": {
+      "label": "Generar con Kling 4.0",
+      "href": "/app?engine=kling-v4"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Leer las especificaciones",
+        "href": "#specs"
+      }
+    ]
+  },
+  "bestUseCases": [
+    "Una presentación de producto",
+    "Un diálogo breve",
+    "Un personaje recurrente"
+  ],
+  "faqs": [
+    {
+      "q": "¿Qué es Kling 4.0?",
+      "a": "Kling 4.0 es el modelo de video de Kuaishou con flujos documentados de texto, imagen, referencias y edición. Esta página presenta su contrato y consejos de preparación."
+    },
+    {
+      "q": "¿Puedo generar con Kling 4.0 en MaxVideoAI ahora?",
+      "a": "Sí. La App, Studio y MCP ofrecen Kling 4.0 para texto, imagen, referencias y edición de vídeo, con materiales compatibles y un presupuesto actual. Las comprobaciones funcionales no certifican la calidad artística de un nuevo resultado."
+    },
+    {
+      "q": "¿Qué duraciones y resoluciones están documentadas?",
+      "a": "El esquema acepta duraciones enteras de 3 a 30 segundos y salidas de 720p o 1080p. Los valores predeterminados de generación son 5 segundos y 1080p. La edición puede heredar la duración de la fuente cuando se omite."
+    },
+    {
+      "q": "¿Genera audio?",
+      "a": "El proveedor anuncia audio estéreo, diálogo, canto y sincronización labial nativos. Los esquemas no incluyen interruptor de audio ni archivo de audio de entrada. Son afirmaciones del proveedor, no resultados medidos por MaxVideoAI."
+    },
+    {
+      "q": "¿Puedo aportar una primera y una última imagen?",
+      "a": "Imagen a video requiere una imagen inicial y admite una imagen final opcional. La generación por referencias permite una imagen inicial, pero no documenta un parámetro de imagen final. Ningún modo expone una lista de fotogramas clave temporizados."
+    },
+    {
+      "q": "¿Cómo funcionan los planos temporizados?",
+      "a": "Los modos de generación aceptan una lista de prompts de planos. Cada prompt admite hasta 512 caracteres y cada duración va de 1 a 30 segundos enteros. La suma debe coincidir con el clip solicitado de 3 a 30 segundos. El esquema inspeccionado no publica un número máximo explícito de planos."
+    },
+    {
+      "q": "¿Qué referencias puedo utilizar?",
+      "a": "La generación por referencias admite hasta 10 imágenes, incluida la inicial, 5 videos y 7 elementos. El proveedor anuncia un presupuesto global de 15 medios. Videos y elementos de video comparten 30 segundos; cada video debe durar de 3 a 30 segundos. También se aplican las restricciones de los elementos."
+    },
+    {
+      "q": "¿Puedo reutilizar una voz?",
+      "a": "El esquema de elementos de referencia incluye un identificador de voz, con un máximo de tres elementos con voz. Crear voces y utilizarlas requiere una verificación separada. Los modos normales de texto e imagen no exponen una lista de voces."
+    },
+    {
+      "q": "¿En qué se diferencia la edición de video?",
+      "a": "Requiere un video fuente y un prompt y admite imágenes y elementos visuales opcionales. No expone múltiples planos, elementos de voz ni control de proporción. Las duraciones de entrada y salida afectan a la facturación del proveedor."
+    },
+    {
+      "q": "¿Se reemplazarán los ejemplos anteriores de Kling?",
+      "a": "Las páginas y los videos existentes conservan sus identidades, prompts y ajustes originales. Un video Kling 3 u Omni no se convierte en un ejemplo Kling 4.0."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Kling 4.0",
+    "heroHighlights": [
+      "Dirigir una secuencia||Describe una escena continua o varios planos temporizados cuyas duraciones sumen el clip completo. Asigna una acción clara a cada plano.",
+      "Guiar el sujeto y el entorno||Parte de una imagen, añade una imagen final opcional o utiliza imágenes, videos y elementos de referencia para guiar una escena nueva.",
+      "Escribir el sonido de la escena||El proveedor anuncia diálogo, canto y audio estéreo nativos. Describe las palabras, las voces y el ambiente en el prompt; no hay un interruptor de audio documentado.",
+      "Editar un video existente||El modo de edición recibe un video fuente y un prompt, con imágenes y elementos visuales opcionales. Sus entradas son distintas de las de generación por referencias."
+    ],
+    "specTitle": "Controles documentados de Kling 4.0",
+    "specNote": "Contratos del proveedor verificados el 25 de octubre de 2026. Las escenas públicas seleccionadas conservan sus prompts y referencias originales.",
+    "specSections": [
+      {
+        "title": "Texto a video",
+        "intro": "Un prompt o planos temporizados, de 3 a 30 segundos, en 720p o 1080p, con encuadre horizontal, vertical, cuadrado o 21:9.",
+        "items": []
+      },
+      {
+        "title": "Imagen a video",
+        "intro": "Se necesita una imagen inicial. La imagen final es opcional. Las imágenes determinan el encuadre.",
+        "items": []
+      },
+      {
+        "title": "Generación por referencias",
+        "intro": "Hasta 10 imágenes, incluida una imagen inicial opcional, y 5 videos. Los videos de referencia y los elementos de video comparten un límite de 30 segundos.",
+        "items": []
+      },
+      {
+        "title": "Edición de video",
+        "intro": "Aporta un video fuente y un prompt. Las imágenes y los elementos visuales pueden guiar la edición; este modo no incluye planos temporizados ni elementos de voz.",
+        "items": []
+      }
+    ],
+    "tipsTitle": "Consejos de dirección y límites",
+    "tipsIntro": "Define el sujeto, la acción, la cámara y el sonido. Los planos temporizados orientan la secuencia sin garantizar cortes exactos.",
+    "strengths": [
+      "Asigna una acción clara a cada plano.",
+      "Mantén referencias coherentes en identidad e iluminación.",
+      "Escribe el diálogo exacto e identifica a quien habla.",
+      "Revisa el video y la banda sonora completos antes de seleccionar un resultado."
+    ],
+    "troubleshootingItems": [],
+    "boundaries": [
+      "Los clips generados duran de 3 a 30 segundos enteros.",
+      "Se documentan 720p y 1080p; aquí no se declara un nivel 4K.",
+      "No se documentan semilla, CFG, prompt negativo, selector de FPS ni una lista de fotogramas clave temporizados.",
+      "La generación por referencias y la edición tienen límites diferentes."
+    ],
+    "safetyNote": "Usa medios y voces con los permisos necesarios. Revisa la identidad, el diálogo y posibles interpretaciones engañosas antes de compartir."
+  },
+  "decision": {
+    "modelSlug": "kling-v4",
+    "hero": {
+      "eyebrow": "KLING 4.0",
+      "title": "Kling 4.0 — dirigir la escena, las referencias y el sonido",
+      "subtitle": "Prepara videos de 3 a 30 segundos a partir de texto, imágenes o referencias de video, con audio nativo y un modo de edición independiente.",
+      "subtitleHighlights": [
+        "3 a 30"
+      ],
+      "paragraph": "Descubre escenas originales de Kling 4.0 con sus prompts y después dirige tu video en App, Studio o mediante MCP. Cada generación requiere un presupuesto actual y tu confirmación.",
+      "primaryCta": {
+        "label": "Generar con Kling 4.0",
+        "href": "/app?engine=kling-v4"
+      },
+      "secondaryCta": {
+        "label": "Leer las especificaciones",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Leer las especificaciones",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Concierto en blanco y negro — Kling 4.0",
+      "description": "Una escena de concierto original creada con Kling 4.0 a partir de dos imágenes de referencia. Reproduce la película completa de 24 segundos con audio.",
+      "renderLabel": "Ver el concierto completo",
+      "badges": [
+        "Kling 4.0",
+        "720p",
+        "Referencias a video"
+      ],
+      "altContext": "Escena de concierto original de Kling 4.0"
+    },
+    "features": [
+      {
+        "title": "Dirigir una secuencia",
+        "body": "Describe una escena continua o varios planos temporizados cuyas duraciones sumen el clip completo. Asigna una acción clara a cada plano.",
+        "tone": "duration"
+      },
+      {
+        "title": "Guiar el sujeto y el entorno",
+        "body": "Parte de una imagen, añade una imagen final opcional o utiliza imágenes, videos y elementos de referencia para guiar una escena nueva.",
+        "tone": "reference"
+      },
+      {
+        "title": "Escribir el sonido de la escena",
+        "body": "El proveedor anuncia diálogo, canto y audio estéreo nativos. Describe las palabras, las voces y el ambiente en el prompt; no hay un interruptor de audio documentado.",
+        "tone": "audio"
+      },
+      {
+        "title": "Editar un video existente",
+        "body": "El modo de edición recibe un video fuente y un prompt, con imágenes y elementos visuales opcionales. Sus entradas son distintas de las de generación por referencias.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Una presentación de producto",
+        "body": "Prepara una vista inicial, un movimiento deliberado y una composición final clara.",
+        "cta": {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Un diálogo breve",
+        "body": "Identifica a quien habla, escribe una frase corta y deja una pausa natural para la reacción.",
+        "cta": {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Un personaje recurrente",
+        "body": "Prepara imágenes coherentes y describe la acción sin rediseñar constantemente al sujeto.",
+        "cta": {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texto a video",
+        "body": "Un prompt o planos temporizados, de 3 a 30 segundos, en 720p o 1080p, con encuadre horizontal, vertical, cuadrado o 21:9."
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Se necesita una imagen inicial. La imagen final es opcional. Las imágenes determinan el encuadre."
+      },
+      {
+        "title": "Generación por referencias",
+        "body": "Hasta 10 imágenes, incluida una imagen inicial opcional, y 5 videos. Los videos de referencia y los elementos de video comparten un límite de 30 segundos."
+      },
+      {
+        "title": "Edición de video",
+        "body": "Aporta un video fuente y un prompt. Las imágenes y los elementos visuales pueden guiar la edición; este modo no incluye planos temporizados ni elementos de voz."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Kling 4.0",
+      "subtitle": "Kling 4.0 está disponible en la App, Studio y mediante MCP. El presupuesto actual depende del modo y los materiales elegidos.",
+      "footnote": "Las tarifas del proveedor no son un precio de MaxVideoAI. Revisa el presupuesto actual y aprueba explícitamente cada generación.",
+      "ctaLabel": "Leer las especificaciones",
+      "ctaHref": "#specs"
+    },
+    "meta": {
+      "title": "Kling 4.0 — dirigir la escena, las referencias y el sonido | MaxVideoAI",
+      "description": "Explora Kling 4.0: videos de 3 a 30 segundos, 720p y 1080p, planos temporizados, audio nativo, referencias de imagen y video y edición."
+    }
+  },
+  "prompting": {
+    "modelSlug": "kling-v4",
+    "section": {
+      "title": "Laboratorio de prompts — Kling 4.0",
+      "intro": "Dos prompts de escenas filmadas con Kling 4.0 muestran un concierto y una historia guiada por referencias. Las pestañas de imagen y edición ofrecen recetas adaptables.",
+      "tip": "Define el sujeto, la acción, la cámara y el sonido. Los planos temporizados orientan la secuencia sin garantizar cortes exactos.",
+      "guide": {
+        "label": "Leer la presentación del proveedor",
+        "href": "https://fal.ai/kling-4"
+      },
+      "referencesTitle": "Preparar referencias coherentes"
+    },
+    "tabs": [
+      {
+        "id": "scene",
+        "label": "Dirección",
+        "title": "Concierto en blanco y negro — escena filmada",
+        "description": "Una cantante original mantiene la misma actuación a lo largo de seis planos motivados. Dos referencias fijan su identidad y el escenario.",
+        "copy": "Create a 24-second black-and-white live concert sequence, one continuous musical performance across six motivated shots. Use @Image1 for the original singer's identity, black knitted beanie, dark sleeveless top and suspended vintage microphone. Use @Image2 for the outdoor night stage, band placement, lights and audience geography. These are references, not imposed first frames. Keep the singer and her clothing identical across shots. Do not copy a real performer's face or voice.\n\nThe singer is a woman around thirty-five with long slightly unruly dark hair, a strong expressive brow and a direct, unpolished stage presence. She stands at centre stage, very close to a silver vintage microphone suspended at mouth height. A curly-haired adult trumpeter stands behind her to camera right; an adult keyboard player is behind her to camera left. A standing audience faces the stage beyond the footlights. This is an actual outdoor concert at night, not a bar, rehearsal, closing-time scene or narrative interlude.\n\nPhotography: tactile monochrome, luminous skin against deep blacks, soft blooming stage bulbs, restrained anamorphic character and shallow depth of field in close views. A physically present handheld camera follows small shifts of breath and weight, without random whip pans. Preserve readable eyes and lips; natural facial asymmetry and skin. The final wide reveals a real stage, trees against the night sky and listeners in the foreground.\n\nMusic is the dramatic centre. Generate a new original English-language live soul performance with an intimate, slightly grainy female voice, unforced chest-to-head transitions, audible breaths and clear words. A slow, lightly swung pulse around 80 BPM, warm electric-piano chords, restrained bass and brushed percussion support her; the trumpet answers only after her sung phrase. The band and voice share a single uninterrupted tempo, harmony and acoustic space across every cut. No borrowed melody, recognisable existing song, artist voice imitation, spoken narration or crowd speech. This is a proposed original musical interpretation, not an instruction to reproduce an external recording.\n\n0–6s: tight three-quarter frontal view of her face and microphone. She takes one audible breath, leans toward the microphone and sings the original line, \"Let the morning find us here.\" Let the phrase build from conversational intimacy to a held final word. Small jaw and brow movements follow the vocal; the camera drifts only a few centimetres.\n\n6–12s: cut to her left profile, chest-up with the same microphone position. On the same groove she sings the original line, \"With the city in our hands.\" Her free hand opens once at waist height as the voice gains strength, then rests. Do not turn this into choreographed gestures on every syllable. Show her finishing the final consonant before leaving her face.\n\n12–15s: cut to the trumpeter in side backlight. He lifts one trumpet to his mouth and plays a short answering phrase; the visible embouchure and fingers match the trumpet sound. The singer is not singing during this response.\n\n15–18s: cut to close hands on the same electric piano, pressing and releasing a small resolving chord figure. The electric-piano notes already present in the mix become momentarily more exposed; the music does not restart.\n\n18–21s: return to a frontal close-up of the singer. She sustains an open vowel as a short melodic resolution, eases back from the microphone and lets a small involuntary smile appear when the note ends. Keep vocal effort, release and breathing visible. Do not add another lyric or spoken line.\n\n21–24s: cut to a steady wide view from behind the audience. Reveal the complete illuminated stage in the night landscape; the same musicians remain in their positions. Let the last chord and vocal reverberation decay into modest applause and night air. Hold the ending rather than cutting mid-phrase.\n\nSound must be audible and integrated: foreground singing, supporting live instruments, natural short stage reverberation and audience response only at the end. No music replacement between shots, no silent singer, no prerecorded source audio assumed, no additional paid audio-generation step implied. The described timings and tempo guide a coherent performance; musical coherence matters more than mechanical timestamp precision.\n\nProduction language: English. All sung lyrics and any incidental permitted language must be English. No subtitles, titles, watermarks, logos, banners or readable stage signage. Preserve an actual concert and the full musical phrase; no story outside the performance.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "image",
+        "label": "Imagen inicial",
+        "title": "Una revelación pausada",
+        "description": "Adapta este prompt a tu propia imagen inicial.",
+        "copy": "Continúa desde la imagen proporcionada. Conserva el sujeto, los materiales y la iluminación. Mueve lentamente la cámara hacia la derecha mientras el sujeto hace un pequeño movimiento natural. Termina con una composición estable. Ambiente interior suave.",
+        "matchPublicExample": false
+      },
+      {
+        "id": "reference",
+        "label": "Referencias",
+        "title": "The Next One — el tranvía",
+        "description": "Un guante devuelto abre dos instantes de un futuro imaginado; luego la decisión vuelve al andén. Dos imágenes de personajes mantienen sus identidades.",
+        "copy": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+        "matchPublicExample": true
+      },
+      {
+        "id": "edit",
+        "label": "Edición",
+        "title": "Cambiar la atmósfera",
+        "description": "Describe el cambio deseado en tu video fuente.",
+        "copy": "Conserva las personas, los movimientos y la composición del video fuente. Cambia el ambiente a una tarde cálida, con sombras más suaves y una luz dorada sutil. Mantén los rostros legibles y las texturas naturales.",
+        "matchPublicExample": false
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "scene",
+        "body": "Prompt utilizado para una película Kling 4.0 seleccionada. Abre el ejemplo enlazado para ver el resultado real y sus referencias."
+      },
+      {
+        "tabId": "image",
+        "body": "Adapta esta receta a tu propio material; aquí no hay una película correspondiente enlazada."
+      },
+      {
+        "tabId": "reference",
+        "body": "Prompt utilizado para una película Kling 4.0 seleccionada. Abre el ejemplo enlazado para ver el resultado real y sus referencias."
+      },
+      {
+        "tabId": "edit",
+        "body": "Adapta esta receta a tu propio material; aquí no hay una película correspondiente enlazada."
+      }
+    ],
+    "globalPrinciples": [
+      "Asigna una acción clara a cada plano.",
+      "Mantén referencias coherentes en identidad e iluminación.",
+      "Escribe el diálogo exacto e identifica a quien habla.",
+      "Revisa el video y la banda sonora completos antes de seleccionar un resultado."
+    ],
+    "engineWhy": [
+      "Un prompt o planos temporizados, de 3 a 30 segundos, en 720p o 1080p, con encuadre horizontal, vertical, cuadrado o 21:9.",
+      "Se necesita una imagen inicial. La imagen final es opcional. Las imágenes determinan el encuadre.",
+      "Hasta 10 imágenes, incluida una imagen inicial opcional, y 5 videos. Los videos de referencia y los elementos de video comparten un límite de 30 segundos.",
+      "Aporta un video fuente y un prompt. Las imágenes y los elementos visuales pueden guiar la edición; este modo no incluye planos temporizados ni elementos de voz."
+    ],
+    "demo": {
+      "title": "The Next One",
+      "promptLabel": "Prompt utilizado para el ejemplo filmado",
+      "prompt": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+      "notes": [
+        "Esta película guiada por referencias usa dos imágenes de personajes originales. Evalúa los cortes, la continuidad y el sonido en el vídeo real."
+      ],
+      "summary": {
+        "subject": "Leon y Adele ante la puerta de un tranvía detenido",
+        "action": "Un guante devuelto, momentos imaginados juntos y la decisión real de bajar",
+        "camera": "Cinco planos motivados y un retorno preciso al primer encuadre",
+        "style": "Rostros naturales, amanecer frío e interiores cálidos",
+        "output": "Película de 28 segundos guiada por referencias, con sonidos de tranvía e interiores"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Referencias a vídeo",
+        "outputLabel": "Película generada con referencias",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "supported",
+        "audioChipLabel": null,
+        "altContext": "The Next One — escena de tranvía Kling 4.0"
+      }
+    },
+    "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-v4",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Ejemplos de Kling 4.0",
+      "intro": "Escenas originales de Kling 4.0 con sus prompts y referencias. Los videos anteriores de Kling mantienen su modelo original en la galería de la familia.",
+      "defaultCtaLabel": null,
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todos"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "0",
+        "icon": "image",
+        "title": "Comparar las referencias",
+        "body": "Asigna una acción clara a cada plano."
+      },
+      {
+        "id": "1",
+        "icon": "zap",
+        "title": "Seguir la acción",
+        "body": "Mantén referencias coherentes en identidad e iluminación."
+      },
+      {
+        "id": "2",
+        "icon": "users",
+        "title": "Examinar el sujeto",
+        "body": "Escribe el diálogo exacto e identifica a quien habla."
+      },
+      {
+        "id": "3",
+        "icon": "maximize",
+        "title": "Revisar el encuadre",
+        "body": "Revisa el video y la banda sonora completos antes de seleccionar un resultado."
+      },
+      {
+        "id": "4",
+        "icon": "audio",
+        "title": "Escuchar el sonido",
+        "body": "Revisa el video y la banda sonora completos antes de seleccionar un resultado."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

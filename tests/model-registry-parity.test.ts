@@ -345,7 +345,7 @@ test('family membership and current variants preserve baseline with explicit lif
     const expectedPublishedModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
       : expected.id === 'kling'
-        ? ['kling-3-turbo-pro', 'kling-3-turbo-standard', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
+        ? ['kling-v4', 'kling-3-turbo-pro', 'kling-3-turbo-standard', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
       : expected.id === 'hailuo'
         ? ['minimax-h3', 'minimax-h3-max', ...(expected.examplesPage?.publishedModelSlugs ?? [])]
         : expected.id === 'veo'

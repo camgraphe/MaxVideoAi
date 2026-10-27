@@ -62,6 +62,7 @@ export const frPayAsYouGoContent = {
     },
     footer: 'Happy Horse 1.1 et Seedance 2 Mini sont assez récents pour mériter des essais directs plutôt qu’un jugement fondé uniquement sur d’anciens classements.',
     models: {
+      'kling-v4': { family: 'Kling', title: 'Kling 4.0 pour le découpage et les références visuelles', body: 'Préparez une scène de 3 à 30 secondes avec un prompt et une durée par plan, guidez-la par des images ou des sujets vidéo, ou éditez un clip existant. Sortie en 720p ou 1080p ; l’audio natif se dirige dans le prompt.' },
       'gemini-omni-flash': { family: 'Google Gemini', title: 'Gemini Omni Flash 1.1 pour une création multimodale rapide', body: 'Utilisez Gemini Omni Flash 1.1 pour les workflows texte, image, vidéo et références lorsque l’itération rapide, l’audio natif ou le multi-plan comptent.' },
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro pour une sortie 1080p détaillée', body: 'Choisissez Turbo Pro pour un mouvement 1080p soigné, les détails produit, le guidage par image et les séquences multi-plans.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard pour des brouillons 720p efficaces', body: 'Choisissez Turbo Standard pour itérer plus vite en 720p avec mouvement cohérent, guidage par image et essais multi-plans.' },
@@ -185,6 +186,7 @@ export const frPayAsYouGoContent = {
     },
     openRowLabel: 'Ouvrir la ligne tarifaire',
     items: {
+      'kling-v4': { query: 'prix de Kling 4.0', title: 'Prix de Kling 4.0 selon le mode', body: 'Vérifiez le mode, la durée de sortie et la résolution. En génération par références et en édition, la durée des vidéos fournies influe aussi sur le devis ; comparez les mêmes entrées.' },
       'gemini-omni-flash': { query: 'prix de Gemini Omni Flash 1.1', title: 'Consulter le prix de Gemini Omni Flash 1.1', body: 'Consultez la route Google directe pour la vidéo multimodale rapide, l’audio natif et les workflows multi-plans.' },
       'kling-3-turbo-pro': { query: 'prix de Kling 3 Turbo Pro', title: 'Consulter le prix de Kling 3.0 Turbo Pro', body: 'Consultez la route Turbo 1080p détaillée pour la génération par texte, image et multi-plans.' },
       'kling-3-turbo-standard': { query: 'prix de Kling 3 Turbo Standard', title: 'Consulter le prix de Kling 3.0 Turbo Standard', body: 'Consultez la route Turbo 720p efficace pour la génération par texte, image et multi-plans.' },
@@ -241,6 +243,7 @@ export const frPayAsYouGoContent = {
       }
     },
     labels: {
+      'kling-v4': 'Scène texte vers vidéo avec Kling 4.0',
       'gemini-omni-flash': 'Essai multimodal avec Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Essai 1080p avec Kling 3.0 Turbo Pro',
       'kling-3-turbo-standard': 'Brouillon avec Kling 3.0 Turbo Standard',
@@ -290,6 +293,12 @@ export const frPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
+      videoOverrides: {
+        'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f': {
+          title: 'Une pilote sous les néons',
+          useCase: 'Une pilote, une moto, un tunnel néon. Découvrez le prompt de cette scène de dix secondes.',
+        },
+      },
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Rendu d’exemple avec {engine}',

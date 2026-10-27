@@ -1,26 +1,37 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { runPreflight } from '@/lib/api';
+import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { modelEstimateKey } from '@/lib/model-picker-estimates';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { EnginePickerContext } from '@/components/ui/engine-select/model-picker-types';
 import type { WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
 import { buildWorkspacePickerOptions } from '../_lib/workspace-model-picker';
 import { resolveWorkspaceWorkflow } from '../_lib/workspace-workflow-projection';
+import { pickerScenarioBasis, pickerScenarioControls, updatePickerScenario, type PickerScenario } from '../_lib/workspace-picker-scenario';
 import { getEngineModeLabel } from '../_lib/workspace-engine-helpers';
 
-export function useWorkspaceModelPicker({ current, engines, locale, memberTier, accountId, accessToken, disabledEngineReasons }: {
+export function useWorkspaceModelPicker({ current, engines, locale, memberTier, accountId, accessToken, disabledEngineReasons, applyScenario }: {
   current: WorkspaceModelSetup | null; engines: EngineCaps[]; locale: string;
   memberTier: 'Member' | 'Plus' | 'Pro'; accountId: string | null; accessToken: string | null;
   disabledEngineReasons?: Record<string, string>;
+  applyScenario?: (id: string, source: WorkspaceModelSetup, overrides: PickerScenario) => boolean;
 }): EnginePickerContext {
   const [open, setOpen] = useState(false);
   const scope = `video:${accountId ?? 'guest'}:${accessToken ?? ''}`;
-  const prepared = useMemo(() => open && current ? buildWorkspacePickerOptions({ current, engines, locale, memberTier, disabledEngineReasons }) : {},
-    [open, current, engines, locale, memberTier, disabledEngineReasons]);
+  const key = open ? modelEstimateKey([scope, current, memberTier]) : 'closed';
+  const [scenario, setScenario] = useState<{ key: string; overrides: PickerScenario } | null>(null);
+  const overrides = useMemo(() => scenario?.key === key ? scenario.overrides : {}, [scenario, key]);
+  const latest = useRef({ key, overrides });
+  latest.current = { key, overrides };
+  const prepared = useMemo(() => open && current ? buildWorkspacePickerOptions({ current, engines, locale, memberTier, disabledEngineReasons, overrides }) : {},
+    [open, current, engines, locale, memberTier, disabledEngineReasons, overrides]);
   const engine = engines.find(item => item.id === current?.form.engineId);
-  const mode: Mode = current ? resolveWorkspaceWorkflow({ engine: engine ?? null, ...current }).submissionMode : 't2v';
+  const workflow = current ? resolveWorkspaceWorkflow({ engine: engine ?? null, ...current }) : null;
+  const mode: Mode = workflow?.submissionMode ?? 't2v';
+  const sourceWorkflow = isVideoSourceWorkflow(workflow?.activeManualMode ?? undefined) || workflow?.activeManualMode === 'retake';
+  const basis = useMemo(() => open && current && engine ? pickerScenarioBasis(current, engine) : current, [open, current, engine]);
   const options = useMemo(() => Object.fromEntries(Object.entries(prepared).map(([id, option]) => {
     const { request, iterations, ...presentation } = option;
     return [id, { ...presentation, estimate: request ? {
@@ -34,9 +45,14 @@ export function useWorkspaceModelPicker({ current, engines, locale, memberTier, 
   })), [prepared, accessToken]);
   return {
     // Full draft signature invalidates a confirmation when references/settings change externally.
-    key: open ? modelEstimateKey([scope, current, memberTier]) : 'closed', scope, mode, options, onOpenChange: setOpen,
-    label: current ? [getEngineModeLabel(engine?.id, mode, locale), current.form.resolution,
-      Number.isFinite(current.form.durationSec) ? `${current.form.durationSec} s` : null,
-      current.form.iterations > 1 ? `×${current.form.iterations}` : null].filter(Boolean).join(' · ') : '',
+    key, scope, mode: 't2v', options, scenarioKey: modelEstimateKey(overrides), hasChanges: Object.keys(overrides).length > 0,
+    controls: open && basis && engine ? pickerScenarioControls(basis, engine, overrides, locale) : undefined,
+    onControlChange: (id, value) => {
+      if (!basis || !engine || latest.current.key !== key || latest.current.overrides !== overrides) return;
+      setScenario({ key, overrides: updatePickerScenario(basis, engine, overrides, id, value) });
+    },
+    onApply: applyScenario ? id => Boolean(current && latest.current.key === key && latest.current.overrides === overrides && applyScenario(id, current, overrides)) : undefined,
+    onOpenChange: value => { setOpen(value); if (!value) setScenario(null); },
+    label: sourceWorkflow ? locale.startsWith('fr') ? 'Autre modèle → Créer' : locale.startsWith('es') ? 'Otro modelo → Crear' : 'Other model → Create' : getEngineModeLabel(engine?.id, mode, locale),
   };
 }

@@ -5,6 +5,7 @@ import type { GalleryVideo } from '@/server/videos';
 import type { CurrentExamplePrice } from '@/server/current-example-price';
 import type { AppLocale } from '@/i18n/locales';
 import { formatCurrentExamplePrice } from '@/lib/current-example-price-display';
+import type { Mode } from '@/types/engines';
 
 export type FeaturedMedia = {
   id: string | null;
@@ -13,6 +14,7 @@ export type FeaturedMedia = {
   previewVideoUrl?: string | null;
   posterUrl: string | null;
   durationSec?: number | null;
+  generationMode?: Mode | null;
   hasAudio?: boolean;
   href?: string | null;
   label?: string | null;
@@ -23,8 +25,14 @@ export function isPlayableVideoUrl(src: string | null | undefined): boolean {
   return Boolean(src && /\.(?:mp4|webm|mov)(?:[?#].*)?$/i.test(src));
 }
 
+/** A selected model can loop its short, silent derivative while linking the full film. */
+export function pickHeroAutoplayUrl(media: FeaturedMedia, preferPreview = false): string | null {
+  if (!isPlayableVideoUrl(media.videoUrl)) return null;
+  return preferPreview && isPlayableVideoUrl(media.previewVideoUrl) ? media.previewVideoUrl! : media.videoUrl;
+}
+
 export function getHeroMediaBadges(media: FeaturedMedia, authored: string[], audioBadgeLabel: string): Array<string | null> {
-  if (!isPlayableVideoUrl(media.videoUrl)) return authored;
+  if (!isPlayableVideoUrl(media.videoUrl)) return media.posterUrl ? authored : [];
   return [
     media.hasAudio ? audioBadgeLabel : null,
     typeof media.durationSec === 'number' && media.durationSec > 0 ? `${media.durationSec}s` : null,
@@ -96,6 +104,7 @@ export function toGalleryCard(
     promptFull: video.prompt,
     aspectRatio: video.aspectRatio ?? null,
     durationSec: video.durationSec,
+    ...(video.generationMode ? { generationMode: video.generationMode } : {}),
     hasAudio: video.hasAudio,
     optimizedPosterUrl: buildOptimizedPosterUrl(thumbUrl),
     rawPosterUrl: thumbUrl,
@@ -116,6 +125,7 @@ export function toFeaturedMedia(entry?: ExampleGalleryVideo | null, preferFullPr
     previewVideoUrl: resolvePublicMarketingVideoUrl(entry.previewVideoUrl),
     posterUrl: normalizeMediaUrl(entry.optimizedPosterUrl) ?? normalizeMediaUrl(entry.rawPosterUrl),
     durationSec: entry.durationSec,
+    ...(entry.generationMode ? { generationMode: entry.generationMode } : {}),
     hasAudio: entry.hasAudio,
     href: entry.href,
     label: entry.engineLabel,

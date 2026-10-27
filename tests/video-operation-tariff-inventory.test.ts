@@ -29,12 +29,15 @@ test('all historical checkpoints and independently enumerated additive operation
   assert.deepEqual(counts, { 'kling-reference': 13, 'kling-edit': 3, 'h3-recast': 2, 'h3-relight': 4,
     'luma-extend': 3, 'flux-keyframes': 48, 'flux-fast-edit': 1, 'flux-draft-enhance': 1, 'ltx23-reframe': 2 });
   const cases = collectCustomerTariffCutoverCheckpoints();
-  assert.equal(cases.filter(row => row.kind === 'ordinary').length, 20286);
+  assert.equal(cases.filter(row => row.kind === 'ordinary' && !['kling-v4', 'nano-banana-2-1'].includes(row.scenario.modelId)).length, 20286);
+  assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
+  assert.equal(cases.filter(row => row.scenario.modelId === 'nano-banana-2-1').length, 6,
+    'new native fixed image cells remain separate from the old video inventory');
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
   assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
   assert.equal(cases.filter(row => String(row.kind) === 'new_offer').length, 89);
-  assert.equal(cases.length, 27071);
-  assert.equal(new Set(cases.map(row => row.key)).size, 27071);
+  assert.equal(cases.length, 27071 + 280 + 6);
+  assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
   const veo = coverage.scenarios.filter(row => row.modelId === 'veo-3-1' && row.selector.mode === 'i2v');
   assert.equal(veo.length, 18);
   assert.deepEqual(new Set(veo.map(row => `${row.selector.durationSec}:${row.selector.resolution}:${row.selector.audio}`)),

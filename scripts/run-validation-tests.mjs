@@ -2,6 +2,36 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { reportTestPostgres, resolveTestPostgres } from './_lib/test-postgres-toolchain.mjs';
 
+function fail(message) {
+  process.stderr.write(`${message}\n`);
+  process.exit(1);
+}
+
+// pnpm may preserve its passthrough separator before the runner's options.
+const args = process.argv.slice(2);
+if (args[0] === '--') args.shift();
+const options = {};
+for (let index = 0; index < args.length; index += 1) {
+  const argument = args[index];
+  if (!['--suite', '--shard', '--plan'].includes(argument)) fail(`Unknown validation argument: ${argument}`);
+  if (Object.hasOwn(options, argument)) fail(`Duplicate validation argument: ${argument}`);
+  if (argument === '--plan') {
+    options[argument] = true;
+  } else {
+    const value = args[++index];
+    if (!value || value.startsWith('--')) fail(`Missing value for validation argument: ${argument}`);
+    options[argument] = value;
+  }
+}
+const suite = options['--suite'] ?? 'all';
+const shard = options['--shard'] ?? null;
+if (!['all', 'fast', 'integration', 'tariffs', 'studio', 'browser'].includes(suite)) {
+  fail(`Unknown validation suite: ${suite}`);
+}
+if (shard !== null && (suite !== 'browser' || !['1/2', '2/2'].includes(shard))) {
+  fail('Validation --shard requires --suite browser and exactly 1/2 or 2/2.');
+}
+
 const studioIntegration = [
   'tests/connected-studio-mcp-route-integration.test.ts',
   'tests/connected-studio-montage-browser-integration.test.ts',
@@ -29,11 +59,14 @@ for (const file of tariffs) {
 const tariffSet = new Set(tariffs);
 const browser = [
   'tests/connected-studio-montage-browser-integration.test.ts',
-  ...standard.filter(file => /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
+  // This integrated fixture chooses Chromium or WebKit before calling .launch().
+  ...standard.filter(file => file === 'tests/post-kling-app-integration-browser.test.ts'
+    || /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
 ];
 const browserSet = new Set(browser);
-// This regression uses executable version doubles and needs no installed database.
-const toolsFree = new Set(['tests/test-postgres-toolchain.test.ts']);
+// Named exceptions use executable version doubles or temporary APT text fixtures;
+// neither regression installs validation tools or starts a real database/media tool.
+const toolsFree = new Set(['tests/test-postgres-toolchain.test.ts', 'tests/ci-ubuntu-mirror.test.ts']);
 // Include tests with older names that start PostgreSQL or encode/probe real media.
 // New *-postgres tests are automatically excluded from the tools-free lane.
 const integration = standard.filter(file => !toolsFree.has(file) && !tariffSet.has(file) && !browserSet.has(file) && (
@@ -44,16 +77,17 @@ const integrationSet = new Set(integration);
 const fast = standard.filter(file => !tariffSet.has(file) && !integrationSet.has(file) && !browserSet.has(file));
 const studio = studioIntegration.filter(file => !browser.includes(file));
 const suites = { fast, integration, tariffs, studio, browser };
-const suiteIndex = process.argv.indexOf('--suite');
-const suite = suiteIndex === -1 ? 'all' : process.argv[suiteIndex + 1];
-if (suite !== 'all' && !Object.hasOwn(suites, suite)) {
-  process.stderr.write(`Unknown validation suite: ${suite}\n`);
-  process.exit(1);
-}
+const browserShards = {
+  '1/2': browser.filter((_, index) => index % 2 === 0),
+  '2/2': browser.filter((_, index) => index % 2 === 1),
+};
+const selectedFiles = suite === 'all' ? [...standard, ...studioIntegration] : shard ? browserShards[shard] : suites[suite];
+// An empty explicit file list would make Node discover unrelated tests by default.
+if (selectedFiles.length === 0) fail(`Empty validation selection: ${suite}${shard ? ` ${shard}` : ''}.`);
 
-if (process.argv.includes('--plan')) {
+if (options['--plan']) {
   // The manifest exceeds a pipe's buffer; finish the write before exiting.
-  writeFileSync(1, `${JSON.stringify({ standard, studioIntegration, ...suites })}\n`);
+  writeFileSync(1, `${JSON.stringify({ standard, studioIntegration, ...suites, browserShards, selection: { suite, shard, files: selectedFiles } })}\n`);
   process.exit(0);
 }
 
@@ -90,5 +124,5 @@ if (suite === 'all') {
   runTests('standard suite', standard);
   runTests('isolated Studio integrations', studioIntegration, ['--test-concurrency=1']);
 } else {
-  runTests(`${suite} suite`, suites[suite], ['studio', 'browser'].includes(suite) ? ['--test-concurrency=1'] : []);
+  runTests(`${suite} suite${shard ? ` ${shard}` : ''}`, selectedFiles, ['studio', 'browser'].includes(suite) ? ['--test-concurrency=1'] : []);
 }

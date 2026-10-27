@@ -69,6 +69,7 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
     const rows = await reader.query<VideoRow>(`${BASE_SELECT} WHERE ${PUBLIC_VIDEO_SOURCE_ELIGIBILITY}`);
     assert.equal(rows.length, 1, 'one publication, no duplicate in a gallery');
     assert.equal(rows[0].video_url, 'https://media.example/marketing-media/original.mp4');
+    assert.equal(rows[0].generation_mode, 'v2v', 'public copies retain their recorded mode without the full recipe');
     assert.equal(rows[0].recreation_snapshot, undefined, 'gallery reads must not transport the complete reuse recipe');
     const previousFlag = process.env.MARKETING_MEDIA_ENABLED;
     process.env.MARKETING_MEDIA_ENABLED = '1';
@@ -88,6 +89,7 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
       ['stable-page'],
     );
     const video = mapGalleryVideoRow(row);
+    assert.equal(video.generationMode, 'v2v');
     assert.equal(video.id, 'stable-page');
     assert.equal(video.indexable, true);
     assert.equal(video.visibility, 'public');

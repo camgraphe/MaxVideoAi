@@ -17,6 +17,10 @@ export function projectManualTariffMedia(context: PricingContext, details: Engin
   meta: Record<string, unknown>): ManualTariffMedia {
   const media: ManualTariffMedia = {};
   const id = context.engine.id;
+  if (id === 'kling-v4') {
+    media.billingInputType = meta.has_video_input === true ? 'video_input' : 'no_video_input';
+    if (meta.has_video_input === true) media.inputVideoDurationSec = Number(meta.input_video_duration_sec);
+  }
   if (isWan3EngineId(id) || id === 'gemini-omni-flash') {
     const seconds = Number(meta.input_video_duration_sec);
     if (seconds > 0) media.inputVideoDurationSec = seconds;

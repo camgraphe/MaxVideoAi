@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation } from '../../lib/h3-source-operations';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
@@ -24,6 +25,12 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (selector.engineId === 'kling-v4' && selector.billingInputType === 'video_input') {
+    const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
+    if (!['ref2v','v2v'].includes(selector.mode) || !Number.isFinite(input) || input < 3 || input > (selector.mode === 'v2v' ? 30.05 : 30)
+      || !Number.isFinite(output) || output < 3 || output > 30.05) throw new Error('Invalid Kling V4 source/output timing.');
+    return {...selector,inputVideoDurationSec:'continuous',...(selector.mode === 'v2v' ? {durationSec:'continuous'} : {})};
+  }
   if (isFluxLtxSourceOperation(selector.operation)) {
     const identity=videoOperationTariffIdentity(selector.engineId,selector.mode,selector.operation), bounds=fluxLtxDurationBounds(selector.operation),seconds=Number(selector.durationSec);
     if (!identity||identity.endpoint!==selector.endpoint||identity.transport!==selector.transport||!Number.isFinite(seconds)||seconds<=0||(bounds.maxExclusive?seconds>=bounds.max:seconds>bounds.max)) throw new Error('Invalid source operation tariff identity or duration.');
@@ -88,6 +95,15 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (facts.engineId === NANO21_ENGINE_ID) {
+    const settings = normalizeNano21Settings(context);
+    assertNano21Scenario({ ...settings, mode: context.mode, referenceImageCount: context.referenceImageCount,
+      outputCount: context.durationSec, aspectRatio: context.aspectRatio });
+    // Adrien approved one fixed image amount per output size. Native settings
+    // stay in the request hash/snapshot; they are not extra priced dimensions.
+    return { selector: { engineId: NANO21_ENGINE_ID, mode: context.mode!, resolution: settings.imageSize, durationSec: '1' },
+      quantities: { output_units: 1, reference_images: context.referenceImageCount ?? 0 } };
+  }
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);
@@ -139,6 +155,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
+    ...(facts.engineId === 'kling-v4' ? {billable_seconds:Number(facts.metadata?.billable_seconds ?? (context.hasVideoInput ? Math.max((context.inputVideoDurationSec ?? 0)+billedDuration,2*billedDuration) : billedDuration))} : {}),
     ...(operationIdentity?.operation === 'kling-edit' || isH3SourceOperation(operationIdentity?.operation) || isFluxLtxSourceOperation(operationIdentity?.operation)
       ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,

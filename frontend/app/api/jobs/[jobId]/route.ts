@@ -1,3 +1,4 @@
+import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { claimGenerationPoll } from '@/server/generation-poll-state';
 import { refreshDirectGeneration } from '@/server/refresh-direct-generation';
@@ -224,8 +225,9 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     try {
       const falModel = (await resolveFalModelId(job.engine_id)) ?? job.engine_id;
       const falClient = getFalClient();
-      const statusInfo = (await falClient.queue
-        .status(falModel, { requestId: job.provider_job_id })
+      const queue = await resolveFalJobQueue({jobId:job.job_id,engineId:job.engine_id,
+        requestId:job.provider_job_id,legacyModel:falModel},{client:falClient});
+      const statusInfo = (await queue.status()
         .catch(() => null)) as Record<string, unknown> | null;
       if (!statusInfo) statusCheckDegraded = true;
       if (statusInfo) {
@@ -234,7 +236,7 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
         providerCompleted = Boolean(state && FAL_COMPLETED_STATES.has(state));
         const queueResult =
           state && FAL_COMPLETED_STATES.has(state)
-            ? ((await falClient.queue.result(falModel, { requestId: job.provider_job_id }).catch(() => null)) as
+            ? ((await queue.result().catch(() => null)) as
                 | Record<string, unknown>
                 | null)
             : null;

@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-25T20:58:10.537342+00:00",
+  "sharedConstraints": {
+    "falImage": {
+      "maxBytes": 31457280,
+      "minWidthPx": 300,
+      "minHeightPx": 300,
+      "minAspectRatio": 0.4,
+      "maxAspectRatio": 2.5,
+      "providerDownloadTimeoutSec": 20
+    },
+    "falVideo": {
+      "maxBytes": 314572800,
+      "minWidthPx": 700,
+      "minHeightPx": 700,
+      "maxWidthPx": 4553,
+      "maxHeightPx": 4553,
+      "minDurationSec": 3,
+      "maxDurationValidationToleranceSec": 30.05,
+      "nominalMaxDurationSec": 30,
+      "minFps": 23.9,
+      "maxFps": 60.05,
+      "minAspectRatio": 0.4,
+      "maxAspectRatio": 2.5,
+      "providerDownloadTimeoutSec": 30
+    }
+  },
+  "routes": [
+    {
+      "appMode": "t2v",
+      "providerEndpointId": "kling/v4/text-to-video",
+      "endpoint": "https://queue.fal.run/kling/v4/text-to-video",
+      "contractStatus": "published_schema_observed",
+      "observedAt": "2026-10-25T20:54:57.629252+00:00",
+      "evidence": [
+        "https://fal.ai/models/kling/v4/text-to-video/api",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/text-to-video"
+      ],
+      "schemaSha256": "069a125797d0579bbd46bfcc340a330fd96745e8b3cb031fd90a61124c14ee29",
+      "providerFields": [
+        "resolution",
+        "aspect_ratio",
+        "prompt",
+        "multi_prompt",
+        "duration"
+      ],
+      "required": [],
+      "promptMaxChars": 26000,
+      "duration": {
+        "type": "integer",
+        "min": 3,
+        "max": 30,
+        "default": 5,
+        "omission": "provider default 5"
+      },
+      "resolution": {
+        "values": [
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "aspectRatio": {
+        "values": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "21:9"
+        ],
+        "default": "16:9"
+      },
+      "shots": {
+        "field": "multi_prompt",
+        "minItems": 1,
+        "maxItems": null,
+        "perShotPromptMinChars": 1,
+        "perShotPromptMaxChars": 512,
+        "perShotDurationMinSec": 1,
+        "perShotDurationMaxSec": 30,
+        "perShotDefaultSec": 5,
+        "outputDuration": "sum of shot durations, within 3–30 seconds",
+        "inputRule": "prompt or multi_prompt required in prose; exclusivity is an explicit app validation policy, not a published JSON Schema oneOf"
+      },
+      "audio": {
+        "providerSwitch": false,
+        "documentedModelCapability": "native audio (prompt direction), from fal explanatory guide",
+        "runtimeAudioVerified": false,
+        "voiceBinding": null,
+        "runtimeAudioStreamObserved": {
+          "present": true,
+          "channels": 2,
+          "codec": "aac",
+          "sampleRate": 44100,
+          "evidence": "../access-trials-2026-10-25/fal-media-probe.json"
+        },
+        "runtimeAudioVerifiedScope": "Stream presence observed in the exact closed trial; audio content was not critically listened to."
+      },
+      "unsupportedProviderFields": [
+        "generate_audio",
+        "keep_audio",
+        "fps",
+        "seed",
+        "negative_prompt",
+        "cfg_scale",
+        "audio_url",
+        "camera_control",
+        "extend",
+        "4K resolution"
+      ]
+    },
+    {
+      "appMode": "i2v",
+      "providerEndpointId": "kling/v4/image-to-video",
+      "endpoint": "https://queue.fal.run/kling/v4/image-to-video",
+      "contractStatus": "published_schema_observed",
+      "observedAt": "2026-10-25T20:54:58.267202+00:00",
+      "evidence": [
+        "https://fal.ai/models/kling/v4/image-to-video/api",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/image-to-video"
+      ],
+      "schemaSha256": "4d048267dcbea9d83bb02815c50006746117ac2ff3346cf559fcb07d0121381a",
+      "providerFields": [
+        "resolution",
+        "prompt",
+        "end_image_url",
+        "start_image_url",
+        "multi_prompt",
+        "duration"
+      ],
+      "required": [
+        "start_image_url"
+      ],
+      "promptMaxChars": 26000,
+      "duration": {
+        "type": "integer",
+        "min": 3,
+        "max": 30,
+        "default": 5,
+        "omission": "provider default 5"
+      },
+      "resolution": {
+        "values": [
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "aspectRatio": {
+        "providerField": false,
+        "behavior": "follows source frames/video; no independent aspect_ratio field exposed"
+      },
+      "shots": {
+        "field": "multi_prompt",
+        "minItems": 1,
+        "maxItems": null,
+        "perShotPromptMinChars": 1,
+        "perShotPromptMaxChars": 512,
+        "perShotDurationMinSec": 1,
+        "perShotDurationMaxSec": 30,
+        "perShotDefaultSec": 5,
+        "outputDuration": "sum of shot durations, within 3–30 seconds",
+        "inputRule": "prompt or multi_prompt required in prose; exclusivity is an explicit app validation policy, not a published JSON Schema oneOf"
+      },
+      "references": {
+        "requiredStartImage": true,
+        "optionalEndImage": true,
+        "imageLimitsRef": "sharedConstraints.falImage"
+      },
+      "audio": {
+        "providerSwitch": false,
+        "documentedModelCapability": "native audio (prompt direction), from fal explanatory guide",
+        "runtimeAudioVerified": false,
+        "voiceBinding": null
+      },
+      "unsupportedProviderFields": [
+        "generate_audio",
+        "keep_audio",
+        "fps",
+        "seed",
+        "negative_prompt",
+        "cfg_scale",
+        "audio_url",
+        "camera_control",
+        "extend",
+        "4K resolution"
+      ]
+    },
+    {
+      "appMode": "ref2v",
+      "providerEndpointId": "kling/v4/reference-to-video",
+      "endpoint": "https://queue.fal.run/kling/v4/reference-to-video",
+      "contractStatus": "published_schema_observed",
+      "observedAt": "2026-10-25T20:54:59.022605+00:00",
+      "evidence": [
+        "https://fal.ai/models/kling/v4/reference-to-video/api",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/reference-to-video"
+      ],
+      "schemaSha256": "a3e5f5f2399ddba000734c5cec14f2938f4359e9eb6389793abca33493b21a6a",
+      "providerFields": [
+        "video_urls",
+        "prompt",
+        "multi_prompt",
+        "duration",
+        "resolution",
+        "aspect_ratio",
+        "image_urls",
+        "start_image_url",
+        "elements"
+      ],
+      "required": [],
+      "promptMaxChars": 26000,
+      "duration": {
+        "type": "integer",
+        "min": 3,
+        "max": 30,
+        "default": 5,
+        "omission": "provider default 5"
+      },
+      "resolution": {
+        "values": [
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "aspectRatio": {
+        "values": [
+          "auto",
+          "16:9",
+          "9:16",
+          "1:1",
+          "21:9"
+        ],
+        "default": "16:9"
+      },
+      "shots": {
+        "field": "multi_prompt",
+        "minItems": 1,
+        "maxItems": null,
+        "perShotPromptMinChars": 1,
+        "perShotPromptMaxChars": 512,
+        "perShotDurationMinSec": 1,
+        "perShotDurationMaxSec": 30,
+        "perShotDefaultSec": 5,
+        "outputDuration": "sum of shot durations, within 3–30 seconds",
+        "inputRule": "prompt or multi_prompt required in prose; exclusivity is an explicit app validation policy, not a published JSON Schema oneOf"
+      },
+      "references": {
+        "imagesMax": 10,
+        "startFrameCountsTowardImages": true,
+        "videosMax": 5,
+        "elementsMax": 7,
+        "videoElementsMax": 3,
+        "voicedElementsMax": 3,
+        "videoSecondsCombinedMax": 30,
+        "combinedDurationScope": [
+          "video_urls",
+          "elements[].video_url"
+        ],
+        "tokens": [
+          "@Image1",
+          "@Video1",
+          "@Element1"
+        ],
+        "elementShape": "video_url OR frontal_image_url + reference_image_urls (1–3); voice_id optional; image/video exclusivity enforced by app, semantic rules not fully expressed by OpenAPI",
+        "unknowns": [
+          "No explicit total count formula for nested element images against ten-image cap in current schema; do not invent one.",
+          "Total-reference headline from prelaunch guide does not supersede per-field current contract."
+        ],
+        "imageLimitsRef": "sharedConstraints.falImage",
+        "videoLimitsRef": "sharedConstraints.falVideo"
+      },
+      "audio": {
+        "providerSwitch": false,
+        "documentedModelCapability": "native audio (prompt direction), from fal explanatory guide",
+        "runtimeAudioVerified": false,
+        "voiceBinding": "elements[].voice_id only"
+      },
+      "unsupportedProviderFields": [
+        "generate_audio",
+        "keep_audio",
+        "fps",
+        "seed",
+        "negative_prompt",
+        "cfg_scale",
+        "audio_url",
+        "camera_control",
+        "extend",
+        "4K resolution"
+      ]
+    },
+    {
+      "appMode": "v2v",
+      "providerEndpointId": "kling/v4/video-to-video/edit",
+      "endpoint": "https://queue.fal.run/kling/v4/video-to-video/edit",
+      "contractStatus": "published_schema_observed",
+      "observedAt": "2026-10-25T20:54:59.627855+00:00",
+      "evidence": [
+        "https://fal.ai/models/kling/v4/video-to-video/edit/api",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/video-to-video/edit"
+      ],
+      "schemaSha256": "598b2902b005ba449ef88a8f5ddcfef394710ff3c0d6b1ecb42e23940c354a84",
+      "providerFields": [
+        "resolution",
+        "image_urls",
+        "video_url",
+        "prompt",
+        "elements",
+        "duration"
+      ],
+      "required": [
+        "prompt",
+        "video_url"
+      ],
+      "promptMaxChars": 26000,
+      "duration": {
+        "type": "integer",
+        "min": 3,
+        "max": 30,
+        "default": null,
+        "omission": "inherit source duration"
+      },
+      "resolution": {
+        "values": [
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "aspectRatio": {
+        "providerField": false,
+        "behavior": "follows source frames/video; no independent aspect_ratio field exposed"
+      },
+      "references": {
+        "requiredSourceVideo": true,
+        "sourceToken": "@Video1",
+        "imagesMax": 10,
+        "elementsMax": 7,
+        "elementRequired": [
+          "frontal_image_url",
+          "reference_image_urls"
+        ],
+        "elementAdditionalImagesMin": 1,
+        "elementAdditionalImagesMax": 3,
+        "videoElements": false,
+        "voiceIdField": false,
+        "imageLimitsRef": "sharedConstraints.falImage",
+        "videoLimitsRef": "sharedConstraints.falVideo"
+      },
+      "audio": {
+        "providerSwitch": false,
+        "documentedModelCapability": "native audio (prompt direction), from fal explanatory guide",
+        "runtimeAudioVerified": false,
+        "voiceBinding": null
+      },
+      "unsupportedProviderFields": [
+        "generate_audio",
+        "keep_audio",
+        "fps",
+        "seed",
+        "negative_prompt",
+        "cfg_scale",
+        "audio_url",
+        "camera_control",
+        "extend",
+        "4K resolution",
+        "multi_prompt",
+        "aspect_ratio"
+      ]
+    },
+    {
+      "appMode": "extend",
+      "providerEndpointId": null,
+      "endpoint": null,
+      "contractStatus": "not_exposed_by_verified_contracts",
+      "observedAt": "2026-10-25T20:58:10.537342+00:00",
+      "evidence": [
+        "https://fal.ai/learn/tools/what-is-kling-4-0",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/video-to-video/extend",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/extend",
+        "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/video-extend"
+      ],
+      "mustNotAliasTo": [
+        "v2v",
+        "video-to-video/edit",
+        "reference-to-video",
+        "image-to-video"
+      ]
+    }
+  ],
+  "salePricesApproved": false,
+  "runtimeTrials": "One earlier bounded T2V3s720p trial only; no calls performed by this integration."
+}

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
+import { ComposerModeSwitch } from '@/components/composer/ComposerModeSwitch.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
@@ -238,6 +239,10 @@ export function Composer({
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
     : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
+  // Keep requested values saved, but do not present them as a configured result
+  // until the required source is usable. Create's optional references stay independent.
+  const sourceSettingsPending = Boolean(videoSourceWorkflow &&
+    (extensionSourceState !== 'ready' || excerptNeedsRange || excerptEditorOpen));
 
   const composerToolbar = (settingsBar || onGenerate) ? (
               <div className={clsx('app-composer-toolbar border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
@@ -249,7 +254,7 @@ export function Composer({
                       'app-composer-settings-group min-w-0 flex-1',
                       workspaceDensity && 'app-composer-settings-inline'
                     )}>
-                      {settingsBar}
+                      {!sourceSettingsPending ? settingsBar : null}
                       {workspaceDensity ? optionsControl : null}
                       {workspaceDensity ? generateControl : null}
                     </div>
@@ -325,27 +330,8 @@ export function Composer({
         <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
-              <div className="app-mode-switch flex flex-wrap gap-2">
-                {visibleModeToggles.map((entry) => {
-                  const active = activeManualMode === entry.mode;
-                  return (
-                    <Button
-                      key={entry.mode ?? 'base'}
-                      data-composer-mode={entry.mode ?? 'create'}
-                      type="button"
-                      size="sm"
-                      variant={active ? 'primary' : 'outline'}
-                      onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
-                      disabled={entry.disabled}
-                      title={entry.disabledReason}
-                      aria-pressed={active}
-                      className="!min-h-11 rounded-2xl px-4 py-0 text-[12px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
-                    >
-                      {entry.label}
-                    </Button>
-                  );
-                })}
-              </div>
+              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
+                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
             ) : null}
             <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
           </div>
@@ -380,22 +366,18 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} prompt={prompt} onPromptChange={onPromptChange}
-                promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale} />
-              {multiPrompt || promotedActions?.length ? <div className={clsx(
+                promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
+                multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
+                  aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}
+                  title={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
+                  className="!min-h-11 min-w-11 rounded-full px-2 py-0 text-[11px] font-medium">
+                  <span className="sm:hidden">{locale.startsWith('fr') ? 'Scènes' : locale.startsWith('es') ? 'Escenas' : 'Scenes'}</span>
+                  <span className="hidden sm:inline">Multi-prompt</span>
+                </Button> : undefined} />
+              {promotedActions?.length ? <div className={clsx(
                 'flex items-center justify-end',
                 workspaceDensity ? 'min-w-0 flex-wrap gap-1.5' : 'flex-wrap gap-2'
               )}>
-                {multiPrompt ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={multiPromptEnabled ? 'primary' : 'outline'}
-                    onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
-                    className="!min-h-11 sm:!min-h-0 sm:h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
-                  >
-                    {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
-                  </Button>
-                ) : null}
                 {promotedActions?.map((action) => (
                   <Button
                     key={action.id}

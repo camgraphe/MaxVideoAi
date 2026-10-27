@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import test from 'node:test';
 
 import type { ExampleGalleryVideo } from '../frontend/components/examples/ExamplesGalleryGrid.tsx';
 import {
   getHeroMediaBadges,
+  pickHeroAutoplayUrl,
   pickDemoMedia,
   pickHeroMedia,
   type FeaturedMedia,
@@ -73,7 +76,38 @@ test('video hero badges describe the displayed clip; image badges keep editorial
     getHeroMediaBadges({ ...fallback, hasAudio: false, durationSec: 5, aspectRatio: '9:16' }, authored, 'Audio enabled'),
     [null, '5s', '9:16'],
   );
-  assert.deepEqual(getHeroMediaBadges({ ...fallback, videoUrl: null }, authored, 'Audio enabled'), authored);
+  assert.deepEqual(getHeroMediaBadges({ ...fallback, videoUrl: null, posterUrl: '/image.webp' }, authored, 'Audio enabled'), authored);
+});
+
+test('an absent model preview cannot claim audio, duration or a rendered example', () => {
+  assert.deepEqual(getHeroMediaBadges({ ...fallback, videoUrl: null, posterUrl: null, hasAudio: true },
+    ['Native audio', '30s', '1080p'], 'Audio enabled'), []);
+});
+
+test('model hero autoplay uses its lightweight preview while the full film remains the linked original', () => {
+  const media = { ...fallback, videoUrl: 'https://media.maxvideoai.com/full.mp4',
+    previewVideoUrl: 'https://media.maxvideoai.com/silent-preview.mp4', href: '/video/full' };
+  assert.equal(pickHeroAutoplayUrl(media), media.videoUrl);
+  assert.equal(pickHeroAutoplayUrl(media, true), media.previewVideoUrl);
+  assert.equal(media.videoUrl, 'https://media.maxvideoai.com/full.mp4');
+  assert.equal(media.href, '/video/full');
+  assert.equal(pickHeroAutoplayUrl({ ...media, previewVideoUrl: null }, true), media.videoUrl);
+  assert.equal(pickHeroAutoplayUrl({ ...media, previewVideoUrl: 'https://media.maxvideoai.com/poster.webp' }, true), media.videoUrl);
+});
+
+test('an empty hero card renders the localized empty state without a fabricated caption or watch link', async () => {
+  const requireFrontend = createRequire(resolve('frontend/package.json'));
+  const React = requireFrontend('react');
+  Object.assign(globalThis, { React });
+  const { renderToStaticMarkup } = requireFrontend('react-dom/server');
+  const { ModelDecisionMediaCard } = await import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionMediaCard');
+  const markup = renderToStaticMarkup(React.createElement(ModelDecisionMediaCard, {
+    media: { ...fallback, videoUrl: null, posterUrl: null, href: '/video/not-a-render', hasAudio: true },
+    label: 'Invented render caption', description: 'Invented render description', badges: ['Native audio'],
+    renderLinkLabel: 'Watch invented render', locale: 'fr', audioBadgeLabel: 'Audio enabled', altContext: 'Preview',
+  }));
+  assert.match(markup, /Aucun aperçu disponible/);
+  assert.doesNotMatch(markup, /Invented render|Watch invented|not-a-render|Native audio|Audio enabled/);
 });
 
 

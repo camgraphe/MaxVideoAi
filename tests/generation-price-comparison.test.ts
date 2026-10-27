@@ -534,11 +534,15 @@ test('Edit comparison and Studio reply expose inherited source facts instead of 
   assert.deepEqual((result.options[0] as any).sourceVideoOutput, sourceVideoOutput);
   assert.equal(result.options[0].settings.durationSec, 9);
   assert.equal(result.options[0].settings.aspectRatio, '9:16');
+  result.estimatedAt = '2026-10-25T19:16:27.097Z';
   const reply = studioCurrentComparisonReply({ action: 'pricing.compare', ...request,
     settings: Object.entries(request.settings).map(([name, value]) => ({ name, value })), outputCount: 1,
     baselineModelId: null, baselineSettings: null } as never, { ok: true, action: 'pricing.compare', data: result }, 0, 'fr');
-  assert.match(reply.reply!, /4,25s.*Format source.*Tarif 5s/);
-  assert.doesNotMatch(reply.reply!, /9:16|\b9s\b/);
+  assert.ok(reply.reply!.includes('2026-10-25T19:16:27.097Z'));
+  const optionLine = reply.reply!.split('\n').find(line => line.startsWith('- '));
+  assert.ok(optionLine);
+  assert.match(optionLine, /4,25s.*Format source.*Tarif 5s/);
+  assert.doesNotMatch(optionLine, /9:16|\b9s\b/);
 });
 
 test('negative comparison evidence changes when a live prompt limit changes',async()=>{

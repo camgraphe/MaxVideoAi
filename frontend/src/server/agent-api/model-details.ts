@@ -88,6 +88,7 @@ function requiresOwnedReferenceAsset(
   engineId: string,
   engine: EngineCaps,
 ): boolean {
+  if(engineId==='kling-v4')return true;
   const ownedAssetModes = engine.inputSchema?.constraints?.ownedAssetModes;
   if (Array.isArray(ownedAssetModes) && ownedAssetModes.includes(toEngineGenerationMode(engineId, mode))) {
     return true;
@@ -307,6 +308,9 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   start_time: 'startTimeSec',
   style: 'style',
   thinking_level: 'thinkingLevel',
+  max_output_tokens: 'maxOutputTokens',
+  system_instruction: 'systemInstruction',
+  enable_image_search: 'enableImageSearch',
   x_end: 'cropEndX',
   x_start: 'cropStartX',
   y_end: 'cropEndY',
@@ -457,6 +461,7 @@ export function projectAgentModelModeDetails(
     ]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
+    ...(candidate.engine.id === 'kling-v4' && ['ref2v','v2v'].includes(mode) ? {subjects:{max:7 as const,maxVideo:mode==='ref2v'?3 as const:0 as const,maxVoiced:mode==='ref2v'?3 as const:0 as const,voiceBinding:'unavailable' as const,identity:'owned_reference_slots' as const,imageViews:{min:1 as const,max:3 as const}}} : {}),
     ...(referenceRequirement ? { referenceRequirement } : {}),
   });
 }

@@ -11,7 +11,6 @@ const previewActionsHookPath = join(root, 'frontend/app/(core)/(workspace)/app/i
 const displayStateHookPath = join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageWorkspaceDisplayState.ts');
 const composerSurfacePath = join(root, 'frontend/app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface.tsx');
 const videoComposerSurfacePath = join(root, 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx');
-const storyboardLaunchModalPath = join(root, 'frontend/app/(core)/(workspace)/app/_components/StoryboardLaunchModal.tsx');
 const previewDockPath = join(root, 'frontend/components/groups/ImageCompositePreviewDock.tsx');
 const toolsPagePath = join(root, 'frontend/src/components/tools/ToolsWorkspacePage.tsx');
 const storyboardRoutePath = join(root, 'frontend/app/(core)/(workspace)/app/tools/storyboard/page.tsx');
@@ -451,19 +450,11 @@ test('storyboard prompt carries dialogue into metadata rows without drawing thum
   assert.match(prompt, /no captions inside thumbnails/);
 });
 
-test('video workspace exposes a storyboard launcher for Seedance and Kling models', () => {
-  assert.equal(existsSync(storyboardLaunchModalPath), true, 'video workspace storyboard modal should be route-local');
-
+test('video prompt keeps Storyboard in its dedicated tools workspace', () => {
   const composerSource = readFileSync(videoComposerSurfacePath, 'utf8');
-  const modalSource = readFileSync(storyboardLaunchModalPath, 'utf8');
 
-  assert.match(composerSource, /isStoryboardLaunchEngine/);
-  assert.match(composerSource, /setStoryboardModalOpen/);
-  assert.match(composerSource, /StoryboardLaunchModal/);
-  assert.match(composerSource, /storyboardLaunchAction/);
-  assert.match(composerSource, /selectedEngine\.id/);
-  assert.match(modalSource, /role="dialog"/);
-  assert.match(modalSource, /\/app\/tools\/storyboard/);
-  assert.match(modalSource, /Seedance/);
-  assert.match(modalSource, /Kling/);
+  assert.doesNotMatch(composerSource, /storyboard-launch|StoryboardLaunchModal|storyboardLaunchAction/);
+  assert.match(composerSource, /buildComposerPromotedActions/);
+  assert.equal(existsSync(storyboardRoutePath), true);
+  assert.equal(existsSync(storyboardWorkspacePath), true);
 });

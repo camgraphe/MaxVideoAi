@@ -1,3 +1,4 @@
+import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { captureCompletedFalDraftCache } from './fal-webhook-draft-cache';
 import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
@@ -171,7 +172,9 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     try {
       const falModel = (await resolveFalModelId(effectiveEngineId)) ?? effectiveEngineId;
       const falClient = getFalClient();
-      const queueResult = await falClient.queue.result(falModel, { requestId });
+      const queue = await resolveFalJobQueue({jobId:job.job_id,engineId:effectiveEngineId,
+        requestId,legacyModel:falModel},{client:falClient});
+      const queueResult = await queue.result();
       finalPayload = queueResult?.data ?? finalPayload ?? queueResult ?? null;
       if (!media.videoUrl && queueResult && typeof queueResult === 'object') {
         const fallbackMedia = extractMediaUrls(queueResult);
@@ -477,10 +480,8 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
         .replace(/\s+/g, ' ')
         .trim()
     : null;
-  const engineIdForUpdate =
-    effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
-  const engineLabelForUpdate =
-    effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
+  const engineIdForUpdate = effectiveEngineId && effectiveEngineId !== 'fal-unknown' ? effectiveEngineId : null;
+  const engineLabelForUpdate = effectiveEngineLabel && effectiveEngineLabel !== 'fal-unknown' ? effectiveEngineLabel : null;
   const explicitAutoRefundEligibility = (() => {
     if (typeof payload.auto_refund_eligible === 'boolean') return payload.auto_refund_eligible;
     if (typeof payload.autoRefundEligible === 'boolean') return payload.autoRefundEligible;
@@ -636,7 +637,6 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   });
 
   const normalizedLogStatus = normalizeFalQueueLogStatus(nextStatus ?? statusInfo.status ?? payload.status);
-
   try {
     await query(
       `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)

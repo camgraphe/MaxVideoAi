@@ -1,0 +1,259 @@
+{
+  "version": "v1",
+  "modelSlug": "kling-v4",
+  "checkedAt": "2026-10-22",
+  "editorialReview": {
+    "status": "withheld-insufficient-observed-evidence",
+    "methodologyFile": "benchmark-methodology.v1.json",
+    "methodologyVersion": "1.1.0",
+    "assessmentProtocol": "kling-v4-criterion-review-v1",
+    "modelVersion": "Kling 4.0, full model; candidate fal kling/v4 routes",
+    "evaluator": "MaxVideoAI editorial research",
+    "criterionScoresPublished": false,
+    "controlledOutputsReviewed": 0,
+    "publicVideosInspected": 0,
+    "promptPackExecuted": false,
+    "retryCount": null,
+    "failureCount": null,
+    "note": "This file prepares evidence and the review worksheet. No output-quality score, overall rating, latency, success rate or price-value score has been measured. Textual creator reports are not our own inspection of their footage. A cinematic marketing selection is not a controlled benchmark."
+  },
+  "publication": {
+    "scoreOwner": "data/benchmarks/engine-scores.v1.json",
+    "specOwner": "data/benchmarks/engine-key-specs.v1.json",
+    "runtimeConsumesThisFile": false,
+    "scoreRowPresent": false,
+    "publicPlaceholderAllowed": false,
+    "overallRequiredCriteria": ["fidelity", "motion", "consistency"],
+    "rule": "Keep Kling V4 out of scored projections until observed evidence supports the published criteria. Missing evidence is not zero, average, a competitor's score, or an editorial estimate. Publish only reviewed numbers through the existing score owner, with evidence and the appropriate disclosure. Derive overall with the existing mean only after all three core criteria have been assessed."
+  },
+  "sources": [
+    {
+      "id": "fal-landing-2026-10-22",
+      "publisher": "fal",
+      "url": "https://fal.ai/kling-4",
+      "accessedAt": "2026-10-22",
+      "type": "provider-product-description",
+      "observation": "Playground and Agent are offered; API is marked coming soon. Demonstrations are attributed to Kling AI and explicitly not to fal API generation. Native stereo, lip sync, motion and reference control are provider descriptions, not measured results here."
+    },
+    {
+      "id": "fal-t2v-contract-2026-10-22",
+      "publisher": "fal",
+      "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/text-to-video",
+      "accessedAt": "2026-10-22",
+      "type": "provider-input-schema",
+      "captureSha256": "84c22dde3aae24d0a74a19de259cab2966a6eb70200d94c2979f31f2f1404278",
+      "captureRecord": "docs/launch/kling-v4/provider-refresh-2026-10-22.md",
+      "observation": "Candidate input contract: 3–30 second output, 720p or 1080p, main prompt up to 2,500 characters, and per-shot prompts up to 512 characters. These controls do not demonstrate execution or adherence."
+    },
+    {
+      "id": "fal-i2v-contract-2026-10-22",
+      "publisher": "fal",
+      "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/image-to-video",
+      "accessedAt": "2026-10-22",
+      "type": "provider-input-schema",
+      "captureSha256": "7198dcad6587d18962f48398378421a5558c72427b2a6db672a388a859c086ca",
+      "captureRecord": "docs/launch/kling-v4/provider-refresh-2026-10-22.md",
+      "observation": "A start image is required; an end image is optional. No intermediate-keyframe array is exposed in this route."
+    },
+    {
+      "id": "fal-r2v-contract-2026-10-22",
+      "publisher": "fal",
+      "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/reference-to-video",
+      "accessedAt": "2026-10-22",
+      "type": "provider-input-schema",
+      "captureSha256": "b2826a7e5ec226f4bf28fa826d03c13edb68311760eedf010cdd2cc06fe3b8cd",
+      "captureRecord": "docs/launch/kling-v4/provider-refresh-2026-10-22.md",
+      "observation": "Candidate image/video/element references and per-shot inputs exist. Reference acceptance and identity retention have not been observed in a MaxVideoAI V4 output."
+    },
+    {
+      "id": "fal-edit-contract-2026-10-22",
+      "publisher": "fal",
+      "url": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/video-to-video/edit",
+      "accessedAt": "2026-10-22",
+      "type": "provider-input-schema",
+      "captureSha256": "45aefa323ddbe6c4aa0bea0efb059b23f73e6245d82ff552e162780db1b8b372",
+      "captureRecord": "docs/launch/kling-v4/provider-refresh-2026-10-22.md",
+      "observation": "Candidate edit contract takes a source video and optional images/image elements. An accepted edit or preservation of unrequested regions has not been observed here."
+    },
+    {
+      "id": "aa-t2v-2026-10-22",
+      "publisher": "Artificial Analysis",
+      "url": "https://artificialanalysis.ai/video/leaderboard/text-to-video",
+      "accessedAt": "2026-10-22",
+      "type": "independent-benchmark-publisher",
+      "observation": "The returned AA-Video-T2V v2.1 audio table has 29 rows. No Kling V4/4.0 row appears; Kling 3.0 and 3.0 Omni appear separately. This is a check of the retrieved audio table, not every filter or private evaluation."
+    },
+    {
+      "id": "aa-i2v-2026-10-22",
+      "publisher": "Artificial Analysis",
+      "url": "https://artificialanalysis.ai/video/leaderboard/image-to-video",
+      "accessedAt": "2026-10-22",
+      "type": "independent-benchmark-publisher",
+      "observation": "The returned AA-Video-I2V v1.1 audio table has 24 rows. No Kling V4/4.0 row appears; Kling 3.0 and 3.0 Omni appear separately. This is a check of the retrieved audio table, not every filter or private evaluation."
+    },
+    {
+      "id": "arena-t2v-2026-10-22",
+      "publisher": "Arena",
+      "url": "https://arena.ai/leaderboard/video/text-to-video",
+      "accessedAt": "2026-10-22",
+      "publisherSnapshotDate": "2026-09-21",
+      "type": "independent-benchmark-publisher",
+      "observation": "All 48 rows in the returned text-to-video table were inspected. No Kling V4/4.0 row appears. The page displays 21 September 2026; this predates the full-model release and cannot establish current relative performance."
+    },
+    {
+      "id": "arena-i2v-2026-10-22",
+      "publisher": "Arena",
+      "url": "https://arena.ai/leaderboard/video/image-to-video",
+      "accessedAt": "2026-10-22",
+      "publisherSnapshotDate": "2026-09-21",
+      "type": "independent-benchmark-publisher",
+      "observation": "All 48 rows in the returned image-to-video table were inspected. No Kling V4/4.0 row appears. The page displays 21 September 2026; this predates the full-model release and cannot establish current relative performance."
+    },
+    {
+      "id": "kling-invited-johnson-2026-10-02",
+      "publisher": "Kling AI",
+      "author": "Johnson Sheng, Kling AI Creative Partner",
+      "url": "https://kling.ai/blog/Kling4-Hands-On-Review-JohnsonSheng?tab=video-creation",
+      "accessedAt": "2026-10-22",
+      "publishedAt": "2026-10-02",
+      "type": "vendor-hosted-invited-creator-report",
+      "observation": "The creator reports stable action and prop continuity in selected full-model beta clips, including a 30-second fight. He also mentions an awkward final action. The article does not supply a complete retry ledger or controlled comparative scores. We read the report; we did not inspect its moving images or audio."
+    },
+    {
+      "id": "theoreticallymedia-flash-2026-10-01",
+      "publisher": "Theoretically Media",
+      "author": "Tim Simmons",
+      "url": "https://theoreticallymedia.com/blog/kling-4-early-look-gemini-4-argon-ideogram-4-5-eleven-v4/",
+      "accessedAt": "2026-10-22",
+      "publishedAt": "2026-10-01",
+      "type": "independent-first-person-review-different-model",
+      "observation": "The reviewer explicitly tests early-access Kling 4 Flash at 720p, not the full model. Its performance observations are excluded from this scorecard. The site discloses affiliate links."
+    },
+    {
+      "id": "pricing-preparation-2026-10-22",
+      "publisher": "MaxVideoAI",
+      "path": "docs/launch/kling-v4/pricing-plan.md",
+      "accessedAt": "2026-10-22",
+      "type": "internal-offline-commercial-preparation",
+      "observation": "Normal fal supplier references and the existing canonical +30% markup are prepared separately from actual supplier charges and active customer tariffs. The calculation is not evidence of cost per accepted shot or of an active MaxVideoAI quote."
+    }
+  ],
+  "externalEvaluations": [],
+  "externalEvaluationChecks": [
+    {"sourceId": "aa-t2v-2026-10-22", "result": "no-matching-model-in-retrieved-table", "benchmark": "AA-Video-T2V v2.1", "mode": "text-to-video", "audio": true, "rowsInspected": 29},
+    {"sourceId": "aa-i2v-2026-10-22", "result": "no-matching-model-in-retrieved-table", "benchmark": "AA-Video-I2V v1.1", "mode": "image-to-video", "audio": true, "rowsInspected": 24},
+    {"sourceId": "arena-t2v-2026-10-22", "result": "no-matching-model-in-retrieved-table", "benchmark": "Text-to-Video Arena", "mode": "text-to-video", "rowsInspected": 48},
+    {"sourceId": "arena-i2v-2026-10-22", "result": "no-matching-model-in-retrieved-table", "benchmark": "Image-to-Video Arena", "mode": "image-to-video", "rowsInspected": 48}
+  ],
+  "externalEvaluationLimitations": [
+    "No numeric external result for the full Kling V4 model was recovered from these four tables. This is not proof that no other evaluation exists.",
+    "Never reuse Kling 3, O3, Turbo or Kling 4 Flash results for the full V4 model.",
+    "Preference Elo is not a measurement of our eleven individual criteria and must not be converted to a 0–10 score.",
+    "An invited creator's beta clip is useful for choosing what to test, but is not an independent controlled benchmark or an observed fal execution.",
+    "Provider specifications and controls establish testable capabilities, not their reliability or a quality rating."
+  ],
+  "criterionAssessments": [
+    {
+      "criterion": "fidelity", "score": null, "status": "withheld",
+      "sourceIds": ["fal-t2v-contract-2026-10-22", "kling-invited-johnson-2026-10-02"],
+      "promptPackIds": ["hands-object", "two-character-continuity", "fast-motion-camera", "camera-control"],
+      "currentAssessment": "Prompt controls and a creator's report are available; exact prompt-to-output compliance has not been reviewed by us.",
+      "requiredEvidence": ["Original clip paired with the exact executed prompt and controls", "Predeclared list of required subjects, ordered actions, composition and exclusions", "Timecoded fulfilled, missing, reversed and invented requirements for every retained attempt"],
+      "measurement": "Review the full clip against atomic requirements, preserving the pass/partial/fail ledger and the important omitted action. Use that ledger to justify the existing editorial anchors; a mechanically calculated completion percentage is not the published score."
+    },
+    {
+      "criterion": "visualQuality", "score": null, "status": "withheld",
+      "sourceIds": ["fal-t2v-contract-2026-10-22", "kling-invited-johnson-2026-10-02"],
+      "promptPackIds": ["cinematic-materials", "product-text"],
+      "currentAssessment": "Supported output resolution does not measure texture, lighting, geometry or artifact quality.",
+      "requiredEvidence": ["Unedited original at its actual resolution and codec, without added upscale or grain", "Timecoded inspection of skin, cloth, metal, glass, edges, lighting and backgrounds", "Full-motion playback in addition to representative frames"],
+      "measurement": "Record severity, duration and screen area of blur, melting, geometry changes and lighting artifacts. Compare the same delivered resolution when calibrating against another model, and disclose any resolution difference."
+    },
+    {
+      "criterion": "motion", "score": null, "status": "withheld",
+      "sourceIds": ["fal-landing-2026-10-22", "kling-invited-johnson-2026-10-02"],
+      "promptPackIds": ["fast-motion-camera", "hands-object"],
+      "currentAssessment": "A selected action report motivates testing; we have not observed continuous V4 action or camera motion.",
+      "requiredEvidence": ["Original continuous moving footage at native cadence", "Timecoded contact, acceleration, direction, inertia and occlusion checks", "Full action including beginnings, transitions and endings, not an edited highlight"],
+      "measurement": "Inspect at normal speed first, then step through suspected failures. Log foot sliding, impossible collisions, direction reversals, object teleportation and camera jitter with durations. Avoid inferring motion quality from still frames."
+    },
+    {
+      "criterion": "consistency", "score": null, "status": "withheld",
+      "sourceIds": ["fal-r2v-contract-2026-10-22", "kling-invited-johnson-2026-10-02"],
+      "promptPackIds": ["two-character-continuity", "three-shot-sequence"],
+      "currentAssessment": "Reference inputs and a reported consistent prop do not establish identity retention for our outputs.",
+      "requiredEvidence": ["Original references and their ordered mapping to the executed input", "Identity and object checks before and after occlusions and every cut", "Start, midpoint and final-state comparison plus full playback of long takes"],
+      "measurement": "Track each face, outfit, prop, scene axis and background over time. Record identity swaps, disappearing details and topology changes separately; distinguish within-shot drift from across-shot continuity."
+    },
+    {
+      "criterion": "anatomy", "score": null, "status": "withheld",
+      "sourceIds": ["kling-invited-johnson-2026-10-02"],
+      "promptPackIds": ["hands-object", "two-character-continuity"],
+      "currentAssessment": "No close human interaction output has been inspected for the full model.",
+      "requiredEvidence": ["Visible faces, hands and human-object contact in the original output", "Timecoded body-part count, attachment, joint and contact checks", "At least two distinct human interactions before generalizing beyond a single shot"],
+      "measurement": "Record finger/limb additions or losses, face deformation, fused objects and broken contact at normal playback speed and frame level. Cropped or occluded hands are unobserved, not passing evidence."
+    },
+    {
+      "criterion": "textRendering", "score": null, "status": "withheld",
+      "sourceIds": ["fal-landing-2026-10-22"],
+      "promptPackIds": ["product-text"],
+      "currentAssessment": "The provider describes legible moving text, but no exact-string output has been checked.",
+      "requiredEvidence": ["Exact requested string recorded before generation", "Original frames showing the text through its visible duration", "Character-by-character human check, with OCR only as a cross-check"],
+      "measurement": "Track missing, replaced or changing characters, placement and legibility under motion. Score only intended readable text; unrelated scenery text cannot prove this criterion."
+    },
+    {
+      "criterion": "lipsyncQuality", "score": null, "status": "withheld",
+      "sourceIds": ["fal-landing-2026-10-22"],
+      "promptPackIds": ["dialogue-lipsync"],
+      "currentAssessment": "Stereo and lip-sync claims are documented. We have neither listened to a full-model output nor measured visible speech alignment.",
+      "requiredEvidence": ["Original audio/video with no replaced soundtrack or speed change", "Exact spoken script and a clearly visible speaking mouth", "Actual audio streams/channel count and timecoded word-level onset/end checks"],
+      "measurement": "Transcribe what is actually heard; flag omissions, speaker changes, pauses and visible mouth/audio drift in milliseconds where measurable. Stereo metadata alone does not prove two distinct channels or accurate sync."
+    },
+    {
+      "criterion": "sequencingQuality", "score": null, "status": "withheld",
+      "sourceIds": ["fal-t2v-contract-2026-10-22", "fal-r2v-contract-2026-10-22"],
+      "promptPackIds": ["three-shot-sequence"],
+      "currentAssessment": "Per-shot inputs exist; output cuts, timing, order and narrative continuity have not been inspected.",
+      "requiredEvidence": ["Exact multi_prompt array, shot durations and total from the accepted request", "Unedited provider clip with timecoded observed shot boundaries", "Requested versus actual actions, order, identities and props per shot"],
+      "measurement": "Match each intended shot to the original output and note missing, merged, reordered or invented shots, duration deviations and continuity failures. A timeline assembled from separate generations is not native multi-shot evidence."
+    },
+    {
+      "criterion": "controllability", "score": null, "status": "withheld",
+      "sourceIds": ["fal-t2v-contract-2026-10-22", "fal-i2v-contract-2026-10-22", "fal-r2v-contract-2026-10-22", "fal-edit-contract-2026-10-22"],
+      "promptPackIds": ["camera-control", "two-character-continuity"],
+      "currentAssessment": "The route contract supports several controls. Their effect on delivered footage is untested.",
+      "requiredEvidence": ["Paired input/control and output for each claimed mode", "Start/end-frame and subject-reference comparisons against exact originals", "For editing, a time-aligned source/output comparison of requested and preserved regions"],
+      "measurement": "Keep separate results for camera direction, start/end frames, references and editing. API parameter acceptance is not compliance. Do not claim intermediate-keyframe reliability, owned voices, 4K or HDR from these fal routes."
+    },
+    {
+      "criterion": "speedStability", "score": null, "status": "withheld",
+      "sourceIds": ["fal-landing-2026-10-22"],
+      "promptPackIds": [],
+      "currentAssessment": "No complete V4 attempt ledger, completed application delivery or retry/failure sample exists in this assessment.",
+      "requiredEvidence": ["All attempts, including rejected and failed submissions, with provider identity and exact settings", "Submission, queue, provider completion and first recorded application delivery timestamps kept separate", "Retry count, failure count, rejection reasons and observation window"],
+      "measurement": "Report the small qualification sample descriptively. Publish live median/P90 only through the existing latency owner once its 30-day eligibility threshold of 30 completed jobs and 5 distinct users is met. An imported external render is not application-generation latency evidence."
+    },
+    {
+      "criterion": "pricing", "score": null, "status": "withheld",
+      "sourceIds": ["pricing-preparation-2026-10-22"],
+      "promptPackIds": [],
+      "currentAssessment": "Normal-price commercial preparation exists; value relative to usable output is not established.",
+      "requiredEvidence": ["Reviewed active MaxVideoAI customer quote for the exact mode, resolution, output and measured reference duration", "Actual supplier charge and the full attempt ledger kept distinct from customer price", "Accepted/rejected footage decisions and usable seconds, with matched peer scope if making a relative claim"],
+      "measurement": "Separate advertised supplier cost, prepared normal-price-plus-30% customer calculation, active customer tariff, actual charge and cost per accepted second. Do not award a value score from a low headline price without output-quality and retry evidence."
+    }
+  ],
+  "reviewProtocol": {
+    "status": "prepared-not-executed",
+    "generationAuthorizedByThisFile": false,
+    "promptOwner": "data/benchmarks/benchmark-methodology.v1.json#promptPack",
+    "promptPolicy": "Reuse the eight existing English prompts unchanged for a controlled run. Marketing-film scenes can supply qualitative observations but must be tagged non-canonical; do not retrofit them into the benchmark prompt pack. Any additional generation still needs the applicable spending authorization.",
+    "scopePolicy": "Keep full V4 and Flash separate, and preserve provider route, actual resolution, duration and mode. Do not pool 720p and 1080p, text-only and reference-led generations, or beta and later model snapshots as if matched.",
+    "selectionPolicy": "Register the intended attempts and settings before generation. Retain every original and unsuccessful attempt; do not score only heroes. Log prompt changes as new cases. A best-take gallery remains an explicitly selected showcase.",
+    "reviewPolicy": "Watch the entire original with sound, then inspect flagged timestamps. Score against the existing 0–10 anchors and record criterion-specific reasoning. Obtain a second reviewer, retain disagreements, and explain any interpolation between anchors rather than manufacturing precision.",
+    "aggregationPolicy": "Within a controlled pack, aggregate repeated attempts per prompt before averaging prompt-level criterion assessments, so repeated attempts do not overweight a scene. Exclude unobservable criteria rather than awarding a pass. Report n, range, exclusions and failures; no statistical confidence claim from a handful of selected clips.",
+    "publicationPolicy": "Add reviewed numbers only to engine-scores.v1.json with dated evidence. Publish an editorial estimate with the existing disclosure if using non-controlled observations. Never represent it as a controlled benchmark, and never fill an unobserved criterion with a guessed number. Preserve the existing fidelity/motion/consistency overall formula.",
+    "additionalRunMetadata": ["providerEndpoint", "providerRequestId", "providerModelSnapshot", "canonicalPromptIdOrMarketingSceneId", "exactPrompt", "executedInput", "orderedReferenceIdsAndHashes", "originalAssetIdAndSha256", "actualMediaProbe", "submittedAt", "providerCompletedAt", "firstApplicationDeliveryAt", "providerChargeAndCurrency", "customerQuoteSnapshot", "attemptOutcome", "criterionTimecodes", "reviewerDisagreements", "selectionReason"],
+    "latencyOwner": "frontend/server/benchmark-lab-metrics.ts",
+    "requiredRunMetadataOwner": "data/benchmarks/benchmark-methodology.v1.json#requiredRunMetadata"
+  }
+}

@@ -25,9 +25,9 @@ const sourceDeps:AgentModelCatalogDeps={
 };
 const currentCertified=[
   'gemini-omni-flash','gpt-image-2-5-flare','happy-horse-1-1',
-  'kling-3-4k','kling-3-pro','kling-3-standard','kling-o3-4k','kling-o3-pro','kling-o3-standard',
+  'kling-3-4k','kling-3-pro','kling-3-standard','kling-o3-4k','kling-o3-pro','kling-o3-standard','kling-v4',
   'luma-ray-3-2','luma-uni-1','luma-uni-1-max','minimax-h3','minimax-hailuo-02-text',
-  'nano-banana-2','nano-banana-lite','nano-banana-pro','pika-text-to-video',
+  'nano-banana-2','nano-banana-2-1','nano-banana-lite','nano-banana-pro','pika-text-to-video',
   'seedance-2-0','seedance-2-0-fast','seedance-2-0-mini','seedance-2-5','seedream','seedream-5-0-pro',
   'veo-3-1','veo-3-1-fast','veo-3-1-lite','wan-3','wan-3-prime',
   'kling-3-turbo-pro','kling-3-turbo-standard','minimax-h3-max','ltx-2-5-fast','ltx-2-5-pro','grok-imagine-video-1-5','flux-3','flux-3-draft','flux-3-max',
@@ -48,6 +48,7 @@ async function services(deps=sourceDeps) {
 test('the real published catalog reaches Studio without the five-model pilot restriction',async()=>{
   const {catalog}=await services();
   assert.deepEqual(catalog.filter(entry=>getRuntimeModelById(entry.engine.id)?.lifecycle==='current').map(entry=>entry.engine.id).sort(),currentCertified.slice().sort());
+  assert.deepEqual(catalog.find(entry=>entry.engine.id==='kling-v4')?.publicModes,['t2v','i2v','ref2v','v2v']);
   for(const id of [...uncertified,...archive,'seedance-2-0-fast-byteplus'])
     assert.equal(catalog.some(entry=>entry.engine.id===id),false,id);
   assert.deepEqual(catalog.filter(entry=>getRuntimeModelById(entry.engine.id)?.lifecycle==='legacy').map(entry=>entry.engine.id).sort(),executableLegacy.slice().sort(),'Published legacy explicit choices remain executable.');

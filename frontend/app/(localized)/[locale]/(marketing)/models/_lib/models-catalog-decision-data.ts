@@ -26,9 +26,11 @@ const TOP_PICK_IDS = [
   'wan-3-prime',
   'grok-imagine-video-1-5',
   'flux-3-max',
+  'kling-v4',
   'seedance-2-5',
 ] as const;
 const RECOMMENDED_IDS = [
+  'kling-v4',
   'wan-3',
   'wan-3-prime',
   'ltx-2-5-fast',
@@ -118,7 +120,7 @@ export function buildDefaultModelCompareHref(modelSlug: string): ModelsGalleryCo
   if (['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'gpt-image-2-5-flare', 'gpt-image-2-5-sunburst', 'seedream'].includes(modelSlug)) {
     return null;
   }
-  const opponent = modelSlug === 'flux-3-max' ? 'flux-3' : modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';
+  const opponent = modelSlug === 'kling-v4' ? 'kling-o3-pro' : modelSlug === 'flux-3-max' ? 'flux-3' : modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';
   if (!isPublishedComparisonSlug(buildCanonicalCompareSlug(modelSlug, opponent))) return null;
   return buildModelCompareHref(modelSlug, opponent);
 }
@@ -150,6 +152,7 @@ function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
 function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; detail: string }> {
   return textByLocale(locale, {
     en: {
+      'kling-v4': { reason: 'Multi-shot and reference controls', detail: '3–30 second generation, 720p or 1080p, plus a separate video editing mode' },
       'flux-3-max': { reason: 'New: FLUX 3 Max', detail: '5–20 second videos with audio and frame control' },
       'ltx-2-5-pro': { reason: 'Create with LTX', detail: 'Production-focused LTX 2.5 generation' },
       'wan-3-prime': { reason: 'Create with Wan', detail: 'Premium Wan 3 generation' },
@@ -162,6 +165,7 @@ function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; d
       'happy-horse-1-1': { reason: 'Best Alibaba audio route', detail: 'Text, image, and references with native audio' },
     },
     fr: {
+      'kling-v4': { reason: 'Découpage et références', detail: 'Génération de 3 à 30 s, en 720p ou 1080p, et mode de modification vidéo distinct' },
       'flux-3-max': { reason: 'Nouveau : FLUX 3 Max', detail: 'Vidéos de 5 à 20 s avec audio et images de début/fin' },
       'ltx-2-5-pro': { reason: 'Pour les projets vidéo LTX', detail: 'Génération LTX 2.5 orientée production' },
       'wan-3-prime': { reason: 'Pour la vidéo avec Wan', detail: 'Génération premium Wan 3' },
@@ -174,6 +178,7 @@ function buildTopPickCopy(locale: AppLocale): Record<string, { reason: string; d
       'happy-horse-1-1': { reason: 'Audio natif avec Alibaba', detail: 'Texte, image et références avec audio natif' },
     },
     es: {
+      'kling-v4': { reason: 'Planos y referencias', detail: 'Generación de 3 a 30 s, en 720p o 1080p, y un modo independiente de edición de vídeo' },
       'flux-3-max': { reason: 'Nuevo: FLUX 3 Max', detail: 'Videos de 5 a 20 s con audio y control de fotogramas' },
       'ltx-2-5-pro': { reason: 'Video con LTX', detail: 'Generación LTX 2.5 orientada a producción' },
       'wan-3-prime': { reason: 'Video con Wan', detail: 'Generación premium Wan 3' },
@@ -374,6 +379,7 @@ export function buildModelsCatalogDecisionData({
 }): ModelsCatalogDecisionData {
   const byId = cardMap(cards);
   const comparisonCandidates = [
+    ['Kling 4.0 vs Kling 3.0 Omni Pro', 'kling-v4', 'kling-o3-pro'],
     ['FLUX 3 Max vs FLUX 3', 'flux-3-max', 'flux-3'],
     ['Seedance 2.0 vs Kling 3 Pro', 'seedance-2-0', 'kling-3-pro'],
     ['Seedance 2.0 vs Seedance 2.0 Fast', 'seedance-2-0', 'seedance-2-0-fast', SEEDANCE_FAST_COMPARISON_SLUG],
@@ -406,10 +412,9 @@ export function buildModelsCatalogHeroData({ activeLocale, cards }: {
   const topPickIcons = [Sparkles, Trophy, Camera, Film, Sparkles, Mic2, SlidersHorizontal, Bolt, Gauge] as const;
   return {
     badges: buildBadges(activeLocale),
-    topPicks: TOP_PICK_IDS.flatMap((id, index): ModelsCatalogTopPick[] => {
-      const card = byId.get(id);
-      if (!card) return [];
-      return [{
+    topPicks: TOP_PICK_IDS.filter(id => byId.has(id)).slice(0, 5).map((id, index): ModelsCatalogTopPick => {
+      const card = byId.get(id)!;
+      return {
         id,
         label: card.label,
         reason: topPickCopy[id].reason,
@@ -419,7 +424,7 @@ export function buildModelsCatalogHeroData({ activeLocale, cards }: {
         scoreReviewDisclosure: card.scoreReview?.disclosure[activeLocale] ?? null,
         icon: topPickIcons[index] ?? Trophy,
         href: card.href,
-      }];
+      };
     }),
     useCases: buildUseCases(activeLocale),
   };

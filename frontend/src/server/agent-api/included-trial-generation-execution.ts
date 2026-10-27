@@ -17,10 +17,12 @@ import type {
   ReservePaidGenerationInput,
 } from './paid-generation-execution';
 import type { McpGenerationQuote } from './quote-repository';
+import { resolveReservedVideoTiming, type ReservedVideoTiming } from './video-generation-timing';
 
 export type McpTrialFunding = Extract<GenerationFunding, { kind: 'mcp_trial' }>;
 
 export type IncludedTrialGenerationExecution = {
+  timing?: ReservedVideoTiming;
   surface: 'video';
   quoteId: string;
   userId: string;
@@ -179,9 +181,14 @@ export async function reserveIncludedTrialGenerationInitialJob(
   dependencies: { executor: TransactionQueryExecutor },
   canonicalPricing: Record<string, unknown>,
 ): Promise<IncludedTrialGenerationReservation> {
+  const params = includedTrialVideoInitialParams(input, canonicalPricing);
+  const timing = await resolveReservedVideoTiming(
+    input.candidate.engine, input.quote.request, params.jobInsert.durationSec, dependencies.executor,
+  );
+  Object.assign(params.jobInsert, timing);
   const created = await createInitialVideoJobInExecutor(
     dependencies.executor,
-    includedTrialVideoInitialParams(input, canonicalPricing),
+    params,
   );
   if (created.kind !== 'created'
     || !('funding' in created)
@@ -197,6 +204,7 @@ export async function reserveIncludedTrialGenerationInitialJob(
     jobId: input.quote.quoteId,
     surface: 'video',
     execution: {
+      timing,
       surface: 'video',
       quoteId: input.quote.quoteId,
       userId: input.quote.userId,
@@ -227,6 +235,7 @@ function includedTrialRequestBody(execution: IncludedTrialGenerationExecution): 
     jobId: execution.quoteId,
     membershipTier: membershipTier(execution.canonicalPricing),
     ...settings,
+    ...execution.timing,
     inputs: [],
     referenceImages: [],
   };

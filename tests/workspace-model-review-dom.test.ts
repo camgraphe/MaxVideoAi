@@ -6,6 +6,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { listFalEngines } from '../frontend/src/config/falEngines';
+import { getVideoWorkflowSourceField } from '../frontend/lib/video-source-workflow';
 import { coerceFormState, getModeCaps } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import {
   decodeWorkspaceModelSetups,
@@ -1051,5 +1052,60 @@ test('incomplete candidates stay in Compare as cards and the family picker exclu
     assert.equal(f.requests.length, 0, 'missing-input candidates are not quoted as valid jobs');
     assert.match(f.dom.window.document.body.textContent ?? '', /References or settings needed/);
     assert.deepEqual(f.setup, before); assert.equal(f.writes.length, 0);
+  } finally { await f.dispose(); }
+});
+
+test('picker scenario applies current-model settings transactionally and snapshots the prior setup', async () => {
+  const f = await mount();
+  try {
+    const before = structuredClone(f.setup);
+    let applied = false;
+    await act(async () => { applied = f.current.applyPickerScenario(before.form.engineId, before, { durationSec: 10, iterations: 2 }); });
+    assert.equal(applied, true);
+    assert.equal(f.setup.form.durationSec, 10);
+    assert.equal(f.setup.form.iterations, 2);
+    assert.equal(f.setup.prompt, before.prompt);
+    const saved = decodeWorkspaceModelSetups(f.storage.getItem(workspaceModelSetupsKey('a')), 'a');
+    assert.equal(saved.entries[before.form.engineId]?.setup.form.durationSec, before.form.durationSec);
+  } finally { await f.dispose(); }
+});
+
+test('picker scenario refuses stale source and account callbacks without changing any draft setter', async () => {
+  const f = await mount();
+  try {
+    const source = structuredClone(f.setup);
+    const apply = f.current.applyPickerScenario;
+    await f.edit({ prompt: 'An updated prompt' });
+    await act(async () => { assert.equal(apply(source.form.engineId, source, { durationSec: 10 }), false); });
+    assert.equal(f.writes.length, 0);
+    const updated = structuredClone(f.setup);
+    const oldAccountApply = f.current.applyPickerScenario;
+    await f.auth('b');
+    await act(async () => { assert.equal(oldAccountApply(updated.form.engineId, updated, { durationSec: 10 }), false); });
+    assert.equal(f.writes.length, 0);
+  } finally { await f.dispose(); }
+});
+
+test('manual picker switch parks original Modify media and scenes before applying Create, while saved recovery keeps Modify', async () => {
+  const f = await mount();
+  try {
+    const engine = listFalEngines().find(e => e.id === f.setup.form.engineId)!.engine;
+    const field = getVideoWorkflowSourceField(engine.inputSchema, 'v2v')!;
+    await f.edit({ form: coerceFormState(engine, 'v2v', f.setup.form), multiPromptEnabled: true,
+      multiPromptScenes: [{ id: 'saved-scene', prompt: 'Keep this scene', duration: 5 }],
+      inputAssets: { [field.id]: [{ id: 'source', assetId: 'source', fieldId: field.id, kind: 'video', name: 'Source', type: 'video/mp4', size: 1234, status: 'ready', durationSec: 8,
+        url: 'https://owned.test/source.mp4', previewUrl: 'https://owned.test/source.mp4' }] } });
+    const before = structuredClone(f.setup);
+    await act(async () => { assert.equal(f.current.applyPickerScenario('veo-3-1', before, {}), true); });
+    assert.equal(f.setup.form.engineId, 'veo-3-1'); assert.equal(f.setup.form.mode, 't2v');
+    assert.ok(!Object.values(f.setup.inputAssets).flat().some(asset => asset?.assetId === 'source'));
+    assert.equal(f.setup.prompt, before.prompt); assert.deepEqual(f.setup.multiPromptScenes, before.multiPromptScenes);
+    const saved = decodeWorkspaceModelSetups(f.storage.getItem(workspaceModelSetupsKey('a')), 'a');
+    assert.equal(saved.entries[before.form.engineId]?.setup.form.mode, 'v2v');
+    assert.equal(saved.entries[before.form.engineId]?.setup.inputAssets[field.id]?.[0]?.assetId, 'source');
+    assert.deepEqual(saved.entries[before.form.engineId]?.setup.multiPromptScenes, before.multiPromptScenes);
+    await act(async () => f.current.selectSavedSetup(before.form.engineId));
+    assert.equal(f.current.candidate?.workflow.submissionMode, 'v2v');
+    assert.equal(f.current.candidate?.setup.inputAssets[field.id]?.[0]?.assetId, 'source');
   } finally { await f.dispose(); }
 });

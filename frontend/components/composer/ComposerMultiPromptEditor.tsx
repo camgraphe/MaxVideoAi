@@ -49,12 +49,16 @@ export function ComposerMultiPromptEditor({ multiPrompt, labelledBy }: ComposerM
                 <span>Duration (s)</span>
                 <input
                   type="number"
-                  min={multiPrompt.minDurationSec}
+                  aria-label={`Scene ${index + 1} duration`}
+                  min={multiPrompt.minSceneDurationSec ?? multiPrompt.minDurationSec}
+                  step={1}
                   max={multiPrompt.maxDurationSec}
                   value={scene.duration}
                   onChange={(event) =>
                     multiPrompt.onUpdateScene(scene.id, {
-                      duration: Math.max(0, Math.round(Number(event.currentTarget.value))),
+                      duration: multiPrompt.strictIntegerDurations
+                        ? Number(event.currentTarget.value)
+                        : Math.max(0, Math.round(Number(event.currentTarget.value))),
                     })
                   }
                   className="w-20 rounded-input border border-border bg-surface px-2 py-1 text-right text-xs text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.03] dark:text-white"

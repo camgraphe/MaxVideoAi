@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "deterministic-offline-metadata",
+  "reviewedAtLocalDate": "2026-10-22",
+  "modelReleaseQualified": false,
+  "realHostVerified": false,
+  "providerCalls": 0,
+  "reviewedChange": "Phase2: explicit ordered Kling V4 subjects linked to existing owned reference slots in prepare_generation; model-specific canonical validation and executable discovery stay gated",
+  "previousPolicyFingerprintSha256": "07f2512e47a74c41c9e8b5d2d83495182f47374164e4d884a7ff3bdd49060cbe",
+  "policyFingerprintSha256": "ef5422bc43eb668d6075a4f9692eabe2714e6affa6244a588e868d974247a364",
+  "fixtureContractSha256": "05f0fd68e1f8b0a403760bd68368a1cfeb73d85308750ffbc6808dc7e08cdb04",
+  "curatedDecisionCount": 70,
+  "curatedDecisionsUnchanged": true,
+  "policyCoverage": {
+    "fixtureCount": 70,
+    "policyCheckCount": 39,
+    "requiredChecks": {
+      "selected_seedance_details": 7,
+      "i2v_first_last_images": 1,
+      "ref2v_multimodal_media": 1,
+      "v2v_source_and_guidance": 1,
+      "extend_ordered_sources": 1,
+      "budget_only_no_quote_or_confirm": 3,
+      "quote_only_waits_for_approval": 7,
+      "confirmed_exact_quote_once": 1,
+      "ambiguous_approval_no_confirm": 1,
+      "recovery_without_resubmit": 4,
+      "account_destination_without_invention": 2,
+      "topup_from_prepared_quote": 1,
+      "funding_requote_before_confirm": 1,
+      "library_recovery_without_resubmit": 2,
+      "private_media_kind_selection": 1,
+      "reference_upload_then_list": 1,
+      "failure_status_without_resubmit": 1,
+      "no_payment_data_or_invented_url": 2,
+      "stale_quote_no_confirm": 1
+    }
+  },
+  "globalInstructionBytes": 1551,
+  "modelVisibleToolCount": 18,
+  "largestDescriptorBytes": 1927,
+  "prepareDescriptionBytes": 1639,
+  "prepareSchemaBytes": 10331,
+  "validation": {
+    "mcpClientCheck": {
+      "passed": 173,
+      "skipped": 1,
+      "failed": 0
+    },
+    "curatedScenarios": {
+      "passed": 70,
+      "changedDecisions": 0
+    },
+    "targetedFollowupTests": {
+      "passed": 143,
+      "failed": 0,
+      "scope": "canonical/Studio agent suite; overlapping MCP coverage is not summed"
+    },
+    "typescript": "root final integration verification recorded in HANDOFF.md"
+  }
+}

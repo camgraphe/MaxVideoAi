@@ -10,7 +10,13 @@ export type EnginePickerOption = {
   priceUnavailableReason?: string;
   estimate?: PickerEstimateRequest;
 };
+export type PickerControl = { id: string; label: string; value: string; options?: { value: string; label: string }[] };
 export type EnginePickerContext = {
+  controls?: PickerControl[];
+  scenarioKey?: string;
+  hasChanges?: boolean;
+  onControlChange?: (id: string, value: string) => void;
+  onApply?: (id: string) => boolean;
   /** Account and immutable draft context; never displayed or logged. */
   key: string;
   scope: string;

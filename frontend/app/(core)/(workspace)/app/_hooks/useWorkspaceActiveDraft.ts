@@ -30,6 +30,7 @@ type Store = WorkspaceActiveDraftRecord & {
   loaded: boolean;
   memoryOnly: boolean;
   error: Status;
+  pendingSaveError?: WorkspaceModelSetupError | null;
 };
 // Bounded fallback: only the last confirmed account, for this document/module lifetime.
 // It survives route unmounts, never a reload, logout, or a different confirmed account.
@@ -68,6 +69,13 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     restored: boolean;
   } | null>(null);
   const [saveError, setSaveError] = useState<Status>(null);
+  const saveErrorRef = useRef<Status>(null);
+  const updateSaveError = useCallback((next: Status) => {
+    // An unchanged synchronous layout update can replay a pending input edit indefinitely.
+    if (saveErrorRef.current === next) return;
+    saveErrorRef.current = next;
+    setSaveError(next);
+  }, []);
   const storeRef = useRef(store);
   storeRef.current = store;
   const phaseMatches =
@@ -92,7 +100,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     (next: Store) => {
       const encoded = encodeWorkspaceActiveDraft(next, account!);
       if (!encoded.ok) {
-        setSaveError(encoded.error);
+        updateSaveError(encoded.error);
         return false;
       }
       let memoryOnly = next.memoryOnly;
@@ -103,13 +111,13 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
           memoryOnly = true;
         }
       }
-      const committed = { ...next, memoryOnly };
+      const committed = { ...next, memoryOnly, pendingSaveError: null };
       memory = committed;
       storeRef.current = committed;
       setStore(committed);
       return true;
     },
-    [account],
+    [account, updateSaveError],
   );
 
   useLayoutEffect(() => {
@@ -130,6 +138,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     }
     if (!account || !options.engines.length || !options.storageReady) return;
     if (phaseMatches) return;
+    updateSaveError(null);
     let loaded = storeRef.current;
     if (loaded.account !== account || !loaded.loaded) {
       if (memory?.account === account) loaded = memory;
@@ -156,10 +165,14 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
       }
     }
     const guestRaw = consumeGuestCreationFromLocation('/app');
+    let hasGuestContinuation = false;
     if (guestRaw) {
       try {
         const guest = serializeWorkspaceModelSetup(JSON.parse(guestRaw));
-        if (guest.ok) loaded = { ...loaded, recovery: loaded.current, current: { modelId: guest.setup.form.engineId, updatedAt: Date.now(), setup: guest.setup } };
+        if (guest.ok) {
+          loaded = { ...loaded, recovery: loaded.current, current: { modelId: guest.setup.form.engineId, updatedAt: Date.now(), setup: guest.setup } };
+          hasGuestContinuation = true;
+        }
       } catch { /* Invalid or expired continuation keeps the account draft. */ }
     }
     let restored = false;
@@ -182,6 +195,17 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
           })
         : null;
       if (candidate?.applicable) {
+        // The one-use handoff already matches current, so the normal change-save
+        // below cannot persist it. Commit it before this route can unmount.
+        if (hasGuestContinuation) {
+          const encoded = encodeWorkspaceActiveDraft(loaded, account);
+          if (!encoded.ok) {
+            // Keep both complete setups only in this account's bounded document
+            // fallback. Never write an oversized envelope or lose its warning.
+            loaded = { ...loaded, pendingSaveError: encoded.error };
+            memory = loaded;
+          } else if (save(loaded)) loaded = storeRef.current;
+        }
         // Same-model restoration preserves every authored field and sparse slot; validation
         // rejects roles that no longer fit instead of silently migrating them to another model.
         applyWorkspacePreparedSetup(saved, options);
@@ -199,7 +223,6 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     }
     storeRef.current = loaded;
     setStore(loaded);
-    setSaveError(null);
     setPhase({
       account,
       requestKey: options.requestKey,
@@ -207,7 +230,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
       stage: 'commit',
       restored,
     });
-  }, [options, account, phaseMatches, valid, save]);
+  }, [options, account, phaseMatches, valid, save, updateSaveError]);
   useLayoutEffect(() => {
     if (
       !account ||
@@ -226,7 +249,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     const stored = storeRef.current;
     const serialized = serializeWorkspaceModelSetup(current);
     if (!serialized.ok) {
-      setSaveError(serialized.error);
+      updateSaveError(serialized.error);
       return;
     }
     const next = {
@@ -241,8 +264,8 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     if (JSON.stringify(stored.current?.setup) !== JSON.stringify(serialized.setup)) {
       if (!save(next)) return;
     }
-    setSaveError(null);
-  }, [ready, valid, current, store.error, store.recovery, save]);
+    updateSaveError(storeRef.current.pendingSaveError ?? null);
+  }, [ready, valid, current, store.error, store.recovery, save, updateSaveError]);
   const removeRecovery = () => {
     if (!valid()) return;
     save({ ...storeRef.current, recovery: null });
@@ -262,8 +285,8 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     loaded: Boolean(account && store.account === account && store.loaded && phaseMatches),
     hasActiveSetup: Boolean(account && store.account === account && store.current),
     recoverySetup: account && store.account === account ? store.recovery : null,
-    error: account && store.account === account ? (saveError ?? store.error) : null,
-    memoryOnly: Boolean(account && store.account === account && store.memoryOnly),
+    error: account && store.account === account ? (saveError ?? store.pendingSaveError ?? store.error) : null,
+    memoryOnly: Boolean(account && store.account === account && (store.memoryOnly || store.pendingSaveError)),
     discardRejected,
     removeRecovery,
   };

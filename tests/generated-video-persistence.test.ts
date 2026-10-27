@@ -21,8 +21,10 @@ async function load(entry: string, fixture: unknown, stubs: Record<string, strin
     } }],
   });
   const module = { exports: {} };
+  // Keep the real SDK import available while denying all network access.
   runInNewContext(bundle.outputFiles[0].text, { module, exports: module.exports, fixture,
-    require: createRequire(import.meta.url), Buffer, URL, process: { env: (fixture as { env?: Record<string, string> }).env ?? {} }, console: { info() {}, warn() {}, error() {} } });
+    require: createRequire(import.meta.url), Buffer, URL, TextEncoder, TextDecoder,
+    fetch: () => { throw new Error('Unexpected network request'); }, process: { env: (fixture as { env?: Record<string, string> }).env ?? {} }, console: { info() {}, warn() {}, error() {} } });
   return module.exports as Record<string, (...args: any[]) => Promise<any>>;
 }
 test('precise facts survive output projection while nominal requested duration stays integer', () => {

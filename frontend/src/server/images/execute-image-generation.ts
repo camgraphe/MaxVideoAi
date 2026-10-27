@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21UnsupportedFields, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { randomUUID } from 'crypto';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
@@ -74,6 +75,15 @@ export async function executeImageGeneration({
   const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
     resolveImageGenerationRequestContext(body);
 
+  let nano21: ReturnType<typeof normalizeNano21Settings> | null = null;
+  if (engine.id === NANO21_ENGINE_ID) {
+    try {
+      assertNano21UnsupportedFields(body as unknown as Record<string, unknown>);
+      nano21 = normalizeNano21Settings(body);
+      assertNano21Scenario({ ...nano21, mode, referenceImageCount: (body.imageUrls?.length ?? 0) + (body.characterReferences?.length ?? 0),
+        outputCount: body.numImages, aspectRatio: resolvedAspectRatio });
+    } catch { fail(mode, 'nano21_settings_invalid', 'Unsupported Nano Banana 2.1 scenario.', 400); }
+  }
   assertGoogleVertexImageAvailable(engine);
 
   const { characterReferences, normalizedImageUrls, combinedImageUrls, effectivePrompt, storedAssetInfoByUrl } =
@@ -204,8 +214,8 @@ export async function executeImageGeneration({
     );
   }
 
-  const thinkingLevelSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'thinking_level', mode), body.thinkingLevel);
-  const thinkingLevel = thinkingLevelSetting.value;
+  const thinkingLevelSetting = resolveImageEnumSetting(getImageFieldValues(engine, 'thinking_level', mode), nano21?.thinkingLevel.toLowerCase() ?? body.thinkingLevel);
+  const thinkingLevel = nano21?.thinkingLevel.toLowerCase() ?? thinkingLevelSetting.value;
   if (thinkingLevelSetting.invalid) {
     fail(
       mode,
@@ -239,7 +249,7 @@ export async function executeImageGeneration({
     pricingResult = await resolveImageGenerationPricingSnapshot({
       engine, mode, durationSec, resolution, customImageSize, quality,
       combinedImageCount: combinedImageUrls.length,
-      enableWebSearch, numImages, billingProductKey, billingQuantityMultiplier,
+      enableWebSearch, thinkingLevel, ...(nano21 ?? {}), numImages, billingProductKey, billingQuantityMultiplier,
       jobSurface, source: body.source, metadata: requestMetadata,
       includedKlingFirstFrameParentJobId, resolvedAspectRatio,
       trustedQuotedBilling,
@@ -313,6 +323,7 @@ export async function executeImageGeneration({
     settingsSnapshot ??
       buildDefaultSettingsSnapshot({
         surface: jobSurface,
+        nano21Settings: nano21 ?? undefined,
         engineEntry,
         mode,
         prompt,
@@ -427,6 +438,7 @@ export async function executeImageGeneration({
       let providerJobId: string | undefined;
 
       const directProviderResponse = await executeDirectImageProviderIfAvailable({
+        ...(nano21 ?? {}),
         billingProductKey,
         characterReferenceCount: characterReferences.length,
         combinedImageUrls,

@@ -62,6 +62,7 @@ export const enPayAsYouGoContent = {
     },
     footer: 'Happy Horse 1.1 and Seedance 2 Mini are new enough that they should be tested directly instead of judged only by older model rankings.',
     models: {
+      'kling-v4': { family: 'Kling', title: 'Kling 4.0 for shot plans and visual references', body: 'Plan a 3–30 second scene with a prompt and duration per shot, guide it with images or video subjects, or edit an existing clip. Output is 720p or 1080p; native audio is directed through the prompt.' },
       'gemini-omni-flash': { family: 'Google Gemini', title: 'Gemini Omni Flash 1.1 for fast multimodal creation', body: 'Use Gemini Omni Flash 1.1 for text, image, video, and reference-led generation when fast iteration, native audio, or multi-shot direction matters.' },
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro for detailed 1080p output', body: 'Choose Turbo Pro for polished 1080p motion, product detail, image guidance, and multi-shot sequences.' },
       'kling-3-turbo-standard': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Standard for efficient 720p drafts', body: 'Choose Turbo Standard for faster 720p iteration, coherent motion, image guidance, and multi-shot testing.' },
@@ -185,6 +186,7 @@ export const enPayAsYouGoContent = {
     },
     openRowLabel: 'Open pricing row',
     items: {
+      'kling-v4': { query: 'kling 4.0 price', title: 'Kling 4.0 pricing by workflow', body: 'Check the selected workflow, output duration and resolution. For reference and editing workflows, supplied video duration also affects the quote; compare the same inputs.' },
       'gemini-omni-flash': { query: 'gemini omni flash 1.1 price', title: 'Gemini Omni Flash 1.1 price lookup', body: 'Check the Google-direct route for fast multimodal video, native audio, and multi-shot workflows.' },
       'kling-3-turbo-pro': { query: 'kling 3 turbo pro price', title: 'Kling 3.0 Turbo Pro price lookup', body: 'Check the detailed 1080p Turbo route for text, image, and multi-shot generation.' },
       'kling-3-turbo-standard': { query: 'kling 3 turbo standard price', title: 'Kling 3.0 Turbo Standard price lookup', body: 'Check the efficient 720p Turbo route for text, image, and multi-shot generation.' },
@@ -241,6 +243,7 @@ export const enPayAsYouGoContent = {
       }
     },
     labels: {
+      'kling-v4': 'Kling 4.0 text-to-video scene',
       'gemini-omni-flash': 'Gemini Omni Flash 1.1 multimodal test',
       'kling-3-turbo-pro': 'Kling 3.0 Turbo Pro 1080p test',
       'kling-3-turbo-standard': 'Kling 3.0 Turbo Standard draft',
@@ -290,6 +293,12 @@ export const enPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
+      videoOverrides: {
+        'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f': {
+          title: 'Neon racer reveal',
+          useCase: 'A rider, a motorcycle, a neon tunnel. Explore the prompt behind this 10-second scene.',
+        },
+      },
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: '{engine} example render',
