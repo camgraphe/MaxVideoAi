@@ -1,7 +1,8 @@
+import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import { getFalEngineById } from '@/config/falEngines';
 import { listRuntimeModels } from '@/config/model-runtime';
 import type { PricingContext } from '@/lib/pricing-context';
-import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { EngineCaps, Mode, PricingSnapshot } from '@/types/engines';
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario } from '@/lib/pricing-manual-scenario';
@@ -85,6 +86,14 @@ function mediaDimensions(modelId: string, mode: string, durationSec: number): Pr
 }
 
 /** Reviewed finite catalog combinations are captured; unresolved controls remain explicit gaps. */
+/** Fixed Nano21 prices vary only by size and mode; options remain request facts. */
+export function nano21ManualTariffContexts(engine: EngineCaps, mode: Mode): PricingContext[] {
+  if (engine.id !== NANO21_ENGINE_ID || !['t2i', 'i2i'].includes(mode)) return [];
+  return ['1k', '2k', '4k'].map(resolution => ({ engine, mode, durationSec: 1, resolution,
+    thinkingLevel: 'medium', aspectRatio: '16:9', referenceImageCount: mode === 'i2i' ? 1 : 0,
+    maxOutputTokens: NANO21_DEFAULT_MAX_OUTPUT_TOKENS, enableWebSearch: false, enableImageSearch: false }));
+}
+
 export function collectSellableManualTariffCoverage(scope: { modelId?: string; mode?: string; bytePlusTransport?: 'modelark' | 'las' } = {}): ManualTariffCoverage {
   const scenarios: ManualTariffCoverageScenario[] = [];
   const gaps: ManualTariffCoverage['gaps'] = [];
@@ -110,6 +119,13 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
     for (const modeConfig of entry.modes) {
       const mode = modeConfig.mode;
       if (scope.mode !== undefined && mode !== scope.mode) continue;
+      if (entry.id === NANO21_ENGINE_ID) {
+        for (const context of nano21ManualTariffContexts(entry.engine, mode)) {
+          scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${context.resolution}`));
+        }
+        gaps.push({ modelId: model.id, reason: `${mode}: nondefault output token caps require exact separately reviewed cells; search budget remains closed` });
+        continue;
+      }
       if (hasOperationTariffInventory(model.id, mode)) continue;
       const isImage = entry.category === 'image';
       const gptImage = isImage && isGptImageFamilyEngineId(model.id);

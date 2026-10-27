@@ -32,6 +32,7 @@ import { ltx25ProTemplateConfig } from './model-page-templates/ltx-2-5-pro';
 import { minimaxHailuo02TemplateConfig } from './model-page-templates/minimax-hailuo-02-text';
 import { minimaxH3TemplateConfig } from './model-page-templates/minimax-h3';
 import { minimaxH3MaxTemplateConfig } from './model-page-templates/minimax-h3-max';
+import { nanoBanana21TemplateConfig } from './model-page-templates/nano-banana-2-1';
 import { nanoBanana2TemplateConfig } from './model-page-templates/nano-banana-2';
 import { nanoBananaLiteTemplateConfig } from './model-page-templates/nano-banana-lite';
 import { nanoBananaProTemplateConfig } from './model-page-templates/nano-banana-pro';
@@ -93,6 +94,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [nanoBananaTemplateConfig.slug]: nanoBananaTemplateConfig,
   [nanoBananaLiteTemplateConfig.slug]: nanoBananaLiteTemplateConfig,
   [nanoBanana2TemplateConfig.slug]: nanoBanana2TemplateConfig,
+  [nanoBanana21TemplateConfig.slug]: nanoBanana21TemplateConfig,
   [nanoBananaProTemplateConfig.slug]: nanoBananaProTemplateConfig,
   [pikaTextToVideoTemplateConfig.slug]: pikaTextToVideoTemplateConfig,
   [flux3TemplateConfig.slug]: flux3TemplateConfig,

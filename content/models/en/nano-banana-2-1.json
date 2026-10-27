@@ -1,0 +1,197 @@
+{
+  "marketingName": "Nano Banana 2.1",
+  "versionLabel": "2.1",
+  "seo": {
+    "title": "Nano Banana 2.1 | MaxVideoAI",
+    "description": "Text-to-image and image editing through Google Vertex AI."
+  },
+  "overview": "Nano Banana 2.1 is a separate image model with 1K, 2K and 4K output, fourteen aspect ratios and up to fourteen ordered references for edits. MINIMAL, MEDIUM and HIGH reasoning are supported; MEDIUM is the default.",
+  "hero": {
+    "title": "Nano Banana 2.1",
+    "intro": "Text-to-image and image editing through Google Vertex AI.",
+    "badge": "1K / 2K / 4K · MINIMAL / MEDIUM / HIGH",
+    "ctaPrimary": {
+      "label": "Open image workspace",
+      "href": "/app/image?engine=nano-banana-2-1"
+    }
+  },
+  "tips": {
+    "title": "Availability and limits",
+    "items": [
+      "Fixed price per image: $0.07 in 1K, $0.11 in 2K or $0.23 in 4K.",
+      "Choose MINIMAL, MEDIUM or HIGH reasoning, fourteen aspect ratios, and up to fourteen image references for edits. Supported options do not add a customer surcharge."
+    ]
+  },
+  "pricingNotes": [
+    "Your current quote is confirmed before generation. Supplier text and reasoning costs do not change the agreed image price."
+  ],
+  "decision": {
+    "modelSlug": "nano-banana-2-1",
+    "hero": {
+      "eyebrow": "GOOGLE IMAGE MODEL",
+      "title": "Nano Banana 2.1",
+      "subtitle": "Text-to-image and image editing through Google Vertex AI.",
+      "subtitleHighlights": [
+        "Google Vertex AI",
+        "1K / 2K / 4K"
+      ],
+      "paragraph": "Nano Banana 2.1 is a separate image model with 1K, 2K and 4K output, fourteen aspect ratios and up to fourteen ordered references for edits. MINIMAL, MEDIUM and HIGH reasoning are supported; MEDIUM is the default.",
+      "primaryCta": {
+        "label": "Open image workspace",
+        "href": "/app/image?engine=nano-banana-2-1"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "View pricing",
+          "href": "/pricing"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Nano Banana 2.1 image workflow",
+      "description": "Text-to-image and image editing through Google Vertex AI.",
+      "renderLabel": "View image",
+      "badges": [
+        "1K / 2K / 4K",
+        "MINIMAL / MEDIUM / HIGH"
+      ],
+      "altContext": "Nano Banana 2.1 image workflow"
+    },
+    "features": [
+      {
+        "title": "1K, 2K and 4K",
+        "body": "Choose the output size and one of fourteen documented aspect ratios. No seed, sampling or native mask control is offered.",
+        "tone": "quality"
+      },
+      {
+        "title": "Owned image references",
+        "body": "Attach one to fourteen owned images in the intended order and explain what each should preserve or change.",
+        "tone": "reference"
+      },
+      {
+        "title": "Reasoning",
+        "body": "Choose minimal, medium or high. Reasoning usage varies and is separate from image output tokens.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Exact quote before generation",
+        "body": "Available in MaxVideoAI through Google Vertex AI.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Nano Banana 2 remains available",
+        "body": "Nano Banana 2 retains its own model identity, settings and history.",
+        "cta": {
+          "label": "View Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Describe the subject, action, setting, framing and lighting. Select the aspect ratio, size and reasoning level."
+      },
+      {
+        "title": "Owned image references",
+        "body": "Attach one to fourteen owned images in the intended order and explain what each should preserve or change."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Exact quote before generation",
+      "subtitle": "Fixed price per image: $0.07 in 1K, $0.11 in 2K or $0.23 in 4K.",
+      "footnote": "Your current quote is confirmed before generation. Supplier text and reasoning costs do not change the agreed image price.",
+      "ctaLabel": "View pricing",
+      "ctaHref": "/pricing",
+      "maxDurationNote": "Up to 4K"
+    },
+    "meta": {
+      "title": "Nano Banana 2.1 | MaxVideoAI",
+      "description": "Text-to-image and image editing through Google Vertex AI."
+    }
+  },
+  "examples": {
+    "modelSlug": "nano-banana-2-1",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "Nano Banana 2.1 images",
+      "intro": "Characters, settings and illustration generated with Nano Banana 2.1.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Use this prompt"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "fact-1",
+        "title": "Separate model",
+        "body": "Nano Banana 2.1 is distinct from Nano Banana 2.",
+        "icon": "image"
+      },
+      {
+        "id": "fact-2",
+        "title": "Output sizes",
+        "body": "Generate images in 1K, 2K or 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "fact-3",
+        "title": "Aspect ratios",
+        "body": "Choose from fourteen supported aspect ratios.",
+        "icon": "image"
+      },
+      {
+        "id": "fact-4",
+        "title": "Reasoning",
+        "body": "Choose MINIMAL, MEDIUM or HIGH reasoning.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "fact-5",
+        "title": "References",
+        "body": "Use up to fourteen ordered images for edits.",
+        "icon": "users"
+      }
+    ],
+    "fallbackItems": null
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-2-1",
+    "section": {
+      "title": "Describe the image",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": null
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "The blue dress",
+      "intro": "The original prompt used for the Nano Banana 2.1 character still.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "fashion-character",
+          "title": "The blue dress",
+          "badge": "1K · 16:9 · MEDIUM",
+          "kind": "image",
+          "prompt": "Original full-body cinematic fashion portrait, horizontal 16:9. Iris, a tall woman aged58, sharply cut silver bob, strong nose, fine eye wrinkles, composed professional expression. A sculptural midnight-blue heavy silk gown with a high asymmetric collar, one plain silver cuff, exactly two simple black heels worn on her feet. Narrow runway end under hard white light; charcoal curtain behind. Photographers stay outside frame. Rich real silk texture, natural mature skin, restrained contrast, poised weight on one leg, no exaggerated beauty retouch. Both shoes and complete dress hem visible. No celebrity likeness, brands, captions, collage or text. This is an identity and wardrobe reference before she leaves the runway.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels."
+        }
+      ]
+    }
+  }
+}

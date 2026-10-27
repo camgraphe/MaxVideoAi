@@ -266,6 +266,25 @@
     }
   },
   {
+    "engineId": "nano-banana-2-1",
+    "marketingName": "Nano Banana 2.1",
+    "brandId": "google",
+    "modelSlug": "nano-banana-2-1",
+    "family": "nano-banana",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "versionLabel": "2.1",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "nano-banana-lite",
     "marketingName": "Nano Banana Lite",
     "brandId": "google",
