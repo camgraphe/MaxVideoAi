@@ -6,7 +6,7 @@
     "description": "Usa Kling 3 Pro en MaxVideoAI para video IA multi-shot, control de escena, audio nativo y specs y precios en vivo antes de renderizar.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro es el modelo de video IA Kling actual en MaxVideoAI para video multi-shot, workflows Kling de imagen-a-video con start frame, Kling Elements reutilizables, frames finales opcionales y audio nativo.",
+  "overview": "Kling 3 Pro es un modelo de video IA Kling en MaxVideoAI para video multi-shot, workflows Kling de imagen-a-video con start frame, Kling Elements reutilizables, frames finales opcionales y audio nativo.",
   "pricingNotes": "Las estimaciones mostradas a miembros incluyen el margen de MaxVideoAI: aprox. 0,22 $/s con audio, 0,15 $/s audio off y 0,26 $/s con voice control.",
   "hero": {
     "title": "Kling 3 Pro — modelo Kling actual para video multi-shot y control de escena",
@@ -311,11 +311,11 @@
         }
       },
       {
-        "title": "¿Necesitas dirección más precisa?",
-        "body": "Usa momentos de escena, prompt negativo, CFG scale y cuadro final opcional cuando la cámara necesita límites claros.",
+        "title": "¿Necesitas una escena más larga?",
+        "body": "Explora Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias de imagen o vídeo en 720p o 1080p.",
         "cta": {
-          "label": "Abrir Prompt Lab",
-          "href": "#prompting"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

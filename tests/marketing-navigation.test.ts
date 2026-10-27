@@ -174,6 +174,8 @@ test('editorial navigation promotes current models and preserves comparisons wit
     ['flux-3-max', 'ltx-2-5-pro', 'wan-3-prime'],
   );
   const expectedComparisons = [
+    'kling-v4-vs-seedance-2-5',
+    'kling-v4-vs-wan-3-prime',
     'minimax-h3-vs-seedance-2-5',
     'ltx-2-5-fast-vs-ltx-2-5-pro',
     'gemini-omni-flash-vs-veo-3-1',
@@ -334,10 +336,11 @@ test('marketing brand logo images are decorative when brand text is visible', ()
 
 test('marketing footer promotes the current shared comparison selection', () => {
   assert.match(marketingFooterSource, /FOOTER_COMPARISONS\.map/);
+  assert.ok(FOOTER_COMPARISONS.some(item => item.key === 'kling-v4-vs-seedance-2-5'));
   for (const key of ['seedance-2-0-vs-seedance-2-0-fast', 'gemini-omni-flash-vs-veo-3-1']) {
     assert.ok(FOOTER_COMPARISONS.some(item => item.key === key), 'Preserve comparisons with recorded search demand');
   }
-  assert.ok(FOOTER_COMPARISONS.length <= 4);
+  assert.ok(FOOTER_COMPARISONS.length <= 5);
   assert.equal(FOOTER_EXAMPLES[0]?.key, 'ltx');
   assert.doesNotMatch(marketingFooterSource, /seedance-1-5-pro|ltx-2-3/);
 });

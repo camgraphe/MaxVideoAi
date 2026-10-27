@@ -201,11 +201,11 @@
         }
       },
       {
-        "title": "A recurring character",
-        "body": "Prepare consistent source images and describe the action without repeatedly redesigning the subject.",
+        "title": "Need native 4K?",
+        "body": "Kling 4.0 outputs 720p or 1080p. Explore Kling 3.0 Omni 4K for native 4K and compare the available modes before choosing.",
         "cta": {
-          "label": "Explore prompt ideas",
-          "href": "#prompting"
+          "label": "Explore Kling 3.0 Omni 4K",
+          "href": "/models/kling-o3-4k"
         }
       }
     ],

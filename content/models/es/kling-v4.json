@@ -201,11 +201,11 @@
         }
       },
       {
-        "title": "Un personaje recurrente",
-        "body": "Prepara imágenes coherentes y describe la acción sin rediseñar constantemente al sujeto.",
+        "title": "¿Necesitas 4K nativo?",
+        "body": "Kling 4.0 produce 720p o 1080p. Descubre Kling 3.0 Omni 4K para una salida en 4K nativo y compara los modos disponibles antes de elegir.",
         "cta": {
-          "label": "Explorar ideas de prompts",
-          "href": "#prompting"
+          "label": "Descubrir Kling 3.0 Omni 4K",
+          "href": "/es/modelos/kling-o3-4k"
         }
       }
     ],

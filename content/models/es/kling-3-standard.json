@@ -299,11 +299,11 @@
         }
       },
       {
-        "title": "¿Planeas varias tomas?",
-        "body": "Mantén cada beat corto, una acción por toma y repite anclas de continuidad.",
+        "title": "¿Necesitas una escena más larga?",
+        "body": "Explora Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias de imagen o vídeo en 720p o 1080p.",
         "cta": {
-          "label": "Abrir Prompt Lab",
-          "href": "#prompting"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

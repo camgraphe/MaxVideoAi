@@ -19,6 +19,7 @@ export const FOOTER_MODELS = select(MARKETING_NAV_MODELS, [
 
 export const FOOTER_COMPARISONS = select(MARKETING_NAV_COMPARE, [
   'minimax-h3-vs-seedance-2-5',
+  'kling-v4-vs-seedance-2-5',
   'kling-3-pro-vs-seedance-2-5',
   // Established acquisition pages retained alongside current launches (D85 GSC).
   'seedance-2-0-vs-seedance-2-0-fast',

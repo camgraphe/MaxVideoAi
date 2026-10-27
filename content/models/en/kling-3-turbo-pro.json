@@ -81,11 +81,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Choose Pro for final delivery",
-        "body": "Use Pro when the approved concept needs 1080p output and a more polished visual finish.",
+        "title": "Need a longer scene?",
+        "body": "Explore Kling 4.0 for 3–30 second generation, timed shot prompts and image or video references at 720p or 1080p.",
         "cta": {
-          "label": "Generate with Kling 3.0 Turbo Pro",
-          "href": "/app?engine=kling-3-turbo-pro"
+          "label": "Explore Kling 4.0",
+          "href": "/models/kling-v4"
         }
       },
       {

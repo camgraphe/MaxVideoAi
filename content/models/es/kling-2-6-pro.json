@@ -315,11 +315,11 @@
         }
       },
       {
-        "title": "¿Necesitas una pasada corta con audio?",
-        "body": "Mantén diálogo y SFX breves, ligados a acciones visibles, y activa audio solo cuando la revisión lo necesite.",
+        "title": "¿Necesitas una escena más larga?",
+        "body": "Explora Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias de imagen o vídeo en 720p o 1080p.",
         "cta": {
-          "label": "Abrir Prompt Lab",
-          "href": "#prompting"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

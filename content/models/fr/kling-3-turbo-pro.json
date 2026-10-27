@@ -81,11 +81,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Choisir Pro pour la livraison",
-        "body": "Utilisez Pro quand le concept validé exige une sortie 1080p et une finition plus poussée.",
+        "title": "Une scène plus longue ?",
+        "body": "Découvrez Kling 4.0 pour générer de 3 à 30 s, diriger chaque plan et utiliser des références image ou vidéo en 720p ou 1080p.",
         "cta": {
-          "label": "Générer avec Kling 3.0 Turbo Pro",
-          "href": "/app?engine=kling-3-turbo-pro"
+          "label": "Découvrir Kling 4.0",
+          "href": "/fr/modeles/kling-v4"
         }
       },
       {

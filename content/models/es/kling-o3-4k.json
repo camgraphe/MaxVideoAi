@@ -172,11 +172,11 @@
         }
       },
       {
-        "title": "¿Necesitas V2V fuente?",
-        "body": "Compara Standard o Pro para otras resoluciones de salida y pruebas de referencias antes de elegir 4K.",
+        "title": "¿Una escena más larga en 1080p?",
+        "body": "Kling 4.0 permite generar de 3 a 30 s con planos temporizados, en 720p o 1080p. Conserva esta versión Kling 4K si necesitas una salida en 4K nativo.",
         "cta": {
-          "label": "Ver O3 Pro",
-          "href": "/es/modelos/kling-o3-pro"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

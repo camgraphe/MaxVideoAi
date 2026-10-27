@@ -189,10 +189,10 @@ export function buildExamplesNextStepLinks({
     kling: [
       ['kling-v4-vs-seedance-2-5', 'Kling 4.0 vs Seedance 2.5'],
       ['kling-v4-vs-wan-3-prime', 'Kling 4.0 vs Wan 3 Prime'],
+      ['kling-3-pro-vs-kling-3-standard', 'Kling 3 Pro vs Standard'],
       ['kling-o3-pro-vs-kling-v4', 'Kling 3.0 Omni Pro vs Kling 4.0'],
       ['kling-3-pro-vs-seedance-2-5', 'Kling 3 Pro vs Seedance 2.5'],
       ['kling-3-pro-vs-minimax-h3', 'Kling 3 Pro vs MiniMax H3'],
-      ['kling-3-pro-vs-kling-3-standard', 'Kling 3 Pro vs Standard'],
       ['kling-3-pro-vs-veo-3-1', 'Kling 3 Pro vs Veo 3.1'],
     ],
     seedance: [

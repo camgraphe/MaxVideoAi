@@ -81,11 +81,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Elige Standard para iterar",
-        "body": "Usa Standard en 720p para probar ganchos, puesta en escena y ritmo antes del acabado final.",
+        "title": "¿Necesitas una escena más larga?",
+        "body": "Explora Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias de imagen o vídeo en 720p o 1080p.",
         "cta": {
-          "label": "Generar con Kling 3.0 Turbo Standard",
-          "href": "/app?engine=kling-3-turbo-standard"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

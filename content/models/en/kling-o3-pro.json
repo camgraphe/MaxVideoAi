@@ -231,11 +231,11 @@
         }
       },
       {
-        "title": "Need source-video guidance?",
-        "body": "Choose Reference for new motion guided by a video, or Edit for a change that inherits source timing and framing. Standard, Pro and Omni 4K expose their own exact settings and quotes.",
+        "title": "Planning a new scene with references?",
+        "body": "Explore Kling 4.0 for 3–30 second generation, timed shots and visual references at 720p or 1080p. Video editing uses a separate mode.",
         "cta": {
-          "label": "Open O3 Pro composer",
-          "href": "/app?engine=kling-o3-pro"
+          "label": "Explore Kling 4.0",
+          "href": "/models/kling-v4"
         }
       },
       {

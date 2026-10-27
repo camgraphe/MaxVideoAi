@@ -299,11 +299,11 @@
         }
       },
       {
-        "title": "Plusieurs plans à structurer ?",
-        "body": "Gardez chaque beat court, une action par plan, et répétez les ancres de continuité.",
+        "title": "Une scène plus longue ?",
+        "body": "Découvrez Kling 4.0 pour générer de 3 à 30 s, diriger chaque plan et utiliser des références image ou vidéo en 720p ou 1080p.",
         "cta": {
-          "label": "Ouvrir le Prompt Lab",
-          "href": "#prompting"
+          "label": "Découvrir Kling 4.0",
+          "href": "/fr/modeles/kling-v4"
         }
       },
       {

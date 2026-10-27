@@ -170,6 +170,8 @@ const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.i
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
+  { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
   { slug: 'kling-o3-pro-vs-kling-v4', label: 'Kling 4.0 vs Kling 3.0 Omni Pro' },
   { slug: 'minimax-h3-vs-seedance-2-5', label: 'MiniMax H3 vs Seedance 2.5' },
   { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs H3 Max' },
