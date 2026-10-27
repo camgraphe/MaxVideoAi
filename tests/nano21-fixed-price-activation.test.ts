@@ -4,6 +4,7 @@ import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { resolveImageGenerationRequestContext } from '../frontend/src/server/images/image-generation-request-context';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-facts';
+import { buildPublicPricingFacts } from '../frontend/src/lib/pricing-public-facts';
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import tariffDocument from '../frontend/config/customer-tariffs.json';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
@@ -75,5 +76,26 @@ test('public model pricing resolves the same three one-image scenarios as chargi
 test('the same admitted Nano21 model is available to Studio image creation and editing',()=>{
   for(const presetId of ['generate-image','modify-image'] as const){
     assert.equal(isWorkspaceModelCertifiedForBlock({modelId:'nano-banana-2-1',presetId}),true);
+  }
+});
+
+test('public and admin supplier facts admit Nano21 while keeping variable provider cost incomplete', () => {
+  const engine = getFalEngineById('nano-banana-2-1')!.engine;
+  for (const [resolution, imageOnlyCents] of [['1K', 3.36], ['2K', 5.04], ['4K', 11.34]] as const) {
+    for (const referenceImageCount of [0, 14]) {
+      const context = { engine, resolution, durationSec: 1, referenceImageCount,
+        mode: referenceImageCount ? 'i2i' as const : 't2i' as const,
+        maxOutputTokens: 4096, thinkingLevel: 'HIGH', enableWebSearch: true, enableImageSearch: true };
+      const billing = buildBillingPricingFacts(context, undefined, 'USD');
+      const publicFacts = buildPublicPricingFacts(context);
+      const { metadata: _manualSelectorMetadata, ...billingSupplierFacts } = billing.facts;
+      assert.deepEqual(publicFacts.facts, billingSupplierFacts);
+      if (!referenceImageCount) assert.ok(Math.abs(publicFacts.facts.vendorSubtotalExactCents - imageOnlyCents) < 1e-9);
+      assert.equal(publicFacts.base.unit, 'image');
+      assert.equal(publicFacts.meta.providerCostIncomplete, true);
+      assert.equal(publicFacts.meta.providerInvoiceCostUsd, null);
+      assert.equal(publicFacts.meta.providerConfiguredOutputTokenLimit, 4096);
+      assert.deepEqual(buildPublicPricingFacts({ ...context, useStandardDefinitionFacts: true }).facts, billingSupplierFacts);
+    }
   }
 });
