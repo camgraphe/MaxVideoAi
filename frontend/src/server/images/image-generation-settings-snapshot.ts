@@ -56,7 +56,7 @@ export function buildDefaultSettingsSnapshot(args: {
       thinkingLevel: args.thinkingLevel,
       limitGenerations: args.limitGenerations,
       watermark: args.watermark,
-      ...(args.nano21Settings ?? {}),
+      ...(args.nano21Settings ? { ...args.nano21Settings, thinkingLevel: args.thinkingLevel } : {}),
     },
     refs: {
       imageUrls: args.imageUrls,
