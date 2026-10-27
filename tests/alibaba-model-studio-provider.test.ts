@@ -67,6 +67,20 @@ test('Wan 3 factual cost includes input and output video duration', () => {
   }).providerCostUsd, 2.8);
 });
 
+test('Wan Modify preserves the prompt by default and honors explicit rewriting choices', () => {
+  for (const engineId of ['wan-3', 'wan-3-prime']) {
+    for (const promptExtend of [undefined, false, true]) {
+      const payload = buildAlibabaVideoPayload({
+        engineId, mode: 'v2v', prompt: 'Keep the same people and original gestures.',
+        durationSec: 8, resolution: '480p', aspectRatio: '16:9',
+        referenceVideoUrls: ['https://media.example/source.mp4'], promptExtend,
+      });
+      assert.equal(payload.parameters.prompt_extend, promptExtend ?? false, engineId);
+      assert.equal(payload.input.prompt, 'Keep the same people and original gestures.');
+    }
+  }
+});
+
 test('HappyHorse 1.1 factual cost bills output duration only', () => {
   assert.deepEqual(estimateAlibabaProviderCost({
     engineId: 'happy-horse-1-1',
