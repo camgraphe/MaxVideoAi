@@ -176,6 +176,8 @@ export async function executeGoogleVertexImageGeneration(params: {
         referenceImages,
         aspectRatio: params.resolvedAspectRatio,
         imageSize: params.resolution,
+        // Qualified thinking contract: Gemini 3.1 Flash Image (Nano2).
+        thinkingLevel: modelId === 'gemini-3.1-flash-image' ? params.thinkingLevel : null,
         enableWebSearch: params.enableWebSearch,
       }));
       lastProviderResponse = providerResponse;
