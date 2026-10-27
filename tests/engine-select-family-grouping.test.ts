@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   buildEngineFamilyGroups,
+  compareEnginesByDefaultPriority,
   formatEngineSelectScore,
   formatEngineSelectScorePercent,
 } from '../frontend/src/components/ui/engine-select/engine-select-helpers.ts';
@@ -221,4 +222,31 @@ test('family priority reorders the displayed groups without changing the source 
     'seedance-2-0-fast',
     'seedance-2-0-mini',
   ]);
+});
+
+test('Kling 4 leads the catalogue and its canonical family without changing default priority or sibling order', () => {
+  const engines = [
+    engine('wan-3-prime', 'Wan 3 Prime'), engine('kling-3-pro', 'Kling 3 Pro'),
+    engine('kling-v4', 'Kling 4'), engine('seedance-2-5', 'Seedance 2.5'),
+    engine('kling-o3-pro', 'Kling 3 Omni Pro'), engine('minimax-h3', 'MiniMax H3'),
+  ];
+  const originalIds = engines.map(item => item.id);
+  const meta = registryMeta([
+    { id: 'wan-3-prime', family: 'wan', rank: 2 },
+    { id: 'kling-3-pro', family: 'kling', rank: 3 },
+    { id: 'kling-v4', family: 'kling', rank: 100 },
+    { id: 'seedance-2-5', family: 'seedance', rank: 0 },
+    { id: 'kling-o3-pro', family: 'kling', rank: 1 },
+    { id: 'minimax-h3', family: 'hailuo', rank: 4 },
+  ]);
+  const engineScores = { 'kling-v4': 1, 'kling-o3-pro': 10, 'kling-3-pro': 9 };
+  const groups = buildEngineFamilyGroups({ engines, registryMeta: meta, engineScores, selectedEngineId: 'wan-3-prime' });
+  assert.deepEqual(groups.map(group => group.id), ['kling', 'seedance', 'hailuo', 'wan']);
+  assert.deepEqual(groups[0].engines.map(item => item.id), ['kling-v4', 'kling-o3-pro', 'kling-3-pro']);
+  assert.deepEqual(engines.map(item => item.id), originalIds, 'presentation ordering does not mutate the source catalogue');
+  assert.equal(engines.slice().sort((a, b) => compareEnginesByDefaultPriority(a, b, meta))[0].id, 'seedance-2-5', 'fallback/default priority is unchanged');
+  for (const catalogue of [engines.filter(item => item.id !== 'kling-v4'), engines.map(item => item.id === 'kling-v4' ? { ...item, availability: 'paused' as const } : item)]) {
+    assert.deepEqual(buildEngineFamilyGroups({ engines: catalogue, registryMeta: meta }).map(group => group.id), ['seedance', 'kling', 'hailuo', 'wan']);
+  }
+  assert.equal(buildEngineFamilyGroups({ engines, registryMeta: null })[0].engines[0].id, 'kling-v4', 'catalogue priority is available before lazy metadata');
 });

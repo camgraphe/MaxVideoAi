@@ -16,10 +16,24 @@ function setup(id = 'wan-3-prime'): WorkspaceModelSetup {
 }
 test('approved recommendations preserve order and never invent absent models', () => {
   const groups = getPickerRecommendations(engines, 't2v');
-  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'wan-3-prime', 'kling-o3-pro'], ['wan-3', 'flux-3-max'], ['seedance-2-0-mini', 'minimax-h3']]);
+  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'kling-v4', 'wan-3-prime'], ['wan-3', 'flux-3-max'], ['seedance-2-0-mini', 'minimax-h3']]);
   assert.deepEqual(getPickerRecommendations([engine('wan-3')], 't2v').flatMap(group => group.ids), ['wan-3']);
   assert.deepEqual(getPickerRecommendations(engines, 't2i'), []);
   assert.ok(!getPickerRecommendations([{ ...engine('wan-3'), availability: 'paused' }], 't2v').length);
+});
+test('Kling 4 promotion preserves mode admission and the contextual Modify shortlist', () => {
+  const kling = engine('kling-v4');
+  const quality = (catalogue: typeof engines, mode: 't2v' | 'i2v' | 'fl2v' | 'v2v') =>
+    getPickerRecommendations(catalogue, mode).find(group => group.group === 'quality')?.ids ?? [];
+  assert.deepEqual(quality(engines, 'i2v'), ['seedance-2-5', 'kling-v4', 'wan-3-prime']);
+  assert.deepEqual(quality(engines.filter(item => item.id !== kling.id), 't2v'), ['seedance-2-5', 'wan-3-prime']);
+  for (const excluded of [
+    { ...kling, availability: 'paused' as const },
+    { ...kling, modes: kling.modes.filter(value => value !== 't2v') },
+    { ...kling, modeAvailability: { t2v: { available: false } } },
+  ]) assert.deepEqual(quality(engines.map(item => item.id === kling.id ? excluded : item), 't2v'), ['seedance-2-5', 'wan-3-prime']);
+  assert.ok(!quality(engines, 'fl2v').includes(kling.id), 'promotion cannot invent a first/last contract');
+  assert.deepEqual(quality(engines, 'v2v'), ['luma-ray-3-2', 'kling-o3-pro', 'wan-3-prime']);
 });
 test('Create budgets lead with Mini only when that model and mode are admitted', () => {
   const mini = engine('seedance-2-0-mini');

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
 import {
   compareEnginesByDefaultPriority,
+  buildEngineFamilyGroups,
   ENGINE_LEGACY_STORAGE_KEY,
   ensureEngineRegistryMeta,
   getCachedEngineRegistryMeta,
@@ -69,13 +70,9 @@ export function useEngineSelectRegistry({
   );
 
   const visibleEngines = useMemo(() => {
-    return availableEngines.filter((engine) => {
-      const meta = registryMeta?.meta.get(engine.id);
-      if (!meta?.isLegacy) return true;
-      if (showLegacy) return true;
-      return engine.id === selectedEngine?.id;
-    });
-  }, [availableEngines, registryMeta, selectedEngine, showLegacy]);
+    return buildEngineFamilyGroups({ engines: availableEngines, engineScores, registryMeta,
+      selectedEngineId: selectedEngine?.id, showLegacy }).flatMap(group => group.engines);
+  }, [availableEngines, engineScores, registryMeta, selectedEngine, showLegacy]);
 
   const hasLegacyEngines = useMemo(
     () => availableEngines.some((engine) => Boolean(registryMeta?.meta.get(engine.id)?.isLegacy)),

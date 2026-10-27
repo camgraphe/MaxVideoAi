@@ -16,7 +16,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatResolutionList } from '@/lib/resolution-labels';
 import { DEFAULT_ENGINE_SELECT_COPY, type EngineSelectCopy } from './engine-select-copy';
 import {
-  compareEnginesByDefaultPriority,
+  compareEnginesByCataloguePriority,
   DEFAULT_MODE_OPTIONS,
   engineMatchesBrowseResolution,
   formatAvgDuration,
@@ -133,7 +133,7 @@ export function BrowseEnginesModal({
         return haystack.includes(searchValue);
       })
       .sort((a, b) => {
-        const ranked = compareEnginesByDefaultPriority(a, b, null, engineMeta);
+        const ranked = compareEnginesByCataloguePriority(a, b, null, engineMeta);
         if (ranked !== 0) return ranked;
         if (a.isLab !== b.isLab) return a.isLab ? 1 : -1;
         const aName = engineMeta?.get(a.id)?.marketingName ?? a.label ?? a.id;
