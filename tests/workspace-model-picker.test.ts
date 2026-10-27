@@ -92,14 +92,16 @@ test('Kling and mandatory-audio H3 disclose the effective quote settings', () =>
   assert.match(rows['minimax-h3'].summary, /audio/i);
   assert.ok(rows['minimax-h3'].changes.some(change => change.label === 'Son' && change.after === 'Toujours activé'));
 });
-test('a source cannot be discarded or Modify silently turned into Text to Video', () => {
+test('an explicit other-model choice from Modify prepares Create without reusing its source', () => {
   const current = setup('luma-ray-3-2');
   current.form.mode = 'v2v';
   current.inputAssets.video_url = [{ id: 'source', assetId: 'source', fieldId: 'video_url', kind: 'video', name: 'source', type: 'video/mp4', size: 1, status: 'ready', url: 'https://example.com/source.mp4', previewUrl: 'https://example.com/source.mp4', durationSec: 8 }];
   const before = structuredClone(current);
   const rows = buildWorkspacePickerOptions({ current, engines, locale: 'fr', memberTier: 'Member' });
-  assert.ok(rows['flux-3-max'].disabledReason);
-  assert.equal(rows['flux-3-max'].request, null);
+  assert.equal(rows['flux-3-max'].disabledReason, undefined);
+  assert.equal(rows['flux-3-max'].request?.mode, 't2v');
+  assert.ok(!rows['flux-3-max'].request?.inputs?.some(input => input.assetId === 'source'));
+  assert.equal(rows['luma-ray-3-2'].request?.mode, 'v2v', 'current model retains Modify');
   assert.deepEqual(current, before);
 });
 test('missing Modify source produces a truthful prerequisite instead of quoting another mode', () => {

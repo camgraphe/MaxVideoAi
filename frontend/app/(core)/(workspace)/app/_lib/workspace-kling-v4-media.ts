@@ -9,6 +9,14 @@ const ACTIVE_FIELDS: Partial<Record<Mode, readonly string[]>> = {
   v2v: ['video_url', 'image_urls'],
 };
 
+/** Create infers the provider mode; a Modify source is never a creation reference. */
+export function resolveKlingV4CreateMode(assets: Record<string, (ReferenceAsset | null)[]>, elements: KlingElementState[]): Mode {
+  if (['image_urls', 'video_urls'].some(id => assets[id]?.some(Boolean))
+    || elements.some(element => element.frontal || element.video || element.references.some(Boolean))) return 'ref2v';
+  if (['image_url', 'end_image_url'].some(id => assets[id]?.some(Boolean))) return 'i2v';
+  return 't2v';
+}
+
 /** Keep inactive V4 media in the draft without submitting another mode's source. */
 export function getWorkspaceKlingV4ActiveAssets(
   mode: Mode,

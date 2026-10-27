@@ -174,7 +174,7 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
   if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
     return undefined;
   }
-  if (isKlingO3EngineId(engine.id)) {
+  if (isKlingO3EngineId(engine.id) || engine.id === 'kling-v4') {
     return undefined;
   }
   if (engine.id === 'veo-3-1') {
@@ -229,7 +229,6 @@ export function buildComposerModeToggles({
   workflowCopy: WorkspaceWorkflowCopy;
 }): ComposerModeToggle[] | undefined {
   if (!selectedEngine) return undefined;
-  if (selectedEngine.id === 'kling-v4') return selectedEngine.modes.map((mode) => ({ mode, label: getEngineModeLabel(selectedEngine.id, mode, uiLocale) }));
   const explicitModes: readonly Mode[] = selectedEngine.id.startsWith('flux-3')
     ? ['ref2v', 'v2v', 'extend']
     : isLumaRay2EngineId(selectedEngine.id) || isLumaRay32EngineId(selectedEngine.id)
@@ -368,6 +367,12 @@ export function getDefaultEngineMode(engine: EngineCaps): Mode {
   const availableMode = engine.modes.find((mode) => isWorkspaceModeAvailable(engine, mode));
   if (availableMode) return availableMode;
   return engine.modes[0] ?? 't2v';
+}
+
+/** An explicit model choice starts Create; saved drafts and deep links keep their own mode policy. */
+export function getWorkspaceCreateMode(engine: EngineCaps): Mode | null {
+  const creationModes: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
+  return creationModes.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
 }
 
 export function getPreferredEngineModeForEngineRequest({

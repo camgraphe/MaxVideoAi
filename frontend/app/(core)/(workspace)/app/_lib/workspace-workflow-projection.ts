@@ -27,6 +27,7 @@ import {
   isUnifiedMinimaxH3EngineId,
 } from './minimax-h3-unified-workflow';
 import { isVideoSourceWorkflow } from '@/lib/video-source-workflow';
+import { resolveKlingV4CreateMode } from './workspace-kling-v4-media';
 import {
   getWorkspaceMediaFields,
   hasMultimodalReferenceFields,
@@ -119,7 +120,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
 
   const implicitMode = (() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
-    if (supportsKlingV4Controls) return form && selectedEngine.modes.includes(form.mode) ? form.mode : 't2v';
+    if (supportsKlingV4Controls) return resolveKlingV4CreateMode(inputAssets, klingElements);
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
@@ -168,7 +169,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
-    if (supportsKlingV4Controls) return currentMode && selectedEngine.modes.includes(currentMode) ? currentMode : 't2v';
+    if (supportsKlingV4Controls) return currentMode === 'v2v' && selectedEngine.modes.includes(currentMode) ? currentMode : null;
     if (isUnifiedKlingO3 && form?.operation === 'kling-reference') return null;
     if (isUnifiedSeedance || isUnifiedKlingO3 || isUnifiedGeminiOmni) {
       return (currentMode === 'v2v' || currentMode === 'extend') && isWorkspaceModeAvailable(selectedEngine, currentMode)

@@ -90,8 +90,8 @@ test('shared composer clears and safely restores prompts with touch and keyboard
         ? await webkit.launch({ headless: true })
         : await chromium.launch({ headless: true });
       try {
-        for (const width of [390, 1440]) for (const locale of ['en', 'fr', 'es'] as const) for (const density of ['workspace', 'default']) {
-          const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width === 390, hasTouch: width === 390 });
+        for (const width of [320, 390, 1440]) for (const locale of ['en', 'fr', 'es'] as const) for (const density of ['workspace', 'default']) {
+          const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 600, hasTouch: width < 600 });
           const page = await context.newPage(); const errors: string[] = [];
           page.on('pageerror', error => errors.push(error.message));
           const copy = { en: ['Clear', 'Undo clearing'], fr: ['Effacer', 'Annuler l’effacement'], es: ['Borrar', 'Deshacer borrado'] }[locale];
@@ -118,7 +118,13 @@ test('shared composer clears and safely restores prompts with touch and keyboard
           const labelBounds = await page.locator('label[for]').filter({ hasText: 'Prompt' }).first().boundingBox();
           assert.ok(bounds && labelBounds && bounds.x > labelBounds.x && labelBounds.y >= bounds.y && labelBounds.y < bounds.y + bounds.height, 'clear stays on the prompt-label line at its right');
           assert.ok(bounds && bounds.height >= 44 && bounds.width >= 44, 'clear has a 44px touch target');
-          const activate = async (button: typeof clear) => { if (width === 390) await button.tap(); else { await button.focus(); await page.keyboard.press('Enter'); } };
+          const multi = page.getByRole('button', { name: 'Multi-prompt', exact: true });
+          const multiBounds = await multi.boundingBox();
+          assert.ok(bounds && multiBounds && Math.abs(bounds.y - multiBounds.y) < 2 && multiBounds.x + multiBounds.width <= bounds.x,
+            'multi-prompt shares the compact action row with Clear without overlap');
+          assert.equal(await multi.getAttribute('aria-pressed'), 'false');
+          assert.equal(await page.locator('body').evaluate(body => body.scrollWidth <= window.innerWidth), true, '320px prompt controls do not overflow');
+          const activate = async (button: typeof clear) => { if (width < 600) await button.tap(); else { await button.focus(); await page.keyboard.press('Enter'); } };
           await input.focus();
           await activate(clear);
           assert.equal(await input.inputValue(), '');
@@ -166,7 +172,7 @@ test('shared composer clears and safely restores prompts with touch and keyboard
           if (evidence && locale === 'fr' && density === 'workspace') await page.screenshot({ path: join(evidence, `${browserType.name()}-${width}-restored.png`) });
           await context.close();
         }
-        t.diagnostic(`${browserType.name()} ${browser.version()}: 12 scenarios passed`);
+        t.diagnostic(`${browserType.name()} ${browser.version()}: 18 scenarios passed`);
       } finally { await browser.close(); }
     }
   } finally { await fixture.close(); }

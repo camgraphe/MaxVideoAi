@@ -17,8 +17,8 @@ test('price scenarios are provisional, cleared on close, and reject replaced cal
     Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
   }
   const engines = getBaseEnginesByCategory('video');
-  const engine = engines.find(engine => engine.id === 'wan-3-prime')!;
-  const current: WorkspaceModelSetup = { form: { ...coerceFormState(engine, 't2v', null), durationSec: 5, durationOption: 5 }, prompt: 'A scene', negativePrompt: '', inputAssets: {}, klingElements: [], multiPromptEnabled: false, multiPromptScenes: [], shotType: 'customize', voiceIdsInput: '', cfgScale: null };
+  const engine = engines.find(engine => engine.id === 'kling-o3-pro')!;
+  const current: WorkspaceModelSetup = { form: { ...coerceFormState(engine, 'v2v', null), operation: 'kling-edit', durationSec: 5, durationOption: 5 }, prompt: 'A scene', negativePrompt: '', inputAssets: {}, klingElements: [], multiPromptEnabled: false, multiPromptScenes: [], shotType: 'customize', voiceIdsInput: '', cfgScale: null };
   const before = structuredClone(current);
   let context!: ReturnType<typeof useWorkspaceModelPicker>, calls = 0;
   function Fixture() {
@@ -30,9 +30,12 @@ test('price scenarios are provisional, cleared on close, and reject replaced cal
     await act(async () => root.render(React.createElement(Fixture)));
     assert.deepEqual(context.options, {});
     await act(async () => context.onOpenChange?.(true));
+    assert.equal(context.mode, 't2v', 'the recommendation catalogue offers Create choices even from Modify');
+    assert.match(context.label, /Create/);
+    assert.ok(context.controls?.find(control => control.id === 'durationSec')?.options?.length, 'another-model Create comparisons can change requested timing independently of Modify source timing');
     await act(async () => context.onControlChange?.('durationSec', '10'));
     const ten = context.onApply!;
-    assert.match(context.options[engine.id].summary, /10 s/);
+    assert.match(context.options['wan-3-prime'].summary, /10 s/);
     assert.deepEqual(current, before);
     await act(async () => context.onControlChange?.('durationSec', '5'));
     assert.equal(ten(engine.id), false, 'an earlier scenario cannot apply after its settings changed');

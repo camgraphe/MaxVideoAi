@@ -15,10 +15,10 @@ const asset = (id: string, kind: 'image' | 'video' = 'image') => buildKlingLibra
 const subject = (id: string, video = false): KlingElementState => ({ id, frontal:video?null:asset(`${id}-front`),references: video?[null,null,null]:[asset(`${id}-angle`),null,null], video:video?asset(`${id}-video`,'video'):null });
 const prepare = (patch: Record<string,unknown> = {}) => prepareGenerationInputs({ selectedEngineId:'kling-v4', activeMode:'ref2v', submissionMode:'ref2v', form:form(), inputSchema:KLING_V4_ENGINE.inputSchema, inputSchemaSummary:{assetFields:[]}, extraInputFields:[],inputAssets:{},primaryAssetFieldIds:new Set(),referenceAssetFieldIds:new Set(),genericImageFieldIds:new Set(),frameAssetFieldIds:new Set(),referenceAudioFieldIds:new Set(),supportsKlingV3Controls:false,klingElements:[],multiPromptActive:false,multiPromptScenes:[],...patch });
 
-test('V4 explicit modes survive empty references and never enable V3 controls', () => {
+test('V4 creation modes infer from inputs while explicit Modify stays selected and V3 controls stay disabled', () => {
   for (const mode of ['t2v','i2v','ref2v','v2v'] as const) {
     const workflow = resolveWorkspaceWorkflow({engine:KLING_V4_ENGINE,form:form(mode),inputAssets:{},klingElements:[]});
-    assert.equal(workflow.submissionMode,mode);
+    assert.equal(workflow.submissionMode,mode === 'v2v' ? 'v2v' : 't2v');
     assert.equal(workflow.supportsKlingV3Controls,false);
     const facts=resolveWorkspaceComposerFacts({engine:KLING_V4_ENGINE,form:form(mode),workflow,prompt:'',multiPromptEnabled:true,multiPromptScenes:Array.from({length:10},(_,i)=>({id:String(i),prompt:`Shot ${i}`,duration:3})),voiceIdsInput:'unowned'});
     assert.equal(facts.multiPromptActive,mode!=='v2v');

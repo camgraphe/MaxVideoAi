@@ -34,12 +34,20 @@ function Fixture() {
   const [captured, setCaptured] = useState(null);
   const [quoted, setQuoted] = useState(true);
   const [cfgScale, setCfgScale] = useState(null);
-  const mode = useWorkspaceComposerState({ engines: [engine], form, setForm, inputAssets, klingElements, prompt, multiPromptEnabled,setMultiPromptEnabled,multiPromptScenes,setMultiPromptScenes, voiceIdsInput:'',shotType:'customize',setShotType:noop,
+  const mode = useWorkspaceComposerState({ engines: [engine], form, setForm, inputAssets, setInputAssets, klingElements, prompt, multiPromptEnabled,setMultiPromptEnabled,multiPromptScenes,setMultiPromptScenes, voiceIdsInput:'',shotType:'customize',setShotType:noop,
     effectiveRequestedEngineToken: null, authChecked: true, hydratedForScope: 'owner', storageScope: 'owner', preserveStoredDraftRef: useRef(false), requestedEngineOverrideIdRef: useRef(null), requestedEngineOverrideTokenRef: useRef(null), requestedModeOverrideRef: useRef(null), writeStorage: noop, uiLocale: 'en', workflowCopy, showNotice: noop });
   const schema = useWorkspaceInputSchemaState({ ...mode, uiLocale: 'en', authChecked: true, authLoading: false, authenticatedUserId: 'owner', uploadLockedCopy: 'Sign in', setInputAssets, setForm });
+  function selectFixtureMode(value) {
+    if (value === 'v2v') { mode.handleComposerModeToggle('v2v'); return; }
+    mode.handleComposerModeToggle(null);
+    setKlingElements(values => values.map(element => ({...element, frontal:null, video:null, references:[null,null,null]})));
+    const fieldId = value === 'i2v' ? 'image_url' : 'image_urls';
+    const image = {...original, id:'owned-image', assetId:'owned-image', fieldId, kind:'image', type:'image/png', durationSec:null, width:1280,height:720,url:'https://example.test/opening.png',previewUrl:'https://example.test/opening.png'};
+    setInputAssets(value === 't2v' ? {} : {[fieldId]:[image]});
+  }
 
   return <I18nProvider locale="en" dictionary={{}} fallback={{}}>
-    <main className="app-workspace-main"><h1>Offline Kling 4.0 editor fixture</h1>{['t2v','i2v','ref2v','v2v'].map(value=><button key={value} onClick={()=>mode.handleModeChange(value)}>Fixture {value}</button>)}
+    <main className="app-workspace-main"><h1>Offline Kling 4.0 editor fixture</h1>{['t2v','i2v','ref2v','v2v'].map(value=><button key={value} onClick={()=>selectFixtureMode(value)}>Fixture {value}</button>)}
     <button onClick={()=>setInputAssets({video_url:[original]})}>Restore owned source</button>
     <button onClick={()=>setKlingElements(values=>values.map((value,index)=>({...value,video:index<3?original:null})))}>Restore three video subjects</button>
     <button onClick={()=>setEngine(current=>({...current,modeAvailability:Object.fromEntries(current.modes.map(mode=>[mode,{available:false,reason:'provider_disabled'}]))}))}>Close fixture modes</button>
@@ -80,6 +88,8 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     await page.evaluate(engine=>{(globalThis as any).klingFixtureEngine=engine;(globalThis as any).process={env:{NODE_ENV:'production'}};},KLING_V4_ENGINE);
     await page.addScriptTag({url:`http://127.0.0.1:${address.port}/fixture.js`});
     await page.locator('.app-generation-action').waitFor();
+    assert.equal(await page.locator('[data-composer-mode]').count(),2);
+    assert.equal(await page.locator('[data-composer-mode="t2v"], [data-composer-mode="i2v"], [data-composer-mode="ref2v"]').count(),0);
     await page.getByRole('button',{name:'Multi-prompt',exact:true}).click();
     assert.match(await page.locator('body').innerText(),/Total: 30s.*Max 30s/);
     const durations=page.locator('input[type="number"]');
@@ -105,8 +115,7 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     await page.getByRole('button',{name:'Restore owned source',exact:true}).click();
     await page.getByRole('button',{name:'Fixture i2v',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('[data-mode]')?.textContent==='i2v');
-    assert.match(await page.locator('[data-assets]').innerText(),/exact-original.mp4/);
-    assert.match(await page.locator('body').innerText(),/Media from other modes stays saved/);
+    assert.doesNotMatch(await page.locator('[data-assets]').innerText(),/exact-original.mp4/,'Modify source stays parked rather than becoming a Create reference');
     await page.getByRole('button',{name:'Fixture t2v',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('[data-mode]')?.textContent==='t2v');
     assert.equal(await page.getByRole('textbox',{name:'Scene 1 prompt'}).inputValue(),'First shot');
@@ -119,6 +128,7 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     await page.getByRole('button',{name:'Close fixture modes',exact:true}).click();
     await page.getByRole('button',{name:'Fixture v2v',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('[data-mode]')?.textContent==='v2v');
+    assert.match(await page.locator('[data-assets]').innerText(),/exact-original.mp4/,'explicit return to Modify restores its parked original');
     assert.equal(await page.locator('.app-generation-action').isDisabled(),true);
     assert.match(await page.locator('body').innerText(),/temporarily unavailable/);
     if(process.env.KLING_V4_BROWSER_EVIDENCE_DIR){await mkdir(process.env.KLING_V4_BROWSER_EVIDENCE_DIR,{recursive:true});await page.screenshot({path:join(process.env.KLING_V4_BROWSER_EVIDENCE_DIR,'workspace-v4-controls.png'),fullPage:true});}

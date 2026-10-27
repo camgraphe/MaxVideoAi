@@ -430,7 +430,7 @@ export function WorkspaceComposerSurface({
     advancedFields.length
   );
   const showKlingElementsBuilder =
-    (isKlingV4 && (submissionMode === 'ref2v' || submissionMode === 'v2v')) ||
+    isKlingV4 ||
     (supportsKlingV3Controls && (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v'));
   const showExtraFields = Boolean(
     klingV4Error || showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
