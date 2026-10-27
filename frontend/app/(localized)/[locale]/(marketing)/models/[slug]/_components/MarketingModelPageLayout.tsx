@@ -1,3 +1,4 @@
+import { listNano21EditorialImages } from '@/lib/nano21-editorial-images';
 import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
@@ -349,7 +350,8 @@ export async function MarketingModelPageLayout({
   const keyframeDemo = examplesContent.keyframeDemo ? buildModelKeyframeDemoViewModel(
     await loadModelKeyframeDemo(engine.modelSlug), examplesContent.keyframeDemo, locale, engine.surfaces.app.enabled,
   ) : null;
-  const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo);
+  const editorialImages = listNano21EditorialImages(engine.id);
+  const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo) || editorialImages.length > 0;
   const hasTextSection = true;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
@@ -431,7 +433,7 @@ export async function MarketingModelPageLayout({
         pricingCallout: legacyPricingCallout,
         microCta: legacyMicroCta,
         microCtaHref: normalizedPrimaryCtaHref,
-        examplesProps: { viewModel: examplesViewModel, keyframeDemo },
+        examplesProps: { viewModel: examplesViewModel, keyframeDemo, editorialImages },
         decisionCards: templateData?.decisionCards ?? null,
         promptingProps: { viewModel: promptingViewModel },
         prepLinksProps: { prepLinksSection, locale },

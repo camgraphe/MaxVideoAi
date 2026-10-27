@@ -1,4 +1,4 @@
-import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { listFalEngines } from '@/config/falEngines';
 import type { PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
@@ -121,6 +121,7 @@ async function estimateImageGenerationInternal(
     throw new ImageEstimateError('engine_unavailable', 404);
   }
 
+  if (engineEntry.id === NANO21_ENGINE_ID && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable',404);
   const engine = engineEntry.engine;
   const numImages = clampRequestedImageCount(engine, mode, requestedImages);
   if (!engineEntry.modes.some((entry) => entry.mode === mode)) {
@@ -168,6 +169,7 @@ async function estimateImageGenerationInternal(
       ? referenceImageCount
       : undefined;
 
+  if (engine.id === NANO21_ENGINE_ID) assertNano21UnsupportedFields(input as unknown as Record<string, unknown>);
   const nano21 = engine.id === NANO21_ENGINE_ID ? normalizeNano21Settings(input) : null;
   if (nano21) assertNano21Scenario({ ...nano21, mode, referenceImageCount, outputCount: input.numImages, aspectRatio: input.aspectRatio });
   const pricing = await computeCanonicalPublicSnapshot({

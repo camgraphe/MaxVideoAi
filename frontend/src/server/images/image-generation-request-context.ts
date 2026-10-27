@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import type {
   ImageGenerationMode,
@@ -38,6 +39,11 @@ export function resolveImageGenerationRequestContext(
   const engine = engineEntry.engine;
   const fallbackMode = (engineEntry.modes[0]?.mode as ImageGenerationMode | undefined) ?? 't2i';
   const mode = normalizeMode(body.mode, fallbackMode);
+  if (engineEntry.id === NANO21_ENGINE_ID) {
+    if (!engineEntry.surfaces.app.enabled) fail(mode,'engine_unavailable','Image engine unavailable.',503);
+    try { assertNano21UnsupportedFields(body as unknown as Record<string, unknown>); }
+    catch (error) { fail(mode, 'invalid_parameter', error instanceof Error ? error.message : 'Unsupported image setting.', 400); }
+  }
   const modeConfig = engineEntry.modes.find((entry) => entry.mode === mode);
   if (!modeConfig?.falModelId) {
     fail(mode, 'mode_unsupported', 'Selected engine does not support this mode.', 400, null, {

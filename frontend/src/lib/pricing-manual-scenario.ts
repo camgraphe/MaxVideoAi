@@ -101,7 +101,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
       outputCount: context.durationSec, aspectRatio: context.aspectRatio });
     // Adrien approved one fixed image amount per output size. Native settings
     // stay in the request hash/snapshot; they are not extra priced dimensions.
-    return { selector: { engineId: NANO21_ENGINE_ID, mode: context.mode!, resolution: settings.imageSize },
+    return { selector: { engineId: NANO21_ENGINE_ID, mode: context.mode!, resolution: settings.imageSize, durationSec: '1' },
       quantities: { output_units: 1, reference_images: context.referenceImageCount ?? 0 } };
   }
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.

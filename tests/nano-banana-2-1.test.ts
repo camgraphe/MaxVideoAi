@@ -42,7 +42,9 @@ test('admin coverage exposes six fixed size/mode classes without duplicate unpri
   assert.equal(text.length,3); assert.equal(edit.length,3);
   const scenarios = [...text,...edit].map(context=>coverage.buildManualTariffCoverageScenario(context,'nano21-fixed'));
   assert.equal(new Set(scenarios.map(scenario=>scenario.id)).size,6);
-  assert.equal(coverage.collectSellableManualTariffCoverage({modelId:engine.id}).scenarios.length,6);
+  const inventory=coverage.collectSellableManualTariffCoverage({modelId:engine.id});
+  assert.equal(inventory.scenarios.length,6);
+  assert.deepEqual(inventory.gaps,[],'approved unpriced options cannot remain economic coverage gaps');
 });
 
 test('Nano21 picker estimate carries the same normalized thinking value that applying it selects', () => {
@@ -111,6 +113,9 @@ test('canonical Nano settings bind defaults, normalize aliases and retain owned 
   const normalized = normalizeGenerationRequest(input);
   assert.equal(normalized.settings.resolution, '2k');
   assert.equal(normalized.settings.thinkingLevel, 'high');
+  assert.equal(normalized.settings.enableWebSearch, false);
+  assert.equal(normalized.settings.enableImageSearch, false);
+  assert.deepEqual(normalizeGenerationRequest(normalized), normalized);
   assert.equal(normalized.references[0].kind === 'asset' && normalized.references[0].assetId, input.references[0].assetId);
   assert.equal(hashCanonicalGenerationRequest(normalized), hashCanonicalGenerationRequest({ ...normalized,
     settings: { ...normalized.settings, thinkingLevel: 'HIGH', resolution: '2K' } }));
@@ -185,7 +190,7 @@ test('Nano21 fixed tariff identity contains exactly the priced size and mode', (
     referenceImageCount:0,thinkingLevel:'high',maxOutputTokens:4096,aspectRatio:'16:9'} as PricingContext;
   const facts = {engineId:context.engine.id,currency:'USD',vendorSubtotalExactCents:0,quantity:1,unit:'image' as const};
   const scenario = buildManualTariffScenario(context,facts);
-  assert.deepEqual(scenario.selector,{engineId:'nano-banana-2-1',mode:'t2i',resolution:'1K'});
+  assert.deepEqual(scenario.selector,{engineId:'nano-banana-2-1',mode:'t2i',resolution:'1K',durationSec:'1'});
   assert.equal(continuousInputTariffSelector(scenario.selector),null);
   assert.deepEqual(scenario.selector,buildManualTariffScenario({...context,thinkingLevel:'minimal',maxOutputTokens:32768,aspectRatio:'21:9'},facts).selector);
 });

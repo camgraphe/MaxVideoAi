@@ -7,6 +7,8 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import tariffDocument from '../frontend/config/customer-tariffs.json';
 import type { ManualTariffCell } from '@maxvideoai/pricing';
+import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
+import { isWorkspaceModelCertifiedForBlock } from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification';
 
 test('Nano21 has a separate factual engine and never aliases Nano2', () => {
   const engine = getFalEngineById('nano-banana-2-1');
@@ -18,6 +20,20 @@ test('Nano21 has a separate factual engine and never aliases Nano2', () => {
 
 test('an explicit unknown image model cannot silently generate with the first engine', () => {
   assert.throws(() => resolveImageGenerationRequestContext({ engineId: 'unknown-nano-version', prompt: 'An original still.', mode: 't2i' }), /unavailable/i);
+});
+
+test('a raw undeclared size alias cannot price a different image than the requested resolution', () => {
+  const body={engineId:'nano-banana-2-1',mode:'t2i',prompt:'A still.',resolution:'4k',imageSize:'1K'};
+  assert.throws(()=>resolveImageGenerationRequestContext(body as Parameters<typeof resolveImageGenerationRequestContext>[0]),/imageSize|unsupported/i);
+});
+
+test('the normal publication switch still closes a forced new Nano21 generation during rollback',()=>{
+  const app=getFalEngineById('nano-banana-2-1')!.surfaces.app as {enabled:boolean};
+  const before=app.enabled;
+  try{
+    app.enabled=false;
+    assert.throws(()=>resolveImageGenerationRequestContext({engineId:'nano-banana-2-1',mode:'t2i',prompt:'A still.'}),/unavailable/i);
+  }finally{app.enabled=before;}
 });
 
 test('the canonical fixed Nano21 price covers every supported ratio, reasoning and reference count', async () => {
@@ -46,4 +62,18 @@ test('unpriced native controls remain quote facts without requiring more tariff 
     return buildManualTariffScenario(context,buildBillingPricingFacts(context,undefined,'USD').facts).selector;
   }));
   assert.equal(new Set(selectors.map(selector=>JSON.stringify(selector))).size,1);
+});
+
+test('public model pricing resolves the same three one-image scenarios as charging',()=>{
+  for(const resolution of ['1k','2k','4k']){
+    const scenario=resolvePublicModelScenario({modelId:'nano-banana-2-1',mode:'t2i',durationSec:1,resolution});
+    assert.ok(scenario,`missing public image price ${resolution}`);
+    assert.equal(scenario.context.referenceImageCount,0);
+  }
+});
+
+test('the same admitted Nano21 model is available to Studio image creation and editing',()=>{
+  for(const presetId of ['generate-image','modify-image'] as const){
+    assert.equal(isWorkspaceModelCertifiedForBlock({modelId:'nano-banana-2-1',presetId}),true);
+  }
 });

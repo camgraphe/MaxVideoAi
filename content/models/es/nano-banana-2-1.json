@@ -2,13 +2,13 @@
   "marketingName": "Nano Banana 2.1",
   "versionLabel": "2.1",
   "seo": {
-    "title": "Nano Banana 2.1 | MaxVideoAI",
-    "description": "Generación y edición de imágenes mediante Google Vertex AI."
+    "title": "Nano Banana 2.1: ejemplos de imágenes con IA",
+    "description": "Explora 14 imágenes de prueba de Nano Banana 2.1: personajes, escenarios e ilustración, generados desde texto en 1K y formato panorámico."
   },
   "overview": "Nano Banana 2.1 es un modelo de imagen distinto: salidas 1K, 2K y 4K, catorce relaciones de aspecto y hasta catorce referencias ordenadas para editar. Admite MINIMAL, MEDIUM y HIGH; MEDIUM es el valor predeterminado.",
   "hero": {
     "title": "Nano Banana 2.1",
-    "intro": "Generación y edición de imágenes mediante Google Vertex AI.",
+    "intro": "Personajes, escenarios e ilustración: explora nuestras imágenes de prueba.",
     "badge": "1K / 2K / 4K · MINIMAL / MEDIUM / HIGH",
     "ctaPrimary": {
       "label": "Abrir espacio de imagen",
@@ -18,7 +18,7 @@
   "tips": {
     "title": "Disponibilidad y límites",
     "items": [
-      "Precio fijo por imagen: 0,07 $ en 1K, 0,11 $ en 2K o 0,23 $ en 4K.",
+      "Elige una imagen en 1K, 2K o 4K. El razonamiento y las referencias compatibles no añaden recargos al cliente.",
       "Elige razonamiento MINIMAL, MEDIUM o HIGH, catorce formatos y hasta catorce imágenes de referencia para editar. Las opciones compatibles no añaden un recargo al precio del cliente."
     ]
   },
@@ -30,12 +30,11 @@
     "hero": {
       "eyebrow": "MODELO DE IMAGEN GOOGLE",
       "title": "Nano Banana 2.1",
-      "subtitle": "Generación y edición de imágenes mediante Google Vertex AI.",
+      "subtitle": "Personajes, escenarios e ilustración: explora nuestras imágenes de prueba.",
       "subtitleHighlights": [
-        "Google Vertex AI",
-        "1K / 2K / 4K"
+        "imágenes de prueba"
       ],
-      "paragraph": "Nano Banana 2.1 es un modelo de imagen distinto: salidas 1K, 2K y 4K, catorce relaciones de aspecto y hasta catorce referencias ordenadas para editar. Admite MINIMAL, MEDIUM y HIGH; MEDIUM es el valor predeterminado.",
+      "paragraph": "Elige una imagen en 1K, 2K o 4K. El razonamiento y las referencias compatibles no añaden recargos al cliente.",
       "primaryCta": {
         "label": "Abrir espacio de imagen",
         "href": "/app/image?engine=nano-banana-2-1"
@@ -105,25 +104,27 @@
     ],
     "pricingCopy": {
       "title": "Presupuesto exacto antes de generar",
-      "subtitle": "Precio fijo por imagen: 0,07 $ en 1K, 0,11 $ en 2K o 0,23 $ en 4K.",
+      "subtitle": "Elige una imagen en 1K, 2K o 4K. El razonamiento y las referencias compatibles no añaden recargos al cliente.",
       "footnote": "El presupuesto vigente se confirma antes de generar. Los costes del proveedor por texto y razonamiento no cambian el precio acordado de la imagen.",
       "ctaLabel": "Ver precios",
       "ctaHref": "/es/precios",
       "maxDurationNote": "Hasta 4K"
     },
     "meta": {
-      "title": "Nano Banana 2.1 | MaxVideoAI",
-      "description": "Generación y edición de imágenes mediante Google Vertex AI."
+      "title": "Nano Banana 2.1: ejemplos de imágenes con IA",
+      "description": "Explora 14 imágenes de prueba de Nano Banana 2.1: personajes, escenarios e ilustración, generados desde texto en 1K y formato panorámico."
     }
   },
   "examples": {
     "modelSlug": "nano-banana-2-1",
     "showWhenEmpty": false,
     "section": {
-      "title": "Imágenes de Nano Banana 2.1",
-      "intro": "Personajes, escenarios e ilustración generados con Nano Banana 2.1.",
+      "title": "14 imágenes generadas con Nano Banana 2.1",
+      "intro": "Nano Banana 2.1 · Texto a imagen · 1K · 16:9",
       "defaultCtaLabel": null,
-      "recreateLabel": "Usar este prompt"
+      "recreateLabel": "Abrir el espacio de imágenes",
+      "afterGallery": "Estas imágenes de prueba se generaron desde texto con Nano Banana 2.1 a través de Google Vertex AI. Nano Banana 2.1 es un modelo distinto de Nano Banana 2.",
+      "videoWorkflowLabel": "Explorar los videos de Kling 4.0"
     },
     "filters": [
       {

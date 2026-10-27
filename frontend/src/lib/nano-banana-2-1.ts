@@ -51,7 +51,7 @@ export function assertNano21Scenario(input: { mode?: string; referenceImageCount
 }
 
 export function assertNano21UnsupportedFields(input: Record<string, unknown>): void {
-  for (const key of ['seed', 'temperature', 'topP', 'topK', 'logprobs', 'thinkingBudget', 'maskUrl', 'outputFormat',
+  for (const key of ['imageSize', 'seed', 'temperature', 'topP', 'topK', 'logprobs', 'thinkingBudget', 'maskUrl', 'outputFormat',
     'quality', 'background', 'style', 'limitGenerations', 'conversation', 'contents', 'tools']) {
     if (input[key] !== undefined && input[key] !== null && input[key] !== false && input[key] !== '') {
       throw new Error(`Unsupported Nano Banana 2.1 field: ${key}.`);

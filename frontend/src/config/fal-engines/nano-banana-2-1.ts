@@ -1,6 +1,9 @@
+import { listNano21EditorialImages } from '../../../lib/nano21-editorial-images';
 import type { EngineCaps } from '../../../types/engines';
 import { NANO21_ASPECT_RATIOS, NANO21_ENGINE_ID, NANO21_MODEL_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '../../lib/nano-banana-2-1';
 import type { RawFalEngineEntry } from './types';
+
+const editorialHero=listNano21EditorialImages('nano-banana-2-1').find(image=>image.role==='hero');
 
 const engine: EngineCaps = {
   id: NANO21_ENGINE_ID, label: 'Nano Banana 2.1', provider: 'Google', version: '2.1', status: 'live',
@@ -37,6 +40,7 @@ export const NANO_BANANA_2_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [{
   modes: (['t2i', 'i2i'] as const).map(mode => ({ mode, falModelId: NANO21_MODEL_ID,
     ui: { modes: [mode], resolution: ['1k', '2k', '4k'], aspectRatio: NANO21_ASPECT_RATIOS,
       ...(mode === 'i2i' ? { acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'], maxUploadMB: 7 } : {}) } })),
+  ...(editorialHero ? {media:{imagePath:editorialHero.display.url,videoUrl:editorialHero.original.url,altText:editorialHero.title}} : {}),
   defaultFalModelId: NANO21_MODEL_ID, type: 'image',
   seo: { title: 'Nano Banana 2.1 | MaxVideoAI', description: 'Google Vertex image generation and editing with up to 14 references, 1K to 4K output and three reasoning levels.', canonicalPath: '/models/nano-banana-2-1' },
   seoText: 'A distinct Google Vertex AI image model with fixed 1K, 2K and 4K customer prices.', prompts: [],

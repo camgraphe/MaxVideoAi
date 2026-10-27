@@ -659,11 +659,9 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
       const native = normalizeNano21Settings(result.settings as Parameters<typeof normalizeNano21Settings>[0]);
       assertNano21Scenario({ ...native, mode: result.mode, referenceImageCount: result.references.length, outputCount: result.outputCount, aspectRatio: String(result.settings.aspectRatio ?? '1:1') });
       if (result.references.some(reference => reference.kind !== 'asset' || reference.role !== 'reference')) throw new Error('Owned ordered image references are required.');
-      delete result.settings.enableWebSearch;
-      delete result.settings.enableImageSearch;
       result.settings = { ...result.settings, resolution: native.imageSize.toLowerCase(), thinkingLevel: native.thinkingLevel.toLowerCase(),
         maxOutputTokens: native.maxOutputTokens, aspectRatio: result.settings.aspectRatio ?? '1:1',
-        ...(native.enableWebSearch ? { enableWebSearch: true } : {}), ...(native.enableImageSearch ? { enableImageSearch: true } : {}) };
+        enableWebSearch: native.enableWebSearch, enableImageSearch: native.enableImageSearch };
     } catch { fail('settings', 'Unsupported Nano Banana 2.1 scenario.'); }
   }
   try { validateOwnedKlingElements(result); } catch { fail('elements', 'Invalid owned Kling Element composition.'); }

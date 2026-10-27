@@ -65,7 +65,7 @@ test('registered MCP preparation and comparison transport exact Nano caps/system
   await client.connect(clientTransport);
   try {
     for (const maxOutputTokens of [4096, 32768]) {
-      const settings = { resolution: '2k', aspectRatio: '1:1', thinkingLevel: 'high', maxOutputTokens, systemInstruction: 'Preserve exact subject geometry.' };
+      const settings = { enableImageSearch:true, resolution: '2k', aspectRatio: '1:1', thinkingLevel: 'high', maxOutputTokens, systemInstruction: 'Preserve exact subject geometry.' };
       const input = { surface: 'image', mode: 't2i', prompt: 'A still.', settings };
       const prepared = await client.callTool({ name: 'prepare_generation', arguments: { ...input, engineId: entry.id } });
       assert.notEqual(prepared.isError, true, JSON.stringify(prepared.content));
@@ -94,7 +94,7 @@ test('registered MCP preparation and comparison transport exact Nano caps/system
         assert.equal(calls, before, 'invalid outer inputs never reach canonical service');
       }
     }
-    for (const settings of [{ maxOutputTokens: 4096, systemInstruction: 'Do not add an unsupported older-model control.' }]) {
+    for (const settings of [{enableImageSearch:true}, { maxOutputTokens: 4096, systemInstruction: 'Do not add an unsupported older-model control.' }]) {
       const engineId = 'nano-banana-2';
       const refused = await client.callTool({ name: 'prepare_generation', arguments: { surface: 'image', mode: 't2i', prompt: 'A still.', engineId, settings } });
       assert.equal(refused.isError, true);

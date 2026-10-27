@@ -11,7 +11,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "t2i",
-        "resolution": "1K"
+        "resolution": "1K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",
@@ -27,7 +28,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "t2i",
-        "resolution": "2K"
+        "resolution": "2K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",
@@ -43,7 +45,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "t2i",
-        "resolution": "4K"
+        "resolution": "4K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",
@@ -59,7 +62,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "i2i",
-        "resolution": "1K"
+        "resolution": "1K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",
@@ -75,7 +79,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "i2i",
-        "resolution": "2K"
+        "resolution": "2K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",
@@ -91,7 +96,8 @@
       "selector": {
         "engineId": "nano-banana-2-1",
         "mode": "i2i",
-        "resolution": "4K"
+        "resolution": "4K",
+        "durationSec": "1"
       },
       "price": {
         "kind": "fixed",

@@ -123,7 +123,6 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
         for (const context of nano21ManualTariffContexts(entry.engine, mode)) {
           scenarios.push(buildManualTariffCoverageScenario(context, `${entry.id}:${mode}:${context.resolution}`));
         }
-        gaps.push({ modelId: model.id, reason: `${mode}: nondefault output token caps require exact separately reviewed cells; search budget remains closed` });
         continue;
       }
       if (hasOperationTariffInventory(model.id, mode)) continue;
