@@ -194,6 +194,8 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   ].map(entry => [entry.field.id, entry])).values()] } : activeSourceSummary;
   const originalReferences = referencesFor(current, sourceSummary);
   const blockingReasons: WorkspaceModelCandidateReason[] = [];
+  const createMode = manualChange ? getWorkspaceCreateMode(engine) : null;
+  if (manualChange && !createMode) blockingReasons.push({ code: 'unsupported-workflow', scope: 'apply', message: locale.startsWith('fr') ? 'Créer est indisponible pour ce modèle.' : locale.startsWith('es') ? 'Crear no está disponible para este modelo.' : 'Create is unavailable for this model.' });
   for (const reference of originalReferences) {
     if (reference.asset.status === 'uploading') blockingReasons.push({ code: 'uploading-reference', scope: 'apply', fieldId: reference.fieldId, message: 'Wait for reference uploads to finish before changing models.' });
   }
@@ -203,8 +205,6 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   const requestedMode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: null, carryoverMode: current.form.mode });
   let setup: WorkspaceModelSetup = structuredClone(seed);
   if (!restoreSetup) {
-    const createMode = manualCreate ? getWorkspaceCreateMode(engine) : null;
-    if (manualCreate && !createMode) blockingReasons.push({ code: 'unsupported-workflow', scope: 'apply', message: locale.startsWith('fr') ? 'Créer est indisponible pour ce modèle.' : locale.startsWith('es') ? 'Crear no está disponible para este modelo.' : 'Create is unavailable for this model.' });
     const sourceMode = sourceWorkflow.activeManualMode ?? undefined;
     if (manualCreate && (isVideoSourceWorkflow(sourceMode) || sourceMode === 'retake')) {
       const field = getVideoWorkflowSourceField(sourceEngine?.inputSchema, sourceMode);

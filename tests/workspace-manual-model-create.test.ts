@@ -48,8 +48,12 @@ test('runtime admission is checked on the prepared Create mode, without inventin
   {...target,modes:['v2v'] as typeof target.modes},
   {...target,modeAvailability:Object.fromEntries(target.modes.map(mode=>[mode,{available:false}]))},
  ]){
-  const option=buildWorkspacePickerOptions({current,engines:[engine(current.form.engineId),closed],locale:'en',memberTier:'Member'})[closed.id];
-  assert.ok(option.disabledReason);assert.equal(option.request,null);
+  for(const overrides of [{},{iterations:2}]){
+   const prepared=preparePickerScenario({current,engine:closed,currentEngine:engine(current.form.engineId),locale:'en',overrides});
+   assert.equal(prepared.applicable,false,'edited options cannot bypass Create admission');
+   const option=buildWorkspacePickerOptions({current,engines:[engine(current.form.engineId),closed],locale:'en',memberTier:'Member',overrides})[closed.id];
+   assert.ok(option.disabledReason);assert.equal(option.request,null);
+  }
  }
 });
 
