@@ -64,6 +64,17 @@ controller displays neutral confirmation/sign-in/recovery guidance without
 reporting a new completed signup. Real consent storage errors still block signup
 completion; a valid immediate session still requires persistence.
 
+Password signup and confirmation resend mark their return URL with `flow=signup`.
+The callback uses that marker to show a confirmation-link error instead of a
+Google error when the provider rejects an expired or used link. A real signup
+without a session tells the user to click the confirmation button in the mail;
+the obfuscated duplicate response keeps neutral guidance. Password sign-in
+handles Supabase's `email_not_confirmed` code before the generic invalid-login
+path and offers a single user-triggered `auth.resend({ type: 'signup' })` action.
+The action preserves locale and the safe return destination, blocks duplicate
+clicks, and presents rate limits without promising delivery. Other HTTP 400
+responses must not be treated as evidence of a new account.
+
 Regression coverage: `tests/auth-locale-continuity.test.ts`,
 `tests/login-signup-consents.test.ts`, and the existing login, callback,
 marketing-locale and middleware contract suites.
@@ -71,6 +82,10 @@ marketing-locale and middleware contract suites.
 ## Password recovery
 
 Reset requests add `flow=recovery` to the existing locale-aware callback. That branch forwards proof to `/auth/reset-password` without exchanging it or falling back to an existing session. The form removes proof from the URL immediately, waits for an explicit Continue action, verifies the session user with Auth, then accepts a confirmed new password. A changed account invalidates the operation. `frontend/lib/password-recovery.ts` owns these pure orchestration helpers; the route owns rendering.
+
+Local email recovery also returns through `/auth/callback`; the local direct
+`/login` PKCE exchange remains for Google only. A recovery code must reach the
+dedicated form before it is exchanged.
 
 The root hash-session handler skips this route to prevent competing exchanges. GTM/GA4 is excluded. Recovery links preserve the language via middleware cookies; direct `lang` is also accepted by the page. Current hosted `ConfirmationURL` uses PKCE and requires the original browser. Token-hash verification is supported locally but requires a separately published email template before cross-browser recovery is available. Do not claim live delivery or a provider migration based on these local tests.
 

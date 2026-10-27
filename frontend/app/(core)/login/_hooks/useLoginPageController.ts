@@ -75,6 +75,9 @@ export function useLoginPageController({
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const confirmationResendPendingRef = useRef(false);
+  const [isConfirmationResending, setIsConfirmationResending] = useState(false);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
   const fieldRefs = useMemo(
     () => ({
@@ -105,13 +108,14 @@ export function useLoginPageController({
   }, []);
 
   const handleModeChange = useCallback((nextMode: AuthMode) => {
-    if (passwordSubmissionPending.current || nextMode === mode) return;
+    if (passwordSubmissionPending.current || confirmationResendPendingRef.current || nextMode === mode) return;
     invalidatePasswordSubmission();
     setStatus(null);
     setMode(nextMode);
     setFieldErrors({});
     setFormAttention(false);
     setError(null);
+    setUnconfirmedEmail(null);
   }, [invalidatePasswordSubmission, mode, passwordSubmissionPending]);
 
   const validateCurrentForm = useCallback(
@@ -192,22 +196,27 @@ export function useLoginPageController({
 
   async function signInWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (passwordSubmission.pending.current || !validateCurrentForm('signin')) return;
+    if (passwordSubmission.pending.current || confirmationResendPendingRef.current || !validateCurrentForm('signin')) return;
     await passwordSubmission.run(async (isCurrent) => {
       setStatusTone('info');
       setStatus(authCopy.feedback.signingIn);
       setError(null);
       setSignupSuggestion(null);
+      setUnconfirmedEmail(null);
       clearPendingGoogleLogin();
       const supabase = await loadSupabaseClient();
       if (!isCurrent()) return;
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (!isCurrent()) return;
       if (error) {
-        if (continuation?.kind === 'mcp') {
+        if (error.code === 'email_not_confirmed') {
+          setUnconfirmedEmail(email);
+          setError(authCopy.feedback.emailNotConfirmed);
+          setStatus(null);
+        } else if (continuation?.kind === 'mcp') {
           setError(error.code === 'invalid_credentials' ? authCopy.feedback.mcpSigninFailed : error.message);
           setStatus(null);
-        } else if (error.status === 400) {
+        } else if (error.code === 'invalid_credentials') {
           setSignupSuggestion({ email, password });
           setStatusTone('info');
           setStatus(authCopy.feedback.signinSuggestion);
@@ -233,6 +242,45 @@ export function useLoginPageController({
       setError(authCopy.feedback.passwordUnavailable);
       setStatus(null);
     });
+  }
+
+  async function resendConfirmation() {
+    if (!unconfirmedEmail || confirmationResendPendingRef.current || passwordSubmission.pending.current) return;
+    confirmationResendPendingRef.current = true;
+    setIsConfirmationResending(true);
+    setError(null);
+    setStatusTone('info');
+    setStatus(authCopy.feedback.sendingConfirmation);
+    try {
+      const emailRedirectTo = buildAuthCallbackRedirect(
+        getBrowserAuthRedirectOrigin() || authRedirectOrigin,
+        safeNextPath,
+        locale,
+        'signup'
+      );
+      if (!emailRedirectTo) throw new Error('Missing confirmation redirect origin');
+      const supabase = await loadSupabaseClient();
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: unconfirmedEmail,
+        options: { emailRedirectTo },
+      });
+      if (error) {
+        setStatus(null);
+        setError(error.status === 429 || error.code === 'over_email_send_rate_limit'
+          ? authCopy.feedback.confirmationRateLimited
+          : authCopy.feedback.confirmationUnavailable);
+      } else {
+        setStatus(authCopy.feedback.confirmationResent);
+        setUnconfirmedEmail(null);
+      }
+    } catch {
+      setStatus(null);
+      setError(authCopy.feedback.confirmationUnavailable);
+    } finally {
+      confirmationResendPendingRef.current = false;
+      setIsConfirmationResending(false);
+    }
   }
 
   const handleAcceptSignupSuggestion = useCallback(() => {
@@ -297,7 +345,8 @@ export function useLoginPageController({
       const emailRedirectTo = buildAuthCallbackRedirect(
         getBrowserAuthRedirectOrigin() || authRedirectOrigin,
         safeNextPath,
-        locale
+        locale,
+        'signup'
       );
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -348,7 +397,7 @@ export function useLoginPageController({
         completeAuthenticatedRedirect(safeNextPath, data.session.user?.id ?? data.user?.id ?? null);
       } else {
         setStatusTone('success');
-        setStatus(authCopy.feedback.confirmEmail);
+        setStatus(authCopy.feedback.confirmEmailAfterSignup);
         dispatchAnalyticsEvent('sign_up_completed', {
           route_family: 'auth',
           auth_surface: 'login',
@@ -373,12 +422,13 @@ export function useLoginPageController({
     const passwordResetRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
       safeNextPath,
-      locale
+      locale,
+      'recovery'
     );
     const result = await requestPasswordReset(async () => {
       if (!passwordResetRedirectTo) throw new Error('Missing recovery redirect origin');
       const supabase = await loadSupabaseClient();
-      return supabase.auth.resetPasswordForEmail(email, { redirectTo: `${passwordResetRedirectTo}&flow=recovery` });
+      return supabase.auth.resetPasswordForEmail(email, { redirectTo: passwordResetRedirectTo });
     });
     passwordResetPendingRef.current = false;
     setIsResetSending(false);
@@ -392,7 +442,7 @@ export function useLoginPageController({
   }
 
   async function signInWithGoogle() {
-    if (passwordSubmission.pending.current || googleOAuthStartedRef.current) return;
+    if (passwordSubmission.pending.current || confirmationResendPendingRef.current || googleOAuthStartedRef.current) return;
     if (canonicalizeBrowserAuthOrigin()) return;
     googleOAuthStartedRef.current = true;
     setIsGoogleOAuthStarting(true);
@@ -467,6 +517,7 @@ export function useLoginPageController({
 
   const handleEmailChange = useCallback((value: string) => {
     setEmail(value);
+    setUnconfirmedEmail(null);
     clearFieldError('email');
   }, [clearFieldError]);
 
@@ -499,6 +550,8 @@ export function useLoginPageController({
     fieldErrors,
     formAttention,
     signupSuggestion,
+    unconfirmedEmail,
+    isConfirmationResending,
     isGoogleOAuthStarting,
     isResetSending,
     isPasswordSubmitting: passwordSubmission.busy,
@@ -515,6 +568,7 @@ export function useLoginPageController({
     onModeChange: handleModeChange,
     onGoogleSignIn: signInWithGoogle,
     onSignInSubmit: signInWithPassword,
+    onResendConfirmation: resendConfirmation,
     onSignUpSubmit: signUpWithPassword,
     onResetSubmit: sendReset,
     onEmailChange: handleEmailChange,
