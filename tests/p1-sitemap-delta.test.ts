@@ -12,21 +12,25 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 and subsequent candidates add fourteen English routes, including the noindex Kling V4 route', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 7);
+test('P1 and subsequent candidates add fifteen English routes, including the noindex Kling V4 route', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 8);
   assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 7);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 14);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 15);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
   // This inventory includes three branch-only V4 routes; sitemap eligibility is checked separately below.
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82);
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3);
   const v4 = modelRoster.find(model => model.modelSlug === 'kling-v4');
   assert.ok(v4);
   assert.deepEqual(v4.surfaces.modelPage, { indexable: false, includeInSitemap: false });
   assert.equal(dynamicPaths.has('/models/kling-v4'), true);
+  const nano21 = modelRoster.find(model => model.modelSlug === 'nano-banana-2-1');
+  assert.ok(nano21);
+  assert.deepEqual(nano21.surfaces.modelPage, { indexable: true, includeInSitemap: true });
+  assert.equal(dynamicPaths.has('/models/nano-banana-2-1'), true);
   for (const path of fixture.expectedNewEnglishPaths) assert.equal(dynamicPaths.has(path), true, path);
   for (const path of [
     '/models/flux-3-max',

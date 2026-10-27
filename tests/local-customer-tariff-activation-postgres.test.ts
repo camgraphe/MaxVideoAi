@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
-import { withClosedKlingV4Release } from './helpers/kling-v4-release-profile';
+import { withHistoricalCustomerTariffCatalogue } from './helpers/historical-customer-tariff-catalogue';
 import { getDb, withDbTransaction } from '../frontend/src/lib/db';
 import { loadPricingPolicyOverridesWithExecutor } from '../frontend/src/lib/pricing-rule-store';
 import { collectSellableManualTariffCoverage, collectEffectiveCustomerTariffBaseline } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
@@ -20,8 +20,8 @@ import { collectCustomerTariffCutoverCheckpoints } from '../frontend/server/pric
 const actor = '11111111-1111-4111-8111-111111111111';
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 
-test('atomic local cutover rejects stale certificates, preserves staged evidence and removes every model margin fallback', async () => withClosedKlingV4Release(async () => {
-  // Replay the historical catalogue; Kling V4 requires its separate native tariffs.
+test('atomic local cutover rejects stale certificates, preserves staged evidence and removes every model margin fallback', async () => withHistoricalCustomerTariffCatalogue(async () => {
+  // Replay the historical catalogue; Kling V4 and Nano21 have separate native tariffs.
   const db = await startDisposablePostgres('tariff-cutover');
   const before = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX };
   Object.assign(process.env, { DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });

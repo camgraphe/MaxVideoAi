@@ -1,10 +1,19 @@
 import {MAX_GENERATION_REFERENCES} from '@/lib/generation-reference-limits';
 import {z} from 'zod';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
+import {NANO21_ENGINE_ID} from '@/lib/nano-banana-2-1';
 
 export const STUDIO_CONVERSATION_MAX_REFERENCES=8;
 /** The attachment pool precedes model selection; generation keeps its own mode limit. */
 export const STUDIO_CONVERSATION_MAX_ATTACHMENTS=MAX_GENERATION_REFERENCES;
+export function studioImageReferenceLimit(modelId?: string | null): number {
+  return modelId === NANO21_ENGINE_ID ? 14 : STUDIO_CONVERSATION_MAX_REFERENCES;
+}
+export function validateStudioImageReferences(value: {modelId?: string | null; references?: readonly unknown[] | null}, context: z.RefinementCtx) {
+  const maximum = studioImageReferenceLimit(value.modelId);
+  if ((value.references?.length ?? 0) > maximum) context.addIssue({code: z.ZodIssueCode.too_big,
+    type: 'array', maximum, inclusive: true, path: ['references'], message: `Choose at most ${maximum} references for this image model.`});
+}
 
 export const conversationAspectRatioSchema = z.string().regex(/^(?:[1-9]\d{0,2}:[1-9]\d{0,2}|auto)$/);
 const settingValue = z.union([z.string().max(4096), z.number().finite(), z.boolean(), z.null()]);
@@ -24,11 +33,14 @@ const selection = {
   outputCount: z.literal(1).nullable().optional(),
 };
 export const conversationSelectionFields = selection;
-export const imageSelectionSchema = z.object({
+export const imageSelectionFields = {
   prompt: z.string().min(1).max(12000), aspectRatio: conversationAspectRatioSchema,
   ...selection, mode: z.enum(['t2i','i2i']).nullable().optional(),
-  references: z.array(conversationReferenceSchema.refine(reference => reference.ref.type === 'asset', 'Attach a saved library image.')).max(STUDIO_CONVERSATION_MAX_REFERENCES).nullable().optional(),
-}).strict();
+  references: z.array(conversationReferenceSchema.refine(reference => reference.ref.type === 'asset', 'Attach a saved library image.')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).nullable().optional(),
+};
+const imageSelectionObject = z.object(imageSelectionFields);
+export const imageSelectionSchema = imageSelectionObject.strict().superRefine(validateStudioImageReferences);
+export const imageSelectionStripSchema = imageSelectionObject.strip().superRefine(validateStudioImageReferences);
 
 const assetProperties = {type: 'string', enum: ['image']};
 export const conversationImageRefProperties = {

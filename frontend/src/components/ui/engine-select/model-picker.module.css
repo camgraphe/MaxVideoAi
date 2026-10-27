@@ -58,6 +58,9 @@
 .priceContextLabel { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; margin-bottom: 2px; }
 .priceContextLabel > span { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--app-accent, var(--brand)); }
 .priceContextLabel small { font-size: 11px; color: var(--text-secondary); }
+.priceRetry { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 32px; border: 0; border-radius: 7px; background: transparent; color: var(--app-accent, var(--brand)); }
+/* Keep retry geometry stable when estimates settle, without an extra list bar. */
+.priceRetry[aria-hidden=true] { visibility: hidden; }
 .priceControls { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-block: 2px; }
 .priceChip { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 36px; border: 1px solid var(--app-line, var(--border)); border-radius: 7px; background: var(--app-surface, var(--surface)); color: var(--text-primary); font-size: 12px; font-weight: 500; }
 .priceChip > span:not(:global(.sr-only)) { padding: 8px; }

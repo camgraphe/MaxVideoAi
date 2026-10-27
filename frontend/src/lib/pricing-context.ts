@@ -2,6 +2,11 @@ import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import type { EngineCaps, Mode } from '@/types/engines';
 
 export type PricingContext = {
+  thinkingLevel?: string | null;
+  maxOutputTokens?: number;
+  enableWebSearch?: boolean;
+  enableImageSearch?: boolean;
+  systemInstruction?: string;
   operation?: import('@/lib/video-operation').VideoOperation;
   /** Internal class derived from server-resolved owned source dimensions. */
   seedanceSourceAspectRatio?: import('@/types/engines').AspectRatio;

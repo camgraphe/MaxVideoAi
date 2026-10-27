@@ -24,6 +24,8 @@ const schema = z.object({
     intro: nonEmpty,
     defaultCtaLabel: nonEmpty.nullable(),
     recreateLabel: nonEmpty.nullable(),
+    afterGallery: nonEmpty.nullable().optional(),
+    videoWorkflowLabel: nonEmpty.nullable().optional(),
   }).strict(),
   filters: z.array(z.object({ id: filterId, label: nonEmpty }).strict()).min(1),
   proofItems: z.array(z.object({

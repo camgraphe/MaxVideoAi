@@ -35,6 +35,52 @@ export function parseGoogleVertexResponseId(payload: unknown): string | null {
   return typeof root?.responseId === 'string' ? root.responseId : null;
 }
 
+/** A parsed object alone cannot establish that an accepted POST produced no image. */
+export function isValidatedGoogleVertexImageResponse(payload: unknown): boolean {
+  const root = asRecord(payload);
+  if (!root) return false;
+  if (summarizeGoogleVertexImageResponse(payload).blockedForSafety) return true;
+  if (!Array.isArray(root.candidates) || !root.candidates.length) return false;
+  const candidates = root.candidates.map(asRecord);
+  if (candidates.some(candidate => !candidate)) return false;
+  for (const candidate of candidates) {
+    const parts = asRecord(candidate?.content)?.parts;
+    if (!Array.isArray(parts)) return false;
+    for (const part of parts) {
+      const value = asRecord(part);
+      const inline = asRecord(value?.inlineData);
+      if (inline) {
+        if (typeof inline.mimeType !== 'string' || !inline.mimeType.startsWith('image/')
+          || typeof inline.data !== 'string' || !Buffer.from(inline.data, 'base64').length) return false;
+      } else if (typeof value?.text !== 'string') return false;
+    }
+  }
+  return extractGoogleVertexImages(payload).length > 0
+    || candidates.every(candidate => ['STOP', 'MAX_TOKENS'].includes(String(candidate?.finishReason)));
+}
+
+/** Modality counts are separate from inline parts and from the actual invoice. */
+export function parseGoogleVertexImageUsage(payload: unknown): {
+  inputTokens: number; outputTextTokens: number; outputImageTokens: number; thoughtsTokens: number;
+  listEstimateUsd: number; invoiceCostUsd: null; source: string; ratesCheckedAt: string; toolFeesIncluded: false;
+} | null {
+  const usage = asRecord(asRecord(payload)?.usageMetadata);
+  if (!usage || !Array.isArray(usage.candidatesTokensDetails)) return null;
+  const valid = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+  if (!valid(usage.promptTokenCount) || !valid(usage.thoughtsTokenCount)) return null;
+  const totals: Record<string, number> = { TEXT: 0, IMAGE: 0 };
+  for (const item of usage.candidatesTokensDetails) {
+    const detail = asRecord(item);
+    if (!detail || !['TEXT', 'IMAGE'].includes(String(detail.modality)) || !valid(detail.tokenCount)) return null;
+    totals[String(detail.modality)] += detail.tokenCount;
+  }
+  const inputTokens = usage.promptTokenCount;
+  const thoughtsTokens = usage.thoughtsTokenCount;
+  return { inputTokens, outputTextTokens: totals.TEXT, outputImageTokens: totals.IMAGE, thoughtsTokens,
+    listEstimateUsd: Number(((inputTokens * 1.5 + (totals.TEXT + thoughtsTokens) * 7.5 + totals.IMAGE * 30) / 1_000_000).toFixed(10)),
+    invoiceCostUsd: null, source: 'google-vertex-usage-metadata', ratesCheckedAt: '2026-10-25', toolFeesIncluded: false };
+}
+
 export function summarizeGoogleVertexImageResponse(payload: unknown): GoogleVertexImageResponseSummary {
   const root = asRecord(payload);
   const promptFeedback = asRecord(root?.promptFeedback);

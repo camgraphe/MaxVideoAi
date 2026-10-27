@@ -440,6 +440,30 @@ test('public gallery traverses every eligible video beyond the old window and hy
       assert.equal((await reader.getExampleWatchDetail('kling-21')).watchHref,'/video/kling-dance-film');
       assert.equal(afterCatalog.total,beforeCatalog.total);
       assert.deepEqual(afterCatalog.items.map((video:any)=>video.id),beforeCatalog.items.map((video:any)=>video.id));
+      // Returning only N rows does not prove PostgreSQL projected only N media.
+      // The marketing UNION used to let a pulled-up lateral join hydrate every job.
+      for (const limit of [1, 24]) {
+        statements.length = 0;
+        const page = await reader.listExamplesPage({sort:'date-desc',limit,offset:1,includeVersionSamples:true});
+        assert.equal(page.items.length, limit);
+        assert.equal(statements.length, 1, 'counts, membership and hydration share one read-only statement');
+        const statement = statements[0];
+        const explained = await reader.getDb().query(`EXPLAIN (ANALYZE, FORMAT JSON) ${statement.text}`, statement.params);
+        const dimensionScans: Array<Record<string, any>> = [];
+        let publicationDecodes = 0;
+        const visit = (node: Record<string, any>) => {
+          if (node['Function Name'] === 'jsonb_populate_record') publicationDecodes += node['Actual Loops'];
+          if (node['Relation Name'] === 'job_outputs' && node.Filter?.includes('width IS NOT NULL')) dimensionScans.push(node);
+          for (const child of node.Plans ?? []) visit(child);
+        };
+        visit(explained.rows[0]['QUERY PLAN'][0].Plan);
+        assert.ok(dimensionScans.length > 0, 'the real output-dimension lookup must be exercised');
+        const dimensionReads = dimensionScans.reduce((sum, node) => sum + node['Actual Loops'], 0);
+        assert.ok(dimensionReads <= 2 * limit,
+          `width/height lookups must stay within the selected page: ${dimensionReads} reads for ${limit} cards`);
+        assert.ok(publicationDecodes <= 1, 'decode the one ready publication at most once, not once per selected card');
+      }
+
     } finally {
       if(previousFlag===undefined)delete process.env.MARKETING_MEDIA_ENABLED;else process.env.MARKETING_MEDIA_ENABLED=previousFlag;
     }

@@ -40,3 +40,22 @@ test('localized Studio login retains its language through local and hosted callb
     }
   }
 });
+
+test('signup confirmation carries an explicit flow marker without changing Google callbacks', () => {
+  for (const origin of ['http://localhost:3000', 'https://maxvideoai.com']) {
+    const signup = new URL(buildAuthCallbackRedirect(origin, '/app/studio', 'fr', 'signup')!);
+    assert.equal(signup.pathname, '/auth/callback');
+    assert.equal(signup.searchParams.get('flow'), 'signup');
+    assert.equal(signup.searchParams.get('next'), '/app/studio');
+    assert.equal(signup.searchParams.get('lang'), 'fr');
+  }
+  assert.equal(new URL(buildAuthCallbackRedirect('https://maxvideoai.com', '/app')!).searchParams.has('flow'), false);
+});
+
+test('local password recovery returns through the callback instead of exchanging on the login page', () => {
+  const redirect = new URL(buildAuthCallbackRedirect('http://localhost:3000', '/app/studio', 'es', 'recovery')!);
+  assert.equal(redirect.pathname, '/auth/callback');
+  assert.equal(redirect.searchParams.get('flow'), 'recovery');
+  assert.equal(redirect.searchParams.get('next'), '/app/studio');
+  assert.equal(redirect.searchParams.get('lang'), 'es');
+});

@@ -2,8 +2,9 @@ import type { EngineCaps } from '@/types/engines';
 import type { PickerControl } from '@/components/ui/engine-select/model-picker-types';
 import { videoDurationPolicy, videoInheritsSourceFraming, videoSourceDurationLabel } from '@/lib/video-workflow-capabilities';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
+import { getVideoWorkflowSourceField, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { parseDurationOptionValue } from '@/components/settings-controls/settings-control-duration';
-import { getModeCaps, framesToSeconds, findInputFieldById } from './workspace-engine-helpers';
+import { coerceFormState, getModeCaps, getWorkspaceCreateMode, framesToSeconds, findInputFieldById } from './workspace-engine-helpers';
 import { prepareWorkspaceModelCandidate, type WorkspaceModelSetup } from './workspace-model-candidate';
 import { resolveWorkspaceWorkflow } from './workspace-workflow-projection';
 
@@ -13,23 +14,35 @@ function projected(engine: EngineCaps, current: WorkspaceModelSetup) {
     ? resolveVideoOperationEngine(engine, current.form.mode, current.form.operation) : engine;
 }
 
+/** Header controls describe other-model Create quotes; the current model keeps its source workflow. */
+export function pickerScenarioBasis(current: WorkspaceModelSetup, engine: EngineCaps): WorkspaceModelSetup {
+  const activeEngine = projected(engine, current);
+  const sourceMode = resolveWorkspaceWorkflow({ engine: activeEngine, ...current }).activeManualMode ?? undefined;
+  const createMode = getWorkspaceCreateMode(engine);
+  if ((!isVideoSourceWorkflow(sourceMode) && sourceMode !== 'retake') || !createMode) return current;
+  const sourceField = getVideoWorkflowSourceField(activeEngine.inputSchema, sourceMode);
+  const inputAssets = { ...current.inputAssets };
+  if (sourceField) delete inputAssets[sourceField.id];
+  return { ...current, inputAssets, form: coerceFormState(engine, createMode, { ...current.form, operation: undefined }) };
+}
+
 /** The same pure preparation is used for estimates and the transactional commit. */
 export function preparePickerScenario({ current, engine, currentEngine, locale, overrides = {} }: {
   current: WorkspaceModelSetup; engine: EngineCaps; currentEngine?: EngineCaps; locale: string; overrides?: PickerScenario;
 }) {
   if (!Object.keys(overrides).length) return prepareWorkspaceModelCandidate({ current, engine, currentEngine, locale,
-    restoreSetup: engine.id === current.form.engineId ? current : undefined });
+    returnToCreate: true, restoreSetup: engine.id === current.form.engineId ? current : undefined });
   const sourceEngine = currentEngine ? projected(currentEngine, current) : undefined;
-  const durationEditable = sourceEngine && videoDurationPolicy(sourceEngine, resolveWorkspaceWorkflow({ engine: sourceEngine, ...current }).submissionMode) === 'requested' && !current.multiPromptEnabled;
+  const durationEditable = engine.id !== current.form.engineId || (sourceEngine && videoDurationPolicy(sourceEngine, resolveWorkspaceWorkflow({ engine: sourceEngine, ...current }).submissionMode) === 'requested' && !current.multiPromptEnabled);
   const { durationSec, keepAudio, ...rest } = overrides;
   const seed = { ...current, form: { ...current.form, ...rest,
     ...(keepAudio !== undefined ? { extraInputValues: { ...current.form.extraInputValues, keep_audio: keepAudio } } : {}),
     ...(durationEditable && durationSec !== undefined ? { durationSec: durationSec === 'auto' ? current.form.durationSec : durationSec, durationOption: durationSec, numFrames: null } : {}) } };
   const prepared = prepareWorkspaceModelCandidate({ current: seed, engine, currentEngine, locale,
-    restoreSetup: engine.id === current.form.engineId ? seed : undefined });
+    returnToCreate: true, restoreSetup: engine.id === current.form.engineId ? seed : undefined });
   // Engine switches normally reset audio to that model's default. An explicit comparison choice takes precedence.
   if (overrides.audio !== undefined && prepared.supportsAudioToggle) prepared.setup.form.audio = overrides.audio;
-  return prepareWorkspaceModelCandidate({ current, engine, currentEngine, locale, restoreSetup: prepared.setup });
+  return prepareWorkspaceModelCandidate({ current, engine, currentEngine, locale, returnToCreate: true, restoreSetup: prepared.setup });
 }
 
 export function pickerScenarioControls(current: WorkspaceModelSetup, engine: EngineCaps, overrides: PickerScenario, locale: string): PickerControl[] {

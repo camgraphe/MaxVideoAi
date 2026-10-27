@@ -204,7 +204,7 @@ function buildWanPayload(input: AlibabaVideoPayloadInput, model: 'wan3.0-video' 
       ratio: normalizeRatio(input.aspectRatio),
       duration,
       audio: input.audioEnabled === true,
-      prompt_extend: input.promptExtend !== false,
+      prompt_extend: input.promptExtend ?? input.mode !== 'v2v',
       watermark: false,
       ...(typeof input.seed === 'number' ? { seed: input.seed } : {}),
     },

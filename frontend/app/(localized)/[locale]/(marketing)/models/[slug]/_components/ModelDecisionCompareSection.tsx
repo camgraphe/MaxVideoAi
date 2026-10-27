@@ -207,7 +207,7 @@ export function ModelDecisionCompareSection({
                           prefetch={false}
                           className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-500 dark:text-blue-300"
                         >
-                          <span>{ctaLabel}</span>
+                          <span>{ctaLabel.replace(/\s*→\s*$/, '')}</span>
                           <UIIcon icon={ArrowRight} size={14} className={MODEL_PAGE_ICON_MUTED} />
                         </Link>
                       </div>

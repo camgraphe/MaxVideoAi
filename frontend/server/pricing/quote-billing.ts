@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import {
   projectCanonicalQuoteToSnapshot,
@@ -108,7 +109,8 @@ export async function computeCanonicalBillingSnapshot(
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
   const requiresKlingV4Tariff = context.engine.id === 'kling-v4';
-  if (requiresKlingV4Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
+  if (requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -147,6 +149,7 @@ export async function computeCanonicalBillingSnapshot(
     }
   }
   if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
+  if (requiresNano21Tariff) throw new CustomerTariffUnavailableError('An active reviewed Nano Banana 2.1 customer tariff is required.');
   if (requiresOperationTariff) throw new CustomerTariffUnavailableError('A separate active reviewed video operation tariff is required.');
   if (requiresEditTariff) throw new CustomerTariffUnavailableError(`An active reviewed ${requiresLasTariff ? 'LAS' : 'ModelArk'} Edit customer tariff is required.`);
   if (context.workflowStep) throw new CustomerTariffUnavailableError('A separate active Draft workflow tariff is required.');

@@ -44,6 +44,16 @@ test('expired proof never falls back to an already signed-in account', async () 
   assert.equal(await verifyRecoveryProof(auth, { kind: 'code', value: 'expired' }), null);
 });
 
+test('a reused token hash also fails closed and cannot update an existing session', async () => {
+  let updates = 0;
+  const auth = fakeAuth({
+    verifyOtp: async () => ({ data: { session: null }, error: { code: 'otp_expired' } }),
+    updateUser: async () => { updates++; return { error: null }; },
+  });
+  assert.equal(await verifyRecoveryProof(auth, { kind: 'tokenHash', value: 'already-used' }), null);
+  assert.equal(updates, 0);
+});
+
 test('a changed account or invalid password cannot be updated', async () => {
   let updates = 0;
   const auth = fakeAuth({ updateUser: async () => { updates++; return { error: null }; } });
@@ -77,6 +87,12 @@ test('recovery callback preserves proof and locale without consuming the link', 
   assert.equal(location.pathname, '/auth/reset-password');
   assert.equal(location.searchParams.get('next'), '/app');
   assert.equal(location.searchParams.get('error'), 'expired');
+  const local = await GET(new NextRequest('http://localhost:3000/auth/callback?flow=recovery&code=fixture&lang=es&next=%2Fapp%2Fstudio'));
+  const localLocation = new URL(local.headers.get('location')!);
+  assert.equal(localLocation.origin, 'http://localhost:3000');
+  assert.equal(localLocation.pathname, '/auth/reset-password');
+  assert.equal(localLocation.searchParams.get('code'), 'fixture');
+  assert.equal(localLocation.searchParams.get('next'), '/app/studio');
 });
 
 test('recovery pages exclude analytics even with token-bearing query parameters', async () => {

@@ -23,7 +23,7 @@ test('PAYG preserves its whole localized projection with only the video quotes i
     const full = await buildCurrentPricingHubData(locale, quote(fullCalls), { audio: other, product: other });
     const video = await buildCurrentVideoPricingData(locale, quote(videoCalls));
     assert.deepEqual(Object.keys(video), ['video'], 'The narrow owner must expose no unrefreshed pricing surface');
-    assert.equal(fullCalls.length, 137);
+    assert.equal(fullCalls.length, 139);
     assert.equal(otherCalls, 21);
     assert.equal(videoCalls.length, 119);
     assert.deepEqual(videoCalls, fullCalls.filter(input => input.mode !== 't2i'));

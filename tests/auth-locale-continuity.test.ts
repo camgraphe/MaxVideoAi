@@ -107,3 +107,23 @@ test('email, reset and OAuth callback URLs retain locale and exact continuation 
     assert.equal(redirect.searchParams.get('next'), '/billing?amount=2500&currency=EUR');
   }
 });
+
+test('signup confirmation failures retain locale and Studio continuation through callback and login', async () => {
+  const { GET } = await import('../frontend/app/auth/callback/route');
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const callback = new URL(buildAuthCallbackRedirect('https://maxvideoai.com', '/app/studio', locale, 'signup')!);
+    callback.searchParams.set('error', 'access_denied');
+    callback.searchParams.set('error_code', 'otp_expired');
+    const localized = await middleware(new NextRequest(callback));
+    assert.equal(localized.cookies.get('mvid_locale')?.value, locale);
+    const callbackUrl = new URL(localized.headers.get('location')!);
+    const login = await GET(new NextRequest(callbackUrl, { headers: { cookie: `mvid_locale=${locale}` } }));
+    const loginUrl = new URL(login.headers.get('location')!);
+    assert.equal(loginUrl.pathname, '/login');
+    assert.equal(loginUrl.searchParams.get('next'), '/app/studio');
+    assert.equal(loginUrl.searchParams.get('authError'), 'signup_link_failed');
+    const final = await middleware(new NextRequest(loginUrl, { headers: { cookie: `mvid_locale=${locale}` } }));
+    assert.equal(final.headers.get('location'), null);
+    assert.equal(final.cookies.get('mvid_locale')?.value, undefined);
+  }
+});

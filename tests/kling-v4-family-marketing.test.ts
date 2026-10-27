@@ -46,17 +46,21 @@ test('PAYG selects Kling V4 copy only when the pricing owner supplies a row and 
 test('family discovery and additive copy require both publication and accepted Kling V4 media', () => {
   const models = listRuntimeModels().map((model) => structuredClone(model));
   const closedModels = structuredClone(models);
-  const originalFamilies = buildModelFamilyDefinitions(models);
+  const closed = closedModels.find(model => model.id === 'kling-v4')!;
+  closed.publication.examples.current = false;
+  closed.publication.examples.includeInFamilyCopy = false;
+  const withoutKlingMedia = MODEL_LAUNCH_READY_MODELS.filter(model => model.modelId !== 'kling-v4');
+  const originalFamilies = buildModelFamilyDefinitions(closedModels, withoutKlingMedia);
   const originalKling = originalFamilies.find((family) => family.id === 'kling')!;
   const model = models.find((entry) => entry.id === 'kling-v4')!;
-  const ready = [...MODEL_LAUNCH_READY_MODELS, klingReadiness];
+  const ready = [...withoutKlingMedia, klingReadiness];
   const mediaOnlyFamilies = buildModelFamilyDefinitions(closedModels, ready);
   model.publication.model.published = true;
   model.publication.model.indexable = true;
   model.publication.examples.published = true;
   model.publication.examples.current = true;
   model.publication.examples.includeInFamilyCopy = true;
-  const publicationOnlyFamilies = buildModelFamilyDefinitions(models);
+  const publicationOnlyFamilies = buildModelFamilyDefinitions(models, withoutKlingMedia);
   const completeFamilies = buildModelFamilyDefinitions(models, ready);
   const completeKling = completeFamilies.find((family) => family.id === 'kling')!;
   assert.equal(completeKling.defaultModelSlug, originalKling.defaultModelSlug);

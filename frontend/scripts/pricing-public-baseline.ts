@@ -32,6 +32,9 @@ async function main(): Promise<void> {
   const fluxMaxLaunch = JSON.parse(await readFile(
     new URL('../../tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
+  const nano21Launch = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/nano21-fixed-public-pricing-launch-2026-10-27.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
   const audioChange = JSON.parse(await readFile(new URL('../../tests/fixtures/audio-pricing-change-2026-09-08.json', import.meta.url), 'utf8')) as { rows: Array<{ id: string; previousCents: number; totalCents: number }> };
   const audioChanges = new Map(audioChange.rows.map(row => [row.id, row]));
   if (audioChanges.size !== audioChange.rows.length || audioChanges.size !== 15) throw new Error('Invalid reviewed Audio pricing change matrix.');
@@ -119,9 +122,16 @@ async function main(): Promise<void> {
     || fluxMaxLaunch.rows.some((row) => row.engineId !== 'flux-3-max' || historicalIds.has(row.id) || launchIds.has(row.id))) {
     throw new Error('Invalid reviewed FLUX.3 Max public pricing launch matrix.');
   }
+  const priorLaunchIds = new Set([...historicalIds, ...launchIds, ...fluxMaxLaunch.rows.map(row => row.id)]);
+  if (nano21Launch.rows.length !== 9 || new Set(nano21Launch.rows.map(row => row.id)).size !== 9
+    || nano21Launch.rows.some(row => row.engineId !== 'nano-banana-2-1' || priorLaunchIds.has(row.id)
+      || (row.id.endsWith(':quantity-4') ? row.status !== 'unavailable'
+        : row.status !== 'exact' || row.customerTotalCents !== (row.id.endsWith(':high') ? 23 : 7)))) {
+    throw new Error('Invalid reviewed Nano21 fixed customer-price launch matrix.');
+  }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

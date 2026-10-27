@@ -55,7 +55,7 @@ test('middleware routing helpers own locale, query, redirect, and response utili
   assert.match(marketingSource, /export function handleMarketingSlug/);
   assert.match(marketingSource, /export function resolveNonPrefixedLocalizedMarketingRedirect/);
   assert.match(querySource, /export function normalizePublicQueryParams/);
-  assert.match(querySource, /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"]\]\)/);
+  assert.match(querySource, /login:\s*new Set\(\[['"]next['"],\s*['"]mode['"],\s*['"]authError['"],\s*['"]code['"],\s*['"]state['"],\s*['"]flow['"]\]\)/);
 });
 
 test('middleware preserves legacy French compare blog redirects', () => {

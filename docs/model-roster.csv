@@ -13,6 +13,7 @@ seedream,Seedream,bytedance,seedream,seedream,current,,,5.0 Lite,available,logoA
 seedream-5-0-pro,Seedream 5.0 Pro,bytedance,seedream-5-0-pro,seedream,current,,,5.0 Pro,available,logoAllowed,true,true
 nano-banana,Nano Banana (Image Generation),google,nano-banana,nano-banana,legacy,,,Nano,available,logoAllowed,true,true
 nano-banana-2,Nano Banana 2,google,nano-banana-2,nano-banana,current,,,2,available,logoAllowed,true,true
+nano-banana-2-1,Nano Banana 2.1,google,nano-banana-2-1,nano-banana,current,,,2.1,available,logoAllowed,true,true
 nano-banana-lite,Nano Banana Lite,google,nano-banana-lite,nano-banana,current,,,Lite,available,logoAllowed,true,true
 nano-banana-pro,Nano Banana Pro,google,nano-banana-pro,nano-banana,current,,,Pro,available,logoAllowed,true,true
 gemini-omni-flash,Gemini Omni Flash 1.1,google-gemini,gemini-omni-flash,veo,current,,,1.1 Preview,limited,textOnly,true,true

@@ -122,6 +122,9 @@ export const canonicalSettingsSchema = z.object({
   startTimeSec: z.number().min(0).nullable().default(null),
   style: z.string().trim().min(1).max(64).nullable().default(null),
   thinkingLevel: z.string().trim().min(1).max(64).nullable().default(null),
+  enableImageSearch: z.boolean().nullable().default(null),
+  maxOutputTokens: z.number().int().min(1).max(32768).nullable().default(null),
+  systemInstruction: z.string().max(4096).nullable().default(null),
 }).strict().describe(
   'Canonical MaxVideoAI settings only. Read the selected mode from get_model_details and include only compatible fields.',
 );

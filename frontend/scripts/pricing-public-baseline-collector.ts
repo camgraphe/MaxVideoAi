@@ -20,6 +20,8 @@ import {
   getImagePresetQuote,
 } from '../app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 import { resolveModelOfferAmountCents } from '../app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { collectNano21PublicProjectionRows } from './pricing-public-baseline-nano21';
 
 type PublicProjectionSurface =
   | 'pricing-hub-video'
@@ -33,7 +35,7 @@ type PublicProjectionSurface =
   | 'workspace-preflight'
   | 'image-estimate';
 
-type PublicProjectionRow = {
+export type PublicProjectionRow = {
   id: string;
   surface: PublicProjectionSurface;
   engineId: string;
@@ -179,8 +181,10 @@ function resolveCompatibilityProfile(row: PublicProjectionRow): string {
 export async function collectPublicPricingProjectionRows(): Promise<PublicProjectionRow[]> {
   for (const key of DETERMINISTIC_ENV_KEYS) delete process.env[key];
 
-  const entries = listFalEngines();
-  const rows: PublicProjectionRow[] = [];
+  const allEntries = listFalEngines();
+  const entries = allEntries.filter(entry => entry.id !== NANO21_ENGINE_ID);
+  const nano = allEntries.find(entry => entry.id === NANO21_ENGINE_ID);
+  const rows: PublicProjectionRow[] = nano ? await collectNano21PublicProjectionRows(nano) : [];
   const hub = buildPricingHubData('en');
 
   for (const row of hub.video.rows) {

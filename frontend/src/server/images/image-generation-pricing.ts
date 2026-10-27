@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
@@ -24,6 +25,10 @@ export async function resolveImageGenerationPricingSnapshot(params: {
   quality: string | null;
   combinedImageCount: number;
   enableWebSearch: boolean;
+  thinkingLevel?: string | null;
+  maxOutputTokens?: number;
+  systemInstruction?: string;
+  enableImageSearch?: boolean;
   numImages: number;
   billingProductKey: BillingProductKey | null;
   billingQuantityMultiplier: number;
@@ -40,9 +45,12 @@ export async function resolveImageGenerationPricingSnapshot(params: {
     ? params.mode === 'i2i'
       ? Math.max(0, params.combinedImageCount - 1)
       : params.combinedImageCount
-    : isGptImage25EngineId(params.engine.id) && params.mode === 'i2i'
+    : params.engine.id === NANO21_ENGINE_ID || isGptImage25EngineId(params.engine.id) && params.mode === 'i2i'
       ? params.combinedImageCount
       : undefined;
+  const nano21 = params.engine.id === NANO21_ENGINE_ID ? normalizeNano21Settings(params) : null;
+  if (nano21 && params.billingProductKey) throw new Error('Nano Banana 2.1 requires its own exact customer tariff.');
+  if (nano21) assertNano21Scenario({ ...nano21, mode: params.mode, referenceImageCount: params.combinedImageCount, outputCount: params.numImages, aspectRatio: params.resolvedAspectRatio });
   let pricing = params.trustedQuotedBilling
     ? JSON.parse(JSON.stringify(params.trustedQuotedBilling.pricing)) as PricingSnapshot
     : params.billingProductKey
@@ -54,6 +62,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
         })
       : await computeCanonicalBillingSnapshot({
         engine: params.engine,
+        ...(nano21 ?? {}),
         durationSec: params.durationSec,
         resolution: params.resolution,
         mode: params.mode,

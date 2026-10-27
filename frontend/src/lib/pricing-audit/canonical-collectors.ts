@@ -5,6 +5,7 @@ import {
 
 import { buildPricingAuditScenarios } from './scenarios';
 import type { FrozenPricingOutput } from './types';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 
 export type CanonicalPricingAuditOutput = FrozenPricingOutput & {
   engineId: string;
@@ -23,7 +24,11 @@ function formatUsd(cents: number): string {
 export function collectCanonicalPricingOutputs(
   baselineRows: FrozenPricingOutput[]
 ): CanonicalPricingAuditOutput[] {
-  const scenarios = buildPricingAuditScenarios();
+  // This reproduces the historical percentage-policy audit. Nano21 launched
+  // with native fixed customer tariffs and an incomplete provider invoice;
+  // its six cells and public quotes are qualified independently, never invented
+  // as a historical supplier-cost/margin baseline.
+  const scenarios = buildPricingAuditScenarios().filter(scenario => scenario.engineId !== NANO21_ENGINE_ID);
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(
     quoteHistoricalCanonicalAuditScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])
