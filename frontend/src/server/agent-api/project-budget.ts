@@ -572,6 +572,15 @@ export async function calculateAgentProjectBudget(
       } catch (error) {
         mapCapabilityError(error, proposalIndex, lineIndex);
       }
+      if (engineId === 'kling-v4' && ['i2v', 'ref2v', 'v2v'].includes(mode) && referenceRoles.length > 0) {
+        editProjectLine(
+          'REFERENCE_REQUIRED',
+          'Kling reference pricing requires actual owned media to verify reference types and video timing. Use prepare_generation with asset references for a fixed customer quote.',
+          proposalIndex,
+          lineIndex,
+          'references',
+        );
+      }
       let unitPrice: BudgetMoney;
       try {
         unitPrice = validatePrice(

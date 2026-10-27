@@ -50,9 +50,23 @@
 .app-experience .app-model-strip { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0 0 20px; }
 .app-model-strip > div { padding: 0; }
 .app-experience [data-composer-density="workspace"] { border: 0; border-radius: 0; background: transparent; background-image: none; box-shadow: none; padding: 0; }
-.app-experience .app-mode-switch { gap: 22px; border-bottom: 1px solid var(--app-line); margin-bottom: 20px; }
+.app-experience .app-mode-switch { gap: 14px; border-bottom: 1px solid var(--app-line); margin-bottom: 6px; }
 .app-experience .app-mode-switch button { border: 0; border-radius: 0; background: transparent; background-image: none; color: var(--app-muted); box-shadow: none; padding: 0 0 9px; font-size: 13px; }
 .app-experience .app-mode-switch button[aria-pressed="true"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+/* Approved A: a single compact rail with a clearly selected mode. */
+.app-experience .app-mode-switch-segmented { flex-wrap: nowrap; width: fit-content; max-width: 100%; gap: 3px; padding: 4px; border: 0; border-radius: 11px; background: var(--surface-2); }
+.app-experience .app-mode-switch-segmented button { flex: 1 1 172px; width: 172px; min-width: 0; min-height: 48px !important; gap: 10px; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 570; letter-spacing: -.02em; line-height: 1.25; }
+.app-experience .app-mode-switch-segmented button svg { flex: none; width: 24px; height: 24px; }
+.app-experience .app-mode-switch-segmented button span { min-width: 0; overflow-wrap: anywhere; }
+.app-experience .app-mode-switch-segmented button:hover:not(:disabled):not([aria-pressed="true"]) { background: var(--app-panel); color: var(--app-ink); }
+.app-experience .app-mode-switch-segmented button[aria-pressed="true"] { background: var(--app-ink); color: #fff9e8; box-shadow: none; }
+[data-theme="dark"] .app-experience .app-mode-switch-segmented button[aria-pressed="true"] { background: var(--app-accent); color: var(--on-brand); }
+.app-experience .app-mode-switch-segmented button:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 2px; }
+.app-experience .app-mode-switch-segmented button:disabled { opacity: .45; }
+@media (max-width: 640px) {
+  .app-experience .app-mode-switch-segmented { gap: 1px; padding: 3px; }
+  .app-experience .app-mode-switch-segmented button { flex-direction: column; min-height: 66px !important; gap: 6px; padding: 8px 4px; font-size: 11px; }
+}
 .app-experience .app-prompt-surface { border: 1px solid var(--app-line); border-radius: 12px; background: var(--app-panel); background-image: none; box-shadow: none; }
 .app-experience .app-prompt-heading { padding: 18px 20px 8px; }
 .app-experience .app-prompt-heading > div:first-child > span { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: -.01em; color: var(--app-ink); }
@@ -254,7 +268,6 @@
   .app-experience .app-image-preview-toolbar { min-height: 54px; }
   .app-experience .app-image-composer { margin-top: 5px; }
 }
-.app-experience .app-mode-switch { margin-bottom: 6px; gap: 14px; }
 .app-experience .app-audio-workbench { padding-top: 14px; }
 .app-experience .app-audio-workbench > div:first-child { gap: 12px; padding-bottom: 230px; }
 .app-experience .app-audio-workbench section { border-radius: 7px; box-shadow: none; }
@@ -367,19 +380,27 @@
 
 /* Direct reference commands and the focused media popup share workspace primitives. */
 .app-experience .app-reference-heading { justify-content: flex-start; column-gap: 14px; }
-.app-experience .app-reference-commands { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
-.app-experience .app-reference-command { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; color: var(--app-accent); }
-.app-experience .app-reference-command-media { position: relative; display: inline-flex; flex: none; width: 20px; height: 20px; }
+.app-experience .app-reference-commands { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.app-experience .app-workspace-references .app-reference-command { display: inline-flex; align-items: center; justify-content: flex-start; gap: 9px; min-width: 162px; max-width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 9px; color: var(--app-accent); }
+.app-experience .app-reference-command-label { min-width: 0; color: var(--app-ink); overflow-wrap: anywhere; text-align: left; line-height: 1.25; }
+.app-experience .app-reference-command-media { position: relative; display: inline-flex; flex: none; width: 22px; height: 22px; }
+.app-experience .app-reference-command-media > svg { width: 100%; height: 100%; }
+.app-experience .app-reference-command-add { flex: none; width: 16px; height: 16px; margin-left: auto; color: var(--app-muted); }
+.app-experience .app-reference-command-count { margin-left: auto; color: var(--app-muted); }
+.app-experience .app-reference-command:hover:not([aria-disabled="true"]) { border-color: var(--app-accent); background: var(--app-accent-soft); }
 .app-experience .app-reference-command-media img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
 .app-experience .app-reference-command-media .app-reference-command-status { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 12px; height: 12px; border-radius: 50%; background: var(--app-panel); color: var(--app-accent); font-size: 10px; line-height: 1; }
 .app-experience .app-reference-command[aria-expanded="true"] { background: var(--app-accent-soft); border-color: var(--app-accent); }
-.app-experience .app-reference-command.is-add-disabled { border-color: var(--app-line); border-style: dashed; color: var(--app-muted); }
+.app-experience .app-reference-command.is-add-disabled { border-color: var(--app-line); border-style: dashed; }
+.app-experience .app-reference-command.is-add-disabled, .app-experience .app-reference-command.is-add-disabled .app-reference-command-label { color: var(--app-muted); }
 .app-experience .app-reference-command[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
 .app-experience .app-reference-command small { color: var(--app-muted); font-size: 10px; }
 @media (max-width: 640px) {
-  .app-experience .app-reference-commands .app-reference-command { padding-inline: 6px; }
-  .app-experience .app-reference-command-label { max-width: 52px; white-space: normal; text-align: left; line-height: 1.15; }
-  .app-experience [data-extension-workflow="true"] .app-reference-command-label { max-width: 100px; }
+  .app-experience .app-reference-commands { gap: 5px; }
+  .app-experience .app-workspace-references .app-reference-command { position: relative; flex: 1 1 80px; flex-direction: column; justify-content: center; min-width: 0; min-height: 67px; gap: 6px; padding: 8px 6px; }
+  .app-experience .app-reference-command-label { text-align: center; font-size: 11px; }
+  .app-experience .app-reference-command-add { position: absolute; top: 7px; right: 5px; width: 12px; height: 12px; }
+  .app-experience .app-reference-command-count { margin-left: 0; }
 }
 .app-experience .app-reference-restrictions { display: grid; gap: 2px; margin-top: 4px; color: var(--app-muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
 .app-experience .app-reference-restrictions p { margin: 0; }
@@ -401,7 +422,7 @@
 .app-experience .app-reference-thumbnail > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-height: 100%; object-fit: cover; }
 .app-experience .app-reference-thumbnail-kind { position: absolute; bottom: 2px; right: 2px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 3px; background: rgb(0 0 0 / .65); color: white; }
 .app-experience .app-reference-thumbnail-kind svg { width: 12px; height: 12px; }
-.app-experience .app-reference-command-media .app-reference-thumbnail { width: 20px; height: 20px; }
+.app-experience .app-reference-command-media .app-reference-thumbnail { width: 22px; height: 22px; }
 .app-experience .app-reference-selected-summary small { max-width: 100px; overflow-wrap: anywhere; }
 .app-experience .app-reference-mention-review { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--surface-2); font-size: 12px; }
 .app-experience .app-reference-mention-review button { justify-self: start; min-height: 44px; color: var(--app-accent); text-decoration: underline; }
@@ -413,8 +434,6 @@
 .app-experience .app-reference-popup .app-reference-field { margin-top: 8px; }
 @media (max-width: 380px) {
   .app-experience .app-reference-heading > span { flex-basis: 100%; }
-  .app-experience .app-reference-command { gap: 5px; padding-inline: 6px; }
-  .app-experience .app-reference-command svg, .app-experience .app-reference-command-media { width: 18px; height: 18px; }
   .app-experience.app-reference-modal-layer { padding: 8px; }
   .app-experience .app-reference-popup { padding: 10px; }
 }

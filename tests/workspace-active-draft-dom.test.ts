@@ -12,11 +12,13 @@ import { useWorkspaceDraftHydration } from '../frontend/app/(core)/(workspace)/a
 import { useWorkspaceInputSchemaState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceInputSchemaState';
 import {
   decodeWorkspaceActiveDraft,
+  encodeWorkspaceActiveDraft,
   workspaceActiveDraftKey,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-active-draft';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { serializeWorkspaceModelSetup } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups';
 import { resolveVideoOperationEngine } from '../frontend/lib/video-operation';
+import { stageGuestCreation } from '../frontend/lib/guest-creation-continuation';
 import { useWorkspaceGalleryActions } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceGalleryActions';
 import type { LocalRenderGroup } from '../frontend/app/(core)/(workspace)/app/_lib/render-persistence';
 import type { GroupSummary } from '../frontend/types/groups';
@@ -448,6 +450,99 @@ const snapshot = (view: Awaited<ReturnType<typeof mount>>) => {
     }),
   );
 };
+for (const hasAccountDraft of [false, true]) {
+  test(`guest continuation survives post-auth route return ${hasAccountDraft ? 'with' : 'without'} an existing account draft`, async () => {
+    const view = await mount({ initialAuth: 'pending' });
+    try {
+      const base = snapshot(view);
+      const engine = allEngines.find((entry) => entry.id === 'kling-o3-pro')!;
+      const source = { ...media('video_url', 'video'), width: 720, height: 1280 };
+      const serialized = serializeWorkspaceModelSetup({
+        ...base,
+        form: { ...coerceFormState(engine, 'v2v', null), operation: 'kling-edit', extraInputValues: { keep_audio: false } },
+        inputAssets: { video_url: [source] },
+        prompt: 'Guest setup retained after sign-in and a billing visit',
+        negativePrompt: 'No camera cuts',
+      });
+      assert.equal(serialized.ok, true);
+      if (!serialized.ok) return;
+      const previous = { ...serialized.setup, prompt: 'Existing account setup', inputAssets: {} };
+      if (hasAccountDraft) {
+        const encoded = encodeWorkspaceActiveDraft({
+          current: { modelId: engine.id, updatedAt: Date.now(), setup: previous }, recovery: null,
+        }, 'a');
+        assert.equal(encoded.ok, true);
+        if (!encoded.ok) return;
+        view.storage.setItem(workspaceActiveDraftKey('a'), encoded.value);
+      }
+      stageGuestCreation(view.storage, '/app', JSON.stringify(serialized.setup), 'synthetic-continuation');
+      window.history.replaceState({}, '', '/app?continueDraft=synthetic-continuation');
+      assert.ok(view.storage.getItem('maxvideoai:guest-creation:v1'), 'pending auth has not consumed the setup');
+      await view.auth('authed', 'a');
+      assert.equal(view.current.hydration.ready, true);
+      assert.deepEqual(snapshot(view), serialized.setup, 'the visible post-auth form is exact');
+      assert.equal(view.storage.getItem('maxvideoai:guest-creation:v1'), null, 'handoff remains one-use');
+      assert.equal(window.location.search, '');
+      await view.remount(); // Billing or another route may unmount the workspace.
+      assert.deepEqual(snapshot(view), serialized.setup, 'return must not restore the displaced account setup or defaults');
+      const stored = decodeWorkspaceActiveDraft(view.storage.getItem(workspaceActiveDraftKey('a')), 'a');
+      assert.deepEqual(stored.current?.setup, serialized.setup);
+      assert.deepEqual(stored.recovery?.setup ?? null, hasAccountDraft ? previous : null);
+      assert.equal(view.libraryWrites, 0);
+      assert.equal(view.requests.length, 0, 'no auth, payment, upload or generation service is called');
+    } finally { await view.close(); }
+  });
+}
+for (const resolution of ['remove recovery', 'retire account']) {
+  test(`guest continuation with an oversized combined record survives remount until ${resolution}`, async () => {
+    const view = await mount({ initialAuth: 'pending' });
+    try {
+      const engine = allEngines.find((entry) => entry.id === 'kling-o3-pro')!;
+      const serialized = serializeWorkspaceModelSetup({
+        ...snapshot(view), form: { ...coerceFormState(engine, 'v2v', null), operation: 'kling-edit' },
+        prompt: 'g'.repeat(99_000), inputAssets: { video_url: [media('video_url', 'video')] },
+      });
+      assert.equal(serialized.ok, true);
+      if (!serialized.ok) return;
+      const previous = { ...serialized.setup, prompt: 'a'.repeat(980_000) };
+      const encoded = encodeWorkspaceActiveDraft({
+        current: { modelId: engine.id, updatedAt: Date.now(), setup: previous }, recovery: null,
+      }, 'a');
+      assert.equal(encoded.ok, true);
+      if (!encoded.ok) return;
+      view.storage.setItem(workspaceActiveDraftKey('a'), encoded.value);
+      assert.equal(stageGuestCreation(view.storage, '/app', JSON.stringify(serialized.setup), 'synthetic-large-continuation'), true);
+      window.history.replaceState({}, '', '/app?continueDraft=synthetic-large-continuation');
+      await view.auth('authed', 'a');
+      for (const remount of [false, true]) {
+        if (remount) await view.remount();
+        assert.deepEqual(snapshot(view), serialized.setup);
+        assert.deepEqual(view.current.hydration.recoverySetup?.setup, previous);
+        assert.equal(view.current.hydration.error, 'oversized', 'a failed envelope save stays visible');
+        assert.equal(view.current.hydration.memoryOnly, true);
+        assert.equal(view.storage.getItem(workspaceActiveDraftKey('a')), encoded.value, 'the persistent account record and size limit remain intact');
+      }
+      if (resolution === 'remove recovery') {
+        await act(async () => view.current.hydration.removeRecovery());
+        assert.equal(view.current.hydration.error, null);
+        assert.equal(view.current.hydration.memoryOnly, false);
+        const stored = decodeWorkspaceActiveDraft(view.storage.getItem(workspaceActiveDraftKey('a')), 'a');
+        assert.deepEqual(stored.current?.setup, serialized.setup);
+        assert.equal(stored.recovery, null);
+        await view.remount();
+        assert.deepEqual(snapshot(view), serialized.setup);
+      } else {
+        await view.auth('authed', 'b');
+        assert.notEqual(view.current.prompt, serialized.setup.prompt);
+        assert.equal(view.current.hydration.recoverySetup, null);
+        await view.auth('authed', 'a');
+        assert.deepEqual(snapshot(view), previous, 'retired document-only continuation must not cross accounts');
+      }
+      assert.equal(view.libraryWrites, 0);
+      assert.equal(view.requests.length, 0);
+    } finally { await view.close(); }
+  });
+}
 for (const scenario of [
   {
     name: 'Start and End frame',

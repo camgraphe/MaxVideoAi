@@ -231,6 +231,65 @@ async function assertLineError(
   });
 }
 
+test('Kling V4 declarative references require owned media before project pricing', async () => {
+  for (const [mode, referenceRoles] of [
+    ['i2v', ['source']],
+    ['ref2v', ['reference']],
+    ['ref2v', ['first_frame']],
+    ['v2v', ['source']],
+  ] as const) {
+    const deps = makeDeps({ listPublicEngines: async () => [registryCapability('kling-v4')] });
+    await assert.rejects(calculateAgentProjectBudget(input([{
+      name: 'Reference film', lines: [line({
+        engineId: 'kling-v4', mode, referenceRoles: [...referenceRoles],
+        settings: { durationSec: 14, resolution: '720p', ...(mode === 'ref2v' ? { aspectRatio: '16:9' } : {}) },
+      })],
+    }]), principal, deps), (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, 'REFERENCE_REQUIRED');
+      assert.match(error.message, /actual owned media.*prepare_generation/);
+      assert.deepEqual(error.nextAction, {
+        type: 'edit_project_line', proposalIndex: 0, lineIndex: 0, field: 'references',
+      });
+      return true;
+    });
+    assert.equal(deps.calls.length, 0, `${mode} must stop before pricing placeholder references`);
+  }
+});
+
+test('Kling V4 reference errors locate the failing line without returning a partial budget', async () => {
+  const deps = makeDeps({ listPublicEngines: async () => [seedance, registryCapability('kling-v4')] });
+  await assertLineError(calculateAgentProjectBudget(input([
+    { name: 'Alternative', lines: [line()] },
+    { name: 'Film', lines: [line(), line({
+      engineId: 'kling-v4', mode: 'ref2v', referenceRoles: ['reference'],
+      settings: { durationSec: 14, resolution: '720p', aspectRatio: '16:9' },
+    })] },
+  ]), principal, deps), 'REFERENCE_REQUIRED', { proposalIndex: 1, lineIndex: 1, field: 'references' });
+  assert.equal(deps.calls.length, 2);
+  assert.ok(deps.calls.every((request) => request.engineId === 'seedance-2-5'));
+});
+
+test('Kling V4 reference-free project estimates retain canonical capability validation', async () => {
+  for (const mode of ['t2v', 'ref2v'] as const) {
+    const deps = makeDeps({ listPublicEngines: async () => [registryCapability('kling-v4')] });
+    const result = await calculateAgentProjectBudget(input([{
+      name: 'Text film', lines: [line({
+        engineId: 'kling-v4', mode,
+        settings: { durationSec: 14, resolution: '720p', aspectRatio: '16:9' },
+      })],
+    }]), principal, deps);
+    assert.equal(result.proposals[0]?.total.amountCents, 80, 'synthetic injected unit price');
+    assert.equal(deps.calls.length, 1);
+    assert.deepEqual(deps.calls[0]?.references, []);
+  }
+  const deps = makeDeps({ listPublicEngines: async () => [registryCapability('kling-v4')] });
+  await assertLineError(calculateAgentProjectBudget(input([{
+    name: 'Invalid role', lines: [line({ engineId: 'kling-v4', mode: 'ref2v', referenceRoles: ['mask'] })],
+  }]), principal, deps), 'REFERENCE_INVALID', { proposalIndex: 0, lineIndex: 0, field: 'references' });
+  assert.equal(deps.calls.length, 0);
+});
+
 test('prices a 60-second single-model video project as a named proposal', async () => {
   const deps = makeDeps();
   const result = await calculateAgentProjectBudget(input([{ name: 'Consistent product film', lines: [line({ clipCount: 6 })] }]), principal, deps);

@@ -13,6 +13,7 @@ export type GoogleVertexImagePayload = {
   generationConfig: {
     responseModalities: ['TEXT', 'IMAGE'];
     imageConfig?: { aspectRatio?: string; imageSize?: string };
+    thinkingConfig?: { thinkingLevel: 'MINIMAL' | 'HIGH' };
   };
   tools?: Array<{ googleSearch: Record<string, never> }>;
 };
@@ -27,11 +28,19 @@ function normalizeImageSize(value: string | null | undefined): string | undefine
   return value?.trim() || undefined;
 }
 
+function normalizeThinkingLevel(value: string | null | undefined): 'MINIMAL' | 'HIGH' | undefined {
+  if (value == null) return undefined;
+  if (value === 'minimal') return 'MINIMAL';
+  if (value === 'high') return 'HIGH';
+  throw new Error('Unsupported thinking level for Google Vertex image generation.');
+}
+
 export function buildGoogleVertexImagePayload(params: {
   prompt: string;
   referenceImages?: GoogleVertexReferenceImage[];
   aspectRatio?: string | null;
   imageSize?: string | null;
+  thinkingLevel?: string | null;
   enableWebSearch?: boolean;
 }): GoogleVertexImagePayload {
   const prompt = params.prompt.trim();
@@ -43,11 +52,13 @@ export function buildGoogleVertexImagePayload(params: {
   }
   const aspectRatio = params.aspectRatio && params.aspectRatio !== 'auto' ? params.aspectRatio : undefined;
   const imageSize = normalizeImageSize(params.imageSize);
+  const thinkingLevel = normalizeThinkingLevel(params.thinkingLevel);
   return {
     contents: [{ role: 'user', parts }],
     generationConfig: {
       responseModalities: ['TEXT', 'IMAGE'],
       ...(aspectRatio || imageSize ? { imageConfig: { ...(aspectRatio ? { aspectRatio } : {}), ...(imageSize ? { imageSize } : {}) } } : {}),
+      ...(thinkingLevel ? { thinkingConfig: { thinkingLevel } } : {}),
     },
     ...(params.enableWebSearch ? { tools: [{ googleSearch: {} }] } : {}),
   };

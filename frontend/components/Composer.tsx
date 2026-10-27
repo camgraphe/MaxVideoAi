@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
+import { ComposerModeSwitch } from '@/components/composer/ComposerModeSwitch.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
@@ -329,27 +330,8 @@ export function Composer({
         <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
-              <div className="app-mode-switch flex flex-wrap gap-2">
-                {visibleModeToggles.map((entry) => {
-                  const active = activeManualMode === entry.mode;
-                  return (
-                    <Button
-                      key={entry.mode ?? 'base'}
-                      data-composer-mode={entry.mode ?? 'create'}
-                      type="button"
-                      size="sm"
-                      variant={active ? 'primary' : 'outline'}
-                      onClick={() => onModeToggle?.(entry.mode === null ? null : active ? null : entry.mode)}
-                      disabled={entry.disabled}
-                      title={entry.disabledReason}
-                      aria-pressed={active}
-                      className="!min-h-11 rounded-2xl px-4 py-0 text-[12px] font-semibold dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
-                    >
-                      {entry.label}
-                    </Button>
-                  );
-                })}
-              </div>
+              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
+                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
             ) : null}
             <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
           </div>
