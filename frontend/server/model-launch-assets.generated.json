@@ -23,8 +23,8 @@
     {
       "waveId": "kling-v4",
       "sourceManifest": "docs/model-launch/kling-v4-video-example-pack.json",
-      "sourceStatus": "missing",
-      "sourceDigest": null
+      "sourceStatus": "validated",
+      "sourceDigest": "1b82fa5d54065619529936090bf74043874d8a15350a57a53010b6c30ff68e4a"
     }
   ],
   "assets": [
@@ -736,6 +736,72 @@
       "playlistSlugs": [
         "family-flux",
         "examples-flux-3-max"
+      ]
+    },
+    {
+      "waveId": "kling-v4",
+      "assetId": "output:job_external_fal_7ba203855713484c19652a8a3ef9412b6eac98fe_video_0",
+      "videoId": "job_external_fal_7ba203855713484c19652a8a3ef9412b6eac98fe",
+      "libraryAssetId": "ma_1b244801a51842f5b0210756da00f659",
+      "jobId": "job_external_fal_7ba203855713484c19652a8a3ef9412b6eac98fe",
+      "modelId": "kling-v4",
+      "engineId": "kling-v4",
+      "familyId": "kling",
+      "mode": "ref2v",
+      "prompt": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+      "sourceKind": "references",
+      "sourceAssetIds": [
+        "ma_b8f6f38861e54ea2a3e758a40d8a1c95",
+        "ma_7eca1bf7d78d4dce866125296304f892"
+      ],
+      "videoUrl": "https://media.maxvideoai.com/marketing-media/74a2c6b5-5484-4885-9ab6-fbbf922504db/a3d2396eae4e1d8a32aeed3e1b42d98f791dab278fcf96f585d217885a87c9f2.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/marketing-media/74a2c6b5-5484-4885-9ab6-fbbf922504db/00a65f0d00c44b9ce6a016a17135cf2f992183be9f435cee97f194eb123885ef.webp",
+      "previewVideoUrl": "https://media.maxvideoai.com/marketing-media/74a2c6b5-5484-4885-9ab6-fbbf922504db/76c7b55b227ae441af0a7f87e9471d544283752f515aac8e6f981d55cd04422c.mp4",
+      "width": 1280,
+      "height": 720,
+      "durationSec": 28,
+      "acceptedAt": "2026-10-27T16:01:17.970Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "243ecbb8-221e-4592-93c1-0a12d85f5c30",
+      "modelPlaylistId": "a04d8baf-5b6b-4074-bdb7-9e73dada408d",
+      "playlistSlugs": [
+        "family-kling",
+        "examples-kling-v4"
+      ]
+    },
+    {
+      "waveId": "kling-v4",
+      "assetId": "output:job_external_fal_a308ea2f899d01a2306e89aecdc9dcd501ed29b5_video_0",
+      "videoId": "job_external_fal_a308ea2f899d01a2306e89aecdc9dcd501ed29b5",
+      "libraryAssetId": "ma_8e479c3bb2f54487949ff20936780da5",
+      "jobId": "job_external_fal_a308ea2f899d01a2306e89aecdc9dcd501ed29b5",
+      "modelId": "kling-v4",
+      "engineId": "kling-v4",
+      "familyId": "kling",
+      "mode": "ref2v",
+      "prompt": "Create a 24-second black-and-white live concert sequence, one continuous musical performance across six motivated shots. Use @Image1 for the original singer's identity, black knitted beanie, dark sleeveless top and suspended vintage microphone. Use @Image2 for the outdoor night stage, band placement, lights and audience geography. These are references, not imposed first frames. Keep the singer and her clothing identical across shots. Do not copy a real performer's face or voice.\n\nThe singer is a woman around thirty-five with long slightly unruly dark hair, a strong expressive brow and a direct, unpolished stage presence. She stands at centre stage, very close to a silver vintage microphone suspended at mouth height. A curly-haired adult trumpeter stands behind her to camera right; an adult keyboard player is behind her to camera left. A standing audience faces the stage beyond the footlights. This is an actual outdoor concert at night, not a bar, rehearsal, closing-time scene or narrative interlude.\n\nPhotography: tactile monochrome, luminous skin against deep blacks, soft blooming stage bulbs, restrained anamorphic character and shallow depth of field in close views. A physically present handheld camera follows small shifts of breath and weight, without random whip pans. Preserve readable eyes and lips; natural facial asymmetry and skin. The final wide reveals a real stage, trees against the night sky and listeners in the foreground.\n\nMusic is the dramatic centre. Generate a new original English-language live soul performance with an intimate, slightly grainy female voice, unforced chest-to-head transitions, audible breaths and clear words. A slow, lightly swung pulse around 80 BPM, warm electric-piano chords, restrained bass and brushed percussion support her; the trumpet answers only after her sung phrase. The band and voice share a single uninterrupted tempo, harmony and acoustic space across every cut. No borrowed melody, recognisable existing song, artist voice imitation, spoken narration or crowd speech. This is a proposed original musical interpretation, not an instruction to reproduce an external recording.\n\n0–6s: tight three-quarter frontal view of her face and microphone. She takes one audible breath, leans toward the microphone and sings the original line, \"Let the morning find us here.\" Let the phrase build from conversational intimacy to a held final word. Small jaw and brow movements follow the vocal; the camera drifts only a few centimetres.\n\n6–12s: cut to her left profile, chest-up with the same microphone position. On the same groove she sings the original line, \"With the city in our hands.\" Her free hand opens once at waist height as the voice gains strength, then rests. Do not turn this into choreographed gestures on every syllable. Show her finishing the final consonant before leaving her face.\n\n12–15s: cut to the trumpeter in side backlight. He lifts one trumpet to his mouth and plays a short answering phrase; the visible embouchure and fingers match the trumpet sound. The singer is not singing during this response.\n\n15–18s: cut to close hands on the same electric piano, pressing and releasing a small resolving chord figure. The electric-piano notes already present in the mix become momentarily more exposed; the music does not restart.\n\n18–21s: return to a frontal close-up of the singer. She sustains an open vowel as a short melodic resolution, eases back from the microphone and lets a small involuntary smile appear when the note ends. Keep vocal effort, release and breathing visible. Do not add another lyric or spoken line.\n\n21–24s: cut to a steady wide view from behind the audience. Reveal the complete illuminated stage in the night landscape; the same musicians remain in their positions. Let the last chord and vocal reverberation decay into modest applause and night air. Hold the ending rather than cutting mid-phrase.\n\nSound must be audible and integrated: foreground singing, supporting live instruments, natural short stage reverberation and audience response only at the end. No music replacement between shots, no silent singer, no prerecorded source audio assumed, no additional paid audio-generation step implied. The described timings and tempo guide a coherent performance; musical coherence matters more than mechanical timestamp precision.\n\nProduction language: English. All sung lyrics and any incidental permitted language must be English. No subtitles, titles, watermarks, logos, banners or readable stage signage. Preserve an actual concert and the full musical phrase; no story outside the performance.",
+      "sourceKind": "references",
+      "sourceAssetIds": [
+        "ma_33db9122fc024fae84b5574f8f0a1b6e",
+        "ma_3abb8dccb0f44f70a6bd02b186e5c92c"
+      ],
+      "videoUrl": "https://media.maxvideoai.com/marketing-media/781ae55f-dd33-4673-aeee-706aa0b85cc8/645dd4075439e0094d32a63af453252f1a0323d49d12e3732c2419e83f6daaa7.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/marketing-media/781ae55f-dd33-4673-aeee-706aa0b85cc8/f2db6fbd5a8f3645aaebf60cf1adebe29127bbdcbe82f4a87df5731650b240e7.webp",
+      "previewVideoUrl": "https://media.maxvideoai.com/marketing-media/781ae55f-dd33-4673-aeee-706aa0b85cc8/0efa68778ceb868bb6a91e793c619f9cd9c5e6a2fd8f4a665aacd801a8b92dfc.mp4",
+      "width": 1280,
+      "height": 720,
+      "durationSec": 24,
+      "acceptedAt": "2026-10-27T16:01:17.970Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "243ecbb8-221e-4592-93c1-0a12d85f5c30",
+      "modelPlaylistId": "a04d8baf-5b6b-4074-bdb7-9e73dada408d",
+      "playlistSlugs": [
+        "family-kling",
+        "examples-kling-v4"
       ]
     }
   ]

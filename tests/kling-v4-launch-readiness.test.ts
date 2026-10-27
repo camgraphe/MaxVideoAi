@@ -3,6 +3,24 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { buildModelLaunchProjectionsFromSources, validateModelLaunchWaveDocument } from '../frontend/server/model-launch-assets-validation';
 
+test('the selected concert and tram are the two exact public Kling readiness assets', () => {
+  const document = JSON.parse(readFileSync('docs/model-launch/kling-v4-video-example-pack.json', 'utf8'));
+  assert.equal(validateModelLaunchWaveDocument('kling-v4', document).ok, true);
+  assert.deepEqual(document.assets.map((asset: {videoId: string}) => asset.videoId), [
+    'job_external_fal_a308ea2f899d01a2306e89aecdc9dcd501ed29b5',
+    'job_external_fal_7ba203855713484c19652a8a3ef9412b6eac98fe',
+  ]);
+  for (const asset of document.assets) {
+    assert.equal(asset.familyPlaylistId, '243ecbb8-221e-4592-93c1-0a12d85f5c30');
+    assert.equal(asset.modelPlaylistId, 'a04d8baf-5b6b-4074-bdb7-9e73dada408d');
+    assert.ok(asset.videoUrl.startsWith('https://media.maxvideoai.com/marketing-media/'));
+    assert.ok(asset.thumbnailUrl.startsWith('https://media.maxvideoai.com/marketing-media/'));
+    assert.ok(asset.previewVideoUrl.startsWith('https://media.maxvideoai.com/marketing-media/'));
+    assert.equal(asset.sourceAssetIds.length, 2);
+    assert.equal(asset.watchPageCandidate, false);
+  }
+});
+
 test('absent V4 renders remain unready and do not change historical FLUX/Kling media', () => {
   const sources = Object.fromEntries(['p0', 'p1', 'flux-3-max'].map(wave => [wave, readFileSync(`docs/model-launch/${wave}-video-example-pack.json`, 'utf8')]));
   const result = buildModelLaunchProjectionsFromSources(sources);

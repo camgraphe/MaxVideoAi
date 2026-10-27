@@ -5,6 +5,7 @@ import { createExampleFamilyResolver, getExampleFamilyIds, getExampleFamilyModel
 import { buildModelFamilyDefinitions } from '../frontend/config/model-families';
 import { listRuntimeModels } from '../frontend/config/model-runtime';
 import { isDiscoverableExampleEngine } from '../frontend/lib/examples/discovery';
+import { MODEL_LAUNCH_READY_MODELS } from '../frontend/config/model-launch-readiness';
 
 function playlist(slug: string) {
   return mapCreatedPlaylistRow({ id: slug, slug, name: slug, description: null, is_public: true, created_at: '2026-09-28', updated_at: '2026-09-28' });
@@ -39,8 +40,11 @@ test('unready admin model destinations are missing until their exact collection 
   assert.equal(rows.find(row => row.id === 'playlist:custom-flux-3-max')?.status, 'unconnected');
 });
 
-test('Kling V4 can be curated before its public film pack without changing the existing family landing', async () => {
-  const models = listRuntimeModels();
+test('Kling V4 can be curated while the family and discovery gates are explicitly closed', async () => {
+  const models = listRuntimeModels().map(model => structuredClone(model));
+  const beforeFamilyOpening = models.find(model => model.id === 'kling-v4')!;
+  beforeFamilyOpening.publication.examples.current = false;
+  beforeFamilyOpening.publication.examples.includeInFamilyCopy = false;
   const { buildPlaylistDestinations } = await import('../frontend/server/playlists/destinations');
   const missing = buildPlaylistDestinations([playlist('family-kling')], new Map(), models);
   const destination = missing.find(row => row.id === 'model:kling-v4');
@@ -55,7 +59,8 @@ test('Kling V4 can be curated before its public film pack without changing the e
   assert.equal(connected?.editable, true);
   assert.equal(connected?.playlistId, 'examples-kling-v4');
 
-  const kling = buildModelFamilyDefinitions(models).find(family => family.id === 'kling')!;
+  const withoutKlingMedia = MODEL_LAUNCH_READY_MODELS.filter(model => model.modelId !== 'kling-v4');
+  const kling = buildModelFamilyDefinitions(models, withoutKlingMedia).find(family => family.id === 'kling')!;
   assert.equal(kling.defaultModelSlug, 'kling-o3-pro');
   assert.equal(kling.examplesPage?.publishedModelSlugs?.includes('kling-v4'), false);
   const v4 = models.find(model => model.id === 'kling-v4')!;
