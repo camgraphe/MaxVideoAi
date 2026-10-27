@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app/api/admin/pricing/tariffs/batches/confirm/route.ts": { "regions": ["cle1"] }
+  },
   "redirects": [
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
