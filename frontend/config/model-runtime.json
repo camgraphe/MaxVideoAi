@@ -527,7 +527,7 @@
           "indexable": false
         },
         "examples": {
-          "published": false,
+          "published": true,
           "includeInFamilyCopy": false,
           "current": false
         },

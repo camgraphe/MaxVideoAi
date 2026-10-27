@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { ExampleGalleryVideo } from '../frontend/components/examples/ExamplesGalleryGrid.tsx';
 import {
   getHeroMediaBadges,
+  pickHeroAutoplayUrl,
   pickDemoMedia,
   pickHeroMedia,
   type FeaturedMedia,
@@ -81,6 +82,17 @@ test('video hero badges describe the displayed clip; image badges keep editorial
 test('an absent model preview cannot claim audio, duration or a rendered example', () => {
   assert.deepEqual(getHeroMediaBadges({ ...fallback, videoUrl: null, posterUrl: null, hasAudio: true },
     ['Native audio', '30s', '1080p'], 'Audio enabled'), []);
+});
+
+test('model hero autoplay uses its lightweight preview while the full film remains the linked original', () => {
+  const media = { ...fallback, videoUrl: 'https://media.maxvideoai.com/full.mp4',
+    previewVideoUrl: 'https://media.maxvideoai.com/silent-preview.mp4', href: '/video/full' };
+  assert.equal(pickHeroAutoplayUrl(media), media.videoUrl);
+  assert.equal(pickHeroAutoplayUrl(media, true), media.previewVideoUrl);
+  assert.equal(media.videoUrl, 'https://media.maxvideoai.com/full.mp4');
+  assert.equal(media.href, '/video/full');
+  assert.equal(pickHeroAutoplayUrl({ ...media, previewVideoUrl: null }, true), media.videoUrl);
+  assert.equal(pickHeroAutoplayUrl({ ...media, previewVideoUrl: 'https://media.maxvideoai.com/poster.webp' }, true), media.videoUrl);
 });
 
 test('an empty hero card renders the localized empty state without a fabricated caption or watch link', async () => {

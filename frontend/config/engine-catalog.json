@@ -11534,7 +11534,7 @@
         "includeInSitemap": false
       },
       "examples": {
-        "includeInFamilyResolver": false,
+        "includeInFamilyResolver": true,
         "includeInFamilyCopy": false
       },
       "compare": {

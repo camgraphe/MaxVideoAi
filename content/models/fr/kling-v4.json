@@ -7,8 +7,8 @@
   },
   "overview": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
   "pricingNotes": [
-    "Les devis clients restent désactivés en attente des tarifs revus et de la recette App, Studio et MCP.",
-    "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite."
+    "Kling 4.0 est disponible dans l’App, Studio et via MCP. Le devis actuel dépend du mode et des éléments choisis.",
+    "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Vérifiez le devis actuel et validez explicitement chaque génération."
   ],
   "hero": {
     "title": "Kling 4.0 — diriger la scène, les références et le son",
@@ -37,7 +37,7 @@
     },
     {
       "q": "Puis-je générer avec Kling 4.0 dans MaxVideoAI maintenant ?",
-      "a": "La génération et les devis clients restent désactivés. Un essai API texte vers vidéo borné a réussi le 25 octobre 2026 ; il ne valide ni les références, ni Modify, ni les voix liées, ni la qualité artistique."
+      "a": "Oui. L’App, Studio et MCP proposent Kling 4.0 pour le texte, l’image, les références et la modification vidéo, sous réserve d’entrées compatibles et d’un devis actuel. Les contrôles fonctionnels ne certifient pas la qualité artistique d’un nouveau rendu."
     },
     {
       "q": "Quelles durées et résolutions sont documentées ?",
@@ -81,7 +81,7 @@
       "Modifier une vidéo existante||Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références."
     ],
     "specTitle": "Contrôles documentés de Kling 4.0",
-    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. Un essai d’accès texte vers vidéo a réussi ; les autres routes, l’exécution produit et la qualité artistique demandent une recette distincte.",
+    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. L’accès fonctionnel est validé ; les exemples publics et la qualité artistique demandent une revue distincte.",
     "specSections": [
       {
         "title": "Texte vers vidéo",
@@ -130,7 +130,7 @@
       "subtitleHighlights": [
         "3 à 30"
       ],
-      "paragraph": "Cette page décrit le contrat publié par le fournisseur. La génération Kling 4.0 et les devis clients ne sont pas activés dans MaxVideoAI ; aucun rendu MaxVideoAI n’a encore été évalué.",
+      "paragraph": "Kling 4.0 est disponible dans l’App, Studio et via MCP avec un devis actuel avant génération. Cette page décrit ses commandes ; les exemples publics évalués sont préparés séparément.",
       "primaryCta": {
         "label": "Explorer les idées de prompts",
         "href": "#prompting"
@@ -227,8 +227,8 @@
     ],
     "pricingCopy": {
       "title": "Prix de Kling 4.0",
-      "subtitle": "Les devis clients restent désactivés en attente des tarifs revus et de la recette App, Studio et MCP.",
-      "footnote": "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Chaque génération nécessitera un devis actuel et une validation explicite.",
+      "subtitle": "Kling 4.0 est disponible dans l’App, Studio et via MCP. Le devis actuel dépend du mode et des éléments choisis.",
+      "footnote": "Les tarifs du fournisseur ne constituent pas un prix client MaxVideoAI. Vérifiez le devis actuel et validez explicitement chaque génération.",
       "ctaLabel": "Lire les caractéristiques",
       "ctaHref": "#specs"
     },
@@ -241,7 +241,7 @@
     "modelSlug": "kling-v4",
     "section": {
       "title": "Laboratoire de prompts — Kling 4.0",
-      "intro": "Ces prompts originaux sont des propositions à adapter, pas des prompts issus de rendus Kling 4.0 réalisés.",
+      "intro": "Deux prompts de scènes Kling 4.0 filmées montrent un concert et un récit guidé par des références. Les onglets image et modification proposent des recettes à adapter.",
       "tip": "Précisez le sujet, l’action, la caméra et le son. Les plans minutés guident la séquence sans garantir des coupes exactes.",
       "guide": {
         "label": "Lire la présentation du fournisseur",
@@ -253,10 +253,10 @@
       {
         "id": "scene",
         "label": "Direction",
-        "title": "Ignition — proposition de film non générée",
-        "description": "Un client sabote sa moto réparée pour rester auprès de la mécanicienne. Elle comprend sa ruse et lui tend un casque. Proposition originale ; aucun rendu Kling 4.0 généré ni évalué.",
-        "copy": "An adult romantic film scene in a small motorcycle repair shop at closing time. A sharp-faced woman in her fifties, with tied brown hair and one broad white streak, wears open blue coveralls over a dark vest. Her customer is a man in his sixties with an aquiline nose, carefully combed gray hair and a camel coat too elegant for the workshop. She reconnects one accessible cable on his old motorcycle, wipes her hands and turns toward the bench. He checks that she is looking away, then quietly disconnects the very same cable. In the reflection of the shop window, she sees what he has done. Let her look at him for a moment before he notices. She returns, reconnects the cable and holds his gaze. Without scolding him, she takes two plain helmets from the shelf, offers one to him and keeps the other. She says softly in English, \"You could just ask.\" His practiced composure gives way to an embarrassed, relieved smile. She smiles back. End with the two helmets between them and the invitation understood. Warm late-afternoon light, tangible grease and worn leather, restrained performances. Follow the cable only long enough to explain his excuse; give the discovery and final exchange more room. Sound: workshop ambience, the connector, cloth, helmets and her natural voice. A few quiet notes of original guitar may enter after his smile. No additional dialogue or text.",
-        "matchPublicExample": false
+        "title": "Concert en noir et blanc — scène filmée",
+        "description": "Une chanteuse originale garde la même performance au fil de six plans motivés. Deux références fixent son identité et la géographie de la scène.",
+        "copy": "Create a 24-second black-and-white live concert sequence, one continuous musical performance across six motivated shots. Use @Image1 for the original singer's identity, black knitted beanie, dark sleeveless top and suspended vintage microphone. Use @Image2 for the outdoor night stage, band placement, lights and audience geography. These are references, not imposed first frames. Keep the singer and her clothing identical across shots. Do not copy a real performer's face or voice.\n\nThe singer is a woman around thirty-five with long slightly unruly dark hair, a strong expressive brow and a direct, unpolished stage presence. She stands at centre stage, very close to a silver vintage microphone suspended at mouth height. A curly-haired adult trumpeter stands behind her to camera right; an adult keyboard player is behind her to camera left. A standing audience faces the stage beyond the footlights. This is an actual outdoor concert at night, not a bar, rehearsal, closing-time scene or narrative interlude.\n\nPhotography: tactile monochrome, luminous skin against deep blacks, soft blooming stage bulbs, restrained anamorphic character and shallow depth of field in close views. A physically present handheld camera follows small shifts of breath and weight, without random whip pans. Preserve readable eyes and lips; natural facial asymmetry and skin. The final wide reveals a real stage, trees against the night sky and listeners in the foreground.\n\nMusic is the dramatic centre. Generate a new original English-language live soul performance with an intimate, slightly grainy female voice, unforced chest-to-head transitions, audible breaths and clear words. A slow, lightly swung pulse around 80 BPM, warm electric-piano chords, restrained bass and brushed percussion support her; the trumpet answers only after her sung phrase. The band and voice share a single uninterrupted tempo, harmony and acoustic space across every cut. No borrowed melody, recognisable existing song, artist voice imitation, spoken narration or crowd speech. This is a proposed original musical interpretation, not an instruction to reproduce an external recording.\n\n0–6s: tight three-quarter frontal view of her face and microphone. She takes one audible breath, leans toward the microphone and sings the original line, \"Let the morning find us here.\" Let the phrase build from conversational intimacy to a held final word. Small jaw and brow movements follow the vocal; the camera drifts only a few centimetres.\n\n6–12s: cut to her left profile, chest-up with the same microphone position. On the same groove she sings the original line, \"With the city in our hands.\" Her free hand opens once at waist height as the voice gains strength, then rests. Do not turn this into choreographed gestures on every syllable. Show her finishing the final consonant before leaving her face.\n\n12–15s: cut to the trumpeter in side backlight. He lifts one trumpet to his mouth and plays a short answering phrase; the visible embouchure and fingers match the trumpet sound. The singer is not singing during this response.\n\n15–18s: cut to close hands on the same electric piano, pressing and releasing a small resolving chord figure. The electric-piano notes already present in the mix become momentarily more exposed; the music does not restart.\n\n18–21s: return to a frontal close-up of the singer. She sustains an open vowel as a short melodic resolution, eases back from the microphone and lets a small involuntary smile appear when the note ends. Keep vocal effort, release and breathing visible. Do not add another lyric or spoken line.\n\n21–24s: cut to a steady wide view from behind the audience. Reveal the complete illuminated stage in the night landscape; the same musicians remain in their positions. Let the last chord and vocal reverberation decay into modest applause and night air. Hold the ending rather than cutting mid-phrase.\n\nSound must be audible and integrated: foreground singing, supporting live instruments, natural short stage reverberation and audience response only at the end. No music replacement between shots, no silent singer, no prerecorded source audio assumed, no additional paid audio-generation step implied. The described timings and tempo guide a coherent performance; musical coherence matters more than mechanical timestamp precision.\n\nProduction language: English. All sung lyrics and any incidental permitted language must be English. No subtitles, titles, watermarks, logos, banners or readable stage signage. Preserve an actual concert and the full musical phrase; no story outside the performance.",
+        "matchPublicExample": true
       },
       {
         "id": "image",
@@ -269,10 +269,10 @@
       {
         "id": "reference",
         "label": "Références",
-        "title": "Le même personnage, ailleurs",
-        "description": "Utilisez uniquement des références que vous avez le droit d’employer.",
-        "copy": "Utilise les références fournies pour préserver le visage, les vêtements et les proportions du personnage adulte. Place-le dans une gare calme au lever du soleil. Il regarde un train arriver, puis fait un pas déterminé vers l’avant. Léger rapprochement de caméra, bruit du train au loin, sans dialogue.",
-        "matchPublicExample": false
+        "title": "The Next One — le tramway",
+        "description": "Un gant rendu ouvre deux aperçus d’un avenir imaginé, avant le retour sur le quai et un vrai choix. Deux images de personnage préservent les identités.",
+        "copy": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
+        "matchPublicExample": true
       },
       {
         "id": "edit",
@@ -286,19 +286,19 @@
     "tabNotes": [
       {
         "tabId": "scene",
-        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+        "body": "Prompt utilisé pour un film Kling 4.0 sélectionné. Ouvrez l’exemple lié pour voir le résultat réel et ses références."
       },
       {
         "tabId": "image",
-        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+        "body": "Adaptez cette recette à vos propres sources ; aucun film correspondant n’est lié ici."
       },
       {
         "tabId": "reference",
-        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+        "body": "Prompt utilisé pour un film Kling 4.0 sélectionné. Ouvrez l’exemple lié pour voir le résultat réel et ses références."
       },
       {
         "tabId": "edit",
-        "body": "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+        "body": "Adaptez cette recette à vos propres sources ; aucun film correspondant n’est lié ici."
       }
     ],
     "globalPrinciples": [
@@ -314,27 +314,27 @@
       "Fournissez une vidéo source et un prompt. Des images et éléments visuels peuvent guider la modification ; ce mode ne propose ni plans minutés ni éléments vocaux."
     ],
     "demo": {
-      "title": "Ignition — proposition de film non générée",
-      "promptLabel": "Prompt proposé, sans exemple généré",
-      "prompt": "An adult romantic film scene in a small motorcycle repair shop at closing time. A sharp-faced woman in her fifties, with tied brown hair and one broad white streak, wears open blue coveralls over a dark vest. Her customer is a man in his sixties with an aquiline nose, carefully combed gray hair and a camel coat too elegant for the workshop. She reconnects one accessible cable on his old motorcycle, wipes her hands and turns toward the bench. He checks that she is looking away, then quietly disconnects the very same cable. In the reflection of the shop window, she sees what he has done. Let her look at him for a moment before he notices. She returns, reconnects the cable and holds his gaze. Without scolding him, she takes two plain helmets from the shelf, offers one to him and keeps the other. She says softly in English, \"You could just ask.\" His practiced composure gives way to an embarrassed, relieved smile. She smiles back. End with the two helmets between them and the invitation understood. Warm late-afternoon light, tangible grease and worn leather, restrained performances. Follow the cable only long enough to explain his excuse; give the discovery and final exchange more room. Sound: workshop ambience, the connector, cloth, helmets and her natural voice. A few quiet notes of original guitar may enter after his smile. No additional dialogue or text.",
+      "title": "The Next One",
+      "promptLabel": "Prompt utilisé pour l’exemple filmé",
+      "prompt": "Create a 28-second romantic live-action scene in five shots: a brief encounter at a tram doorway, two imagined fragments of a shared future, then a return to the same unfinished gesture and a real choice. Use @Image1 only for Leon's identity, worn coat and blue pencil; use @Image2 only for Adele's identity, orange hair clip and dented insulated bag. They are character references, not first frames or locations. Both original adult characters keep the same face and age through all three settings. No narrator, dialogue, written titles or explanatory montage graphics.\n\nLeon is 37, a furniture restorer with untidy brown hair, thoughtful eyes, a worn charcoal coat and a blue carpenter's pencil behind his right ear. He rehearses sentences before daring to speak. Adele is 41, a nurse leaving a night shift, tired lively eyes, chestnut hair held with one orange clip, a practical olive coat and a dented small insulated lunch bag on her left shoulder. She has a quick smile despite her fatigue. At a quiet tram stop in cool early-morning light, Leon has just boarded; Adele remains on the platform. The tram is stationary, its doors fully open, floor level close to the platform. She holds one grey wool glove he has dropped. Keep the threshold, their hand positions and the single glove consistent on returning to the present. Avoid readable route labels or advertisements.\n\n0–6s: a medium two-shot from the platform at a three-quarter angle shows the open door and both bodies. Leon stands just inside, facing outward; Adele stands a safe step back on the platform. She extends the glove in her right hand toward him. He notices it, then meets her eyes and pauses. She is simply returning a glove, not inviting an imagined future. End close enough to read his hesitant expression, the glove still held between them.\n\n6–11s: a clean hard cut into his imagined future. In a tiny warm morning kitchen, the same two people, now in simple sweaters, stand close at a cramped counter. One piece of burnt toast is between them. Adele passes it to Leon; he accepts it, inspects the blackened edge and they laugh together. Show one clear transfer, with the toast ending in his hand. Their ease suggests intimacy without any explanatory wedding or age-change montage.\n\n11–17s: hard cut to a second imagined fragment. In a modest apartment being renovated, with covered furniture, plaster patches and one warm work lamp, they wear the same simple sweaters. A full-body two-shot holds their hands and feet in view. Adele places one foot lightly on top of Leon's planted foot to demonstrate a slow dance step. He looks down, understands, and shifts gently with her. The weight change is small and affectionate, not a spin or acrobatic move. Hold their shared smile. Keep the orange clip and the blue pencil as quiet identity anchors.\n\n17–22s: a sharp tram warning chime interrupts. Hard cut back to the exact cool platform composition and almost unchanged extended glove from the first shot. The imagined warmth ends instantly. Leon is still just inside the open doorway; Adele still stands outside. He takes the glove from her right hand. He hesitates for one beat, then deliberately steps completely out onto the platform, both feet clearing the threshold while the doors remain fully open. Show the entire step and its completion in one unobstructed view. The doors only begin to close after he is safely beside her. No squeezing through moving doors or dangerous last-second leap.\n\n22–28s: medium two-shot on the platform, the tram doors now closed behind them. The tram pulls away slowly, opening the space around the two strangers. Leon lifts his free hand toward the blue pencil behind his right ear with a small embarrassed half-smile, as if it could explain his distraction; the pencil stays there. Adele looks at him and smiles back. They remain side by side with the recovered glove in his hand. Hold the awkward, hopeful first real moment; do not show a kiss or assert that the imagined relationship comes true.\n\nPhotography: natural faces, tactile cloth and practical environments; restrained 35mm-like grain. Cool diffuse dawn on the platform contrasts with warm ordinary domestic light in the two imagined fragments. Clean cuts carry the time shifts, never dissolves, magic particles, mirrors or transformations. Keep the screen direction and body positions of the platform encounter stable.\n\nSound: gentle tram machinery and distant city air in the present; toast scraping and a spontaneous shared laugh in the kitchen; soft feet on the renovation floor during the dance. A sparse original instrumental piano motif may connect the two imagined fragments, stopping decisively at the tram chime. Final tram departure and human breathing remain audible. No speech, singing, voice-over or recognisable existing music.\n\nProduction language: English for any incidental language that is permitted; this scene contains no dialogue or readable text. Do not add French announcements, subtitles, captions, titles, logos or labels. Preserve the difference between an imagined future and a first real encounter.",
       "notes": [
-        "Ce prompt n’a pas été généré ni évalué avec Kling 4.0."
+        "Ce film guidé par références utilise deux images de personnages originaux. Jugez les coupes, les raccords et le son dans la vidéo réelle."
       ],
       "summary": {
-        "subject": "Une mécanicienne quinquagénaire et son client sexagénaire",
-        "action": "Il débranche le câble réparé ; elle le reconnecte et lui offre un casque",
-        "camera": "Suivre brièvement le câble, puis laisser vivre les regards et l’échange final",
-        "style": "Romance adulte et jeu retenu dans un garage habité",
-        "output": "Scène proposée ; aucune sortie mesurée"
+        "subject": "Leon et Adele à la porte d’un tramway à l’arrêt",
+        "action": "Un gant rendu, des instants imaginés à deux, puis le choix réel de descendre",
+        "camera": "Cinq plans motivés et un retour précis au premier cadrage",
+        "style": "Visages naturels, aube froide et lumière domestique chaude",
+        "output": "Film de 28 secondes guidé par références, avec ambiances de tram et d’intérieur"
       },
       "presentationOverrides": {
-        "modeLabel": "Texte vers vidéo",
-        "outputLabel": "Prompt proposé, sans exemple généré",
+        "modeLabel": "Références vers vidéo",
+        "outputLabel": "Film généré avec références",
         "duration": null,
         "aspectRatio": null,
         "audioChipMode": "supported",
         "audioChipLabel": null,
-        "altContext": "Évaluation des médias Kling 4.0"
+        "altContext": "The Next One — scène de tramway Kling 4.0"
       }
     },
     "imageExamples": null

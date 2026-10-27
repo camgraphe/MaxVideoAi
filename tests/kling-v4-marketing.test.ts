@@ -10,7 +10,7 @@ import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
 import { buildModelPromptingViewModel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-view-model';
 
-test('Kling v4 functional access retains a normal noindex model page and closed marketing discovery', () => {
+test('Kling v4 permits gallery preparation while the model page and other discovery remain closed', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
   const model = registry.models.find((entry: { id: string }) => entry.id === 'kling-v4');
   assert.ok(model, 'Kling v4 registry identity must exist');
@@ -19,7 +19,10 @@ test('Kling v4 functional access retains a normal noindex model page and closed 
   assert.notEqual(model.presentationOnly, true);
   assert.deepEqual(model.publication.model, { published: true, indexable: false });
   assert.equal(model.publication.app.published, true);
-  for (const surface of ['pricing', 'compare', 'examples', 'sitemap']) {
+  assert.equal(model.publication.examples.published, true);
+  assert.equal(model.publication.examples.current, false);
+  assert.equal(model.publication.examples.includeInFamilyCopy, false);
+  for (const surface of ['pricing', 'compare', 'sitemap']) {
     assert.equal(model.publication[surface].published, false, surface);
   }
   assert.equal(model.replacement, null);
@@ -52,10 +55,7 @@ test('Kling v4 factual raw schema separates generation, frame and editing contro
   assert.deepEqual(entry.engine.modeCaps?.v2v?.aspectRatio, []);
 });
 
-test('Kling v4 localized normal-page content has no fake media, quote or public launch destination', () => {
-  const ignition = JSON.parse(readFileSync('docs/launch/kling-v4/films.json', 'utf8')).films
-    .find((film: { id: string }) => film.id === 'ignition');
-  assert.equal(ignition.status, 'prepared_unrendered');
+test('Kling v4 localized normal-page content uses the selected filmed prompts without fake media URLs', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const content = JSON.parse(readFileSync(`content/models/${locale}/kling-v4.json`, 'utf8'));
     const decision = parseModelDecisionContent(content.decision, 'kling-v4', locale);
@@ -65,10 +65,15 @@ test('Kling v4 localized normal-page content has no fake media, quote or public 
     assert.equal(examples.showWhenEmpty, false);
     assert.equal(examples.fallbackItems, null);
     assert.equal(examples.keyframeDemo, undefined);
-    assert.equal(prompting.tabs.some(tab => tab.matchPublicExample === true), false);
-    assert.equal(content.prompting.tabs.find((tab: { id: string }) => tab.id === 'scene').copy, ignition.prompt);
-    assert.equal(content.prompting.demo.prompt, ignition.prompt);
-    assert.match(content.prompting.tabs[0].title, /Ignition/);
+    const concert = prompting.tabs.find(tab => tab.id === 'scene');
+    const nextOne = prompting.tabs.find(tab => tab.id === 'reference');
+    assert.equal(concert?.matchPublicExample, true);
+    assert.equal(nextOne?.matchPublicExample, true);
+    assert.match(concert?.copy ?? '', /black-and-white live concert sequence/);
+    assert.match(nextOne?.copy ?? '', /romantic live-action scene in five shots/);
+    assert.equal(prompting.demo?.prompt, nextOne?.copy);
+    assert.match(prompting.demo?.title ?? '', /The Next One/i);
+    assert.doesNotMatch(JSON.stringify(prompting), /unrendered|non généré|sin generar|not been rendered|pas été généré|no se ha generado/i);
     assert.doesNotMatch(JSON.stringify(content.prompting), /ceramic|céramiste|ceramista|finished bowl|bol terminé|cuenco terminado/i);
     const links = [decision.hero.primaryCta, decision.hero.secondaryCta, ...decision.hero.quickLinks,
       ...decision.decisionCards.map(card => card.cta), { href: decision.pricingCopy.ctaHref }];
@@ -79,7 +84,19 @@ test('Kling v4 localized normal-page content has no fake media, quote or public 
   }
 });
 
-test('Kling v4 prompt ideas render without manufacturing a demonstration duration or soundtrack', async () => {
+test('Kling V4 public copy reflects live quoted access in every locale without inventing a fixed price', () => {
+  const obsolete = /quotes remain disabled|generation and customer quotes remain disabled|devis clients restent désactivés|génération et les devis clients restent désactivés|presupuestos siguen desactivados|generación y los presupuestos siguen desactivados|generation and customer quotes are not enabled|génération Kling 4\.0 et les devis clients ne sont pas activés|generación Kling 4\.0 y los presupuestos para clientes están desactivados/i;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = JSON.parse(readFileSync(`content/models/${locale}/kling-v4.json`, 'utf8'));
+    assert.doesNotMatch(JSON.stringify(content), obsolete, locale);
+    assert.match(content.pricingNotes[0], /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
+    assert.match(content.pricingNotes[1], /quote|devis|presupuesto/i, locale);
+    assert.match(content.decision.hero.paragraph, /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
+    assert.doesNotMatch(JSON.stringify(content), /\$\d+\.\d{2}/, 'No invented fixed customer price');
+  }
+});
+
+test('Kling v4 rendered prompt recipes display without invented media URLs or playback', async () => {
   const requireFrontend = createRequire(resolve('frontend/package.json'));
   const React = requireFrontend('react');
   Object.assign(globalThis, { React });
@@ -94,9 +111,35 @@ test('Kling v4 prompt ideas render without manufacturing a demonstration duratio
     defaultDemoPresentation: { audioBadgeLabel: 'Audio on', altContext: 'Kling 4.0' }, referenceWorkflows: [],
   });
   const markup = renderToStaticMarkup(React.createElement(ModelDecisionPromptingSection, { viewModel }));
-  assert.match(markup, /original draft prompts/);
-  assert.match(markup, /Ignition — unrendered film prompt/);
-  assert.match(markup, /An adult romantic film scene in a small motorcycle repair shop/);
-  assert.match(markup, /You could just ask/);
+  assert.match(markup, /filmed Kling 4\.0 scenes/);
+  assert.match(markup, /Black-and-White Concert/);
+  assert.match(markup, /black-and-white live concert sequence/);
+  assert.doesNotMatch(markup, /Ignition/);
   assert.doesNotMatch(markup, /Draft prompt — the finished bowl|>8s<|>Audio on<|<video|\/app\?engine=kling-v4/);
+});
+
+test('Kling v4 selected tram film supplies the model demo and its matching example link', () => {
+  const content = JSON.parse(readFileSync('content/models/en/kling-v4.json', 'utf8'));
+  const prompting = parseModelPromptingContent(content.prompting, 'kling-v4', 'en');
+  const filmedPrompt = prompting.demo!.prompt;
+  const viewModel = buildModelPromptingViewModel({
+    content: prompting, locale: 'en', engineId: 'kling-v4', modelSlug: 'kling-v4',
+    appGenerationEnabled: true, imageAnchorId: 'prompting', isVideoEngine: true,
+    isImageEngine: false, supportsNativeAudio: true, demoPromptSource: 'media',
+    defaultDemoPromptSource: 'media',
+    demoMedia: { id: 'selected-tram', prompt: filmedPrompt, videoUrl: 'https://media.maxvideoai.com/selected.mp4',
+      posterUrl: 'https://media.maxvideoai.com/selected.webp', durationSec: 28.04,
+      generationMode: 'ref2v', hasAudio: true, href: '/video/selected-tram', label: 'The Next One', aspectRatio: '16:9' },
+    galleryVideos: [{ id: 'selected-tram', promptFull: filmedPrompt,
+      videoUrl: 'https://media.maxvideoai.com/selected.mp4', href: '/video/selected-tram',
+      recreateHref: '/app?engine=kling-v4&from=selected-tram' }],
+    defaultDemoPresentation: { audioBadgeLabel: 'Audio on', altContext: 'Kling 4.0' },
+    referenceWorkflows: [],
+  });
+  assert.equal(viewModel.demo?.title, 'The Next One');
+  assert.equal(viewModel.demo?.prompt, filmedPrompt);
+  assert.equal(viewModel.demo?.modeLabel, 'Reference-to-video');
+  assert.equal(viewModel.tabs.items.find(tab => tab.id === 'reference')?.exampleLinks?.exampleHref, '/video/selected-tram');
+  assert.equal(viewModel.tabs.items.find(tab => tab.id === 'reference')?.exampleLinks?.usePromptHref,
+    '/app?engine=kling-v4&from=selected-tram');
 });
