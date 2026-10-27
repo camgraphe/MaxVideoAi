@@ -495,7 +495,7 @@ export function orderedGenerationReferenceRole(
   engineId: string,
   explicitReferenceOrder = false,
 ): CanonicalGenerationReference['role'] | null {
-  return engineId === NANO21_ENGINE_ID && mode === 'i2i' ? 'reference' : mode === 'extend'
+  return (engineId === NANO21_ENGINE_ID || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
     ? 'source'
     : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
