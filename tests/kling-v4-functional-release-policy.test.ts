@@ -16,10 +16,15 @@ test('functional publication exposes four qualified modes independently of marke
   const model = getRuntimeModelById('kling-v4')!;
   assert.equal(model.publication.app.published, true);
   assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
-  const original = model.publication.app.published;
+  const original = {
+    appPublished: model.publication.app.published,
+    modelIndexable: model.publication.model.indexable,
+    examplesPublished: model.publication.examples.published,
+  };
   try {
-    assert.equal(model.publication.model.indexable, false);
-    assert.equal(model.publication.examples.published, false);
+    // Functional access remains available when both marketing gates are closed.
+    model.publication.model.indexable = false;
+    model.publication.examples.published = false;
     assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
     assert.doesNotThrow(() => assertKlingV4ReleaseReady('kling-v4'));
     const engine = getFalEngineById('kling-v4')!.engine;
@@ -68,12 +73,19 @@ test('functional publication exposes four qualified modes independently of marke
       assert.equal(quote.meta?.customerTariffRevision, 7);
     }
     assert.deepEqual(state.databaseCells, [], 'local quote preparation never persists cells');
+    // Published marketing cannot reopen an explicitly closed generation gate.
+    model.publication.model.indexable = true;
+    model.publication.examples.published = true;
     model.publication.app.published = false;
     assert.deepEqual(await listAgentModels({}, deps), []);
     assert.equal(isKlingV4ReleaseBlocked('kling-v4'), true);
     assert.throws(() => assertKlingV4ReleaseReady('kling-v4'), /KLING_V4_NOT_QUALIFIED/);
     assert.equal(isKlingV4ReleaseBlocked('kling-3-pro'), false);
     assert.equal(isKlingV4ReleaseBlocked(undefined), false);
-  } finally { model.publication.app.published = original; }
+  } finally {
+    model.publication.app.published = original.appPublished;
+    model.publication.model.indexable = original.modelIndexable;
+    model.publication.examples.published = original.examplesPublished;
+  }
   assert.equal(isKlingV4ReleaseBlocked('kling-v4'), false);
 });
