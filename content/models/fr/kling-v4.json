@@ -15,8 +15,8 @@
     "intro": "Kling 4.0 réunit direction de scène, génération guidée par des références et modification vidéo. Pensez ensemble l’action, le cadrage et le son, puis choisissez le mode adapté aux éléments dont vous disposez.",
     "badge": "3–30 s · 720p / 1080p",
     "ctaPrimary": {
-      "label": "Explorer les idées de prompts",
-      "href": "#prompting"
+      "label": "Générer avec Kling 4.0",
+      "href": "/app?engine=kling-v4"
     },
     "secondaryLinks": [
       {
@@ -81,7 +81,7 @@
       "Modifier une vidéo existante||Le mode de modification reçoit une vidéo source et un prompt, avec des images et éléments visuels facultatifs. Ses entrées diffèrent de celles de la génération par références."
     ],
     "specTitle": "Contrôles documentés de Kling 4.0",
-    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. L’accès fonctionnel est validé ; les exemples publics et la qualité artistique demandent une revue distincte.",
+    "specNote": "Contrats fournisseur vérifiés le 25 octobre 2026. Les scènes publiques sélectionnées conservent leurs prompts et leurs références d’origine.",
     "specSections": [
       {
         "title": "Texte vers vidéo",
@@ -130,10 +130,10 @@
       "subtitleHighlights": [
         "3 à 30"
       ],
-      "paragraph": "Kling 4.0 est disponible dans l’App, Studio et via MCP avec un devis actuel avant génération. Cette page décrit ses commandes ; les exemples publics évalués sont préparés séparément.",
+      "paragraph": "Découvrez des scènes originales Kling 4.0 avec leurs prompts, puis dirigez votre vidéo dans App, Studio ou via MCP. Chaque génération passe par un devis actuel et votre confirmation.",
       "primaryCta": {
-        "label": "Explorer les idées de prompts",
-        "href": "#prompting"
+        "label": "Générer avec Kling 4.0",
+        "href": "/app?engine=kling-v4"
       },
       "secondaryCta": {
         "label": "Lire les caractéristiques",
@@ -151,13 +151,15 @@
       ]
     },
     "media": {
-      "caption": "Évaluation des médias Kling 4.0",
-      "description": "Aucun résultat Kling 4.0 n’est présenté comme un exemple MaxVideoAI évalué.",
-      "renderLabel": "Voir l’exemple",
+      "caption": "Concert en noir et blanc — Kling 4.0",
+      "description": "Une scène de concert originale créée avec Kling 4.0 à partir de deux images de référence. Lancez le film complet de 24 secondes pour l’écouter.",
+      "renderLabel": "Voir le concert complet",
       "badges": [
-        "Aucun exemple évalué"
+        "Kling 4.0",
+        "720p",
+        "Références → vidéo"
       ],
-      "altContext": "Évaluation des médias Kling 4.0"
+      "altContext": "Scène de concert originale Kling 4.0"
     },
     "features": [
       {
@@ -344,7 +346,7 @@
     "showWhenEmpty": false,
     "section": {
       "title": "Exemples Kling 4.0",
-      "intro": "Seuls des résultats Kling 4.0 évalués apparaîtront ici.",
+      "intro": "Des scènes originales Kling 4.0 avec leurs prompts et références. Les vidéos Kling précédentes conservent leur modèle d’origine dans la galerie de la famille.",
       "defaultCtaLabel": null,
       "recreateLabel": null
     },

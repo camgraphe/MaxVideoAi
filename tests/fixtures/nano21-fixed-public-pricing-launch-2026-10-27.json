@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "generatedFrom": "reviewed-nano21-fixed-image-price-launch",
+  "reviewedAt": "2026-10-27",
+  "fixedCustomerCentsBySize": {
+    "1k": 7,
+    "2k": 11,
+    "4k": 23
+  },
+  "providerVariableExtrasChargedToCustomer": false,
+  "rows": [
+    {
+      "id": "estimator:nano-banana-2-1:member:default",
+      "surface": "estimator",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:nano-banana-2-1:plus:default",
+      "surface": "estimator",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "estimator:nano-banana-2-1:pro:default",
+      "surface": "estimator",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "image-estimate:nano-banana-2-1:default",
+      "surface": "image-estimate",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "json-ld:nano-banana-2-1:offer",
+      "surface": "json-ld",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "offer",
+      "quantity": 1,
+      "compatibilityProfile": "schema-current",
+      "structuredDataAmount": "0.07"
+    },
+    {
+      "id": "model-page:nano-banana-2-1:default",
+      "surface": "model-page",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard"
+    },
+    {
+      "id": "pricing-hub-image:nano-banana-2-1:high",
+      "surface": "pricing-hub-image",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 23,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard",
+      "displayedAmount": "$0.23"
+    },
+    {
+      "id": "pricing-hub-image:nano-banana-2-1:quantity-4",
+      "surface": "pricing-hub-image",
+      "engineId": "nano-banana-2-1",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-image:nano-banana-2-1:standard",
+      "surface": "pricing-hub-image",
+      "engineId": "nano-banana-2-1",
+      "status": "exact",
+      "currency": "USD",
+      "customerTotalCents": 7,
+      "unit": "image",
+      "quantity": 1,
+      "compatibilityProfile": "standard",
+      "displayedAmount": "$0.07"
+    }
+  ]
+}

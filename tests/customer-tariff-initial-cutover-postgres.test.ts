@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
-import { withClosedKlingV4Release } from './helpers/kling-v4-release-profile';
+import { withHistoricalCustomerTariffCatalogue } from './helpers/historical-customer-tariff-catalogue';
 import { withDbTransaction } from '../frontend/src/lib/db';
 import { ENV } from '../frontend/src/lib/env';
 import { loadPricingPolicyOverridesWithExecutor } from '../frontend/src/lib/pricing-rule-store';
@@ -24,8 +24,8 @@ const actor = '11111111-1111-4111-8111-111111111111';
 const key = (value: object) => JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)));
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 
-test('initial cutover is atomic, validates the actual reader, and rollback preserves all financial history', async t => withClosedKlingV4Release(async () => {
-  // Replay the historical catalogue; Kling V4 requires its separate native tariffs.
+test('initial cutover is atomic, validates the actual reader, and rollback preserves all financial history', async t => withHistoricalCustomerTariffCatalogue(async () => {
+  // Replay the historical catalogue; Kling V4 and Nano21 have separate native tariffs.
   // This synthetic rehearsal checks atomicity, not elapsed CI time. Mock only
   // Date so slow hosts do not expire its fixture; real database timers still run.
   t.mock.timers.enable({ apis: ['Date'], now: Date.now() });

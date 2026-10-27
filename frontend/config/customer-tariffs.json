@@ -1,5 +1,108 @@
 {
   "schemaVersion": 1,
   "active": true,
-  "cells": []
+  "cells": [
+    {
+      "id": "nano21-fixed-t2i-1k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "t2i",
+        "resolution": "1K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 7
+      }
+    },
+    {
+      "id": "nano21-fixed-t2i-2k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "t2i",
+        "resolution": "2K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "nano21-fixed-t2i-4k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "t2i",
+        "resolution": "4K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 23
+      }
+    },
+    {
+      "id": "nano21-fixed-i2i-1k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "i2i",
+        "resolution": "1K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 7
+      }
+    },
+    {
+      "id": "nano21-fixed-i2i-2k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "i2i",
+        "resolution": "2K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "id": "nano21-fixed-i2i-4k-20261027",
+      "source": "versioned",
+      "version": 1,
+      "currency": "USD",
+      "effectiveFrom": "2026-10-27T00:00:00.000Z",
+      "selector": {
+        "engineId": "nano-banana-2-1",
+        "mode": "i2i",
+        "resolution": "4K",
+        "durationSec": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 23
+      }
+    }
+  ]
 }

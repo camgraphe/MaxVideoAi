@@ -298,6 +298,10 @@ test('canonical projection returns one explicit outcome for every selected scena
   assert.deepEqual(
     unsupported.map((outcome) => outcome.scenarioId),
     [
+      'billing:nano-banana-2-1:t2i:1:1k:member',
+      'billing:nano-banana-2-1:t2i:1:1k:plus',
+      'billing:nano-banana-2-1:t2i:1:1k:pro',
+      'estimator:nano-banana-2-1:1:1k',
       'pricing-hub:pika-text-to-video:10s-1080p-audio',
       'pricing-hub:pika-text-to-video:4k-route',
       'pricing-hub:pika-text-to-video:8s-1080p',

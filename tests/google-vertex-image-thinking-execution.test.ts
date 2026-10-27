@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import ts from '../frontend/node_modules/typescript/lib/typescript.js';
 
 import * as imageRenders from '../frontend/lib/image-renders.ts';
+import * as nano21 from '../frontend/src/lib/nano-banana-2-1.ts';
 import { GoogleVertexImageClient } from '../frontend/src/server/images/google-vertex-image-client.ts';
 import * as vertexError from '../frontend/src/server/images/google-vertex-image-error.ts';
 import * as vertexPayload from '../frontend/src/server/images/google-vertex-image-payload.ts';
@@ -69,6 +70,7 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
     }
     const { executeGoogleVertexImageGeneration } = loadModule<{ executeGoogleVertexImageGeneration: Executor }>(
       'frontend/src/server/images/google-vertex-image-execution.ts', {
+        '@/lib/nano-banana-2-1': nano21,
         '@/lib/media': { normalizeMediaUrl: (url: string) => url },
         '@/server/storage': {
           isStorageConfigured: () => true,
@@ -82,6 +84,7 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
         './google-vertex-image-response': vertexResponse,
         './image-generation-completion': { persistCompletedImageGeneration },
         './image-generation-failure': { persistFailedImageGeneration: async () => assert.fail('Unexpected failed generation') },
+        './image-provider-failure-policy': { markImageProviderOutcomeAmbiguous: async () => assert.fail('Unexpected ambiguous generation') },
         './image-generation-error': executionError,
       },
     );

@@ -145,6 +145,7 @@ const IMAGE_MODELS = [
   'nano-banana-lite',
   'nano-banana-pro',
   'nano-banana-2',
+  'nano-banana-2-1',
   'gpt-image-2',
   'gpt-image-2-5-flare',
   'seedream',

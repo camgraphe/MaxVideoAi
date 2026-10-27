@@ -246,7 +246,7 @@ test('Kling V3 model pages keep start-frame positioning instead of cannibalizing
   }
 });
 
-test('Kling marketing family promotes Turbo without changing the O3 family canonical', () => {
+test('Kling marketing family includes ready V4 while keeping current Turbo and the O3 family canonical', () => {
   const descriptor = getExampleFamilyDescriptor('kling-o3-pro');
   assert.ok(descriptor);
   assert.equal(descriptor.id, 'kling');
@@ -264,7 +264,8 @@ test('Kling marketing family promotes Turbo without changing the O3 family canon
     'kling-3-standard',
     'kling-3-4k',
   ]);
-  assert.deepEqual(getExampleFamilyModelSlugs('kling').slice(0, 8), [
+  assert.deepEqual(getExampleFamilyModelSlugs('kling').slice(0, 9), [
+    'kling-v4',
     'kling-3-turbo-pro',
     'kling-3-turbo-standard',
     'kling-o3-pro',

@@ -53,6 +53,7 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
     priceUnavailableReason: missingSource ? (fr ? 'Ajoutez une image source pour estimer' : es ? 'Añade una imagen para estimar' : 'Add a source image to estimate') : undefined,
     summary: [settings.resolution && formatImageSizeLabel(settings.resolution), settings.aspectRatio === 'auto' ? 'Auto' : settings.aspectRatio, `${settings.numImages} image${settings.numImages > 1 ? 's' : ''}`].filter(Boolean).join(' · '),
     request: { engineId: engine.id, mode, numImages: settings.numImages, resolution: settings.resolution ?? undefined, aspectRatio: settings.aspectRatio ?? undefined,
+      thinkingLevel: settings.thinkingLevel ?? undefined,
       quality: settings.quality ?? undefined, enableWebSearch: settings.enableWebSearch || undefined, referenceImageCount: current.referenceImageCount,
       referenceImageSizes: current.readyReferenceSizes.length ? current.readyReferenceSizes : undefined,
       customImageSize: settings.resolution === 'custom' ? buildCustomImageSize(settings.customImageWidth, settings.customImageHeight) : null },

@@ -28,6 +28,21 @@ export function resolveHeroLimitsLine(locale: AppLocale) {
   return HERO_LIMITS_LINES[locale] ?? HERO_LIMITS_LINES.en;
 }
 
+export function buildHeroMetaLines(input: {
+  isImageEngine: boolean;
+  labels: { price: string; duration: string; format: string };
+  price: string; resolutionLabel: string; resolution: string;
+  outputFormat: string; duration: string; aspectRatio: string;
+}): Array<{ label: string; value: string }> {
+  return [
+    { label: input.labels.price, value: input.price },
+    input.isImageEngine
+      ? { label: input.resolutionLabel, value: input.resolution }
+      : { label: input.labels.duration, value: input.duration },
+    { label: input.labels.format, value: input.isImageEngine ? input.outputFormat : input.aspectRatio },
+  ].filter((line) => Boolean(line.value));
+}
+
 export function buildAutoHeroSpecChips(values: KeySpecValues | null, locale: AppLocale): HeroSpecChip[] {
   if (!values) return [];
   const chips: HeroSpecChip[] = [];
