@@ -430,7 +430,7 @@ export function WorkspaceComposerSurface({
     advancedFields.length
   );
   const showKlingElementsBuilder =
-    (isKlingV4 && (submissionMode === 'ref2v' || submissionMode === 'v2v')) ||
+    isKlingV4 ||
     (supportsKlingV3Controls && (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v'));
   const showExtraFields = Boolean(
     klingV4Error || showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ||
@@ -499,7 +499,9 @@ export function WorkspaceComposerSurface({
         onGenerate={startRender}
         generateLabel={localDraftPreview?.selected ? draftSettingsLocked ? draftCopy.generated : 'Draft 480p' : undefined}
         preflight={preflight}
-        promptField={inputSchemaSummary.promptField}
+        promptField={isKlingV4 && inputSchemaSummary.promptField
+          ? { ...inputSchemaSummary.promptField, description: undefined }
+          : inputSchemaSummary.promptField}
         promptRequired={inputSchemaSummary.promptRequired}
         negativePromptField={inputSchemaSummary.negativePromptField}
         negativePromptRequired={inputSchemaSummary.negativePromptRequired}

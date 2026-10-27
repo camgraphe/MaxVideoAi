@@ -24,3 +24,8 @@ export function getEngineSelectFamilyRank(entry: Pick<FalEngineEntry, 'family'> 
   if (!entry?.family) return Number.MAX_SAFE_INTEGER;
   return ENGINE_SELECT_FAMILY_RANK.get(entry.family as ModelFamilyId) ?? Number.MAX_SAFE_INTEGER;
 }
+
+/** Reviewed catalogue placement; independent of defaults, identity and execution. */
+export function getEngineSelectPromotionRank(engineId: string): number {
+  return engineId === 'kling-v4' ? 0 : Number.MAX_SAFE_INTEGER;
+}

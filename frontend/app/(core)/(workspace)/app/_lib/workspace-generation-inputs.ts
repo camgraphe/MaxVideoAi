@@ -1,4 +1,4 @@
-import { getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
+import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
 import { getWorkspaceMultiPromptState } from './workspace-multi-prompt-state';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
@@ -274,8 +274,10 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   }
 
   const orderedAttachments: Array<{ field: { id: string; label?: string }; asset: ReferenceAsset }> = [];
+  const activeKlingV4Fields = isKlingV4 ? new Set(Object.keys(getWorkspaceKlingV4ActiveAssets(options.submissionMode, options.inputAssets))) : null;
   const ignoreKlingO3FrameAssets = shouldIgnoreKlingO3FrameAssets(options.selectedEngineId, options.submissionMode);
   options.inputSchemaSummary.assetFields.forEach(({ field }) => {
+    if (activeKlingV4Fields && !activeKlingV4Fields.has(field.id)) return;
     if (ignoreKlingO3FrameAssets && isKlingO3FrameFieldId(field.id)) return;
     const items = options.inputAssets[field.id] ?? [];
     items.forEach((asset) => {

@@ -24,7 +24,7 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, setA
   return useCallback((target: Mode | null): WorkspaceInputAssetState => {
     if (!engine || !setAssets) return assets;
     const fields = getWorkspaceMediaFields(engine);
-    if (target === null && isVideoSourceWorkflow(mode)) {
+    if (target === null && (isVideoSourceWorkflow(mode) || mode === 'retake')) {
       const sourceId = getVideoWorkflowSourceField(engine.inputSchema, mode)?.id;
       const remaining: WorkspaceInputAssetState = {};
       const removed: WorkspaceInputAssetState = {};

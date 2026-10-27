@@ -43,12 +43,13 @@ test('source timing is read-only and a forged duration cannot replace measured m
   assert.equal(row.request?.operation, 'kling-edit');
   assert.deepEqual(row.request?.inputs?.map(input => input.assetId), ['source']);
 });
-test('changing price settings never unlocks a different operation or removes references', () => {
+test('a different model uses Create even when price options were edited in Modify', () => {
   const current = setup('minimax-h3-max', 'v2v');
   current.form.operation = 'h3-relight';
   const rows = buildWorkspacePickerOptions({ current, engines, locale: 'en', memberTier: 'Member', overrides: { resolution: '1080p' } });
-  assert.ok(rows['wan-3'].disabledReason);
-  assert.equal(rows['wan-3'].request, null);
+  assert.equal(rows['wan-3'].disabledReason, undefined);
+  assert.equal(rows['wan-3'].request?.mode, 't2v');
+  assert.equal(rows['wan-3'].request?.operation, undefined);
 });
 
 test('automatic durations can be compared at an explicit duration and restored to Auto', () => {

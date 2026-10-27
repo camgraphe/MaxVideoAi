@@ -7,7 +7,7 @@ export function isVideoSourceWorkflow(mode: Mode | undefined): mode is VideoSour
   return mode === 'extend' || mode === 'v2v' || mode === 'reframe';
 }
 
-export function getVideoWorkflowSourceField(inputSchema: EngineInputSchema | undefined, mode: VideoSourceWorkflow) {
+export function getVideoWorkflowSourceField(inputSchema: EngineInputSchema | undefined, mode: VideoSourceWorkflow | 'retake') {
   return resolveActiveVideoInputField({
     inputSchema, mode, type: 'video', candidateFieldIds: VIDEO_MEDIA_FIELD_CANDIDATES.sourceVideo,
   });
