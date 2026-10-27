@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { checkProductionGit, PRODUCTION_PROJECT_ID, STAGING_PROJECT_ID } from '../scripts/check-production-git.mjs';
-import { checkAncestry, deploymentRevision } from '../scripts/check-production-alignment.mjs';
+import { checkAncestry, deploymentRevision, assertPreviewModelAdmissionParity, previewDeploymentRevision } from '../scripts/check-production-alignment.mjs';
 
 const sha = 'a'.repeat(40);
 const productionEnv = {
@@ -74,4 +74,38 @@ test('alignment blocks missing production commits and branches based on stale ma
   assert.doesNotThrow(() => checkAncestry('main', 'main', 'main', ancestor));
   assert.throws(() => checkAncestry('unpublished', 'main', 'candidate', ancestor), /missing from GitHub main/);
   assert.throws(() => checkAncestry('prod', 'main', 'stale', ancestor), /does not include current GitHub main/);
+});
+
+const admissionCatalog = (available = true) => ({ ok: true, engines: [{ id: 'seedance-2-5',
+  modes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'], modeAvailability: Object.fromEntries(
+    ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].map(mode => [mode, { available, reason: available ? 'available' : 'provider_disabled' }])) }] });
+
+test('preview parity checks the real Seedance admissions in both directions, including closed modes', () => {
+  const production = admissionCatalog(), preview = admissionCatalog();
+  assert.equal(assertPreviewModelAdmissionParity(production, preview).modes.length, 5);
+  production.engines[0].modeAvailability.v2v.available = false;
+  assert.throws(() => assertPreviewModelAdmissionParity(production, preview), /admission differs.*v2v/);
+  preview.engines[0].modeAvailability.v2v.available = false;
+  assert.doesNotThrow(() => assertPreviewModelAdmissionParity(production, preview));
+  assert.throws(() => assertPreviewModelAdmissionParity(admissionCatalog(), admissionCatalog(false)), /admission differs.*t2v/);
+});
+
+test('preview parity refuses degraded, missing or incomplete readiness instead of inferring availability', () => {
+  for (const invalid of [{ ...admissionCatalog(), degraded: true }, { ok: false, engines: [] },
+    { ok: true, engines: [] }, { ok: true, engines: [{ id: 'seedance-2-5', modes: ['t2v'] }] }]) {
+    assert.throws(() => assertPreviewModelAdmissionParity(admissionCatalog(), invalid), /catalogue|readiness|modes/);
+    assert.throws(() => assertPreviewModelAdmissionParity(invalid, admissionCatalog()), /catalogue|readiness|modes/);
+  }
+  const preview = admissionCatalog(); preview.engines[0].modes.pop();
+  assert.throws(() => assertPreviewModelAdmissionParity(admissionCatalog(), preview), /modes differ/);
+});
+
+test('preview readiness belongs to the exact READY Git candidate and project, never an older or production deployment', () => {
+  const preview = { ...deployment, target: null, meta: { ...deployment.meta, githubCommitRef: 'codex/model-picker' } };
+  assert.equal(previewDeploymentRevision(preview, sha), sha);
+  for (const patch of [{ projectId: STAGING_PROJECT_ID }, { readyState: 'BUILDING' },
+    { target: 'production' }, { source: 'cli' }, { meta: {} },
+    { meta: { ...preview.meta, githubCommitSha: 'b'.repeat(40) } }]) {
+    assert.throws(() => previewDeploymentRevision({ ...preview, ...patch }, sha), /exact READY Git Preview/);
+  }
 });
