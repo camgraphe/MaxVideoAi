@@ -82,6 +82,18 @@ test('Kling v4 localized normal-page content has no fake media, quote or public 
   }
 });
 
+test('Kling V4 public copy reflects live quoted access in every locale without inventing a fixed price', () => {
+  const obsolete = /quotes remain disabled|generation and customer quotes remain disabled|devis clients restent désactivés|génération et les devis clients restent désactivés|presupuestos siguen desactivados|generación y los presupuestos siguen desactivados|generation and customer quotes are not enabled|génération Kling 4\.0 et les devis clients ne sont pas activés|generación Kling 4\.0 y los presupuestos para clientes están desactivados/i;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = JSON.parse(readFileSync(`content/models/${locale}/kling-v4.json`, 'utf8'));
+    assert.doesNotMatch(JSON.stringify(content), obsolete, locale);
+    assert.match(content.pricingNotes[0], /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
+    assert.match(content.pricingNotes[1], /quote|devis|presupuesto/i, locale);
+    assert.match(content.decision.hero.paragraph, /App.*Studio.*MCP|MCP.*Studio.*App/i, locale);
+    assert.doesNotMatch(JSON.stringify(content), /\$\d+\.\d{2}/, 'No invented fixed customer price');
+  }
+});
+
 test('Kling v4 prompt ideas render without manufacturing a demonstration duration or soundtrack', async () => {
   const requireFrontend = createRequire(resolve('frontend/package.json'));
   const React = requireFrontend('react');

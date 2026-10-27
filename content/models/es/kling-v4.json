@@ -7,8 +7,8 @@
   },
   "overview": "Kling 4.0 reúne dirección de escenas, generación guiada por referencias y edición de video. Piensa en la acción, el encuadre y el sonido juntos, y elige el modo adecuado para el material disponible.",
   "pricingNotes": [
-    "Los presupuestos siguen desactivados hasta revisar las tarifas y validar App, Studio y MCP.",
-    "Las tarifas del proveedor no son un precio de MaxVideoAI. Cada generación requerirá un presupuesto actual y una aprobación explícita."
+    "Kling 4.0 está disponible en la App, Studio y mediante MCP. El presupuesto actual depende del modo y los materiales elegidos.",
+    "Las tarifas del proveedor no son un precio de MaxVideoAI. Revisa el presupuesto actual y aprueba explícitamente cada generación."
   ],
   "hero": {
     "title": "Kling 4.0 — dirigir la escena, las referencias y el sonido",
@@ -37,7 +37,7 @@
     },
     {
       "q": "¿Puedo generar con Kling 4.0 en MaxVideoAI ahora?",
-      "a": "La generación y los presupuestos siguen desactivados. Una prueba API limitada de texto a vídeo tuvo éxito el 25 de octubre de 2026; no valida referencias, Modify, voces vinculadas ni calidad artística."
+      "a": "Sí. La App, Studio y MCP ofrecen Kling 4.0 para texto, imagen, referencias y edición de vídeo, con materiales compatibles y un presupuesto actual. Las comprobaciones funcionales no certifican la calidad artística de un nuevo resultado."
     },
     {
       "q": "¿Qué duraciones y resoluciones están documentadas?",
@@ -81,7 +81,7 @@
       "Editar un video existente||El modo de edición recibe un video fuente y un prompt, con imágenes y elementos visuales opcionales. Sus entradas son distintas de las de generación por referencias."
     ],
     "specTitle": "Controles documentados de Kling 4.0",
-    "specNote": "Contratos del proveedor verificados el 25 de octubre de 2026. Una prueba de acceso de texto a vídeo tuvo éxito; las demás rutas, la ejecución del producto y la calidad artística requieren validación adicional.",
+    "specNote": "Contratos del proveedor verificados el 25 de octubre de 2026. Se ha validado el acceso funcional; los ejemplos públicos y la calidad artística requieren una revisión aparte.",
     "specSections": [
       {
         "title": "Texto a video",
@@ -130,7 +130,7 @@
       "subtitleHighlights": [
         "3 a 30"
       ],
-      "paragraph": "Esta página describe el contrato publicado por el proveedor. La generación Kling 4.0 y los presupuestos para clientes están desactivados en MaxVideoAI; todavía no se ha evaluado ningún resultado de MaxVideoAI.",
+      "paragraph": "Kling 4.0 está disponible en la App, Studio y mediante MCP con un presupuesto actual antes de generar. Esta página describe sus controles; los ejemplos públicos revisados se preparan por separado.",
       "primaryCta": {
         "label": "Explorar ideas de prompts",
         "href": "#prompting"
@@ -227,8 +227,8 @@
     ],
     "pricingCopy": {
       "title": "Precios de Kling 4.0",
-      "subtitle": "Los presupuestos siguen desactivados hasta revisar las tarifas y validar App, Studio y MCP.",
-      "footnote": "Las tarifas del proveedor no son un precio de MaxVideoAI. Cada generación requerirá un presupuesto actual y una aprobación explícita.",
+      "subtitle": "Kling 4.0 está disponible en la App, Studio y mediante MCP. El presupuesto actual depende del modo y los materiales elegidos.",
+      "footnote": "Las tarifas del proveedor no son un precio de MaxVideoAI. Revisa el presupuesto actual y aprueba explícitamente cada generación.",
       "ctaLabel": "Leer las especificaciones",
       "ctaHref": "#specs"
     },
