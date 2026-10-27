@@ -1,0 +1,982 @@
+[
+  {
+    "id": "nano21-fashion-identity",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "hero",
+    "title": "The blue dress",
+    "promptLanguage": "en",
+    "prompt": "Original full-body cinematic fashion portrait, horizontal 16:9. Iris, a tall woman aged58, sharply cut silver bob, strong nose, fine eye wrinkles, composed professional expression. A sculptural midnight-blue heavy silk gown with a high asymmetric collar, one plain silver cuff, exactly two simple black heels worn on her feet. Narrow runway end under hard white light; charcoal curtain behind. Photographers stay outside frame. Rich real silk texture, natural mature skin, restrained contrast, poised weight on one leg, no exaggerated beauty retouch. Both shoes and complete dress hem visible. No celebrity likeness, brands, captions, collage or text. This is an identity and wardrobe reference before she leaves the runway.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:31:15.688Z",
+      "responseSha256": "c1586052f0aaf9cea6251ac217b0a47aadbc25904e75fa81bb220ac7e74ff10a",
+      "promptSha256": "2fcf1b5bf18d30b7eee73579cad9ede5a7af5e6e06a550ebd4468fe0df6a24c0"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20.png",
+      "sha256": "201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20",
+      "bytes": 1362511,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/abea1efa339b9a991e8bd1b5b4a669f25a50efafa0a02c877c707e6652ef6719.webp",
+      "sha256": "abea1efa339b9a991e8bd1b5b4a669f25a50efafa0a02c877c707e6652ef6719",
+      "bytes": 32824,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/abea1efa339b9a991e8bd1b5b4a669f25a50efafa0a02c877c707e6652ef6719.webp",
+        "sha256": "abea1efa339b9a991e8bd1b5b4a669f25a50efafa0a02c877c707e6652ef6719",
+        "bytes": 32824,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/4ac74b8c0e0ffa74482116a642275180d2c9ab5870158e2f96d389943bb05234.webp",
+        "sha256": "4ac74b8c0e0ffa74482116a642275180d2c9ab5870158e2f96d389943bb05234",
+        "bytes": 9852,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/02630467002ba6bc2a6425f856116ad5c7c642569478d9e4df22ccfe82096ab3.webp",
+        "sha256": "02630467002ba6bc2a6425f856116ad5c7c642569478d9e4df22ccfe82096ab3",
+        "bytes": 3666,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "201d6ecdcb90b472651f5ac028748f7092b5fd8e5195b723e660ebb34e37cb20"
+      }
+    ]
+  },
+  {
+    "id": "nano21-storm-world",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The storm gong",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 hand-drawn fantasy-animation concept frame, matte gouache, visible paper grain, expressive ink outlines and simplified flat shapes. A wooden weather workshop sits on a broad mountain ledge above a valley. One immense copper thunder drum hangs vertically in a stout timber frame, curled chalk-white clouds behind it. Nilo, a lanky young adult apprentice with large ears, patched vermilion coat and loose wool cap, stands to the left, holding one short double-faced mallet at waist height. One head is soft pale felt; the opposite face is dark wood, clearly part of the same tool. Midnight-blue and copper palette. Quiet state BEFORE the first strike, no lightning or blown hat. Original character and world, no franchise design, text, panel grid, photorealism or glossy3D.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:35:31.798Z",
+      "responseSha256": "2ebc2fb2ebffbd50deb0ef0e37768ee1afc07427e96282650cad93f9520b9a06",
+      "promptSha256": "a93c95aa4aae25672a1f545e032072e04ea24a16cd3dbdda7b5aec30d13dba80"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b.png",
+      "sha256": "bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b",
+      "bytes": 2029420,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/011f2c981992c2360740c54bb3fceb659aa14f7755ece4ebe16af8abb999de3b.webp",
+      "sha256": "011f2c981992c2360740c54bb3fceb659aa14f7755ece4ebe16af8abb999de3b",
+      "bytes": 183264,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/011f2c981992c2360740c54bb3fceb659aa14f7755ece4ebe16af8abb999de3b.webp",
+        "sha256": "011f2c981992c2360740c54bb3fceb659aa14f7755ece4ebe16af8abb999de3b",
+        "bytes": 183264,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/be6a957a4c38c7d2cf0a95cc7db376ef4f7bc8feb45b7b0838376f5c62cb811b.webp",
+        "sha256": "be6a957a4c38c7d2cf0a95cc7db376ef4f7bc8feb45b7b0838376f5c62cb811b",
+        "bytes": 53100,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1e8a26cbf861cf3f14fe82fbc54607ffa23b852ffc9708be10e7a1e1df37b7b4.webp",
+        "sha256": "1e8a26cbf861cf3f14fe82fbc54607ffa23b852ffc9708be10e7a1e1df37b7b4",
+        "bytes": 15952,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "bcfa5a75a8479e46541be32e58bebc3f1bbc6bd2736fa667c3ce9ba76689418b"
+      }
+    ]
+  },
+  {
+    "id": "nano21-concert-singer",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The singer",
+    "promptLanguage": "en",
+    "prompt": "Original cinematic concert portrait in black and white, horizontal 16:9. An original woman around thirty-five, long slightly unruly dark hair under a plain black knitted beanie, strong expressive brow, natural skin and a dark sleeveless top. Chest-up three-quarter view, eyes and mouth clearly readable, poised a short distance from a silver vintage microphone suspended vertically at mouth height. She is about to sing, one hand relaxed at waist level. Deep black background, luminous side-lit skin, softly blooming stage bulbs and tactile film grain; physically present live-performance photography, not a beauty campaign. One singer and one microphone; no celebrity likeness, captions, typography, logos or collage. This is an identity and performance reference, not an imposed first frame.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:17:56.354Z",
+      "responseSha256": "e2e29102d98216e07f7f91be49e07d2af1a246af9162e0f356df0c417251944a",
+      "promptSha256": "4c77989eed86e41252eb885efa1f2a618087bc59f1050c58d4f73694781fde37"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f.png",
+      "sha256": "0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f",
+      "bytes": 1649939,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/bac96b017361daacc651e85ee1aff224fd7687d168fbdd6729325233c525f53b.webp",
+      "sha256": "bac96b017361daacc651e85ee1aff224fd7687d168fbdd6729325233c525f53b",
+      "bytes": 81046,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/bac96b017361daacc651e85ee1aff224fd7687d168fbdd6729325233c525f53b.webp",
+        "sha256": "bac96b017361daacc651e85ee1aff224fd7687d168fbdd6729325233c525f53b",
+        "bytes": 81046,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/c1195f07b2444cc42dfb8bfa941a20f96d287855f52d7dfe3d97b036432f83f1.webp",
+        "sha256": "c1195f07b2444cc42dfb8bfa941a20f96d287855f52d7dfe3d97b036432f83f1",
+        "bytes": 18770,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/a56a41d74967e1aff7adfe01a6c211c161cb8871fab4b59ccf63f0fd253ed1f8.webp",
+        "sha256": "a56a41d74967e1aff7adfe01a6c211c161cb8871fab4b59ccf63f0fd253ed1f8",
+        "bytes": 5950,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "0bc1c617f6d8ad4e4df53d5f74950630eb4d41235e2f700b16adfa4dac9c085f"
+      }
+    ]
+  },
+  {
+    "id": "nano21-concert-stage",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The concert stage",
+    "promptLanguage": "en",
+    "prompt": "Original black-and-white 16:9 wide live-concert photograph from behind a modest standing audience in a park at night. A small professional outdoor stage is framed by trees against the night sky. A female singer stands centre stage at a suspended vintage microphone; keep her face small and indistinct because a separate portrait controls identity. A curly-haired adult trumpeter stands to camera right and an adult electric-keyboard player to camera left, both behind her; restrained bass and percussion players farther back. White stage bulbs, light haze, deep luminous monochrome, believable practical cables and instruments. Audience silhouettes occupy the lower foreground, all facing the same stage. No bar, tables, closing-time story, giant arena, brands, readable stage banners, captions or panels.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:20:36.484Z",
+      "responseSha256": "6999794cdd7cf0f9ab5c13cd93e74584422bef3e46948d96285d6546b27557d4",
+      "promptSha256": "baac6a4ef33410555e34b3ad40572fd718876d2dffd4aef555e60589e87b6c91"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f.png",
+      "sha256": "f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f",
+      "bytes": 1904636,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/e7f60eed3bbe2b8027d9b095efc76f30f121648bb023159db9c0efe97afc4e38.webp",
+      "sha256": "e7f60eed3bbe2b8027d9b095efc76f30f121648bb023159db9c0efe97afc4e38",
+      "bytes": 149890,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/e7f60eed3bbe2b8027d9b095efc76f30f121648bb023159db9c0efe97afc4e38.webp",
+        "sha256": "e7f60eed3bbe2b8027d9b095efc76f30f121648bb023159db9c0efe97afc4e38",
+        "bytes": 149890,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/88126241931639a175a92405006498e286eff12378ba03cfb626df339b077b10.webp",
+        "sha256": "88126241931639a175a92405006498e286eff12378ba03cfb626df339b077b10",
+        "bytes": 40784,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/f8911d781bec9ad29a97417dc86c09c317dbc4d39c371d00d08890ddbcbd50e2.webp",
+        "sha256": "f8911d781bec9ad29a97417dc86c09c317dbc4d39c371d00d08890ddbcbd50e2",
+        "bytes": 12268,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "f80ebbb2ca7c0b999c06ec56e21419e1fd3015d0a359cdb8ef555c04c7e9820f"
+      }
+    ]
+  },
+  {
+    "id": "nano21-western-pair",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The western porch",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 live-action Western reference still, American frontier1880, small timber church porch in late amber sunlight. Martha46 stands by an open doorway, dark hair firmly pinned, sun-browned hands, practical ivory wedding dress with repaired hem and a small bunch of dry field flowers in her left hand. Eli52 stands below the porch to her right, lean, exhausted, grey stubble, faded black coat and exactly one brown gun belt with its revolver holstered on his waist. A plain empty porch rail is visible beside them. Both faces, hands and the full gun belt are readable. Dusty blue distance, tactile film grain, natural weathered faces; quiet state before her request, nobody touching yet. No extra people, gunfire, logos, text, collage or drawn arrows.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:26:23.430Z",
+      "responseSha256": "f635c9ece13bedf95bc30678f30c187940cd37a9ddeb52e46b6ee9a57fdc42dd",
+      "promptSha256": "0e0c6edc078ee46165538fadf32eeee2ea29f96c10026f72839eb0198844fa53"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78.png",
+      "sha256": "95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78",
+      "bytes": 1731467,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/e15315cea005ac89fdaca370a58b6542bb21bc65dd476fb8d75187b52d11204c.webp",
+      "sha256": "e15315cea005ac89fdaca370a58b6542bb21bc65dd476fb8d75187b52d11204c",
+      "bytes": 105086,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/e15315cea005ac89fdaca370a58b6542bb21bc65dd476fb8d75187b52d11204c.webp",
+        "sha256": "e15315cea005ac89fdaca370a58b6542bb21bc65dd476fb8d75187b52d11204c",
+        "bytes": 105086,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/3048e49b6c85eb7bfc63b6dc40c2f55200627a8e50d66ffc01cc68107d985ba1.webp",
+        "sha256": "3048e49b6c85eb7bfc63b6dc40c2f55200627a8e50d66ffc01cc68107d985ba1",
+        "bytes": 33052,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/38bcabad6cec8407c5c4e0d9d391300804d05ebfd22e4350c23ac93663a989bc.webp",
+        "sha256": "38bcabad6cec8407c5c4e0d9d391300804d05ebfd22e4350c23ac93663a989bc",
+        "bytes": 10956,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "95ab818fb6b81d33b7a79524af023e459d444687be745ad9b03f7c7b7747fb78"
+      }
+    ]
+  },
+  {
+    "id": "nano21-sub-corridor",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The submarine corridor",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 tense submarine film reference. One cramped wartime machinery corridor, wet dark steel, condensation and low red utility lamps. Owen24 with cropped dark curls, narrow shoulders and grease on his cheek crouches left beside an open maintenance panel and a tool cloth. One loose brass bolt rests on the cloth on a solid floor plate leading gently toward a drainage grille at right. Owen's rubber-soled boot is visible beside the cloth but does not touch the bolt. Captain Hale57, grey beard, heavy eyelids and dark knitted sweater, stands farther down the same corridor. Clear floor geometry and realistic scale, both faces readable, no national insignia or readable text. This is the quiet initial condition, no rolling motion or explosion, no panels or labels.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:28:18.213Z",
+      "responseSha256": "10d02135b97a5987b03d9cd572bd8c869dc2cbb38c4b1bc750c831fb1c95b400",
+      "promptSha256": "2cd792467a13f05685fe1d577814cf4d8559ccc5a0cf4a251c024ebb27d2105b"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466.png",
+      "sha256": "81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466",
+      "bytes": 1674815,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/08d7d45892696939d312b13dd49b315f25b6dd3c0860dc195fe4c35f2db2e185.webp",
+      "sha256": "08d7d45892696939d312b13dd49b315f25b6dd3c0860dc195fe4c35f2db2e185",
+      "bytes": 91656,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/08d7d45892696939d312b13dd49b315f25b6dd3c0860dc195fe4c35f2db2e185.webp",
+        "sha256": "08d7d45892696939d312b13dd49b315f25b6dd3c0860dc195fe4c35f2db2e185",
+        "bytes": 91656,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/8a3e5ebc34bbedf21b92d5590583e302e43f3fdc9c309ded59b5907b48c2c09d.webp",
+        "sha256": "8a3e5ebc34bbedf21b92d5590583e302e43f3fdc9c309ded59b5907b48c2c09d",
+        "bytes": 29732,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/ec77248111dbec5b7f86e5486bc6aea97d36a36ffca8f5586a9eb781df5d500c.webp",
+        "sha256": "ec77248111dbec5b7f86e5486bc6aea97d36a36ffca8f5586a9eb781df5d500c",
+        "bytes": 9820,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "81b08de1a1406efc69a327818454795429f3ecbbf00be0b459b7a894a983e466"
+      }
+    ]
+  },
+  {
+    "id": "nano21-next-leon",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The Next One — Leon",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 cinematic character reference, full figure with readable face. Leon, a37-year-old furniture restorer, untidy brown hair, thoughtful eyes, natural unretouched face, worn charcoal coat over a simple grey sweater, practical dark trousers and worn shoes. A blue carpenter's pencil sits behind his right ear. He stands just inside a fully open stationary tram doorway, facing the camera at a three-quarter angle, both hands relaxed and empty. Cool diffuse dawn, quiet city tram stop without readable signs. Show the complete door threshold and both feet. No glove in his hands, other characters, celebrity likeness, captions, labels or collage. Preserve ordinary, slightly hesitant physical presence rather than a fashion pose.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:22:26.442Z",
+      "responseSha256": "ef67152d635357f84e6f231be347f1cd4901c300f0b01dd1d359a1d6360e59f5",
+      "promptSha256": "7dc348522a0856a03e32f7c281c5cba2e5b148fe1d2df57e74fc64d3a2090db3"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4.png",
+      "sha256": "f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4",
+      "bytes": 1638778,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/93f98f5a4cf547cbc52b723f0beb21cf75cd39f2cbaca8deef6fe4ffaea6a9df.webp",
+      "sha256": "93f98f5a4cf547cbc52b723f0beb21cf75cd39f2cbaca8deef6fe4ffaea6a9df",
+      "bytes": 79944,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/93f98f5a4cf547cbc52b723f0beb21cf75cd39f2cbaca8deef6fe4ffaea6a9df.webp",
+        "sha256": "93f98f5a4cf547cbc52b723f0beb21cf75cd39f2cbaca8deef6fe4ffaea6a9df",
+        "bytes": 79944,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/d8451ef35a2b990a0586fd1f3e699a70dc61e802a1cc82659c07081b8c15b602.webp",
+        "sha256": "d8451ef35a2b990a0586fd1f3e699a70dc61e802a1cc82659c07081b8c15b602",
+        "bytes": 28436,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/2321b57c6547cd68dd4fb16af23481dee7f9049964884d83856c88da80e03809.webp",
+        "sha256": "2321b57c6547cd68dd4fb16af23481dee7f9049964884d83856c88da80e03809",
+        "bytes": 10572,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "f2244f10e1fb74082b3589d4f050b3cb1abd8eb039409bf95571fbc0e2cb6de4"
+      }
+    ]
+  },
+  {
+    "id": "nano21-next-adele",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The Next One — Adele",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 cinematic character reference, full figure with readable face. Adele, a41-year-old nurse leaving a night shift, chestnut hair held by one orange hair clip, tired lively eyes and a small quick smile. Practical olive coat over a plain cream sweater, dark trousers, flat shoes, dented small insulated lunch bag on her left shoulder. She holds one grey wool glove in her right hand at waist level, about to return it. A quiet generic tram platform in cool diffuse dawn, uncluttered background and no readable signage. One person only, no medical uniform required, no celebrity likeness, captions, collage or labels. The reference establishes her identity and objects, not the first frame of a film.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:24:56.694Z",
+      "responseSha256": "d2fd643d91fe4ade899ff248b33152b848e856d7bee2b627acfc7f00e22bd44b",
+      "promptSha256": "823a6356fbb0ff01fed3f2b6c84b9b936732d2a370a6ed97625c78ce45bc6d3f"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b.png",
+      "sha256": "1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b",
+      "bytes": 1530606,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/a396a3e1e63ed3689f38cb616e521e5dd7890fd8d6c12034338531b604c33c6c.webp",
+      "sha256": "a396a3e1e63ed3689f38cb616e521e5dd7890fd8d6c12034338531b604c33c6c",
+      "bytes": 63476,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/a396a3e1e63ed3689f38cb616e521e5dd7890fd8d6c12034338531b604c33c6c.webp",
+        "sha256": "a396a3e1e63ed3689f38cb616e521e5dd7890fd8d6c12034338531b604c33c6c",
+        "bytes": 63476,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/be57baf4b4b0bde0ad00307bcfa0df13aa468f637240481b5dc2c4866473d0d3.webp",
+        "sha256": "be57baf4b4b0bde0ad00307bcfa0df13aa468f637240481b5dc2c4866473d0d3",
+        "bytes": 20296,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/229fad15a6d94db2772a8157a03de1b4192de47d5973d7f7084892bdce201420.webp",
+        "sha256": "229fad15a6d94db2772a8157a03de1b4192de47d5973d7f7084892bdce201420",
+        "bytes": 7464,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "1ed2c1bbec4ef17baf232b8aaad23f5aa3a46a0657f3dfe6b18976dc0aae6f5b"
+      }
+    ]
+  },
+  {
+    "id": "nano21-fashion-location",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The blue corridor",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 cinematic architecture and lighting reference for a small fashion show. A narrow hard-white-lit runway leads directly through an open heavy charcoal curtain into a modest concrete backstage passage. The adjacent passage contains one low wooden bench under a warm work lamp. Show both zones from a three-quarter angle so their physical connection is obvious, the curtain central and the bench fully visible beyond. Realistic cloth, floor scuffs and practical fixtures. No people, mirrors, logos, typography or diagram markings. Not a luxurious second room: two adjacent connected spaces with a natural white-to-warm lighting transition.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:33:02.030Z",
+      "responseSha256": "a5d54e59ab4a64dbcfbe096f2f2523c69af6eca59ffcd52879efaabf85eea1d1",
+      "promptSha256": "d5e9cb258c2d9bd8e7c60421e11f8d5525203d0ab5213881ee0b8842b22f0c02"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69.png",
+      "sha256": "5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69",
+      "bytes": 1660050,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/8ef18ed560517fc7ab0bcf2834c3b06016c9db5a918a1c48ed3fd9934375fd12.webp",
+      "sha256": "8ef18ed560517fc7ab0bcf2834c3b06016c9db5a918a1c48ed3fd9934375fd12",
+      "bytes": 99918,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/8ef18ed560517fc7ab0bcf2834c3b06016c9db5a918a1c48ed3fd9934375fd12.webp",
+        "sha256": "8ef18ed560517fc7ab0bcf2834c3b06016c9db5a918a1c48ed3fd9934375fd12",
+        "bytes": 99918,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/6a33fc4e2c399c766a88232cd72e80071e85caa5d2a41b294453cf7ab7897e6a.webp",
+        "sha256": "6a33fc4e2c399c766a88232cd72e80071e85caa5d2a41b294453cf7ab7897e6a",
+        "bytes": 30126,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/760979978ed4a4a6a7dc5b258dac71940e4276ab9b783559d725bb89bc9ef557.webp",
+        "sha256": "760979978ed4a4a6a7dc5b258dac71940e4276ab9b783559d725bb89bc9ef557",
+        "bytes": 9336,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "5270ffd39d4e30c72769a26de281238015fcf8a1eb7001017bf99abf85b42f69"
+      }
+    ]
+  },
+  {
+    "id": "nano21-table-cast",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The dinner table",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 restrained period-drama still, provincial France late eighteenth century. Small dark-green dining room, linen-covered table, silver cutlery, soft winter window light and a few candles. Elise29, loosely pinned chestnut hair and deep rust silk dress, sits in the near-side chair. Jeanne61, worn precise hands, faded blue wool dress and plain working apron, stands beside her with a small sewing case, attending the repaired cuff. Countess Adrienne72, dressed silver hair and dark plum gown, sits opposite; two additional guests remain indistinct in the far background. Make the three main faces, Elise's chair and the unobstructed space for her to stand readable. Natural skin, tactile cloth, restrained photographic realism. State before the chair is offered; no duplicate chair or character, labels, typography, logos or modern objects.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:37:07.012Z",
+      "responseSha256": "c7b43adbd9f3622eba14943dd4972e836ed30bf5496b0a9518a62b74e3e87bd5",
+      "promptSha256": "9766b4a070da3c1f48de5a2f2f78cd6aaa3b21cb92f0438cfbb2c9394a0e306b"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e.png",
+      "sha256": "1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e",
+      "bytes": 1527699,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/04dedc8aa44c153dd6bd1f93ed569bd43370e02b439d57808ea182156a08b70d.webp",
+      "sha256": "04dedc8aa44c153dd6bd1f93ed569bd43370e02b439d57808ea182156a08b70d",
+      "bytes": 70592,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/04dedc8aa44c153dd6bd1f93ed569bd43370e02b439d57808ea182156a08b70d.webp",
+        "sha256": "04dedc8aa44c153dd6bd1f93ed569bd43370e02b439d57808ea182156a08b70d",
+        "bytes": 70592,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/a69b9334c8a00c2c81940a3ec0ba010d067658fba72c9781548ebb0539299f9c.webp",
+        "sha256": "a69b9334c8a00c2c81940a3ec0ba010d067658fba72c9781548ebb0539299f9c",
+        "bytes": 24870,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/4e8b22dcdbc142781d5e5440bfae2841247986203a48124cbe2b8faba3cfe294.webp",
+        "sha256": "4e8b22dcdbc142781d5e5440bfae2841247986203a48124cbe2b8faba3cfe294",
+        "bytes": 9036,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "1a65a61b10e014a48e2ea99695799c7cbdf91cdfae92d352fe21bf4ad710040e"
+      }
+    ]
+  },
+  {
+    "id": "nano21-horror-ruth-cabin",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The cabin",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 quiet folk-horror film still inside a small wooden ranger cabin at night. Ruth44, blunt dark fringe, tired alert eyes, thick olive wool shirt, stands beside one warm oil lamp and looks toward an opaque plank door. The door has a horizontal iron bolt; its handle is drawn back, out of the receiving socket, so it can later be slid shut. Show Ruth's face and hand, the same door's timber texture, bolt and socket clearly. Matte wood and damp wool, deep shadows with readable detail, no mirror or window effect. No animal, attack, gore, writing, logos, panels or labels; a realistic state before the knocks.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:40:30.797Z",
+      "responseSha256": "4d5ca07facf3b75a2d705b16f99daa0ee043b13206a3f069ffc5b03334df4c38",
+      "promptSha256": "9220eed08dcf160a818d7fc031f05dc7341db9d3c596dfa0b939d091e757170d"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26.png",
+      "sha256": "aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26",
+      "bytes": 1495293,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/193a55dbe2e7e1504e73388227356abd7900a15a779398bbf1e24ca4e9f36007.webp",
+      "sha256": "193a55dbe2e7e1504e73388227356abd7900a15a779398bbf1e24ca4e9f36007",
+      "bytes": 50720,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/193a55dbe2e7e1504e73388227356abd7900a15a779398bbf1e24ca4e9f36007.webp",
+        "sha256": "193a55dbe2e7e1504e73388227356abd7900a15a779398bbf1e24ca4e9f36007",
+        "bytes": 50720,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/b8369581cd43787484c09d7842e8c136ecae1e483637bd0590c2973c9e83bbf6.webp",
+        "sha256": "b8369581cd43787484c09d7842e8c136ecae1e483637bd0590c2973c9e83bbf6",
+        "bytes": 15344,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/f85a863841a8aa3809806c7bced5b010cc1093fb82b5580db4a7823731679b4e.webp",
+        "sha256": "f85a863841a8aa3809806c7bced5b010cc1093fb82b5580db4a7823731679b4e",
+        "bytes": 4828,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "aec621e3dcafb74669a5e1f55df9f6085c09b57ce3ca2358c824d1e0995e6d26"
+      }
+    ]
+  },
+  {
+    "id": "nano21-horror-stag",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The stag",
+    "promptLanguage": "en",
+    "prompt": "Original 16:9 folk-horror exterior reference photograph in a wet pine forest at night. An enormous natural dark stag stands on all four legs in full side view beside a small ranger cabin's closed opaque vertical-plank door. Show the whole attached animal body, four ordinary legs and hooves, heavy wet fur, broad antlers and natural eyes. Its shoulder nearly reaches the top of the door handle; keep enough space above for it to rear later. Cold overcast moonlight, damp matte wood, no attack underway. This is an anatomy and scale reference, not an imposed first frame or an instruction to knock while on all fours. No human hands, glowing eyes, floating limbs, extra animals, captions, logos or panels.\n\nProduction language: English for any permitted visible text. Do not add captions, titles, typography or labels where the image requests their absence.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:43:19.482Z",
+      "responseSha256": "512a9bb34c87018b71bd0090922b325da08f558448eb9bea7879ce25d44629cf",
+      "promptSha256": "635ece30e2d2b8611940ae99643edcc39d8c4dd5a7c280d28c1321543e5cc965"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6.png",
+      "sha256": "4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6",
+      "bytes": 1870532,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/ce31050c92a734940fc310d69096c5abb6b2dcdb9f0b686ca3bc6bde37110a28.webp",
+      "sha256": "ce31050c92a734940fc310d69096c5abb6b2dcdb9f0b686ca3bc6bde37110a28",
+      "bytes": 130530,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/ce31050c92a734940fc310d69096c5abb6b2dcdb9f0b686ca3bc6bde37110a28.webp",
+        "sha256": "ce31050c92a734940fc310d69096c5abb6b2dcdb9f0b686ca3bc6bde37110a28",
+        "bytes": 130530,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/d3673601cae1d233d24cf60c24517515140d091b656688613e24b4bf35f8532a.webp",
+        "sha256": "d3673601cae1d233d24cf60c24517515140d091b656688613e24b4bf35f8532a",
+        "bytes": 31368,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/38aa2dc8e1268897beccf78988a3a5cf20ee64c484564a7a25b508cde0a6cdba.webp",
+        "sha256": "38aa2dc8e1268897beccf78988a3a5cf20ee64c484564a7a25b508cde0a6cdba",
+        "bytes": 9242,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "4fbe37828d0f7aab55a2206837958d966e4c8d1e396b256d3e26508f8df0c3a6"
+      }
+    ]
+  },
+  {
+    "id": "nano21-janitor-identity",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The caretaker",
+    "promptLanguage": "en",
+    "prompt": "Original cinematic character reference, horizontal 16:9. Hank, a lean wiry American janitor around seventy, short white hair, uneven white moustache, lined face and an unhurried slightly weary gaze. Faded blue work shirt with rolled sleeves, high-waisted charcoal work trousers, worn brown shoes, simple belt. Full body with face large enough to read, holding one ordinary wet mop upright beside a cleaning cart. Plain softly lit bank service corridor, no action, no heroic pose. Realistic skin, fabric wear, restrained cold daylight and subtle film grain. One person, one attached mop, no logos, typography, celebrity likeness or collage. Preserve a clean readable silhouette for reuse in a film.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:15:00.393Z",
+      "responseSha256": "813c37cf38c74ba3fea2d8421721efaa54bec88ce4cb729459fa1128189f50b7",
+      "promptSha256": "35d82a51ced9c29c29000718e541e5cedf27cd62221de075d9a7e79a967e3d32"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d.png",
+      "sha256": "8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d",
+      "bytes": 1596147,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/42a7ed407ad844ee3d57065c4316a3cba3e0b5532a571d6d3d272f77198db7b1.webp",
+      "sha256": "42a7ed407ad844ee3d57065c4316a3cba3e0b5532a571d6d3d272f77198db7b1",
+      "bytes": 63034,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/42a7ed407ad844ee3d57065c4316a3cba3e0b5532a571d6d3d272f77198db7b1.webp",
+        "sha256": "42a7ed407ad844ee3d57065c4316a3cba3e0b5532a571d6d3d272f77198db7b1",
+        "bytes": 63034,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1c467989ebc94b382b5d38ee643b849c4051cd6d7c248f2f6cf861f746664872.webp",
+        "sha256": "1c467989ebc94b382b5d38ee643b849c4051cd6d7c248f2f6cf861f746664872",
+        "bytes": 20456,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/c8f4218181b7ec8d9e035f11d7e08529041f211f4c4eb88d3ada43d1f2bacaff.webp",
+        "sha256": "c8f4218181b7ec8d9e035f11d7e08529041f211f4c4eb88d3ada43d1f2bacaff",
+        "bytes": 7480,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "8065b14742b852e17b1a5b925a0deaf68073f70c06d5e3f6dfee13b01e21f46d"
+      }
+    ]
+  },
+  {
+    "id": "nano21-janitor-bank",
+    "status": "accepted",
+    "engineId": "nano-banana-2-1",
+    "providerModelId": "gemini-nano-banana-2.1",
+    "role": "example",
+    "title": "The bank hall",
+    "promptLanguage": "en",
+    "prompt": "Original cinematic environment reference, 16:9 wide eye-level view of a small American bank. Broad open lobby, worn pale stone floor, teller counter at back, waiting chairs on right, large daylight windows on left. Three adult masked robbers occupy distinct positions: stocky leader at the counter, younger nervous robber near the right chairs, third robber guarding a few adult hostages kneeling at the left wall. Their weapons point down or toward the floor. A janitor and cleaning cart are at the far left edge, shown from behind only; no emphasis on his face. Clear traversable floor between all positions, no fight underway, no broken glass yet. Cold daylight, tactile materials, realistic action-film still. No brands, readable signs, text overlay or storyboard grid. This image specifies geography, not the janitor's facial identity.\n\nProduction language: English for any permitted diegetic writing or visible text. This does not override the request for no typography or text; do not add captions, titles or labels.",
+    "settings": {
+      "mode": "t2i",
+      "resolution": "1k",
+      "aspectRatio": "16:9",
+      "thinkingLevel": "medium",
+      "maxOutputTokens": 32768
+    },
+    "provenance": {
+      "kind": "external_vertex",
+      "location": "global",
+      "generatedAt": "2026-10-26T01:16:35.836Z",
+      "responseSha256": "6f3756dfe40b995ff1ab8662ba4cf4edc700aafa2436fab20696084b6337e133",
+      "promptSha256": "51763853ab95341d8c2479b95d295041dc074c4815ec1116d078ef3c201eb1a5"
+    },
+    "original": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d.png",
+      "sha256": "2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d",
+      "bytes": 1585896,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1fadb4c891889070c09e828957f79f990556acf2e7ea5e39c2cd52fa4b3db085.webp",
+      "sha256": "1fadb4c891889070c09e828957f79f990556acf2e7ea5e39c2cd52fa4b3db085",
+      "bytes": 78434,
+      "width": 1376,
+      "height": 768,
+      "mimeType": "image/webp",
+      "sourceSha256": "2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d"
+    },
+    "variants": [
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1fadb4c891889070c09e828957f79f990556acf2e7ea5e39c2cd52fa4b3db085.webp",
+        "sha256": "1fadb4c891889070c09e828957f79f990556acf2e7ea5e39c2cd52fa4b3db085",
+        "bytes": 78434,
+        "width": 1376,
+        "height": 768,
+        "mimeType": "image/webp",
+        "sourceSha256": "2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/1da2caa95a62623d65999a85111227dd3b537ff4f719c719dc89715596da5833.webp",
+        "sha256": "1da2caa95a62623d65999a85111227dd3b537ff4f719c719dc89715596da5833",
+        "bytes": 24910,
+        "width": 640,
+        "height": 357,
+        "mimeType": "image/webp",
+        "sourceSha256": "2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d"
+      },
+      {
+        "url": "https://media.maxvideoai.com/marketing-media/nano21-9b486fa24586bbd9/f3f967041e14ad06cfa50cf96473fd87cc65fb5f4d173db2fc3f49f818a602ef.webp",
+        "sha256": "f3f967041e14ad06cfa50cf96473fd87cc65fb5f4d173db2fc3f49f818a602ef",
+        "bytes": 8484,
+        "width": 320,
+        "height": 179,
+        "mimeType": "image/webp",
+        "sourceSha256": "2b2da26c9d74136086d602fc729507e45cfc47f3b9d6eaed030d6f3870adc04d"
+      }
+    ]
+  }
+]

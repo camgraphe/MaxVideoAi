@@ -4,6 +4,7 @@ import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import {
   resolveAgentGenerationEngineExecutability,
+  resolveAgentGenerationModeExecutability,
   resolveAgentGenerationRequestExecutability,
   type AgentGenerationExecutabilityEnvironment,
 } from '../frontend/src/server/agent-runtime/model-executability';
@@ -224,12 +225,14 @@ test('Luma requests routed directly to Fal require Fal before a quote can be pre
   );
 });
 
-test('Google image models follow their forced direct provider instead of Fal readiness', () => {
-  const engine = getEngine('nano-banana-2');
+test('Google image models keep explicit per-model Vertex admission instead of Fal readiness', () => {
+  // This is the complete currently supported Vertex image family, including the
+  // new version. Publishing an engine alone must not bypass its MCP allowlist.
+  const ids = ['nano-banana', 'nano-banana-lite', 'nano-banana-pro', 'nano-banana-2', 'nano-banana-2-1'];
   const googleFlags = {
     GOOGLE_VERTEX_IMAGE_MCP_ENABLED: 'true',
     GOOGLE_VERTEX_IMAGE_MCP_PUBLIC_ROUTING_ENABLED: 'true',
-    GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: 'nano-banana-2',
+    GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: ids.join(','),
   };
   const googleCredentials = {
     ...googleFlags,
@@ -237,31 +240,29 @@ test('Google image models follow their forced direct provider instead of Fal rea
     GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"test@example.com","private_key":"key"}',
     GOOGLE_VERTEX_INPUT_GCS_URI: 'gs://maxvideoai-inputs/images',
   };
-
-  assert.deepEqual(
-    resolveAgentGenerationEngineExecutability(engine, environment({
-      falApiKey: '',
-      providerEnv: googleCredentials,
-    })),
-    { executable: true, reason: 'available' },
-  );
-  assert.deepEqual(
-    resolveAgentGenerationEngineExecutability(engine, environment({
-      falApiKey: 'fal-key',
-      providerEnv: googleFlags,
-    })),
-    { executable: false, reason: 'provider_credentials_missing' },
-  );
-  assert.deepEqual(
-    resolveAgentGenerationEngineExecutability(engine, environment({
-      falApiKey: '',
-      providerEnv: {
-        ...googleCredentials,
-        GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: 'nano-banana-pro',
-      },
-    })),
-    { executable: false, reason: 'provider_disabled' },
-  );
+  for (const id of ids) {
+    const engine = getEngine(id);
+    assert.deepEqual(
+      resolveAgentGenerationEngineExecutability(engine, environment({ falApiKey: '', providerEnv: googleCredentials })),
+      { executable: true, reason: 'available' }, id,
+    );
+    for (const mode of ['t2i', 'i2i'] as const) {
+      assert.deepEqual(
+        resolveAgentGenerationModeExecutability(engine, mode, environment({ falApiKey: '', providerEnv: googleCredentials })),
+        { executable: true, reason: 'available' }, `${id}/${mode}`,
+      );
+    }
+    assert.deepEqual(
+      resolveAgentGenerationEngineExecutability(engine, environment({ falApiKey: 'fal-key', providerEnv: googleFlags })),
+      { executable: false, reason: 'provider_credentials_missing' }, id,
+    );
+    assert.deepEqual(
+      resolveAgentGenerationEngineExecutability(engine, environment({ falApiKey: '', providerEnv: {
+        ...googleCredentials, GOOGLE_VERTEX_IMAGE_MCP_ENGINE_ALLOWLIST: ids.filter(candidate => candidate !== id).join(','),
+      } })),
+      { executable: false, reason: 'provider_disabled' }, `${id} must remain individually closable`,
+    );
+  }
 });
 
 test('Luma image models use direct readiness when enabled and Fal otherwise', () => {

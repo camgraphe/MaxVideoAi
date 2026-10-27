@@ -469,6 +469,7 @@ test('Happy Horse has a crawlable examples family and appears in example family 
 
 test('Examples family current model groups do not classify new delivery models as older', () => {
   assert.deepEqual(getExampleFamilyModelSlugs('kling'), [
+    'kling-v4',
     'kling-3-turbo-pro',
     'kling-3-turbo-standard',
     'kling-o3-pro',

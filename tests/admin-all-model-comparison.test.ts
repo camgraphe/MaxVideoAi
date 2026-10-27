@@ -9,10 +9,11 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison inventory contains published models once while V4 keeps its separate native tariff', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 50);
+  assert.equal(expected.length, 51);
   assert.equal(rows.length, expected.length);
   assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set(expected.map((model) => model.id)));
   assert.equal(rows.filter(({entry})=>entry.id==='kling-v4').length,1);
+  assert.equal(rows.filter(({entry})=>entry.id==='nano-banana-2-1').length,1);
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2_flash'));
   assert.equal(new Set(expected.map((model) => model.family)).size, 15);
@@ -21,6 +22,18 @@ test('admin comparison inventory contains published models once while V4 keeps i
   assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 49);
   assert.throws(()=>quoteCanonicalAdminScenarios({databaseRules:[],scenarios:[rows.find(({entry})=>entry.id==='kling-v4')!.scenario]}),/Pricing definition not found/,'V4 cannot acquire an old percentage-policy price');
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
+});
+
+test('a percentage-policy preview cannot replace the fixed Nano21 customer image tariff', () => {
+  const row = buildAllModelComparisonScenarios().find(({ entry }) => entry.id === 'nano-banana-2-1');
+  assert.ok(row);
+  const outcomes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: [row.scenario] });
+  assert.equal(outcomes.length, 1);
+  assert.equal(outcomes[0].status, 'unsupported');
+  if (outcomes[0].status === 'unsupported') {
+    assert.equal(outcomes[0].reason, 'product_policy_not_authoritative');
+    assert.match(outcomes[0].warning, /fixed.*image.*tariff/i);
+  }
 });
 
 test('representative admin quotes use catalog defaults instead of the cheapest enumerated option', () => {

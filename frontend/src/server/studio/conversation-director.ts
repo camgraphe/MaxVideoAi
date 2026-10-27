@@ -12,7 +12,7 @@ import type { ImageDraft, ImageTurnInput, ImageConversationHistoryTurn,StudioCon
 import {studioHistoryMessage,studioReferenceInputContent} from './conversation-reference-mentions';
 import {STUDIO_MEDIA_DIRECTOR_TOOLS} from '@/lib/studio/conversation-media-contract';
 import {STUDIO_EDITING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-editing-contract';
-import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {imageSelectionStripSchema} from '@/lib/studio/conversation-creation-contract';
 import {studioToolReferenceProperties} from './conversation-tool-reference-schema';
 import {isStudioPreparationCorrection} from './conversation-preparation-validation';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
@@ -297,7 +297,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       }
       if (result.ok && result.action === 'timeline.edit' && result.data.changed && !('replayed' in result&&result.replayed)) completedEdits++;
       if (action.action === 'image.prepare' && result.ok) {
-        return {reply: projectStudioReply(action.reply),image: imageSelectionSchema.strip().parse(action)};
+        return {reply: projectStudioReply(action.reply),image: imageSelectionStripSchema.parse(action)};
       }
       if (action.action === 'image.prepare' && !result.ok)
         throw new AgentApiError(result.error.code, result.error.message, result.error.retryable, result.error.nextAction);

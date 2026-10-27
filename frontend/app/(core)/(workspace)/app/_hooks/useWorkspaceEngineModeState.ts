@@ -17,6 +17,7 @@ import {
   getComposerWorkflowNotice,
   getPreferredEngineModeForEngineRequest,
   getPreferredEngineMode,
+  getWorkspaceCreateMode,
   isWorkspaceModeAvailable,
   matchesEngineToken,
   resolveSelectedWorkspaceEngine,
@@ -189,8 +190,8 @@ export function useWorkspaceEngineModeState({
   });
 
   const klingO3DisabledEngineReasons = useMemo(
-    () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
-    [engines, inputAssets, klingElements]
+    () => getKlingO3DisabledEngineReasons({ engines: engines.filter(engine => engine.id === form?.engineId), inputAssets, klingElements }),
+    [engines, form?.engineId, inputAssets, klingElements]
   );
 
   useEffect(() => {
@@ -232,28 +233,29 @@ export function useWorkspaceEngineModeState({
   const handleEngineChange = useCallback(
     (engineId: string) => {
       const nextEngine = engines.find((entry) => entry.id === engineId);
-      if (!nextEngine) return;
+      if (!nextEngine || nextEngine.id === form?.engineId) return;
       const disabledReason = klingO3DisabledEngineReasons[nextEngine.id];
       if (disabledReason) {
         showNotice(disabledReason);
         return;
       }
+      const createMode = getWorkspaceCreateMode(nextEngine);
+      if (!createMode) { showNotice(uiLocale === 'fr' ? 'Créer est indisponible pour ce modèle.' : uiLocale === 'es' ? 'Crear no está disponible para este modelo.' : 'Create is unavailable for this model.'); return; }
+      prepareModeAssets(null);
       requestedEngineOverrideIdRef.current = null;
       requestedEngineOverrideTokenRef.current = null;
       requestedModeOverrideRef.current = null;
       preserveStoredDraftRef.current = false;
       setForm((current) => {
         const candidate = current ?? null;
-        const nextMode = getPreferredEngineModeForEngineRequest({
-          engine: nextEngine,
-          requestedMode: null,
-          carryoverMode: candidate?.mode ?? null,
-        });
-        return coerceFormStateForEngineChange(nextEngine, nextMode, candidate);
+        return coerceFormStateForEngineChange(nextEngine, createMode, candidate ? { ...candidate, operation: undefined } : null);
       });
     },
     [
       engines,
+      form?.engineId,
+      prepareModeAssets,
+      uiLocale,
       klingO3DisabledEngineReasons,
       preserveStoredDraftRef,
       requestedEngineOverrideIdRef,

@@ -1,3 +1,5 @@
+import { listNano21EditorialImages } from '@/lib/nano21-editorial-images';
+import { buildHeroMetaLines } from '../_lib/model-page-hero-specs';
 import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import { localePathnames, localeRegions, type AppLocale } from '@/i18n/locales';
@@ -172,19 +174,9 @@ export async function MarketingModelPageLayout({
   const heroFormat = heroMedia.aspectRatio ?? keySpecValues?.aspectRatios ?? 'Data pending';
   const heroResolution = keySpecValues?.maxResolution ?? 'Data pending';
   const heroOutputFormat = keySpecValues?.outputFormats ?? 'Data pending';
-  const heroMetaLines = (
-    isImageEngine
-      ? [
-          { label: heroMetaLabels.price, value: heroPrice },
-          { label: resolveSpecRowLabel(locale, 'maxResolution', true), value: heroResolution },
-          { label: heroMetaLabels.format, value: heroOutputFormat },
-        ]
-      : [
-          { label: heroMetaLabels.price, value: heroPrice },
-          { label: heroMetaLabels.duration, value: heroDuration },
-          { label: heroMetaLabels.format, value: heroFormat },
-        ]
-  ).filter((line) => Boolean(line.value));
+  const heroMetaLines = buildHeroMetaLines({ isImageEngine, labels: heroMetaLabels, price: heroPrice,
+    resolutionLabel: resolveSpecRowLabel(locale, 'maxResolution', true), resolution: heroResolution,
+    outputFormat: heroOutputFormat, duration: heroDuration, aspectRatio: heroFormat });
   const isEsLocale = locale === 'es';
   const modelsBase = (MODELS_BASE_PATH_MAP[locale] ?? 'models').replace(/^\/+|\/+$/g, '');
   const localizeModelsPath = (targetSlug?: string) => {
@@ -349,7 +341,8 @@ export async function MarketingModelPageLayout({
   const keyframeDemo = examplesContent.keyframeDemo ? buildModelKeyframeDemoViewModel(
     await loadModelKeyframeDemo(engine.modelSlug), examplesContent.keyframeDemo, locale, engine.surfaces.app.enabled,
   ) : null;
-  const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo);
+  const editorialImages = listNano21EditorialImages(engine.id);
+  const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo) || editorialImages.length > 0;
   const hasTextSection = true;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
@@ -431,7 +424,7 @@ export async function MarketingModelPageLayout({
         pricingCallout: legacyPricingCallout,
         microCta: legacyMicroCta,
         microCtaHref: normalizedPrimaryCtaHref,
-        examplesProps: { viewModel: examplesViewModel, keyframeDemo },
+        examplesProps: { viewModel: examplesViewModel, keyframeDemo, editorialImages },
         decisionCards: templateData?.decisionCards ?? null,
         promptingProps: { viewModel: promptingViewModel },
         prepLinksProps: { prepLinksSection, locale },
@@ -447,7 +440,7 @@ export async function MarketingModelPageLayout({
       <div className={['container-page model-page model-editorial overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {templateData ? (
-            <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} />
+            <ModelDecisionHeroSection decision={templateData} localizeModelsPath={localizeModelsPath} resolvedBreadcrumb={resolvedBreadcrumb} breadcrumbModelLabel={breadcrumbModelLabel} heroMedia={heroMedia} locale={locale} audioBadgeLabel={audioBadgeLabel} mediaAltContext={mediaAltContexts.hero} preferPreviewAutoplay={engine.modelSlug === 'kling-v4'} />
           ) : (
             <ModelHeroSection
               modelsPathname={modelsPathname}

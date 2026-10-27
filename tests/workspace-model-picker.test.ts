@@ -16,10 +16,24 @@ function setup(id = 'wan-3-prime'): WorkspaceModelSetup {
 }
 test('approved recommendations preserve order and never invent absent models', () => {
   const groups = getPickerRecommendations(engines, 't2v');
-  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'wan-3-prime', 'kling-o3-pro'], ['wan-3', 'flux-3-max'], ['seedance-2-0-mini', 'minimax-h3']]);
+  assert.deepEqual(groups.map(group => group.ids), [['seedance-2-5', 'kling-v4', 'wan-3-prime'], ['wan-3', 'flux-3-max'], ['seedance-2-0-mini', 'minimax-h3']]);
   assert.deepEqual(getPickerRecommendations([engine('wan-3')], 't2v').flatMap(group => group.ids), ['wan-3']);
   assert.deepEqual(getPickerRecommendations(engines, 't2i'), []);
   assert.ok(!getPickerRecommendations([{ ...engine('wan-3'), availability: 'paused' }], 't2v').length);
+});
+test('Kling 4 promotion preserves mode admission and the contextual Modify shortlist', () => {
+  const kling = engine('kling-v4');
+  const quality = (catalogue: typeof engines, mode: 't2v' | 'i2v' | 'fl2v' | 'v2v') =>
+    getPickerRecommendations(catalogue, mode).find(group => group.group === 'quality')?.ids ?? [];
+  assert.deepEqual(quality(engines, 'i2v'), ['seedance-2-5', 'kling-v4', 'wan-3-prime']);
+  assert.deepEqual(quality(engines.filter(item => item.id !== kling.id), 't2v'), ['seedance-2-5', 'wan-3-prime']);
+  for (const excluded of [
+    { ...kling, availability: 'paused' as const },
+    { ...kling, modes: kling.modes.filter(value => value !== 't2v') },
+    { ...kling, modeAvailability: { t2v: { available: false } } },
+  ]) assert.deepEqual(quality(engines.map(item => item.id === kling.id ? excluded : item), 't2v'), ['seedance-2-5', 'wan-3-prime']);
+  assert.ok(!quality(engines, 'fl2v').includes(kling.id), 'promotion cannot invent a first/last contract');
+  assert.deepEqual(quality(engines, 'v2v'), ['luma-ray-3-2', 'kling-o3-pro', 'wan-3-prime']);
 });
 test('Create budgets lead with Mini only when that model and mode are admitted', () => {
   const mini = engine('seedance-2-0-mini');
@@ -78,14 +92,16 @@ test('Kling and mandatory-audio H3 disclose the effective quote settings', () =>
   assert.match(rows['minimax-h3'].summary, /audio/i);
   assert.ok(rows['minimax-h3'].changes.some(change => change.label === 'Son' && change.after === 'Toujours activé'));
 });
-test('a source cannot be discarded or Modify silently turned into Text to Video', () => {
+test('an explicit other-model choice from Modify prepares Create without reusing its source', () => {
   const current = setup('luma-ray-3-2');
   current.form.mode = 'v2v';
   current.inputAssets.video_url = [{ id: 'source', assetId: 'source', fieldId: 'video_url', kind: 'video', name: 'source', type: 'video/mp4', size: 1, status: 'ready', url: 'https://example.com/source.mp4', previewUrl: 'https://example.com/source.mp4', durationSec: 8 }];
   const before = structuredClone(current);
   const rows = buildWorkspacePickerOptions({ current, engines, locale: 'fr', memberTier: 'Member' });
-  assert.ok(rows['flux-3-max'].disabledReason);
-  assert.equal(rows['flux-3-max'].request, null);
+  assert.equal(rows['flux-3-max'].disabledReason, undefined);
+  assert.equal(rows['flux-3-max'].request?.mode, 't2v');
+  assert.ok(!rows['flux-3-max'].request?.inputs?.some(input => input.assetId === 'source'));
+  assert.equal(rows['luma-ray-3-2'].request?.mode, 'v2v', 'current model retains Modify');
   assert.deepEqual(current, before);
 });
 test('missing Modify source produces a truthful prerequisite instead of quoting another mode', () => {

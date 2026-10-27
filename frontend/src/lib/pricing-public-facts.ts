@@ -14,6 +14,8 @@ import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { isWan3EngineId, withWan3InputVideoPricing } from '@/lib/wan3-pricing';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { calculateNano21ListImageComponents } from '@/lib/nano-banana-2-1-pricing';
 import {
   isGptImage25EngineId,
   calculateGptImage25ProviderPrice,
@@ -64,6 +66,10 @@ export type PublicPricingFactsContext = {
   lumaRay2BasePriceUsd?: number;
   useFlatImageUnitFacts?: boolean;
   useStandardDefinitionFacts?: boolean;
+  thinkingLevel?: string | null;
+  maxOutputTokens?: number;
+  enableWebSearch?: boolean;
+  enableImageSearch?: boolean;
 };
 
 export const DEFAULT_LUMA_RAY2_BASE_PRICE_USD = {
@@ -156,6 +162,11 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? (engine.modes.includes('t2i') ? 't2i' : 't2v');
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+  if (engine.id === NANO21_ENGINE_ID) {
+    const { partialListUsd, meta } = calculateNano21ListImageComponents({ ...context, mode }, currency);
+    return resultFromExactFacts({ engineId: engine.id, currency, exactCents: partialListUsd * 100,
+      presentedBaseCents: partialListUsd * 100, quantity: 1, unit: 'image', rate: partialListUsd, meta });
+  }
   if (context.useStandardDefinitionFacts) {
     return buildStandardDefinitionFacts(context, currency);
   }

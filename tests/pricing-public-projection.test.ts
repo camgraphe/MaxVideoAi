@@ -55,11 +55,14 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   const fluxMaxLaunch = JSON.parse(
     readFileSync('tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', 'utf8')
   ) as PublicProjectionFixture;
+  const nano21Launch = JSON.parse(
+    readFileSync('tests/fixtures/nano21-fixed-public-pricing-launch-2026-10-27.json', 'utf8')
+  ) as PublicProjectionFixture;
   assert.equal(fixture.version, 1);
   assert.equal(fixture.generatedFrom, 'canonical-public-pricing-paths');
   assert.ok(fixture.rows.length >= 250, `expected at least 250 public projection rows, got ${fixture.rows.length}`);
 
-  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows];
+  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows];
   const ids = rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, 'public projection scenario ids must be unique');
 
@@ -148,7 +151,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(589 rows\)/);
+  assert.match(result.stdout, /current \(598 rows\)/);
 });
 
 test('Max launch adds only normal-list-plus-30-percent public projections and reproduces offline', () => {

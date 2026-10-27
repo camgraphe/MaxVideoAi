@@ -7,6 +7,7 @@ import { traceModelPicker } from '@/lib/model-picker-diagnostics';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { getPickerRecommendations } from '@/lib/model-picker-policy';
+import { getEngineSelectPromotionRank } from '@/lib/engine-family-priority';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { EngineRegistryMeta } from './engine-select-types';
 import type { EnginePickerContext, PickerEstimateRequest } from './model-picker-types';
@@ -34,7 +35,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const groups = useMemo(() => getPickerRecommendations(engines, activeMode), [engines, activeMode]);
   const [tab, setTab] = useState<'selected' | 'all'>(() => initialAll || !groups.length ? 'all' : 'selected');
   const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId)).map(group => group.id)));
+  const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId || getEngineSelectPromotionRank(engine.id) !== Number.MAX_SAFE_INTEGER)).map(group => group.id)));
   const contextKey = context?.key ?? `${engineId}:${activeMode}`;
   const [draft, setDraft] = useState({ key: contextKey, id: engineId });
   const [view, setView] = useState<'list' | 'detail'>('list');
@@ -95,7 +96,7 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
     <div ref={dialogRef} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onKeyDown={onDialogKeyDown}>
       <header className={styles.header}>
         <div className={styles.titleLine}><h2 id={titleId} data-modal-initial-focus="true" tabIndex={-1}>{copy.title}</h2><button type="button" className={styles.iconButton} aria-label={copy.close} onClick={onClose}><X size={20} /></button></div>
-        <PickerPriceContext context={context} copy={copy} fallback={getModeLabel(engineId, activeMode, locale)} editable={view === 'list'} />
+        <PickerPriceContext context={context} copy={copy} fallback={getModeLabel(engineId, activeMode, locale)} editable={view === 'list'} onRetry={view === 'list' && hasError ? pricing.retry : undefined} />
         {view === 'list' ? <><div className={styles.search}><Search size={17} /><input ref={searchRef} type="search" value={query} aria-label={copy.search} placeholder={copy.search} onChange={event => setQuery(event.target.value)} />
           {query ? <button type="button" className={styles.iconButton} aria-label={copy.clear} onClick={() => { setQuery(''); searchRef.current?.focus(); }}><X size={16} /></button> : null}</div>
           <div className={styles.tabs} role="tablist" aria-label={copy.title}>
@@ -121,12 +122,12 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
           <p className={styles.note}>{context ? copy.priceNote : copy.preserved}</p>
         </div> : null}
       </div>
-      <footer className={styles.footer}><div><p>{context?.hasChanges && option?.changes.length ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
+      {view === 'detail' ? <footer className={styles.footer}><div><p>{context?.hasChanges && option?.changes.length ? copy.changes : copy.preserved}</p>{context ? <small>{copy.priceNote}</small> : null}{hasError ? <button type="button" className={styles.retry} onClick={pricing.retry}>{copy.retry}</button> : null}</div>
         <button type="button" className={styles.apply} disabled={draft.key !== contextKey || Boolean(disabled(view === 'detail' ? detailId ?? draft.id : draft.id))}
           onClick={() => apply(view === 'detail' && detailId ? detailId : draft.id)}>
           <span>{`${copy.use} ${labels(view === 'detail' ? detailId ?? draft.id : draft.id)}`}</span><ArrowRight size={17} aria-hidden="true" />
         </button>
-      </footer>
+      </footer> : null}
     </div>
   </div>, document.body);
 }

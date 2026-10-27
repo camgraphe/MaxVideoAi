@@ -1,8 +1,9 @@
 import {getFalEngineById} from '@/config/falEngines';
-import {STUDIO_CONVERSATION_MAX_ATTACHMENTS,STUDIO_CONVERSATION_MAX_REFERENCES} from '@/lib/studio/conversation-creation-contract';
+import {STUDIO_CONVERSATION_MAX_ATTACHMENTS,STUDIO_CONVERSATION_MAX_REFERENCES,studioImageReferenceLimit} from '@/lib/studio/conversation-creation-contract';
 
 /** Transport capacity follows authored media fields; canonical role/combined validation still applies. */
 export function studioGenerationReferenceLimit(modelId:string,surface:string,mode:string):number {
+  if(surface==='image')return studioImageReferenceLimit(modelId);
   if(surface==='video'&&modelId==='kling-v4')return mode==='ref2v'?43:mode==='v2v'?39:mode==='i2v'?2:0;
   if(surface==='video' && modelId==='luma-ray-3-2' && mode==='t2v') return 64;
   if(surface!=='video'||!['ref2v','v2v','extend'].includes(mode))return STUDIO_CONVERSATION_MAX_REFERENCES;

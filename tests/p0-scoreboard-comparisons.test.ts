@@ -95,7 +95,7 @@ test('all P0 models have complete sourced key specs', () => {
     'watermark',
     'releaseDate',
   ];
-  assert.equal(document.last_updated, '2026-10-20');
+  assert.equal(document.last_updated, '2026-10-27'); // Dataset date includes the separate Nano21 image row.
   for (const modelId of P0_IDS) {
     const row = document.specs.find(({ modelSlug }) => modelSlug === modelId);
     assert.ok(row, modelId);

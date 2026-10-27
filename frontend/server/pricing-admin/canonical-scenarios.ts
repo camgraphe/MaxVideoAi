@@ -11,6 +11,7 @@ import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario, PricingAuditSurface } from '@/lib/pricing-audit/types';
 import { getVersionedPricingPolicy, resolveLiveAudioPricingProfile } from '@/lib/pricing-policy-defaults';
 import { LIVE_MEMBERSHIP_DISCOUNTS, LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 
 import { PricingAdminError } from './errors';
 import { buildLiveProductPolicyScenarios, buildLiveProductPolicyFacts } from './product-policy-scenarios';
@@ -202,6 +203,12 @@ function quoteCanonicalScenarios(
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
+      if (scenario.engineId === NANO21_ENGINE_ID) {
+        return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
+          reason: 'product_policy_not_authoritative',
+          warning: 'Nano Banana 2.1 uses its fixed per-image customer tariff; percentage-policy previews cannot reprice it.',
+          policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };
+      }
       if (projection === 'live' && scenario.input.adminProduct === 'finishing' && policy.rule.engineId !== 'toolbox-finishing') {
         return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
           reason: 'product_policy_not_authoritative', warning: 'Finishing tools require an effective tool-specific pricing policy.',

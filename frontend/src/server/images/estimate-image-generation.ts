@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { listFalEngines } from '@/config/falEngines';
 import type { PricingSnapshot } from '@/types/engines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
@@ -32,7 +33,7 @@ import type { PublicPricingMembershipTier } from '@/lib/pricing-public-quote';
 
 export type ImageEstimateInput = Pick<
   ImageGenerationRequest,
-  'engineId' | 'mode' | 'numImages' | 'resolution' | 'quality' | 'aspectRatio'
+  'engineId' | 'mode' | 'numImages' | 'resolution' | 'quality' | 'aspectRatio' | 'thinkingLevel' | 'maxOutputTokens' | 'systemInstruction' | 'enableImageSearch'
 > & {
   referenceImageCount?: number;
   referenceImageSizes?: Array<{ width: number; height: number }>;
@@ -120,6 +121,7 @@ async function estimateImageGenerationInternal(
     throw new ImageEstimateError('engine_unavailable', 404);
   }
 
+  if (engineEntry.id === NANO21_ENGINE_ID && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable',404);
   const engine = engineEntry.engine;
   const numImages = clampRequestedImageCount(engine, mode, requestedImages);
   if (!engineEntry.modes.some((entry) => entry.mode === mode)) {
@@ -167,7 +169,11 @@ async function estimateImageGenerationInternal(
       ? referenceImageCount
       : undefined;
 
+  if (engine.id === NANO21_ENGINE_ID) assertNano21UnsupportedFields(input as unknown as Record<string, unknown>);
+  const nano21 = engine.id === NANO21_ENGINE_ID ? normalizeNano21Settings(input) : null;
+  if (nano21) assertNano21Scenario({ ...nano21, mode, referenceImageCount, outputCount: input.numImages, aspectRatio: input.aspectRatio });
   const pricing = await computeCanonicalPublicSnapshot({
+    ...(nano21 ? { ...nano21, referenceImageCount } : {}),
     engine,
     durationSec: numImages,
     aspectRatio: typeof input.aspectRatio === 'string' ? input.aspectRatio : undefined,
@@ -175,7 +181,7 @@ async function estimateImageGenerationInternal(
     mode,
     customImageSize,
     quality: typeof input.quality === 'string' ? input.quality : undefined,
-    referenceImageCount: pricedReferenceImageCount,
+    referenceImageCount: nano21 ? referenceImageCount : pricedReferenceImageCount,
     ...(isSeedreamEngineId(engine.id) ? { inputImageCount: mode === 'i2i' ? referenceImageCount : 0 } : {}),
     membershipTier: input.membershipTier,
     currency: engine.pricing?.currency ?? 'USD',
@@ -260,6 +266,7 @@ export async function estimateImageGeneration(
       referenceImageSizes: input.referenceImageSizes,
       membershipTier: input.membershipTier,
       enableWebSearch: input.enableWebSearch,
+      thinkingLevel: input.thinkingLevel, maxOutputTokens: input.maxOutputTokens, systemInstruction: input.systemInstruction, enableImageSearch: input.enableImageSearch,
     },
     true
   );

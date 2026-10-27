@@ -351,11 +351,6 @@ test('migrated app-enabled template links use the active engine id, not only the
     for (const locale of LOCALES) {
       const decision = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
-      // Functional access opens separately from Kling V4's deferred marketing launch.
-      if (slug === 'kling-v4') {
-        assert.equal(decision.hero.primaryCta.href, '#prompting');
-        continue;
-      }
       if (!engine.surfaces.app.enabled) {
         assert.doesNotMatch(decision.hero.primaryCta.href, /^\/app(?:\/image)?\?engine=/);
         continue;
