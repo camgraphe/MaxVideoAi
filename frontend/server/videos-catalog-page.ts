@@ -43,8 +43,12 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
     CASE WHEN p.id::text=$5::jsonb->>'playlistId' THEN ARRAY(SELECT jsonb_array_elements_text(COALESCE(NULLIF($5::jsonb->'draft'->'openingIds','null'::jsonb),'[]'::jsonb))) || ARRAY(SELECT jsonb_array_elements_text($5::jsonb->'draft'->'orderedIds')) ELSE ARRAY(SELECT jsonb_array_elements_text(NULLIF(to_jsonb(c)->'opening_ids','null'::jsonb))) || c.ordered_ids END AS ordered_ids,
     CASE WHEN p.id::text=$5::jsonb->>'playlistId' THEN ARRAY(SELECT jsonb_array_elements_text($5::jsonb->'draft'->'excludedIds')) ELSE c.excluded_ids END AS excluded_ids` : savedCurationColumns;
   const curationJoin = withCuration ? 'LEFT JOIN playlist_curations c ON c.playlist_id=p.id' : '';
+  const selectedMedia = BASE_SELECT.replace('FROM app_jobs', 'FROM selected_media AS app_jobs');
   // Count, selected IDs and media are evaluated in one PostgreSQL statement/snapshot.
-  // Only page membership reaches the expensive media/settings projection.
+  // Materialize only selected raw rows before evaluating media/settings projections.
+  // Otherwise PostgreSQL can pull up the marketing UNION and hydrate every job.
+  // Joining the overlay once also avoids decoding every publication per page item.
+  // OFFSET 0 keeps each dimension/settings projection behind its selected-ID filter.
   return `WITH source_specs AS (
     SELECT * FROM jsonb_to_recordset($1::jsonb) AS spec(slug text,source_rank int,parent_slug text,aliases text[])
   ), sources AS (
@@ -74,7 +78,9 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
   ), selected_page AS (
     SELECT job_id,ROW_NUMBER() OVER (ORDER BY ${SORT_SQL[sort]}) AS ordinal
     FROM unique_memberships ORDER BY ${SORT_SQL[sort]} LIMIT $3 OFFSET $4
-  ) ${idsOnly ? `SELECT totals.total,page.job_id,page.ordinal AS preview_ordinal,
+  )${idsOnly ? '' : `, selected_media AS MATERIALIZED (
+    SELECT app_jobs.* FROM app_jobs JOIN selected_page ON app_jobs.job_id=selected_page.job_id
+  )`} ${idsOnly ? `SELECT totals.total,page.job_id,page.ordinal AS preview_ordinal,
       ARRAY(SELECT slug FROM sources WHERE is_public=TRUE AND id NOT IN (SELECT id FROM active_sources) ORDER BY slug) AS suppressed_source_slugs
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,${includeVersionSamples ? `
@@ -85,7 +91,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
       ) END AS version_samples,` : ''}media.*
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE
-    LEFT JOIN LATERAL (${BASE_SELECT} WHERE app_jobs.job_id=page.job_id) media ON TRUE
+    LEFT JOIN LATERAL (${selectedMedia} WHERE app_jobs.job_id=page.job_id OFFSET 0) media ON TRUE
     ORDER BY page.ordinal`}`;
 }
 
