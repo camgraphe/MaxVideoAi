@@ -970,7 +970,10 @@
           "24 fps"
         ],
         "audioOutput": "Optional generated audio",
-        "nativeAudioGeneration": "Optional"
+        "nativeAudioGeneration": "Optional",
+        "outputFormats": [
+          "MP4"
+        ]
       }
     },
     {
@@ -1508,7 +1511,11 @@
           "16:9",
           "21:9"
         ],
-        "audioOutput": "Not supported"
+        "audioOutput": "Not supported",
+        "outputFormats": [
+          "Provider-selected image format"
+        ],
+        "releaseDate": "Oct 2026"
       }
     },
     {
@@ -1887,6 +1894,45 @@
         "durationOptions": "5-20 seconds in whole-second increments; default 5 seconds",
         "reasoningLevel": "Low or high; default high",
         "referenceLimit": "1-10 keyframe images; unique frame indices from 0 through duration × 24"
+      }
+    },
+    {
+      "modelSlug": "kling-v4",
+      "sources": [
+        "https://fal.ai/models/kling/v4/reference-to-video/api",
+        "https://fal.ai/models/kling/v4/image-to-video/api"
+      ],
+      "provenance": {
+        "basis": "maxvideoai-production-route-contract",
+        "note": "MaxVideoAI route contract at 5f91109bd; provider documentation already reviewed on 27 October 2026. Capability descriptions do not certify output quality."
+      },
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (video editing)",
+        "firstLastFrame": "Supported (start + end image in i2v)",
+        "referenceImageStyle": "Up to 10 images total, including the opening image",
+        "referenceVideo": "Up to 5 reference videos; 30s combined with video elements",
+        "maxResolution": "720p / 1080p",
+        "maxDuration": "3–30s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "21:9"
+        ],
+        "fpsOptions": [
+          "Provider-set; no FPS selector"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Native audio directed by prompt; no audio switch",
+        "lipSync": "Prompt-directed native dialogue",
+        "cameraMotionControls": "Prompt-based camera and multi-shot control",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Oct 2026"
       }
     }
   ]

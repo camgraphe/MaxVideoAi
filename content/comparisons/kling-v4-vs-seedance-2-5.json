@@ -1,0 +1,84 @@
+{
+  "slug": "kling-v4-vs-seedance-2-5",
+  "en": {
+    "meta": {
+      "title": "Kling 4.0 vs Seedance 2.5: videos, audio and formats",
+      "description": "Watch Kling 4.0 and Seedance 2.5 examples, then compare clip length, audio, output formats and video extension for your project.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Watch the examples, then choose by clip length, audio and whether you need to extend a video.",
+    "heroIntro": "Compare the available workflows and settings for your next video.",
+    "primaryLinksTitle": "Explore each model",
+    "primaryLinks": [
+      {"href": "/models/kling-v4", "label": "Kling 4.0: workflows and settings"},
+      {"href": "/models/seedance-2-5", "label": "Seedance 2.5: workflows and settings"}
+    ],
+    "faq": {
+      "title": "Choose for your project",
+      "items": [
+        {
+          "question": "Which settings make the difference?",
+          "answer": "Kling 4.0 creates 3–30-second clips at 720p or 1080p, with audio always generated. Seedance 2.5 offers 4–30-second creation, an audio switch, 480p output and a separate video-extension mode. Both support text, images, references and video editing. Check the settings for the mode you intend to use."
+        },
+        {
+          "question": "How should I compare the examples?",
+          "answer": "These are independent examples, with prompts and settings that may differ. Use them to explore each model’s output for your project."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 4.0 vs Seedance 2.5 : vidéos, audio et formats",
+      "description": "Regardez les exemples Kling 4.0 et Seedance 2.5, puis comparez durée, audio, formats de sortie et prolongation vidéo pour votre projet.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Regardez les exemples, puis choisissez selon la durée, l’audio et votre besoin de prolonger une vidéo.",
+    "heroIntro": "Comparez les usages et les réglages disponibles pour votre prochaine vidéo.",
+    "primaryLinksTitle": "Explorer chaque modèle",
+    "primaryLinks": [
+      {"href": "/fr/modeles/kling-v4", "label": "Kling 4.0 : usages et réglages"},
+      {"href": "/fr/modeles/seedance-2-5", "label": "Seedance 2.5 : usages et réglages"}
+    ],
+    "faq": {
+      "title": "Choisir pour votre projet",
+      "items": [
+        {
+          "question": "Quels réglages font la différence ?",
+          "answer": "Kling 4.0 crée des clips de 3 à 30 secondes en 720p ou 1080p, avec un audio toujours généré. Seedance 2.5 propose une création de 4 à 30 secondes, un choix audio, une sortie 480p et un mode de prolongation vidéo. Les deux acceptent texte, images, références et édition vidéo. Vérifiez les réglages du mode choisi."
+        },
+        {
+          "question": "Comment comparer les exemples ?",
+          "answer": "Ce sont des exemples indépendants, dont les prompts et les réglages peuvent varier. Ils permettent d’explorer le rendu de chaque modèle pour votre projet."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 4.0 vs Seedance 2.5: videos, audio y formatos",
+      "description": "Mira ejemplos de Kling 4.0 y Seedance 2.5 y compara duración, audio, formatos de salida y extensión de video para tu proyecto.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Mira los ejemplos y elige según la duración, el audio y si necesitas extender un video.",
+    "heroIntro": "Compara los flujos y ajustes disponibles para tu próximo video.",
+    "primaryLinksTitle": "Explorar cada modelo",
+    "primaryLinks": [
+      {"href": "/es/modelos/kling-v4", "label": "Kling 4.0: usos y ajustes"},
+      {"href": "/es/modelos/seedance-2-5", "label": "Seedance 2.5: usos y ajustes"}
+    ],
+    "faq": {
+      "title": "Elegir para tu proyecto",
+      "items": [
+        {
+          "question": "¿Qué ajustes marcan la diferencia?",
+          "answer": "Kling 4.0 crea clips de 3 a 30 segundos en 720p o 1080p, siempre con audio generado. Seedance 2.5 ofrece creación de 4 a 30 segundos, audio opcional, salida en 480p y un modo para extender videos. Ambos admiten texto, imágenes, referencias y edición de video. Revisa los ajustes del modo que vas a usar."
+        },
+        {
+          "question": "¿Cómo comparo los ejemplos?",
+          "answer": "Son ejemplos independientes, con prompts y ajustes que pueden variar. Úsalos para explorar los resultados de cada modelo para tu proyecto."
+        }
+      ]
+    }
+  }
+}

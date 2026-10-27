@@ -14,9 +14,14 @@ import { parseComparePageContentDocument } from '../frontend/app/(localized)/[lo
 
 const PAIR = 'kling-o3-pro-vs-kling-v4';
 const currentModels = () => structuredClone(listRuntimeModels());
+const privatePreviewModels = () => {
+  const models = currentModels();
+  models.find(model => model.id === 'kling-v4')!.publication.model.indexable = false;
+  return models;
+};
 
 test('private model previews cannot acquire a New menu badge or displace public discovery', () => {
-  const models = currentModels();
+  const models = privatePreviewModels();
   const current = buildMarketingModelMenu(models);
   assert.equal(current.some(item => item.slug === 'kling-v4'), false);
   assert.equal(selectCurrentModelCatalogSlugs(models).includes('kling-v4'), false);
@@ -38,14 +43,16 @@ test('prepared comparison content passes the existing localized route contract',
   }
 });
 
-test('future published V4 gains exactly one New menu card without expanding the menu', () => {
-  const models = currentModels();
+test('published V4 gains exactly one New menu card while retaining the existing entries', () => {
+  const models = privatePreviewModels();
+  const previous = buildMarketingModelMenu(models);
   models.find(model => model.id === 'kling-v4')!.publication.model.indexable = true;
   const menu = buildMarketingModelMenu(models);
   assert.equal(menu.filter(item => item.slug === 'kling-v4').length, 1);
   assert.equal(menu.find(item => item.slug === 'kling-v4')?.badge, 'new');
   assert.equal(menu.find(item => item.slug === 'kling-v4')?.brandId, 'kling');
-  assert.ok(menu.length <= 11);
+  assert.equal(menu.length, previous.length + 1);
+  assert.deepEqual(menu.filter(item => item.slug !== 'kling-v4'), previous);
   assert.ok(menu.some(item => item.slug === 'kling-3-pro'));
   const catalog = selectCurrentModelCatalogSlugs(models);
   assert.ok(catalog.indexOf('kling-v4') < catalog.indexOf('kling-3-pro'));
@@ -55,7 +62,7 @@ test('future published V4 gains exactly one New menu card without expanding the 
 test('the prepared same-family comparison remains hidden until publication and review', () => {
   const models = currentModels();
   assert.equal(buildMarketingCompareMenu(models).some(item => item.slug === PAIR), false);
-  assert.equal(buildDefaultModelCompareHref('kling-v4'), null);
+  assert.equal(buildDefaultModelCompareHref('kling-v4')?.params?.slug, 'kling-v4-vs-seedance-2-5');
   const model = models.find(entry => entry.id === 'kling-v4')!;
   model.publication.compare = {
     published: true, indexed: true,

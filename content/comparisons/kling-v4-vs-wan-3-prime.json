@@ -1,0 +1,84 @@
+{
+  "slug": "kling-v4-vs-wan-3-prime",
+  "en": {
+    "meta": {
+      "title": "Kling 4.0 vs Wan 3 Prime: videos, audio and extension",
+      "description": "Watch Kling 4.0 and Wan 3 Prime examples. Compare clip length, audio options, output resolutions and video extension before choosing a workflow.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Watch the examples, then compare audio options, clip length and video extension for your next scene.",
+    "heroIntro": "Choose the workflow that fits your source material and intended result.",
+    "primaryLinksTitle": "Explore each model",
+    "primaryLinks": [
+      {"href": "/models/kling-v4", "label": "Kling 4.0: workflows and settings"},
+      {"href": "/models/wan-3-prime", "label": "Wan 3 Prime: workflows and settings"}
+    ],
+    "faq": {
+      "title": "Choose for your project",
+      "items": [
+        {
+          "question": "Which workflow fits my scene?",
+          "answer": "Kling 4.0 creates 3–30-second clips at 720p or 1080p, with audio always generated. Wan 3 Prime offers 2–30-second creation, optional audio, 480p output and a separate video-extension mode. Both support image and video references. Editing and extension have their own source-duration limits; check these before choosing a mode."
+        },
+        {
+          "question": "How should I compare the examples?",
+          "answer": "These are independent examples, with prompts and settings that may differ. Use them to explore each model’s output for your project."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 4.0 vs Wan 3 Prime : vidéos, audio et prolongation",
+      "description": "Regardez les exemples Kling 4.0 et Wan 3 Prime. Comparez durée, options audio, résolutions et prolongation vidéo avant de choisir votre parcours.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Regardez les exemples, puis comparez les options audio, la durée et la prolongation pour votre prochaine scène.",
+    "heroIntro": "Choisissez le parcours adapté à vos sources et au résultat recherché.",
+    "primaryLinksTitle": "Explorer chaque modèle",
+    "primaryLinks": [
+      {"href": "/fr/modeles/kling-v4", "label": "Kling 4.0 : usages et réglages"},
+      {"href": "/fr/modeles/wan-3-prime", "label": "Wan 3 Prime : usages et réglages"}
+    ],
+    "faq": {
+      "title": "Choisir pour votre projet",
+      "items": [
+        {
+          "question": "Quel parcours convient à ma scène ?",
+          "answer": "Kling 4.0 crée des clips de 3 à 30 secondes en 720p ou 1080p, avec un audio toujours généré. Wan 3 Prime propose une création de 2 à 30 secondes, un audio facultatif, une sortie 480p et un mode de prolongation vidéo. Les deux acceptent des références image et vidéo. L’édition et la prolongation ont leurs propres limites de durée des sources, à vérifier avant de choisir le mode."
+        },
+        {
+          "question": "Comment comparer les exemples ?",
+          "answer": "Ce sont des exemples indépendants, dont les prompts et les réglages peuvent varier. Ils permettent d’explorer le rendu de chaque modèle pour votre projet."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 4.0 vs Wan 3 Prime: videos, audio y extensión",
+      "description": "Mira ejemplos de Kling 4.0 y Wan 3 Prime. Compara duración, opciones de audio, resoluciones y extensión de video antes de elegir cómo crear.",
+      "titleBranding": "auto"
+    },
+    "decisionSummary": "Mira los ejemplos y compara las opciones de audio, la duración y la extensión para tu próxima escena.",
+    "heroIntro": "Elige el flujo adecuado para tu material de origen y el resultado que buscas.",
+    "primaryLinksTitle": "Explorar cada modelo",
+    "primaryLinks": [
+      {"href": "/es/modelos/kling-v4", "label": "Kling 4.0: usos y ajustes"},
+      {"href": "/es/modelos/wan-3-prime", "label": "Wan 3 Prime: usos y ajustes"}
+    ],
+    "faq": {
+      "title": "Elegir para tu proyecto",
+      "items": [
+        {
+          "question": "¿Qué flujo encaja con mi escena?",
+          "answer": "Kling 4.0 crea clips de 3 a 30 segundos en 720p o 1080p, siempre con audio generado. Wan 3 Prime ofrece creación de 2 a 30 segundos, audio opcional, salida en 480p y un modo para extender videos. Ambos admiten referencias de imagen y video. La edición y la extensión tienen límites propios de duración del material de origen; revísalos antes de elegir el modo."
+        },
+        {
+          "question": "¿Cómo comparo los ejemplos?",
+          "answer": "Son ejemplos independientes, con prompts y ajustes que pueden variar. Úsalos para explorar los resultados de cada modelo para tu proyecto."
+        }
+      ]
+    }
+  }
+}

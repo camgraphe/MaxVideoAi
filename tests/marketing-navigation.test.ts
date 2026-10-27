@@ -91,7 +91,7 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public dropdowns limit launch badges to six current models with none on comparisons', () => {
+test('public dropdowns limit launch badges to the seven promoted current models with none on comparisons', () => {
   const badgedEntries = Object.values(MARKETING_NAV_DROPDOWNS)
     .flatMap((dropdown) => dropdown?.items ?? [])
     .filter(({ badge }) => badge === 'new')
@@ -102,6 +102,7 @@ test('public dropdowns limit launch badges to six current models with none on co
     'minimax-h3',
     'minimax-h3-max',
     'seedance-2-5',
+    'kling-v4',
     'wan-3',
     'wan-3-prime',
   ]);

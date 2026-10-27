@@ -62,6 +62,7 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
     'seedance-2-0',
     'kling-3-pro',
     'veo-3-1',
+    'kling-v4',
   ]);
   assert.deepEqual(model.publication.compare.publishedPairIds, [
     'seedance-2-0',
@@ -70,6 +71,7 @@ test('Seedance 2.5 is the public flagship across every product surface', () => {
     'minimax-h3-max',
     'veo-3-1',
     'wan-3',
+    'kling-v4',
   ]);
   assert.equal(model.publication.app.discoveryRank, -3);
   assert.equal(model.publication.app.variantGroup, 'seedance-2-0');

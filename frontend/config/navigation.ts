@@ -130,15 +130,18 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
 export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const bySlug = new Map(models.map((model) => [model.slug, model]));
   const byId = new Map(models.map((model) => [model.id, model]));
-  return MODEL_MENU_CANDIDATES
+  const visibleCandidates = MODEL_MENU_CANDIDATES
     .filter(({ slug }) => {
       const model = bySlug.get(slug);
       if (!model?.publication.model.published || !model.publication.model.indexable || model.lifecycle === 'retired' || model.lifecycle === 'deep_legacy') return false;
       if (model.lifecycle !== 'legacy' || !model.successorId) return true;
       const successor = byId.get(model.successorId);
       return !successor?.publication.model.published || !successor.publication.model.indexable;
-    })
-    .slice(0, 11)
+    });
+  // The new Kling card adds one slot instead of evicting an existing model.
+  const capacity = 11 + Number(visibleCandidates.some(({ slug }) => slug === 'kling-v4'));
+  return visibleCandidates
+    .slice(0, capacity)
     .map((item) => {
       const model = bySlug.get(item.slug);
       return {

@@ -43,6 +43,9 @@ test('unready admin model destinations are missing until their exact collection 
 test('Kling V4 can be curated while the family and discovery gates are explicitly closed', async () => {
   const models = listRuntimeModels().map(model => structuredClone(model));
   const beforeFamilyOpening = models.find(model => model.id === 'kling-v4')!;
+  beforeFamilyOpening.publication.model.indexable = false;
+  beforeFamilyOpening.publication.compare.published = false;
+  beforeFamilyOpening.publication.sitemap.published = false;
   beforeFamilyOpening.publication.examples.current = false;
   beforeFamilyOpening.publication.examples.includeInFamilyCopy = false;
   const { buildPlaylistDestinations } = await import('../frontend/server/playlists/destinations');

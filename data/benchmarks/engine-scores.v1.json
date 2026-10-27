@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-10-20",
+  "last_updated": "2026-10-27",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -675,6 +675,21 @@
         "speedStability": "low",
         "pricing": "medium"
       }
+    },
+    {
+      "modelSlug": "kling-v4",
+      "fidelity": 9.1,
+      "visualQuality": 9.3,
+      "motion": 9.2,
+      "consistency": 9.2,
+      "anatomy": 9.0,
+      "textRendering": 8.2,
+      "lipsyncQuality": 9.1,
+      "sequencingQuality": 9.3,
+      "controllability": 9.3,
+      "speedStability": 7.5,
+      "pricing": 8.4,
+      "last_updated": "2026-10-27"
     }
   ]
 }
