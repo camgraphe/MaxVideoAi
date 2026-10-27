@@ -79,7 +79,17 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
+    const root = document.documentElement;
+    const previousMarginRight = root.style.marginRight;
+    const previousWidth = root.getBoundingClientRect().width;
     document.body.style.overflow = 'hidden';
+    // Reserve only the width actually released by the scrollbar. A stable CSS
+    // gutter can already do this; custom macOS scrollbars may still release it.
+    const releasedGutter = root.getBoundingClientRect().width - previousWidth;
+    if (releasedGutter > 0) {
+      const marginRight = Number.parseFloat(window.getComputedStyle(root).marginRight) || 0;
+      root.style.marginRight = `${marginRight + releasedGutter}px`;
+    }
 
     const focusTimer = window.setTimeout(() => {
       const dialog = dialogRef.current;
@@ -95,6 +105,7 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
     return () => {
       window.clearTimeout(focusTimer);
       document.body.style.overflow = previousOverflow;
+      if (releasedGutter > 0) root.style.marginRight = previousMarginRight;
       if (opener?.isConnected) {
         opener.focus();
       }
