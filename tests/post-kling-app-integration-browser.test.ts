@@ -141,7 +141,10 @@ test('assembled app keeps guest mode/source state, source guards and localized s
         assert.equal((await state()).recovery.prompt,'Previous synthetic account setup');
         assert.equal(await page.evaluate(()=>sessionStorage.getItem('maxvideoai:guest-creation:v1')),null);
         const reference=composer.locator('[data-reference-command]').first();await reference.click();
-        await expect(page.getByRole('dialog')).toBeVisible();await page.keyboard.press('Escape');
+        const dialog=page.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.locator('[data-modal-initial-focus]')).toBeFocused();
+        await page.keyboard.press('Escape');
         await expect(page.getByRole('dialog')).toHaveCount(0);await expect(reference).toBeFocused();
         await capture('restored');
         assert.deepEqual(await composer.locator('[data-composer-mode]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-composer-mode'))),['t2v','i2v','ref2v','v2v'],'Kling keeps its four native modes and does not acquire Extend');
