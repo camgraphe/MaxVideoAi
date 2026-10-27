@@ -517,9 +517,17 @@ export function useLoginPageController({
 
   const handleEmailChange = useCallback((value: string) => {
     setEmail(value);
-    setUnconfirmedEmail(null);
+    if (value !== email) {
+      setUnconfirmedEmail(null);
+      setError((current) => current && [
+        authCopy.feedback.emailNotConfirmed,
+        authCopy.feedback.confirmationRateLimited,
+        authCopy.feedback.confirmationUnavailable,
+      ].includes(current) ? null : current);
+      setStatus((current) => current === authCopy.feedback.confirmationResent ? null : current);
+    }
     clearFieldError('email');
-  }, [clearFieldError]);
+  }, [authCopy, clearFieldError, email]);
 
   const handlePasswordChange = useCallback((value: string) => {
     setPassword(value);

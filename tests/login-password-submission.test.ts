@@ -37,7 +37,7 @@ async function mount(mode = 'signup', locale = 'en') {
     await change('#auth-confirm','SyntheticPassword123!');
     await w.fx.act(async () => { const boxes=w.document.querySelectorAll<HTMLInputElement>('input[type=checkbox]'); boxes[0].click(); boxes[1].click(); });
   }
-  return { w, requests, resendRequests, resendInputs, client, get consents(){return consents;},
+  return { w, requests, resendRequests, resendInputs, client, change, get consents(){return consents;},
     get submit(){return w.document.querySelector<HTMLButtonElement>('button[type=submit]')!;},
     async submitTwice() { await w.fx.act(async () => { const form=w.document.querySelector('form')!; form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})); form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})); }); },
     async dispose(){await w.fx.act(async()=>w.fx.unmount());w.close();}
@@ -70,6 +70,39 @@ test('unconfirmed email offers one explicit resend without suggesting account cr
     assert.equal(resend.disabled, true);
     await f.w.fx.act(async () => f.resendRequests[0].resolve({ error: null }));
     assert.match(f.w.controller.status ?? '', /check your inbox/i);
+    assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+  } finally { await f.dispose(); }
+});
+
+test('unconfirmed guidance belongs only to the email that received the auth error', async () => {
+  const f = await mount('signin');
+  try {
+    assert.equal(f.w.controller.unconfirmedEmail, null);
+    assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+    await f.submitTwice();
+    await f.w.fx.act(async () => f.requests[0].resolve({ data: { user: null, session: null }, error: { code: 'email_not_confirmed', status: 400, message: 'Email not confirmed' } }));
+    assert.match(f.w.controller.error ?? '', /Confirm your email/);
+    assert.ok(f.w.document.querySelector('[data-testid="resend-confirmation"]'));
+    await f.change('#auth-email', 'other@example.invalid');
+    assert.equal(f.w.controller.email, 'other@example.invalid');
+    assert.equal(f.w.controller.unconfirmedEmail, null);
+    assert.equal(f.w.controller.error, null);
+    assert.doesNotMatch([...f.w.document.querySelectorAll('[role="alert"]')].map(node => node.textContent).join(' '), /Confirm your email/);
+    assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+    await f.change('#auth-email', 'synthetic@example.invalid');
+    assert.equal(f.w.controller.error, null);
+    assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+    assert.equal(f.resendRequests.length, 0);
+  } finally { await f.dispose(); }
+});
+
+test('editing the email does not erase an unrelated provider error', async () => {
+  const f = await mount('signin');
+  try {
+    await f.submitTwice();
+    await f.w.fx.act(async () => f.requests[0].resolve({ data: { user: null, session: null }, error: { code: 'provider_unavailable', status: 503, message: 'Provider unavailable' } }));
+    await f.change('#auth-email', 'other@example.invalid');
+    assert.equal(f.w.controller.error, 'Provider unavailable');
     assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
   } finally { await f.dispose(); }
 });
