@@ -52,10 +52,14 @@ test('the real Studio route preserves safe failure explanations, locale and term
       if(proof)for(let index=0;index<3;index++)await cards.nth(index).screenshot({path:join(proof,'captures',`${locale}-${['moderation-refunded','moderation-not-refunded','reason-unavailable'][index]}.png`)});
       const help=cards.nth(0).locator('[data-safety-guidance]');
       const helpSummary=help.locator('summary');
+      await expect(helpSummary).toContainText(locale==='fr'?'Contrôle de sécurité : que vérifier ?':locale==='es'?'Control de seguridad: ¿qué revisar?':'Safety check: what to review');
       await expect(help).not.toHaveAttribute('open','');
       await helpSummary.focus();await helpSummary.press('Enter');
       await expect(help).toHaveAttribute('open','');
       for(const paragraph of await help.locator('p').all())await expect(paragraph).toBeVisible();
+      await expect(help.locator('p').first()).toContainText(locale==='fr'?/mots.*sens.*contexte/:locale==='es'?/palabras.*significado.*contexto/:/words.*meaning.*context/);
+      await expect(help.locator('p').nth(1)).toContainText(locale==='fr'?/Dans le prompt et les références, évitez/:locale==='es'?/En el prompt y las referencias, evita/:/In the prompt and references, avoid/);
+      await expect(help.locator('p').last()).toContainText(locale==='fr'?/Relisez le prompt et les médias de référence/:locale==='es'?/Revisa el prompt y los medios de referencia/:/Review the prompt and reference media/);
       await expect(help.getByRole('link')).toHaveAttribute('href','https://policies.google.com/terms/generative-ai/use-policy?hl='+locale);
       if(proof)await cards.nth(0).screenshot({path:join(proof,'captures',`${locale}-safety-help-expanded.png`)});
       await helpSummary.press('Space');await expect(help).not.toHaveAttribute('open','');

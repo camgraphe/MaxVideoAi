@@ -199,9 +199,9 @@ function failedTurn(message = googleFailure, paymentStatus: NonNullable<ImageCon
 }
 
 for (const [locale, label, meaning, examples, uncertainty] of [
-  ['en', 'Understand this refusal', /wording.*meaning.*reference media/i, /sexually explicit.*graphic violence.*hate.*minors/i, /does not.*exact.*guarantee/i],
-  ['fr', 'Comprendre ce refus', /formulation.*sens.*médias de référence/i, /sexuel explicite.*violence graphique.*haine.*mineurs/i, /ne précise pas.*garantit pas/i],
-  ['es', 'Entender este rechazo', /redacción.*significado.*medios de referencia/i, /sexual explícito.*violencia gráfica.*odio.*menores/i, /no siempre.*garantiza/i],
+  ['en', 'Safety check: what to review', /words.*meaning.*context.*reference images/i, /explicit sexual.*graphic violence.*hate.*minors/i, /does not always identify.*may still be refused/i],
+  ['fr', 'Contrôle de sécurité : que vérifier ?', /mots.*sens.*contexte.*images/i, /sexuel explicite.*violence graphique.*haine.*mineurs/i, /ne précise pas forcément.*peut encore entraîner un refus/i],
+  ['es', 'Control de seguridad: ¿qué revisar?', /palabras.*significado.*contexto.*imágenes/i, /sexual explícito.*violencia gráfica.*odio.*menores/i, /no siempre identifica.*puede seguir provocando un rechazo/i],
 ] as const) {
   test(`Google moderation help explains content checks without guessing the trigger (${locale})`, async () => {
     const view = await mountCard({ turn: failedTurn(), locale });

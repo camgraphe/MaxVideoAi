@@ -18,24 +18,24 @@ export function conversationGoogleSafetyHelp(
     || !/^Google blocked this request during safety checks\./i.test(safeFailureMessage(generation.message) ?? '')) return null;
   const copy = {
     en: {
-      label: 'Understand this refusal',
-      explanation: 'Google may assess the wording and meaning of the prompt, reference media and generated content.',
-      examples: 'Avoid sexually explicit content, graphic violence, hate or harassment, exploitation of minors, and instructions for dangerous or illegal acts.',
-      next: 'Describe a permitted scene clearly and remove problematic content from the prompt and references. Google does not always identify the exact trigger; rewording does not guarantee acceptance.',
+      label: 'Safety check: what to review',
+      explanation: 'Google may assess the words, meaning and context of the prompt, as well as reference images or videos and generated content. The refusal does not always identify the exact trigger.',
+      examples: 'In the prompt and references, avoid explicit sexual content, graphic violence, hate or harassment, exploitation of minors, dangerous or illegal instructions, and other people’s private information.',
+      next: 'Review the prompt and reference media, then describe a permitted scene without the problematic elements. Changing a few words while keeping the same meaning may still be refused.',
       policy: 'Google content rules',
     },
     fr: {
-      label: 'Comprendre ce refus',
-      explanation: 'Google peut analyser la formulation et le sens du prompt, les médias de référence et le contenu généré.',
-      examples: 'À éviter : contenu sexuel explicite, violence graphique, haine ou harcèlement, exploitation de mineurs et instructions d’actes dangereux ou illégaux.',
-      next: 'Décrivez clairement une scène autorisée et retirez les éléments problématiques du prompt et des références. Google ne précise pas toujours l’élément en cause ; reformuler ne garantit pas l’acceptation.',
+      label: 'Contrôle de sécurité : que vérifier ?',
+      explanation: 'Google peut examiner les mots, le sens et le contexte du prompt, ainsi que les images ou vidéos de référence et le résultat généré. Le message ne précise pas forcément ce qui a déclenché le refus.',
+      examples: 'Dans le prompt et les références, évitez notamment le contenu sexuel explicite, la violence graphique, la haine ou le harcèlement, l’exploitation de mineurs, les instructions dangereuses ou illégales et les informations privées d’autrui.',
+      next: 'Relisez le prompt et les médias de référence, puis décrivez une scène autorisée sans les éléments problématiques. Changer quelques mots en gardant le même sens peut encore entraîner un refus.',
       policy: 'Règles Google sur les contenus',
     },
     es: {
-      label: 'Entender este rechazo',
-      explanation: 'Google puede analizar la redacción y el significado del prompt, los medios de referencia y el contenido generado.',
-      examples: 'Evita el contenido sexual explícito, la violencia gráfica, el odio o el acoso, la explotación de menores y las instrucciones para actos peligrosos o ilegales.',
-      next: 'Describe claramente una escena permitida y elimina los elementos problemáticos del prompt y las referencias. Google no siempre indica el motivo exacto; reformular no garantiza la aceptación.',
+      label: 'Control de seguridad: ¿qué revisar?',
+      explanation: 'Google puede evaluar las palabras, el significado y el contexto del prompt, además de las imágenes o los vídeos de referencia y el contenido generado. El rechazo no siempre identifica el motivo exacto.',
+      examples: 'En el prompt y las referencias, evita el contenido sexual explícito, la violencia gráfica, el odio o el acoso, la explotación de menores, las instrucciones peligrosas o ilegales y los datos privados de otras personas.',
+      next: 'Revisa el prompt y los medios de referencia; después, describe una escena permitida sin los elementos problemáticos. Cambiar unas palabras sin cambiar el sentido puede seguir provocando un rechazo.',
       policy: 'Normas de contenido de Google',
     },
   }[locale];
