@@ -70,6 +70,15 @@ test('batch boundaries keep one transactional price owner and no runtime coeffic
   assert.match(migration, /DEFAULT FALSE/); assert.doesNotMatch(migration, /INSERT INTO app_customer_tariff_cells/);
 });
 
+test('only batch confirmation is placed beside the Ohio database without relaxing transaction bounds', () => {
+  const config = JSON.parse(readFileSync('frontend/vercel.json', 'utf8'));
+  assert.deepEqual(config.functions?.['app/api/admin/pricing/tariffs/batches/confirm/route.ts'], { regions: ['cle1'] });
+  assert.equal(config.regions, undefined, 'The rest of the application retains its existing regional policy.');
+  const service = readFileSync('frontend/server/pricing-admin/tariff-batches/service.ts', 'utf8');
+  assert.match(service, /SET LOCAL transaction_timeout = '5000ms'/);
+  assert.match(service, /SET LOCAL lock_timeout = '1000ms'/);
+});
+
 
 test('local admission rejects ambiguous or remote database URLs', async () => {
   const { tariffBatchIdentity } = await import('../frontend/server/pricing-admin/tariff-batches/environment');

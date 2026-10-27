@@ -141,8 +141,18 @@ export async function confirmTariffBatch(id: string, expectedFingerprint: string
   const claim = await claimTariffBatch(id, expectedFingerprint, actorId);
   if (!claim.claimed) return claim.operation;
   let operation: TariffBatchOperation;
-  try { operation = await applyTariffBatch(id, actorId, claim.operation.epoch); }
-  catch { operation = await reconcileTariffBatch(id, actorId); }
+  const applyStartedAt = performance.now();
+  try {
+    operation = await applyTariffBatch(id, actorId, claim.operation.epoch);
+    console.info('[pricing-admin] Tariff batch apply completed', { operationId: id, status: operation.status,
+      elapsedMs: Math.ceil(performance.now() - applyStartedAt), region: process.env.VERCEL_REGION ?? 'local' });
+  } catch (error) {
+    const code = (error as { code?: unknown })?.code;
+    console.warn('[pricing-admin] Tariff batch apply needs reconciliation', { operationId: id,
+      elapsedMs: Math.ceil(performance.now() - applyStartedAt), region: process.env.VERCEL_REGION ?? 'local',
+      code: typeof code === 'string' && /^[A-Z0-9_]{1,40}$/.test(code) ? code : 'UNKNOWN' });
+    operation = await reconcileTariffBatch(id, actorId);
+  }
   if (operation.status === 'committed' && operation.receipt?.changes.length) {
     try { return await refreshTariffBatchPages(id, actorId, revalidate); }
     catch { return { ...operation, operationalWarnings: ['Prices committed. Page refresh is pending; retry page refresh only.'] }; }

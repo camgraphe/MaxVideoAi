@@ -58,7 +58,8 @@ test('source, actor, fingerprint and global revision are checked before any tari
   assert.equal(rejected.status, 'not_applied'); assert.equal((await counts(db)).cells, '0');
 }));
 
-test('a failure after an earlier row or in the receipt rolls back cells, versions, events and revision', async () => fixture(async ({ db }) => {
+test('a failure after an earlier row or in the receipt rolls back cells, versions, events and revision', async t => fixture(async ({ db }) => {
+  const warnings = t.mock.method(console, 'warn', () => {});
   await db.pool.query(`CREATE FUNCTION fail_batch_event() RETURNS trigger AS $$ BEGIN
     IF (SELECT count(*) FROM app_pricing_change_events) > 0 THEN RAISE EXCEPTION 'injected event failure'; END IF; RETURN NEW; END; $$ LANGUAGE plpgsql;
     CREATE TRIGGER fail_batch_event BEFORE INSERT ON app_pricing_change_events FOR EACH ROW EXECUTE FUNCTION fail_batch_event();`);
@@ -70,6 +71,15 @@ test('a failure after an earlier row or in the receipt rolls back cells, version
     CREATE TRIGGER fail_batch_receipt BEFORE INSERT ON app_tariff_batch_receipts FOR EACH ROW EXECUTE FUNCTION fail_batch_receipt();`);
   assert.equal((await confirm(await previewTariffBatch(proposal(), actor))).status, 'not_applied');
   assert.deepEqual(await counts(db), { revision: '0', cells: '0', versions: '0', events: '0', receipts: '0' });
+  assert.equal(warnings.mock.callCount(), 2);
+  for (const { arguments: args } of warnings.mock.calls) {
+    assert.equal(args[0], '[pricing-admin] Tariff batch apply needs reconciliation');
+    const diagnostic = args[1] as Record<string, unknown>;
+    assert.deepEqual(Object.keys(diagnostic).sort(), ['code', 'elapsedMs', 'operationId', 'region']);
+    assert.equal(diagnostic.code, 'P0001');
+    assert.equal(typeof diagnostic.elapsedMs, 'number');
+    assert.doesNotMatch(JSON.stringify(args), /injected|SELECT|INSERT|postgresql|customerCents/);
+  }
 }));
 
 test('reconciliation fences a delayed executor and a held executor stays indeterminate', async () => fixture(async f => {

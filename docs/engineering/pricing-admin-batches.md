@@ -71,6 +71,16 @@ qualification bounds, not permission to lengthen production timeouts. Revalidati
 runs once after commit; a failure warns that prices committed and must not be
 submitted again. It does not undo or mutate the immutable receipt. A pending refresh record commits with the receipt; its operational outcome survives reload. The authorized same-origin refresh endpoint retries only invalidation, including when price admission is disabled. It never re-enters confirmation or writes financial history.
 
+The confirmation function alone is pinned to Vercel `cle1` in `frontend/vercel.json`,
+beside the Neon `aws-us-east-2` database. The canonical per-cell writes make many
+sequential SQL round trips; a local socket benchmark does not qualify a remote
+deployment. Requalify a full 226-row create and update after any database-region
+change. Apply diagnostics record the operation UUID, outcome or sanitized error
+code, `VERCEL_REGION`, and elapsed time including SQL commit (excluding claim and
+page refresh). They do not log prices, SQL, connection strings or error messages.
+The receipt's lock duration ends before receipt persistence and commit, so use
+the runtime duration as additional evidence, not the receipt alone.
+
 A duplicate confirmation reads the existing operation. Status is read-only.
 Reconciliation takes the operation row with `NOWAIT`: a live executor returns
 `accepted`; a committed operation returns its original receipt. If an accepted
