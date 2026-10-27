@@ -5,6 +5,8 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { JSDOM } from "jsdom";
 import type { ImageConversationTurn } from "../frontend/src/lib/studio/image-conversation-contract";
+import {mapGenerationStatusRecordToAgent} from '../frontend/src/server/generations/agent-generation-policy';
+import type {GenerationStatusRecord} from '../frontend/src/server/generations/generation-status';
 
 function buttonMatching(
   doc: Document,
@@ -68,7 +70,7 @@ async function mountCard({
   turn?: ImageConversationTurn;
   localQa?: boolean;
   busy?: boolean;
-  locale?: "en" | "fr";
+  locale?: "en" | "fr" | "es";
 } = {}) {
   const require = createRequire(import.meta.url);
   const previousCssLoader = require.extensions[".css"];
@@ -184,6 +186,173 @@ test("a failed accepted attempt displays its confirmed wallet refund without reu
     assert.equal(view.renewals, 0);
   } finally { await view.close(); }
 });
+
+const googleFailure = 'Google blocked this request during safety checks. Review the prompt and reference media before preparing a new request.';
+function failedTurn(message = googleFailure, paymentStatus: NonNullable<ImageConversationTurn['generation']>['paymentStatus'] = 'refunded_wallet') {
+  const turn = makeTurn({ state: 'accepted' });
+  turn.generation = {
+    jobId: 'fixture-failed-job', surface: 'video', status: 'failed', progress: null,
+    message, priceCents: 45, currency: 'USD', paymentStatus,
+    result: null, retryAfterSeconds: null,
+  };
+  return turn;
+}
+
+for (const [locale, label, meaning, examples, uncertainty] of [
+  ['en', 'Understand this refusal', /wording.*meaning.*reference media/i, /sexually explicit.*graphic violence.*hate.*minors/i, /does not.*exact.*guarantee/i],
+  ['fr', 'Comprendre ce refus', /formulation.*sens.*médias de référence/i, /sexuel explicite.*violence graphique.*haine.*mineurs/i, /ne précise pas.*garantit pas/i],
+  ['es', 'Entender este rechazo', /redacción.*significado.*medios de referencia/i, /sexual explícito.*violencia gráfica.*odio.*menores/i, /no siempre.*garantiza/i],
+] as const) {
+  test(`Google moderation help explains content checks without guessing the trigger (${locale})`, async () => {
+    const view = await mountCard({ turn: failedTurn(), locale });
+    try {
+      const help = [...view.dom.window.document.querySelectorAll('details')].find(details => details.querySelector('summary')?.textContent === label);
+      assert.ok(help, 'a click/tap disclosure accompanies the Google refusal');
+      assert.equal(help.open, false, 'long help stays collapsed initially');
+      assert.match(help.textContent ?? '', meaning);
+      assert.match(help.textContent ?? '', examples);
+      assert.match(help.textContent ?? '', uncertainty);
+      const policy = help.querySelector('a');
+      assert.equal(new URL(policy?.href ?? '').hostname, 'policies.google.com');
+      assert.doesNotMatch(help.textContent ?? '', /fixture-failed-job|sensitive words|refund|rembours|reembols/i);
+      assert.equal(view.confirms + view.renewals + view.refreshes, 0);
+    } finally { await view.close(); }
+  });
+}
+
+test('unknown, technical and other-provider failures never acquire Google moderation guidance', async () => {
+  for (const message of [
+    'MaxVideoAI could not complete this render.',
+    'This request was blocked by safety checks.',
+    'The reference image is too small.',
+    '{"message":"Google blocked this request during safety checks."}',
+    'https://provider.invalid/Google blocked this request during safety checks.',
+  ]) {
+    const view = await mountCard({ turn: failedTurn(message), locale: 'en' });
+    try { assert.equal(view.dom.window.document.querySelector('[data-safety-guidance]'), null); }
+    finally { await view.close(); }
+  }
+});
+
+for (const [locale, moderation, revise, nextQuote, refunded] of [
+  ['en', /Google.*safety checks/, /Review the prompt/, /new quote/, /refunded to your wallet/],
+  ['fr', /Google.*modération/, /Vérifiez le prompt/, /nouveau devis/, /remboursé sur votre wallet/],
+  ['es', /Google.*moderación/, /Revisa el prompt/, /nuevo presupuesto/, /reembolsado.*monedero/],
+] as const) {
+  test(`a failed creation retains the available moderation explanation after reopening (${locale})`, async () => {
+    const stored = JSON.stringify(failedTurn());
+    for (let opening = 0; opening < 2; opening++) {
+      const view = await mountCard({ turn: JSON.parse(stored), locale, busy: true });
+      try {
+        const status = view.dom.window.document.querySelector('[role="status"]');
+        assert.ok(status, 'the terminal explanation must be announced');
+        const text = status.textContent ?? '';
+        assert.match(text, moderation);
+        assert.match(text, revise);
+        assert.match(text, nextQuote);
+        assert.match(text, refunded);
+        assert.doesNotMatch(text, /sensitive words|Responsible AI|fixture-failed-job|started|working|commencé|trabajando/i);
+        assert.equal(buttonMatching(view.dom.window.document, /Create|Renew|Retry|Créer|Redemander|Crear|Renovar/i), null);
+      } finally { await view.close(); }
+    }
+  });
+  test(`a refusal does not infer a wallet refund from its text (${locale})`, async () => {
+    for (const paymentStatus of ['paid_wallet', 'refunded', 'included_mcp_trial', null] as const) {
+      const view = await mountCard({ turn: failedTurn(googleFailure + ' Your payment was refunded to your wallet.', paymentStatus), locale });
+      try {
+        const text = view.dom.window.document.body.textContent ?? '';
+        assert.match(text, moderation);
+        assert.match(text, nextQuote);
+        assert.doesNotMatch(text, refunded);
+      } finally { await view.close(); }
+    }
+  });
+}
+
+test('a terminal failure takes priority over a stale prepared or expired quote', async () => {
+  for (const state of ['prepared', 'expired'] as const) {
+    const turn = failedTurn();
+    turn.quote = { ...turn.quote!, state };
+    const view = await mountCard({ turn, locale: 'en' });
+    try {
+      assert.match(view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '', /Google.*safety/);
+      assert.equal(buttonMatching(view.dom.window.document, /Create|Renew|Retry/i), null);
+      assert.equal(view.confirms, 0);
+      assert.equal(view.renewals, 0);
+    } finally { await view.close(); }
+  }
+});
+
+test('an unavailable historical reason remains explicit and never becomes a moderation claim', async () => {
+  for (const message of ['MaxVideoAI could not complete this render.', 'https://provider.invalid/private-input?secret=hidden', '{"message":"moderation","prompt":"PRIVATE_FIXTURE"}']) {
+    const view = await mountCard({ turn: failedTurn(message), locale: 'en' });
+    try {
+      const text = view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '';
+      assert.match(text, /Creation failed/);
+      assert.match(text, /precise reason.*not available/i);
+      assert.match(text, /Review.*request/);
+      assert.match(text, /new quote/);
+      assert.doesNotMatch(text, /Google|moderation|safety|provider\.invalid|secret|PRIVATE_FIXTURE/);
+    } finally { await view.close(); }
+  }
+});
+
+test('other known reference failures keep their actionable public explanation', async () => {
+  const view = await mountCard({ turn: failedTurn('The reference image is too small. Use an image with each side at least 256 pixels before trying again.'), locale: 'fr' });
+  try {
+    const text = view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '';
+    assert.match(text, /image.*trop petite/);
+    assert.match(text, /256/);
+    assert.match(text, /nouveau devis/);
+    assert.doesNotMatch(text, /Google|modération|safety/);
+  } finally { await view.close(); }
+});
+
+test('a recognized persisted failure code remains useful when its message is unavailable', async () => {
+  const turn = failedTurn();
+  turn.generation = { ...turn.generation!, message: null, failureCode: 'seedance_output_copyright_restricted' };
+  const view = await mountCard({ turn, locale: 'en' });
+  try {
+    const text = view.dom.window.document.querySelector('[role="status"]')?.textContent ?? '';
+    assert.match(text, /copyright/i);
+    assert.doesNotMatch(text, /precise reason.*not available/i);
+  } finally { await view.close(); }
+});
+
+test('the Spanish creation card retains Spanish labels around its failure explanation', async () => {
+  const view = await mountCard({ turn: failedTurn(), locale: 'es' });
+  try {
+    const doc = view.dom.window.document;
+    assert.ok(doc.querySelector('[aria-label="Presupuesto de creación"]'));
+    assert.match(doc.querySelector('summary')?.textContent ?? '', /Ver.*ajustes/);
+    assert.doesNotMatch(doc.body.textContent ?? '', /Creation quote|View direction|Original creation/);
+  } finally { await view.close(); }
+});
+
+for(const [locale,expected] of [
+  ['en',[/selected inputs/,/could not read.*reference media/,/processing window/,/queue.*busy/,/prepare.*download/,/without a usable output/,/manual review/]],
+  ['fr',[/entrées sélectionnées/,/média.*référence.*lu/,/délai.*traitement/,/file.*saturée/,/préparer.*téléchargement/,/sans résultat exploitable/,/vérification manuelle/]],
+  ['es',[/entradas seleccionadas/,/leer.*referencia/,/plazo.*procesamiento/,/cola.*saturada/,/preparar.*descarga/,/sin.*resultado utilizable/,/revisión manual/]],
+] as const){
+  test(`available public journal reasons reach the actual card (${locale})`,async()=>{
+    const inputs=['Unsupported input setting.','Reference media could not be read.','The request timed out.','The queue is temporarily busy.','The output video could not be copied to storage.','The render returned no usable output.','This render needs manual review.'];
+    for(let index=0;index<inputs.length;index++){
+      const generation=mapGenerationStatusRecordToAgent({
+        id:1,job_id:'fixture-known-failure',user_id:'fixture-user',status:index===6?'provider_polling_stalled':'failed',
+        progress:0,provider:'fixture',provider_job_id:null,surface:'video',engine_id:'gemini-omni-flash',
+        engine_label:'Gemini Omni Flash 1.1',duration_sec:10,prompt:'Safe fixture request.',created_at:'2026-10-26T00:00:00Z',
+        message:inputs[index],payment_status:'paid_wallet',final_price_cents:45,currency:'USD',settings_snapshot:{surface:'video'},render_ids:[],pricing_snapshot:null,
+      } as GenerationStatusRecord);
+      const turn=failedTurn();turn.generation=generation;
+      const view=await mountCard({turn,locale});
+      try{
+        const text=view.dom.window.document.querySelector('[role="status"]')?.textContent??'';
+        assert.match(text,expected[index]);
+        assert.doesNotMatch(text,/precise reason.*not available|motif précis.*pas disponible|motivo preciso.*no está disponible|Google|modération|moderación|safety/);
+      }finally{await view.close();}
+    }
+  });
+}
 
 test("a completed creation stays ready while Studio answers another message", async () => {
   const turn = makeTurn({ state: "accepted" });

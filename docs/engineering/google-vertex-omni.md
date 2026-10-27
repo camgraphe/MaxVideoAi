@@ -98,6 +98,38 @@ Poller responsibilities:
 - Complete the `app_jobs` row and update the latest `provider_attempts` snapshot.
 - Mark unresolved jobs for manual review after 45 minutes without retrying, rerouting, or automatically refunding them. Confirmed terminal provider failures still use the standard idempotent wallet refund flow.
 
+Terminal Interactions failures may expose `errors[]` rather than the legacy
+`error` or `message` fields. The response normalizer owns reading the supplier
+code and message. The poller retains those two diagnostic fields on the provider
+attempt, without copying the interaction's prompt, input media or reasoning into
+the failure snapshot. A `safety` code projects fixed Google moderation guidance
+through the shared EN/FR/ES generation-failure messages. It never authorizes a
+resubmission or fallback; the existing terminal-failure refund remains unchanged.
+`tests/google-vertex-omni-failures.test.ts` covers this production response shape,
+the public guidance and the terminal polling/refund boundary.
+
+Studio's creation card projects only fixed public failure messages through
+`conversationFailurePresentation`, including the available moderation reason and
+the other known public journal failures. Unknown historical reasons stay
+explicitly unavailable; no prompt, supplier payload or lost cause is reconstructed.
+The card receives the app's EN/FR/ES locale and confirms a wallet refund only from
+the persisted `refunded_wallet` status. A failed generation takes priority over
+stale quote readiness or expiration. The real-route browser fixture in
+`tests/studio-failure-card-browser.test.ts` checks these messages, read-only journal
+refresh/reopening and the Spanish locale boundary using synthetic records; it
+does not establish access to an authenticated customer's production history.
+
+For an explicitly known Google moderation refusal, `conversationGoogleSafetyHelp`
+adds a collapsed native disclosure with fixed EN/FR/ES guidance. It covers prompt
+wording/meaning, reference media, generated content and illustrative prohibited
+content categories; it never identifies a particular word or reference as the
+cause, or promises that rewording will pass. Other failures and unknown historical
+reasons do not receive Google guidance. Keyboard and mobile disclosure behavior
+are covered by the same synthetic browser fixture. The content is based on
+[Google's Omni documentation](https://ai.google.dev/gemini-api/docs/omni) and
+[Generative AI Prohibited Use Policy](https://policies.google.com/terms/generative-ai/use-policy),
+reviewed on October 26, 2026. This is explanatory copy, not a change to provider filters.
+
 ## Pricing And Cost Estimate
 
 The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.
