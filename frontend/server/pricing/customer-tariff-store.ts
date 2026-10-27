@@ -142,7 +142,7 @@ export async function withLockedCustomerTariffQuoteReadBatch<T>(
   }
 }
 
-async function readState(executor: QueryExecutor, selector?: ManualTariffSelector): Promise<EffectiveCustomerTariffState> {
+async function readState(executor: QueryExecutor, selector?: ManualTariffSelector, modelId?: string): Promise<EffectiveCustomerTariffState> {
   const selectors = selector ? quoteSelectors(selector) : null;
   const keys = selectors?.map(selectorKey);
   const batch = lockedQuoteReadBatches.get(executor);
@@ -155,8 +155,9 @@ async function readState(executor: QueryExecutor, selector?: ManualTariffSelecto
     rows = selectBatchRows(batch.rows, keys);
     versions = selectBatchRows(batch.versions, keys);
   } else {
-    const where = keys ? (keys.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
-    const args = keys ? [keys.length > 1 ? keys : keys[0]] : [];
+    const where = modelId ? "WHERE selector_json->>'engineId' = $1 OR selector_json->>'engineId' IS NULL"
+      : keys ? (keys.length > 1 ? 'WHERE selector_key = ANY($1::text[])' : 'WHERE selector_key = $1') : '';
+    const args = modelId ? [modelId] : keys ? [keys.length > 1 ? keys : keys[0]] : [];
     [state] = await executor.query<RawState>('SELECT revision, active FROM app_customer_tariff_state WHERE singleton = TRUE');
     if (!state) return { status: 'unavailable' };
     if (state.active && keys) {
@@ -197,6 +198,20 @@ function projectSelectedState(state: RawState, selectors: ManualTariffSelector[]
 /** A failed database read never becomes an empty versioned-only state. */
 export async function loadEffectiveCustomerTariffState(executor?: QueryExecutor): Promise<EffectiveCustomerTariffState> {
   return loadState(executor);
+}
+
+/** Complete model snapshot, including exact exceptions and scheduled/history intervals.
+ * The state lock preserves consistency with every canonical tariff writer. Unknown
+ * stored ownership is included and validated, never silently treated as absence. */
+export async function loadCustomerTariffModelState(executor: TransactionQueryExecutor, modelId: string): Promise<EffectiveCustomerTariffState> {
+  if (!isTransactionQueryExecutor(executor) || !modelId.trim()) throw new Error('Model tariff reads require an active transaction and model');
+  try {
+    await executor.query('SELECT revision FROM app_customer_tariff_state WHERE singleton = TRUE FOR SHARE');
+    const state = await readState(executor, undefined, modelId);
+    return state.status === 'loaded' ? { ...state,
+      versionedCells: state.versionedCells.filter(cell => cell.selector.engineId === modelId),
+    } : state;
+  } catch { return { status: 'unavailable' }; }
 }
 
 /** A quote reads only its exact selector; the admin inventory can explicitly read all cells. */
