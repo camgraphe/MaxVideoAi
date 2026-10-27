@@ -157,6 +157,23 @@ delivery verification before making a user-visible performance claim.
 
 Examples routes read24 items per logical page from the SQL catalog; all24 watch links and posters are rendered on the server. Four optional opening videos belong to the same page and are never reinserted on page2. `examples-discovery-layout.ts` chooses compatible opening formats from the current page only; CSS owns geometry and native continuation ratios. Measured media dimensions take priority over declared ratios. Only the two side previews are cropped. Empty managed destinations stay empty and out-of-range URLs redirect to the last valid page.
 
+Catalog media hydration first materializes the selected raw rows in the
+`selected_media` CTE in `videos-catalog-page.ts`. Without this boundary, PostgreSQL
+can pull the marketing overlay's union into the outer join and evaluate
+media/settings and output-dimension projections for unrelated jobs before
+filtering to the page. The overlay joins this selection once, so ready publication
+records are decoded once rather than again for every selected card. Membership
+and the overlay can still scan unselected records; only the subsequent media
+projection is bounded to the selected page. Its correlated `OFFSET 0` fence also
+keeps each dimension/settings calculation behind its selected-ID filter instead
+of recalculating the entire selected page for each result row.
+Keep counts, membership and hydration in the same read-only statement; returning
+24 rows alone does not prove that only 24 media were projected.
+`tests/examples-catalog-pagination-postgres.test.ts` checks actual dimension
+lookup executions and publication decodes with the marketing overlay enabled for
+one-item and 24-item page-sized reads. It also retains ordering, pagination and source-deletion
+coverage. Database execution reductions are not a measured browser LCP gain.
+
 Family metadata uses route-local `selectFamilyMetadataVideo` to read the first
 playlist item through `listExampleFamilyPage`, independently of URL sort/page.
 An empty result stops there. A nonempty result without a playable original retries
