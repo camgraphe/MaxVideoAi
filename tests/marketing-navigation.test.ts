@@ -98,11 +98,11 @@ test('public dropdowns limit launch badges to the seven promoted current models 
     .map(({ key }) => key);
 
   assert.deepEqual(badgedEntries, [
+    'kling-v4',
     'flux-3-max',
     'minimax-h3',
     'minimax-h3-max',
     'seedance-2-5',
-    'kling-v4',
     'wan-3',
     'wan-3-prime',
   ]);
@@ -256,20 +256,21 @@ test('examples navigation exposes discoverable families without promoting archiv
 
 test('marketing footer projects the current bounded model menu instead of a second stale roster', () => {
   assert.match(marketingFooterSource, /FOOTER_MODELS\.map/);
-  assert.ok(FOOTER_MODELS.length <= 8);
+  assert.ok(FOOTER_MODELS.length <= 9);
   for (const item of FOOTER_MODELS) assert.ok(MARKETING_NAV_MODELS.some(model => model.key === item.key));
   assert.doesNotMatch(marketingFooterSource, /slug: 'ltx-2-3-fast'/);
   assert.doesNotMatch(marketingFooterSource, /slug: 'wan-2-6'/);
 });
 
-test('marketing footer adds FLUX 3 Max before the seven existing model links', () => {
+test('marketing footer promotes Kling 4 while preserving all eight previous model links', () => {
   const preservedModelKeys = [
+    'flux-3-max',
     'minimax-h3', 'seedance-2-5', 'kling-3-pro', 'veo-3-1',
     'ltx-2-5-pro', 'wan-3', 'wan-3-prime',
   ];
-  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['flux-3-max', ...preservedModelKeys]);
+  assert.deepEqual(FOOTER_MODELS.map(item => item.key), ['kling-v4', ...preservedModelKeys]);
   assert.deepEqual(FOOTER_MODELS[0].href, {
-    pathname: '/models/[slug]', params: { slug: 'flux-3-max' },
+    pathname: '/models/[slug]', params: { slug: 'kling-v4' },
   });
   assert.deepEqual(
     FOOTER_MODELS.slice(1),

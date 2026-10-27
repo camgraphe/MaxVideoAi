@@ -112,11 +112,11 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 
 // D85 editorial promotion. Publication and canonical identity remain registry-owned.
 const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+  { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'flux-3-max', label: 'FLUX 3 Max', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
-  { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
   { slug: 'kling-3-turbo-pro', label: 'Kling 3 Turbo Pro' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
