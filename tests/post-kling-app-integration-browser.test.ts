@@ -4,6 +4,8 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {chromium,webkit,expect,type Browser} from '@playwright/test';
 import {startWorkspaceReferenceFixture} from './helpers/workspace-reference-browser-fixture';
+import {getBaseEnginesByCategory} from '../frontend/src/lib/engines';
+import {applyBytePlusSeedanceRuntimeOptions} from '../frontend/src/server/video-providers/byteplus-modelark-profile-policy';
 
 // Only remote/account boundaries are synthetic. The draft, mode, source guards,
 // quote card and both global/module styles come from the assembled application.
@@ -16,7 +18,6 @@ import {CoreSettingsBar} from './components/CoreSettingsBar';
 import {useWorkspaceAssetState} from './app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
 import {useWorkspaceComposerState} from './app/(core)/(workspace)/app/_hooks/useWorkspaceComposerState';
 import {useWorkspaceActiveDraft} from './app/(core)/(workspace)/app/_hooks/useWorkspaceActiveDraft';
-import {getBaseEnginesByCategory} from './src/lib/engines';
 import {coerceFormState} from './app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import {summarizeWorkspaceInputSchema} from './app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import {getVideoWorkflowSourceField} from './lib/video-source-workflow';
@@ -28,7 +29,7 @@ import {ImageQuoteCard} from './app/(core)/(workspace)/app/studio/conversation/[
 import studioStyles from './app/(core)/(workspace)/app/studio/conversation/[projectId]/image-conversation.module.css';
 const locale=new URLSearchParams(location.search).get('locale')||'en';
 const noop=()=>{};
-const engines=getBaseEnginesByCategory('video').filter(e=>['seedance-2-0-mini','wan-3-prime','kling-v4'].includes(e.id));
+const engines=globalThis.fixtureConfig.engines;
 const requests=[];globalThis.integrationRequests=requests;
 globalThis.fetch=async(...args)=>{requests.push(String(args[0]));throw Error('Remote request forbidden in integration fixture');};
 const turn={requestId:'synthetic-request',message:'Synthetic request',reply:'',references:[],state:'ready',retryable:false,createdAt:'2026-10-26T00:00:00Z',
@@ -51,6 +52,7 @@ function Workspace({auth,remount,setAuth,onReturn}){
  const summary=summarizeWorkspaceInputSchema({selectedEngine:c.selectedEngine,...c,uiLocale:locale});
  const field=getVideoWorkflowSourceField(c.selectedEngine.inputSchema,c.submissionMode);
  const select=status=>{if(field)assets.commitInputAssetMutation(()=>({state:{[field.id]:[{id:'synthetic-source',assetId:'synthetic-source',fieldId:field.id,kind:'video',name:'Synthetic source',type:'video/mp4',size:1000,url:location.origin+'/synthetic.mp4',previewUrl:location.origin+'/portrait.svg',width:720,height:1280,durationSec:4,status}]}}));};
+ const selectCreateImage=fieldId=>assets.commitInputAssetMutation(()=>({state:{[fieldId]:[{id:'synthetic-image',assetId:'synthetic-image',fieldId,kind:'image',name:'Synthetic image',type:'image/svg+xml',size:1000,url:location.origin+'/portrait.svg',previewUrl:location.origin+'/portrait.svg',width:720,height:1280,status:'ready'}]}}));
  const remove=()=>assets.commitInputAssetMutation(()=>({state:{}}));
  const stage=()=>{
   const result=serializeWorkspaceModelSetup(current);if(!result.ok)throw Error(result.error);
@@ -64,6 +66,7 @@ function Workspace({auth,remount,setAuth,onReturn}){
  return <>
  <nav aria-label="Synthetic fixture controls" style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
  <button onClick={()=>select('uploading')}>Uploading source</button><button onClick={()=>select('error')}>Failed source</button><button onClick={()=>select('ready')}>Ready source</button><button onClick={remove}>Remove source</button>
+ <button onClick={()=>selectCreateImage('image_url')}>Ready opening image</button><button onClick={()=>selectCreateImage('image_urls')}>Ready reference image</button>
  <button onClick={stage}>Stage sign-in</button><button onClick={()=>setAuth('authed')}>Confirm synthetic account</button><button onClick={onReturn}>Route return</button>
  </nav>
  <label>Model <select aria-label="Model" value={form.engineId} onChange={e=>c.handleEngineChange(e.target.value)}>{engines.map(e=><option key={e.id} value={e.id}>{e.label}</option>)}</select></label>
@@ -92,7 +95,11 @@ function App(){
 test('assembled app keeps guest mode/source state, source guards and localized safety help compatible', {timeout:180000}, async()=>{
   const evidence=process.env.APP_INTEGRATION_EVIDENCE_DIR;
   const dictionaries=Object.fromEntries(await Promise.all(['en','fr','es'].map(async locale=>[locale,JSON.parse(await readFile(join(process.cwd(),'frontend/messages',locale+'.json'),'utf8'))])));
-  const fixture=await startWorkspaceReferenceFixture({source,config:{dictionaries}});
+  // The app API supplies this real provider projection; the base Mini alone is Create-only.
+  // Pin the reviewed direct-provider configuration so this offline fixture exercises its source guards.
+  const engines=getBaseEnginesByCategory('video').filter(e=>['seedance-2-0-mini','wan-3-prime','kling-v4'].includes(e.id))
+    .map(engine=>engine.id==='seedance-2-0-mini'?applyBytePlusSeedanceRuntimeOptions(engine,{provider:'byteplus_modelark',allowedModes:['t2v','i2v','ref2v','v2v','extend']}):engine);
+  const fixture=await startWorkspaceReferenceFixture({source,config:{dictionaries,engines}});
   const observations=[];
   const browsers:Browser[]=[];
   if(evidence)await mkdir(evidence,{recursive:true});
@@ -147,9 +154,16 @@ test('assembled app keeps guest mode/source state, source guards and localized s
         await page.keyboard.press('Escape');
         await expect(page.getByRole('dialog')).toHaveCount(0);await expect(reference).toBeFocused();
         await capture('restored');
-        assert.deepEqual(await composer.locator('[data-composer-mode]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-composer-mode'))),['t2v','i2v','ref2v','v2v'],'Kling keeps its four native modes and does not acquire Extend');
-        await composer.locator('[data-composer-mode="t2v"]').click();await expect(settings).toBeVisible();
+        assert.deepEqual(await composer.locator('[data-composer-mode]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-composer-mode'))),['create','v2v'],'Kling exposes unified Create/Modify and does not acquire Extend');
+        await composer.locator('[data-composer-mode="create"]').click();await expect(settings).toBeVisible();
         assert.equal((await state()).mode,'t2v');
+        assert.ok(!Object.values((await state()).assets).flat().some(asset=>asset?.id==='synthetic-source'),'Modify source stays out of active Create references');
+        for(const [action,expected] of [['Ready opening image','i2v'],['Ready reference image','ref2v']]){
+          await page.getByRole('button',{name:action,exact:true}).click();
+          await expect.poll(async()=>(await state()).mode).toBe(expected);
+          await expect(composer.locator('[data-composer-mode="create"]')).toHaveAttribute('aria-pressed','true');
+        }
+        await page.getByRole('button',{name:'Remove source',exact:true}).click();await expect.poll(async()=>(await state()).mode).toBe('t2v');
         await page.getByLabel('Model',{exact:true}).selectOption('seedance-2-0-mini');
         await composer.locator('[data-composer-mode="create"]').click();await expect(settings).toBeVisible();
         assert.equal((await state()).mode,'t2v');assert.ok((await state()).fields.some(f=>!f.required),'Unified Create keeps optional reference capabilities');
@@ -173,7 +187,7 @@ test('assembled app keeps guest mode/source state, source guards and localized s
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
         assert.deepEqual(errors,[]);assert.deepEqual(blocked,[]);
         assert.deepEqual(await page.evaluate(()=>(globalThis as unknown as {integrationRequests:string[]}).integrationRequests),[]);
-        observations.push({browser:name,locale,width,theme:dark?'dark':'light',restoredActualDraftIntoActualComposer:true,sourceIdentityPreserved:true,klingNativeFourModes:true,optionalCreateReferences:true,sourceGuards:['seedance-2-0-mini','wan-3-prime','kling-v4'],popupFocus:true,studioSafetyWithGlobalCss:true,serviceCalls:0});
+        observations.push({browser:name,locale,width,theme:dark?'dark':'light',restoredActualDraftIntoActualComposer:true,sourceIdentityPreserved:true,klingUnifiedCreateModify:true,klingCreateInferredModes:['t2v','i2v','ref2v'],optionalCreateReferences:true,sourceGuards:['seedance-2-0-mini','wan-3-prime','kling-v4'],popupFocus:true,studioSafetyWithGlobalCss:true,serviceCalls:0});
         await context.close();
       }
     }
