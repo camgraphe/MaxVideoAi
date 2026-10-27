@@ -88,6 +88,7 @@ test('offline V4 workspace edits thirty-second shots, preserves modes and subjec
     await page.evaluate(engine=>{(globalThis as any).klingFixtureEngine=engine;(globalThis as any).process={env:{NODE_ENV:'production'}};},KLING_V4_ENGINE);
     await page.addScriptTag({url:`http://127.0.0.1:${address.port}/fixture.js`});
     await page.locator('.app-generation-action').waitFor();
+    assert.doesNotMatch(await page.locator('body').innerText(),/Generation accepts a prompt or multi-shot scenes|Video editing requires a prompt/,'the unified workspace omits redundant native-mode catalogue instructions');
     assert.equal(await page.locator('[data-composer-mode]').count(),2);
     assert.equal(await page.locator('[data-composer-mode="t2v"], [data-composer-mode="i2v"], [data-composer-mode="ref2v"]').count(),0);
     await page.getByRole('button',{name:'Multi-prompt',exact:true}).click();
