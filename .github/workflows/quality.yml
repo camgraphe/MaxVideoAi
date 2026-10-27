@@ -108,13 +108,17 @@ jobs:
         run: pnpm run test:validate -- --suite tariffs
 
   browser:
-    name: Browser integration
+    name: Browser integration (${{ matrix.shard }}/2)
     needs: plan
     if: ${{ needs.plan.outputs.browser == 'true' }}
     # Playwright 1.59.1 supports Ubuntu 24.04; ubuntu-latest can resolve to 26.04.
     runs-on: ubuntu-24.04
-    # Tool/browser installation can take 12 minutes before the complete browser and admin suites.
+    # Each independent VM keeps sequential files and the existing setup/test budget.
     timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -125,15 +129,16 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium webkit
       - name: Validate connected Studio browser
-        run: pnpm run test:validate -- --suite browser
+        run: pnpm run test:validate -- --suite browser --shard ${{ matrix.shard }}/2
       - name: Smoke test admin
+        if: ${{ matrix.shard == 2 }}
         env:
           DATABASE_URL: ${{ secrets.RUNTIME_AUDIT_DATABASE_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: pnpm run test:admin-smoke
       - name: Upload Playwright admin report
-        if: failure()
+        if: ${{ failure() && matrix.shard == 2 }}
         uses: actions/upload-artifact@v6
         with:
           name: playwright-admin-report
