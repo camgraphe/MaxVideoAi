@@ -59,16 +59,48 @@ export function assertPreviewModelAdmissionParity(production, preview) {
   return { modelId, modes };
 }
 
-function main() {
+function previewOrigin(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol === 'https:' && url.hostname.endsWith('.vercel.app') && !url.username &&
+        !url.password && !url.port && url.pathname === '/' && !url.search && !url.hash) return url;
+  } catch { /* report a bounded error without echoing input */ }
+  throw new Error('Preview must be an HTTPS Vercel deployment origin without credentials, path or query.');
+}
+
+export async function readPreviewAdmissionCatalogues(previewUrl, token, request = fetch) {
+  const origin = previewOrigin(previewUrl);
+  if (typeof token !== 'string' || !token.trim()) {
+    throw new Error('An existing OIDC token is required; use the isolated env-run command in docs/deployment/github-vercel.md.');
+  }
+  let expiresAt;
+  try { expiresAt = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).exp; }
+  catch { /* Vercel validates the actual credential; never echo it */ }
+  if (Number.isFinite(expiresAt) && expiresAt <= Date.now() / 1000) {
+    throw new Error('Existing OIDC token has expired; refresh it with the isolated env-run command in docs/deployment/github-vercel.md.');
+  }
+  const read = async (url, label, headers) => {
+    let response;
+    try {
+      response = await request(url, { headers, redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(20000) });
+    } catch { throw new Error(`${label} catalogue request failed with existing read-only access.`); }
+    if (!response.ok) throw new Error(`${label} catalogue HTTP ${response.status}; verify existing access without changing protection.`);
+    try { return await response.json(); }
+    catch { throw new Error(`${label} catalogue returned invalid JSON.`); }
+  };
+  const [production, preview] = await Promise.all([
+    read('https://maxvideoai.com/api/engines', 'Production', { Accept: 'application/json' }),
+    read(`${origin.origin}/api/engines`, 'Preview', { Accept: 'application/json', 'x-vercel-trusted-oidc-idp-token': token }),
+  ]);
+  return { production, preview };
+}
+
+async function main() {
   const args = process.argv.slice(2);
   if (args.length && (args.length !== 2 || args[0] !== '--preview')) {
     throw new Error('Usage: pnpm deployment:check [--preview https://exact-deployment.vercel.app]');
   }
-  const previewUrl = args.length ? new URL(args[1]) : null;
-  if (previewUrl && (previewUrl.protocol !== 'https:' || !previewUrl.hostname.endsWith('.vercel.app') ||
-      previewUrl.username || previewUrl.password || previewUrl.port || previewUrl.pathname !== '/' || previewUrl.search || previewUrl.hash)) {
-    throw new Error('Preview must be an HTTPS Vercel deployment origin without credentials, path or query.');
-  }
+  const previewUrl = args.length ? previewOrigin(args[1]) : null;
   const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
   if (git('status', '--porcelain', '--untracked-files=all')) throw new Error('Use a clean, committed, isolated worktree.');
   const remote = git('remote', 'get-url', 'origin');
@@ -99,21 +131,17 @@ function main() {
   if (previewUrl) {
     const deployment = api(`/v13/deployments/${previewUrl.hostname}`);
     const sha = previewDeploymentRevision(deployment, candidateSha);
-    const readCatalogue = (url) => JSON.parse(execFileSync('npx', [
-      '--yes', 'vercel@55.0.0', 'curl', '/api/engines', '--deployment', url,
-      '--scope', 'camgraphes-projects', '--', '--silent', '--show-error', '--fail', '--max-time', '20',
-    ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 4 * 1024 * 1024, timeout: 60000 }));
-    const parity = assertPreviewModelAdmissionParity(readCatalogue('https://maxvideoai.com'), readCatalogue(previewUrl.origin));
+    const catalogues = await readPreviewAdmissionCatalogues(previewUrl.origin, process.env.VERCEL_OIDC_TOKEN);
+    const parity = assertPreviewModelAdmissionParity(catalogues.production, catalogues.preview);
     preview = { url: previewUrl.origin, deploymentId: deployment.id, sha, ...parity };
   }
   console.log(JSON.stringify({ status: 'aligned', mainSha, candidateSha, domains: records, ...(preview ? { preview } : {}) }, null, 2));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { main(); }
-  catch (error) {
+  main().catch((error) => {
     // Do not print CLI responses or environment values on authentication failures.
     console.error(error.status !== undefined ? 'Production alignment check failed while reading Git/Vercel. Check authentication and run git fetch origin main.' : error.message);
     process.exitCode = 1;
-  }
+  });
 }

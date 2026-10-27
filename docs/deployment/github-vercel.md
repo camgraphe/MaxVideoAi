@@ -19,12 +19,14 @@ workflow for normal production releases.
    while CI runs; wait for the required Quality CI on the latest candidate before
    merging. This check aggregates fast checks and every selected integration,
    browser and exhaustive financial lane. See `docs/engineering/ci-validation.md`.
-   Once its Git Preview is READY, run `pnpm deployment:check --preview
-   https://exact-deployment.vercel.app` from the clean committed candidate. This
+   Once its Git Preview is READY, run the Preview check below from the clean committed candidate. This
    read-only premerge gate verifies that Preview's Git SHA is HEAD and compares
    Seedance 2.5's actual mode admissions with production's `/api/engines`, including
-   intentionally closed modes. Missing/degraded readiness fails closed. It uses
-   existing Vercel authentication and never generates media or changes configuration.
+   intentionally closed modes. Missing/degraded readiness fails closed. The command
+   uses a short-lived Development OIDC token for the verified Preview origin only,
+   refuses redirects and fails closed if existing access is unavailable. It does
+   not create a protection bypass, generate media or change configuration. The
+   ordinary production-only check below does not require an OIDC token.
 3. Immediately before merging, run `git fetch origin main` and
    `pnpm deployment:check` from the committed candidate. This read-only remote
    check uses the authenticated Vercel CLI and GitHub remote; it never deploys,
@@ -46,6 +48,19 @@ workflow for normal production releases.
 The command does not lock other releases; tasks must coordinate the final merge
 and domain checks. Never merge another branch while production reconciliation is
 pending. Rebase/merge onto the confirmed new main before resuming that branch.
+
+Use an empty temporary CLI directory to obtain a fresh short-lived token without
+letting an expired token in `.env.local` override it. The command still runs the
+check in the candidate checkout and leaves its local environment files untouched:
+
+```bash
+(
+  preview_qa_cwd="$(mktemp -d)"
+  trap 'rmdir "$preview_qa_cwd"' EXIT
+  vercel --cwd "$preview_qa_cwd" env run --project maxvideoai --scope camgraphes-projects -- \
+    pnpm --dir "$PWD" deployment:check --preview https://exact-deployment.vercel.app
+)
+```
 
 Seedance Preview configuration is common to Preview, rather than scoped to a past
 feature branch. Keep its existing Preview Ark credentials. Its nonsecret routing,
