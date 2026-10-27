@@ -42,6 +42,18 @@ function summary(value: EngineCaps, activeMode: Mode, options: Partial<Parameter
   });
 }
 
+test('Wan Modify defaults prompt rewriting off while creation and extension retain their defaults', () => {
+  for (const id of ['wan-3', 'wan-3-prime']) {
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'] as const) {
+      const value = summary(engine(id), mode);
+      const fields = [...value.promotedFields, ...value.secondaryFields]
+        .filter(({ field }) => field.id === 'enable_prompt_expansion');
+      assert.equal(fields.length, 1, `${id}:${mode} exposes one rewriting toggle`);
+      assert.equal(fields[0].field.default, mode !== 'v2v', `${id}:${mode}`);
+    }
+  }
+});
+
 function referenceOptions(inputAssets: Record<string, (ReferenceAsset | null)[]> = {}): WorkspaceReferenceAvailability {
   return {
     inputAssets,
