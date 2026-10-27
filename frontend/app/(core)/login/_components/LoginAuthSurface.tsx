@@ -32,6 +32,7 @@ type LoginAuthSurfaceProps = {
   isConfirmationResending: boolean;
   isGoogleOAuthStarting: boolean;
   isResetSending: boolean;
+  isAuthReady?: boolean;
   isPasswordSubmitting?: boolean;
   acceptTerms: boolean;
   ageConfirmed: boolean;
@@ -96,6 +97,7 @@ export function LoginAuthSurface({
   isConfirmationResending,
   isGoogleOAuthStarting,
   isResetSending,
+  isAuthReady = true,
   isPasswordSubmitting = false,
   acceptTerms,
   ageConfirmed,
@@ -240,7 +242,7 @@ export function LoginAuthSurface({
               type="button"
               onClick={onGoogleSignIn}
               variant="outline"
-              disabled={isGoogleOAuthStarting || isPasswordSubmitting || isConfirmationResending}
+              disabled={!isAuthReady || isGoogleOAuthStarting || isPasswordSubmitting || isConfirmationResending}
               aria-busy={isGoogleOAuthStarting}
               className="w-full justify-center gap-2 font-medium"
             >
@@ -255,6 +257,7 @@ export function LoginAuthSurface({
               <span className="h-px flex-1 bg-border" aria-hidden />
             </div>
             <form
+              method="post"
               noValidate
               onSubmit={mode === 'signin' ? onSignInSubmit : onSignUpSubmit}
               className="stack-gap-sm"
@@ -382,7 +385,7 @@ export function LoginAuthSurface({
 
               <Button
                 type="submit"
-                disabled={isPasswordSubmitting || isConfirmationResending}
+                disabled={!isAuthReady || isPasswordSubmitting || isConfirmationResending}
                 aria-busy={isPasswordSubmitting}
                 variant={mode === 'signup' ? 'primary' : 'outline'}
                 className="w-full"
@@ -407,7 +410,7 @@ export function LoginAuthSurface({
             ) : null}
           </>
         ) : (
-          <form noValidate onSubmit={onResetSubmit} className="stack-gap-sm">
+          <form method="post" noValidate onSubmit={onResetSubmit} className="stack-gap-sm">
             <div className="block text-sm">
               <label htmlFor="reset-email" className="mb-1 block text-text-secondary">
                 {authCopy.fields.email}
@@ -438,7 +441,7 @@ export function LoginAuthSurface({
                 {authCopy.links.backToSignIn}
               </Button>
             </div>
-            <Button type="submit" variant="outline" className="w-full gap-2" disabled={isResetSending || isPasswordSubmitting} aria-busy={isResetSending}>
+            <Button type="submit" variant="outline" className="w-full gap-2" disabled={!isAuthReady || isResetSending || isPasswordSubmitting} aria-busy={isResetSending}>
               {isResetSending ? <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin motion-reduce:animate-none" />{authCopy.feedback.sendingReset}</> : authCopy.actions.reset}
             </Button>
           </form>

@@ -75,6 +75,12 @@ The action preserves locale and the safe return destination, blocks duplicate
 clicks, and presents rate limits without promising delivery. Other HTTP 400
 responses must not be treated as evidence of a new account.
 
+Confirmation feedback follows the email state, including native autofill updates,
+so changing the address removes the previous explanation and resend action.
+Password submission waits for client continuation initialization. Auth forms use
+POST as their native fallback to keep password fields out of URL queries before
+hydration; the client owns their actual submission.
+
 Regression coverage: `tests/auth-locale-continuity.test.ts`,
 `tests/login-signup-consents.test.ts`, and the existing login, callback,
 marketing-locale and middleware contract suites.

@@ -8,7 +8,7 @@ import { deferred } from './helpers/auth-legal-client-fixture';
     '@/lib/analytics-client': 'export const dispatchAnalyticsEvent=()=>{};export const persistPendingAnalyticsEvent=()=>{};',
     '@/lib/analytics/commercial-client': 'export const resolveBrowserCommercialAnalyticsAuthContext=async()=>{};',
     '@/lib/supabaseClientLoader': 'export const loadSupabaseClient=()=>window.loadClient();',
-    './useLoginNextTarget': "export const useLoginNextTarget=()=>({authRedirectOrigin:'https://example.invalid',nextPath:'/app',nextPathReady:true,persistNextTarget(){},safeNextPath:'/app'});",
+    './useLoginNextTarget': "export const useLoginNextTarget=()=>({authRedirectOrigin:'https://example.invalid',nextPath:'/app',nextPathReady:window.authNextReady!==false,persistNextTarget(){},safeNextPath:'/app'});",
     './useLoginAuthenticatedRedirect': 'export const useLoginAuthenticatedRedirect=()=>({redirectFromExistingBrowserSession(){}});',
     './useLoginAuthHashSession': 'export const useLoginAuthHashSession=()=>{};',
     './useLoginOAuthCodeExchange': 'export const useLoginOAuthCodeExchange=()=>{};',
@@ -16,7 +16,7 @@ import { deferred } from './helpers/auth-legal-client-fixture';
 
 const bundle = bundleClientFlow(`import React,{act}from'react';import{createRoot}from'react-dom/client';import{useLoginPageController}from'./app/(core)/login/_hooks/useLoginPageController';import{LoginAuthSurface}from'./app/(core)/login/_components/LoginAuthSurface';window.IS_REACT_ACT_ENVIRONMENT=true;function Page(){const state=useLoginPageController({initialMode:window.mode,initialLocale:window.locale,initialMcpConnection:false});window.controller=state;return <LoginAuthSurface {...state} isMcpStaging={false}/>;}const root=createRoot(document.getElementById('root'));window.fx={act,render:()=>root.render(<Page/>),unmount:()=>root.unmount()};`, boundaries);
 
-async function mount(mode = 'signup', locale = 'en') {
+async function mount(mode = 'signup', locale = 'en', authNextReady = true) {
   const dom = createClientFlowDom('/login'); const w = dom.window;
   const requests: Array<ReturnType<typeof deferred<unknown>>> = [];
   const authRequest = () => { const r=deferred<unknown>(); requests.push(r); return r.promise; };
@@ -24,7 +24,7 @@ async function mount(mode = 'signup', locale = 'en') {
   const resendInputs: unknown[] = [];
   const client = { auth: { signUp: authRequest, signInWithPassword: authRequest, resend: (input: unknown) => { resendInputs.push(input); const r=deferred<unknown>(); resendRequests.push(r); return r.promise; } } };
   let consents = 0;
-  w.mode = mode; w.locale = locale; w.loadClient = async () => client;
+  w.mode = mode; w.locale = locale; w.authNextReady = authNextReady; w.loadClient = async () => client;
   w.fetch = async (url: string) => { assert.equal(url, '/api/legal/consents'); consents++; return {ok:true,json:async()=>({ok:true})}; };
   w.eval(await bundle); await w.fx.act(async () => w.fx.render());
   const change = async (selector: string, value: string) => w.fx.act(async () => {
@@ -104,6 +104,36 @@ test('editing the email does not erase an unrelated provider error', async () =>
     await f.change('#auth-email', 'other@example.invalid');
     assert.equal(f.w.controller.error, 'Provider unavailable');
     assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+  } finally { await f.dispose(); }
+});
+
+test('autofill synchronization clears confirmation guidance when its address changes', async () => {
+  const f = await mount('signin');
+  try {
+    await f.submitTwice();
+    await f.w.fx.act(async () => f.requests[0].resolve({ data: { user: null, session: null }, error: { code: 'email_not_confirmed', status: 400, message: 'Email not confirmed' } }));
+    await f.w.fx.act(async () => {
+      const input = f.w.document.querySelector('#auth-email')!;
+      Object.getOwnPropertyDescriptor(f.w.HTMLInputElement.prototype, 'value')!.set!.call(input, 'autofilled@example.invalid');
+      f.w.controller.onSyncInputState();
+    });
+    assert.equal(f.w.controller.email, 'autofilled@example.invalid');
+    assert.equal(f.w.controller.error, null);
+    assert.equal(f.w.document.querySelector('[data-testid="resend-confirmation"]'), null);
+    assert.equal(f.resendRequests.length, 0);
+  } finally { await f.dispose(); }
+});
+
+test('password submission waits for the client continuation and has no native GET fallback', async () => {
+  const f = await mount('signin', 'en', false);
+  try {
+    assert.equal(f.submit.disabled, true);
+    assert.equal(f.w.document.querySelector('form')!.getAttribute('method'), 'post');
+    await f.w.fx.act(async () => { f.w.authNextReady = true; f.w.fx.render(); });
+    assert.equal(f.submit.disabled, false);
+    await f.submitTwice();
+    assert.equal(f.requests.length, 1);
+    await f.w.fx.act(async () => f.requests[0].resolve({ data: { user: null, session: null }, error: { message: 'Synthetic failure', status: 503 } }));
   } finally { await f.dispose(); }
 });
 

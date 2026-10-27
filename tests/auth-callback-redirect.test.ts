@@ -145,7 +145,7 @@ test('login page protects Google PKCE from duplicate starts and host drift', () 
   );
   assert.match(
     loginSurfaceSource,
-    /disabled=\{isGoogleOAuthStarting \|\| isPasswordSubmitting \|\| isConfirmationResending\}/,
+    /disabled=\{!isAuthReady \|\| isGoogleOAuthStarting \|\| isPasswordSubmitting \|\| isConfirmationResending\}/,
     'the Google button should be disabled while the OAuth URL is being created'
   );
   assert.match(

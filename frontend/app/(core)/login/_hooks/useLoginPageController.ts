@@ -194,9 +194,20 @@ export function useLoginPageController({
     }
   }, [mode, signupSuggestion]);
 
+  useEffect(() => {
+    // Native autofill listeners can update email before React's onChange runs.
+    setUnconfirmedEmail((current) => current === email ? current : null);
+    setError((current) => current && [
+      authCopy.feedback.emailNotConfirmed,
+      authCopy.feedback.confirmationRateLimited,
+      authCopy.feedback.confirmationUnavailable,
+    ].includes(current) ? null : current);
+    setStatus((current) => current === authCopy.feedback.confirmationResent ? null : current);
+  }, [authCopy, email]);
+
   async function signInWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (passwordSubmission.pending.current || confirmationResendPendingRef.current || !validateCurrentForm('signin')) return;
+    if (!nextPathReady || passwordSubmission.pending.current || confirmationResendPendingRef.current || !validateCurrentForm('signin')) return;
     await passwordSubmission.run(async (isCurrent) => {
       setStatusTone('info');
       setStatus(authCopy.feedback.signingIn);
@@ -328,7 +339,7 @@ export function useLoginPageController({
 
   async function signUpWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (passwordSubmission.pending.current || !validateCurrentForm('signup')) return;
+    if (!nextPathReady || passwordSubmission.pending.current || !validateCurrentForm('signup')) return;
     await passwordSubmission.run(async (isCurrent) => {
       setStatusTone('info');
       setStatus(authCopy.feedback.creatingAccount);
@@ -517,17 +528,8 @@ export function useLoginPageController({
 
   const handleEmailChange = useCallback((value: string) => {
     setEmail(value);
-    if (value !== email) {
-      setUnconfirmedEmail(null);
-      setError((current) => current && [
-        authCopy.feedback.emailNotConfirmed,
-        authCopy.feedback.confirmationRateLimited,
-        authCopy.feedback.confirmationUnavailable,
-      ].includes(current) ? null : current);
-      setStatus((current) => current === authCopy.feedback.confirmationResent ? null : current);
-    }
     clearFieldError('email');
-  }, [authCopy, clearFieldError, email]);
+  }, [clearFieldError]);
 
   const handlePasswordChange = useCallback((value: string) => {
     setPassword(value);
@@ -562,6 +564,7 @@ export function useLoginPageController({
     isConfirmationResending,
     isGoogleOAuthStarting,
     isResetSending,
+    isAuthReady: nextPathReady,
     isPasswordSubmitting: passwordSubmission.busy,
     acceptTerms,
     ageConfirmed,
