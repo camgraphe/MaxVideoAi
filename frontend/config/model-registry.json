@@ -527,7 +527,7 @@
           "indexable": false
         },
         "examples": {
-          "published": false,
+          "published": true,
           "includeInFamilyCopy": false,
           "current": false
         },
@@ -3295,6 +3295,46 @@
         },
         "app": {
           "published": true
+        },
+        "pricing": {
+          "published": true
+        },
+        "sitemap": {
+          "published": true
+        }
+      },
+      "replacement": null,
+      "lifecycle": "current",
+      "successorId": null
+    },
+    {
+      "id": "nano-banana-2-1",
+      "slug": "nano-banana-2-1",
+      "family": "nano-banana",
+      "category": "image",
+      "aliases": {
+        "internal": [],
+        "publicSlugs": []
+      },
+      "publication": {
+        "model": {
+          "published": true,
+          "indexable": true
+        },
+        "examples": {
+          "published": false,
+          "includeInFamilyCopy": false,
+          "current": false
+        },
+        "compare": {
+          "published": false,
+          "indexed": false,
+          "suggestedOpponentIds": [],
+          "publishedPairIds": []
+        },
+        "app": {
+          "published": true,
+          "launchBadge": "new"
         },
         "pricing": {
           "published": true

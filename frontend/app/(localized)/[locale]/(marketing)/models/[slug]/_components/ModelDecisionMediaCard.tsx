@@ -6,7 +6,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { ModelHeroMedia } from '@/components/marketing/ModelHeroMedia.client';
 import { UIIcon } from '@/components/ui/UIIcon';
 
-import { getHeroMediaBadges, isPlayableVideoUrl, type FeaturedMedia } from '../_lib/model-page-media';
+import { getHeroMediaBadges, pickHeroAutoplayUrl, type FeaturedMedia } from '../_lib/model-page-media';
 import { MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
 
 type ModelDecisionMediaCardProps = {
@@ -18,6 +18,7 @@ type ModelDecisionMediaCardProps = {
   locale: AppLocale;
   audioBadgeLabel: string;
   altContext: string;
+  preferPreviewAutoplay?: boolean;
 };
 
 function getDecisionMediaAlt(locale: AppLocale, altContext: string) {
@@ -36,12 +37,13 @@ export function ModelDecisionMediaCard({
   locale,
   audioBadgeLabel,
   altContext,
+  preferPreviewAutoplay = false,
 }: ModelDecisionMediaCardProps) {
   const posterSrc = media.posterUrl ?? null;
   const resolvedAltText = getDecisionMediaAlt(locale, altContext);
   const [leadingBadge, durationBadge, ratioBadge] = getHeroMediaBadges(media, badges, audioBadgeLabel);
   const LeadingBadgeIcon = media.hasAudio ? Volume2 : ImageIcon;
-  const videoSrc = isPlayableVideoUrl(media.videoUrl) ? media.videoUrl : null;
+  const videoSrc = pickHeroAutoplayUrl(media, preferPreviewAutoplay);
   const hasDisplayMedia = Boolean(videoSrc || posterSrc);
 
   return (

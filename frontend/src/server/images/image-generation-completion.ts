@@ -38,6 +38,7 @@ export async function persistCompletedImageGeneration(params: {
   resolution: string;
   style?: string | null;
   thinkingLevel: string | null;
+  providerUsage?: unknown;
   userId: string;
   vendorAccountId: string | null;
   visibility: 'public' | 'private';
@@ -182,6 +183,7 @@ export async function persistCompletedImageGeneration(params: {
             ...(limitGenerations ? { limit_generations: true } : {}),
           },
           pricing: { totalCents: pricing.totalCents, currency: pricing.currency },
+          ...(params.providerUsage ? { providerUsage: params.providerUsage } : {}),
         }),
       ]
     );

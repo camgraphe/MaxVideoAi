@@ -366,22 +366,18 @@ export function Composer({
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} prompt={prompt} onPromptChange={onPromptChange}
-                promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale} />
-              {multiPrompt || promotedActions?.length ? <div className={clsx(
+                promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
+                multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
+                  aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}
+                  title={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
+                  className="!min-h-11 min-w-11 rounded-full px-2 py-0 text-[11px] font-medium">
+                  <span className="sm:hidden">{locale.startsWith('fr') ? 'Scènes' : locale.startsWith('es') ? 'Escenas' : 'Scenes'}</span>
+                  <span className="hidden sm:inline">Multi-prompt</span>
+                </Button> : undefined} />
+              {promotedActions?.length ? <div className={clsx(
                 'flex items-center justify-end',
                 workspaceDensity ? 'min-w-0 flex-wrap gap-1.5' : 'flex-wrap gap-2'
               )}>
-                {multiPrompt ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={multiPromptEnabled ? 'primary' : 'outline'}
-                    onClick={() => multiPrompt.onToggle(!multiPromptEnabled)}
-                    className="!min-h-11 sm:!min-h-0 sm:h-8 rounded-full px-3 py-0 text-[10px] font-semibold uppercase tracking-micro dark:border-white/12 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]"
-                  >
-                    {multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'}
-                  </Button>
-                ) : null}
                 {promotedActions?.map((action) => (
                   <Button
                     key={action.id}

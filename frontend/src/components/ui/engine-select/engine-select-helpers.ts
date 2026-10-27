@@ -2,7 +2,7 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps, Mode, Resolution } from '@/types/engines';
 import { getModelFamilyDefinition } from '@/config/model-families';
 import { getRuntimeModelById } from '@/config/model-runtime';
-import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
+import { getEngineSelectFamilyRank, getEngineSelectPromotionRank } from '@/lib/engine-family-priority';
 import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { EngineRegistryMeta } from './engine-select-types';
 
@@ -344,7 +344,7 @@ export function buildEngineFamilyGroups({
       if (showLegacy) return true;
       return engine.id === selectedEngineId;
     })
-    .sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta, undefined, engineScores));
+    .sort((a, b) => compareEnginesByCataloguePriority(a, b, registryMeta, undefined, engineScores));
 
   const groupsById = new Map<string, EngineCaps[]>();
   sortedEngines.forEach((engine) => {
@@ -368,6 +368,8 @@ export function buildEngineFamilyGroups({
       };
     })
     .sort((a, b) => {
+      const promotion = getEngineSelectPromotionRank(a.engines[0].id) - getEngineSelectPromotionRank(b.engines[0].id);
+      if (promotion !== 0) return promotion;
       if (a.rank !== b.rank) {
         if (a.rank === Number.MAX_SAFE_INTEGER) return 1;
         if (b.rank === Number.MAX_SAFE_INTEGER) return -1;
@@ -425,4 +427,15 @@ export function compareEnginesByDefaultPriority(
   const orderA = registryMeta?.order.get(a.id) ?? Number.MAX_SAFE_INTEGER;
   const orderB = registryMeta?.order.get(b.id) ?? Number.MAX_SAFE_INTEGER;
   return orderA - orderB;
+}
+
+export function compareEnginesByCataloguePriority(
+  a: EngineCaps,
+  b: EngineCaps,
+  registryMeta: EngineRegistryMeta | null,
+  engineMeta?: Map<string, FalEngineEntry>,
+  engineScores?: EngineScoreMap
+): number {
+  const promotion = getEngineSelectPromotionRank(a.id) - getEngineSelectPromotionRank(b.id);
+  return promotion || compareEnginesByDefaultPriority(a, b, registryMeta, engineMeta, engineScores);
 }

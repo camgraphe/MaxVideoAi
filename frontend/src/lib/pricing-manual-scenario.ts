@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
 import { isFluxLtxSourceOperation, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation } from '../../lib/h3-source-operations';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
@@ -94,6 +95,15 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (facts.engineId === NANO21_ENGINE_ID) {
+    const settings = normalizeNano21Settings(context);
+    assertNano21Scenario({ ...settings, mode: context.mode, referenceImageCount: context.referenceImageCount,
+      outputCount: context.durationSec, aspectRatio: context.aspectRatio });
+    // Adrien approved one fixed image amount per output size. Native settings
+    // stay in the request hash/snapshot; they are not extra priced dimensions.
+    return { selector: { engineId: NANO21_ENGINE_ID, mode: context.mode!, resolution: settings.imageSize, durationSec: '1' },
+      quantities: { output_units: 1, reference_images: context.referenceImageCount ?? 0 } };
+  }
   // GPT billing already maps arbitrary sizes/orientations to six factual tiers.
   // Keep the requested pixels in the quote context, never as separately authored prices.
   const gptImage = isGptImageFamilyEngineId(facts.engineId);

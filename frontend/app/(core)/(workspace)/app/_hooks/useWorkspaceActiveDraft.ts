@@ -69,6 +69,13 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     restored: boolean;
   } | null>(null);
   const [saveError, setSaveError] = useState<Status>(null);
+  const saveErrorRef = useRef<Status>(null);
+  const updateSaveError = useCallback((next: Status) => {
+    // An unchanged synchronous layout update can replay a pending input edit indefinitely.
+    if (saveErrorRef.current === next) return;
+    saveErrorRef.current = next;
+    setSaveError(next);
+  }, []);
   const storeRef = useRef(store);
   storeRef.current = store;
   const phaseMatches =
@@ -93,7 +100,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     (next: Store) => {
       const encoded = encodeWorkspaceActiveDraft(next, account!);
       if (!encoded.ok) {
-        setSaveError(encoded.error);
+        updateSaveError(encoded.error);
         return false;
       }
       let memoryOnly = next.memoryOnly;
@@ -110,7 +117,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
       setStore(committed);
       return true;
     },
-    [account],
+    [account, updateSaveError],
   );
 
   useLayoutEffect(() => {
@@ -131,7 +138,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     }
     if (!account || !options.engines.length || !options.storageReady) return;
     if (phaseMatches) return;
-    setSaveError(null);
+    updateSaveError(null);
     let loaded = storeRef.current;
     if (loaded.account !== account || !loaded.loaded) {
       if (memory?.account === account) loaded = memory;
@@ -223,7 +230,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
       stage: 'commit',
       restored,
     });
-  }, [options, account, phaseMatches, valid, save]);
+  }, [options, account, phaseMatches, valid, save, updateSaveError]);
   useLayoutEffect(() => {
     if (
       !account ||
@@ -242,7 +249,7 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     const stored = storeRef.current;
     const serialized = serializeWorkspaceModelSetup(current);
     if (!serialized.ok) {
-      setSaveError(serialized.error);
+      updateSaveError(serialized.error);
       return;
     }
     const next = {
@@ -257,8 +264,8 @@ export function useWorkspaceActiveDraft(options: WorkspaceActiveDraftOptions) {
     if (JSON.stringify(stored.current?.setup) !== JSON.stringify(serialized.setup)) {
       if (!save(next)) return;
     }
-    setSaveError(storeRef.current.pendingSaveError ?? null);
-  }, [ready, valid, current, store.error, store.recovery, save]);
+    updateSaveError(storeRef.current.pendingSaveError ?? null);
+  }, [ready, valid, current, store.error, store.recovery, save, updateSaveError]);
   const removeRecovery = () => {
     if (!valid()) return;
     save({ ...storeRef.current, recovery: null });

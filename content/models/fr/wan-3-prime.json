@@ -278,6 +278,7 @@
         "body": "Refuser contenu dangereux, marques indésirables, erreur de texte ou ressemblance non autorisée."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "postGallery": null
   }
 }

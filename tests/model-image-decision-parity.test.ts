@@ -25,8 +25,8 @@ function readDocument(locale: (typeof LOCALES)[number], slug: string) {
   };
 }
 
-test('all eleven image models own localized decision content', () => {
-  assert.equal(IMAGE_SLUGS.length, 11);
+test('all twelve image models own localized decision content', () => {
+  assert.equal(IMAGE_SLUGS.length, 12);
 
   for (const slug of IMAGE_SLUGS) {
     const engine = listFalEngines().find((candidate) => candidate.modelSlug === slug);

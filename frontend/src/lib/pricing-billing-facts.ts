@@ -1,4 +1,6 @@
 import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from './kling-v4-pricing';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { calculateNano21ListImageComponents } from '@/lib/nano-banana-2-1-pricing';
 import { isFluxLtxSourceOperation, fluxLtxReferenceRate, fluxLtxDurationBounds } from '../../lib/flux-ltx-operations';
 import { isH3SourceOperation, h3OperationRate } from '../../lib/h3-source-operations';
 import { klingOperationPublishedRate } from '@/lib/kling-operation-pricing';
@@ -114,6 +116,12 @@ function buildBillingPricingFactsInternal(
         provider_cost_checked_at:'2026-10-25',effective_supplier_charge_verified:false,
         input_video_duration_sec:usage.inputVideoDurationSec,output_duration_sec:usage.outputDurationSec,
         billable_seconds:usage.billableSeconds,has_video_input:usage.hasVideoInput}});
+  }
+  if (engine.id === NANO21_ENGINE_ID) {
+    const { partialListUsd, meta } = calculateNano21ListImageComponents(context, currency);
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: partialListUsd * 100,
+      base: { seconds: 1, rate: partialListUsd, unit: 'image', amountCents: partialListUsd * 100 },
+      meta });
   }
   if (['flux-3','flux-3-draft'].includes(engine.id) && context.mode==='ref2v') {
     const cents=engine.id==='flux-3-draft'?(resolution==='720p'?6:undefined):({'720p':17,'1080p':29} as Record<string,number>)[resolution??''];

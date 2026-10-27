@@ -163,6 +163,8 @@ test('model audit fails malformed and divergent localized Examples with critical
     const parityFailures = report.critical.filter(
       ({ type }) => type === 'localized_examples_parity_mismatch',
     );
+    assert.ok(!parityFailures.some(({ modelSlug }) => modelSlug === 'wan-3-prime'),
+      'an EN-only post-gallery accompaniment must not create a locale parity failure');
     assert.ok(parityFailures.some(
       ({ modelSlug, locale, differences }) =>
         modelSlug === 'nano-banana-pro' &&

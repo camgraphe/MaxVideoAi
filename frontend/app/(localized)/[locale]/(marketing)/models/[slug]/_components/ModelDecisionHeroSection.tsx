@@ -85,6 +85,7 @@ type ModelDecisionHeroSectionProps = {
   locale: AppLocale;
   audioBadgeLabel: string;
   mediaAltContext: string;
+  preferPreviewAutoplay?: boolean;
 };
 
 export function ModelDecisionHeroSection({
@@ -96,6 +97,7 @@ export function ModelDecisionHeroSection({
   locale,
   audioBadgeLabel,
   mediaAltContext,
+  preferPreviewAutoplay = false,
 }: ModelDecisionHeroSectionProps) {
   const homeCrumb = HOME_CRUMB[locale] ?? HOME_CRUMB.en;
   return (
@@ -172,6 +174,7 @@ export function ModelDecisionHeroSection({
               audioBadgeLabel={audioBadgeLabel}
               renderLinkLabel={decision.media.renderLabel}
               altContext={decision.media.altContext || mediaAltContext}
+              preferPreviewAutoplay={preferPreviewAutoplay}
             />
           </div>
             {decision.hero.quickLinks.length ? (

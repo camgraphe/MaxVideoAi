@@ -22,6 +22,7 @@ import type {
   ModelExampleIconId,
   ModelExamplesContent,
 } from './model-page-examples-content';
+import type { ModelExamplesPostGalleryLinks } from './model-page-examples-runtime-policy';
 import {
   formatEmptyExamplesLabel,
   type ModelExamplesUiCopy,
@@ -56,12 +57,14 @@ export type BuildModelExamplesViewModelInput = {
   fallbackPosters: ReadonlyMap<string, string>;
   examplesLinkHref: LocalizedLinkHref;
   imageWorkspaceHref: string;
+  postGalleryLinks?: ModelExamplesPostGalleryLinks | null;
 };
 
 export type ModelExamplesViewModel = {
   visible: boolean;
   anchorId: string;
   section: ModelExamplesContent['section'];
+  postGallery: (NonNullable<ModelExamplesContent['postGallery']> & ModelExamplesPostGalleryLinks) | null;
   filters: ModelExampleFilter[];
   proofItems: Array<Omit<ModelExamplesContent['proofItems'][number], 'icon'> & { icon: LucideIcon }>;
   decision: {
@@ -245,6 +248,9 @@ export function buildModelExamplesViewModel(
     visible: items.length > 0 || input.content.showWhenEmpty,
     anchorId: input.anchorId,
     section: input.content.section,
+    postGallery: input.content.postGallery && input.postGalleryLinks
+      ? { ...input.content.postGallery, ...input.postGalleryLinks }
+      : null,
     filters: input.content.filters.filter(
       (filter) => filter.id === 'all' || availableIds.has(filter.id),
     ),

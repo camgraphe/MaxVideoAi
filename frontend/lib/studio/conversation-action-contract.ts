@@ -15,7 +15,7 @@ import type {ToolAssetRef} from '@/lib/toolbox/contract';
 import {studioTimelineReadSchema,studioTimelineEditSchema,STUDIO_EDITING_DIRECTOR_TOOLS,type StudioConversationTimeline} from './conversation-editing-contract';
 import type {ConversationEditResult} from '@/server/studio/conversation-edit-command';
 import type {StudioQuoteDiscardResult} from '@/server/studio/conversation-quote-command';
-import {imageSelectionSchema,imageSelectionProperties,conversationPreparationReplyProperty} from './conversation-creation-contract';
+import {imageSelectionFields,imageSelectionProperties,conversationPreparationReplyProperty,validateStudioImageReferences} from './conversation-creation-contract';
 import type {AgentModelModeDetails,AgentModelLifecycle} from '@/server/agent-api/types';
 import type {listAudioCapabilities} from '@/server/agent-api/audio-capabilities';
 import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/agent-api/audio-capabilities';
@@ -70,7 +70,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioPricingCompareSchema,
   z.object({action: z.literal('model.details'), modelId: z.string().trim().min(1).max(128)}).strict(),
   z.object({action: z.literal('project.remember'), ...studioMemorySchema.shape, projectTitle:studioProjectNameSchema.refine(value=>value.length<=80).nullable().optional().catch(null)}).strict(),
-  z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionSchema.shape}).strict(),
+  z.object({action: z.literal('image.prepare'), reply: z.string().min(1).max(2400), ...imageSelectionFields}).strict(),
   z.object({action: z.literal('generation.read'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('quote.discard'), quoteId: z.string().uuid()}).strict(),
   z.object({action: z.literal('media.read')}).strict(),
@@ -78,7 +78,9 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
   studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
-]).superRefine(validateStudioVideoPrompt);
+]).superRefine(validateStudioVideoPrompt).superRefine((value, context) => {
+  if(value.action==='image.prepare')validateStudioImageReferences(value, context);
+});
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary; audioWorkflow?: StudioAudioWorkflowFacts};
 type AudioCapabilities=ReturnType<typeof listAudioCapabilities>;

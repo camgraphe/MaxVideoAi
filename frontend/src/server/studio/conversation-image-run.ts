@@ -41,7 +41,7 @@ import {editStudioConversationTimeline} from './conversation-edit-command';
 import {readStudioWorkspace} from './workspace-command';
 import {StudioConnectedPersistenceError} from './montage-command';
 import {discardStudioPreparedQuote} from './conversation-quote-command';
-import {imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
+import {imageSelectionStripSchema} from '@/lib/studio/conversation-creation-contract';
 import {studioGreetingReply} from './conversation-intent';
 import {planStudioExtensionAssembly,studioExtensionSourceSnapshot} from './conversation-extension-assembly';
 import {readStudioConversationTimeline} from './conversation-timeline';
@@ -206,7 +206,7 @@ export async function runStudioImageActions(options: {
     },
     prepareImage: async action => {
       if(input.shotPlanRevision)throw new AgentApiError('PARAMETER_INVALID','The revised shot plan requires a new video quote.');
-      const draft = {reply: action.reply,image: imageSelectionSchema.strip().parse(action)};
+      const draft = {reply: action.reply,image: imageSelectionStripSchema.parse(action)};
       // Validate selection before saving intent. Catalog/ownership failures remain terminal.
       const catalog = await generation.catalog();
       const request = validateStudioPreparationInput(() => imageRequestFromDraft(draft, input, catalog));

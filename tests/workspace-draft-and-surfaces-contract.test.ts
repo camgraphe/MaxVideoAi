@@ -136,7 +136,7 @@ test('model review owns account-scoped snapshots and atomic application outside 
   const serializer = readFileSync('frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups.ts', 'utf8');
   assert.match(ready, /useWorkspaceModelReview/);
   assert.match(ready, /handleEngineChange=\{modelReview.switchPickerModel\}/);
-  assert.match(controller, /switchPickerModel: \(id: string\) => switchModel\(id, true\)/);
+  assert.match(controller, /switchPickerModel: \(id: string\) => switchModel\(id\)/, 'manual switching uses the guarded Create preparation rather than locking the prior operation');
   assert.match(ready, /onGuestEngineChange: composer.handleEngineChange/);
   assert.doesNotMatch(app + ready, /sessionStorage\.(getItem|setItem).*model-setups/);
   assert.match(controller, /prepareWorkspaceModelCandidate/);
