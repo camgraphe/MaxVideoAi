@@ -51,7 +51,9 @@ for (const kind of ['actions', 'legacy'] as const) test(`${kind} director binds 
   let captured: unknown;
   const createResponse = async (params: unknown) => { captured = params; return reply; };
   const current = { requestId: randomUUID(), message: 'Use @Image 1.', references: [imageB, imageA], referenceMentions: [{ assetId: imageA, label: 'Image 1' }, { assetId: imageB, label: 'Image 2' }] };
-  const history = [{ message: 'Previously @Image 1.', reply: 'Previous idea.', referenceMentions: [{ assetId: imageB, label: 'Image 1' }] }];
+  const fullBrief = 'Previously @Image 1. '.padEnd(3950, 'x') + ' Final line: end on the unopened blue door.';
+  imageTurnInputSchema.parse({...current, message: fullBrief});
+  const history = [{ message: fullBrief, reply: 'Previous idea.', referenceMentions: [{ assetId: imageB, label: 'Image 1' }] }];
   if (kind === 'actions') {
     await createStudioConversationDirector({ createResponse: async params => ({ ...await createResponse(params), output_text: JSON.stringify({ reply: 'I can use the selected reference.' }) }) })({ ...current, references: refs, history,
       project: { name: 'Project', revision: 0, memory: { revision: 0, brief: '', decisions: [] } },
@@ -60,6 +62,7 @@ for (const kind of ['actions', 'legacy'] as const) test(`${kind} director binds 
   } else await createStudioImageDirector({ createResponse })(current, history, refs);
   const messages = (captured as { input: { role: string; content: unknown }[] }).input;
   const previous = messages.find(message => typeof message.content === 'string' && message.content.includes('Previously'))!;
+  assert.ok(String(previous.content).startsWith(fullBrief), 'The full accepted brief must survive into later turns, including its ending.');
   assert.match(String(previous.content), /earlier turn only/);
   assert.match(String(previous.content), new RegExp(`"assetId":"${imageB}","label":"Image 1"`));
   const currentParts = messages.at(-1)!.content as { type: string; text?: string; image_url?: string }[];

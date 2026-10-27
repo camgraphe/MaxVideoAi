@@ -25,7 +25,7 @@ import {createStudioAudioGenerationService} from './audio-generation-service';
 import {resolveStudioMedia,type StudioResolvedMedia} from './media-resolver';
 import type {CanonicalGenerationRequest} from '@/server/agent-api/generation-types';
 import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization';
-import {GenerationNormalizationError, normalizeGenerationRequest,stableJson} from '@/server/agent-api/generation-normalization';
+import {GenerationNormalizationError, normalizeGenerationRequest,orderedGenerationReferenceRole,stableJson} from '@/server/agent-api/generation-normalization';
 import {GenerationCapabilityError, validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
@@ -260,6 +260,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
       } };
     }
     const legacy = !action.modelId && action.settings == null;
+    const orderedRole=orderedGenerationReferenceRole(mode,candidate.engine.id,candidate.engine.id==='minimax-h3-max'&&typeof settings.referenceOrder==='string');
     // Validate model/parameters/roles before resolving images or promoting job outputs.
     let derivedSettings:Record<string,number>={};
     const build = (assetIds: string[],correctable=false,resolvedReferences?:ResolvedReference[]) => {try {return canonicalPreparation(() => {
@@ -268,7 +269,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
           ...(shotPlan ? {multiPrompt:shotPlan,durationSec:shotPlan.reduce((total,shot)=>total+shot.durationSec,0)} : {}), ...settings},
         ...(action.subjects == null ? {} : {subjects:action.subjects}),
         references: selections.map((selection, index) => ({kind: 'asset', assetId: assetIds[index], role: selection.role,
-          ...(selection.slot === null || selection.slot === undefined ? {} : {slot: selection.slot})})), outputCount: 1});
+          ...(selection.role!==orderedRole || selection.slot == null ? {} : {slot: selection.slot})})), outputCount: 1});
       validateCanonicalGenerationCapabilities(request, candidate,{resolvedReferences});
       return request as CanonicalGenerationRequest & {surface: 'video'};
     },correctable);}catch(error){
@@ -293,7 +294,8 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
     const referenceFactsSignal=AbortSignal.timeout(8_000);
     for (const [index,selection]of selections.entries()){
       const canonicalRef=preflight.references.find(reference=>reference.kind==='asset'&&reference.assetId===preflightIds[index]&&reference.role===selection.role
-        &&(selection.slot==null?!used.has(JSON.stringify([reference.assetId,reference.role,reference.slot])):reference.slot===selection.slot))!;
+        &&(selection.role!==orderedRole||selection.slot==null?!used.has(JSON.stringify([reference.assetId,reference.role,reference.slot])):reference.slot===selection.slot));
+      if(!canonicalRef)throw new StudioPreparationInputError('REFERENCE_INVALID','The selected reference does not match its canonical role and order.');
       used.add(JSON.stringify([canonicalRef.kind==='asset'?canonicalRef.assetId:'',canonicalRef.role,canonicalRef.slot]));
       const identity={assetId:preflightIds[index],role:selection.role,...(canonicalRef.slot===undefined?{}:{slot:canonicalRef.slot})};
       const raw=selection.ref.type==='job-output'?await requireStudioMediaSource(actor,selection.ref,input,dependencies):null;

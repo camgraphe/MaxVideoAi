@@ -24,6 +24,8 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
   if (!row) throw new AgentApiError('PARAMETER_INVALID', 'This Studio project is not available.');
   const quoteRows = await query<StudioConversationQuoteRow>(`
     SELECT q.quote_id AS "quoteId",q.request_json->>'surface' AS surface,q.state AS "quoteState",q.job_id AS "jobId",j.status,
+      j.message AS "failureMessage",jsonb_build_object('providerFailure',j.settings_snapshot->'providerFailure') AS "failureSettings",
+      refund.amount_cents AS "refundAmountCents",refund.currency AS "refundCurrency",
       q.price_cents AS "amountCents",q.currency,q.expires_at AS "expiresAt",clock_timestamp() AS "databaseNow",
       q.request_json->>'engineId' AS "modelId",q.request_json->>'mode' AS mode,q.request_json->'outputCount' AS "outputCount",
       q.pricing_snapshot->'canonicalPricing'->'meta'->'output_duration_sec' AS "outputDurationSec",
@@ -33,6 +35,9 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
       ARRAY(SELECT reference->>'role' FROM jsonb_array_elements(q.request_json->'references') AS reference) AS "referenceRoles"
     FROM studio_image_turns t JOIN mcp_generation_quotes q ON q.quote_id=t.quote_id AND q.user_id=t.user_id AND q.studio_project_id=t.project_id
     LEFT JOIN app_jobs j ON j.job_id=q.job_id AND j.user_id=q.user_id
+    LEFT JOIN app_receipts charge ON charge.job_id=j.job_id AND charge.user_id=j.user_id AND charge.type='charge'
+    LEFT JOIN app_receipts refund ON refund.job_id=j.job_id AND refund.user_id=j.user_id AND refund.type='refund'
+      AND j.payment_status='refunded_wallet' AND refund.amount_cents=charge.amount_cents AND refund.currency=charge.currency
     WHERE t.user_id=$1 AND t.project_id=$2 AND q.auth_origin='studio-session' ORDER BY t.created_at DESC LIMIT 30`, [actor.userId, actor.projectId,STUDIO_QUOTE_SETTING_KEYS]);
   const generations = projectStudioConversationQuotes(quoteRows);
   const authoredNotes=options.taskContext?await readStudioTaskMemory(actor,options.taskContext.message,options.taskContext.requestId):[];

@@ -1,5 +1,15 @@
 import type {ImageDraft} from '@/lib/studio/image-conversation-contract';
 
+/** A verbatim choice of the last server-rendered menu is selection intent only.
+ * Prices remain historical; preparation and client confirmation still own execution. */
+export function studioSelectedFilmPlan(message:string,history:readonly {reply?:string|null}[]):string|null {
+  const previous=history.at(-1)?.reply??'';
+  if(!/^(?:Cut plans for the complete|Découpages pour le film complet de|Opciones para la película completa de)\b/u.test(previous))return null;
+  const normalized=(value:string)=>value.normalize('NFKC').trim().replace(/^-\s+/,'').replace(/[.!]\s*$/,'').replace(/\s+/g,' ').toLowerCase();
+  const selection=normalized(message.replace(/^(?:please\s+)?(?:generate|prepare)(?:\s+this(?:\s+one)?)?\s*:\s*/i,''));
+  return previous.split('\n').find(line=>/^\s*- \d+ × [\d.]+ s/u.test(line)&&normalized(line)===selection)?.replace(/^\s*- /,'')??null;
+}
+
 /** Only standalone salutations qualify; a greeting plus a brief must reach the director. */
 export function studioGreetingReply(message:string,hasReferences:boolean):ImageDraft|null {
   if(hasReferences||message.length>80)return null;

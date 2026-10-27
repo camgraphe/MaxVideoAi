@@ -2,6 +2,8 @@ import {recordedGenerationSourceVideoOutput} from '@/lib/generation-output-durat
 import type {StudioConversationProject,StudioConversationQuoteFacts,StudioConversationQuoteSettings} from '@/lib/studio/conversation-action-contract';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {parseFlux3MaxKeyframeIndexes} from '@/lib/flux-3-max';
+import {getKnownGenerationFailureMessage,getGenerationFailureFallbackMessage} from '@/lib/generation-failure-messages';
+import {getVideoFailureCodeFromSettingsSnapshot} from '@/lib/video-failure-codes';
 
 const settingTypes: Record<keyof StudioConversationQuoteSettings,'boolean'|'number'|'string'> = {
   audio:'boolean',durationSec:'number',resolution:'string',aspectRatio:'string',quality:'string',
@@ -24,6 +26,10 @@ export type StudioConversationQuoteRow = {
   referenceCount: unknown; referenceRoles: unknown;
   outputDurationSec?: unknown;
   sourceVideoOutput?: unknown;
+  failureMessage?: string | null;
+  failureSettings?: unknown;
+  refundAmountCents?: unknown;
+  refundCurrency?: unknown;
 };
 
 function positiveDuration(value:unknown):number|undefined {
@@ -79,6 +85,12 @@ export function projectStudioConversationQuotes(rows: readonly StudioConversatio
   return rows.map((row,index) => {
     const summary = {quoteId:row.quoteId,surface:row.surface,quoteState:row.quoteState,jobId:row.jobId,status:row.status};
     const quote = index < MAX_QUOTE_FACTS ? safeQuoteFacts(row) : null;
-    return quote ? {...summary,quote} : summary;
+    const failed = ['failed','error','errored','aborted','cancelled','canceled','timed_out','timeout','provider_polling_stalled'].includes(row.status??'');
+    const failure = failed ? {message:getKnownGenerationFailureMessage({message:row.failureMessage,
+      failureCode:getVideoFailureCodeFromSettingsSnapshot(row.failureSettings)})??getGenerationFailureFallbackMessage()} : undefined;
+    const walletRefund = typeof row.refundAmountCents==='number'&&Number.isSafeInteger(row.refundAmountCents)&&row.refundAmountCents>0
+      &&typeof row.refundCurrency==='string'&&/^[A-Z]{3}$/.test(row.refundCurrency)
+      ? customerDisplayPrice(row.refundAmountCents,row.refundCurrency) : undefined;
+    return {...summary,...(quote?{quote}:{}),...(failure?{failure}:{}),...(walletRefund?{walletRefund}:{})};
   });
 }

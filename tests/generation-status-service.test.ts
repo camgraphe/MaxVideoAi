@@ -56,6 +56,20 @@ function generationRecord(overrides: Partial<GenerationStatusRecord> = {}): Gene
 const FAILED_ATTEMPT_BOUNDARY =
   'No new generation was started after this failure. A refund or recredit does not restore the previous authorization. To try again, prepare a fresh exact quote and wait for explicit user approval.';
 
+test('recorded input safety refusals remain actionable in web and agent status without exposing provider text', () => {
+  for (const [message, subject] of [
+    ['Green net check rejected text (input)', /prompt.*blocked/i],
+    ['Green net check rejected image (input)', /reference image.*blocked/i],
+  ] as const) {
+    const record = generationRecord({status: 'failed', message});
+    for (const result of [mapGenerationStatusRecordToAgent(record), mapGenerationStatusRecordToWeb(record)]) {
+      assert.match(result?.message ?? '', subject);
+      assert.doesNotMatch(result?.message ?? '', /Green net|provider-secret|returned to your wallet/i);
+    }
+    assert.match(mapGenerationStatusRecordToAgent(record)?.message ?? '', /fresh exact quote.*explicit user approval/);
+  }
+});
+
 test('owned status lookup scopes the SQL by job and user before returning a record', async () => {
   const calls: Array<{ sql: string; params?: ReadonlyArray<unknown> }> = [];
   const record = generationRecord();
