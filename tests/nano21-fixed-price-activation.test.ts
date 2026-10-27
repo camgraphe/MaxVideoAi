@@ -99,3 +99,38 @@ test('public and admin supplier facts admit Nano21 while keeping variable provid
     }
   }
 });
+
+
+test('Nano fixed tariffs never enter the historical percentage-policy audit', async () => {
+  const { collectCanonicalPricingOutputs } = await import('../frontend/src/lib/pricing-audit/canonical-collectors');
+  const frozen = await import('./fixtures/pricing-parity.v1.json');
+  const additions = await import('./fixtures/pricing-shadow-additions.v1.json');
+  const rows = collectCanonicalPricingOutputs([...frozen.rows, ...additions.rows]);
+  assert.ok(rows.length > 178, 'the existing audit coverage remains intact');
+  assert.equal(rows.some(row => row.engineId === 'nano-banana-2-1'), false,
+    'Native fixed customer tariffs have no historical percentage-policy or complete invoice baseline.');
+});
+
+
+test('offline public Nano projections use fixed customer quotes and reject unsupported batches', async () => {
+  const { collectPublicPricingProjectionRows } = await import('../frontend/scripts/pricing-public-baseline-collector');
+  const rows = (await collectPublicPricingProjectionRows()).filter(row => row.engineId === 'nano-banana-2-1');
+  assert.equal(rows.length, 9);
+  for (const row of rows) {
+    if (row.id.endsWith(':quantity-4')) { assert.equal(row.status, 'unavailable'); continue; }
+    assert.equal(row.status, 'exact', row.id);
+    assert.equal(row.customerTotalCents, row.id.endsWith(':high') ? 23 : 7, row.id);
+  }
+});
+
+
+test('the public estimator exposes all three Nano image sizes without a percentage-derived customer hint', async () => {
+  const { buildEngineOption, PER_IMAGE_ENGINE_IDS } = await import('../frontend/components/marketing/price-estimator/price-estimator-options');
+  const { getPricingKernel } = await import('../frontend/src/lib/pricing-kernel');
+  const entry = getFalEngineById('nano-banana-2-1')!;
+  const option = buildEngineOption(entry, entry.engine, entry.engine, getPricingKernel(), {});
+  assert.ok(option, 'Nano21 must be selectable in the public estimator');
+  assert.equal(PER_IMAGE_ENGINE_IDS.has(entry.id), true);
+  assert.equal(option.rateUnit, '/image');
+  assert.deepEqual(option.resolutions.map(row => [row.value, row.rate]), [['1k', 0.07], ['2k', 0.11], ['4k', 0.23]]);
+});
