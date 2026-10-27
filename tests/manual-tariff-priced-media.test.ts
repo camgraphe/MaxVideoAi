@@ -18,7 +18,7 @@ test('real generation zero media counts and unused source metadata resolve the c
     const context = { ...scenario.context, referenceImageCount: scenario.context.referenceImageCount ?? 0,
       inputImageCount: scenario.context.inputImageCount ?? 0, inputVideoDurationSec: scenario.context.inputVideoDurationSec ?? 0 };
     assert.deepEqual(project(context).selector, scenario.selector, scenario.id);
-    if (!['gemini-omni-flash', 'wan-3', 'wan-3-prime'].includes(scenario.modelId)
+    if (!['gemini-omni-flash', 'wan-3', 'wan-3-prime', 'kling-v4'].includes(scenario.modelId)
       && !supportsSeedanceInputTariff(scenario.modelId,scenario.selector.mode,scenario.selector.billingInputType)) {
       const extra = { ...context, inputVideoDurationSec: 3.25 };
       assert.equal(project(extra).facts.vendorSubtotalExactCents, project(context).facts.vendorSubtotalExactCents);

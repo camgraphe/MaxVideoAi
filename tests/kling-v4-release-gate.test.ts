@@ -6,8 +6,9 @@ import { resolveGenerateRouteContext, resolveTrustedPaidGenerateRouteContext } f
 import { resolveMediaAwarePreflight } from '../frontend/app/api/preflight/_lib/media-aware-preflight';
 import { resolveAgentGenerationModeExecutability, resolveAgentGenerationRequestExecutability } from '../frontend/src/server/agent-runtime/model-executability';
 import { generateVideo } from '../frontend/src/lib/fal';
+import { withClosedKlingV4Release } from './helpers/kling-v4-release-profile';
 
-test('V4 preparation cannot reach configuration, pricing, billing, canary or providers', async () => {
+test('closed V4 profile cannot reach configuration, pricing, billing, canary or providers', async () => withClosedKlingV4Release(async () => {
   const forbidden = async (): Promise<never> => { throw new Error('Side effect reached while release is closed'); };
   const engine = getFalEngineById('kling-v4')!.engine;
   for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v'] as const) {
@@ -26,11 +27,11 @@ test('V4 preparation cannot reach configuration, pricing, billing, canary or pro
     assert.equal(preflight.error?.code, 'ENGINE_UNAVAILABLE');
     await assert.rejects(generateVideo(request), /KLING_V4_NOT_QUALIFIED/);
   }
-});
+}));
 
-test('request executability also refuses restored V4 requests with configured offline credentials', () => {
+test('closed V4 profile also refuses restored requests with configured offline credentials', async () => withClosedKlingV4Release(() => {
   const engine = getFalEngineById('kling-v4')!.engine;
   for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v'] as const) {
     assert.deepEqual(resolveAgentGenerationRequestExecutability({surface:'video',engineId:'kling-v4',mode,prompt:'Offline',settings:{},references:[]}, engine, [], {bytePlusEnabled:false,falApiKey:'offline-only'}), {executable:false,reason:'provider_disabled'});
   }
-});
+}));

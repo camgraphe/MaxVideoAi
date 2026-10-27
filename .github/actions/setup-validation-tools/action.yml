@@ -3,6 +3,32 @@ description: Install FFmpeg and PostgreSQL 17 for disposable integration fixture
 runs:
   using: composite
   steps:
+    - name: Select official Ubuntu archive transport
+      shell: bash
+      run: |
+        sudo python3 - <<'PYTHON'
+        from pathlib import Path
+        import re
+
+        # Change only the known Ubuntu transport endpoint, retaining suites and signing keys.
+        for source in (
+            Path('/etc/apt/apt-mirrors.txt'),
+            Path('/etc/apt/security-mirrors.txt'),
+            Path('/etc/apt/sources.list'),
+            Path('/etc/apt/sources.list.d/ubuntu.sources'),
+        ):
+            if not source.is_file():
+                continue
+            original = source.read_text()
+            updated = re.sub(
+                r'https?://azure\.archive\.ubuntu\.com/ubuntu(?=/|\s|$)',
+                'https://archive.ubuntu.com/ubuntu',
+                original,
+            )
+            if updated != original:
+                source.write_text(updated)
+                print(f'Ubuntu archive transport updated: {source}')
+        PYTHON
     - name: Install media and database validation tools
       shell: bash
       run: |
