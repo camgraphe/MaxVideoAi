@@ -163,6 +163,8 @@ function collectStringValues(value, output = []) {
 }
 
 function examplesStructuralSignature(value, currentPath = '') {
+  // This optional accompaniment can be authored for one locale; the parser validates its shape.
+  if (currentPath === 'postGallery') return 'nullable-locale-accompaniment';
   if (EXAMPLES_NULLABLE_STRING_PATHS.has(currentPath)) return 'nullable-string';
   if (Array.isArray(value)) {
     return {

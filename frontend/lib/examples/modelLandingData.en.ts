@@ -176,11 +176,12 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   },
   ltx: {
     ...getEvergreenExampleFamilyCopy('en', 'LTX'),
+    sectionTitles: ['Prompt patterns across LTX models', 'Strengths and limits by model', 'What would your version cost?'],
     summary:
       "LTX 2.5 Pro and Fast lead this page. Older LTX 2.3 and LTX 2 examples keep their original model labels so you can compare generations without confusing their capabilities.",
     promptPatterns: "Describe the subject, action, camera movement and visual style. For image-to-video, explain how the scene should move from the opening image. Keep the same starting point and change one instruction at a time.",
     strengthsLimits: "Compare the whole clip across Pro and Fast: does the motion follow the prompt, and does the subject remain consistent? Use the same source image for image-to-video tests. A successful example is a starting point, not a guarantee of identical results. Standard LTX 2.3 Reframe accepts source timing up to 60 seconds at 720p or 1080p without a prompt. This source operation does not transfer to LTX 2.3 Fast or LTX 2.5 Fast/Pro.",
-    pricingNotes: "Keep the model, mode, duration, resolution and available audio settings explicit when comparing costs. The detail page records the cost of that example; check the current quote in the workspace before generating your version.",
+    pricingNotes: "The price shown is a current estimate for a new generation, not the original spend. Open the example for its recorded settings; confirm your own settings and quote in the app.",
     faq: [
       {
         question: "Where can I find LTX 2.3 prompt examples?",

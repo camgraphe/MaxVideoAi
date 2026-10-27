@@ -278,6 +278,15 @@
         "body": "Reject unsafe content, unwanted marks, text errors or unapproved likenesses."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "postGallery": {
+      "title": "Give your video a different setting",
+      "example": "In our published example, a talking clip moves from a home office to an orbital flight deck. The source clip was AI-generated.",
+      "method": "To try it, choose Wan 3 Prime and Modify Video, add your clip and describe the change. Review the current quote before generating.",
+      "limitation": "Watch the full result before choosing it: faces, clothing, motion and lip sync can change.",
+      "ctaLabel": "Open Wan 3 Prime",
+      "exampleLinkLabel": "Watch the example",
+      "guideLinkLabel": "See the prompts and steps"
+    }
   }
 }

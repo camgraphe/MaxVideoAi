@@ -293,6 +293,12 @@ export const enPayAsYouGoContent = {
       engineImageAltSuffix: 'AI video model',
     },
     runtime: {
+      videoOverrides: {
+        'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f': {
+          title: 'Neon racer reveal',
+          useCase: 'A rider, a motorcycle, a neon tunnel. Explore the prompt behind this 10-second scene.',
+        },
+      },
       defaultEngineLabel: 'AI video model',
       defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: '{engine} example render',

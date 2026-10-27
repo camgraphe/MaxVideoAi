@@ -140,13 +140,14 @@ export function buildPayAsYouGoShowcaseVideo(
   const duration = Math.max(1, Math.round(video.durationSec || 0));
   const engineLabel = video.engineLabel || video.engineId || copy.defaultEngineLabel;
   const titleEngineLabel = video.engineLabel || video.engineId || copy.defaultTitleEngineLabel;
+  const authoredCopy = copy.videoOverrides?.[video.id];
   return {
     id: video.id,
     engineId: video.engineId,
     engineLabel,
     durationLabel: `${duration}s`,
-    title: formatVideoTitle(video.promptExcerpt || video.prompt || '', titleEngineLabel, copy),
-    useCase: formatVideoUseCase(video, copy),
+    title: authoredCopy?.title ?? formatVideoTitle(video.promptExcerpt || video.prompt || '', titleEngineLabel, copy),
+    useCase: authoredCopy?.useCase ?? formatVideoUseCase(video, copy),
     posterUrl: video.thumbUrl,
     videoUrl: video.previewVideoUrl ?? video.videoUrl,
     href: `/video/${encodeURIComponent(video.id)}?from=${encodeURIComponent('/pay-as-you-go-ai-video-generator')}`,
