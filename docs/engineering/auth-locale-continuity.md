@@ -93,6 +93,6 @@ Local email recovery also returns through `/auth/callback`; the local direct
 `/login` PKCE exchange remains for Google only. A recovery code must reach the
 dedicated form before it is exchanged.
 
-The root hash-session handler skips this route to prevent competing exchanges. GTM/GA4 is excluded. Recovery links preserve the language via middleware cookies; direct `lang` is also accepted by the page. Current hosted `ConfirmationURL` uses PKCE and requires the original browser. Token-hash verification is supported locally but requires a separately published email template before cross-browser recovery is available. Do not claim live delivery or a provider migration based on these local tests.
+The root hash-session handler skips this route to prevent competing exchanges. GTM/GA4 is excluded. Recovery links preserve the language via middleware cookies; direct `lang` is also accepted by the page. Hosted templates are deployed independently from this code. PKCE proof requires the requesting browser's verifier; token-hash proof supports a different browser. Check the actual hosted link and a controlled mailbox recipe before claiming live delivery or cross-browser compatibility; local tests alone do not establish the hosted template's state.
 
 Coverage: `tests/password-recovery.test.ts` and the auth/locale tests listed above.
