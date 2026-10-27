@@ -484,15 +484,15 @@ export function LoginAuthSurface({
             </div>
           </div>
         )}
-        {mode === 'signin' && unconfirmedEmail && (
-          <Button type="button" variant="outline" size="sm" data-testid="resend-confirmation" onClick={onResendConfirmation} disabled={isConfirmationResending || isPasswordSubmitting} aria-busy={isConfirmationResending}>
-            {isConfirmationResending ? authCopy.feedback.sendingConfirmation : authCopy.feedback.resendConfirmation}
-          </Button>
-        )}
         {error && (
           <p role="alert" className="text-xs text-state-warning">
             {error}
           </p>
+        )}
+        {mode === 'signin' && unconfirmedEmail && (
+          <Button type="button" variant="outline" size="sm" data-testid="resend-confirmation" onClick={onResendConfirmation} disabled={isConfirmationResending || isPasswordSubmitting} aria-busy={isConfirmationResending}>
+            {isConfirmationResending ? authCopy.feedback.sendingConfirmation : authCopy.feedback.resendConfirmation}
+          </Button>
         )}
       </div>
     </main>

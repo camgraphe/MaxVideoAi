@@ -62,6 +62,8 @@ test('unconfirmed email offers one explicit resend without suggesting account cr
     assert.equal(f.w.controller.signupSuggestion, null);
     const resend = f.w.document.querySelector<HTMLButtonElement>('[data-testid="resend-confirmation"]')!;
     assert.ok(resend);
+    const explanation = [...f.w.document.querySelectorAll('[role="alert"]')].find(node => node.textContent?.includes('Confirm your email'))!;
+    assert.ok(explanation.compareDocumentPosition(resend) & f.w.Node.DOCUMENT_POSITION_FOLLOWING, 'explain confirmation before offering resend');
     await f.w.fx.act(async () => { resend.click(); resend.click(); });
     assert.equal(f.resendRequests.length, 1);
     assert.deepEqual(JSON.parse(JSON.stringify(f.resendInputs[0])), { type: 'signup', email: 'synthetic@example.invalid', options: { emailRedirectTo: 'https://example.invalid/auth/callback?next=%2Fapp&lang=en&flow=signup' } });
