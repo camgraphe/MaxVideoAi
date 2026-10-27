@@ -25,6 +25,12 @@ export function isPlayableVideoUrl(src: string | null | undefined): boolean {
   return Boolean(src && /\.(?:mp4|webm|mov)(?:[?#].*)?$/i.test(src));
 }
 
+/** A selected model can loop its short, silent derivative while linking the full film. */
+export function pickHeroAutoplayUrl(media: FeaturedMedia, preferPreview = false): string | null {
+  if (!isPlayableVideoUrl(media.videoUrl)) return null;
+  return preferPreview && isPlayableVideoUrl(media.previewVideoUrl) ? media.previewVideoUrl! : media.videoUrl;
+}
+
 export function getHeroMediaBadges(media: FeaturedMedia, authored: string[], audioBadgeLabel: string): Array<string | null> {
   if (!isPlayableVideoUrl(media.videoUrl)) return media.posterUrl ? authored : [];
   return [
