@@ -10,7 +10,7 @@ import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
 import { buildModelPromptingViewModel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-view-model';
 
-test('Kling v4 functional access retains a normal noindex model page and closed marketing discovery', () => {
+test('Kling v4 permits gallery preparation while the model page and other discovery remain closed', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
   const model = registry.models.find((entry: { id: string }) => entry.id === 'kling-v4');
   assert.ok(model, 'Kling v4 registry identity must exist');
@@ -19,7 +19,10 @@ test('Kling v4 functional access retains a normal noindex model page and closed 
   assert.notEqual(model.presentationOnly, true);
   assert.deepEqual(model.publication.model, { published: true, indexable: false });
   assert.equal(model.publication.app.published, true);
-  for (const surface of ['pricing', 'compare', 'examples', 'sitemap']) {
+  assert.equal(model.publication.examples.published, true);
+  assert.equal(model.publication.examples.current, false);
+  assert.equal(model.publication.examples.includeInFamilyCopy, false);
+  for (const surface of ['pricing', 'compare', 'sitemap']) {
     assert.equal(model.publication[surface].published, false, surface);
   }
   assert.equal(model.replacement, null);

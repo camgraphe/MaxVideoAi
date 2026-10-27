@@ -39,6 +39,34 @@ test('unready admin model destinations are missing until their exact collection 
   assert.equal(rows.find(row => row.id === 'playlist:custom-flux-3-max')?.status, 'unconnected');
 });
 
+test('Kling V4 can be curated before its public film pack without changing the existing family landing', async () => {
+  const models = listRuntimeModels();
+  const { buildPlaylistDestinations } = await import('../frontend/server/playlists/destinations');
+  const missing = buildPlaylistDestinations([playlist('family-kling')], new Map(), models);
+  const destination = missing.find(row => row.id === 'model:kling-v4');
+  assert.ok(destination, 'Kling V4 must have an admin destination before its media pack exists');
+  assert.equal(destination.status, 'missing');
+  assert.equal(destination.editable, false);
+  assert.equal(destination.slug, 'examples-kling-v4');
+
+  const connected = buildPlaylistDestinations([playlist('family-kling'), playlist('examples-kling-v4')], new Map(), models)
+    .find(row => row.id === 'model:kling-v4');
+  assert.equal(connected?.status, 'connected');
+  assert.equal(connected?.editable, true);
+  assert.equal(connected?.playlistId, 'examples-kling-v4');
+
+  const kling = buildModelFamilyDefinitions(models).find(family => family.id === 'kling')!;
+  assert.equal(kling.defaultModelSlug, 'kling-o3-pro');
+  assert.equal(kling.examplesPage?.publishedModelSlugs?.includes('kling-v4'), false);
+  const v4 = models.find(model => model.id === 'kling-v4')!;
+  assert.equal(v4.publication.model.indexable, false);
+  assert.equal(v4.publication.examples.current, false);
+  assert.equal(v4.publication.examples.includeInFamilyCopy, false);
+  assert.equal(v4.publication.pricing.published, false);
+  assert.equal(v4.publication.compare.published, false);
+  assert.equal(v4.publication.sitemap.published, false);
+});
+
 test('admin model bootstrap excludes retired, deep legacy and unpublished identities', async () => {
   const { buildPlaylistDestinations } = await import('../frontend/server/playlists/destinations');
   for (const variant of ['retired', 'deep_legacy', 'app-hidden', 'examples-hidden'] as const) {
