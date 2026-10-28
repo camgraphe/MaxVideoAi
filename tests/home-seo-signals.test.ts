@@ -71,7 +71,7 @@ test('homepage proof card stays on Seedance 2.0 while discovery surfaces lead wi
   const seedance25Index = footerModelIds.indexOf('seedance-2-5');
   assert.match(footerSource, /FOOTER_MODELS\.map/);
   assert.ok(seedance25Index >= 0, 'Footer should include Seedance 2.5');
-  assert.deepEqual(footerModelIds.slice(0, 3), ['flux-3-max', 'minimax-h3', 'seedance-2-5']);
+  assert.deepEqual(footerModelIds.slice(0, 4), ['kling-v4', 'flux-3-max', 'minimax-h3', 'seedance-2-5']);
 });
 
 test('localized homepage keeps the Seedance 2.0 proof and renders a separate Seedance 2.5 discovery CTA', () => {

@@ -400,13 +400,13 @@ test('Seedance 2.5 and Seedance 2.0 lead the app menu while P1 models enter mark
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-v4', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']
+    ['kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
-    ['minimax-h3-vs-seedance-2-5', 'minimax-h3-vs-minimax-h3-max', 'kling-3-pro-vs-seedance-2-5', 'seedance-2-5-vs-wan-3', 'ltx-2-5-fast-vs-ltx-2-5-pro', 'wan-3-vs-wan-3-prime', 'gemini-omni-flash-vs-veo-3-1', 'seedance-2-0-vs-seedance-2-0-fast']
+    ['kling-v4-vs-seedance-2-5', 'kling-v4-vs-wan-3-prime', 'minimax-h3-vs-seedance-2-5', 'minimax-h3-vs-minimax-h3-max', 'kling-3-pro-vs-seedance-2-5', 'seedance-2-5-vs-wan-3', 'ltx-2-5-fast-vs-ltx-2-5-pro', 'wan-3-vs-wan-3-prime', 'gemini-omni-flash-vs-veo-3-1', 'seedance-2-0-vs-seedance-2-0-fast']
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 8);
+  assert.equal(MARKETING_NAV_COMPARE.length, 10);
   const expectedExampleFamilies = [
     'veo',
     'seedance',
@@ -438,7 +438,7 @@ test('Seedance 1.5 Pro stays historical while Seedance 2.0 keeps the primary ali
 });
 
 test('Header model menu keeps H3 and the current P1 representatives in the bounded set', () => {
-  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-v4', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']);
+  assert.deepEqual(MARKETING_NAV_MODELS.map((item) => item.key), ['kling-v4', 'flux-3-max', 'minimax-h3', 'minimax-h3-max', 'seedance-2-5', 'kling-3-pro', 'kling-3-turbo-pro', 'veo-3-1', 'ltx-2-5-pro', 'ltx-2-5-fast', 'wan-3', 'wan-3-prime']);
 });
 
 test('Examples hub family order follows the current business priority without reordering global families', () => {

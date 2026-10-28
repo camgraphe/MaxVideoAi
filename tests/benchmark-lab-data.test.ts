@@ -86,7 +86,7 @@ test('Seedance 2.5 specifications expose the factual public model card contract'
   assert.deepEqual(spec.provenance, {
     basis: 'maxvideoai-production-route-contract',
     mechanicsSources: ['https://docs.byteplus.com/en/docs/modelark/1520757'],
-    note: 'The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only.',
+    note: 'The live ModelArk product announcement is the source for Seedance 2.5 1080p availability; the documentation URL covers generic asynchronous video task mechanics only. MaxVideoAI input schemas at 90af7ed3b expose generated audio but no separate lip-sync parameter; this describes the available controls, not measured dialogue quality.',
   });
 });
 

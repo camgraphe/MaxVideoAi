@@ -158,6 +158,7 @@ test('the three priority Seedance 2.5 comparisons remain published while best-fo
     'seedance-2-5-vs-veo-3-1',
   ]);
   assert.deepEqual(compareConfig.relatedComparisons['kling-3-pro-vs-seedance-2-5'], [
+    'kling-v4-vs-seedance-2-5',
     'kling-3-pro-vs-kling-3-standard',
     'kling-3-pro-vs-seedance-2-0',
     'seedance-2-0-vs-seedance-2-5',

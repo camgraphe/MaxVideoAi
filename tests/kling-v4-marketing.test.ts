@@ -81,7 +81,11 @@ test('Kling v4 localized normal-page content uses the selected filmed prompts wi
     const links = [decision.hero.primaryCta, decision.hero.secondaryCta, ...decision.hero.quickLinks,
       ...decision.decisionCards.map(card => card.cta), { href: decision.pricingCopy.ctaHref }];
     assert.equal(decision.hero.primaryCta.href, '/app?engine=kling-v4');
-    for (const link of links) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
+    const native4KHref = { en: '/models/kling-o3-4k', fr: '/fr/modeles/kling-o3-4k', es: '/es/modelos/kling-o3-4k' }[locale];
+    assert.equal(decision.decisionCards.filter(card => card.cta.href === native4KHref).length, 1);
+    for (const link of links) {
+      if (link.href !== native4KHref) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
+    }
     assert.doesNotMatch(JSON.stringify(content), /media\.maxvideoai\.com|job_external_|\.mp4|\/pricing#kling-v4/);
     assert.ok(prompting.tabs.length >= 3);
     assert.ok(content.faqs.length >= 6);

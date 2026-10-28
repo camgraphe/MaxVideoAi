@@ -24,6 +24,12 @@ const EDITORIAL_COMPARISONS = [
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
 ] as const;
 
+const CURRENT_EDITORIAL_COMPARISONS = [
+  { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
+  { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
+  ...EDITORIAL_COMPARISONS,
+] as const;
+
 function model(
   id: string,
   slug: string,
@@ -58,7 +64,7 @@ function countLocaleComparisons<T>(run: () => T): { result: T; calls: number } {
 }
 
 test('each editorial comparison accepts a declaration from either canonical endpoint using IDs', () => {
-  for (const item of EDITORIAL_COMPARISONS) {
+  for (const item of CURRENT_EDITORIAL_COMPARISONS) {
     const [leftSlug, rightSlug] = item.slug.split('-vs-');
     for (const direction of ['left', 'right']) {
       const models = [
@@ -189,16 +195,16 @@ test('live runtime comparison menu retains every link, label, brand and badge fr
   const isPublished = createPublishedComparisonSlugLookup(models);
   for (const slug of published) assert.equal(isPublished(slug), true, slug);
   assert.deepEqual(EDITORIAL_COMPARISONS.filter(({ slug }) => published.has(slug)), EDITORIAL_COMPARISONS);
-  assert.deepEqual(buildMarketingCompareMenu(models), EDITORIAL_COMPARISONS);
+  assert.deepEqual(buildMarketingCompareMenu(models), CURRENT_EDITORIAL_COMPARISONS);
 
   const brandsBySlug: Record<string, string> = {
     'minimax-h3': 'minimax', 'minimax-h3-max': 'minimax', 'seedance-2-5': 'bytedance',
-    'kling-3-pro': 'kling', 'wan-3': 'wan', 'wan-3-prime': 'wan',
+    'kling-3-pro': 'kling', 'kling-v4': 'kling', 'wan-3': 'wan', 'wan-3-prime': 'wan',
     'ltx-2-5-fast': 'lightricks', 'ltx-2-5-pro': 'lightricks',
     'gemini-omni-flash': 'google-veo', 'veo-3-1': 'google-veo',
     'seedance-2-0': 'bytedance', 'seedance-2-0-fast': 'bytedance',
   };
-  assert.deepEqual(MARKETING_NAV_COMPARE, EDITORIAL_COMPARISONS.map(({ slug, label }) => ({
+  assert.deepEqual(MARKETING_NAV_COMPARE, CURRENT_EDITORIAL_COMPARISONS.map(({ slug, label }) => ({
     key: slug,
     label,
     href: { pathname: '/ai-video-engines/[slug]', params: { slug } },
@@ -218,9 +224,9 @@ test('comparison menu bounds canonical comparison work to editorial candidates e
     const expanded = countLocaleComparisons(() => buildPublishedComparisonSlugsFromModels(models, () => true));
     const menu = countLocaleComparisons(() => buildMarketingCompareMenu(models));
     t.diagnostic(`${name}: full graph ${expanded.result.length} canonical pairs / ${expanded.calls} localeCompare calls; menu ${menu.result.length} entries / ${menu.calls} localeCompare calls.`);
-    assert.deepEqual(menu.result, EDITORIAL_COMPARISONS);
+    assert.deepEqual(menu.result, CURRENT_EDITORIAL_COMPARISONS);
     // One additional prepared V4 pair is filtered out of the live publication graph.
-    const candidateCount = EDITORIAL_COMPARISONS.length + 1;
+    const candidateCount = CURRENT_EDITORIAL_COMPARISONS.length + 1;
     assert.ok(menu.calls <= candidateCount,
       `${name}: menu should canonicalize at most its ${candidateCount} candidates; observed ${menu.calls} localeCompare calls`);
     assert.ok(expanded.calls > menu.calls, `${name}: the bounded menu avoids full graph canonicalization and sorting`);
