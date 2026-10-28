@@ -143,7 +143,7 @@
 /* Prompt assistance preview: aligned creation and gallery navigation. */
 .app-experience .app-creation-topbar { position: sticky; top: var(--header-height); z-index: 30; display: flex; flex: none; min-width: 0; background: var(--app-canvas); border-bottom: 1px solid var(--app-line); }
 .app-experience .app-creation-topbar-main { flex: 1; min-width: 0; }
-.app-experience .app-creation-topbar .app-navigation-activities { position: static; max-width: 1160px; margin-inline: auto; padding: 0 24px; gap: 20px; border: 0; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar .app-navigation-activities { position: static; max-width: 1160px; margin-inline: auto; padding: 0 24px; gap: 6px; border: 0; flex-wrap: nowrap; }
 .app-experience .app-creation-topbar-rail { display: none; }
 .app-experience .app-creation-topbar .app-media-rail-switch { width: 100%; margin: 0; gap: 20px; flex-wrap: nowrap; }
 .app-experience .app-creation-topbar :is(.app-navigation-activities a, .app-media-rail-switch > button, .app-media-rail-view-all) { position: relative; display: inline-flex; align-items: center; flex: none; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--app-muted); font-size: 12px; font-weight: 400; box-shadow: none; }
@@ -152,13 +152,18 @@
 .app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"], a:hover, button:hover) { color: var(--app-ink); background: transparent; }
 .app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"])::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--app-accent); }
 .app-experience .app-creation-topbar :is(a, button):focus-visible { outline: 1px solid var(--app-accent); outline-offset: -3px; border-radius: 4px; }
+.app-experience .app-creation-topbar .app-navigation-activities a { gap: 7px; padding-inline: 12px; border-block: 4px solid transparent; border-radius: 10px; background-clip: padding-box; font-size: 13px; font-weight: 500; }
+.app-experience .app-creation-topbar .app-navigation-activities .app-glyph { width: 18px; height: 18px; }
+.app-experience .app-creation-topbar .app-navigation-activities a:hover { color: var(--app-ink); background-color: var(--surface-2); }
+.app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"] { color: var(--app-accent); background-color: var(--app-accent-soft); }
+.app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"]::after { content: none; }
 @media (min-width: 768px) {
   .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 240px; align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
 }
 @media (min-width: 900px) { .app-experience .app-creation-topbar-rail { flex-basis: 272px; } }
 @media (min-width: 1088px) { .app-experience .app-creation-topbar-rail { flex-basis: 320px; padding-inline: 21px; } }
 @media (max-width: 767px) {
-  .app-experience .app-creation-topbar .app-navigation-activities { padding-inline: 12px; gap: 24px; }
+  .app-experience .app-creation-topbar .app-navigation-activities { padding-inline: 12px; }
   .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open { padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--app-muted); font-size: 12px; }
   .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open .app-glyph { width: 16px; height: 16px; }
 }
