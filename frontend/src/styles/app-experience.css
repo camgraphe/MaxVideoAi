@@ -190,6 +190,9 @@
 .app-experience .app-prompt-heading { padding: 8px 12px 0; align-items: center; }
 .app-experience .app-prompt-heading label { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: 0; color: var(--app-ink); }
 .app-experience [data-workspace-prompt] { display: block; height: 96px; min-height: 96px; max-height: 240px; padding: 9px 12px 12px; font-size: 15px; line-height: 1.5; border-radius: 7px; }
+@media (pointer: coarse), (max-width: 639px) {
+  .app-experience [data-composer-density] :is(textarea, input) { font-size: 16px; }
+}
 .app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--app-muted) 55%, transparent) transparent; scrollbar-gutter: stable; }
 @supports selector(::-webkit-scrollbar) {
   .app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: auto; scrollbar-color: auto; }

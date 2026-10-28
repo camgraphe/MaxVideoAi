@@ -55,7 +55,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
   const selected = assetFields.flatMap((entry) => (assets[entry.field.id] ?? []).flatMap((asset, slotIndex) => asset ? [{ entry, asset, slotIndex }] : []));
   const selectedCollections = compact ? selected : selected.filter(({ entry }) => !getWorkspaceFrameCommand(entry, engine));
   const visibleCollections = selectedCollections.filter(({ entry }, index) => selectedCollections.length <= 8 || index < 3 || canSelectRange(entry.field.id));
-  const collectionRequired = (compact ? assetFields : collections).filter((entry) => entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
+  const collectionRequired = (compact ? assetFields : collections).filter((entry) => entry !== sourceEntry && entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
   const collectionAvailability = getReferenceCommandAvailability(collections, assets);
   const restrictionReasons = getReferenceCommandAvailability(assetFields, assets).reasons;
   if (assetFields.some((entry) => entry.disabled && !entry.disabledReason?.trim())) {

@@ -28,3 +28,13 @@ No media generation or live LLM call is part of this refinement. Production reta
 ## Follow-up — compact empty conversation
 
 Before the first message, show only the Milo heading and the message composer; hide the empty history and Expand. Typing alone does not open the history. Sending the first message opens the bounded conversation immediately, so the pending response and later replies do not resize it. A pending request or existing proposal also keeps the conversation visible. The seven targeted layout/navigation browser tests pass, including empty state, first send, ten follow-ups and Review at 320–1440 px; focused lint and diff checks pass. Authenticated visual verification captured `compact-empty-milo.png` privately.
+
+## Follow-up: stable references and mobile prompt focus
+
+- Create, Modify and Extend keep references in the writing footer in both Prompt and AI assistant. A missing required source keeps its direct upload/library action; only the duplicate required-source summary is removed. Other required assets and provider restrictions remain visible.
+- Source buttons stay horizontal on small screens. Controls can wrap within the footer without moving above the writing field.
+- The manual prompt no longer inherits the old inset focus ring. A single subtle border follows the outer composer radius; keyboard focus for individual controls remains visible.
+- Mobile and coarse-pointer writing fields use at least 16 px, including manual, scene and assistant inputs. Viewport user zoom remains unrestricted. This addresses the small-font iOS focus trigger; physical iPhone keyboard behavior still needs device confirmation.
+- Clear keeps its position beside Multi-prompt and is disabled when the manual prompt is empty. Undo and its synchronous textarea focus remain unchanged; there is no global clear across multiple scenes.
+
+Validation: Chromium and WebKit at 320/390/1440 px cover preview input focus, a long prompt/counter, Clear and Undo, plus the existing 36 clear-action scenarios across three locales and two densities. Modify/Extend direct-source popup access is checked in both writing tabs.

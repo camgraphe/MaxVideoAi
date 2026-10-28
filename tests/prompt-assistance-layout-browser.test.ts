@@ -63,24 +63,38 @@ test('compact reference picker retains the field character library action', asyn
   } finally {await browser.close();await fixture.close();}
 });
 
-test('compact Modify and Extend keep a direct source action before writing in both tabs', async () => {
+test('compact Modify and Extend keep source references inside the writing footer in both tabs', async () => {
   const source=sourceSettingsBrowserSource.replace('<Composer density="workspace"','<Composer assistance={{scopeKey:"owner",contextKey:"modify"}} density="workspace"');
   const fixture=await startWorkspaceReferenceFixture({source,assistancePreview:true,config:{}});
   const browser=await chromium.launch({headless:true});
   try {
-    const page=await browser.newPage();await page.goto(fixture.url);
-    for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
-      await page.getByRole('tab',{name:mode,exact:true}).click();
-      const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
-      await expect(sourceButton).toBeVisible();
-      const sourceBox=await sourceButton.boundingBox();
-      const inputBox=await page.locator(mode==='Prompt'?'[data-workspace-prompt]':'[data-assistance-message]').boundingBox();
-      assert.ok(sourceBox && inputBox && sourceBox.y+sourceBox.height<=inputBox.y);
-      await sourceButton.click();await expect(page.locator('.app-reference-popup')).toBeVisible();
-      await expect(page.locator('.app-reference-popup')).not.toContainText('Reference images');
-      await page.locator('.app-reference-popup').getByRole('button',{name:'Close',exact:true}).click();
-      await expect(page.locator('.app-reference-popup')).toHaveCount(0);
-    }}
+    for(const width of [320,390,1440]) {
+      const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
+      for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
+        await page.getByRole('tab',{name:mode,exact:true}).click();
+        const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
+        await expect(sourceButton).toBeVisible();
+        const sourceBox=await sourceButton.boundingBox();
+        const inputBox=await page.locator(mode==='Prompt'?'[data-workspace-prompt]':'[data-assistance-message]').boundingBox();
+        assert.ok(sourceBox && inputBox && sourceBox.y>=inputBox.y+inputBox.height, 'source action stays below the writing area');
+        const surface=page.locator(mode==='Prompt'?'[data-assistance-manual-input]':'[data-assistance-input]');
+        await expect(surface.locator('[data-reference-command]')).toHaveCount(1);
+        await expect(surface.getByRole('button',{name:'Add references',exact:true})).toBeVisible();
+        await expect(surface.locator('.app-reference-required')).toHaveCount(0);
+        assert.equal(await sourceButton.evaluate(button=>getComputedStyle(button).flexDirection),'row', 'source action remains a compact horizontal control on mobile');
+        assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+        if(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR && operation==='v2v' && mode==='Prompt' && width===390) {
+          await mkdir(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,{recursive:true});
+          await page.locator('[data-workspace-prompt]').focus();
+          await page.locator('[data-prompt-assistance-preview]').screenshot({path:`${process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR}/modify-footer-mobile.png`});
+        }
+        await sourceButton.click();await expect(page.locator('.app-reference-popup')).toBeVisible();
+        await expect(page.locator('.app-reference-popup')).not.toContainText('Reference images');
+        await page.locator('.app-reference-popup').getByRole('button',{name:'Close',exact:true}).click();
+        await expect(page.locator('.app-reference-popup')).toHaveCount(0);
+      }}
+      await page.close();
+    }
   }finally{await browser.close();await fixture.close();}
 });
 

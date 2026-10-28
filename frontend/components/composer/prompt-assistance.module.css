@@ -1,4 +1,5 @@
 .root { border: 1px solid var(--border); border-radius: 16px; background: var(--bg); min-width: 0; color: var(--text-primary); }
+.root:has(textarea:focus) { border-color: var(--text-muted); }
 .header { display: flex; align-items: center; justify-content: space-between; gap: 0 16px; flex-wrap: wrap; padding: 0 16px; border-bottom: 1px solid var(--border); }
 .tabs { display: flex; flex-shrink: 0; gap: 20px; }
 .expandConversation { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; gap: 6px; font-size: 12px; min-height: 44px; color: var(--text-secondary); }
@@ -36,7 +37,6 @@
 .sendRow { min-height: 44px; align-items: flex-end; }
 .inputReferences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 .manualReferences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 14px 5px; }
-.sourceReferences { min-width: 0; padding: 12px 14px; }
 .manualSurface :global(.app-prompt-surface) { border: 0; background: transparent; }
 .manualSurface:has(textarea[aria-invalid='true']) { border-color: var(--error-border); }
 .send { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--text-primary); color: var(--surface); flex-shrink: 0; }
@@ -46,10 +46,13 @@
 
 .composer { border: 0 !important; background: transparent !important; box-shadow: none !important; padding-inline: 0 !important; }
 .composer :global(.app-prompt-surface) { border-radius: 15px; background: var(--surface); box-shadow: none; }
+.root[data-prompt-assistance-preview] :global(.app-prompt-surface:focus-within) { box-shadow: none; }
 .composer :global(.app-prompt-surface)::before, .composer :global(.app-prompt-surface)::after { display: none; }
 .composer :global(.app-prompt-surface textarea) { outline: none; box-shadow: none; }
 .manualSurface textarea:focus-visible { outline: none; box-shadow: none; }
 .root :global([data-compact-references]) { min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; border: 0; padding: 2px 0; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command) { flex-direction: row; min-width: 0; min-height: 44px; gap: 6px; padding: 0 8px; border-radius: 7px; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command-media) { width: 17px; height: 17px; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-add-compact) { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; flex-shrink: 0; padding: 0 3px; font-size: 12px; font-weight: 450; color: var(--text-secondary); border: 0; background: transparent; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact svg) { width: 17px; height: 17px; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact:hover) { color: var(--text-primary); }
@@ -74,12 +77,15 @@
 @media (max-width: 600px) {
   .commandBar :global(.app-mode-switch[data-compact-modes]) { border-left: 0; padding-left: 0; }
   .header { padding-inline: 12px; }
-  .sourceReferences { padding-inline: 12px; }
   .proposalHeader { gap: 6px; }
 }
 @media (pointer: coarse) {
   .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger { min-height: 44px !important; }
-  .inputSurface > textarea, .editor { font-size: 16px; }
 }
 
 @media (max-width: 400px) { .expandConversation span { display: none; } }
+
+/* Keep touch keyboards from zooming the page without restricting user zoom. */
+@media (pointer: coarse), (max-width: 639px) {
+  .root[data-prompt-assistance-preview] :is(textarea, input) { font-size: 16px; }
+}

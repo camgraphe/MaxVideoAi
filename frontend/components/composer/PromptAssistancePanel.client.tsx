@@ -11,12 +11,12 @@ export type PromptAssistancePanelProps = {
   message: string; pending: boolean; blocked?: boolean; maxLength?: number;
   onMessageChange: (text: string) => void; onSend: () => void;
   onProposalTextChange: (text: string) => void; onApply: () => void;
-  onCopy: () => void; references?: ReactNode; referencesBeforeInput?: boolean; messageRef?: RefObject<HTMLTextAreaElement>;
+  onCopy: () => void; references?: ReactNode; messageRef?: RefObject<HTMLTextAreaElement>;
   modelControl?: ReactNode;
   conversationControl?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, referencesBeforeInput, messageRef, modelControl, conversationControl }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -54,7 +54,6 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         </div>
       </section> : null}
     </div>
-    {referencesBeforeInput ? <div className={styles.sourceReferences}>{references}</div> : null}
     <div className={styles.inputSurface} data-assistance-input>
       <label htmlFor={messageId}>{copy.message}</label>
       <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
@@ -63,7 +62,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) onSend();
       }} />
-      <div className={styles.sendRow}><div className={styles.inputReferences}>{!referencesBeforeInput ? references : null}{modelControl}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
+      <div className={styles.sendRow}><div className={styles.inputReferences}>{references}{modelControl}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
     </div>
   </div>;
 }
