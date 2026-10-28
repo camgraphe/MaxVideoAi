@@ -21,7 +21,8 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
     const id = state.pending.id;
     const timeout = window.setTimeout(() => {
       const text = sampleDraft.current || (target === 'script' ? 'Some moments stay with us. A familiar light, a memory of summer.' : 'A quiet scene in warm afternoon light. Natural textures, a clear subject and a restrained composition.');
-      dispatch({ type: 'reply', id, text, reply: 'Here is a sample suggestion using your current draft. You can edit it, apply it, or continue the conversation. This local preview does not call Milo.' });
+      // Fixture copy stays natural for visual review. This development-only path never calls a model.
+      dispatch({ type: 'reply', id, text, reply: 'Here’s a starting point. What would you like to refine?' });
     }, 350);
     return () => window.clearTimeout(timeout);
   }, [state.pending, scopeKey, target]);

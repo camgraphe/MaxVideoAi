@@ -28,6 +28,6 @@ The apparent Seedance 2.5 regression came from missing local environment control
 
 ## Limits
 
-This remains a clearly labelled sample conversation: it repeats the current draft or supplies fixed example text. It cannot demonstrate prompt quality, model specialization, credit consumption or persistence. Full service integration is the next increment in the same draft PR.
+At this revision the sample conversation was labelled in the UI (revision 5 removes that visual-only label at the user’s request): it repeats the current draft or supplies fixed example text. It cannot demonstrate prompt quality, model specialization, credit consumption or persistence. Full service integration is the next increment in the same draft PR.
 
 Physical mobile keyboard behavior and true 200% browser zoom have not been qualified in this pass. The whole app column still scrolls; Use prompt is independent of the prompt/transcript scroll areas, not fixed to the browser viewport. Audio soundtrack and lyrics assistance remain outside this first adapter. Existing provider mention numbering remains in place pending stable alias translation. See [engineering ownership](../../engineering/prompt-assistance.md).

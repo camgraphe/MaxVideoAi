@@ -58,7 +58,7 @@ test('real video adapter invalidates suggestions and undo when subjects or exter
   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
   await page.locator('[data-assistance-message]').fill('Delayed suggestion');await page.locator('[data-assistance-message]').press('Enter');
   await page.evaluate(()=>(globalThis as any).changeContext({klingElements:[]}));
-  await expect(page.getByText('Preparing the example…',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('Milo is writing…',{exact:true})).toHaveCount(0);
   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
   await request();await page.locator('[data-assistance-apply]').click();
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeEnabled();

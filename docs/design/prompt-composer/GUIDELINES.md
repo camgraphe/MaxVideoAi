@@ -4,7 +4,7 @@ Proposition du 28/10/2026. À appliquer lors de l'intégration après validation
 
 ## Direction actuelle
 
-Les [révisions 2](REFINEMENT-2.md) et [3](REFINEMENT-3.md) intègrent les retours d'Adrien : interface et exemples en anglais, références compactes sans nom de fichier, libellés Start image / End image / Image 1 / Audio 1, conversation distincte du champ Message Milo. La révision 3 conserve deux lignes d'aperçu du prompt, son dépliage et une action indépendante toujours accessible dans l'en-tête. Elle fait autorité en cas de différence.
+Les [révisions 2](REFINEMENT-2.md) et [3](REFINEMENT-3.md) intègrent les retours d'Adrien : interface et exemples en anglais, références compactes sans nom de fichier, libellés Start image / End image / Image 1 / Audio 1, conversation distincte du champ Message Milo. La révision 3 conserve deux lignes d'aperçu du prompt, son dépliage et une action indépendante toujours accessible dans l'en-tête. La [révision 5](REFINEMENT-5.md) affine ensuite l’intégration réelle : saisie stable, ajout de références dans la surface et identité Milo liée au modèle. Elle fait autorité en cas de différence.
 
 ## Repères d'interface
 

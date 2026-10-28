@@ -158,4 +158,6 @@
 
 .assistanceReferences { display:flex; align-items:center; gap:8px; font-size:12px; }
 .assistanceReferences button { min-height:44px; padding:0 6px; background:transparent; border:0; }
-.assistanceReferences button:first-child { width:36px; font-size:23px; font-weight:300; }
+.assistanceReferences button:first-child { display:inline-flex; align-items:center; gap:6px; font-size:12px; }
+.assistanceReferences button:first-child span { font-size:21px; font-weight:300; }
+[data-assistance-manual-input] .writing { border:0; background:transparent; }

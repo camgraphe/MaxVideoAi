@@ -31,27 +31,29 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   return <div className={styles.panel}>
-    <div className={styles.transcript} data-assistance-transcript ref={transcript} tabIndex={0} aria-label={copy.history}>
-      <div className={styles.assistant}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{modelLabel}</span></div>
-      {!messages.length ? <p>{copy.intro}</p> : null}
-      <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
-        {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.text}</div>)}
+    <div className={styles.assistant}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>
+    <div className={styles.conversationStage}>
+      <div className={styles.transcript} data-assistance-transcript ref={transcript} tabIndex={0} aria-label={copy.history}>
+        {!messages.length ? <p>{copy.intro}</p> : null}
+        <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
+          {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.text}</div>)}
+        </div>
+        {pending ? <p role="status">{copy.pending}</p> : null}
       </div>
-      {pending ? <p role="status">{copy.pending}</p> : null}
+      {proposal ? <section className={styles.proposal} aria-label={copy[proposal.target]}>
+        <div className={styles.proposalHeader}>
+          <button type="button" data-assistance-expand aria-expanded={expanded} aria-controls={proposalId} aria-label={`${expanded ? copy.collapse : copy.expand} ${copy[proposal.target]}`} onClick={() => setExpanded(value => !value)}>{copy[proposal.target]}<ChevronDown size={13} aria-hidden className={expanded ? styles.rotated : undefined} /></button>
+          <button type="button" data-assistance-apply className={styles.apply} disabled={proposal.stale || pending || blocked || tooLong || !proposal.text.trim()} onClick={onApply}>{proposal.target === 'prompt' ? copy.usePrompt : copy.useScript}</button>
+        </div>
+        {!expanded ? <p className={styles.excerpt}>{proposal.text}</p> : null}
+        <div id={proposalId} className={styles.proposalBody} data-assistance-body hidden={!expanded}>
+          {expanded ? <><label className="sr-only" htmlFor={`${proposalId}-text`}>{copy.edit}</label><textarea id={`${proposalId}-text`} data-assistance-editor className={styles.editor} rows={8} value={proposal.text} onChange={event => onProposalTextChange(event.target.value)} /><div className={styles.copyRow}><span>{maxLength ? `${proposal.text.length} / ${maxLength}` : null}</span><button type="button" onClick={onCopy}>{copy.copy}</button></div></> : null}
+        </div>
+        {proposal.stale || tooLong ? <p className={styles.warning} role="status">{proposal.stale ? copy.stale : `${proposal.text.length} / ${maxLength}`}</p> : null}
+      </section> : null}
     </div>
-    {proposal ? <section className={styles.proposal} aria-label={copy[proposal.target]}>
-      <div className={styles.proposalHeader}>
-        <button type="button" data-assistance-expand aria-expanded={expanded} aria-controls={proposalId} aria-label={`${expanded ? copy.collapse : copy.expand} ${copy[proposal.target]}`} onClick={() => setExpanded(value => !value)}>{copy[proposal.target]}<ChevronDown size={13} aria-hidden className={expanded ? styles.rotated : undefined} /></button>
-        <button type="button" data-assistance-apply className={styles.apply} disabled={proposal.stale || pending || blocked || tooLong || !proposal.text.trim()} onClick={onApply}>{proposal.target === 'prompt' ? copy.usePrompt : copy.useScript}</button>
-      </div>
-      {!expanded ? <p className={styles.excerpt}>{proposal.text}</p> : null}
-      <div id={proposalId} data-assistance-body hidden={!expanded}>
-        {expanded ? <><label className="sr-only" htmlFor={`${proposalId}-text`}>{copy.edit}</label><textarea id={`${proposalId}-text`} data-assistance-editor className={styles.editor} rows={8} value={proposal.text} onChange={event => onProposalTextChange(event.target.value)} /><div className={styles.copyRow}><span>{maxLength ? `${proposal.text.length} / ${maxLength}` : null}</span><button type="button" onClick={onCopy}>{copy.copy}</button></div></> : null}
-      </div>
-      {proposal.stale || tooLong ? <p className={styles.warning} role="status">{proposal.stale ? copy.stale : `${proposal.text.length} / ${maxLength}`}</p> : null}
-    </section> : null}
     {referencesBeforeInput ? references : null}
-    <div className={styles.inputSurface}>
+    <div className={styles.inputSurface} data-assistance-input>
       <label htmlFor={messageId}>{copy.message}</label>
       <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
@@ -59,8 +61,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) onSend();
       }} />
-      {!referencesBeforeInput ? references : null}
-      <div className={styles.sendRow}><span>{copy.sample}</span><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
+      <div className={styles.sendRow}><div className={styles.inputReferences}>{!referencesBeforeInput ? references : null}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
     </div>
   </div>;
 }

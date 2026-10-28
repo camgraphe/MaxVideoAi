@@ -31,7 +31,10 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
       <button type="button" id={`${id}-milo-tab`} role="tab" aria-selected={milo} aria-controls={`${id}-milo`} tabIndex={milo ? 0 : -1} disabled={Boolean(disabledReason)} onClick={() => dispatch({ type: 'mode', mode: 'milo' })}>{copy.withMilo}</button>
     </div>
     {disabledReason ? <p className={styles.warning}>{disabledReason}</p> : null}
-    <div id={`${id}-manual`} role="tabpanel" aria-labelledby={`${id}-prompt-tab`} hidden={milo}>{referencesBeforeInput ? manualReferences : null}{children}{!referencesBeforeInput ? manualReferences : null}</div>
+    <div id={`${id}-manual`} role="tabpanel" aria-labelledby={`${id}-prompt-tab`} hidden={milo}>
+      {referencesBeforeInput ? manualReferences : null}
+      <div className={styles.manualSurface} data-assistance-manual-input>{children}{!referencesBeforeInput && manualReferences ? <div className={styles.manualReferences}>{manualReferences}</div> : null}</div>
+    </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
       {milo ? <PromptAssistancePanel key={context.scopeKey} referencesBeforeInput={referencesBeforeInput} locale={locale} modelLabel={modelLabel} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
         message={state.message} pending={Boolean(state.pending)} blocked={blocked} maxLength={maxLength} messageRef={controller.input}

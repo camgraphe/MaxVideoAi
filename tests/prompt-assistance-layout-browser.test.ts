@@ -98,9 +98,13 @@ test('real composer keeps the full suggestion, independent scrolling, references
       if(width===390) await page.locator('html').evaluate(el=>el.setAttribute('data-theme','dark'));
       await page.getByRole('tab',{name:'With Milo',exact:true}).click({timeout:3000});
       const message=page.locator('[data-assistance-message]');
+      const inputTop = () => message.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
+      const initialInputTop = await inputTop();
       await message.fill('Keep the camera movement slow.'); await message.press('Enter');
       await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
+      assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'the first reply must not push the reply field down');
       await page.locator('[data-assistance-expand]').click();
+      assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'expanding a proposal must not move the reply field');
       const text='A slow camera movement. '.repeat(100);
       await page.locator('[data-assistance-editor]').fill(text);
       await page.locator('[data-assistance-expand]').click();
@@ -110,6 +114,7 @@ test('real composer keeps the full suggestion, independent scrolling, references
       await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Keep this visible.');
       await page.getByRole('tab',{name:'With Milo',exact:true}).click();
       for(let i=0;i<10;i++){await message.fill(`Follow-up ${i}`);await message.press('Enter');await expect(page.getByRole('button',{name:'Send message to Milo'})).toBeDisabled();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();}
+      assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'ten replies must not move the reply field');
       await expect(message).toBeFocused();
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
       assert.equal(await page.locator('[data-assistance-transcript]').evaluate(el=>el.scrollHeight>el.clientHeight),true);

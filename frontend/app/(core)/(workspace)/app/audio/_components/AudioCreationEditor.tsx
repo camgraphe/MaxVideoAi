@@ -33,6 +33,7 @@ export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, 
   const max = spoken ? 5000 : 2000;
   const modelName = intent === 'voice'
     ? eleven ? copy.models.voiceEleven : draft.reference || draft.voiceModel === 'seed' ? copy.models.voiceSeed : copy.models.voiceMinimax
+    : intent === 'music' ? draft.musicModel === 'pro' ? copy.musicPro : copy.musicClip
     : intent === 'song' ? copy.models.song
       : intent === 'sfx' ? copy.models.sfx
         : copy.models.ambience;
@@ -56,7 +57,7 @@ export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, 
     {assistanceEnabled ? <PromptAssistanceComposer context={{scopeKey: JSON.stringify([assistanceAccountId, intent, draft.voiceModel, draft.musicModel]), contextKey: JSON.stringify({...draft, [key]: undefined})}}
       locale="en" modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
       renderReferences={spoken && (draft.reference || draft.voiceModel === 'seed') ? insert => <div className={styles.assistanceReferences}>
-        <button type="button" aria-label="Add audio reference" disabled={uploading} onClick={() => input.current?.click()}>＋</button>
+        <button type="button" aria-label="Add audio reference" disabled={uploading} onClick={() => input.current?.click()}><span aria-hidden>＋</span> Reference</button>
         {draft.reference ? <><button type="button" onClick={() => insert?.('@Audio1')} disabled={!insert}>Audio 1</button><button type="button" aria-label="Remove Audio 1" onClick={() => onChange({reference: null})}>×</button></> : null}
       </div> : undefined}>{writing}</PromptAssistanceComposer> : writing}
     {song ? <div className={styles.writing}>

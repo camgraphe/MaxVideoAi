@@ -124,7 +124,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
         </button> : null}
         {!compact ? assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null) : null}
     </div>
-    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><span aria-hidden>＋</span></button> : null}
+    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null}
     {videoWorkflowNotices(engine.id,sourceMode ?? '',locale).map(note=><p key={note.code} role="note" className="text-xs text-text-muted">{note.message}</p>)}
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
       {restrictionReasons.map((reason) => <p key={reason}>{referenceAuthAction?.label === reason
