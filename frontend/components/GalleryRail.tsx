@@ -439,9 +439,9 @@ export function GalleryRail({
         className={clsx(
           'scrollbar-rail app-gallery-rail-grid mt-1 space-y-4',
           responsiveVariant
-            ? 'min-[768px]:h-full min-[768px]:overflow-y-auto min-[768px]:pr-6 min-[768px]:pt-3'
+            ? 'min-[768px]:h-full min-[768px]:overflow-y-auto min-[768px]:overscroll-y-contain min-[768px]:pr-6 min-[768px]:pt-3'
             : isDesktopVariant
-              ? 'h-full overflow-y-auto pr-6 pt-3'
+              ? 'h-full overflow-y-auto overscroll-y-contain pr-6 pt-3'
               : ''
         )}
       >

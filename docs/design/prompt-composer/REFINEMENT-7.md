@@ -50,3 +50,9 @@ The footer now reads **model → Variant → References** in both writing modes.
 The existing variant control also appears beside the compact model trigger when the catalog supplies multiple variants. Its visible label is **Variant**, because the adjacent model name already identifies the current choice. The menu marks the current variant, preserves disabled choices and their reasons, and uses the existing model-selection handler. Standalone models have no variant button. A portal keeps the menu outside the composer's clipped boundary.
 
 Validation: 11 relevant model/command-bar tests and eight EngineSelect architecture contracts pass. The new browser case covers Chromium and WebKit at 320/390/1440 px, selection through the restored control, disabled choices, prompt preservation, keyboard Escape/focus, and absence for standalone models. TypeScript and focused ESLint pass. The authenticated app was checked with Mini → Fast → Mini without generating media. Private visual evidence: `model-variants-composer.png` in the task visualization folder.
+
+## Follow-up: independent gallery scrolling
+
+The bounded desktop gallery now uses native vertical overscroll containment. A gesture at either end of the list stays within the gallery instead of scrolling the surrounding page. The responsive variant applies this only from 768 px, where the independent scroller exists; the mobile document flow remains unchanged. No page-wide wheel listener or scroll lock is introduced.
+
+In the authenticated app, an upward gesture at the gallery's top previously moved the document from 364 px to 0 px. With containment, the same gesture keeps the document at 364 px; a downward gesture moves the gallery from 0 to 1112 px while the document stays at 364 px. Scrolling the center then returns the document to 0 px while retaining the gallery position. All 10 gallery contracts, focused ESLint and diff checks pass. Private capture: `gallery-scroll-contained.png`.
