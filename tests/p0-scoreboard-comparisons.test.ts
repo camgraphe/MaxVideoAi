@@ -50,7 +50,7 @@ test('all P0 models have eleven reviewed numeric scores and a derived three-axis
     last_updated: string;
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
   };
-  assert.equal(document.last_updated, '2026-10-20');
+  assert.equal(document.last_updated, '2026-10-27');
 
   for (const modelId of P0_IDS) {
     const score = document.scores.find(({ modelSlug }) => modelSlug === modelId);
@@ -163,6 +163,7 @@ test('published P0 models expose only approved comparison edges, including the t
     if (expected.has(rightId)) expected.get(rightId)?.add(leftId);
   }
   expected.get('wan-3')?.add('seedance-2-5');
+  expected.get('wan-3-prime')?.add('kling-v4');
   expected.get('flux-3')?.add('flux-3-max');
 
   for (const modelId of P0_IDS) {

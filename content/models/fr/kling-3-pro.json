@@ -6,7 +6,7 @@
     "description": "Utilisez Kling 3 Pro sur MaxVideoAI pour la vidéo IA multi-plans, le contrôle de scène, l’audio natif et les specs et prix live avant de générer.",
     "image": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/27311f53-6265-4eac-b88b-021d57eca35b-job_665a317f-f4dc-41c8-ade4-4a0a891627c8.jpg"
   },
-  "overview": "Kling 3 Pro est le modèle vidéo IA Kling actuel sur MaxVideoAI pour la vidéo multi-plans, les workflows Kling en image-vers-video avec start frame, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif.",
+  "overview": "Kling 3 Pro est un modèle vidéo IA Kling sur MaxVideoAI pour la vidéo multi-plans, les workflows Kling en image-vers-video avec start frame, les Kling Elements réutilisables, les images de fin optionnelles et l’audio natif.",
   "pricingNotes": "Les estimations affichées aux membres incluent la marge MaxVideoAI : environ 0,22 $/s avec audio, 0,15 $/s audio off et 0,26 $/s avec voice control.",
   "hero": {
     "title": "Kling 3 Pro — modèle Kling actuel pour la vidéo multi-plans et le contrôle de scène",
@@ -311,11 +311,11 @@
         }
       },
       {
-        "title": "Besoin d’une direction de plan plus stricte ?",
-        "body": "Utilisez beats de scène, prompt négatif, CFG scale et image finale optionnelle quand la caméra doit rester cadrée.",
+        "title": "Une scène plus longue ?",
+        "body": "Découvrez Kling 4.0 pour générer de 3 à 30 s, diriger chaque plan et utiliser des références image ou vidéo en 720p ou 1080p.",
         "cta": {
-          "label": "Ouvrir le Prompt Lab",
-          "href": "#prompting"
+          "label": "Découvrir Kling 4.0",
+          "href": "/fr/modeles/kling-v4"
         }
       },
       {

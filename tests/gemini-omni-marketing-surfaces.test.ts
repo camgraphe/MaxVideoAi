@@ -259,5 +259,5 @@ test('Gemini Omni Flash has benchmark scores and a promoted comparison while the
 
   assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === PRIMARY_COMPARE_SLUG));
   assert.ok(MARKETING_NAV_MODELS.some((item) => item.key === 'veo-3-1'));
-  assert.ok(MARKETING_MODEL_SLUGS.length <= 11);
+  assert.ok(MARKETING_MODEL_SLUGS.length <= 12);
 });

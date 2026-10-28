@@ -81,7 +81,7 @@ test('editorial menus remain bounded and filter unpublished P1 models and pairs'
   const models = publishedP1Models();
   const modelMenu = buildMarketingModelMenu(models);
   const compareMenu = buildMarketingCompareMenu(models);
-  assert.ok(modelMenu.length <= 11);
+  assert.ok(modelMenu.length <= 12);
   for (const slug of ['minimax-h3', 'minimax-h3-max', 'kling-3-turbo-pro']) assert.ok(modelMenu.some(item => item.slug === slug));
   assert.ok(compareMenu.length <= 10);
   assert.ok(compareMenu.some(item => item.slug === 'minimax-h3-vs-minimax-h3-max'));

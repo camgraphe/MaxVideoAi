@@ -661,7 +661,7 @@ test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () 
   ]);
   assert.equal(en25.hero.primaryCta.href, '/app?engine=kling-2-5-turbo');
   assert.equal(en25.hero.quickLinks[2]?.href, '#prompting');
-  assert.equal(en25.decisionCards[2]?.cta.href, '#prompting');
+  assert.equal(en25.decisionCards[2]?.cta.href, '/models/kling-v4');
   assert.match(fr25.hero.subtitle, /Drafts muets 1080p/);
   assert.match(es25.hero.subtitle, /Borradores silenciosos 1080p/);
 
@@ -677,7 +677,7 @@ test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () 
   ]);
   assert.equal(en26.hero.primaryCta.href, '/app?engine=kling-2-6-pro');
   assert.equal(en26.hero.quickLinks[2]?.href, '#prompting');
-  assert.equal(en26.decisionCards[1]?.cta.href, '#prompting');
+  assert.equal(en26.decisionCards[1]?.cta.href, '/models/kling-v4');
   assert.match(fr26.hero.subtitle, /Audio natif/);
   assert.match(es26.hero.subtitle, /Audio nativo/);
 });

@@ -418,11 +418,11 @@
         }
       },
       {
-        "title": "¿Estás limpiando un prompt?",
-        "body": "Usa una acción, un movimiento de cámara y un prompt negativo claro antes de probar rutas más costosas.",
+        "title": "¿Necesitas una escena más larga?",
+        "body": "Explora Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias de imagen o vídeo en 720p o 1080p.",
         "cta": {
-          "label": "Abrir Prompt Lab",
-          "href": "#prompting"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       }
     ],

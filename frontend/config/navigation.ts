@@ -112,11 +112,11 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 
 // D85 editorial promotion. Publication and canonical identity remain registry-owned.
 const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+  { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'flux-3-max', label: 'FLUX 3 Max', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
   { slug: 'minimax-h3-max', label: 'MiniMax H3 Max', badge: 'new' },
   { slug: 'seedance-2-5', label: 'Seedance 2.5', badge: 'new' },
-  { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'kling-3-pro', label: 'Kling 3 Pro' },
   { slug: 'kling-3-turbo-pro', label: 'Kling 3 Turbo Pro' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
@@ -130,15 +130,18 @@ const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
 export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const bySlug = new Map(models.map((model) => [model.slug, model]));
   const byId = new Map(models.map((model) => [model.id, model]));
-  return MODEL_MENU_CANDIDATES
+  const visibleCandidates = MODEL_MENU_CANDIDATES
     .filter(({ slug }) => {
       const model = bySlug.get(slug);
       if (!model?.publication.model.published || !model.publication.model.indexable || model.lifecycle === 'retired' || model.lifecycle === 'deep_legacy') return false;
       if (model.lifecycle !== 'legacy' || !model.successorId) return true;
       const successor = byId.get(model.successorId);
       return !successor?.publication.model.published || !successor.publication.model.indexable;
-    })
-    .slice(0, 11)
+    });
+  // The new Kling card adds one slot instead of evicting an existing model.
+  const capacity = 11 + Number(visibleCandidates.some(({ slug }) => slug === 'kling-v4'));
+  return visibleCandidates
+    .slice(0, capacity)
     .map((item) => {
       const model = bySlug.get(item.slug);
       return {
@@ -167,6 +170,8 @@ const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.i
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
+  { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
   { slug: 'kling-o3-pro-vs-kling-v4', label: 'Kling 4.0 vs Kling 3.0 Omni Pro' },
   { slug: 'minimax-h3-vs-seedance-2-5', label: 'MiniMax H3 vs Seedance 2.5' },
   { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs H3 Max' },

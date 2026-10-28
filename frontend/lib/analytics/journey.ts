@@ -595,12 +595,12 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
 type AnalyticsPrimitive = string | number | boolean;
 
 const ENGINE_IDS = new Set([
-  'luma-ray-2', 'luma-ray-2-flash', 'kling-3-turbo-standard', 'kling-3-turbo-pro',
+  'luma-ray-2', 'luma-ray-2-flash', 'kling-3-turbo-standard', 'kling-3-turbo-pro', 'kling-v4',
   'dreamina-seedance-2-0-mini', 'ltx-2-3-pro', 'minimax-h3-max', 'wan-3', 'wan-3-prime',
   'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3-max', 'flux-3', 'flux-3-draft',
   'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',
   'seedance-2-0', 'seedance-2-0-fast', 'seedance-2-5', 'seedream', 'seedream-5-0-pro',
-  'nano-banana', 'nano-banana-2', 'nano-banana-lite', 'nano-banana-pro', 'gemini-omni-flash',
+  'nano-banana', 'nano-banana-2', 'nano-banana-2-1', 'nano-banana-lite', 'nano-banana-pro', 'gemini-omni-flash',
   'veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'kling-2-5-turbo', 'kling-2-6-pro',
   'kling-3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-o3-4k', 'kling-o3-pro',
   'kling-o3-standard', 'ltx-2-3-fast', 'ltx-2-3', 'ltx-2-fast', 'ltx-2', 'lumaRay2',

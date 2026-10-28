@@ -414,7 +414,7 @@ test('a published fixture keeps the menu bounded while exposing both promoted Wa
   if (!buildMarketingModelMenu) return;
 
   const menu = buildMarketingModelMenu(publishedFixture());
-  assert.ok(menu.length <= 11);
+  assert.ok(menu.length <= 12);
   assert.deepEqual(
     menu.map(({ slug }) => slug).filter((slug) => P0_IDS.includes(slug as never)),
     P0_BOUNDED_NAV_MENU_ENTRIES,

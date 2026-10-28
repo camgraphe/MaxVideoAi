@@ -150,6 +150,7 @@ test('the real published state exposes every P0 across current and machine disco
       'flux-3-vs-flux-3-max',
       'flux-3-vs-grok-imagine-video-1-5',
       'grok-imagine-video-1-5-vs-sora-2',
+      'kling-v4-vs-wan-3-prime',
       'ltx-2-3-fast-vs-ltx-2-5-fast',
       'ltx-2-3-pro-vs-ltx-2-5-pro',
       'ltx-2-5-fast-vs-ltx-2-5-pro',

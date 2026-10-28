@@ -305,11 +305,11 @@
         }
       },
       {
-        "title": "Preparing an image-to-video master?",
-        "body": "Lock the source frame, product details and final composition before rendering the 4K version.",
+        "title": "Need a longer scene at 1080p?",
+        "body": "Kling 4.0 offers 3–30 second generation and timed shots at 720p or 1080p. Keep this Kling 4K route when native 4K delivery is required.",
         "cta": {
-          "label": "Open Prompt Lab",
-          "href": "#prompting"
+          "label": "Explore Kling 4.0",
+          "href": "/models/kling-v4"
         }
       },
       {

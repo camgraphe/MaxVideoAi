@@ -315,11 +315,11 @@
         }
       },
       {
-        "title": "Need a short audio pass?",
-        "body": "Keep dialogue and SFX brief, tie sound to visible action and use the audio toggle only when review context needs it.",
+        "title": "Need a longer scene?",
+        "body": "Explore Kling 4.0 for 3–30 second generation, timed shot prompts and image or video references at 720p or 1080p.",
         "cta": {
-          "label": "Open Prompt Lab",
-          "href": "#prompting"
+          "label": "Explore Kling 4.0",
+          "href": "/models/kling-v4"
         }
       },
       {

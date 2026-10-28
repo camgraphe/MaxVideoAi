@@ -10,28 +10,31 @@ import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
 import { buildModelPromptingViewModel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-view-model';
 
-test('Kling v4 permits gallery preparation while the model page and other discovery remain closed', () => {
+test('Kling v4 publishes its model, two comparisons and additive current family copy while pricing remains separate', () => {
   const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
   const model = registry.models.find((entry: { id: string }) => entry.id === 'kling-v4');
   assert.ok(model, 'Kling v4 registry identity must exist');
   assert.equal(model.slug, 'kling-v4');
   assert.equal(model.family, 'kling');
   assert.notEqual(model.presentationOnly, true);
-  assert.deepEqual(model.publication.model, { published: true, indexable: false });
+  assert.deepEqual(model.publication.model, { published: true, indexable: true });
   assert.equal(model.publication.app.published, true);
   assert.equal(model.publication.examples.published, true);
-  assert.equal(model.publication.examples.current, false);
-  assert.equal(model.publication.examples.includeInFamilyCopy, false);
-  for (const surface of ['pricing', 'compare', 'sitemap']) {
-    assert.equal(model.publication[surface].published, false, surface);
-  }
+  assert.equal(model.publication.examples.current, true);
+  assert.equal(model.publication.examples.includeInFamilyCopy, true);
+  assert.equal(model.publication.pricing.published, false);
+  assert.equal(model.publication.compare.published, true);
+  assert.equal(model.publication.compare.indexed, true);
+  assert.deepEqual(model.publication.compare.publishedPairIds, ['seedance-2-5', 'wan-3-prime']);
+  assert.equal(model.publication.sitemap.published, true);
   assert.equal(model.replacement, null);
   assert.equal(model.successorId, null);
   const template = getModelPageTemplateConfig('kling-v4');
   assert.ok(template);
   assert.equal(template.intent, 'production');
   assert.equal(template.pricing.enabled, false);
-  assert.equal(template.sections.compare, false);
+  assert.equal(template.sections.compare, true);
+  assert.equal(template.comparisonLimit, 2);
 });
 
 test('Kling v4 factual raw schema separates generation, frame and editing controls', () => {
@@ -78,7 +81,11 @@ test('Kling v4 localized normal-page content uses the selected filmed prompts wi
     const links = [decision.hero.primaryCta, decision.hero.secondaryCta, ...decision.hero.quickLinks,
       ...decision.decisionCards.map(card => card.cta), { href: decision.pricingCopy.ctaHref }];
     assert.equal(decision.hero.primaryCta.href, '/app?engine=kling-v4');
-    for (const link of links) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
+    const native4KHref = { en: '/models/kling-o3-4k', fr: '/fr/modeles/kling-o3-4k', es: '/es/modelos/kling-o3-4k' }[locale];
+    assert.equal(decision.decisionCards.filter(card => card.cta.href === native4KHref).length, 1);
+    for (const link of links) {
+      if (link.href !== native4KHref) assert.match(link.href, /^(?:#(?:prompting|specs)|\/app\?engine=kling-v4)$/);
+    }
     assert.doesNotMatch(JSON.stringify(content), /media\.maxvideoai\.com|job_external_|\.mp4|\/pricing#kling-v4/);
     assert.ok(prompting.tabs.length >= 3);
     assert.ok(content.faqs.length >= 6);

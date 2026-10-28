@@ -81,11 +81,11 @@
     ],
     "decisionCards": [
       {
-        "title": "Choose Standard for iteration",
-        "body": "Use 720p Standard to test hooks, staging, rhythm, and multishot structure before a higher-finish pass.",
+        "title": "Need a longer scene?",
+        "body": "Explore Kling 4.0 for 3–30 second generation, timed shot prompts and image or video references at 720p or 1080p.",
         "cta": {
-          "label": "Generate with Kling 3.0 Turbo Standard",
-          "href": "/app?engine=kling-3-turbo-standard"
+          "label": "Explore Kling 4.0",
+          "href": "/models/kling-v4"
         }
       },
       {

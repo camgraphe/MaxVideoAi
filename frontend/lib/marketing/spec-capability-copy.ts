@@ -2,6 +2,15 @@ import type { AppLocale } from '@/i18n/locales';
 
 // Exact capability phrases only: unknown values keep their original meaning.
 const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
+  "up to 10 images total, including the opening image": { fr: "Jusqu’à 10 images au total, image de départ comprise", es: "Hasta 10 imágenes en total, incluida la imagen inicial" },
+  "up to 5 reference videos; 30s combined with video elements": { fr: "Jusqu’à 5 vidéos de référence ; 30 s au total avec les éléments vidéo", es: "Hasta 5 videos de referencia; 30 s en total con los elementos de video" },
+  "provider-set; no fps selector": { fr: "Cadence définie par le fournisseur ; aucun sélecteur FPS", es: "Cadencia definida por el proveedor; sin selector de FPS" },
+  "native audio directed by prompt; no audio switch": { fr: "Audio natif guidé par le prompt ; aucun interrupteur audio", es: "Audio nativo guiado por el prompt; sin interruptor de audio" },
+  "provider-selected image format": { fr: "Format d’image choisi par le fournisseur", es: "Formato de imagen elegido por el proveedor" },
+  "video editing": { fr: "modification vidéo", es: "edición de video" },
+  "optional generated audio": { fr: "Audio généré facultatif", es: "Audio generado opcional" },
+  "optional": { fr: "Facultatif", es: "Opcional" },
+  'no separate lip-sync control': { fr: 'Aucun réglage distinct de synchronisation labiale', es: 'Sin ajuste independiente de sincronización labial' },
   'recast / relight; specialized source tools': { fr: 'Recast / Relight ; outils spécialisés sur vidéo source', es: 'Recast / Relight; herramientas especializadas sobre video de origen' },
   'fast edit; source timing and framing': { fr: 'FAST Edit ; durée et cadrage de la source', es: 'FAST Edit; duración y encuadre del origen' },
   'enhance draft; owned paired draft cache': { fr: 'Enhance Draft ; cache apparié d’un Draft de votre compte', es: 'Enhance Draft; caché emparejada de un Draft de tu cuenta' },
@@ -57,6 +66,8 @@ export function localizeCapabilityDetail(value: string, locale: AppLocale): stri
     if (clips) return locale === 'fr' ? `Jusqu’à ${clips[1]} clips, ${clips[2]} s au total` : `Hasta ${clips[1]} clips, ${clips[2]} s en total`;
     const images = lower.match(/^up to (\d+) (?:image references|reference images)$/);
     if (images) return locale === 'fr' ? `Jusqu’à ${images[1]} images de référence` : `Hasta ${images[1]} imágenes de referencia`;
+    const videoReferences = lower.match(/^up to (\d+) (?:video references|reference videos)$/);
+    if (videoReferences) return locale === 'fr' ? `Jusqu’à ${videoReferences[1]} vidéos de référence` : `Hasta ${videoReferences[1]} videos de referencia`;
     const videos = lower.match(/^up to (\d+) video references; (\d+)-(\d+)s each and (\d+)s combined$/);
     if (videos) return locale === 'fr'
       ? `Jusqu’à ${videos[1]} vidéos de référence ; ${videos[2]}–${videos[3]} s chacune, ${videos[4]} s au total`

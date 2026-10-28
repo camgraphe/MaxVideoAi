@@ -5922,6 +5922,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -6268,6 +6269,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -6622,6 +6624,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -7019,6 +7022,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -7415,6 +7419,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -7773,6 +7778,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -8762,6 +8768,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -9749,6 +9756,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -10753,6 +10761,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -11136,6 +11145,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -11523,6 +11533,7 @@
         "kling-2-5-turbo"
       ],
       "currentModelSlugs": [
+        "kling-v4",
         "kling-3-turbo-pro",
         "kling-3-turbo-standard",
         "kling-o3-pro",
@@ -11541,17 +11552,23 @@
     "successorSlug": null,
     "surfaces": {
       "modelPage": {
-        "indexable": false,
-        "includeInSitemap": false
+        "indexable": true,
+        "includeInSitemap": true
       },
       "examples": {
         "includeInFamilyResolver": true,
-        "includeInFamilyCopy": false
+        "includeInFamilyCopy": true
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
-        "includeInHub": false
+        "suggestOpponents": [
+          "seedance-2-5",
+          "wan-3-prime"
+        ],
+        "publishedPairs": [
+          "seedance-2-5",
+          "wan-3-prime"
+        ],
+        "includeInHub": true
       },
       "app": {
         "enabled": true
@@ -16707,7 +16724,8 @@
           "minimax-h3-max",
           "seedance-2-0",
           "kling-3-pro",
-          "veo-3-1"
+          "veo-3-1",
+          "kling-v4"
         ],
         "publishedPairs": [
           "seedance-2-0",
@@ -16715,7 +16733,8 @@
           "minimax-h3",
           "minimax-h3-max",
           "veo-3-1",
-          "wan-3"
+          "wan-3",
+          "kling-v4"
         ],
         "includeInHub": true
       },
@@ -26015,10 +26034,12 @@
       },
       "compare": {
         "suggestOpponents": [
-          "wan-3"
+          "wan-3",
+          "kling-v4"
         ],
         "publishedPairs": [
-          "wan-3"
+          "wan-3",
+          "kling-v4"
         ],
         "includeInHub": true
       },

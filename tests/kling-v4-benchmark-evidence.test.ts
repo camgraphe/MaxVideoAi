@@ -5,14 +5,21 @@ import { loadBenchmarkLabStaticData } from '../frontend/server/benchmark-lab-dat
 import { loadAppEngineScoreMap } from '../frontend/src/server/engine-scores';
 import { buildBenchmarkPageData } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-page-data';
 
-test('Kling V4 evidence preparation cannot create a public score or placeholder row', async () => {
+test('the October22 worksheet remains historical while the manual V4 score feeds public and App readers', async () => {
   const data = await loadBenchmarkLabStaticData();
   const page = buildBenchmarkPageData(data, {
     status: 'unavailable', windowDays: 30, asOf: null, rows: [],
   });
-  assert.equal(data.scores.some((row) => (row.modelSlug ?? row.engineId) === evidence.modelSlug), false);
-  assert.equal(page.scores.some((row) => row.modelSlug === evidence.modelSlug), false);
-  assert.equal(Object.hasOwn(await loadAppEngineScoreMap(), evidence.modelSlug), false);
+  const manual = data.scores.find((row) => (row.modelSlug ?? row.engineId) === evidence.modelSlug);
+  assert.ok(manual);
+  for (const key of ['fidelity', 'visualQuality', 'motion', 'consistency', 'anatomy', 'textRendering', 'lipsyncQuality', 'sequencingQuality', 'controllability', 'speedStability', 'pricing'] as const) {
+    assert.equal(typeof manual[key], 'number', key);
+  }
+  assert.equal(manual.last_updated, '2026-10-27');
+  assert.equal(manual.reviewStatus, undefined);
+  assert.equal(page.scores.some((row) => row.modelSlug === evidence.modelSlug), true);
+  assert.equal((await loadAppEngineScoreMap())[evidence.modelSlug], 9.2);
+  assert.equal(evidence.checkedAt, '2026-10-22');
   assert.equal(evidence.editorialReview.criterionScoresPublished, false);
   assert.equal(evidence.editorialReview.controlledOutputsReviewed, 0);
   assert.equal(evidence.editorialReview.publicVideosInspected, 0);

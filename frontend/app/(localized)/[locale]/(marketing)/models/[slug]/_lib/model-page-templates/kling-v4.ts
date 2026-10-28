@@ -8,5 +8,6 @@ export const klingV4TemplateConfig: ModelPageTemplateConfig = {
     quickLinks: [{ labelKey: 'promptExamples', href: '#prompting', icon: 'prompt' }],
   },
   pricing: { enabled: false, anchorHref: '#specs', presets: [] },
-  sections: { examples: true, prompting: true, tips: true, compare: false, specs: true, safety: true, faq: true },
+  comparisonLimit: 2,
+  sections: { examples: true, prompting: true, tips: true, compare: true, specs: true, safety: true, faq: true },
 };

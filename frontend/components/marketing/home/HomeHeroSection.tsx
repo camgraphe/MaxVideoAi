@@ -186,7 +186,7 @@ export function HomeHero({
       </div>
       <div id="model-brands" className="container-page cinema-models">
         <div className="cinema-model-marks">{[
-          ['kling-3-pro','Kling','/brand/partners/kling/kling-mark-light.png'],
+          ['kling-v4','Kling','/brand/partners/kling/kling-mark-light.png'],
           ['seedance-2-5','Seedance','/brand/partners/bytedance/bytedance-mark-light.svg'],
           ['minimax-h3-max','MiniMax','/brand/partners/minimax/minimax-mark-light.svg'],
           ['wan-3-prime','Wan','/brand/partners/wan/wan-mark-light.png'],

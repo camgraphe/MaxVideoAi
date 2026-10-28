@@ -54,6 +54,8 @@ test('model and comparison capability descriptions share exact localized limits'
   const {localizeSpecDetailValue} = await import('../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-spec-values');
   const labels={pending:'À confirmer',supported:'Pris en charge',notSupported:'Non pris en charge'};
   assert.equal(localizeSpecDetailValue('Up to 9 image references','fr',labels), 'Jusqu’à 9 images de référence');
+  assert.equal(localizeSpecDetailValue('Up to 10 video references','fr',labels), 'Jusqu’à 10 vidéos de référence');
+  assert.equal(localizeSpecDetailValue('Up to 10 video references','es',labels), 'Hasta 10 videos de referencia');
   assert.equal(localizeSpecDetailValue('Native stereo audio','es',labels), 'Audio estéreo nativo');
   assert.equal(localizeSpecDetailValue('New unverified capability','fr',labels), 'New unverified capability');
   assert.equal(localizeCapabilityDetail('Up to 3 clips, 15s total','es'), 'Hasta 3 clips, 15 s en total');

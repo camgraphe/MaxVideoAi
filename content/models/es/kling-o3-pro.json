@@ -164,11 +164,11 @@
         }
       },
       {
-        "title": "¿Necesitas guía V2V?",
-        "body": "Elige Reference para movimiento nuevo guiado por un video o Edit para un cambio que hereda duración y encuadre del origen. Standard, Pro y Omni 4K tienen sus propios ajustes y cotizaciones exactos.",
+        "title": "¿Una nueva escena con referencias?",
+        "body": "Descubre Kling 4.0 para generar de 3 a 30 s, dirigir cada plano y usar referencias en 720p o 1080p. La edición de vídeo usa un modo independiente.",
         "cta": {
-          "label": "Abrir compositor O3 Pro",
-          "href": "/app?engine=kling-o3-pro"
+          "label": "Descubrir Kling 4.0",
+          "href": "/es/modelos/kling-v4"
         }
       },
       {

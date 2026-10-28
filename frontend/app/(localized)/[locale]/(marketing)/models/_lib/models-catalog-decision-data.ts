@@ -17,7 +17,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
 import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
 import type { ModelsGalleryCompareHref } from '@/components/marketing/models-gallery/models-gallery-types';
-import { buildCanonicalCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
+import { buildCanonicalCompareSlug, getSuggestedOpponentSlugs, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
 import { resolveExampleFamilyId } from '@/lib/model-families';
 import { getBenchmarkScoreReviewCopy } from '@/lib/benchmark-score-review';
 
@@ -120,7 +120,10 @@ export function buildDefaultModelCompareHref(modelSlug: string): ModelsGalleryCo
   if (['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'gpt-image-2-5-flare', 'gpt-image-2-5-sunburst', 'seedream'].includes(modelSlug)) {
     return null;
   }
-  const opponent = modelSlug === 'kling-v4' ? 'kling-o3-pro' : modelSlug === 'flux-3-max' ? 'flux-3' : modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';
+  const opponent = modelSlug === 'kling-v4'
+    ? getSuggestedOpponentSlugs(modelSlug, 2).find(slug => isPublishedComparisonSlug(buildCanonicalCompareSlug(modelSlug, slug)))
+    : modelSlug === 'flux-3-max' ? 'flux-3' : modelSlug === 'seedance-2-0' ? 'kling-3-pro' : 'seedance-2-0';
+  if (!opponent) return null;
   if (!isPublishedComparisonSlug(buildCanonicalCompareSlug(modelSlug, opponent))) return null;
   return buildModelCompareHref(modelSlug, opponent);
 }

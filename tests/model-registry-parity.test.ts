@@ -361,7 +361,7 @@ test('family membership and current variants preserve baseline with explicit lif
     const expectedCurrentModelSlugs = expected.id === 'seedance'
       ? ['seedance-2-5', ...baselineCurrentModelSlugs]
       : expected.id === 'kling'
-        ? ['kling-3-turbo-pro', 'kling-3-turbo-standard', ...baselineCurrentModelSlugs]
+        ? ['kling-v4', 'kling-3-turbo-pro', 'kling-3-turbo-standard', ...baselineCurrentModelSlugs]
       : expected.id === 'hailuo'
         ? ['minimax-h3', 'minimax-h3-max']
         : expected.id === 'veo'

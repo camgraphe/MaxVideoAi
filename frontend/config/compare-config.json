@@ -165,6 +165,7 @@
       "seedance-2-5-vs-veo-3-1"
     ],
     "kling-3-pro-vs-seedance-2-5": [
+      "kling-v4-vs-seedance-2-5",
       "kling-3-pro-vs-kling-3-standard",
       "kling-3-pro-vs-seedance-2-0",
       "seedance-2-0-vs-seedance-2-5"
@@ -421,6 +422,15 @@
       "gemini-omni-flash-vs-veo-3-1",
       "gemini-omni-flash-vs-sora-2",
       "kling-3-pro-vs-kling-3-turbo-pro"
+    ],
+    "kling-v4-vs-seedance-2-5": [
+      "kling-3-pro-vs-seedance-2-5",
+      "kling-v4-vs-wan-3-prime",
+      "kling-3-pro-vs-kling-3-standard"
+    ],
+    "kling-v4-vs-wan-3-prime": [
+      "kling-v4-vs-seedance-2-5",
+      "wan-3-vs-wan-3-prime"
     ]
   },
   "showdownOverrides": {

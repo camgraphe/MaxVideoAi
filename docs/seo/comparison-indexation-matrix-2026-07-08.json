@@ -38,20 +38,20 @@
     "safety": "Recommendation only; no sitemap, robots, canonical, or noindex change is applied."
   },
   "summary": {
-    "publishedSlugs": 313,
-    "totalUrls": 939,
+    "publishedSlugs": 315,
+    "totalUrls": 945,
     "withGscRows": 639,
-    "withoutGscRows": 300,
+    "withoutGscRows": 306,
     "withClicks": 144,
     "gscRowsOutsidePublishedSet": 21,
     "gscRowsOutsidePublishedSetWithClicks": 2,
     "byLocale": {
-      "en": 313,
-      "fr": 313,
-      "es": 313
+      "en": 315,
+      "fr": 315,
+      "es": 315
     },
     "byClassification": {
-      "keep": 356,
+      "keep": 362,
       "enrich": 28,
       "review": 342,
       "noindex_candidate": 213
@@ -2997,6 +2997,40 @@
       "classification": "review",
       "rationale": [
         "gsc_review_opportunity"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-v4-vs-seedance-2-5",
+      "locale": "en",
+      "slug": "kling-v4-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/ai-video-engines/kling-v4-vs-wan-3-prime",
+      "locale": "en",
+      "slug": "kling-v4-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
@@ -9246,6 +9280,40 @@
       ]
     },
     {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-v4-vs-seedance-2-5",
+      "locale": "fr",
+      "slug": "kling-v4-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/fr/comparatif/kling-v4-vs-wan-3-prime",
+      "locale": "fr",
+      "slug": "kling-v4-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
       "url": "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro",
       "locale": "fr",
       "slug": "ltx-2-3-fast-vs-ltx-2-3-pro",
@@ -15367,6 +15435,40 @@
       "classification": "noindex_candidate",
       "rationale": [
         "low_demand_outside_top_10"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/kling-v4-vs-seedance-2-5",
+      "locale": "es",
+      "slug": "kling-v4-vs-seedance-2-5",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
+      ]
+    },
+    {
+      "url": "https://maxvideoai.com/es/comparativa/kling-v4-vs-wan-3-prime",
+      "locale": "es",
+      "slug": "kling-v4-vs-wan-3-prime",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": 0,
+      "position": 0,
+      "hasGscRow": false,
+      "gscSourceUrls": [],
+      "hasLocalizedOverride": true,
+      "strategicSignals": [],
+      "classification": "keep",
+      "rationale": [
+        "localized_editorial_override"
       ]
     },
     {
