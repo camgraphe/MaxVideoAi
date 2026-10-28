@@ -40,3 +40,5 @@ Before the first message, show only the Milo heading and the message composer; h
 Validation: Chromium and WebKit at 320/390/1440 px cover preview input focus, a long prompt/counter, Clear and Undo, plus the existing 36 clear-action scenarios across three locales and two densities. Modify/Extend direct-source popup access is checked in both writing tabs.
 
 The model selector is now the first control in the writing footer, followed by references, in both Prompt and AI assistant. A 1 px theme-aware border and a slightly stronger hover border distinguish the selector without increasing its height.
+
+The shared FLUX 3 / Luma Ray 3.2 keyframe editor now occupies the existing extra-fields area below the prompt and the settings / Generate row. Source and operation selection stay in their existing locations; keyframe data and handlers are unchanged.

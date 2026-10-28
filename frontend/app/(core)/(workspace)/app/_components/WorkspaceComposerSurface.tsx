@@ -548,6 +548,23 @@ export function WorkspaceComposerSurface({
                 sourceJobId={String(form.extraInputValues.source_job_id ?? '')}
                 onSelect={source => setForm(current => current ? {...current,extraInputValues:{...current.extraInputValues,
                   source_job_id:source?.sourceJobId ?? '',source_output_id:source?.sourceOutputId ?? ''}} : current)} /> : null}
+        </>}
+        subjectReferences={showKlingElementsBuilder ? {
+          hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
+          content: <KlingElementsBuilder
+            elements={klingElements}
+            variant={isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
+            onAddElement={handleKlingElementAdd}
+            onRemoveElement={handleKlingElementRemove}
+            onAddAsset={handleKlingElementAssetAdd}
+            onRemoveAsset={handleKlingElementAssetRemove}
+            onOpenLibrary={handleOpenKlingAssetLibrary}
+            videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
+          />,
+        } : undefined}
+        extraFields={showExtraFields ? (
+          <>
+            {klingV4Error ? <p role="alert" className="text-xs text-error">{klingV4Error}</p> : null}
             {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
               <LumaRay32KeyframeEditor
                 uiLocale={uiLocale}
@@ -566,23 +583,6 @@ export function WorkspaceComposerSurface({
                 disabledReason={guestUploadLockedReason}
               />
             ) : null}
-        </>}
-        subjectReferences={showKlingElementsBuilder ? {
-          hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
-          content: <KlingElementsBuilder
-            elements={klingElements}
-            variant={isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
-            onAddElement={handleKlingElementAdd}
-            onRemoveElement={handleKlingElementRemove}
-            onAddAsset={handleKlingElementAssetAdd}
-            onRemoveAsset={handleKlingElementAssetRemove}
-            onOpenLibrary={handleOpenKlingAssetLibrary}
-            videoReferenceDisabledReason={klingO3VideoReferenceDisabledReason}
-          />,
-        } : undefined}
-        extraFields={showExtraFields ? (
-          <>
-            {klingV4Error ? <p role="alert" className="text-xs text-error">{klingV4Error}</p> : null}
             {showOmniStudioPanel ? (
               <OmniStudioPanel
                 form={form}
