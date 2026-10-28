@@ -64,3 +64,9 @@ Eight focused composer, layout and panel checks pass, including Chromium/WebKit 
 In the compact preview, the recognizable-person notice now appears immediately above the video upload controls, both in the direct source picker and the Video section of References. It is removed from the writing footer in both Prompt and AI assistant, and does not appear when selecting image or audio references. The notice wording, eligibility and non-preview presentation are unchanged.
 
 Fifteen focused checks pass, including Modify/Extend with both writing tabs at 320 / 390 / 1440 px and existing production Extend behavior. TypeScript, focused ESLint and diff checks pass. Authenticated Seedance 2.5 verification confirms the notice inside the source picker; private capture: `seedance-warning-in-references.png`.
+
+## Follow-up — group references and keep source clips out of Create
+
+The picker puts Images / Videos / Audio on its first row, followed by Start image / End image and the workflow source when applicable. Images is the initial selection when available. The compact Create picker excludes video fields reserved for Modify, Extend or Reframe; actual video references remain available. Modify retains its source clip, and Extend retains its dedicated source entry. This changes presentation only, preserving field identifiers, attachment callbacks and workflow inference.
+
+Two focused integration checks pass, covering row order, initial selection, Create filtering and retained Modify/Extend source access in both writing tabs at 320 / 390 / 1440 px. TypeScript, focused ESLint and diff checks pass. The authenticated Seedance 2.5 Create picker shows the two rows without Source video; private capture: `reference-picker-two-rows.png`. No generation or LLM call was made.

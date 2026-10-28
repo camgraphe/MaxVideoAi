@@ -623,12 +623,17 @@
 .app-experience .app-reference-popup .app-reference-empty-actions > button { flex: 1; min-width: 0; min-height: 64px; justify-content: center; padding: 10px !important; border: 1px solid var(--app-line) !important; }
 .app-experience .app-reference-popup .app-reference-empty-actions > .app-reference-add-target { border-style: dashed !important; }
 .app-experience .app-reference-popup[data-single-role] .app-reference-field-heading { display: none; }
-.app-experience .app-reference-role-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px 0 12px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-reference-role-nav { display: grid; gap: 6px; padding: 8px 0 12px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-reference-role-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .app-experience .app-reference-role-nav button { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 52px; padding: 6px 8px; text-align: left; border: 1px solid var(--app-line); border-radius: 6px; font-size: 12px; color: var(--app-muted); }
 .app-experience .app-reference-role-nav button[aria-pressed="true"] { background: var(--app-accent-soft); border-color: var(--app-accent); color: var(--app-accent); }
 .app-experience .app-reference-role-nav svg { width: 20px; height: 20px; flex: none; }
+.app-experience .app-reference-role-nav button > span { min-width: 0; overflow-wrap: anywhere; }
 .app-experience .app-reference-role-nav small { display: block; font-size: 10px; }
-@media (max-width: 479px) { .app-experience .app-reference-role-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 479px) {
+  .app-experience .app-reference-role-nav button { gap: 5px; padding-inline: 6px; font-size: 11px; }
+  .app-experience .app-reference-role-nav svg { width: 16px; height: 16px; }
+}
 .app-experience .app-picker-guidance { margin-bottom: 12px; color: var(--app-muted); font-size: 12px; }
 .app-experience .app-picker-guidance summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
 .app-experience .app-picker-guidance p { padding: 4px 0 12px; }

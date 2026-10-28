@@ -72,6 +72,20 @@ test('compact Modify and Extend keep source references inside the writing footer
       const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
       await page.locator('[data-mode="create"]').click();
       const creationTop=await page.locator('[data-prompt-assistance-preview]').evaluate(el=>el.getBoundingClientRect().top+scrollY);
+      await page.getByRole('button',{name:'Add references',exact:true}).click();
+      const picker=page.getByRole('dialog');
+      assert.deepEqual(await picker.locator('.app-reference-role-row').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('[data-reference-role]')].map(button=>button.getAttribute('data-reference-role')))),
+        [['image_urls','video_urls','audio_urls'],['image_url','end_image_url']]);
+      await expect(picker.locator('[data-reference-role="image_urls"]')).toHaveAttribute('aria-pressed','true');
+      const referenceRow=await picker.locator('.app-reference-role-row').first().boundingBox();
+      for(const fieldId of ['image_urls','video_urls','audio_urls']) {
+        const buttonBox=await picker.locator(`[data-reference-role="${fieldId}"]`).boundingBox();
+        assert.ok(buttonBox && referenceRow && Math.abs(buttonBox.y-referenceRow.y)<1, 'media choices share the first row on mobile and desktop');
+      }
+      const framesRow=await picker.locator('.app-reference-role-row').last().boundingBox();
+      assert.ok(referenceRow && framesRow && framesRow.y>=referenceRow.y+referenceRow.height, 'start and end images stay below media references');
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+      await picker.getByRole('button',{name:'Close',exact:true}).click();
       for(const operation of ['v2v','extend']){const idleGeometry: Array<{height:number;sourceTop:number;sourceLeft:number}> = [];await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
         await page.getByRole('tab',{name:mode,exact:true}).click();
         assert.equal(await page.locator('[data-prompt-assistance-preview]').evaluate(el=>el.getBoundingClientRect().top+scrollY),creationTop, 'source guidance must not shift the composer when changing operation');

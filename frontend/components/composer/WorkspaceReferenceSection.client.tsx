@@ -18,7 +18,7 @@ import { WorkspaceReferenceInventory } from './WorkspaceReferenceInventory.clien
 import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 import { videoExtensionCopy } from '@/lib/video-extension';
-import { getVideoWorkflowSourceField, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import { getVideoWorkflowSourceField, isVideoSourceWorkflow, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { ReferenceThumbnail } from './ReferenceThumbnail.client';
 import { buildReferenceMentions, selectedReferenceLabel, referenceMentionCopy, type ReferenceMention } from './workspace-reference-mentions';
 
@@ -64,7 +64,9 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
   }
   const activeFrame = frames.find((entry) => entry.field.id === activeCommand);
   const activeSource = sourceEntry?.field.id === activeCommand ? sourceEntry : null;
-  const popupFields = activeCommand === 'all' ? assetFields : activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [];
+  const popupFields = (activeCommand === 'all' ? assetFields : activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [])
+    .filter(({ field }) => !compact || Boolean(sourceMode) || field.type !== 'video'
+      || !field.modes?.length || !field.modes.every(isVideoSourceWorkflow));
   const popupTitle = activeSource ? sourceLabel : activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title;
   const close = () => setActiveCommand(null);
   const open = (command: string, trigger: HTMLButtonElement) => {
@@ -167,7 +169,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
     {engine.activeVideoOperation === 'h3-recast' && selectedCollections.some(({ entry }) => entry.field.id === 'reference_image_urls') ? <p className="app-reference-required" role="note">{mentionCopy.portraits}</p> : null}
     {subjectsVisible ? <div id={subjectPanelId} data-subject-references>{subjectReferences?.content}</div> : null}
     {popupFields.length || (activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
-      <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <>
+      <WorkspaceReferenceInventory fields={popupFields} sourceFieldId={sourceField?.id} assets={assets} locale={locale} renderField={(entry) => <>
         {compact && entry.field.type === 'video' ? workflowNotices.map(note=><p key={note.code} role="note" className="mb-3 text-xs leading-relaxed text-text-muted">{note.message}</p>) : null}
         <AssetDropzone key={entry.field.id} {...entry} headerAction={compact ? entry.headerAction : undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
