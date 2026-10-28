@@ -29,6 +29,12 @@ test('audio preview applies only to its active text field and retires an intent 
     await page.getByRole('button',{name:'Undo',exact:true}).click();
     assert.equal(await page.evaluate(()=>(globalThis as any).currentDraft.script),'Original speech');
     await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+    await page.locator('[data-assistance-message]').fill('Keep this voice direction');
+    await page.getByRole('button',{name:'Remove Audio 1',exact:true}).click();
+    await page.getByRole('combobox',{name:'Model',exact:true}).selectOption('minimax');
+    await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('[data-assistance-message]')).toHaveValue('Keep this voice direction');
+    await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
     await page.locator('[data-assistance-message]').fill('Next');await page.locator('[data-assistance-message]').press('Enter');await page.getByRole('button',{name:'Switch to song'}).click();
     await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
     await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);

@@ -47,8 +47,22 @@ test('compact model selector keeps logos, short names and eligible variants reac
         await assistantVariant.focus();await page.keyboard.press('Enter');
         await expect(page.getByRole('listbox')).toBeVisible();await page.keyboard.press('Escape');
         await expect(assistantVariant).toBeFocused();
+        const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
+        await message.fill('Keep the lighting soft.');await message.press('Enter');
+        await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
+        await message.fill('Keep this unsent message.');
+        await assistantVariant.click();await page.getByRole('option',{name:'Mini',exact:true}).click();
+        await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
+        await expect(message).toHaveValue('Keep this unsent message.');
+        await expect(page.getByText('Keep the lighting soft.',{exact:true})).toBeVisible();
+        await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
+        await expect(page.getByRole('button',{name:'Variant: Mini',exact:true})).toBeVisible();
         await page.getByRole('button',{name:'Single model',exact:true}).click();
         await expect(page.getByRole('button',{name:/^Variant:/})).toHaveCount(0);
+        await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
+        await expect(message).toHaveValue('Keep this unsent message.');
+        await expect(page.getByText('for Wan 3 Prime',{exact:true})).toBeVisible();
+        await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Keep my draft.');
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
         await page.close();
       }}finally{await browser.close();}

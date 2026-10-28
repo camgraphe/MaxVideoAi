@@ -2,6 +2,7 @@
 import { useEffect, useReducer, useRef } from 'react';
 import { canApplyProposal, canUndoProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
 
+/** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
 export type PromptAssistanceContext = { scopeKey: string; contextKey: string };
 export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, target, onApplyText, maxLength, blocked }: PromptAssistanceContext & {
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;

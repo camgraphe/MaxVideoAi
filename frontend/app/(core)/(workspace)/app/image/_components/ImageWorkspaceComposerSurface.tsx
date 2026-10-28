@@ -295,7 +295,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
-          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, selectedEngineId, mode]), contextKey: JSON.stringify([aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
+          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, 'image']), contextKey: JSON.stringify([selectedEngineId, mode, aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}

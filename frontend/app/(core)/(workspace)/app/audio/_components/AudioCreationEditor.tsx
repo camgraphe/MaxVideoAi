@@ -54,7 +54,7 @@ export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, 
         <button type="button" aria-pressed={draft.musicModel === 'pro'} onClick={() => onChange({ musicModel: 'pro' })}>{copy.musicPro}<span>{copy.musicProMeta}</span></button>
       </div> : <div className={styles.modelIdentity}><span>{copy.model}</span><strong>{modelName}</strong></div>}
     </div>
-    {assistanceEnabled ? <PromptAssistanceComposer context={{scopeKey: JSON.stringify([assistanceAccountId, intent, draft.voiceModel, draft.musicModel]), contextKey: JSON.stringify({...draft, [key]: undefined})}}
+    {assistanceEnabled ? <PromptAssistanceComposer context={{scopeKey: JSON.stringify([assistanceAccountId, intent]), contextKey: JSON.stringify({...draft, [key]: undefined})}}
       locale="en" modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
       renderReferences={spoken && (draft.reference || draft.voiceModel === 'seed') ? insert => <div className={styles.assistanceReferences}>
         <button type="button" aria-label="Add audio reference" disabled={uploading} onClick={() => input.current?.click()}><span aria-hidden>＋</span> Reference</button>
