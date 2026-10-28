@@ -8,6 +8,7 @@ const stubs = {
   'next/dynamic': "import React,{lazy,Suspense} from 'react';export default load=>{const Component=lazy(()=>load().then(value=>({default:value})));return props=>React.createElement(Suspense,{fallback:null},React.createElement(Component,props));};",
   'next/image': "import React from 'react';export default ({fill,priority,unoptimized,fetchPriority,...props})=>React.createElement('img',props);",
   './model-picker.module.css': 'export default {};',
+  './prompt-assistance.module.css': 'export default {};',
   '@/components/Composer': 'export const Composer=()=>null;',
   '@/components/ImageAdvancedSettings': 'export const ImageAdvancedSettings=()=>null;',
   '@/components/ImageSettingsBar': 'export const ImageSettingsBar=()=>null;export const ImageCountControl=()=>null;',

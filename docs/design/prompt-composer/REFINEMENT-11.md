@@ -39,6 +39,12 @@ settings locks, restoration and finalization remain unchanged.
   browser tests cover source references in both tabs, character-library actions,
   audio text-field selection, scrollable conversation and manual fallback.
 - Focused suites passed; TypeScript, scoped ESLint and whitespace checks passed.
+- The general fast validation reported 9,749 passes, one skip and two failures
+  in older test fixtures: the image-picker lifecycle fixture did not stub the
+  newly imported composer CSS, and a source contract still expected the old
+  mode-header condition. Both expectations were updated to the existing preview
+  integration and their affected suites passed on a focused rerun. No product
+  behavior was changed to satisfy these two tests.
 
 This is an interface/contract audit, not a paid generation test for every model.
 No additional missing control was found in these checks. Server feature switches
