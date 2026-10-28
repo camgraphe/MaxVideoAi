@@ -1,6 +1,6 @@
 # Prompt assistance — first app integration plan
 
-> **For agentic workers:** Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Keep work in the existing isolated worktree and draft PR.
+> **For agentic workers:** Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking. Keep work in the existing isolated worktree and draft PR.
 
 **Goal:** Evaluate and refine the compact prompt/Milo interaction inside the real video, image and audio generators before connecting paid assistance.
 
@@ -50,12 +50,12 @@ Only step 1 is executable from this file. The service increment needs its own bo
 
 **Interfaces:** `PromptAssistancePanelProps` contains `messages: readonly {id:string; role:'user'|'assistant'; text:string}[]`, `proposal: {text:string; target:'prompt'|'script'|'lyrics'; stale:boolean}|null`, `message:string`, `pending:boolean`, `onMessageChange(text)`, `onSend()`, `onProposalTextChange(text)`, `onApply()`, `onCopy()`, and `references: ReactNode`. Presentation has no Generate callback. The preview controller takes `scopeKey`, `revision`, `target`, `draftText` and `onApplyText(text, expectedRevision)`; it exposes these panel props plus writing mode and an undo action. It clears on scope changes, invalidates on revision changes and uses the existing draft callback only after checking the expected revision.
 
-- [ ] Install locked dependencies inside this worktree with `pnpm install --frozen-lockfile` before running the component tests. Keep its mutable build and database test state separate from other checkouts.
-- [ ] Write reducer tests for a response captured at revision 3 arriving after revision 4 (application rejected); account/model/mode scope change (messages and pending result retired); apply then edit then undo (undo rejected); full 4,000-character application (not a two-line excerpt).
-- [ ] Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-preview-state.test.ts`; confirm failure for the missing reducer, then implement it and rerun to PASS.
-- [ ] Build the controlled panel and development fixture controller. Keep a visible “Sample conversation” note in the opt-in path; no simulated credit balance. Copy and apply the complete edited proposal. Expanded text has a bounded height; its action and stale warning sit outside it. Do not scroll the transcript on user edits or passive renders.
-- [ ] Add DOM tests for collapse/expand/action visibility, apply/undo, disabled stale action, re-entry focus, Enter/Shift+Enter/IME, and zero Generate calls. Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-panel-dom.test.ts` to PASS.
-- [ ] Commit the panel and local interaction boundary together.
+- [x] Install locked dependencies inside this worktree with `pnpm install --frozen-lockfile` before running the component tests. Keep its mutable build and database test state separate from other checkouts.
+- [x] Write reducer tests for a response captured at revision 3 arriving after revision 4 (application rejected); account/model/mode scope change (messages and pending result retired); apply then edit then undo (undo rejected); full 4,000-character application (not a two-line excerpt).
+- [x] Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-preview-state.test.ts`; confirm failure for the missing reducer, then implement it and rerun to PASS.
+- [x] Build the controlled panel and development fixture controller. Keep a visible “Sample conversation” note in the opt-in path; no simulated credit balance. Copy and apply the complete edited proposal. Expanded text has a bounded height; its action and stale warning sit outside it. Do not scroll the transcript on user edits or passive renders.
+- [x] Add DOM tests for collapse/expand/action visibility, apply/undo, disabled stale action, re-entry focus, Enter/Shift+Enter/IME, and zero Generate calls. Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-panel-dom.test.ts` to PASS.
+- [x] Commit the panel and local interaction boundary together.
 
 ## Task 2 — integrate video and image without replacing their state owners
 
@@ -65,11 +65,11 @@ Only step 1 is executable from this file. The service increment needs its own bo
 
 **Interfaces:** add an optional `assistance` presentation prop to `ComposerProps`, populated only by the development adapter from task 1. Pass the actual engine ID, active operation/mode, draft revision and account scope into the controller at route level. Keep `useWorkspaceComposerState`, image route state and existing asset hooks as the source of truth. Single-text help is available only where a writable prompt exists. Multi-prompt scenes retain their current editor; disable the preview helper there with an explicit explanation until structured scene proposals are supported.
 
-- [ ] Extend `tests/workspace-reference-mentions-browser.test.ts` and the fixture in `tests/helpers/workspace-reference-browser-fixture.ts` to cover the new opt-in presentation alongside the default path. Assert selection replacement, changed-reference review, source-before-optional-reference ordering, no original video/audio loads for thumbnails, and no extra generation request.
-- [ ] Integrate the panel into the actual composer flow. Reuse asset import/library actions and role compatibility. Keep required source hints, excerpt editing, advanced controls, negative prompt, model-specific directives and pricing status accessible. The plus opens existing reference actions; it must not become a second uploader.
-- [ ] Apply compact reference and settings styling only in the opt-in workspace presentation. Separate display aliases from the provider mention payload using the existing reference identity/mapping; never renumber existing UI identities silently after removal.
-- [ ] Run the updated reference browser test and `tests/workspace-reference-mentions.test.ts`, `tests/workspace-composer-surface-contract.test.ts`, `tests/workspace-first-viewport-contract.test.ts`, `tests/workspace-composer-generation-split-contract.test.ts`, `tests/composer-quote-layout-browser.test.ts`, `tests/workspace-source-settings-browser.test.ts`, and `tests/image-workspace-split-contract.test.ts` with `pnpm exec tsx --tsconfig frontend/tsconfig.json --test <files>`. Update intentional presentation assertions where the opt-in DOM differs, while retaining the protected responsibilities and default-density behavior.
-- [ ] Commit the video/image adapter and checks together.
+- [x] Extend `tests/workspace-reference-mentions-browser.test.ts` and the fixture in `tests/helpers/workspace-reference-browser-fixture.ts` to cover the new opt-in presentation alongside the default path. Assert selection replacement, changed-reference review, source-before-optional-reference ordering, no original video/audio loads for thumbnails, and no extra generation request.
+- [x] Integrate the panel into the actual composer flow. Reuse asset import/library actions and role compatibility. Keep required source hints, excerpt editing, advanced controls, negative prompt, model-specific directives and pricing status accessible. The plus opens existing reference actions; it must not become a second uploader.
+- [x] Apply compact reference and settings styling only in the opt-in workspace presentation. Separate display aliases from the provider mention payload using the existing reference identity/mapping; retain existing provider numbering and review guards in this preview; stable display aliases require a submission adapter in the service increment.
+- [x] Run the updated reference browser test and `tests/workspace-reference-mentions.test.ts`, `tests/workspace-composer-surface-contract.test.ts`, `tests/workspace-first-viewport-contract.test.ts`, `tests/workspace-composer-generation-split-contract.test.ts`, `tests/composer-quote-layout-browser.test.ts`, `tests/workspace-source-settings-browser.test.ts`, and `tests/image-workspace-split-contract.test.ts` with `pnpm exec tsx --tsconfig frontend/tsconfig.json --test <files>`. Update intentional presentation assertions where the opt-in DOM differs, while retaining the protected responsibilities and default-density behavior.
+- [x] Commit the video/image adapter and checks together.
 
 ## Task 3 — integrate the current audio editor
 
@@ -77,9 +77,9 @@ Only step 1 is executable from this file. The service increment needs its own bo
 
 **Interfaces:** reuse task 1's panel. `voice` targets `draft.script`; `music`, `ambience`, `sfx` and song style target `draft.prompt`; song lyrics remain a distinct `draft.lyrics` field with an explicit target if offered. The existing `onChange(Partial<AudioCreationDraft>)` is the only mutation path. Include account, intent and selected audio model in the scope. Keep the video-soundtrack path (`intent=video`, `AudioWorkspace`) unchanged for this first local preview and record it as separate adapter work for the service increment.
 
-- [ ] Add tests that Use script changes only `script`, leaves voice/delivery/reference untouched, and never inserts `@Audio1` into speech. Verify changing intent/account retires a pending suggestion, and music style edits leave lyrics untouched.
-- [ ] Run both audio tests to see the new assertions fail, then integrate the opt-in panel using the real draft callbacks. Preserve per-field limits, reference ownership/upload cancellation, selected voice preview, generation and quote freshness. Reference mentions belong in the Milo message, never automatically in spoken text.
-- [ ] Rerun those tests plus `tests/audio-workspace-architecture.test.ts` to PASS; commit the audio adapter and tests together.
+- [x] Add tests that Use script changes only `script`, leaves voice/delivery/reference untouched, and never inserts `@Audio1` into speech. Verify changing intent/account retires a pending suggestion, and music style edits leave lyrics untouched.
+- [x] Run both audio tests to see the new assertions fail, then integrate the opt-in panel using the real draft callbacks. Preserve per-field limits, reference ownership/upload cancellation, selected voice preview, generation and quote freshness. Reference mentions belong in the Milo message, never automatically in spoken text.
+- [x] Rerun those tests plus `tests/audio-workspace-architecture.test.ts` to PASS; commit the audio adapter and tests together.
 
 ## Task 4 — review the real app and preserve rollback
 
@@ -94,4 +94,4 @@ Only step 1 is executable from this file. The service increment needs its own bo
 
 ## Current status
 
-Planning only: these implementation checkboxes are intentionally open. The branch currently contains the standalone prototype, design notes, browser evidence and this plan. Local product dependencies have not been installed, and no live assistance route or app integration has been implemented.
+Tasks 1–3 implemented and verified. Task 4 app/browser checks and documentation are implemented; final branch review, build and PR update are in progress. The live assistance service is not implemented. See REFINEMENT-4.md and docs/engineering/prompt-assistance.md for the delivered scope and limits.

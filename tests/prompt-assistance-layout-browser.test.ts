@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mkdir } from 'node:fs/promises';
 import { chromium, expect } from '@playwright/test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
@@ -55,9 +56,10 @@ test('real composer keeps the full suggestion, independent scrolling, references
   const browser = await chromium.launch({headless:true});
   try {
     for (const width of [320,390,768,1024,1440]) {
-      const page = await browser.newPage({viewport:{width,height:900}});
+      const page = await browser.newPage({viewport:{width,height:width===1024?600:900},reducedMotion:'reduce'});
       const errors:string[]=[]; page.on('pageerror',error=>errors.push(error.message));
       await page.goto(fixture.url);
+      if(width===390) await page.locator('html').evaluate(el=>el.setAttribute('data-theme','dark'));
       await page.getByRole('tab',{name:'With Milo',exact:true}).click({timeout:3000});
       const message=page.locator('[data-assistance-message]');
       await message.fill('Keep the camera movement slow.'); await message.press('Enter');
@@ -77,6 +79,13 @@ test('real composer keeps the full suggestion, independent scrolling, references
       assert.equal(await page.locator('[data-assistance-transcript]').evaluate(el=>el.scrollHeight>el.clientHeight),true);
       assert.equal(await page.locator('[data-assistance-apply]').evaluate(el=>Boolean(el.closest('[data-assistance-body],[data-assistance-transcript]'))),false);
       assert.equal(await page.evaluate(()=>(globalThis as any).submissions??0),0);
+      if (process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR && [390,1440].includes(width)) {
+        await mkdir(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,{recursive:true});
+        await page.screenshot({path:`${process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR}/composer-${width}.png`,fullPage:true});
+      }
+      // A replaced reference invalidates the proposal before a newer draft can be overwritten.
+      await page.evaluate(()=>(globalThis as any).updateReferences({image_urls:[]}));
+      await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
       assert.deepEqual(errors,[]);
       await page.close();
     }
