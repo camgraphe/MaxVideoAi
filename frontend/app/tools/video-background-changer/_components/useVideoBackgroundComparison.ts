@@ -51,8 +51,23 @@ export function useVideoBackgroundComparison(media: VideoBackgroundMedia) {
   const start = useCallback(() => {
     if (!intended.current || document.visibilityState === 'hidden') return;
     applySound(); setFailed(false); setPlaying(true); setBuffering(false);
-    for (const owner of owners.current) if (owner.videoRef.current?.paused) owner.togglePlayback();
+    for (const owner of owners.current) {
+      const node = owner.videoRef.current;
+      if (node?.paused && !node.ended) owner.togglePlayback();
+    }
   }, [applySound]);
+  const resumeBuffered = useCallback(() => {
+    if (!intended.current || waiting.current.size === 0) return false;
+    for (const owner of owners.current) {
+      const node = owner.videoRef.current;
+      if (!node) continue;
+      if (node.readyState < 3 || node.seeking) waiting.current.add(node);
+      else waiting.current.delete(node);
+    }
+    if (waiting.current.size > 0) return false;
+    start();
+    return true;
+  }, [start]);
   const togglePlayback = useCallback(() => {
     if (intended.current) { pause(); return; }
     if (position.current >= durationRef.current - 0.01) align(0);
@@ -67,11 +82,12 @@ export function useVideoBackgroundComparison(media: VideoBackgroundMedia) {
   }, [applySound, media.source.src, media.result.src, pause]);
 
   useEffect(() => {
+    if (!source.isVisible || !result.isVisible) { pause(); return; }
     if (!intended.current || waiting.current.size > 0) return;
     if (owners.current.some(owner => !owner.isPlaying && !owner.isLoading && !owner.videoRef.current?.ended)) {
       pause(); setFailed(true);
     }
-  }, [source.isPlaying, source.isLoading, result.isPlaying, result.isLoading, pause]);
+  }, [source.isPlaying, source.isLoading, source.isVisible, result.isPlaying, result.isLoading, result.isVisible, pause]);
 
   const track = (index: number, owner: typeof source) => ({
     ...owner,
@@ -83,14 +99,18 @@ export function useVideoBackgroundComparison(media: VideoBackgroundMedia) {
         node.currentTime = Math.min(position.current, Number.isFinite(node.duration) ? node.duration : position.current);
       },
       onLoadedData: () => setFrames(previous => previous.map((value, i) => i === index ? true : value)),
-      onSeeked: () => setFrames(previous => previous.map((value, i) => i === index ? true : value)),
+      onSeeked: (event: SyntheticEvent<HTMLVideoElement>) => {
+        setFrames(previous => previous.map((value, i) => i === index ? true : value));
+        if (intended.current && waiting.current.size > 0 && !resumeBuffered() && event.currentTarget.readyState >= 3) owner.pause();
+      },
       onPlaying: (event: SyntheticEvent<HTMLVideoElement>) => {
         owner.events.onPlaying(event);
         setFrames(previous => previous.map((value, i) => i === index ? true : value));
+        if (intended.current && waiting.current.size > 0 && !resumeBuffered()) owner.pause();
       },
       onPause: (event: SyntheticEvent<HTMLVideoElement>) => {
         owner.events.onPause(event);
-        if (intended.current && waiting.current.size === 0 && !event.currentTarget.ended) pause();
+        if (intended.current && waiting.current.size === 0 && event.currentTarget.paused && !event.currentTarget.ended) pause();
       },
       onTimeUpdate: (event: SyntheticEvent<HTMLVideoElement>) => {
         owner.events.onTimeUpdate(event);
@@ -105,10 +125,20 @@ export function useVideoBackgroundComparison(media: VideoBackgroundMedia) {
       onWaiting: (event: SyntheticEvent<HTMLVideoElement>) => {
         owner.events.onWaiting();
         if (!intended.current) return;
-        waiting.current.add(event.currentTarget); pauseNodes(); setBuffering(true);
+        waiting.current.add(event.currentTarget);
+        // Pausing a blocked reader can suspend its range/decode work. Ready peers
+        // wait while blocked readers retain intent, then cross one readiness barrier.
+        for (const peer of owners.current) {
+          const node = peer.videoRef.current;
+          if (!node) continue;
+          if (node.readyState < 3 || node.seeking) waiting.current.add(node);
+          else if (node !== event.currentTarget) peer.pause();
+        }
+        setBuffering(true);
+        if (event.currentTarget.readyState >= 3 && !event.currentTarget.seeking) resumeBuffered();
       },
-      onCanPlay: (event: SyntheticEvent<HTMLVideoElement>) => {
-        if (waiting.current.delete(event.currentTarget) && waiting.current.size === 0) start();
+      onCanPlay: () => {
+        if (intended.current && waiting.current.size > 0 && !resumeBuffered()) owner.pause();
       },
       onEnded: () => {
         owner.events.onEnded();

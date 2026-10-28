@@ -21,6 +21,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const { attempt, terminalError, begin, fail, setContext, measureNode,
@@ -106,6 +107,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
     const node = videoRef.current;
     if (!node) return;
     const sync = () => {
+      setIsVisible(visible());
       setContext({ visible: visible() });
       if (!visible()) stop();
     };
@@ -213,7 +215,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
   }, []);
 
   return {
-    videoRef, events, isPlaying, isLoading, isMuted, duration, currentTime, terminalError,
+    videoRef, events, isPlaying, isLoading, isMuted, isVisible, duration, currentTime, terminalError,
     quality, changeQuality, hasQualityChoice: hasPublicVideoRendition(src), togglePlayback, pause: stop, setMuted,
     toggleMuted() {
       const node = videoRef.current;

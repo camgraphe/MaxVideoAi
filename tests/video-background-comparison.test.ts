@@ -7,7 +7,8 @@ async function fixture(ready = 4) {
     import {useVideoBackgroundComparison} from './app/tools/video-background-changer/_components/useVideoBackgroundComparison';
     function App(){const pair=useVideoBackgroundComparison({source:{src:'https://media.invalid/source.mp4',poster:'/s.webp',width:1920,height:1080,durationSec:6},result:{src:'https://media.invalid/result.mp4',poster:'/r.webp',width:1280,height:720,durationSec:6.037007}});window.pair=pair;return <><video aria-label="source" ref={pair.source.videoRef} src="https://media.invalid/source.mp4" preload="none" {...pair.source.events}/><video aria-label="result" ref={pair.result.videoRef} src="https://media.invalid/result.mp4" preload="none" {...pair.result.events}/></>;}
   `, { '@/lib/analytics-client': 'export const dispatchAnalyticsEvent=()=>{};' }, w => {
-    w.mediaReady=ready;w.plays=[];w.loads=[];
+    w.mediaReady=ready;w.plays=[];w.loads=[];w.observers=[];
+    w.IntersectionObserver=class { constructor(callback){this.callback=callback;w.observers.push(this);} observe(){} disconnect(){} };
     Object.defineProperty(w.HTMLMediaElement.prototype,'duration',{get(){return this.getAttribute('aria-label')==='source'?6:6.037007;}});
     Object.defineProperty(w.HTMLMediaElement.prototype,'readyState',{get(){return w.mediaReady;}});
     Object.defineProperty(w.HTMLMediaElement.prototype,'paused',{get(){return !this.testPlaying;}});
@@ -58,8 +59,8 @@ test('paused seeking before metadata is retained and does not start either video
 test('buffering pauses the pair, errors stay retryable and hidden tabs never resume automatically',async()=>{
   const f=await fixture();try{
     const [source,result]=f.w.document.querySelectorAll('video');await metadata(f);await f.act(async()=>f.w.pair.togglePlayback());
-    await event(f,source,'waiting');assert.ok(source.paused&&result.paused);
-    await event(f,source,'canplay');assert.equal(source.paused,false);assert.equal(result.paused,false);
+    Object.defineProperty(source,'readyState',{configurable:true,get:()=>1});await event(f,source,'waiting');assert.ok(!source.paused&&result.paused);
+    Object.defineProperty(source,'readyState',{configurable:true,get:()=>4});await event(f,source,'canplay');assert.equal(source.paused,false);assert.equal(result.paused,false);
     await event(f,result,'error');assert.ok(source.paused&&result.paused);assert.equal(f.w.pair.failed,true);
     await f.act(async()=>f.w.pair.togglePlayback());assert.equal(source.paused,false);assert.equal(result.paused,false);
     Object.defineProperty(f.w.document,'visibilityState',{value:'hidden',configurable:true});await event(f,f.w.document,'visibilitychange');assert.ok(source.paused&&result.paused);
@@ -98,5 +99,54 @@ test('play after a paused seek does not restart the same pending browser seek',a
     const completedRequests=seeks.length;
     await f.act(async()=>f.w.pair.togglePlayback());
     assert.equal(seeks.length,completedRequests,'a second same-time seek can cancel the in-flight range request');
+  }finally{await f.close();}
+});
+
+
+test('leaving the buffered pair cancels intent and never resumes on an offscreen canplay',async()=>{
+  const f=await fixture();try{
+    const [source,result]=f.w.document.querySelectorAll('video');await metadata(f);await f.act(async()=>f.w.pair.togglePlayback());
+    await event(f,source,'waiting');
+    await f.act(async()=>{for(const observer of f.w.observers)observer.callback([{isIntersecting:false}]);});
+    await event(f,source,'canplay');
+    assert.equal(f.w.pair.playing,false,'the pair must agree with paused public readers offscreen');
+    assert.equal(f.w.pair.buffering,false);assert.ok(source.paused&&result.paused);
+    const plays=f.w.plays.length;await f.act(async()=>{for(const observer of f.w.observers)observer.callback([{isIntersecting:true}]);});
+    assert.equal(f.w.pair.playing,false);assert.equal(f.w.plays.length,plays,'returning to view requires a fresh user gesture');
+  }finally{await f.close();}
+});
+
+test('a stale pause event from buffering cannot cancel a newer successful play',async()=>{
+  const f=await fixture();try{
+    const [source,result]=f.w.document.querySelectorAll('video');await metadata(f);await f.act(async()=>f.w.pair.togglePlayback());
+    await event(f,source,'waiting');await event(f,source,'canplay');
+    assert.ok(!source.paused&&!result.paused);
+    await event(f,source,'pause');
+    assert.ok(!source.paused&&!result.paused,'a queued old pause event must defer to the actual playing node');
+    assert.equal(f.w.pair.playing,true);
+  }finally{await f.close();}
+});
+
+
+test('two readers seeking uncached data keep their load intent and resume at one readiness barrier',async()=>{
+  const f=await fixture();try{
+    const [source,result]=f.w.document.querySelectorAll('video');await metadata(f);await f.act(async()=>f.w.pair.togglePlayback());
+    for(const node of [source,result])Object.defineProperty(node,'readyState',{configurable:true,get:()=>1});
+    await event(f,source,'waiting');await event(f,result,'waiting');
+    assert.ok(!source.paused&&!result.paused,'blocked readers must finish fetching/decoding instead of being suspended');
+    Object.defineProperty(source,'readyState',{configurable:true,get:()=>4});await event(f,source,'canplay');
+    assert.ok(source.paused&&!result.paused,'the ready source must wait for the result');
+    Object.defineProperty(result,'readyState',{configurable:true,get:()=>4});await event(f,result,'canplay');
+    assert.ok(!source.paused&&!result.paused);assert.equal(f.w.pair.buffering,false);
+  }finally{await f.close();}
+});
+
+test('buffering in the result tail never restarts an already completed shorter source',async()=>{
+  const f=await fixture();try{
+    const [source,result]=f.w.document.querySelectorAll('video');await metadata(f);await f.act(async()=>f.w.pair.togglePlayback());
+    source.currentTime=6;source.testPlaying=false;await event(f,source,'ended');
+    Object.defineProperty(result,'readyState',{configurable:true,get:()=>1});await event(f,result,'waiting');
+    Object.defineProperty(result,'readyState',{configurable:true,get:()=>4});await event(f,result,'canplay');
+    assert.equal(source.paused,true);assert.equal(result.paused,false);
   }finally{await f.close();}
 });
