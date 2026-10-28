@@ -60,7 +60,8 @@ export type StudioConversationProject = {
   analyses?:{analysisId:string;ref:ToolAssetRef;goal:string;state:StudioAnalysisStatus['state'];startSec:number;endSec:number}[];
   memory: StudioConversationMemory;
   authoredNotes?:{requestId:string;message:string;referenceIds:string[];createdAt:string;truncated:boolean}[];
-  generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts}[];
+  generations?: {quoteId: string; surface: string; quoteState: string; jobId: string | null; status: string | null; quote?: StudioConversationQuoteFacts;
+    failure?: {message: string}; walletRefund?: CustomerDisplayPrice}[];
 };
 export const studioActionRequestSchema = z.discriminatedUnion('action', [
   z.object({action: z.literal('project.read')}).strict(),

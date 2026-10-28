@@ -15,6 +15,7 @@ import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worke
 import type {StudioResponseCreator} from '../frontend/src/server/studio/conversation-director';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
+import {ensureBillingReceiptsSchema} from '../frontend/src/lib/schema/billing-receipts-schema';
 
 const selectedImage='ma_'+'e'.repeat(32),selectedImageUrl='https://cdn.maxvideoai.com/studio-local-fixture/selected.webp';
 
@@ -23,7 +24,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
     for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
-    await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
+    await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text, ADD COLUMN message text, ADD COLUMN settings_snapshot jsonb, ADD COLUMN payment_status text');
     await db.pool.query('ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN size_bytes bigint');
     await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[randomUUID(),selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
@@ -31,6 +32,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
   process.env.DATABASE_URL=runtime.database.databaseUrl;
   let browser:Awaited<ReturnType<typeof startStudioConnectedBrowserFixture>>|undefined;
   try{
+    await ensureBillingReceiptsSchema();
     const project=await createStudioConversationProject({userId:STUDIO_FIXTURE_OWNERS[0]},{name:'Product study',idempotencyKey:randomUUID()},{featureEnabled:true});
     const session=runtime.auth.createSession(STUDIO_FIXTURE_OWNERS[0],{clientId:'task-browser-fixture'});
     browser=await startStudioConnectedBrowserFixture({runtime,browserName:'chromium'});

@@ -86,6 +86,23 @@ const input = {
   references: [],
 };
 
+for (const baseline of [false,true]) test(`reference comparisons preserve authored order across ordered and unordered candidates, baseline=${baseline}`,async()=>{
+  const references=['z','a','b'].map((assetId,slot)=>({kind:'asset' as const,assetId,role:'reference' as const,slot}));
+  const priced:import('../frontend/src/server/agent-api/generation-types').CanonicalGenerationRequest[]=[];
+  const result=await compareGenerationPrices({...input,mode:'ref2v',settings:{durationSec:10,resolution:'720p',aspectRatio:'16:9',audio:true},references,
+    candidateModelIds:['flux-3-max','wan-3'],...(baseline?{baselineModelId:'flux-3-max',baselineSettings:{durationSec:10,resolution:'720p',aspectRatio:'16:9',audio:true,keyframeIndexes:'0,120,216'}}:{})},actor,dependencies({
+    listPublicEngines:async()=>['flux-3-max','wan-3'].map(candidate),
+    resolveGenerationReferences:async request=>request.references.map(ref=>({assetId:ref.kind==='asset'?ref.assetId:'unexpected',role:ref.role,slot:ref.slot,mediaKind:'image',storageUrl:'https://cdn.maxvideoai.com/reference.png',mimeType:'image/png',width:1280,height:720,durationSec:null,sizeBytes:1024})),
+    priceGeneration:async(request,tier)=>{priced.push(request);const amount=request.engineId==='wan-3'?90:300;return {priceCents:amount,currency:'USD',membershipTier:tier,pricingSnapshot:{totalCents:amount,currency:'USD',membershipTier:tier}};},
+  }));
+  assert.deepEqual(result.options.map(option=>option.modelId),['wan-3']);
+  assert.deepEqual(priced.find(request=>request.engineId==='wan-3')?.references,['a','b','z'].map(assetId=>({kind:'asset',assetId,role:'reference'})));
+  if(baseline){assert.equal(result.baseline?.modelId,'flux-3-max');assert.deepEqual(result.baseline?.references,references);assert.equal(result.options[0].savings?.amountCents,210);}
+  else assert.equal(result.baseline,null);
+  assert.ok(result.unavailable.some(option=>option.modelId==='flux-3-max'&&option.code==='PARAMETER_INVALID'),'Missing required keyframes are an incompatible candidate, not an internal failure.');
+  assert.deepEqual(references.map(ref=>ref.slot),[0,1,2]);
+});
+
 test('a rejected image-to-video selection returns exact role and parameter facts for a bounded correction',async()=>{
   await assert.rejects(compareGenerationPrices({...input,mode:'i2v',candidateModelIds:['seedance-2-5'],references:[{kind:'asset',assetId:'frame',role:'reference'}]},actor,dependencies({
     resolveGenerationReferences:async()=>[{assetId:'frame',role:'reference',mediaKind:'image',storageUrl:'https://private.test/secret',mimeType:'image/png',width:1280,height:720}],

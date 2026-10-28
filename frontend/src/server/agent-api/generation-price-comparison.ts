@@ -8,7 +8,7 @@ import {
   type GenerationActor,
 } from "./generation-actor";
 import {createHash} from 'node:crypto';
-import { normalizeGenerationRequest,stableJson } from "./generation-normalization";
+import { GenerationNormalizationError,normalizeGenerationRequest,normalizeGenerationComparisonRequest,orderedGenerationReferenceRole,stableJson } from "./generation-normalization";
 import type {AgentPublicGenerationEngine} from './model-catalog';
 import type { CanonicalGenerationRequest } from "./generation-types";
 import {
@@ -115,7 +115,7 @@ export async function compareGenerationPrices(
     );
   let base: CanonicalGenerationRequest;
   try {
-    base = normalizeGenerationRequest({
+    base = normalizeGenerationComparisonRequest({
       surface: input.surface,
       mode: input.mode,
       prompt: input.prompt,
@@ -220,14 +220,30 @@ export async function compareGenerationPrices(
               settings[key] = value as string | number | boolean;
               defaultedSettings.push(key);
             }
+          const orderedRole=orderedGenerationReferenceRole(base.mode,modelId,modelId==='minimax-h3-max'&&typeof settings.referenceOrder==='string');
           const request = normalizeGenerationRequest({
             ...base,
             ...(input.sourceJobId ? { sourceJobId: input.sourceJobId, sourceOutputId: input.sourceOutputId } : {}),
             ...(input.operation ? {operation:input.operation}:{}),
             engineId: modelId,
             settings,
+            references:base.references.map(reference=>{
+              if(reference.role===orderedRole)return reference;
+              const identity={...reference};
+              delete identity.slot;
+              return identity;
+            }),
           });
-          validateGenerationPricingCapabilities(request,candidate,references);
+          const candidateReferences=request.references.map(reference=>{
+            const resolved=references.find(value=>reference.kind==='asset'&&value.assetId===reference.assetId&&value.role===reference.role
+              &&(reference.slot===undefined||value.slot===reference.slot));
+            if(!resolved)throw new AgentApiError('REFERENCE_INVALID','A selected reference could not be verified.');
+            const facts={...resolved};
+            if(reference.slot===undefined)delete facts.slot;
+            else facts.slot=reference.slot;
+            return facts;
+          });
+          validateGenerationPricingCapabilities(request,candidate,candidateReferences);
           validatedInput=true;
           const { pricing, pricingSnapshot } = await readGenerationPricing(
             request,
@@ -235,7 +251,7 @@ export async function compareGenerationPrices(
             {
               ...deps,
               listPublicEngines: async () => catalog,
-              resolveGenerationReferences: async () => references,
+              resolveGenerationReferences: async () => candidateReferences,
               resolveMembershipPricing: async () => membership,
             },
           );
@@ -282,6 +298,11 @@ export async function compareGenerationPrices(
           if (scenario.baseline) originalBaseline = option;
           else options.push(option);
         } catch (error) {
+          if(error instanceof GenerationNormalizationError){
+            incompatibleInputs++;
+            unavailable.push({modelId,code:'PARAMETER_INVALID',...(scenario.baseline?{baseline:true as const}:{})});
+            return;
+          }
           if (!(error instanceof AgentApiError)) throw error;
           if(!validatedInput&&['PARAMETER_INVALID','REFERENCE_INVALID','REFERENCE_REQUIRED'].includes(error.code)&&!error.retryable)incompatibleInputs++;
           unavailable.push({

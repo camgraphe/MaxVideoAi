@@ -44,6 +44,34 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
   const expectedFresh={price:{amountCents:48,currency:'USD',formattedAmount:'$0.48'},expiresAt:fresh.expiresAt.toISOString(),expiredUnconfirmedQuote:false,
     modelId:request.engineId,mode:request.mode,settings:{audio:true,durationSec:8,resolution:'720p',aspectRatio:'16:9'},outputCount:1,referenceCount:2,referenceRoles:['first_frame','last_frame']};
 
+  await t.test('accepted failures carry safe reasons and only an owned, matched wallet refund receipt', async()=>{
+    const quote=await insertQuote();await linkQuote(quote.quoteId);
+    await pg.pool.query("UPDATE mcp_generation_quotes SET state='claimed',job_id='failed-facts',claimed_at=created_at+interval '1 millisecond',updated_at=clock_timestamp() WHERE quote_id=$1",[quote.quoteId]);
+    await pg.pool.query("UPDATE mcp_generation_quotes SET state='accepted',updated_at=clock_timestamp() WHERE quote_id=$1",[quote.quoteId]);
+    await pg.pool.query("INSERT INTO app_jobs(job_id,user_id,status,payment_status,message) VALUES('failed-facts','owner','failed','refunded_wallet','Green net check rejected text (input)')");
+    const read=async()=>(await readStudioConversationProject(actor)).generations?.find(value=>value.quoteId===quote.quoteId);
+    const failure=await read();
+    assert.equal(failure?.quoteState,'accepted');
+    assert.equal(failure?.status,'failed');
+    assert.match(failure?.failure?.message??'',/prompt.*blocked/i);
+    assert.equal(failure?.walletRefund,undefined,'A failed job or payment label alone is not a receipt.');
+    await pg.pool.query("INSERT INTO app_receipts(user_id,job_id,type,amount_cents,currency) VALUES('owner','failed-facts','charge',48,'USD'),('foreign','failed-facts','refund',48,'USD')");
+    assert.equal((await read())?.walletRefund,undefined,'Another account cannot establish the refund.');
+    await pg.pool.query("UPDATE app_receipts SET user_id='owner',currency='EUR' WHERE job_id='failed-facts' AND type='refund'");
+    assert.equal((await read())?.walletRefund,undefined,'Different currencies cannot be matched.');
+    await pg.pool.query("UPDATE app_receipts SET currency='USD',amount_cents=24 WHERE job_id='failed-facts' AND type='refund'");
+    assert.equal((await read())?.walletRefund,undefined,'A partial receipt must not imply the full wallet recredit.');
+    await pg.pool.query("UPDATE app_receipts SET amount_cents=48 WHERE job_id='failed-facts' AND type='refund'");
+    assert.deepEqual((await read())?.walletRefund,{amountCents:48,currency:'USD',formattedAmount:'$0.48'});
+    await pg.pool.query("UPDATE app_jobs SET message='PRIVATE_PROVIDER request_id=PRIVATE_TOKEN https://private.test' WHERE job_id='failed-facts'");
+    const unknown=await read();
+    assert.match(unknown?.failure?.message??'',/could not complete/i);
+    assert.doesNotMatch(JSON.stringify(unknown),/PRIVATE_|Green net|https:\/\/private/);
+    await pg.pool.query("DELETE FROM app_receipts WHERE job_id='failed-facts';DELETE FROM app_jobs WHERE job_id='failed-facts'");
+    await pg.pool.query('DELETE FROM studio_image_turns WHERE quote_id=$1',[quote.quoteId]);
+    await pg.pool.query('DELETE FROM mcp_generation_quotes WHERE quote_id=$1',[quote.quoteId]);
+  });
+
   await t.test('the current quote supplies recorded customer cents and a private-field-free canonical configuration',async()=>{
     const project=await readStudioConversationProject(actor);
     assert.deepEqual(project.generations,[{quoteId:fresh.quoteId,surface:'video',quoteState:'prepared',jobId:null,status:null,quote:expectedFresh}]);

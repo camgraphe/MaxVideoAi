@@ -76,6 +76,30 @@ test('explicit Wan duration, resolution, audio and ratio override the legacy def
   assert.deepEqual(legacy.settings, {aspectRatio: '16:9', audio: false, durationSec: 5, enablePromptExpansion: true, resolution: '480p'});
 });
 
+test('Wan auto framing advertised by model details survives Studio preparation and canonical validation', async () => {
+  for (const modelId of ['wan-3','wan-3-prime']) {
+    const candidate=videoCapability(modelId);
+    assert.ok(projectAgentModelModeDetails(candidate,'i2v').aspectRatios.includes('auto'));
+    const {dependencies}=mediaDependencies();
+    const request=await studioMediaRequest(actor,{...video,modelId,mode:'i2v',aspectRatio:'auto',source:image,
+      settings:[{name:'durationSec',value:10},{name:'resolution',value:'720p'}]} as never,input,factories([candidate]),true,dependencies) as CanonicalGenerationRequest;
+    assert.equal(request.settings.aspectRatio,'auto');
+    validateCanonicalGenerationCapabilities(request,candidate);
+  }
+});
+
+test('Studio positional reference labels do not create unsupported Wan canonical slots or mutate the saved intent',async()=>{
+  const refs=['3','1','2'].map(char=>({...image,assetId:'ma_'+char.repeat(32)}));
+  const action={...video,modelId:'wan-3',mode:'ref2v',references:refs.map((ref,slot)=>({ref,role:'reference',slot})),
+    settings:[{name:'durationSec',value:10},{name:'resolution',value:'720p'}]};
+  const before=structuredClone(action);
+  const {dependencies}=mediaDependencies();
+  const request=await studioMediaRequest(actor,action as never,{...input,references:refs.map(ref=>ref.assetId)},factories(),true,dependencies) as CanonicalGenerationRequest;
+  assert.deepEqual(request.references,['1','2','3'].map(char=>({kind:'asset',assetId:'ma_'+char.repeat(32),role:'reference'})));
+  assert.deepEqual(action,before);
+  validateCanonicalGenerationCapabilities(request,videoCapability('wan-3'));
+});
+
 test('a saved eight-second Seedance Mini intent keeps its duration alias through canonical preparation', async () => {
   const {dependencies} = mediaDependencies();
   const action = {...video, modelId: 'seedance-2-0-mini', mode: 'i2v', aspectRatio: '9:16',

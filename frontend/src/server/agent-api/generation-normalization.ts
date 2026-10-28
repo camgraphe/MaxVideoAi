@@ -489,19 +489,28 @@ function compareReferences(left: CanonicalGenerationReference, right: CanonicalG
   return roleDifference || compareCodeUnits(referenceIdentity(left), referenceIdentity(right));
 }
 
+/** Canonical slot semantics, shared by ingress and presentation adapters. */
+export function orderedGenerationReferenceRole(
+  mode: CanonicalGenerationMode,
+  engineId: string,
+  explicitReferenceOrder = false,
+): CanonicalGenerationReference['role'] | null {
+  return (engineId === NANO21_ENGINE_ID || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
+    ? 'source'
+    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
+      ? 'reference'
+      : null;
+}
+
 function normalizeReferences(
   value: unknown,
   mode: CanonicalGenerationMode,
   engineId: string,
-  explicitH3Order = false,
+  explicitReferenceOrder = false,
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  const orderedRole = engineId === NANO21_ENGINE_ID && mode === 'i2i' ? 'reference' : mode === 'extend'
-    ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4'].includes(engineId) || explicitH3Order) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
-      ? 'reference'
-      : null;
+  const orderedRole = orderedGenerationReferenceRole(mode,engineId,explicitReferenceOrder);
   let nextOrderedSlot = 0;
   const references = value.map((reference, index) => {
     const normalized = normalizeReference(reference, index, orderedRole);
@@ -586,6 +595,16 @@ function normalizeOutputCount(
 }
 
 export function normalizeGenerationRequest(input: unknown): CanonicalGenerationRequest {
+  return normalizeGenerationInput(input);
+}
+
+/** Comparison envelope only: retain reference order until a concrete model is selected.
+ * Each candidate must still pass strict normalizeGenerationRequest before pricing. */
+export function normalizeGenerationComparisonRequest(input: unknown): CanonicalGenerationRequest {
+  return normalizeGenerationInput(input,true);
+}
+
+function normalizeGenerationInput(input: unknown,comparison = false): CanonicalGenerationRequest {
   assertPlainDataObject(input, 'generation request');
   assertExactFields(input, TOP_LEVEL_FIELDS, 'generation request');
   if (input.schemaVersion !== undefined && input.schemaVersion !== 1) {
@@ -632,7 +651,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     settings.resolution = '480p';
     if (settings.audio === undefined) settings.audio = true;
   }
-  const references = normalizeReferences(input.references, mode, engineId, engineId === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string');
+  const references = normalizeReferences(input.references, mode, engineId, comparison || (engineId === 'minimax-h3-max' && typeof (input.settings as Record<string, unknown> | undefined)?.referenceOrder === 'string'));
   const subjects = normalizeSubjects(input.subjects, engineId, mode, references);
   let elements;
   try { elements = input.elements === undefined ? undefined : klingOwnedElementsSchema.parse(input.elements); }

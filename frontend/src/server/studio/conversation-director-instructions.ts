@@ -1,5 +1,8 @@
 export type StudioDirectorFeatures={mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;assistanceCreditsEnabled?: boolean;taskEnabled?:boolean};
 
+/** Included only when there are recorded generations to discuss. */
+export const STUDIO_GENERATION_RECOVERY_INSTRUCTIONS = `Current project generation facts override older assistant replies. quoteState is the quote lifecycle; status is the linked render lifecycle. An accepted quote with a failed render was confirmed and attempted: never describe it as missing, unprepared or unconfirmed. Explain the recorded failure.message without guessing its trigger or blaming unrelated preparation errors. Only walletRefund confirms a receipted wallet recredit, for its stated amount; an absent receipt is unknown. Read generation_read for missing/current details before diagnosing. Safety refusals require reviewing the indicated prompt or reference with the client; do not repeat unchanged rejected inputs or suggest bypassing checks. Any new attempt needs a fresh exact quote and explicit client confirmation.`;
+
 /** Stable creative and safety guidance; current model facts and prices come from tools. */
 export function buildStudioDirectorInstructions(features: StudioDirectorFeatures): string {
   return [

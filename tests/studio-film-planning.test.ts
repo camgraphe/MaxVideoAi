@@ -4,10 +4,34 @@ import {createStudioConversationDirector} from '../frontend/src/server/studio/co
 import {actionFromTool} from '../frontend/lib/studio/conversation-action-contract';
 import {studioExplicitFilmDuration} from '../frontend/src/server/studio/conversation-intent';
 import {STUDIO_TASK_PROFILES} from '../frontend/src/lib/studio/task-budget-contract';
+import {studioFilmComparisonReply} from '../frontend/src/server/studio/conversation-film-reply';
 
 const context={message:'HEY!',references:[],history:[],project:{name:'Film',revision:0,memory:{revision:0,brief:'',decisions:[]}},
   execute:async()=>{throw new Error('A greeting must not execute actions.');},
   checkpoint:async()=>{throw new Error('A greeting must not reserve/count/charge a model call.');}};
+
+test('selecting the last offered film variant advances to its component quote instead of another comparison menu',async()=>{
+  const clip={modelId:'wan-3',modelLabel:'Wan 3',surface:'video' as const,mode:'t2v',settings:{durationSec:10,resolution:'720p',aspectRatio:'9:16',audio:true},outputCount:1 as const,outputDurationSec:10,referenceCount:0,price:{amountCents:100,currency:'USD',formattedAmount:'$1.00'},estimatedAt:'2026-10-26T10:00:00Z',quoteRequired:true as const,audio:'optional' as const,references:[],defaultedSettings:[],editorialGuidance:{},bestFor:[]};
+  const menu=studioFilmComparisonReply({options:[clip],baseline:null,unavailable:[],estimatedAt:clip.estimatedAt,quoteRequired:true,filmDurationSec:60,filmPlans:[{clip,fullClipCount:6,tail:null,tailUsedSec:0,totalDurationSec:60,generatedDurationSec:60,price:{amountCents:600,currency:'USD',formattedAmount:'$6.00'}}]} as never);
+  const choice=menu.reply.split('\n').find(line=>line.startsWith('- '))!.slice(2);
+  const history=[{message:'Plan a one-minute film about a paper boat.',reply:menu.reply}];
+  for(const message of [choice,'Please generate this one: '+choice]){
+    let actions=0;
+    const draft=await createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
+      const tools=params.tools?.flatMap(tool=>tool.type==='function'?[tool.name]:[])??[];
+      assert.ok(!tools.includes('pricing_compare'),'A selected displayed variant must not return to comparison.');
+      assert.ok(tools.includes('model_details'));assert.ok(tools.includes('video_prepare'));
+      return {id:'selected',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',output:[{type:'function_call',name:'video_prepare',call_id:'first-clip',arguments:JSON.stringify({reply:'Review the exact quote for the first ten-second shot.',modelId:'wan-3',mode:'t2v',prompt:'A paper boat leaves a quiet dock.',aspectRatio:'9:16',settings:[{name:'durationSec',value:10},{name:'resolution',value:'720p'},{name:'audio',value:true}],source:null})}]};
+    }})({...context,message,history,checkpoint:async(_,create)=>create(),execute:async(_,action)=>{actions++;assert.equal(action.action,'video.prepare');return {ok:true,action:'video.prepare',data:{quoteId:'new-quote',confirmationRequired:true}} as never;}});
+    assert.equal(actions,1);assert.equal(draft.media?.action,'video.prepare');
+  }
+  for(const message of ['Can you compare cheaper alternatives to '+choice,'Do not generate '+choice]){
+    await createStudioConversationDirector({mediaEnabled:true,createResponse:async params=>{
+      assert.ok(params.tools?.some(tool=>tool.type==='function'&&tool.name==='pricing_compare'));
+      return {id:'advice',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:JSON.stringify({reply:'We can review alternatives.'}),output:[]};
+    }})({...context,message,history,checkpoint:async(_,create)=>create()});
+  }
+});
 
 test('existing-film exports, writing and edits are not rerouted to paid creation planning',()=>{
   for(const message of ['I want to export my 100-second film','I need a synopsis for my 100-second movie','I want to trim my existing film to 100 seconds','Je veux raccourcir mon film à 100 secondes','I want to slow my existing 100-second film','Quiero recortar mi video a 100 segundos','I want to download my 100-second film','I want to watch my 100-second video','I need a link to my 100-second video','I want a download of my 100-second film','Show me the 100-second film I created yesterday','I want a link to my 100-second product video','Create subtitles for my 100-second video','Create a poster for my 100-second film','Make my 100-second film black and white','Plan a marketing campaign for my 100-second video','What price for a poster of my 100-second film?','Create a video thumbnail for my 100-second film','Create a film poster for a 100-second movie'])assert.equal(studioExplicitFilmDuration(message),null,message);

@@ -108,6 +108,8 @@ export function getKnownGenerationFailureMessage(params: {
   if (outputImage) return outputImage;
   const text = copy[localeKey(params.locale)];
   const message = params.message?.trim() ?? '';
+  if (/^Green net check rejected text \(input\)$/i.test(message)) return text.promptBlocked;
+  if (/^Green net check rejected image \(input\)$/i.test(message)) return text.referenceBlocked;
   if (['reference_link_unsupported', 'IMAGE_HOST_NOT_ALLOWED'].includes(params.failureCode ?? '')
     || /^This reference link cannot be used\./i.test(message)) return text.referenceLink;
   if (params.failureCode === 'LUMA_MODE_UNAVAILABLE'
