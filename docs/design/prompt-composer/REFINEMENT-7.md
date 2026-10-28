@@ -38,3 +38,5 @@ Before the first message, show only the Milo heading and the message composer; h
 - Clear keeps its position beside Multi-prompt and is disabled when the manual prompt is empty. Undo and its synchronous textarea focus remain unchanged; there is no global clear across multiple scenes.
 
 Validation: Chromium and WebKit at 320/390/1440 px cover preview input focus, a long prompt/counter, Clear and Undo, plus the existing 36 clear-action scenarios across three locales and two densities. Modify/Extend direct-source popup access is checked in both writing tabs.
+
+The model selector is now the first control in the writing footer, followed by references, in both Prompt and AI assistant. A 1 px theme-aware border and a slightly stronger hover border distinguish the selector without increasing its height.

@@ -62,7 +62,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) onSend();
       }} />
-      <div className={styles.sendRow}><div className={styles.inputReferences}>{references}{modelControl}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
+      <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
     </div>
   </div>;
 }

@@ -70,7 +70,8 @@
 .commandBar :global(.app-mode-switch[data-compact-modes] button) { flex: 0 1 auto; flex-direction: row; width: auto; min-height: 40px !important; padding: 0 9px; border-radius: 7px; font-size: 12px; font-weight: 500; white-space: nowrap; }
 .commandBar :global(.app-mode-switch[data-compact-modes] button[aria-pressed='true']) { color: var(--text-primary); background: var(--app-accent-soft); }
 .modelControl { min-width: 0; max-width: 100%; }
-.modelTrigger { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 40px; padding: 0 9px; border: 0; border-radius: 7px; background: var(--surface-2); color: var(--text-primary); font-size: 12px; text-align: left; }
+.modelTrigger { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 40px; padding: 0 9px; border: 1px solid color-mix(in srgb, var(--text-muted) 45%, var(--border)); border-radius: 7px; background: var(--surface-2); color: var(--text-primary); font-size: 12px; text-align: left; }
+.modelTrigger:hover { border-color: var(--text-muted); }
 .modelTrigger span { overflow-wrap: anywhere; min-width: 0; }
 .modelTrigger svg { flex-shrink: 0; }
 .undo { padding: 4px 14px; }
