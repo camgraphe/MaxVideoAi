@@ -4,6 +4,8 @@ import { useState, type ReactNode } from 'react';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import type { AssetFieldConfig, AssetSlotAttachment } from '@/components/AssetDropzone';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
+import { ReferenceRolesHelp } from './ReferenceRolesHelp.client';
+import { referenceRoleHelpCopy } from './reference-role-help-copy';
 
 const collectionIds = new Set(['image_urls', 'video_urls', 'audio_urls', 'reference_image_urls', 'reference_video_urls', 'reference_audio_urls']);
 const isCollection = (entry: AssetFieldConfig) => collectionIds.has(entry.field.id) || entry.role === 'reference';
@@ -28,6 +30,7 @@ export function WorkspaceReferenceInventory({ fields, assets, locale, renderFiel
     ?? orderedFields.find(entry => !entry.disabled)
     ?? orderedFields[0];
   const copy = workspaceReferenceCopy(locale);
+  const help = referenceRoleHelpCopy(locale);
   return <>
     {fields.length > 1 ? <div className="app-reference-role-nav" role="group" aria-label={copy.title}>
       {[references, sources].map((group, index) => group.length ? <div className="app-reference-role-row" key={index}>
@@ -40,10 +43,16 @@ export function WorkspaceReferenceInventory({ fields, assets, locale, renderFiel
           : resolveWorkspaceReferenceFieldTitle(entry.field, entry.role ?? 'generic', locale);
         const count = (assets[entry.field.id] ?? []).filter(Boolean).length;
         const capacity = entry.field.maxCount;
-        return <button key={entry.field.id} type="button" aria-pressed={entry === selected} data-reference-role={entry.field.id} onClick={() => setActiveId(entry.field.id)}
+        const explanation = isSourceVideo || entry.field.id === sourceFieldId ? help.source
+          : isReference(entry) || kind !== 'image' ? help[kind]
+          : sourceOrder(entry) === 1 ? help.end : help.start;
+        return <div className="app-reference-role-choice" key={entry.field.id}>
+          <button type="button" aria-pressed={entry === selected} data-reference-role={entry.field.id} onClick={() => setActiveId(entry.field.id)}
           title={entry.disabledReason ?? undefined}>
           <AppGlyph name={kind} /><span>{label}<small>{count}{capacity && capacity > 0 ? `/${capacity}` : ''}{entry.required && count < (entry.field.minCount ?? 1) ? ` · ${copy.required}` : ''}{entry.disabled ? ' · !' : ''}</small></span>
-        </button>;
+          </button>
+          <ReferenceRolesHelp label={`${help.label} ${label}`} description={explanation.description} />
+        </div>;
       })}</div> : null)}
     </div> : null}
     {selected ? renderField(selected) : null}

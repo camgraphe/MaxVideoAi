@@ -69,7 +69,7 @@ test('compact Modify and Extend keep source references inside the writing footer
   const browser=await chromium.launch({headless:true});
   try {
     for(const width of [320,390,1440]) {
-      const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
+      const page=await browser.newPage({viewport:{width,height:844},hasTouch:width<768});await page.goto(fixture.url);
       await page.locator('[data-mode="create"]').click();
       const creationTop=await page.locator('[data-prompt-assistance-preview]').evaluate(el=>el.getBoundingClientRect().top+scrollY);
       await page.getByRole('button',{name:'Add references',exact:true}).click();
@@ -84,6 +84,30 @@ test('compact Modify and Extend keep source references inside the writing footer
       }
       const framesRow=await picker.locator('.app-reference-role-row').last().boundingBox();
       assert.ok(referenceRow && framesRow && framesRow.y>=referenceRow.y+referenceRow.height, 'start and end images stay below media references');
+      const pickerBeforeHelp=await picker.boundingBox();
+      await expect(picker.getByRole('button',{name:'About references',exact:true})).toHaveCount(0);
+      const tooltip=picker.getByRole('tooltip');
+      for(const [title,description] of [['Images','Guide subjects, style and composition.'],['Videos','Guide motion and visual style.'],['Audio','Guides sound, rhythm or voice, depending on the model.'],['Start image','Sets the opening image of your clip.'],['End image','Sets the closing image of your clip.']]) {
+        const help=picker.getByRole('button',{name:`About ${title}`,exact:true});
+        if(width<768) await help.tap(); else await help.click();
+        await expect(tooltip).toBeVisible();
+        await expect(tooltip).toHaveText(description);
+        await expect(picker.locator('[data-reference-role="image_urls"]')).toHaveAttribute('aria-pressed','true');
+        assert.deepEqual(await picker.boundingBox(),pickerBeforeHelp,'help does not resize the reference dialog');
+        const tooltipBox=await tooltip.boundingBox(),inventoryBox=await picker.locator('.app-reference-inventory').boundingBox();
+        assert.ok(tooltipBox && pickerBeforeHelp && tooltipBox.x>=pickerBeforeHelp.x && tooltipBox.x+tooltipBox.width<=pickerBeforeHelp.x+pickerBeforeHelp.width,'each tooltip stays within the picker at mobile widths');
+        assert.ok(tooltipBox && inventoryBox && tooltipBox.y+tooltipBox.height<=inventoryBox.y+inventoryBox.height,'help is fully visible inside the scrolling panel');
+        await help.press('Escape');
+        await expect(tooltip).toHaveCount(0);
+        await expect(picker).toBeVisible();
+        await expect(help).toBeFocused();
+      }
+      const referenceHelp=picker.getByRole('button',{name:'About End image',exact:true});
+      await referenceHelp.press('Enter');
+      await expect(tooltip).toBeVisible();
+      await picker.locator('[data-reference-role="video_urls"]').click();
+      await expect(tooltip).toHaveCount(0);
+      await expect(picker.locator('[data-reference-role="video_urls"]')).toHaveAttribute('aria-pressed','true');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
       await picker.getByRole('button',{name:'Close',exact:true}).click();
       for(const operation of ['v2v','extend']){const idleGeometry: Array<{height:number;sourceTop:number;sourceLeft:number}> = [];await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
