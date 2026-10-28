@@ -29,6 +29,8 @@ const companyAllowedFiles = new Set([
   'frontend/app/(localized)/[locale]/(marketing)/company/_components/CompanyTrustView.tsx',
   'frontend/app/company/page.tsx',
   'frontend/config/localized-slugs.json',
+  // Qualified robots request targets are policy data, not navigation links.
+  'frontend/config/ai-training-public-policy.json',
   'frontend/i18n/routing.ts',
   'frontend/lib/seo/hreflang.ts',
   'frontend/next-sitemap.config.js',
