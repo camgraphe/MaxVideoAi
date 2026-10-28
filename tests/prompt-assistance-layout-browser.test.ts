@@ -98,10 +98,19 @@ test('compact Modify and Extend keep source references inside the writing footer
           await page.locator('[data-workspace-prompt]').focus();
           await page.locator('[data-prompt-assistance-preview]').screenshot({path:`${process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR}/modify-footer-mobile.png`});
         }
+        const recognizablePeopleNotice=page.getByRole('note').filter({hasText:'recognizable person'});
+        await expect(recognizablePeopleNotice).toHaveCount(0);
         await sourceButton.click();await expect(page.locator('.app-reference-popup')).toBeVisible();
+        await expect(page.getByRole('dialog').getByRole('note').filter({hasText:'recognizable person'})).toBeVisible();
         await expect(page.locator('.app-reference-popup')).not.toContainText('Reference images');
         await page.locator('.app-reference-popup').getByRole('button',{name:'Close',exact:true}).click();
         await expect(page.locator('.app-reference-popup')).toHaveCount(0);
+        await expect(recognizablePeopleNotice).toHaveCount(0);
+        await surface.getByRole('button',{name:'Add references',exact:true}).click();
+        const sourceField=await sourceButton.getAttribute('data-reference-command');
+        await page.getByRole('dialog').locator(`[data-reference-role="${sourceField}"]`).click();
+        await expect(page.getByRole('dialog').getByRole('note').filter({hasText:'recognizable person'})).toBeVisible();
+        await page.getByRole('dialog').getByRole('button',{name:'Close',exact:true}).click();
       }
         assert.deepEqual(idleGeometry[1],idleGeometry[0], 'required source and frame stay fixed between empty writing modes');
       }

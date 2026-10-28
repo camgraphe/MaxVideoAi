@@ -42,6 +42,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
   const excerptMode = videoSourceWorkflow ?? caps?.modes?.[0] ?? engine.modes[0];
   const canSelectRange = (fieldId: string) => Boolean(onPrepareVideoExcerpt && excerptMode && getMediaExcerptLimits(engine, excerptMode, fieldId));
   const sourceMode = videoSourceWorkflow ?? (extensionWorkflow ? 'extend' : undefined);
+  const workflowNotices = videoWorkflowNotices(engine.id, sourceMode ?? '', locale);
   const extensionCopy = sourceMode === 'extend' ? videoExtensionCopy(locale) : videoModifyCopy(locale, sourceMode === 'reframe');
   const sourceField = sourceMode ? getVideoWorkflowSourceField(engine.inputSchema, sourceMode) : null;
   const sourceEntry = assetFields.find(({ field }) => field.id === sourceField?.id);
@@ -125,7 +126,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
         {!compact ? assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null) : null}
     </div>
     {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null}
-    {videoWorkflowNotices(engine.id,sourceMode ?? '',locale).map(note=><p key={note.code} role="note" className="text-xs text-text-muted">{note.message}</p>)}
+    {!compact ? workflowNotices.map(note=><p key={note.code} role="note" className="text-xs text-text-muted">{note.message}</p>) : null}
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
       {restrictionReasons.map((reason) => <p key={reason}>{referenceAuthAction?.label === reason
         ? <a className="app-reference-signin" href={referenceAuthAction.href}>{reason}</a>
@@ -166,11 +167,13 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
     {engine.activeVideoOperation === 'h3-recast' && selectedCollections.some(({ entry }) => entry.field.id === 'reference_image_urls') ? <p className="app-reference-required" role="note">{mentionCopy.portraits}</p> : null}
     {subjectsVisible ? <div id={subjectPanelId} data-subject-references>{subjectReferences?.content}</div> : null}
     {popupFields.length || (activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
-      <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={compact ? entry.headerAction : undefined}
+      <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <>
+        {compact && entry.field.type === 'video' ? workflowNotices.map(note=><p key={note.code} role="note" className="mb-3 text-xs leading-relaxed text-text-muted">{note.message}</p>) : null}
+        <AssetDropzone key={entry.field.id} {...entry} headerAction={compact ? entry.headerAction : undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}
-        onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />} />
+        onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} /></>} />
       {(activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <div className="mt-3 space-y-1 border-t border-border pt-3"><button type="button" className="app-reference-command"
         aria-describedby={`${subjectPanelId}-description`} aria-expanded={subjectsVisible} aria-controls={subjectsVisible ? subjectPanelId : undefined}
         onClick={() => { setSubjectEnabledFor(engine.id); close(); }}>

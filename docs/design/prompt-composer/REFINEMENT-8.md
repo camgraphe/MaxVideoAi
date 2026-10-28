@@ -58,3 +58,9 @@ This is a development-preview preference only. It does not change simulated repl
 Provider hypotheses from Adrien, to benchmark before wiring or pricing: Lite → Luna with high reasoning; Standard → Terra with high reasoning; Max → Sol with very high reasoning or Astra at standard reasoning. These are not validated API identifiers or supported effort settings. Compare prompt quality for the selected media model, latency, input/output/reasoning usage and cost across the same briefs before deciding exact routing and credit consumption. Preserve the existing Milo credit system when connecting real assistance.
 
 Eight focused composer, layout and panel checks pass, including Chromium/WebKit at 320 / 390 / 1440 px, keyboard selection and Escape, preserved manual/unsent drafts, and stable empty-frame geometry. TypeScript, focused ESLint and diff checks pass. The authenticated 390 px menu measures 186 px high, has no horizontal overflow, and retains only 4 px padding around its options. Private captures: `milo-level-selector.png` and `milo-level-mobile.png`. No generation or LLM call was made.
+
+## Follow-up — Seedance warning inside the video picker
+
+In the compact preview, the recognizable-person notice now appears immediately above the video upload controls, both in the direct source picker and the Video section of References. It is removed from the writing footer in both Prompt and AI assistant, and does not appear when selecting image or audio references. The notice wording, eligibility and non-preview presentation are unchanged.
+
+Fifteen focused checks pass, including Modify/Extend with both writing tabs at 320 / 390 / 1440 px and existing production Extend behavior. TypeScript, focused ESLint and diff checks pass. Authenticated Seedance 2.5 verification confirms the notice inside the source picker; private capture: `seedance-warning-in-references.png`.
