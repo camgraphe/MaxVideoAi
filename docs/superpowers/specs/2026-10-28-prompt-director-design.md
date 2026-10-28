@@ -121,7 +121,7 @@ Le registre `agent-model-prompting-sources.json` contient des liens, pas les gui
 - `frontend/components/composer/` : onglets, panneau Milo, proposition et barre d'ajout ; composants partagés image/vidéo.
 - `WorkspaceReferenceSection.client.tsx` et ses sous-composants : import, rôles, extraits, mentions, états et restauration du focus restent ici.
 - `useWorkspaceComposerState.ts` : valeurs du brouillon ; `useWorkspaceEngineModeState.ts` : modes/moteurs.
-- `WorkspaceComposerSurface.tsx`, `ImageWorkspaceComposerSurface.tsx`, `audio-workspace-composer-surface.tsx` : adaptateurs des trois surfaces.
+- `WorkspaceComposerSurface.tsx` et `ImageWorkspaceComposerSurface.tsx` : adaptateurs vidéo/image. La route audio actuelle monte `AudioCreationWorkspace.tsx` et `AudioCreationEditor.tsx` pour voix, musique, chanson, effets et ambiance ; `audio-workspace-composer-surface.tsx` concerne le parcours distinct de bande-son vidéo (`intent=video`). Ne pas intégrer l'aide uniquement dans cet ancien compositeur.
 - Nouveau domaine browser-safe `frontend/src/lib/prompt-assistance/` : contrat, révision et validation des propositions côté client ; aucun secret.
 - Nouveau domaine `frontend/src/server/prompt-assistance/` : contexte fiable, guides, appels et persistance.
 - Ledger et contrat Milo existants : extraire seulement les types réellement communs, préserver les consommateurs Studio.
@@ -143,6 +143,8 @@ Les décisions d'apparence proposées par Codex sont réversibles : rayon 15 px 
 6. Les essais créatifs payants, une activation de schéma en environnement partagé et un déploiement restent des étapes explicites. Pas de fusion ni de déploiement dans cette préparation.
 
 L'intégration se fait dans la même branche par lots révisables : compositeur, contrat/adaptateurs, service/crédits, puis QA. La branche conserve toute la portée ; une première étape purement visuelle ne constitue pas une livraison de l'assistant.
+
+Le [plan du premier lot](../plans/2026-10-28-prompt-director-app-integration.md) précise l'intégration visuelle locale dans les vraies routes, avant le raccord des appels Milo. La PR reste en brouillon pendant ces lots ; sa description doit distinguer ce qui est implémenté de ce qui reste à faire.
 
 ## Hors périmètre et réserve Studio
 
