@@ -13,9 +13,10 @@ export type PromptAssistancePanelProps = {
   onProposalTextChange: (text: string) => void; onApply: () => void;
   onCopy: () => void; references?: ReactNode; referencesBeforeInput?: boolean; messageRef?: RefObject<HTMLTextAreaElement>;
   modelControl?: ReactNode;
+  conversationControl?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, referencesBeforeInput, messageRef, modelControl }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, referencesBeforeInput, messageRef, modelControl, conversationControl }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   return <div className={styles.panel}>
-    <div className={styles.assistant}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>
+    <div className={styles.assistant}><div className={styles.assistantIdentity}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>{conversationControl}</div>
     <div className={styles.conversationStage}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">

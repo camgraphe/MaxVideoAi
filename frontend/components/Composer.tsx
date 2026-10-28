@@ -417,9 +417,9 @@ export function Composer({
       )}
     >
       <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !workspaceControls && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && (assistanceEnabled || !visibleModeToggles) && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
-            {visibleModeToggles || workspaceControls ? (
+            {!assistanceEnabled && visibleModeToggles ? (
               <ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity}
                 activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
             ) : null}
@@ -435,6 +435,7 @@ export function Composer({
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
         {assistanceEnabled && assistance ? <PromptAssistanceComposer referencesBeforeInput={sourceSettingsPending} context={{ ...assistance, scopeKey: JSON.stringify([assistance.scopeKey, engine.id, activeManualMode]), contextKey: JSON.stringify([assistance.contextKey, assets, negativePrompt, multiPrompt?.scenes]) }}
+          modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}

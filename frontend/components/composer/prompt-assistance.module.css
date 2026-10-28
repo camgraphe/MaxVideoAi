@@ -1,8 +1,8 @@
 .root { border: 1px solid var(--border); border-radius: 16px; background: var(--bg); min-width: 0; color: var(--text-primary); }
-.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--border); }
-.tabs { display: flex; gap: 20px; }
-.expandConversation { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; min-height: 44px; color: var(--text-secondary); }
-.panel { padding-top: 12px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 0 16px; flex-wrap: wrap; padding: 0 16px; border-bottom: 1px solid var(--border); }
+.tabs { display: flex; flex-shrink: 0; gap: 20px; }
+.expandConversation { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 44px; gap: 6px; font-size: 12px; min-height: 44px; color: var(--text-secondary); }
+.panel { padding-top: 0; }
 .expandedConversation .conversationStage { height: clamp(360px, 50svh, 560px); }
 .tabs button { min-height: 44px; padding: 0 2px; border: 0; border-bottom: 1.5px solid transparent; font-size: 13px; color: var(--text-muted); background: transparent; }
 .tabs button[aria-selected='true'] { color: var(--text-primary); border-bottom-color: currentColor; font-weight: 550; }
@@ -10,8 +10,10 @@
 .root button:disabled { opacity: .45; cursor: default; }
 .conversationStage { height: clamp(240px, 25svh, 280px); display: flex; flex-direction: column; gap: 0; min-width: 0; }
 .transcript { flex: 1; min-height: 64px; overflow-y: auto; scrollbar-width: thin; padding: 6px 16px 12px; overscroll-behavior: contain; font-size: 14px; line-height: 1.65; }
-.assistant { display: flex; align-items: center; gap: 7px; padding: 0 16px; margin-bottom: 8px; font-size: 12px; }
-.assistant span { color: var(--text-muted); }
+.assistant { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 0 16px; font-size: 12px; }
+.assistantIdentity { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.assistantIdentity > svg, .assistantIdentity > strong { flex-shrink: 0; }
+.assistantIdentity span { color: var(--text-muted); overflow-wrap: anywhere; min-width: 0; }
 .messages { display: flex; flex-direction: column; gap: 14px; }
 .user { align-self: flex-end; max-width: 88%; border-radius: 12px 12px 3px 12px; padding: 8px 12px; background: var(--surface-2); }
 .user, .reply { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -60,10 +62,7 @@
 .root :global(.app-reference-required), .root :global(.app-reference-restrictions), .root :global([data-subject-references]) { flex-basis: 100%; }
 .composer :global([data-settings-density="workspace"] button) { color: var(--text-primary); background: var(--surface-2); }
 
-.commandBar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; min-width: 0; }
-.commandBar :global(.app-navigation-activities[data-placement='composer']) { position: static; z-index: auto; display: flex; flex-wrap: nowrap; gap: 2px; padding: 0; border: 0; background: transparent; }
-.commandBar :global(.app-navigation-activities a) { min-height: 40px; padding: 0 9px; gap: 6px; font-size: 12px; }
-.commandBar :global(.app-navigation-activities .app-glyph) { width: 16px; height: 16px; }
+.commandBar { min-width: 0; margin-left: auto; }
 .commandBar :global(.app-mode-switch[data-compact-modes]) { margin: 0; padding: 0 0 0 10px; gap: 2px; background: transparent; border: 0; border-left: 1px solid var(--border); border-radius: 0; }
 .commandBar :global(.app-mode-switch[data-compact-modes] button) { flex: 0 1 auto; flex-direction: row; width: auto; min-height: 40px !important; padding: 0 9px; border-radius: 7px; font-size: 12px; font-weight: 500; white-space: nowrap; }
 .commandBar :global(.app-mode-switch[data-compact-modes] button[aria-pressed='true']) { color: var(--text-primary); background: var(--app-accent-soft); }
@@ -79,6 +78,8 @@
   .proposalHeader { gap: 6px; }
 }
 @media (pointer: coarse) {
-  .commandBar :global(.app-navigation-activities a), .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger { min-height: 44px !important; }
+  .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger { min-height: 44px !important; }
   .inputSurface > textarea, .editor { font-size: 16px; }
 }
+
+@media (max-width: 400px) { .expandConversation span { display: none; } }

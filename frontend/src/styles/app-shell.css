@@ -139,3 +139,13 @@
   .app-experience .app-navigation-rail a { flex: none; min-height: 44px; padding: 3px 1px; gap: 3px; }
   .app-experience .app-navigation-rail .app-glyph { width: 18px; height: 18px; }
 }
+
+/* Prompt assistance preview: creation routes live with primary navigation. */
+.app-experience .app-creation-rail-links { display: flex; flex: none; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-creation-rail-links a { flex: none; flex-direction: row; justify-content: flex-start; min-height: 44px; gap: 6px; padding: 0 7px; font-size: 10px; }
+.app-experience .app-creation-rail-links .app-glyph { width: 16px; height: 16px; }
+.app-experience .app-creation-mobile-picker { display: flex; position: relative; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 59px; border-radius: 4px; color: var(--app-muted); font-size: 10px; }
+.app-experience .app-creation-mobile-picker[data-active='true'] { color: var(--app-accent); background: var(--app-accent-soft); }
+.app-experience .app-creation-mobile-picker > span { display: flex; align-items: center; gap: 3px; }
+.app-experience .app-creation-mobile-picker select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.app-experience .app-creation-mobile-picker:focus-within { outline: 2px solid var(--app-accent); outline-offset: -2px; }
