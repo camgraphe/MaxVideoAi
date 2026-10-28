@@ -99,10 +99,16 @@ test('real composer keeps the full suggestion, independent scrolling, references
       await page.getByRole('tab',{name:'AI assistant',exact:true}).click({timeout:3000});
       const message=page.locator('[data-assistance-message]');
       const inputTop = () => message.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
+      const emptyInputTop = await inputTop();
+      await expect(page.locator('[data-assistance-transcript]')).toBeHidden();
+      await message.fill('Keep the camera movement slow.');
+      assert.ok(Math.abs(await inputTop()-emptyInputTop)<2, 'typing alone must keep the empty conversation compact');
+      await message.press('Enter');
+      await expect(page.locator('[data-assistance-transcript]')).toBeVisible();
       const initialInputTop = await inputTop();
-      await message.fill('Keep the camera movement slow.'); await message.press('Enter');
+      assert.ok(initialInputTop-emptyInputTop>=230, 'the history opens only after the first send');
       await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
-      assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'the first reply must not push the reply field down');
+      assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'the first reply must not push the opened reply field down');
       await page.locator('[data-assistance-expand]').click();
       assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'expanding a proposal must not move the reply field');
       const text='A slow camera movement. '.repeat(100);

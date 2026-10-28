@@ -24,3 +24,7 @@ Previous version: commit `275fbba98`, branch `codex/prompt-director-common-bar-b
 - The full production build was not rerun while the shared local preview server is active. Physical mobile picker/keyboard and true browser zoom still need separate qualification; browser fixtures cover responsive layout and selection behavior.
 
 No media generation or live LLM call is part of this refinement. Production retains the original layout because the existing development-only preview flag guards the new navigation and composer presentation.
+
+## Follow-up — compact empty conversation
+
+Before the first message, show only the Milo heading and the message composer; hide the empty history and Expand. Typing alone does not open the history. Sending the first message opens the bounded conversation immediately, so the pending response and later replies do not resize it. A pending request or existing proposal also keeps the conversation visible. The seven targeted layout/navigation browser tests pass, including empty state, first send, ten follow-ups and Review at 320–1440 px; focused lint and diff checks pass. Authenticated visual verification captured `compact-empty-milo.png` privately.

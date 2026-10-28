@@ -43,21 +43,23 @@ test('creation navigation frees the composer row while operations, Expand and mo
       }
       const writing = await page.getByRole('tablist',{name:'Writing mode'}).boundingBox();
       const operations = await page.locator('[data-composer-command-bar]').boundingBox();
-      const expand = await page.getByRole('button',{name:'Expand',exact:true}).boundingBox();
-      assert.ok(writing && operations && expand);
+      assert.ok(writing && operations);
+      await expect(page.getByRole('button',{name:'Expand',exact:true})).toHaveCount(0);
       if(width>=768) assert.ok(Math.abs(writing.y-operations.y)<3, 'writing tabs and operations share a row');
-      assert.ok(expand.y>=Math.max(writing.y+writing.height,operations.y+operations.height), 'Expand has its own conversation heading, away from operations');
       await page.getByRole('button',{name:'Modify Video',exact:true}).click();
       await expect(page.getByRole('button',{name:'Modify Video',exact:true})).toHaveAttribute('aria-pressed','true');
       await page.getByRole('button',{name:'Create video',exact:true}).click();
       await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
       await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
       const message=page.locator('[data-assistance-message]');
+      await expect(page.locator('[data-assistance-transcript]')).toBeHidden();
+      await message.fill('Refine this'); await message.press('Enter'); await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
+      const expand = await page.getByRole('button',{name:'Expand',exact:true}).boundingBox();
+      assert.ok(expand && expand.y>=Math.max(writing.y+writing.height,operations.y+operations.height), 'Expand has its own conversation heading, away from operations');
       const height=await page.locator('[data-assistance-transcript]').evaluate(el=>el.clientHeight);
       await page.getByRole('button',{name:'Expand',exact:true}).click();
       assert.ok(await page.locator('[data-assistance-transcript]').evaluate(el=>el.clientHeight)>height);
       await page.getByRole('button',{name:'Collapse',exact:true}).click();
-      await message.fill('Refine this'); await message.press('Enter'); await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
       await page.getByRole('button',{name:'Review',exact:true}).click();
       await expect(page.locator('[data-assistance-transcript]')).toBeHidden();
       await expect(message).toBeVisible();

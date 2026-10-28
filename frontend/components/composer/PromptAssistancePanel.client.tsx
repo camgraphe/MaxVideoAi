@@ -32,9 +32,10 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   }, [messages, input]);
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
+  const hasConversation = messages.length > 0 || pending || Boolean(proposal);
   return <div className={styles.panel}>
-    <div className={styles.assistant}><div className={styles.assistantIdentity}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>{conversationControl}</div>
-    <div className={styles.conversationStage}>
+    <div className={styles.assistant}><div className={styles.assistantIdentity}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>{hasConversation ? conversationControl : null}</div>
+    <div className={styles.conversationStage} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
           {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.text}</div>)}
