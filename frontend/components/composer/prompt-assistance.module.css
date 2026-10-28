@@ -34,6 +34,7 @@
 .sendRow { min-height: 44px; align-items: flex-end; }
 .inputReferences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 .manualReferences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 14px 5px; }
+.sourceReferences { min-width: 0; padding: 12px 14px; }
 .manualSurface :global(.app-prompt-surface) { border: 0; background: transparent; }
 .manualSurface:has(textarea[aria-invalid='true']) { border-color: var(--error-border); }
 .send { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--text-primary); color: var(--surface); flex-shrink: 0; }
@@ -74,6 +75,7 @@
 @media (max-width: 600px) {
   .commandBar :global(.app-mode-switch[data-compact-modes]) { border-left: 0; padding-left: 0; }
   .header { padding-inline: 12px; }
+  .sourceReferences { padding-inline: 12px; }
   .proposalHeader { gap: 6px; }
 }
 @media (pointer: coarse) {

@@ -39,7 +39,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     </div>
     {disabledReason ? <p className={styles.warning}>{disabledReason}</p> : null}
     <div id={`${id}-manual`} role="tabpanel" aria-labelledby={`${id}-prompt-tab`} hidden={milo}>
-      {referencesBeforeInput ? manualReferences : null}
+      {referencesBeforeInput ? <div className={styles.sourceReferences}>{manualReferences}</div> : null}
       <div className={styles.manualSurface} data-assistance-manual-input>{children}<div className={styles.manualReferences}>{!referencesBeforeInput ? manualReferences : null}{!milo ? controls?.modelControl : null}</div></div>
     </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>

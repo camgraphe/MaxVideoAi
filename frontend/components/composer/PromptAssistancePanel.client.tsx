@@ -52,7 +52,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         </div>
       </section> : null}
     </div>
-    {referencesBeforeInput ? references : null}
+    {referencesBeforeInput ? <div className={styles.sourceReferences}>{references}</div> : null}
     <div className={styles.inputSurface} data-assistance-input>
       <label htmlFor={messageId}>{copy.message}</label>
       <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
