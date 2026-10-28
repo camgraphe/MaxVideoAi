@@ -49,6 +49,8 @@ The footer now reads **model → Variant → References** in both writing modes.
 
 The existing variant control also appears beside the compact model trigger when the catalog supplies multiple variants. Its visible label is **Variant**, because the adjacent model name already identifies the current choice. The menu marks the current variant, preserves disabled choices and their reasons, and uses the existing model-selection handler. Standalone models have no variant button. A portal keeps the menu outside the composer's clipped boundary.
 
+After visual feedback, the model keeps a faint outline on a transparent background; Variant becomes a secondary text control without a permanent visible border. Both use 36 px desktop height, retain 44 px coarse-pointer targets and reveal a light background on hover/open. A single fine outline marks keyboard focus. The existing Chromium/WebKit model interaction checks still pass at 320/390/1440 px. Private capture: `light-model-variant-controls.png`.
+
 Validation: 11 relevant model/command-bar tests and eight EngineSelect architecture contracts pass. The new browser case covers Chromium and WebKit at 320/390/1440 px, selection through the restored control, disabled choices, prompt preservation, keyboard Escape/focus, and absence for standalone models. TypeScript and focused ESLint pass. The authenticated app was checked with Mini → Fast → Mini without generating media. Private visual evidence: `model-variants-composer.png` in the task visualization folder.
 
 ## Follow-up: independent gallery scrolling
