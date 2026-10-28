@@ -68,6 +68,9 @@ importers:
       jsdom:
         specifier: 26.1.0
         version: 26.1.0(bufferutil@4.0.9)
+      robots-parser:
+        specifier: 3.0.1
+        version: 3.0.1
       tsx:
         specifier: ^4.20.6
         version: 4.20.6

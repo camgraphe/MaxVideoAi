@@ -109,6 +109,26 @@ test('limits the non-link route classifier exception to analytics ownership', as
   );
 });
 
+test('robots target data has one exact exception while other config references stay guarded', () => {
+  const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-robots-link-guard-'));
+  const fixtureRoot = join(sandboxRoot, 'frontend');
+  const policyPath = join(fixtureRoot, 'config/ai-training-public-policy.json');
+  const unauthorizedPath = join(fixtureRoot, 'config/unauthorized-company-link.json');
+  const runGuard = () => spawnSync(process.execPath, [INTERNAL_LINK_GUARD_PATH, '--scan-root', fixtureRoot], { cwd: ROOT, encoding: 'utf8' });
+  try {
+    mkdirSync(dirname(policyPath), { recursive: true });
+    writeFileSync(policyPath, JSON.stringify({ schemaVersion: 1, pageTargets: ['/company'], renderTargets: [] }));
+    const qualified = runGuard();
+    assert.equal(qualified.status, 0, qualified.stderr);
+    writeFileSync(unauthorizedPath, JSON.stringify({ href: '/company' }));
+    const unauthorized = runGuard();
+    assert.equal(unauthorized.status, 1);
+    assert.match(unauthorized.stderr, /unexpected \/company reference outside allowed files: frontend\/config\/unauthorized-company-link\.json/);
+  } finally {
+    rmSync(sandboxRoot, { recursive: true, force: true });
+  }
+});
+
 test('rejects an unauthorized authored company link outside the classifier', () => {
   const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-internal-link-guard-'));
   const fixtureRoot = join(sandboxRoot, 'frontend');

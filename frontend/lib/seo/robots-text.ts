@@ -1,3 +1,5 @@
+import { buildTrainingPublicRules } from './training-crawl-policy';
+
 export type RobotsSurface = 'public' | 'protocol';
 
 const PUBLIC_ASSET_RULES = [
@@ -67,9 +69,26 @@ export function buildRobotsText(surface: RobotsSurface): string {
   const blocks = [
     '# robots.txt - MaxVideoAI public site',
     [
-      '# Training-only crawlers are blocked from public content.',
+      '# Approved training access is limited to qualified public pages and rendering resources.',
+      group(['GPTBot', 'ClaudeBot'], [
+        ...buildTrainingPublicRules(),
+        ...PRIVATE_PATH_RULES,
+        'Disallow: /auth',
+        'Disallow: /login',
+        'Disallow: /s/',
+        'Disallow: /v/',
+        'Disallow: /video/',
+        'Disallow: /mcp/reference-upload',
+        'Disallow: /fr/mcp/reference-upload',
+        'Disallow: /es/mcp/reference-upload',
+        'Disallow: /fr/docs/private',
+        'Disallow: /es/docs/private',
+      ]),
+    ].join('\n'),
+    [
+      '# Other training-only crawlers remain blocked.',
       group(
-        ['GPTBot', 'ClaudeBot', 'anthropic-ai', 'Claude-Web', 'CCBot', 'Bytespider', 'cohere-ai'],
+        ['anthropic-ai', 'Claude-Web', 'CCBot', 'Bytespider', 'cohere-ai'],
         ['Disallow: /'],
       ),
     ].join('\n'),
