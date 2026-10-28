@@ -10,30 +10,50 @@ import {PathnameContext} from 'next/dist/shared/lib/hooks-client-context.shared-
 import {AppRouterContext} from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import {I18nProvider} from './lib/i18n/I18nProvider';
 import {AppNavigation} from './components/app/AppNavigation.client';
+import {AppCreationContent} from './components/app/AppCreationContent';
 import {ComposerWorkspaceControls} from './components/composer/ComposerWorkspaceControls.client';
 import {WorkspaceComposerModel} from './components/composer/WorkspaceComposerModel.client';
 import {Composer} from './components/Composer';
 const engine=globalThis.fixtureConfig.engine;
-function Fixture(){const [path,setPath]=useState(location.pathname==='/'?'/app':location.pathname); const [mode,setMode]=useState(null); const [prompt,setPrompt]=useState('Original draft');
+function Fixture(){const [path,setPath]=useState(location.pathname==='/'?'/app':location.pathname); const [mode,setMode]=useState(null); const [railView,setRailView]=useState('activity'); const [prompt,setPrompt]=useState('Original draft');
 return <I18nProvider locale="en" dictionary={{}} fallback={{}}><PathnameContext.Provider value={path}><AppRouterContext.Provider value={{push:setPath,prefetch:()=>{},replace:setPath}}>
+  <header className="app-connected-header" aria-label="Fixture header" />
   <div style={{display:"flex"}}><aside className="app-sidebar hidden md:flex"><AppNavigation variant="rail" /></aside><AppNavigation variant="mobile" />
-  <AppNavigation variant="activities" />
+  <AppCreationContent railNavigation={<div className="app-media-rail-switch" role="group" aria-label="Recents">
+    <button aria-pressed={railView==='activity'} onClick={()=>setRailView('activity')}>Activity</button>
+    <button aria-pressed={railView==='recent'} onClick={()=>setRailView('recent')}>Recents</button>
+  </div>}>
   {path!=='/app/audio'? <main className="app-workspace-main" style={{padding:12,maxWidth:900}}><ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={[engine]} engineId={engine.id} mode="t2v" onModeChange={()=>{}} onEngineChange={()=>{}} />}>
   <Composer density="workspace" engine={engine} prompt={prompt} onPromptChange={setPrompt} assetFields={[]} assets={{}} price={1.35} currency="USD" isLoading={false}
     assistance={{scopeKey:'a:video',contextKey:'4s'}} activeManualMode={mode} onModeToggle={setMode}
     modeToggles={[{mode:null,label:'Create video'},{mode:'v2v',label:'Modify Video'},{mode:'extend',label:'Extend Video'}]}
     onGenerate={()=>{throw new Error('Must not generate')}} />
   </ComposerWorkspaceControls></main>:null}
- </div></AppRouterContext.Provider></PathnameContext.Provider></I18nProvider>};createRoot(document.getElementById('root')).render(<Fixture/>);`;
+ </AppCreationContent></div></AppRouterContext.Provider></PathnameContext.Provider></I18nProvider>};createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
-test('creation navigation frees the composer row while operations, Expand and model selection stay reachable', {timeout:60_000}, async () => {
+test('top navigation stays aligned and compact while operations, Expand and model selection stay reachable', {timeout:60_000}, async () => {
   const engine = listFalEngines().find(entry => entry.id === 'kling-o3-pro')!.engine;
   const fixture = await startWorkspaceReferenceFixture({source, config:{engine}, assistancePreview:true});
   const browser = await chromium.launch({headless:true});
   try {
     for (const width of [320,390,768,1440]) {
       const page=await browser.newPage({viewport:{width,height:900}}); await page.goto(fixture.url);
-      await expect(page.getByRole('navigation',{name:'Creation type'})).toHaveCount(0);
+      await expect(page.getByRole('navigation',{name:'Creation type'})).toBeVisible();
+      await expect(page.getByRole('group',{name:'Creation type'})).toHaveCount(0);
+      await expect(page.getByRole('combobox',{name:'Creation type'})).toHaveCount(0);
+      const topbar = page.locator('.app-creation-topbar');
+      const topbarBounds = await topbar.boundingBox();
+      assert.ok(topbarBounds && topbarBounds.height<=46, 'one compact navigation row');
+      const railNav = topbar.getByRole('group',{name:'Recents'});
+      if(width>=768) {
+        await expect(railNav).toBeVisible();
+        const mediaBounds = await topbar.getByRole('link',{name:'Video',exact:true}).boundingBox();
+        const activityBounds = await railNav.getByRole('button',{name:'Activity',exact:true}).boundingBox();
+        assert.ok(mediaBounds && activityBounds && Math.abs(mediaBounds.y-activityBounds.y)<1, 'media and gallery tabs share a baseline');
+        await railNav.getByRole('button',{name:'Recents',exact:true}).click();
+        await expect(railNav.getByRole('button',{name:'Recents',exact:true})).toHaveAttribute('aria-pressed','true');
+        await railNav.getByRole('button',{name:'Activity',exact:true}).click();
+      } else await expect(railNav).toBeHidden();
       for (const label of ['Create video','Modify Video','Extend Video']) await expect(page.getByRole('button',{name:label,exact:true})).toBeVisible();
       for (const tab of ['Prompt','AI assistant']) {
         await page.getByRole('tab',{name:tab,exact:true}).click();
@@ -66,16 +86,10 @@ test('creation navigation frees the composer row while operations, Expand and mo
       await page.getByRole('button',{name:'Conversation',exact:true}).click();
       await expect(page.locator('[data-assistance-transcript]')).toBeVisible();
       for (const type of ['image','audio','video']) {
-        if(width<768) {
-          const picker=page.getByRole('combobox',{name:'Creation type'});
-          await expect(picker).toBeVisible(); await picker.selectOption(type);
-          await expect(picker).toHaveValue(type);
-        } else {
-          const links=page.getByRole('group',{name:'Creation type'});
-          await links.getByRole('link',{name:type[0].toUpperCase()+type.slice(1),exact:true}).click();
-          await expect(links.getByRole('link',{name:type[0].toUpperCase()+type.slice(1),exact:true})).toHaveAttribute('aria-current','page');
-        }
-        await expect(page.getByRole('navigation',{name:'Creation type'})).toHaveCount(0);
+        const links=page.getByRole('navigation',{name:'Creation type'});
+        await links.getByRole('link',{name:type[0].toUpperCase()+type.slice(1),exact:true}).click();
+        await expect(links.getByRole('link',{name:type[0].toUpperCase()+type.slice(1),exact:true})).toHaveAttribute('aria-current','page');
+        await expect(page.getByRole('navigation',{name:'Creation type'})).toBeVisible();
       }
       await page.close();
     }

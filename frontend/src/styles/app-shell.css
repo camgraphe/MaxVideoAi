@@ -140,12 +140,24 @@
   .app-experience .app-navigation-rail .app-glyph { width: 18px; height: 18px; }
 }
 
-/* Prompt assistance preview: creation routes live with primary navigation. */
-.app-experience .app-creation-rail-links { display: flex; flex: none; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--app-line); }
-.app-experience .app-creation-rail-links a { flex: none; flex-direction: row; justify-content: flex-start; min-height: 44px; gap: 6px; padding: 0 7px; font-size: 10px; }
-.app-experience .app-creation-rail-links .app-glyph { width: 16px; height: 16px; }
-.app-experience .app-creation-mobile-picker { display: flex; position: relative; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 59px; border-radius: 4px; color: var(--app-muted); font-size: 10px; }
-.app-experience .app-creation-mobile-picker[data-active='true'] { color: var(--app-accent); background: var(--app-accent-soft); }
-.app-experience .app-creation-mobile-picker > span { display: flex; align-items: center; gap: 3px; }
-.app-experience .app-creation-mobile-picker select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.app-experience .app-creation-mobile-picker:focus-within { outline: 2px solid var(--app-accent); outline-offset: -2px; }
+/* Prompt assistance preview: aligned creation and gallery navigation. */
+.app-experience .app-creation-topbar { position: sticky; top: var(--header-height); z-index: 30; display: flex; flex: none; min-width: 0; background: var(--app-canvas); border-bottom: 1px solid var(--app-line); }
+.app-experience .app-creation-topbar-main { flex: 1; min-width: 0; }
+.app-experience .app-creation-topbar .app-navigation-activities { position: static; max-width: 1160px; margin-inline: auto; padding: 0 24px; gap: 20px; border: 0; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar-rail { display: none; }
+.app-experience .app-creation-topbar .app-media-rail-switch { margin: 0; gap: 20px; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar :is(.app-navigation-activities a, .app-media-rail-switch > button) { position: relative; display: inline-flex; align-items: center; flex: none; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--app-muted); font-size: 12px; font-weight: 400; box-shadow: none; }
+.app-experience .app-creation-topbar .app-glyph { width: 16px; height: 16px; }
+.app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"], a:hover, button:hover) { color: var(--app-ink); background: transparent; }
+.app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"])::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--app-accent); }
+.app-experience .app-creation-topbar :is(a, button):focus-visible { outline: 1px solid var(--app-accent); outline-offset: -3px; border-radius: 4px; }
+@media (min-width: 768px) {
+  .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 240px; align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
+}
+@media (min-width: 900px) { .app-experience .app-creation-topbar-rail { flex-basis: 272px; } }
+@media (min-width: 1088px) { .app-experience .app-creation-topbar-rail { flex-basis: 320px; padding-inline: 21px; } }
+@media (max-width: 767px) {
+  .app-experience .app-creation-topbar .app-navigation-activities { padding-inline: 12px; gap: 24px; }
+  .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open { padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--app-muted); font-size: 12px; }
+  .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open .app-glyph { width: 16px; height: 16px; }
+}

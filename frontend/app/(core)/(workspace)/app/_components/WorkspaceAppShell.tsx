@@ -136,14 +136,17 @@ export function WorkspaceAppShell({
     setRailView('recent');
     setMobileRecentOpen(true);
   };
+  const railNavigation = recentMedia ? <div className="app-media-rail-switch" role="group" aria-label={copy.title}>
+    <button type="button" aria-pressed={railView === 'activity'} aria-controls={activityPanelId}
+      onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
+    <button type="button" aria-pressed={railView === 'recent'} aria-controls={recentPanelId} onClick={openRecentMedia}>{copy.title}</button>
+  </div> : null;
   return (
     <WorkspaceChrome
+      railNavigation={PROMPT_ASSISTANCE_PREVIEW ? railNavigation : null}
       rail={
         <div className="app-media-rail">
-          {recentMedia ? <div className="app-media-rail-switch" aria-label={copy.title}>
-            <button type="button" aria-pressed={railView === 'activity'} onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
-            <button type="button" aria-pressed={railView === 'recent'} onClick={openRecentMedia}>{copy.title}</button>
-          </div> : null}
+          {PROMPT_ASSISTANCE_PREVIEW ? null : railNavigation}
           <div id={activityPanelId} ref={activityPanelRef} tabIndex={-1} hidden={railView !== 'activity'}>
         <GalleryRail
           engine={selectedEngine}
