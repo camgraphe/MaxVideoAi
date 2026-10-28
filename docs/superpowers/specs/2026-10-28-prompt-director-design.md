@@ -5,6 +5,23 @@ Base : `main` / `origin/main` à `04e7c53190dc7791eda8012861e9de6c226d654b`.
 
 Statut : proposition d'interface à relire avant intégration produit. L'étude et le principe d'une aide facultative ont été retenus ; les détails visuels ci-dessous sont les choix proposés par Codex. Le prototype HTML est une maquette autonome, avec réponses et références simulées. Il ne fait aucun appel API et ne remplace aucun composant de l'application.
 
+## Revision 2 — user feedback incorporated
+
+The preview now uses **English throughout**. This section supersedes the first visual proposal where they differ.
+
+- Use **Start image** and **End image** for frame roles. Other references use **Image 1, Image 2, Audio 1, Video 1**, numbered independently by media type. Start/end roles do not consume image-reference numbers.
+- Do not show uploaded filenames in the composer. Use the short identity as the primary and only label. Keep filenames in optional details in the future product, if needed, rather than in the main flow or automatic hover tooltips.
+- Keep thumbnails at 44 × 44 px, without an enclosing card or a second line of metadata. Multiple references share one horizontally scrollable row, including on mobile; do not grow a grid that pushes the writing field away.
+- Clicking a reference inserts a mention at the saved text selection. The preview illustrates `@Image1`, `@Audio1`, `@StartImage` and `@EndImage`; these are **application aliases, not a universal provider syntax**. Real integration must resolve asset identity and role, then translate to the selected model's supported bindings. Existing provider-specific mention checks remain authoritative.
+- Preserve reference identity: deleting Image 1 does not rename Image 2, and a new attachment becomes Image 3. A removed or replaced reference mentioned in text requires review; never silently retarget a mention. Stable UI numbering may differ from compact provider indices, so the adapter must keep an explicit mapping.
+- For a spoken audio script, clicking a reference switches to With Milo and inserts it into the message. Never insert a reference alias into words that TTS will read aloud. A future direction field can accept reference mentions if its actual contract supports them.
+- **Conversation above, composer below.** Milo's messages are displayed in a bounded conversation area without an outer card. A separate, clearly outlined input surface below has the persistent visible label **Message Milo** and an action-specific placeholder. The message field does not scroll away with the conversation.
+- **Suggested prompt** is a compact disclosure in the conversation. Expanding it reveals editable proposed text and Apply. It does not replace or visually resemble the reply input. Sending a follow-up returns focus to Message Milo. It does not generate media.
+- Remove the old left focus bars, padding shifts, layered shadows and segmented-tab boxes. Use thin text tabs, one input border and restrained hover states. Clicking the prompt does not create an overlay. Keep a clear keyboard-only focus outline.
+- The plus is a simple unframed glyph with a 44 px hit area. Main controls retain comfortable targets; compact reference-removal controls are 27 × 44 px, above the 24 px minimum and separate from the insert button.
+
+The revised structure draws from assistant-ui's separate transcript and composer footer, Runway's typed reference labels, and Krea's distinction between start/end frames and generation settings. Exact sources and limits are recorded in the guidelines. This is still an isolated design prototype; production code, billing and provider adapters are unchanged.
+
 ## Intention et décisions acquises
 
 Réduire la difficulté de partir d'un champ vide, tout en conservant un générateur direct pour les personnes qui savent écrire leur prompt ou utilisent leur propre LLM. Proposer une conversation avec Milo à l'intérieur de la zone de préparation du média. Adapter les conseils au moteur et au mode sélectionnés, plutôt que donner une aide générique.
@@ -23,14 +40,14 @@ Pour la réalisation, conserver React, le SDK OpenAI Responses existant et les p
 
 ## Interface proposée
 
-Le même emplacement propose deux onglets **Prompt** et **Avec Milo**. Le mode initial reste Prompt. Le passage d'un onglet à l'autre conserve le texte, les références et les réglages ; la préférence d'ouverture pourra être mémorisée par compte, sans mémoriser de contenu sensible dans une préférence globale.
+Le même emplacement propose deux onglets **Prompt** et **With Milo**. Le mode initial reste Prompt. Le passage d'un onglet à l'autre conserve le texte, les références et les réglages ; la préférence d'ouverture pourra être mémorisée par compte, sans mémoriser de contenu sensible dans une préférence globale.
 
-Une surface unique, légèrement arrondie, remplace l'empilement visuel des cartes de références et du gros contour de saisie. Conserver les couleurs de MaxVideoAI, avec une bordure moins contrastée, une ombre très discrète et davantage d'espace intérieur. La profondeur doit venir de l'espacement et de la hiérarchie, pas de bordures imbriquées.
+Une surface de saisie unique, légèrement arrondie, remplace l'empilement des cartes de références. En mode Milo, la conversation se trouve au-dessus, hors de cette surface. Conserver les couleurs de MaxVideoAI, avec une bordure moins contrastée, une ombre très discrète et davantage d'espace intérieur. La profondeur doit venir de l'espacement et de la hiérarchie, pas de bordures imbriquées.
 
 Ordre visuel :
 
 1. Moteur et mode de génération, dans leurs contrôles existants.
-2. Onglets Prompt / Avec Milo.
+2. Onglets Prompt / With Milo.
 3. Texte manuel, ou conversation et proposition éditable.
 4. Pièces jointes visibles, avec leur rôle, leur état et leur suppression.
 5. Barre de saisie avec **+ à gauche** ; en mode Milo, bouton d'envoi de message à droite.
@@ -108,7 +125,7 @@ Le registre `agent-model-prompting-sources.json` contient des liens, pas les gui
 
 Voir [les guidelines et sources](../../design/prompt-composer/GUIDELINES.md). Les techniques retenues : champ + barre d'actions + pièces jointes, états explicites, guide ciblé, schéma avant appel, absence de boucle gratuite supposée. Aucun code concurrent ni asset propriétaire n'est copié dans cette maquette.
 
-Les décisions d'apparence proposées par Codex sont réversibles : rayon 18 px pour la surface, contrôles tactiles de 44 px, couleurs olive/ivoire/ambre existantes, typographie système, ligne fine et ombre douce. Conserver un contour de focus visible, une hiérarchie de texte lisible, le contraste AA, le mode sombre, les langues EN/FR/ES et les préférences de mouvement réduit. Les dimensions finales doivent être vérifiées dans la vraie application.
+Les décisions d'apparence proposées par Codex sont réversibles : rayon 15 px pour la surface, contrôles tactiles de 44 px, couleurs olive/ivoire/ambre existantes, typographie système, ligne fine et ombre douce. Conserver un contour de focus visible, une hiérarchie de texte lisible, le contraste AA, le mode sombre, les langues EN/FR/ES et les préférences de mouvement réduit. Les dimensions finales doivent être vérifiées dans la vraie application.
 
 ## Vérification et livraison
 

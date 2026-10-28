@@ -1,4 +1,23 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relire le compositeur · MaxVideoAI</title><style>
-*{box-sizing:border-box}body{margin:0;background:#dfe2d8;color:#20271f;font:13px/1.5 system-ui,sans-serif}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fafaf4;border-bottom:1px solid #bcc3b3;padding:10px 20px}strong{font-size:13px}nav{display:flex;gap:5px;flex-wrap:wrap}button,a{font:inherit;color:inherit;border:1px solid #bdc5b4;background:transparent;border-radius:7px;padding:7px 10px;min-height:38px;cursor:pointer;text-decoration:none}button[aria-pressed=true]{background:#20271f;color:#fafaf4}button:focus-visible,a:focus-visible{outline:2px solid #765020;outline-offset:3px}.frame{margin:16px auto;max-width:100%;width:100%;transition:width .15s ease}iframe{display:block;border:0;width:100%;height:1100px;background:#eeeee7;box-shadow:0 2px 16px #0000000d}.caption{text-align:center;font-size:11px;color:#57634f;margin:0 10px 14px}@media(prefers-reduced-motion:reduce){.frame{transition:none}}
-</style></head><body><header><strong>Prompt + Milo · Proposition à relire</strong><nav aria-label="Largeur de l’aperçu"><button data-width="100%" aria-pressed="true">Bureau</button><button data-width="768px" aria-pressed="false">768 px</button><button data-width="390px" aria-pressed="false">390 px</button><button data-width="320px" aria-pressed="false">320 px</button><a href="prototype.html" target="_blank" rel="noopener">Ouvrir seul ↗</a></nav></header><div class="frame" id="frame"><iframe title="Prototype du compositeur MaxVideoAI" src="prototype.html"></iframe></div><p class="caption">Les réponses, références et capacités sont illustratives. Aucun LLM, crédit ou générateur connecté.</p><script>document.querySelectorAll('[data-width]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-width]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));document.getElementById('frame').style.width=button.dataset.width;});</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prompt & Milo · Design review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e3e6dd;color:#252b23;font:12px/1.5 system-ui,sans-serif}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f6f7f1;border-bottom:1px solid #d2d8ca;padding:6px 18px}strong{font-size:12px;font-weight:500}nav{display:flex;gap:6px;flex-wrap:wrap}button,a{font:inherit;color:#626b5c;border:0;background:transparent;border-radius:5px;padding:7px 9px;min-height:38px;cursor:pointer;text-decoration:none}button[aria-pressed=true]{background:#e4e8dd;color:#252b23}button:focus-visible,a:focus-visible{outline:2px solid #627354;outline-offset:2px}.frame{margin:14px auto;max-width:100%;width:100%}iframe{display:block;border:0;width:100%;height:1100px;background:#f1f2eb}.caption{text-align:center;font-size:11px;color:#626b5c;margin:0 10px 14px}
+</style>
+</head>
+<body>
+<header><strong>Prompt + Milo · Design preview</strong><nav aria-label="Preview width">
+<button data-width="100%" aria-pressed="true">Desktop</button><button data-width="768px" aria-pressed="false">768 px</button><button data-width="390px" aria-pressed="false">390 px</button><button data-width="320px" aria-pressed="false">320 px</button><a href="prototype.html?mode=milo&references=1&example=1" target="_blank" rel="noopener">Open preview ↗</a>
+</nav></header>
+<div class="frame" id="frame"><iframe title="MaxVideoAI composer preview" src="prototype.html?mode=milo&references=1&example=1"></iframe></div>
+<p class="caption">Sample responses, media and capabilities. No live AI calls or credits.</p>
+<script>
+document.querySelectorAll('[data-width]').forEach(button=>button.onclick=()=>{
+ document.querySelectorAll('[data-width]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));
+ document.getElementById('frame').style.width=button.dataset.width;
+});
+</script>
+</body>
+</html>

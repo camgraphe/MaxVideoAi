@@ -2,11 +2,15 @@
 
 Proposition du 28/10/2026. À appliquer lors de l'intégration après validation de la [conception](../../superpowers/specs/2026-10-28-prompt-director-design.md). Le [prototype](prototype.html) est autonome et simulé ; il n'est pas un composant de production.
 
+## Direction actuelle
+
+La [révision 2](REFINEMENT-2.md) intègre les retours d'Adrien : interface et exemples en anglais, références compactes sans nom de fichier, libellés Start image / End image / Image 1 / Audio 1, conversation distincte du champ Message Milo. Elle remplace les choix visuels initiaux ci-dessous en cas de différence.
+
 ## Repères d'interface
 
-- **Un endroit pour écrire.** Prompt manuel ou message Milo ; la proposition n'est pas confondue avec le message de discussion.
+- **Un endroit pour répondre.** La conversation est au-dessus ; le champ Message Milo est dans sa propre surface de saisie en dessous. Suggested prompt est un détail à ouvrir, jamais le champ de réponse. Les onglets sont Prompt / With Milo.
 - **Un + prévisible.** En bas à gauche, nom accessible « Ajouter une référence ». Ouvre les rôles compatibles et les importateurs existants. Les références requises restent signalées hors du menu.
-- **Des pièces jointes explicites.** Montrer rôle, nom, chargement/erreur, suppression et éventuel extrait. Une vignette ne prouve pas que Milo a analysé son contenu.
+- **Des pièces jointes explicites.** Montrer une vignette de 44 px et un identifiant court : Start image, End image, Image 1, Audio 1. Masquer les noms de fichiers ; pas de seconde ligne systématique ni de carte englobante. Une rangée défilante conserve une hauteur constante. Les états de chargement/erreur, suppression et extraits restent disponibles. Une vignette ne prouve pas que Milo a analysé son contenu.
 - **Deux actions distinctes.** Flèche = envoyer à Milo. Générer + devis = produire un média. Rien ne se génère par l'envoi, l'application ou Entrée.
 - **Le manuel reste complet.** Collage depuis un autre LLM sans transformation ; mêmes paramètres, références, sorties et modes. Pas d'appel d'assistance en arrière-plan.
 - **Un original préservé.** Proposition éditable, application explicite, garde de révision, retour arrière sûr. Un changement de contexte invalide l'application, pas la possibilité de lire/copier la réponse.
@@ -17,9 +21,9 @@ Proposition du 28/10/2026. À appliquer lors de l'intégration après validation
 
 Palette issue du produit : canvas ivoire `#eeeee7`, panneau `#fafaf4`, texte olive `#20271f`, secondaire `#57634f`, accent `#765020`. Les valeurs exactes de bordure s'ajustent au contraste et au rendu réel ; les champs interactifs doivent rester perceptibles. Mode sombre cohérent avec les tokens existants.
 
-Surface proposée : rayon 18 px, ligne fine, ombre de faible amplitude, pas de carte dans une carte pour chaque option. Corps 15–16 px, interligne confortable, texte secondaire courant à 12 px, métadonnées discrètes au moins 11 px. Éviter les lettres espacées et les capitales qui donnent une apparence de formulaire technique.
+Surface proposée : rayon 15 px, ligne fine, ombre de faible amplitude, pas de carte dans une carte pour chaque option. Corps 14–16 px, interligne confortable, texte secondaire courant à 12 px, métadonnées discrètes au moins 11 px. Éviter les lettres espacées et les capitales qui donnent une apparence de formulaire technique.
 
-Cibles tactiles de 44 px, focus visible, noms accessibles, états sélectionnés annoncés, suppression et retour de focus gérés. Le menu + reste utilisable au clavier, se ferme avec Échap et rend le focus à son bouton. Pas d'action sur un simple survol. Réponses avec annonce discrète ; ne pas annoncer l'intégralité du chat à chaque frappe. Contrôler 320, 390, 768 et 1440 px, zoom 200 %, EN/FR/ES, textes longs, sombre et mouvement réduit.
+Actions principales avec cibles tactiles de 44 px, suppression compacte à 27 × 44 px, focus clavier visible, noms accessibles, états sélectionnés annoncés, suppression et retour de focus gérés. Pas de barre latérale au focus, de variation de marge ou de cadre ajouté au clic. Le menu + reste utilisable au clavier, se ferme avec Échap et rend le focus à son bouton. Pas d'action sur un simple survol. Réponses avec annonce discrète ; ne pas annoncer l'intégralité du chat à chaque frappe. Contrôler 320, 390, 768 et 1440 px, zoom 200 %, EN/FR/ES, textes longs, sombre et mouvement réduit.
 
 ## Inspirations inspectées et limites
 
@@ -55,4 +59,4 @@ Studio possède déjà mémoire, analyse et reprise technique. Ne pas dupliquer 
 
 Depuis ce dossier : `python3 -m http.server 8768 --bind 127.0.0.1`, puis ouvrir `http://127.0.0.1:8768/review.html`. Le cadre de revue propose Bureau, 768, 390 et 320 px ; `prototype.html` ouvre la maquette seule.
 
-Essayer les onglets vidéo/image/audio, Prompt/Avec Milo, le +, une source obligatoire en mode Modifier, envoyer un message, modifier une proposition, appliquer puis annuler. Changer un réglage après une proposition la rend périmée. Le bouton Générer rappelle le caractère simulé ; aucun média ni coût réel. Le prototype sert à relire la disposition et les interactions, pas à valider un moteur ou le ledger.
+Essayer les onglets vidéo/image/audio, Prompt/With Milo, le +, une source obligatoire en mode Modifier, envoyer un message, modifier une proposition, appliquer puis annuler. Changer un réglage après une proposition la rend périmée. Le bouton Générer rappelle le caractère simulé ; aucun média ni coût réel. Le prototype sert à relire la disposition et les interactions, pas à valider un moteur ou le ledger.

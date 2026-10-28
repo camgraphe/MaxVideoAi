@@ -1,5 +1,7 @@
 # État et contrôles — 28 octobre 2026
 
+La section ci-dessous décrit la première livraison. Les modifications et contrôles de la version actuelle sont consignés dans [REFINEMENT-2.md](REFINEMENT-2.md).
+
 ## Branche et périmètre
 
 - `main` local actualisé par fast-forward sur le `main` distant `04e7c53190dc7791eda8012861e9de6c226d654b`.
