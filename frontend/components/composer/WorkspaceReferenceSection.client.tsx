@@ -99,8 +99,9 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
     triggerRef.current?.focus();
     onOpenLibrary?.(field, slotIndex);
   };
+  const compactReferencesButton = compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null;
   return <section className="app-workspace-references" data-compact-references={compact || undefined} data-extension-workflow={extensionWorkflow || undefined} aria-label={copy.title}>
-    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null}
+    {!requiredSourceMissing ? compactReferencesButton : null}
     <div className="app-reference-commands" hidden={compact && !requiredSourceMissing}>
         {sourceEntry ? <button ref={(node) => { if (node) commandRefs.current.set(sourceEntry.field.id, node); else commandRefs.current.delete(sourceEntry.field.id); }}
           type="button" className={`app-reference-command${sourceAvailability.addDisabled ? ' is-add-disabled' : ''}`}
@@ -113,6 +114,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
           <span className="app-reference-command-label">{sourceLabel}</span>
           <small>{sourceCount ? `${sourceCount}/${sourceField?.maxCount ?? 1}` : copy.required}</small>
         </button> : null}
+        {requiredSourceMissing ? compactReferencesButton : null}
         {(compact ? [] : orderedFrames).map((entry) => {
           const command = getWorkspaceFrameCommand(entry, engine)!;
           const asset = (assets[entry.field.id] ?? []).find(Boolean);

@@ -12,6 +12,8 @@ Choose section, duration, replacement and removal are inside the matching invent
 
 Follow-up: References participates in the model/variant command row independently of the selected-media group. When the group no longer fits, all selected thumbnails move below the commands together and wrap without horizontal scrolling. Narrow screens can still wrap commands when their labels cannot physically fit. The summary reserves space for Milo's send button on its last row. Direct removal uses the existing asset callback and returns keyboard focus to References; it leaves the prompt intact.
 
+In Modify and Extend, when a required source-video button is shown, References is grouped immediately after it. This keeps the source action first and References to its right when there is sufficient width. Create retains its model/variant/References order. The existing Modify/Extend browser check passes at 320, 390 and 1440 px in both writing tabs; the live Modify page also confirms the order.
+
 The reference panel and excerpt dialog retain their existing media owners and callbacks. Production reference presentation, pricing, generation, the main player and the gallery layout are unchanged.
 
 ## Bounded product comparison
