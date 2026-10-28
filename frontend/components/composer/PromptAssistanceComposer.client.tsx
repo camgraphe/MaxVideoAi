@@ -1,5 +1,5 @@
 'use client';
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
@@ -22,8 +22,22 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const [expandedConversation, setExpandedConversation] = useState(false);
   const controls = useComposerWorkspaceControls();
   const milo = state.mode === 'milo' && !disabledReason;
+  const frame = useRef<HTMLDivElement>(null);
+  const manualWriting = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = manualWriting.current;
+    if (!element || milo) return;
+    const syncHeight = () => {
+      const height = element.getBoundingClientRect().height;
+      if (height > 0) frame.current?.style.setProperty('--manual-writing-height', `${height}px`);
+    };
+    syncHeight();
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [milo]);
   const manualReferences = !milo ? renderReferences?.(target === 'script' ? token => { dispatch({ type: 'mode', mode: 'milo' }); controller.insertMention(token); } : undefined) : null;
-  return <div className={`${styles.root}${expandedConversation && milo ? ` ${styles.expandedConversation}` : ''}`} data-prompt-assistance-preview>
+  return <div ref={frame} className={`${styles.root}${expandedConversation && milo ? ` ${styles.expandedConversation}` : ''}`} data-prompt-assistance-preview>
     <div className={styles.header}>
     <div className={styles.tabs} role="tablist" aria-label="Writing mode" onKeyDown={event => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -39,7 +53,13 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     </div>
     {disabledReason ? <p className={styles.warning}>{disabledReason}</p> : null}
     <div id={`${id}-manual`} role="tabpanel" aria-labelledby={`${id}-prompt-tab`} hidden={milo}>
-      <div className={styles.manualSurface} data-assistance-manual-input>{children}<div className={styles.manualReferences}>{!milo ? controls?.modelControl : null}{manualReferences}</div></div>
+      <div className={styles.manualSurface} data-assistance-manual-input>
+        <div ref={manualWriting}>{children}</div>
+        <div className={styles.manualReferences}><div className={styles.sendRow}>
+          <div className={styles.inputReferences}>{!milo ? controls?.modelControl : null}{manualReferences}</div>
+          <span className={styles.sendPlaceholder} aria-hidden />
+        </div></div>
+      </div>
     </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
       {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}

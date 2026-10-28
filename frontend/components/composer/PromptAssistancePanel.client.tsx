@@ -33,7 +33,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
-  return <div className={styles.panel}>
+  return <div className={styles.panel} data-assistance-empty={!hasConversation || undefined}>
     <div className={styles.assistant}><div className={styles.assistantIdentity}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>{hasConversation ? conversationControl : null}</div>
     <div className={styles.conversationStage} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
@@ -55,6 +55,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       </section> : null}
     </div>
     <div className={styles.inputSurface} data-assistance-input>
+      <div className={styles.messageField}>
       <label htmlFor={messageId}>{copy.message}</label>
       <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
@@ -62,6 +63,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
         event.preventDefault(); if (canSend) onSend();
       }} />
+      </div>
       <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
     </div>
   </div>;

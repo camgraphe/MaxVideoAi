@@ -55,12 +55,20 @@ test('top navigation stays aligned and compact while operations, Expand and mode
         await railNav.getByRole('button',{name:'Activity',exact:true}).click();
       } else await expect(railNav).toBeHidden();
       for (const label of ['Create video','Modify Video','Extend Video']) await expect(page.getByRole('button',{name:label,exact:true})).toBeVisible();
+      const idleGeometry: Array<{height:number;modelTop:number;toolbarTop:number}> = [];
       for (const tab of ['Prompt','AI assistant']) {
         await page.getByRole('tab',{name:tab,exact:true}).click();
         await expect(page.getByRole('button',{name:`Change model: ${engine.label}`,exact:true})).toHaveCount(1);
         await expect(page.getByRole('button',{name:`Change model: ${engine.label}`,exact:true})).toBeVisible();
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+        idleGeometry.push(await page.evaluate(()=>{
+          const root=document.querySelector('[data-prompt-assistance-preview]')!.getBoundingClientRect();
+          const model=document.querySelector('[role="tabpanel"]:not([hidden]) button[aria-label^="Change model:"]')!.getBoundingClientRect();
+          const toolbar=document.querySelector('.app-composer-toolbar')!.getBoundingClientRect();
+          return {height:root.height,modelTop:model.top-root.top,toolbarTop:toolbar.top+scrollY};
+        }));
       }
+      assert.deepEqual(idleGeometry[1],idleGeometry[0], 'before chatting, the frame, model and generation toolbar stay fixed between tabs');
       const writing = await page.getByRole('tablist',{name:'Writing mode'}).boundingBox();
       const operations = await page.locator('[data-composer-command-bar]').boundingBox();
       assert.ok(writing && operations);

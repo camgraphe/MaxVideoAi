@@ -20,3 +20,9 @@ This gives the page a shared visual heading rather than promising a shorter cent
 - Private screenshots: `shared-creation-gallery-topbar.png` and `shared-topbar-mobile.png` in the task visualization folder. No generation or LLM call was made.
 
 The work remains isolated in draft PR #555; no production deployment.
+
+## Follow-up — stable initial writing height
+
+Before the first message, AI assistant matches the manual writing area's measured height. The measurement follows the visible manual editor, including a user's textarea resize. Both modes reserve the same footer width for model, variants, references and the send-action column, so switching tabs does not change reference wrapping or move the generation toolbar. Narrow model names truncate while Variant remains beside the model. The bounded history still opens only after the first send.
+
+The authenticated Modify view measures 326 px in both modes, with the toolbar at the same document position (913.24 px). Targeted browser checks compare the initial frame, model and toolbar geometry at 320 / 390 / 768 / 1440 px, plus required-source positions in Modify and Extend. Private captures: `stable-idle-prompt.png` and `stable-idle-assistant.png`.

@@ -70,13 +70,16 @@ test('compact Modify and Extend keep source references inside the writing footer
   try {
     for(const width of [320,390,1440]) {
       const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
-      for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
+      for(const operation of ['v2v','extend']){const idleGeometry: Array<{height:number;sourceTop:number;sourceLeft:number}> = [];await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
         await page.getByRole('tab',{name:mode,exact:true}).click();
         const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
         await expect(sourceButton).toBeVisible();
         const sourceBox=await sourceButton.boundingBox();
         const inputBox=await page.locator(mode==='Prompt'?'[data-workspace-prompt]':'[data-assistance-message]').boundingBox();
         assert.ok(sourceBox && inputBox && sourceBox.y>=inputBox.y+inputBox.height, 'source action stays below the writing area');
+        const frame=await page.locator('[data-prompt-assistance-preview]').boundingBox();
+        assert.ok(frame);
+        idleGeometry.push({height:frame.height,sourceTop:sourceBox.y-frame.y,sourceLeft:sourceBox.x-frame.x});
         const surface=page.locator(mode==='Prompt'?'[data-assistance-manual-input]':'[data-assistance-input]');
         await expect(surface.locator('[data-reference-command]')).toHaveCount(1);
         await expect(surface.getByRole('button',{name:'Add references',exact:true})).toBeVisible();
@@ -92,7 +95,9 @@ test('compact Modify and Extend keep source references inside the writing footer
         await expect(page.locator('.app-reference-popup')).not.toContainText('Reference images');
         await page.locator('.app-reference-popup').getByRole('button',{name:'Close',exact:true}).click();
         await expect(page.locator('.app-reference-popup')).toHaveCount(0);
-      }}
+      }
+        assert.deepEqual(idleGeometry[1],idleGeometry[0], 'required source and frame stay fixed between empty writing modes');
+      }
       await page.close();
     }
   }finally{await browser.close();await fixture.close();}
