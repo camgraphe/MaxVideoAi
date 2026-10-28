@@ -4,7 +4,7 @@
 
 The earlier transcript used only a maximum height, so its first messages and the first suggestion pushed Message Milo down. The conversation and suggestion now share a reserved 240–280 px stage. The transcript scrolls independently; expanding the suggestion uses that same space. Message Milo stays below the stage, and Use prompt stays outside both scroll regions. The selected-model identity, **Milo for Seedance 2.5** for example, stays above the transcript. Audio instrumental identity uses the selected Lyria Clip/Pro model.
 
-The introductory sentence appears only as the grey placeholder in Message Milo, not as a duplicate paragraph in the empty conversation.
+The user-approved tabs now read **Prompt / AI assistant**, explaining the option before introducing Milo by name inside the conversation. The grey Message Milo placeholder reads “Describe your idea. Milo will help write your prompt.” There is no duplicate introduction in the empty conversation. French and Spanish labels follow the same distinction.
 
 Manual writing and optional references now share one surface. A thin plus with the visible **References** label opens the existing inventory, in both writing modes. The Milo references and send button share a footer row. Required Modify/Extend sources retain their direct entry point before writing. Filenames remain absent from the compact strip; thumbnails and reference actions retain their existing behavior.
 

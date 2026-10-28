@@ -1,6 +1,6 @@
 # Prompt assistance (local app preview)
 
-The video and image workspace composers and the audio creation editor now share an optional **Prompt / With Milo** presentation. This increment is a development-only interaction sample, not a live assistant. It performs no LLM, credit, provider or generation request. Studio is unchanged.
+The video and image workspace composers and the audio creation editor now share an optional **Prompt / AI assistant** presentation. This increment is a development-only interaction sample, not a live assistant. It performs no LLM, credit, provider or generation request. Studio is unchanged.
 
 ## Activate and roll back
 

@@ -42,7 +42,7 @@ test('real video adapter invalidates suggestions and undo when subjects or exter
  try{
   const page=await browser.newPage();await page.goto(fixture.url);
   const request=async()=>{
-   await page.getByRole('tab',{name:'With Milo',exact:true}).click();
+   await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
    await page.locator('[data-assistance-message]').fill('Refine this');await page.locator('[data-assistance-message]').press('Enter');
    await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
   };
@@ -66,7 +66,7 @@ test('real video adapter invalidates suggestions and undo when subjects or exter
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
   await request();await page.evaluate(()=>(globalThis as any).changeContext({sourceAccount:{userId:'another',token:'fixture'}}));
   await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
-  await page.getByRole('tab',{name:'With Milo',exact:true}).click();
+  await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
   assert.equal(await page.evaluate(()=>(globalThis as any).generations??0),0);
  }finally{await browser.close();await fixture.close();}

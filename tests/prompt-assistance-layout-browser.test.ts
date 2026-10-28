@@ -28,10 +28,10 @@ test('audio preview applies only to its active text field and retires an intent 
     assert.deepEqual(await page.evaluate(()=>{const d=(globalThis as any).currentDraft;return [d.script,d.prompt,d.lyrics,d.voiceModel,d.reference.name]}),['Revised speech.','Original style','Original lyrics','seed','long-private-file-name.wav']);
     await page.getByRole('button',{name:'Undo',exact:true}).click();
     assert.equal(await page.evaluate(()=>(globalThis as any).currentDraft.script),'Original speech');
-    await page.getByRole('tab',{name:'With Milo',exact:true}).click();
+    await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
     await page.locator('[data-assistance-message]').fill('Next');await page.locator('[data-assistance-message]').press('Enter');await page.getByRole('button',{name:'Switch to song'}).click();
     await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
-    await page.getByRole('tab',{name:'With Milo',exact:true}).click();await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
+    await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
     await page.locator('[data-assistance-message]').fill('More rhythm');await page.locator('[data-assistance-message]').press('Enter');await expect(page.getByRole('button',{name:'Use prompt',exact:true})).toBeEnabled();
     await page.locator('[data-assistance-expand]').click();await page.locator('[data-assistance-editor]').fill('Revised music style.');await page.getByRole('button',{name:'Use prompt',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>{const d=(globalThis as any).currentDraft;return [d.script,d.prompt,d.lyrics]}),['Original speech','Revised music style.','Original lyrics']);
@@ -69,7 +69,7 @@ test('compact Modify and Extend keep a direct source action before writing in bo
   const browser=await chromium.launch({headless:true});
   try {
     const page=await browser.newPage();await page.goto(fixture.url);
-    for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','With Milo']){
+    for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
       await page.getByRole('tab',{name:mode,exact:true}).click();
       const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
       await expect(sourceButton).toBeVisible();
@@ -96,7 +96,7 @@ test('real composer keeps the full suggestion, independent scrolling, references
       const errors:string[]=[]; page.on('pageerror',error=>errors.push(error.message));
       await page.goto(fixture.url);
       if(width===390) await page.locator('html').evaluate(el=>el.setAttribute('data-theme','dark'));
-      await page.getByRole('tab',{name:'With Milo',exact:true}).click({timeout:3000});
+      await page.getByRole('tab',{name:'AI assistant',exact:true}).click({timeout:3000});
       const message=page.locator('[data-assistance-message]');
       const inputTop = () => message.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
       const initialInputTop = await inputTop();
@@ -112,7 +112,7 @@ test('real composer keeps the full suggestion, independent scrolling, references
       await expect(page.locator('[data-workspace-prompt]')).toHaveValue(text);
       await page.getByRole('button',{name:'Undo',exact:true}).click();
       await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Keep this visible.');
-      await page.getByRole('tab',{name:'With Milo',exact:true}).click();
+      await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
       for(let i=0;i<10;i++){await message.fill(`Follow-up ${i}`);await message.press('Enter');await expect(page.getByRole('button',{name:'Send message to Milo'})).toBeDisabled();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();}
       assert.ok(Math.abs(await inputTop()-initialInputTop)<2, 'ten replies must not move the reply field');
       await expect(message).toBeFocused();
