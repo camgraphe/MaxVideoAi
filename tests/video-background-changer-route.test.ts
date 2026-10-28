@@ -30,11 +30,18 @@ test('an explicit language parameter uses the same fallback and preserves tracki
   }
 });
 
-test('the prepared page metadata announces only its actual English URL and keeps unpublished media unavailable', async () => {
+test('the prepared page metadata announces only its actual English URL and binds the approved public media identities', async () => {
   const owner = await import('../frontend/app/tools/video-background-changer/_lib/page-data.ts').catch(() => null);
   assert.ok(owner, 'the route data owner must exist');
   const metadata = owner.buildVideoBackgroundMetadata();
   assert.equal(metadata.alternates?.canonical, 'https://maxvideoai.com/tools/video-background-changer');
   assert.deepEqual(metadata.alternates?.languages, { en: 'https://maxvideoai.com/tools/video-background-changer', 'x-default': 'https://maxvideoai.com/tools/video-background-changer' });
-  assert.equal(owner.getPublishedVideoBackgroundMedia(), null);
+  const media = owner.getPublishedVideoBackgroundMedia();
+  assert.ok(media, 'activation requires the qualified public pair');
+  assert.equal(media.source.src, 'https://media.maxvideoai.com/authored/video-background-changer/e1daf333b6df13b289c4bee1ab4cc4d9defefaa3eea4645021636aa5101c7092.mp4');
+  assert.equal(media.result.src, 'https://media.maxvideoai.com/authored/video-background-changer/a1496fc2552f03e3cce7ddef72c161740f010dbbd4afca211fa29193d4eb7078.mp4');
+  assert.equal(media.source.poster, 'https://media.maxvideoai.com/authored/video-background-changer/e0c5be8c1bedfa8e06c899254cf2417005513f13f5efcf4dd583bf2f09948e6a.webp');
+  assert.equal(media.result.poster, 'https://media.maxvideoai.com/authored/video-background-changer/80f864726dafe8184adc8ba587193603bfa7a7e1828a36a38744a5db903c537a.webp');
+  assert.equal(media.source.durationSec, 6);
+  assert.equal(media.result.durationSec, 6.037007);
 });
