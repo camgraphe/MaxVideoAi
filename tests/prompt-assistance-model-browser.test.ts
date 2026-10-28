@@ -97,3 +97,59 @@ test('Milo level selection keeps writing geometry and drafts stable across tabs'
     }
   }finally{await fixture.close();}
 });
+
+test('reference command stays beside the model while media wrap together and can be removed directly', {timeout:90_000}, async()=>{
+  const ids=['seedance-2-0-mini','seedance-2-0','seedance-2-0-fast'];
+  const engines=listFalEngines().filter(entry=>ids.includes(entry.id)).map(entry=>entry.engine);
+  const engine=engines.find(entry=>entry.id==='seedance-2-0-mini')!;
+  const field=[...engine.inputSchema!.required,...engine.inputSchema!.optional].find(field=>field.id==='image_urls')!;
+  const layoutSource=source.replace("function Fixture(){", "function Fixture(){const [refs,setRefs]=useState({});globalThis.replaceReferences=setRefs;")
+    .replace('assetFields={[]} assets={{}}', 'assetFields={globalThis.fixtureConfig.fields} assets={refs} onAssetRemove={(field,index)=>setRefs(previous=>({...previous,[field.id]:previous[field.id].map((item,i)=>i===index?null:item)}))}');
+  const fixture=await startWorkspaceReferenceFixture({source:layoutSource,config:{engines,fields:[{field,required:false,role:'reference'}]},assistancePreview:true});
+  const assets=Array.from({length:8},(_,i)=>({id:String(i),kind:'image',name:`private-${i}.png`,size:1,type:'image/png',url:`/${i}.svg`,previewUrl:`/${i}.svg`,status:'ready'}));
+  try {
+    for(const browserType of [chromium,webkit]) {
+      const browser=await browserType.launch({headless:true});
+      try {for(const width of [320,390,600,1440]) {
+        const page=await browser.newPage({viewport:{width,height:900}});await page.goto(fixture.url);
+        for(const tab of ['Prompt','AI assistant']) {
+          await page.getByRole('tab',{name:tab,exact:true}).click();
+          const model=page.getByRole('button',{name:'Change model: Dreamina Seedance 2.0 Mini',exact:true});
+          const add=page.getByRole('button',{name:'Add references',exact:true});
+          let headerY:number|undefined;
+          for(const count of [1,3,8]) {
+            await page.evaluate(refs=>(globalThis as any).replaceReferences({image_urls:refs}),assets.slice(0,count));
+            const m=(await model.boundingBox())!,r=(await add.boundingBox())!;
+            if(width>=600) assert.ok(Math.abs(m.y+m.height/2-r.y-r.height/2)<2, `${browserType.name()} ${width} ${tab} ${count}: model and References share their command line: ${JSON.stringify({m,r})}`);
+            if(headerY!==undefined) assert.equal(r.y,headerY,`${browserType.name()} ${width} ${tab} ${count}: adding references does not move References`);
+            headerY=r.y;
+            const summary=page.locator('.app-reference-selected-summary');
+            const first=(await summary.locator('.app-reference-selected-item').first().boundingBox())!;
+            if(count>=3 && width<1000) assert.ok(first.y>=r.y+r.height, 'all thumbnails move below the commands together');
+            for(const item of await summary.locator('.app-reference-selected-item').all()) {
+              const box=(await item.boundingBox())!;
+              assert.ok(box.x>=0 && box.x+box.width<=width, 'complete thumbnail, name and remove control remain visible');
+            }
+            const send=page.getByRole('button',{name:'Send message to Milo',exact:true});
+            if(await send.count()) {
+              const button=(await send.boundingBox())!;
+              for(const item of await summary.locator('button').all()) {
+                const box=(await item.boundingBox())!;
+                assert.ok(box.x+box.width<=button.x || box.y+box.height<=button.y || box.y>=button.y+button.height, 'send never covers a reference action');
+              }
+            }
+          }
+          await page.evaluate(refs=>(globalThis as any).replaceReferences({image_urls:refs}),assets.slice(0,3));
+          await page.getByRole('button',{name:'Remove · Image 2',exact:true}).click();
+          await expect(page.locator('.app-reference-selected-item')).toHaveCount(2);
+          assert.deepEqual(await page.locator('.app-reference-selected-item img').evaluateAll(images=>images.map(image=>image.getAttribute('src'))),['/0.svg','/2.svg']);
+          await expect(page.getByRole('dialog')).toHaveCount(0);
+          await expect(add).toBeFocused();
+          await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Keep my draft.');
+          assert.equal(await page.evaluate(()=>document.body.scrollWidth<=innerWidth),true);
+        }
+        await page.close();
+      }} finally {await browser.close();}
+    }
+  } finally {await fixture.close();}
+});

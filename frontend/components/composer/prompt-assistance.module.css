@@ -67,25 +67,28 @@
 .composer :global(.app-prompt-surface)::before, .composer :global(.app-prompt-surface)::after { display: none; }
 .composer :global(.app-prompt-surface textarea) { outline: none; box-shadow: none; }
 .manualSurface textarea:focus-visible { outline: none; box-shadow: none; }
-.root :global([data-compact-references]) { min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; border: 0; padding: 2px 0; }
+.root :global([data-compact-references]) { display: contents; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command) { flex-direction: row; min-width: 0; min-height: 44px; gap: 6px; padding: 0 8px; border-radius: 7px; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command-media) { width: 17px; height: 17px; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-add-compact) { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; flex-shrink: 0; padding: 0 3px; font-size: 12px; font-weight: 450; color: var(--text-secondary); border: 0; background: transparent; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact svg) { width: 17px; height: 17px; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact:hover) { color: var(--text-primary); }
-.root :global(.app-reference-selected-summary) { display: flex; flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 10px; margin: 0; padding: 2px 0; scrollbar-width: thin; }
+.root :global(.app-reference-selected-summary) { display: flex; flex: 0 0 auto; width: max-content; max-width: 100%; min-width: 0; flex-wrap: wrap; overflow: visible; gap: 0 8px; margin: 0; padding: 0; }
+/* References stays beside the model; the selected-media group wraps as a unit. */
+.sendRow:has([data-compact-references] :global(.app-reference-selected-summary)) .inputReferences { grid-column: 1 / -1; grid-row: 1; }
+.sendRow:has([data-compact-references] :global(.app-reference-selected-summary)) :is(.send, .sendPlaceholder) { grid-column: 2; grid-row: 1; align-self: end; }
+.sendRow:has([data-compact-references] :global(.app-reference-selected-summary)) :global(.app-reference-selected-summary)::after { content: ''; flex: 0 0 38px; width: 38px; min-width: 38px; height: 38px; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-item) { flex-shrink: 0; border: 0; border-radius: 0; background: transparent; padding: 0; gap: 4px; box-shadow: none; }
 .root :global(.app-reference-thumbnail) { width: 32px !important; height: 32px !important; min-width: 32px !important; border-radius: 5px; }
 .root :global(.app-reference-thumbnail img) { width: 100%; height: 100%; object-fit: cover; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-manage), .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-mention) { min-height: 44px; padding: 0; background: transparent; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-manage) { position: relative; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove) { position: static; transform: none; flex: none; width: 24px; min-width: 24px; height: 44px; min-height: 44px !important; padding: 0; border: 0; border-radius: 5px; background: transparent; color: var(--text-muted); opacity: .7; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove > span) { font-size: 16px; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove:hover), .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove:focus-visible) { opacity: 1; background: var(--surface-2); color: var(--text-primary); }
 .root :global(.app-reference-edit-hint) { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; background: rgb(0 0 0 / .55); color: #fff; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
 .root :global(.app-reference-selected-manage:hover .app-reference-edit-hint), .root :global(.app-reference-selected-manage:focus .app-reference-edit-hint) { opacity: 1; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-more) { flex: none; padding: 0 5px; border: 0; background: transparent; color: var(--text-secondary); }
-@media (max-width: 767px) {
-  .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-summary) { display: contents; }
-  .root[data-prompt-assistance-preview] :global([data-compact-references]) { column-gap: 8px; row-gap: 0; }
-}
 .root :global(.app-reference-required), .root :global(.app-reference-restrictions), .root :global([data-subject-references]) { flex-basis: 100%; }
 .composer :global([data-settings-density="workspace"] button) { color: var(--text-primary); background: var(--surface-2); }
 

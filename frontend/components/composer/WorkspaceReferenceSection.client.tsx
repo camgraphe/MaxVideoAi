@@ -100,6 +100,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
     onOpenLibrary?.(field, slotIndex);
   };
   return <section className="app-workspace-references" data-compact-references={compact || undefined} data-extension-workflow={extensionWorkflow || undefined} aria-label={copy.title}>
+    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null}
     <div className="app-reference-commands" hidden={compact && !requiredSourceMissing}>
         {sourceEntry ? <button ref={(node) => { if (node) commandRefs.current.set(sourceEntry.field.id, node); else commandRefs.current.delete(sourceEntry.field.id); }}
           type="button" className={`app-reference-command${sourceAvailability.addDisabled ? ' is-add-disabled' : ''}`}
@@ -138,7 +139,6 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
         </button> : null}
         {!compact ? assetFields.map((entry) => entry.headerAction ? <span key={entry.field.id}>{entry.headerAction}</span> : null) : null}
     </div>
-    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><WorkspaceComposerGlyph name="add" /><span>{copy.title}</span></button> : null}
     {!compact ? workflowNotices.map(note=><p key={note.code} role="note" className="text-xs text-text-muted">{note.message}</p>) : null}
     {restrictionReasons.length ? <div id={restrictionId} className="app-reference-restrictions" aria-live="polite">
       {restrictionReasons.map((reason) => <p key={reason}>{referenceAuthAction?.label === reason
@@ -169,7 +169,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
         {!compact && excerptMode && canSelectRange(entry.field.id) && (asset.status === 'ready' || asset.excerptEditing) ? <VideoExcerptControl
           key={`${engine.id}:${excerptMode}:${entry.field.id}:${slotIndex}`} engine={engine} field={entry.field} index={slotIndex} asset={asset} mode={excerptMode} locale={locale}
           onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange} /> : null}
-        {!compact && onAssetRemove ? <button className="app-reference-selected-remove" type="button" onClick={() => removeAsset(entry.field, slotIndex)} aria-label={`${copy.remove} · ${label} · ${asset.name}`} title={`${copy.remove} · ${label}`}>
+        {onAssetRemove ? <button className="app-reference-selected-remove" type="button" onClick={() => removeAsset(entry.field, slotIndex)} aria-label={compact ? `${copy.remove} · ${label}` : `${copy.remove} · ${label} · ${asset.name}`} title={`${copy.remove} · ${label}`}>
           <span aria-hidden="true">×</span>
         </button> : null}
       </div>; })}

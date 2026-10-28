@@ -35,9 +35,10 @@ test('compact references edit the correct video/audio inside the picker and pres
           if (width === 390) await page.getByRole('tab', { name: 'AI assistant', exact: true }).click();
           const summary = page.locator('.app-reference-selected-summary');
           await expect(summary).toHaveText(/Image 1.*Video 1.*Audio 1/s);
-          assert.doesNotMatch(await summary.innerText(), /20|section|private|×/);
-          await expect(summary.locator('.video-excerpt-trigger,.app-reference-selected-remove')).toHaveCount(0);
-          const referenceSection = page.locator('[data-compact-references]');
+          assert.doesNotMatch(await summary.innerText(), /20|section|private/);
+          await expect(summary.locator('.video-excerpt-trigger')).toHaveCount(0);
+          await expect(summary.locator('.app-reference-selected-remove')).toHaveCount(3);
+          const referenceSection = page.locator('[data-compact-references]').locator('..');
           const videoManage = summary.getByRole('button', { name: 'Manage · Video 1', exact: true });
           await videoManage.focus();
           await expect(videoManage).toBeFocused();
@@ -74,13 +75,12 @@ test('compact references edit the correct video/audio inside the picker and pres
           await expect(summary.locator('.app-reference-selected-item')).toHaveCount(3);
           await expect(summary.getByRole('button', { name: 'Manage · 17 References' })).toHaveText('+14');
           if (width < 768) {
-            assert.equal(await summary.evaluate(el => getComputedStyle(el).display), 'contents', 'references wrap with their command instead of scrolling');
+            assert.equal(await summary.evaluate(el => getComputedStyle(el).flexWrap), 'wrap', 'the selected-media group wraps instead of scrolling');
             for (const item of await summary.locator('button').all()) {
               const itemBox = (await item.boundingBox())!, sectionBox = (await referenceSection.boundingBox())!;
               assert.ok(itemBox.x >= sectionBox.x && itemBox.x + itemBox.width <= sectionBox.x + sectionBox.width + 1, 'every visible reference and +N stays fully inside the mobile form');
             }
-            const geometry = await referenceSection.evaluate(el => ({ width: el.clientWidth, height: el.clientHeight, children: [...el.querySelectorAll('button')].filter(b => b.getClientRects().length).map(b => ({ text: b.textContent, x: b.getBoundingClientRect().x, y: b.getBoundingClientRect().y, width: b.getBoundingClientRect().width })) }));
-            assert.ok(geometry.height <= 100, `the capped summary needs at most two compact rows: ${JSON.stringify(geometry)}`);
+            assert.ok((await summary.boundingBox())!.height <= 100, 'the capped media group needs at most two compact rows');
           }
           await summary.getByRole('button', { name: 'Manage · 17 References' }).click();
           const picker = page.getByRole('dialog', { name: 'References', exact: true });

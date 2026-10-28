@@ -4,11 +4,13 @@
 
 The prompt footer mixed reference identity, durations, removal and Choose section controls. Range-editable video/audio references also bypassed the summary limit, so adding temporal references could keep expanding the footer. On mobile, the horizontal strip concealed references beyond the viewport.
 
-The compact development preview now shows only a thumbnail and Image 1 / Video 1 / Audio 1 (or the existing frame/source role). A pencil appears over the thumbnail on hover or keyboard focus. Clicking/tapping the thumbnail opens References on the matching media type and scrolls to the corresponding slot. Where provider mentions already exist, clicking the adjacent reference name retains insertion into the prompt.
+The compact development preview shows a thumbnail, Image 1 / Video 1 / Audio 1 (or the existing frame/source role), and a small always-visible remove × next to the name. A pencil appears over the thumbnail on hover or keyboard focus. Clicking/tapping the thumbnail opens References on the matching media type and scrolls to the corresponding slot. Where provider mentions already exist, clicking the adjacent reference name retains insertion into the prompt.
 
 The first three references are shown; an actionable +N opens the remaining inventory at its first hidden reference. On mobile these controls wrap naturally without horizontal scrolling. References are never discarded by this presentation limit.
 
-Choose section, duration, replacement and removal are inside the matching inventory slot. Slot labels use the same short names as the prompt instead of long filenames. Video and audio share the existing excerpt preparation flow; opening/cancelling does not prepare an asset or generate media. Keyboard events stay inside the excerpt dialog, Escape returns to References, and the initiating button explicitly receives focus for Safari/touch return-focus consistency.
+Choose section, duration, replacement and removal are inside the matching inventory slot; removal is also available directly in the footer. Slot labels use the same short names as the prompt instead of long filenames. Video and audio share the existing excerpt preparation flow; opening/cancelling does not prepare an asset or generate media. Keyboard events stay inside the excerpt dialog, Escape returns to References, and the initiating button explicitly receives focus for Safari/touch return-focus consistency.
+
+Follow-up: References participates in the model/variant command row independently of the selected-media group. When the group no longer fits, all selected thumbnails move below the commands together and wrap without horizontal scrolling. Narrow screens can still wrap commands when their labels cannot physically fit. The summary reserves space for Milo's send button on its last row. Direct removal uses the existing asset callback and returns keyboard focus to References; it leaves the prompt intact.
 
 The reference panel and excerpt dialog retain their existing media owners and callbacks. Production reference presentation, pricing, generation, the main player and the gallery layout are unchanged.
 
@@ -30,3 +32,5 @@ Regression coverage uses synthetic media in the real Composer at 320 / 390 / 144
 Private screenshots in the task visualization directory: references-before-compact-edit.png, reference-audio-edit-panel.png, references-mobile-wrapped.png. No production generation or LLM call was made.
 
 The focused browser, excerpt, mention and composer layout checks pass (47 checks across the targeted suites). TypeScript, focused ESLint and `git diff --check` pass. The final mobile check includes the assistant at 390 px, touch access, and 17 references behind a bounded summary without horizontal clipping.
+
+The command-row/removal follow-up passes all nine cases in the model, assistance-layout and reference-editing browser suites. Its fixture exercises 1, 3 and 8 images at 320 / 390 / 600 / 1440 px in Chromium and WebKit, in both Prompt and AI assistant. It checks command stability, grouped wrapping, visible remove targets, no overlap with Send, and removal of the correct image without changing the draft. TypeScript, focused ESLint and whitespace checks also pass. Additional private screenshots: references-toolbar-remove-mobile.png and references-remove-final.png.
