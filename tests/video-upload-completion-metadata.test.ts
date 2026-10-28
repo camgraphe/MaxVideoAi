@@ -19,7 +19,9 @@ async function fixture(kind: 'multipart' | 'direct', corrupt = false, portrait =
       const output = join(directory, 'iphone.mov');
       execFileSync(requireFrontend('@ffmpeg-installer/ffmpeg').path, [
         '-v', 'error', '-i', 'tests/fixtures/studio-media/pattern-a.mp4',
-        '-c', 'copy', '-metadata:s:v:0', 'rotate=90', output,
+        // AAC edit-list handling differs between bundled FFmpeg builds (6 vs
+        // 6.022 s). Isolate rotation with video only; the other cases cover audio.
+        '-an', '-c', 'copy', '-metadata:s:v:0', 'rotate=90', output,
       ], { timeout: 15_000 });
       source = await readFile(output);
     } finally { await rm(directory, { recursive: true, force: true }); }
@@ -104,7 +106,7 @@ for (const kind of ['multipart', 'direct'] as const) {
     const response = await run();
     assert.equal(response.status, 200);
     const { asset } = await response.json();
-    assert.deepEqual(asset.mediaFacts, { ...expectedFacts, width: 180, height: 320 });
+    assert.deepEqual(asset.mediaFacts, { ...expectedFacts, width: 180, height: 320, hasAudio: false });
     assert.equal(state.canonical[0].width, 180); assert.equal(state.canonical[0].height, 320);
     assert.equal(asset.url, state.url); assert.equal(asset.mime, 'video/quicktime');
     if (kind === 'multipart') assert.deepEqual(state.uploads[0].data, state.bytes);
