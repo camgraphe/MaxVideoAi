@@ -12,6 +12,9 @@ import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/comp
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
+import { ComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
+import { WorkspaceComposerModel } from '@/components/composer/WorkspaceComposerModel.client';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
@@ -249,7 +252,7 @@ export function ImageWorkspaceComposerSurface({
       <WorkspaceCreationHeading media="image" />
       {/* History can replace the preview without remounting the open model picker. */}
       <div className="min-w-0">
-        <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
+        {!PROMPT_ASSISTANCE_PREVIEW ? <section className="app-model-strip app-image-model-strip">{engineSettings}</section> : null}
         {!compositePreviewEntry ? (
           <div className="mt-1">
             {starterPreview && starterNavigation
@@ -277,6 +280,9 @@ export function ImageWorkspaceComposerSurface({
         )}
       </div>
 
+      <ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={engineCapsList} engineId={selectedEngineId}
+        onEngineChange={setEngineId} mode={mode} onModeChange={nextMode => setMode(nextMode as ImageGenerationMode)}
+        modeOptions={['t2i', 'i2i']} picker={modelPicker} />}>
       <form onSubmit={handleRun} className="app-image-composer space-y-4">
         {statusMessage ? (
           <p
@@ -483,6 +489,7 @@ export function ImageWorkspaceComposerSurface({
           }
         />
       </form>
+      </ComposerWorkspaceControls>
     </div>
   );
 }

@@ -37,6 +37,7 @@ test('proposal action stays outside its disclosure; chat keyboard does not submi
     assert.equal(document.querySelector('[data-assistance-transcript]')!.contains(apply), false);
     await click('[data-assistance-apply]'); assert.equal(applied, 1);
     await click('[data-assistance-expand]');
+    assert.equal((document.querySelector('[data-assistance-transcript]') as HTMLElement).hidden, true, 'Review replaces the transcript within the existing conversation stage');
     assert.equal((document.querySelector('[data-assistance-editor]') as HTMLTextAreaElement).value, props.proposal.text);
     assert.equal(document.querySelector('[data-assistance-body]')!.contains(apply), false);
     const message = document.querySelector('[data-assistance-message]') as HTMLTextAreaElement;

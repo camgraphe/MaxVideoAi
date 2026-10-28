@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
-import { ComposerModeSwitch } from '@/components/composer/ComposerModeSwitch.client';
+import { ComposerCommandBar, useComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
@@ -93,6 +93,7 @@ export function Composer({
 }: ComposerProps) {
   const { t, locale } = useI18n();
   const promptId = useId();
+  const workspaceControls = useComposerWorkspaceControls();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
   const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
@@ -416,10 +417,10 @@ export function Composer({
       )}
     >
       <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && !visibleModeToggles && !workspaceControls && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
-            {visibleModeToggles ? (
-              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
+            {visibleModeToggles || workspaceControls ? (
+              <ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity}
                 activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
             ) : null}
             <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
@@ -427,6 +428,7 @@ export function Composer({
         </div>
 
         {beforeAssets}
+        {!assistanceEnabled ? workspaceControls?.modelControl : null}
         {!assistanceEnabled ? renderReferences() : null}
 
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice

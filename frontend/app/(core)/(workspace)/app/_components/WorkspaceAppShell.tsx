@@ -15,6 +15,9 @@ import { GalleryRailSkeleton } from './WorkspaceBootSkeletons';
 import { WorkspaceCenterGallery } from './WorkspaceCenterGallery';
 import { WorkspaceChrome } from './WorkspaceChrome';
 import { WorkspacePreviewDock } from './WorkspacePreviewDock';
+import { ComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
+import { WorkspaceComposerModel } from '@/components/composer/WorkspaceComposerModel.client';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 
 const GalleryRail = dynamic<GalleryRailProps>(
   () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
@@ -201,6 +204,7 @@ export function WorkspaceAppShell({
           onEngineChange={handleEngineChange}
           modelReviewCommands={modelReviewCommands}
           modelPicker={modelPicker}
+          hideModelStrip={PROMPT_ASSISTANCE_PREVIEW}
           onModeChange={handleModeChange}
           disabledEngineReasons={disabledEngineReasons}
           engineScores={engineScores}
@@ -210,7 +214,11 @@ export function WorkspaceAppShell({
           setViewerTarget={setViewerTarget}
         />
         {previewSupplement}
-        <div {...recentDropProps}>{composerSurface}</div>
+        <ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={engines} engineId={engineId}
+          onEngineChange={handleEngineChange} mode={activeMode} onModeChange={handleModeChange} modeOptions={engineModeOptions}
+          picker={modelPicker} disabledEngineReasons={disabledEngineReasons} engineScores={engineScores} engineScoreReviews={engineScoreReviews} />}>
+          <div {...recentDropProps}>{composerSurface}</div>
+        </ComposerWorkspaceControls>
       </div>
     </WorkspaceChrome>
   );

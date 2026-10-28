@@ -5,19 +5,22 @@ import { usePathname } from 'next/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { AppGlyph } from './AppGlyph';
 import { APP_ACTIVITIES, appNavLabel, getAppNavigation, getAppNavigationSelection } from './app-navigation';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 
-export function AppNavigation({ variant, studioVisible = false }: {
+export function AppNavigation({ variant, studioVisible = false, placement = 'page' }: {
   variant: 'rail' | 'mobile' | 'activities';
   studioVisible?: boolean;
+  placement?: 'page' | 'composer';
 }) {
   const pathname = usePathname();
   const { locale } = useI18n();
   const selection = getAppNavigationSelection(pathname, undefined, studioVisible);
   if (variant === 'activities' && !selection.activity) return null;
+  if (variant === 'activities' && placement === 'page' && PROMPT_ASSISTANCE_PREVIEW && ['video', 'image'].includes(selection.activity ?? '')) return null;
   const activities = variant === 'activities';
   const label = activities ? (locale === 'fr' ? 'Type de création' : locale === 'es' ? 'Tipo de creación' : 'Creation type') : (locale === 'fr' ? 'Navigation principale' : locale === 'es' ? 'Navegación principal' : 'Primary navigation');
   return (
-    <nav className={`app-navigation app-navigation-${variant}`} aria-label={label}>
+    <nav className={`app-navigation app-navigation-${variant}`} data-placement={placement} aria-label={label}>
       {(activities ? APP_ACTIVITIES : getAppNavigation(undefined, studioVisible)).map((item) => (
         <Link
           key={item.id}

@@ -44,7 +44,7 @@ export function WorkspacePreviewDock({
   disabledEngineReasons,
   engineScores,
   engineScoreReviews,
-  modelReviewCommands, modelPicker,
+  modelReviewCommands, modelPicker, hideModelStrip = false,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -68,6 +68,7 @@ export function WorkspacePreviewDock({
   engineScores?: Record<string, number>;
   engineScoreReviews?: import('@/types/engines').EngineScoreReviews;
   modelReviewCommands?: ReactNode;
+  hideModelStrip?: boolean;
   modelPicker?: import('@/components/ui/engine-select/model-picker-types').EnginePickerContext;
   renderGroups: ReadonlyMap<string, unknown>;
   compositeOverrideSummary: GroupSummary | null;
@@ -96,9 +97,9 @@ export function WorkspacePreviewDock({
   );
   // A local illustration reserves the result location without mounting a media reader.
   if (!group && !isLoading) {
-    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
+    return <>{!hideModelStrip ? <section className="app-model-strip rounded-card border border-border bg-surface shadow-card">
       <div className="px-4 py-1">{engineSettings}</div>
-    </section><WorkspaceEmptyPreview media="video" /></>;
+    </section> : null}<WorkspaceEmptyPreview media="video" /></>;
   }
 
   return (
@@ -111,7 +112,7 @@ export function WorkspacePreviewDock({
       onCopyPrompt={hasSharedVideoSettings ? undefined : sharedPrompt ? onCopySharedPrompt : undefined}
       showTitle={false}
       guidedNavigation={guidedNavigation}
-      engineSettings={engineSettings}
+      engineSettings={hideModelStrip ? undefined : engineSettings}
       onOpenModal={(nextGroup) => {
         if (!nextGroup) return;
         if (renderGroups.has(nextGroup.id)) {
