@@ -272,7 +272,7 @@ test('rendered editorial sections expose localized FAQs, account requirements, a
   assert.doesNotMatch(viewSource, /McpAnswerPassagesSection/);
 });
 
-test('AI search crawlers can read public content while training crawlers and private surfaces remain blocked', () => {
+test('AI search and explicitly qualified training access stay separate from private and other blocked crawlers', () => {
   const groups = parseRobotsGroups(buildRobotsText('public'));
   const groupFor = (agent: string) => groups.find((group) => group.agents.includes(agent));
   const privateRules = ['Disallow: /api/', 'Disallow: /oauth', 'Disallow: /account', 'Disallow: /uploads', 'Disallow: /library'];
@@ -283,7 +283,16 @@ test('AI search crawlers can read public content while training crawlers and pri
     assert.ok(group.rules.includes('Allow: /'), `${agent} should be allowed on public content`);
     for (const rule of privateRules) assert.ok(group.rules.includes(rule), `${agent} should retain ${rule}`);
   }
-  for (const agent of ['GPTBot', 'ClaudeBot', 'anthropic-ai', 'CCBot']) {
+  for (const agent of ['GPTBot', 'ClaudeBot']) {
+    const group = groupFor(agent);
+    assert.ok(group, `${agent} should have its own bounded training policy`);
+    assert.ok(group.rules.includes('Disallow: /'));
+    assert.ok(group.rules.includes('Allow: /$'));
+    assert.ok(group.rules.includes('Allow: /docs/mcp$'));
+    assert.equal(group.rules.includes('Allow: /'), false);
+    for (const rule of privateRules) assert.ok(group.rules.includes(rule));
+  }
+  for (const agent of ['anthropic-ai', 'Claude-Web', 'CCBot', 'Bytespider', 'cohere-ai']) {
     const group = groupFor(agent);
     assert.ok(group, `${agent} should have an explicit training-crawler policy`);
     assert.ok(group.rules.includes('Disallow: /'), `${agent} should be blocked from training crawl`);

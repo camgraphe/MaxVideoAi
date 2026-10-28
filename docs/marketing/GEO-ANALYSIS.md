@@ -61,7 +61,14 @@ Treat the public v0.3.3 tree and release assets as installation and publication 
 | ChatGPT search and app discovery | 91/100 | Dedicated live intent owner, direct MCP as the primary live route, allowed retrieval crawlers, synchronized public plugin repository, tagged releases, and richer agent-readable GitHub passages. | Exact-host evidence and observed citation data remain outstanding. OpenAI directory submission remains `do_not_submit` / `policy_blocked` under the current commerce policy; it is not a pending acquisition milestone. |
 | Perplexity | 78/100 | Concise source passages, synchronized public repository identity, current visual evidence, localized technical guide, and crawler access are ready. | No earned community validation, authoritative listing, or observed citation data. |
 
-## AI Crawler Access Status
+## AI Crawler Access Status (16 September snapshot)
+
+Policy decision update, 28 October 2026: GPTBot and ClaudeBot now have a separately
+approved, deny-by-default policy for exact qualified public page and rendering
+targets. See [the versioned policy and maintenance contract](../seo/ai-training-policy.md).
+The bullets below preserve the September observation; they do not describe that
+later policy decision. Search/retrieval, Google-Extended and other training agents
+retain their existing directives.
 
 The public robots policy intentionally separates search/retrieval from training:
 
