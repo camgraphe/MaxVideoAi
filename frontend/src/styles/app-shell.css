@@ -159,6 +159,10 @@
 .app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"]::after { content: none; }
 @media (min-width: 768px) {
   .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 240px; align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
+  .app-experience .app-results-rail [data-gallery-header-in-navigation] { padding-top: 0; }
+  /* Match the preview's 8 px media inset once the rail title moves into navigation. */
+  .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-grid { margin-top: 0; padding-top: 8px; }
+  .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 8px; }
 }
 @media (min-width: 900px) { .app-experience .app-creation-topbar-rail { flex-basis: 272px; } }
 @media (min-width: 1088px) { .app-experience .app-creation-topbar-rail { flex-basis: 320px; padding-inline: 21px; } }

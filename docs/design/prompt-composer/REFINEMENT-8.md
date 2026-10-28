@@ -42,3 +42,9 @@ Gallery props and feed-state types now live in `gallery-rail-types.ts`, re-expor
 ## Follow-up — clearer creation-mode affordance
 
 Video / Image / Audio now use 13 px medium text and 18 px icons, with a softly filled rounded selection and a visible neutral hover. The selected fill replaces the media underline; Activity / Recents keep their lighter underline treatment. The bar still measures 45 px with 44 px click targets and no additional row. The existing browser suite passes at 320 / 390 / 768 / 1440 px, including navigation between all three media routes and production-off behavior. Live preview and diff checks pass. Private capture: `creation-mode-highlight.png`.
+
+## Follow-up — align the first gallery card with the preview
+
+Removing the desktop title had left 24 px of extra inset above the gallery. Rails whose header lives in navigation now remove the old aside top padding and list margin, and use the same 8 px media inset as the preview. The custom scrollbar follows that inset. Mobile spacing and rails with their original header are unaffected.
+
+Live measurements at 768 / 900 / 1171 / 1440 px put both the preview and first card at y=137 px, compared with 137 / 161 before the fix. The scrollbar also starts at 137 px; 390 px retains the mobile layout without horizontal overflow. Thirteen gallery and architecture checks, focused ESLint and diff checks pass. The sample-selection contract now reads the previously extracted props from `gallery-rail-types.ts`. Private capture: `gallery-preview-top-alignment.png`.

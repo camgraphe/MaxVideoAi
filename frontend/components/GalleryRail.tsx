@@ -431,7 +431,7 @@ export function GalleryRail({
         {cards}
       </div>
       {isDesktopVariant && showRail ? (
-        <div className="absolute right-2 top-3">
+        <div className="app-gallery-rail-scrollbar absolute right-2 top-3">
           <div
             ref={railTrackRef}
             className="relative w-[4px] cursor-pointer touch-none rounded-full bg-brand/25"
@@ -464,11 +464,11 @@ export function GalleryRail({
   return (
     <>
       {responsiveVariant ? (
-        <aside aria-label={hideDesktopHeader ? copy.title : undefined} className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
+        <aside data-gallery-header-in-navigation={hideDesktopHeader || undefined} aria-label={hideDesktopHeader ? copy.title : undefined} className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
           {content}
         </aside>
       ) : isDesktopVariant ? (
-        <aside aria-label={hideDesktopHeader ? copy.title : undefined} className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
+        <aside data-gallery-header-in-navigation={hideDesktopHeader || undefined} aria-label={hideDesktopHeader ? copy.title : undefined} className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
           {content}
         </aside>
       ) : (
