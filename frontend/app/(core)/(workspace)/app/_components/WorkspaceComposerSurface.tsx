@@ -10,7 +10,7 @@ import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type MultiPromptScene } from '@/components/Composer';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
-import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
+import { SeedanceDraftSettingsNotice } from './SeedanceDraftSettingsNotice.client';
 import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
@@ -667,19 +667,8 @@ export function WorkspaceComposerSurface({
           </>
         ) : undefined}
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
-        settingsNotice={localDraftPreview ? (
-          <div className="mt-2 border-t border-hairline pt-2">
-            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} locale={uiLocale} />
-            <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
-              {localDraftPreview.selected
-                ? draftSettingsLocked
-                  ? draftCopy.locked
-                  : draftCopy.selected
-                : draftCopy.inactive}
-            </p>
-            {!localDraftPreview.live ? <p className="mt-1 text-[10px] text-text-muted">{draftCopy.prototype}</p> : null}
-          </div>
-        ) : undefined}
+        settingsNotice={<SeedanceDraftSettingsNotice controls={localDraftPreview} locale={uiLocale}
+          setup={{ engineId: selectedEngine.id, mode: submissionMode, iterations: form.iterations, aspectRatio: form.aspectRatio }} />}
         settingsBar={ownedGenerationRequired && !form.extraInputValues.source_job_id ? undefined : (
           <>
             <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? draftCopy.lockTitle : undefined}>

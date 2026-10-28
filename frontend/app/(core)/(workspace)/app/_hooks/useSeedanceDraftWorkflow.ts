@@ -7,6 +7,7 @@ import { useSeedanceWorkflowView } from '@/hooks/useSeedanceWorkflowView';
 import type { SeedanceWorkflowAccount } from '@/hooks/useSeedanceWorkflowAccount';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
 import { SEEDANCE_WORKFLOW_ASPECT_RATIOS } from '@/lib/seedance-workflow-contract';
+import { supportsSeedanceDraftSetup } from '@/lib/seedance-draft-setup';
 import type { AspectRatio, Mode, PreflightMediaInput } from '@/types/engines';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
 import type { FormState } from '../_lib/workspace-form-state';
@@ -28,8 +29,7 @@ function restoreAttempt(userId: string, jobId: string): Attempt | null {
 export function useSeedanceDraftWorkflow(options: Options) {
   const { enabled, form, engineId, mode, prompt, account } = options;
   const aspectRatio = form && (form.aspectRatio === 'auto' || SEEDANCE_WORKFLOW_ASPECT_RATIOS.includes(form.aspectRatio as AspectRatio)) ? form.aspectRatio as AspectRatio : null;
-  const supportedMode = ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'].includes(mode);
-  const available = Boolean(enabled && form && (aspectRatio || mode === 'i2v' || mode === 'v2v') && engineId === 'seedance-2-5' && supportedMode && form.iterations === 1);
+  const available = Boolean(enabled && form && supportsSeedanceDraftSetup({ engineId, mode, iterations: form.iterations, aspectRatio: form.aspectRatio }));
   const [selected, setSelected] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [attempt, setAttempt] = useState<Attempt | null>(null);

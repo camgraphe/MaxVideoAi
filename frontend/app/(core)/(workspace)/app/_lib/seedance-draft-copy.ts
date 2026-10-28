@@ -2,6 +2,7 @@ const COPY = {
   en: {
     enable: 'Enable Draft · 480p → final 1080p',
     tooltip: 'Prepare a Draft in 480p, then choose to finalize in 1080p. Two separately paid generations.',
+    previewUnavailable: 'Draft generation is not enabled in this local preview.',
     generated: 'Draft ready',
     locked: 'Duration, ratio and audio are retained for the final 1080p. Start a new Draft to change these settings.',
     lockTitle: 'Settings retained for final 1080p',
@@ -12,6 +13,7 @@ const COPY = {
   fr: {
     enable: 'Activer Draft · 480p → final 1080p',
     tooltip: 'Préparez une première version en Draft 480p, puis choisissez de la finaliser en 1080p. Deux générations payantes distinctes.',
+    previewUnavailable: 'La génération Draft n’est pas activée dans cette prévisualisation locale.',
     generated: 'Draft généré',
     locked: 'Durée, format et audio conservés pour le final 1080p. « Nouveau Draft » permet de changer ces réglages.',
     lockTitle: 'Réglages conservés pour le final 1080p',
@@ -22,6 +24,7 @@ const COPY = {
   es: {
     enable: 'Activar Draft · 480p → final 1080p',
     tooltip: 'Prepara un Draft en 480p y después elige finalizarlo en 1080p. Dos generaciones con cobros separados.',
+    previewUnavailable: 'La generación Draft no está activada en esta vista previa local.',
     generated: 'Draft listo',
     locked: 'Se conservan la duración, el formato y el audio para el final 1080p. Inicia un nuevo Draft para cambiar estos ajustes.',
     lockTitle: 'Ajustes conservados para el final 1080p',
