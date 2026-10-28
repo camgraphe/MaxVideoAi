@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createIsbotFromList, list as botPatterns } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
+import { isEnglishOnlyMarketingPath } from '@/lib/i18n/marketing-page-fallback';
 import mcpPublication from '@/config/mcp-publication.json';
 import { FEATURES } from '@/content/feature-flags';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
@@ -186,7 +187,9 @@ export async function middleware(req: NextRequest) {
 
   if (isMarketingPath) {
     const defaultPrefix = localePathnames[defaultLocale];
-    if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
+    if (isEnglishOnlyMarketingPath(pathname)) {
+      response = NextResponse.next();
+    } else if ((isBotRequest || bypassLocaleRedirect) && !hasLocalePrefix(pathname)) {
       if (defaultPrefix) {
         const rewriteUrl = req.nextUrl.clone();
         const suffix = pathname === '/' ? '' : pathname;

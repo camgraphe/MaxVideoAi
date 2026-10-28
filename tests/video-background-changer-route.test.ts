@@ -5,6 +5,7 @@ import { buildMarketingLocaleSwitchHref } from '../frontend/lib/i18n/marketing-l
 import { resolveLangParamRedirect } from '../frontend/lib/middleware/routing-locale.ts';
 import { buildLoginHref } from '../frontend/lib/auth-entry-href.ts';
 import { safeInternalReturnTarget } from '../frontend/lib/auth-return-target.ts';
+import { middleware } from '../frontend/middleware.ts';
 
 test('the English-only background changer sends language choices to real tools hubs without stale section anchors', () => {
   for (const [targetLocale, expected] of [['fr', '/fr/outils?utm_source=review&lang=fr'], ['es', '/es/herramientas?utm_source=review&lang=es']] as const) {
@@ -44,4 +45,26 @@ test('the prepared page metadata announces only its actual English URL and binds
   assert.equal(media.result.poster, 'https://media.maxvideoai.com/authored/video-background-changer/80f864726dafe8184adc8ba587193603bfa7a7e1828a36a38744a5db903c537a.webp');
   assert.equal(media.source.durationSec, 6);
   assert.equal(media.result.durationSec, 6.037007);
+});
+
+
+test('the English-only public page reaches its authored route for real visitors without an absent locale-prefixed rewrite', async () => {
+  for (const [host, agent, cookie] of [
+    ['maxvideoai.com', 'Mozilla/5.0 Chrome/130.0 Safari/537.36', 'NEXT_LOCALE=fr'],
+    ['maxvideoai-j8g9fadgj-camgraphes-projects.vercel.app', 'Mozilla/5.0 Chrome/130.0 Safari/537.36', 'NEXT_LOCALE=es'],
+    ['maxvideoai.com', 'Googlebot', ''],
+    ['localhost:8792', 'Mozilla/5.0 Chrome/130.0 Safari/537.36', ''],
+  ]) {
+    const request = new NextRequest(`https://${host}/tools/video-background-changer`, {
+      headers: { host, 'user-agent': agent, cookie },
+    });
+    const response = await middleware(request);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('location'), null);
+    assert.equal(response.headers.get('x-middleware-rewrite'), null, `${host} must reach the actual English-only route`);
+  }
+  const existing = await middleware(new NextRequest('https://maxvideoai.com/tools/character-builder', {
+    headers: { host: 'maxvideoai.com', 'user-agent': 'Mozilla/5.0 Chrome/130.0 Safari/537.36' },
+  }));
+  assert.equal(new URL(existing.headers.get('x-middleware-rewrite')!).pathname, '/en/tools/character-builder');
 });
