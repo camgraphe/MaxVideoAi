@@ -6,6 +6,7 @@ import { promptAssistanceCopy } from './prompt-assistance-copy';
 import styles from './prompt-assistance.module.css';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
+import { MiloReasoningSelect, type MiloReasoning } from './MiloReasoningSelect.client';
 
 export function PromptAssistanceComposer({ context, locale, modelLabel, draftText, onApplyText, children, renderReferences, modeControl, target = 'prompt', maxLength, blocked, disabledReason }: {
   context: PromptAssistanceContext; locale: string; modelLabel: string; draftText: string;
@@ -20,6 +21,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const id = useId();
   const [copied, setCopied] = useState(false);
   const [expandedConversation, setExpandedConversation] = useState(false);
+  const [reasoning, setReasoning] = useState<MiloReasoning>('standard');
   const controls = useComposerWorkspaceControls();
   const milo = state.mode === 'milo' && !disabledReason;
   const frame = useRef<HTMLDivElement>(null);
@@ -63,6 +65,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
       {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
+        reasoningControl={<MiloReasoningSelect locale={locale} value={reasoning} onChange={setReasoning} />}
         conversationControl={<button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button>}
         message={state.message} pending={Boolean(state.pending)} blocked={blocked} maxLength={maxLength} messageRef={controller.input}
         onMessageChange={text => dispatch({ type: 'message', text })} onSend={controller.send} onProposalTextChange={text => dispatch({ type: 'edit', text })} onApply={controller.apply}

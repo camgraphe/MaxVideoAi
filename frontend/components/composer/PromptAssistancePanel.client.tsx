@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } fr
 import { ArrowUp, ArrowLeft, Sparkles } from 'lucide-react';
 import type { PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
+import { composerModelLabel } from './composer-model-label';
 import styles from './prompt-assistance.module.css';
 
 export type PromptAssistancePanelProps = {
@@ -14,9 +15,10 @@ export type PromptAssistancePanelProps = {
   onCopy: () => void; references?: ReactNode; messageRef?: RefObject<HTMLTextAreaElement>;
   modelControl?: ReactNode;
   conversationControl?: ReactNode;
+  reasoningControl?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, reasoningControl }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -34,7 +36,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
   return <div className={styles.panel} data-assistance-empty={!hasConversation || undefined}>
-    <div className={styles.assistant}><div className={styles.assistantIdentity}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>{hasConversation ? conversationControl : null}</div>
+    <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={modelLabel}>{copy.forModel} {composerModelLabel(modelLabel)}</span></div>{hasConversation ? conversationControl : null}</div>
     <div className={styles.conversationStage} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">

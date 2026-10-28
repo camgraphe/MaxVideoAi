@@ -48,3 +48,13 @@ Video / Image / Audio now use 13 px medium text and 18 px icons, with a softly f
 Removing the desktop title had left 24 px of extra inset above the gallery. Rails whose header lives in navigation now remove the old aside top padding and list margin, and use the same 8 px media inset as the preview. The custom scrollbar follows that inset. Mobile spacing and rails with their original header are unaffected.
 
 Live measurements at 768 / 900 / 1171 / 1440 px put both the preview and first card at y=137 px, compared with 137 / 161 before the fix. The scrollbar also starts at 137 px; 390 px retains the mobile layout without horizontal overflow. Thirteen gallery and architecture checks, focused ESLint and diff checks pass. The sample-selection contract now reads the previously extracted props from `gallery-rail-types.ts`. Private capture: `gallery-preview-top-alignment.png`.
+
+## Follow-up — Milo assistance levels
+
+The existing 44 px identity row now offers `Milo Standard ▾` beside the short generation-model name. The lightweight menu contains Lite (simple prompts), Standard (everyday creation) and Max (complex ideas). It reuses the shared keyboard-accessible SelectMenu with a viewport-constrained portal, and does not add a row or move the writing area. Selection survives switching between Prompt and AI assistant; drafts and conversation are retained.
+
+This is a development-preview preference only. It does not change simulated replies, call a provider, debit credits or alter the media generation price. The implementation remains behind the existing development-only assistance flag.
+
+Provider hypotheses from Adrien, to benchmark before wiring or pricing: Lite → Luna with high reasoning; Standard → Terra with high reasoning; Max → Sol with very high reasoning or Astra at standard reasoning. These are not validated API identifiers or supported effort settings. Compare prompt quality for the selected media model, latency, input/output/reasoning usage and cost across the same briefs before deciding exact routing and credit consumption. Preserve the existing Milo credit system when connecting real assistance.
+
+Eight focused composer, layout and panel checks pass, including Chromium/WebKit at 320 / 390 / 1440 px, keyboard selection and Escape, preserved manual/unsent drafts, and stable empty-frame geometry. TypeScript, focused ESLint and diff checks pass. The authenticated 390 px menu measures 186 px high, has no horizontal overflow, and retains only 4 px padding around its options. Private captures: `milo-level-selector.png` and `milo-level-mobile.png`. No generation or LLM call was made.

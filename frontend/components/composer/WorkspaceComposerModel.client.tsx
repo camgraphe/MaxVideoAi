@@ -5,13 +5,14 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import type { EngineSelectProps } from '@/components/ui/engine-select/engine-select-types';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { composerModelLabel } from './composer-model-label';
 import styles from './prompt-assistance.module.css';
 
 export function WorkspaceComposerModel(props: EngineSelectProps) {
   const { locale } = useI18n();
   const model = props.engines.find(engine => engine.id === props.engineId);
   const fullName = model?.label ?? props.engineId;
-  const buttonName = model?.id === 'seedance-2-0-mini' ? 'Seedance 2 Mini' : fullName;
+  const buttonName = composerModelLabel(fullName);
   const label = locale.startsWith('fr') ? 'Changer de modèle' : locale.startsWith('es') ? 'Cambiar modelo' : 'Change model';
   return <EngineSelect {...props} showModeSelect={false} showBillingNote={false} className={styles.modelControl}
     trigger={{ label: `${label}: ${fullName}`, className: styles.modelTrigger, variantClassName: styles.variantTrigger,
