@@ -26,6 +26,7 @@ type ControlOption = {
 };
 
 interface ImageWorkspaceComposerSurfaceProps {
+  assistanceAccountId?: string | null;
   starterPreview?: StarterMedia | null;
   starterNavigation?: ImageStarterNavigation;
   advancedSettingsTitle: string;
@@ -123,6 +124,7 @@ interface ImageWorkspaceComposerSurfaceProps {
 }
 
 export function ImageWorkspaceComposerSurface({
+  assistanceAccountId,
   starterPreview,
   starterNavigation,
   advancedSettingsTitle,
@@ -287,6 +289,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
+          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, selectedEngineId, mode]), contextKey: JSON.stringify([aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}

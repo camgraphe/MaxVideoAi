@@ -481,6 +481,7 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
+        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, form.mode]), contextKey: JSON.stringify(form) }}
         density="workspace"
         engine={selectedEngine}
         caps={capability}

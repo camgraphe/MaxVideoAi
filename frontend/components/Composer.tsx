@@ -26,6 +26,9 @@ import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
+import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
+import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
 import type { ComposerProps } from '@/components/composer/composer-types';
 
 export type {
@@ -38,7 +41,7 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
-  density = 'default', compactPrompt = false,
+  density = 'default', compactPrompt = false, assistance,
   engine,
   caps,
   prompt,
@@ -92,6 +95,7 @@ export function Composer({
   const promptId = useId();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const composerCopy = useMemo<ComposerCopy>(() => {
@@ -318,29 +322,9 @@ export function Composer({
               </div>
             ) : null;
 
-  return (
-    <Card
-      data-composer-density={density}
-      className={clsx(
-        'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
-        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
-      )}
-    >
-      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3">
-            {visibleModeToggles ? (
-              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
-                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
-            ) : null}
-            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
-          </div>
-        </div>
-
-        {beforeAssets}
-        {workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
-          <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
-            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? referenceMentions.insert : undefined}
+  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
+          <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
@@ -348,11 +332,8 @@ export function Composer({
             onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
           {showSoraImageWarning ? <ComposerSoraImageNotice workspace /> : null}
           {afterAssets}
-        </> : null}
-
-        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
-          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
-
+        </> : null;
+  const promptEditor = (
         <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
               className={clsx(
@@ -424,6 +405,36 @@ export function Composer({
             {!workspaceDensity ? composerToolbar : null}
           </div>
         </div>
+  );
+  return (
+    <Card
+      data-composer-density={density}
+      className={clsx(
+        assistanceEnabled && assistanceStyles.composer,
+        'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
+        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
+      )}
+    >
+      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
+        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1 space-y-3">
+            {visibleModeToggles ? (
+              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
+                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
+            ) : null}
+            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
+          </div>
+        </div>
+
+        {beforeAssets}
+        {!assistanceEnabled ? renderReferences() : null}
+
+        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
+          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
+
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, scopeKey: JSON.stringify([assistance.scopeKey, engine.id, activeManualMode]), contextKey: JSON.stringify([assistance.contextKey, assets, negativePrompt, multiPrompt?.scenes]) }}
+          locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
+          disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
 
         {!workspaceDensity && assetFields.length > 0 ? (

@@ -22,9 +22,9 @@ import { getVideoWorkflowSourceField, videoModifyCopy, type VideoSourceWorkflow 
 import { ReferenceThumbnail } from './ReferenceThumbnail.client';
 import { buildReferenceMentions, selectedReferenceLabel, referenceMentionCopy, type ReferenceMention } from './workspace-reference-mentions';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction' | 'subjectReferences'> & { referenceWarning: string; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction' | 'subjectReferences'> & { referenceWarning: string; compact?: boolean; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
 
-export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, subjectReferences, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
+export function WorkspaceReferenceSection({ compact = false, assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, subjectReferences, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const mentionCopy = referenceMentionCopy(locale);
@@ -52,9 +52,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
   const collections = assetFields.filter((entry) => !getWorkspaceFrameCommand(entry, engine) && entry !== sourceEntry);
   const orderedFrames = [...frames].sort((a, b) => Number(getWorkspaceFrameCommand(a, engine) === 'end') - Number(getWorkspaceFrameCommand(b, engine) === 'end'));
   const selected = assetFields.flatMap((entry) => (assets[entry.field.id] ?? []).flatMap((asset, slotIndex) => asset ? [{ entry, asset, slotIndex }] : []));
-  const selectedCollections = selected.filter(({ entry }) => !getWorkspaceFrameCommand(entry, engine));
+  const selectedCollections = compact ? selected : selected.filter(({ entry }) => !getWorkspaceFrameCommand(entry, engine));
   const visibleCollections = selectedCollections.filter(({ entry }, index) => selectedCollections.length <= 8 || index < 3 || canSelectRange(entry.field.id));
-  const collectionRequired = collections.filter((entry) => entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
+  const collectionRequired = (compact ? assetFields : collections).filter((entry) => entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
   const collectionAvailability = getReferenceCommandAvailability(collections, assets);
   const restrictionReasons = getReferenceCommandAvailability(assetFields, assets).reasons;
   if (assetFields.some((entry) => entry.disabled && !entry.disabledReason?.trim())) {
@@ -62,7 +62,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
   }
   const activeFrame = frames.find((entry) => entry.field.id === activeCommand);
   const activeSource = sourceEntry?.field.id === activeCommand ? sourceEntry : null;
-  const popupFields = activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [];
+  const popupFields = activeCommand === 'all' ? assetFields : activeSource ? [activeSource] : activeCommand === 'collections' ? collections : activeFrame ? [activeFrame] : [];
   const popupTitle = activeSource ? sourceLabel : activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title;
   const close = () => setActiveCommand(null);
   const open = (command: string, trigger: HTMLButtonElement) => {
@@ -74,6 +74,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     // Move focus before the owned state update unmounts its Remove control.
     const popup = document.activeElement?.closest('.app-reference-popup');
     if (popup) popup.querySelector<HTMLButtonElement>('[data-modal-initial-focus="true"]')?.focus();
+    else if (compact) triggerRef.current?.focus();
     else commandRefs.current.get(commandRefs.current.has(field.id) ? field.id : 'collections')?.focus();
     onAssetRemove?.(field, slotIndex);
   };
@@ -83,8 +84,9 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
     triggerRef.current?.focus();
     onOpenLibrary?.(field, slotIndex);
   };
-  return <section className="app-workspace-references" data-extension-workflow={extensionWorkflow || undefined} aria-label={copy.title}>
-    <div className="app-reference-commands">
+  return <section className="app-workspace-references" data-compact-references={compact || undefined} data-extension-workflow={extensionWorkflow || undefined} aria-label={copy.title}>
+    {compact ? <button type="button" className="app-reference-add-compact" ref={triggerRef} aria-label={copy.add} aria-haspopup="dialog" aria-expanded={activeCommand === 'all'} onClick={event => open('all', event.currentTarget)}><span aria-hidden>＋</span></button> : null}
+    <div className="app-reference-commands" hidden={compact}>
         {sourceEntry ? <button ref={(node) => { if (node) commandRefs.current.set(sourceEntry.field.id, node); else commandRefs.current.delete(sourceEntry.field.id); }}
           type="button" className={`app-reference-command${sourceAvailability.addDisabled ? ' is-add-disabled' : ''}`}
           data-reference-command={sourceEntry.field.id} data-add-disabled={sourceAvailability.addDisabled || undefined}
@@ -134,20 +136,21 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         const mention = referenceMentions.find(item => item.fieldId === entry.field.id && item.slotIndex === slotIndex);
         const sequence = mention ? Number(mention.token.match(/\d+/)?.[0] ?? 1) + (mention.token.startsWith('<IMAGE_') ? 1 : 0)
           : (assets[entry.field.id] ?? []).slice(0, slotIndex + 1).filter(Boolean).length;
-        const label = selectedReferenceLabel(engine, entry.field, asset.kind, sequence, locale, entry === sourceEntry);
+        const frameRole = getWorkspaceFrameCommand(entry, engine);
+        const label = compact && frameRole ? (locale === 'en' ? frameRole === 'start' ? 'Start image' : 'End image' : copy[frameRole]) : selectedReferenceLabel(engine, entry.field, asset.kind, sequence, locale, entry === sourceEntry);
         const canMention = Boolean(mention && onInsertMention && asset.status !== 'uploading' && asset.status !== 'error');
         return <div className="app-reference-selected-item" key={`${entry.field.id}-${slotIndex}`} data-reference-label={label}>
-        <button className="app-reference-selected-manage" type="button" title={`${label} · ${asset.name}`}
+        <button className="app-reference-selected-manage" type="button" title={compact ? undefined : `${label} · ${asset.name}`}
           onClick={() => {
-            const command = entry === sourceEntry ? entry.field.id : 'collections';
-            const trigger = commandRefs.current.get(command);
+            const command = compact ? 'all' : entry === sourceEntry ? entry.field.id : 'collections';
+            const trigger = compact ? triggerRef.current : commandRefs.current.get(command);
             if (trigger) open(command, trigger);
-          }} aria-label={`${copy.manage} · ${label} · ${asset.name}`}>
+          }} aria-label={compact ? `${copy.manage} · ${label}` : `${copy.manage} · ${label} · ${asset.name}`}>
           <ReferenceThumbnail asset={asset} />
           {!canMention ? <span>{label}</span> : null}
         </button>
         {canMention && mention ? <button className="app-reference-selected-mention" type="button" title={mentionCopy.insert(mention.token)} aria-label={mentionCopy.insert(mention.token)}
-          onClick={() => onInsertMention?.(mention.token)}><span>{label}</span><small>{mention.token}</small></button> : null}
+          onClick={() => onInsertMention?.(mention.token)}><span>{label}</span>{!compact ? <small>{mention.token}</small> : null}</button> : null}
         {typeof asset.durationSec === 'number' ? <small className="app-reference-selected-duration">{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(asset.durationSec)} s</small> : null}
         {asset.status === 'uploading' ? <small role="status">{assetCopy.uploading}</small> : asset.status === 'error' ? <small role="alert">{asset.error ?? assetCopy.uploadFailed}</small> : null}
         {excerptMode && canSelectRange(entry.field.id) && (asset.status === 'ready' || asset.excerptEditing) ? <VideoExcerptControl
@@ -167,7 +170,7 @@ export function WorkspaceReferenceSection({ assetFields, assets, engine, caps, o
         density="workspace" engine={engine} caps={caps}
         assets={assets[entry.field.id] ?? []} onSelect={onAssetAdd} onRemove={removeAsset}
         onError={onNotice} onOpenLibrary={onOpenLibrary ? openLibrary : undefined} onUrlSelect={onAssetUrlSelect} referenceWarning={referenceWarning} />} />
-      {activeCommand === 'collections' && subjectReferences ? <div className="mt-3 space-y-1 border-t border-border pt-3"><button type="button" className="app-reference-command"
+      {(activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <div className="mt-3 space-y-1 border-t border-border pt-3"><button type="button" className="app-reference-command"
         aria-describedby={`${subjectPanelId}-description`} aria-expanded={subjectsVisible} aria-controls={subjectsVisible ? subjectPanelId : undefined}
         onClick={() => { setSubjectEnabledFor(engine.id); close(); }}>
         <span className="app-reference-command-media"><AppGlyph name="reference" /></span>

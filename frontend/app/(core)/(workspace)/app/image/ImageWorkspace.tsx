@@ -447,6 +447,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
         }}
       >
         <ImageWorkspaceComposerSurface
+          assistanceAccountId={accountId}
               starterPreview={starterPreview} starterNavigation={{ ...starterNavigation, ...guardComposerActions({
                 onPrev: starterNavigation.onPrev, onNext: starterNavigation.onNext,
               }) }}
