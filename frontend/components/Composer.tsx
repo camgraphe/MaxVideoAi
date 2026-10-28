@@ -432,7 +432,7 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, scopeKey: JSON.stringify([assistance.scopeKey, engine.id, activeManualMode]), contextKey: JSON.stringify([assistance.contextKey, assets, negativePrompt, multiPrompt?.scenes]) }}
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer referencesBeforeInput={sourceSettingsPending} context={{ ...assistance, scopeKey: JSON.stringify([assistance.scopeKey, engine.id, activeManualMode]), contextKey: JSON.stringify([assistance.contextKey, assets, negativePrompt, multiPrompt?.scenes]) }}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}

@@ -3,7 +3,8 @@ import test from 'node:test';
 import { mkdir } from 'node:fs/promises';
 import { chromium, expect } from '@playwright/test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
-import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
+import { startWorkspaceReferenceFixture, workspaceReferenceFixtureSource } from './helpers/workspace-reference-browser-fixture';
+import { sourceSettingsBrowserSource } from './helpers/workspace-source-settings-browser-source';
 
 test('audio preview applies only to its active text field and retires an intent switch', {timeout:60_000}, async () => {
   const source = `import { useState } from 'react'; import {createRoot} from 'react-dom/client';
@@ -46,6 +47,41 @@ test('ordinary production composer does not expose the simulated assistant', asy
     await expect(page.locator('[data-workspace-prompt]')).toBeVisible();
     await expect(page.locator('[data-prompt-assistance-preview]')).toHaveCount(0);
   } finally {await browser.close();await fixture.close();}
+});
+
+test('compact reference picker retains the field character library action', async () => {
+  const engine=listFalEngines().find(entry=>entry.id==='kling-o3-pro')!.engine;
+  const field=[...engine.inputSchema!.required,...engine.inputSchema!.optional].find(field=>field.id==='image_urls')!;
+  const source=workspaceReferenceFixtureSource.replace('assetFields={config.fields}', 'assetFields={config.fields.map(entry=>({...entry,headerAction:<button type="button" onClick={()=>{globalThis.characterOpened=true}}>Character library</button>}))}');
+  const fixture=await startWorkspaceReferenceFixture({source,assistancePreview:true,config:{engine,locale:'en',fields:[{field,required:false}],assets:{},assistance:{scopeKey:'owner',contextKey:'image'}}});
+  const browser=await chromium.launch({headless:true});
+  try {
+    const page=await browser.newPage();await page.goto(fixture.url);
+    await page.getByRole('button',{name:'Add references',exact:true}).click();
+    await page.getByRole('button',{name:'Character library',exact:true}).click({timeout:2000});
+    assert.equal(await page.evaluate(()=>(globalThis as any).characterOpened),true);
+  } finally {await browser.close();await fixture.close();}
+});
+
+test('compact Modify and Extend keep a direct source action before writing in both tabs', async () => {
+  const source=sourceSettingsBrowserSource.replace('<Composer density="workspace"','<Composer assistance={{scopeKey:"owner",contextKey:"modify"}} density="workspace"');
+  const fixture=await startWorkspaceReferenceFixture({source,assistancePreview:true,config:{}});
+  const browser=await chromium.launch({headless:true});
+  try {
+    const page=await browser.newPage();await page.goto(fixture.url);
+    for(const operation of ['v2v','extend']){await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','With Milo']){
+      await page.getByRole('tab',{name:mode,exact:true}).click();
+      const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
+      await expect(sourceButton).toBeVisible();
+      const sourceBox=await sourceButton.boundingBox();
+      const inputBox=await page.locator(mode==='Prompt'?'[data-workspace-prompt]':'[data-assistance-message]').boundingBox();
+      assert.ok(sourceBox && inputBox && sourceBox.y+sourceBox.height<=inputBox.y);
+      await sourceButton.click();await expect(page.locator('.app-reference-popup')).toBeVisible();
+      await expect(page.locator('.app-reference-popup')).not.toContainText('Reference images');
+      await page.locator('.app-reference-popup').getByRole('button',{name:'Close',exact:true}).click();
+      await expect(page.locator('.app-reference-popup')).toHaveCount(0);
+    }}
+  }finally{await browser.close();await fixture.close();}
 });
 
 test('real composer keeps the full suggestion, independent scrolling, references and safe manual fallback', {timeout:120_000}, async () => {

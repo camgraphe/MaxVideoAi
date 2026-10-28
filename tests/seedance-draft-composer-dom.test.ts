@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createRequire } from 'node:module';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { JSDOM } from 'jsdom';
 import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 import { getBaseEngines } from '../frontend/src/lib/engines';
-import { WorkspaceComposerSurface } from '../frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface';
 import type { SeedanceDraftControls } from '../frontend/lib/seedance-workflow-contract';
 import type { Mode } from '../frontend/types/engines';
+
+// This static-markup test does not inspect CSS; the browser fixtures load real product styles.
+const require = createRequire(import.meta.url);
+const previousCssLoader = require.extensions['.css'];
+require.extensions['.css'] = module => { module.exports = {}; };
+let WorkspaceComposerSurface: typeof import('../frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface').WorkspaceComposerSurface;
+try { ({ WorkspaceComposerSurface } = require('../frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface')); }
+finally { if (previousCssLoader) require.extensions['.css'] = previousCssLoader; else delete require.extensions['.css']; }
 
 const noop = () => {};
 const engines = getBaseEngines();

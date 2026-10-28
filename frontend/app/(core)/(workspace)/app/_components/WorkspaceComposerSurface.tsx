@@ -481,7 +481,7 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
-        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, form.mode]), contextKey: JSON.stringify({ ...form, prompt: undefined }) }}
+        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, form.mode]), contextKey: JSON.stringify({ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } }) }}
         density="workspace"
         engine={selectedEngine}
         caps={capability}

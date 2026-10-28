@@ -62,5 +62,5 @@ for (const kind of ['video', 'audio'] as const) test(`${kind} reference: shared 
     assert.equal(JSON.stringify(w.probe.inputAssets.reference_image_urls), JSON.stringify([image]));
     assert.equal(w.generated, undefined);
     assert.equal(w.document.querySelector('[role=dialog]'), null);
-  } finally { await w.fx.act(async () => w.fx.unmount()); dom.window.close(); }
+  } finally { if (w.fx) await w.fx.act(async () => w.fx.unmount()); dom.window.close(); }
 });

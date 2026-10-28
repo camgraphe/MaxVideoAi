@@ -16,6 +16,12 @@ References reuse the app's real inventory. The plus is unboxed, filenames are ab
 
 Publicly safe screenshots use synthetic media in the real components, not the user's wallet or generation history: [desktop](evidence/refinement-4/composer-1440.png), [390 px](evidence/refinement-4/composer-390.png). The private authenticated app screenshot was kept locally outside Git. Previous design: [revision 3](REFINEMENT-3.md).
 
+## Final review and verification
+
+One independent whole-branch review identified missing video-context inputs, the hidden Character library opener and the missing direct source entry point. Each regression was reproduced before correction. Video proposals and Undo now invalidate for subject/settings changes, including a value changed away and back; the compact inventory preserves field actions; Modify and Extend present their required source before either writing input.
+
+Final focused suite: **107/107 passed**. Full production build, TypeScript, frontend lint, i18n parity and public-exposure checks passed. Lint retains seven existing warnings in unrelated Studio/billing files. The static DOM fixture loader was updated for the new CSS module; real browser fixtures continue loading product CSS. Required remote Quality CI remains a merge gate, not a claim made by these local checks.
+
 ## Seedance local environment
 
 The apparent Seedance 2.5 regression came from missing local environment controls. Chat de Pilotage confirmed that the earlier correction targeted Vercel Preview and deliberately preserved local files. The six previously qualified non-secret controls were reconciled only in this worktree's ignored `.env.local`. The real local catalogue then reported all five modes available; the app removed its warnings and displayed Generate with a quote. No production setting, tariff, credential or provider job was changed.
