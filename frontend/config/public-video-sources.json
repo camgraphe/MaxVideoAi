@@ -116,6 +116,16 @@
       "assetId": "flux-3-max-unavailable",
       "url": "https://media.maxvideoai.com/user-assets/by-content/c780259ed79d025b4ac74ccc513f18bf/0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1.mp4",
       "sha256": "0ed92d4517b23b3218ff97c2464fbec9d42b33d283f9aec2d43e103b65c6b2f1"
+    },
+    {
+      "assetId": "video-background-source",
+      "url": "https://media.maxvideoai.com/authored/video-background-changer/e1daf333b6df13b289c4bee1ab4cc4d9defefaa3eea4645021636aa5101c7092.mp4",
+      "sha256": "e1daf333b6df13b289c4bee1ab4cc4d9defefaa3eea4645021636aa5101c7092"
+    },
+    {
+      "assetId": "video-background-cockpit",
+      "url": "https://media.maxvideoai.com/authored/video-background-changer/a1496fc2552f03e3cce7ddef72c161740f010dbbd4afca211fa29193d4eb7078.mp4",
+      "sha256": "a1496fc2552f03e3cce7ddef72c161740f010dbbd4afca211fa29193d4eb7078"
     }
   ]
 }
