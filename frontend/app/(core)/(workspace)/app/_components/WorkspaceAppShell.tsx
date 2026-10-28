@@ -5,6 +5,7 @@ import { recentMediaCopy } from '@/components/library/recent-media-copy';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import type { RecentReferenceDropProps } from './WorkspaceRecentReferences.client';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { focusWorkspaceRecentTarget } from '../_lib/workspace-recent-focus';
 import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import type { GalleryRailProps } from '@/components/GalleryRail';
@@ -140,6 +141,7 @@ export function WorkspaceAppShell({
     <button type="button" aria-pressed={railView === 'activity'} aria-controls={activityPanelId}
       onClick={() => { setRailView('activity'); setMobileRecentOpen(false); }}>{copy.activity}</button>
     <button type="button" aria-pressed={railView === 'recent'} aria-controls={recentPanelId} onClick={openRecentMedia}>{copy.title}</button>
+    {PROMPT_ASSISTANCE_PREVIEW ? <Link href="/app/library" prefetch={false} className="app-media-rail-view-all">{copy.viewAll}</Link> : null}
   </div> : null;
   return (
     <WorkspaceChrome
@@ -157,6 +159,7 @@ export function WorkspaceAppShell({
           onGroupAction={handleGalleryGroupAction}
           onFeedStateChange={handleGalleryFeedStateChange}
           variant="responsive"
+          hideDesktopHeader={PROMPT_ASSISTANCE_PREVIEW && Boolean(recentMedia)}
         />
           </div>
           {recentMedia ? <div id={recentPanelId} ref={recentPanelRef} tabIndex={-1} hidden={railView !== 'recent'}

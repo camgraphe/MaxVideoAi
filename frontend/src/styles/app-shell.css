@@ -145,8 +145,9 @@
 .app-experience .app-creation-topbar-main { flex: 1; min-width: 0; }
 .app-experience .app-creation-topbar .app-navigation-activities { position: static; max-width: 1160px; margin-inline: auto; padding: 0 24px; gap: 20px; border: 0; flex-wrap: nowrap; }
 .app-experience .app-creation-topbar-rail { display: none; }
-.app-experience .app-creation-topbar .app-media-rail-switch { margin: 0; gap: 20px; flex-wrap: nowrap; }
-.app-experience .app-creation-topbar :is(.app-navigation-activities a, .app-media-rail-switch > button) { position: relative; display: inline-flex; align-items: center; flex: none; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--app-muted); font-size: 12px; font-weight: 400; box-shadow: none; }
+.app-experience .app-creation-topbar .app-media-rail-switch { width: 100%; margin: 0; gap: 20px; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar :is(.app-navigation-activities a, .app-media-rail-switch > button, .app-media-rail-view-all) { position: relative; display: inline-flex; align-items: center; flex: none; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--app-muted); font-size: 12px; font-weight: 400; box-shadow: none; }
+.app-experience .app-creation-topbar .app-media-rail-view-all { margin-left: auto; white-space: nowrap; }
 .app-experience .app-creation-topbar .app-glyph { width: 16px; height: 16px; }
 .app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"], a:hover, button:hover) { color: var(--app-ink); background: transparent; }
 .app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"])::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--app-accent); }

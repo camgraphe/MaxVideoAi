@@ -22,6 +22,7 @@ return <I18nProvider locale="en" dictionary={{}} fallback={{}}><PathnameContext.
   <AppCreationContent railNavigation={<div className="app-media-rail-switch" role="group" aria-label="Recents">
     <button aria-pressed={railView==='activity'} onClick={()=>setRailView('activity')}>Activity</button>
     <button aria-pressed={railView==='recent'} onClick={()=>setRailView('recent')}>Recents</button>
+    <a href="/app/library" className="app-media-rail-view-all">View all</a>
   </div>}>
   {path!=='/app/audio'? <main className="app-workspace-main" style={{padding:12,maxWidth:900}}><ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={[engine]} engineId={engine.id} mode="t2v" onModeChange={()=>{}} onEngineChange={()=>{}} />}>
   <Composer density="workspace" engine={engine} prompt={prompt} onPromptChange={setPrompt} assetFields={[]} assets={{}} price={1.35} currency="USD" isLoading={false}
@@ -50,6 +51,10 @@ test('top navigation stays aligned and compact while operations, Expand and mode
         const mediaBounds = await topbar.getByRole('link',{name:'Video',exact:true}).boundingBox();
         const activityBounds = await railNav.getByRole('button',{name:'Activity',exact:true}).boundingBox();
         assert.ok(mediaBounds && activityBounds && Math.abs(mediaBounds.y-activityBounds.y)<1, 'media and gallery tabs share a baseline');
+        const viewAll = railNav.getByRole('link',{name:'View all',exact:true});
+        const viewAllBounds = await viewAll.boundingBox(), railBounds = await railNav.boundingBox();
+        assert.ok(viewAllBounds && railBounds && activityBounds && Math.abs(viewAllBounds.y-activityBounds.y)<1 && Math.abs(viewAllBounds.x+viewAllBounds.width-railBounds.x-railBounds.width)<1, 'View all stays on the same row at the right edge');
+        await expect(viewAll).toHaveAttribute('href','/app/library');
         await railNav.getByRole('button',{name:'Recents',exact:true}).click();
         await expect(railNav.getByRole('button',{name:'Recents',exact:true})).toHaveAttribute('aria-pressed','true');
         await railNav.getByRole('button',{name:'Activity',exact:true}).click();

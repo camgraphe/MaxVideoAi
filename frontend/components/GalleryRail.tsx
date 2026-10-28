@@ -3,7 +3,6 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EngineCaps } from '@/types/engines';
-import type { Job } from '@/types/jobs';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import { saveImageToLibrary, useEngines, useInfiniteJobs } from '@/lib/api';
@@ -31,27 +30,10 @@ import {
   resolveDisplayedActiveGroup,
   resolveMediaUrl,
   type GalleryCopy,
-  type GalleryFeedType,
-  type GalleryVariant,
 } from './gallery-rail-utils';
 import { useGalleryRailScrollbar } from './useGalleryRailScrollbar';
-export interface GalleryFeedState {
-  visibleGroups: GroupSummary[];
-  sampleOnly: boolean;
-}
-export interface GalleryRailProps {
-  engine: EngineCaps;
-  engineRegistry?: EngineCaps[];
-  feedType?: GalleryFeedType;
-  feedSurface?: GalleryFeedType;
-  activeGroups?: GroupSummary[];
-  selectedGroupId?: string | null;
-  onOpenGroup?: (group: GroupSummary) => void;
-  onGroupAction?: (group: GroupSummary, action: GroupedJobAction, options?: { autoPlayPreview?: boolean }) => void;
-  onFeedStateChange?: (state: GalleryFeedState) => void;
-  jobFilter?: (job: Job) => boolean;
-  variant?: GalleryVariant;
-}
+import type { GalleryRailProps } from './gallery-rail-types';
+export type { GalleryFeedState, GalleryRailProps } from './gallery-rail-types';
 
 const BACKGROUND_WARM_START_DELAY_MS = 200, BACKGROUND_WARM_STEP_DELAY_MS = 900;
 export function GalleryRail({
@@ -65,6 +47,7 @@ export function GalleryRail({
   onFeedStateChange,
   jobFilter,
   variant = 'desktop',
+  hideDesktopHeader = false,
 }: GalleryRailProps) {
   const { t, locale } = useI18n();
   const responsiveVariant = variant === 'responsive';
@@ -470,7 +453,7 @@ export function GalleryRail({
 
   const content = (
     <>
-      <GalleryRailHeader title={sampleOnly ? (locale === 'fr' ? 'Exemples à adapter' : locale === 'es' ? 'Ejemplos para adaptar' : 'Examples to make your own') : copy.title} viewAll={copy.viewAll} />
+      <GalleryRailHeader title={sampleOnly ? (locale === 'fr' ? 'Exemples à adapter' : locale === 'es' ? 'Ejemplos para adaptar' : 'Examples to make your own') : copy.title} viewAll={copy.viewAll} desktopHidden={hideDesktopHeader} viewAllHref={hideDesktopHeader ? '/app/library' : '/jobs'} />
       <GalleryRailCuratedBanner copy={copy.curated} show={hasMounted && hasCuratedJobs} />
       <GalleryRailErrorBanner copy={copy.error} retryLabel={copy.retry} show={hasMounted && Boolean(error)} onRetry={retry} />
       {body}
@@ -481,11 +464,11 @@ export function GalleryRail({
   return (
     <>
       {responsiveVariant ? (
-        <aside className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
+        <aside aria-label={hideDesktopHeader ? copy.title : undefined} className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3">
           {content}
         </aside>
       ) : isDesktopVariant ? (
-        <aside className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
+        <aside aria-label={hideDesktopHeader ? copy.title : undefined} className="flex h-[calc(125vh-var(--header-height))] w-full max-w-[312px] shrink-0 flex-col bg-bg/80 px-3 pb-6 pt-4">
           {content}
         </aside>
       ) : (
