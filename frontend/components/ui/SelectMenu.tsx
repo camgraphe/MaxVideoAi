@@ -21,6 +21,8 @@ interface SelectMenuProps {
   className?: string;
   hideChevron?: boolean;
   buttonClassName?: string;
+  triggerLabel?: ReactNode;
+  ariaLabel?: string;
   menuClassName?: string;
   menuPlacement?: 'auto' | 'bottom' | 'top';
   portal?: boolean;
@@ -59,6 +61,8 @@ export function SelectMenu({
   className,
   hideChevron = false,
   buttonClassName,
+  triggerLabel,
+  ariaLabel,
   menuClassName,
   menuPlacement = 'bottom',
   portal = false,
@@ -85,7 +89,7 @@ export function SelectMenu({
     [options, value]
   );
   const selectedOption = options[selectedIndex] ?? options[0];
-  const selectedLabel = selectedOption?.label ?? String(value);
+  const selectedLabel = triggerLabel ?? selectedOption?.label ?? String(value);
   const filteredOptions = useMemo(() => {
     if (!searchable) return options;
     const normalizedQuery = query.trim().toLowerCase();
@@ -298,6 +302,7 @@ export function SelectMenu({
         }}
         onKeyDown={handleTriggerKeyDown}
         className={clsx(BUTTON_BASE, disabled && 'cursor-not-allowed opacity-60', buttonClassName)}
+        aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}

@@ -6,6 +6,8 @@ import { SelectMenu } from '@/components/ui/SelectMenu';
 import type { EngineSelectControlPresentation } from './engine-select-types';
 
 type Props = {
+  inline?: boolean;
+  buttonClassName?: string;
   bar: boolean;
   compact: boolean;
   disabledEngineReasons?: Record<string, string>;
@@ -20,6 +22,17 @@ type Props = {
 export function EngineVariantControl(props: Props) {
   const { bar, compact, disabledEngineReasons, getLabel, label, onChange, presentation, selectedEngineId, variants } = props;
   if (variants.length <= 1) return null;
+
+  if (props.inline) {
+    const selected = variants.find(entry => entry.id === selectedEngineId);
+    return <SelectMenu
+      options={variants.map(entry => ({ value: entry.id, label: getLabel(entry), disabled: Boolean(disabledEngineReasons?.[entry.id]), title: disabledEngineReasons?.[entry.id] }))}
+      value={selectedEngineId} onChange={value => onChange(String(value))}
+      triggerLabel={label} ariaLabel={`${label}: ${selected ? getLabel(selected) : selectedEngineId}`}
+      className="min-w-0 shrink-0" buttonClassName={props.buttonClassName}
+      portal menuPlacement="auto"
+    />;
+  }
 
   if (presentation === 'workspace') {
     return (

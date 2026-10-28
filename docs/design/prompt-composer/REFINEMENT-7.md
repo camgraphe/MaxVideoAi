@@ -42,3 +42,11 @@ Validation: Chromium and WebKit at 320/390/1440 px cover preview input focus, a 
 The model selector is now the first control in the writing footer, followed by references, in both Prompt and AI assistant. A 1 px theme-aware border and a slightly stronger hover border distinguish the selector without increasing its height.
 
 The shared FLUX 3 / Luma Ray 3.2 keyframe editor now occupies the existing extra-fields area below the prompt and the settings / Generate row. Source and operation selection stay in their existing locations; keyframe data and handlers are unchanged.
+
+## Follow-up: model identity and quick variants
+
+The footer now reads **model → Variant → References** in both writing modes. The model button reuses the existing 16 px brand icon and shortens Dreamina Seedance 2.0 Mini to **Seedance 2 Mini**; the picker and accessible button name retain the full model name. Long labels can truncate without expanding the row.
+
+The existing variant control also appears beside the compact model trigger when the catalog supplies multiple variants. Its visible label is **Variant**, because the adjacent model name already identifies the current choice. The menu marks the current variant, preserves disabled choices and their reasons, and uses the existing model-selection handler. Standalone models have no variant button. A portal keeps the menu outside the composer's clipped boundary.
+
+Validation: 11 relevant model/command-bar tests and eight EngineSelect architecture contracts pass. The new browser case covers Chromium and WebKit at 320/390/1440 px, selection through the restored control, disabled choices, prompt preservation, keyboard Escape/focus, and absence for standalone models. TypeScript and focused ESLint pass. The authenticated app was checked with Mini → Fast → Mini without generating media. Private visual evidence: `model-variants-composer.png` in the task visualization folder.

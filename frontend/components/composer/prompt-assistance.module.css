@@ -69,10 +69,12 @@
 .commandBar :global(.app-mode-switch[data-compact-modes]) { margin: 0; padding: 0 0 0 10px; gap: 2px; background: transparent; border: 0; border-left: 1px solid var(--border); border-radius: 0; }
 .commandBar :global(.app-mode-switch[data-compact-modes] button) { flex: 0 1 auto; flex-direction: row; width: auto; min-height: 40px !important; padding: 0 9px; border-radius: 7px; font-size: 12px; font-weight: 500; white-space: nowrap; }
 .commandBar :global(.app-mode-switch[data-compact-modes] button[aria-pressed='true']) { color: var(--text-primary); background: var(--app-accent-soft); }
-.modelControl { min-width: 0; max-width: 100%; }
-.modelTrigger { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 40px; padding: 0 9px; border: 1px solid color-mix(in srgb, var(--text-muted) 45%, var(--border)); border-radius: 7px; background: var(--surface-2); color: var(--text-primary); font-size: 12px; text-align: left; }
-.modelTrigger:hover { border-color: var(--text-muted); }
-.modelTrigger span { overflow-wrap: anywhere; min-width: 0; }
+.modelControl { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.modelTrigger, .variantTrigger { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 40px; padding: 0 9px; border: 1px solid color-mix(in srgb, var(--text-muted) 45%, var(--border)); border-radius: 7px; background: var(--surface-2); color: var(--text-primary); font-size: 12px; text-align: left; }
+.modelTrigger:hover, .variantTrigger:hover { border-color: var(--text-muted); }
+.modelTrigger .modelName { min-width: 0; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modelIcon { display: inline-flex; flex-shrink: 0; }
+.root .variantTrigger { width: auto; min-width: 0; min-height: 40px; padding: 0 9px; box-shadow: none; font-size: 12px; font-weight: 400; }
 .modelTrigger svg { flex-shrink: 0; }
 .undo { padding: 4px 14px; }
 @media (max-width: 600px) {
@@ -81,7 +83,7 @@
   .proposalHeader { gap: 6px; }
 }
 @media (pointer: coarse) {
-  .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger { min-height: 44px !important; }
+  .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger, .root .variantTrigger { min-height: 44px !important; }
 }
 
 @media (max-width: 400px) { .expandConversation span { display: none; } }
