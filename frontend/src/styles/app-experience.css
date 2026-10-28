@@ -240,6 +240,9 @@
 .app-settings-menu [role="option"][aria-selected="true"] { background: var(--app-accent-soft); color: var(--app-accent); }
 .app-experience .app-quote-status { max-width: 80px; font-size: 11px; color: var(--app-muted); }
 .app-experience .app-preview-frame.is-workspace { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+/* The preview composer already separates the player, prompt and generation controls. */
+.app-experience .app-workspace-main:has([data-prompt-assistance-preview]) .app-preview-frame.is-workspace > header { border-bottom: 0; }
+.app-experience [data-prompt-assistance-preview] + .app-composer-toolbar { border-top: 0; }
 .app-experience .app-preview-frame.is-workspace .app-preview-media { border: 1px solid var(--app-line); border-bottom: 0; border-radius: 8px 8px 0 0; }
 .app-experience .app-preview-frame.is-workspace .app-preview-toolbar { min-height: 52px; border-color: var(--app-line); border-radius: 0 0 8px 8px; background: var(--app-panel); box-shadow: none; }
 .app-experience .app-preview-toolbar-actions { gap: 4px; }
