@@ -34,7 +34,6 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     <div className={styles.assistant}><Sparkles size={15} aria-hidden /><strong>Milo</strong><span>{copy.forModel} {modelLabel}</span></div>
     <div className={styles.conversationStage}>
       <div className={styles.transcript} data-assistance-transcript ref={transcript} tabIndex={0} aria-label={copy.history}>
-        {!messages.length ? <p>{copy.intro}</p> : null}
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
           {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.text}</div>)}
         </div>

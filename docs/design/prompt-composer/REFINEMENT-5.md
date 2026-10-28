@@ -4,6 +4,8 @@
 
 The earlier transcript used only a maximum height, so its first messages and the first suggestion pushed Message Milo down. The conversation and suggestion now share a reserved 240–280 px stage. The transcript scrolls independently; expanding the suggestion uses that same space. Message Milo stays below the stage, and Use prompt stays outside both scroll regions. The selected-model identity, **Milo for Seedance 2.5** for example, stays above the transcript. Audio instrumental identity uses the selected Lyria Clip/Pro model.
 
+The introductory sentence appears only as the grey placeholder in Message Milo, not as a duplicate paragraph in the empty conversation.
+
 Manual writing and optional references now share one surface. A thin plus with the visible **References** label opens the existing inventory, in both writing modes. The Milo references and send button share a footer row. Required Modify/Extend sources retain their direct entry point before writing. Filenames remain absent from the compact strip; thumbnails and reference actions retain their existing behavior.
 
 At Adrien's request, simulation badges and explanatory fixture replies have been removed from the visual-review UI. This changes presentation only: the local response remains a fixed fixture or a copy of the current draft. It makes no LLM or credit request, and the production-off gate is unchanged. The live service is still a separate increment.
