@@ -158,14 +158,22 @@
 .app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"] { color: var(--app-accent); background-color: var(--app-accent-soft); }
 .app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"]::after { content: none; }
 @media (min-width: 768px) {
-  .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 240px; align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
+  /* Share the preview video rail width with its navigation; other workspaces keep their widths. */
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 216px; }
+  .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 var(--app-creation-rail-width, 240px); align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
   .app-experience .app-results-rail [data-gallery-header-in-navigation] { padding-top: 0; }
   /* Match the preview's 8 px media inset once the rail title moves into navigation. */
   .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-grid { margin-top: 0; padding-top: 8px; }
   .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 8px; }
 }
-@media (min-width: 900px) { .app-experience .app-creation-topbar-rail { flex-basis: 272px; } }
-@media (min-width: 1088px) { .app-experience .app-creation-topbar-rail { flex-basis: 320px; padding-inline: 21px; } }
+@media (min-width: 900px) {
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 240px; }
+  .app-experience .app-creation-topbar-rail { flex-basis: var(--app-creation-rail-width, 272px); }
+}
+@media (min-width: 1088px) {
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 280px; }
+  .app-experience .app-creation-topbar-rail { flex-basis: var(--app-creation-rail-width, 320px); padding-inline: 21px; }
+}
 @media (max-width: 767px) {
   .app-experience .app-creation-topbar .app-navigation-activities { padding-inline: 12px; }
   .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open { padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--app-muted); font-size: 12px; }

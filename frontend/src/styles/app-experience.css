@@ -121,13 +121,13 @@
   .app-experience .app-results-rail { border-left: 0; border-top: 1px solid var(--app-line); }
 }
 @media (min-width: 768px) {
-  .app-experience .app-results-rail { flex: none; width: 240px; padding: 16px 0 16px 8px; border-top: 0; background: transparent; }
+  .app-experience .app-results-rail { flex: none; width: var(--app-creation-rail-width, 240px); padding: 16px 0 16px 8px; border-top: 0; background: transparent; }
 }
 @media (min-width: 900px) {
-  .app-experience .app-results-rail { width: 272px; }
+  .app-experience .app-results-rail { width: var(--app-creation-rail-width, 272px); }
 }
 @media (min-width: 1088px) {
-  .app-experience .app-results-rail { width: 320px; }
+  .app-experience .app-results-rail { width: var(--app-creation-rail-width, 320px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-experience *, .app-experience *::before, .app-experience *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
