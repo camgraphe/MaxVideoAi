@@ -4,17 +4,17 @@ Proposition du 28/10/2026. À appliquer lors de l'intégration après validation
 
 ## Direction actuelle
 
-La [révision 2](REFINEMENT-2.md) intègre les retours d'Adrien : interface et exemples en anglais, références compactes sans nom de fichier, libellés Start image / End image / Image 1 / Audio 1, conversation distincte du champ Message Milo. Elle remplace les choix visuels initiaux ci-dessous en cas de différence.
+Les [révisions 2](REFINEMENT-2.md) et [3](REFINEMENT-3.md) intègrent les retours d'Adrien : interface et exemples en anglais, références compactes sans nom de fichier, libellés Start image / End image / Image 1 / Audio 1, conversation distincte du champ Message Milo. La révision 3 conserve deux lignes d'aperçu du prompt, son dépliage et une action indépendante toujours accessible dans l'en-tête. Elle fait autorité en cas de différence.
 
 ## Repères d'interface
 
-- **Un endroit pour répondre.** La conversation est au-dessus ; le champ Message Milo est dans sa propre surface de saisie en dessous. Suggested prompt est un détail à ouvrir, jamais le champ de réponse. Les onglets sont Prompt / With Milo.
+- **Un endroit pour répondre.** La conversation est au-dessus ; le champ Message Milo est dans sa propre surface de saisie en dessous. Entre les deux, Suggested prompt montre deux lignes repliées ; son titre et chevron permettent de lire/éditer le texte complet. Use prompt / Use script reste dans l'en-tête, hors du contenu dépliable et du défilement de la conversation. Les onglets sont Prompt / With Milo.
 - **Un + prévisible.** En bas à gauche, nom accessible « Ajouter une référence ». Ouvre les rôles compatibles et les importateurs existants. Les références requises restent signalées hors du menu.
-- **Des pièces jointes explicites.** Montrer une vignette de 44 px et un identifiant court : Start image, End image, Image 1, Audio 1. Masquer les noms de fichiers ; pas de seconde ligne systématique ni de carte englobante. Une rangée défilante conserve une hauteur constante. Les états de chargement/erreur, suppression et extraits restent disponibles. Une vignette ne prouve pas que Milo a analysé son contenu.
+- **Des pièces jointes explicites.** Montrer une vignette de 32 px dans une cible de 44 px de haut et un identifiant court : Start image, End image, Image 1, Audio 1. Masquer les noms de fichiers ; pas de seconde ligne systématique ni de carte englobante. Une rangée défilante conserve une hauteur constante. Les états de chargement/erreur, suppression et extraits restent disponibles. Une vignette ne prouve pas que Milo a analysé son contenu.
 - **Deux actions distinctes.** Flèche = envoyer à Milo. Générer + devis = produire un média. Rien ne se génère par l'envoi, l'application ou Entrée.
 - **Le manuel reste complet.** Collage depuis un autre LLM sans transformation ; mêmes paramètres, références, sorties et modes. Pas d'appel d'assistance en arrière-plan.
 - **Un original préservé.** Proposition éditable, application explicite, garde de révision, retour arrière sûr. Un changement de contexte invalide l'application, pas la possibilité de lire/copier la réponse.
-- **Des réglages compréhensibles.** Courants visibles ; avancés accessibles. Les modifications proposées sont affichées avant/après. Un champ fixe reste informatif ; un champ non supporté n'est pas inventé.
+- **Des réglages compréhensibles.** Courants visibles, texte légèrement renforcé et fond discret ; avancés accessibles. Préserver la taille actuelle des titres. Les modifications proposées sont affichées avant/après. Un champ fixe reste informatif ; un champ non supporté n'est pas inventé.
 - **Une identité cohérente.** Nom Milo, couleurs et iconographie MaxVideoAI. Ne pas imposer « agent », « orchestration », « tool call » ou des noms de modèles de dialogue au premier usage.
 
 ## Apparence et accessibilité

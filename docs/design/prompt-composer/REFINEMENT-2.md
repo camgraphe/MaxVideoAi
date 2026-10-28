@@ -1,5 +1,7 @@
 # Refinement 2 — compact references and a clear reply field
 
+Historical record. [Revision 3](REFINEMENT-3.md) supersedes the disclosure layout, action placement and thumbnail size below.
+
 28 October 2026. User-directed iteration of the design preview, not production implementation.
 
 ## What changed

@@ -5,6 +5,12 @@ Base : `main` / `origin/main` à `04e7c53190dc7791eda8012861e9de6c226d654b`.
 
 Statut : proposition d'interface à relire avant intégration produit. L'étude et le principe d'une aide facultative ont été retenus ; les détails visuels ci-dessous sont les choix proposés par Codex. Le prototype HTML est une maquette autonome, avec réponses et références simulées. Il ne fait aucun appel API et ne remplace aucun composant de l'application.
 
+## Revision 3 — long prompts and conversation space
+
+This section supersedes the disclosure layout and thumbnail dimensions in revision 2. Keep the prompt collapsible, with its first two lines visible when collapsed. Place **Use prompt / Use script** in the header, outside the disclosure and outside the scrollable conversation. Applying never requires expanding or scrolling to the bottom of the prompt. Expanding reveals an editable, height-bounded text field without consuming the transcript's scroll area. Keep stale-draft warnings outside the collapsed content as well.
+
+Reduce thumbnails to **32 × 32 px**, retaining 44 px-high reference targets. Give generation settings slightly stronger text and a subtle fill, without changing heading sizes. The prototype demonstrates these changes; real workspace-column sizing, mobile keyboard behavior and app integration remain to be verified in the product. See [revision 3 evidence](../../design/prompt-composer/REFINEMENT-3.md).
+
 ## Revision 2 — user feedback incorporated
 
 The preview now uses **English throughout**. This section supersedes the first visual proposal where they differ.

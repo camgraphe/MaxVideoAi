@@ -59,17 +59,20 @@
             </div>
           </div>
           <div id="chat" class="chat" role="log" aria-label="Messages" aria-live="polite" aria-relevant="additions"></div>
-          <details class="proposal" id="proposal" hidden>
-            <summary><span class="proposal-heading"><svg><use href="#i-image"/></svg><span id="proposal-title">Suggested prompt</span></span><span class="proposal-state" id="proposal-status">Review</span><span class="chevron" aria-hidden="true">⌄</span></summary>
-            <div class="proposal-body">
-              <label for="proposal-text" class="sr">Edit the proposed text</label>
-              <textarea id="proposal-text" rows="5"></textarea>
-              <p id="patch-note" class="patch-note">Your settings and references stay unchanged.</p>
-              <p id="stale" class="warning" hidden>The draft changed. Ask Milo for an updated suggestion.</p>
-              <div class="proposal-actions"><button class="primary-small" id="apply">Apply to prompt</button><button class="text-button" id="copy">Copy</button></div>
-            </div>
-          </details>
         </div>
+        <section class="proposal" id="proposal" aria-labelledby="proposal-title" hidden>
+          <div class="proposal-header">
+            <button class="proposal-toggle" id="proposal-toggle" aria-expanded="false" aria-controls="proposal-body" aria-label="Expand suggested prompt"><span id="proposal-title">Suggested prompt</span><span class="chevron" aria-hidden="true">⌄</span></button>
+            <button class="primary-small" id="apply">Use prompt</button>
+          </div>
+          <p class="proposal-preview" id="proposal-preview"></p>
+          <div class="proposal-body" id="proposal-body" hidden>
+            <label for="proposal-text" class="sr">Edit the proposed text</label>
+            <textarea id="proposal-text" rows="8"></textarea>
+            <div class="proposal-footer"><p id="patch-note" class="patch-note">Your settings and references stay unchanged.</p><button class="text-button" id="copy">Copy</button></div>
+          </div>
+          <p id="stale" class="warning" hidden>The draft changed. Ask Milo for an updated suggestion.</p>
+        </section>
       </section>
       <div class="source-required" id="source-required" hidden><svg><use href="#i-video"/></svg><span>Add a source video to continue.</span><button id="source-add">Add video</button></div>
       <div class="input-surface" id="input-surface">

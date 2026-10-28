@@ -65,7 +65,14 @@ function updateProposal() {
   const stale = suggestionRevision !== revision;
   $('apply').disabled = stale;
   $('stale').hidden = !stale;
-  $('proposal-status').textContent = stale ? 'Draft changed' : 'Review';
+}
+
+function setProposalExpanded(expanded) {
+  $('proposal-toggle').setAttribute('aria-expanded', String(expanded));
+  $('proposal-toggle').setAttribute('aria-label', `${expanded ? 'Collapse' : 'Expand'} suggested ${surface === 'audio' ? 'script' : 'prompt'}`);
+  $('proposal-body').hidden = !expanded;
+  $('proposal-preview').hidden = expanded;
+  $('proposal-preview').textContent = $('proposal-text').value;
 }
 
 function missingMentions(text) {
@@ -247,7 +254,7 @@ function chooseSurface(next) {
   $('chat').replaceChildren();
   $('welcome').hidden = false;
   $('proposal').hidden = true;
-  $('proposal').open = false;
+  setProposalExpanded(false);
   $('applied-note').hidden = true;
   $('message').value = '';
   $('send').disabled = true;
@@ -274,13 +281,13 @@ function sendMessage() {
   $('chat').append(user, reply);
   $('welcome').hidden = true;
   $('proposal').hidden = false;
-  $('proposal').open = false;
   $('proposal-title').textContent = surface === 'audio' ? 'Suggested script' : 'Suggested prompt';
   const mentioned = refs.filter((ref) => value.includes(ref.token));
   const references = surface !== 'audio' && mentioned.length ? `Use ${mentioned.map((ref) => ref.token).join(' and ')} as the attached references. ` : '';
   $('proposal-text').value = references + examples[surface].proposal;
+  setProposalExpanded(false);
   $('patch-note').textContent = surface === 'audio' ? 'Only the spoken script changes. Voice and delivery stay unchanged.' : 'Your settings and references stay unchanged.';
-  $('apply').textContent = surface === 'audio' ? 'Apply to script' : 'Apply to prompt';
+  $('apply').textContent = surface === 'audio' ? 'Use script' : 'Use prompt';
   suggestionRevision = revision;
   updateProposal();
   $('message').value = '';
@@ -352,6 +359,7 @@ $('message').onkeydown = (event) => {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); sendMessage(); }
 };
 $('send').onclick = sendMessage;
+$('proposal-toggle').onclick = () => setProposalExpanded($('proposal-body').hidden);
 document.querySelectorAll('[data-starter]').forEach((button) => {
   button.onclick = () => {
     $('message').value = button.dataset.starter;
@@ -388,7 +396,7 @@ $('undo').onclick = () => {
 };
 $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText($('proposal-text').value); status('Suggestion copied.'); }
-  catch { $('proposal-text').focus(); $('proposal-text').select(); status('Text selected. Use Copy on your device.'); }
+  catch { setProposalExpanded(true); $('proposal-text').focus(); $('proposal-text').select(); status('Text selected. Use Copy on your device.'); }
 };
 $('credit').onclick = () => {
   const show = $('credit-note').hidden;
