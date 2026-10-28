@@ -3,12 +3,22 @@ import test from 'node:test';
 import { NextRequest } from 'next/server';
 import { buildMarketingLocaleSwitchHref } from '../frontend/lib/i18n/marketing-locale-switch.ts';
 import { resolveLangParamRedirect } from '../frontend/lib/middleware/routing-locale.ts';
+import { buildLoginHref } from '../frontend/lib/auth-entry-href.ts';
+import { safeInternalReturnTarget } from '../frontend/lib/auth-return-target.ts';
 
 test('the English-only background changer sends language choices to real tools hubs without stale section anchors', () => {
   for (const [targetLocale, expected] of [['fr', '/fr/outils?utm_source=review&lang=fr'], ['es', '/es/herramientas?utm_source=review&lang=es']] as const) {
     assert.equal(buildMarketingLocaleSwitchHref({ pathname: '/tools/video-background-changer', targetLocale, search: '?utm_source=review&nolocale=1', hash: '#comparison' }), expected);
   }
   assert.equal(buildMarketingLocaleSwitchHref({ pathname: '/tools/video-background-changer', targetLocale: 'en', hash: '#comparison' }), '/tools/video-background-changer?lang=en#comparison');
+});
+
+test('signin and signup continuation retain the exact Wan Prime Modify request', () => {
+  for (const mode of ['signin', 'signup'] as const) {
+    const href = buildLoginHref({ mode, nextPath: '/app?engine=wan-3-prime&mode=v2v' });
+    const target = new URL(href, 'https://maxvideoai.com').searchParams.get('next');
+    assert.equal(safeInternalReturnTarget(target), '/app?engine=wan-3-prime&mode=v2v');
+  }
 });
 
 test('an explicit language parameter uses the same fallback and preserves tracking', () => {
