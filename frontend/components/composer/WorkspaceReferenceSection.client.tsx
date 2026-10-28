@@ -164,7 +164,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
     </div> : null}
     {engine.activeVideoOperation === 'h3-recast' && selectedCollections.some(({ entry }) => entry.field.id === 'reference_image_urls') ? <p className="app-reference-required" role="note">{mentionCopy.portraits}</p> : null}
     {subjectsVisible ? <div id={subjectPanelId} data-subject-references>{subjectReferences?.content}</div> : null}
-    {popupFields.length || activeCommand === 'collections' && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
+    {popupFields.length || (activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
       <WorkspaceReferenceInventory fields={popupFields} assets={assets} locale={locale} renderField={(entry) => <AssetDropzone key={entry.field.id} {...entry} headerAction={undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
         density="workspace" engine={engine} caps={caps}

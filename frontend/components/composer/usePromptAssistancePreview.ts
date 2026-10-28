@@ -12,6 +12,8 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
   if (state !== stored) dispatch({ type: 'sync', scope: scopeKey, fingerprint });
   const sequence = useRef(0);
   const input = useRef<HTMLTextAreaElement>(null);
+  const currentScope = useRef(scopeKey);
+  currentScope.current = scopeKey;
   const sampleDraft = useRef(draftText);
   // A scope change cancels the local fixture. A draft edit leaves its response stale.
   useEffect(() => {
@@ -44,7 +46,10 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
     const before = state.message.slice(0, start), after = state.message.slice(end);
     const insertion = `${before && !/\s$/.test(before) ? ' ' : ''}${token}${after && /^\s/.test(after) ? '' : ' '}`;
     dispatch({ type: 'message', text: before + insertion + after });
-    requestAnimationFrame(() => { if (input.current !== field) return; field?.focus(); field?.setSelectionRange(start + insertion.length, start + insertion.length); });
+    requestAnimationFrame(() => {
+      if (currentScope.current !== scopeKey || (field && input.current !== field)) return;
+      input.current?.focus(); input.current?.setSelectionRange(start + insertion.length, start + insertion.length);
+    });
   };
   return { state, dispatch, input, send, apply, undo, insertMention, canUndo: canUndoProposal(state), target };
 }

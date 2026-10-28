@@ -36,7 +36,7 @@ export async function startWorkspaceReferenceFixture(options: { source?: string;
   const requireFrontend = createRequire(join(frontend, 'package.json'));
   const source = options.source ?? workspaceReferenceFixtureSource;
   const bundle = await build({ stdin: { contents: source, loader: 'tsx', resolveDir: frontend },
-    outdir: '/reference-fixture', write: false, bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
+    outdir: '/reference-fixture', external: ['/assets/*'], write: false, bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
     tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': JSON.stringify(options.assistancePreview ? 'development' : 'production'), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW': JSON.stringify(options.assistancePreview ? '1' : '') } });
   const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css'].map(path => readFile(join(frontend, path), 'utf8')));
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig, content: [

@@ -23,6 +23,7 @@
 .inputSurface:focus-within { border-color: var(--text-muted); }
 .inputSurface label { font-size: 12px; font-weight: 500; display: block; margin-bottom: 7px; }
 .inputSurface > textarea { display: block; width: 100%; border: 0; background: transparent; padding: 0; min-height: 52px; max-height: 160px; resize: vertical; font-size: 14px; line-height: 1.65; }
+.inputSurface > textarea:focus, .inputSurface > textarea:focus-visible { outline: none; box-shadow: none; }
 .sendRow { min-height: 48px; }
 .send { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--text-primary); color: var(--surface); flex-shrink: 0; }
 .warning { font-size: 12px; margin: 6px 0; color: var(--text-secondary); }
@@ -35,12 +36,12 @@
 .composer :global(.app-prompt-surface textarea) { outline: none; box-shadow: none; }
 .composer :global(.app-prompt-surface textarea:focus-visible) { outline: 2px solid var(--text-secondary); outline-offset: 2px; }
 .root :global([data-compact-references]) { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; border: 0; padding: 2px 0; }
-.root :global(.app-reference-add-compact) { width: 44px; height: 44px; flex-shrink: 0; font-size: 23px; font-weight: 300; border: 0; background: transparent; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-add-compact) { width: 44px; height: 44px; flex-shrink: 0; font-size: 23px; font-weight: 300; border: 0; background: transparent; }
 .root :global(.app-reference-selected-summary) { display: flex; flex: 1; min-width: 0; flex-wrap: nowrap; overflow-x: auto; gap: 10px; margin: 0; padding: 2px 0; scrollbar-width: thin; }
-.root :global(.app-reference-selected-item) { flex-shrink: 0; border: 0; border-radius: 0; background: transparent; padding: 0; gap: 4px; box-shadow: none; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-item) { flex-shrink: 0; border: 0; border-radius: 0; background: transparent; padding: 0; gap: 4px; box-shadow: none; }
 .root :global(.app-reference-thumbnail) { width: 32px !important; height: 32px !important; min-width: 32px !important; border-radius: 5px; }
 .root :global(.app-reference-thumbnail img) { width: 100%; height: 100%; object-fit: cover; }
-.root :global(.app-reference-selected-manage), .root :global(.app-reference-selected-mention) { min-height: 44px; padding: 0; background: transparent; }
-.root :global(.app-reference-selected-remove) { width: 27px; min-height: 44px; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-manage), .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-mention) { min-height: 44px; padding: 0; background: transparent; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove) { position: static; transform: none; width: 27px; min-width: 27px; height: 44px; min-height: 44px !important; padding: 0; border: 0; background: transparent; }
 .root :global(.app-reference-required), .root :global(.app-reference-restrictions), .root :global([data-subject-references]) { flex-basis: 100%; }
-.composer :global(.app-core-settings-control) { color: var(--text-primary); background: var(--surface-2); }
+.composer :global([data-settings-density="workspace"] button) { color: var(--text-primary); background: var(--surface-2); }
