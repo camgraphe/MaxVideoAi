@@ -99,6 +99,7 @@ export function Composer({
   const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
+  const leadingExtensionNotice = assistanceEnabled ? null : extensionNotice;
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -417,13 +418,13 @@ export function Composer({
       )}
     >
       <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && (assistanceEnabled || !visibleModeToggles) && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && (assistanceEnabled || !visibleModeToggles) && !promptDescription && !workflowNotice && !leadingExtensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {!assistanceEnabled && visibleModeToggles ? (
               <ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity}
                 activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
             ) : null}
-            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
+            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={leadingExtensionNotice} error={error} />
           </div>
         </div>
 
@@ -439,6 +440,7 @@ export function Composer({
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
+        {assistanceEnabled ? <ComposerNotices extensionNotice={extensionNotice} /> : null}
 
         {!workspaceDensity && assetFields.length > 0 ? (
           <div className="space-y-2">

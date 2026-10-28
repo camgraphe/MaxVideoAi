@@ -26,3 +26,9 @@ The work remains isolated in draft PR #555; no production deployment.
 Before the first message, AI assistant matches the manual writing area's measured height. The measurement follows the visible manual editor, including a user's textarea resize. Both modes reserve the same footer width for model, variants, references and the send-action column, so switching tabs does not change reference wrapping or move the generation toolbar. Narrow model names truncate while Variant remains beside the model. The bounded history still opens only after the first send.
 
 The authenticated Modify view measures 326 px in both modes, with the toolbar at the same document position (913.24 px). Targeted browser checks compare the initial frame, model and toolbar geometry at 320 / 390 / 768 / 1440 px, plus required-source positions in Modify and Extend. Private captures: `stable-idle-prompt.png` and `stable-idle-assistant.png`.
+
+## Follow-up — source guidance below generation
+
+In the composer preview, the source-upload and pricing guidance now appears below the generation toolbar. Its original header wrapper is hidden when it has no other notice, so Create / Modify / Extend share the same top position for the writing frame. The Required badge remains beside the source button. Upload, excerpt and pricing states continue to use the existing notice component; production presentation is unchanged.
+
+The browser regression checks assert the same frame top and exactly one guidance notice below Generate at 320 / 390 / 1440 px, in both writing tabs. All 41 targeted layout, architecture, Modify and Extend checks pass, along with TypeScript, focused ESLint and diff checks. In the authenticated app, all three operations place the frame at document y=528.99 px; the Modify / Extend guidance starts 8 px below the toolbar. Private capture: `source-guidance-below-generate.png`. No generation or LLM call was made.

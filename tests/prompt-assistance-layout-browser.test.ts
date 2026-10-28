@@ -70,8 +70,15 @@ test('compact Modify and Extend keep source references inside the writing footer
   try {
     for(const width of [320,390,1440]) {
       const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
+      await page.locator('[data-mode="create"]').click();
+      const creationTop=await page.locator('[data-prompt-assistance-preview]').evaluate(el=>el.getBoundingClientRect().top+scrollY);
       for(const operation of ['v2v','extend']){const idleGeometry: Array<{height:number;sourceTop:number;sourceLeft:number}> = [];await page.locator(`[data-mode="${operation}"]`).click();for(const mode of ['Prompt','AI assistant']){
         await page.getByRole('tab',{name:mode,exact:true}).click();
+        assert.equal(await page.locator('[data-prompt-assistance-preview]').evaluate(el=>el.getBoundingClientRect().top+scrollY),creationTop, 'source guidance must not shift the composer when changing operation');
+        const guidance=page.getByRole('status').filter({hasText:'Upload the video'});
+        await expect(guidance).toHaveCount(1);
+        const noticeBox=await guidance.boundingBox(),toolbarBox=await page.locator('.app-composer-toolbar').boundingBox();
+        assert.ok(noticeBox && toolbarBox && noticeBox.y>=toolbarBox.y+toolbarBox.height, 'source guidance stays below Generate in both writing modes');
         const sourceButton=page.locator('[data-reference-command="video_urls"],[data-reference-command="video_url"],[data-reference-command="extension_source_videos"]').first();
         await expect(sourceButton).toBeVisible();
         const sourceBox=await sourceButton.boundingBox();
