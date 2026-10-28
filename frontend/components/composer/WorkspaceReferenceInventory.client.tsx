@@ -14,14 +14,15 @@ const sourceOrder = ({ field }: AssetFieldConfig) => field.type === 'video' ? 2
   : /end_image|last_frame/.test(field.id) ? 1 : 0;
 
 /** Role navigation changes presentation only. Draft mutation stays in the rendered field owner. */
-export function WorkspaceReferenceInventory({ fields, assets, locale, renderField, sourceFieldId }: {
+export function WorkspaceReferenceInventory({ fields, assets, locale, renderField, sourceFieldId, initialFieldId }: {
   fields: AssetFieldConfig[];
   assets: Record<string, (AssetSlotAttachment | null)[]>;
   locale: string;
   renderField: (entry: AssetFieldConfig) => ReactNode;
   sourceFieldId?: string;
+  initialFieldId?: string;
 }) {
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(initialFieldId ?? null);
   const isReference = (entry: AssetFieldConfig) => entry.field.id !== sourceFieldId && isCollection(entry);
   const references = fields.filter(isReference).sort((a, b) => mediaOrder(a) - mediaOrder(b));
   const sources = fields.filter(entry => !isReference(entry)).sort((a, b) => sourceOrder(a) - sourceOrder(b));

@@ -2,15 +2,22 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { AppGlyph } from '@/components/app/AppGlyph';
+import { useEffect, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 
 /** Media, upload and removal are siblings: native controls never activate replacement. */
-export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotIndex, slotLabel, disabled, disabledReason, minCount, inputRef, canOpenLibrary, onDisabledAttempt, onDrop, onPaste, onInputChange, onSelectFileSlot, onOpenLibrarySlot, onRemoveSlot, assetCopy }: AssetDropzoneSlotProps) {
+export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotIndex, slotLabel, disabled, disabledReason, minCount, inputRef, canOpenLibrary, onDisabledAttempt, onDrop, onPaste, onInputChange, onSelectFileSlot, onOpenLibrarySlot, onRemoveSlot, assetCopy, workspacePresentation }: AssetDropzoneSlotProps) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
-  return <div className="app-workspace-asset-slot" data-asset-index={slotIndex}
+  const slotRef = useRef<HTMLDivElement>(null);
+  const selected = workspacePresentation?.selected;
+  useEffect(() => {
+    if (selected) slotRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [selected]);
+  const label = workspacePresentation?.label ?? slotLabel;
+  return <div ref={slotRef} className="app-workspace-asset-slot" data-asset-index={slotIndex} data-reference-selected={selected || undefined}
     onDragOver={(event) => event.preventDefault()}
     onDrop={(event) => { event.preventDefault(); if (disabled) onDisabledAttempt(); else onDrop(event, slotIndex); }}
     onPaste={(event) => { if (disabled) onDisabledAttempt(); else onPaste(event, slotIndex); }}>
@@ -22,14 +29,16 @@ export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotInd
     {asset ? <div className="app-reference-media">
       {asset.kind === 'image' ? <img src={asset.previewUrl} alt={asset.name} loading="lazy" /> : asset.kind === 'video' ? <video src={asset.previewUrl} controls preload="none" aria-label={asset.name} /> : <audio src={asset.previewUrl} controls preload="none" aria-label={asset.name} />}
     </div> : null}
-    <div className="app-reference-slot-label"><span>{asset?.badge ?? asset?.name ?? slotLabel}</span>{slotIndex < minCount && !asset ? <small>{copy.required}</small> : null}
+    <div className="app-reference-slot-label"><span>{workspacePresentation?.label ?? asset?.badge ?? asset?.name ?? slotLabel}</span>{slotIndex < minCount && !asset ? <small>{copy.required}</small> : null}
+      {workspacePresentation && typeof asset.durationSec === 'number' ? <small>{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(asset.durationSec)} s</small> : null}
       {asset?.status === 'uploading' ? <small role="status">{assetCopy.uploading}</small> : null}
       {asset?.status === 'error' ? <small role="alert">{asset.error ?? assetCopy.uploadFailed}</small> : null}
     </div>
     <div className="app-reference-slot-actions">
-      <button type="button" disabled={disabled} title={disabledReason ?? accept} aria-label={`${asset ? copy.replace : copy.upload} · ${slotLabel}`} onClick={() => onSelectFileSlot(slotIndex)}>{asset ? copy.replace : copy.upload}</button>
-      {canOpenLibrary ? <button type="button" disabled={disabled} title={disabledReason ?? undefined} aria-label={`${copy.library} · ${slotLabel}`} onClick={() => onOpenLibrarySlot(slotIndex)}>{copy.library}</button> : null}
-      {asset ? <button type="button" aria-label={`${copy.remove} · ${slotLabel}`} onClick={() => onRemoveSlot(slotIndex)}>{copy.remove}</button> : null}
+      {workspacePresentation?.actions}
+      <button type="button" disabled={disabled} title={disabledReason ?? accept} aria-label={`${asset ? copy.replace : copy.upload} · ${label}`} onClick={() => onSelectFileSlot(slotIndex)}>{asset ? copy.replace : copy.upload}</button>
+      {canOpenLibrary ? <button type="button" disabled={disabled} title={disabledReason ?? undefined} aria-label={`${copy.library} · ${label}`} onClick={() => onOpenLibrarySlot(slotIndex)}>{copy.library}</button> : null}
+      {asset ? <button type="button" aria-label={`${copy.remove} · ${label}`} onClick={() => onRemoveSlot(slotIndex)}>{copy.remove}</button> : null}
     </div>
     </>}
   </div>;

@@ -51,7 +51,9 @@ export function VideoExcerptControl({
         className="app-reference-command video-excerpt-trigger"
         disabled={asset.status !== 'ready'}
         aria-disabled={Boolean(selected)}
-        onClick={() => {
+        onClick={(event) => {
+          // Safari/touch clicks do not always focus buttons; retain a reliable modal return target.
+          event.currentTarget.focus();
           if (!selected) setSelection(asset);
         }}
       >

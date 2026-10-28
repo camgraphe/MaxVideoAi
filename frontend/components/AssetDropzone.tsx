@@ -29,7 +29,7 @@ import {
   validateEngineImageFile,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
-import type { AssetDisabledPresentation, AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
+import type { AssetDisabledPresentation, AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta, WorkspaceAssetPresentation } from '@/components/asset-dropzone/asset-dropzone-types';
 
 export type { AssetDisabledPresentation, AssetFieldConfig, AssetFieldGuidance, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 interface AssetDropzoneProps {
@@ -44,6 +44,7 @@ interface AssetDropzoneProps {
   headerAction?: ReactNode;
   density?: 'default' | 'compact' | 'workspace';
   allowVideoExcerptImport?: boolean;
+  renderWorkspaceSlot?: (asset: AssetSlotAttachment, slotIndex: number) => WorkspaceAssetPresentation;
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
@@ -69,6 +70,7 @@ export function AssetDropzone({
   density = 'default',
   onSelect,
   allowVideoExcerptImport = false,
+  renderWorkspaceSlot,
   onRemove,
   onError,
   onOpenLibrary,
@@ -332,6 +334,7 @@ export function AssetDropzone({
         compactDensity={compactDensity}
         compactCollectionLayout={compactCollectionLayout}
         workspaceDensity={workspaceDensity}
+        workspacePresentation={workspaceDensity && asset ? renderWorkspaceSlot?.(asset, slotIndex) : undefined}
         disabled={disabled}
         disabledReason={disabledReason}
         displaySlotCount={displaySlots.length}

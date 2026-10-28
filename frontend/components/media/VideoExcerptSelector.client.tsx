@@ -145,6 +145,8 @@ export function VideoExcerptSelector({
   return createPortal(
     <div
       className="app-experience app-reference-modal-layer video-excerpt-layer"
+      // Portal events still bubble through References; its focus trap must not handle these keys.
+      onKeyDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         if (event.target === event.currentTarget) onCancel();
       }}

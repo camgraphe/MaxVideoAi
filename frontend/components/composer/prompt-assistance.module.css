@@ -78,7 +78,14 @@
 .root :global(.app-reference-thumbnail) { width: 32px !important; height: 32px !important; min-width: 32px !important; border-radius: 5px; }
 .root :global(.app-reference-thumbnail img) { width: 100%; height: 100%; object-fit: cover; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-manage), .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-mention) { min-height: 44px; padding: 0; background: transparent; }
-.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-remove) { position: static; transform: none; width: 27px; min-width: 27px; height: 44px; min-height: 44px !important; padding: 0; border: 0; background: transparent; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-manage) { position: relative; }
+.root :global(.app-reference-edit-hint) { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; background: rgb(0 0 0 / .55); color: #fff; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.root :global(.app-reference-selected-manage:hover .app-reference-edit-hint), .root :global(.app-reference-selected-manage:focus .app-reference-edit-hint) { opacity: 1; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-more) { flex: none; padding: 0 5px; border: 0; background: transparent; color: var(--text-secondary); }
+@media (max-width: 767px) {
+  .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-selected-summary) { display: contents; }
+  .root[data-prompt-assistance-preview] :global([data-compact-references]) { column-gap: 8px; row-gap: 0; }
+}
 .root :global(.app-reference-required), .root :global(.app-reference-restrictions), .root :global([data-subject-references]) { flex-basis: 100%; }
 .composer :global([data-settings-density="workspace"] button) { color: var(--text-primary); background: var(--surface-2); }
 
