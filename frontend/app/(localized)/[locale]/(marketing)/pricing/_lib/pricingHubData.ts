@@ -296,10 +296,6 @@ function collectFields(engine: EngineCaps) {
   return [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
 }
 
-function findField(engine: EngineCaps, id: string) {
-  return collectFields(engine).find((field) => field.id === id);
-}
-
 function parseDurationValue(value: number | string | undefined) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value !== 'string') return null;
