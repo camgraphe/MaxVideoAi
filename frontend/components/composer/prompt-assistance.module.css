@@ -51,6 +51,10 @@
 /* Subtract the 44 px identity row, 12 px input padding and 1 px border from the manual writing area. */
 .panel[data-assistance-empty] .messageField { display: flex; flex-direction: column; height: calc(var(--manual-writing-height, 148px) - 57px); }
 .panel[data-assistance-empty] .messageField > textarea { flex: 1; height: 0; max-height: none; }
+.panel[data-assistance-empty] .messageField[data-assistance-input-notice] > textarea { min-height: 0; }
+.inputNotice { flex-shrink: 0; color: var(--text-muted); font-size: 14px; line-height: 1.65; }
+.inputNotice a { color: var(--text-secondary); text-decoration: underline; text-underline-offset: .2em; }
+.inputNotice a:focus-visible { outline: 1px solid var(--text-secondary); outline-offset: 3px; border-radius: 2px; }
 .sendRow { display: grid; grid-template-columns: minmax(0, 1fr) 38px; min-height: 44px; align-items: end; }
 .sendPlaceholder { width: 38px; height: 38px; }
 .inputReferences { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; min-width: 0; }

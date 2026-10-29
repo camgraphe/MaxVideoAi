@@ -17,9 +17,10 @@ export type PromptAssistancePanelProps = {
   conversationControl?: ReactNode;
   reasoningControl?: ReactNode;
   feedback?: ReactNode;
+  inputNotice?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, reasoningControl, feedback }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, reasoningControl, feedback, inputNotice }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -58,9 +59,10 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       </section> : null}
     </div>
     <div className={styles.inputSurface} data-assistance-input>
-      <div className={styles.messageField}>
+      <div className={styles.messageField} data-assistance-input-notice={inputNotice ? true : undefined}>
       <label htmlFor={messageId}>{copy.message}</label>
-      <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
+      {inputNotice}
+      <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
         event.stopPropagation();
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
