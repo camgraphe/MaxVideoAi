@@ -73,7 +73,8 @@ test('the product dialog reviews cumulative packs before purchase and preserves 
     await act(async()=>button('Standard').click());
     const dialog=dom.window.document.querySelector('dialog')!;
     assert.equal(dialog.querySelectorAll('[aria-label="Assistant model"] button').length,3);
-    assert.match(dialog.textContent??'',/GPT.6.1 Terra/);
+    assert.doesNotMatch(dialog.textContent??'',/\bGPT[‑-]\d|\b(?:Luna|Terra|Sol)\b|high reasoning|Raisonnement (?:très )?élevé/i);
+    assert.match(dialog.textContent??'',/Creative work & planning/);
     assert.match(dialog.textContent??'',/\$10 output/,'Standard shows its own tariff, not the active Luna/Sol tariff');
     assert.equal(choices.length,4,'Inspecting Standard leaves the account unchanged');
     await act(async()=>button('Continue with Standard').click());

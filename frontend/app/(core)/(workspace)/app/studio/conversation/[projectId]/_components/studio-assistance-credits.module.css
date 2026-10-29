@@ -9,5 +9,4 @@
 .dialog .notice{padding:12px;margin-top:16px;border:1px solid var(--studio-line);border-radius:9px;background:color-mix(in srgb,var(--studio-accent) 7%,transparent);font-size:12px;line-height:1.7}.notice button,.notice a{display:inline-block;min-height:36px;padding:8px 0;margin-right:16px;border:0;background:transparent;color:inherit;text-decoration:underline}.dialog button:disabled{opacity:.45;cursor:not-allowed}.held{display:block;margin-top:5px}.dialog .purchaseDisclosure{padding:14px 0 20px}.dialog a:focus-visible{outline:2px solid var(--studio-accent);outline-offset:3px}.dialog small{color:var(--studio-muted)}
 
 .dialog[data-context="composer"]{--studio-bg:var(--surface);--studio-text:var(--text-primary);--studio-muted:var(--text-muted);--studio-line:var(--border);--studio-accent:var(--app-accent,var(--accent));--studio-ink:var(--on-brand,var(--on-accent))}
-.dialog .modelDetail{margin:12px 0 0;font-size:11px;color:var(--studio-muted)}
 @media(max-width:480px){.dialog .models button{padding:10px 7px}.models button>div{gap:4px;font-size:12px}.models button>div>svg:first-child{display:none}}

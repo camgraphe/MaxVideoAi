@@ -79,18 +79,19 @@ test('Studio copy describes available creation, editing and individual downloads
   assert.doesNotMatch(view, /betaNote|capabilitiesNote/);
 });
 
-test('public Studio assistance copy follows activated credits with bounded Luna availability and separate confirmed media pricing', () => {
+test('public Studio assistance copy follows activated credits with bounded Lite availability and separate confirmed media pricing', () => {
   const expectations = {
-    en: { credits: /monthly included credits first.*purchased credits/, purchase: /confirm each pack purchase.*MaxVideoAI balance.*cumulative/, account: /account.*new projects do not reset/, refill: /no automatic refill/i, luna: /choose Standard.*no extra assistance fee.*without a monthly quota.*request limits.*service availability/, quote: /Media generation is charged separately.*current exact quote.*explicitly confirm/ },
-    fr: { credits: /crédits mensuels inclus.*avant.*crédits achetés/, purchase: /confirmez chaque achat de pack.*solde MaxVideoAI.*cumulables/, account: /compte.*nouveaux projets ne les réinitialisent/, refill: /aucune recharge automatique/i, luna: /choisir Standard.*sans frais d’assistance supplémentaires.*sans quota mensuel.*limites de requête.*disponibilité du service/, quote: /génération de médias est facturée séparément.*devis exact actuel.*confirmez explicitement/ },
-    es: { credits: /créditos mensuales incluidos.*antes.*créditos comprados/, purchase: /confirmas cada compra de pack.*saldo MaxVideoAI.*acumulables/i, account: /cuenta.*proyectos nuevos no los restablecen/, refill: /ninguna recarga automática/i, luna: /elegir Standard.*sin coste adicional de asistencia.*sin cuota mensual.*límites de solicitud.*disponibilidad del servicio/, quote: /generación de medios se cobra por separado.*presupuesto exacto actual.*confirma expresamente/ },
+    en: { credits: /monthly included credits.*first.*purchased credits/, purchase: /confirm each pack purchase.*MaxVideoAI balance.*cumulative/, account: /account.*new projects do not reset/, refill: /no automatic refill/i, luna: /choose Milo Lite.*no extra assistance fee.*without a monthly quota.*request limits.*service availability/, quote: /Media generation is charged separately.*current exact quote.*explicitly confirm/ },
+    fr: { credits: /crédits mensuels inclus.*avant.*crédits achetés/, purchase: /confirmez chaque achat de pack.*solde MaxVideoAI.*cumulables/, account: /compte.*nouveaux projets ne les réinitialisent/, refill: /aucune recharge automatique/i, luna: /choisir Milo Lite.*sans frais d’assistance supplémentaires.*sans quota mensuel.*limites de requête.*disponibilité du service/, quote: /génération de médias est facturée séparément.*devis exact actuel.*confirmez explicitement/ },
+    es: { credits: /créditos mensuales incluidos.*antes.*créditos comprados/, purchase: /confirmas cada compra de pack.*saldo MaxVideoAI.*acumulables/i, account: /cuenta.*proyectos nuevos no los restablecen/, refill: /ninguna recarga automática/i, luna: /elegir Milo Lite.*sin coste adicional de asistencia.*sin cuota mensual.*límites de solicitud.*disponibilidad del servicio/, quote: /generación de medios se cobra por separado.*presupuesto exacto actual.*confirma expresamente/ },
   };
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getStudioMarketingCopy(locale);
     const assistance = copy.faq.items.find(item => item.answer.includes('Milo Max'))?.answer ?? '';
     for (const contract of Object.values(expectations[locale])) assert.match(assistance, contract, locale);
-    assert.match(copy.costNote, /Milo Max.*cr[eé]dit/);
+    assert.match(copy.costNote, /Milo Standard.*Max.*cr[eé]dit/);
     assert.doesNotMatch(`${copy.costNote} ${assistance}`, /allowance|pourcentage restant|porcentaje restante|quota inclus|cuota incluida|budget you authorize|budget que vous autorisez|presupuesto que autorizas/i);
+    assert.doesNotMatch(assistance, /GPT|Luna|Terra|Sol/);
     assert.doesNotMatch(assistance, /unlimited|illimité|ilimitad|\$\d|€\d/i);
   }
 });

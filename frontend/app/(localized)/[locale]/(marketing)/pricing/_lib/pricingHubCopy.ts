@@ -350,7 +350,7 @@ const en: PricingHubCopy = {
         },
         {
           "title": "Milo assistance credits",
-          "body": "Milo Max (GPT-6.1 Sol) includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Max packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Standard (GPT-6 Luna) has no extra assistance fee, subject to request limits and service availability."
+          "body": "Milo Standard and Max share 500 included assistance credits per UTC calendar month. Unused included credits do not carry over. Purchased Milo packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Milo Lite has no extra assistance fee, subject to request limits and service availability."
         }
       ],
       "links": {
@@ -374,7 +374,7 @@ const en: PricingHubCopy = {
       },
       {
         title: 'Exact price before launch',
-        body: "The app shows the live price for your selected engine, duration, resolution and options before generation, even as a guest. Using Studio? Milo Max uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
+        body: "The app shows the live price for your selected engine, duration, resolution and options before generation, even as a guest. Using Milo in a generator or Studio? Standard and Max share included and purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
       },
       {
         title: 'Failed generations refunded',
@@ -565,7 +565,7 @@ const fr: PricingHubCopy = {
         },
         {
           "title": "Crédits d’assistance Milo",
-          "body": "Milo Max (GPT-6.1 Sol) inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Max achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Standard (GPT-6 Luna) n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+          "body": "Milo Standard et Max partagent 500 crédits d’assistance inclus par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Milo achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Milo Lite n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
         }
       ],
       "links": {
@@ -589,7 +589,7 @@ const fr: PricingHubCopy = {
       },
       {
         title: 'Prix exact avant lancement',
-        body: "L’app affiche le prix live selon le moteur, la durée, la résolution et les options sélectionnés avant génération, même en invité. Vous utilisez Studio ? Milo Max consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
+        body: "L’app affiche le prix live selon le moteur, la durée, la résolution et les options sélectionnés avant génération, même en invité. Vous utilisez Milo dans un générateur ou dans Studio ? Standard et Max partagent les crédits d’assistance inclus et achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
       },
       {
         title: 'Échecs remboursés',
@@ -780,7 +780,7 @@ const es: PricingHubCopy = {
         },
         {
           "title": "Créditos de asistencia de Milo",
-          "body": "Milo Max (GPT-6.1 Sol) incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Max comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Standard (GPT-6 Luna) no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+          "body": "Milo Standard y Max comparten 500 créditos de asistencia incluidos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Milo comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Milo Lite no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
         }
       ],
       "links": {
@@ -804,7 +804,7 @@ const es: PricingHubCopy = {
       },
       {
         title: 'Precio exacto antes de lanzar',
-        body: "La app muestra el precio vivo según el motor, la duración, la resolución y las opciones antes de generar, incluso como invitado. ¿Usas Studio? Milo Max utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
+        body: "La app muestra el precio vivo según el motor, la duración, la resolución y las opciones antes de generar, incluso como invitado. ¿Usas Milo en un generador o en Studio? Standard y Max comparten los créditos de asistencia incluidos y comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
       },
       {
         title: 'Fallos reembolsados',

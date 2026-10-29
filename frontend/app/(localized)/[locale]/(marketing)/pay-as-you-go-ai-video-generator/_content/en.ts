@@ -216,7 +216,7 @@ export const enPayAsYouGoContent = {
     budgetTemplate: "Planning three attempts? At an unchanged quote of {unitPrice}, three completed generations would use {totalPrice} in media credits.",
     budgetContext: "LTX 2.5 Pro · 10s 720p · audio off.",
     budgetCaveat: "This is a budget illustration, not a promise that three attempts will produce the result you want. Media credits used are separate from the minimum top-up, which starts at $10. Changed settings or prices require a new quote.",
-    studioAssistance: "Using Studio? Milo Max uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
+    studioAssistance: "Using Milo in a generator or Studio? Standard and Max share included and purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
     studioLinkLabel: "Open Studio",
     creditNotes: {
       "title": "Credit validity before you top up",
@@ -231,7 +231,7 @@ export const enPayAsYouGoContent = {
         },
         {
           "title": "Milo assistance credits",
-          "body": "Milo Max (GPT-6.1 Sol) includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Max packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Standard (GPT-6 Luna) has no extra assistance fee, subject to request limits and service availability."
+          "body": "Milo Standard and Max share 500 included assistance credits per UTC calendar month. Unused included credits do not carry over. Purchased Milo packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Milo Lite has no extra assistance fee, subject to request limits and service availability."
         }
       ],
       "links": {
