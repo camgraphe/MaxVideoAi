@@ -13,14 +13,42 @@ After verification, the route passes the `Stripe.Event` to
 `stripe-webhook-event-processor.ts`. The processor filters supported event types before creating an
 idempotency record. Unsupported events are acknowledged without a database write.
 
-For a supported event, `beginStripeEvent` inserts its event ID. An existing ID returns `duplicate`,
-which the route acknowledges with `{ received: true, duplicate: true }`. Before that acknowledgement,
-successful top-up event types get one measurement-only MCP attribution replay from their canonical
-stored receipt; this path never dispatches a wallet handler or changes credit, and measurement
-unavailability remains fail-open. A successful first-delivery handler is followed by
-`markStripeEventProcessed`. If a product handler throws, `rollbackStripeEvent` removes the event
-record before the error reaches the route, allowing Stripe's later delivery retry to process the
-event again.
+For a supported event, `runStripeEvent` owns a transaction on a separate bounded
+connection pool. A transaction-level advisory lock serializes its event ID. If the
+lock is occupied, the processor throws and the route returns HTTP 500 so Stripe can
+retry; an active event is never acknowledged as a completed duplicate. The claim
+insert, completion marker and commit share this lifecycle transaction. Only a
+committed `processed_at` returns `duplicate`, followed by the existing measurement-only
+MCP replay; measurement unavailability remains fail-open on that duplicate path.
+
+Schema, connection, handler, completion-write and commit failures propagate to the
+route. Rollback or process disconnection releases the lock and removes a new
+uncommitted claim without a separate DELETE. Business handlers retain their own
+transactions and canonical idempotency keys: a receipt can commit before the event
+marker. Retrying that event must reuse the receipt, not credit again. A lost lifecycle
+connection cannot cancel external or business I/O already in progress. The runner
+waits for its callback and never acknowledges before the lifecycle COMMIT; safety
+of late business effects still depends on the handler's own deduplication.
+
+Legacy committed rows with `processed_at=NULL` can resume only for the three
+successful top-up event types and `invoice.paid`, which reconcile canonical receipt
+identities. Legacy unfinished failed-card and refund events throw for reconciliation
+and remain intact: older failed-card records lacked event IDs, and older refund
+analytics sent directly without an outbox key. Automatically replaying those historical
+effects is unsafe. New events of all seven handled types use the transaction lifecycle.
+This change performs no historical database sweep or manual Stripe resend.
+
+The lifecycle pool has at most two connections per process, a five-second connection
+timeout and ten-second idle pool timeout. SQL lock waits are limited to two seconds,
+statements to five seconds, and idle lifecycle transactions to sixty seconds. Those
+limits produce retryable failures, never a success fallback. Transaction-level locks
+work with transaction pooling; session-level advisory locks must not replace them.
+The separate JavaScript pool avoids exhausting the application's own pool while
+handlers wait for business connections. It does not establish capacity of a shared
+PgBouncer/backend pool: deployment must reserve backend capacity for both lifecycle
+transactions and business work across all instances. Qualify this on the target proxy
+and drain old webhook workers before relying on serialized legacy recovery in a mixed
+rollout. No database/schema migration or SDK/API-version upgrade is required.
 
 Each event type has one handler owner:
 
@@ -50,16 +78,17 @@ used only when no database is configured. An error after the receipt commits
 also propagates; canonical receipt identities keep its retry from crediting twice.
 `tests/stripe-topup-retry-postgres.test.ts` covers SQL/schema failures, event
 rollback, concurrent payment redelivery, a post-commit failure, and mock mode.
-This does not recover an event marker abandoned by a process interruption or a
-failed rollback; the current event-state owner still treats every existing ID
-as duplicate, including `processed_at=NULL`.
+`tests/stripe-event-recovery-postgres.test.ts` additionally kills real child processes
+before and after a durable credit, injects marker-update/COMMIT failures, terminates
+the lifecycle connection, and verifies busy delivery, independent progress, legacy
+quarantine and one-credit recovery on disposable PostgreSQL 17.
 
 GA4 delivery is owned by the [durable payment outbox](ga4-payment-outbox.md).
 The receipt transaction queues both wallet events under a savepoint; a versioned
 receipt marker allows recent-only repair without changing credit. The webhook
 never waits for Google. Refund notifications enqueue the existing `topup_refunded`
 delta by charge/cumulative amount; an enqueue failure propagates so the processor
-releases its event marker for Stripe retry. Admin and consent eligibility are
+rolls back its lifecycle transaction for Stripe retry. Admin and consent eligibility are
 rechecked by the worker, not inferred from HTTP receipt.
 
 Wallet top-up Checkout Sessions enable Stripe's post-purchase invoice creation. The completed
@@ -74,7 +103,7 @@ payment methods are credited by `checkout.session.async_payment_succeeded`. `inv
 the existing canonical top-up receipt with the final hosted invoice and PDF without crediting the
 wallet again. New top-up invoices carry `metadata.kind=topup`. If `invoice.paid`
 arrives before its canonical receipt exists, the handler throws and the event processor
-releases its idempotency marker so Stripe can retry document synchronization. Unrelated
+rolls back its lifecycle transaction so Stripe can retry document synchronization. Unrelated
 invoices remain acknowledged. This adds no credit and does not repair old cached links.
 The live webhook endpoint must subscribe to every handled event in the table above.
 
@@ -127,13 +156,15 @@ Automatic dispute restrictions and ledger adjustments require their own reviewed
 Run the focused webhook checks first:
 
 ```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/stripe-webhook-event-processor.test.ts tests/stripe-webhook-topup-events.test.ts tests/stripe-webhook-architecture.test.ts tests/stripe-webhook-documents.test.ts tests/stripe-topup-analytics-contract.test.ts tests/stripe-receipt-documents.test.ts
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/stripe-event-recovery-postgres.test.ts tests/stripe-topup-retry-postgres.test.ts tests/stripe-webhook-event-processor.test.ts tests/stripe-webhook-topup-events.test.ts tests/stripe-webhook-architecture.test.ts tests/stripe-webhook-documents.test.ts tests/stripe-topup-analytics-contract.test.ts tests/stripe-receipt-documents.test.ts
 pnpm --prefix frontend exec tsc --noEmit --pretty false
 npm run architecture:audit -- --min-lines 500
 git diff --check
 ```
 
-Then run every repository gate once before committing:
+For local iterations, use focused checks as required by the root AGENTS. Before
+merging, run the required Quality CI lanes and delivery checks on the latest
+candidate. The complete local qualification commands remain:
 
 ```bash
 pnpm test:validate
@@ -151,3 +182,8 @@ The repository-wide Stripe SDK and API-version upgrade is separate work. This we
 preserves Stripe SDK `14.25.0` and API version `2023-10-16`. An upgrade must review all Stripe
 integration surfaces together using the installed `stripe-best-practices` and `upgrade-stripe`
 skills; do not upgrade one route in isolation.
+
+The retry/acknowledgement contract follows [Stripe webhook guidance](https://docs.stripe.com/webhooks).
+Lock release follows [PostgreSQL 17 transaction-level advisory locks](https://www.postgresql.org/docs/17/explicit-locking.html#ADVISORY-LOCKS).
+These references explain protocol behavior; local tests do not certify live Stripe
+delivery, production connection capacity or historical records missing every receipt identity.

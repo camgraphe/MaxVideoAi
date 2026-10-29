@@ -7,6 +7,10 @@ declare module 'pg' {
     database?: string;
     options?: string;
     max?: number;
+    application_name?: string;
+    connectionTimeoutMillis?: number;
+    idleTimeoutMillis?: number;
+    allowExitOnIdle?: boolean;
   }
 
   export interface QueryResult<T = unknown> {

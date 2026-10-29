@@ -22,9 +22,9 @@ test('Stripe webhook event idempotency has one route-local owner', () => {
 
   assert.match(processor, /from ['"]\.\/stripe-webhook-event-state['"]/);
   assert.doesNotMatch(route, /stripe_webhook_events/);
-  assert.match(eventState, /export async function beginStripeEvent/);
-  assert.match(eventState, /export async function markStripeEventProcessed/);
-  assert.match(eventState, /export async function rollbackStripeEvent/);
+  assert.match(eventState, /export async function runStripeEvent/);
+  assert.match(processor, /dependencies\.runStripeEvent\(event,/);
+  assert.doesNotMatch(processor, /beginStripeEvent|markStripeEventProcessed|rollbackStripeEvent/);
   assert.match(eventState, /ON CONFLICT \(event_id\) DO NOTHING/);
 });
 

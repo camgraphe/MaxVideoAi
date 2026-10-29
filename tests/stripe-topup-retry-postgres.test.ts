@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import { build } from 'esbuild';
 import type Stripe from 'stripe';
+import type { CanonicalStripeTopupInput } from '../frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence';
 import { createStripeWebhookEventProcessor } from '../frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-processor';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 
@@ -14,9 +15,10 @@ test('a failed durable top-up releases its webhook claim and retries exactly onc
   const folder = mkdtempSync(join(tmpdir(), 'stripe-topup-retry-'));
   const previous = process.env.DATABASE_URL;
   process.env.DATABASE_URL = pg.databaseUrl;
-  let producerPool: { end(): Promise<void> } | undefined;
+  const resources: { producerPool?: { end(): Promise<void> }; eventPool?: { end(): Promise<void> } } = {};
   t.after(async () => {
-    await producerPool?.end();
+    await resources.eventPool?.end();
+    await resources.producerPool?.end();
     if (previous === undefined) delete process.env.DATABASE_URL;
     else process.env.DATABASE_URL = previous;
     rmSync(folder, { recursive: true, force: true });
@@ -35,7 +37,7 @@ test('a failed durable top-up releases its webhook claim and retries exactly onc
   const output = join(folder, 'producer.cjs');
   await build({ stdin: { contents: `
     export { recordStripeTopup } from './frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence';
-    export { beginStripeEvent, markStripeEventProcessed, rollbackStripeEvent } from './frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-state';
+    export { runStripeEvent, getStripeEventPool } from './frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-state';
     export { getDb } from './frontend/src/lib/db';
     export { getMockWalletBalance } from './frontend/src/lib/wallet';
     export { setSchemaFailure } from '@/lib/schema';
@@ -52,14 +54,14 @@ test('a failed durable top-up releases its webhook claim and retries exactly onc
       b.onLoad({ filter: /.*/, namespace: 'boundary' }, args => ({ contents: stubs[args.path], loader: 'ts' }));
     } }] });
   const producer = createRequire(resolve('frontend/package.json'))(output);
-  producerPool = producer.getDb();
-  let input = { userId: 'topup-retry-owner', stripeLiveMode: true, walletAmountCents: 2500,
+  resources.producerPool = producer.getDb();
+  resources.eventPool = producer.getStripeEventPool();
+  let input: CanonicalStripeTopupInput = { userId: 'topup-retry-owner', stripeLiveMode: true, walletAmountCents: 2500,
     walletCurrency: 'USD', settlementAmountCents: 2500, settlementCurrency: 'USD', paymentIntentId: 'pi_retry', metadata: {} };
   const baselineMock = producer.getMockWalletBalance(input.userId);
   const unexpected = async () => { throw new Error('Unexpected event handler'); };
   const processEvent = createStripeWebhookEventProcessor({
-    beginStripeEvent: producer.beginStripeEvent, markStripeEventProcessed: producer.markStripeEventProcessed,
-    rollbackStripeEvent: producer.rollbackStripeEvent, replayMcpTopupAttribution: async () => {},
+    runStripeEvent: producer.runStripeEvent, replayMcpTopupAttribution: async () => {},
     handleCheckoutSessionCompleted: async () => producer.recordStripeTopup(input, { receiptsPriceOnly: false }),
     handlePaymentIntentSucceeded: unexpected, handlePaymentIntentFailed: unexpected,
     handleChargeFailed: unexpected, handleChargeRefunded: unexpected, handleInvoicePaid: unexpected,
@@ -109,6 +111,28 @@ test('a failed durable top-up releases its webhook claim and retries exactly onc
     assert.deepEqual((await pg.pool.query("SELECT count(*)::int n, sum(amount_cents)::int cents FROM app_receipts WHERE stripe_payment_intent_id='pi_post_commit'")).rows, [{ n: 1, cents: 2500 }]);
     assert.equal(producer.getMockWalletBalance(input.userId), baselineMock);
   });
+  await t.test('an abandoned event can resume and credit exactly once', async () => {
+    input = { ...input, paymentIntentId: 'pi_abandoned' };
+    const abandoned = { ...event, id: 'evt_abandoned' };
+    await pg.pool.query('INSERT INTO stripe_webhook_events(event_id,event_type) VALUES($1,$2)', [abandoned.id, abandoned.type]);
+    assert.equal(await processEvent(abandoned, options), 'handled');
+    assert.equal(await processEvent(abandoned, options), 'duplicate');
+    assert.deepEqual((await pg.pool.query("SELECT count(*)::int n, sum(amount_cents)::int cents FROM app_receipts WHERE stripe_payment_intent_id='pi_abandoned'")).rows, [{ n: 1, cents: 2500 }]);
+    assert.ok((await pg.pool.query('SELECT processed_at FROM stripe_webhook_events WHERE event_id=$1', [abandoned.id])).rows[0].processed_at);
+  });
+  for (const identity of ['payment-intent-only', 'checkout-session-only']) {
+    await t.test(`legacy unfinished event reuses an older ${identity} receipt`, async () => {
+      const paymentIntentId = identity === 'payment-intent-only' ? 'pi_legacy_only' : null;
+      const stripeCheckoutSessionId = identity === 'checkout-session-only' ? 'cs_legacy_only' : null;
+      input = { ...input, userId: `legacy-${identity}`, paymentIntentId, stripeCheckoutSessionId };
+      await producer.recordStripeTopup(input, { receiptsPriceOnly: false });
+      const legacy = { ...event, id: `evt_legacy_${identity}` };
+      await pg.pool.query('INSERT INTO stripe_webhook_events(event_id,event_type) VALUES($1,$2)', [legacy.id, legacy.type]);
+      assert.equal(await processEvent(legacy, options), 'handled');
+      assert.equal(await processEvent(legacy, options), 'duplicate');
+      assert.deepEqual((await pg.pool.query('SELECT count(*)::int n, sum(amount_cents)::int cents FROM app_receipts WHERE user_id=$1', [input.userId])).rows, [{ n: 1, cents: 2500 }]);
+    });
+  }
   await t.test('without a configured database the mock ledger still credits and deduplicates', async () => {
     delete process.env.DATABASE_URL;
     try {
