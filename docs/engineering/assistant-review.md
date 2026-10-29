@@ -77,7 +77,7 @@ composer retention.
 Apply **migrations 90 then 91** explicitly after Studio 52 and composer 85. Migration 90 adds the
 nullable native Studio snapshot, a metadata-only access log and append-only review
 annotations, plus their indexes. Reapplying it is safe. Do not run migrations from
-readers. The existing Studio v1 viewer is left compatible. Enable the Studio capture
+readers. The existing Studio v1 quality-review reader enforces the same 90-day expiry. Enable the Studio capture
 flag only after migrating its database through 91 and publishing the customer information. Composer capture uses existing storage.
 Keep the flag off for rollback; do not erase historical financial evidence.
 
@@ -152,3 +152,11 @@ including malformed/refused/incomplete/oversized output review, nested credentia
 and null-versus-truncated evidence. TypeScript, targeted server lint, public exposure
 and diff checks pass. The earlier full frontend lint has 0 errors / 7 existing warnings.
 Required Quality CI remains a merge gate; this is not a full-repository green claim.
+
+
+Retention increment qualification (30 October): 13 focused shared/legacy-review,
+cron, retention and real composer PostgreSQL/DOM checks passed. Independent review
+found one Important gap in the legacy Studio reveal path; a regression reproduced
+the bypass, then passed after the shared database-clock boundary and 410 handling
+were applied there too. No Critical or deferred Minor findings. The original
+customer history and operational/financial viewers remain separate lifecycles.

@@ -50,6 +50,7 @@ backdating, production schema/configuration or legal-publication change was made
 
 Local PostgreSQL qualification covers expiry before cleanup, exact-field removal,
 scoped IDs, locked/concurrent/repeated batches and old composer recovery with the
-real credit ledger. Seven focused runtime tests and 49 existing legal/marketing
-checks passed. Full CI and Preview must qualify the new commit; prior success at
+real credit ledger. Thirteen focused runtime/legacy-review tests and 49 existing legal/marketing
+checks passed. Independent review found and corrected the legacy Studio review
+age bypass; its PostgreSQL and DOM regressions failed before the fix and pass after. Full CI and Preview must qualify the new commit; prior success at
 `f175c2941` does not qualify this increment.

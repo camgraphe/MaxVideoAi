@@ -14,6 +14,10 @@ export function StudioReviewReveal({ scope }: { scope: ReviewScope }) {
     setLoading(true); setError(null);
     try {
       const response = await fetch('/api/admin/studio/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(scope), cache: 'no-store' });
+      if (response.status === 410) {
+        setDetail(null);
+        throw new Error('The 90-day review window has expired. Detailed content is no longer available for review.');
+      }
       if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? 'Admin access is required.' : response.status === 404 ? 'This retained turn is no longer available.' : 'Evidence or access auditing is unavailable. No content was revealed.');
       const payload = await response.json() as { detail: ReviewDetail };
       setDetail(payload.detail);
