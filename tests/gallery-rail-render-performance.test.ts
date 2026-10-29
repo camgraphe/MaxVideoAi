@@ -130,3 +130,40 @@ test('scrollbar updates skip cards while local card focus and menus remain inter
     assert.ok(h.probe.counts.GroupedJobCard > 0, 'card local focus state still renders below the memo boundary');
   } finally { h.close(); }
 });
+
+test('starter samples never present their historical charge as a recreation price', async () => {
+  const h = await harness(1);
+  try {
+    h.run(() => h.fixture.job(0, { curated: true, finalPriceCents: 440, currency: 'USD', pricingSnapshot: { totalCents: 440, currency: 'USD' } }));
+    assert.match(h.win.document.body.textContent!, /Sample/);
+    assert.doesNotMatch(h.win.document.body.textContent!, /\$4\.40/);
+    h.run(() => h.fixture.select('group-0'));
+    h.run(() => h.fixture.render());
+    assert.doesNotMatch(h.win.document.body.textContent!, /\$4\.40/);
+  } finally { h.close(); }
+});
+
+test('owned rail prices identify the recorded cost and preserve final charge precedence', async () => {
+  const h = await harness(1);
+  try {
+    h.run(() => h.fixture.job(0, { finalPriceCents: 206, currency: 'USD', pricingSnapshot: { totalCents: 440, currency: 'USD' } }));
+    assert.match(h.win.document.body.textContent!, /Original cost.*\$2\.06/);
+    assert.doesNotMatch(h.win.document.body.textContent!, /\$4\.40/);
+    h.run(() => h.fixture.locale('fr'));
+    assert.match(h.win.document.body.textContent!, /Coût d’origine.*\$2\.06/);
+    h.run(() => h.fixture.locale('es'));
+    assert.match(h.win.document.body.textContent!, /Coste original.*\$2\.06/);
+  } finally { h.close(); }
+});
+
+test('a rail batch adds each job cost once, including image jobs with multiple outputs', async () => {
+  const h = await harness(1);
+  try {
+    h.run(() => h.fixture.job(0, { finalPriceCents: 32, currency: 'USD', videoUrl: null,
+      renderIds: ['https://fixture.invalid/first.png', 'https://fixture.invalid/second.png'], iterationCount: 2 }));
+    assert.match(h.win.document.body.textContent!, /Original cost.*\$0\.32/);
+    h.run(() => h.fixture.addMember());
+    h.run(() => h.fixture.job(1, { finalPriceCents: 18, currency: 'USD' }));
+    assert.match(h.win.document.body.textContent!, /Original cost.*\$0\.50/);
+  } finally { h.close(); }
+});

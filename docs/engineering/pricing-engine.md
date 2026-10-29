@@ -43,6 +43,18 @@ the 324 supported Edit classes through the normal append-only store and an atomi
 release event. Exact exceptions, stale review and partial writes fail closed.
 It does not activate execution. See the [LAS release procedure](../model-launch/seedance-2-5-las-edit.md).
 
+## Workspace gallery rail prices
+
+`GalleryRailCards` hides recorded amounts on curated starter samples: their old
+charge and incomplete public settings do not establish the price of recreating
+them. Owned renders retain their stored final amount (or stored quote fallback),
+labeled as the original cost. Group totals still count each job once, including
+multi-output image jobs. Selecting/reusing a render obtains the current price
+through the composer's existing preflight; the rail adds no pricing requests and
+never rewrites paid history. `gallery-rail-render-performance.test.ts` covers
+sample suppression, localized cost labels, final-amount precedence, batch totals
+and the existing prompt-input render budget.
+
 ## Studio conversational estimates
 
 Studio whole-film estimates compose this same canonical read seam through
