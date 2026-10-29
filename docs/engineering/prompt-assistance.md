@@ -51,6 +51,8 @@ Only role/label, supported token and width/height/duration metadata reach the LL
 
 Dedicated Kling subject identities, image-mask content and owned-generation-only source details remain unavailable to Milo; the adapter marks these cases explicitly and the user must describe their intended constraints. Full visual/audio analysis and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
 
+The agreed next perception scope is **images on Lite; images, video and audio on Standard and Max**. This is not yet active in the composers. See the [reference-perception integration scope](prompt-assistance-reference-perception.md) for existing Studio owners, current API modality support and required acceptance evidence.
+
 ## Calls and existing credits
 
 `/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
