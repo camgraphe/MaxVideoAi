@@ -117,7 +117,9 @@ export async function chooseStudioAssistance(userId:string,raw:StudioAssistanceC
     return readStudioAssistanceStatus(userId,policy,tx);
   });
 }
-export async function openStudioAssistanceTurn(actor:StudioGenerationActor,requestId:string,policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor,frozenModel?:StudioAssistantModel):Promise<AssistanceTurn>{
+/** Authorized assistance owner. projectId is a Studio project or a persisted `composer:<session UUID>` scope; never a generation actor. */
+export type AssistanceScope = {userId:string;projectId:string};
+export async function openStudioAssistanceTurn(actor:AssistanceScope,requestId:string,policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor,frozenModel?:StudioAssistantModel):Promise<AssistanceTurn>{
   requireEnabled(policy);
   const open=async(tx:TransactionQueryExecutor)=>{
     const account=await lockAccount(tx,actor.userId,policy);

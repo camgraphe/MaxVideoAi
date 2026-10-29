@@ -1,0 +1,69 @@
+import {query,withDbTransaction} from '@/lib/db';
+import {promptAssistanceReplySchema,promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
+import {readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall,markStudioAssistanceUnknown} from '@/server/studio/assistance-ledger';
+import {buildPromptAssistanceContext} from './context';
+import {claimPromptRequest,composerScope,readPromptHistory,readPromptRequest,promptScopeValues,type PromptRequestRow} from './repository';
+import {countPromptTokens,createPromptResponse,promptResponseParams} from './provider';
+
+type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse};
+async function result(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
+  return {sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,
+    state:row.state==='complete'?'complete':row.state==='failed'?'failed':row.state==='unknown'||(row.call_id&&new Date(row.lease_expires_at).getTime()<Date.now())?'unknown':'pending',
+    ...(row.reply_json?{reply:row.reply_json}:{}),...(row.error?{error:row.error}:{}),assistance:await readStudioAssistanceStatus(row.user_id,policy)};
+}
+/** Read only. Recovery settlement is an explicit POST of the original request. */
+export async function readPromptAssistance(userId:string,sessionId:string,requestId:string,policy=studioAssistancePolicy()) {
+  return result(await readPromptRequest(userId,sessionId,requestId),policy);
+}
+async function finishRecorded(row:PromptRequestRow,policy:StudioAssistancePolicy){
+  if(!row.response_json||!row.call_id)return result(row,policy);
+  return withDbTransaction(async tx=>{
+    await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${row.user_id}`]);
+    row=await readPromptRequest(row.user_id,row.session_id,row.request_id,tx);
+    if(row.state==='complete'||row.state==='failed')return row;
+    const response=row.response_json!;
+    if(!await settleStudioAssistanceCall(row.call_id!,row.user_id,response,tx)){
+      return (await tx.query<PromptRequestRow>("UPDATE prompt_assistance_requests SET state='unknown',error='USAGE_UNRESOLVED',updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *",promptScopeValues(row)))[0];
+    }
+    let reply=null,error=null;
+    try{
+      if(response.status!=='completed')throw new Error('OUTPUT_INCOMPLETE');
+      reply=promptAssistanceReplySchema.parse(JSON.parse(response.output_text));
+      const maxChars=(row.context_json as {maxChars:number}).maxChars;
+      if(reply.text&&reply.text.length>maxChars)throw new Error('OUTPUT_TOO_LONG');
+    }catch{error='OUTPUT_INVALID';}
+    return (await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
+  }).then(saved=>result(saved,policy));
+}
+export async function sendPromptAssistance(userId:string,raw:PromptAssistanceRequest,deps:Dependencies={}) {
+  const input=promptAssistanceRequestSchema.parse(raw),policy=deps.policy??studioAssistancePolicy();
+  if(!policy.enabled)throw new Error('ASSISTANCE_DISABLED');
+  const {row,claimed}=await claimPromptRequest(userId,input,policy);
+  if(!claimed)return row.response_json?finishRecorded(row,policy):result(row,policy);
+  let dispatched=false;
+  try {
+    const context=await (deps.buildContext??buildPromptAssistanceContext)(userId,input);
+    const params=promptResponseParams(row,context,await readPromptHistory(row));
+    const inputTokens=await(deps.count??countPromptTokens)(params);
+    if(!Number.isSafeInteger(inputTokens)||inputTokens<1||inputTokens>32000)throw new Error('CONTEXT_TOO_LARGE');
+    const call=await withDbTransaction(async tx=>{
+      await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${userId}`]);
+      const current=await readPromptRequest(userId,input.sessionId,input.requestId,tx);
+      if(current.state!=='preparing'||new Date(current.lease_expires_at).getTime()<=Date.now())throw new Error('REQUEST_INTERRUPTED');
+      const reserved=await reserveStudioAssistanceCall({...composerScope(userId,input.sessionId),requestId:input.requestId,leaseId:row.lease_id,index:0,inputTokens,outputTokens:2200},policy,tx);
+      await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(context)]);
+      return reserved;
+    });
+    row.call_id=call.id;dispatched=true;
+    const response=await (deps.create??createPromptResponse)(params);
+    // Persist supplier evidence before settlement; replay can finish without another provider call.
+    await query("UPDATE prompt_assistance_requests SET response_json=$4::jsonb,state=CASE WHEN state='failed' THEN state ELSE 'reported' END,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND call_id=$5 AND response_json IS NULL",[...promptScopeValues(row),JSON.stringify(response),call.id]);
+    return await finishRecorded(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
+  } catch(error) {
+    if(dispatched&&row.call_id)await markStudioAssistanceUnknown(row.call_id,userId);
+    const known=error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
+    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known]);
+    return result(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
+  }
+}
