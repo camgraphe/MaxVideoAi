@@ -131,7 +131,7 @@ export async function runStudioImageActions(options: {
   const policy = options.assistancePolicy ?? studioAssistancePolicy();
   // Injected response creators are offline qualification seams. Native dispatch always requires the monetary gate.
   const assistance = policy.enabled || !options.createResponse ? await openStudioAssistanceTurn(actor,turn.request_id,policy) : null;
-  const usedLuna=options.taskExecution&&policy.credits&&assistance?.model==='gpt-6.1-sol'
+  const usedLuna=options.taskExecution&&policy.credits&&assistance&&assistance.model!=='gpt-6-luna'
     ? (await readStudioTaskUsage({user_id:actor.userId,project_id:actor.projectId,request_id:options.taskExecution.taskRequestId})).usedLuna : false;
   let currentModel=usedLuna?'gpt-6-luna' as const:assistance?.model??'gpt-6.1-sol';
   const analysisPolicy=studioAnalysisPolicy();
@@ -139,7 +139,7 @@ export async function runStudioImageActions(options: {
   const analysis=createStudioAnalysisService(actor,{assistancePolicy:policy});
   const hasGreetingCheckpoint=studioGreetingReply(input.message,options.references.length>0)
     ? (await query<{exists:boolean}>('SELECT EXISTS(SELECT 1 FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3) exists',[actor.userId,actor.projectId,turn.request_id]))[0].exists:false;
-  const director = createStudioConversationDirector({model: assistance?.model,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
+  const director = createStudioConversationDirector({model: assistance?.model,runtimePolicy:assistance?.tariff_snapshot?.runtime,modelForNextCall:()=>currentModel,createResponse: options.createResponse, mediaEnabled: options.mediaEnabled,editingEnabled: options.editingEnabled,exportsEnabled: options.exportsEnabled,analysisEnabled,analysisProfiles:{video:!!analysisPolicy?.video,audio:!!analysisPolicy?.audio},assistanceCreditsEnabled:policy.credits===true,taskExecution:options.taskExecution,localGreetingEnabled:!options.responseReplayOnly&&!hasGreetingCheckpoint});
   let currentCallId: string;
   const execute = createStudioActionExecutor(actor, {referenceFingerprint:options.referenceFingerprint,enabled: options.enabled, generation, factories: options.factories, mediaEnabled: options.mediaEnabled,
     recallProject:options.taskExecution?text=>recallStudioTaskMemory(actor,text):undefined,
@@ -228,7 +228,7 @@ export async function runStudioImageActions(options: {
     project: await readStudioConversationProject(actor,{exportsEnabled:options.editingEnabled&&options.exportsEnabled,...(options.taskExecution?{taskContext:{message:input.message,requestId:options.taskExecution.taskRequestId}}:{})}),
     checkpoint: async (index, create, params, checkpointOptions) => {
       let solBounds:StudioLunaFallback['solBounds'];
-      let lunaFallback:StudioLunaFallback|undefined=currentModel==='gpt-6-luna'&&assistance?.model==='gpt-6.1-sol'?{}:undefined;
+      let lunaFallback:StudioLunaFallback|undefined=currentModel==='gpt-6-luna'&&assistance&&assistance.model!=='gpt-6-luna'?{}:undefined;
       const checkpoint=()=>checkpointStudioResponse(actor, turn, index, create, assistance ? {prepare: async () => {
       if (await getActiveAccountRestrictionStrict(actor.userId)) {
         throw new AgentApiError('ACCOUNT_RESTRICTED','This account is temporarily restricted. Open MaxVideoAI for help.');
@@ -237,28 +237,28 @@ export async function runStudioImageActions(options: {
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if(lunaFallback){
         params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
-        params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
+        params.reasoning={effort:options.taskExecution?.policyVersion==='studio-task-budget-2026-10-29-v3'?'high':params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
-        params.instructions=(params.instructions??'')+'\nMilo has continued this task in Standard (GPT-6 Luna) because the next Max call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
+        params.instructions=(params.instructions??'')+'\nMilo has continued this task in Lite (GPT-6 Luna) because the next credit-funded call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
       if (!options.countInputTokens && options.createResponse) throw new AgentApiError('ENGINE_UNAVAILABLE','Offline Studio metering requires an injected token counter.');
       const inputTokens = options.countInputTokens ? await options.countInputTokens(params) : (await new OpenAI({apiKey: process.env.OPENAI_API_KEY,maxRetries: 0,timeout: 15000}).responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;
       if (!Number.isSafeInteger(inputTokens) || inputTokens < 0 || inputTokens > 272000) throw new AgentApiError('PARAMETER_INVALID','This Studio context exceeds the supported assistance limit.');
       if(options.taskExecution&&inputTokens>options.taskExecution.profile.maxInputTokens)throw new StudioTaskStop("context","The current context exceeds this task allowance.");
       const outputTokens=params.max_output_tokens??2200;
-      if(currentModel==='gpt-6.1-sol')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
+      if(currentModel!=='gpt-6-luna')solBounds={inputTokens,outputTokens,allowCreditCompletion:true};
       return {policy,inputTokens,outputTokens,lunaFallback};
     },applyReservation:call=>{if(params)params.max_output_tokens=call.output_token_bound;if(readStudioCreditCompletion(call.pricing_snapshot))checkpointOptions?.onCreditCompletion?.();}} : undefined, {replayOnly: options.responseReplayOnly || checkpointOptions?.replayOnly});
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;
-        if(!options.taskExecution||!policy.credits||currentModel!=='gpt-6.1-sol'||!params||!solBounds
+        if(!options.taskExecution||!policy.credits||currentModel==='gpt-6-luna'||!params||!solBounds
           ||options.responseReplayOnly||checkpointOptions?.replayOnly||options.taskExecution.recoveryOnly
           ||!(error instanceof AgentApiError)||error.code!=='SPENDING_LIMIT_EXCEEDED'||action?.type!=='studio_assistance'
           ||typeof action.reason!=='string'||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))throw error;
         // The declined reservation created no response/call. Retry this same step once with Luna.
         currentModel='gpt-6-luna';lunaFallback={solBounds};
-        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:params.reasoning?.effort==='low'?'low':'medium'};
+        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:options.taskExecution?.policyVersion==='studio-task-budget-2026-10-29-v3'?'high':params.reasoning?.effort==='low'?'low':'medium'};
         return checkpoint();
       }
     },

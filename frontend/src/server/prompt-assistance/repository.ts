@@ -3,15 +3,16 @@ import {query,withDbTransaction,type QueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {openStudioAssistanceTurn} from '@/server/studio/assistance-ledger';
 import type {StudioAssistancePolicy} from '@/server/studio/assistance-policy';
-import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
+import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistance-contract';
 import type {PromptAssistanceReply,PromptAssistanceRequest} from '@/lib/prompt-assistance/contract';
 import type {Response} from 'openai/resources/responses/responses';
 
-export type PromptRequestRow={user_id:string;session_id:string;request_id:string;input_hash:string;input_json:PromptAssistanceRequest;lease_id:string;lease_expires_at:Date;state:'preparing'|'calling'|'reported'|'complete'|'failed'|'unknown';model:StudioAssistantModel;call_id:string|null;context_json:unknown;response_json:Response|null;reply_json:PromptAssistanceReply|null;error:string|null};
+export type PromptRequestRow={user_id:string;session_id:string;request_id:string;input_hash:string;input_json:PromptAssistanceRequest;lease_id:string;lease_expires_at:Date;state:'preparing'|'calling'|'reported'|'complete'|'failed'|'unknown';model:StudioAssistantModel;runtime_policy?:MiloRuntimePolicy;call_id:string|null;context_json:unknown;response_json:Response|null;reply_json:PromptAssistanceReply|null;error:string|null};
+const requestProjection="SELECT r.*,t.tariff_snapshot->'runtime' runtime_policy FROM prompt_assistance_requests r JOIN studio_assistance_turns t ON t.user_id=r.user_id AND t.project_id='composer:'||r.session_id::text AND t.request_id=r.request_id";
 export const composerScope=(userId:string,sessionId:string)=>({userId,projectId:`composer:${sessionId}`});
 export const promptScopeValues=(row:PromptRequestRow)=>[row.user_id,row.session_id,row.request_id];
 export async function readPromptRequest(userId:string,sessionId:string,requestId:string,db:QueryExecutor={query}) {
-  const row=(await db.query<PromptRequestRow>('SELECT * FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,sessionId,requestId]))[0];
+  const row=(await db.query<PromptRequestRow>(requestProjection+' WHERE r.user_id=$1 AND r.session_id=$2 AND r.request_id=$3',[userId,sessionId,requestId]))[0];
   if(!row)throw new Error('REQUEST_NOT_FOUND');
   return row;
 }
@@ -21,7 +22,7 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
   return withDbTransaction(async tx=>{
     await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${userId}`]);
     if((await tx.query('SELECT 1 FROM prompt_assistance_abandoned_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId])).length)throw new Error('REQUEST_CLOSED');
-    const prior=(await tx.query<PromptRequestRow>('SELECT * FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId]))[0];
+    const prior=(await tx.query<PromptRequestRow>(requestProjection+' WHERE r.user_id=$1 AND r.session_id=$2 AND r.request_id=$3',[userId,input.sessionId,input.requestId]))[0];
     if(prior){if(prior.input_hash!==hash)throw new Error('REQUEST_CONFLICT');return {row:prior,claimed:false};}
     // Never redispatch an expired call. Only pre-dispatch failures can be closed automatically.
     await tx.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp()",[userId]);
@@ -35,7 +36,7 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     if(Number(count.n)>=100)throw new Error('SESSION_FULL');
     const turn=await openStudioAssistanceTurn(composerScope(userId,input.sessionId),input.requestId,policy,tx);
     const row=(await tx.query<PromptRequestRow>(`INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model) VALUES($1,$2,$3,$4,$5::jsonb,$6,'preparing',$7) RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model]))[0];
-    return {row,claimed:true};
+    return {row:{...row,runtime_policy:turn.tariff_snapshot?.runtime},claimed:true};
   });
 }
 export async function readPromptHistory(row:PromptRequestRow) {

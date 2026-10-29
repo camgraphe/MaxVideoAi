@@ -71,7 +71,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
       await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${userId}`]);
       const current=await readPromptRequest(userId,input.sessionId,input.requestId,tx);
       if(current.state!=='preparing'||new Date(current.lease_expires_at).getTime()<=Date.now())throw new Error('REQUEST_INTERRUPTED');
-      const reserved=await reserveStudioAssistanceCall({...composerScope(userId,input.sessionId),requestId:input.requestId,leaseId:row.lease_id,index:0,inputTokens,outputTokens:2200},policy,tx);
+      const reserved=await reserveStudioAssistanceCall({...composerScope(userId,input.sessionId),requestId:input.requestId,leaseId:row.lease_id,index:0,inputTokens,outputTokens:params.max_output_tokens??2200},policy,tx);
       await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(context)]);
       return reserved;
     });

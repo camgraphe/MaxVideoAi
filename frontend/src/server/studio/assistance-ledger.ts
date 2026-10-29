@@ -8,7 +8,7 @@ import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
-import {STUDIO_ASSISTANCE_TARIFF,STUDIO_ASSISTANCE_CREDIT_TARIFF,STUDIO_ASSISTANCE_TERRA_TARIFF,studioCreditTariffForModel,isStudioCreditCall,isStudioCreditTariff,studioAssistanceTariff,studioAssistanceChoiceSchema,type StudioAssistanceStatus,type StudioAssistanceMode,type StudioAssistantModel,type StudioAssistanceChoice} from '@/lib/studio/assistance-contract';
+import {STUDIO_ASSISTANCE_TARIFF,STUDIO_ASSISTANCE_CREDIT_TARIFF,STUDIO_ASSISTANCE_TERRA_TARIFF,studioCreditTariffForModel,isStudioCreditCall,isStudioCreditTariff,studioAssistanceTariff,studioMiloRuntime,type MiloRuntimePolicy,studioAssistanceChoiceSchema,type StudioAssistanceStatus,type StudioAssistanceMode,type StudioAssistantModel,type StudioAssistanceChoice} from '@/lib/studio/assistance-contract';
 import {quoteStudioAssistance} from '../../../server/pricing/quote-studio-assistance';
 import {readStudioUsage,studioProviderReservation,studioProviderRateVersion} from './assistance-provider-facts';
 import {studioAssistancePolicy,studioAssistancePolicyVersion,STUDIO_ASSISTANCE_CAMPAIGN_ID,type StudioAssistancePolicy} from './assistance-policy';
@@ -18,7 +18,7 @@ import {ensureStudioMonthlyCredits,readStudioCreditBalance,existingStudioCreditP
 
 const CAMPAIGN = STUDIO_ASSISTANCE_CAMPAIGN_ID;
 type Account = {user_id:string;selected_model:StudioAssistantModel;paid_enabled:boolean;paid_authorized_cents:number;tariff_version:string|null;sol_limit_nano_usd:string|number;luna_limit_nano_usd:string|number;revision:string|number};
-export type AssistanceTurn = {model:StudioAssistantModel;mode:StudioAssistanceMode;tariff_version:string;policy_version:string};
+export type AssistanceTurn = {model:StudioAssistantModel;mode:StudioAssistanceMode;tariff_version:string;policy_version:string;tariff_snapshot?:{runtime?:MiloRuntimePolicy}};
 /** Server-only proof from a declined Sol preflight; subsequent Luna calls use their saved task evidence. */
 export type StudioLunaFallback = {solBounds?:{inputTokens:number;outputTokens:number;allowCreditCompletion?:boolean}};
 export type AssistanceCall = {id:string;user_id:string;project_id:string;request_id:string;lease_id:string;response_index:number;model:StudioAssistantModel;mode:StudioAssistanceMode;state:'reserved'|'unknown'|'settled';reserved_nano_usd:string|number;reserved_cents:number;input_token_bound:number;output_token_bound:number;response_id:string|null;tariff_version:string;rate_version:string;policy_version:string;pricing_snapshot?:unknown};
@@ -130,7 +130,7 @@ export async function openStudioAssistanceTurn(actor:AssistanceScope,requestId:s
     if(policy.credits)await ensureStudioMonthlyCredits(tx,actor.userId);
     if(account.selected_model==='gpt-6.1-terra'&&!policy.credits)throw new AgentApiError('ENGINE_UNAVAILABLE','Standard requires the shared credit policy.');
     const tariff=policy.credits?studioCreditTariffForModel(account.selected_model):STUDIO_ASSISTANCE_TARIFF;
-    await tx.query(`INSERT INTO studio_assistance_turns(user_id,project_id,request_id,model,mode,policy_version,tariff_version,tariff_snapshot) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb) ON CONFLICT DO NOTHING`,[actor.userId,actor.projectId,requestId,account.selected_model,accountMode(account,policy),studioAssistancePolicyVersion(policy),tariff.version,JSON.stringify(tariff)]);
+    await tx.query(`INSERT INTO studio_assistance_turns(user_id,project_id,request_id,model,mode,policy_version,tariff_version,tariff_snapshot) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb) ON CONFLICT DO NOTHING`,[actor.userId,actor.projectId,requestId,account.selected_model,accountMode(account,policy),studioAssistancePolicyVersion(policy),tariff.version,JSON.stringify({...tariff,...(policy.credits?{runtime:studioMiloRuntime(account.selected_model)}:{})})]);
     return (await tx.query<AssistanceTurn>('SELECT * FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[actor.userId,actor.projectId,requestId]))[0];
   };
   return executor?open(executor):withDbTransaction(open);
@@ -173,7 +173,7 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
       if(!policy.credits||!task||turn.model==='gpt-6-luna')throw new AgentApiError('PARAMETER_INVALID','Luna fallback requires an owned Sol task under the credit policy.');
       const taskUsage=await readStudioTaskUsage(task,tx);
       if(usage.unresolved||taskUsage.unknownCalls)assistanceError('usage_unresolved','Recover unresolved usage before continuing with Lite.');
-      if(input.outputTokens>2200)throw new AgentApiError('PARAMETER_INVALID','Luna fallback needs a bounded response.');
+      if(input.outputTokens>(task.profile_json.maxOutputTokens))throw new AgentApiError('PARAMETER_INVALID','Luna fallback needs a bounded response.');
       if(!taskUsage.usedLuna){
         const bounds=input.lunaFallback.solBounds;
         if(!bounds||!Number.isSafeInteger(bounds.inputTokens)||bounds.inputTokens<0||!Number.isSafeInteger(bounds.outputTokens)||bounds.outputTokens<1)throw new AgentApiError('PARAMETER_INVALID','The declined Sol request bounds are required.');
@@ -201,7 +201,7 @@ export async function reserveStudioAssistanceCall(input:{userId:string;projectId
       if(active.length)fail('luna_busy','Wait for your current Lite message to finish or recover its saved response.');
     }
     const outputTokens=input.outputTokens;
-    const reserved=studioProviderReservation(turn.model,input.inputTokens,outputTokens,task?.profile_json.maxOutputTokens??2200);
+    const reserved=studioProviderReservation(turn.model,input.inputTokens,outputTokens,task?.profile_json.maxOutputTokens??turn.tariff_snapshot?.runtime?.maxOutputTokens??2200);
     if((await readStudioAnalysisExposure(tx,input.userId)).unresolved>0)assistanceError('usage_unresolved','This account has unresolved analysis usage. Recover that analysis before another model call.');
     let creditCompletion:StudioCreditCompletion|null=null;
     let cents=0,receiptId:string|null=null,creditPlan:CreditReservation|null=null;const id=randomUUID();

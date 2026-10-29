@@ -102,7 +102,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
         const generation=(await tx.query<{quote_id:string|null;draft_json:Record<string,unknown>|null}>('SELECT quote_id,draft_json FROM studio_image_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3 FOR UPDATE',[actor.userId,actor.projectId,row.segment_request_id]))[0];
         if(generation?.quote_id||generation?.draft_json?.image||generation?.draft_json?.media||generation?.draft_json?.exportQuote||generation?.draft_json?.analysisQuote)throw new AgentApiError('PARAMETER_INVALID','The delivered preparation has its own confirmation or renewal.');
         const delta=input.maxCredits-row.max_credits;
-        if(input.action==='continue'?delta!==0:row.model!=='gpt-6.1-sol'||![100,250,500].includes(delta))throw new AgentApiError('PARAMETER_INVALID','Review the exact additional task ceiling.');
+        if(input.action==='continue'?delta!==0:row.model==='gpt-6-luna'||![100,250,500].includes(delta))throw new AgentApiError('PARAMETER_INVALID','Review the exact additional task ceiling.');
         if(input.maxCredits>STUDIO_TASK_MAX_CREDITS||row.allowed_calls>=STUDIO_TASK_MAX_CALLS)throw new AgentApiError('PARAMETER_INVALID','Start a new explicit request after this task resource limit.');
         const allowed=Math.min(STUDIO_TASK_MAX_CALLS,row.allowed_calls+row.profile_json.maxCalls),revision=row.revision+1;
         await openStudioAssistanceTurn(actor,input.approvalId,policy,tx,row.model);

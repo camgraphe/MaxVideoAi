@@ -18,7 +18,7 @@ test('a large input context with zero remaining Max credits continues with spons
   const counted:string[]=[],models:string[]=[];
   const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
     countInputTokens:async params=>{counted.push(params.model!);return params.model==='gpt-6.1-sol'?30000:100;},
-    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'medium');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
+    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'high');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
   assert.equal(await runStudioTaskWorkerOnce(worker),true);
   const task=await service.read(input.requestId);
   assert.equal(task.state,'completed','Funding should continue with Luna instead of pausing');assert.equal(task.model,'gpt-6-luna');
@@ -132,7 +132,7 @@ test('Luna tool round trips retain their own reasoning and native function-call 
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?30000:100,createActionResponse:async params=>{
     assert.equal(params.model,'gpt-6-luna');
     assert.equal(params.max_output_tokens,2200,'Each fallback round keeps its recorded output allowance');
-    assert.equal(params.reasoning?.effort,'medium','Each fallback round keeps its recorded reasoning allowance');
+    assert.equal(params.reasoning?.effort,'high','Each fallback round keeps its recorded reasoning allowance');
     if(++calls===1)return {...response(params.model!,'luna-with-tool'),output_text:'',output:[{type:'reasoning' as const,id:'luna-thinking',summary:[],encrypted_content:'luna-opaque'},{type:'function_call' as const,id:'fc-luna-read',status:'completed' as const,name:'project_read',call_id:'luna-project-read',arguments:'{}'}]};
     assert.match(JSON.stringify(params.input),/luna-opaque/);assert.match(JSON.stringify(params.input),/fc-luna-read/);assert.match(JSON.stringify(params.input),/function_call_output/);
     return response(params.model!,'luna-roundtrip-done');

@@ -29,6 +29,11 @@ export type MiloLevel = keyof typeof MILO_LEVELS;
 export function miloLevelForModel(model:StudioAssistantModel):MiloLevel {
   return model==='gpt-6-luna'?'lite':model==='gpt-6.1-terra'?'standard':'max';
 }
+export const MILO_RUNTIME_VERSION='milo-levels-2026-10-29-v1';
+export function studioMiloRuntime(model:StudioAssistantModel) {
+  return {version:MILO_RUNTIME_VERSION,reasoning:MILO_LEVELS[miloLevelForModel(model)].reasoning,maxOutputTokens:6000} as const;
+}
+export type MiloRuntimePolicy=ReturnType<typeof studioMiloRuntime>;
 export function studioCreditTariffForModel(model:StudioAssistantModel) {
   return model==='gpt-6.1-terra'?STUDIO_ASSISTANCE_TERRA_TARIFF:STUDIO_ASSISTANCE_CREDIT_TARIFF;
 }

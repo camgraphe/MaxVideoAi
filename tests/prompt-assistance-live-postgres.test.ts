@@ -12,7 +12,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
   const {readStudioAssistanceStatus,chooseStudioAssistance}=await import('../frontend/src/server/studio/assistance-ledger');
   const {promptAssistanceRequestSchema}=await import('../frontend/src/lib/prompt-assistance/contract');

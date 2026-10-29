@@ -66,7 +66,7 @@ test('paid Sol has a raised hourly allowance but purchased-credit suspension rem
   await f.pool.query("UPDATE studio_assistance_credit_lots SET consumed_credits=total_credits WHERE user_id=$1 AND kind='included'",[actor.userId]);
   status=await chooseStudioAssistance(actor.userId,{action:'disable_paid',expectedRevision:status.revision},f.policy);
   const lease=randomUUID();await f.pool.query("UPDATE studio_tasks SET state='running',phase='thinking',worker_id=$2,lease_expires_at=now()+interval '3 minutes',deadline_at=now()+interval '5 minutes' WHERE request_id=$1",[task.requestId,lease]);
-  await assert.rejects(reserveStudioAssistanceCall({...actor,requestId:task.requestId,leaseId:lease,index:0,inputTokens:100,outputTokens:100},f.policy),/Resume purchased Max credits/);
+  await assert.rejects(reserveStudioAssistanceCall({...actor,requestId:task.requestId,leaseId:lease,index:0,inputTokens:100,outputTokens:100},f.policy),/Resume purchased Milo credits/);
   assert.equal((await readStudioAssistanceStatus(actor.userId,f.policy)).paid.enabled,false);
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id=$1',[actor.userId])).rows[0].n,0);
   await f.pool.query("INSERT INTO user_account_restrictions(user_id,reason,active) VALUES($1,'controlled',true)",[actor.userId]);
