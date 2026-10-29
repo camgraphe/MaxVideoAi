@@ -19,7 +19,7 @@ NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW=1 pnpm --dir frontend dev --port 3018
 
 The sample replies require `NODE_ENV=development`; they never call an LLM or consume credits. The shared Milo panel still reads the real Studio account; explicit account choices or confirmed pack purchases there are real. At the user's request it has no sample badge. Removing the public flag and rebuilding restores the previous presentation. To stop new paid requests, disable `STUDIO_ASSISTANCE_ENABLED` using the existing policy controls; keep the composer endpoint available for recovery/status until outstanding calls are resolved. Disabling the composer endpoint entirely also hides its recovery route. Do not drop the migration or erase usage evidence during rollback.
 
-No shared migration, live activation, deployment or paid LLM call was performed for the first connection. Keep per-worktree environment files private.
+The first connection was verified offline. The subsequent [2026-10-29 live check](milo-live-check-2026-10-29.md) applied migrations to an isolated Neon branch, activated the local app and exercised real LLM calls and credit accounting. The parent database and production remain unchanged. Keep per-worktree environment files private.
 
 ## Ownership and draft safety
 
