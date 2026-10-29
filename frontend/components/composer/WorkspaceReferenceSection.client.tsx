@@ -68,7 +68,8 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
   };
   const collectionRequired = (compact ? assetFields : collections).filter((entry) => entry !== sourceEntry && entry.required && (assets[entry.field.id] ?? []).filter(Boolean).length < (entry.field.minCount ?? 1));
   const collectionAvailability = getReferenceCommandAvailability(collections, assets);
-  const restrictionReasons = getReferenceCommandAvailability(assetFields, assets).reasons;
+  const restrictionReasons = getReferenceCommandAvailability(assetFields, assets).reasons
+    .filter((reason) => !compact || reason !== referenceAuthAction?.label);
   if (assetFields.some((entry) => entry.disabled && !entry.disabledReason?.trim())) {
     restrictionReasons.push(copy.unavailable);
   }
@@ -107,7 +108,7 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
           type="button" className={`app-reference-command${sourceAvailability.addDisabled ? ' is-add-disabled' : ''}`}
           data-reference-command={sourceEntry.field.id} data-add-disabled={sourceAvailability.addDisabled || undefined}
           aria-disabled={!sourceAvailability.canOpen || undefined} aria-haspopup="dialog" aria-expanded={Boolean(activeSource)}
-          aria-describedby={sourceAvailability.addDisabled ? restrictionId : undefined}
+          aria-describedby={sourceAvailability.addDisabled && restrictionReasons.length ? restrictionId : undefined}
           title={sourceEntry.disabledReason ?? sourceLabel}
           onClick={(event) => { if (sourceAvailability.canOpen) open(sourceEntry.field.id, event.currentTarget); }}>
           <span className="app-reference-command-media"><AppGlyph name="video" /></span>
@@ -186,6 +187,9 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
       <WorkspaceReferenceInventory fields={popupFields} sourceFieldId={sourceField?.id} initialFieldId={popupTarget?.fieldId} assets={assets} locale={locale} renderField={(entry) => <>
         {compact && entry.field.type === 'video' ? workflowNotices.map(note=><p key={note.code} role="note" className="mb-3 text-xs leading-relaxed text-text-muted">{note.message}</p>) : null}
         <AssetDropzone key={entry.field.id} {...entry} headerAction={compact ? entry.headerAction : undefined}
+        workspaceDisabledReasonContent={compact && referenceAuthAction && entry.disabledReason?.trim() === referenceAuthAction.label
+          ? <a className="app-reference-signin" href={referenceAuthAction.href}>{referenceAuthAction.label}</a>
+          : undefined}
         allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt && getMediaExcerptImportMode(engine, excerptMode, entry.field.id))}
         density="workspace" engine={engine} caps={caps}
         renderWorkspaceSlot={compact ? (asset, index) => ({ label: referenceLabel(entry, index), selected: popupTarget?.fieldId === entry.field.id && popupTarget.slotIndex === index,

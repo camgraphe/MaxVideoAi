@@ -54,6 +54,7 @@ interface AssetDropzoneProps {
   guidance?: AssetFieldGuidanceCopy | null;
   disabled?: boolean;
   disabledReason?: string | null;
+  workspaceDisabledReasonContent?: ReactNode;
   disabledPresentation?: AssetDisabledPresentation;
 }
 
@@ -79,6 +80,7 @@ export function AssetDropzone({
   guidance,
   disabled = false,
   disabledReason = null,
+  workspaceDisabledReasonContent,
   disabledPresentation = 'default',
 }: AssetDropzoneProps) {
   const { locale } = useI18n();
@@ -371,7 +373,7 @@ export function AssetDropzone({
     return <div className="app-reference-field" data-reference-field={field.id}>
       <div className="app-reference-field-heading"><strong>{fieldTitle}</strong>{required ? <small>{copy.required}</small> : null}{headerAction}</div>
       {workspaceHelperText ? <p className="app-reference-limits">{workspaceHelperText}</p> : null}
-      {disabledReason ? <p className="app-reference-disabled" role="note">{disabledReason}</p> : null}
+      {disabledReason ? <p className="app-reference-disabled" role="note">{workspaceDisabledReasonContent ?? disabledReason}</p> : null}
       <div className="app-reference-slots">
           {renderSlots.map(renderSlot)}
       </div>
