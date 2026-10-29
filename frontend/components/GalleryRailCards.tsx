@@ -56,6 +56,8 @@ export const GalleryRailCards = memo(function GalleryRailCards({
             selected={selectedGroupId === group.id}
             eagerPreview={feedType === 'video' && index < backgroundWarmCount}
             warmOnVisible={false}
+            showPrice={!group.hero.job?.curated}
+            priceLabel={locale === 'fr' ? 'Coût d’origine' : locale === 'es' ? 'Coste original' : 'Original cost'}
           />
         );
       })}

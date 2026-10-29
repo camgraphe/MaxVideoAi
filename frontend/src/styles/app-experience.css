@@ -499,6 +499,8 @@
 .app-experience .app-rail-media-card .app-rail-caption { display: flex; align-items: center; gap: 7px; min-height: 48px; padding: 8px 10px; border-top: 1px solid var(--app-line); }
 .app-experience .app-rail-caption strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .app-experience .app-rail-caption > span { flex-shrink: 0; color: var(--app-muted); font-size: 11px; }
+.app-experience .app-rail-media-card .app-rail-caption-with-cost { flex-wrap: wrap; row-gap: 2px; }
+.app-experience .app-rail-caption-with-cost > .app-rail-cost { flex-basis: 100%; text-align: right; }
 .app-experience .app-rail-media-card > div:first-child > button { min-height: 44px; padding-inline: 10px; font-size: 12px; }
 /* Compact gallery actions: feedback stays inside the fixed visual button. */
 .app-experience .app-rail-media-card > div:first-child button.app-gallery-icon-action { position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 44px; min-width: 32px; min-height: 44px; padding: 0; border: 0; background: transparent; outline: none; box-shadow: none; transform: none; cursor: pointer; }
