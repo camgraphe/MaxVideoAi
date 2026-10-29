@@ -20,6 +20,9 @@ import { useModelPickerEstimates } from './useModelPickerEstimates';
 import { useVisiblePickerModels } from './useVisiblePickerModels';
 import styles from './model-picker.module.css';
 
+type PickerTab = 'selected' | 'all';
+const PICKER_TAB_STORAGE_KEY = 'engineSelect.pickerTab.v1';
+
 export function EnginePickerDialog({ engines, engineId, mode, locale, registryMeta, context, disabledEngineReasons, onSelect, onClose, showLegacy = false, onToggleLegacy, initialAll = false }: {
   engines: EngineCaps[]; engineId: string; mode: Mode; locale: string; registryMeta: EngineRegistryMeta | null;
   context?: EnginePickerContext; disabledEngineReasons?: Record<string, string>; onSelect: (id: string) => void; onClose: () => void;
@@ -33,7 +36,20 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
   const returnTo = useRef<{ id: string; scroll: number } | null>(null);
   const familyGroups = useMemo(() => buildEngineFamilyGroups({ engines, registryMeta, selectedEngineId: engineId, showLegacy }), [engines, registryMeta, engineId, showLegacy]);
   const groups = useMemo(() => getPickerRecommendations(engines, activeMode), [engines, activeMode]);
-  const [tab, setTab] = useState<'selected' | 'all'>(() => initialAll || !groups.length ? 'all' : 'selected');
+  const [preferredTab, setPreferredTab] = useState<PickerTab>(() => {
+    if (initialAll) return 'all';
+    try {
+      return window.localStorage.getItem(PICKER_TAB_STORAGE_KEY) === 'all' ? 'all' : 'selected';
+    } catch {
+      return 'selected';
+    }
+  });
+  const tab = groups.length ? preferredTab : 'all';
+  function chooseTab(value: PickerTab) {
+    setPreferredTab(value);
+    try { window.localStorage.setItem(PICKER_TAB_STORAGE_KEY, value); } catch { /* Optional browser preference. */ }
+    bodyRef.current?.scrollTo?.(0, 0);
+  }
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(() => new Set(familyGroups.filter(group => group.engines.some(engine => engine.id === engineId || getEngineSelectPromotionRank(engine.id) !== Number.MAX_SAFE_INTEGER)).map(group => group.id)));
   const contextKey = context?.key ?? `${engineId}:${activeMode}`;
@@ -101,8 +117,8 @@ export function EnginePickerDialog({ engines, engineId, mode, locale, registryMe
           {query ? <button type="button" className={styles.iconButton} aria-label={copy.clear} onClick={() => { setQuery(''); searchRef.current?.focus(); }}><X size={16} /></button> : null}</div>
           <div className={styles.tabs} role="tablist" aria-label={copy.title}>
             {(['selected', 'all'] as const).filter(value => value !== 'selected' || groups.length).map(value => <button key={value} type="button" role="tab" id={`${panelId}-${value}`} aria-selected={tab === value} aria-controls={panelId} tabIndex={tab === value ? 0 : -1}
-              onKeyDown={event => { if (['ArrowLeft', 'ArrowRight'].includes(event.key) && groups.length) { event.preventDefault(); const next = value === 'selected' ? 'all' : 'selected'; setTab(next); document.getElementById(`${panelId}-${next}`)?.focus(); } }}
-              onClick={() => { setTab(value); bodyRef.current?.scrollTo?.(0, 0); }}>{copy[value]}</button>)}
+              onKeyDown={event => { if (['ArrowLeft', 'ArrowRight'].includes(event.key) && groups.length) { event.preventDefault(); const next = value === 'selected' ? 'all' : 'selected'; chooseTab(next); document.getElementById(`${panelId}-${next}`)?.focus(); } }}
+              onClick={() => chooseTab(value)}>{copy[value]}</button>)}
           </div></> : null}
       </header>
       <div ref={bodyRef} className={styles.body} id={panelId} role={view === 'list' ? 'tabpanel' : undefined} aria-labelledby={view === 'list' ? `${panelId}-${tab}` : undefined}>
