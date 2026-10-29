@@ -4,12 +4,20 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { reviewIssues, type AssistantReviewDetail, type AssistantReviewScope, type Annotation } from '@/server/admin-assistant-review/contracts';
 
+class ReviewExpiredError extends Error {
+  constructor() { super('The 90-day review window has expired. Detailed content is no longer available for review.'); }
+}
+
 export function AssistantReview({ scope }: { scope: AssistantReviewScope }) {
   const [detail, setDetail] = useState<AssistantReviewDetail | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState(''), [saved, setSaved] = useState(false);
   const [verdict, setVerdict] = useState('unreviewed'), [issues, setIssues] = useState<string[]>([]), [note, setNote] = useState('');
   const pending = useRef<{ signature: string; id: string } | null>(null);
   async function send(body: object) {
     const response = await fetch('/api/admin/assistants/review', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), cache: 'no-store' });
+    if (response.status === 410) {
+      setDetail(null); setNote(''); setIssues([]); setVerdict('unreviewed'); setSaved(false); pending.current = null;
+      throw new ReviewExpiredError();
+    }
     if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? 'Admin access is required.' : response.status === 404 ? 'The retained source is no longer available.' : 'Evidence or access auditing is unavailable.');
     return response.json();
   }
@@ -27,11 +35,11 @@ export function AssistantReview({ scope }: { scope: AssistantReviewScope }) {
       const result = await send({ action: 'annotate', ...body, id: pending.current.id }) as { annotation: Annotation };
       setDetail(current => current ? { ...current, annotations: { ...current.annotations, items: [result.annotation, ...current.annotations.items.filter(item => item.id !== result.annotation.id)].slice(0, 20) } } : null);
       setSaved(true); pending.current = null;
-    } catch (failure) { setError(`Review could not be saved. ${failure instanceof Error ? failure.message : ''} Your note is preserved.`); }
+    } catch (failure) { setError(failure instanceof ReviewExpiredError ? failure.message : `Review could not be saved. ${failure instanceof Error ? failure.message : ''} Your note is preserved.`); }
     finally { setBusy(false); }
   }
   return <div className="space-y-4">
-    <AdminNotice>Content access and reviews are recorded with your admin identity. Customer text is private and untrusted. Links, credentials and hidden reasoning are excluded; redaction does not anonymize arbitrary prose.</AdminNotice>
+    <AdminNotice>Detailed review is available for 90 days. Content access and reviews are recorded with your admin identity. Customer text is private and untrusted. Links, credentials and hidden reasoning are excluded; redaction does not anonymize arbitrary prose.</AdminNotice>
     {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
     {!detail ? <button type="button" disabled={busy} onClick={() => void reveal()} className="rounded border border-border bg-surface px-4 py-3 text-sm disabled:opacity-50">{busy ? 'Recording access…' : 'Reveal recorded content'}</button> : <>
       <button type="button" disabled={busy} onClick={() => { setDetail(null); setNote(''); setIssues([]); setVerdict('unreviewed'); setSaved(false); pending.current = null; }} className="rounded border border-border px-4 py-2 text-sm">Hide content</button>

@@ -12,9 +12,9 @@ test('shared reviewer reveals on demand, keeps failed notes and records explicit
   const requests: Record<string, unknown>[] = [], prior = new Map<string, PropertyDescriptor | undefined>();
   const detail = { item: { ...scope, createdAt: '2026-10-29T12:00:00Z', state: 'complete', surface: 'video', mediaModel: 'wan-3', assistantModel: 'gpt-6.1-terra' }, accessId: 'audit-one',
     message: 'A blue boat', reply: '<script>unsafe</script>', proposal: 'The complete proposed prompt', evidence: [], limitations: ['Historical context may be missing.'], annotations: { status: 'available', items: [], truncated: false } };
-  let rejectSave = true;
+  let rejectSave = true, expired = false;
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document, React, IS_REACT_ACT_ENVIRONMENT: true,
-    fetch: async (_url: string, options: RequestInit) => { const body = JSON.parse(options.body as string); requests.push(body); return new Response(JSON.stringify(body.action === 'reveal' ? { detail } : { annotation: { ...body, actorId: 'admin', createdAt: '2026-10-29T12:00:01Z' } }), { status: body.action === 'annotate' && rejectSave ? 503 : 200 }); } })) {
+    fetch: async (_url: string, options: RequestInit) => { const body = JSON.parse(options.body as string); requests.push(body); return new Response(JSON.stringify(body.action === 'reveal' ? { detail } : { annotation: { ...body, actorId: 'admin', createdAt: '2026-10-29T12:00:01Z' } }), { status: expired ? 410 : body.action === 'annotate' && rejectSave ? 503 : 200 }); } })) {
     prior.set(key, Object.getOwnPropertyDescriptor(globalThis, key)); Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
   const root = createRoot(dom.window.document.getElementById('root')!);
@@ -40,6 +40,12 @@ test('shared reviewer reveals on demand, keeps failed notes and records explicit
     assert.match(dom.window.document.body.textContent!, /Review saved/i);
     await React.act(async () => button('Hide content').click());
     assert.doesNotMatch(dom.window.document.body.textContent!, /A blue boat|The complete proposed prompt/);
+    await React.act(async () => button('Reveal recorded content').click());
+    expired = true;
+    await React.act(async () => button('Save review').click());
+    assert.match(dom.window.document.querySelector('[role="alert"]')!.textContent!, /90.day.*expired/i);
+    assert.doesNotMatch(dom.window.document.body.textContent!, /A blue boat|The complete proposed prompt|Your note is preserved/);
+    assert.equal(dom.window.document.querySelector('textarea'), null, 'Expiry clears the detailed review and its unsaved note');
   } finally {
     await React.act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of prior) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }

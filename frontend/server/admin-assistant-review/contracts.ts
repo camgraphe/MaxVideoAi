@@ -21,5 +21,5 @@ export type Annotation = { id: string; actorId: string; verdict: string; issues:
 export type Evidence = { title: string; status: 'available' | 'unavailable'; data: ReviewProjection; rowsTruncated?: boolean };
 export type AssistantReviewDetail = { item: ReviewItem; accessId: string; message: string | null; reply: string | null; proposal: string | null; evidence: Evidence[]; annotations: { status: 'available' | 'unavailable'; items: Annotation[]; truncated: boolean }; limitations: string[] };
 export class AssistantReviewError extends Error {
-  constructor(public code: 'not_found' | 'unavailable' | 'invalid_request' | 'conflict', public status: number) { super(code); }
+  constructor(public code: 'not_found' | 'unavailable' | 'invalid_request' | 'conflict' | 'review_expired', public status: number) { super(code); }
 }
