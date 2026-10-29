@@ -4,6 +4,7 @@ import {promptAssistanceReplySchema,promptAssistanceRequestSchema,type PromptAss
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import {readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall,markStudioAssistanceUnknown} from '@/server/studio/assistance-ledger';
 import {buildPromptAssistanceContext} from './context';
+import {buildAssistantReviewContext} from '../assistant-review/context';
 import {claimPromptRequest,composerScope,readPromptHistory,readPromptRequest,promptScopeValues,type PromptRequestRow} from './repository';
 import {countPromptTokens,createPromptResponse,promptResponseParams} from './provider';
 import {preparePromptPerception} from './perception';
@@ -65,10 +66,12 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
   const {row,claimed}=await claimPromptRequest(userId,input,policy);
   if(!claimed)return row.response_json?finishRecorded(row,policy):result(row,policy);
   let dispatched=false;
+  let reviewContext:Record<string,unknown>|undefined;
   try {
     const context=await (deps.buildContext??buildPromptAssistanceContext)(userId,input);
     const perceived=await(deps.perception??preparePromptPerception)(userId,input,row.model,context);
     const params=promptResponseParams(row,perceived.context,await readPromptHistory(row),perceived.content);
+    reviewContext={...perceived.context,reviewInput:buildAssistantReviewContext(params)};
     const inputTokens=await(deps.count??countPromptTokens)(params);
     if(!Number.isSafeInteger(inputTokens)||inputTokens<1||inputTokens>32000)throw new Error('CONTEXT_TOO_LARGE');
     const call=await withDbTransaction(async tx=>{
@@ -76,7 +79,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
       const current=await readPromptRequest(userId,input.sessionId,input.requestId,tx);
       if(current.state!=='preparing'||new Date(current.lease_expires_at).getTime()<=Date.now())throw new Error('REQUEST_INTERRUPTED');
       const reserved=await reserveStudioAssistanceCall({...composerScope(userId,input.sessionId),requestId:input.requestId,leaseId:row.lease_id,index:0,inputTokens,outputTokens:params.max_output_tokens??2200},policy,tx);
-      await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(perceived.context)]);
+      await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(reviewContext)]);
       return reserved;
     });
     row.call_id=call.id;dispatched=true;
@@ -88,7 +91,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
     if(dispatched&&row.call_id)await markStudioAssistanceUnknown(row.call_id,userId);
     const known=error instanceof AgentApiError?error.code:error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
     const nextAction=assistanceNextActionSchema.safeParse(error instanceof AgentApiError?error.nextAction:null);
-    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,context_json=COALESCE(context_json,'{}'::jsonb)||$6::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known,JSON.stringify(!dispatched&&nextAction.success?{failureAction:nextAction.data}:{})]);
+    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,context_json=COALESCE(context_json,'{}'::jsonb)||$6::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known,JSON.stringify({...(!dispatched&&reviewContext?{...reviewContext,reviewInput:{...(reviewContext.reviewInput as object),capturePoint:'prepared_not_dispatched'}}:{}),...(!dispatched&&nextAction.success?{failureAction:nextAction.data}:{})})]);
     return result(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
   }
 }

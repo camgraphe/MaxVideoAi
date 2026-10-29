@@ -31,6 +31,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.equal(declined.state,'failed');assert.equal(declined.safeToRetry,true);
   assert.equal(declined.nextAction?.reason,'included_exhausted');assert.equal(declined.nextAction?.safeToStartNewRequest,true);
   assert.equal(calls,0,'Insufficient maximum reservation must stop before any model call');
+  assert.equal((await pg.pool.query('SELECT context_json FROM prompt_assistance_requests WHERE request_id=$1',[declinedRequest.requestId])).rows[0].context_json.reviewInput?.capturePoint,'prepared_not_dispatched');
   assert.equal((await service.recoverPromptAssistance('low-credit-owner',declinedRequest.sessionId,declinedRequest.requestId,policy)).nextAction?.reason,'included_exhausted');
   const abandoned={...request,requestId:randomUUID()};
   assert.equal((await service.recoverPromptAssistance('owner',abandoned.sessionId,abandoned.requestId,policy)).state,'failed');
@@ -39,6 +40,10 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const results=await Promise.all([service.sendPromptAssistance('owner',request,deps),service.sendPromptAssistance('owner',request,deps)]);
   assert.equal(calls,1);
   assert.ok(results.some(r=>r.state==='complete'));
+  const recordedInput=(await pg.pool.query('SELECT context_json FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',["owner",request.sessionId,request.requestId])).rows[0].context_json.reviewInput;
+  assert.equal(recordedInput.model,'gpt-6.1-sol');
+  assert.equal(recordedInput.maxOutputTokens,6000);
+  assert.match(JSON.stringify(recordedInput.input),/Make the motion slower/);
   const replay=await service.sendPromptAssistance('owner',request,deps);
   assert.equal(calls,1);assert.equal(replay.reply?.text,'A dancer moves slowly across the stage.');
   assert.equal(replay.draftRevision,2);

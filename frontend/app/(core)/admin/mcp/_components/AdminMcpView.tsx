@@ -56,6 +56,7 @@ export function AdminMcpView({ metrics, outcomes, selectedRange }: AdminMcpViewP
         description="Authoritative acquisition, conversion and operating signals for ChatGPT, Claude, Codex and other MCP clients. Installs are not directly observable; authenticated initialization is the source of truth for connected users. All windows use UTC [from, to)."
         actions={
           <div className="flex flex-wrap gap-2" aria-label="MCP reporting range">
+            <Link href="/admin/assistants?source=mcp" prefetch={false} className="text-sm underline">Review preparations</Link>
             {ADMIN_MCP_RANGE_OPTIONS.map((option) => (
               <Link
                 key={option.value}

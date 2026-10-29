@@ -11,6 +11,7 @@ export function AdminStudioDetail({ turn, unavailable = false }: { turn?: Review
     {unavailable || !turn ? <AdminNotice tone="warning">Turn evidence is unavailable. No conversation content has been revealed.</AdminNotice> : <>
       <dl className="grid gap-3 rounded-xl border border-border bg-surface p-5 text-sm sm:grid-cols-2">{Object.entries({ Account: turn.userId, Project: turn.projectId, Turn: turn.requestId, 'Stored state': reviewStateLabel(turn.state), 'Request progress': reviewProgressLabel(turn), 'Created (UTC)': turn.createdAt, 'Model attempts': turn.attempts }).map(([label, value]) => <div key={label}><dt className="text-text-muted">{label}</dt><dd className="break-all">{value}</dd></div>)}</dl>
       <AdminNotice>Ready means a visible reply was saved. Preparation outcomes require reviewing the recorded actions and any quote.</AdminNotice>
+      <Link prefetch={false} className="block text-sm underline" href={`/admin/assistants/${turn.requestId}?${new URLSearchParams({source:'studio',userId:turn.userId,scopeId:turn.projectId})}`}>Inspect recorded context and human reviews</Link>
       <StudioReviewReveal scope={{ userId: turn.userId, projectId: turn.projectId, requestId: turn.requestId }} />
     </>}
   </div>;
