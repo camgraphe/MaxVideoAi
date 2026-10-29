@@ -179,7 +179,9 @@ the external fal import evidence owner (which probes real video bytes),
 or using initdb/FFmpeg in the
 integration lane. Tests directly launching Chromium, Firefox or WebKit, or using
 their installed executable paths for a renderer, belong in the browser lane, as
-do tests importing the connected browser fixture helper. The real composition
+do tests importing the connected Studio, workspace-reference or image-rail browser
+fixture helpers, including tests choosing Chromium/WebKit through a variable.
+The real composition
 render test checks that Chromium is installed before allocating servers, so a
 missing browser fails promptly without leaving a Remotion server open.
 The two exhaustive financial files and the four Studio files

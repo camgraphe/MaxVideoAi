@@ -136,6 +136,11 @@ test('CI suites partition every validation file without losing expensive financi
     'tests/workspace-operation-refresh-browser.test.ts',
     'tests/reference-picker-portrait-browser.test.ts',
     'tests/post-kling-app-integration-browser.test.ts',
+    'tests/image-rail-layout-browser.test.ts',
+    'tests/prompt-assistance-audio-browser.test.ts',
+    'tests/prompt-assistance-input-browser.test.ts',
+    'tests/prompt-assistance-model-browser.test.ts',
+    'tests/prompt-reference-editing-browser.test.ts',
   ]) {
     assert.ok(plan.browser.includes(file), file);
     assert.equal(plan.fast.includes(file), false);
