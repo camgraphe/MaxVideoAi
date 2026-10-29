@@ -5,9 +5,10 @@ import {readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssis
 import {buildPromptAssistanceContext} from './context';
 import {claimPromptRequest,composerScope,readPromptHistory,readPromptRequest,promptScopeValues,type PromptRequestRow} from './repository';
 import {countPromptTokens,createPromptResponse,promptResponseParams} from './provider';
+import {preparePromptPerception} from './perception';
 import {AgentApiError} from '@/server/agent-api/errors';
 
-type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse};
+type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse;perception?:typeof preparePromptPerception};
 async function result(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
   return {sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
     state:row.state==='complete'?'complete':row.state==='failed'?'failed':row.state==='unknown'||(row.call_id&&new Date(row.lease_expires_at).getTime()<Date.now())?'unknown':'pending',
@@ -64,7 +65,8 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
   let dispatched=false;
   try {
     const context=await (deps.buildContext??buildPromptAssistanceContext)(userId,input);
-    const params=promptResponseParams(row,context,await readPromptHistory(row));
+    const perceived=await(deps.perception??preparePromptPerception)(userId,input,row.model,context);
+    const params=promptResponseParams(row,perceived.context,await readPromptHistory(row),perceived.content);
     const inputTokens=await(deps.count??countPromptTokens)(params);
     if(!Number.isSafeInteger(inputTokens)||inputTokens<1||inputTokens>32000)throw new Error('CONTEXT_TOO_LARGE');
     const call=await withDbTransaction(async tx=>{
@@ -72,7 +74,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
       const current=await readPromptRequest(userId,input.sessionId,input.requestId,tx);
       if(current.state!=='preparing'||new Date(current.lease_expires_at).getTime()<=Date.now())throw new Error('REQUEST_INTERRUPTED');
       const reserved=await reserveStudioAssistanceCall({...composerScope(userId,input.sessionId),requestId:input.requestId,leaseId:row.lease_id,index:0,inputTokens,outputTokens:params.max_output_tokens??2200},policy,tx);
-      await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(context)]);
+      await tx.query("UPDATE prompt_assistance_requests SET state='calling',call_id=$4,context_json=$5::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3",[...promptScopeValues(row),reserved.id,JSON.stringify(perceived.context)]);
       return reserved;
     });
     row.call_id=call.id;dispatched=true;

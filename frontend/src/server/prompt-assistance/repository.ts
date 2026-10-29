@@ -1,5 +1,5 @@
 import {createHash,randomUUID} from 'node:crypto';
-import {query,withDbTransaction,type QueryExecutor} from '@/lib/db';
+import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {openStudioAssistanceTurn} from '@/server/studio/assistance-ledger';
 import type {StudioAssistancePolicy} from '@/server/studio/assistance-policy';
@@ -27,11 +27,7 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     // Never redispatch an expired call. Only pre-dispatch failures can be closed automatically.
     await tx.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp()",[userId]);
     if((await tx.query("SELECT 1 FROM prompt_assistance_requests WHERE user_id=$1 AND state IN ('preparing','calling','reported','unknown') LIMIT 1",[userId])).length)throw new Error('REQUEST_PENDING');
-    const scope=input.draft.surface==='audio'?`audio:${input.draft.mode}`:input.draft.surface;
-    await tx.query('INSERT INTO prompt_assistance_sessions(user_id,id,scope) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,input.sessionId,scope]);
-    const session=(await tx.query<{scope:string;active:boolean}>('SELECT scope,expires_at>clock_timestamp() active FROM prompt_assistance_sessions WHERE user_id=$1 AND id=$2',[userId,input.sessionId]))[0];
-    if(!session.active)throw new Error('SESSION_EXPIRED');
-    if(session.scope!==scope)throw new Error('SESSION_SCOPE_CHANGED');
+    await ensurePromptSession(userId,input.sessionId,input.draft,tx);
     const count=(await tx.query<{n:string}>('SELECT count(*)::text n FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2',[userId,input.sessionId]))[0];
     if(Number(count.n)>=100)throw new Error('SESSION_FULL');
     const turn=await openStudioAssistanceTurn(composerScope(userId,input.sessionId),input.requestId,policy,tx);
@@ -42,4 +38,12 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
 export async function readPromptHistory(row:PromptRequestRow) {
   const previous=await query<Pick<PromptRequestRow,'input_json'|'reply_json'>>(`SELECT input_json,reply_json FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND state='complete' AND request_id<>$3 ORDER BY created_at DESC LIMIT 8`,promptScopeValues(row));
   return previous.reverse().flatMap(item=>[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
+}
+
+export async function ensurePromptSession(userId:string,sessionId:string,draft:{surface:string;mode:string},tx:TransactionQueryExecutor) {
+  const scope=draft.surface==='audio'?`audio:${draft.mode}`:draft.surface;
+  await tx.query('INSERT INTO prompt_assistance_sessions(user_id,id,scope) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,sessionId,scope]);
+  const session=(await tx.query<{scope:string;active:boolean}>('SELECT scope,expires_at>clock_timestamp() active FROM prompt_assistance_sessions WHERE user_id=$1 AND id=$2',[userId,sessionId]))[0];
+  if(!session?.active)throw new Error('SESSION_EXPIRED');
+  if(session.scope!==scope)throw new Error('SESSION_SCOPE_CHANGED');
 }

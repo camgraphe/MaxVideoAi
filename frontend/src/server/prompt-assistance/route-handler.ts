@@ -13,7 +13,7 @@ const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('recover'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
 ]);
 const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
-async function boundedJson(req:NextRequest){
+export async function boundedPromptJson(req:NextRequest){
   if(!req.body)throw new SyntaxError('Missing body');
   const reader=req.body.getReader(),chunks:Uint8Array[]=[];let size=0;
   try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>65536){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(part.value);}}
@@ -31,7 +31,7 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
       return json({ok:true,result:session||request?await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)):await readStudioAssistanceStatus(access.userId)});
     }
-    const input=bodySchema.parse(await boundedJson(req));
+    const input=bodySchema.parse(await boundedPromptJson(req));
     return json({ok:true,result:input.action==='choose'?await chooseStudioAssistance(access.userId,input.choice):input.action==='recover'?await recoverPromptAssistance(access.userId,input.sessionId,input.requestId):await sendPromptAssistance(access.userId,input.request)});
   }catch(error){
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);

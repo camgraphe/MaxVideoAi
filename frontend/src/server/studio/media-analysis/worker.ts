@@ -2,7 +2,7 @@ import {studioAnalysisKind} from '@/lib/studio/media-analysis-contract';
 import {randomUUID} from 'node:crypto';
 import {query,withDbTransaction} from '@/lib/db';
 import {getActiveAccountRestrictionInExecutor} from '@/server/fraud-cleanup/restrictions';
-import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
+import {analysisScopeParts,analysisRunScope,assertAnalysisScope} from './scope';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '../assistance-policy';
 import {lockAccount} from '../assistance-ledger';
@@ -20,10 +20,11 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
   const assistance=dependencies.assistancePolicy??studioAssistancePolicy();
   // Read candidates first; every mutation locks campaign -> account -> run.
   const scopeFilter=dependencies.scope;
+  const scopeParts=scopeFilter?analysisScopeParts(scopeFilter):null;
   const candidate=(await query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE (state='queued'
     OR (provider_snapshot IS NOT NULL AND (state='running' OR (state='unknown' AND error='ANALYSIS_SETTLEMENT_PENDING')))
     OR (state='running' AND ${studioAnalysisLeaseExpiredSql()}))
-    ${scopeFilter?'AND user_id=$1 AND project_id=$2 AND id=$3':''} ORDER BY created_at LIMIT 1`,scopeFilter?[scopeFilter.userId,scopeFilter.projectId,scopeFilter.requestId]:[]))[0];
+    ${scopeFilter?`AND user_id=$1 AND ${scopeParts?.sessionId?'composer_session_id':'project_id'}=$2 AND id=$3`:''} ORDER BY created_at LIMIT 1`,scopeFilter?[scopeFilter.userId,scopeParts?.sessionId??scopeFilter.projectId,scopeFilter.requestId]:[]))[0];
   if(!candidate)return false;
   const workerId=randomUUID();
   const run=await withDbTransaction(async tx=>{
@@ -38,23 +39,21 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
   if(!run)return false;
   let dispatched=!!run.dispatched_at;
   let settlementPending=false;
-  const actor:StudioGenerationActor={userId:run.user_id,projectId:run.project_id,authMethod:'studio-session',clientId:null};
+  const actor=analysisRunScope(run);
   try {
     let snapshot=run.provider_snapshot;
     if(!snapshot){
       const active=dependencies.policy===undefined?studioAnalysisPolicy():dependencies.policy;
       if(!active||stableJson(active)!==stableJson(run.policy_json)||!assistance.enabled||!assistance.credits)throw new Error('ANALYSIS_PROFILE_UNAVAILABLE');
-      const owned=await query('SELECT id FROM studio_projects WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL',[run.project_id,run.user_id]);
-      if(!owned.length)throw new Error('ANALYSIS_PROJECT_UNAVAILABLE');
+      await assertAnalysisScope({query},actor);
       const media=await resolveAnalysisSource(actor,run.request_json);
       if(analysisSourceFingerprint(media)!==run.source_fingerprint)throw new Error('ANALYSIS_SOURCE_CHANGED');
       const source=await (dependencies.extract??extractStudioAnalysisSource)(media,run.request_json,AbortSignal.timeout(120_000));
-      const prepared=await (dependencies.provider??prepareStudioAnalysisProvider)(run.policy_json,run.request_json,source);
+      const prepared=await (dependencies.provider??prepareStudioAnalysisProvider)(run.policy_json,run.request_json,source,run.quote_json.model);
       await withDbTransaction(async tx=>{
         await lockAccount(tx,run.user_id,assistance);
         if(await getActiveAccountRestrictionInExecutor(run.user_id,tx))throw new Error('ANALYSIS_ACCOUNT_RESTRICTED');
-        const project=await tx.query('SELECT id FROM studio_projects WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL FOR SHARE',[run.project_id,run.user_id]);
-        if(!project.length)throw new Error('ANALYSIS_PROJECT_UNAVAILABLE');
+        await assertAnalysisScope(tx,actor,true);
         const retained=(await resolveAnalysisSource(actor,run.request_json,tx,true));
         if(analysisSourceFingerprint(retained)!==run.source_fingerprint)throw new Error('ANALYSIS_SOURCE_CHANGED');
         const saved=await tx.query(`UPDATE studio_media_analysis_runs SET dispatched_at=clock_timestamp(),source_hash=$3 WHERE id=$1 AND worker_id=$2 AND state='running' AND dispatched_at IS NULL RETURNING id`,[run.id,workerId,source.sourceHash]);
@@ -68,7 +67,7 @@ export async function runStudioAnalysisWorkerOnce(dependencies:WorkerDependencie
         WHERE id=$1 AND worker_id=$2 AND state IN ('running','unknown') AND dispatched_at IS NOT NULL AND settled_at IS NULL AND provider_snapshot IS NULL RETURNING id`,[run.id,workerId,JSON.stringify(snapshot)]);
       if(!saved.length)throw new Error('ANALYSIS_SNAPSHOT_UNAVAILABLE');
     }
-    const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,studioAnalysisKind(run.request_json),run.policy_json);
+    const providerNanoUsd=readStudioAnalysisProviderCost(snapshot,studioAnalysisKind(run.request_json),run.policy_json,run.quote_json.model);
     if(providerNanoUsd===null)throw new Error('ANALYSIS_USAGE_UNKNOWN');
     const price=priceStudioAnalysis(run.policy_json,run.request_json.endSec-run.request_json.startSec,providerNanoUsd);
     if(price.credits>run.quote_json.maxCredits||price.supplierNanoUsd>Number(run.reserved_supplier_nano_usd))throw new Error('ANALYSIS_USAGE_UNKNOWN');

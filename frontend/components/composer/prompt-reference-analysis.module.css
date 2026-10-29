@@ -1,0 +1,18 @@
+.trigger { display:inline-flex; align-items:center; gap:6px; margin-top:6px; color:var(--text-muted); font-size:12px; padding:4px 0; }
+.trigger:hover { color:var(--text-primary); }
+.dialog { width:min(480px,calc(100vw - 24px)); max-height:85dvh; overflow-y:auto; margin:auto; padding:20px; color:var(--text-primary); background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+.dialog::backdrop { background:rgb(0 0 0 / .4); }
+.dialog header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.dialog h3 { font-size:16px; font-weight:600; }
+.dialog p { font-size:13px; line-height:1.5; margin:10px 0; }
+.dialog header button { display:grid; place-items:center; width:32px; height:32px; border-radius:8px; }
+.fields { display:grid; gap:12px; border:0; margin-top:16px; padding:0; min-width:0; }
+.fields label { display:grid; gap:6px; font-size:13px; min-width:0; }
+.fields input,.fields select { width:100%; min-width:0; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary); font-size:16px; }
+.interval { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.dialog .note { color:var(--text-muted); font-size:12px; }
+.quote,.result { border-top:1px solid var(--border); margin-top:14px; padding-top:4px; }
+.dialog footer { display:flex; justify-content:flex-end; margin-top:18px; }
+.dialog footer button { padding:9px 13px; border:1px solid var(--border); border-radius:8px; font-size:13px; }
+.dialog button:disabled { opacity:.5; cursor:not-allowed; }
+.dialog button:focus-visible,.trigger:focus-visible { outline:2px solid currentColor; outline-offset:2px; }

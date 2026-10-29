@@ -6,12 +6,12 @@ import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
 export type PromptAssistanceContext = { scopeKey: string; contextKey: string; live?:PromptAssistanceDraftContext };
-export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale='en', draftText, target, onApplyText, maxLength, blocked }: PromptAssistanceContext & {
-  locale?:string;
+export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale='en', draftText, target, onApplyText, maxLength, blocked, perceptionRevision=0 }: PromptAssistanceContext & {
+  locale?:string; perceptionRevision?:number;
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;
 }) {
   // The request itself participates: a new control cannot accidentally bypass the stale guard.
-  const fingerprintFor = (text:string) => JSON.stringify([contextKey, live, target, text]);
+  const fingerprintFor = (text:string) => JSON.stringify([contextKey, live, target, text, perceptionRevision]);
   const fingerprint = fingerprintFor(draftText);
   const [stored, dispatch] = useReducer(previewReducer, undefined, () => createPreviewState(scopeKey, fingerprint));
   const state = previewReducer(stored, { type: 'sync', scope: scopeKey, fingerprint });

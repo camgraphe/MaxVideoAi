@@ -9,6 +9,8 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
     ? 'Check this reply before sending another message. Stopping the wait does not cancel a call already started.'
     : error==='CONTEXT_TOO_LARGE'||error==='DRAFT_TOO_LONG'||error==='BODY_TOO_LARGE'
       ? 'This request is too long. Shorten the draft or message and try again.'
+    : error==='REFERENCE_IMAGES_TOO_LARGE'
+      ? 'These images are too large to inspect together. Remove some references and try again.'
     : error==='REFERENCE_REATTACH_REQUIRED'||error?.startsWith('REFERENCE_')||error==='MEDIA_NOT_AVAILABLE'
       ? 'One reference is unavailable. Choose it again from Media before retrying.'
     : error==='SPENDING_LIMIT_EXCEEDED'

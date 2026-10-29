@@ -47,11 +47,11 @@ Update curated guidance beside its authoritative source, add a model/operation f
 
 Each reference is resolved through the exact owned asset/job-output resolver. The server validates applicable fields, media kind, slot uniqueness and maximum count, and derives display labels and supported mention syntax from the canonical model fields. Null/foreign/deleted/unavailable assets cannot be sent as real references. Missing required generation assets do not prevent discussing a draft.
 
-Only role/label, supported token and width/height/duration metadata reach the LLM. No private URL, filename, pixels, video or audio is supplied. Milo must not claim it has viewed or heard a reference. Start/end images and the source clip have distinct roles; numbering matches the active reference list, including empty slots. Uploading, failed or actively edited excerpts cannot silently reuse an older clip. Schema-based keyframe references outside the compact picker also reach this metadata adapter, with authored frame positions where available.
+With perception disabled, only role/label, supported token and width/height/duration metadata reach the LLM. With the separately enabled perception path, images accompany every level as normalized pixels; Standard/Max can use confirmed video/audio observations. Private URLs and filenames are never prompt context. Uninspected references remain explicitly metadata-only. Start/end images and the source clip have distinct roles; numbering matches the active reference list, including empty slots. Uploading, failed or actively edited excerpts cannot silently reuse an older clip. Schema-based keyframe references outside the compact picker also reach this metadata adapter, with authored frame positions where available.
 
-Dedicated Kling subject identities, image-mask content and owned-generation-only source details remain unavailable to Milo; the adapter marks these cases explicitly and the user must describe their intended constraints. Full visual/audio analysis and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
+Dedicated Kling subject identities, image-mask content and owned-generation-only source details remain unavailable to Milo; the adapter marks these cases explicitly and the user must describe their intended constraints. Full continuous video inspection and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
 
-The agreed next perception scope is **images on Lite; images, video and audio on Standard and Max**. This is not yet active in the composers. See the [reference-perception integration scope](prompt-assistance-reference-perception.md) for existing Studio owners, current API modality support and required acceptance evidence.
+The agreed next perception scope is **images on Lite; images, video and audio on Standard and Max**. This is implemented behind separate flags, enabled only in the isolated local test environment. See the [reference-perception integration scope](prompt-assistance-reference-perception.md) for migration 89, activation, existing Studio owners, modality limits and validation evidence.
 
 ## Calls and existing credits
 
@@ -69,7 +69,7 @@ Lite/Standard/Max selection and credit purchases use the existing account prefer
 - Expired pre-dispatch requests can close without a charge. Unknown dispatched outcomes retain their reservation and block another composer request for that account.
 - Existing assistance support inspection/resolution recognizes composer scopes, checks their lease and evidence, and can settle recorded usage or waive an unknown call using the existing audited workflow. An active lease cannot be waived. Late evidence after a support closure remains available for review; it does not automatically reopen the chat or start another call.
 
-No periodic automatic billable retry or new recovery worker is introduced. Failed pending checks may require support, including when supplier evidence was never received. Keep endpoint and support availability in the rollout checklist.
+No periodic automatic billable retry or new recovery worker is introduced. Explicit video/audio analysis reuses the existing Studio analysis worker and its durable recovery; it has a separate confirmation and credit ceiling. Failed pending checks may require support, including when supplier evidence was never received. Keep endpoint and support availability in the rollout checklist.
 
 ## Verification
 

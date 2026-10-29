@@ -56,5 +56,5 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     void perform({action:'message',request:{...request,sessionId:pending.sessionId,requestId:pending.requestId}},pending);return true;
   }
   function recover(){if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);}
-  return {send,recover,stop:()=>owner.controller?.abort(),waiting:view.owner===owner&&view.waiting,recovery:view.owner===owner&&view.recovery,error:view.owner===owner?view.error:null};
+  return {session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,recover,stop:()=>owner.controller?.abort(),waiting:view.owner===owner&&view.waiting,recovery:view.owner===owner&&view.recovery,error:view.owner===owner?view.error:null};
 }

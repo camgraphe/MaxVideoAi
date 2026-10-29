@@ -5,7 +5,7 @@ Provider qualification and the production activation procedure are recorded in
 `docs/operations/studio-media-tasks-activation-2026-10-06.md`. Qualification alone
 does not establish production deployment readiness.
 
-Studio creates first. Both models retain image vision and simple edits. Known
+Studio creates first. All three levels retain image vision and simple edits. Known
 clips, end images and supplied music can be assembled from explicit timing without
 content analysis. A delivered result ends the request: generation completion,
 polling and montage delivery never enqueue an inspection or buy another model call.
@@ -22,15 +22,16 @@ the existing credit owner funds both chat and the separate analysis consumer.
 An analysis must serve a client request or a concrete observation required for
 unfinished requested work. Preparation on Luna is a nonspending Sol handoff; it
 does not inspect, dispatch, reserve or buy credits. The review card identifies
-the source, goal, interval and maximum credits. Client confirmation selects Sol
+the source, goal, interval and maximum credits. Standard/Terra and Max/Sol retain
+their selected level. A Lite handoff still requires explicit confirmation of Max
 for that frozen run without buying a pack or resuming suspended purchased usage.
 
 Safe results distinguish observations/inferences and expose source intervals and
 sparse coverage. They never initiate a montage, regeneration, export or creative
-review. `analysis_read` can read paid saved observations on either model. Audio
+review. `analysis_read` can read paid saved observations on any level. Audio
 uses a separately qualified `gpt-audio-1.5` Chat Completions adapter, including
-sound extracted from a selected video; Sol's Responses
-API receives timestamped image inputs for video. Subsequent Sol discussion is an
+sound extracted from a selected video; Terra/Sol Responses
+receive timestamped image inputs for video. Subsequent Milo discussion is an
 ordinary explicitly sent metered chat message; no extra synthesis call is hidden
 after analysis completion. The candidate has no autonomous review loop.
 
@@ -142,3 +143,17 @@ MCP client checks pass 151 tests with one skip plus tool-selection QA. Current
 Existing image lint warnings remain. Those counts describe the earlier branch
 review. The later authorized live qualification and current validation are recorded
 in the activation report; they do not change the frozen historical evidence above.
+
+## Composer reuse (PR #555, 2026-10-29)
+
+Migration 89 extends the existing ledger with an exclusive owned composer-session
+scope. No synthetic Studio project or separate credit pool is created. Studio
+project ownership and historical Sol quotes remain unchanged. Composer reads can
+recover already paid results after session expiry; new work requires a live session.
+See [composer reference perception](prompt-assistance-reference-perception.md).
+
+Native audio uses its supported `report_analysis` function-call output to type the
+report; this is data extraction, never application tool execution. Completed native
+audio tool calls may use `finish_reason=stop` or `tool_calls`; truncated/refused or
+multiple calls are rejected. Reports still pass strict schema and interval checks.
+Visual JSON requests explicitly mention JSON in input for token-count compatibility.

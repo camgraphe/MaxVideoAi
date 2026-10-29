@@ -1,46 +1,137 @@
-# Milo reference perception — agreed scope
+# Milo reference perception
 
-Product decision, 2026-10-29, for PR #555. **This document specifies the next integration; composer perception is still metadata-only.**
+PR #555, 2026-10-29. Implemented behind separate flags and qualified on the isolated
+Neon test branch. Production is unchanged; this is not a rollout approval.
 
-## Confirmed tier split
+## Tier split
 
 | Milo tier | Writing model | Image content | Video content | Audio content |
 | --- | --- | --- | --- | --- |
-| Lite | GPT-6 Luna / high | Yes | No | No |
-| Standard | GPT-6.1 Terra / high | Yes | Yes | Yes |
-| Max | GPT-6.1 Sol / xhigh | Yes | Yes | Yes |
+| Lite | GPT-6 Luna / high | Yes | No new analysis | No new analysis |
+| Standard | GPT-6.1 Terra / high | Yes | Confirmed sampled frames | Confirmed sound excerpt |
+| Max | GPT-6.1 Sol / xhigh | Yes | Confirmed sampled frames | Confirmed sound excerpt |
 
-These are assistance capabilities, not restrictions on references accepted by the media-generation model. A video/audio reference can remain attached in Lite; Milo must distinguish metadata from content it has actually analysed. The paid tiers keep their selected writing model when using a separate perception adapter.
+These are assistance capabilities, not restrictions on references accepted by the
+media-generation model. References can stay attached in Lite. Current content
+status is explicit per reference; metadata never becomes a claim of perception.
+Standard/Max retain their selected writing tier. Visual analysis uses Terra/Sol
+with the existing bounded analysis runtime (medium reasoning); sound uses the
+separate native `gpt-audio-1.5` adapter. Selecting a level does not buy credits.
 
-## Verified implementation basis
+The official [Luna](https://developers.openai.com/api/docs/models/gpt-6-luna),
+[Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) and
+[Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) pages were checked
+on 2026-10-29: they accept text/images, not raw video/audio in these Responses
+calls. The [vision guide](https://developers.openai.com/api/docs/guides/images-vision)
+explains image inputs and token costs. The [audio model](https://developers.openai.com/api/docs/models/gpt-audio-1.5)
+supports Chat Completions and function calling. Its forced report function returns
+data only; no application action is exposed or executed.
 
-The official [Luna](https://developers.openai.com/api/docs/models/gpt-6-luna), [Terra](https://developers.openai.com/api/docs/models/gpt-6.1-terra) and [Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) pages were fetched on 2026-10-29. All three list text and image input. Their Responses calls do not directly accept audio/video media in this design. The official [vision guide](https://developers.openai.com/api/docs/guides/images-vision) describes labelled image inputs and their token costs; [audio Chat Completions](https://developers.openai.com/api/docs/guides/audio-chat-completions) supports native audio input through an audio-capable model.
+## Owners and visible flow
 
-Existing code to reuse:
+- `prompt-assistance/perception.ts` rechecks each exact owned reference and pairs
+  normalized image pixels with canonical labels/roles. Images are at most 1536px,
+  JPEG quality 80, 2 MiB normalized each, 16 MiB aggregate, 30 MiB source each,
+  with download/decode deadlines. Unsupported/unavailable images fail before the
+  paid chat dispatch. No silent omission. Token preflight includes the pixels.
+- `PromptReferenceAnalysis.client.tsx` adds a compact **Analyze references** action
+  when video/audio references exist. The dialog chooses one reference, visuals or
+  sound (including video sound), and source seconds. **Review analysis cost** is
+  free preparation. A distinct confirmation shows the exact interval and maximum
+  credits before reservation/dispatch. Images require no separate analysis quote.
+- `reference-analysis.ts` validates the full current generator draft before creating
+  an owned composer session and preparing an analysis. No invented Studio project.
+- The existing Studio source/provider/worker/credit ledger owners perform bounded
+  extraction, reserve existing credits, dispatch once, save evidence and settle.
+  No generation, purchase, tier switch or extra synthesis call follows completion.
+- The next explicitly sent Milo message gets the safe observations and coverage.
+  Completing/reusing an analysis invalidates an earlier prompt suggestion.
 
-- `server/studio/conversation-reference-mentions.ts`: owned, labelled image inputs already used in Studio.
-- `server/studio/media-analysis/source.ts`: bounded original downloads, timestamped video frames and audio-window extraction, with temporary-file cleanup.
-- `server/studio/media-analysis/provider.ts`: visual observations and the native `gpt-audio-1.5` adapter. Audio analysis covers sound, not only a speech transcript.
-- `server/studio/media-analysis/service.ts` and `worker.ts`: immutable identity, quoted credit ceiling, dispatch/settlement evidence, recovery and unknown-usage handling.
-- `server/prompt-assistance/context.ts`: current operation, controls and owned reference identities; reuse this mapping rather than introducing new image/video numbering.
+Video coverage is at most 60 seconds and 12 sampled frames. Audio coverage is at
+most 30 seconds; timing and speech interpretation remain approximate. The original
+must have a known duration and be at most 100 MiB. These are selected intervals,
+not complete viewing/listening or beat-accurate timing. The dialog's interval is
+for analysis only; it does not trim the generator reference or change settings.
 
-Existing Studio analysis is explicitly scoped to a real Studio project and its worker, and its prepared quote currently selects Max. It cannot simply be called from a composer or claimed available for Standard. Adapt ownership to composer sessions, preserve the selected tier, and qualify the pricing/provider path before activation. Do not create a synthetic Studio project or bypass credit reservations to make the call work.
+## Cache, ownership and interruptions
 
-## Proposed integration
+Completed composer observations are reusable by the same owner for the exact
+reference identity, original URL identity, measured duration/size, selected
+interval, assessment and policy. Reuse re-resolves ownership; Studio-project
+analyses are not implicitly imported into composer history. A fresh chat can use
+saved observations without restoring hidden old conversation messages. The current
+session's explicit excerpt selection takes precedence over newer cached excerpts;
+an unfinished/failed selected excerpt cannot silently fall back to an older one.
 
-1. Supply owned images to the current Milo request, preserving labels, start/end roles, token counting and the existing input budget. Keep transient bytes/signed access out of persisted context and logs.
-2. For Standard/Max, analyse the selected video/audio interval using the existing bounded extraction and accounting owners. Video coverage is a timestamped sample, not a complete viewing; audio observations identify the analysed interval and uncertainty.
-3. Reuse saved observations for the exact unchanged owned source and interval. Recheck access on reuse. A changed excerpt, replaced reference or analysis profile requires fresh evidence. A repeat message must not silently redispatch the same analysis. Reusing observations still adds ordinary chat input tokens.
-4. Present the applicable analysis ceiling through a compact reference action before a separately charged analysis, consistent with the existing Studio flow. Exact limits and customer cost need validation against the chosen adapter; no new pack or automatic tier switch.
-5. Carry coverage/status per reference into the current context. Missing, failed, unavailable or Lite-ineligible perception must never look like successful analysis. Existing stale-proposal guards continue to cover edits during analysis.
+This fingerprint assumes the existing immutable original-storage contract; it is
+not a new byte download to prove a remote object is unchanged on every message.
+Replacing/removing the reference invalidates its observations. Read-only context
+contains validated descriptions, coverage and labels, never private URLs/base64.
+Normalization/extraction bytes are transient; temporary media is deleted.
 
-## Acceptance evidence needed
+The browser saves only pending session/analysis IDs in account/workspace-scoped
+sessionStorage. Reload recovery uses GET and cannot repeat the paid call. It does
+not automatically retry a failed POST. The shared worker can settle saved supplier
+evidence after a lost wake-up. Unknown dispatched outcomes retain the reservation
+and block new spending until recovered; closing the panel is not cancellation.
+Session expiry prevents new preparation/confirmation but not reading already paid
+evidence. Retention/deletion policy still needs product-wide treatment before a
+persistent history release.
 
-- Real image-only identification with no identifying hint in the prompt, on all three writing models.
-- Standard/Max video motion and sound checks, including extracted video audio and audio without speech.
-- Lite receives image content but does not dispatch video/audio perception.
-- Exact excerpt, role and label consistency; no stale observations after replacing/removing references.
-- Owned-source isolation, deleted-asset rejection, bounded downloads/decoding and no media URL leakage.
-- Input-count/credit correctness, replay without duplicate analysis charges, known-usage settlement and unknown-usage recovery.
+## Migration and activation
 
-This decision adds no migration, runtime flag or paid call by itself. Any required schema/worker change belongs in the same isolated PR, with test-environment validation before activation.
+Apply `89_composer_reference_analysis.sql` explicitly after 64 and 85–88. It makes
+Studio project vs. owned composer-session scope exclusive, preserves historical
+rows and adds an excerpt-selection binding. No handler creates schema. It was
+applied only to the isolated test branch in this work.
+
+In addition to the existing live composer/Studio credit flags:
+
+- `PROMPT_ASSISTANCE_PERCEPTION_ENABLED=true` enables server perception.
+- `NEXT_PUBLIC_PROMPT_ASSISTANCE_PERCEPTION=1` enables the analysis action.
+- The existing `STUDIO_MEDIA_ANALYSIS_ENABLED`, approved policy version and policy
+  JSON enable the qualified profiles. A profile may independently be disabled.
+- Keep the existing Studio worker/cron operational. The Next `after()` wake-up uses
+  `STUDIO_VERCEL_WORKERS_ENABLED=true`; durable cron recovery is still required.
+
+Disabling perception stops new composer analysis confirmation and image injection.
+Keep owned status and the existing recovery worker available for saved work. Do not
+drop evidence tables or infer refunds during rollback. Production rollout still
+requires final CI, release review and its own migration/flag procedure.
+
+## Validation and practical limits
+
+- 52 focused non-browser tests passed for perception, context, transport, routes,
+  provider parsing, extraction and existing Studio analysis behavior.
+- 13 disposable PostgreSQL checks passed for shared credits, ownership, preserved
+  levels, expiry, exact excerpt selection, concurrent confirmation, exactly-once
+  dispatch and saved-usage recovery; historical Studio schema/flows still pass.
+- Browser coverage exercises explicit cost confirmation, a changed reference before
+  confirmation, account/session handling, pending reload by GET, stale suggestions
+  and a 390px dialog. HTTP is intercepted; this is not a physical-device test.
+- Real API calls on the isolated database verified image description with no content
+  hint on Lite/Standard/Max. Lite correctly reported video/audio as metadata only.
+  Terra and Sol inspected different video intervals. Native audio inspected voice
+  excerpts; subsequent Standard/Max messages reported coverage and current model,
+  duration, resolution, framing, output format and audio toggle.
+- Repeating confirmation and requesting unchanged completed analyses reused the
+  saved identity without another analysis call. Ordinary chat input tokens still
+  apply when observations are reused.
+
+Real calls exposed two adapter issues, now covered: visual JSON token-count input
+needed an explicit JSON instruction; native audio needed a typed report and support
+for completed function calls with `finish_reason=stop`. The pre-dispatch rejection
+charged zero. Malformed/incomplete known responses were rejected and their actual
+usage settled; no automatic paid retry was introduced. Evaluation failures remain
+in the private test evidence, not erased or described as successful inspections.
+
+Observed examples, not universal estimates: 3-second visual analyses used 60 credits
+on Standard and 70 on Max (ceilings 100/150); short voice analyses used 50 credits
+with a 330-credit ceiling. They include the existing processing allowance. Broader
+creative accuracy, long noisy clips, many images, physical mobile devices and
+production runtime/worker timing still require rollout qualification. These tests
+do not establish exact transcription, exhaustive visual understanding or a new
+pricing guarantee. A separate video-sound attempt used a source without an audio stream: extraction
+failed before dispatch and settled zero credits. This is a negative-path check,
+not positive native-video-sound or music-quality qualification. Raw media/account
+evidence stays under ignored `.local/`.
