@@ -35,9 +35,9 @@
 
 **Interfaces:** `PromptAssistanceRequest` and `buildPromptAssistanceContext(userId, request)` produce validated model facts, target limit and the selected guide for task 2. `PromptAssistanceResult` carries request/session/revision identity and nullable text proposal.
 
-- [ ] Write and run failing behavioral tests for target/mode validation, guide selection, unknown model rejection, current draft limits and reference ownership.
-- [ ] Implement strict request/result schemas and context composition from existing capability owners. Include reviewed family/mode guidance, fallback provenance and examples.
-- [ ] Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-context.test.ts`; expect all pass. Commit.
+- [x] Write and run failing behavioral tests for target/mode validation, guide selection, unknown model rejection, current draft limits and reference ownership.
+- [x] Implement strict request/result schemas and context composition from existing capability owners. Include reviewed family/mode guidance, fallback provenance and examples.
+- [x] Run `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-context.test.ts`; expect all pass. Commit.
 
 ### Task 2: Durable conversation and existing credits
 
@@ -45,10 +45,10 @@
 
 **Interfaces:** `sendPromptAssistance(userId, request)` persists one response; `readPromptAssistance(userId, sessionId, requestId)` recovers without a model request. Both return the same result contract. Settings endpoint reuses the existing account assistance choices.
 
-- [ ] Write and run failing PG17 tests for ownership, concurrent replay, body mismatch, settlement, recorded-response recovery and unknown outcome retention.
-- [ ] Implement sessions/requests and same-origin authenticated bounded routes. Save evidence before settlement, return only validated output after settlement. Read paths never bootstrap schema.
-- [ ] Extend support resolution to recognize composer calls and prevent waiving active requests.
-- [ ] Run focused new tests and existing assistance credit/recovery tests; expect all pass. Commit.
+- [x] Write and run failing PG17 tests for ownership, concurrent replay, body mismatch, settlement, recorded-response recovery and unknown outcome retention.
+- [x] Implement sessions/requests and same-origin authenticated bounded routes. Save evidence before settlement, return only validated output after settlement. Read paths never bootstrap schema.
+- [x] Extend support resolution to recognize composer calls and prevent waiving active requests.
+- [x] Run focused new tests and existing assistance credit/recovery tests; expect all pass. Commit.
 
 ### Task 3: Real client connection and verification
 
@@ -56,11 +56,11 @@
 
 **Interfaces:** UI supplies `PromptAssistanceDraftContext`; the live transport uses the contracts from tasks 1/2. Existing reducer revision/application/undo remain authoritative.
 
-- [ ] Write and run failing tests for real payloads, clarification without proposal, late response, explicit recovery and supported Milo level selection.
-- [ ] Connect live status/preferences/send/recover with errors and stop-waiting. Keep provider processing independent of browser cancellation, with no refund promise.
-- [ ] Verify TypeScript, scoped lint, exposure, existing composer tests and `pnpm test:validate`. Use disposable PG/provider fixtures for browser checks.
-- [ ] Document flags, migration, scope, limits, support and remaining paid quality evaluation; update PR #555 and push reviewed commits.
+- [x] Write and run failing tests for real payloads, clarification without proposal, late response, explicit recovery and supported Milo level selection.
+- [x] Connect live status/preferences/send/recover with errors and stop-waiting. Keep provider processing independent of browser cancellation, with no refund promise.
+- [x] Verify TypeScript, scoped lint, exposure, existing composer tests and `pnpm test:validate`. Use disposable PG/provider fixtures for browser checks.
+- [x] Document flags, migration, scope, limits, support and remaining paid quality evaluation; update PR #555 and push reviewed commits.
 
 ## Progress
 
-Implementation in progress. No live paid calls or shared schema changes authorized by this plan.
+Implementation and focused verification completed on 2026-10-29. The broader validation run and its isolated rechecks are recorded in `docs/engineering/prompt-assistance-validation.md`. No live paid calls or shared schema changes were performed. PR #555 stays draft; activation and creative-quality/cost evaluation remain separate release work.
