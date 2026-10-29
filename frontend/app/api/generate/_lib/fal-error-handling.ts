@@ -198,6 +198,9 @@ export function shouldDeferFalError(meta: FalErrorMetadata): boolean {
   if (!(meta.error instanceof FalGenerationError)) {
     return false;
   }
+  if (meta.error.phase === 'accepted' || meta.error.phase === 'submission_unknown') return true;
+  if (meta.error.phase === 'pre_submission' || meta.error.phase === 'submission_rejected'
+    || meta.error.phase === 'provider_terminal') return false;
 
   const providerJobId = meta.providerJobId ?? meta.error.providerJobId ?? null;
   if (!providerJobId) return false;

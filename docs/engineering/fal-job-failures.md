@@ -109,12 +109,62 @@ state after an UPDATE loses a row-lock race. An uncertain final persistence erro
 after provider work is not permission to roll payment back or submit again.
 
 This scope does not redesign the legacy Stripe rollback or all provider-specific
-submission handlers. In particular, separating a confirmed Fal enqueue from a
-later authentication/rate-limit result-read failure still needs an explicit
-transport-phase signal; a request ID alone is insufficient evidence.
+submission handlers. The transport-phase follow-up below distinguishes accepted
+Fal requests from later read errors; a request ID alone is insufficient evidence.
 
 Focused runtime checks include `fal-wallet-refund-postgres.test.ts`,
 `fal-wallet-webhook-postgres.test.ts`, `fal-poll-terminal-race-postgres.test.ts`,
 `admin-refund-lock-order-postgres.test.ts` and the generate final-persistence tests.
 Use the repository's disposable PostgreSQL 17 runner; no live paid generation is
 needed for these regressions.
+
+
+## Fal acceptance and outcome provenance (29 October 2026 follow-up)
+
+`fal.ts` records evidence at the transport boundary; `fal-error-provenance.ts`
+owns error normalization and phase classification into `FalGenerationError`.
+`fal-error-handling.ts` owns the decision to defer, and
+`fal-submission.ts` retains the existing job identity for recovery. An error's
+request ID, message, HTTP status or `onRequestId` persistence callback alone does
+not prove provider acceptance or terminal inference failure.
+
+- Pre-submission errors occur before any provider submission, including local
+  configuration or request construction. They retain their existing refusal
+  semantics and error codes.
+- A single POST can establish a definite rejection through its explicit client
+  error response. A timeout, server error, network failure or unusable success
+  acknowledgement instead leaves submission uncertain, including Kling v4's
+  forced queue path when `submissionMode` is absent.
+- A successful queue response with a nonempty request ID, or the installed SDK's
+  `onEnqueue` after successful submission, establishes acceptance. Set this fact
+  before invoking local persistence hooks. Errors from those hooks must not
+  authorize a refund, even when they carry a 422-like status or body.
+- After acceptance, authentication/rate-limit/status-read errors remain
+  recoverable. A terminal result rejection needs evidence from the result read
+  after a matching completed queue state, plus a structured 422 failure. A bare
+  422, safety wording during a status read, or an unrelated queue identity is
+  insufficient. The webhook and normal polling retain their terminal outcome
+  ownership.
+- Before responding with a deferred state, read the durable job where possible.
+  If a webhook has already completed it, return that completed state. A storage
+  outage still does not authorize a new paid request or a payment rollback.
+
+The installed `@fal-ai/client` 1.7.0 calls `queue.submit`, then `onEnqueue`, then
+`queue.subscribeToStatus`, then `queue.result`. Its legacy submit path also retries
+some POST failures. An error before its acknowledgement therefore remains
+uncertain: the final error cannot establish that an earlier attempt was rejected.
+This follow-up does not remove those SDK retries or prove a provider charged
+multiple requests. Their removal/qualification remains the separate GEN-03 lot.
+The explicit queue POST helper continues to submit once.
+
+An uncertain submission without a verified provider ID is not automatically
+pollable: the regular Fal poll requires that ID, and stale provisional settlement
+selects only pending jobs without a request fingerprint, not these running jobs.
+A correlated callback may recover the identity; otherwise this still needs
+explicit reconciliation. Do not promise an automatic retry or refund, or describe
+provider acceptance as confirmed. Bounded reconciliation of ambiguous submissions
+belongs with the remaining GEN-03 work, not a blind refund scan.
+
+Acceptance provenance is local control-flow evidence, not client-supplied data,
+a new database schema or a replacement for the persisted job/provider identity.
+Verify the SDK ordering again if its version or subscription implementation changes.

@@ -159,6 +159,7 @@ export async function submitFalGenerateTask(params: {
   const rollbackPendingPaymentFn = params.deps?.rollbackPendingPaymentFn ?? rollbackPendingPayment;
   const markJobAwaitingFalFn = params.deps?.markJobAwaitingFalFn ?? markJobAwaitingFal;
   let providerSubmissionStarted = false;
+  let acceptedProviderJobId: string | null = null;
   let sanitize = sanitizeProviderMediaDiagnostics;
 
   try {
@@ -176,18 +177,21 @@ export async function submitFalGenerateTask(params: {
       transport.payload,
       {
         onRequestId: (requestId, nativeDraftSubmission, falQueueReceipt) => {
+          if (!requestId.trim()) return;
+          acceptedProviderJobId = requestId.trim();
+          params.setLastProviderJobId(acceptedProviderJobId);
           console.info('[fal] request id received', {
             jobId: params.jobId,
             engineId: params.engineId,
             requestId,
           });
-          return params.persistProviderJobId(requestId, nativeDraftSubmission, falQueueReceipt);
+          return params.persistProviderJobId(acceptedProviderJobId, nativeDraftSubmission, falQueueReceipt);
         },
         onQueueUpdate: (status) => {
-          if (!status) return;
-          const requestId =
-            (status as { request_id?: string }).request_id ?? params.getLastProviderJobId() ?? null;
-          params.setLastProviderJobId(requestId);
+          if (!status || !acceptedProviderJobId) return;
+          const requestId = (status as { request_id?: unknown }).request_id;
+          if (requestId !== undefined && requestId !== acceptedProviderJobId) return;
+          params.setLastProviderJobId(acceptedProviderJobId);
         },
       }
     );
@@ -237,12 +241,14 @@ export async function submitFalGenerateTask(params: {
     });
     const failureMessage = toUserFacingFailureMessage(translation.message);
     const errorCode = translation.code;
+    const phase = error instanceof FalGenerationError ? error.phase : undefined;
     const providerJobId: string | null =
-      error instanceof FalGenerationError && error.providerJobId
+      phase && phase !== 'accepted' && phase !== 'provider_terminal' ? null
+      : acceptedProviderJobId ?? (error instanceof FalGenerationError && error.providerJobId
         ? error.providerJobId
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
-          : params.getLastProviderJobId() ?? null;
+          : params.getLastProviderJobId() ?? null);
     const refundDescription = buildUserFacingRefundDescription({
       engineLabel: params.engineLabel,
       durationSec: params.durationSec,
@@ -267,9 +273,7 @@ export async function submitFalGenerateTask(params: {
       safeError
     );
 
-    const deferable =
-      !isQuotaError &&
-      shouldDeferFalError({
+    const deferable = shouldDeferFalError({
         error,
         status,
         detail,
@@ -278,12 +282,14 @@ export async function submitFalGenerateTask(params: {
       });
 
     // A request id cannot turn a definitive enqueue rejection into a pending job.
-    const uncertainSubmission = providerSubmissionStarted && params.falPayload.submissionMode === 'enqueue' &&
-      (!status || status >= 500 || status === 408);
+    const uncertainSubmission = phase === 'submission_unknown' || (phase === undefined && providerSubmissionStarted
+      && (params.falPayload.submissionMode === 'enqueue' || params.engineId === 'kling-v4')
+      && (!status || status >= 500 || status === 408));
     if (isTimeoutError || uncertainSubmission) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
-      const waitingMessage =
-        'Rendering is still in progress. We will refresh as soon as the next status arrives.';
+      const waitingMessage = uncertainSubmission
+        ? 'We are checking whether this generation was accepted. Do not submit again.'
+        : 'Rendering is still in progress. We will refresh as soon as the next status arrives.';
 
       if (providerJobId) {
         await markJobAwaitingFalFn({
@@ -317,10 +323,10 @@ export async function submitFalGenerateTask(params: {
         });
       }
 
-      return buildDeferredFalResponse(params.jobId, providerJobId, progressFloor, waitingMessage);
+      return buildCurrentOrDeferredFalResponse(params.jobId, providerJobId, progressFloor, waitingMessage, queryFn);
     }
 
-    if (deferable && providerJobId) {
+    if (deferable) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
       const waitingMessage =
         'Rendering is still in progress. No action is needed while we wait for the next status update.';
@@ -340,7 +346,7 @@ export async function submitFalGenerateTask(params: {
         deps: { queryFn },
       });
 
-      return buildDeferredFalResponse(params.jobId, providerJobId, progressFloor, waitingMessage);
+      return buildCurrentOrDeferredFalResponse(params.jobId, providerJobId, progressFloor, waitingMessage, queryFn);
     }
 
     let settledJob: PersistedVideoJob;
@@ -464,6 +470,22 @@ export async function submitFalGenerateTask(params: {
       }),
     };
   }
+}
+
+async function buildCurrentOrDeferredFalResponse(
+  jobId: string,
+  providerJobId: string | null,
+  progress: number,
+  message: string,
+  queryFn: QueryFn,
+): Promise<FalGenerateSubmissionResult> {
+  try {
+    const current = await readPersistedVideoJob(jobId, queryFn);
+    if (['completed', 'failed'].includes(current.status ?? '')) {
+      return { ok: false, status: 200, body: buildPersistedVideoJobResponse(current) };
+    }
+  } catch { /* Preserve recovery through the same job when status reads are unavailable. */ }
+  return buildDeferredFalResponse(jobId, providerJobId, progress, message);
 }
 
 function buildDeferredFalResponse(

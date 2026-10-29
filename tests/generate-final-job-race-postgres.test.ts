@@ -180,7 +180,11 @@ test('late submission acknowledgments preserve terminal output while other jobs 
           await completing.query('COMMIT');
           const result = await resultPromise;
           assert.equal(result.ok, false);
-          if (!result.ok) assert.equal(result.status, 202);
+          if (!result.ok) {
+            assert.equal(result.status, 200);
+            assert.equal(result.body.status, terminal);
+            assert.equal(result.body.videoUrl, expected.video_url);
+          }
           assert.equal(submissions, 1);
           assert.equal(rollbacks, 0);
           assert.deepEqual(await read(jobId), expected);
