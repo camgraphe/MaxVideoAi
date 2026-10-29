@@ -35,7 +35,8 @@ export async function studioTaskFundingRequestIds(db:QueryExecutor,scope:{user_i
 }
 export async function projectStudioTask(row:StudioTaskRow,db:QueryExecutor={query}):Promise<StudioTaskStatus> {
   const usage=await readStudioTaskUsage(row,db);
-  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:usage.usedLuna?'gpt-6-luna':row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
+  const segment=(await db.query<{model:StudioAssistantModel}>('SELECT model FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[row.user_id,row.project_id,row.segment_request_id]))[0];
+  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:usage.usedLuna?'gpt-6-luna':segment?.model??row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
     consumedCredits:usage.consumedCredits,reservedCredits:usage.reservedCredits,completedCalls:usage.completedCalls,allowedCalls:row.allowed_calls,revision:row.revision,error:row.error,
     canContinue:row.state==='paused'&&usage.unknownCalls===0&&row.allowed_calls<24});
 }

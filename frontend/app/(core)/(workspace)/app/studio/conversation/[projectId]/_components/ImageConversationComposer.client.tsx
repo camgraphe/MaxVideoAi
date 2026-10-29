@@ -10,6 +10,7 @@ export function ImageConversationComposer({
   onTextChange,
   onSend,
   blocked,
+  sendBlocked=false,
   onOpenLibrary,
   libraryTrigger,
   locale = 'en',
@@ -21,6 +22,7 @@ export function ImageConversationComposer({
   onTextChange: (text: string) => void;
   onSend: () => void;
   blocked: boolean;
+  sendBlocked?:boolean;
   onOpenLibrary: (trigger: HTMLButtonElement) => void;
   libraryTrigger: Ref<HTMLButtonElement>;
   locale?: ConversationLocale | 'es';
@@ -32,7 +34,7 @@ export function ImageConversationComposer({
   const textarea = useRef<HTMLTextAreaElement>(null);
   const lengthNoticeId = useId();
   const tooLong = text.length > 4000;
-  const canSend = !blocked && Boolean(text.trim()) && !tooLong;
+  const canSend = !blocked && !sendBlocked && Boolean(text.trim()) && !tooLong;
   const resizeTextarea = useCallback(() => {
     const element = textarea.current;
     if (!element) return;

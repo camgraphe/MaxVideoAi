@@ -81,3 +81,6 @@ export const studioAssistanceChoiceSchema = z.discriminatedUnion('action',[
   z.object({action: z.enum(['select_luna','select_terra','select_sol','disable_paid']),expectedRevision: z.number().int().nonnegative()}).strict(),
 ]);
 export type StudioAssistanceChoice = z.infer<typeof studioAssistanceChoiceSchema>;
+
+export const assistanceNextActionSchema=z.object({type:z.literal('studio_assistance'),reason:z.enum(['included_exhausted','luna_exhausted','paid_budget_exhausted','campaign_exhausted','usage_unresolved','wallet_insufficient','call_limit','luna_busy','luna_request_too_large','policy_changed']),safeToStartNewRequest:z.boolean(),canStartFollowup:z.boolean().optional(),completedModelCalls:z.number().int().nonnegative().optional()});
+export type AssistanceNextAction=z.infer<typeof assistanceNextActionSchema>;

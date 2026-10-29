@@ -11,7 +11,7 @@ type Props=StudioAssistanceProps;
 const money=(cents:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);
 export function StudioAssistance(props:Props) {
   const [open,setOpen]=useState(false),[requestedView,setRequestedView]=useState<MiloLevel|undefined>(),trigger=useRef<HTMLButtonElement>(null),returnFocus=useRef<HTMLButtonElement|null>(null);
-  useEffect(()=>{if(props.openSignal){const active=document.activeElement;returnFocus.current=active?.tagName==='BUTTON'?active as HTMLButtonElement:trigger.current;setRequestedView('max');setOpen(true);}},[props.openSignal]);
+  useEffect(()=>{if(props.openSignal){const active=document.activeElement;returnFocus.current=active?.tagName==='BUTTON'?active as HTMLButtonElement:trigger.current;setRequestedView(undefined);setOpen(true);}},[props.openSignal]);
   const {status,locale}=props,t=(en:string,fr:string)=>locale==='fr'?fr:en;
   if(status&&!status.enabled)return null;
   function close(){setOpen(false);}

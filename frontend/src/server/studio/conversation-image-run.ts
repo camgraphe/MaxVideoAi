@@ -252,7 +252,7 @@ export async function runStudioImageActions(options: {
       try{return await checkpoint();}
       catch(error){
         const action=error instanceof AgentApiError?error.nextAction:undefined;
-        if(!options.taskExecution||!policy.credits||currentModel==='gpt-6-luna'||!params||!solBounds
+        if(!options.taskExecution||options.taskExecution.profile.explicitLiteChoice||!policy.credits||currentModel==='gpt-6-luna'||!params||!solBounds
           ||options.responseReplayOnly||checkpointOptions?.replayOnly||options.taskExecution.recoveryOnly
           ||!(error instanceof AgentApiError)||error.code!=='SPENDING_LIMIT_EXCEEDED'||action?.type!=='studio_assistance'
           ||typeof action.reason!=='string'||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))throw error;

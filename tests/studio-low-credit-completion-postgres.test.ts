@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {STUDIO_TASK_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
-import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
+import {createLegacyTaskService as createStudioTaskService} from './helpers/legacy-task-service';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import type {StudioResponseCreator} from '../frontend/src/server/studio/conversation-director';

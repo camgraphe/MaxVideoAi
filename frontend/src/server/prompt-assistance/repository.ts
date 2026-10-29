@@ -1,7 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
-import {openStudioAssistanceTurn} from '@/server/studio/assistance-ledger';
+import {lockAccount,openStudioAssistanceTurn} from '@/server/studio/assistance-ledger';
 import type {StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistance-contract';
 import type {PromptAssistanceReply,PromptAssistanceRequest} from '@/lib/prompt-assistance/contract';
@@ -30,6 +30,8 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     await ensurePromptSession(userId,input.sessionId,input.draft,tx);
     const count=(await tx.query<{n:string}>('SELECT count(*)::text n FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2',[userId,input.sessionId]))[0];
     if(Number(count.n)>=100)throw new Error('SESSION_FULL');
+    const account=await lockAccount(tx,userId,policy);
+    if(input.assistanceModel!==undefined&&(account.selected_model!==input.assistanceModel||Number(account.revision)!==input.assistanceRevision))throw new Error('ASSISTANCE_SELECTION_CHANGED');
     const turn=await openStudioAssistanceTurn(composerScope(userId,input.sessionId),input.requestId,policy,tx);
     const row=(await tx.query<PromptRequestRow>(`INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model) VALUES($1,$2,$3,$4,$5::jsonb,$6,'preparing',$7) RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model]))[0];
     return {row:{...row,runtime_policy:turn.tariff_snapshot?.runtime},claimed:true};

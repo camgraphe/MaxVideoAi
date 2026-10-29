@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import { HelpCircle, ArrowDown, X, ImagePlus, Images, Clapperboard } from "lucide-react";
 import {canResumeAssistanceRequest,canStartAssistanceFollowupWithoutChoice} from './_lib/conversation-assistance';
+import {MiloAccessNotice} from '@/components/composer/MiloAccessNotice.client';
+import {needsMiloCredits,canUseMiloLite} from '@/lib/studio/milo-funding';
+import type {StudioAssistanceStatus,AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useStudioAssistance} from './_hooks/useStudioAssistance';
 import {StudioAssistance} from './_components/StudioAssistance.client';
 import { useImageConversation } from "./_hooks/useImageConversation";
@@ -75,7 +78,13 @@ function StudioImageConversationWorkspace({
   useEffect(()=>{if(lastTaskUsage.current!==taskUsageKey){lastTaskUsage.current=taskUsageKey;void refreshAssistance();}},[taskUsageKey,refreshAssistance]);
   const [budgetPrompt,setBudgetPrompt]=useState(0);
   const [followupNotice,setFollowupNotice]=useState(false);
-  const assistanceBlocked=!!assistance.status?.enabled&&!assistance.status.canContinue;
+  const [fundingDecline,setFundingDecline]=useState<{action:AssistanceNextAction;revision:number}|null>(null);
+  const fundingAction=fundingDecline?.revision===assistance.status?.revision?fundingDecline?.action:null;
+  const fundingBlocked=needsMiloCredits(assistance.status,fundingAction);
+  const pausedForCredits=studio.conversation.turns.some(turn=>turn.task?.state==='paused'&&turn.task.error==='funding');
+  const paidFundingAvailable=!!assistance.status?.enabled&&!assistance.error&&!assistance.status.unresolvedCalls&&!!assistance.status.credits&&(assistance.status.credits.included.remaining+(assistance.status.paid.enabled?assistance.status.credits.purchased.remaining:0)>0);
+  const authRequired=assistance.error==='AUTH_REQUIRED';
+  const assistanceBlocked=!!assistance.error||assistance.busy||!assistance.status?.enabled||!assistance.status.canContinue||fundingBlocked;
   const recoveredUsage=canResumeAssistanceRequest(studio.assistanceAction,assistance.status,assistance.error);
   const exports = useConversationExports(projectId,exportsEnabled);
   const root = useRef<HTMLElement>(null);
@@ -154,22 +163,41 @@ function StudioImageConversationWorkspace({
       studio.discardPending();setFollowupNotice(true);
     }
   }
-  async function send() {
-    if (assistanceLoading || assistanceBlocked || !text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
+  // Restore only a server-confirmed rejection before any model call; unknown calls keep their recovery identity.
+  useEffect(()=>{
+    const pending=studio.pending,action=studio.assistanceAction;
+    if(!pending||studio.busy||!action?.safeToStartNewRequest||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))return;
+    setFundingDecline({action,revision:assistance.status?.revision??-1});
+    setText(current=>current||pending.message);setShotPlanRevision(pending.shotPlanRevision);shelf.restore(pending);studio.discardPending();
+  },[studio,shelf,assistance.status?.revision]);
+  const liteSending=useRef(false);
+  const latestSend=useRef<(status:StudioAssistanceStatus)=>Promise<void>>(async()=>{});
+  async function sendWithLite(){
+    if(liteSending.current||studio.busy||studio.pending||assistance.busy||!text.trim()||!canUseMiloLite(assistance.status))return;
+    liteSending.current=true;
+    try{
+      const accepted=await assistance.choose({action:'select_luna',expectedRevision:assistance.status!.revision});
+      const fresh=assistance.getStatus();
+      if(accepted&&fresh?.selectedModel==='gpt-6-luna'&&fresh.canContinue&&canUseMiloLite(fresh))await latestSend.current(fresh);
+    }finally{liteSending.current=false;}
+  }
+  async function send(status=assistance.getStatus()) {
+    if (!status?.enabled || !status.canContinue || status.unresolvedCalls || needsMiloCredits(status) || !text.trim() || studio.loading || studio.busy || studio.pending || shelf.uploading || unavailableReferences) return;
     const input:ImageTurnInput = {
       requestId: crypto.randomUUID(),
       message: text,
       ...(shotPlanRevision?{shotPlanRevision}:{}),
       locale:appLocale,
-      ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:assistance.status!.selectedModel,assistanceRevision:assistance.status!.revision}}:{}),
+      ...(tasksEnabled?{taskBudget:{profile:'standard',maxCredits:STUDIO_TASK_PROFILES.standard.maxCredits,policyVersion:STUDIO_TASK_POLICY_VERSION,model:status.selectedModel,assistanceRevision:status.revision}}:{}),
       references: references.filter(ref => !ref.kind || ref.kind === 'image').map((ref) => ref.assetId),
       ...(references.length ? {referenceMentions:references.map(ref=>({assetId:ref.assetId,label:ref.label}))} : {}),
       ...(mediaEnabled ? {attachments: references.filter(ref => ref.kind === 'video' || ref.kind === 'audio').map(ref => ({type: 'asset' as const, assetId: ref.assetId, kind: ref.kind as 'video' | 'audio'}))} : {}),
     };
-    setText("");setShotPlanRevision(undefined);setFollowupNotice(false);
+    setText("");setShotPlanRevision(undefined);setFollowupNotice(false);setFundingDecline(null);
     follow.current = true;
     await studio.submit(input);
   }
+  latestSend.current=send;
   return (
     <section
       className={styles.studio}
@@ -238,7 +266,7 @@ function StudioImageConversationWorkspace({
                     {t('Resume this exchange', 'Reprendre cet échange')}
                   </button>
                 )}
-                {turn.task&&<ConversationTask compact={mobile} task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
+                {turn.task&&<ConversationTask fundingAvailable={paidFundingAvailable} liteAvailable={canUseMiloLite(assistance.status)&&!assistance.error} compact={mobile} task={turn.task} projectId={projectId} accountKey={accountKey} locale={locale} onChanged={()=>{void studio.refresh();void assistance.refresh();}} onAssistance={()=>setBudgetPrompt(value=>value+1)} onSimplify={()=>{studio.discardPending();setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();}}/>}
                 <ImageQuoteCard
                   turn={turn}
                   assemblyError={extensions.errors[turn.requestId]}
@@ -345,7 +373,8 @@ function StudioImageConversationWorkspace({
               )}
             </div>
           )}
-          {assistanceBlocked&&!studio.assistanceAction&&<div className={styles.assistanceNote} role="status"><span>{t('Your assistance allowance needs attention. Choose how to continue.','Votre allocation d’assistance nécessite votre attention. Choisissez comment continuer.')}</span><button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('See options','Voir les options')}</button></div>}
+          {(authRequired||(fundingBlocked&&!studio.busy&&!studio.pending&&(!pausedForCredits||!!text.trim())))&&<MiloAccessNotice authRequired={authRequired} canUseLite={canUseMiloLite(assistance.status)} busy={assistance.busy} onLite={()=>void sendWithLite()} onCredits={()=>setBudgetPrompt(value=>value+1)}/>}
+          {assistanceBlocked&&!authRequired&&!fundingBlocked&&!studio.assistanceAction&&<div className={styles.assistanceNote} role="status"><span>{t('Your assistance allowance needs attention. Choose how to continue.','Votre allocation d’assistance nécessite votre attention. Choisissez comment continuer.')}</span><button onClick={()=>setBudgetPrompt(value=>value+1)}>{t('See options','Voir les options')}</button></div>}
           {followupNotice&&<p className={styles.assistanceNote} role="status">{t('Some work may already be saved. Send a follow-up to continue from your current project. Your original request will not be replayed.','Une partie du travail peut déjà être enregistrée. Envoyez un nouveau message pour continuer à partir du projet actuel. La demande initiale ne sera pas rejouée.')}</p>}
           {!!references.length && (
             <div className={styles.attachments} aria-label={t('Attached to next message','Joints au prochain message')}>
@@ -365,7 +394,8 @@ function StudioImageConversationWorkspace({
             text={text}
             onTextChange={setText}
             onSend={() => void send()}
-            blocked={assistanceLoading || assistanceBlocked || studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
+            sendBlocked={assistanceLoading || assistanceBlocked}
+            blocked={studio.loading || studio.busy || !!studio.pending || shelf.uploading || unavailableReferences}
             libraryTrigger={libraryTrigger}
             onOpenLibrary={openReferences}
             locale={locale}

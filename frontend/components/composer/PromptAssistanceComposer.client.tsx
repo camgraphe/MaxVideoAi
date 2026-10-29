@@ -12,6 +12,8 @@ import { useStudioAssistance } from '@/app/(core)/(workspace)/app/studio/convers
 import { StudioAssistanceCreditsDialog } from '@/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistanceCredits.client';
 import { PromptAssistanceFeedback } from './PromptAssistanceFeedback.client';
 import { PROMPT_REFERENCE_PERCEPTION } from '@/lib/prompt-assistance/analysis-contract';
+import {MiloAccessNotice} from './MiloAccessNotice.client';
+import {needsMiloCredits,canUseMiloLite} from '@/lib/studio/milo-funding';
 import { PromptReferenceAnalysis } from './PromptReferenceAnalysis.client';
 
 export function PromptAssistanceComposer({ context, locale, modelLabel, draftText, onApplyText, children, renderReferences, modeControl, target = 'prompt', maxLength, blocked, disabledReason }: {
@@ -29,7 +31,20 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const [creditsOpen, setCreditsOpen] = useState(false);
   const creditsTrigger = useRef<HTMLButtonElement>(null);
   const liveBusy = controller.transport.waiting || controller.transport.recovery || analysisBusy;
-  const liveBlocked = PROMPT_ASSISTANCE_LIVE && (!context.live || !credits.status?.enabled || !!credits.error || credits.busy || liveBusy || !!credits.status.unresolvedCalls);
+  const authRequired=credits.error==='AUTH_REQUIRED'||['UNAUTHORIZED','AUTH_REQUIRED'].includes(controller.transport.error??'');
+  const fundingBlocked=PROMPT_ASSISTANCE_LIVE&&!controller.transport.recovery&&!controller.transport.waiting&&needsMiloCredits(credits.status,credits.status?.revision===controller.transport.fundingRevision?controller.transport.nextAction:null);
+  const liveBlocked = PROMPT_ASSISTANCE_LIVE && (!context.live || fundingBlocked || authRequired || !credits.status?.enabled || !!credits.error || credits.busy || liveBusy || !!credits.status.unresolvedCalls);
+  const liteSending=useRef(false);
+  const latest=useRef({controller,scope:context.scopeKey});latest.current={controller,scope:context.scopeKey};
+  async function sendWithLite(){
+    if(liteSending.current||liveBusy||credits.busy||!state.message.trim()||!canUseMiloLite(credits.status))return;
+    liteSending.current=true;
+    try{
+      const accepted=await credits.choose({action:'select_luna',expectedRevision:credits.status!.revision});
+      const fresh=credits.getStatus();
+      if(accepted&&fresh?.selectedModel==='gpt-6-luna'&&fresh.canContinue&&canUseMiloLite(fresh)&&latest.current.scope===context.scopeKey)latest.current.controller.send(fresh);
+    }finally{liteSending.current=false;}
+  }
   const copy = promptAssistanceCopy(locale);
   const id = useId();
   const [copied, setCopied] = useState(false);
@@ -80,10 +95,10 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
         reasoningControl={<button type="button" ref={creditsTrigger} className={styles.miloTrigger} aria-label="Milo settings and credits" aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}><Sparkles size={15} aria-hidden/><strong>Milo</strong>{credits.status ? <span>{MILO_LEVELS[miloLevelForModel(credits.status.selectedModel)].label}</span> : null}<ChevronDown size={12} aria-hidden/></button>}
         conversationControl={<button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button>}
         message={state.message} pending={PROMPT_ASSISTANCE_LIVE ? controller.transport.waiting : Boolean(state.pending)} blocked={blocked || liveBlocked} maxLength={maxLength} messageRef={controller.input}
-        feedback={PROMPT_ASSISTANCE_LIVE ? <><PromptAssistanceFeedback error={controller.transport.error ?? credits.error ?? (!credits.status ? 'LOADING' : !credits.status.enabled ? 'ASSISTANCE_DISABLED' : credits.status.unresolvedCalls ? 'USAGE_UNRESOLVED' : null)} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} />
-          {PROMPT_REFERENCE_PERCEPTION && context.live && credits.status ? <PromptReferenceAnalysis key={context.scopeKey} scopeKey={context.scopeKey} draft={{...context.live,text:draftText,target}} model={credits.status.selectedModel} session={controller.transport.session} blocked={Boolean(blocked || controller.transport.waiting || controller.transport.recovery || credits.busy || !credits.status.enabled || credits.error)} onBusy={setAnalysisBusy} onCompleted={()=>{setPerceptionRevision(value=>value+1);void credits.refresh();}}/> : null}
+        feedback={PROMPT_ASSISTANCE_LIVE ? <>{authRequired||fundingBlocked?<MiloAccessNotice authRequired={authRequired} canUseLite={canUseMiloLite(credits.status)} busy={liveBusy||credits.busy} onLite={()=>void sendWithLite()} onCredits={()=>{setCreditsOpen(true);void credits.refresh();}}/>:<PromptAssistanceFeedback error={(controller.transport.nextAction&&credits.status?.revision!==controller.transport.fundingRevision?null:controller.transport.error) ?? credits.error ?? (!credits.status ? 'LOADING' : !credits.status.enabled ? 'ASSISTANCE_DISABLED' : credits.status.unresolvedCalls ? 'USAGE_UNRESOLVED' : null)} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} />}
+          {PROMPT_REFERENCE_PERCEPTION && context.live && credits.status ? <PromptReferenceAnalysis key={context.scopeKey} scopeKey={context.scopeKey} draft={{...context.live,text:draftText,target}} model={credits.status.selectedModel} session={controller.transport.session} blocked={Boolean(blocked || controller.transport.waiting || controller.transport.recovery || credits.busy || !credits.status.enabled || credits.error || authRequired || fundingBlocked)} onBusy={setAnalysisBusy} onCompleted={()=>{setPerceptionRevision(value=>value+1);void credits.refresh();}}/> : null}
         </> : null}
-        onMessageChange={text => dispatch({ type: 'message', text })} onSend={() => { if (!liveBlocked) controller.send(); }} onProposalTextChange={text => dispatch({ type: 'edit', text })} onApply={controller.apply}
+        onMessageChange={text => dispatch({ type: 'message', text })} onSend={() => { if (!liveBlocked) controller.send(credits.status??undefined); }} onProposalTextChange={text => dispatch({ type: 'edit', text })} onApply={controller.apply}
         onCopy={() => { if (state.proposal) void navigator.clipboard?.writeText(state.proposal.text).then(() => setCopied(true)).catch(() => setCopied(false)); }} references={renderReferences?.(controller.insertMention)} /> : null}
     </div>
     {state.undo ? <div className={styles.undo}><span>{copy.applied}</span><button type="button" disabled={!controller.canUndo || blocked} onClick={controller.undo}>{copy.undo}</button></div> : null}

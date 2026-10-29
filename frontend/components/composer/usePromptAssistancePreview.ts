@@ -2,6 +2,7 @@
 import { useEffect, useReducer, useRef } from 'react';
 import { canApplyProposal, canUndoProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
+import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
@@ -25,7 +26,8 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale=
     if(result.state==='complete'&&result.reply){
       if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply});
       else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply});
-    }else if(uiId!==null)dispatch({type:'failed',id:uiId});
+    }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
+    else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
   });
   // A scope change cancels the local fixture. A draft edit leaves its response stale.
   useEffect(() => {
@@ -38,10 +40,10 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale=
     }, 350);
     return () => window.clearTimeout(timeout);
   }, [state.pending, scopeKey, target]);
-  const send = () => {
+  const send = (selection?:Pick<StudioAssistanceStatus,'selectedModel'|'revision'>) => {
     if (!state.message.trim() || state.pending || blocked) return;
     const id=++sequence.current;
-    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target}},id)))return;
+    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target}},id)))return;
     sampleDraft.current = draftText;
     dispatch({ type: 'send', id, message: state.message.trim() });
   };

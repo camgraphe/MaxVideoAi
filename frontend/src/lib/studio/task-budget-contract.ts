@@ -34,8 +34,8 @@ export function studioTaskProfileForModel(selection:StudioTaskSelection,model:St
     ? {...profile,reasoning:'high' as const,maxOutputTokens:6000 as const}
     : profile;
 }
-export type StudioTaskResourceProfile=ReturnType<typeof studioTaskProfileForModel>;
-export const studioTaskResumeSchema=z.object({requestId:z.string().uuid(),approvalId:z.string().uuid(),expectedRevision:z.number().int().nonnegative(),action:z.enum(['continue','extend']),maxCredits:credits,policyVersion,confirmed:z.literal(true)}).strict();
+export type StudioTaskResourceProfile=ReturnType<typeof studioTaskProfileForModel>&{explicitLiteChoice?:boolean};
+export const studioTaskResumeSchema=z.object({requestId:z.string().uuid(),approvalId:z.string().uuid(),expectedRevision:z.number().int().nonnegative(),action:z.enum(['continue','extend','continue_lite']),maxCredits:credits,policyVersion,confirmed:z.literal(true)}).strict();
 export const studioTaskMaintenanceSchema=z.object({requestId:z.string().uuid(),expectedRevision:z.number().int().nonnegative(),action:z.enum(['recover','cancel']),policyVersion,confirmed:z.literal(true)}).strict();
 export type StudioTaskResume=z.infer<typeof studioTaskResumeSchema>;
 export const studioTaskStatusSchema=z.object({

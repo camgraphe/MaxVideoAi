@@ -21,3 +21,21 @@ test('Audio context keeps spoken script separate and video references carry exac
   assert.ok(!('script' in audio.settings));assert.equal(audio.references.length,0);
   assert.deepEqual(adapters.assistanceSettings({prompt:'Secret draft',durationSec:5,videoUrl:'https://private',nested:{url:'secret'},enabled:true}),{durationSec:5,enabled:true});
 });
+
+test('a rejected pre-dispatch message is restored without overwriting newer writing or duplicating the transcript',()=>{
+  const sent=previewReducer(createPreviewState('owner','draft'),{type:'send',id:1,message:'Keep the red coat'});
+  const restored=previewReducer(sent,{type:'failed',id:1,restore:true} as never);
+  assert.equal(restored.message,'Keep the red coat');
+  assert.equal(restored.messages.length,0);
+  const edited=previewReducer(sent,{type:'message',text:'Keep the blue coat instead'});
+  assert.equal(previewReducer(edited,{type:'failed',id:1,restore:true} as never).message,'Keep the blue coat instead');
+  assert.equal(previewReducer(sent,{type:'failed',id:1}).message,'','A provider-dispatched failure is never treated as an unsent draft');
+});
+
+
+test('recovering a rejected message after reload preserves newer writing',()=>{
+ const empty=createPreviewState('owner','draft');
+ assert.equal(previewReducer(empty,{type:'rejected',message:'Recovered original'}).message,'Recovered original');
+ const edited=previewReducer(empty,{type:'message',text:'Newer writing'});
+ assert.equal(previewReducer(edited,{type:'rejected',message:'Recovered original'}).message,'Newer writing');
+});

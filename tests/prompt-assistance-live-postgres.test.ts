@@ -21,6 +21,17 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   let calls=0;
   const context={model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt' as const,maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only' as const};
   const deps={policy,buildContext:async()=>context as never,count:async()=>1000,create:async(params:{model?:string|null})=>{calls++;return {id:'resp_'+randomUUID(),model:params.model!,status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'I slowed the motion.',text:'A dancer moves slowly across the stage.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never;}};
+  const {ensureStudioMonthlyCredits}=await import('../frontend/src/server/studio/assistance-credit-ledger');
+  const {withDbTransaction}=await import('../frontend/src/lib/db');
+  const {lockAccount}=await import('../frontend/src/server/studio/assistance-ledger');
+  await withDbTransaction(async tx=>{await lockAccount(tx,'low-credit-owner',policy);await ensureStudioMonthlyCredits(tx,'low-credit-owner');});
+  await pg.pool.query("UPDATE studio_assistance_credit_lots SET consumed_credits=490 WHERE user_id='low-credit-owner'");
+  const declinedRequest={...request,sessionId:randomUUID(),requestId:randomUUID()};
+  const declined=await service.sendPromptAssistance('low-credit-owner',declinedRequest,deps);
+  assert.equal(declined.state,'failed');assert.equal(declined.safeToRetry,true);
+  assert.equal(declined.nextAction?.reason,'included_exhausted');assert.equal(declined.nextAction?.safeToStartNewRequest,true);
+  assert.equal(calls,0,'Insufficient maximum reservation must stop before any model call');
+  assert.equal((await service.recoverPromptAssistance('low-credit-owner',declinedRequest.sessionId,declinedRequest.requestId,policy)).nextAction?.reason,'included_exhausted');
   const abandoned={...request,requestId:randomUUID()};
   assert.equal((await service.recoverPromptAssistance('owner',abandoned.sessionId,abandoned.requestId,policy)).state,'failed');
   await assert.rejects(service.sendPromptAssistance('owner',abandoned,deps),/REQUEST_CLOSED/);
@@ -52,7 +63,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.equal((await service.sendPromptAssistance('owner',unknownRequest,deps)).state,'complete');
   assert.equal(calls,callsAfterUnknown,'Recorded usage must settle without another model call');
   const unusable=await service.sendPromptAssistance('malformed-owner',{...request,requestId:randomUUID()},{...deps,create:async(params)=>({...await deps.create(params),output_text:'not JSON'}) as never});
-  assert.equal(unusable.state,'failed');assert.equal(unusable.error,'OUTPUT_INVALID');assert.equal(unusable.reply,undefined);
+  assert.equal(unusable.safeToRetry,false);assert.equal(unusable.nextAction,undefined);assert.equal(unusable.state,'failed');assert.equal(unusable.error,'OUTPUT_INVALID');assert.equal(unusable.reply,undefined);
   assert.equal(unusable.assistance.credits?.included.remaining,470,'Known provider usage is charged even for unusable output');
   for (const [owner, responsePatch, expectedError] of [
     ['incomplete-owner', {status:'incomplete',incomplete_details:{reason:'max_output_tokens'}}, 'OUTPUT_INCOMPLETE'],
@@ -67,6 +78,12 @@ test('Composer conversations share real Milo credits, replay once and retain unk
     assert.equal((await service.sendPromptAssistance(owner,rejectedRequest,deps)).error,expectedError);
     assert.equal(calls,countAfterRejection,'An unusable reply never triggers an automatic retry');
   }
+  let selected=await chooseStudioAssistance('race-owner',{action:'select_luna',expectedRevision:0},policy);
+  const bound={...request,sessionId:randomUUID(),requestId:randomUUID(),assistanceModel:selected.selectedModel,assistanceRevision:selected.revision};
+  selected=await chooseStudioAssistance('race-owner',{action:'select_sol',expectedRevision:selected.revision},policy);
+  const callsBeforeRace=calls;
+  await assert.rejects(service.sendPromptAssistance('race-owner',bound,deps),/ASSISTANCE_SELECTION_CHANGED/);
+  assert.equal(calls,callsBeforeRace,'A free click must never dispatch the paid selection from another tab');
   const unavailable=await service.sendPromptAssistance('invalid-owner',{...request,requestId:randomUUID()},{...deps,buildContext:async()=>{throw new Error('MODEL_UNAVAILABLE');}});
   assert.equal(unavailable.state,'failed');assert.equal(unavailable.assistance.credits?.included.remaining,500);
   assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id='invalid-owner'")).rows[0].n,0);

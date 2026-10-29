@@ -151,7 +151,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
       const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
-      const effort=options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):options.runtimePolicy?.reasoning??(model==='gpt-6-luna'?'high':'medium');
+      const effort=options.taskExecution?.profile.explicitLiteChoice&&model==='gpt-6-luna'?'high':options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):options.runtimePolicy?.reasoning??(model==='gpt-6-luna'?'high':'medium');
       const params: ResponseCreateParamsNonStreaming = {
         model, service_tier: 'default', store: false, reasoning: studioReasoning(effort), max_output_tokens: options.taskExecution?.profile.maxOutputTokens??options.runtimePolicy?.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],

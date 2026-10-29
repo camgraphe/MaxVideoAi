@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
-import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
+import {createLegacyTaskService as createStudioTaskService} from './helpers/legacy-task-service';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import {STUDIO_TASK_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
@@ -11,7 +11,7 @@ import {chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanc
 const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
 const response=(model:string,id:string)=>({id,model,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued from the saved project.'}),output:[]});
 
-test('a large input context with zero remaining Max credits continues with sponsored Standard',async t=>{
+test('a large input context with zero remaining Max credits historically continues with sponsored Lite',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input('complex','Keep the approved vertical framing and continue.');await service.enqueue(input);
   await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);

@@ -86,9 +86,9 @@ export async function readStudioAssistanceStatus(userId:string,policy=studioAssi
     paid:{enabled:paidEnabled(account,policy),authorizedCents:account.paid_authorized_cents,spentCents:usage.paidSpent,reservedCents:usage.paidReserved,remainingCents:paidRemaining,maxAdditionalBudgetCents:Math.max(0,policy.maxAdditionalBudgetCents-paidRemaining-usage.paidReserved)},
     unresolvedCalls:usage.unresolved,canContinue:blockedReason===null,blockedReason};
 }
-export async function chooseStudioAssistance(userId:string,raw:StudioAssistanceChoice,policy=studioAssistancePolicy()):Promise<StudioAssistanceStatus>{
+export async function chooseStudioAssistance(userId:string,raw:StudioAssistanceChoice,policy=studioAssistancePolicy(),executor?:TransactionQueryExecutor):Promise<StudioAssistanceStatus>{
   requireEnabled(policy);const choice=studioAssistanceChoiceSchema.parse(raw);
-  return withDbTransaction(async tx=>{
+  const apply=async(tx:TransactionQueryExecutor)=>{
     const restriction=choice.action==='purchase_pack'||choice.action==='resume_paid'?await getActiveAccountRestrictionInExecutor(userId,tx):null;
     const account=await lockAccount(tx,userId,policy);
     if(choice.action==='purchase_pack'){
@@ -118,7 +118,8 @@ export async function chooseStudioAssistance(userId:string,raw:StudioAssistanceC
     await tx.query(`UPDATE studio_assistance_accounts SET selected_model=$2,paid_enabled=$3,paid_authorized_cents=$4,tariff_version=$5,revision=revision+1,updated_at=clock_timestamp() WHERE user_id=$1`,[userId,account.selected_model,account.paid_enabled,account.paid_authorized_cents,account.tariff_version]);
     await tx.query(`INSERT INTO studio_assistance_choices(user_id,revision,action,authorized_cents,tariff_version) VALUES($1,$2,$3,$4,$5)`,[userId,Number(account.revision)+1,choice.action,account.paid_authorized_cents,account.tariff_version]);
     return readStudioAssistanceStatus(userId,policy,tx);
-  });
+  };
+  return executor?apply(executor):withDbTransaction(apply);
 }
 /** Authorized assistance owner. projectId is a Studio project or a persisted `composer:<session UUID>` scope; never a generation actor. */
 export type AssistanceScope = {userId:string;projectId:string};

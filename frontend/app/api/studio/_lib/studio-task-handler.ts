@@ -25,7 +25,7 @@ export async function handleStudioTask(req:NextRequest,projectId:string,requestI
   }catch(error){
     if(error instanceof SyntaxError||error instanceof ZodError||error instanceof Error&&error.message==='INVALID_BODY')return studioJson({ok:false,error:'INVALID_REQUEST'},{status:400});
     if(error instanceof Error&&error.message==='BODY_TOO_LARGE')return studioJson({ok:false,error:'BODY_TOO_LARGE'},{status:413});
-    if(error instanceof AgentApiError)return studioJson({ok:false,error:error.code,message:error.message},{status:error.code==='SPENDING_LIMIT_EXCEEDED'?402:error.code==='RATE_LIMITED'?429:error.code==='ENGINE_UNAVAILABLE'?503:400});
+    if(error instanceof AgentApiError)return studioJson({ok:false,error:error.code,message:error.message,nextAction:error.nextAction},{status:error.code==='SPENDING_LIMIT_EXCEEDED'?402:error.code==='RATE_LIMITED'?429:error.code==='ENGINE_UNAVAILABLE'?503:400});
     return studioJson({ok:false,error:'STUDIO_TASK_UNAVAILABLE',message:'The task is saved. Check its current status before retrying.'},{status:503});
   }
 }

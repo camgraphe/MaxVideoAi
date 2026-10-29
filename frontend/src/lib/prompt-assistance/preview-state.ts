@@ -12,7 +12,8 @@ type Action =
   | { type: 'message' | 'edit'; text: string }
   | { type: 'send'; id: number; message: string }
   | { type: 'reply'; id: number; text: string | null; reply: string }
-  | { type: 'failed'; id: number }
+  | { type: 'failed'; id: number; restore?:boolean }
+  | { type: 'rejected'; message:string }
   | { type: 'restored'; message: string; text: string | null; reply: string }
   | { type: 'applied'; previous: string; fingerprint: string }
   | { type: 'undone'; fingerprint: string };
@@ -35,7 +36,12 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'send': return state.pending || !action.message.trim() ? state : { ...state, message: '', pending: { id: action.id, revision: state.revision }, messages: [...state.messages, { id: `${action.id}-user`, role: 'user', text: action.message }] };
     case 'reply':
       return state.pending?.id !== action.id ? state : { ...state, pending: null, proposal: action.text ? { text: action.text, revision: state.pending.revision } : null, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply }] };
-    case 'failed': return state.pending?.id===action.id?{...state,pending:null}:state;
+    case 'failed': {
+      if(state.pending?.id!==action.id)return state;
+      const failedId=`${action.id}-user`;
+      return {...state,pending:null,...(action.restore?{message:state.message||state.messages.find(item=>item.id===failedId)?.text||'',messages:state.messages.filter(item=>item.id!==failedId)}:{})};
+    }
+    case 'rejected': return {...state,message:state.message||action.message};
     case 'restored': return {...state,pending:null,proposal:action.text?{text:action.text,revision:-1}:null,messages:[...state.messages,{id:'recovered-user',role:'user',text:action.message},{id:'recovered-assistant',role:'assistant',text:action.reply}]};
     case 'applied': return !canApplyProposal(state) ? state : { ...state, mode: 'prompt', revision: state.revision + 1, fingerprint: action.fingerprint, undo: { text: action.previous, revision: state.revision + 1 } };
     case 'undone': return !canUndoProposal(state) ? state : { ...state, revision: state.revision + 1, fingerprint: action.fingerprint, undo: null };

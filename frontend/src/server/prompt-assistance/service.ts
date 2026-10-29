@@ -1,3 +1,4 @@
+import {assistanceNextActionSchema} from '@/lib/studio/assistance-contract';
 import {query,withDbTransaction} from '@/lib/db';
 import {promptAssistanceReplySchema,promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
@@ -10,7 +11,8 @@ import {AgentApiError} from '@/server/agent-api/errors';
 
 type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse;perception?:typeof preparePromptPerception};
 async function result(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
-  return {sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
+  const nextAction=assistanceNextActionSchema.safeParse((row.context_json as {failureAction?:unknown}|null)?.failureAction);
+  return {safeToRetry:row.state==='failed'&&!row.call_id,...(row.state==='failed'&&!row.call_id&&nextAction.success?{nextAction:nextAction.data}:{}),sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
     state:row.state==='complete'?'complete':row.state==='failed'?'failed':row.state==='unknown'||(row.call_id&&new Date(row.lease_expires_at).getTime()<Date.now())?'unknown':'pending',
     ...(row.reply_json?{reply:row.reply_json}:{}),...(row.error?{error:row.error}:{}),assistance:await readStudioAssistanceStatus(row.user_id,policy)};
 }
@@ -85,7 +87,8 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
   } catch(error) {
     if(dispatched&&row.call_id)await markStudioAssistanceUnknown(row.call_id,userId);
     const known=error instanceof AgentApiError?error.code:error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
-    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known]);
+    const nextAction=assistanceNextActionSchema.safeParse(error instanceof AgentApiError?error.nextAction:null);
+    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,context_json=COALESCE(context_json,'{}'::jsonb)||$6::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known,JSON.stringify(!dispatched&&nextAction.success?{failureAction:nextAction.data}:{})]);
     return result(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
   }
 }
