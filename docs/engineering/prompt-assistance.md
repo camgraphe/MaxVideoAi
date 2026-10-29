@@ -1,33 +1,68 @@
-# Prompt assistance (local app preview)
+# Milo in the creation composers
 
-The video and image workspace composers and the audio creation editor now share an optional **Prompt / AI assistant** presentation. This increment is a development-only interaction sample, not a live assistant. It performs no LLM, credit, provider or generation request. Studio is unchanged.
+The video and image composers and audio creation editor share **Prompt / AI assistant**. The isolated PR includes an opt-in real text-assistance service as well as the development-only visual sample. Default behavior remains off. This service cannot generate media or change generator settings.
 
-## Activate and roll back
+## Activation and rollback
 
-Start this worktree independently:
+Before enabling real assistance in a controlled environment:
+
+1. Apply `neon/migrations/85_prompt_assistance.sql` explicitly, after existing Studio assistance ledger/credit migrations. Request handlers never create schema. Do not apply this migration to a shared database merely to review the UI.
+2. Configure the existing OpenAI credential and Milo policy: `STUDIO_ASSISTANCE_ENABLED=true`; production also requires `STUDIO_ASSISTANCE_APPROVED_POLICY=studio-credits-2026-10-05-v2`. The global OpenAI endpoint is required by the existing tariff policy.
+3. Enable server flag `PROMPT_ASSISTANCE_ENABLED=true` and build the frontend with `NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE=1`.
+4. Verify authenticated status, owned references and recovery, then run a separately approved, bounded paid quality evaluation before general release.
+
+The public flag alone does not enable the API. A live UI never falls back to sample replies. With live disabled, a development visual sample is available using:
 
 ```sh
 NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW=1 pnpm --dir frontend dev --port 3018
 ```
 
-Both `NODE_ENV=development` and the flag above are required. A production build cannot expose the simulation even with the flag set. Remove the flag and restart to restore the ordinary UI. Keep each worktree's `.env.local`, `.next` and test state separate; copying an old local environment does not synchronize Vercel Preview settings. Never commit credentials.
+The sample requires `NODE_ENV=development`; it never calls an LLM or spends credits. At the user's request it has no sample badge. Removing the public flag and rebuilding restores the previous presentation. To stop new paid requests, disable `STUDIO_ASSISTANCE_ENABLED` using the existing policy controls; keep the composer endpoint available for recovery/status until outstanding calls are resolved. Disabling the composer endpoint entirely also hides its recovery route. Do not drop the migration or erase usage evidence during rollback.
 
-## Ownership
+No shared migration, live activation, deployment or paid LLM call was performed for the first connection. Keep per-worktree environment files private.
 
-- `Composer.tsx` keeps manual editing, reference review, advanced options, quotes and Generate. Video/image route adapters provide account/model/mode scope and the current settings, Kling subjects and separately owned generation controls; existing hooks remain the draft owners.
-- `PromptAssistanceComposer.client.tsx` selects the view and presents Undo. `PromptAssistancePanel.client.tsx` owns transcript/editor layout only; it has no Generate callback.
-- `usePromptAssistancePreview.ts` supplies a 350 ms local sample. At the user’s request, the visual-review UI uses natural fixture copy with no simulation badge; the development-only gate and no-network implementation are unchanged. `preview-state.ts` captures monotonic revisions from the draft/settings/reference fingerprint and rejects stale application/undo. Account, model and operation changes retire the conversation and pending response.
-- Suggestions preserve their complete text. A fixed-height conversation stage (240–280 px depending on viewport height) contains the independently scrolling transcript and compact proposal action row. Review replaces the transcript with the complete editable suggestion in that same space. The reply field stays below it from the empty state through subsequent exchanges and review. Expand explicitly enlarges the conversation only. **Use prompt / Use script** lives outside both scroll regions. This is not a sticky action relative to the whole page.
-- `ComposerWorkspaceControls.client.tsx` supplies presentation slots from the video shell and image surface, without owning model or quote state. `ComposerCommandBar` places visible compact operation buttons beside the writing tabs; Expand sits in the Milo heading. `WorkspaceComposerModel.client.tsx` uses EngineSelect's custom trigger and existing picker. The old model/history strip and page activity row are omitted only behind the development gate. `AppCreationNavigation.client.tsx` provides Video/Image/Audio links beneath Create in the sidebar and a native route picker in the mobile navigation, including on audio. The existing settings/Generate toolbar, player and gallery are unchanged.
-- `WorkspaceReferenceSection.client.tsx` reuses the existing upload/library/excerpt owners. Compact references use short labels and 32 px thumbnails; the labelled “+ References” action lives inside the writing surface and opens the existing inventory, including character-library field actions. Required Modify/Extend sources keep a direct action in that same writing footer, with one Required label on the source button rather than a second summary. Provider-specific mention tokens and changed-reference guards remain authoritative. Stable display aliases with translation to provider tokens are still service work; deleting a reference may currently renumber the existing provider mentions.
-- Audio voice assistance edits `script`; music/song style, ambience and SFX edit `prompt`. Lyrics remain separate. Clicking **Audio 1** writes a mention into Message Milo, never speech. The existing `onChange` callback is the only draft mutation path. Soundtrack-a-video uses the existing separate AudioWorkspace and is not included.
+## Ownership and draft safety
 
-Multi-prompt scene editing remains manual with an explanation. Existing engine text limits still apply; no unrestricted text is silently submitted to a model with a smaller limit. Preview conversations are ephemeral and reset when leaving the page.
+- `Composer.tsx` and the route adapters supply the selected model, operation, current text, scalar settings and exact owned reference identities. The manual draft, quotes and Generate remain with their existing owners.
+- `PromptAssistanceComposer.client.tsx` handles writing tabs, Milo level and existing credits dialog. `PromptAssistancePanel.client.tsx` only presents the conversation, suggestion and reply field.
+- `usePromptAssistancePreview.ts` delegates to the live transport when enabled. Its existing reducer captures a monotonic revision from the complete draft/settings/reference fingerprint. Changing model or mode keeps the conversation and invalidates old suggestions. Account changes clear local conversation state. Apply/Undo cannot overwrite a later revision.
+- `usePromptAssistanceTransport.ts` sends one authenticated request identity and stores only its session/request IDs in account/workspace-scoped sessionStorage. A reload can recover the outstanding response, which is always stale for application. The visible chat is otherwise local to the mounted workspace; after reload the next message starts a new session, so hidden old history is never silently supplied.
+- Completed requests remain saved on the server. Within a session, the last eight completed exchanges accompany the current draft. New messages are limited to 100 per session, with a 24-hour session expiry. Usage evidence and replay identities are not deleted at expiry. A retention/deletion policy is still required before a broader history product.
 
-## Remaining live-service increment
+The approved compact reference/footer, visible generator settings, player and galleries retain their existing owners. Review opens the complete suggestion inside the bounded conversation area; Use prompt/Use script stays outside its scroll region. Send never invokes Generate. Multi-prompt scene editing remains manual. Audio voice updates only `script`; music/song style, ambience and effects update only `prompt`. Lyrics and Soundtrack a video are outside this increment.
 
-Build a dedicated authenticated context/proposal contract, with model/mode-specific guides, reference identity binding, revision checks, idempotent requests and the existing Milo Sol/Luna credit accounting. Do not fabricate Studio project/actor identifiers to reuse its endpoints. Evaluate Terra separately. Complete localized copy (including audio's preview labels), real errors/cancellation, account transitions and mobile keyboard QA before enabling a live path. No new dependency or external source code was copied for this increment.
+## Selected-model fiches
+
+`server/prompt-assistance/context.ts` resolves model, public operation and audio variant from the same canonical capability owners used by the application/MCP. It rejects unknown combinations and target limits before reserving credits.
+
+`profiles.ts` selects authored family and operation advice, then attaches the existing per-model `agent-model-guidance.json` and official-source entries from `agent-model-prompting-sources.json`. A request records that guide's version, source list and canonical capabilities. Thus the assistant loads the relevant fiche, not the entire catalogue. Unsupported families get an explicitly generic capability-based guide. The family examples are editorial synthesis, not copied provider claims or measured quality results. Source links are provenance, not fetched live or injected as untrusted instructions.
+
+Update curated guidance beside its authoritative source, add a model/operation fixture, and version the guide when it changes. Capabilities override examples. Terra and a future Lite tier remain a separate evaluation; this increment uses the existing Standard/Luna and Max/Sol policy and tariff.
+
+## References
+
+Each reference is resolved through the exact owned asset/job-output resolver. The server validates applicable fields, media kind, slot uniqueness and maximum count, and derives display labels and supported mention syntax from the canonical model fields. Null/foreign/deleted/unavailable assets cannot be sent as real references. Missing required generation assets do not prevent discussing a draft.
+
+Only role/label, supported token and width/height/duration metadata reach the LLM. No private URL, filename, pixels, video or audio is supplied. Milo must not claim it has viewed or heard a reference. Dedicated Kling subject panels and keyframe editors remain outside this metadata adapter; their edits still invalidate suggestions, and the user must describe their intended content. Full visual/audio analysis and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
+
+## Calls and existing credits
+
+`/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
+
+The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 2,200 output tokens (including reasoning). The current draft is never silently truncated. Output that is incomplete, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
+
+Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
+
+## Interruption and support
+
+- The persisted identity/body hash makes concurrent or repeated submissions return the original request, without another provider call.
+- **Stop waiting** aborts only the browser wait. It does not cancel a dispatched provider request or promise a refund.
+- **Check reply** is an explicit recovery POST. It can settle saved evidence but cannot call the model. If recovery arrives before the original POST was claimed, an immutable abandoned identity prevents that delayed POST from dispatching later.
+- Expired pre-dispatch requests can close without a charge. Unknown dispatched outcomes retain their reservation and block another composer request for that account.
+- Existing assistance support inspection/resolution recognizes composer scopes, checks their lease and evidence, and can settle recorded usage or waive an unknown call using the existing audited workflow. An active lease cannot be waived. Late evidence after a support closure remains available for review; it does not automatically reopen the chat or start another call.
+
+No periodic automatic billable retry or new recovery worker is introduced. Failed pending checks may require support, including when supplier evidence was never received. Keep endpoint and support availability in the rollout checklist.
 
 ## Verification
 
-Reducer, real React DOM and browser tests cover stale replies, scope changes, complete application, Undo, keyboard/IME, reference invalidation, audio field isolation, production-off behavior and no accidental generation. `tests/prompt-assistance-layout-browser.test.ts` uses the real Composer, audio editor and product CSS with synthetic data, across 320/390/768/1024/1440 px, including short desktop and reduced motion. The command-bar browser test covers compact navigation, model placement in both tabs, operation visibility and explicit expansion. See [latest app review](../design/prompt-composer/REFINEMENT-6.md) for actual browser checks and remaining limits.
+`prompt-assistance-context`, `live-client`, `live-postgres`, `route` and `live-browser` tests cover model/target rejection, metadata-only owned references, audio variants, exact payloads, clarification without a proposal, shared balances, concurrent sends, recovery, late replies and account changes. Provider/HTTP behavior is injected or intercepted; financial assertions use disposable PostgreSQL 17 with the actual ledger and migrations. Existing composer layout/keyboard/IME/mobile tests and Studio accounting/recovery suites remain part of validation. No claim of live provider quality follows from those fixtures.

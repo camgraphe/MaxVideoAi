@@ -16,9 +16,10 @@ export type PromptAssistancePanelProps = {
   modelControl?: ReactNode;
   conversationControl?: ReactNode;
   reasoningControl?: ReactNode;
+  feedback?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, reasoningControl }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, reasoningControl, feedback }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -67,6 +68,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       }} />
       </div>
       <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
+      {feedback}
     </div>
   </div>;
 }

@@ -5,11 +5,12 @@ import {readStudioAssistanceStatus,chooseStudioAssistance} from '@/server/studio
 import {studioAssistanceChoiceSchema} from '@/lib/studio/assistance-contract';
 import {promptAssistanceRequestSchema} from '@/lib/prompt-assistance/contract';
 import {AgentApiError} from '@/server/agent-api/errors';
-import {readPromptAssistance,sendPromptAssistance} from './service';
+import {readPromptAssistance,sendPromptAssistance,recoverPromptAssistance} from './service';
 
 const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('message'),request:promptAssistanceRequestSchema}).strict(),
   z.object({action:z.literal('choose'),choice:studioAssistanceChoiceSchema}).strict(),
+  z.object({action:z.literal('recover'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
 ]);
 const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
 async function boundedJson(req:NextRequest){
@@ -31,7 +32,7 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
       return json({ok:true,result:session||request?await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)):await readStudioAssistanceStatus(access.userId)});
     }
     const input=bodySchema.parse(await boundedJson(req));
-    return json({ok:true,result:input.action==='choose'?await chooseStudioAssistance(access.userId,input.choice):await sendPromptAssistance(access.userId,input.request)});
+    return json({ok:true,result:input.action==='choose'?await chooseStudioAssistance(access.userId,input.choice):input.action==='recover'?await recoverPromptAssistance(access.userId,input.sessionId,input.requestId):await sendPromptAssistance(access.userId,input.request)});
   }catch(error){
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);
     if(error instanceof AgentApiError)return json({ok:false,error:error.code,nextAction:error.nextAction},error.code==='ACCOUNT_RESTRICTED'?403:402);

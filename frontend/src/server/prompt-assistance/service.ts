@@ -5,16 +5,31 @@ import {readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssis
 import {buildPromptAssistanceContext} from './context';
 import {claimPromptRequest,composerScope,readPromptHistory,readPromptRequest,promptScopeValues,type PromptRequestRow} from './repository';
 import {countPromptTokens,createPromptResponse,promptResponseParams} from './provider';
+import {AgentApiError} from '@/server/agent-api/errors';
 
 type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse};
 async function result(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
-  return {sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,
+  return {sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
     state:row.state==='complete'?'complete':row.state==='failed'?'failed':row.state==='unknown'||(row.call_id&&new Date(row.lease_expires_at).getTime()<Date.now())?'unknown':'pending',
     ...(row.reply_json?{reply:row.reply_json}:{}),...(row.error?{error:row.error}:{}),assistance:await readStudioAssistanceStatus(row.user_id,policy)};
 }
 /** Read only. Recovery settlement is an explicit POST of the original request. */
 export async function readPromptAssistance(userId:string,sessionId:string,requestId:string,policy=studioAssistancePolicy()) {
   return result(await readPromptRequest(userId,sessionId,requestId),policy);
+}
+export async function recoverPromptAssistance(userId:string,sessionId:string,requestId:string,policy=studioAssistancePolicy()){
+  const row=await withDbTransaction(async tx=>{
+    await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${userId}`]);
+    const saved=(await tx.query<PromptRequestRow>('SELECT * FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,sessionId,requestId]))[0];
+    if(saved){
+      if(saved.state==='preparing'&&!saved.call_id&&new Date(saved.lease_expires_at).getTime()<Date.now())return (await tx.query<PromptRequestRow>("UPDATE prompt_assistance_requests SET state='failed',error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *",[userId,sessionId,requestId]))[0];
+      return saved;
+    }
+    await tx.query('INSERT INTO prompt_assistance_abandoned_requests(user_id,session_id,request_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,sessionId,requestId]);
+    return null;
+  });
+  if(!row)return {sessionId,requestId,draftRevision:0,target:'prompt' as const,message:'',state:'failed' as const,error:'REQUEST_NOT_FOUND',assistance:await readStudioAssistanceStatus(userId,policy)};
+  return row.response_json?finishRecorded(row,policy):result(row,policy);
 }
 async function finishRecorded(row:PromptRequestRow,policy:StudioAssistancePolicy){
   if(!row.response_json||!row.call_id)return result(row,policy);
@@ -62,7 +77,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
     return await finishRecorded(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
   } catch(error) {
     if(dispatched&&row.call_id)await markStudioAssistanceUnknown(row.call_id,userId);
-    const known=error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
+    const known=error instanceof AgentApiError?error.code:error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
     await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed')",[...promptScopeValues(row),dispatched?'unknown':'failed',known]);
     return result(await readPromptRequest(userId,input.sessionId,input.requestId),policy);
   }

@@ -1,10 +1,13 @@
 'use client';
 import { useEffect, useReducer, useRef } from 'react';
 import { canApplyProposal, canUndoProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
+import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
+import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
-export type PromptAssistanceContext = { scopeKey: string; contextKey: string };
-export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, target, onApplyText, maxLength, blocked }: PromptAssistanceContext & {
+export type PromptAssistanceContext = { scopeKey: string; contextKey: string; live?:PromptAssistanceDraftContext };
+export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale='en', draftText, target, onApplyText, maxLength, blocked }: PromptAssistanceContext & {
+  locale?:string;
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;
 }) {
   const fingerprint = JSON.stringify([contextKey, draftText]);
@@ -16,9 +19,15 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
   const currentScope = useRef(scopeKey);
   currentScope.current = scopeKey;
   const sampleDraft = useRef(draftText);
+  const transport=usePromptAssistanceTransport(scopeKey,PROMPT_ASSISTANCE_LIVE,(result,uiId)=>{
+    if(result.state==='complete'&&result.reply){
+      if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply});
+      else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply});
+    }else if(uiId!==null)dispatch({type:'failed',id:uiId});
+  });
   // A scope change cancels the local fixture. A draft edit leaves its response stale.
   useEffect(() => {
-    if (!state.pending) return;
+    if (!state.pending || PROMPT_ASSISTANCE_LIVE) return;
     const id = state.pending.id;
     const timeout = window.setTimeout(() => {
       const text = sampleDraft.current || (target === 'script' ? 'Some moments stay with us. A familiar light, a memory of summer.' : 'A quiet scene in warm afternoon light. Natural textures, a clear subject and a restrained composition.');
@@ -29,8 +38,10 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
   }, [state.pending, scopeKey, target]);
   const send = () => {
     if (!state.message.trim() || state.pending || blocked) return;
+    const id=++sequence.current;
+    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target}},id)))return;
     sampleDraft.current = draftText;
-    dispatch({ type: 'send', id: ++sequence.current, message: state.message.trim() });
+    dispatch({ type: 'send', id, message: state.message.trim() });
   };
   const apply = () => {
     if (blocked || !canApplyProposal(state) || !state.proposal || (maxLength && state.proposal.text.length > maxLength)) return;
@@ -53,5 +64,5 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, draftText, ta
       input.current?.focus(); input.current?.setSelectionRange(start + insertion.length, start + insertion.length);
     });
   };
-  return { state, dispatch, input, send, apply, undo, insertMention, canUndo: canUndoProposal(state), target };
+  return { state, dispatch, input, send, apply, undo, insertMention, canUndo: canUndoProposal(state), target,transport };
 }

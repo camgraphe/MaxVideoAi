@@ -1,6 +1,7 @@
 'use client';
 import { useRef } from 'react';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { audioAssistanceContext } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import { AUDIO_ELEVEN_VOICES, findElevenVoice } from '@/lib/audio-eleven-voices';
 import {
@@ -54,7 +55,7 @@ export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, 
         <button type="button" aria-pressed={draft.musicModel === 'pro'} onClick={() => onChange({ musicModel: 'pro' })}>{copy.musicPro}<span>{copy.musicProMeta}</span></button>
       </div> : <div className={styles.modelIdentity}><span>{copy.model}</span><strong>{modelName}</strong></div>}
     </div>
-    {assistanceEnabled ? <PromptAssistanceComposer context={{scopeKey: JSON.stringify([assistanceAccountId, intent]), contextKey: JSON.stringify({...draft, [key]: undefined})}}
+    {assistanceEnabled ? <PromptAssistanceComposer context={{scopeKey: JSON.stringify([assistanceAccountId, intent]), contextKey: JSON.stringify({...draft, [key]: undefined}), live: audioAssistanceContext(intent, draft)}}
       locale="en" modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
       renderReferences={spoken && (draft.reference || draft.voiceModel === 'seed') ? insert => <div className={styles.assistanceReferences}>
         <button type="button" aria-label="Add audio reference" disabled={uploading} onClick={() => input.current?.click()}><span aria-hidden>＋</span> Reference</button>

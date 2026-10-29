@@ -18,7 +18,7 @@ export type PromptAssistanceRequest = z.infer<typeof promptAssistanceRequestSche
 export const promptAssistanceReplySchema = z.object({reply:z.string().trim().min(1).max(6000),text:z.string().trim().min(1).max(50000).nullable()}).strict();
 export type PromptAssistanceReply = z.infer<typeof promptAssistanceReplySchema>;
 export type PromptAssistanceResult = {
-  sessionId:string;requestId:string;draftRevision:number;target:PromptAssistanceRequest['draft']['target'];
+  sessionId:string;requestId:string;draftRevision:number;target:PromptAssistanceRequest['draft']['target'];message:string;
   state:'pending'|'unknown'|'complete'|'failed'; reply?:PromptAssistanceReply; error?:string;
   assistance:StudioAssistanceStatus;
 };

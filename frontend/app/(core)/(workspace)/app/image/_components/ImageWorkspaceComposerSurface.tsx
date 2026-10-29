@@ -1,4 +1,5 @@
 'use client';
+import { assistanceSettings } from '@/lib/prompt-assistance/client-context';
 
 import type { FormEvent } from 'react';
 import type { PendingGeneration } from '@/lib/pending-generations';
@@ -295,7 +296,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
-          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, 'image']), contextKey: JSON.stringify([selectedEngineId, mode, aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
+          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, 'image']), live: {surface: 'image', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark}), references: []}, contextKey: JSON.stringify([selectedEngineId, mode, aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}

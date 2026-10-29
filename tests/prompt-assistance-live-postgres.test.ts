@@ -21,6 +21,10 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   let calls=0;
   const context={model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt' as const,maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only' as const};
   const deps={policy,buildContext:async()=>context as never,count:async()=>1000,create:async(params:{model?:string|null})=>{calls++;return {id:'resp_'+randomUUID(),model:params.model!,status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'I slowed the motion.',text:'A dancer moves slowly across the stage.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never;}};
+  const abandoned={...request,requestId:randomUUID()};
+  assert.equal((await service.recoverPromptAssistance('owner',abandoned.sessionId,abandoned.requestId,policy)).state,'failed');
+  await assert.rejects(service.sendPromptAssistance('owner',abandoned,deps),/REQUEST_CLOSED/);
+  assert.equal(calls,0,'A delayed original POST cannot start after recovery closed its absent identity');
   const results=await Promise.all([service.sendPromptAssistance('owner',request,deps),service.sendPromptAssistance('owner',request,deps)]);
   assert.equal(calls,1);
   assert.ok(results.some(r=>r.state==='complete'));
@@ -47,6 +51,12 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[unknownRequest.requestId,JSON.stringify(evidence)]);
   assert.equal((await service.sendPromptAssistance('owner',unknownRequest,deps)).state,'complete');
   assert.equal(calls,callsAfterUnknown,'Recorded usage must settle without another model call');
+  const unusable=await service.sendPromptAssistance('malformed-owner',{...request,requestId:randomUUID()},{...deps,create:async(params)=>({...await deps.create(params),output_text:'not JSON'}) as never});
+  assert.equal(unusable.state,'failed');assert.equal(unusable.error,'OUTPUT_INVALID');assert.equal(unusable.reply,undefined);
+  assert.equal(unusable.assistance.credits?.included.remaining,470,'Known provider usage is charged even for unusable output');
+  const unavailable=await service.sendPromptAssistance('invalid-owner',{...request,requestId:randomUUID()},{...deps,buildContext:async()=>{throw new Error('MODEL_UNAVAILABLE');}});
+  assert.equal(unavailable.state,'failed');assert.equal(unavailable.assistance.credits?.included.remaining,500);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id='invalid-owner'")).rows[0].n,0);
   const lost=await service.sendPromptAssistance('support-owner',{...request,requestId:randomUUID()}, {...deps,create:async()=>{throw new Error('lost');}});
   const lostRow=(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[lost.requestId])).rows[0];
   const support=await import('../frontend/src/server/studio/assistance-resolution');

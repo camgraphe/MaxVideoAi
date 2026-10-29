@@ -1,4 +1,5 @@
 'use client';
+import { assistanceSettings } from '@/lib/prompt-assistance/client-context';
 import { OwnedGenerationSourcePicker } from './OwnedGenerationSourcePicker.client';
 import { VideoOperationSelector } from './VideoOperationSelector';
 import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
@@ -481,7 +482,7 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
-        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video']), contextKey: JSON.stringify({ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } }) }}
+        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video']), live: {surface: 'video', engineId: selectedEngine.id, mode: submissionMode, settings: assistanceSettings({...form, cfgScale, shotType, voiceControlEnabled, seed: seedValue, cameraFixed: cameraFixedValue, safetyChecker: safetyCheckerValue, draft: localDraftPreview?.selected}), references: []}, contextKey: JSON.stringify({ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } }) }}
         density="workspace"
         engine={selectedEngine}
         caps={capability}

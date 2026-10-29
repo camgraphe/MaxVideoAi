@@ -27,6 +27,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { composerAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
 import type { ComposerProps } from '@/components/composer/composer-types';
@@ -435,7 +436,7 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, negativePrompt, multiPrompt?.scenes]) }}
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, live: assistance.live ? { ...assistance.live, references: composerAssistanceReferences(engine, assetFields, assets) } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, negativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}

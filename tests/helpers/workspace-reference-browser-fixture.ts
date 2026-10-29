@@ -31,13 +31,13 @@ export const workspaceReferenceFixtureSource = `
 `;
 
 /** Real Composer/CSS with a local synthetic-data boundary; usable by tests and manual preview. */
-export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; hostModules?: Record<string, string> } = {}) {
+export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; assistanceLive?: boolean; hostModules?: Record<string, string> } = {}) {
   const frontend = join(process.cwd(), 'frontend');
   const requireFrontend = createRequire(join(frontend, 'package.json'));
   const source = options.source ?? workspaceReferenceFixtureSource;
   const bundle = await build({ stdin: { contents: source, loader: 'tsx', resolveDir: frontend },
     outdir: '/reference-fixture', external: ['/assets/*'], write: false, bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
-    tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': JSON.stringify(options.assistancePreview ? 'development' : 'production'), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW': JSON.stringify(options.assistancePreview ? '1' : '') },
+    tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': JSON.stringify(options.assistancePreview ? 'development' : 'production'), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE': JSON.stringify(options.assistanceLive ? '1' : ''), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW': JSON.stringify(options.assistancePreview ? '1' : '') },
     plugins: options.hostModules ? [{ name: 'workspace-host-boundaries', setup(builder) {
       builder.onResolve({ filter: /.*/ }, args => options.hostModules?.[args.path] !== undefined ? { path: args.path, namespace: 'workspace-host' } : undefined);
       builder.onLoad({ filter: /.*/, namespace: 'workspace-host' }, args => ({ contents: options.hostModules![args.path], loader: 'tsx', resolveDir: frontend }));

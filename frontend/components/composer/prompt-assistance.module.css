@@ -122,3 +122,8 @@
 @media (pointer: coarse), (max-width: 639px) {
   .root[data-prompt-assistance-preview] :is(textarea, input) { font-size: 16px; }
 }
+
+.creditsTrigger { padding: .25rem; color: var(--text-muted); font-size: .75rem; text-decoration: underline; text-underline-offset: .2em; }
+.liveFeedback { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding-top: .5rem; color: var(--text-muted); font-size: .75rem; }
+.liveFeedback span { flex: 1 1 18rem; }
+.liveFeedback button { flex: none; text-decoration: underline; text-underline-offset: .2em; }

@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS prompt_assistance_requests (
   FOREIGN KEY(user_id,session_id) REFERENCES prompt_assistance_sessions(user_id,id)
 );
 CREATE INDEX IF NOT EXISTS prompt_assistance_account_pending ON prompt_assistance_requests(user_id,state);
+-- Recovery may arrive before an interrupted POST. Its identity must stay closed even if that POST arrives later.
+CREATE TABLE IF NOT EXISTS prompt_assistance_abandoned_requests (
+  user_id text NOT NULL, session_id uuid NOT NULL, request_id uuid NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  PRIMARY KEY(user_id,session_id,request_id)
+);
 CREATE UNIQUE INDEX IF NOT EXISTS prompt_assistance_call ON prompt_assistance_requests(call_id) WHERE call_id IS NOT NULL;
 CREATE OR REPLACE FUNCTION enforce_prompt_assistance_identity() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN

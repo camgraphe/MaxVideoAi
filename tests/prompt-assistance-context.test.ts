@@ -34,6 +34,24 @@ test('Reference context resolves exact owned assets and exposes no URLs or filen
   assert.equal(owner,'owner');
   assert.equal(built.references[0].label,'Image 1');
   assert.equal(built.references[0].width,100);
+  assert.equal(built.references[0].token,null,'Do not invent a provider token from an ordinary display label');
   assert.ok(!JSON.stringify(built).includes('secret'));
+  await assert.rejects(module.buildPromptAssistanceContext('owner',{...request,draft:{...request.draft,references:[{...request.draft.references[0],fieldId:'invented'}]}},{catalog}),/REFERENCE_INVALID/);
+  await assert.rejects(module.buildPromptAssistanceContext('owner',{...request,draft:{...request.draft,references:[request.draft.references[0],request.draft.references[0]]}},{catalog}),/REFERENCE_INVALID/);
   await assert.rejects(module.buildPromptAssistanceContext('other',request,{catalog,resolveMedia:async () => {throw new Error('MEDIA_NOT_AVAILABLE');}}));
+});
+
+test('Every audio editor variant resolves the canonical target and guide without sending script in settings',async()=>{
+  const {audioAssistanceContext}=await import('../frontend/src/lib/prompt-assistance/client-context');
+  const {newAudioDraft}=await import('../frontend/src/lib/audio-creation');
+  const {listAudioCapabilities}=await import('../frontend/src/server/agent-api/audio-capabilities');
+  const {buildPromptAssistanceContext}=await import('../frontend/src/server/prompt-assistance/context');
+  const audio=()=>{const result=listAudioCapabilities();return {...result,modes:result.modes.map(entry=>({...entry,available:true,variants:entry.variants.map(variant=>({...variant,available:true}))}))};};
+  for(const intent of ['voice','music','song','sfx','ambience'] as const){
+    const draft=audioAssistanceContext(intent,newAudioDraft(intent));
+    const request={sessionId:randomUUID(),requestId:randomUUID(),draftRevision:0,locale:'en' as const,message:'Help me write',draft:{...draft,target:intent==='voice'?'script' as const:'prompt' as const,text:''}};
+    const context=await buildPromptAssistanceContext('owner',request,{audio});
+    assert.equal(context.target,intent==='voice'?'script':'prompt');assert.match(context.guide.family,/audio-/);
+    assert.ok(!('script' in draft.settings));assert.ok(!('lyrics' in draft.settings));
+  }
 });

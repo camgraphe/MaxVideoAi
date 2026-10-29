@@ -20,6 +20,7 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
   const hash=createHash('sha256').update(stableJson(input)).digest('hex');
   return withDbTransaction(async tx=>{
     await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${userId}`]);
+    if((await tx.query('SELECT 1 FROM prompt_assistance_abandoned_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId])).length)throw new Error('REQUEST_CLOSED');
     const prior=(await tx.query<PromptRequestRow>('SELECT * FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId]))[0];
     if(prior){if(prior.input_hash!==hash)throw new Error('REQUEST_CONFLICT');return {row:prior,claimed:false};}
     // Never redispatch an expired call. Only pre-dispatch failures can be closed automatically.
