@@ -72,6 +72,7 @@ export function PrivacyArticleFr({
         <h3 className="text-lg font-semibold text-text-primary">4. Conservation</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li><strong>Compte et espace de travail :</strong> les données de compte, projets, conversations et médias sont conservés pour fournir votre espace, l’historique et les téléchargements. Vous pouvez demander leur effacement.</li>
+          <li><strong>Revue interne des assistants :</strong> des membres autorisés de notre équipe peuvent examiner les échanges avec Milo et Studio et leur contexte pour repérer les problèmes et améliorer le service. L’accès à la revue détaillée expire 90 jours après l’échange. Les copies supplémentaires de contexte et les notes libres des évaluateurs deviennent supprimables après 90 jours ; un nettoyage programmé s’exécute chaque heure par lots. Cela ne supprime pas les conversations originales de votre espace, les médias, les données de reprise des opérations ni les justificatifs de facturation, qui ont leurs propres finalités et règles de conservation.</li>
           <li><strong>Documents comptables :</strong> les factures et pièces justificatives comptables doivent être conservées 10 ans à compter de la clôture de l’exercice concerné.</li>
           <li><strong>Journaux techniques et sauvegardes :</strong> leur conservation dépend du service concerné et des besoins de sécurité, de reprise et des obligations légales.</li>
         </ul>
@@ -80,7 +81,7 @@ export function PrivacyArticleFr({
 
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Prestataires</h3>
-        <p>L’hébergement, le stockage, l’authentification, les paiements et les e-mails utilisent les services de notre liste de prestataires. Selon la fonctionnalité, les fournisseurs IA reçoivent les prompts, réglages et références nécessaires à la génération. Studio transmet à OpenAI les messages, le contexte utile du projet et de l’historique, ainsi que les références ou extraits sélectionnés pour l’assistance et les analyses demandées.</p>
+        <p>L’hébergement, le stockage, l’authentification, les paiements et les e-mails utilisent les services de notre liste de prestataires. Selon la fonctionnalité, les fournisseurs IA reçoivent les prompts, réglages et références nécessaires à la génération. Milo, dans les générateurs et dans Studio, transmet à OpenAI les messages, le modèle et les réglages choisis, le contexte utile du brouillon, du projet et de l’historique, ainsi que les références ou extraits sélectionnés pour l’assistance et les analyses demandées.</p>
         <p><Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">Prestataires et données concernées</Link>.</p>
         <p>Si vous utilisez un assistant externe via MCP, les données traitées par cet assistant relèvent aussi de sa propre politique de confidentialité.</p>
       </section>
@@ -152,7 +153,7 @@ export function PrivacyArticleFr({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Informations mises à jour : 19 octobre 2026</p>
+        <p className="text-sm text-text-muted">Informations mises à jour : 30 octobre 2026</p>
       </section>
     </article>
   );

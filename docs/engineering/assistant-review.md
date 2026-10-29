@@ -74,20 +74,52 @@ its provider-facing input/history in native request storage without the Studio
 capture flag; leaving `ASSISTANT_REVIEW_CONTEXT_ENABLED` off does not disable
 composer retention.
 
-Apply **migration 90** explicitly after Studio 52 and composer 85. It adds the
+Apply **migrations 90 then 91** explicitly after Studio 52 and composer 85. Migration 90 adds the
 nullable native Studio snapshot, a metadata-only access log and append-only review
 annotations, plus their indexes. Reapplying it is safe. Do not run migrations from
 readers. The existing Studio v1 viewer is left compatible. Enable the Studio capture
-flag only after migrating its database. Composer capture uses existing storage.
+flag only after migrating its database through 91 and publishing the customer information. Composer capture uses existing storage.
 Keep the flag off for rollback; do not erase historical financial evidence.
 
 No production database, environment or capture policy is changed by this PR.
 Source deletion remains authoritative: composer request/session and Studio
 project/turn reads are exactly scoped and locked during review; deleted Studio
 projects cannot be revealed or annotated. Snapshots are native row fields, so native
-hard deletion removes them. Access metadata and annotation notes require the same
-explicit operator retention/deletion governance as other private admin evidence;
-this change does not silently schedule a cleanup job or extend source retention.
+hard deletion removes them. The shared reviewer refuses detailed reveal and annotation after 90 elapsed days
+from the source creation timestamp, even if cleanup has not run. Metadata remains
+available. A 410 response clears already displayed details and unsaved notes.
+
+## 90-day review-context cleanup
+
+The user approved 90 days on 30 October 2026. This scope is deliberately limited:
+
+- Composer: remove only `context_json.reviewInput`; preserve original input/reply,
+  supplier response, guide/perception data and `maxChars` required for recovery.
+- Studio: clear only `studio_conversation_responses.review_context_json`.
+- Internal annotations: clear free-text `note` 90 days after its own creation;
+  preserve verdict, issue labels, identity and timestamps. Access audit stays immutable.
+- MCP: no additional snapshot is stored or purged; its shared-review access expires,
+  while native operational quote records retain their existing lifecycle.
+
+The fixed cutoff uses 2,160 elapsed hours against the database clock. Migration 91
+allows only exact expired-field removal; it rejects early deletion, collateral
+changes and re-population of an expired snapshot. Original workspace history,
+media, provider evidence and financial rows are not subject to this cleanup.
+
+`GET /api/cron/assistant-review-retention` runs hourly at minute 19 and requires a
+nonempty `CRON_SECRET` plus the existing cron authentication. Each transaction
+clears at most 100 rows per table, with locked rows skipped and no customer text
+in the response. `hasMore` means another batch is needed; monitor successful runs,
+failures and persistent backlog. A 503 is a failed cleanup, never proof of deletion.
+Only trusted callers can invoke `cleanupAssistantReviewContext({limit,dryRun})`;
+limit is 1–500 per table. `dryRun:true` uses a read-only transaction. HTTP query
+parameters cannot change the cutoff or batch size. Missing schema fails closed.
+
+Keep the cron and guard migration on runtime rollback so expired copies continue
+to be removed. Do not replay migration 90 alone over 91: it would restore older
+guards. Reapply 91 last if the migration runner replays history. Backup retention
+and AI-provider retention remain separate; this is not a claim that all copies of
+a conversation are erased at 90 days.
 
 ## Turning evidence into improvements
 

@@ -72,6 +72,7 @@ export function PrivacyArticleEn({
         <h3 className="text-lg font-semibold text-text-primary">4. Retention</h3>
         <ul className="ml-5 list-disc space-y-2">
           <li><strong>Account and workspace:</strong> account data, projects, conversations and media are kept to provide your workspace, history and downloads. You may request erasure.</li>
+          <li><strong>Internal assistant review:</strong> authorised team members may review Milo and Studio exchanges and their context to find issues and improve the service. Detailed review access expires 90 days after the exchange. Additional review snapshots and free-text reviewer notes are eligible for deletion after 90 days; scheduled cleanup runs hourly in batches. This does not delete the original workspace conversations, media, operational recovery records or billing evidence, which have their separate purposes and retention rules.</li>
           <li><strong>Accounting records:</strong> invoices and supporting accounting documents must be retained for 10 years from the end of the relevant financial year.</li>
           <li><strong>Technical logs and backups:</strong> retention depends on the service concerned and the needs of security, recovery and legal obligations.</li>
         </ul>
@@ -80,7 +81,7 @@ export function PrivacyArticleEn({
 
       <section className="stack-gap-sm">
         <h3 className="text-lg font-semibold text-text-primary">5. Service providers</h3>
-        <p>Hosting, storage, authentication, payments and emails use the services listed in our provider register. Depending on the feature, AI providers receive the prompts, settings and references needed for generation. Studio sends OpenAI messages, relevant project/history context and selected references or media excerpts for assistance and requested analyses.</p>
+        <p>Hosting, storage, authentication, payments and emails use the services listed in our provider register. Depending on the feature, AI providers receive the prompts, settings and references needed for generation. Milo, in the generators and Studio, sends OpenAI messages, selected models and settings, relevant draft/project/history context and selected references or media excerpts for assistance and requested analyses.</p>
         <p><Link href={links.subprocessorsHref} className="text-brand underline hover:text-brandHover">Providers and data concerned</Link>.</p>
         <p>If you use an external assistant through MCP, data handled by that assistant also falls under its own privacy policy.</p>
       </section>
@@ -150,7 +151,7 @@ export function PrivacyArticleEn({
           />
           .
         </p>
-        <p className="text-sm text-text-muted">Information updated: 19 October 2026</p>
+        <p className="text-sm text-text-muted">Information updated: 30 October 2026</p>
       </section>
     </article>
   );
