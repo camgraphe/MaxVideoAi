@@ -187,7 +187,7 @@ async function insertion(actor: ConversationEditActor, input: InsertionInput, se
   const legacyAssetId = `studio-media-${media.id}`;
   const sourceIdentity = media.ref.type === 'asset' ? [media.ref.type,media.ref.kind,media.ref.assetId] : [media.ref.type,media.ref.kind,media.ref.jobId,media.ref.outputId];
   const assetId = legacyAssetId.length <= 200 ? legacyAssetId : `studio-media-${createHash('sha256').update(JSON.stringify(sourceIdentity)).digest('hex')}`;
-  const asset: WorkspaceAssetRecord = {id: assetId,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio,audioProvenance: media.mediaFacts?.hasAudio ? 'embedded' : 'none'};
+  const asset: WorkspaceAssetRecord = {id: assetId,ref: media.ref,kind: media.kind,filename: media.originalName ?? `${media.kind} clip`,subtitle: media.kind,url: media.url,mimeType: media.mime,thumbUrl: media.thumbUrl ?? undefined,mediaFacts: media.mediaFacts,mediaAccessRequired: true,durationSec: media.mediaFacts?.durationSec,width: media.mediaFacts?.width,height: media.mediaFacts?.height,hasAudio: media.mediaFacts?.hasAudio};
   const drafts = buildWorkspaceTimelineItemsForAsset({assetNodeId: asset.id,title: asset.filename,asset,startSec: 0,idSeed: id});
   const draft = drafts[0];
   if (!draft) throw new Error('MEDIA_NOT_AVAILABLE');

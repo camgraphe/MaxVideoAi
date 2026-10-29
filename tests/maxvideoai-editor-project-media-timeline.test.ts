@@ -214,6 +214,16 @@ test('timeline audio provenance distinguishes embedded, external, none, and unkn
   assert.equal(resolveWorkspaceAudioProvenance({ kind: 'video' }), 'unknown');
 });
 
+test('timeline builders preserve measured audio facts without requiring duplicated legacy flags', () => {
+  for (const [hasAudio, provenance, embedded] of [[true, 'embedded', true], [false, 'none', false], [undefined, 'unknown', undefined]] as const) {
+    const asset: WorkspaceAssetRecord = {id: 'probed-video', kind: 'video', filename: 'probed.mp4', subtitle: 'Video', url: '/media/probed.mp4', durationSec: 6, mediaFacts: {source: 'probe', durationSec: 6, hasAudio}};
+    const [item] = buildWorkspaceTimelineItemsForAsset({assetNodeId: asset.id, title: 'Probed', asset, startSec: 0, idSeed: 'probed'});
+    assert.equal(item.audioProvenance, provenance);
+    assert.equal(item.hasEmbeddedAudio, embedded);
+    assert.deepEqual(item.mediaFacts, asset.mediaFacts);
+  }
+});
+
 test('export video audio is muted whenever a separate linked audio clip renders', () => {
   assert.equal(shouldMuteWorkspaceTimelineVideo({
     includeAudio: true,

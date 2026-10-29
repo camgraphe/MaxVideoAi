@@ -609,6 +609,8 @@ function fieldIdsForRole(
         'image_urls',
         'reference_image_urls',
         'reference_image_url',
+        'video_urls',
+        'reference_video_urls',
         'audio_urls',
         'reference_audio_urls',
       ]
@@ -853,6 +855,15 @@ function validateReferenceBudget(
     ? new Set(budgetReferences.map(referenceSourceIdentity)).size
     : budgetReferences.length;
   if (count > budget.maxTotal) fail('references', 'reference_invalid');
+  for (const [kind, maximum] of Object.entries(budget.maxByType ?? {})) {
+    const typedReferences = request.references.filter((reference, index) =>
+      budgetReferences.includes(reference)
+      && selectedFields[index]?.every(field => field.type === kind));
+    const typedCount = budget.countUniqueUrls
+      ? new Set(typedReferences.map(referenceSourceIdentity)).size
+      : typedReferences.length;
+    if (typedCount > maximum) fail('references', 'reference_invalid');
+  }
 }
 
 function validateReferences(

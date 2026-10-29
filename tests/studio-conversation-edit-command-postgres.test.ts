@@ -81,6 +81,47 @@ test('assembling an original and its continuation derives a ten-second sequence 
   assert.deepEqual(await readStudioWorkspace(actor,project.projectId,deps),read);
 });
 
+test('an unknown video can be muted and restored to its original volume through saved revisioned commands', async t => {
+  const {editStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-edit-command');
+  const {projectStudioConversationTimeline} = await import('../frontend/src/server/studio/conversation-timeline');
+  const {pg,actor,deps,project} = await videoQualificationFixture(t);
+  await pg.pool.query('UPDATE media_assets SET metadata=$1::jsonb', [JSON.stringify({mediaFacts: {source: 'probe',durationSec: 6,width: 320,height: 180}})]);
+  const originalMedia = (await pg.pool.query('SELECT * FROM media_assets ORDER BY id')).rows;
+  const guarded = {...deps,hydrateVideoFacts: async () => {throw new Error('Mute/restore must not probe a source.');}};
+  const base = {projectId: project.projectId,sequenceId: project.sequenceId};
+  await editStudioConversationTimeline(actor, {...base,expectedRevision: 0,idempotencyKey: randomUUID(),edit: {kind: 'assemble',clips: [STUDIO_CONNECTED_ASSET_IDS.a,STUDIO_CONNECTED_ASSET_IDS.b,STUDIO_CONNECTED_ASSET_IDS.a].map(assetId => ({ref: {type: 'asset',assetId,kind: 'video'},sourceInFrame: 30,durationFrames: 60}))}}, guarded);
+  // Reproduce older insertion metadata only on the third clip. Its neighbors
+  // remain byte-for-byte intact while the explicit edit corrects this cache.
+  await pg.pool.query(`UPDATE studio_sequences SET timeline_state=jsonb_set(jsonb_set(timeline_state,'{timelineItems,2,audioProvenance}','"none"'::jsonb),'{timelineItems,2,hasEmbeddedAudio}','false'::jsonb) WHERE id=$1 AND user_id=$2`, [project.sequenceId,actor.userId]);
+  const before = await readStudioWorkspace(actor, project.projectId, deps);
+  const originalItems = (before.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  const selected = originalItems[2];
+  const correctedSelected = {...selected,audioProvenance: 'unknown' as const};
+  delete correctedSelected.hasEmbeddedAudio;
+  const correctedItems = originalItems.map(item => item.id === selected.id ? correctedSelected : item);
+  const mute = {...base,expectedRevision: 1,idempotencyKey: randomUUID(),edit: {kind: 'gain',clipId: selected.id,volume: 0}};
+  const muted = await editStudioConversationTimeline(actor, mute, guarded);
+  assert.equal(muted.revision, 2);
+  const mutedRead = await readStudioWorkspace(actor, project.projectId, deps);
+  const mutedItems = (mutedRead.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(mutedItems, correctedItems.map(item => item.id === selected.id ? {...item,audioMix: {volume: 0,muted: false}} : item));
+  assert.equal(buildWorkspaceTimelineRenderManifest({items: mutedItems,nodes: [],projectName: 'Film',sequenceId: project.sequenceId,sequenceName: 'Main'}).tracks.flatMap(track => track.clips).find(clip => clip.id === selected.id)?.audioMix?.volume, 0);
+  assert.deepEqual(projectStudioConversationTimeline(mutedRead).data.clips[2].audio, {source: 'unknown',canMute: true,canAdjustVolume: false,canRestoreOriginalVolume: true});
+  const restore = {...base,expectedRevision: 2,idempotencyKey: randomUUID(),edit: {kind: 'gain',clipId: selected.id,volume: 100}};
+  const restored = await editStudioConversationTimeline(actor, restore, guarded);
+  assert.equal(restored.revision, 3);
+  const restoredRead = await readStudioWorkspace(actor, project.projectId, deps);
+  const restoredItems = (restoredRead.sequences[0].timelineState as {timelineItems: WorkspaceTimelineItem[]}).timelineItems;
+  assert.deepEqual(restoredItems, correctedItems, 'Source, timing, order and identity survive; only the selected stale audio cache becomes unknown.');
+  assert.equal(buildWorkspaceTimelineRenderManifest({items: restoredItems,nodes: [],projectName: 'Film',sequenceId: project.sequenceId,sequenceName: 'Main'}).tracks.flatMap(track => track.clips).find(clip => clip.id === selected.id)?.audioMix?.volume, 100);
+  assert.deepEqual(await editStudioConversationTimeline(actor, restore, guarded), restored, 'A lost acknowledgement replays the same restore receipt.');
+  assert.deepEqual(await readStudioWorkspace(actor, project.projectId, deps), restoredRead);
+  const repeated = await editStudioConversationTimeline(actor, {...restore,expectedRevision: 3,idempotencyKey: randomUUID()}, guarded);
+  assert.equal(repeated.changed, false, 'An explicitly repeated restore does not change an already restored mix.');
+  await assert.rejects(editStudioConversationTimeline(actor, {...restore,expectedRevision: repeated.revision,idempotencyKey: randomUUID(),edit: {...restore.edit,volume: 25}}, guarded), /no audio/i);
+  assert.deepEqual((await pg.pool.query('SELECT * FROM media_assets ORDER BY id')).rows, originalMedia);
+});
+
 test('a longer music bed never pushes automatically assembled visuals past the end of the picture',async t=>{
   const {editStudioConversationTimeline}=await import('../frontend/src/server/studio/conversation-edit-command');
   for(const audioFirst of [true,false])await t.test(audioFirst?'audio first':'audio last',async subtest=>{

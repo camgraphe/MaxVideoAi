@@ -211,7 +211,26 @@ export async function completeTimelineExportJob(params: {
   mimeType: string;
   billingStatus: TimelineExportBillingStatus;
 }): Promise<void> {
-  await query(
+  await withDbTransaction(async executor => {
+    const job = (await executor.query<Pick<TimelineExportJobRecord,'user_id'|'billing_kind'|'billing_status'|'amount_cents'|'currency'>>(
+      'SELECT user_id,billing_kind,billing_status,amount_cents,currency FROM app_timeline_exports WHERE id=$1 FOR UPDATE',
+      [params.exportId],
+    ))[0];
+    if (!job) return;
+    let billingStatus = job.billing_status === 'platform' || job.billing_status === 'refunded' ? job.billing_status : params.billingStatus;
+    if (job.billing_kind === 'paid' && job.amount_cents > 0 && billingStatus !== 'platform' && billingStatus !== 'refunded') {
+      // Run after the row lock in a separate statement so a refund committed
+      // while completion was waiting is visible under READ COMMITTED.
+      const refunded = await executor.query(`SELECT 1 FROM app_receipts charge
+        JOIN app_receipts refund ON refund.user_id=charge.user_id AND refund.job_id=charge.job_id
+          AND refund.type='refund' AND refund.amount_cents=charge.amount_cents
+          AND UPPER(COALESCE(NULLIF(refund.currency,''),'USD'))=UPPER(COALESCE(NULLIF(charge.currency,''),'USD'))
+        WHERE charge.user_id=$1 AND charge.job_id=$2 AND charge.type='charge' AND charge.amount_cents=$3
+          AND UPPER(COALESCE(NULLIF(charge.currency,''),'USD'))=UPPER($4)
+        LIMIT 1`,[job.user_id,params.exportId,job.amount_cents,job.currency]);
+      if (refunded.length) billingStatus = 'refunded';
+    }
+    await executor.query(
     `UPDATE app_timeline_exports
         SET status = 'completed',
             progress = 100,
@@ -224,8 +243,9 @@ export async function completeTimelineExportJob(params: {
             completed_at = NOW(),
             updated_at = NOW()
       WHERE id = $1`,
-    [params.exportId, params.outputUrl, params.outputAssetId, params.sizeBytes, params.mimeType, params.billingStatus]
-  );
+      [params.exportId, params.outputUrl, params.outputAssetId, params.sizeBytes, params.mimeType, billingStatus]
+    );
+  });
 }
 
 export async function failTimelineExportJob(params: {

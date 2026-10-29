@@ -50,6 +50,39 @@ test('manual and bot edits retain linked audio, frame snapping, locked tracks an
   assert.throws(() => module.applyConversationTimelineEdit(items, {kind: 'trim', clipId: 'one', edge: 'end', durationFrames: 1}, 30, []), /duration/i);
 });
 
+test('an explicit zero gain can silence an unmeasured video without asserting embedded audio or changing the edit', async () => {
+  const {applyConversationTimelineEdit} = await import('../frontend/lib/studio/conversation-timeline-editing');
+  for (const legacyAudio of [{}, {audioProvenance: 'unknown' as const}, {audioProvenance: 'none' as const, hasEmbeddedAudio: false}]) {
+    const source = {...items[0], ...legacyAudio, ref: {type: 'asset' as const, assetId: 'ma_'+'1'.repeat(32), kind: 'video' as const}, mediaFacts: {source: 'probe' as const, durationSec: 8}};
+    const original = structuredClone(source);
+    const corrected = {...original, audioProvenance: 'unknown' as const};
+    delete corrected.hasEmbeddedAudio;
+    const result = applyConversationTimelineEdit([source, items[1]], {kind: 'gain', clipId: source.id, volume: 0}, 30, []);
+    assert.deepEqual(result, [{...corrected, audioMix: {volume: 0, muted: false}}, items[1]]);
+    const restored = applyConversationTimelineEdit(result, {kind: 'gain', clipId: source.id, volume: 100}, 30, []);
+    assert.deepEqual(restored, [{...corrected, audioMix: {volume: 100, muted: false}}, items[1]]);
+    assert.deepEqual(applyConversationTimelineEdit(restored, {kind: 'gain', clipId: source.id, volume: 100}, 30, []), restored, 'Repeated restoration stays harmless.');
+    assert.deepEqual(applyConversationTimelineEdit([source], {kind: 'gain', clipId: source.id, volume: 100}, 30, [])[0], {...corrected, audioMix: {volume: 100, muted: false}}, 'Original level is safe even without a prior mute.');
+    assert.deepEqual(source, original, 'The original media and saved input remain unchanged.');
+    for (const volume of [1,25,99]) assert.throws(() => applyConversationTimelineEdit([source], {kind: 'gain', clipId: source.id, volume}, 30, []), /no audio/i, 'Unknown sound does not authorize arbitrary gain.');
+    assert.throws(() => applyConversationTimelineEdit([source], {kind: 'gain', clipId: source.id, volume: 0}, 30, ['video']), /locked/i);
+  }
+});
+
+test('measured embedded audio overrides a stale silent flag while silent videos, images and linked external sound stay protected', async () => {
+  const {applyConversationTimelineEdit} = await import('../frontend/lib/studio/conversation-timeline-editing');
+  const measured = {...items[0], audioProvenance: 'none' as const, hasEmbeddedAudio: false, mediaFacts: {source: 'probe' as const, durationSec: 8, hasAudio: true}};
+  const quieter = applyConversationTimelineEdit([measured], {kind: 'gain', clipId: measured.id, volume: 20}, 30, []);
+  assert.equal(quieter[0].audioMix?.volume, 20);
+  assert.equal(quieter[0].audioProvenance, 'embedded', 'Exports must receive the measured audio presence instead of the stale flag.');
+  assert.equal(quieter[0].hasEmbeddedAudio, true);
+  for (const protectedClip of [
+    {...measured, mediaFacts: {...measured.mediaFacts, hasAudio: false}},
+    {...measured, mediaKind: 'image' as const},
+    {...measured, audioProvenance: 'external' as const, linkedGroupId: 'sound-pair'},
+  ]) for (const volume of [0,100]) assert.throws(() => applyConversationTimelineEdit([protectedClip], {kind: 'gain', clipId: protectedClip.id, volume}, 30, []), /no audio/i);
+});
+
 test('library insertion floors source-limited durations so a fractional final frame never extends audio or video', async () => {
   const module = await import('../frontend/lib/studio/conversation-timeline-editing');
   assert.ok(module.conversationLibraryInsertTiming,'Library insertion needs a bounded frame projection.');

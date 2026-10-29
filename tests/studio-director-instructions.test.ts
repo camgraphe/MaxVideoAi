@@ -22,6 +22,8 @@ test('director sends creative purpose, current help and live quote rules with it
       const instructions=String(params.instructions);
       assert.match(instructions,/creative partner/i);
       assert.match(instructions,/prompt.*asset.*edit/i);
+      assert.match(instructions,/check.*explain.*only.*read-only/i);
+      assert.match(instructions,/never.*timeline_edit.*test.*support/i);
       assert.match(instructions,/editorialGuidance/);
       assert.match(instructions,/reviewStatus/);
       assert.match(instructions,/Vary.*shot.*subject.*continuity/);
@@ -37,7 +39,7 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/Open library/);
-      assert.ok(instructions.length<8500,'Keep permanent guidance bounded; exact model facts belong in tools.');
+      assert.ok(instructions.length<8500,`Keep permanent guidance bounded (${instructions.length}/8500); exact model facts belong in tools.`);
       assert.doesNotMatch(instructions,/seedance|kling|wan-3|pika|\$\d|€\d/i);
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name) ?? [];
       assert.equal(names.includes('video_prepare'),enabled);

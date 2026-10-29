@@ -71,6 +71,17 @@ test('a ready generated video obtains measured facts outside locks before the sh
   assert.equal(state.hydrations, 1, 'Receipt replay cannot inspect or require the source again.');
 });
 
+test('insertion keeps an unmeasured audio stream unknown rather than marking a video silent', async () => {
+  const {state, dependencies} = fixture();
+  state.source.metadata.mediaFacts = {source: 'probe', durationSec: 6, width: 320, height: 180};
+  await editStudioConversationTimeline({userId: 'owner'}, command, dependencies);
+  const item = (state.timeline.timelineItems as any[])[0];
+  assert.equal(state.hydrations, 0, 'Measured duration is enough for a bounded insertion.');
+  assert.equal(item.audioProvenance, 'unknown');
+  assert.equal(item.hasEmbeddedAudio, undefined);
+  assert.equal(item.mediaUrl, state.source.url);
+});
+
 test('source preparation cannot bypass ownership, project quote scope, revision or measured duration', async () => {
   for (const scenario of ['foreign', 'scope', 'revision', 'overlong'] as const) {
     const { state, dependencies } = fixture();

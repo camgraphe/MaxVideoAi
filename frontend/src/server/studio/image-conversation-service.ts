@@ -39,7 +39,7 @@ import {
   type StoredImageTurn,
 } from "./image-conversation-repository";
 import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversation-media-generation';
-import {resolveStudioMedia} from './media-resolver';
+import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependencies} from './conversation-attachment-facts';
 import type {ResolvedReference} from '@/server/agent-api/reference-types';
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {conversationSelectionSettings,imageSelectionSchema} from '@/lib/studio/conversation-creation-contract';
@@ -166,6 +166,7 @@ export function createImageConversationService(
     exportsEnabled?: boolean;
     requestOrigin?: string;
     exportDependencies?: Partial<StudioExportDependencies>;
+    attachmentFacts?:StudioAttachmentFactsDependencies;
   },
 ) {
   const factory =
@@ -296,15 +297,9 @@ export function createImageConversationService(
           })),
           outputCount: 1,
         });
-        for (const attachment of input.attachments ?? []) {
-          try {
-            const media = await resolveStudioMedia(actor.userId, attachment);
-            refs.push({assetId: attachment.type === 'asset' ? attachment.assetId : attachment.outputId,
-              role: 'reference', mediaKind: media.kind, storageUrl: media.url, mimeType: media.mime,
-              width: media.width ?? media.mediaFacts?.width ?? null, height: media.height ?? media.mediaFacts?.height ?? null, durationSec: media.durationSec ?? media.mediaFacts?.durationSec ?? null, sizeBytes: media.sizeBytes ?? null,
-              originalName: media.originalName ?? null} satisfies ResolvedReference);
-          } catch {throw new AgentApiError('REFERENCE_INVALID', 'The attached media is no longer available.');}
-        }
+        refs.push(...await resolveStudioConversationAttachments(actor,input.attachments??[],{
+          ...dependencies.attachmentFacts,qualifyMissingVideoFacts:!turn.draft_json&&!responseReplayOnly,
+        }));
         const referenceFingerprint = studioReferenceFingerprint(refs);
         if (
           turn.draft_json &&

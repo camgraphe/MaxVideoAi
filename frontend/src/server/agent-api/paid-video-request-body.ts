@@ -427,14 +427,17 @@ export function buildPaidVideoRequestBody(
       reference.kind === 'image' && reference.role === 'first_frame');
     const imageReferences = references.filter((reference) =>
       reference.kind === 'image' && reference.role === 'reference');
+    const videoReferences = references.filter((reference) =>
+      reference.kind === 'video' && reference.role === 'reference');
     const audioReferences = references.filter((reference) =>
       reference.kind === 'audio' && reference.role === 'reference');
     const images = imageReferences.map(({ url }) => url);
+    const videos = videoReferences.map(({ url }) => url);
     const audio = audioReferences.map(({ url }) => url);
     if (
       source.length !== 1
       || guideFrames.length > 1
-      || 1 + guideFrames.length + images.length + audio.length !== references.length
+      || 1 + guideFrames.length + images.length + videos.length + audio.length !== references.length
     ) {
       invalidModeReferences();
     }
@@ -449,8 +452,9 @@ export function buildPaidVideoRequestBody(
       'image',
       ['image_url', 'edit_keyframe_urls', 'image_urls', 'reference_image_urls', 'reference_image_url'],
     );
+    const videoFieldId = activeReferenceFieldId(execution, 'video', VIDEO_MEDIA_FIELD_CANDIDATES.referenceVideo);
     const audioFieldId = activeReferenceFieldId(execution, 'audio', VIDEO_MEDIA_FIELD_CANDIDATES.referenceAudio);
-    if ((images.length && !imageFieldId) || (audio.length && !audioFieldId)) invalidModeReferences();
+    if ((images.length && !imageFieldId) || (videos.length && !videoFieldId) || (audio.length && !audioFieldId)) invalidModeReferences();
     if (images.length) {
       if (imageFieldId === 'start_image_url' || imageFieldId === 'image_url') {
         if (images.length !== 1) invalidModeReferences();
@@ -459,12 +463,14 @@ export function buildPaidVideoRequestBody(
         body.referenceImages = images;
       }
     }
+    if (videos.length) body.referenceVideos = videos;
     if (audio.length) body.referenceAudio = audio;
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
       ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
+      ...(videoFieldId ? videoReferences.map((reference) => input(reference, videoFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
     ];
     return body;

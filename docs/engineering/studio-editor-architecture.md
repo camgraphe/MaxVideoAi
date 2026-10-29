@@ -177,6 +177,20 @@ When required model/source facts are known, prepare by Response 3; optional `pro
 
 The visible timeline edits canonical sequence state with revision and ownership checks. It reuses pure frame-aware operations for clipping, source bounds and linked audio. Library selection does not automatically insert every new generation into the timeline. Preview media uses transient stored grants; signed URLs and private originals must not leak into journal/tool projections or saved command payloads.
 
+`workspace-audio-provenance.ts` owns clip audio mixing support for both revisioned
+edits and read-only timeline facts. Probe `hasAudio` remains tri-state: missing
+evidence is unknown, never silence. An explicit zero gain can mute an unknown
+video without asserting an audio stream exists or replacing its original; 100%
+restores the original level, including on repeated requests. Other gain settings
+require known embedded audio. Measured silent clips and separately linked
+audio remain protected. An explicit gain edit reconciles only its selected clip's
+stale audio flags with known facts or unknown status; reads never repair storage.
+Preview and MP4 rendering consume the same saved
+`audioMix`. `timeline_read` exposes only bounded `audio.source`, `canMute` and
+`canAdjustVolume`/`canRestoreOriginalVolume` facts; lock facts remain separate. Check/explain-only requests
+must use these reads rather than trial mutations. Pure edit, DOM playback, MCP
+schema and opt-in synthetic FFmpeg/Chromium rendering tests cover this contract.
+
 `useConversationTimeline` owns periodic preview refresh. Its polling waits for all current-project reads to settle, including a forced replacement for a refused grant that still appears valid to the browser clock. Explicit refreshes, revisioned edits and lifecycle invalidations retain their epoch ordering. Pending grant replacements belong to the project path and survive superseded or failed reads until the winning successful canonical response replaces those grants. A late journal response must not lose that renewal intent; the obsolete response still cannot reset canonical revisions. Replacement sources and decoder retry keys commit atomically in the hook; completing an obsolete or failed request never retries the refused source. Grant retention and retry keys never cross project boundaries. Read counts belong to each project path and are released in `finally`, so failed or obsolete reads cannot release another project's polling gate. `tests/studio-conversation-timeline-refresh-dom.test.ts` exercises the real hook with deferred responses; the connected montage browser test deliberately delivers the initial journal while renewal is pending, tests both response orders with the old URL persistently refused, and retains separate preview/new-grant diagnostic flags without exposing signed URLs.
 
 The 2026-10-06 branch candidate adds bounded atomic assembly (up to 12 insertions)
@@ -186,6 +200,28 @@ generation completion or polling. See [Studio media analysis](studio-media-analy
 for qualified profiles, shared-credit recovery and activation prerequisites.
 
 Exports use the canonical worker contract and backend pricing/idempotency. The browser estimates, confirms, polls and recovers; it does not manufacture completed MP4s. Completed exports and reusable library media remain account artifacts even if a project is later deleted.
+
+The generic missing-generation cron excludes Timeline's `timeline_export` surface,
+`server_render` product and exact account-owned export records, including legacy
+charges without product labels. The export owner handles failure refunds. Late
+completion locks the export and preserves an existing full same-account/job/currency
+charge/refund pair as `billing_status=refunded`; successful delivery does not reclaim
+that credit or alter receipts. Free and platform completion retain their own states.
+
+Milo's `project_read` keeps prepared quote cards in `exports` and separately
+projects the eight newest `renders` from `app_timeline_exports`, including manual
+footer submissions without a conversation quote receipt. The SELECT-only owner
+`conversation-export-facts.ts` joins live owned projects and sequences, exposing
+recorded status, progress, timestamps, framing and billing. It excludes original
+media URLs, storage grants, submission identities and arbitrary worker messages.
+`export_read` accepts one exact `exportId` from these facts or a historical owned
+`quoteId`; an exact older export remains readable outside the context's eight-row
+window. Missing optional export schema yields no render facts without bootstrap.
+Diagnosis never confirms, retries, reserves billing or launches a worker. Queued
+with no `startedAt` establishes that rendering has not begun. Timeline facts also
+expose the saved sequence's aspect ratio and resolution. The disposable PostgreSQL
+regression verifies manual and quoted exports, read-only access, isolation and
+the director's diagnostic tool turn.
 
 MP4 activation and worker provenance are documented in
 [Studio MP4 exports](../deployment/studio-timeline-exports.md). Completed chat
