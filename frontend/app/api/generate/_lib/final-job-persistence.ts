@@ -44,6 +44,8 @@ export async function persistFinalVideoJobUpdate(params: {
       : normalizedStatus === 'failed'
         ? 'unknown'
         : 'accepted';
+  // A webhook can finish while submission/media resolution is still awaiting I/O.
+  // Keep its terminal state and output together; only a later completion may recover failure.
   await queryFn(
     `UPDATE app_jobs
      SET thumb_url = $2,
@@ -85,7 +87,9 @@ export async function persistFinalVideoJobUpdate(params: {
          END,
          provisional = FALSE,
          updated_at = NOW()
-     WHERE job_id = $1`,
+     WHERE job_id = $1
+       AND NOT (status = 'completed' AND $8 <> 'completed')
+       AND NOT (status = 'failed' AND $8 IN ('pending','queued','running','processing','in_progress'))`,
     [
       params.jobId,
       params.thumb,

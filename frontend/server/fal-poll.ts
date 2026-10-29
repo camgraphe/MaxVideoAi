@@ -110,7 +110,8 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
         console.warn('[fal-poll] webhook update failed, falling back to DB update', job.job_id, sanitizeProviderMediaDiagnostics(updateError));
         try {
           await query(
-            `UPDATE app_jobs SET status = 'failed', progress = LEAST(progress, 1), message = $1 WHERE job_id = $2`,
+            `UPDATE app_jobs SET status = 'failed', progress = LEAST(progress, 1), message = $1
+             WHERE job_id = $2 AND status IN ('pending','queued','running','processing','in_progress')`,
             [userMessage, job.job_id]
           );
         } catch (writeError) {

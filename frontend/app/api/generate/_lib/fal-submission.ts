@@ -96,7 +96,8 @@ export async function markJobAwaitingFal(params: {
            END,
            provisional = FALSE,
            updated_at = NOW()
-       WHERE job_id = $1`,
+       WHERE job_id = $1
+         AND status IN ('pending','queued','running','processing','in_progress')`,
       [params.jobId, progressFloor, message, params.providerJobId]
     );
   } catch (error) {
@@ -311,7 +312,8 @@ export async function submitFalGenerateTask(params: {
                  message = $3,
                  provisional = FALSE,
                  updated_at = NOW()
-           WHERE job_id = $1`,
+           WHERE job_id = $1
+             AND status IN ('pending','queued','running','processing','in_progress')`,
           [params.jobId, progressFloor, waitingMessage]
         ).catch((updateError) => {
           console.error('[api/generate] failed to mark timeout job awaiting status refresh', updateError);
