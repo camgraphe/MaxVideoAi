@@ -158,13 +158,27 @@
 .app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"] { color: var(--app-accent); background-color: var(--app-accent-soft); }
 .app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"]::after { content: none; }
 @media (min-width: 768px) {
-  /* Share the preview video rail width with its navigation; other workspaces keep their widths. */
+  /* Image and video rails share their width with the navigation above them. */
   .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 216px; }
   .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 var(--app-creation-rail-width, 240px); align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
   .app-experience .app-results-rail [data-gallery-header-in-navigation] { padding-top: 0; }
+  .app-experience .app-image-media-rail [data-gallery-header-in-navigation] .app-gallery-rail-grid { padding-top: 0; }
+  .app-experience .app-image-media-rail [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 0; }
   /* Match the preview's 8 px media inset once the rail title moves into navigation. */
   .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-grid { margin-top: 0; padding-top: 8px; }
   .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 8px; }
+}
+.app-experience .app-image-mobile-rail-navigation { display: none; }
+.app-experience .app-image-recent-panel { padding: 0 13px; }
+.app-experience .app-image-recent-panel .app-recent-list { overscroll-behavior-y: contain; }
+.app-experience .app-image-media-rail { scroll-margin-top: calc(var(--header-height) + 52px); }
+@media (max-width: 767px) {
+  .app-experience .app-image-mobile-rail-navigation { display: block; }
+  .app-experience .app-image-mobile-rail-navigation .app-media-rail-switch { align-items: center; gap: 16px; }
+  .app-experience .app-image-mobile-rail-navigation :is(button, a) { min-height: 44px; border: 0; padding: 0; background: transparent; font-size: 12px; color: var(--app-muted); }
+  .app-experience .app-image-mobile-rail-navigation button[aria-pressed="true"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+  .app-experience .app-image-mobile-rail-navigation a { margin-left: auto; }
+  .app-experience .app-image-media-rail header { display: none; }
 }
 @media (min-width: 900px) {
   .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 240px; }

@@ -256,3 +256,19 @@ test('image composer user actions share gallery hydration cancellation at the ro
   assert.match(source, /onSelectStarter: composerActionProps.selectStarter/);
   assert.match(source, /starterNavigation=\{[\s\S]*guardComposerActions\(\{\s*onPrev: starterNavigation.onPrev, onNext: starterNavigation.onNext/);
 });
+
+test('image creation chrome and recent reference ownership remain at their route boundaries', () => {
+  const page = readFileSync(path.join(imageDir, 'page.tsx'), 'utf8');
+  const shell = readFileSync(shellPath, 'utf8');
+  const empty = readFileSync(emptyStatePath, 'utf8');
+  const references = readFileSync(path.join(imageDir, '_components/ImageMediaHandoff.client.tsx'), 'utf8');
+  assert.doesNotMatch(page, /<AppCreationContent\b/, 'the server page must not duplicate the shell navigation');
+  assert.match(shell, /<AppCreationContent railNavigation=/);
+  assert.match(shell, /<ImageWorkspaceGalleryRail[^>]*variant="responsive"/);
+  assert.match(empty, /AppCreationContent/, 'loading and empty states retain creation navigation');
+  assert.match(references, /useWorkspaceRecentMedia/);
+  assert.match(references, /recentRequested \? user\?\.id : null/, 'opening Recents owns its first network request');
+  assert.match(references, /resolveCurrentRecentAsset/, 'selection must remain bound to the current account feed');
+  assert.match(references, /onInsert\(selected, index\)/, 'recent selections reuse the guarded image reference insertion path');
+  assert.doesNotMatch(references, /localStorage|fetch\(/, 'handoff UI must not own persistence or a second feed transport');
+});

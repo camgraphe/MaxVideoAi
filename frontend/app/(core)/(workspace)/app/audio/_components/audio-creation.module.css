@@ -3,9 +3,10 @@
   flex: 1; min-width: 0; color: var(--audio-ink); padding: 26px clamp(16px, 3vw, 48px) 112px;
 }
 .root * { box-sizing: border-box; }
-.root button,.root a,.root select,.root input,.root summary { min-height:44px; }
+/* The shared prompt composer owns its control geometry and focus treatment. */
+.root :is(button,a,select,input,summary):not(:where([data-prompt-assistance-preview] *)) { min-height:44px; }
 .root button,.root select,.root summary { cursor:pointer; }
-.root :is(button,a,select,textarea,input,summary):focus-visible { outline: 2px solid var(--audio-accent); outline-offset:4px; }
+.root :is(button,a,select,textarea,input,summary):not(:where([data-prompt-assistance-preview] *)):focus-visible { outline: 2px solid var(--audio-accent); outline-offset:4px; }
 .root button:disabled { opacity:.45; cursor:not-allowed; }
 .header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
 .header h1 { font-size:24px; letter-spacing:-.7px; font-weight:650; margin:0; }

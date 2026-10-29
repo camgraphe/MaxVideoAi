@@ -24,7 +24,7 @@ type ImageWorkspaceGalleryRailProps = {
   isImageJob: (job: Job) => boolean;
   onOpenGroup: (group: GroupSummary) => void;
   selectedEngineCaps: EngineCaps;
-  variant: 'desktop' | 'mobile';
+  variant: 'desktop' | 'mobile' | 'responsive';
   onSelectStarter: (item: StarterMedia) => void;
 };
 
@@ -50,8 +50,11 @@ export function ImageWorkspaceGalleryRail({
       jobFilter={isImageJob}
       onOpenGroup={onOpenGroup}
       variant={variant}
+      hideDesktopHeader={variant === 'responsive'}
     />
   );
+
+  if (variant === 'responsive') return rail;
 
   if (variant === 'desktop') {
     return <div className="flex w-[320px] justify-end border-l border-hairline pl-2 pr-0 py-4">{rail}</div>;
