@@ -6,7 +6,7 @@ The video and image composers and audio creation editor share **Prompt / AI assi
 
 Before enabling real assistance in a controlled environment:
 
-1. Apply `neon/migrations/85_prompt_assistance.sql` explicitly, after existing Studio assistance ledger/credit migrations. Request handlers never create schema. Do not apply this migration to a shared database merely to review the UI.
+1. Apply `neon/migrations/85_prompt_assistance.sql` explicitly, after existing Studio assistance ledger/credit migrations. Then apply the pending shared-level migrations 86–88 in the order documented in [Milo levels](milo-levels.md). Request handlers never create schema. Do not apply this migration to a shared database merely to review the UI.
 2. Configure the existing OpenAI credential and Milo policy: `STUDIO_ASSISTANCE_ENABLED=true`; production also requires `STUDIO_ASSISTANCE_APPROVED_POLICY=studio-credits-2026-10-05-v2`. The global OpenAI endpoint is required by the existing tariff policy.
 3. Enable server flag `PROMPT_ASSISTANCE_ENABLED=true` and build the frontend with `NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE=1`.
 4. Verify authenticated status, owned references and recovery, then run a separately approved, bounded paid quality evaluation before general release.
@@ -17,7 +17,7 @@ The public flag alone does not enable the API. A live UI never falls back to sam
 NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW=1 pnpm --dir frontend dev --port 3018
 ```
 
-The sample requires `NODE_ENV=development`; it never calls an LLM or spends credits. At the user's request it has no sample badge. Removing the public flag and rebuilding restores the previous presentation. To stop new paid requests, disable `STUDIO_ASSISTANCE_ENABLED` using the existing policy controls; keep the composer endpoint available for recovery/status until outstanding calls are resolved. Disabling the composer endpoint entirely also hides its recovery route. Do not drop the migration or erase usage evidence during rollback.
+The sample replies require `NODE_ENV=development`; they never call an LLM or consume credits. The shared Milo panel still reads the real Studio account; explicit account choices or confirmed pack purchases there are real. At the user's request it has no sample badge. Removing the public flag and rebuilding restores the previous presentation. To stop new paid requests, disable `STUDIO_ASSISTANCE_ENABLED` using the existing policy controls; keep the composer endpoint available for recovery/status until outstanding calls are resolved. Disabling the composer endpoint entirely also hides its recovery route. Do not drop the migration or erase usage evidence during rollback.
 
 No shared migration, live activation, deployment or paid LLM call was performed for the first connection. Keep per-worktree environment files private.
 
@@ -49,9 +49,9 @@ Only role/label, supported token and width/height/duration metadata reach the LL
 
 `/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
 
-The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 2,200 output tokens (including reasoning). The current draft is never silently truncated. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
+The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 6,000 output tokens (including reasoning) for newly frozen runtimes; historical requests retain their 2,200-token limit. The current draft is never silently truncated. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
 
-Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
+Lite/Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
 
 ## Interruption and support
 

@@ -38,5 +38,5 @@ Files: task-budget-contract, conversation-director/image-run/tasks service, comp
 Files: Studio credits dialog/control/status parser, composer trigger, browser tests, engineering docs.
 - [x] Test direct opening, all three selections, tariff display and no purchase on opening/switching.
 - [x] Render Lite/Standard/Max and common balances; replace composer level menu and separate Credits button with one dialog trigger.
-- [ ] Run focused browser tests, Studio suite, type check, lint and exposure check.
-- [ ] Independently review, address important findings, update documentation and push current PR.
+- [x] Run focused browser tests, Studio suite, type check, lint and exposure check.
+- [x] Independently review, address important findings, update documentation and push current PR.
