@@ -4,7 +4,7 @@ Passation de la pause demandée par Adrien le 29 octobre 2026 pour changer de co
 
 ## État après reprise
 
-Les parties 1 et 2 ci-dessous ont été commitées et poussées dans la même PR, jusqu’à `3bdcd5990`. Milo a reçu un guide explicite du parcours dans chaque générateur ; trois essais API synthétiques ont été réalisés. La revue indépendante a identifié une fuite de durées statiques dans Pricing, corrigée avec deux régressions. La qualification finale et les limites sont consignées dans `docs/marketing/public-offer-refresh-2026-10-29.md`. Les sections suivantes restent le relevé historique de la pause.
+Les parties 1 et 2 ci-dessous ont été commitées et poussées dans la même PR, jusqu’à `8345a89bf`. Milo a reçu un guide explicite du parcours dans chaque générateur ; trois essais API synthétiques ont été réalisés. La revue indépendante a identifié une fuite de durées statiques dans Pricing, corrigée avec deux régressions. La qualification finale et les limites sont consignées dans `docs/marketing/public-offer-refresh-2026-10-29.md`. Les sections suivantes restent le relevé historique de la pause.
 
 ## Où reprendre
 

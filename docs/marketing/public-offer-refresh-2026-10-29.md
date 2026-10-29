@@ -52,21 +52,23 @@ to be free. Private logs and account screenshots remain unpublished.
 
 ## Qualification evidence
 
-- Application build at `3bdcd5990` succeeded from a clean clone. The following
-  audit correction at `7d29853b2` changes audit collectors, additive evidence and
-  tests, not generation or billing behavior.
+- Application build and full fast lane at `8345a89bf` succeeded from a clean
+  clone: **9,872 passed, one skipped, zero failures**. The audit corrections
+  preserve generation and billing behavior.
 - Pricing/admin duration suite: 103/103; PostgreSQL pricing/PAYG: 25/25; marketing
   expectation updates: 36/36; native-tariff/public-baseline audits: 58/58.
 - App-guide context/scope checks: 19/19. Earlier resumed discovery: 118/118.
 - Clean-clone connected browser and Git-dependent checks: 25/25. Isolated Studio
-  lane: 4/4. Additional browser and initial-cutover results are recorded below
-  when complete.
+  lane: 4/4. Additional Studio/Milo/mobile/montage browser coverage: 4/4.
+  The exhaustive initial-cutover replay is still running separately; its local
+  result log is `/tmp/public-offer-candidate-cutover.log`. No successful result
+  is claimed for that replay until the process completes.
 - Nine live local HTTP checks passed: Pricing, PAYG and comparison hubs in
   EN/FR/ES, with successful responses, correct canonical/hreflang and valid
   JSON-LD. Pricing/PAYG show the current models plus Milo/Studio, without Pika 2.2
   promotion. `/app` also returned HTTP 200 after development compilation.
-- TypeScript passed. The first final lint found one newly unused helper, which
-  was removed; the final lint result is recorded below. Public-exposure checks
+- TypeScript passed. The unused duration helper found by lint was removed.
+  Lint has zero errors and seven existing warnings. Public-exposure checks
   passed. No private QA screenshot was staged.
 - An initial full run from an archive had 11,196 passes, 26 failures and four
   skips. It is **not** a green full-suite run. Failures identified stale editorial
