@@ -351,7 +351,7 @@ export function Composer({
               'app-prompt-heading flex items-start justify-between px-4',
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
-              <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} prompt={prompt} onPromptChange={onPromptChange}
+              <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} hideLabel={assistanceEnabled} prompt={prompt} onPromptChange={onPromptChange}
                 promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
                 multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
                   aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}

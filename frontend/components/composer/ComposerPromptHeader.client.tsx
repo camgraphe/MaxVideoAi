@@ -4,9 +4,10 @@ import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { ComposerPromptClear } from './ComposerPromptClear.client';
 
-export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptChange, promptMaxChars, promptTooLong, multiPromptEnabled, multiPromptAction, locale }: {
+export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptChange, promptMaxChars, promptTooLong, multiPromptEnabled, multiPromptAction, locale, hideLabel = false }: {
   promptId: string;
   promptLabel: string;
+  hideLabel?: boolean;
   prompt: string;
   onPromptChange: (value: string) => void;
   promptMaxChars?: number;
@@ -18,8 +19,8 @@ export function ComposerPromptHeader({ promptId, promptLabel, prompt, onPromptCh
   return <div className="flex w-full items-center justify-between gap-2">
     <div className="flex min-w-0 flex-wrap items-center gap-x-2">
       {multiPromptEnabled
-        ? <h2 id={`${promptId}-heading`} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</h2>
-        : <label htmlFor={promptId} className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</label>}
+        ? <h2 id={`${promptId}-heading`} className={hideLabel ? 'sr-only' : 'text-[11px] font-semibold uppercase tracking-micro text-text-muted'}>{promptLabel}</h2>
+        : <label htmlFor={promptId} className={hideLabel ? 'sr-only' : 'text-[11px] font-semibold uppercase tracking-micro text-text-muted'}>{promptLabel}</label>}
       {typeof promptMaxChars === 'number' ? (
         <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
           {prompt.length}/{promptMaxChars}
