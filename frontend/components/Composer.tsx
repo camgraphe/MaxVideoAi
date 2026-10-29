@@ -151,7 +151,9 @@ export function Composer({
     }
   }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
   const promptLabel = promptField?.label ?? 'Prompt';
-  const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
+  // Length limits already appear in the prompt counter and validation feedback.
+  const redundantLengthHint = /^Provider (?:prompt length|maximum):/i.test(promptField?.description ?? '');
+  const promptDescription = videoSourceWorkflow || redundantLengthHint ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
