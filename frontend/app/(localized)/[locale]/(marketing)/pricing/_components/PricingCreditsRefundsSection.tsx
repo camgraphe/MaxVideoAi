@@ -34,6 +34,7 @@ export function PricingCreditsRefundsSection({ locale }: { locale: AppLocale }) 
         })}
       </div>
       <CreditPurchaseNotes copy={copy.creditsRefunds.creditNotes} />
+      <Link href="/ai-video-prompt-generator" locale={locale} prefetch={false} className="mt-4 inline-flex text-sm underline underline-offset-4">{locale === 'fr' ? 'Comprendre les niveaux et crédits Milo →' : locale === 'es' ? 'Conocer los niveles y créditos de Milo →' : 'Understand Milo levels and credits →'}</Link>
     </section>
   );
 }

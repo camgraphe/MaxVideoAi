@@ -44,7 +44,7 @@ test('Docs articles and fallback cannot resurrect the removed workspace and memb
     assert.match(safety, /date: "2024-06-03"/);
     assert.match(gettingStarted, /date: "2024-06-01"/);
     assert.match(safety, /updatedAt: "2026-09-21"/);
-    assert.match(gettingStarted, /updatedAt: "2026-10-24"/);
+    assert.match(gettingStarted, /updatedAt: "2026-10-29"/);
     assert.match(gettingStarted, /Luma Ray 3\.2/);
     assert.match(gettingStarted, /FLUX 3 Draft/);
     assert.match(gettingStarted, /H3 Max Extend, Insert/);

@@ -9,6 +9,7 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     '',
     'about',
     'ai-video-engines',
+    'ai-video-prompt-generator',
     'benchmarks',
     'blog',
     'changelog',

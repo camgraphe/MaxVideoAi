@@ -27,6 +27,7 @@ const COPY = {
 
 export function HomeConversationSection({ locale, assistantHref }: { locale: AppLocale; assistantHref?: string }) {
   const copy = COPY[locale];
+  const miloLink = { en: 'Just need a hand with your prompt? Meet Milo →', fr: 'Un coup de pouce pour votre prompt ? Découvrez Milo →', es: '¿Necesitas ayuda con tu prompt? Conoce a Milo →' }[locale];
   return (
     <section id="studio" className="home-conversation section border-b border-hairline bg-surface">
       <div className="container-page">
@@ -40,6 +41,7 @@ export function HomeConversationSection({ locale, assistantHref }: { locale: App
               <Link href={{ pathname: '/studio' }} prefetch={false} className="editorial-action" data-analytics-event="cta_click" data-analytics-cta-name="home_studio" data-analytics-cta-location="home_conversation">{copy.cta}<span aria-hidden>↗</span></Link>
               <NextLink href={`/api/studio/marketing-entry?lang=${locale}`} prefetch={false} className="home-studio-open" data-analytics-event="cta_click" data-analytics-cta-name="home_studio_open" data-analytics-cta-location="home_conversation">{copy.open}<span aria-hidden>→</span></NextLink>
             </div>
+            <Link href="/ai-video-prompt-generator" locale={locale} prefetch={false} className="mt-5 inline-flex text-sm underline underline-offset-4" data-analytics-event="cta_click" data-analytics-cta-name="home_milo" data-analytics-cta-location="home_conversation">{miloLink}</Link>
           </div>
           <Link href={{ pathname: '/studio' }} prefetch={false} className="home-studio-preview" aria-label={copy.cta}>
             <Image src="/assets/studio/studio-milo-preview.webp" alt={copy.alt} width={1354} height={832} sizes="(max-width: 900px) 90vw, 720px" loading="lazy" />

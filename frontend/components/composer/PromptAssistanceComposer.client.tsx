@@ -1,10 +1,11 @@
 'use client';
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import styles from './prompt-assistance.module.css';
-import { Maximize2, Minimize2, Sparkles, ChevronDown } from 'lucide-react';
+import { isMiloEntry } from '@/lib/prompt-assistance/marketing-entry';
+import { Maximize2, Minimize2, Sparkles, ChevronDown, CircleHelp } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
 import { MILO_LEVELS, miloLevelForModel } from '@/lib/studio/assistance-contract';
 import { PROMPT_ASSISTANCE_LIVE } from '@/lib/prompt-assistance/contract';
@@ -27,6 +28,12 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const [analysisBusy, setAnalysisBusy] = useState(false);
   const controller = usePromptAssistancePreview({ ...context, locale, draftText, onApplyText, target, maxLength, blocked, perceptionRevision });
   const { state, dispatch } = controller;
+  const entryDismissed = useRef(false);
+  useEffect(() => {
+    if (!disabledReason && !entryDismissed.current && isMiloEntry(window.location.search)) dispatch({ type: 'mode', mode: 'milo' });
+  }, [context.scopeKey, disabledReason, dispatch]);
+  const helpLabel = locale.startsWith('fr') ? 'Découvrir Milo' : locale.startsWith('es') ? 'Conocer a Milo' : 'Meet Milo';
+  const helpHref = `${locale.startsWith('fr') ? '/fr' : locale.startsWith('es') ? '/es' : ''}/ai-video-prompt-generator`;
   const credits = useStudioAssistance(context.scopeKey, controller.transport.waiting, { endpoint: PROMPT_ASSISTANCE_LIVE ? '/api/prompt-assistance' : '/api/studio/assistance', wrapChoice: PROMPT_ASSISTANCE_LIVE });
   const [creditsOpen, setCreditsOpen] = useState(false);
   const creditsTrigger = useRef<HTMLButtonElement>(null);
@@ -76,9 +83,9 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
       event.preventDefault();
       const next = event.key === 'Home' ? 'prompt' : event.key === 'End' ? 'milo' : milo ? 'prompt' : 'milo';
       if (next === 'milo' && disabledReason) return;
-      dispatch({ type: 'mode', mode: next }); document.getElementById(`${id}-${next}-tab`)?.focus();
+      entryDismissed.current = true; dispatch({ type: 'mode', mode: next }); document.getElementById(`${id}-${next}-tab`)?.focus();
     }}>
-      <button type="button" id={`${id}-prompt-tab`} role="tab" aria-selected={!milo} aria-controls={`${id}-manual`} tabIndex={milo ? -1 : 0} onClick={() => dispatch({ type: 'mode', mode: 'prompt' })}>{copy.manual}</button>
+      <button type="button" id={`${id}-prompt-tab`} role="tab" aria-selected={!milo} aria-controls={`${id}-manual`} tabIndex={milo ? -1 : 0} onClick={() => { entryDismissed.current = true; dispatch({ type: 'mode', mode: 'prompt' }); }}>{copy.manual}</button>
       <button type="button" id={`${id}-milo-tab`} role="tab" aria-selected={milo} aria-controls={`${id}-milo`} tabIndex={milo ? 0 : -1} disabled={Boolean(disabledReason)} onClick={() => dispatch({ type: 'mode', mode: 'milo' })}>{copy.assistant}</button>
     </div>
     {modeControl}
@@ -96,6 +103,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
       {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
         reasoningControl={<button type="button" ref={creditsTrigger} className={styles.miloTrigger} aria-label="Milo settings and credits" aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}><Sparkles size={15} aria-hidden/><strong>Milo</strong>{credits.status ? <span>{MILO_LEVELS[miloLevelForModel(credits.status.selectedModel)].label}</span> : null}<ChevronDown size={12} aria-hidden/></button>}
+        helpControl={<a className={styles.helpLink} href={helpHref} target="_blank" rel="noopener noreferrer" aria-label={helpLabel} title={helpLabel}><CircleHelp size={15} aria-hidden/></a>}
         conversationControl={<button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button>}
         message={state.message} pending={PROMPT_ASSISTANCE_LIVE ? controller.transport.waiting : Boolean(state.pending)} blocked={blocked || liveBlocked} maxLength={maxLength} messageRef={controller.input}
         inputNotice={authRequired ? accessNotice : null}

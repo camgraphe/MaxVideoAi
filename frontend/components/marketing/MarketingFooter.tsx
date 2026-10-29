@@ -93,6 +93,7 @@ export function MarketingFooter() {
       label: labelFor('footer.sections.product.items.characterBuilder', 'Character Builder'),
       href: { pathname: '/tools/character-builder' },
     },
+    { key: 'milo', label: locale === 'fr' ? 'Milo · Assistant de prompts IA' : locale === 'es' ? 'Milo · Asistente de prompts IA' : 'Milo · AI prompt assistant', href: '/ai-video-prompt-generator' },
     { key: 'pricing', label: labelFor('footer.sections.product.items.pricing', 'Pricing'), href: { pathname: '/pricing' } },
     {
       key: 'paygVideo',
