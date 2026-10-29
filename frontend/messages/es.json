@@ -11,7 +11,7 @@
     "saved": "Tu contraseña se ha actualizado.",
     "continueToApp": "Ir a la aplicación",
     "requestNew": "Solicitar otro enlace",
-    "invalid": "Este enlace no es válido o ha caducado. Solicita uno nuevo. Si cambiaste de navegador, prueba a abrir el enlace original en el navegador donde lo solicitaste.",
+    "invalid": "Este enlace no es válido, ha caducado o ya se usó. Solicita otro para restablecer tu contraseña.",
     "tooShort": "Usa al menos 6 caracteres.",
     "mismatch": "Las contraseñas no coinciden.",
     "weak": "Elige una contraseña más segura.",
@@ -401,7 +401,7 @@
         "href": "/return-policy"
       }
     ],
-    "brandNote": "Centro independiente para video profesional con IA: precio antes de generar, acceso a los motores más recientes y un espacio de trabajo para cada toma. Funciona con Seedance, Kling, Veo, LTX, Wan, Pika y más. Las marcas pertenecen a sus respectivos propietarios.",
+    "brandNote": "Un espacio para video, imagen y audio con IA. Desarrolla tu idea con Milo, prepara un proyecto en Studio y revisa el precio antes de generar. Los nombres y marcas de modelos de terceros pertenecen a sus propietarios.",
     "languageLabel": "Idioma",
     "languages": [
       {
@@ -1169,7 +1169,7 @@
         "title": "Conoce el precio antes de generar.",
         "subtitle": "MaxVideoAI muestra el precio antes de cada generación de video para que mantengas el control de tus créditos.",
         "cta": "Ver precios",
-        "supportingText": "MaxVideoAI es un generador de video IA multi-modelo de pago por uso para Seedance, Kling, Veo, LTX, Wan, Pika y más.",
+        "supportingText": "Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más. Prepara el prompt con Milo, consulta el precio antes de generar y paga por uso.",
         "modelsLink": "Modelos",
         "examplesLink": "Ejemplos",
         "compareLink": "Comparar modelos",
@@ -1194,18 +1194,29 @@
       },
       "providers": {
         "title": "Modelos y proveedores compatibles",
-        "subtitle": "Seedance, Kling, Veo, LTX, Wan, Pika, Happy Horse, MiniMax, Luma están disponibles desde un solo catálogo de modelos.",
+        "subtitle": "Explora FLUX, MiniMax, Kling, Seedance, Veo, LTX y Wan en un solo catálogo.",
         "cta": "Ver todos los modelos",
         "items": [
           {
+            "providerKey": "Black Forest Labs",
+            "provider": "Black Forest Labs",
+            "model": "FLUX 3 Max",
+            "href": {
+              "pathname": "/models/[slug]",
+              "params": {
+                "slug": "flux-3-max"
+              }
+            }
+          },
+          {
             "providerKey": "ByteDance",
             "provider": "ByteDance",
-            "model": "Seedance"
+            "model": "Seedance 2.5"
           },
           {
             "providerKey": "Kling by Kuaishou",
             "provider": "Kling / Kuaishou",
-            "model": "Kling"
+            "model": "Kling 4.0"
           },
           {
             "providerKey": "Google",
@@ -1215,17 +1226,12 @@
           {
             "providerKey": "Lightricks",
             "provider": "Lightricks",
-            "model": "LTX"
+            "model": "LTX 2.5"
           },
           {
             "providerKey": "Wan",
             "provider": "Wan",
-            "model": "Wan"
-          },
-          {
-            "providerKey": "Pika",
-            "provider": "Pika",
-            "model": "Pika"
+            "model": "Wan 3"
           },
           {
             "providerKey": "Alibaba",
@@ -1241,7 +1247,7 @@
           {
             "providerKey": "MiniMax",
             "provider": "MiniMax",
-            "model": "MiniMax"
+            "model": "MiniMax H3"
           },
           {
             "providerKey": "Luma AI",
@@ -1369,16 +1375,13 @@
     "worksWith": {
       "label": "Funciona con",
       "brands": [
+        "FLUX 3 Max",
+        "MiniMax H3",
+        "Kling 4.0",
         "Seedance 2.5",
         "Veo 3.1",
-        "LTX 2 Fast",
-        "LTX 2",
-        "Kling 2.6 Pro",
-        "Pika 2.2",
-        "MiniMax Hailuo 02",
-        "Kling 2.5",
-        "Wan 2.5",
-        "Nano Banana"
+        "LTX 2.5",
+        "Wan 3"
       ],
       "caption": "Las marcas comerciales pertenecen a sus propietarios.",
       "availabilityNotice": "La disponibilidad puede variar según el proveedor; las fichas de precio se actualizan automáticamente.",
@@ -1420,7 +1423,7 @@
       },
       {
         "title": "Todos tus modelos en un solo lugar.",
-        "body": "Cambia entre Seedance 2.5, Veo, Pika, MiniMax y Hunyuan sin saltar entre tableros ni claves API."
+        "body": "Prueba FLUX 3 Max, MiniMax H3, Kling 4.0 y Seedance 2.5 en un espacio. Compara ejemplos y la cotización de tus ajustes antes de elegir."
       }
     ],
     "ways": [
@@ -1623,7 +1626,7 @@
     "priceChipSuffix": "Visible antes de lanzar.",
     "meta": {
       "title": "Generador de video IA de pago por uso | MaxVideoAI",
-      "description": "Compara Seedance, Kling, Veo, LTX, Wan, Pika y más antes de generar. Previsualiza resultados reales, mira el precio por adelantado y genera con pago por uso."
+      "description": "Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más. Prepara el prompt con Milo, consulta el precio antes de generar y paga por uso."
     },
     "compare": {
       "title": "Modelos de video con IA en un solo panel",
@@ -1691,7 +1694,7 @@
       "compare": {
         "title": "Compara modelos de video con IA antes de generar",
         "body": "MaxVideoAI te permite probar varios modelos en un solo lugar. Cada modelo tiene fortalezas distintas (velocidad, fidelidad al prompt, movimiento, realismo y estilo). Compara resultados lado a lado, elige el mejor modelo para cada toma y mantén el precio visible antes de generar.",
-        "worksWith": "Compatible con MiniMax H3, Seedance 2.5, Veo 3.1, Kling 3, LTX 2.3, Wan 2.6, Pika 2.2... y más.",
+        "worksWith": "Compatible con FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, Veo 3.1, LTX 2.5, Wan 3 y modelos de imagen.",
         "popularLinks": [
           {
             "label": "Comparativa MiniMax H3 vs Seedance 2.5",
@@ -1837,13 +1840,13 @@
       "cards": [
         {
           "title": "Clip social (vertical)",
-          "engine": "Pika 2.2",
+          "engine": "FLUX 3 Max",
           "duration": "5 s",
           "resolution": "1080×1920",
           "audio": "Silencioso",
           "note": "Se cobra solo si termina correctamente.",
           "pricingScenario": {
-            "engineId": "pika-text-to-video",
+            "engineId": "flux-3-max",
             "durationSec": 5,
             "resolution": "1080p",
             "memberTier": "member"
@@ -1886,7 +1889,7 @@
         "La resolución cambia el precio en modelos con niveles 720p, 1080p, 1440p o 4K.",
         "Las rutas de text-to-video AI, image-to-video AI y video-to-video AI pueden tener precios distintos según el motor y el tipo de entrada.",
         "El audio puede estar incluido, ser opcional o no estar disponible según la familia del modelo.",
-        "El nivel del motor (Veo, LTX, Kling, Seedance, Pika, Wan) define la tarifa base."
+        "El modelo y el modo elegidos fijan el precio inicial; la duración, resolución y referencias pueden cambiarlo."
       ]
     },
     "teams": {
@@ -2149,8 +2152,8 @@
         },
         {
           "emoji": "⚡",
-          "title": "Cuándo elegir Pika o MiniMax",
-          "body": "Pika 2.2 destaca en loops estilizados, MiniMax Hailuo 02 mantiene bajos los presupuestos para ejecuciones masivas."
+          "title": "Explora las familias de modelos actuales",
+          "body": "Compara FLUX 3 Max, MiniMax H3, Kling 4.0 y Seedance 2.5 con las referencias y ajustes de tu proyecto. Usa los ejemplos para elegir el aspecto y la cotización para comparar el costo."
         },
         {
           "emoji": "🖼️",
@@ -3029,7 +3032,7 @@
     },
     "paragraphs": [
       "Creemos que los equipos profesionales merecen claridad antes de iniciar el render. Eso significa transparencia de precios, enrutamiento fiable y contexto compartido entre creativos, productores y stakeholders.",
-      "La independencia importa: nos mantenemos neutrales entre motores, nos integramos con Seedance 2.5, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image y betas rotativas, y listamos marcas sólo para describir compatibilidad.",
+      "Elige entre FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, Veo, LTX, Wan y modelos de imagen en un espacio. Milo ayuda a convertir una idea en un prompt; Studio ayuda a preparar un proyecto. Revisa las entradas, ejemplos y cotizaciones de cada modelo. Las marcas de terceros describen compatibilidad.",
       "El producto está diseñado para equipos que necesitan precisión sin ruido. Interfaz discreta, ajustes predefinidos premium, controles precisos y etiquetas de precio antes de generar que mantienen a finanzas en el bucle.",
       "Mantenemos el flujo de trabajo práctico: comparar modelos, preparar recursos, generar sólo cuando el coste y los ajustes están claros, y revisar los resultados desde un único workspace sin repartir el contexto entre paneles de proveedores."
     ],
@@ -8522,25 +8525,5 @@
     "body": "No encontramos esa URL. Es posible que ya no exista o que nunca haya existido. Usa los enlaces de abajo para seguir explorando MaxVideoAI.",
     "homeLabel": "Volver al inicio",
     "modelsLabel": "Ver modelos de video"
-  },
-  "passwordRecovery": {
-    "title": "Elige una nueva contraseña",
-    "intro": "Continúa para verificar tu enlace de restablecimiento.",
-    "verify": "Continuar",
-    "verifying": "Verificando el enlace…",
-    "password": "Nueva contraseña",
-    "confirm": "Confirma la nueva contraseña",
-    "save": "Guardar nueva contraseña",
-    "saving": "Guardando…",
-    "saved": "Tu contraseña se ha actualizado.",
-    "continueToApp": "Ir a la aplicación",
-    "requestNew": "Solicitar otro enlace",
-    "invalid": "Este enlace no es válido, ha caducado o ya se usó. Solicita otro para restablecer tu contraseña.",
-    "tooShort": "Usa al menos 6 caracteres.",
-    "mismatch": "Las contraseñas no coinciden.",
-    "weak": "Elige una contraseña más segura.",
-    "same": "Elige una contraseña diferente de la actual.",
-    "unavailable": "No pudimos actualizar tu contraseña. Inténtalo de nuevo.",
-    "ready": "Introduce y confirma tu nueva contraseña."
   }
 }

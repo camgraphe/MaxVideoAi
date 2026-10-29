@@ -3,7 +3,7 @@ import type { PayAsYouGoContent } from './types';
 export const frPayAsYouGoContent = {
   metadata: {
     title: 'Générateur de vidéos IA sans abonnement, paiement à l’usage',
-    description: 'Générez des vidéos IA avec des crédits prépayés sans abonnement mensuel. Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles avant de générer.',
+    description: "Créez des vidéos IA sans abonnement. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0 et Seedance 2.5, préparez le prompt avec Milo et voyez le prix avant de générer.",
     imageAlt: 'Vidéo IA MaxVideoAI à la demande.',
     keywords: ['générateur vidéo IA sans abonnement', 'générateur de vidéos IA paiement à l’usage', 'prix vidéo IA avant génération', 'comparer LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'prix Grok Imagine Video', 'prix FLUX 3 Video'],
   },
@@ -17,7 +17,7 @@ export const frPayAsYouGoContent = {
   hero: {
     eyebrow: 'Crédits vidéo IA, sans engagement mensuel',
     title: 'Générateur de vidéos IA sans abonnement',
-    intro: 'Générez des vidéos IA à partir de texte, d’images, d’audio ou de vidéo avec des crédits prépayés. Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles, puis validez le devis avant chaque génération.',
+    intro: "Partez de votre idée, choisissez un modèle et voyez le prix avant de créer la vidéo. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 et d’autres avec des crédits à la demande. Besoin d’aide pour le prompt ? Demandez à Milo.",
     primaryCta: 'Obtenir un devis vidéo',
     secondaryCta: 'Voir les prix par modèle',
     trustItems: ['Aucun abonnement requis', 'Crédits de départ dès 10 USD', 'Prix affiché avant la génération', 'Échecs du fournisseur remboursés'],
@@ -37,20 +37,20 @@ export const frPayAsYouGoContent = {
     header: {
       eyebrow: 'Réponses rapides',
       title: 'L’essentiel avant d’utiliser vos crédits',
-      intro: 'Un générateur de vidéos IA sans abonnement vous permet d’acheter des crédits uniquement lorsque vous en avez besoin, de choisir un modèle par projet, de vérifier le prix avant le rendu et de ne dépenser les crédits qu’une fois le résultat terminé.',
+      intro: 'Achetez des crédits quand vous en avez besoin, comparez le prix pour vos réglages et créez vos vidéos sans abonnement.',
     },
     summaryLead: 'Avec MaxVideoAI, vous pouvez :',
     summaryItems: [
       'Générez des vidéos IA à partir de texte, d’images ou de vidéo.',
-      'Comparez les routes actuelles LTX 2.5, Wan 3, Grok Imagine et FLUX.3 avec Seedance, Kling et Google Veo.',
+      'Comparez les routes actuelles FLUX 3 Max, MiniMax H3, Kling 4.0 et Seedance 2.5 avec Seedance, Kling et Google Veo.',
       'Consultez le prix estimé avant de lancer.',
       'Utilisez des crédits uniquement pour les rendus terminés.',
     ],
     items: [
-      { question: 'Où tester des modèles de vidéo IA sans abonnement ?', answer: 'Utilisez MaxVideoAI pour comparer LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles avec des crédits prépayés plutôt qu’un forfait récurrent.' },
+      { question: 'Où tester des modèles de vidéo IA sans abonnement ?', answer: 'Utilisez MaxVideoAI pour comparer FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3, Google Veo et d’autres modèles avec des crédits prépayés plutôt qu’un forfait récurrent.' },
       { question: 'Quelle plateforme de vidéo IA affiche les prix avant la génération ?', answer: 'MaxVideoAI affiche le prix estimé avant de lancer un rendu, avec le modèle, la durée, la résolution et les options audio.' },
       { question: 'Quel modèle de vidéo IA sans abonnement tester en premier ?', answer: "Partez de votre tâche : texte-vers-vidéo, image-vers-vidéo ou un mode compatible avec une vidéo source. Comparez les modèles adaptés à partir d’exemples et de réglages identiques, puis examinez le devis exact avant de générer." },
-      { question: 'Où comparer les familles actuelles de modèles vidéo IA ?', answer: 'MaxVideoAI réunit LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres moteurs vidéo dans un même espace afin de comparer workflows, limites et prix avant de choisir.' },
+      { question: 'Où comparer les familles actuelles de modèles vidéo IA ?', answer: 'MaxVideoAI réunit FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3, Google Veo et d’autres moteurs vidéo dans un même espace afin de comparer workflows, limites et prix avant de choisir.' },
       { question: 'Qu’est-ce qui fait un bon générateur de vidéo IA sans abonnement ?', answer: 'Une bonne solution avec paiement à l’usage permet de tester les modèles récents, de voir le prix avant de générer, de changer de moteur selon le projet et d’éviter les frais liés aux échecs du fournisseur.' },
     ],
   },
@@ -60,8 +60,10 @@ export const frPayAsYouGoContent = {
       title: "Choisissez un modèle pour votre prochain essai",
       intro: "Partez des éléments dont vous disposez et du résultat recherché. Vérifiez les entrées acceptées, la durée, la résolution et l’audio, puis comparez les devis. Les modèles ci-dessous répondent à différents usages ; leur ordre ne classe ni leur qualité ni leur prix.",
     },
-    footer: 'Happy Horse 1.1 et Seedance 2 Mini sont assez récents pour mériter des essais directs plutôt qu’un jugement fondé uniquement sur d’anciens classements.',
+    footer: "Essayez la même idée avec des modèles adaptés et comparez les résultats. Le nom du modèle ou un prix plus bas ne suffit pas à savoir quel plan vous préférerez.",
     models: {
+      "flux-3-max": {"family": "FLUX 3", "title": "FLUX 3 Max pour guider la scène avec des images clés", "body": "Partez d’un texte ou d’images, placez des images clés pour guider la progression, ou travaillez à partir d’un clip. Vérifiez le mode sélectionné et le devis avant de générer."},
+      "minimax-h3": {"family": "MiniMax H3", "title": "MiniMax H3 pour les références et l’audio natif", "body": "Apportez des images ou des vidéos de référence pour guider la scène. Comparez ses résolutions natives 768P, 2K et 4K ; une vidéo de référence peut modifier le prix."},
       'kling-v4': { family: 'Kling', title: 'Kling 4.0 pour le découpage et les références visuelles', body: 'Préparez une scène de 3 à 30 secondes avec un prompt et une durée par plan, guidez-la par des images ou des sujets vidéo, ou éditez un clip existant. Sortie en 720p ou 1080p ; l’audio natif se dirige dans le prompt.' },
       'gemini-omni-flash': { family: 'Google Gemini', title: 'Gemini Omni Flash 1.1 pour une création multimodale rapide', body: 'Utilisez Gemini Omni Flash 1.1 pour les workflows texte, image, vidéo et références lorsque l’itération rapide, l’audio natif ou le multi-plan comptent.' },
       'kling-3-turbo-pro': { family: 'Kling 3.0 Turbo', title: 'Kling 3.0 Turbo Pro pour une sortie 1080p détaillée', body: 'Choisissez Turbo Pro pour un mouvement 1080p soigné, les détails produit, le guidage par image et les séquences multi-plans.' },
@@ -95,7 +97,7 @@ export const frPayAsYouGoContent = {
     cards: [
       { title: 'Testez avant de passer à l’échelle', body: 'Lancez de petits essais de prompts et d’images avant d’engager le budget d’une campagne ou d’une production.' },
       { title: 'Évitez les dépenses inutilisées', body: 'Si vous générez des vidéos uniquement pour des lancements, des expérimentations ou des clients, les crédits correspondent mieux à votre usage réel.' },
-      { title: 'Changez librement de modèle', body: 'Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling et Google Veo selon le workflow, la vitesse, le mouvement, l’audio, la durée et le devis exact.' },
+      { title: 'Changez librement de modèle', body: 'Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3 et Google Veo selon le workflow, la vitesse, le mouvement, l’audio, la durée et le devis exact.' },
     ],
   },
   audienceFit: {
@@ -121,12 +123,13 @@ export const frPayAsYouGoContent = {
     columns: ['Critère', 'MaxVideoAI à l’usage', 'Abonnement classique'],
     rows: [
       { label: 'Maîtrise du budget', payg: 'Ajoutez des crédits lorsque vous avez besoin de vidéos et arrêtez à la fin du projet.', subscription: 'Payez un forfait récurrent, même les mois sans rendu.' },
-      { label: 'Choix du modèle', payg: 'Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres moteurs selon le projet.', subscription: 'Souvent limité à un fournisseur, une famille de modèles ou un quota d’usage.' },
+      { label: 'Choix du modèle', payg: 'Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3, Google Veo et d’autres moteurs selon le projet.', subscription: 'Souvent limité à un fournisseur, une famille de modèles ou un quota d’usage.' },
       { label: 'Visibilité du prix', payg: 'Examinez le devis avant chaque génération.', subscription: 'Les crédits inclus peuvent masquer le coût réel des options premium.' },
       { label: 'Expérimentation', payg: 'Lancez de petits essais avant de déployer une campagne, un projet client ou une production.', subscription: 'Le choix du forfait intervient souvent avant de savoir quel modèle convient.' },
     ],
   },
   workflow: {
+    assistance: {"milo": {"title": "Une idée, mais pas de prompt ? Voici Milo →", "body": "Décrivez ce que vous voulez avec vos mots. Milo aide à écrire un prompt adapté au modèle et aux références. Connectez-vous pour discuter ; Lite est sans frais d’assistance supplémentaires."}, "studio": {"title": "Un projet plus large ? Passez à Studio →", "body": "Discutez du brief, préparez les scènes et vérifiez chaque devis de génération. Standard et Max utilisent les mêmes crédits Milo dans Studio et les générateurs."}},
     header: {
       title: 'Comment fonctionne le paiement à l’usage',
       intro: 'Le flux affiche le coût avant le lancement et renvoie les comparaisons détaillées vers la page des tarifs.',
@@ -186,6 +189,9 @@ export const frPayAsYouGoContent = {
     },
     openRowLabel: 'Ouvrir la ligne tarifaire',
     items: {
+      "flux-3-max": {"query": "prix flux 3 max", "title": "Tarifs FLUX 3 Max", "body": "Comparez un court essai texte-vers-vidéo, puis vérifiez le devis pour vos images clés, références et réglages finaux."},
+      "minimax-h3": {"query": "prix minimax h3", "title": "Tarifs MiniMax H3", "body": "Cet exemple utilise une résolution native prise en charge. Comparez les modèles avec la même durée, la même résolution et les mêmes références."},
+      "seedance-2-5": {"query": "prix seedance 2.5", "title": "Tarifs Seedance 2.5", "body": "Vérifiez le prix de votre scène selon sa durée, sa résolution et ses références. Les générations Draft et finales ont des devis distincts."},
       'kling-v4': { query: 'prix de Kling 4.0', title: 'Prix de Kling 4.0 selon le mode', body: 'Vérifiez le mode, la durée de sortie et la résolution. En génération par références et en édition, la durée des vidéos fournies influe aussi sur le devis ; comparez les mêmes entrées.' },
       'gemini-omni-flash': { query: 'prix de Gemini Omni Flash 1.1', title: 'Consulter le prix de Gemini Omni Flash 1.1', body: 'Consultez la route Google directe pour la vidéo multimodale rapide, l’audio natif et les workflows multi-plans.' },
       'kling-3-turbo-pro': { query: 'prix de Kling 3 Turbo Pro', title: 'Consulter le prix de Kling 3.0 Turbo Pro', body: 'Consultez la route Turbo 1080p détaillée pour la génération par texte, image et multi-plans.' },
@@ -243,6 +249,9 @@ export const frPayAsYouGoContent = {
       }
     },
     labels: {
+      "flux-3-max": "Courte scène FLUX 3 Max",
+      "minimax-h3": "Essai MiniMax H3 en résolution native",
+      "seedance-2-5": "Courte scène Seedance 2.5",
       'kling-v4': 'Scène texte vers vidéo avec Kling 4.0',
       'gemini-omni-flash': 'Essai multimodal avec Gemini Omni Flash 1.1',
       'kling-3-turbo-pro': 'Essai 1080p avec Kling 3.0 Turbo Pro',
@@ -340,7 +349,7 @@ export const frPayAsYouGoContent = {
     webApplication: {
       description: 'Générateur de vidéos IA sans abonnement pour comparer plusieurs modèles avec un prix affiché à l’avance et un paiement à l’usage.',
       offer: 'Les crédits de départ sont disponibles sans abonnement récurrent.',
-      features: ['Générez des vidéos IA à partir de texte, d’images, d’audio ou de vidéo', 'Comparez LTX 2.5, Wan 3, Grok Imagine, FLUX.3, Seedance, Kling, Google Veo et d’autres modèles', 'Consultez le prix estimé avant la génération', 'Utilisez les crédits uniquement pour les rendus terminés'],
+      features: ['Générez des vidéos IA à partir de texte, d’images, d’audio ou de vidéo', 'Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3, Google Veo et d’autres modèles', 'Consultez le prix estimé avant la génération', 'Utilisez les crédits uniquement pour les rendus terminés'],
     },
   },
 } satisfies PayAsYouGoContent;

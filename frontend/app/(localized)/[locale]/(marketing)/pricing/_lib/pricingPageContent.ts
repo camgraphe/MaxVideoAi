@@ -53,12 +53,12 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
     cards: [
       {
         title: 'Social clip (vertical)',
-        engine: 'Pika 2.2',
+        engine: 'FLUX 3 Max',
         duration: '5s',
         resolution: '1080×1920',
         audio: 'Off',
         note: 'Charged only if it succeeds.',
-        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
+        pricingScenario: { engineId: 'flux-3-max', durationSec: 5, resolution: '1080p', memberTier: 'member' },
       },
       {
         title: 'Cinematic test (landscape)',
@@ -93,12 +93,12 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
     cards: [
       {
         title: 'Clip social (vertical)',
-        engine: 'Pika 2.2',
+        engine: 'FLUX 3 Max',
         duration: '5 s',
         resolution: '1080×1920',
         audio: 'Silencieux',
         note: 'Débité uniquement si le rendu aboutit.',
-        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
+        pricingScenario: { engineId: 'flux-3-max', durationSec: 5, resolution: '1080p', memberTier: 'member' },
       },
       {
         title: 'Test cinématographique (paysage)',
@@ -133,12 +133,12 @@ export const DEFAULT_EXAMPLE_COSTS: Record<AppLocale, ExampleCostsContent> = {
     cards: [
       {
         title: 'Clip social (vertical)',
-        engine: 'Pika 2.2',
+        engine: 'FLUX 3 Max',
         duration: '5 s',
         resolution: '1080×1920',
         audio: 'Silencioso',
         note: 'Se cobra solo si termina correctamente.',
-        pricingScenario: { engineId: 'pika-text-to-video', durationSec: 5, resolution: '1080p', memberTier: 'member' },
+        pricingScenario: { engineId: 'flux-3-max', durationSec: 5, resolution: '1080p', memberTier: 'member' },
       },
       {
         title: 'Test cinematográfico (horizontal)',

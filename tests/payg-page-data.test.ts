@@ -9,6 +9,24 @@ const p0Ids = new Set([
   'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft',
 ]);
 
+test('PAYG includes current launches and never revives disabled models through editorial fallbacks', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = getPayAsYouGoContent(locale);
+    const pricingHub = buildPricingHubData(locale);
+    const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
+    for (const id of ['flux-3-max', 'minimax-h3', 'kling-v4', 'seedance-2-5']) {
+      assert.ok(data.modelTesting.items.some(item => item.id === id), `${locale}:${id}:model`);
+      assert.ok(data.priceLookups.items.some(item => item.id === id), `${locale}:${id}:price`);
+      assert.ok(data.pricing.rows.some(item => item.id === id), `${locale}:${id}:table`);
+      assert.ok(data.exampleCosts.items.some(item => item.id === id), `${locale}:${id}:example`);
+    }
+    const empty = buildPayAsYouGoPageData({ locale, content, pricingHub: { video: { ...pricingHub.video, rows: [] } } });
+    assert.deepEqual(empty.modelTesting.items, []);
+    assert.deepEqual(empty.priceLookups.items, []);
+    assert.deepEqual(empty.exampleCosts.items, []);
+  }
+});
+
 test('Pay-as-you-go data is render-ready and does not mutate content or pricing input', () => {
   const content = structuredClone(getPayAsYouGoContent('en'));
   const pricingHub = structuredClone(buildPricingHubData('en'));
@@ -111,13 +129,13 @@ test('missing quotes preserve the current exact-locale live-quote fallback', () 
   for (const locale of ['en', 'fr', 'es'] as const) {
     const content = getPayAsYouGoContent(locale);
     const pricingHub = structuredClone(buildPricingHubData(locale));
-    const sourceRow = pricingHub.video.rows.find((row) => row.id === 'seedance-2-0');
+    const sourceRow = pricingHub.video.rows.find((row) => row.id === 'seedance-2-5');
     assert.ok(sourceRow);
     delete (sourceRow.quotes as Partial<typeof sourceRow.quotes>)['5s-720p'];
 
     const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
     const cell = data.pricing.rows
-      .find((row) => row.id === 'seedance-2-0')
+      .find((row) => row.id === 'seedance-2-5')
       ?.priceCells.find((item) => item.presetId === '5s-720p');
 
     assert.equal(cell?.value, content.common.liveQuote);

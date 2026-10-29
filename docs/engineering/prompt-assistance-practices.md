@@ -44,3 +44,33 @@ Compare Standard and Max on the same cases with human ratings for usefulness, fa
 - Add human feedback and sanitized failure cases to evaluations. If later work introduces tools, assess tool decisions separately from writing quality.
 
 No live supplier calls, shared migrations or paid evaluation were performed for this review.
+
+## App navigation context — 2026-10-29
+
+The validated composer context now identifies its `surface` explicitly. The server-owned
+`prompt-assistance/app-guide.ts` adds a concise guide for that surface to the provider
+instructions, separately from the selected model's prompting profile. Help-only questions
+return a conversational explanation with `text: null`, preserving the user's draft.
+Video guidance distinguishes source clips from optional references, explains model/variant
+and settings controls, and defers to `capabilities.sourceGeneration` for workflows that
+require a completed owned generation. Image and Audio receive their own controls, not
+video-source directions. Current capabilities still override general navigation guidance.
+
+Studio retains its separate director instructions, project/media tools, quote approval
+and documented library/timeline UI. The generator assistant has no tools and cannot upload,
+change a setting, purchase credits or generate on the user's behalf. The app guide is
+versioned prose and must be reviewed when the corresponding UI changes.
+
+Offline tests exercise the actual provider envelope for video, image and audio, including
+help-only behavior instructions and surface separation. They verify supplied context,
+not a guaranteed LLM answer on every request.
+
+Three bounded live calls also completed with synthetic input: Lite explained the
+Seedance Modify source picker and returned `text: null`; Standard rejected an uploaded
+phone clip for Ray Extend, pointed to eligible owned generations, and corrected stale
+8-second settings against the supported 5-second continuation; Max explained Studio's
+library, attachment and explicit quote confirmation without calling tools. Usage was
+12,449 input tokens and 1,460 output tokens (including reasoning), without media
+creation or customer data. This is three observed cases, not a success-rate claim.
+The Ray answer said to set duration to 5 seconds: on fixed-duration UI that value is
+informational, so exact control wording still merits broader live UX evaluation.

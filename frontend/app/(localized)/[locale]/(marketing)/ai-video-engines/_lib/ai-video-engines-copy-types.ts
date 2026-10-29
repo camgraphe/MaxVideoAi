@@ -38,9 +38,6 @@ export type HubCopy = {
     complianceLabel: string;
     quickStartLabel: string;
     prelaunchSpotlightLabel: string;
-    prelaunchModelLabel: string;
-    prelaunchCompareLabel: string;
-    prelaunchCompareSecondaryLabel: string;
     useCasesFallback: string;
   };
   tagLabels: Record<string, string>;

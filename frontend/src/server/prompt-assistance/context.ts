@@ -75,5 +75,5 @@ export async function buildPromptAssistanceContext(userId:string,raw:PromptAssis
     return {field:reference.fieldId,slot:reference.slot,label,role,token:mention?.token??null,kind:media.kind,width:media.width??null,height:media.height??null,durationSec:media.durationSec??null};
   });
   const settings=selectedPromptSettings(draft.settings,engine,selectedMode??mode as Mode,videoCapabilities,references);
-  return {version:'2026-10-29-v2',model,mode,operation:operation??null,target:draft.target,maxChars,settings,capabilities,guide:getPromptAssistanceProfile(model.id,mode),references,referencePerception:'metadata_only' as const};
+  return {version:'2026-10-29-v3',surface:draft.surface,model,mode,operation:operation??null,target:draft.target,maxChars,settings,capabilities,guide:getPromptAssistanceProfile(model.id,mode),references,referencePerception:'metadata_only' as const};
 }

@@ -3010,10 +3010,13 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
-        "localized_editorial_override"
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -3027,10 +3030,13 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
-        "localized_editorial_override"
+        "localized_editorial_override",
+        "english_strategic_surface"
       ]
     },
     {
@@ -9290,7 +9296,9 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
         "localized_editorial_override"
@@ -9307,7 +9315,9 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
         "localized_editorial_override"
@@ -15448,7 +15458,9 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
         "localized_editorial_override"
@@ -15465,7 +15477,9 @@
       "hasGscRow": false,
       "gscSourceUrls": [],
       "hasLocalizedOverride": true,
-      "strategicSignals": [],
+      "strategicSignals": [
+        "related_graph"
+      ],
       "classification": "keep",
       "rationale": [
         "localized_editorial_override"

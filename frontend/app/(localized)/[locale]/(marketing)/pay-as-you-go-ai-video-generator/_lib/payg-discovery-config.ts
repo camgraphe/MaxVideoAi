@@ -8,6 +8,9 @@ export type PaygDiscoveryConfigs = {
 };
 
 const PRICE_LOOKUP_CONFIGS = [
+  { id: 'flux-3-max', presetId: '5s-720p' },
+  { id: 'minimax-h3', presetId: 'entry-route' },
+  { id: 'seedance-2-5', presetId: '5s-720p' },
   { id: 'kling-v4', presetId: '5s-720p' },
   { id: 'gemini-omni-flash', presetId: '5s-720p' },
   { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
@@ -29,12 +32,15 @@ const PRICE_LOOKUP_CONFIGS = [
 ] as const satisfies PaygDiscoveryConfigs['priceLookups'];
 
 const PREFERRED_EXAMPLES = [
-  { id: 'kling-v4', presetId: '5s-720p' },
   { id: 'gemini-omni-flash', presetId: '5s-720p' },
+  { id: 'kling-v4', presetId: '5s-720p' },
+  { id: 'flux-3-max', presetId: '5s-720p' },
+  { id: 'minimax-h3', presetId: 'entry-route' },
+  { id: 'seedance-2-5', presetId: '5s-720p' },
+  { id: 'ltx-2-5-pro', presetId: '10s-720p' },
   { id: 'kling-3-turbo-pro', presetId: '8s-1080p' },
   { id: 'kling-3-turbo-standard', presetId: '5s-720p' },
   { id: 'minimax-h3-max', presetId: 'entry-route' },
-  { id: 'ltx-2-5-pro', presetId: '10s-720p' },
   { id: 'wan-3-prime', presetId: '5s-720p' },
   { id: 'grok-imagine-video-1-5', presetId: '5s-720p' },
   { id: 'flux-3', presetId: '5s-720p' },
@@ -47,6 +53,8 @@ const PREFERRED_EXAMPLES = [
 ] as const satisfies PaygDiscoveryConfigs['examples'];
 
 const SUPPORTED_MODEL_CONFIGS = [
+  { id: 'flux-3-max', fallbackLabel: 'FLUX 3 Max' },
+  { id: 'minimax-h3', fallbackLabel: 'MiniMax H3' },
   { id: 'kling-v4', fallbackLabel: 'Kling 4.0' },
   { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
   { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.1' },

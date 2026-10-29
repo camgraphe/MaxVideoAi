@@ -10,7 +10,7 @@ export const home: Dictionary['home'] = {
     },
     worksWith: {
       label: 'Works with',
-      brands: ['Seedance 2.5', 'Veo 3.1', 'Pika 2.2', 'MiniMax Hailuo 02'],
+      brands: ['FLUX 3 Max', 'MiniMax H3', 'Kling 4.0', 'Seedance 2.5'],
       caption: 'Independent hub. Trademarks belong to their owners.',
       availabilityNotice: 'Availability may vary by provider; pricing chips refresh automatically.',
     },

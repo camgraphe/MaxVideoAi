@@ -59,7 +59,7 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
       vendor_account_id TEXT, effective_from TIMESTAMPTZ, updated_at TIMESTAMPTZ, updated_by UUID);
       INSERT INTO app_pricing_rules (id, margin_percent, margin_flat_cents, surcharge_audio_percent,
         surcharge_upscale_percent, currency) VALUES ('default', 0.3, 0, 0.2, 0.5, 'USD');`);
-    for (const migration of ['27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
+    for (const migration of ['08_admin_controls.sql', '09_engine_settings.sql', '27_pricing_admin_cockpit.sql', '54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) {
       await database.pool.query(readFileSync(`neon/migrations/${migration}`, 'utf8'));
     }
     const input = { modelId: 'pika-text-to-video', mode: 't2v', durationSec: 5, resolution: '720p' };
@@ -155,6 +155,9 @@ test('confirmed admin tariffs propagate to billing, public quotes, Pricing, mode
     assert.deepEqual((await buildCurrentHomePriceDemo('en'))[0].steps.map(step => step.amountCents),
       [homeInitialCents[0] + 5, ...homeInitialCents.slice(1)]);
     assert.equal((await database.pool.query('SELECT count(*) FROM app_customer_tariff_cell_versions')).rows[0].count, '2');
+    await database.pool.query("INSERT INTO engine_overrides (engine_id, active) VALUES ('pika-text-to-video', false)");
+    const disabledHub = await buildCurrentPricingHubData('en', undefined, { audio: unavailable, product: unavailable });
+    assert.ok(!disabledHub.video.rows.some(row => row.id === entry.id), 'current Pricing respects a disabled engine even with an approved tariff');
   } finally {
     await getDb().end().catch(() => undefined);
     await database.cleanup();

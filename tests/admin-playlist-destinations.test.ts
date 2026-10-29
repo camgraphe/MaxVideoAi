@@ -44,6 +44,7 @@ test('Kling V4 can be curated while the family and discovery gates are explicitl
   const models = listRuntimeModels().map(model => structuredClone(model));
   const beforeFamilyOpening = models.find(model => model.id === 'kling-v4')!;
   beforeFamilyOpening.publication.model.indexable = false;
+  beforeFamilyOpening.publication.pricing.published = false;
   beforeFamilyOpening.publication.compare.published = false;
   beforeFamilyOpening.publication.sitemap.published = false;
   beforeFamilyOpening.publication.examples.current = false;

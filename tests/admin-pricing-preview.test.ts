@@ -286,6 +286,19 @@ test('comparison returns a null percentage when the current total is zero', () =
   assert.equal(preview[0]?.deltaPercent, null);
 });
 
+test('published Kling 4 prices use approved tariffs rather than legacy percentage previews', () => {
+  const scenarios = buildPricingAuditScenarios().filter((scenario) => scenario.engineId === 'kling-v4');
+  assert.ok(scenarios.length > 0, 'published pricing must have audit scenarios');
+  const outcomes = quoteCanonicalAdminScenarios({ databaseRules: [globalRule], scenarios });
+  assert.equal(outcomes.length, scenarios.length);
+  for (const outcome of outcomes) {
+    assert.equal(outcome.status, 'unsupported');
+    if (outcome.status !== 'unsupported') throw new Error('Legacy pricing unexpectedly invented a Kling tariff');
+    assert.equal(outcome.reason, 'product_policy_not_authoritative');
+    assert.match(outcome.warning, /approved customer tariffs/);
+  }
+});
+
 test('canonical projection returns one explicit outcome for every selected scenario', () => {
   const scenarios = buildPricingAuditScenarios();
   const outcomes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios });
@@ -296,7 +309,7 @@ test('canonical projection returns one explicit outcome for every selected scena
   );
   const unsupported = outcomes.filter((outcome) => 'status' in outcome && outcome.status === 'unsupported');
   assert.deepEqual(
-    unsupported.map((outcome) => outcome.scenarioId),
+    unsupported.filter((outcome) => outcome.engineId !== 'kling-v4').map((outcome) => outcome.scenarioId),
     [
       'billing:nano-banana-2-1:t2i:1:1k:member',
       'billing:nano-banana-2-1:t2i:1:1k:plus',

@@ -154,3 +154,33 @@ test('published video and image operations resolve their own capability context 
   }
   assert.ok(covered>80,`Expected broad catalog coverage, got ${covered}`);t.diagnostic(`${covered} model/mode/operation contexts resolved; provider availability deliberately mocked, no paid calls`);
 });
+
+
+test('Milo gets surface-specific app navigation and answers help without rewriting the draft',async()=>{
+  for(const [surface,mode,id] of [['video','v2v','seedance-2-5'],['image','t2i','gpt-image-2-5-flare']] as const){
+    const input=request({},mode,id);input.draft.surface=surface;input.message='How do I use this screen?';
+    const context=await buildPromptAssistanceContext('owner',input,{catalog});
+    assert.equal((context as any).surface,surface);
+    const params=promptResponseParams({model:'gpt-6.1-terra',input_json:input} as PromptRequestRow,context,[]);
+    const instructions=String(params.instructions);
+    assert.match(instructions,/navigation.*text: null/i);
+    assert.match(instructions,/References/);
+    assert.match(instructions,/Use prompt.*does not generate/i);
+    if(surface==='video'){
+      assert.match(instructions,/Video to modify/);
+      assert.match(instructions,/sourceGeneration.*uploaded/i);
+    }else assert.doesNotMatch(instructions,/Video to modify/);
+    assert.match(instructions,/not Studio/);
+    assert.doesNotMatch(instructions,/How do I use this screen/);
+  }
+  const {audioAssistanceContext}=await import('../frontend/src/lib/prompt-assistance/client-context');
+  const {newAudioDraft}=await import('../frontend/src/lib/audio-creation');
+  const {listAudioCapabilities}=await import('../frontend/src/server/agent-api/audio-capabilities');
+  const audio=()=>{const result=listAudioCapabilities();return {...result,modes:result.modes.map(entry=>({...entry,available:true,variants:entry.variants.map(variant=>({...variant,available:true}))}))};};
+  const input={...request(),draft:{...audioAssistanceContext('voice',newAudioDraft('voice')),target:'script' as const,text:'Hello.'}};
+  const context=await buildPromptAssistanceContext('owner',input,{audio});
+  const params=promptResponseParams({model:'gpt-6.1-terra',input_json:input} as PromptRequestRow,context,[]);
+  assert.equal((context as any).surface,'audio');
+  assert.match(String(params.instructions),/Voice.*Language/);
+  assert.doesNotMatch(String(params.instructions),/Video to modify/);
+});

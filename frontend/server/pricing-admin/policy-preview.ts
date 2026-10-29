@@ -230,6 +230,8 @@ export function deriveRequestedPricingSurcharges(input: {
 
   const entries = listFalEngines();
   const supports = (engineId: string, kind: RequestedPricingSurcharge['kind']) => {
+    // Kling 4 has no legacy percentage price; approved customer tariffs own its price.
+    if (engineId === 'kling-v4') return false;
     const entry = entries.find(
       (candidate) => candidate.id === engineId || candidate.engine.id === engineId
     );

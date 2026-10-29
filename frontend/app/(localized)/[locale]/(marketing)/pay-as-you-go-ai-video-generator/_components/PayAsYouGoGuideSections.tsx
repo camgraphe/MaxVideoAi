@@ -1,4 +1,4 @@
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clapperboard, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
 import {
@@ -114,6 +114,20 @@ export function PayAsYouGoWorkflowSection({ data }: PayAsYouGoPageDataProps) {
               <h3 className="mt-4 text-sm font-semibold text-text-primary">{item.title}</h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">{item.body}</p>
             </article>
+          ))}
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {([
+            [data.workflow.assistance.milo, '/ai-video-prompt-generator', Sparkles],
+            [data.workflow.assistance.studio, '/studio', Clapperboard],
+          ] as const).map(([item, href, Icon]) => (
+            <div key={href} className="flex items-start gap-3 border-t border-hairline pt-5">
+              <Icon aria-hidden className="mt-1 h-5 w-5 shrink-0 text-text-secondary" />
+              <div>
+                <Link href={href} prefetch={false} className="font-semibold text-text-primary underline underline-offset-4">{item.title}</Link>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{item.body}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>

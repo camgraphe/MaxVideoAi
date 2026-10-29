@@ -43,14 +43,12 @@ export type {
 
 export function Composer({
   density = 'default', compactPrompt = false, assistance,
-  engine,
-  caps,
+  engine, caps,
   prompt,
   onPromptChange,
   negativePrompt,
   onNegativePromptChange,
-  price,
-  currency,
+  price, currency,
   isLoading,
   error,
   messages,
