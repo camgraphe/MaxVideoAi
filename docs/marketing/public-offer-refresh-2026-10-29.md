@@ -60,9 +60,9 @@ to be free. Private logs and account screenshots remain unpublished.
 - App-guide context/scope checks: 19/19. Earlier resumed discovery: 118/118.
 - Clean-clone connected browser and Git-dependent checks: 25/25. Isolated Studio
   lane: 4/4. Additional Studio/Milo/mobile/montage browser coverage: 4/4.
-  The exhaustive initial-cutover replay is still running separately; its local
-  result log is `/tmp/public-offer-candidate-cutover.log`. No successful result
-  is claimed for that replay until the process completes.
+  The exhaustive initial-cutover replay passed separately: **27,071 checkpoints**,
+  actual-reader activation, atomicity and rollback. It ran against disposable
+  PostgreSQL, not production; result: `/tmp/public-offer-candidate-cutover.log`.
 - Nine live local HTTP checks passed: Pricing, PAYG and comparison hubs in
   EN/FR/ES, with successful responses, correct canonical/hreflang and valid
   JSON-LD. Pricing/PAYG show the current models plus Milo/Studio, without Pika 2.2
