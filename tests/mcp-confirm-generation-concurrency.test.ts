@@ -1,3 +1,4 @@
+import { buildConfirmedJobJourneyContext } from '../frontend/src/server/generations/job-journey-context';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
@@ -402,6 +403,8 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
     );
   `);
   assert.equal(schema.status, 0, commandFailure(schema));
+  const journeyMigration = psql('-v', 'ON_ERROR_STOP=1', '-f', join(root, 'neon/migrations/81_job_journey_context.sql'));
+  assert.equal(journeyMigration.status, 0, commandFailure(journeyMigration));
 
   const connection = { host: socketDirectory, user: 'postgres', database: 'postgres' };
   const pool = new Pool(connection);
@@ -435,6 +438,7 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
       const locked = await lockOwnedQuote({ quoteId, userId, oauthClientId: clientId }, { executor });
       assert.ok(locked, `${surface} quote must survive the JSONB round-trip`);
       return reservePaidGenerationInitialJob({
+        journeyContext: buildConfirmedJobJourneyContext({ authMethod: 'oauth', userId, clientId, emailVerified: true }),
         quote: locked.quote,
         candidate,
         pricingSnapshot: authoritativePricing,

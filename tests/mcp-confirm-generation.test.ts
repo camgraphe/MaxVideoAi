@@ -1522,3 +1522,27 @@ for (const seconds of [5.558333, 1.1111111111111113e-9]) {
     assert.equal(reservations,1);
   });
 }
+
+
+test('C12/C13: legacy quote parser fallback uses the new authenticated actor only for a fresh reservation', async t => {
+  const previous = process.env.VERCEL_GIT_COMMIT_SHA;
+  process.env.VERCEL_GIT_COMMIT_SHA = 'a'.repeat(40);
+  t.after(() => { if (previous === undefined) delete process.env.VERCEL_GIT_COMMIT_SHA; else process.env.VERCEL_GIT_COMMIT_SHA = previous; });
+  const { dependencies, captures } = baseDependencies(videoRequest);
+  const legacyQuote = quoteFor(videoRequest, { authOrigin: undefined });
+  dependencies.lockOwnedQuote = async () => ({ quote: legacyQuote, databaseNow: NOW });
+  const reserve = dependencies.reserveInitialJob;
+  const contexts: unknown[] = [];
+  dependencies.reserveInitialJob = async (input, deps) => {
+    contexts.push(input.journeyContext);
+    return reserve(input, deps);
+  };
+  await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
+  assert.deepEqual(contexts, [{ entrySurface: 'mcp', entrySource: 'confirmed_actor', journeyVersion: 1, entryReleaseSha: 'a'.repeat(40) }]);
+  assert.equal(legacyQuote.authOrigin, undefined);
+  process.env.VERCEL_GIT_COMMIT_SHA = 'b'.repeat(40);
+  dependencies.lockOwnedQuote = async () => ({ quote: { ...legacyQuote, state: 'accepted', jobId: QUOTE_ID }, databaseNow: NOW });
+  await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
+  assert.equal(contexts.length, 1);
+  assert.equal(captures.providerCalls, 1);
+});

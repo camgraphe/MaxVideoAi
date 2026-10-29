@@ -56,6 +56,7 @@ const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 
 export async function executeImageGeneration({
+  journeyContext,
   userId,
   body,
   walletReservation,
@@ -381,6 +382,7 @@ export async function executeImageGeneration({
   const reserveInitialState = async () => {
     try {
       const initialJobState = await createAtomicInitialImageJob({
+        journeyContext,
         auditPricingSnapshot: pricing,
         userId,
         mode,

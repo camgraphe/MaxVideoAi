@@ -133,4 +133,5 @@ export async function createPaidGenerationTestSchema(pool: Pool): Promise<void> 
       updated_at timestamptz NOT NULL DEFAULT clock_timestamp()
     );
   `);
+  await pool.query(readFileSync('neon/migrations/81_job_journey_context.sql', 'utf8'));
 }

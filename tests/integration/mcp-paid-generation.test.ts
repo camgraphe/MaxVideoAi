@@ -67,12 +67,12 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const enabled = await sessionFor(registryIdentity, true);
   assert.deepEqual((await defaults.client.listTools()).tools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
-    'calculate_project_budget',
+    'calculate_project_budget', 'compare_generation_prices',
   ]);
   const paidTools = (await enabled.client.listTools()).tools;
   assert.deepEqual(paidTools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
-    'calculate_project_budget', 'prepare_generation',
+    'calculate_project_budget', 'compare_generation_prices', 'prepare_generation',
     'confirm_generation', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation', 'create_topup_link',
   ]);
   const annotations = Object.fromEntries(paidTools.map((tool) => [tool.name, tool.annotations]));
@@ -87,7 +87,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   });
   for (const name of [
     'get_account_status', 'list_models', 'get_model_details', 'recommend_models',
-    'calculate_project_budget', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation',
+    'calculate_project_budget', 'compare_generation_prices', 'get_generation_status', 'list_recent_generations', 'get_generation_download', 'present_generation',
   ]) {
     assert.equal(record(annotations[name]).readOnlyHint, true);
     assert.equal(record(annotations[name]).destructiveHint, false);
@@ -104,7 +104,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     trial: false,
     referenceUploads: true,
     montagePreparation: false,
-    audioGeneration: false,
+    audioGeneration: true,
     studioMontageCreation: false,
   });
   const mediaIdentity = principal('p11-media');
@@ -148,7 +148,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   }) as CallToolResult;
   assert.ok((structured(recentImages).items as unknown[]).some((item) => record(item).jobId === t2iQuoteId));
   assertRecoverySafe(recentImages, [t2iInput.prompt, mediaIdentity.clientId]);
-  const imageReference = 'https://fixtures.maxvideoai.com/p11/source.png';
+  const imageReference = 'https://cdn.maxvideoai.com/p11/source.png';
   const i2iInput = {
     surface: 'image', engineId: 'gpt-image-2', mode: 'i2i',
     prompt: 'P11 private image edit prompt',
@@ -216,7 +216,7 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.equal(structured(completedVideo).status, 'completed');
   assert.ok(completedVideo.content.some((entry) => entry.type === 'resource_link' && entry.uri === videoUrl));
   assertRecoverySafe(completedVideo, [t2vInput.prompt, `private-provider-${t2vQuoteId}`, mediaIdentity.clientId]);
-  const firstFrame = 'https://fixtures.maxvideoai.com/p11/first-frame.png';
+  const firstFrame = 'https://cdn.maxvideoai.com/p11/first-frame.png';
   const i2vInput = {
     surface: 'video', engineId: 'seedance-2-0-mini', mode: 'i2v',
     prompt: 'P11 private image to video prompt',

@@ -1,10 +1,10 @@
+import { buildConfirmedJobJourneyContext } from '@/server/generations/job-journey-context';
 import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { resolveCanonicalLumaLineage, lumaLineageQuoteBinding } from './generation-luma-lineage';
 import { generationOperationQuoteBinding } from './generation-operation-facts';
 import { seedanceWorkflowCandidate } from './seedance-workflow-capabilities';
 import { resolveAgentSeedanceWorkflow, assertSeedanceWorkflowQuoteBinding, seedanceWorkflowQuoteBinding } from './seedance-workflow';
-import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import type { SeedanceWorkflowMediaFacts } from '@/server/seedance-workflow-facts';
 import mcpPublication from '@/config/mcp-publication.json';
 import { withDbTransaction, type TransactionQueryExecutor } from '@/lib/db';
@@ -50,6 +50,7 @@ import {
   type IncludedTrialGenerationReservation,
   type PaidGenerationProviderOutcome,
   type PaidGenerationReservation,
+  type ReservePaidGenerationInput,
 } from './paid-generation-execution';
 import { buildGenerationPricingSnapshot, type TrialRiskRequestContext } from './prepare-generation';
 import type { AgentPrincipal } from './principal';
@@ -146,13 +147,7 @@ export type ConfirmGenerationDependencies = {
     dependencies: ExecutorDependencies,
   ): Promise<TrialEntitlement | null>;
   reserveInitialJob(
-    input: {
-      quote: McpGenerationQuote;
-      candidate: AgentPublicGenerationEngine;
-      pricingSnapshot: Record<string, unknown>;
-      resolvedReferences?: ResolvedReference[];
-      seedanceWorkflow?: PreparedSeedanceWorkflow;
-    },
+    input: ReservePaidGenerationInput,
     dependencies: ExecutorDependencies,
   ): Promise<PaidGenerationReservation>;
   reserveTrialInitialJob(
@@ -474,7 +469,8 @@ async function confirmationTransaction(
       if (!spending.allowed) throw spendingError(dependencies);
       try {
         reservation = await dependencies.reserveInitialJob(
-          { quote, candidate, pricingSnapshot, resolvedReferences, seedanceWorkflow: inherited.workflow },
+          { quote, candidate, pricingSnapshot, resolvedReferences, seedanceWorkflow: inherited.workflow,
+            journeyContext: buildConfirmedJobJourneyContext(principal) },
           { executor },
         );
       } catch (error) {
