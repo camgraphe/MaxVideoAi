@@ -3,40 +3,49 @@ import type { AppLocale } from '@/i18n/locales';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { createScopedPublicModelQuoter } from '@/server/pricing/quote-public-model-scenario';
 import { formatPricePerUnit } from '@/lib/pricing-unit-display';
+import type { EngineCaps } from '@/types/engines';
+import { getReadOnlyConfiguredEnginesByCategory } from '@/server/agent-api/read-only-engine-catalog';
 
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
 import { buildCurrentOtherPricing, type CurrentOtherPricingDependencies } from './current-other-pricing';
-import { buildPopularChecks, buildPricingHubData, buildVideoHighlights,
+import { buildPopularChecks, buildPricingHubData, buildVideoHighlights, buildVideoPricingRowsFromEntries,
   DEFAULT_VIDEO_PRICE_PRESET_ID, getExactVideoPresetInput, getImagePricePresetInput, markCheapestQuotes,
   orderPricingRows, VIDEO_PRICE_PRESETS, type PricingHubData, type PresetQuote,
   type VideoPricePresetId, type VideoPricingRow } from './pricingHubData';
 
 type ModelQuoter = (input: PublicModelQuoteInput) => Promise<PublicModelQuote>;
+type CatalogReader = () => Promise<readonly EngineCaps[]>;
 export type CurrentVideoPricingData = Pick<PricingHubData, 'video'>;
 
 /** Keep server-rendered Pricing amounts on the same database-aware quote as a new charge. */
 export function buildCurrentPricingHubData(
   locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies,
+  catalog?: CatalogReader,
 ): Promise<PricingHubData> {
-  return buildCurrentPricingData('all', locale, quote, otherDependencies);
+  return buildCurrentPricingData('all', locale, quote, otherDependencies, catalog);
 }
 
 /** PAYG consumes only video quotes; never wait for unused image, audio or tool prices. */
-export function buildCurrentVideoPricingData(locale: AppLocale, quote?: ModelQuoter): Promise<CurrentVideoPricingData> {
-  return buildCurrentPricingData('video', locale, quote);
+export function buildCurrentVideoPricingData(locale: AppLocale, quote?: ModelQuoter, catalog?: CatalogReader): Promise<CurrentVideoPricingData> {
+  return buildCurrentPricingData('video', locale, quote, undefined, catalog);
 }
 
-function buildCurrentPricingData(scope: 'all', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies): Promise<PricingHubData>;
-function buildCurrentPricingData(scope: 'video', locale: AppLocale, quote?: ModelQuoter): Promise<CurrentVideoPricingData>;
+function buildCurrentPricingData(scope: 'all', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies, catalog?: CatalogReader): Promise<PricingHubData>;
+function buildCurrentPricingData(scope: 'video', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: undefined, catalog?: CatalogReader): Promise<CurrentVideoPricingData>;
 async function buildCurrentPricingData(
   scope: 'all' | 'video', locale: AppLocale, quote?: ModelQuoter, otherDependencies?: CurrentOtherPricingDependencies,
+  catalog?: CatalogReader,
 ): Promise<PricingHubData | CurrentVideoPricingData> {
+  // Read once per render. A failed availability read must not revive disabled models.
+  const configured = new Map((await (catalog ? catalog() : getReadOnlyConfiguredEnginesByCategory(scope)))
+    .map((engine) => [engine.id, engine]));
   const quoteModel = quote ?? createScopedPublicModelQuoter();
   const base = buildPricingHubData(locale);
-  const entries = new Map(listFalEngines().map((entry) => [entry.id, entry]));
+  const entries = new Map(listFalEngines().filter((entry) => configured.has(entry.id))
+    .map((entry) => [entry.id, { ...entry, engine: configured.get(entry.id)! }]));
   const copy = getPricingHubCopy(locale);
-  const rows: VideoPricingRow[] = base.video.rows.map((row) => ({ ...row,
+  const rows: VideoPricingRow[] = buildVideoPricingRowsFromEntries([...entries.values()], locale).map((row) => ({ ...row,
     quotes: Object.fromEntries(VIDEO_PRICE_PRESETS.map((preset) => [preset.id,
       { ...row.quotes[preset.id], isCheapest: false }])) as Record<VideoPricePresetId, PresetQuote> }));
   const tasks: Array<() => Promise<void>> = [];
@@ -60,7 +69,7 @@ async function buildCurrentPricingData(
     if (!entry) continue;
     for (const preset of VIDEO_PRICE_PRESETS) {
       const old = row.quotes[preset.id];
-      if (old.status !== 'exact') continue;
+      if (old.status !== 'exact' && old.status !== 'live_quote') continue;
       const input = getExactVideoPresetInput(entry, preset, locale);
       // A toggle may be supported even when audio has no separate price tier.
       const note = input?.audio === false
@@ -69,7 +78,7 @@ async function buildCurrentPricingData(
         : old.note;
       const apply = (result: PublicModelQuote) => {
         row.quotes[preset.id] = result.status === 'exact'
-          ? { ...old, note, amountCents: result.amountCents,
+          ? { ...old, status: 'exact', note, amountCents: result.amountCents,
               display: formatCurrencyForLocale(locale, result.currency, result.amountCents / 100),
               rateDisplay: copy.quote.perSecond(formatPricePerUnit(locale, result.currency,
                 result.amountCents / input!.durationSec / 100)),
@@ -81,7 +90,7 @@ async function buildCurrentPricingData(
       else apply({ status: 'unavailable' });
     }
   }
-  const imageRows = scope === 'all' ? base.otherSurfaces.imageRows.map((row) => ({ ...row })) : [];
+  const imageRows = scope === 'all' ? base.otherSurfaces.imageRows.filter((row) => configured.has(row.id)).map((row) => ({ ...row })) : [];
   for (const row of imageRows) {
     const entry = entries.get(row.id);
     if (!entry) continue;

@@ -3,9 +3,10 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PoolClient, QueryResult } from 'pg';
 
+import { getBaseEnginesByCategory } from '../frontend/src/lib/engines';
 import { getDb } from '../frontend/src/lib/db';
 import type { PublicModelQuoteInput } from '../frontend/lib/pricing-public-model-contract';
-import { buildCurrentPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
+import { buildCurrentPricingHubData as buildHub } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
 import { createScopedPublicModelQuoter, quotePublicModelScenario, resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
 import { confirmCustomerTariffChange, previewCustomerTariffChange } from '../frontend/server/pricing-admin/customer-tariff-service';
 import { startDisposablePostgres, type DisposablePostgres } from './helpers/disposable-postgres';
@@ -17,6 +18,10 @@ type Observation = {
   before?: (category: keyof Counts, ordinal: number) => void | Promise<void>;
   after?: (category: keyof Counts, ordinal: number) => void | Promise<void>;
 };
+// This fixture isolates tariff SQL; availability is covered by the catalog contracts.
+const buildCurrentPricingHubData = (...args: Parameters<typeof buildHub>) =>
+  buildHub(args[0], args[1], args[2], async () => getBaseEnginesByCategory('all'));
+
 const freshCounts = (): Counts => ({ policy: 0, begin: 0, state: 0, selected: 0, commit: 0, rollback: 0, other: 0 });
 const unavailableOther = {
   audio: async () => { throw new Error('Audio is outside the model SQL fixture'); },
@@ -112,14 +117,14 @@ test('default Pricing shares one successful policy read while preserving every i
       ]);
       // Five Max inputs add five independent transactions, even when audio shares a tariff selector.
       // Two new Nano21 reads also keep independent transactions; the six unsupported hub inputs still perform no policy or tariff I/O.
-      assert.equal(attempts, 139);
-      assert.deepEqual(observe.counts, { policy: 133, begin: 133, state: 133, selected: 133,
-        commit: 133, rollback: 0, other: 0 });
+      assert.equal(attempts, 143);
+      assert.deepEqual(observe.counts, { policy: 137, begin: 137, state: 137, selected: 137,
+        commit: 137, rollback: 0, other: 0 });
       observe.reset();
       const current = await buildCurrentPricingHubData(locale, undefined, unavailableOther);
       assert.deepEqual(current, baseline, 'complete localized hub output must preserve stable canonical prices and fallbacks');
-      assert.deepEqual(observe.counts, { policy: 1, begin: 133, state: 133, selected: 133,
-        commit: 133, rollback: 0, other: 0 });
+      assert.deepEqual(observe.counts, { policy: 1, begin: 137, state: 137, selected: 137,
+        commit: 137, rollback: 0, other: 0 });
     }
   });
 });
@@ -136,7 +141,7 @@ test('custom public quote injection performs no default policy I/O and retains a
       audio: async () => { audio++; return { totalCents: 444, currency: 'USD' }; },
       product: async () => { products++; return { totalCents: 555, currency: 'USD' }; },
     });
-    assert.deepEqual({ models, audio, products }, { models: 139, audio: 9, products: 12 });
+    assert.deepEqual({ models, audio, products }, { models: 143, audio: 9, products: 12 });
     assert.deepEqual(observe.counts, freshCounts(), 'an injected reader must remain entirely in control');
     assert.equal(pikaAmount(data), 333);
   });
@@ -153,14 +158,14 @@ test('active and missing tariff cells preserve complete EN/FR/ES hub output and 
       for (const locale of ['en', 'fr', 'es'] as const) {
         observe.reset();
         const baseline = await buildCurrentPricingHubData(locale, quotePublicModelScenario, unavailableOther);
-        assert.deepEqual(observe.counts, { policy: 133, begin: 133, state: 133, selected: 133,
-          commit: 133, rollback: 0, other: 0 });
+        assert.deepEqual(observe.counts, { policy: 137, begin: 137, state: 137, selected: 137,
+          commit: 137, rollback: 0, other: 0 });
         observe.reset();
         const current = await buildCurrentPricingHubData(locale, undefined, unavailableOther);
         assert.deepEqual(current, baseline);
         assert.equal(pikaAmount(current), hasCell ? 37 : undefined, 'missing active cells must not fall back to legacy prices');
-        assert.deepEqual(observe.counts, { policy: 1, begin: 133, state: 133, selected: 133,
-          commit: 133, rollback: 0, other: 0 });
+        assert.deepEqual(observe.counts, { policy: 1, begin: 137, state: 137, selected: 137,
+          commit: 137, rollback: 0, other: 0 });
       }
     }
   });
@@ -173,18 +178,18 @@ test('an unavailable policy remains unavailable across the whole hub and a fresh
       await database.pool.query('ALTER TABLE app_pricing_rules RENAME TO fixture_saved_pricing_rules');
       observe.reset();
       const baseline = await buildCurrentPricingHubData(locale, quotePublicModelScenario, unavailableOther);
-      assert.equal(observe.counts.policy, 133);
+      assert.equal(observe.counts.policy, 137);
       assert.equal(observe.counts.begin, 0);
       observe.reset();
       const current = await buildCurrentPricingHubData(locale, undefined, unavailableOther);
       assert.deepEqual(current, baseline, 'a failed policy read cannot turn versioned amounts into current prices');
-      assert.ok(observe.counts.policy > 1 && observe.counts.policy <= 133, 'unavailable loads must remain retryable in this render');
+      assert.ok(observe.counts.policy > 1 && observe.counts.policy <= 137, 'unavailable loads must remain retryable in this render');
       assert.equal(observe.counts.begin, 0);
       await database.pool.query('ALTER TABLE fixture_saved_pricing_rules RENAME TO app_pricing_rules');
       observe.reset();
       assert.deepEqual(await buildCurrentPricingHubData(locale, undefined, unavailableOther), healthy);
       assert.equal(observe.counts.policy, 1);
-      assert.equal(observe.counts.commit, 133);
+      assert.equal(observe.counts.commit, 137);
     }
   });
 });
@@ -198,13 +203,13 @@ test('a rejected default policy read can recover during the same hub without poi
     };
     const recovering = await buildCurrentPricingHubData('en', undefined, unavailableOther);
     assert.equal(observe.counts.policy, 2);
-    assert.ok(observe.counts.commit > 0 && observe.counts.commit < 133, 'affected quotes stay unavailable; later admitted inputs recover');
+    assert.ok(observe.counts.commit > 0 && observe.counts.commit < 137, 'affected quotes stay unavailable; later admitted inputs recover');
     assert.notDeepEqual(recovering, healthy);
     observe.before = undefined;
     observe.reset();
     assert.deepEqual(await buildCurrentPricingHubData('en', undefined, unavailableOther), healthy);
     assert.equal(observe.counts.policy, 1);
-    assert.equal(observe.counts.commit, 133);
+    assert.equal(observe.counts.commit, 137);
   });
 });
 
@@ -228,8 +233,8 @@ test('overlapping default hubs keep their captured policies isolated and the nex
       assert.equal(pikaAmount(second), 36);
       release();
       assert.deepEqual(await first, baseline, 'the first hub must retain the complete successful result captured before the update');
-      assert.deepEqual(observe.counts, { policy: 2, begin: 266, state: 266, selected: 266,
-        commit: 266, rollback: 0, other: 0 });
+      assert.deepEqual(observe.counts, { policy: 2, begin: 274, state: 274, selected: 274,
+        commit: 274, rollback: 0, other: 0 });
       observe.after = undefined;
       observe.reset();
       assert.deepEqual(await buildCurrentPricingHubData('en', undefined, unavailableOther), second);
@@ -277,19 +282,19 @@ test('tariff read failures retain independent rollback and truthful complete hub
       observe.before = category => { if (category === 'state') throw new Error('Tariff state unavailable'); };
       observe.reset();
       const baseline = await buildCurrentPricingHubData(locale, quotePublicModelScenario, unavailableOther);
-      assert.deepEqual(observe.counts, { policy: 133, begin: 133, state: 133, selected: 0,
-        commit: 0, rollback: 133, other: 0 });
+      assert.deepEqual(observe.counts, { policy: 137, begin: 137, state: 137, selected: 0,
+        commit: 0, rollback: 137, other: 0 });
       observe.reset();
       const current = await buildCurrentPricingHubData(locale, undefined, unavailableOther);
       assert.deepEqual(current, baseline);
       assert.notDeepEqual(current, healthy);
-      assert.deepEqual(observe.counts, { policy: 1, begin: 133, state: 133, selected: 0,
-        commit: 0, rollback: 133, other: 0 });
+      assert.deepEqual(observe.counts, { policy: 1, begin: 137, state: 137, selected: 0,
+        commit: 0, rollback: 137, other: 0 });
       observe.before = undefined;
       observe.reset();
       assert.deepEqual(await buildCurrentPricingHubData(locale, undefined, unavailableOther), healthy);
       assert.equal(observe.counts.policy, 1);
-      assert.equal(observe.counts.commit, 133);
+      assert.equal(observe.counts.commit, 137);
     }
   });
 });

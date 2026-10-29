@@ -1,7 +1,43 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildCurrentPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
+import { buildCurrentPricingHubData, buildCurrentVideoPricingData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import type { PublicModelQuoteInput } from '../frontend/lib/pricing-public-model-contract';
+
+test('new models receive current quotes without requiring an old catalogue price', async () => {
+  const calls: PublicModelQuoteInput[] = [];
+  const data = await buildCurrentVideoPricingData('en', async (input) => {
+    calls.push(input);
+    return { status: 'exact', amountCents: input.modelId === 'kling-v4' ? 12 : 999,
+      currency: 'USD', revision: 'current', scenarioLabel: 'test' };
+  });
+  for (const id of ['kling-v4', 'flux-3-max', 'minimax-h3', 'seedance-2-5']) {
+    assert.ok(calls.some(input => input.modelId === id), `Missing current quote: ${id}`);
+    assert.equal(data.video.rows.find(row => row.id === id)?.quotes['entry-route'].status, 'exact');
+  }
+  assert.ok(data.video.highlights.some(item => item.featured?.engineName === 'Kling 4.0' && item.featured.price === '$0.12'));
+  assert.ok(!calls.some(input => input.modelId === 'minimax-h3' && input.resolution === '1080p'), 'Do not invent an unsupported H3 resolution');
+});
+
+test('disabled models never enter current pricing rows, requests or cheapest highlights', async () => {
+  const calls: string[] = [];
+  const data = await buildCurrentVideoPricingData('en', async (input) => {
+    calls.push(input.modelId);
+    return { status: 'exact', amountCents: input.modelId === 'pika-text-to-video' ? 1 : 123,
+      currency: 'USD', revision: 'current', scenarioLabel: 'test' };
+  }, async () => [getFalEngineById('kling-v4')!.engine]);
+  assert.deepEqual(data.video.rows.map(row => row.id), ['kling-v4']);
+  assert.deepEqual([...new Set(calls)], ['kling-v4']);
+  assert.doesNotMatch(JSON.stringify(data.video.highlights), /pika/i);
+});
+
+test('missing current quotes and failed catalog reads cannot invent a cheapest model', async () => {
+  const data = await buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }));
+  assert.ok(data.video.highlights.every(item => !item.featured));
+  await assert.rejects(buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }),
+    async () => { throw new Error('catalog unavailable'); }), /catalog unavailable/);
+});
 
 test('Pricing image rows and popular image check use current customer quotes', async () => {
   const data = await buildCurrentPricingHubData('en', async (input) => ({

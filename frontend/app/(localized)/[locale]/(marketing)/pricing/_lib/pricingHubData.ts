@@ -496,14 +496,17 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
         )
       : null;
   if (exact) {
+    const note = preset.id === 'entry-route'
+      ? `${formatCompactSeconds(locale, duration.durationSec!)} ${formatResolutionLabel(resolution.resolution)}${
+          !preset.audio && engine.audio && !supportsAudioOff(engine) ? ` · ${copy.quote.audioIncluded}` : ''}`
+      : preset.id === '4k-route'
+        ? copy.quote.fourKNote(duration.durationSec!)
+        : !preset.audio && engine.audio && !supportsAudioOff(engine) ? copy.quote.audioIncluded : undefined;
     if (exactCents == null || duration.durationSec == null) {
       return {
         status: 'live_quote',
         display: copy.liveQuote,
-        note:
-          preset.id === '4k-route' && duration.durationSec != null
-            ? copy.quote.fourKNote(duration.durationSec)
-            : undefined,
+        note,
         sortValue: Number.POSITIVE_INFINITY,
       };
     }
@@ -512,16 +515,7 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
       status: 'exact',
       amountCents: exactCents ?? undefined,
       display: formatPrice(locale, exactCents, currency),
-      note:
-        preset.id === 'entry-route'
-          ? `${formatCompactSeconds(locale, duration.durationSec)} ${formatResolutionLabel(resolution.resolution)}${
-              !preset.audio && engine.audio && !supportsAudioOff(engine) ? ` · ${copy.quote.audioIncluded}` : ''
-            }`
-          : preset.id === '4k-route'
-          ? copy.quote.fourKNote(duration.durationSec)
-          : !preset.audio && engine.audio && !supportsAudioOff(engine)
-            ? copy.quote.audioIncluded
-            : undefined,
+      note,
       rateDisplay: formatRateDisplay(locale, rateCents, currency),
       sortValue: exactCents ?? Number.POSITIVE_INFINITY,
     };
@@ -541,7 +535,9 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 }
 
 export function getExactVideoPresetInput(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale) {
-  if (getPresetQuote(entry, preset, locale).status !== 'exact') return null;
+  // Compatibility is independent of whether the legacy catalogue has a price.
+  const status = getPresetQuote(entry, preset, locale).status;
+  if (status !== 'exact' && status !== 'live_quote') return null;
   const resolution = preset.id === 'entry-route'
     ? chooseEntryResolution(entry.engine)
     : resolveResolutionSupport(entry.engine, preset.resolution, locale).resolution;
@@ -820,12 +816,12 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
     },
     {
       label: copy.video.highlights.cheapest4k,
-      value: cheapest4k ? `${cheapest4k.row.engineName} · ${cheapest4k.quote.display}` : copy.noExactRoute,
+      value: cheapest4k ? `${cheapest4k.row.engineName} · ${cheapest4k.quote.display} · ${cheapest4k.quote.note}` : copy.noExactRoute,
       href: cheapest4k ? `#${cheapest4k.row.anchorId}` : undefined,
     },
     {
       label: copy.video.highlights.dedicated4k,
-      value: dedicated4k ? `${dedicated4k.row.engineName} · ${dedicated4k.quote.display}` : copy.noExactRoute,
+      value: dedicated4k ? `${dedicated4k.row.engineName} · ${dedicated4k.quote.display} · ${dedicated4k.quote.note}` : copy.noExactRoute,
       href: dedicated4k ? `#${dedicated4k.row.anchorId}` : undefined,
     },
     {
