@@ -82,7 +82,7 @@ test('top navigation stays aligned and compact while operations, Expand and mode
       await page.getByRole('button',{name:'Modify Video',exact:true}).click();
       await expect(page.getByRole('button',{name:'Modify Video',exact:true})).toHaveAttribute('aria-pressed','true');
       await page.getByRole('button',{name:'Create video',exact:true}).click();
-      await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
+      await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
       await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
       const message=page.locator('[data-assistance-message]');
       await expect(page.locator('[data-assistance-transcript]')).toBeHidden();

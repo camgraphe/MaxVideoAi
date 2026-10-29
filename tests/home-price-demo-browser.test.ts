@@ -17,7 +17,7 @@ test('home demo shows only the exact quote and keeps its button inside the marke
     import {HomePriceAppSurface} from './components/marketing/home/HomePriceAppSurface.client';
     const root=createRoot(document.getElementById('root'));
     globalThis.renderDemo=props=>root.render(<HomePriceAppSurface {...props}/>);`;
-  const bundle = await build({ stdin: { contents: source, loader: 'tsx', resolveDir: frontend }, write: false,
+  const bundle = await build({ stdin: { contents: source, loader: 'tsx', resolveDir: frontend }, write: false, outfile: 'demo.js',
     bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
     tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': '"production"' } });
   // Marketing deliberately does not load the authenticated app stylesheet.
@@ -31,7 +31,7 @@ test('home demo shows only the exact quote and keeps its button inside the marke
   const server = createServer((req, res) => {
     const name = req.url;
     res.setHeader('content-type', name === '/demo.js' ? 'text/javascript' : name === '/style.css' ? 'text/css' : 'text/html');
-    res.end(name === '/demo.js' ? bundle.outputFiles[0].text : name === '/style.css' ? css.css :
+    res.end(name === '/demo.js' ? bundle.outputFiles.find(file => file.path.endsWith('.js'))!.text : name === '/style.css' ? css.css + (bundle.outputFiles.find(file => file.path.endsWith('.css'))?.text ?? '') :
       '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body class="marketing-site"><div class="price-app-frame" style="max-width:760px;margin:16px"><div id="root"></div></div><script src="/demo.js"></script></body></html>');
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));

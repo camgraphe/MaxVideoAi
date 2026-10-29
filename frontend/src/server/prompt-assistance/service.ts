@@ -43,11 +43,16 @@ async function finishRecorded(row:PromptRequestRow,policy:StudioAssistancePolicy
     }
     let reply=null,error=null;
     try{
-      if(response.status!=='completed')throw new Error('OUTPUT_INCOMPLETE');
+      if(response.status==='incomplete')throw new Error('OUTPUT_INCOMPLETE');
+      if(response.status!=='completed')throw new Error('OUTPUT_INVALID');
+      if(response.output?.some(item=>item.type==='message'&&item.content.some(part=>part.type==='refusal')))throw new Error('OUTPUT_REFUSED');
       reply=promptAssistanceReplySchema.parse(JSON.parse(response.output_text));
       const maxChars=(row.context_json as {maxChars:number}).maxChars;
       if(reply.text&&reply.text.length>maxChars)throw new Error('OUTPUT_TOO_LONG');
-    }catch{error='OUTPUT_INVALID';}
+    }catch(cause){
+      reply=null;
+      error=cause instanceof Error&&['OUTPUT_INCOMPLETE','OUTPUT_REFUSED','OUTPUT_TOO_LONG'].includes(cause.message)?cause.message:'OUTPUT_INVALID';
+    }
     return (await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
   }).then(saved=>result(saved,policy));
 }

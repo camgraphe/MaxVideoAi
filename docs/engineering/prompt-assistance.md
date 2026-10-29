@@ -49,7 +49,7 @@ Only role/label, supported token and width/height/duration metadata reach the LL
 
 `/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
 
-The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 2,200 output tokens (including reasoning). The current draft is never silently truncated. Output that is incomplete, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
+The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 2,200 output tokens (including reasoning). The current draft is never silently truncated. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
 
 Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
 
@@ -66,3 +66,5 @@ No periodic automatic billable retry or new recovery worker is introduced. Faile
 ## Verification
 
 `prompt-assistance-context`, `live-client`, `live-postgres`, `route` and `live-browser` tests cover model/target rejection, metadata-only owned references, audio variants, exact payloads, clarification without a proposal, shared balances, concurrent sends, recovery, late replies and account changes. Provider/HTTP behavior is injected or intercepted; financial assertions use disposable PostgreSQL 17 with the actual ledger and migrations. Existing composer layout/keyboard/IME/mobile tests and Studio accounting/recovery suites remain part of validation. No claim of live provider quality follows from those fixtures.
+
+The [LLM practices review](prompt-assistance-practices.md) records the official OpenAI/SDK sources, implemented safeguards and quality/cost evaluation still required before activation.
