@@ -25,11 +25,13 @@ export const studioTimelineAssetRefSchema = z.discriminatedUnion('type',[
 export const studioTimelineOutputSchema = z.object({
   projectId: identifier,sequenceId: identifier,sequenceName: z.string(),updatedAt: z.string(),
   revision: z.number().int().nonnegative(),fps: z.number().int().min(1).max(60),
+  aspectRatio: z.string().optional(),resolution: z.string().optional(),
   lockedTracks: z.array(z.string()).optional(),mutedAudioTracks: z.array(z.string()).optional(),
   clips: z.array(z.object({
     id: identifier,title: z.string(),kind: z.string(),track: z.string(),
     startFrame: frame,durationFrames: frame.positive(),sourceInFrame: frame,
     volume: z.number().min(0).max(100).optional(),muted: z.boolean().optional(),ref: studioTimelineAssetRefSchema.optional(),
+    audio: z.object({source: z.enum(['none','embedded','external','unknown']),canMute: z.boolean(),canAdjustVolume: z.boolean(),canRestoreOriginalVolume: z.boolean().optional()}).strict().optional(),
     subtitle: z.object({documentId: identifier,revision: z.number().int().positive()}).strict().optional(),
   }).strict()).max(5_000),
 }).strict();

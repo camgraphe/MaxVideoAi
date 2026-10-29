@@ -4,8 +4,7 @@ import {studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,STUDIO_
 import {studioProjectNameSchema} from './conversation-project-title';
 import {studioPricingReadSchema,studioPricingCompareSchema,STUDIO_PRICING_COMPARE_TOOL,STUDIO_PRICING_DIRECTOR_TOOL,type StudioPricingEstimate} from './conversation-pricing-contract';
 import type {StudioPriceComparison} from './conversation-pricing-contract';
-import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport} from './conversation-export-contract';
-import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
+import {studioExportPrepareActionSchema,studioExportReadActionSchema,STUDIO_EXPORT_DIRECTOR_TOOLS,type StudioPreparedExport,type StudioConversationRender} from './conversation-export-contract';
 import type { PreparedGeneration } from '@/server/agent-api/prepare-generation';
 import type { AgentGenerationStatus } from '@/server/generations/generation-status';
 import type { AgentApiFailure } from '@/server/agent-api/errors';
@@ -57,6 +56,7 @@ export type StudioConversationProject = {
   name: string;
   revision: number;
   exports?: StudioPreparedExport[];
+  renders?: StudioConversationRender[];
   analyses?:{analysisId:string;ref:ToolAssetRef;goal:string;state:StudioAnalysisStatus['state'];startSec:number;endSec:number}[];
   memory: StudioConversationMemory;
   authoredNotes?:{requestId:string;message:string;referenceIds:string[];createdAt:string;truncated:boolean}[];
@@ -81,6 +81,7 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
 ]).superRefine(validateStudioVideoPrompt).superRefine((value, context) => {
   if(value.action==='image.prepare')validateStudioImageReferences(value, context);
+  if(value.action==='export.read'&&!!value.quoteId===!!value.exportId)context.addIssue({code:'custom',message:'Choose one quoteId or exportId.'});
 });
 export type StudioActionRequest = z.infer<typeof studioActionRequestSchema>;
 export type StudioImageCapability = {modelId: string; label: string; lifecycle: AgentModelLifecycle | null; modes: string[]; formats: string[]; customImageSize?: boolean; bestFor?: readonly string[]; editorialGuidance?: AgentModelEditorialSummary; audioWorkflow?: StudioAudioWorkflowFacts};
@@ -98,7 +99,7 @@ export type StudioActionResult =
   | {ok:true;action:'analysis.prepare';data:StudioPreparedAnalysis}
   | {ok:true;action:'analysis.read';data:StudioAnalysisStatus}
   | {ok: true; action: 'export.prepare'; data: StudioPreparedExport}
-  | {ok: true; action: 'export.read'; data: TimelineExportJobResponse | null}
+  | {ok: true; action: 'export.read'; data: StudioConversationRender | null}
   | {ok: true; action: 'project.read'; data: StudioConversationProject}
   | {ok:true;action:'project.recall';data:NonNullable<StudioConversationProject['authoredNotes']>}
   | {ok: true; action: 'project.remember'; data: StudioConversationMemory}

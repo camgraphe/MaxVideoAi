@@ -97,3 +97,27 @@ rendering row is not proof of live compute, and repeating confirmation must not
 launch another worker or manufacture a successful artifact. The current renderer
 releases billing on handled render failure; abrupt ECS termination requires
 operator reconciliation. Do not erase financial records or retry unknown work.
+
+### An accepted worker never claims its export
+
+An AWS launch acknowledgement is not a worker-start acknowledgement. For an
+incident involving a queued export, correlate its exact `exportId` tag with the
+CloudTrail `RunTask` record, original ECS task and its log stream. Record the
+immutable task definition and published source revision. A missing old task alone
+does not establish that no replacement is running; inspect current tasks for the
+same export too.
+
+Only after establishing that no worker is active may an operator resume a still
+queued, unstarted export with no completed artifact. Keep its ID, stored manifest,
+amount, billing status and receipts intact. Launch the existing qualified worker
+with that exact `TIMELINE_EXPORT_TARGET_ID`, the reviewed network configuration
+and a stable recovery `clientToken` for this incident. Reuse that token if the
+AWS acknowledgement is lost. The worker's atomic exact-ID claim permits only one
+queued-to-rendering transition. Do not repeat export confirmation, create another
+job, submit a generation or run the unbounded queue worker for this recovery.
+
+Verify the same ID reaches `completed`, has a stored original and library asset,
+and retains the original financial amount. If startup or rendering fails, retain
+the exact task's failure evidence and use the canonical failure/billing owner;
+elapsed time alone does not authorize a refund or another worker. This is an
+explicit incident recovery procedure, not automatic retry from a status read.

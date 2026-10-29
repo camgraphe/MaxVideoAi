@@ -14,6 +14,7 @@ import {isReplayableStudioResponse, type StudioDirectorResponse} from './convers
 import {readStudioAnalysisFacts} from './media-analysis/repository';
 import type {ImageModelUsage} from './image-model-usage';
 import {projectStudioConversationQuotes,STUDIO_QUOTE_SETTING_KEYS,type StudioConversationQuoteRow} from './conversation-quote-facts';
+import {readStudioConversationRenderFacts} from './conversation-export-facts';
 
 export async function readStudioConversationProject(actor: StudioGenerationActor,options:{exportsEnabled?:boolean;taskContext?:{message:string;requestId:string}}={}): Promise<StudioConversationProject> {
   requireGenerationActor(actor);
@@ -43,7 +44,8 @@ export async function readStudioConversationProject(actor: StudioGenerationActor
   const authoredNotes=options.taskContext?await readStudioTaskMemory(actor,options.taskContext.message,options.taskContext.requestId):[];
   const analyses=await readStudioAnalysisFacts(actor);
   const exports = options.exportsEnabled ? await query<{safe_result: unknown}>(`SELECT safe_result FROM studio_project_commands WHERE user_id=$1 AND project_id=$2 AND command_kind='timeline_export_prepare' AND command_version=1 AND request_payload->'scope'->>'authOrigin'='studio-session' AND request_payload->'scope'->>'clientId' IS NULL ORDER BY created_at DESC LIMIT 8`,[actor.userId,actor.projectId]) : null;
-  return {...(authoredNotes.length?{authoredNotes}:{}),...(analyses.length?{analyses}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
+  const renders=options.exportsEnabled?await readStudioConversationRenderFacts(actor):null;
+  return {...(authoredNotes.length?{authoredNotes}:{}),...(analyses.length?{analyses}:{}),...(renders?{renders}:{}),...(exports ? {exports: exports.flatMap(value => {const parsed=studioPreparedExportSchema.safeParse(value.safe_result);return parsed.success ? [parsed.data] : [];})} : {}),name: row.name, revision: Number(row.revision), memory: studioMemorySchema.parse({revision: Number(row.memory_revision ?? 0), brief: row.brief ?? '', decisions: row.decisions ?? []}), generations};
 }
 
 export async function saveStudioConversationMemory(actor: StudioGenerationActor, value: StudioConversationMemory & {projectTitle?:string|null}, executor?: TransactionQueryExecutor) {

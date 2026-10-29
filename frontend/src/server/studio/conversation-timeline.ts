@@ -5,6 +5,7 @@ import type {WorkspaceProjectSettings,WorkspaceTimelineItem} from '@/app/(core)/
 import {secondsToTimelineFrame} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames';
 import {buildConversationPreviewMedia} from './conversation-preview-media';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
+import {workspaceTimelineAudioMixSupport} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-audio-provenance';
 
 /** Safe edit facts shared with the OAuth adapter; no original URL, graph or access token projection. */
 export function projectStudioConversationTimeline({project,sequences}: Awaited<ReturnType<typeof readStudioWorkspace>>,sequenceId?: string) {
@@ -15,7 +16,7 @@ export function projectStudioConversationTimeline({project,sequences}: Awaited<R
   const settings = sequence.settings as WorkspaceProjectSettings;
   const data: StudioConversationTimeline = {
     projectId: project.id,sequenceId: sequence.id,sequenceName: sequence.name,
-    updatedAt: project.updatedAt,revision: project.revision!,fps: settings.fps,
+    updatedAt: project.updatedAt,revision: project.revision!,fps: settings.fps,aspectRatio:settings.aspectRatio,resolution:settings.resolution,
     lockedTracks: [...state.lockedTimelineTracks ?? []],
     mutedAudioTracks: [...state.mutedAudioTracks ?? []],
     clips: state.timelineItems.map(item => {
@@ -26,6 +27,7 @@ export function projectStudioConversationTimeline({project,sequences}: Awaited<R
         durationFrames: secondsToTimelineFrame(item.durationSec,settings.fps),
         sourceInFrame: secondsToTimelineFrame(item.sourceStartSec ?? 0,settings.fps),
         ...(item.audioMix ? {volume: item.audioMix.volume,muted: item.audioMix.muted} : {}),
+        audio: workspaceTimelineAudioMixSupport(item),
         ...(ref.success ? {ref: ref.data} : {}),
       };
     }),

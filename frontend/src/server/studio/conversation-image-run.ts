@@ -12,7 +12,7 @@ import {studioTokenCountInput} from './assistance-token-count';
 import {openStudioAssistanceTurn,type StudioLunaFallback} from './assistance-ledger';
 import {readStudioTaskUsage} from './tasks/repository';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from './assistance-policy';
-import {prepareStudioTimelineExport,readStudioTimelineExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
+import {prepareStudioTimelineExport,readStudioConversationExport,asStudioExportAgentError,type StudioExportDependencies} from './conversation-export-command';
 import {withDbTransaction,isTransactionQueryExecutor,query} from '@/lib/db';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {generationComparisonCatalogFingerprint} from '@/server/agent-api/generation-price-comparison';
@@ -161,8 +161,8 @@ export async function runStudioImageActions(options: {
         onPrepared: async (quote,executor) => {await completeStudioAction(actor,turn,currentCallId,{ok: true,action: 'export.prepare',data: quote},executor);},
       });} catch(error) {throw asStudioExportAgentError(error);}
     },
-    readExport: async quoteId => {
-      try {return await readStudioTimelineExport({userId: actor.userId,authOrigin: 'studio-session',clientId: null},{projectId: actor.projectId,quoteId},{...options.exportDependencies,enabled: options.enabled && options.editingEnabled === true && options.exportsEnabled === true,requestOrigin: options.requestOrigin ?? 'https://maxvideoai.com'});} catch(error) {throw asStudioExportAgentError(error);}
+    readExport: async ({quoteId,exportId}) => {
+      try {return await readStudioConversationExport({userId: actor.userId,authOrigin: 'studio-session',clientId: null},{projectId: actor.projectId,quoteId,exportId},{...options.exportDependencies,enabled: options.enabled && options.editingEnabled === true && options.exportsEnabled === true,requestOrigin: options.requestOrigin ?? 'https://maxvideoai.com'});} catch(error) {throw asStudioExportAgentError(error);}
     },
     discardQuote: quoteId => withDbTransaction(async executor => {
       const data = await discardStudioPreparedQuote(actor,turn,quoteId,executor);
