@@ -574,14 +574,11 @@ export function WorkspaceComposerSurface({
               <LumaRay32KeyframeEditor
                 uiLocale={uiLocale}
                 engine={selectedEngine}
-                caps={capability}
                 form={form}
                 setForm={setForm}
                 assetFields={inputSchemaSummary.assetFields}
                 inputAssets={inputAssets}
                 onAssetAdd={handleAssetAdd}
-                onPrepareVideoExcerpt={handlePrepareVideoExcerpt}
-                onVideoExcerptEditorChange={handleVideoExcerptEditorChange}
                 onAssetRemove={handleAssetRemove}
                 onOpenLibrary={handleOpenAssetLibrary}
                 onNotice={showNotice}

@@ -8,11 +8,8 @@ import type {
   PointerEvent as ReactPointerEvent,
   SetStateAction,
 } from 'react';
-import { AssetDropzone } from '@/components/AssetDropzone';
 import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
-import type { ComposerProps } from '@/components/composer/composer-types';
-import { VideoExcerptControl } from '@/components/media/VideoExcerptControl.client';
-import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '@/types/engines';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
 import {
   DEFAULT_VISIBLE_KEYFRAME_COUNT,
   findBestNewFrameIndex,
@@ -34,9 +31,8 @@ const PROVIDER_KEYFRAME_SLOT_LIMIT = 64;
 const COMPACT_TIMELINE_SLOT_WIDTH = 122;
 const MIN_TIMELINE_WIDTH = 680;
 
-export type LumaRay32KeyframeEditorProps = Pick<ComposerProps, 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange'> & {
+export type LumaRay32KeyframeEditorProps = {
   engine: EngineCaps;
-  caps?: EngineModeUiCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
   assetFields: AssetFieldConfig[];
@@ -55,14 +51,11 @@ function getFieldEntry(assetFields: AssetFieldConfig[], fieldId: string): AssetF
 
 export function LumaRay32KeyframeEditor({
   engine,
-  caps,
   form,
   setForm,
   assetFields,
   inputAssets,
   onAssetAdd,
-  onPrepareVideoExcerpt,
-  onVideoExcerptEditorChange,
   onAssetRemove,
   onOpenLibrary,
   onNotice,
@@ -95,10 +88,6 @@ export function LumaRay32KeyframeEditor({
     maxFrameIndex + 1,
     Math.max(1, keyframeEntry?.field.maxCount ?? PROVIDER_KEYFRAME_SLOT_LIMIT)
   );
-  const sourceVideoAssets = useMemo(
-    () => (sourceVideoEntry ? inputAssets[sourceVideoEntry.field.id] ?? [] : []),
-    [inputAssets, sourceVideoEntry]
-  );
   const guideFrameAssets = useMemo(
     () => (guideFrameEntry ? inputAssets[guideFrameEntry.field.id] ?? [] : []),
     [guideFrameEntry, inputAssets]
@@ -108,7 +97,6 @@ export function LumaRay32KeyframeEditor({
     [inputAssets, keyframeEntry]
   );
   const hasGuideFrame = guideFrameAssets.some(Boolean);
-  const hasKeyframes = keyframeAssets.some(Boolean);
   const rawSlotIndexes =
     form.extraInputValues[slotIndexesFieldId] ?? form.extraInputValues[indexesFieldId];
   const keyframeSlots = useMemo(
@@ -122,7 +110,6 @@ export function LumaRay32KeyframeEditor({
   const timelineWidth = timelineNeedsScroll
     ? Math.max(MIN_TIMELINE_WIDTH, keyframeSlots.length * COMPACT_TIMELINE_SLOT_WIDTH)
     : undefined;
-  const guideDisabledReason = hasKeyframes ? 'Remove keyframes to use a single guide frame.' : disabledReason;
   const keyframesTimelineDisabledReason = hasGuideFrame ? 'Remove the guide frame to use multiple keyframes.' : null;
   const keyframesUploadDisabledReason = keyframesTimelineDisabledReason ?? disabledReason;
 
@@ -367,8 +354,6 @@ export function LumaRay32KeyframeEditor({
 
   if ((!isFluxMax && !sourceVideoEntry) || !keyframeEntry) return null;
 
-  const sourceVideoField = sourceVideoEntry?.field;
-  const guideFrameField = guideFrameEntry?.field ?? null;
   const filledKeyframeCount = keyframeSlots.filter((slot) => Boolean(keyframeAssets[slot.assetSlot])).length;
 
   return (
@@ -388,51 +373,6 @@ export function LumaRay32KeyframeEditor({
           <span>f0-f{maxFrameIndex}</span>
         </div>
       </div>
-
-      {sourceVideoEntry && sourceVideoField ? <div className="grid gap-3 md:grid-cols-[minmax(0,1.2fr)_minmax(220px,0.8fr)]">
-        <div className="min-w-0 space-y-2">
-          <AssetDropzone
-            engine={engine}
-            caps={caps}
-            field={sourceVideoField}
-            required={sourceVideoEntry.required}
-            role={sourceVideoEntry.role}
-            assets={sourceVideoAssets}
-            density="compact"
-            allowVideoExcerptImport={Boolean(onPrepareVideoExcerpt)}
-            disabled={Boolean(disabledReason)}
-            disabledReason={disabledReason}
-            onSelect={onAssetAdd}
-            onRemove={onAssetRemove}
-            onError={onNotice}
-            onOpenLibrary={onOpenLibrary}
-          />
-          {sourceVideoAssets.map((asset, index) => asset && (asset.status === 'ready' || asset.excerptEditing) ? (
-            <VideoExcerptControl
-              key={`${engine.id}:v2v:${sourceVideoField.id}:${index}`}
-              engine={engine} field={sourceVideoField} index={index} asset={asset} mode="v2v" locale={uiLocale}
-              onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={onVideoExcerptEditorChange}
-            />
-          ) : null)}
-        </div>
-        {guideFrameField ? (
-          <AssetDropzone
-            engine={engine}
-            caps={caps}
-            field={guideFrameField}
-            required={false}
-            role="frame"
-            assets={guideFrameAssets}
-            density="compact"
-            disabled={Boolean(guideDisabledReason)}
-            disabledReason={guideDisabledReason}
-            onSelect={onAssetAdd}
-            onRemove={onAssetRemove}
-            onError={onNotice}
-            onOpenLibrary={onOpenLibrary}
-          />
-        ) : null}
-      </div> : null}
 
       <LumaRay32KeyframeTimeline
         uiLocale={isFluxMax ? uiLocale : undefined}

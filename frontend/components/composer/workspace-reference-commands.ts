@@ -1,9 +1,14 @@
 import type { AssetFieldConfig } from '@/components/AssetDropzone';
-import type { EngineCaps } from '@/types/engines';
+import type { EngineCaps, EngineInputField } from '@/types/engines';
+
+export function isWorkspaceModifyGuide(field: EngineInputField): boolean {
+  return field.id === 'start_image_url' && field.modes?.length === 1 && field.modes[0] === 'v2v';
+}
 
 /** Only actual video keyframe identities receive Start/End labels. */
 export function getWorkspaceFrameCommand({ field, role }: AssetFieldConfig, engine: EngineCaps): 'start' | 'end' | null {
   if (field.type !== 'image' || (field.maxCount ?? 1) > 1 || role === 'reference') return null;
+  if (isWorkspaceModifyGuide(field)) return null;
   if (!engine.modes.some((mode) => mode === 't2v' || mode === 'i2v')) return null;
   if (['end_image_url', 'end_image', 'last_frame_url'].includes(field.id)) return 'end';
   if (['image_url', 'start_image_url', 'start_image', 'first_frame_url', 'input_image'].includes(field.id)) return 'start';

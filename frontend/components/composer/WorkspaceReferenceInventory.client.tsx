@@ -6,6 +6,7 @@ import type { AssetFieldConfig, AssetSlotAttachment } from '@/components/AssetDr
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 import { ReferenceRolesHelp } from './ReferenceRolesHelp.client';
 import { referenceRoleHelpCopy } from './reference-role-help-copy';
+import { isWorkspaceModifyGuide } from './workspace-reference-commands';
 
 const collectionIds = new Set(['image_urls', 'video_urls', 'audio_urls', 'reference_image_urls', 'reference_video_urls', 'reference_audio_urls']);
 const isCollection = (entry: AssetFieldConfig) => collectionIds.has(entry.field.id) || entry.role === 'reference';
@@ -45,6 +46,7 @@ export function WorkspaceReferenceInventory({ fields, assets, locale, renderFiel
         const count = (assets[entry.field.id] ?? []).filter(Boolean).length;
         const capacity = entry.field.maxCount;
         const explanation = isSourceVideo || entry.field.id === sourceFieldId ? help.source
+          : isWorkspaceModifyGuide(entry.field) ? help.guide
           : isReference(entry) || kind !== 'image' ? help[kind]
           : sourceOrder(entry) === 1 ? help.end : help.start;
         return <div className="app-reference-role-choice" key={entry.field.id}>

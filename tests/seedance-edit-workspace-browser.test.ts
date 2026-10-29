@@ -220,9 +220,10 @@ test('real workspace source selection enables Edit and preserves unavailable sav
             await picker.getByRole('button',{name:'Remove source',exact:true}).click();
             assert.equal(await page.locator('.app-generation-action').isDisabled(),true,'removal revokes source and quote immediately');
           } else if (engine.id === 'luma-ray-3-2' && mode === 'v2v') {
-            const editor = page.locator('section').filter({ hasText: 'Ray 3.2 Modify' });
-            await editor.locator('input[type="file"][accept*="video"]').waitFor({ state: 'attached' });
-            assert.equal(await page.locator('[data-reference-command="video_url"]').count(), 0, 'Luma keyframe editor owns its source without a duplicate picker');
+            const editor = page.getByTestId('video-keyframe-editor');
+            await editor.waitFor();
+            assert.equal(await editor.locator('input[type="file"][accept*="video"]').count(), 0, 'keyframes do not duplicate the shared source picker');
+            assert.equal(commands[0], source.field.id, 'Luma uses the common source command');
           } else assert.equal(commands[0], source.field.id, `${engine.id}/${mode}: source comes first`);
           for (const id of commands) {
             if (id === 'collections') {

@@ -15,6 +15,8 @@ import {useWorkspaceAssetState} from './app/(core)/(workspace)/app/_hooks/useWor
 import {useWorkspaceVideoExcerpt} from './app/(core)/(workspace)/app/_hooks/useWorkspaceVideoExcerpt';
 import {summarizeWorkspaceInputSchema} from './app/(core)/(workspace)/app/_lib/workspace-input-schema';
 import {LumaRay32KeyframeEditor} from './app/(core)/(workspace)/app/_components/LumaRay32KeyframeEditor';
+import {WorkspaceReferenceSection} from './components/composer/WorkspaceReferenceSection.client';
+import {getWorkspaceReferenceFields} from './app/(core)/(workspace)/app/_lib/workspace-reference-fields';
 function Main(){
   const engine=getBaseEngineIncludingHidden('luma-ray-3-2');
   const state=useWorkspaceAssetState('owner');
@@ -23,12 +25,19 @@ function Main(){
   const actions=useWorkspaceVideoExcerpt({accountScope:'owner',engine,mode:'v2v',inputAssets:state.inputAssets,commitInputAssetMutation:state.commitInputAssetMutation});
   const summary=summarizeWorkspaceInputSchema({selectedEngine:engine,activeMode:'v2v',uiLocale:'en',allowsUnifiedVeoFirstLast:false,isUnifiedHappyHorse:false,isUnifiedSeedance:false,isUnifiedGeminiOmni:false});
   window.probe={...state,form,sourceState:getVideoWorkflowSourceState(engine.inputSchema,state.inputAssets,'v2v',getVideoExcerptLimits(engine,'v2v'))};
-  return <I18nProvider locale="en" dictionary={{}} fallback={{}}><LumaRay32KeyframeEditor
+  const fields=getWorkspaceReferenceFields(summary.assetFields,{inputAssets:state.inputAssets,isUnifiedSeedance:false,isUnifiedKlingO3:false,klingO3VideoToVideoSupported:true,hasAnyVideoInput:false,
+    guestUploadLockedReason:null,workflowCopy:{clearReferencesToUseStartEnd:'clear references',clearStartEndToUseReferences:'clear frames'},showOmniStudioPanel:false,showLumaRay32KeyframeEditor:true});
+  return <I18nProvider locale="en" dictionary={{}} fallback={{}}><WorkspaceReferenceSection
+    compact videoSourceWorkflow="v2v" referenceWarning="" engine={engine} assetFields={fields} assets={state.inputAssets}
+    onAssetAdd={(field,file,index,meta)=>window.added.push({field:field.id,name:file.name,index,meta})}
+    onAssetRemove={(field,index)=>state.setInputAssets(current=>({...current,[field.id]:(current[field.id]??[]).map((asset,i)=>i===index?null:asset)}))}
+    onOpenLibrary={()=>{}} onNotice={message=>window.notices.push(message)}
+    onPrepareVideoExcerpt={window.excerptsEnabled?actions.handlePrepareVideoExcerpt:undefined}
+    onVideoExcerptEditorChange={window.excerptsEnabled?actions.handleVideoExcerptEditorChange:undefined}
+  /><LumaRay32KeyframeEditor
     engine={engine} form={form} setForm={setForm} assetFields={summary.assetFields} inputAssets={state.inputAssets}
     onAssetAdd={(field,file,index,meta)=>window.added.push({field:field.id,name:file.name,index,meta})}
     onAssetRemove={()=>{}} onOpenLibrary={()=>{}} onNotice={message=>window.notices.push(message)}
-    onPrepareVideoExcerpt={window.excerptsEnabled?actions.handlePrepareVideoExcerpt:undefined}
-    onVideoExcerptEditorChange={window.excerptsEnabled?actions.handleVideoExcerptEditorChange:undefined}
   /></I18nProvider>;
 }
 const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;
@@ -70,7 +79,12 @@ async function mount(selected = true) {
   await w.fx.act(async () => w.fx.render());
   await w.fx.act(async () => w.probe.setInputAssets({ video_url: selected ? [source] : [], edit_keyframe_urls: [keyframe] }));
   const button = (name: string) => Array.from(w.document.querySelectorAll('button')).find((node: any) => node.textContent.trim() === name) as HTMLButtonElement | undefined;
-  return { w, requests, button, async dispose() { await w.fx.act(async () => w.fx.unmount()); dom.window.close(); } };
+  const openReferences = async () => { await w.fx.act(async () => w.document.querySelector('button[aria-label="Add references"]').click()); };
+  const openSource = async () => {
+    await openReferences();
+    await w.fx.act(async () => w.document.querySelector('[data-reference-role="video_url"]').click());
+  };
+  return { w, requests, button, openReferences, openSource, async dispose() { await w.fx.act(async () => w.fx.unmount()); dom.window.close(); } };
 }
 
 test('Luma keyframe range follows a selected 4s or 18s source instead of stale presets', async () => {
@@ -87,18 +101,19 @@ test('Luma keyframe range follows a selected 4s or 18s source instead of stale p
   } finally { await f.dispose(); }
 });
 
-test('specialized Luma source opens and applies the real excerpt flow without changing keyframes or options', async () => {
+test('shared Luma source opens and applies the real excerpt flow without changing keyframes or options', async () => {
   const f = await mount();
   try {
     assert.match(f.w.document.body.textContent, /Ray 3.2 Modify/);
     assert.equal(f.w.probe.sourceState, 'error', 'the uncut 60-second source is not generation-ready');
     const beforeKeyframes = JSON.stringify(f.w.probe.inputAssets.edit_keyframe_urls);
     const beforeOptions = JSON.stringify(f.w.probe.form.extraInputValues);
+    await f.openSource();
     const choose = f.button('Choose section');
-    assert.ok(choose, 'the actual specialized source must expose the shared excerpt control');
+    assert.ok(choose, 'the shared source picker must expose the excerpt control');
     await f.w.fx.act(async () => choose.click());
     assert.equal(f.w.probe.sourceState, 'uploading', 'opening masks source eligibility through the existing route hook');
-    const dialog = f.w.document.querySelector('[role=dialog]');
+    const dialog = f.w.document.querySelector('.video-excerpt-dialog');
     assert.ok(dialog);
     assert.equal(dialog.querySelector('video')?.getAttribute('src'), 'https://example.invalid/full.mp4');
     assert.equal(dialog.querySelector('video')?.getAttribute('preload'), 'none');
@@ -130,7 +145,7 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
       url: 'https://example.invalid/prepared.mp4', previewUrl: 'https://example.invalid/prepared-preview.mp4',
       durationSec: 17.985, width: 720, height: 1280, size: 80, mime: 'video/mp4',
     } }) }));
-    assert.equal(f.w.document.querySelector('[role=dialog]'), null);
+    assert.equal(f.w.document.querySelector('.video-excerpt-dialog'), null);
     assert.equal(f.w.probe.sourceState, 'ready');
     assert.equal(f.w.probe.inputAssets.video_url[0].url, 'https://example.invalid/prepared.mp4');
     assert.equal(f.w.probe.inputAssets.video_url[0].durationSec, 17.985);
@@ -141,9 +156,10 @@ test('specialized Luma source opens and applies the real excerpt flow without ch
   } finally { await f.dispose(); }
 });
 
-test('specialized Luma source accepts a long local clip only when excerpt preparation is available', async () => {
+test('shared Luma source accepts a long local clip only when excerpt preparation is available', async () => {
   const f = await mount(false);
   try {
+    await f.openSource();
     const upload = async () => {
       const input = f.w.document.querySelector('input[type=file][accept*="video"]');
       assert.ok(input);
@@ -164,10 +180,36 @@ test('specialized Luma source accepts a long local clip only when excerpt prepar
   } finally { await f.dispose(); }
 });
 
-test('workspace forwards its owned excerpt handlers to the specialized Luma source', () => {
+test('workspace keeps excerpt handlers on the shared composer, not the keyframe editor', () => {
   const surface = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx', 'utf8');
   const specialized = surface.match(/<LumaRay32KeyframeEditor\b[\s\S]*?\/>/)?.[0];
   assert.ok(specialized);
-  assert.match(specialized, /onPrepareVideoExcerpt=\{handlePrepareVideoExcerpt\}/);
-  assert.match(specialized, /onVideoExcerptEditorChange=\{handleVideoExcerptEditorChange\}/);
+  assert.doesNotMatch(specialized, /onPrepareVideoExcerpt|onVideoExcerptEditorChange/);
+  const composer = surface.slice(surface.indexOf('<Composer'), surface.indexOf('extraFields='));
+  assert.match(composer, /onPrepareVideoExcerpt=\{handlePrepareVideoExcerpt\}/);
+  assert.match(composer, /onVideoExcerptEditorChange=\{handleVideoExcerptEditorChange\}/);
+});
+
+test('guide frame uses References and preserves the two-way keyframe exclusion', async () => {
+  const f = await mount();
+  try {
+    const editor = f.w.document.querySelector('[data-testid="video-keyframe-editor"]');
+    assert.equal(editor.querySelector('input[type=file][accept*="video"]'), null);
+    await f.openReferences();
+    const guideRole = f.w.document.querySelector('[data-reference-role="start_image_url"]');
+    assert.match(guideRole.textContent, /Guide frame/);
+    assert.doesNotMatch(guideRole.textContent, /Start image/);
+    await f.w.fx.act(async () => guideRole.click());
+    const guideUpload = () => f.w.document.querySelector('[data-reference-field="start_image_url"] input[type=file]');
+    assert.equal(guideUpload().disabled, true);
+    assert.match(f.w.document.body.textContent, /Remove keyframes to use a single guide frame/);
+    await f.w.fx.act(async () => f.w.probe.setInputAssets({ video_url: [source], edit_keyframe_urls: [] }));
+    assert.equal(guideUpload().disabled, false);
+    await f.w.fx.act(async () => f.w.probe.setInputAssets({ video_url: [source], start_image_url: [{ ...keyframe, fieldId: 'start_image_url' }] }));
+    assert.equal(f.button('Add keyframe')!.disabled, true);
+    await f.w.fx.act(async () => editor.querySelector('button[aria-label="Choose from Media or upload keyframe 1"]').click());
+    assert.match(f.w.notices.at(-1), /Remove the guide frame to use multiple keyframes/);
+    await f.w.fx.act(async () => f.w.document.querySelector('button[aria-label="Remove · Guide frame"]').click());
+    assert.equal(f.button('Add keyframe')!.disabled, false);
+  } finally { await f.dispose(); }
 });

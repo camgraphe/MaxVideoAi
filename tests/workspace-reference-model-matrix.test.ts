@@ -204,7 +204,16 @@ test('Happy Horse and Omni expose shared references while Luma keeps its editor'
   const luma = engine('luma-ray-3-2');
   const modifyFields = summary(luma, 'v2v').assetFields;
   assert.deepEqual(modifyFields.map(({ field }) => field.id), ['video_url', 'start_image_url', 'edit_keyframe_urls']);
-  assert.equal(getWorkspaceReferenceFields(modifyFields, { ...referenceOptions(), showLumaRay32KeyframeEditor: true }).length, 0);
+  const modifyOptions = { ...referenceOptions(), showLumaRay32KeyframeEditor: true };
+  const commonFields = getWorkspaceReferenceFields(modifyFields, modifyOptions);
+  assert.deepEqual(commonFields.map(({ field }) => field.id), ['video_url', 'start_image_url']);
+  assert.ok(commonFields.every(entry => !entry.disabled));
+  const withKeyframes = getWorkspaceReferenceFields(modifyFields, { ...modifyOptions, inputAssets: { edit_keyframe_urls: [image] } });
+  assert.equal(withKeyframes[0].disabled, false, 'source remains editable with keyframes');
+  assert.match(withKeyframes[1].disabledReason ?? '', /Remove keyframes/);
+  assert.equal(withKeyframes[1].disabled, true);
+  const guestFields = getWorkspaceReferenceFields(modifyFields, { ...modifyOptions, guestUploadLockedReason: 'Sign in' });
+  assert.ok(guestFields.every(entry => entry.disabled && entry.disabledPresentation === 'auth-lock'));
   const imageFields = summary(luma, 'i2v').assetFields;
   assert.deepEqual(imageFields.map(({ field }) => field.id), ['image_url', 'end_image_url']);
   assertExactFieldOwners(luma, imageFields);

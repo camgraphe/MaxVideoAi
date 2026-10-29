@@ -83,7 +83,7 @@ test('composer and recents share workflow, auth and specialized-role visibility 
   const start = { ...entry, field: { ...entry.field, id: 'image_url' } };
   assert.equal(getWorkspaceReferenceFields([start], { ...available, isUnifiedSeedance: true, inputAssets: { image_urls: [buildReferenceAssetFromLibraryAsset(entry.field, asset())] } })[0].disabledReason, 'clear refs');
   const frame = { ...entry, field: { ...entry.field, id: 'start_image_url' } };
-  assert.equal(getWorkspaceReferenceFields([frame], { ...available, showLumaRay32KeyframeEditor: true }).length, 0);
+  assert.equal(getWorkspaceReferenceFields([frame], { ...available, showLumaRay32KeyframeEditor: true })[0].field, frame.field);
 });
 
 test('feed reuses the account-scoped SWR page; insertion and desktop drop stay under existing owners', () => {
