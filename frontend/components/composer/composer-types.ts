@@ -97,6 +97,8 @@ export interface ComposerProps {
   } | null;
   extraFields?: ReactNode;
   beforeAssets?: React.ReactNode;
+  /** Source selectors whose authority comes from an owned generation rather than an upload. */
+  sourceControl?: ReactNode;
   afterAssets?: ReactNode;
   disableGenerate?: boolean;
   workflowNotice?: string | null;

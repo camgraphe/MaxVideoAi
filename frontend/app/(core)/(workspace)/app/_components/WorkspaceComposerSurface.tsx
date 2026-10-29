@@ -545,15 +545,13 @@ export function WorkspaceComposerSurface({
             : null
         }
         disableGenerate={Boolean(klingV4Error) || Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-        beforeAssets={<>
-            <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
-            {ownedGenerationRequired ?
-              <OwnedGenerationSourcePicker key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
+        beforeAssets={<VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />}
+        sourceControl={ownedGenerationRequired ?
+              <OwnedGenerationSourcePicker compact authAction={referenceAuthAction} key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
                 operation={form.operation === 'flux-draft-enhance' ? 'flux-draft-enhance' : 'luma-extend'} locale={uiLocale}
                 sourceJobId={String(form.extraInputValues.source_job_id ?? '')}
                 onSelect={source => setForm(current => current ? {...current,extraInputValues:{...current.extraInputValues,
                   source_job_id:source?.sourceJobId ?? '',source_output_id:source?.sourceOutputId ?? ''}} : current)} /> : null}
-        </>}
         subjectReferences={showKlingElementsBuilder ? {
           hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
           content: <KlingElementsBuilder

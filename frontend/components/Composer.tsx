@@ -85,6 +85,7 @@ export function Composer({
   multiPrompt,
   extraFields,
   beforeAssets,
+  sourceControl,
   afterAssets,
   disableGenerate,
   workflowNotice,
@@ -100,6 +101,7 @@ export function Composer({
   const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
+  const hasVideoSourceControl = Boolean(videoSourceWorkflow || (sourceControl && extensionWorkflow));
   const leadingExtensionNotice = assistanceEnabled ? null : extensionNotice;
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
@@ -153,7 +155,7 @@ export function Composer({
   const promptLabel = promptField?.label ?? 'Prompt';
   // Length limits already appear in the prompt counter and validation feedback.
   const redundantLengthHint = /^Provider (?:prompt length|maximum):/i.test(promptField?.description ?? '');
-  const promptDescription = videoSourceWorkflow || redundantLengthHint ? undefined : promptField?.description;
+  const promptDescription = videoSourceWorkflow || sourceControl || redundantLengthHint ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
@@ -208,7 +210,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = videoSourceWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
+  const promptPlaceholderValue = hasVideoSourceControl ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -247,7 +249,7 @@ export function Composer({
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
-    : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
+    : generateLabel ?? (hasVideoSourceControl ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
   // Keep requested values saved, but do not present them as a configured result
   // until the required source is usable. Create's optional references stay independent.
   const sourceSettingsPending = Boolean(videoSourceWorkflow &&
@@ -327,14 +329,15 @@ export function Composer({
               </div>
             ) : null;
 
-  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
-          <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
+          {sourceControl}
+          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
-            onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
+            onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} /> : null}
           {showSoraImageWarning ? <ComposerSoraImageNotice workspace /> : null}
           {afterAssets}
         </> : null;

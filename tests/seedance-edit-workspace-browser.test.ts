@@ -201,6 +201,10 @@ test('real workspace source selection enables Edit and preserves unavailable sav
           const source = summary.assetFields.find(({ field, required }) => field.type === 'video' && required)!;
           const owned=(engine.id==='luma-ray-3-2'&&mode==='extend')||(engine.id==='flux-3-draft'&&mode==='v2v');
           if(owned){
+            const sourceTrigger=page.locator('[data-owned-source-trigger]');
+            await sourceTrigger.waitFor();
+            assert.equal(await page.getByTestId('owned-generation-source-picker').count(),0,'source panel stays closed until requested');
+            await sourceTrigger.click();
             await page.getByTestId('owned-generation-source-picker').waitFor();
             assert.equal(await page.getByTestId('owned-generation-source-picker').getAttribute('data-operation'),engine.id==='flux-3-draft'?'flux-draft-enhance':'luma-extend');
             assert.equal(await page.locator('input[type=file]').count(),0,'only an owned generation supplies source authority');
@@ -219,6 +223,7 @@ test('real workspace source selection enables Edit and preserves unavailable sav
             assert.equal(await page.locator('.app-generation-action').isDisabled(),false,'valid zero-cent quote remains executable');
             await picker.getByRole('button',{name:'Remove source',exact:true}).click();
             assert.equal(await page.locator('.app-generation-action').isDisabled(),true,'removal revokes source and quote immediately');
+            await page.getByRole('button',{name:'Close',exact:true}).click();
           } else if (engine.id === 'luma-ray-3-2' && mode === 'v2v') {
             const editor = page.getByTestId('video-keyframe-editor');
             await editor.waitFor();
