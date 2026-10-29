@@ -6,8 +6,8 @@ import {lockUserWalletInExecutor} from '@/lib/wallet';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {lockAccount,settleStudioAssistanceCall,type AssistanceCall,type StudioUsageEvidence} from './assistance-ledger';
 import {studioAssistancePolicy} from './assistance-policy';
-import {readStudioUsage,STUDIO_PROVIDER_RATE_VERSION} from './assistance-provider-facts';
-import {studioAssistanceTariff,STUDIO_ASSISTANCE_CREDIT_TARIFF} from '@/lib/studio/assistance-contract';
+import {readStudioUsage,studioProviderRateVersion} from './assistance-provider-facts';
+import {studioAssistanceTariff,isStudioCreditCall} from '@/lib/studio/assistance-contract';
 
 import {releaseStudioCredits} from './assistance-credit-ledger';
 import {isComposerAssistanceScope,readComposerAssistanceRecovery,lockComposerAssistanceRecovery,closeComposerAssistanceRecovery} from '@/server/prompt-assistance/recovery';
@@ -33,7 +33,7 @@ async function snapshot(callId:string,db:QueryExecutor):Promise<Snapshot>{
   const projectExists=composer?composer.projectExists:(await db.query('SELECT 1 FROM studio_projects WHERE user_id=$1 AND id=$2 AND deleted_at IS NULL',params.slice(0,2))).length>0;
   const saved=composer?{evidence:composer.evidence}:(await db.query<{evidence:StudioUsageEvidence}>(`SELECT jsonb_build_object('id',response_id,'model',response_json->'model','service_tier',response_json->'service_tier','usage',response_json->'usage') evidence FROM studio_conversation_responses WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND lease_id=$4 AND response_index=$5 AND state='reported'`,[...params,call.lease_id,call.response_index]))[0];
   const receipts=await db.query<Receipt>(`SELECT id::text,user_id,type,amount_cents,currency,job_id,surface,billing_product_key FROM app_receipts WHERE job_id=$1 OR id::text=$2 ORDER BY id LIMIT 21`,['studio-assistance:'+call.id,call.charge_receipt_id]);
-  const creditCall=call.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version&&call.model==='gpt-6.1-sol';
+  const creditCall=isStudioCreditCall(call);
   const creditAllocations=creditCall?await db.query<CreditAllocation>('SELECT a.lot_id,l.user_id,a.reserved_credits::text,a.charged_credits::text,a.released_at::text FROM studio_assistance_credit_allocations a JOIN studio_assistance_credit_lots l ON l.id=a.lot_id WHERE a.call_id=$1 ORDER BY l.purchase_order',[callId]):[];
   const resolutions=await db.query<Resolution>(`SELECT action,expected_fingerprint,refund_cents${creditCall?',refund_credits':''} FROM studio_assistance_resolutions WHERE call_id=$1 ORDER BY action`,[callId]);
   const pendingActions=composer?0:Number((await db.query<{n:string}>("SELECT count(*)::text n FROM studio_conversation_steps WHERE user_id=$1 AND project_id=$2 AND request_id=$3 AND state='started'",params))[0].n);
@@ -44,7 +44,7 @@ function validEvidence(state:Snapshot){
   const response=state.evidence,call=state.call;
   if(!response||typeof response.id!=='string'||!response.id)return false;
   const facts=readStudioUsage(response.usage,response.model,response.service_tier);
-  return !!facts&&response.model===call.model&&(!call.response_id||call.response_id===response.id)&&facts.inputTokens<=call.input_token_bound&&facts.outputTokens<=call.output_token_bound&&facts.providerMaxNanoUsd<=Number(call.reserved_nano_usd)&&!!studioAssistanceTariff(call.tariff_version)&&call.rate_version===STUDIO_PROVIDER_RATE_VERSION;
+  return !!facts&&response.model===call.model&&(!call.response_id||call.response_id===response.id)&&facts.inputTokens<=call.input_token_bound&&facts.outputTokens<=call.output_token_bound&&facts.providerMaxNanoUsd<=Number(call.reserved_nano_usd)&&!!studioAssistanceTariff(call.tariff_version)&&call.rate_version===studioProviderRateVersion(call.model);
 }
 function validate(state:Snapshot,action:StudioAssistanceResolutionAction){
   const prior=state.resolutions.find(row=>row.action===action);
@@ -103,7 +103,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
     if(input.action==='settle_recorded'){
       if(!await settleStudioAssistanceCall(input.callId,state.call.user_id,state.evidence!,tx))throw new Error('Recorded provider evidence could not be settled.');
     }else{
-      if(state.call.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version&&state.call.model==='gpt-6.1-sol')await releaseStudioCredits(tx,input.callId);
+      if(isStudioCreditCall(state.call))await releaseStudioCredits(tx,input.callId);
       if(proposed.refundCents>0){
         const inserted=await tx.query<{id:string}>(`INSERT INTO app_receipts(user_id,type,amount_cents,currency,description,job_id,surface,billing_product_key,metadata) VALUES($1,'refund',$2,'USD','Studio assistance customer waiver; supplier usage remains unresolved',$3,'tool','studio_assistance',$4::jsonb) RETURNING id::text`,[state.call.user_id,proposed.refundCents,'studio-assistance:'+input.callId,JSON.stringify({reason:'studio_assistance_customer_waiver',original_receipt_id:state.call.charge_receipt_id,operator_id:input.operator})]);
         refundReceiptId=inserted[0].id;
@@ -118,7 +118,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
         if(!fenced.length)throw new Error('The request lease changed before support closeout.');
       }
     }
-    const creditCall=state.call.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version&&state.call.model==='gpt-6.1-sol';
+    const creditCall=isStudioCreditCall(state.call);
     await tx.query(`INSERT INTO studio_assistance_resolutions(call_id,action,operator_id,reason,expected_fingerprint,refund_cents,refund_receipt_id,revoked_lease_id${creditCall?',refund_credits':''}) VALUES($1,$2,$3,$4,$5,$6,$7,$8${creditCall?',$9':''})`,[input.callId,input.action,input.operator,input.reason,input.expectedFingerprint,proposed.refundCents,refundReceiptId,input.action==='waive_unknown'?state.turn?.lease_id??null:null,...(creditCall?[proposed.refundCredits]:[])]);
     await reconcileStudioTaskResolution(tx,state.call,input.action);
     return {...proposed,applied:true};

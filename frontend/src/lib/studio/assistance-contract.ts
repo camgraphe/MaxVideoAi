@@ -14,9 +14,35 @@ export const STUDIO_ASSISTANCE_CREDIT_TARIFF = {
   version: 'studio-sol-usd-2026-10-05-v2', effectiveAt: '2026-10-05T00:00:00.000Z',
   noncachedInputUsdPerMillion: 5, cachedInputUsdPerMillion: 0.2, outputUsdPerMillion: 20,
 };
+export const STUDIO_ASSISTANCE_TERRA_TARIFF = {
+  ...STUDIO_ASSISTANCE_CREDIT_TARIFF,
+  version: 'studio-terra-usd-2026-10-29-v1', effectiveAt: '2026-10-29T00:00:00.000Z',
+  noncachedInputUsdPerMillion: 2.5, cachedInputUsdPerMillion: 0.1, outputUsdPerMillion: 10,
+};
+export const studioAssistantModelSchema = z.enum(['gpt-6-luna','gpt-6.1-terra','gpt-6.1-sol']);
+export const MILO_LEVELS = {
+  lite: {label:'Lite',model:'gpt-6-luna',reasoning:'high'},
+  standard: {label:'Standard',model:'gpt-6.1-terra',reasoning:'high'},
+  max: {label:'Max',model:'gpt-6.1-sol',reasoning:'xhigh'},
+} as const;
+export type MiloLevel = keyof typeof MILO_LEVELS;
+export function miloLevelForModel(model:StudioAssistantModel):MiloLevel {
+  return model==='gpt-6-luna'?'lite':model==='gpt-6.1-terra'?'standard':'max';
+}
+export function studioCreditTariffForModel(model:StudioAssistantModel) {
+  return model==='gpt-6.1-terra'?STUDIO_ASSISTANCE_TERRA_TARIFF:STUDIO_ASSISTANCE_CREDIT_TARIFF;
+}
+export function isStudioCreditTariff(version:string) {
+  return version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version||version===STUDIO_ASSISTANCE_TERRA_TARIFF.version;
+}
+export function isStudioCreditCall(call:{model:string;tariff_version:string}) {
+  return (call.model==='gpt-6.1-sol'&&call.tariff_version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version)
+    ||(call.model==='gpt-6.1-terra'&&call.tariff_version===STUDIO_ASSISTANCE_TERRA_TARIFF.version);
+}
 export function studioAssistanceTariff(version: string) {
   if(version===STUDIO_ASSISTANCE_TARIFF.version)return STUDIO_ASSISTANCE_TARIFF;
   if(version===STUDIO_ASSISTANCE_CREDIT_TARIFF.version)return STUDIO_ASSISTANCE_CREDIT_TARIFF;
+  if(version===STUDIO_ASSISTANCE_TERRA_TARIFF.version)return STUDIO_ASSISTANCE_TERRA_TARIFF;
   return null;
 }
 export const STUDIO_SOL_CREDITS_PER_DOLLAR = 1000;
@@ -28,7 +54,7 @@ export type StudioCreditBalance = {
   included:StudioCreditQuantity&{period:string;renewsAt:string;priorReserved?:number};
   purchased:StudioCreditQuantity&{packs:Array<StudioCreditQuantity&{id:string;amountCents:number;purchasedAt:string}>};
 };
-export type StudioAssistantModel = 'gpt-6.1-sol' | 'gpt-6-luna';
+export type StudioAssistantModel = z.infer<typeof studioAssistantModelSchema>;
 export type StudioAssistanceMode = 'included_sol' | 'paid_sol' | 'sponsored_luna';
 export type StudioAssistanceBlockedReason = 'disabled' | 'included_exhausted' | 'luna_exhausted' | 'paid_budget_exhausted' | 'campaign_exhausted' | null;
 export type StudioAssistanceStatus = {
@@ -47,6 +73,6 @@ export const studioAssistanceChoiceSchema = z.discriminatedUnion('action',[
   z.object({action:z.literal('purchase_pack'),amountCents:z.union([z.literal(200),z.literal(500),z.literal(1000)]),tariffVersion:z.string(),expectedRevision:z.number().int().nonnegative(),purchaseKey:z.string().uuid()}).strict(),
   z.object({action:z.literal('resume_paid'),tariffVersion:z.string(),expectedRevision:z.number().int().nonnegative()}).strict(),
   z.object({action: z.literal('authorize_paid'),budgetCents: z.number().int().nonnegative().max(1_000_000),tariffVersion: z.string(),expectedRevision: z.number().int().nonnegative()}).strict(),
-  z.object({action: z.enum(['select_luna','select_sol','disable_paid']),expectedRevision: z.number().int().nonnegative()}).strict(),
+  z.object({action: z.enum(['select_luna','select_terra','select_sol','disable_paid']),expectedRevision: z.number().int().nonnegative()}).strict(),
 ]);
 export type StudioAssistanceChoice = z.infer<typeof studioAssistanceChoiceSchema>;

@@ -1,14 +1,17 @@
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 export const STUDIO_PROVIDER_RATE_VERSION = 'openai-standard-global-2026-10-03';
+export const STUDIO_TERRA_RATE_VERSION = 'openai-terra-standard-global-2026-10-29';
+export function studioProviderRateVersion(model:string){return model==='gpt-6.1-terra'?STUDIO_TERRA_RATE_VERSION:STUDIO_PROVIDER_RATE_VERSION;}
 // Factual USD nanounits/token; verified official model pages 2026-10-03. No retail margin here.
 const rates = {
   'gpt-6.1-sol': {input: 2000,read: 100,write: 2500,output: 10000},
+  'gpt-6.1-terra': {input: 1000,read: 50,write: 1250,output: 5000},
   'gpt-6-luna': {input: 100,read: 10,write: 125,output: 500},
 };
 const record = (v: unknown): v is Record<string,unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
 const count = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
 export function readStudioUsage(usage: unknown, model: unknown, serviceTier: unknown) {
-  if (!(model === 'gpt-6.1-sol' || model === 'gpt-6-luna') || !(serviceTier === 'default' || serviceTier === 'standard') || !record(usage)) return null;
+  if (!(model === 'gpt-6.1-sol' || model === 'gpt-6.1-terra' || model === 'gpt-6-luna') || !(serviceTier === 'default' || serviceTier === 'standard') || !record(usage)) return null;
   const input = usage.input_tokens, output = usage.output_tokens, detail = usage.input_tokens_details;
   if (!count(input) || input > 272000 || !count(output) || !record(detail) || !count(detail.cached_tokens) || detail.cached_tokens > input) return null;
   const cached = detail.cached_tokens;
