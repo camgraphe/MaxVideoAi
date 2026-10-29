@@ -24,11 +24,12 @@ function formatUsd(cents: number): string {
 export function collectCanonicalPricingOutputs(
   baselineRows: FrozenPricingOutput[]
 ): CanonicalPricingAuditOutput[] {
-  // This reproduces the historical percentage-policy audit. Nano21 launched
-  // with native fixed customer tariffs and an incomplete provider invoice;
-  // its six cells and public quotes are qualified independently, never invented
-  // as a historical supplier-cost/margin baseline.
-  const scenarios = buildPricingAuditScenarios().filter(scenario => scenario.engineId !== NANO21_ENGINE_ID);
+  // Nano21 and Kling 4 use native customer tariffs. Their current quotes are
+  // qualified independently; pricing publication cannot create a historical
+  // supplier-cost/percentage-margin baseline that never existed.
+  const scenarios = buildPricingAuditScenarios().filter(
+    (scenario) => scenario.engineId !== NANO21_ENGINE_ID && scenario.engineId !== 'kling-v4'
+  );
   const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(
     quoteHistoricalCanonicalAuditScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])

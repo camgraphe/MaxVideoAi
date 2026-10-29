@@ -1389,3 +1389,15 @@ PAYG model cards also require a current row, so an editorial fallback URL cannot
 reintroduce a disabled model. Entry-route/4K durations remain explicit; only
 matching preset settings receive a lowest-quoted highlight. Historical media and
 model URLs keep their original identity.
+
+The duration projection intersects the selected mode's choices with configured
+input values and effective maximum duration; another mode or stale pricing
+metadata cannot reopen a disabled duration.
+
+Publishing Kling 4 on Pricing does not give it a historical percentage-policy
+baseline. Like Nano21, its native customer tariffs are qualified separately.
+The original billing/public fixtures and the October 27 discovery evidence stay
+unchanged. `kling-v4-pricing-discovery-projections-2026-10-29.json` adds exactly ten
+**unavailable offline** rows (three estimator tiers, seven Pricing presets), with
+no monetary values. The read-only public audit now covers 610 rows; live current
+quotes and configured availability remain covered by the pricing-policy tests.

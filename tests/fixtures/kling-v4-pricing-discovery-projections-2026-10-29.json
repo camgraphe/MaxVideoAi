@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "generatedFrom": "reviewed-pricing-discovery-without-offline-tariffs",
+  "rows": [
+    {
+      "id": "estimator:kling-v4:member:default",
+      "surface": "estimator",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "estimator:kling-v4:plus:default",
+      "surface": "estimator",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "estimator:kling-v4:pro:default",
+      "surface": "estimator",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:10s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:10s-1080p-audio",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:10s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:4k-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:5s-720p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:8s-1080p",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    },
+    {
+      "id": "pricing-hub-video:kling-v4:entry-route",
+      "surface": "pricing-hub-video",
+      "engineId": "kling-v4",
+      "status": "unavailable"
+    }
+  ]
+}

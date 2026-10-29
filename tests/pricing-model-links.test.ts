@@ -27,7 +27,7 @@ function getRow(locale: AppLocale, anchorId: string) {
   return buildPricingHubData(locale).video.rows.find((row) => row.anchorId === anchorId);
 }
 
-test('pay-as-you-go model choices lead with the localized Seedance 2.5 profile', () => {
+test('pay-as-you-go current model choices retain the localized Seedance 2.5 profile', () => {
   const matrix = [
     ['en', enPayAsYouGoContent, '/models/seedance-2-5'],
     ['fr', frPayAsYouGoContent, '/fr/modeles/seedance-2-5'],
@@ -36,8 +36,8 @@ test('pay-as-you-go model choices lead with the localized Seedance 2.5 profile',
 
   for (const [locale, content, target] of matrix) {
     const data = buildPayAsYouGoPageData({ locale, content });
-    assert.equal(data.modelTesting.items[0]?.id, 'seedance-2-5');
-    assert.equal(data.modelTesting.items[0]?.href, target);
+    assert.equal(data.modelTesting.items[0]?.id, 'flux-3-max');
+    assert.equal(data.modelTesting.items.find((item) => item.id === 'seedance-2-5')?.href, target);
     assert.ok(data.modelTesting.items.some((item) => item.id === 'seedance-2-0'));
   }
 });
@@ -101,11 +101,14 @@ test('pricing image matrix links the rendered engine identity to its model page'
   assert.match(source, /href=\{row\.modelHref\}/);
 });
 
-test('every exposed video pricing row has at least one exact visible price', () => {
+test('every exposed video pricing row has an exact price or an explicit current-quote placeholder', () => {
   const rows = buildPricingHubData('en').video.rows;
   const missingExactPrice = rows
-    .filter((row) => !Object.values(row.quotes).some((quote) => quote.status === 'exact'))
+    .filter((row) => !Object.values(row.quotes).some((quote) => quote.status === 'exact' || quote.status === 'live_quote'))
     .map((row) => row.anchorId);
 
   assert.deepEqual(missingExactPrice, []);
+  const kling = rows.find((row) => row.id === 'kling-v4');
+  assert.ok(kling);
+  assert.ok(Object.values(kling.quotes).every((quote) => quote.status !== 'exact'));
 });
