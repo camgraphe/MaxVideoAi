@@ -110,3 +110,25 @@ test('current video quote notes describe the submitted audio setting, including 
     assert.match(fixedAudio.quotes['8s-1080p'].note ?? '', /audio incl/);
   }
 });
+
+test('configured duration limits constrain quote requests and ranking even with older static mode options', async () => {
+  const {projectConfiguredEngine}=await import('../frontend/src/server/engine-configuration-projection');
+  const base=getFalEngineById('veo-3-1')!.engine;
+  const configured=projectConfiguredEngine(base,new Map([[base.id,{engine_id:base.id,options:{maxDurationSec:4},pricing:base.pricingDetails??null,updated_by:'admin',updated_at:''}]]),new Map()).engine;
+  const calls:PublicModelQuoteInput[]=[];
+  const data=await buildCurrentVideoPricingData('en',async input=>{calls.push(input);return {status:'exact',amountCents:1,currency:'USD',revision:'configured',scenarioLabel:'test'};},async()=>[configured]);
+  assert.ok(calls.length>0);
+  assert.ok(calls.every(input=>input.durationSec<=4),JSON.stringify(calls));
+  const row=data.video.rows[0];
+  assert.equal(row.quotes['8s-1080p'].status,'unsupported');
+  assert.notEqual(row.quotes['8s-1080p'].isCheapest,true);
+  assert.ok(data.video.highlights.filter(item=>item.featured).every(item=>!JSON.stringify(item.featured).includes('8s')));
+});
+
+test('pricing uses the selected mode duration choices, without borrowing from another mode',async()=>{
+  const base=getFalEngineById('veo-3-1')!.engine;
+  const configured={...base,modes:['t2v' as const],modeCaps:{...base.modeCaps,t2v:{modes:['t2v' as const],duration:{options:[4],default:4}}}};
+  const calls:PublicModelQuoteInput[]=[];
+  await buildCurrentVideoPricingData('en',async input=>{calls.push(input);return {status:'unavailable'};},async()=>[configured]);
+  assert.ok(calls.length>0);assert.ok(calls.every(input=>input.durationSec===4),JSON.stringify(calls));
+});

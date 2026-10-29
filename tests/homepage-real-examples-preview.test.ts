@@ -378,7 +378,7 @@ test('homepage supported engines strip includes the Happy Horse family', () => {
     pathname: '/examples/[model]',
     params: { model: 'happy-horse' },
   });
-  assert.match(enMessages.home.redesign.providers.subtitle, /Happy Horse/);
+  assert.match(enMessages.home.redesign.providers.subtitle, /model catalog/);
 });
 
 test('homepage final sections keep alternating backgrounds before the footer', () => {

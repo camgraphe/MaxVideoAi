@@ -20,7 +20,12 @@ test('admin comparison inventory contains published models once while V4 keeps i
   assert.ok(rows.every(({ scenario }) => scenario.durationSec && scenario.resolution && scenario.mode));
   const quotes = quoteCanonicalAdminScenarios({ databaseRules: [], scenarios: rows.filter(({entry})=>entry.id!=='kling-v4').map(({ scenario }) => scenario) });
   assert.equal(quotes.filter((quote) => quote.status === 'quoted').length, 49);
-  assert.throws(()=>quoteCanonicalAdminScenarios({databaseRules:[],scenarios:[rows.find(({entry})=>entry.id==='kling-v4')!.scenario]}),/Pricing definition not found/,'V4 cannot acquire an old percentage-policy price');
+  const [v4] = quoteCanonicalAdminScenarios({databaseRules:[],scenarios:[rows.find(({entry})=>entry.id==='kling-v4')!.scenario]});
+  assert.equal(v4.status,'unsupported','V4 cannot acquire an old percentage-policy price');
+  if(v4.status==='unsupported') {
+    assert.equal(v4.reason,'product_policy_not_authoritative');
+    assert.match(v4.warning,/approved customer tariffs/);
+  }
   assert.ok(rows.some(({ entry }) => entry.id === 'flux-3-max'));
 });
 
