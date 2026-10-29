@@ -43,6 +43,20 @@ the 324 supported Edit classes through the normal append-only store and an atomi
 release event. Exact exceptions, stale review and partial writes fail closed.
 It does not activate execution. See the [LAS release procedure](../model-launch/seedance-2-5-las-edit.md).
 
+## Workspace gallery rail prices
+
+`GalleryRailCards` hides recorded amounts on curated starter samples: their old
+charge and incomplete public settings do not establish the price of recreating
+them. Owned renders retain their stored final amount (or stored quote fallback),
+labeled as the original cost on a separate caption line so narrow cards retain
+the model name. Group totals still count each job once, including
+multi-output image jobs. Selecting/reusing a render obtains the current price
+through the composer's existing preflight; the rail adds no pricing requests and
+never rewrites paid history. `gallery-rail-render-performance.test.ts` covers
+sample suppression, localized cost labels, final-amount precedence, batch totals
+and the existing prompt-input render budget. `gallery-rail-price-layout-browser.test.ts`
+checks real caption geometry with production CSS at mobile and tablet widths.
+
 ## Studio conversational estimates
 
 Studio whole-film estimates compose this same canonical read seam through
@@ -88,6 +102,23 @@ Savings use current integer customer cents in the same currency and disclose
 configuration differences. Shortlists use the baseline currency (otherwise the
 largest currency group) and disclose other currencies without ranking their amounts.
 Output timing comes from canonical pricing receipts, including fractional source timing. Historical estimates never supply current savings.
+
+Studio's explicit new-message intake qualifies selected saved videos whose
+duration or dimensions are missing, before computing the reference fingerprint
+or starting metered assistant work. `conversation-attachment-facts.ts` authorizes
+the complete selection, then calls the existing bounded
+`hydrateOwnedVideoMediaFacts` owner for at most twelve distinct missing videos.
+It rereads persisted facts and original identities afterward. Qualification does
+not generate media, fabricate filenames, alter original bytes or run from a GET,
+pricing read or recorded-response/draft recovery. An unverifiable original fails
+before an assistant/model, quote or generation charge.
+
+Supplementary video references use the same authored V2V capability fields and
+aggregate per-type budgets as provider submission. Comparison failure facts
+contain at most eight canonical model/field/reason records, with no raw error
+messages, media identities or URLs. The comparison fingerprint includes the
+validation policy so a repaired capability path can reconsider old negative
+evidence instead of repeatedly suppressing the same valid request.
 The conversation journal projects at most three options from each of the two
 latest completed owned pricing actions, with private settings removed, marked
 historical and requiring a quote. Behavioral tests cover fresh prices, strict

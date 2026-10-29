@@ -10,6 +10,7 @@ import {makeCancelSignal,renderMedia,selectComposition} from '@remotion/renderer
 import {buildWorkspaceTimelineRenderManifest} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-timeline-render';
 import type {WorkspaceTimelineItem} from '../frontend/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-types';
 import type {TimelineExportRenderProps} from '../frontend/src/remotion/timeline-export/types';
+import {applyConversationTimelineEdit} from '../frontend/lib/studio/conversation-timeline-editing';
 
 // Explicit opt-in: a real local Chromium/FFmpeg render, never a provider or worker dispatch.
 test('real local render uses GET-only grants and preserves video trim and simultaneous audio source trims, gain and mute',{
@@ -55,21 +56,29 @@ test('real local render uses GET-only grants and preserves video trim and simult
   assert.equal((await fetch(base+'/pattern.mp4')).status,403);
   requests.length=0;
   const items: WorkspaceTimelineItem[] = [
-    {id: 'visual',outputNodeId: 'visual',title: 'Measured test pattern',track: 'video',mediaKind: 'video',mediaUrl: base+'/pattern.mp4',startSec: 0,durationSec: 3,sourceStartSec: 1,sourceDurationSec: 6,mediaFacts: {source: 'probe',durationSec: 6,width: 320,height: 180,hasAudio: true},hasEmbeddedAudio: true,audioProvenance: 'embedded',audioMix: {volume: 100,muted: true},status: 'completed'},
+    {id: 'visual',outputNodeId: 'visual',title: 'Measured test pattern',track: 'video',mediaKind: 'video',mediaUrl: base+'/pattern.mp4',startSec: 0,durationSec: 3,sourceStartSec: 1,sourceDurationSec: 6,mediaFacts: {source: 'probe',durationSec: 6,width: 320,height: 180},audioProvenance: 'none',hasEmbeddedAudio: false,status: 'completed'},
     {id: 'voice',outputNodeId: 'voice',title: 'Synthetic voice marker',track: 'audio',mediaKind: 'audio',mediaUrl: base+'/voice.wav',startSec: 0,durationSec: 3,sourceStartSec: 1,sourceDurationSec: 5,audioProvenance: 'external',audioMix: {volume: 80,muted: false},status: 'completed'},
     {id: 'music',outputNodeId: 'music',title: 'Synthetic music marker',track: 'audio-2',mediaKind: 'audio',mediaUrl: base+'/music.wav',startSec: .5,durationSec: 2,sourceStartSec: 1,sourceDurationSec: 5,audioProvenance: 'external',audioMix: {volume: 25,muted: false},status: 'completed'},
   ];
+  const mutedItems = applyConversationTimelineEdit(items, {kind: 'gain', clipId: 'visual', volume: 0}, 30, []);
+  const restoredItems = applyConversationTimelineEdit(mutedItems, {kind: 'gain', clipId: 'visual', volume: 100}, 30, []);
+  assert.equal(mutedItems[0].audioProvenance, 'unknown', 'Muting cannot invent an audio-presence measurement.');
+  assert.equal(restoredItems[0].audioProvenance, 'unknown', 'Restoration cannot invent an audio-presence measurement.');
+  assert.equal(restoredItems[0].audioMix?.volume, 100);
+  assert.equal(mutedItems[0].mediaUrl, items[0].mediaUrl, 'The exact original remains the export source.');
   const serveUrl = await bundle({entryPoint: resolve('frontend/src/remotion/timeline-export/index.ts'),outDir: join(dir,'bundle')});
   const report: Record<string,unknown> = {fixtureOnly: true,providerCalls: 0,composition: 'MaxVideoAITimelineExport',width: 320,height: 180,fps: 30};
-  for (const muted of [false,true]) {
-    const manifest = buildWorkspaceTimelineRenderManifest({items: items.map(item => item.id === 'music' ? {...item,audioMix: {volume: 25,muted}} : item),nodes: [],projectName: 'Synthetic multitrack fixture',sequenceId: 'main',sequenceName: 'Main'});
+  for (const mode of ['mixed','muted','restored'] as const) {
+    const muted = mode === 'muted';
+    const renderItems = mode === 'restored' ? restoredItems.filter(item => item.id === 'visual') : mutedItems.map(item => item.id === 'music' ? {...item,audioMix: {volume: 25,muted}} : item);
+    const manifest = buildWorkspaceTimelineRenderManifest({items: renderItems,nodes: [],projectName: 'Synthetic multitrack fixture',sequenceId: 'main',sequenceName: 'Main'});
     assert.equal(manifest.status,'ready');
     // Mimic the worker's temporary GET-grant copy without changing the canonical fixture manifest.
     const transport = {...manifest,tracks: manifest.tracks.map(track => ({...track,clips: track.clips.map(clip => ({...clip,mediaUrl: clip.mediaUrl+'?method=GET'}))}))};
     const inputProps: TimelineExportRenderProps = {manifest: transport,width: 320,height: 180,fps: 30,includeAudio: true,mediaTrust: 'server-validated'};
     const composition = await selectComposition({serveUrl,id: 'MaxVideoAITimelineExport',inputProps,browserExecutable});
     assert.equal(composition.durationInFrames,90);
-    const output = join(dir,muted ? 'music-muted.mp4' : 'voice-and-music.mp4');
+    const output = join(dir,mode === 'restored' ? 'original-restored.mp4' : muted ? 'music-muted.mp4' : 'voice-and-music.mp4');
     const {cancel,cancelSignal} = makeCancelSignal();
     const timer = setTimeout(cancel,Math.max(1,240_000-(Date.now()-began)));
     try {await renderMedia({composition,serveUrl,inputProps,outputLocation: output,browserExecutable,codec: 'h264',imageFormat: 'png',colorSpace: 'bt709',concurrency: 1,offthreadVideoThreads: 1,timeoutInMilliseconds: 30_000,cancelSignal});}
@@ -83,6 +92,20 @@ test('real local render uses GET-only grants and preserves video trim and simult
     const maxAacPaddingSec=3*1024/Number(audio.sample_rate);
     assert.ok(Number(probe.format.duration)>=3 && Number(probe.format.duration)<=3+maxAacPaddingSec);
     const pcm = ffmpeg(['-i',output,'-vn','-ac','1','-ar','48000','-f','f32le','pipe:1']);
+    if (mode === 'restored') {
+      const sourcePcm = ffmpeg(['-ss','1','-i','tests/fixtures/studio-media/pattern-a.mp4','-t','3','-vn','-ac','1','-ar','48000','-f','f32le','pipe:1']);
+      const rms = (data: Buffer) => {
+        let squares = 0;
+        const from = 4800,to = Math.min(data.length / 4,48000*2.9);
+        for (let index = from;index < to;index++) squares += data.readFloatLE(index*4)**2;
+        return Math.sqrt(squares/(to-from));
+      };
+      const originalRms = rms(sourcePcm),restoredRms = rms(pcm),ratio = restoredRms/originalRms;
+      assert.ok(originalRms > .01, 'The synthetic original contains actual sound.');
+      assert.ok(ratio > .95 && ratio < 1.05, `The restored original level is audible at its source gain; measured ratio ${ratio}.`);
+      report.restored = {durationSec: Number(video.duration),frames: Number(video.nb_frames),originalRms,restoredRms,ratio};
+      continue;
+    }
     const amplitude = (frequency: number,start: number,end: number) => {
       let re=0,im=0;
       const from=Math.round(start*48000),to=Math.round(end*48000);

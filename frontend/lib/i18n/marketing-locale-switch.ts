@@ -1,6 +1,7 @@
 import localizedSlugConfig from '../../config/localized-slugs.json';
 import { resolveBlogCanonicalSlug, resolveLocalizedBlogSlug } from '../../config/blog-slugs';
 import type { Locale } from './types';
+import { marketingPageFallback } from './marketing-page-fallback';
 
 type MarketingLocaleSwitchInput = {
   pathname: string;
@@ -90,10 +91,11 @@ export function buildMarketingLocaleSwitchHref({
   hash = '',
 }: MarketingLocaleSwitchInput): string {
   const englishPath = resolveEnglishPath(pathname || '/');
-  const targetPath = localizeEnglishPath(englishPath, targetLocale);
+  const fallback = marketingPageFallback(englishPath, targetLocale);
+  const targetPath = localizeEnglishPath(fallback ?? englishPath, targetLocale);
   const searchParams = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
   searchParams.delete('nolocale');
   searchParams.set('lang', targetLocale);
-  const normalizedHash = hash && !hash.startsWith('#') ? `#${hash}` : hash;
+  const normalizedHash = fallback ? '' : hash && !hash.startsWith('#') ? `#${hash}` : hash;
   return `${targetPath}?${searchParams.toString()}${normalizedHash}`;
 }

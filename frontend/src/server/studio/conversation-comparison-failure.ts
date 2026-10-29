@@ -13,6 +13,16 @@ export function studioComparisonFailureGuidance(request:Extract<StudioActionRequ
   if(result.error.code==='REFERENCE_INVALID'||result.error.code==='REFERENCE_REQUIRED')return words.reference;
   if(result.error.retryable||result.error.code==='ENGINE_UNAVAILABLE'||result.error.code==='INTERNAL_ERROR')return words.outage;
   const next=result.error.nextAction;
+  const failures=Array.isArray(next?.validationFailures)?next.validationFailures:[];
+  const reasons=failures.map(failure=>failure&&typeof failure==='object'?(failure as Record<string,unknown>).reason:undefined);
+  if(reasons.length&&reasons.every(reason=>reason==='duration_unverified'))return locale==='fr'
+    ? 'La durée d’un média sélectionné n’a pas pu être vérifiée. Il faut vérifier cet original enregistré avant de demander un nouveau prix ; inutile de changer la durée du résultat ou le cadrage.'
+    :locale==='es'?'No se ha podido verificar la duración de un archivo seleccionado. Hay que comprobar ese original guardado antes de solicitar otro precio; cambiar la duración del resultado o el encuadre no lo resolverá.'
+      :'A selected file’s duration could not be verified. Verify that saved original before requesting another price; changing the output duration or framing will not resolve it.';
+  if(reasons.length&&reasons.every(reason=>['metadata_unverified','dimensions_unverified'].includes(String(reason))))return locale==='fr'
+    ? 'Les caractéristiques d’un original sélectionné ne sont pas vérifiées. Il faut vérifier cet original enregistré avant de demander un nouveau prix.'
+    :locale==='es'?'Los datos de un original seleccionado no están verificados. Hay que comprobar ese original guardado antes de solicitar otro precio.'
+      :'A selected original’s file facts are unverified. Verify that saved original before requesting another price.';
   if(next?.type==='generation_comparison'&&next.constraintMismatch!==true&&next.durationMismatch!==true)return words.unverified;
   return request.mode==='i2v'&&request.references.length>1&&request.references.every(ref=>ref.role==='reference')?words.multiple:words.settings;
 }

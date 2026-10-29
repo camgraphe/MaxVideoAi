@@ -87,6 +87,7 @@ type WorkspaceComposerSurfaceProps = {
   isPricing: boolean;
   isSubmitting: boolean;
   preflightError: ComposerProps['error'];
+  videoDurationBlocked?: boolean;
   preflight: ComposerProps['preflight'];
   composerRef: ComposerProps['textareaRef'];
   startRender: ComposerProps['onGenerate'];
@@ -213,6 +214,7 @@ export function WorkspaceComposerSurface({
   isPricing,
   isSubmitting,
   preflightError,
+  videoDurationBlocked = false,
   preflight,
   composerRef,
   startRender,
@@ -544,7 +546,7 @@ export function WorkspaceComposerSurface({
               }
             : null
         }
-        disableGenerate={Boolean(klingV4Error) || Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
+        disableGenerate={videoDurationBlocked || Boolean(klingV4Error) || Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         beforeAssets={<VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />}
         sourceControl={ownedGenerationRequired ?
               <OwnedGenerationSourcePicker compact authAction={referenceAuthAction} key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}

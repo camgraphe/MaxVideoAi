@@ -1,6 +1,5 @@
 import { normalizeVideoOperation } from '@/lib/video-operation';
-import type {StudioPreparedExport} from '@/lib/studio/conversation-export-contract';
-import type {TimelineExportJobResponse} from '@/server/timeline-exports/contracts';
+import type {StudioPreparedExport,StudioConversationRender} from '@/lib/studio/conversation-export-contract';
 import {studioActionRequestSchema, type StudioActionRequest, type StudioActionResult} from '@/lib/studio/conversation-action-contract';
 import {AgentApiError, toAgentApiFailure} from '@/server/agent-api/errors';
 import {requireGenerationActor, type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -32,7 +31,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   editingEnabled?: boolean;
   exportsEnabled?: boolean;
   prepareExport?(request: Extract<StudioActionRequest,{action: 'export.prepare'}>): Promise<StudioPreparedExport>;
-  readExport?(quoteId: string): Promise<TimelineExportJobResponse | null>;
+  readExport?(request:Extract<StudioActionRequest,{action:'export.read'}>): Promise<StudioConversationRender | null>;
   editTimeline?(request: Extract<StudioActionRequest,{action: 'timeline.edit'}>): Promise<ConversationEditResult>;
   discardQuote?(quoteId: string): Promise<StudioQuoteDiscardResult>;
   attachedImageIds?: readonly string[];
@@ -85,7 +84,7 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           return {ok: true,action: request.action,data: await dependencies.prepareExport(request)};
         case 'export.read':
           if (!dependencies.editingEnabled || !dependencies.exportsEnabled || !dependencies.readExport) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
-          return {ok: true,action: request.action,data: await dependencies.readExport(request.quoteId)};
+          return {ok: true,action: request.action,data: await dependencies.readExport(request)};
         case 'project.read': return {ok: true, action: request.action, data: project};
         case 'project.recall':
           if(!dependencies.recallProject)throw new AgentApiError('ENGINE_UNAVAILABLE','Owned task memory is unavailable.');

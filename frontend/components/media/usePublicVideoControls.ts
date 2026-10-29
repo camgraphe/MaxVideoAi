@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { hasPublicVideoRendition } from '@/lib/public-video-renditions';
 import type { PublicVideoPlaybackAttempt, PublicVideoPlaybackSurface, PublicVideoQuality } from '@/lib/public-video-playback';
 import { usePublicVideoPlayback } from './usePublicVideoPlayback';
 
 /** Manual readers share attempts; native/custom controls retain their own presentation. */
-export function usePublicVideoControls(src: string, surface: PublicVideoPlaybackSurface, defaultQuality: PublicVideoQuality = 'auto') {
+export function usePublicVideoControls(src: string, surface: PublicVideoPlaybackSurface, defaultQuality: PublicVideoQuality = 'auto', visibilityTargetRef?: RefObject<Element | null>) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const activeRef = useRef<PublicVideoPlaybackAttempt | null>(null);
   const intentRef = useRef(false);
@@ -21,6 +21,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const { attempt, terminalError, begin, fail, setContext, measureNode,
@@ -106,6 +107,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
     const node = videoRef.current;
     if (!node) return;
     const sync = () => {
+      setIsVisible(visible());
       setContext({ visible: visible() });
       if (!visible()) stop();
     };
@@ -113,11 +115,11 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
       inViewRef.current = entries.some((entry) => entry.isIntersecting);
       sync();
     }, { threshold: 0.05 });
-    observer?.observe(node);
+    observer?.observe(visibilityTargetRef?.current ?? node);
     document.addEventListener('visibilitychange', sync);
     sync();
     return () => { observer?.disconnect(); document.removeEventListener('visibilitychange', sync); };
-  }, [setContext, src, stop, visible]);
+  }, [setContext, src, stop, visibilityTargetRef, visible]);
 
   const togglePlayback = () => {
     const node = videoRef.current;
@@ -204,15 +206,21 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
     },
   };
 
+  const setMuted = useCallback((muted: boolean) => {
+    const node = videoRef.current;
+    if (!node) return;
+    node.muted = muted;
+    volumeRef.current.muted = muted;
+    setIsMuted(muted);
+  }, []);
+
   return {
-    videoRef, events, isPlaying, isLoading, isMuted, duration, currentTime, terminalError,
-    quality, changeQuality, hasQualityChoice: hasPublicVideoRendition(src), togglePlayback,
+    videoRef, events, isPlaying, isLoading, isMuted, isVisible, duration, currentTime, terminalError,
+    quality, changeQuality, hasQualityChoice: hasPublicVideoRendition(src), togglePlayback, pause: stop, setMuted,
     toggleMuted() {
       const node = videoRef.current;
       if (!node) return;
-      node.muted = !node.muted;
-      volumeRef.current.muted = node.muted;
-      setIsMuted(node.muted);
+      setMuted(!node.muted);
     },
     seek(value: string) {
       const node = videoRef.current;

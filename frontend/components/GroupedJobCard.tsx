@@ -45,6 +45,8 @@ export interface GroupedJobCardProps {
   selected?: boolean;
   eagerPreview?: boolean;
   warmOnVisible?: boolean;
+  showPrice?: boolean;
+  priceLabel?: string;
 }
 
 export function GroupedJobCard({
@@ -72,6 +74,8 @@ export function GroupedJobCard({
   selected = false,
   eagerPreview = false,
   warmOnVisible = false,
+  showPrice = true,
+  priceLabel,
 }: GroupedJobCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -104,6 +108,7 @@ export function GroupedJobCard({
   }, [menuOpen]);
 
   const formattedPrice = useMemo(() => {
+    if (!showPrice) return null;
     if (typeof group.totalPriceCents === 'number') {
       const currency = group.currency ?? hero.currency ?? 'USD';
       try {
@@ -121,7 +126,8 @@ export function GroupedJobCard({
       }
     }
     return null;
-  }, [group.currency, group.totalPriceCents, hero.currency, hero.priceCents]);
+  }, [group.currency, group.totalPriceCents, hero.currency, hero.priceCents, showPrice]);
+  const priceText = formattedPrice ? [priceLabel, formattedPrice].filter(Boolean).join(' · ') : null;
 
   const previews = useMemo(() => {
     if (group.previews.length >= 4) return group.previews.slice(0, 4);
@@ -287,10 +293,10 @@ export function GroupedJobCard({
           </button>
         ))}
       </div>
-      {useRailCaption ? <div className="app-rail-caption">
+      {useRailCaption ? <div className={clsx('app-rail-caption', priceLabel && priceText && 'app-rail-caption-with-cost')}>
         <EngineIcon engine={engine ?? undefined} label={hero.engineLabel} size={20} />
         <strong title={hero.engineLabel}>{hero.engineLabel}</strong>
-        <span>{detailLabel}</span>{formattedPrice ? <span>{formattedPrice}</span> : null}
+        <span>{detailLabel}</span>{priceText ? <span className="app-rail-cost">{priceText}</span> : null}
       </div> : <div className="overflow-hidden rounded-b-card">
         <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
           <div className="flex items-center gap-2">
@@ -359,8 +365,8 @@ export function GroupedJobCard({
                 ) : null}
               </div>
             ) : null}
-            {formattedPrice ? (
-              <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{formattedPrice}</span>
+            {priceText ? (
+              <span className="flex-shrink-0 text-[12px] font-semibold text-text-primary">{priceText}</span>
             ) : null}
           </div>
         </div>

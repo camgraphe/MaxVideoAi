@@ -5,6 +5,7 @@ import {deleteWorkspaceTimelineItem, positionWorkspaceTimelineItem, resizeWorksp
 import {MIN_CLIP_DURATION_SEC, timelineFrameToSeconds, workspaceTimelineSourceTime} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-frames';
 import {maxResizeDurationForTimelineItem} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/timeline/timeline-trim';
 import {readMediaFacts} from '@/lib/media-identity';
+import {workspaceTimelineAudioMixSupport} from '@/app/(core)/(workspace)/app/studio/_shared/_lib/workspace-audio-provenance';
 
 const clipId = z.string().trim().min(1).max(200);
 const frame = z.number().int().min(0).max(5_184_000);
@@ -63,9 +64,19 @@ export function applyConversationTimelineEdit(items: WorkspaceTimelineItem[], ra
       if(edit.documentId&&!edit.revision)throw new Error('SUBTITLE_REVISION_INVALID');
       next=items.map(candidate=>candidate.id===item.id?{...candidate,subtitle:edit.documentId?{documentId:edit.documentId,revision:edit.revision!}:undefined,subtitleDocument:undefined}:candidate);break;
     case 'remove': next = deleteWorkspaceTimelineItem(items, item.id, {ripple: true}); break;
-    case 'gain':
-      if (item.mediaKind !== 'audio' && item.hasEmbeddedAudio !== true) throw new Error('This clip has no audio to mix.');
-      next = items.map(candidate => candidate.id === item.id ? {...candidate, audioMix: {...candidate.audioMix, volume: edit.volume, muted: candidate.audioMix?.muted ?? false}} : candidate);
+    case 'gain': {
+      const support = workspaceTimelineAudioMixSupport(item);
+      if (!support.canAdjustVolume && !(edit.volume === 0 && support.canMute) && !(edit.volume === 100 && support.canRestoreOriginalVolume)) throw new Error('This clip has no audio to mix.');
+      const mixed = {...item, audioMix: {...item.audioMix, volume: edit.volume, muted: item.audioMix?.muted ?? false}};
+      if (item.mediaKind === 'video') {
+        // Preview and export must agree after editing a stale legacy cache.
+        mixed.audioProvenance = support.source;
+        if (support.source === 'embedded') mixed.hasEmbeddedAudio = true;
+        else delete mixed.hasEmbeddedAudio;
+      }
+      next = items.map(candidate => candidate.id === item.id ? mixed : candidate);
+      break;
+    }
   }
   if (timelineEditTouchesLockedTracks(items, next, lockedTracks)) throw new Error('Edit would change a locked timeline track.');
   return next;

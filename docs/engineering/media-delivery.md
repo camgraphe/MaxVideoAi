@@ -978,6 +978,16 @@ unmount abort pending operations; preparation and late responses retain the
 existing account-generation guards. No request may fall back to ambient cookies
 or a newly selected account after session lookup.
 
+Video upload completion must measure the complete original before recording a
+ready library asset. Both direct and multipart completion use
+`video-upload-metadata.ts`, which delegates to the shared buffer probe and honors
+MOV display rotation. Persist duration, dimensions and `mediaFacts` in both
+`user_assets` and `media_assets`, and return those facts and the canonical asset
+reference to the client. Preserve the uploaded bytes, original URL and MIME type.
+Unreadable media returns `METADATA_UNVERIFIED` rather than a successful import
+whose Modify quote cannot resolve. `tests/video-upload-completion-metadata.test.ts`
+exercises both routes with real media, including portrait MOV and large payloads.
+
 Both video inputs use `uploadVideoFile`, including Kling element videos. Files
 above 4 MiB use its existing multipart protocol instead of one oversized function
 request. Each part and finalization recheck the initiating owner. Server limits,

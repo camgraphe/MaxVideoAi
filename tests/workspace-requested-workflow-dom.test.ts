@@ -90,6 +90,24 @@ for (const sourceMode of ['v2v', 'extend'] as const) test(`manual other-engine s
   } finally { await view.close(); }
 });
 
+test('background changer Wan Prime Modify handoff survives hydration, source preparation and removal', async () => {
+  const view = await mount('wan-3-prime');
+  try {
+    await view.ready(false);
+    await view.navigate('engine=wan-3-prime&mode=v2v');
+    await view.ready(true);
+    assert.equal(view.route.form?.engineId, 'wan-3-prime');
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    await view.source('uploading');
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    await view.source('ready');
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    await view.clearSources();
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    assert.equal(view.route.prompt, 'Keep this authored prompt');
+  } finally { await view.close(); }
+});
+
 test('same-model gallery Extend stays selected through source preparation and quote readiness', async () => {
   const view = await mount();
   try {

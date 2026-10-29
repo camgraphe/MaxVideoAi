@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import type {TimelineExportBillingStatus,TimelineExportStatus} from '@/server/timeline-exports/contracts';
 
 const id=z.string().trim().min(1).max(128).regex(/^[a-zA-Z0-9._:-]+$/);
 export const studioExportPreparationSchema=z.object({
@@ -16,6 +17,14 @@ export const studioPreparedExportSchema=z.object({
   expiresAt:z.string().datetime(),confirmationRequired:z.literal(true),
 }).strict();
 export type StudioPreparedExport=z.infer<typeof studioPreparedExportSchema>;
+/** Read-only render evidence for the director; no source, artifact or submission secrets. */
+export type StudioConversationRender = {
+  id:string;sequenceId:string;status:TimelineExportStatus;progress:number;message:string|null;
+  createdAt:string;updatedAt:string;startedAt:string|null;completedAt:string|null;failedAt:string|null;
+  durationSec:number;resolution:string|null;aspectRatio:string|null;fps:number|null;qualityPreset:string;
+  includeAudio:boolean|null;artifactAvailable:boolean;billingStatus:TimelineExportBillingStatus;
+  billing?:{amountCents:number;currency:string;billingKind:'free'|'paid'};
+};
 /** A confirmation reply must identify a real saved job before clearing a pending attempt. */
 export const studioExportAcknowledgementSchema = z.object({
   ok: z.literal(true),
@@ -43,8 +52,10 @@ export const studioExportPrepareActionSchema=z.object({
   sequenceId:id,expectedRevision:studioExportPreparationSchema.shape.expectedRevision,
   qualityPreset:studioExportPreparationSchema.shape.qualityPreset,includeAudio:z.boolean(),
 }).strict();
-export const studioExportReadActionSchema=z.object({action:z.literal('export.read'),quoteId:z.string().uuid()}).strict();
+const exportReadSelection={quoteId:z.string().uuid().nullish(),exportId:studioPreparedExportSchema.shape.exportId.nullish()};
+export const studioConversationExportReadSchema=z.object({projectId:id,...exportReadSelection}).strict().refine(value=>!!value.quoteId!==!!value.exportId,'Choose one quoteId or exportId.');
+export const studioExportReadActionSchema=z.object({action:z.literal('export.read'),...exportReadSelection}).strict();
 export const STUDIO_EXPORT_DIRECTOR_TOOLS=[
   {action:'export.prepare',name:'export_prepare',description:'Prepare an exact non-spending MP4 quote for the owned saved sequence/revision read from timeline_read. Choose draft, standard or high and whether to include audio. Ends this turn: explain that the client reviews and confirms the quote in the chat. Does not export or charge.',properties:{reply:{type:'string'},sequenceId:{type:'string'},expectedRevision:{type:'integer',minimum:0},qualityPreset:{type:'string',enum:['draft','standard','high']},includeAudio:{type:'boolean'}}},
-  {action:'export.read',name:'export_read',description:'Read the owned render job and its recorded price from an exact export quoteId belonging to this project. Never starts, confirms or retries an export.',properties:{quoteId:{type:'string'}}},
+  {action:'export.read',name:'export_read',description:'Inspect an owned project render, including manual exports, by exportId from project_read renders; set quoteId null. An older export quoteId also works with exportId null. Choose exactly one ID. Returns recorded status, timing and billing without media URLs. Never starts, confirms or retries an export.',properties:{quoteId:{type:['string','null']},exportId:{type:['string','null']}}},
 ] as const;

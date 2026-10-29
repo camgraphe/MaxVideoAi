@@ -13,7 +13,6 @@ import type {AgentPublicGenerationEngine} from './model-catalog';
 import type { CanonicalGenerationRequest } from "./generation-types";
 import {
   readGenerationPricing,
-  validateGenerationPricingCapabilities,
   type GenerationPricingReadDependencies,
 } from "./generation-pricing-read";
 import { projectAgentModelModeDetails } from "./model-details";
@@ -23,6 +22,7 @@ import {
 } from "./model-editorial-policy";
 import { getAgentModelGuidance } from "./model-guidance";
 import { resolveGenerationReferencesForActor } from "./resolve-generation-references";
+import {GenerationCapabilityError,validateCanonicalGenerationCapabilities} from './generation-capability-validation';
 import type { ResolvedReference } from "./reference-types";
 import type { StudioPricingEstimate } from "@/lib/studio/conversation-pricing-contract";
 
@@ -76,7 +76,7 @@ function comparisonCandidates(input:ComparisonCatalogScope,catalog:readonly Agen
 export function generationComparisonCatalogFingerprint(input:ComparisonCatalogScope,catalog:readonly AgentPublicGenerationEngine[]):string {
   const models=comparisonCandidates(input,catalog).map(candidate=>({modelId:candidate.engine.id,engine:candidate.engine,modeCaps:candidate.modeCaps,publicModes:candidate.publicModes}))
     .sort((a,b)=>a.modelId.localeCompare(b.modelId));
-  return createHash('sha256').update(stableJson(JSON.parse(JSON.stringify({surface:input.surface,mode:input.mode,...(input.operation ? {operation:input.operation}:{}),models})))).digest('hex');
+  return createHash('sha256').update(stableJson(JSON.parse(JSON.stringify({validationPolicy:'canonical-video-references-v2',surface:input.surface,mode:input.mode,...(input.operation ? {operation:input.operation}:{}),models})))).digest('hex');
 }
 
 function defaultAspectRatio(
@@ -176,6 +176,7 @@ export async function compareGenerationPrices(
       });
   }
   let incompatibleInputs=0;
+  const validationFailures:{modelId:string;code:AgentApiErrorCode;field:string;reason:string}[]=[];
   // Small batches bound concurrent database price reads; no provider inference calls.
   for (let start = 0; start < scenarios.length; start += 4) {
     await Promise.all(
@@ -243,7 +244,7 @@ export async function compareGenerationPrices(
             else facts.slot=reference.slot;
             return facts;
           });
-          validateGenerationPricingCapabilities(request,candidate,candidateReferences);
+          validateCanonicalGenerationCapabilities(request,candidate,{resolvedReferences:candidateReferences});
           validatedInput=true;
           const { pricing, pricingSnapshot } = await readGenerationPricing(
             request,
@@ -298,6 +299,16 @@ export async function compareGenerationPrices(
           if (scenario.baseline) originalBaseline = option;
           else options.push(option);
         } catch (error) {
+          if(error instanceof GenerationCapabilityError){
+            const code=error.kind==='reference_required'?'REFERENCE_REQUIRED':error.kind==='reference_invalid'?'REFERENCE_INVALID':'PARAMETER_INVALID';
+            // Fixed canonical fields/reasons only: no provider field names,
+            // exception messages, media identities or original URLs.
+            const field=['mode','prompt','references','outputCount','durationSec','resolution','aspectRatio','audio','fps'].includes(error.field)?error.field:'settings';
+            validationFailures.push({modelId,code,field,reason:error.referenceFailure??error.kind});
+            incompatibleInputs++;
+            unavailable.push({modelId,code,...(scenario.baseline?{baseline:true as const}:{})});
+            return;
+          }
           if(error instanceof GenerationNormalizationError){
             incompatibleInputs++;
             unavailable.push({modelId,code:'PARAMETER_INVALID',...(scenario.baseline?{baseline:true as const}:{})});
@@ -349,7 +360,8 @@ export async function compareGenerationPrices(
       {type: 'generation_comparison', reason: 'no_matching_scenario', surface: base.surface, mode: base.mode,
         requestedDurationSec, durationMismatch, constraintMismatch:scenarios.length>0&&incompatibleInputs===scenarios.length, catalogFingerprint:generationComparisonCatalogFingerprint({...input,surface:base.surface,mode:base.mode},catalog),
         ...(durationMismatch?{modelsOrder:'longest_supported_clip'}:{}),
-        models: models.slice(0, 8), modelsTruncated: models.length > 8},
+        models: models.slice(0, 8), modelsTruncated: models.length > 8,
+        validationFailures:validationFailures.sort((a,b)=>a.modelId.localeCompare(b.modelId)).slice(0,8),validationFailuresTruncated:validationFailures.length>8},
     );
   }
   options.sort(

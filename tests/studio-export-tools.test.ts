@@ -24,3 +24,12 @@ test('export quotes remain scoped and cannot be mixed with another media quote',
   assert.throws(()=>actionFromTool('export_prepare',{reply:'Ready',sequenceId:'main',expectedRevision:2,qualityPreset:'draft',includeAudio:true,userId:'foreign'}));
   assert.throws(()=>imageDraftSchema.parse({reply:'Ready',image:{prompt:'A bottle',aspectRatio:'16:9'},exportQuote:quote}));
 });
+
+test('export inspection accepts a project render ID without inventing a quote and retains historical quote IDs',()=>{
+  const exportId='tlx_'+'b'.repeat(64);
+  assert.deepEqual(actionFromTool('export_read',{exportId,quoteId:null}),{action:'export.read',exportId,quoteId:null});
+  assert.deepEqual(actionFromTool('export_read',{quoteId:quote.quoteId}),{action:'export.read',quoteId:quote.quoteId});
+  assert.throws(()=>actionFromTool('export_read',{exportId,quoteId:quote.quoteId}));
+  assert.throws(()=>actionFromTool('export_read',{exportId:null,quoteId:null}));
+  assert.throws(()=>actionFromTool('export_read',{exportId,userId:'foreign'}));
+});

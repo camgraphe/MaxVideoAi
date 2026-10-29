@@ -17,6 +17,7 @@ import type { ReferenceAsset } from '../_lib/workspace-assets';
 import type { FormState } from '../_lib/workspace-form-state';
 import { buildWorkspacePreflightRequest } from '../_lib/workspace-preflight-request';
 import { useWorkspacePreflightQuote } from './useWorkspacePreflightQuote';
+import { getWorkspaceVideoDurationGuidance } from '../_lib/workspace-video-duration-guidance';
 import { useWorkspaceTopupPaymentQuote } from './useWorkspaceTopupPaymentQuote';
 import {
   buildWorkspaceTopupAnalyticsPayload,
@@ -51,6 +52,7 @@ type UseWorkspacePricingGateOptions = {
 type UseWorkspacePricingGateResult = {
   preflight: PreflightResponse | null;
   preflightError: string | undefined;
+  videoDurationBlocked: boolean;
   isPricing: boolean;
   price: number | null;
   currency: string;
@@ -106,8 +108,11 @@ export function useWorkspacePricingGate({
   const waitingForVideoSource = (ownedGenerationRequired && !form?.extraInputValues.source_job_id) || isVideoSourceWorkflow(submissionMode)
     && Boolean(getVideoWorkflowSourceField(selectedEngine?.inputSchema, submissionMode))
     && getVideoWorkflowSourceState(selectedEngine?.inputSchema, inputAssets, submissionMode, selectedEngine ? getVideoExcerptLimits(selectedEngine, submissionMode) : null) !== 'ready';
-  const { preflight, preflightError: quoteError, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
-    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError ? buildWorkspacePreflightRequest({
+  const videoDurationError = getWorkspaceVideoDurationGuidance({
+    engine: selectedEngine, mode: submissionMode, inputAssets, outputDurationSec: effectiveDurationSec, locale,
+  });
+  const { preflight, preflightError: quoteError, videoDurationBlocked: serverVideoDurationBlocked, setPreflightError, isPricing, price, currency } = useWorkspacePreflightQuote({
+    request: form && selectedEngine && !modeUnavailableMessage && !waitingForVideoSource && !waitingForExcerpt && !elementError && !videoDurationError ? buildWorkspacePreflightRequest({
       form, selectedEngine, memberTier, supportsAudioToggle,
       effectiveDurationSec, voiceControlEnabled, submissionMode, inputAssets, klingElements,
     }) : null,
@@ -116,7 +121,8 @@ export function useWorkspacePricingGate({
     authChecked,
     locale,
   });
-  const preflightError = modeUnavailableMessage ?? elementError ?? quoteError;
+  const preflightError = modeUnavailableMessage ?? elementError ?? videoDurationError ?? quoteError;
+  const videoDurationBlocked = Boolean(videoDurationError) || serverVideoDurationBlocked;
   const [topUpModal, setTopUpModal] = useState<TopUpModalState>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);
@@ -235,6 +241,7 @@ export function useWorkspacePricingGate({
     () => ({
       preflight,
       preflightError,
+      videoDurationBlocked,
       isPricing,
       price,
       currency,
@@ -279,6 +286,7 @@ export function useWorkspacePricingGate({
       isTopUpLoading,
       preflight,
       preflightError,
+      videoDurationBlocked,
       price,
       showComposerError,
       setPreflightError,

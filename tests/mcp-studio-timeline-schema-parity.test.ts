@@ -74,3 +74,13 @@ test('timeline output accepts pinned subtitle identity without allowing document
     assert.equal(studioTimelineOutputSchema.safeParse({...base,clips:[{...clip,subtitle}]}).success,false);
   }
 });
+
+test('MCP timeline output retains bounded read-only audio support without source URLs or arbitrary capability fields', () => {
+  const base = {projectId: 'project',sequenceId: 'sequence',sequenceName: 'Sequence',updatedAt: '2026-10-29T12:00:00Z',revision: 1,fps: 30};
+  const clip = {id: 'clip',title: 'Video',kind: 'video',track: 'video',startFrame: 0,durationFrames: 60,sourceInFrame: 0};
+  const audio = {source: 'unknown',canMute: true,canAdjustVolume: false,canRestoreOriginalVolume: true};
+  assert.equal(studioTimelineOutputSchema.safeParse({...base,clips: [{...clip,audio}]}).success, true);
+  for (const invalid of [{...audio,source: 'guessed'}, {...audio,sourceUrl: 'https://private.example/original.mp4'}, {...audio,canMute: 'yes'}, {...audio,canRestoreOriginalVolume: 'yes'}]) {
+    assert.equal(studioTimelineOutputSchema.safeParse({...base,clips: [{...clip,audio: invalid}]}).success, false);
+  }
+});

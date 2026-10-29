@@ -23,6 +23,8 @@ test('director sends creative purpose, current help and live quote rules with it
       const instructions=String(params.instructions);
       assert.match(instructions,/creative partner/i);
       assert.match(instructions,/prompt.*asset.*edit/i);
+      assert.match(instructions,/check.*explain.*only.*read-only/i);
+      assert.match(instructions,/never.*timeline_edit.*test.*support/i);
       assert.match(instructions,/editorialGuidance/);
       assert.match(instructions,/reviewStatus/);
       assert.match(instructions,/Vary.*shot.*subject.*continuity/);

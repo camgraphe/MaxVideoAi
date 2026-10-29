@@ -116,7 +116,10 @@ async function reconcile() {
     );
   }
 
-  // Find charges older than 25 minutes that have no matching job and no refund.
+  // Timeline renders have their own job/settlement owner. Older deployments
+  // may have no export table, so retain product exclusions independently.
+  const exportsTable = (await query<{name: string | null}>("SELECT to_regclass('public.app_timeline_exports') AS name"))[0]?.name;
+  // Find generation charges older than 25 minutes with no matching owner/refund.
   const candidates = await query<ChargeRow>(
     `
       SELECT
@@ -135,11 +138,14 @@ async function reconcile() {
       FROM app_receipts r
       WHERE r.type = 'charge'
         AND r.job_id IS NOT NULL
+        AND COALESCE(r.surface, '') <> 'timeline_export'
+        AND COALESCE(r.billing_product_key, '') <> 'server_render'
         AND r.created_at < NOW() - ($1 * INTERVAL '1 minute')
         AND r.created_at >= NOW() - ($2 * INTERVAL '1 minute')
         AND NOT EXISTS (SELECT 1 FROM app_receipts rf WHERE rf.job_id = r.job_id AND rf.type = 'refund')
         AND NOT EXISTS (SELECT 1 FROM app_jobs j WHERE j.job_id = r.job_id)
         AND NOT EXISTS (SELECT 1 FROM fal_queue_log f WHERE f.job_id = r.job_id)
+        ${exportsTable ? 'AND NOT EXISTS (SELECT 1 FROM app_timeline_exports e WHERE e.id = r.job_id AND e.user_id = r.user_id)' : ''}
       ORDER BY r.created_at ASC
       LIMIT 50
     `,
