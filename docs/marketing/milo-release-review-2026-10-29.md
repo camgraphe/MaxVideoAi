@@ -30,6 +30,33 @@ The corrected candidate still requires its own successful Quality CI and exact
 Git Preview admission check. Read their current results on PR #555; the failed
 run above is preserved as diagnostic evidence, not relabelled successful.
 
+## Cross-platform layout follow-up
+
+The next run, `40956269348` at `b7f5984c2`, passed Fast, database/media and
+Browser 2/2, but Browser 1/2 found two geometry defects now that the previously
+misclassified tests actually ran on Linux:
+
+- Wider fallback fonts could expand the rail navigation's intrinsic minimum
+  width beyond its shared column. The navigation now has an explicit zero
+  minimum width and narrower spacing at the smallest desktop breakpoint.
+- A reference's remove target shared a negative 4 px gutter with its neighbour;
+  when it landed at the end of a full row, that target extended outside the
+  form. A trailing 4 px inset now reserves its full clickable area.
+
+Both failures were reproduced before the correction, including the reference
+edge at 379 px on macOS and the rail alignment on Linux. The existing tests now
+also cover wider font metrics, each navigation control's containment and the
+379 px reference boundary. No assertion or tolerance was weakened, no target
+was made smaller and no overflow was hidden. The two strengthened tests pass
+on local Chromium and WebKit. A separate focused review found no remaining
+Critical, Important or Minor issue. The PR records subsequent Linux and CI
+results against their actual revisions; the earlier failed run remains failed.
+
+All seven previously misclassified checks also pass with Chromium and WebKit
+running in an isolated Playwright 1.59.1 Ubuntu Noble container. The rail failure
+was first reproduced there against the old stylesheet. This is Linux ARM64
+qualification, not a claim that the GitHub AMD64 runner has already passed.
+
 ## Release boundaries
 
 Independent review confirmed the CI correction and found two Important

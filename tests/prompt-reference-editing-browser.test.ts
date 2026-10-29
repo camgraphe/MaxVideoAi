@@ -29,7 +29,7 @@ test('compact references edit the correct video/audio inside the picker and pres
     for (const browserType of [chromium, webkit]) {
       const browser = await browserType.launch({ headless: true });
       try {
-        for (const width of [320, 390, 1440]) {
+        for (const width of [320, 379, 390, 1440]) {
           const page = await browser.newPage({ viewport: { width, height: 844 }, hasTouch: width < 600 });
           await page.goto(fixture.url);
           if (width === 390) await page.getByRole('tab', { name: 'AI assistant', exact: true }).click();
@@ -78,7 +78,8 @@ test('compact references edit the correct video/audio inside the picker and pres
             assert.equal(await summary.evaluate(el => getComputedStyle(el).flexWrap), 'wrap', 'the selected-media group wraps instead of scrolling');
             for (const item of await summary.locator('button').all()) {
               const itemBox = (await item.boundingBox())!, sectionBox = (await referenceSection.boundingBox())!;
-              assert.ok(itemBox.x >= sectionBox.x && itemBox.x + itemBox.width <= sectionBox.x + sectionBox.width + 1, 'every visible reference and +N stays fully inside the mobile form');
+              assert.ok(itemBox.x >= sectionBox.x && itemBox.x + itemBox.width <= sectionBox.x + sectionBox.width + 1,
+                `${browserType.name()} ${width}px: every visible reference and +N stays fully inside the mobile form: ${JSON.stringify({ label: await item.getAttribute('aria-label'), itemBox, sectionBox })}`);
             }
             assert.ok((await summary.boundingBox())!.height <= 100, 'the capped media group needs at most two compact rows');
           }
