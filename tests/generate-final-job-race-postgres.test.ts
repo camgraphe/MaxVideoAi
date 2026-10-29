@@ -26,7 +26,7 @@ test('late submission acknowledgments preserve terminal output while other jobs 
     jobId, thumb: '/placeholder.svg', aspectRatio: '16:9', previewFrame: '/placeholder.svg',
     etaSeconds: 60, etaLabel: '60s', video, status, progress: status === 'completed' ? 100 : 5,
     providerJobId: 'request-' + jobId, finalPriceCents: 100, pricingSnapshotJson: '{}',
-    costBreakdownJson: null, currency: 'USD', vendorAccountId: null, paymentStatus: 'paid_wallet',
+    costBreakdownJson: null, currency: 'USD', vendorAccountId: null, paymentStatus: 'platform',
     stripePaymentIntentId: null, stripeChargeId: null, visibility: 'private', indexable: false,
     message: 'Submission accepted', settingsSnapshotJson: '{}', queryFn: execute,
   });
@@ -34,7 +34,7 @@ test('late submission acknowledgments preserve terminal output while other jobs 
     await db.pool.query(`INSERT INTO app_jobs(job_id,provider,engine_id,status,progress,video_url,
       thumb_url,preview_frame,message,settings_snapshot,payment_status,provider_job_id)
       VALUES($1,'fal','minimax-h3',$2,100,$3,'/final.webp','/final.webp',NULL,
-        '{"providerVideoCopy":{"attempts":1}}','paid_wallet',$4)`,
+        '{"providerVideoCopy":{"attempts":1}}','platform',$4)`,
     [jobId, status, status === 'completed' ? 'https://cdn.maxvideoai.com/final.mp4' : null, 'request-' + jobId]);
   };
   const read = async (id: string) => (await db.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [id])).rows[0];
@@ -56,7 +56,9 @@ test('late submission acknowledgments preserve terminal output while other jobs 
   await t.test('completion before the acknowledgment preserves the entire persisted result', async () => {
     await seed('done', 'completed');
     const completed = await read('done');
-    await write('done');
+    const outcome = await write('done');
+    assert.equal(outcome.kind, 'superseded');
+    assert.equal(outcome.job.video_url, 'https://cdn.maxvideoai.com/final.mp4');
     assert.deepEqual(await read('done'), completed);
   });
 
@@ -74,6 +76,16 @@ test('late submission acknowledgments preserve terminal output while other jobs 
     assert.equal((await read('recovered')).video_url, 'https://cdn.maxvideoai.com/late.mp4');
   });
 
+  await t.test('a late completion preserves a committed refund instead of restoring paid status', async () => {
+    await seed('refunded-late', 'failed');
+    await db.pool.query("UPDATE app_jobs SET payment_status='refunded_wallet' WHERE job_id='refunded-late'");
+    const outcome = await write('refunded-late', 'completed', 'https://cdn.maxvideoai.com/recovered.mp4');
+    assert.equal(outcome.kind, 'applied');
+    assert.equal(outcome.job.payment_status, 'refunded_wallet');
+    assert.equal((await read('refunded-late')).status, 'completed');
+    assert.equal((await read('refunded-late')).payment_status, 'refunded_wallet');
+  });
+
   for (const { terminal, incoming } of [
     { terminal: 'completed', incoming: 'queued' },
     { terminal: 'completed', incoming: 'failed' },
@@ -87,7 +99,7 @@ test('late submission acknowledgments preserve terminal output while other jobs 
       await seed(witness, 'pending');
       const completing = await db.pool.connect();
       const submitting = await db.pool.connect();
-      let acknowledgment: Promise<void> | undefined;
+      let acknowledgment: ReturnType<typeof write> | undefined;
       try {
         const blockingPid = (await completing.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
         const waitingPid = (await submitting.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
@@ -103,7 +115,11 @@ test('late submission acknowledgments preserve terminal output while other jobs 
         await write(witness);
         assert.equal((await read(witness)).status, 'queued');
         await completing.query('COMMIT');
-        await acknowledgment;
+        const outcome = await acknowledgment;
+        if (incoming !== 'completed') {
+          assert.equal(outcome.kind, 'superseded');
+          assert.equal(outcome.job.status, terminal);
+        }
         if (incoming === 'completed') {
           const recovered = await read(jobId);
           assert.equal(recovered.status, 'completed');

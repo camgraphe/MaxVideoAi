@@ -32,7 +32,7 @@ test('video generation has a thin HTTP adapter and an injected server orchestrat
   assert.match(prepared, /adapters\.submitGenerateProviderTask/);
   assert.match(prepared, /adapters\.resolveProviderMediaState/);
   assert.match(prepared, /createAtomicInitialVideoJob/);
-  assert.match(prepared, /persistWalletFailureRefundReceipt/);
+  assert.match(prepared, /persistDirectVideoJob/);
   assert.match(prepared, /rollbackPendingPayment/);
   assert.match(prepared, /buildFinalGenerateResponse/);
   assert.match(prepared, /trustedInitialState:\s*params\.preReservedInitialState/);

@@ -57,7 +57,7 @@ test('final job persistence helper writes the expected app_jobs update params', 
     costBreakdownJson: '{"provider":100}',
     currency: 'USD',
     vendorAccountId: null,
-    paymentStatus: 'paid_wallet',
+    paymentStatus: 'platform',
     stripePaymentIntentId: null,
     stripeChargeId: null,
     visibility: 'private',
@@ -66,6 +66,7 @@ test('final job persistence helper writes the expected app_jobs update params', 
     settingsSnapshotJson: '{"schemaVersion":1}',
     queryFn: async (sql, params) => {
       queries.push({ sql, params });
+      return [{ job_id: 'job_123', status: 'completed', payment_status: 'platform' }];
     },
   });
 
@@ -87,7 +88,7 @@ test('final job persistence helper writes the expected app_jobs update params', 
     '{"provider":100}',
     'USD',
     null,
-    'paid_wallet',
+    'platform',
     null,
     null,
     'private',

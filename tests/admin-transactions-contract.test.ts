@@ -238,9 +238,9 @@ function refundHarness(responses: Array<unknown[] | Error>) {
 
 test('job refund locks the latest charge and performs every write in one transaction', async () => {
   const harness = refundHarness([
+    [],
     [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: { total: 900 }, vendor_account_id: 'vendor', message: null, engine_label: 'Veo', duration_sec: 8, currency: 'usd' }],
     [{ id: 10, amount_cents: '900', currency: 'usd', description: 'Generation' }],
-    [],
     [],
     [{ id: 20, created_at: '2026-07-14T12:00:00.000Z' }],
     [],
@@ -254,8 +254,9 @@ test('job refund locks the latest charge and performs every write in one transac
   assert.deepEqual(result, { refundReceiptId: 20, createdAt: '2026-07-14T12:00:00.000Z' });
   assert.equal(harness.transactionCount(), 1);
   assert.equal(harness.calls.length, 6);
-  assert.match(harness.calls[1]!.text, /FOR UPDATE/);
-  assert.match(harness.calls[2]!.text, /pg_advisory_xact_lock/);
+  assert.match(harness.calls[0]!.text, /pg_advisory_xact_lock/);
+  assert.match(harness.calls[1]!.text, /FROM app_jobs[\s\S]*FOR UPDATE/);
+  assert.match(harness.calls[2]!.text, /FROM app_receipts[\s\S]*FOR UPDATE/);
   assert.match(harness.calls[3]!.text, /type = 'refund'/);
   assert.match(harness.calls[4]!.text, /INSERT INTO app_receipts/);
   assert.match(harness.calls[5]!.text, /UPDATE app_jobs/);
@@ -271,6 +272,7 @@ test('job refund locks the latest charge and performs every write in one transac
 
 test('receipt refund preserves orphan-charge fallback and skips job update', async () => {
   const harness = refundHarness([
+    [{ job_id: null }],
     [{ id: 30, user_id: 'user_2', job_id: null, amount_cents: 500, currency: null, description: null, vendor_account_id: null, pricing_snapshot: null }],
     [],
     [{ id: 31, created_at: '2026-07-14T13:00:00.000Z' }],
@@ -283,11 +285,12 @@ test('receipt refund preserves orphan-charge fallback and skips job update', asy
 
   assert.deepEqual(result, { refundReceiptId: 31, createdAt: '2026-07-14T13:00:00.000Z' });
   assert.equal(harness.transactionCount(), 1);
-  assert.equal(harness.calls.length, 3);
-  assert.match(harness.calls[0]!.text, /FOR UPDATE/);
-  assert.match(harness.calls[2]!.text, /INSERT INTO app_receipts/);
+  assert.equal(harness.calls.length, 4);
+  assert.doesNotMatch(harness.calls[0]!.text, /FOR UPDATE/);
+  assert.match(harness.calls[1]!.text, /FOR UPDATE/);
+  assert.match(harness.calls[3]!.text, /INSERT INTO app_receipts/);
   assert.equal(harness.calls.some((call) => /UPDATE app_jobs/.test(call.text)), false);
-  assert.equal(harness.calls[2]!.params?.[3], 'Manual refund for receipt 30');
+  assert.equal(harness.calls[3]!.params?.[3], 'Manual refund for receipt 30');
 });
 
 test('generic receipt refunds leave Studio assistance reservations and packs to their reconciliation owner', async t => {
@@ -299,15 +302,20 @@ test('generic receipt refunds leave Studio assistance reservations and packs to 
   ]) {
     await t.test(JSON.stringify(identity), async () => {
       const harness = refundHarness([
+        [{ job_id: identity.job_id }],
+        ...(identity.job_id ? [[], []] : []),
         [{ id: 30, user_id: 'user_2', amount_cents: 500, currency: 'USD', description: 'Studio assistance reservation', vendor_account_id: null, pricing_snapshot: null, ...identity }],
-        [], [], [], [],
+        [],
+        [],
+        [],
+        [],
       ]);
       await assert.rejects(
         issueManualWalletRefundByReceipt({ receiptId: 30, adminUserId: 'admin_1' }, harness.dependencies),
         /Studio assistance charges require Studio assistance reconciliation/
       );
-      assert.equal(harness.calls.length, 1, 'Only the selected charge may be read before rejecting the generic refund');
-      assert.match(harness.calls[0]!.text, /billing_product_key/);
+      assert.equal(harness.calls.length, identity.job_id ? 4 : 2);
+      assert.match(harness.calls.at(-1)!.text, /billing_product_key/);
       assert.equal(harness.rollbackCount(), 1);
     });
   }
@@ -322,16 +330,19 @@ test('job refund selection cannot bypass Studio reservation or pack reconciliati
   ]) {
     await t.test(JSON.stringify(identity), async () => {
       const harness = refundHarness([
+        [],
         [{ job_id: identity.job_id, user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, currency: 'USD' }],
         [{ id: 10, amount_cents: 900, currency: 'USD', description: null, billing_product_key: identity.billing_product_key }],
-        [], [], [], [],
+        [],
+        [],
+        [],
       ]);
       await assert.rejects(
         issueManualWalletRefund({ jobId: identity.job_id, adminUserId: 'admin_1' }, harness.dependencies),
         /Studio assistance charges require Studio assistance reconciliation/,
       );
-      assert.equal(harness.calls.length, 2);
-      assert.match(harness.calls[1]!.text, /billing_product_key/);
+      assert.equal(harness.calls.length, 3);
+      assert.match(harness.calls[2]!.text, /billing_product_key/);
       assert.equal(harness.rollbackCount(), 1);
     });
   }
@@ -339,9 +350,9 @@ test('job refund selection cannot bypass Studio reservation or pack reconciliati
 
 test('duplicate refund is rejected after the charge lock and before insert', async () => {
   const harness = refundHarness([
+    [],
     [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],
     [{ id: 10, amount_cents: 900, currency: 'USD', description: null }],
-    [],
     [{ id: 99 }],
   ]);
 
@@ -349,18 +360,20 @@ test('duplicate refund is rejected after the charge lock and before insert', asy
     issueManualWalletRefund({ jobId: 'job_1', adminUserId: 'admin_1' }, harness.dependencies),
     /Job or wallet charge not found, or refund already issued\./
   );
-  assert.match(harness.calls[1]!.text, /FOR UPDATE/);
-  assert.match(harness.calls[2]!.text, /pg_advisory_xact_lock/);
+  assert.match(harness.calls[0]!.text, /pg_advisory_xact_lock/);
+  assert.match(harness.calls[1]!.text, /FROM app_jobs[\s\S]*FOR UPDATE/);
+  assert.match(harness.calls[2]!.text, /FROM app_receipts[\s\S]*FOR UPDATE/);
   assert.match(harness.calls[3]!.text, /type = 'refund'/);
   assert.equal(harness.calls.some((call) => /INSERT INTO app_receipts/.test(call.text)), false);
 });
 
 test('receipt selector preserves null-status acceptance and non-wallet rejection', async () => {
   const nullable = refundHarness([
-    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
-    [],
+    [{ job_id: 'job' }],
     [],
     [{ payment_status: null }],
+    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
+    [],
     [{ id: 41, created_at: 'created' }],
     [],
   ]);
@@ -370,10 +383,11 @@ test('receipt selector preserves null-status acceptance and non-wallet rejection
   );
 
   const nonWallet = refundHarness([
-    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
-    [],
+    [{ job_id: 'job' }],
     [],
     [{ payment_status: 'paid_stripe' }],
+    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
+    [],
   ]);
   await assert.rejects(
     issueManualWalletRefundByReceipt(
@@ -386,9 +400,9 @@ test('receipt selector preserves null-status acceptance and non-wallet rejection
 
 test('refund write failure propagates through the transaction without updating the job', async () => {
   const harness = refundHarness([
+    [],
     [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],
     [{ id: 10, amount_cents: 900, currency: 'USD', description: null }],
-    [],
     [],
     new Error('insert failed'),
   ]);
@@ -404,9 +418,9 @@ test('refund write failure propagates through the transaction without updating t
 
 test('job and receipt selectors serialize the same job before duplicate validation', async () => {
   const jobHarness = refundHarness([
+    [],
     [{ job_id: 'job_shared', user_id: 'user', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],
     [{ id: 50, amount_cents: 100, currency: 'USD', description: null }],
-    [],
     [],
     [{ id: 51, created_at: 'job-refund' }],
     [],
@@ -417,9 +431,10 @@ test('job and receipt selectors serialize the same job before duplicate validati
   );
 
   const receiptHarness = refundHarness([
+    [{ job_id: 'job_shared' }],
+    [],
+    [],
     [{ id: 49, user_id: 'user', job_id: 'job_shared', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
-    [],
-    [],
     [],
     [{ id: 52, created_at: 'receipt-refund' }],
   ]);
@@ -433,12 +448,27 @@ test('job and receipt selectors serialize the same job before duplicate validati
   const receiptLockIndex = receiptHarness.calls.findIndex((call) => /pg_advisory_xact_lock/.test(call.text));
   const receiptDuplicateIndex = receiptHarness.calls.findIndex((call) => /type = 'refund'/.test(call.text));
 
-  assert.equal(jobLockIndex, 2);
+  assert.equal(jobLockIndex, 0);
   assert.equal(receiptLockIndex, 1);
   assert.deepEqual(jobHarness.calls[jobLockIndex]?.params, ['job_shared']);
   assert.deepEqual(receiptHarness.calls[receiptLockIndex]?.params, ['job_shared']);
   assert.ok(jobLockIndex < jobDuplicateIndex);
   assert.ok(receiptLockIndex < receiptDuplicateIndex);
-  assert.match(receiptHarness.calls[3]!.text, /FROM app_jobs/);
+  assert.match(receiptHarness.calls[2]!.text, /FROM app_jobs[\s\S]*FOR UPDATE/);
   assert.equal(receiptHarness.calls.some((call) => /UPDATE app_jobs/.test(call.text)), false);
+});
+
+test('receipt identity cannot change the job scope after locks were selected', async () => {
+  const harness = refundHarness([
+    [{ job_id: 'original-job' }],
+    [],
+    [{ job_id: 'original-job', payment_status: 'paid_wallet' }],
+    [{ id: 70, user_id: 'user', job_id: 'different-job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
+  ]);
+  await assert.rejects(
+    issueManualWalletRefundByReceipt({ receiptId: 70, adminUserId: 'admin' }, harness.dependencies),
+    /Charge job identity changed/,
+  );
+  assert.equal(harness.rollbackCount(), 1);
+  assert.equal(harness.calls.some(call => /INSERT INTO app_receipts/.test(call.text)), false);
 });

@@ -107,6 +107,8 @@ export async function runFalPoll(dependencies: Partial<typeof defaults> = {}) {
           failure_origin: options.failureOrigin ?? 'poll_internal',
         });
       } catch (updateError) {
+        // Settlement rolled back: keep the job active so the next poll can retry it.
+        if (autoRefundEligible) throw updateError;
         console.warn('[fal-poll] webhook update failed, falling back to DB update', job.job_id, sanitizeProviderMediaDiagnostics(updateError));
         try {
           await query(

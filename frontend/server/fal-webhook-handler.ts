@@ -2,9 +2,9 @@ import { resolveFalJobQueue } from '@/server/fal-job-queue';
 import { captureCompletedFalDraftCache } from './fal-webhook-draft-cache';
 import { isExternalFalImport } from './app-job-origin';
 import { readGeneratedVideoFacts, type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
-import { query } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { syncProviderAttemptTerminalStatus } from '@/server/video-providers/provider-attempts';
-import { maybeAutoRefundWalletCharge } from './fal-webhook-refunds';
+import { withWalletFailureSettlement } from './fal-webhook-refunds';
 import { createProvisionalJobFromWebhook } from './fal-webhook-provisional';
 import type { AppJobRow } from './fal-webhook-types';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -516,7 +516,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
     });
   }
 
-  const applied = await query<{ job_id: string }>(
+  const persistUpdate = (executor: QueryExecutor) => executor.query<{ job_id: string }>(
     `UPDATE app_jobs
      SET status = $2,
          progress = $3,
@@ -566,6 +566,12 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
       providerVideoCopyStateJson,
     ]
   );
+  const applied = shouldAutoRefundFailure
+    ? await withWalletFailureSettlement(job.job_id, {
+        engineLabel: engineLabelForUpdate ?? job.engine_label ?? job.engine_id,
+        providerJobId: requestId, failureMessage: normalizedMessage, failureOrigin,
+      }, persistUpdate)
+    : await persistUpdate({ query });
   await syncProviderAttemptTerminalStatus({ publicJobId: job.job_id, provider: 'fal', providerJobId: requestId });
   if (!applied.length) return;
 
@@ -604,15 +610,6 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
         existingKeyframeUrls: job.keyframe_urls,
       }),
     ]);
-  }
-
-  if (nextStatus === 'failed' && shouldAutoRefundFailure) {
-    await maybeAutoRefundWalletCharge(job.job_id, {
-      engineLabel: engineLabelForUpdate ?? job.engine_label ?? job.engine_id,
-      providerJobId: requestId,
-      failureMessage: normalizedMessage ?? null,
-      failureOrigin,
-    });
   }
 
   console.info('[fal-webhook] lifecycle update', {

@@ -125,7 +125,7 @@ test('final response helper builds the completed generation payload', () => {
   );
 });
 
-test('final response helper reports refunded wallet status for failed wallet generations', () => {
+test('final response helper never infers a refund from a failed wallet generation', () => {
   assert.equal(
     resolveGenerateResponsePaymentStatus({
       status: 'failed',
@@ -133,7 +133,7 @@ test('final response helper reports refunded wallet status for failed wallet gen
       paymentMode: 'wallet',
       paymentStatus: 'paid_wallet',
     }),
-    'refunded_wallet'
+    'paid_wallet'
   );
 
   const response = buildFinalGenerateResponse({
@@ -171,9 +171,16 @@ test('final response helper reports refunded wallet status for failed wallet gen
     },
   });
 
-  assert.equal(response.paymentStatus, 'refunded_wallet');
+  assert.equal(response.paymentStatus, 'paid_wallet');
   assert.equal(response.videoUrl, null);
   assert.equal(response.message, 'Provider copy failed');
+});
+
+test('payment status resolver preserves confirmed wallet refunds after failure or recovery', () => {
+  for (const status of ['failed', 'completed']) {
+    assert.equal(resolveGenerateResponsePaymentStatus({ status, pendingReceipt, paymentMode: 'wallet',
+      paymentStatus: 'refunded_wallet' }), 'refunded_wallet');
+  }
 });
 
 test('payment status resolver preserves non-wallet statuses', () => {

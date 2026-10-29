@@ -78,27 +78,31 @@ function requireGenericRefund(charge: JobChargeRow, jobId: string | null) {
   }
 }
 
-async function lockRefundJobScope(executor: QueryExecutor, jobId: string | null) {
-  if (!jobId) return;
+async function lockRefundJobScope(executor: QueryExecutor, jobId: string | null): Promise<JobRow | null> {
+  if (!jobId) return null;
+  // Match automatic reconciliation: job scope, then job row, then receipt rows.
+  // Holding a charge first can deadlock a reconciler already holding the job.
   await executor.query(
     `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`,
     [jobId]
   );
+  const jobRows = await executor.query<JobRow>(
+    `SELECT job_id, user_id, payment_status, pricing_snapshot, vendor_account_id,
+            message, engine_label, duration_sec, currency
+     FROM app_jobs
+     WHERE job_id = $1
+     LIMIT 1
+     FOR UPDATE`,
+    [jobId]
+  );
+  return jobRows.at(0) ?? null;
 }
 
 async function resolveJobRefundContext(
   executor: QueryExecutor,
   jobId: string
 ): Promise<RefundContext> {
-  const jobRows = await executor.query<JobRow>(
-    `SELECT job_id, user_id, payment_status, pricing_snapshot, vendor_account_id,
-            message, engine_label, duration_sec, currency
-     FROM app_jobs
-     WHERE job_id = $1
-     LIMIT 1`,
-    [jobId]
-  );
-  const job = jobRows.at(0);
+  const job = await lockRefundJobScope(executor, jobId);
   if (!job || !job.user_id) {
     throw new Error('Job or wallet charge not found, or refund already issued.');
   }
@@ -118,8 +122,6 @@ async function resolveJobRefundContext(
     throw new Error('Job or wallet charge not found, or refund already issued.');
   }
   requireGenericRefund(charge, jobId);
-
-  await lockRefundJobScope(executor, jobId);
 
   const refundRows = await executor.query<{ id: number }>(
     `SELECT id
@@ -156,6 +158,15 @@ async function resolveReceiptRefundContext(
   executor: QueryExecutor,
   receiptId: number
 ): Promise<RefundContext> {
+  // Read only the identity before locking. Re-read the full charge after its job
+  // is locked, so both public selectors acquire locks in the same order.
+  const identities = await executor.query<{ job_id: string | null }>(
+    `SELECT job_id FROM app_receipts WHERE id = $1 AND type = 'charge' LIMIT 1`,
+    [receiptId]
+  );
+  const identity = identities.at(0);
+  if (!identity) throw new Error('Charge receipt not found.');
+  const jobInfo = await lockRefundJobScope(executor, identity.job_id);
   const chargeRows = await executor.query<ReceiptChargeRow>(
     `SELECT id, user_id, job_id, amount_cents, currency, description, billing_product_key,
             vendor_account_id, pricing_snapshot
@@ -167,8 +178,10 @@ async function resolveReceiptRefundContext(
   );
   const charge = chargeRows.at(0);
   if (!charge) throw new Error('Charge receipt not found.');
+  if (charge.job_id !== identity.job_id) {
+    throw new Error('Charge job identity changed while acquiring refund locks.');
+  }
   requireGenericRefund(charge, charge.job_id);
-  await lockRefundJobScope(executor, charge.job_id);
   if (!charge.user_id) throw new Error('Charge does not belong to a wallet user.');
 
   const existingRefund = await executor.query<{ id: number }>(
@@ -184,16 +197,6 @@ async function resolveReceiptRefundContext(
   );
   if (existingRefund.length) throw new Error('This charge already has a refund.');
 
-  const jobRows = charge.job_id
-    ? await executor.query<{ payment_status: string | null }>(
-        `SELECT payment_status
-         FROM app_jobs
-         WHERE job_id = $1
-         LIMIT 1`,
-        [charge.job_id]
-      )
-    : [];
-  const jobInfo = jobRows.at(0) ?? null;
   if (
     jobInfo &&
     jobInfo.payment_status &&

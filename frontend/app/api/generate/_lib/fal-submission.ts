@@ -22,6 +22,8 @@ import { projectProviderErrorResponse } from '@/server/provider-error-projection
 import type { ProviderClientErrorPolicy } from '@/types/engines';
 import { createFalMediaTransport } from '@/server/fal-provider-media-access';
 import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
+import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
+import { buildPersistedVideoJobResponse, persistedVideoJobRows, readPersistedVideoJob, type PersistedVideoJob } from './persisted-video-job';
 
 const LUMA_RAY2_TIMEOUT_MS = 180_000;
 const FAL_RETRY_DELAYS_MS = [5_000, 15_000, 30_000];
@@ -46,6 +48,7 @@ type SubmitFalGenerateTaskDeps = {
   queryFn?: QueryFn;
   rollbackPendingPaymentFn?: typeof rollbackPendingPayment;
   markJobAwaitingFalFn?: typeof markJobAwaitingFal;
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
 };
 
 export type FalGenerateSubmissionResult =
@@ -240,12 +243,6 @@ export async function submitFalGenerateTask(params: {
         : typeof (error as { providerJobId?: string } | undefined)?.providerJobId === 'string'
           ? (error as { providerJobId?: string }).providerJobId!
           : params.getLastProviderJobId() ?? null;
-    const paymentStatusOverride =
-      params.pendingReceipt && params.paymentMode === 'wallet'
-        ? 'refunded_wallet'
-        : params.pendingReceipt && params.paymentMode !== 'wallet'
-          ? 'refunded'
-          : null;
     const refundDescription = buildUserFacingRefundDescription({
       engineLabel: params.engineLabel,
       durationSec: params.durationSec,
@@ -346,8 +343,9 @@ export async function submitFalGenerateTask(params: {
       return buildDeferredFalResponse(params.jobId, providerJobId, progressFloor, waitingMessage);
     }
 
+    let settledJob: PersistedVideoJob;
     try {
-      await queryFn(
+      const persistFailure = async (execute: (sql: string, values?: unknown[]) => Promise<unknown>) => persistedVideoJobRows(await execute(
         `UPDATE app_jobs
          SET status = 'failed',
              progress = 0,
@@ -360,21 +358,54 @@ export async function submitFalGenerateTask(params: {
                    jsonb_build_object('requestId', COALESCE($3, provider_job_id)), true)
                ELSE settings_snapshot
              END,
-             payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
              updated_at = NOW()
-         WHERE job_id = $1`,
-        [params.jobId, failureMessage, providerJobId, paymentStatusOverride]
-      );
+         WHERE job_id = $1
+           AND status IN ('pending','queued','running','processing','in_progress')
+         RETURNING *`,
+        [params.jobId, failureMessage, providerJobId]
+      ));
+      const applied = params.paymentMode === 'wallet'
+        ? await (params.deps?.withFailureSettlementFn ?? withWalletFailureSettlement)(params.jobId, {
+            engineLabel: params.engineLabel, providerJobId, failureMessage, failureOrigin: 'submission_terminal',
+          }, executor => persistFailure((sql, values) => executor.query(sql, values)))
+        : await persistFailure(queryFn);
+      settledJob = await readPersistedVideoJob(params.jobId, queryFn);
+      if (!applied.length || settledJob.status === 'completed') {
+        return { ok: false, status: 200, body: buildPersistedVideoJobResponse(settledJob) };
+      }
     } catch (updateError) {
       console.error('[api/generate] failed to update provisional job after Fal error', updateError);
+      // Infrastructure failures after provider work are uncertain, never permission to refund or resubmit.
+      try {
+        const current = await readPersistedVideoJob(params.jobId, queryFn);
+        if (['completed', 'failed'].includes(current.status ?? '')) {
+          return { ok: false, status: 200, body: buildPersistedVideoJobResponse(current) };
+        }
+      } catch { /* The existing job remains the recovery identity while storage is unavailable. */ }
+      return buildDeferredFalResponse(params.jobId, providerJobId, FAL_PROGRESS_FLOOR,
+        'The generation outcome is being checked. Do not submit again.');
     }
 
-    if (params.pendingReceipt && !isTimeoutError) {
+    if (params.pendingReceipt && params.paymentMode !== 'wallet') {
       await rollbackPendingPaymentFn({
         pendingReceipt: params.pendingReceipt,
         walletChargeReserved: params.walletChargeReserved,
         refundDescription,
       });
+      // The legacy Stripe rollback reports no outcome. Only a recorded real refund confirms it.
+      const receipt = params.pendingReceipt;
+      const refunds = await queryFn(`SELECT id FROM app_receipts WHERE job_id=$1 AND user_id=$2
+        AND type='refund' AND amount_cents=$3 AND UPPER(currency)=UPPER($4)
+        AND stripe_refund_id IS NOT NULL LIMIT 1`,
+      [receipt.jobId, receipt.userId, receipt.amountCents, receipt.currency]).catch(() => []);
+      if (refunds.length) {
+        await queryFn(`UPDATE app_jobs SET payment_status='refunded' WHERE job_id=$1
+          AND payment_status NOT IN ('refunded_wallet','refunded')`, [receipt.jobId]);
+      }
+      settledJob = await readPersistedVideoJob(params.jobId, queryFn);
+      if (settledJob.status !== 'failed') {
+        return { ok: false, status: 200, body: buildPersistedVideoJobResponse(settledJob) };
+      }
     }
 
     if (status === 422) {
@@ -403,6 +434,7 @@ export async function submitFalGenerateTask(params: {
             message: userMessage,
             providerMessage: null,
             detail: null,
+            paymentStatus: settledJob.payment_status,
           },
         }),
       };
@@ -427,6 +459,7 @@ export async function submitFalGenerateTask(params: {
           message: failureMessage,
           providerMessage: null,
           detail: null,
+          paymentStatus: settledJob.payment_status,
         },
       }),
     };

@@ -73,7 +73,7 @@ test('Fal webhook handler delegates mapping, payload extraction, provisional job
     'normalizeFalQueueLogStatus',
     'coerceNumber',
     'normalizeCurrency',
-    'maybeAutoRefundWalletCharge',
+    'withWalletFailureSettlement',
     'createProvisionalJobFromWebhook',
   ]) {
     assert.doesNotMatch(

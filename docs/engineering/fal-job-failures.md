@@ -63,12 +63,58 @@ missing-result, rate-limit and server read errors must not authorize refunds.
 Never resubmit a paid generation to diagnose its status.
 
 Wallet credits and provider spending are distinct. A refunded job that later
-delivers output is an improper wallet refund; a content refusal with no output
-is not proof of an improper refund. Pricing snapshots are estimates, not billing
-events. Do not add wallet refunds to provider costs and call the sum a loss.
+delivers output needs a chronology audit: distinguish a premature refund from a
+late provider recovery after a confirmed terminal failure. A content refusal with
+no output is not proof of an improper refund. Pricing snapshots are estimates,
+not billing events. Do not add wallet refunds to provider costs and call the sum
+a loss.
 
 Focused regression checks:
 
 ```sh
 frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/fal-webhook-errors.test.ts tests/fal-webhook-content-persistence.test.ts tests/fal-long-running-poll.test.ts tests/user-facing-failure-messages.test.ts tests/generation-output-failure-guidance.test.ts tests/generation-status-service.test.ts tests/recent-generations-service.test.ts tests/billing-read-routes-postgres.test.ts
 ```
+
+## Terminal races and wallet settlement (29 October 2026)
+
+Fal's eligible terminal failure and its wallet refund share one PostgreSQL
+transaction in `fal-webhook-refunds.ts`. The scope acquires the per-job advisory
+lock, then the job row, then the charge row. Admin refunds use the same order
+for both job and receipt selectors. Call `withWalletFailureSettlement` before
+writing the failure; do not nest its transaction inside a transaction already
+holding these locks. No provider or media I/O belongs inside this scope.
+
+The refund uses the single persisted wallet charge: its owner, amount, currency,
+surface and pricing snapshot. An absent, ambiguous, card-funded or mismatched
+charge fails reconciliation instead of crediting from a caller's estimate.
+The refund receipt and `refunded_wallet` status must both persist. Storage errors
+propagate, rolling the failure transition back so a later poll or webhook can
+retry. Fal polling must not replace a failed refund transaction with a standalone
+`status='failed'` fallback. The standalone refund helper can also reconcile an
+existing receipt/status split when that job is explicitly replayed; this is not
+a scan or repair of all historical failures.
+
+If completion wins before settlement, no new automatic refund is permitted.
+If a legitimate failure/refund commits first and output arrives later, recovery
+may still complete the job, preserving its refunded payment state. This case
+remains auditable; completion never authorizes a new wallet debit or erasing a
+refund. Manual support refunds of completed jobs remain supported.
+
+Final generation persistence returns whether the update applied and a durable
+job snapshot. A stale acknowledgement must use the persisted response and skip
+its local failure/refund effects. Even an applied response uses the returned media,
+progress and payment state. `failed` alone must never project `refunded_wallet`. Read the losing snapshot with a separate SQL
+statement: a CTE fallback SELECT shares the pre-wait snapshot and can return stale
+state after an UPDATE loses a row-lock race. An uncertain final persistence error
+after provider work is not permission to roll payment back or submit again.
+
+This scope does not redesign the legacy Stripe rollback or all provider-specific
+submission handlers. In particular, separating a confirmed Fal enqueue from a
+later authentication/rate-limit result-read failure still needs an explicit
+transport-phase signal; a request ID alone is insufficient evidence.
+
+Focused runtime checks include `fal-wallet-refund-postgres.test.ts`,
+`fal-wallet-webhook-postgres.test.ts`, `fal-poll-terminal-race-postgres.test.ts`,
+`admin-refund-lock-order-postgres.test.ts` and the generate final-persistence tests.
+Use the repository's disposable PostgreSQL 17 runner; no live paid generation is
+needed for these regressions.

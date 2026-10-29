@@ -5,7 +5,7 @@ import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { allowGenerationPoll } from './helpers/generation-poll-claim';
 import { waitForPostgresBlock } from './helpers/postgres-row-lock';
 
-test('Fal failure fallback preserves terminal races and still fails active jobs', { timeout: 90_000 }, async (t) => {
+test('Fal settlement failure preserves terminal races and keeps active jobs retryable', { timeout: 90_000 }, async (t) => {
   const db = await startDisposablePostgres('fal-terminal-race');
   const polling = await db.pool.connect();
   t.after(async () => { polling.release(); await db.cleanup(); });
@@ -44,7 +44,7 @@ test('Fal failure fallback preserves terminal races and still fails active jobs'
   });
 
   for (const terminal of ['completed', 'failed']) {
-    await t.test(`fallback rechecks concurrent ${terminal} after a real row lock`, async () => {
+    await t.test(`deferred update rechecks concurrent ${terminal} after a real row lock`, async () => {
       const jobId = `racing-${terminal}`;
       await seed(jobId, 'running');
       const completing = await db.pool.connect();
@@ -79,14 +79,14 @@ test('Fal failure fallback preserves terminal races and still fails active jobs'
   }
 
   for (const active of ['pending', 'queued', 'running', 'processing', 'in_progress']) {
-    await t.test(`fallback still fails an active ${active} job`, async () => {
+    await t.test(`settlement outage preserves an active ${active} job`, async () => {
       const jobId = `active-${active}`;
       await seed(jobId, active);
       await poll(async () => {});
       const row = await read(jobId);
-      assert.equal(row.status, 'failed');
-      assert.equal(row.progress, 1);
-      assert.equal(typeof row.message, 'string');
+      assert.equal(row.status, active);
+      assert.equal(row.progress, 25);
+      assert.equal(row.message, null);
       assert.equal(row.video_url, null);
     });
   }

@@ -10,8 +10,8 @@ import {
   type VideoInitialJobResult,
 } from '@/app/api/generate/_lib/initial-video-job';
 import { rollbackPendingPayment } from '@/app/api/generate/_lib/payment-rollback';
-import { persistFinalVideoJobUpdate, recordFinalGenerateQueueLog } from '@/app/api/generate/_lib/final-job-persistence';
-import { persistFinalChargeReceipt, persistWalletFailureRefundReceipt } from '@/app/api/generate/_lib/final-receipts';
+import { recordFinalGenerateQueueLog } from '@/app/api/generate/_lib/final-job-persistence';
+import { persistFinalChargeReceipt } from '@/app/api/generate/_lib/final-receipts';
 import { buildFinalGenerateResponse } from '@/app/api/generate/_lib/final-response';
 import type { GenerateBillingPreflight } from '@/app/api/generate/_lib/billing-preflight';
 import type { FalInputSummary } from '@/app/api/generate/_lib/fal-request';
@@ -24,6 +24,7 @@ import { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
 import type { PreReservedVideoInitialState, VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 import type { PreparedSeedanceWorkflow } from '@/server/seedance-workflow-request';
 import { persistReservedBytePlusLasExecutionSettings } from '@/server/byteplus-submission-state';
+import { persistDirectVideoJob } from './direct-job-persistence';
 
 export type ExecutePreparedVideoGenerationParams = {
   lumaGenerationSource?: import('@/server/agent-api/generation-luma-lineage').OwnedLumaGenerationSource;
@@ -111,7 +112,6 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
   const {
     resolvedCurrencyLower,
     pricing,
-    priceOnlyReceipts,
     costBreakdownUsd,
     pricingSnapshotJson,
     costBreakdownJson,
@@ -388,45 +388,40 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
       ({ thumb, previewFrame, video, videoAsset, providerMode, status, progress, providerJobId, settingsSnapshotJson, message } =
         mediaState);
 
-      try {
-        await persistFinalVideoJobUpdate({
-          jobId,
-          thumb,
-          aspectRatio,
-          previewFrame,
-          etaSeconds,
-          etaLabel,
-          video,
-          status,
-          progress,
-          providerJobId,
-          finalPriceCents: pricing.totalCents,
-          pricingSnapshotJson,
-          costBreakdownJson,
-          currency: pricing.currency,
-          vendorAccountId,
-          paymentStatus,
-          stripePaymentIntentId,
-          stripeChargeId,
-          visibility,
-          indexable,
-          message,
-          settingsSnapshotJson,
-        });
-      } catch (error) {
-        console.error('[api/generate] failed to update job record', error);
-        if (pendingReceipt) {
-          await rollbackPendingPayment({
-            pendingReceipt,
-            walletChargeReserved,
-            refundDescription: `Refund ${engine.label} - ${effectiveDurationSec}s`,
-          });
-        }
-        return {
-          body: { ok: false, error: 'Failed to update job record' },
-          status: 500,
-        };
-      }
+      const persistence = await persistDirectVideoJob({
+        jobId,
+        thumb,
+        aspectRatio,
+        previewFrame,
+        etaSeconds,
+        etaLabel,
+        video,
+        status,
+        progress,
+        providerJobId,
+        finalPriceCents: pricing.totalCents,
+        pricingSnapshotJson,
+        costBreakdownJson,
+        currency: pricing.currency,
+        vendorAccountId,
+        paymentStatus,
+        stripePaymentIntentId,
+        stripeChargeId,
+        visibility,
+        indexable,
+        message,
+        settingsSnapshotJson,
+      }, localKey);
+      if (persistence.kind === 'response') return persistence.response;
+      const stored = persistence.job;
+      videoAsset = stored.video_url === video ? videoAsset : null;
+      status = stored.status ?? status;
+      progress = stored.progress ?? progress;
+      video = stored.video_url;
+      thumb = stored.thumb_url ?? thumb;
+      providerMode = (stored.provider as typeof providerMode) ?? providerMode;
+      providerJobId = stored.provider_job_id;
+      message = stored.message;
 
       await persistFinalChargeReceipt({ pendingReceipt, walletChargeReserved });
       await recordFinalGenerateQueueLog({
@@ -453,21 +448,12 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           durationSec: effectiveDurationSec,
         });
       }
-      await persistWalletFailureRefundReceipt({
-        status,
-        pendingReceipt,
-        paymentMode,
-        engineLabel: engine.label,
-        durationSec: effectiveDurationSec,
-        priceOnlyReceipts,
-      });
-
       const finalResponse = buildFinalGenerateResponse({
         jobId,
         media: { video, videoAsset, thumb },
-        completion: { status, progress, message, etaSeconds, etaLabel },
+        completion: { status, progress, message, etaSeconds: stored.eta_seconds, etaLabel: stored.eta_label },
         pricing,
-        payment: { pendingReceipt, paymentMode, paymentStatus },
+        payment: { pendingReceipt, paymentMode, paymentStatus: stored.payment_status ?? paymentStatus },
         provider: { providerMode, providerJobId },
         batch: {
           batchId,

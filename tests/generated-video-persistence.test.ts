@@ -91,7 +91,7 @@ test('real Fal finalization persists measured facts and measurement absence keep
   const stubs = {
     '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
     './fal-webhook-draft-cache': 'export const captureCompletedFalDraftCache = async () => {};',
-    './fal-webhook-refunds': 'export const maybeAutoRefundWalletCharge = async () => { throw Error("Must not refund"); };',
+    './fal-webhook-refunds': 'export const withWalletFailureSettlement = async () => { throw Error("Must not refund"); };',
     './fal-webhook-provisional': 'export const createProvisionalJobFromWebhook = async () => { throw Error("Unexpected provisional"); };',
     '@/lib/fal-client': 'export const getFalClient = () => ({ queue: { result: async () => fixture.result } });',
     '@/lib/fal-catalog': 'export const resolveFalModelId = async () => "fixture/model";',
