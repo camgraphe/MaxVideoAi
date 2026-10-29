@@ -6,9 +6,9 @@ import {createStudioTaskService} from '../frontend/src/server/studio/tasks/servi
 import {readStudioTaskBudget} from '../frontend/src/server/studio/tasks/budget';
 import {studioTaskSourceFingerprint} from '../frontend/src/server/studio/tasks/source';
 import {StudioTaskStop} from '../frontend/src/server/studio/tasks/policy';
-import {chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
+import {openStudioAssistanceTurn,chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
 import {hydrateOwnedVideoMediaFacts} from '../frontend/server/media-library/owned-video-facts';
-import {STUDIO_TASK_LEGACY_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
+import {STUDIO_TASK_LEGACY_POLICY_VERSION,STUDIO_TASK_V2_POLICY_VERSION,studioTaskProfileForModel} from '../frontend/src/lib/studio/task-budget-contract';
 import type {QueryExecutor} from '../frontend/src/lib/db';
 
 const assetId='ma_'+'1'.repeat(32);
@@ -147,4 +147,26 @@ test('v2 promoted output qualification preserves task identity while job provena
   await f.pool.query('UPDATE app_jobs SET user_id=$2 WHERE job_id=$1',[jobId,actor.userId]);
   await f.pool.query("UPDATE job_outputs SET status='processing' WHERE id=$1",[outputId]);
   await assert.rejects(readStudioTaskBudget(f.db,scope),permission);
+});
+
+
+test('a saved v2 video task keeps its historical fingerprint and resumes after the three-level rollout',async t=>{
+  const f=await sourceFixture(t),actor=await f.actor(),ref=await f.video(actor.userId,assetId,{mediaFacts:measured});
+  const base=f.input(),input={...base,attachments:[ref],taskBudget:{...base.taskBudget,policyVersion:STUDIO_TASK_V2_POLICY_VERSION}};
+  // Persist the exact old recipe independently of the current fingerprint function.
+  const historical=createHash('sha256').update(JSON.stringify([{mime:'video/mp4',ref:{assetId,kind:'video',type:'asset'},sizeBytes:originalBytes,url:original}])).digest('hex');
+  const profile=studioTaskProfileForModel(input.taskBudget,'gpt-6-luna');
+  await openStudioAssistanceTurn(actor,input.requestId,f.policy,f.db);
+  await f.pool.query(`INSERT INTO studio_tasks(user_id,project_id,request_id,segment_request_id,input_hash,input_json,source_fingerprint,policy_version,profile,profile_json,model,max_credits,allowed_calls)
+    VALUES($1,$2,$3,$3,$4,$5::jsonb,$6,$7,'standard',$8::jsonb,'gpt-6-luna',$9,$10)`,[actor.userId,actor.projectId,input.requestId,'frozen-v2-fixture',JSON.stringify(input),historical,STUDIO_TASK_V2_POLICY_VERSION,JSON.stringify(profile),profile.maxCredits,profile.maxCalls]);
+  await f.pool.query('INSERT INTO studio_task_segments(user_id,project_id,task_request_id,request_id,max_calls) VALUES($1,$2,$3,$3,$4)',[actor.userId,actor.projectId,input.requestId,profile.maxCalls]);
+  const leaseId=await f.running(input.requestId),scope={...actor,requestId:input.requestId,leaseId};
+  assert.ok(await readStudioTaskBudget(f.db,scope),'Unchanged v2 media must remain authorized under the v3 runtime');
+  const call=await reserveStudioAssistanceCall({...scope,index:0,inputTokens:100,outputTokens:6000},f.policy);
+  await settleStudioAssistanceCall(call.id,actor.userId,{id:'v2-resumed',model:'gpt-6-luna',service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50}});
+  assert.equal((await f.pool.query('SELECT source_fingerprint FROM studio_tasks WHERE request_id=$1',[input.requestId])).rows[0].source_fingerprint,historical);
+  await f.pool.query('UPDATE media_assets SET width=640,height=360 WHERE public_id=$1',[assetId]);
+  assert.ok(await readStudioTaskBudget(f.db,scope),'Qualification of the same original still preserves v2 approval');
+  await f.pool.query("UPDATE media_assets SET url='https://cdn.maxvideoai.com/replaced.mp4' WHERE public_id=$1",[assetId]);
+  await assert.rejects(readStudioTaskBudget(f.db,scope),permission,'A different original remains blocked');
 });
