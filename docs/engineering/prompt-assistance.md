@@ -6,6 +6,11 @@ The video and image composers and audio creation editor share **Prompt / AI assi
 
 Before enabling real assistance in a controlled environment:
 
+For customer use, approve the customer information, context retention/deletion
+and reviewer access policy before activation. Live composer requests retain
+their provider-facing textual input/history. The expanded Studio capture flag
+`ASSISTANT_REVIEW_CONTEXT_ENABLED` does not gate this composer storage.
+
 1. Apply `neon/migrations/85_prompt_assistance.sql` explicitly, after existing Studio assistance ledger/credit migrations. Then apply the pending shared-level migrations 86–88 in the order documented in [Milo levels](milo-levels.md). Request handlers never create schema. Do not apply this migration to a shared database merely to review the UI.
 2. Configure the existing OpenAI credential and Milo policy: `STUDIO_ASSISTANCE_ENABLED=true`; production also requires `STUDIO_ASSISTANCE_APPROVED_POLICY=studio-credits-2026-10-05-v2`. The global OpenAI endpoint is required by the existing tariff policy.
 3. Enable server flag `PROMPT_ASSISTANCE_ENABLED=true` and build the frontend with `NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE=1`.

@@ -68,6 +68,12 @@ The POST boundary rejects missing/foreign origins, non-JSON and streamed bodies 
 Responses are private/no-store. React escapes text; no HTML, external judging or
 bulk raw export is offered. Optional missing evidence is unavailable, not empty.
 
+Approve customer information, retention/deletion and reviewer access before
+enabling live composer assistance or expanded Studio capture. Composer records
+its provider-facing input/history in native request storage without the Studio
+capture flag; leaving `ASSISTANT_REVIEW_CONTEXT_ENABLED` off does not disable
+composer retention.
+
 Apply **migration 90** explicitly after Studio 52 and composer 85. It adds the
 nullable native Studio snapshot, a metadata-only access log and append-only review
 annotations, plus their indexes. Reapplying it is safe. Do not run migrations from

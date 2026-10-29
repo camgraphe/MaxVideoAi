@@ -32,6 +32,15 @@ run above is preserved as diagnostic evidence, not relabelled successful.
 
 ## Release boundaries
 
+Independent review confirmed the CI correction and found two Important
+ambiguities in the launch instructions, now corrected: approval of customer
+information/retention must precede composer activation as well as expanded Studio
+capture; stopping new assistance must leave the composer endpoint and workers
+available until accepted work is recovered/settled. The Studio capture flag does
+not gate composer input/history storage. No Critical or deferred Minor findings.
+The review was limited to this CI increment and release instructions, not a new
+review of all 364 changed files or a general model-quality certification.
+
 Current main was fetched and remains `fd6f9cbe9`, already included in this
 branch. Repeat the documented alignment check immediately before any merge.
 Manual local browser control remains disabled in Work settings; automated
