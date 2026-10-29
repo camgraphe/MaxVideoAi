@@ -67,8 +67,13 @@ type RefundAuditParams = {
 };
 
 function requireGenericRefund(charge: JobChargeRow, jobId: string | null) {
-  // Assistance settlement owns partial reservation release and any later recovery.
-  if (charge.billing_product_key === 'studio_assistance' || jobId?.startsWith('studio-assistance:')) {
+  // Assistance owns reservations and packs; wallet-only refunds leave purchased credits spendable.
+  if (
+    charge.billing_product_key === 'studio_assistance' ||
+    charge.billing_product_key === 'studio_assistance_pack' ||
+    jobId?.startsWith('studio-assistance:') ||
+    jobId?.startsWith('studio-sol-pack:')
+  ) {
     throw new Error('Studio assistance charges require Studio assistance reconciliation.');
   }
 }

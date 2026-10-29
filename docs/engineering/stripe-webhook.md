@@ -44,6 +44,16 @@ Both successful top-up translators call the canonical `recordStripeTopup` functi
 invoice fields, checkout attribution, and analytics updates in one transaction-oriented flow.
 Document normalization and Stripe receipt lookup stay in `stripe-webhook-documents.ts`.
 
+With a configured database, schema or top-up handling errors propagate to the
+event processor for rollback and a retryable HTTP failure. The mock wallet is
+used only when no database is configured. An error after the receipt commits
+also propagates; canonical receipt identities keep its retry from crediting twice.
+`tests/stripe-topup-retry-postgres.test.ts` covers SQL/schema failures, event
+rollback, concurrent payment redelivery, a post-commit failure, and mock mode.
+This does not recover an event marker abandoned by a process interruption or a
+failed rollback; the current event-state owner still treats every existing ID
+as duplicate, including `processed_at=NULL`.
+
 GA4 delivery is owned by the [durable payment outbox](ga4-payment-outbox.md).
 The receipt transaction queues both wallet events under a savepoint; a versioned
 receipt marker allows recent-only repair without changing credit. The webhook

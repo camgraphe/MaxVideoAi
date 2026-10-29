@@ -290,10 +290,12 @@ test('receipt refund preserves orphan-charge fallback and skips job update', asy
   assert.equal(harness.calls[2]!.params?.[3], 'Manual refund for receipt 30');
 });
 
-test('generic receipt refunds leave Studio assistance reservations to their reconciliation owner', async t => {
+test('generic receipt refunds leave Studio assistance reservations and packs to their reconciliation owner', async t => {
   for (const identity of [
     { billing_product_key: 'studio_assistance', job_id: null },
+    { billing_product_key: 'studio_assistance_pack', job_id: null },
     { billing_product_key: null, job_id: 'studio-assistance:call-1' },
+    { billing_product_key: null, job_id: 'studio-sol-pack:pack-1' },
   ]) {
     await t.test(JSON.stringify(identity), async () => {
       const harness = refundHarness([
@@ -311,19 +313,28 @@ test('generic receipt refunds leave Studio assistance reservations to their reco
   }
 });
 
-test('job refund selection cannot bypass the Studio assistance reconciliation boundary', async () => {
-  const harness = refundHarness([
-    [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, currency: 'USD' }],
-    [{ id: 10, amount_cents: 900, currency: 'USD', description: null, billing_product_key: 'studio_assistance' }],
-    [], [], [], [],
-  ]);
-  await assert.rejects(
-    issueManualWalletRefund({ jobId: 'job_1', adminUserId: 'admin_1' }, harness.dependencies),
-    /Studio assistance charges require Studio assistance reconciliation/
-  );
-  assert.equal(harness.calls.length, 2);
-  assert.match(harness.calls[1]!.text, /billing_product_key/);
-  assert.equal(harness.rollbackCount(), 1);
+test('job refund selection cannot bypass Studio reservation or pack reconciliation', async t => {
+  for (const identity of [
+    { billing_product_key: 'studio_assistance', job_id: 'job_1' },
+    { billing_product_key: 'studio_assistance_pack', job_id: 'job_1' },
+    { billing_product_key: null, job_id: 'studio-assistance:call-1' },
+    { billing_product_key: null, job_id: 'studio-sol-pack:pack-1' },
+  ]) {
+    await t.test(JSON.stringify(identity), async () => {
+      const harness = refundHarness([
+        [{ job_id: identity.job_id, user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, currency: 'USD' }],
+        [{ id: 10, amount_cents: 900, currency: 'USD', description: null, billing_product_key: identity.billing_product_key }],
+        [], [], [], [],
+      ]);
+      await assert.rejects(
+        issueManualWalletRefund({ jobId: identity.job_id, adminUserId: 'admin_1' }, harness.dependencies),
+        /Studio assistance charges require Studio assistance reconciliation/,
+      );
+      assert.equal(harness.calls.length, 2);
+      assert.match(harness.calls[1]!.text, /billing_product_key/);
+      assert.equal(harness.rollbackCount(), 1);
+    });
+  }
 });
 
 test('duplicate refund is rejected after the charge lock and before insert', async () => {

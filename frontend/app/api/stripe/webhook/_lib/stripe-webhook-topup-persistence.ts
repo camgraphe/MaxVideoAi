@@ -210,13 +210,8 @@ export async function recordStripeTopup(
     return;
   }
 
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[stripe-webhook] ensureBillingSchema failed, using mock ledger', error);
-    recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
-    return;
-  }
+  // A configured database is authoritative; failures must reach webhook rollback/retry.
+  await ensureBillingSchema();
 
   try {
     const documentFields = {
@@ -378,7 +373,7 @@ export async function recordStripeTopup(
       destinationAcct,
     });
   } catch (error) {
-    console.error('[stripe-webhook] Failed to persist top-up, using mock ledger', error);
-    recordMockWalletTopUp(userId, normalizedWalletAmount, paymentIntentId, chargeId);
+    console.error('[stripe-webhook] Top-up handling failed; delivery must be retried', error);
+    throw error;
   }
 }
