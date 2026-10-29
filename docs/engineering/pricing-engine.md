@@ -48,12 +48,14 @@ It does not activate execution. See the [LAS release procedure](../model-launch/
 `GalleryRailCards` hides recorded amounts on curated starter samples: their old
 charge and incomplete public settings do not establish the price of recreating
 them. Owned renders retain their stored final amount (or stored quote fallback),
-labeled as the original cost. Group totals still count each job once, including
+labeled as the original cost on a separate caption line so narrow cards retain
+the model name. Group totals still count each job once, including
 multi-output image jobs. Selecting/reusing a render obtains the current price
 through the composer's existing preflight; the rail adds no pricing requests and
 never rewrites paid history. `gallery-rail-render-performance.test.ts` covers
 sample suppression, localized cost labels, final-amount precedence, batch totals
-and the existing prompt-input render budget.
+and the existing prompt-input render budget. `gallery-rail-price-layout-browser.test.ts`
+checks real caption geometry with production CSS at mobile and tablet widths.
 
 ## Studio conversational estimates
 
