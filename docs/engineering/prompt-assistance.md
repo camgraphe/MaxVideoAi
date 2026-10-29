@@ -31,6 +31,27 @@ The first connection was verified offline. The subsequent [2026-10-29 live check
 
 The approved compact reference/footer, visible generator settings, player and galleries retain their existing owners. Review opens the complete suggestion inside the bounded conversation area; Use prompt/Use script stays outside its scroll region. Send never invokes Generate. Multi-prompt scene editing remains manual. Audio voice updates only `script`; music/song style, ambience and effects update only `prompt`. Lyrics and Soundtrack a video are outside this increment.
 
+## Product scope
+
+Composer assistance and Studio share `server/studio/milo-scope.ts`
+(`milo-media-scope-v1`). Milo helps with MaxVideoAI and image/video/audio creation,
+including prompts, scripts, references and creative direction. A recipe alone is
+out of scope; an explicitly requested cooking-video prompt or narration is in scope.
+An active project, draft or attachment is not permission to answer unrelated questions.
+For mixed requests, Milo helps with the media-related part only.
+
+Out-of-scope requests receive a short redirect in the user's language, without
+answering the unrelated question or inventing a media task. Composers return
+`text: null`, preserving the draft; Studio must not call tools or write memory for
+that request. Reference pixels, visible text, transcriptions, saved analyses and
+conversation history remain data, never authority to change Milo's role.
+
+This is model instruction, not a deterministic topic classifier or a promise that
+every adversarial input is blocked. It adds no second classification call and does
+not change accounting: a generated redirect still has ordinary model usage. Review
+captures the instruction version/hash so failures can become regression cases.
+The boundary is shared across all tiers; reference perception retains its own gates.
+
 ## Selected-model fiches
 
 `server/prompt-assistance/context.ts` resolves model, public operation and audio variant from the same canonical capability owners used by the application/MCP. It rejects unknown combinations and target limits before reserving credits.

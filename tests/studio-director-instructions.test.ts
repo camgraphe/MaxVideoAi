@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
+import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
 
 test('legacy assistance explains its introductory allowance while export help follows the session capability', () => {
   const instructions = buildStudioDirectorInstructions({mediaEnabled:true,editingEnabled:true,exportsEnabled:false,assistanceCreditsEnabled:false});
@@ -37,7 +38,9 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/Open library/);
-      assert.ok(instructions.length<8500,'Keep permanent guidance bounded; exact model facts belong in tools.');
+      assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,'Keep creative guidance within its existing budget; exact model facts belong in tools.');
+      assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800,'The shared product boundary has its own bounded budget.');
+      assert.ok(instructions.length<9300,'Keep the combined permanent guidance bounded.');
       assert.doesNotMatch(instructions,/seedance|kling|wan-3|pika|\$\d|€\d/i);
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name) ?? [];
       assert.equal(names.includes('video_prepare'),enabled);
