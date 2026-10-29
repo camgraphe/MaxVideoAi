@@ -153,9 +153,10 @@ The installed `@fal-ai/client` 1.7.0 calls `queue.submit`, then `onEnqueue`, the
 `queue.subscribeToStatus`, then `queue.result`. Its legacy submit path also retries
 some POST failures. An error before its acknowledgement therefore remains
 uncertain: the final error cannot establish that an earlier attempt was rejected.
-This follow-up does not remove those SDK retries or prove a provider charged
-multiple requests. Their removal/qualification remains the separate GEN-03 lot.
-The explicit queue POST helper continues to submit once.
+The acceptance-provenance follow-up did not remove those SDK retries or prove a
+provider charged multiple requests. The subsequent GEN-03 transport change below
+routes the four direct-provider fallbacks through the existing single-POST helper.
+The SDK subscription API itself is unchanged.
 
 An uncertain submission without a verified provider ID is not automatically
 pollable: the regular Fal poll requires that ID, and stale provisional settlement
@@ -168,3 +169,33 @@ belongs with the remaining GEN-03 work, not a blind refund scan.
 Acceptance provenance is local control-flow evidence, not client-supplied data,
 a new database schema or a replacement for the persisted job/provider identity.
 Verify the SDK ordering again if its version or subscription implementation changes.
+
+## Single-POST Fal fallback transport (30 October 2026)
+
+The Alibaba Model Studio, Luma Agents, Google Vertex Veo and Kling direct
+submission owners explicitly set `submissionMode: 'enqueue'` when delegating an
+eligible fallback to `submitFalGenerateTask`. Kling applies it after its existing
+payload sanitizer. These paths therefore use `submitFalQueueOnce`, like the main
+Fal route, instead of the SDK subscription's retrying submission. Eligibility,
+provider routing flags, request content, prices and the original job stay with
+their existing owners.
+
+A verified acknowledgement records the provider ID and returns queued; webhook
+and poll recovery read that job's result. The submission no longer waits for a
+rendered result through SDK polling. A server error, network exception or unusable
+acknowledgement remains an uncertain submission: do not create another provider
+attempt, refund it based only on that uncertainty, or present acceptance as
+confirmed. A definite single-POST refusal retains the existing failure policy.
+The acceptance-provenance and durable-terminal-response rules above still apply.
+
+This is an application fallback correction, not a global change to Fal SDK retry
+configuration. A local transport witness can prove multiple POSTs before the
+change; it cannot prove two provider acceptances or a double charge in production.
+
+Unknown submissions without a provider ID still need bounded reconciliation.
+The single-POST helper adds the local job ID to a configured webhook URL, but the
+current webhook route promotes that query ID only with its configured shared
+token and for `job_` / `tool_upscale_` IDs. UUID jobs used by canonical
+MCP/Studio/Toolbox submissions are outside this query-correlation fallback.
+Do not describe enqueue mode as universal recovery of lost acknowledgements or
+widen webhook correlation without its own authorization and ownership tests.

@@ -185,7 +185,7 @@ async function submitFalFromGoogleVeo(params: {
   });
   const falSubmission = await params.submitFalGenerateTaskFn({
     userId: params.userId,
-    falPayload: params.falPayload,
+    falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,
     engineLabel: params.engineLabel,

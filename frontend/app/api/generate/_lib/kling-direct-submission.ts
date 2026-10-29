@@ -497,7 +497,7 @@ export async function submitKlingDirectGenerateTask(params: {
     });
     const falSubmission = await submitFalGenerateTaskFn({
       userId: params.userId,
-      falPayload: sanitizeKlingDirectFalFallbackPayload(params.falPayload),
+      falPayload: { ...sanitizeKlingDirectFalFallbackPayload(params.falPayload), submissionMode: 'enqueue' },
       jobId: params.jobId,
       engineId: params.engineId,
       engineLabel: params.engineLabel,

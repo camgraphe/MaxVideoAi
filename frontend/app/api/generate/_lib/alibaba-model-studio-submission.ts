@@ -237,7 +237,7 @@ async function submitFalFallback(params: {
   });
   const result = await params.submitFalGenerateTaskFn({
     userId: params.userId,
-    falPayload: params.falPayload,
+    falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,
     engineLabel: params.engineLabel,
