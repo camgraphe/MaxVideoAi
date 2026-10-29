@@ -77,7 +77,8 @@
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-add-compact) { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; flex-shrink: 0; padding: 0 3px; font-size: 12px; font-weight: 450; color: var(--text-secondary); border: 0; background: transparent; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact svg) { width: 22px; height: 22px; flex-shrink: 0; color: var(--text-primary); }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact:hover) { color: var(--text-primary); }
-.root :global(.app-reference-selected-summary) { display: flex; flex: 0 0 auto; width: max-content; max-width: 100%; min-width: 0; flex-wrap: wrap; overflow: visible; gap: 0 8px; margin: 0; padding: 0; }
+/* Keep the last remove target's shared 4 px gutter inside the wrapping group. */
+.root :global(.app-reference-selected-summary) { display: flex; flex: 0 0 auto; width: max-content; max-width: 100%; min-width: 0; flex-wrap: wrap; overflow: visible; gap: 0 8px; margin: 0; padding: 0 4px 0 0; }
 /* References stays beside the model; the selected-media group wraps as a unit. */
 .sendRow:has([data-compact-references] :global(.app-reference-selected-summary)) .inputReferences { grid-column: 1 / -1; grid-row: 1; }
 .sendRow:has([data-compact-references] :global(.app-reference-selected-summary)) :is(.send, .sendPlaceholder) { grid-column: 2; grid-row: 1; align-self: end; }
