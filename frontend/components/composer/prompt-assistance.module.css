@@ -127,3 +127,5 @@
 .liveFeedback { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding-top: .5rem; color: var(--text-muted); font-size: .75rem; }
 .liveFeedback span { flex: 1 1 18rem; }
 .liveFeedback button { flex: none; text-decoration: underline; text-underline-offset: .2em; }
+
+.root .miloTrigger{display:inline-flex;align-items:center;gap:7px;min-width:0;min-height:36px;padding:0 5px;border:0;border-radius:6px;background:transparent;color:var(--text-primary);font-size:12px}.miloTrigger strong{font-weight:600}.miloTrigger span{color:var(--text-muted)}.root .miloTrigger:hover{background:var(--surface-2)}.root .miloTrigger:focus-visible{outline:1px solid var(--accent);outline-offset:2px}

@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {chromium,expect} from '@playwright/test';
 import {startWorkspaceReferenceFixture} from './helpers/workspace-reference-browser-fixture';
-import {STUDIO_ASSISTANCE_TARIFF} from '../frontend/src/lib/studio/assistance-contract';
+import {studioCreditTariffForModel} from '../frontend/src/lib/studio/assistance-contract';
+
+import {initialStatus} from './helpers/milo-status-fixture';
 
 const source=`
 import {useState} from 'react';import {createRoot} from 'react-dom/client';
@@ -13,7 +15,7 @@ function Fixture(){
  return <PromptAssistanceComposer context={{scopeKey:owner,contextKey:model,live:{surface:'video',engineId:model,mode:'t2v',settings:{durationSec:5},references:[]}}} locale="en" modelLabel={model} draftText={text} onApplyText={setText}>
  <textarea aria-label="Manual prompt" value={text} onChange={event=>setText(event.target.value)}/></PromptAssistanceComposer>;
 }createRoot(document.getElementById('root')).render(<Fixture/>);`;
-const initialStatus={enabled:true,policyVersion:'test',revision:3,selectedModel:'gpt-6-luna',mode:'sponsored_luna',tariff:STUDIO_ASSISTANCE_TARIFF,includedSol:{remainingPercent:100,renewal:'monthly'},sponsoredLuna:{remainingPercent:100,renewal:'unlimited'},paid:{enabled:false,authorizedCents:0,spentCents:0,reservedCents:0,remainingCents:0,maxAdditionalBudgetCents:2000},unresolvedCalls:0,canContinue:true,blockedReason:null,credits:{creditsPerDollar:1000,included:{total:500,remaining:500,reserved:0,period:'2026-10-01',renewsAt:'2026-11-01T00:00:00Z'},purchased:{total:0,remaining:0,reserved:0,packs:[]}}};
+
 
 test('live composer sends current draft, recovers without resending, and guards late/account replies', {timeout:90_000},async()=>{
  let release:(()=>void)|undefined;
@@ -23,7 +25,7 @@ test('live composer sends current draft, recovers without resending, and guards 
   await page.route('**/api/prompt-assistance',async route=>{
    if(route.request().method()==='GET'){await route.fulfill({json:{ok:true,result:status}});return;}
    const body=route.request().postDataJSON();calls.push(body);
-   if(body.action==='choose'){status={...status,selectedModel:body.choice.action==='select_sol'?'gpt-6.1-sol':'gpt-6-luna',revision:status.revision+1};await route.fulfill({json:{ok:true,result:status}});return;}
+   if(body.action==='choose'){status={...status,selectedModel:body.choice.action==='select_sol'?'gpt-6.1-sol':body.choice.action==='select_terra'?'gpt-6.1-terra':'gpt-6-luna',revision:status.revision+1};status.tariff=studioCreditTariffForModel(status.selectedModel);await route.fulfill({json:{ok:true,result:status}});return;}
    if(body.action==='message')request=body.request;
    if(mode==='disconnect'&&body.action==='message'){await route.abort('failed');return;}
    if(mode==='delay'&&body.action==='message')await new Promise<void>(resolve=>{release=resolve;});
@@ -32,9 +34,16 @@ test('live composer sends current draft, recovers without resending, and guards 
   });
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   const send=page.getByRole('button',{name:'Send message to Milo'}),message=page.getByRole('textbox',{name:'Message Milo',exact:true});
-  await page.getByRole('button',{name:'Milo assistance level: Standard'}).click();await expect(page.getByText('Lite',{exact:true})).toHaveCount(0);
-  await page.getByRole('option').filter({hasText:'Max'}).click();await expect(page.getByRole('button',{name:'Milo assistance level: Max'})).toBeVisible();
-  assert.equal(calls[0].choice.action,'select_sol');assert.ok(!calls.some(call=>call.choice?.action==='purchase_pack'));
+  const level=page.getByRole('button',{name:'Milo settings and credits'});
+  await expect(level).toContainText('Lite');await level.click();
+  const dialog=page.getByRole('dialog');await expect(dialog.getByRole('group',{name:'Assistant model'}).getByRole('button')).toHaveCount(3);
+  await dialog.getByRole('button',{name:'Standard',exact:true}).click();
+  assert.equal(calls.length,0,'Viewing a level must not select it or spend credits');
+  await dialog.getByRole('button',{name:'Continue with Standard',exact:true}).click();await expect(level).toContainText('Standard');
+  assert.equal(calls[0].choice.action,'select_terra');
+  await level.click();await dialog.getByRole('button',{name:'Max',exact:true}).click();
+  await dialog.getByRole('button',{name:'Continue with Max',exact:true}).click();await expect(level).toContainText('Max');
+  assert.equal(calls[1].choice.action,'select_sol');assert.ok(!calls.some(call=>call.choice?.action==='purchase_pack'));
   await message.fill('Help me refine this.');await send.click();await expect(page.getByText('Which setting matters most?')).toBeVisible();
   assert.equal(request.draft.text,'Keep original detail.');assert.equal(request.draft.engineId,'seedance-2-5');assert.equal(request.draft.settings.durationSec,5);
   await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);

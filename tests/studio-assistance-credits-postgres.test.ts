@@ -12,7 +12,7 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
   process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const ledger=await import('../frontend/src/server/studio/assistance-ledger');
   const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
   const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
@@ -111,12 +111,12 @@ test('Sol packs debit once, accumulate, and reserve free credits before purchase
     const call=(await pg.pool.query("SELECT id,reserved_nano_usd FROM studio_assistance_calls WHERE user_id=$1 AND state='unknown'",[supportActor.userId])).rows[0];
     const {inspectStudioAssistanceResolution,applyStudioAssistanceResolution}=await import('../frontend/src/server/studio/assistance-resolution');
     const preview=await inspectStudioAssistanceResolution(call.id,'waive_unknown');
-    assert.equal(preview.refundCents,0);assert.equal(preview.refundCredits,550);
+    assert.equal(preview.refundCents,0);assert.equal(preview.refundCredits,620);
     const input={callId:call.id,action:'waive_unknown' as const,expectedFingerprint:preview.fingerprint,operator:'credit-support',reason:'Unknown provider outcome in offline fixture'};
     await Promise.all([applyStudioAssistanceResolution(input),applyStudioAssistanceResolution(input)]);
     const released=await ledger.readStudioAssistanceStatus(supportActor.userId,policy);
     assert.equal(released.credits?.included.remaining,500);assert.equal(released.credits?.purchased.remaining,2000);assert.equal(released.unresolvedCalls,0);
-    assert.equal((await pg.pool.query('SELECT refund_credits FROM studio_assistance_resolutions WHERE call_id=$1',[call.id])).rows[0].refund_credits,550);
+    assert.equal((await pg.pool.query('SELECT refund_credits FROM studio_assistance_resolutions WHERE call_id=$1',[call.id])).rows[0].refund_credits,620);
     const stillUnknown=(await pg.pool.query('SELECT state,provider_max_nano_usd,reserved_nano_usd FROM studio_assistance_calls WHERE id=$1',[call.id])).rows[0];
     assert.equal(stillUnknown.state,'unknown');assert.equal(stillUnknown.provider_max_nano_usd,null);assert.equal(stillUnknown.reserved_nano_usd,call.reserved_nano_usd);
     await ledger.settleStudioAssistanceCall(call.id,supportActor.userId,{id:randomUUID(),model:'gpt-6.1-sol',service_tier:'default',usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:0}});
@@ -131,7 +131,7 @@ test('new credit policy keeps legacy consent inactive and projects sponsored out
   process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const ledger=await import('../frontend/src/server/studio/assistance-ledger');
   const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
   const {STUDIO_ASSISTANCE_TARIFF}=await import('../frontend/src/lib/studio/assistance-contract');

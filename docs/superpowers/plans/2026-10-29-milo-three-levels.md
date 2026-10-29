@@ -24,19 +24,19 @@
 
 ### Task 1: Shared models and funding
 Files: assistance-contract/provider-facts/ledger/resolution, quote-studio-assistance, new migration, pricing and PostgreSQL tests.
-- [ ] Add failing tests for Terra rates, all three choices, shared credit lots, replay, pauses and old settlement.
-- [ ] Extend canonical tariff/model ownership and ledger paths; retain stored mode names for compatibility.
-- [ ] Run focused financial tests and commit.
+- [x] Add failing tests for Terra rates, all three choices, shared credit lots, replay, pauses and old settlement.
+- [x] Extend canonical tariff/model ownership and ledger paths; retain stored mode names for compatibility.
+- [x] Run focused financial tests and commit.
 
 ### Task 2: Frozen runtime policies
 Files: task-budget-contract, conversation-director/image-run/tasks service, composer repository/provider/service, migration, task/provider tests.
-- [ ] Add failing tests for three exact reasoning efforts and frozen historical profiles.
-- [ ] Freeze new 6000-token limits and effort, extend guarded database constraints, preserve unknown recovery and fallback to Lite.
-- [ ] Run task/composer integration tests and commit.
+- [x] Add failing tests for three exact reasoning efforts and frozen historical profiles.
+- [x] Freeze new 6000-token limits and effort, extend guarded database constraints, preserve unknown recovery and fallback to Lite.
+- [x] Run task/composer integration tests and commit.
 
 ### Task 3: Shared panel and verification
 Files: Studio credits dialog/control/status parser, composer trigger, browser tests, engineering docs.
-- [ ] Test direct opening, all three selections, tariff display and no purchase on opening/switching.
-- [ ] Render Lite/Standard/Max and common balances; replace composer level menu and separate Credits button with one dialog trigger.
+- [x] Test direct opening, all three selections, tariff display and no purchase on opening/switching.
+- [x] Render Lite/Standard/Max and common balances; replace composer level menu and separate Credits button with one dialog trigger.
 - [ ] Run focused browser tests, Studio suite, type check, lint and exposure check.
 - [ ] Independently review, address important findings, update documentation and push current PR.

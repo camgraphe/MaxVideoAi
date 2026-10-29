@@ -4,6 +4,9 @@ import { chromium, webkit, expect } from '@playwright/test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
 
+import {initialStatus} from './helpers/milo-status-fixture';
+import {studioCreditTariffForModel} from '../frontend/src/lib/studio/assistance-contract';
+
 const source = `
 import {useState} from 'react'; import {createRoot} from 'react-dom/client';
 import {I18nProvider} from './lib/i18n/I18nProvider';
@@ -28,7 +31,11 @@ test('compact model selector keeps logos, short names and eligible variants reac
     for(const browserType of [chromium,webkit]) {
       const browser=await browserType.launch({headless:true});
       try {for(const width of [320,390,1440]) {
-        const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
+        const page=await browser.newPage({viewport:{width,height:844}});let status={...initialStatus};
+        await page.route('**/api/studio/assistance',async route=>{
+          if(route.request().method()==='POST'){const body=route.request().postDataJSON();assert.ok(['select_sol','select_luna','select_terra'].includes(body.action));status={...status,selectedModel:body.action==='select_sol'?'gpt-6.1-sol':body.action==='select_terra'?'gpt-6.1-terra':'gpt-6-luna',revision:status.revision+1};status.tariff=studioCreditTariffForModel(status.selectedModel);}
+          await route.fulfill({json:{ok:true,result:status}});
+        });await page.goto(fixture.url);
         const model=page.getByRole('button',{name:`Change model: ${engines.find(e=>e.id==='seedance-2-0-mini')!.label}`,exact:true});
         const variants=page.getByRole('button',{name:'Variant: Mini',exact:true});
         await expect(variants).toBeVisible();
@@ -77,33 +84,36 @@ test('Milo level selection keeps writing geometry and drafts stable across tabs'
     for(const browserType of [chromium,webkit]) {
       const browser=await browserType.launch({headless:true});
       try {for(const width of [320,390,1440]) {
-        const page=await browser.newPage({viewport:{width,height:844}});await page.goto(fixture.url);
+        const page=await browser.newPage({viewport:{width,height:844}});let status={...initialStatus};
+        await page.route('**/api/studio/assistance',async route=>{
+          if(route.request().method()==='POST'){const body=route.request().postDataJSON();assert.ok(['select_sol','select_luna','select_terra'].includes(body.action));status={...status,selectedModel:body.action==='select_sol'?'gpt-6.1-sol':body.action==='select_terra'?'gpt-6.1-terra':'gpt-6-luna',revision:status.revision+1};status.tariff=studioCreditTariffForModel(status.selectedModel);}
+          await route.fulfill({json:{ok:true,result:status}});
+        });await page.goto(fixture.url);
         const frame=page.locator('[data-prompt-assistance-preview]');
         const height=(await frame.boundingBox())!.height;
         await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
-        const level=page.getByRole('button',{name:/^Milo assistance level:/});
-        await expect(level).toHaveAccessibleName('Milo assistance level: Standard');
+        const level=page.getByRole('button',{name:'Milo settings and credits'});
+        await expect(level).toContainText('Lite');
         const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
-        await message.fill('Keep this unsent idea.');
-        await level.click();
-        const menu=page.getByRole('listbox');
-        await expect(menu.getByRole('option')).toHaveCount(3);
-        const bounds=await menu.boundingBox();
-        assert.ok(bounds && bounds.x>=0 && bounds.x+bounds.width<=width, 'the menu stays inside a narrow viewport');
-        assert.ok(await menu.evaluate(el=>el.parentElement!.getBoundingClientRect().height-el.getBoundingClientRect().height<=12), 'portal theme must not inherit mobile page-navigation padding');
-        assert.equal((await frame.boundingBox())!.height,height, 'opening the menu adds no height');
-        await menu.getByRole('option',{name:/^Max /}).click();
-        await expect(level).toHaveAccessibleName('Milo assistance level: Max');
-        await expect(level).toBeFocused();
+        await message.fill('Keep this unsent idea.');await level.click();
+        const panel=page.getByRole('dialog');
+        await expect(panel.getByRole('group',{name:'Assistant model'}).getByRole('button')).toHaveCount(3);
+        const bounds=await panel.boundingBox();
+        assert.ok(bounds && bounds.x>=0 && bounds.x+bounds.width<=width, 'the credits panel stays inside a narrow viewport');
+        assert.equal((await frame.boundingBox())!.height,height, 'opening the panel adds no height');
+        await panel.getByRole('button',{name:'Max',exact:true}).click();
+        await panel.getByRole('button',{name:'Continue with Max',exact:true}).click();
+        await expect(level).toContainText('Max');await expect(level).toBeFocused();
         await expect(message).toHaveValue('Keep this unsent idea.');
         await page.getByRole('tab',{name:'Prompt',exact:true}).click();
         await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Keep my draft.');
         await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
-        await expect(level).toHaveAccessibleName('Milo assistance level: Max');
-        await level.press('Enter');await level.press('ArrowUp');await level.press('Enter');
-        await expect(level).toHaveAccessibleName('Milo assistance level: Standard');
-        await level.press('Enter');await level.press('Escape');
-        await expect(menu).toHaveCount(0);await expect(level).toBeFocused();
+        await expect(level).toContainText('Max');await level.press('Enter');
+        await panel.getByRole('button',{name:'Standard',exact:true}).click();
+        await panel.getByRole('button',{name:'Continue with Standard',exact:true}).click();
+        await expect(level).toContainText('Standard');
+        await level.press('Enter');await page.keyboard.press('Escape');
+        await expect(panel).toHaveCount(0);await expect(level).toBeFocused();
         assert.equal((await frame.boundingBox())!.height,height, 'changing level keeps the initial frame height');
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
         await page.close();

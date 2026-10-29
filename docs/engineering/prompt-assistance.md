@@ -37,7 +37,7 @@ The approved compact reference/footer, visible generator settings, player and ga
 
 `profiles.ts` selects authored family and operation advice, then attaches the existing per-model `agent-model-guidance.json` and official-source entries from `agent-model-prompting-sources.json`. A request records that guide's version, source list and canonical capabilities. Thus the assistant loads the relevant fiche, not the entire catalogue. Unsupported families get an explicitly generic capability-based guide. The family examples are editorial synthesis, not copied provider claims or measured quality results. Source links are provenance, not fetched live or injected as untrusted instructions.
 
-Update curated guidance beside its authoritative source, add a model/operation fixture, and version the guide when it changes. Capabilities override examples. Terra and a future Lite tier remain a separate evaluation; this increment uses the existing Standard/Luna and Max/Sol policy and tariff.
+Update curated guidance beside its authoritative source, add a model/operation fixture, and version the guide when it changes. Capabilities override examples. Milo now shares Lite/Luna, Standard/Terra and Max/Sol levels with Studio; see [the shared levels contract](milo-levels.md) for model, runtime, tariff and migration ownership.
 
 ## References
 

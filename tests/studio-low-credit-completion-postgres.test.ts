@@ -26,7 +26,7 @@ for(const remaining of [40,10])for(const purchased of [false,true]){
     let calls=0;
     const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>8000,createActionResponse:async(params:Parameters<StudioResponseCreator>[0])=>{
       calls++;assert.equal(params.model,'gpt-6.1-sol','A small positive balance should still buy Max assistance');
-      assert.equal(params.max_output_tokens,2200);
+      assert.equal(params.max_output_tokens,6000);
       const stored=(await f.pool.query('SELECT output_token_bound FROM studio_assistance_calls WHERE user_id=$1',[actor.userId])).rows[0];
       assert.equal(stored.output_token_bound,params.max_output_tokens,'Dispatch and durable reservation must use the same limit');
       return response(params.model!,params.max_output_tokens!);
@@ -37,22 +37,22 @@ for(const remaining of [40,10])for(const purchased of [false,true]){
     assert.equal(balance.credits?.included.remaining,0);assert.equal(balance.credits?.purchased.remaining,0);assert.equal(balance.unresolvedCalls,0);
     const funding=(await f.pool.query('SELECT f.*,c.pricing_snapshot,c.campaign_id,c.reserved_nano_usd FROM studio_assistance_credit_funding f JOIN studio_assistance_calls c ON c.id=f.call_id WHERE c.user_id=$1',[actor.userId])).rows[0];
     assert.equal(funding.quoted_cents,remaining/10);assert.equal(funding.charged_cents,remaining/10);
-    assert.equal(funding.pricing_snapshot.creditCompletion.giftCents,9-remaining/10);
+    assert.equal(funding.pricing_snapshot.creditCompletion.giftCents,16-remaining/10);
     assert.equal(funding.reserved_sponsored_nano_usd,funding.reserved_nano_usd);assert.ok(funding.campaign_id);
     assert.equal((await f.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,purchased?1:0,'Completion never purchases or debits the wallet');
     assert.equal(await runStudioTaskWorkerOnce(worker),false);assert.equal(calls,1);
   });
 }
 
-test('a full last Max output can finish with Standard without executing its incomplete tool call',async t=>{
+test('a full last Max output can finish with Lite without executing its incomplete tool call',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy}),input=f.input('standard','Help develop the opening shot.');
   await service.enqueue(input);await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=460 WHERE user_id=$1',[actor.userId]);
   const models:string[]=[];
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async()=>8000,createActionResponse:async params=>{
     models.push(params.model!);
     if(models.length===1){
-      assert.equal(params.model,'gpt-6.1-sol');assert.equal(params.max_output_tokens,2200);
-      return {...response(params.model!,2200),status:'incomplete',incomplete_details:{reason:'max_output_tokens'},output_text:'',output:[{type:'function_call',name:'project_remember',call_id:'incomplete-memory',arguments:'{"revision":0'}]};
+      assert.equal(params.model,'gpt-6.1-sol');assert.equal(params.max_output_tokens,6000);
+      return {...response(params.model!,6000),status:'incomplete',incomplete_details:{reason:'max_output_tokens'},output_text:'',output:[{type:'function_call',name:'project_remember',call_id:'incomplete-memory',arguments:'{"revision":0'}]};
     }
     assert.equal(params.model,'gpt-6-luna');assert.equal(params.max_output_tokens,2200);
     assert.doesNotMatch(JSON.stringify(params.input),/incomplete-memory/);

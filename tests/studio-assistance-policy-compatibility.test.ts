@@ -27,8 +27,8 @@ test('the actual director explains the selected assistance regime with bounded g
       assert.ok(instructions.length<8500,'Permanent guidance must remain bounded.');
       assert.match(instructions,/creative partner|MaxVideoAI.*quote/i);
       assert.match(instructions,/Never silently replace|never silently replace/);
-      if(credits===true){assert.match(instructions,/monthly free credits.*before purchased/);assert.match(instructions,/purchase debits.*once/);assert.match(instructions,/Standard.*no monthly quota/);}
-      else {assert.match(instructions,/one-time.*allowance|allowance.*one-time/);assert.match(instructions,/spending limit/);assert.match(instructions,/Standard.*limited allowance|limited.*Standard/);assert.doesNotMatch(instructions,/monthly free credits|cumulative Max packs|no monthly quota/);}
+      if(credits===true){assert.match(instructions,/monthly free credits.*before purchased/);assert.match(instructions,/purchase debits.*once/);assert.match(instructions,/Lite.*no monthly quota/);}
+      else {assert.match(instructions,/one-time.*allowance|allowance.*one-time/);assert.match(instructions,/spending limit/);assert.match(instructions,/Lite.*limited allowance|limited.*Lite/);assert.doesNotMatch(instructions,/monthly free credits|cumulative Milo packs|no monthly quota/);}
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name)??[];
       if(expectedNames)assert.deepEqual(names,expectedNames);else expectedNames=names;
       assert.ok(!names.some(name=>/purchase|confirm|recharge/.test(name)));

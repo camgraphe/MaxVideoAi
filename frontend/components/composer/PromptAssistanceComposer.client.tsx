@@ -4,9 +4,9 @@ import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import styles from './prompt-assistance.module.css';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Sparkles, ChevronDown } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
-import { MiloReasoningSelect, type MiloReasoning } from './MiloReasoningSelect.client';
+import { MILO_LEVELS, miloLevelForModel } from '@/lib/studio/assistance-contract';
 import { PROMPT_ASSISTANCE_LIVE } from '@/lib/prompt-assistance/contract';
 import { useStudioAssistance } from '@/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useStudioAssistance';
 import { StudioAssistanceCreditsDialog } from '@/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistanceCredits.client';
@@ -21,7 +21,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
 }) {
   const controller = usePromptAssistancePreview({ ...context, locale, draftText, onApplyText, target, maxLength, blocked });
   const { state, dispatch } = controller;
-  const credits = useStudioAssistance(context.scopeKey, controller.transport.waiting, { endpoint: '/api/prompt-assistance', enabled: PROMPT_ASSISTANCE_LIVE, wrapChoice: true });
+  const credits = useStudioAssistance(context.scopeKey, controller.transport.waiting, { endpoint: PROMPT_ASSISTANCE_LIVE ? '/api/prompt-assistance' : '/api/studio/assistance', wrapChoice: PROMPT_ASSISTANCE_LIVE });
   const [creditsOpen, setCreditsOpen] = useState(false);
   const creditsTrigger = useRef<HTMLButtonElement>(null);
   const liveBusy = controller.transport.waiting || controller.transport.recovery;
@@ -30,7 +30,6 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const id = useId();
   const [copied, setCopied] = useState(false);
   const [expandedConversation, setExpandedConversation] = useState(false);
-  const [reasoning, setReasoning] = useState<MiloReasoning>('standard');
   const controls = useComposerWorkspaceControls();
   const milo = state.mode === 'milo' && !disabledReason;
   const frame = useRef<HTMLDivElement>(null);
@@ -74,8 +73,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     </div>
     <div id={`${id}-milo`} role="tabpanel" aria-labelledby={`${id}-milo-tab`} hidden={!milo}>
       {milo ? <PromptAssistancePanel key={context.scopeKey} modelControl={controls?.modelControl} locale={locale} modelLabel={modelLabel} messages={state.messages} proposal={state.proposal ? { text: state.proposal.text, target, stale: state.proposal.revision !== state.revision } : null}
-        reasoningControl={<><MiloReasoningSelect locale={locale} live={PROMPT_ASSISTANCE_LIVE} disabled={PROMPT_ASSISTANCE_LIVE && (!credits.status?.enabled || credits.busy || liveBusy)} value={PROMPT_ASSISTANCE_LIVE ? credits.status?.selectedModel === 'gpt-6.1-sol' ? 'max' : 'standard' : reasoning} onChange={next => { if (!PROMPT_ASSISTANCE_LIVE) setReasoning(next); else if (credits.status && !liveBusy) void credits.choose({action: next === 'max' ? 'select_sol' : 'select_luna', expectedRevision: credits.status.revision}); }} />
-          {PROMPT_ASSISTANCE_LIVE ? <button type="button" ref={creditsTrigger} className={styles.creditsTrigger} aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}>Credits</button> : null}</>}
+        reasoningControl={<button type="button" ref={creditsTrigger} className={styles.miloTrigger} aria-label="Milo settings and credits" aria-haspopup="dialog" aria-expanded={creditsOpen} onClick={() => { setCreditsOpen(true); void credits.refresh(); }}><Sparkles size={15} aria-hidden/><strong>Milo</strong>{credits.status ? <span>{MILO_LEVELS[miloLevelForModel(credits.status.selectedModel)].label}</span> : null}<ChevronDown size={12} aria-hidden/></button>}
         conversationControl={<button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button>}
         message={state.message} pending={PROMPT_ASSISTANCE_LIVE ? controller.transport.waiting : Boolean(state.pending)} blocked={blocked || liveBlocked} maxLength={maxLength} messageRef={controller.input}
         feedback={PROMPT_ASSISTANCE_LIVE ? <PromptAssistanceFeedback error={controller.transport.error ?? credits.error ?? (!credits.status ? 'LOADING' : !credits.status.enabled ? 'ASSISTANCE_DISABLED' : credits.status.unresolvedCalls ? 'USAGE_UNRESOLVED' : null)} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} /> : null}
@@ -84,6 +82,6 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
     </div>
     {state.undo ? <div className={styles.undo}><span>{copy.applied}</span><button type="button" disabled={!controller.canUndo || blocked} onClick={controller.undo}>{copy.undo}</button></div> : null}
     {copied ? <span role="status" className="sr-only">{copy.copied}</span> : null}
-    {PROMPT_ASSISTANCE_LIVE && creditsOpen ? <StudioAssistanceCreditsDialog key={context.scopeKey} context="composer" {...credits} locale={locale.startsWith('fr') ? 'fr' : 'en'} conversationBusy={liveBusy} onChoice={() => {}} trigger={creditsTrigger} onClose={() => setCreditsOpen(false)} /> : null}
+    {creditsOpen ? <StudioAssistanceCreditsDialog key={context.scopeKey} context="composer" {...credits} locale={locale.startsWith('fr') ? 'fr' : 'en'} conversationBusy={liveBusy} onChoice={() => {}} trigger={creditsTrigger} onClose={() => setCreditsOpen(false)} /> : null}
   </div>;
 }

@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
+import {studioAssistantModelSchema,type StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 const cents=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const allowance=z.object({remainingPercent:z.number().min(0).max(100),renewal:z.enum(['one_time','monthly','unlimited'])});
 const creditQuantity=z.object({total:cents,remaining:cents,reserved:cents});
@@ -14,7 +14,7 @@ const creditBalance=z.object({
 });
 export const assistanceStatusSchema=z.object({
   enabled:z.boolean(),policyVersion:z.string(),revision:cents,
-  selectedModel:z.enum(['gpt-6.1-sol','gpt-6-luna']),mode:z.enum(['included_sol','paid_sol','sponsored_luna']),
+  selectedModel:studioAssistantModelSchema,mode:z.enum(['included_sol','paid_sol','sponsored_luna']),
   tariff:z.object({version:z.string(),effectiveAt:z.string(),currency:z.literal('USD'),noncachedInputUsdPerMillion:z.number().nonnegative(),cachedInputUsdPerMillion:z.number().nonnegative(),outputUsdPerMillion:z.number().nonnegative(),rounding:z.string(),maxCallsPerMessage:cents,automaticRecharge:z.literal(false)}),
   includedSol:allowance.extend({renewal:z.enum(['one_time','monthly'])}),sponsoredLuna:allowance.extend({renewal:z.enum(['one_time','unlimited'])}),
   credits:creditBalance.optional(),

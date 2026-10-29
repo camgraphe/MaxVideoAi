@@ -8,7 +8,7 @@ test('legacy assistance explains its introductory allowance while export help fo
   assert.match(instructions, /limited one-time introductory allowance/);
   assert.doesNotMatch(instructions, /preview allowance/);
   assert.match(instructions, /authorize an assistance spending limit/);
-  assert.match(instructions, /Standard.*limited allowance/);
+  assert.match(instructions, /Lite.*limited allowance/);
   assert.match(instructions, /Export tools are unavailable in this session/);
   assert.doesNotMatch(instructions, /export_prepare may prepare/);
 });
@@ -29,10 +29,10 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/competitor|provider prices/i);
       assert.match(instructions,/Projects opens/);
       assert.doesNotMatch(instructions,/My projects/);
-      assert.match(instructions,/Milo modes.*Max: GPT-6\.1 Sol.*Standard: GPT-6 Luna.*Studio assistance/);
+      assert.match(instructions,/Milo modes.*Lite: GPT-6 Luna\/high.*Standard: GPT-6\.1 Terra\/high.*Max: GPT-6\.1 Sol\/xhigh.*Studio assistance/);
       assert.match(instructions,/monthly free credits.*before purchased/);
       assert.match(instructions,/purchase debits.*once.*usage consumes.*credits/);
-      assert.match(instructions,/Standard.*no monthly quota.*one active message/);
+      assert.match(instructions,/Lite.*no monthly quota.*one active message/);
       assert.match(instructions,/cannot read current credits.*wallet.*tariff/);
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);

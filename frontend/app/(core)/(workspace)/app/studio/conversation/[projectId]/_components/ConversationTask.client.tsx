@@ -10,7 +10,7 @@ export function ConversationTask({task,projectId,accountKey,locale,onChanged,onS
   const canContinue=task.canContinue&&['budget','steps','deadline','funding','provider','unavailable'].includes(task.error??'');
   const canExtend=task.canContinue&&task.model==='gpt-6.1-sol'&&task.error==='budget'&&task.maxCredits+100<=2000;
   const body = <>
-    <p>{task.model==='gpt-6-luna'?t('Standard · Included assistance','Standard · Assistance incluse'):`${task.consumedCredits} ${t('credits used','crédits consommés')} / ${task.maxCredits} ${t('maximum','maximum')}`}{task.reservedCredits>0&&` · ${task.reservedCredits} ${t('reserved','réservés')}`}{task.model==='gpt-6-luna'&&<button className={styles.assistanceLink} onClick={onAssistance}>{t('Explore Max','Découvrir Max')}</button>}</p>
+    <p>{task.model==='gpt-6-luna'?t('Lite · Included assistance','Lite · Assistance incluse'):`${task.consumedCredits} ${t('credits used','crédits consommés')} / ${task.maxCredits} ${t('maximum','maximum')}`}{task.reservedCredits>0&&` · ${task.reservedCredits} ${t('reserved','réservés')}`}{task.model==='gpt-6-luna'&&<button className={styles.assistanceLink} onClick={onAssistance}>{t('Explore Max','Découvrir Max')}</button>}</p>
     {task.model==='gpt-6-luna'&&task.consumedCredits>0&&<p>{task.consumedCredits} {t('Max credits already used','crédits Max déjà consommés')}</p>}
     {task.error&&<p>{reasons[task.error]}</p>}
     {task.state==='queued'&&<p>{t('You can leave this page. Your request stays saved. If the wait continues, cancel it and try later.','Vous pouvez quitter cette page. Votre demande reste enregistrée. Si l’attente se prolonge, annulez-la et réessayez plus tard.')}</p>}

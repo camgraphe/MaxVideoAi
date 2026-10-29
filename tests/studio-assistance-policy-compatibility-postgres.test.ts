@@ -96,7 +96,7 @@ test('real v1 calls, paid checkpoints and support survive delivery before migrat
   });
 
   const beforeMigration=(await pg.pool.query('SELECT * FROM studio_assistance_calls WHERE id=$1',[old.callId])).rows;
-  await pg.pool.query(readFileSync('neon/migrations/63_studio_assistance_credits.sql','utf8'));
+  for(const file of ['63_studio_assistance_credits.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const creditPolicy=studioAssistancePolicy({...env,STUDIO_ASSISTANCE_APPROVED_POLICY:creditVersion});
   await t.test('a policy change before dispatch permits a reviewed new request without supplier or wallet work',async()=>{
     const actor:StudioGenerationActor={userId:'transition-empty',projectId:'transition-empty-film',authMethod:'studio-session',clientId:null};
