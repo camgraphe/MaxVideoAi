@@ -36,3 +36,17 @@ Short service exchanges took approximately 14–17 seconds for Lite/Standard and
 - Reference perception remains metadata-only. These checks do not establish visual or audio understanding.
 - The local branch is retained for hands-on review. Do not deploy its credentials, copy its synthetic records into production, or run media workers as part of this text-assistance check.
 - Before production activation, apply the reviewed pending migrations to the intended environment, verify its configuration and complete the normal PR/release checks. This local activation does not enable the hosted PR preview or production.
+
+## Additional context audit
+
+The subsequent context increment was checked in the same isolated environment with three additional real Lite/Luna calls. These checks requested a description of current inputs, not a replacement prompt or media generation.
+
+| Case | Evidence |
+| --- | --- |
+| Actual video composer | Milo correctly reported Wan 3, T2V, 8 seconds, 1080p, 16:9, audio enabled and no references. It explicitly distinguished the interface's 8-second setting from the manual prompt's request for 30 seconds. No suggestion was applied. |
+| Owned mixed references | A service request supplied Seedance 2.5/ref2v, 12 seconds, 720p, 9:16, MOV and audio disabled, plus Image 1, Video 1 and Audio 1 resolved from copied owned assets. Milo reported the model, timing, resolution, MOV, audio state and all three references' known metadata. The request contained the aspect ratio; this first reply did not separately enumerate it. |
+| Updated next turn | In the same session, removing all references and selecting T2V, 6 seconds, 1080p, 1:1, MP4 and audio enabled produced a reply reflecting those new values and no references. It did not retain the preceding references/settings. |
+
+All three responses completed and settled. Lite consumed **zero customer credits**; recorded supplier usage was an estimated **$0.001362525** for these three calls, separate from the ten-call figures above. The two mixed-reference service exchanges took 14.9 and 16.9 seconds. References were metadata-only: this verifies context transmission and bounded conversation behavior, not visual/audio perception or media-generation eligibility. Private request/ledger evidence remains in the ignored `.local/milo-live/` directory.
+
+The increment's focused suite passed **42 tests**, including 13 context-audit tests, a 123-combination catalogue projection check with provider availability stubbed, browser changes during pending replies, actual PostgreSQL ledger checks, routes and workspace contracts. TypeScript and exposure checks passed; ESLint reported zero errors and seven existing warnings. This is incremental validation, not a rerun of the full repository suite or required Quality CI. No additional migration is needed for this optional JSON context extension; production activation still requires the pending migrations listed above.

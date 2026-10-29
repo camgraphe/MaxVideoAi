@@ -10,7 +10,9 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale=
   locale?:string;
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;
 }) {
-  const fingerprint = JSON.stringify([contextKey, draftText]);
+  // The request itself participates: a new control cannot accidentally bypass the stale guard.
+  const fingerprintFor = (text:string) => JSON.stringify([contextKey, live, target, text]);
+  const fingerprint = fingerprintFor(draftText);
   const [stored, dispatch] = useReducer(previewReducer, undefined, () => createPreviewState(scopeKey, fingerprint));
   const state = previewReducer(stored, { type: 'sync', scope: scopeKey, fingerprint });
   if (state !== stored) dispatch({ type: 'sync', scope: scopeKey, fingerprint });
@@ -46,12 +48,12 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale=
   const apply = () => {
     if (blocked || !canApplyProposal(state) || !state.proposal || (maxLength && state.proposal.text.length > maxLength)) return;
     onApplyText(state.proposal.text);
-    dispatch({ type: 'applied', previous: draftText, fingerprint: JSON.stringify([contextKey, state.proposal.text]) });
+    dispatch({ type: 'applied', previous: draftText, fingerprint: fingerprintFor(state.proposal.text) });
   };
   const undo = () => {
     if (blocked || !canUndoProposal(state) || !state.undo) return;
     onApplyText(state.undo.text);
-    dispatch({ type: 'undone', fingerprint: JSON.stringify([contextKey, state.undo.text]) });
+    dispatch({ type: 'undone', fingerprint: fingerprintFor(state.undo.text) });
   };
   const insertMention = (token: string) => {
     const field = input.current;

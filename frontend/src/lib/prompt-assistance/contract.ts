@@ -7,6 +7,7 @@ export const promptAssistanceDraftSchema = z.object({
   surface:z.enum(['video','image','audio']), engineId:z.string().min(1).max(100), mode:z.string().min(1).max(60),
   target:z.enum(['prompt','script','lyrics']), text:z.string().max(50000),
   settings:z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),setting).refine(value=>Object.keys(value).length<=60),
+  readOnlyText:z.object({negativePrompt:z.string().max(5000).optional(),lyrics:z.string().max(3500).optional()}).strict().optional(),
   references:z.array(z.object({fieldId:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),slot:z.number().int().min(0).max(99),label:z.string().max(40),ref:toolAssetRefSchema.nullable()}).strict()).max(60),
 }).strict();
 export const promptAssistanceRequestSchema = z.object({

@@ -64,3 +64,44 @@ test('live composer sends current draft, recovers without resending, and guards 
   await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.getByText('I kept the original intent.')).toHaveCount(0);
  }finally{release?.();await browser.close();await fixture.close();}
 });
+
+test('every changed live context invalidates a pending suggestion even when the caller contextKey stays constant', {timeout:90_000},async()=>{
+ const source=`import {useState} from 'react';import {createRoot} from 'react-dom/client';
+ import {PromptAssistanceComposer} from './components/composer/PromptAssistanceComposer.client';
+ function Fixture(){const [live,setLive]=useState({surface:'video',engineId:'seedance-2-5',mode:'t2v',settings:{durationSec:8,resolution:'720p',aspectRatio:'16:9',audio:true},references:[]});const [text,setText]=useState('Original prompt');
+ globalThis.setContext=value=>setLive(current=>({...current,...value,settings:{...current.settings,...value.settings}}));
+ return <PromptAssistanceComposer context={{scopeKey:'audit',contextKey:'constant',live}} locale="en" modelLabel={live.engineId} draftText={text} onApplyText={setText}><textarea aria-label="Manual prompt" value={text} onChange={event=>setText(event.target.value)}/></PromptAssistanceComposer>}
+ createRoot(document.getElementById('root')).render(<Fixture/>);`;
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch({headless:true});
+ let release:(()=>void)|undefined;
+ try {
+  const page=await browser.newPage();let sent:any,waiting=false;
+  await page.route('**/api/prompt-assistance',async route=>{
+   if(route.request().method()==='GET'){await route.fulfill({json:{ok:true,result:initialStatus}});return;}
+   sent=route.request().postDataJSON().request;waiting=true;
+   await new Promise<void>(resolve=>{release=resolve;});
+   await route.fulfill({json:{ok:true,result:{sessionId:sent.sessionId,requestId:sent.requestId,draftRevision:sent.draftRevision,target:'prompt',message:sent.message,state:'complete',reply:{reply:'Revised for this context',text:'Proposed prompt'},assistance:initialStatus}}});waiting=false;
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const changes=[{settings:{durationSec:12}},{settings:{resolution:'1080p'}},{settings:{aspectRatio:'9:16'}},{settings:{audio:false}},
+   {settings:{output_format:'mov'}},{settings:{draft:true}},{engineId:'seedance-2-0-mini'},
+   {mode:'extend'},{references:[{fieldId:'video_urls',slot:0,label:'Source video',ref:{type:'asset',assetId:'prepared',kind:'video'}}]},
+   {references:[]},{readOnlyText:{negativePrompt:'No lettering'}}];
+  for(const [index,change] of changes.entries()){
+   await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill(`Refine ${index}`);
+   await page.getByRole('button',{name:'Send message to Milo'}).click();await expect.poll(()=>waiting).toBe(true);
+   const revision=sent.draftRevision;
+   await page.evaluate(value=>(globalThis as any).setContext(value),change);
+   release?.();await expect.poll(()=>waiting).toBe(false);
+   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
+   await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
+   assert.equal(sent.draftRevision,revision);
+  }
+  // A fresh reply can still be applied and undone after those invalidations.
+  await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Use the current settings');await page.getByRole('button',{name:'Send message to Milo'}).click();await expect.poll(()=>waiting).toBe(true);
+  assert.equal(sent.draft.settings.durationSec,12);assert.equal(sent.draft.settings.resolution,'1080p');assert.equal(sent.draft.settings.aspectRatio,'9:16');assert.equal(sent.draft.settings.audio,false);
+  assert.equal(sent.draft.engineId,'seedance-2-0-mini');assert.equal(sent.draft.mode,'extend');assert.equal(sent.draft.readOnlyText.negativePrompt,'No lettering');
+  release?.();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();await page.locator('[data-assistance-apply]').click();await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Proposed prompt');
+  await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Original prompt');
+ }finally{release?.();await browser.close();await fixture.close();}
+});

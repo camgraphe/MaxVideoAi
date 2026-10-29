@@ -35,6 +35,10 @@ The approved compact reference/footer, visible generator settings, player and ga
 
 `server/prompt-assistance/context.ts` resolves model, public operation and audio variant from the same canonical capability owners used by the application/MCP. It rejects unknown combinations and target limits before reserving credits.
 
+The context records the active operation's capabilities, rather than a merged list of all operations. The video adapter includes applicable scalar advanced controls such as output format and keyframe positions. The server reconciles timing, framing and audio with that operation: source timing/dimensions come from resolved owned media; missing metadata stays unknown; automatic duration is not a fixed duration; native Seedance Draft distinguishes its 480p pass from the selected final resolution. Image settings and audio voice/model/language controls accompany their own drafts. Negative prompts and song lyrics are explicit read-only companion text, never part of the replacement proposal.
+
+The complete live request context participates in suggestion invalidation, in addition to the caller's revision key. Changing a model, operation, setting, reference or companion text while a reply is pending makes that reply inapplicable. The next turn receives the current context and is instructed to prefer it over earlier conversation settings. This describes selected inputs for writing assistance; it does not replace generation validation or pricing.
+
 `profiles.ts` selects authored family and operation advice, then attaches the existing per-model `agent-model-guidance.json` and official-source entries from `agent-model-prompting-sources.json`. A request records that guide's version, source list and canonical capabilities. Thus the assistant loads the relevant fiche, not the entire catalogue. Unsupported families get an explicitly generic capability-based guide. The family examples are editorial synthesis, not copied provider claims or measured quality results. Source links are provenance, not fetched live or injected as untrusted instructions.
 
 Update curated guidance beside its authoritative source, add a model/operation fixture, and version the guide when it changes. Capabilities override examples. Milo now shares Lite/Luna, Standard/Terra and Max/Sol levels with Studio; see [the shared levels contract](milo-levels.md) for model, runtime, tariff and migration ownership.
@@ -43,7 +47,9 @@ Update curated guidance beside its authoritative source, add a model/operation f
 
 Each reference is resolved through the exact owned asset/job-output resolver. The server validates applicable fields, media kind, slot uniqueness and maximum count, and derives display labels and supported mention syntax from the canonical model fields. Null/foreign/deleted/unavailable assets cannot be sent as real references. Missing required generation assets do not prevent discussing a draft.
 
-Only role/label, supported token and width/height/duration metadata reach the LLM. No private URL, filename, pixels, video or audio is supplied. Milo must not claim it has viewed or heard a reference. Dedicated Kling subject panels and keyframe editors remain outside this metadata adapter; their edits still invalidate suggestions, and the user must describe their intended content. Full visual/audio analysis and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
+Only role/label, supported token and width/height/duration metadata reach the LLM. No private URL, filename, pixels, video or audio is supplied. Milo must not claim it has viewed or heard a reference. Start/end images and the source clip have distinct roles; numbering matches the active reference list, including empty slots. Uploading, failed or actively edited excerpts cannot silently reuse an older clip. Schema-based keyframe references outside the compact picker also reach this metadata adapter, with authored frame positions where available.
+
+Dedicated Kling subject identities, image-mask content and owned-generation-only source details remain unavailable to Milo; the adapter marks these cases explicitly and the user must describe their intended constraints. Full visual/audio analysis and stable aliases across reference reordering remain later work. Existing changed-reference guards still protect generation.
 
 ## Calls and existing credits
 
@@ -66,5 +72,7 @@ No periodic automatic billable retry or new recovery worker is introduced. Faile
 ## Verification
 
 `prompt-assistance-context`, `live-client`, `live-postgres`, `route` and `live-browser` tests cover model/target rejection, metadata-only owned references, audio variants, exact payloads, clarification without a proposal, shared balances, concurrent sends, recovery, late replies and account changes. Provider/HTTP behavior is injected or intercepted; financial assertions use disposable PostgreSQL 17 with the actual ledger and migrations. Existing composer layout/keyboard/IME/mobile tests and Studio accounting/recovery suites remain part of validation. No claim of live provider quality follows from those fixtures.
+
+`prompt-assistance-context-audit` adds operation-specific settings, source timing, Draft/automatic duration, keyframes, reference roles and read-only text. Its catalogue matrix resolves 123 model/mode/operation contexts with provider availability stubbed; it is not a live-provider compatibility claim. The browser audit changes eleven context dimensions during pending replies. The additional real API/context checks are recorded in the [live-check report](milo-live-check-2026-10-29.md).
 
 The [LLM practices review](prompt-assistance-practices.md) records the official OpenAI/SDK sources, implemented safeguards and quality/cost evaluation still required before activation.
