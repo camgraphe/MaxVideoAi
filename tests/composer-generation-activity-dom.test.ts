@@ -28,12 +28,12 @@ async function mount(image = false, density: 'workspace' | 'default' = 'workspac
   const { useImageWorkspaceDisplayState } = await import('../frontend/app/(core)/(workspace)/app/image/_hooks/useImageWorkspaceDisplayState');
   const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
   const root = createRoot(dom.window.document.getElementById('root')!);
-  let state = { isLoading: false, isPricing: false, pendingGenerations: pending, groups: [] as GroupSummary[] };
+  let state = { isLoading: false, isPricing: false, price: 14.04 as number | null, error: undefined as string | undefined, pendingGenerations: pending, groups: [] as GroupSummary[] };
   let submissions = 0;
   function Fixture() {
     const display = useImageWorkspaceDisplayState({ error: null, historyEntries: [], numImages: 4, pendingGroups: state.groups, pricingErrorMessage: null, pricingSnapshot: null, selectedEngine: undefined, selectedPreviewEntryId: null });
     return React.createElement(I18nProvider, { locale: 'fr', dictionary: {}, fallback: {}, children: React.createElement(Composer, {
-      density, engine, prompt: 'A night scene', onPromptChange() {}, price: 14.04, currency: 'USD', promptRequired: true, assetFields: [], assets: {},
+      density, engine, prompt: 'A night scene', onPromptChange() {}, price: state.price, error: state.error, currency: 'USD', promptRequired: true, assetFields: [], assets: {},
       isLoading: state.isLoading, isPricing: state.isPricing, pendingGenerations: image ? display.pendingGenerations : state.pendingGenerations,
       generateLabel: 'Générer', onGenerate() { submissions += 1; },
     }) });
@@ -54,6 +54,17 @@ async function mount(image = false, density: 'workspace' | 'default' = 'workspac
     },
   };
 }
+
+test('an unavailable quote preserves the Generate action used to open guest sign-in', async () => {
+  const fixture = await mount();
+  try {
+    await fixture.render({ price: null, error: 'Connectez-vous pour vérifier la vidéo.' });
+    assert.equal(fixture.button('Générer')?.disabled, false);
+    await fixture.click('Générer'); assert.equal(fixture.submissions, 1);
+    await fixture.render({ price: 1.25, error: undefined });
+    assert.equal(fixture.button('Générer')?.disabled, false);
+  } finally { await fixture.dispose(); }
+});
 
 test('activity list opens independently of Generate and permits another submission after acceptance', async () => {
   const fixture = await mount();

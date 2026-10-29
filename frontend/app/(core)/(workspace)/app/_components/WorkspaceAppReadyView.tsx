@@ -353,6 +353,7 @@ export function WorkspaceAppReadyView({
             isPricing={draftWorkflow.selected ? draftWorkflow.isPricing : isPricing}
             isSubmitting={generation.isSubmitting || draftWorkflow.pending}
             preflightError={draftWorkflow.selected ? draftWorkflow.error ?? undefined : preflightError}
+            videoDurationBlocked={!draftWorkflow.selected && pricing.videoDurationBlocked}
             preflight={draftWorkflow.selected ? draftWorkflow.preflight : preflight}
             composerRef={composerRef}
             startRender={localSeedanceDraftPreview ? draftPreview.generate : draftWorkflow.selected ? draftWorkflow.generate : generation.startRender}

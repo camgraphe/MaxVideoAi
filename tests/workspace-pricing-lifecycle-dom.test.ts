@@ -125,6 +125,65 @@ test('Edit availability immediately revokes its quote and requests a fresh quote
     assert.equal(f.requests.length, 2); await f.respond(1); assert.equal(f.current.price, 1.25);
   } finally { await f.dispose(); }
 });
+for (const mode of ['v2v', 'extend'] as const) {
+  test(`${mode} explains an overlong source immediately and requotes after replacement`, async () => {
+    const f = await mount();
+    try {
+      const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+      const fieldId = mode === 'extend' ? 'extension_source_videos' : 'video_url';
+      const clip = { id: 'long', assetId: 'long', fieldId, kind: 'video', status: 'ready', url: 'https://example.com/long.mp4', previewUrl: 'https://example.com/long.mp4', durationSec: 20 } as const;
+      await f.update({ locale: 'fr', selectedEngine: engine, submissionMode: mode,
+        form: { ...f.options.form!, mode }, inputAssets: { [fieldId]: [clip] } });
+      assert.match(f.current.preflightError ?? '', /20/);
+      assert.match(f.current.preflightError ?? '', /15/);
+      assert.match(f.current.preflightError ?? '', /[Rr]accourcissez/);
+      assert.equal(f.current.videoDurationBlocked, true);
+      assert.equal(f.current.price, null);
+      assert.equal(f.current.isPricing, false);
+      await f.tick();
+      assert.equal(f.requests.length, 0, 'an invalid source should not request a price');
+      await f.update({ inputAssets: { [fieldId]: [{ ...clip, id: 'trimmed', assetId: 'trimmed', url: 'https://example.com/trimmed.mp4', durationSec: 15 }] } });
+      assert.equal(f.current.preflightError, undefined);
+      assert.equal(f.current.videoDurationBlocked, false);
+      assert.equal(f.current.isPricing, true);
+      await f.tick(); await f.respond(0);
+      assert.equal(f.current.price, 1.25);
+    } finally { await f.dispose(); }
+  });
+}
+
+test('duration guidance follows combined reference limits and disappears when the source is removed', async () => {
+  const f = await mount();
+  try {
+    const engine = listFalEngines().find(entry => entry.id === 'seedance-2-5')!.engine;
+    const clip = { id: 'a', assetId: 'a', fieldId: 'extension_source_videos', kind: 'video', status: 'ready', url: 'https://example.com/a.mp4', previewUrl: 'https://example.com/a.mp4', durationSec: 16 } as const;
+    await f.update({ locale: 'es', selectedEngine: engine, submissionMode: 'extend', form: { ...f.options.form!, engineId: engine.id, mode: 'extend' },
+      inputAssets: { extension_source_videos: [clip, { ...clip, id: 'b', assetId: 'b', url: 'https://example.com/b.mp4' }] } });
+    assert.match(f.current.preflightError ?? '', /32/);
+    assert.match(f.current.preflightError ?? '', /30,2/);
+    assert.match(f.current.preflightError ?? '', /[Rr]ecorta/);
+    await f.update({ inputAssets: {} });
+    assert.equal(f.current.preflightError, undefined);
+  } finally { await f.dispose(); }
+});
+test('server-verified duration errors explain how to repair clips with missing browser metadata', async () => {
+  const f = await mount();
+  try {
+    await f.update({ locale: 'en', submissionMode: 'v2v' });
+    await f.tick();
+    await act(async () => f.requests[0].resolve(Response.json({ ok: false, error: {
+      code: 'MEDIA_DURATION_UNSUPPORTED', message: 'Each video reference must be between 3 and 10 seconds.',
+      field: 'video_url', durationSec: 20, maxDurationSec: 10,
+    } })));
+    assert.match(f.current.preflightError ?? '', /20/);
+    assert.match(f.current.preflightError ?? '', /10/);
+    assert.match(f.current.preflightError ?? '', /Trim/);
+    assert.equal(f.current.price, null);
+    assert.equal(f.current.videoDurationBlocked, true);
+    await f.update({ effectiveDurationSec: 6 });
+    assert.equal(f.current.videoDurationBlocked, false, 'a different draft must not retain a server rejection');
+  } finally { await f.dispose(); }
+});
 test('the French composer explains a preflight reference-duration rejection before charging', async () => {
   const f = await mount();
   try {

@@ -4,6 +4,7 @@ import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
 import { getSeedanceReferenceValidationMessage } from '@/lib/seedance-failure-messages';
 import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
+import { getWorkspaceVideoDurationRejection } from '../_lib/workspace-video-duration-guidance';
 
 export type WorkspacePreflightQuoteOptions = {
   request: PreflightRequest | null;
@@ -13,7 +14,7 @@ export type WorkspacePreflightQuoteOptions = {
   locale?: string;
 };
 type Scope = { requestKey: string | null; accessToken: string | null; authChecked: boolean };
-type Observation = { scope: Scope; response: PreflightResponse | null; error?: string };
+type Observation = { scope: Scope; response: PreflightResponse | null; error?: string; videoDurationBlocked?: boolean };
 
 // Canonicalize object property order only. Array order and every wire value stay significant.
 function requestKey(payload: PreflightRequest): string {
@@ -27,6 +28,8 @@ function requestKey(payload: PreflightRequest): string {
 function getPreflightErrorMessage(response: PreflightResponse, engineId: string, locale: string): string {
   const referenceMessage = getSeedanceReferenceValidationMessage({ ...response.error, error: response.error?.code, engineId, locale });
   if (referenceMessage) return referenceMessage;
+  const durationMessage = getWorkspaceVideoDurationRejection(response.error, locale);
+  if (durationMessage) return durationMessage;
   return (
     (typeof response.error?.message === 'string' && response.error.message.trim().length
       ? response.error.message.trim() : undefined) ??
@@ -69,7 +72,10 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
       Promise.resolve().then(() => runPreflight(payload, { accessToken })).then((response) => {
         if (canceled) return;
         const valid = response.ok && typeof response.total === 'number' && Number.isFinite(response.total) && response.total >= 0;
-        setObservation({ scope, response: valid ? response : null, error: valid ? undefined : getPreflightErrorMessage(response, payload.engine, locale) });
+        setObservation({ scope, response: valid ? response : null,
+          error: valid ? undefined : getPreflightErrorMessage(response, payload.engine, locale),
+          videoDurationBlocked: !valid && Boolean(getWorkspaceVideoDurationRejection(response.error, locale)),
+        });
       }).catch((error: unknown) => {
         if (!canceled) setObservation({ scope, response: null, error: error instanceof Error ? error.message : 'Preflight failed' });
       });
@@ -83,6 +89,7 @@ export function useWorkspacePreflightQuote(options: WorkspacePreflightQuoteOptio
     retry,
     preflight,
     preflightError: composerError ?? current?.error,
+    videoDurationBlocked: Boolean(current?.videoDurationBlocked),
     setPreflightError,
     isPricing: eligible && !current,
     price: singlePrice === null ? null : singlePrice * (iterations || 1),

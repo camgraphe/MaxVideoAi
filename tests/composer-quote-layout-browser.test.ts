@@ -19,18 +19,23 @@ const fixtureSource = `
   import { Composer } from './components/Composer';
   import { CoreSettingsBar } from './components/CoreSettingsBar';
   import { I18nProvider } from './lib/i18n/I18nProvider';
+  import { getWorkspaceVideoDurationGuidance } from './app/(core)/(workspace)/app/_lib/workspace-video-duration-guidance';
   const config = globalThis.fixtureConfig;
   function Fixture() {
     const [phase,setPhase] = useState('pricing');
     globalThis.updateQuote = next => setTimeout(() => setPhase(next), 10);
     const pricing = phase === 'pricing' || phase === 'refresh';
     const price = phase === 'quote' ? 1.23 : phase === 'longQuote' ? 12345.67 : phase === 'refresh' ? 1.23 : null;
+    const sourceField = config.mode === 'extend' ? 'extension_source_videos' : 'video_url';
+    const error = phase === 'tooLong' ? getWorkspaceVideoDurationGuidance({ engine: config.engine, mode: config.mode,
+      locale: config.locale, outputDurationSec: 5, inputAssets: { [sourceField]: [{ id: 'long', kind: 'video', status: 'ready', durationSec: 20 }] } }) : undefined;
     return <I18nProvider locale={config.locale} dictionary={config.dictionary} fallback={{}}>
       <main className="app-workspace-main">
         <h1>Composer quote layout fixture</h1>
         <Composer density={config.density} engine={config.engine} prompt="A night scene" onPromptChange={() => {}}
           promptRequired assetFields={[]} assets={{}} price={price} currency="USD" isPricing={pricing}
-          isLoading={phase === 'sending'} disableGenerate={phase === 'unavailable'}
+          isLoading={phase === 'sending'} disableGenerate={phase === 'unavailable' || Boolean(error)}
+          error={error}
           pendingGenerations={config.pending ? [{id:'one',engineLabel:config.engine.label,prompt:'A night scene',durationSec:5}] : []}
           onGenerate={() => { globalThis.submissions += 1; }}
           settingsBar={<CoreSettingsBar density="workspace" engine={config.engine} mode={config.branch === 'image' ? 't2i' : 't2v'}
@@ -188,4 +193,44 @@ test('asynchronous quote states preserve workspace controls and following galler
     if (evidenceDirectory) { await mkdir(evidenceDirectory, { recursive: true }); await writeFile(join(evidenceDirectory, `composer-quote-${recordBaseline ? 'before' : 'after'}.json`), JSON.stringify(results, null, 2)); }
     await browser.close(); await fixture.close();
   }
+});
+
+test('Modify and Extend show readable duration repair guidance on mobile and desktop', { timeout: 120_000 }, async () => {
+  const fixture = await startFixture();
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const engine = listFalEngines().find(entry => entry.id === 'seedance-2-0')!.engine;
+    for (const locale of ['en', 'fr', 'es'] as const) for (const mode of ['v2v', 'extend']) for (const width of [390, 1440]) {
+      const context = await browser.newContext({ viewport: { width, height: 844 } });
+      const page = await context.newPage();
+      const errors: string[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.addInitScript(() => {
+        (globalThis as any).process = { env: { NODE_ENV: 'production' } };
+        (globalThis as any).__name = (value: unknown) => value;
+      });
+      await page.goto(fixture.url);
+      const dictionary = JSON.parse(await readFile(join(frontend, `messages/${locale}.json`), 'utf8'));
+      await page.evaluate(config => { (globalThis as any).fixtureConfig = config; }, { locale, mode, engine, dictionary, density: 'workspace' });
+      await page.addScriptTag({ url: `${fixture.url}/${fixture.script}` });
+      try { await page.locator('.app-generation-action').waitFor(); }
+      catch (error) { throw new Error(`Composer did not render: ${errors.join('; ')}; ${error}`); }
+      await page.evaluate(() => (globalThis as any).updateQuote('tooLong'));
+      await page.getByRole('alert').waitFor();
+      const message = await page.getByRole('alert').innerText();
+      assert.match(message, /20/); assert.match(message, /15/);
+      assert.match(message, /Trim|Raccourcissez|Recórtalo/);
+      assert.equal(await page.locator('.app-generation-action').isDisabled(), true);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      if (evidenceDirectory && locale === 'fr' && mode === 'v2v' && width === 390) {
+        await mkdir(evidenceDirectory, { recursive: true });
+        await page.screenshot({ path: join(evidenceDirectory, 'video-too-long-fr-mobile.png') });
+      }
+      await page.evaluate(() => (globalThis as any).updateQuote('quote'));
+      await page.getByRole('alert').waitFor({ state: 'detached' });
+      assert.equal(await page.locator('.app-generation-action').isEnabled(), true);
+      assert.deepEqual(errors, []);
+      await context.close();
+    }
+  } finally { await browser.close(); await fixture.close(); }
 });
