@@ -1,7 +1,7 @@
 import { isSignedMediaUrl } from '@/lib/media';
 import {
   createSignedDownloadUrl,
-  extractStorageKeyFromUrl,
+  ownedMediaStorageKeyForUrl,
   isAllowedAssetHost,
   isStorageConfigured,
 } from '@/server/storage';
@@ -118,9 +118,9 @@ function controlledPrivatePreview(value: string | null): string | null {
 }
 
 async function createStoragePreviewUrl(asset: MediaAssetRecord): Promise<string | null> {
-  if (!isStorageConfigured()) return null;
+  if (!asset.userId || !isStorageConfigured()) return null;
   for (const candidate of [asset.thumbUrl, asset.previewUrl, asset.url]) {
-    const key = candidate ? extractStorageKeyFromUrl(candidate) : null;
+    const key = candidate ? ownedMediaStorageKeyForUrl({ url: candidate, userId: asset.userId }) : null;
     if (!key) continue;
     try {
       return await createSignedDownloadUrl(key, { expiresInSeconds: PRIVATE_PREVIEW_TTL_SECONDS });

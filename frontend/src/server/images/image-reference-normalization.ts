@@ -2,13 +2,11 @@ import sharp from 'sharp';
 import { query } from '@/lib/db';
 import { ensureAssetSchema } from '@/lib/schema';
 import {
-  createSignedDownloadUrl,
-  extractStorageKeyFromUrl,
   isAllowedAssetHost,
-  isStorageConfigured,
   recordUserAsset,
   uploadImageToStorage,
 } from '@/server/storage';
+import { createOwnedMediaReadUrl } from '@/server/owned-media-read-access';
 import {
   inferImageFormatFromUrl,
   isSupportedImageFormat,
@@ -127,11 +125,11 @@ export async function normalizeReferenceImageForEngine(params: {
     throw new Error('reference host is not eligible for server-side normalization');
   }
 
-  const storageKey = extractStorageKeyFromUrl(params.url);
-  const sourceUrl =
-    storageKey && isStorageConfigured()
-      ? await createSignedDownloadUrl(storageKey, { expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS })
-      : params.url;
+  const sourceUrl = await createOwnedMediaReadUrl({
+    url: params.url,
+    userId: params.userId,
+    expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS,
+  });
 
   const sourceBuffer = await fetchBufferFromUrl(sourceUrl, NORMALIZED_REFERENCE_FETCH_TIMEOUT_MS);
   const metadata = await sharp(sourceBuffer, { failOn: 'none' }).metadata();

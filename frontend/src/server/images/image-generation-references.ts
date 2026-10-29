@@ -1,5 +1,6 @@
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
-import { ownedMediaStorageKeyForUrl } from '@/server/storage';
+import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
+import { canReadMarketingFile } from '@/server/marketing-media/access';
 import { query } from '@/lib/db';
 import type {
   CharacterReferenceSelection,
@@ -76,6 +77,16 @@ export async function prepareImageGenerationReferences({
         engineLabel: engineEntry.marketingName,
       }
     );
+  }
+
+  // A bucket URL identifies an object; it never authorizes signing that object.
+  // Check every engine and character reference before normalization or provider access.
+  for (const url of new Set(combinedImageUrls)) {
+    const key = extractStorageKeyFromUrl(url);
+    if (key && !ownedMediaStorageKeyForUrl({ url, userId })
+      && !(key.startsWith('marketing-media/') && await canReadMarketingFile(url, userId))) {
+      fail(mode, 'reference_not_owned', 'Reference media is unavailable for this account.', 400);
+    }
   }
 
   if (engine.id === NANO21_ENGINE_ID && combinedImageUrls.length) {
