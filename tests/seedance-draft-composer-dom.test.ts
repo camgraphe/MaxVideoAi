@@ -44,6 +44,18 @@ function composer(engineId: string, controls: SeedanceDraftControls, mode: Mode 
   }
 }
 
+test('duration validation disables the workspace action without disabling guest sign-in on missing quotes', () => {
+  const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
+  for (const videoDurationBlocked of [true, false]) {
+    const dom = composer('seedance-2-0', controls, 'v2v', 1, { videoDurationBlocked, price: null,
+      preflightError: videoDurationBlocked ? 'Trim the source video to 15s or less.' : undefined });
+    try {
+      assert.equal(dom.window.document.querySelector<HTMLButtonElement>('.app-generation-action')?.disabled, videoDurationBlocked);
+      if (videoDurationBlocked) assert.match(dom.window.document.querySelector('[role="alert"]')?.textContent ?? '', /Trim/);
+    } finally { dom.window.close(); }
+  }
+});
+
 test('Kling empty subject builder is optional on the first composer render', () => {
   const controls = { available: false, selected: false, phase: 'setup', live: true, toggle: noop, generate: noop } as const;
   const dom = composer('kling-o3-pro', controls, 'i2v', 1, {
