@@ -33,6 +33,7 @@ export type TopUpModalState = {
 } | null;
 
 type UseWorkspacePricingGateOptions = {
+  accountId: string | null;
   accessToken: string | null;
   locale: AppLocale;
   topUpCopy: WorkspaceCopy['topUp'];
@@ -82,6 +83,7 @@ type UseWorkspacePricingGateResult = {
 };
 
 export function useWorkspacePricingGate({
+  accountId,
   accessToken,
   locale,
   topUpCopy,
@@ -179,6 +181,7 @@ export function useWorkspacePricingGate({
     resetCheckout,
     startCheckout,
   } = useHostedWalletCheckout({
+    accountId,
     accessToken,
     amountCents: topUpAmount,
     currency: topUpChargeCurrency,

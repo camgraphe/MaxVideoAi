@@ -29,7 +29,7 @@ async function mount() {
   }
   const { useWorkspacePricingGate: useGate } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate');
   let options = {
-    accessToken: 'fixture-a', authChecked: true, locale: 'en', memberTier: 'Member', setMemberTier: () => {},
+    accountId: 'account-a', accessToken: 'fixture-a', authChecked: true, locale: 'en', memberTier: 'Member', setMemberTier: () => {},
     topUpCopy: {}, selectedEngine: { id: 'seedance-2-0', modes: ['t2v'], modeCaps: {} }, submissionMode: 't2v',
     form: { engineId: 'seedance-2-0', mode: 't2v', durationSec: 5, resolution: '720p', aspectRatio: '16:9', fps: 24, iterations: 1, audio: false, extraInputValues: {} },
     effectiveDurationSec: 5, supportsAudioToggle: false, voiceControlEnabled: false, inputAssets: {},
@@ -212,7 +212,7 @@ test('current draft masks a resolved quote synchronously before debounce and sco
 test('anonymous draft requests and displays its public quote after auth readiness', async () => {
   const f = await mount();
   try {
-    await f.update({ accessToken: null });
+    await f.update({ accountId: null, accessToken: null });
     assert.equal(f.current.price, null);
     assert.equal(f.current.isPricing, true);
 
@@ -235,13 +235,13 @@ test('engine, inputs and account changes mask every render and superseded respon
     await f.update({ inputAssets: { image_url: [{ id: 'reference', fieldId: 'image_url', kind: 'image', status: 'ready', url: 'https://example.com/original.jpg', previewUrl: 'https://example.com/preview.jpg' } as never] } }); masked(f);
     await f.tick(); await f.respond(1); assert.equal(f.current.price, null);
     await f.respond(2); assert.equal(f.current.price, 1.25);
-    await f.update({ accessToken: 'fixture-b' }); masked(f); assert.equal(f.current.isPricing, true);
+    await f.update({ accountId: 'account-b', accessToken: 'fixture-b' }); masked(f); assert.equal(f.current.isPricing, true);
     await f.tick(); await f.respond(3); assert.equal(f.current.price, 1.25);
-    await f.update({ accessToken: null }); masked(f); assert.equal(f.current.isPricing, true);
+    await f.update({ accountId: null, accessToken: null }); masked(f); assert.equal(f.current.isPricing, true);
     await f.tick(); assert.equal(f.requests.length, 5); await f.respond(4); assert.equal(f.current.price, 1.25);
-    await f.update({ accessToken: 'fixture-b', authChecked: false }); masked(f);
+    await f.update({ accountId: null, accessToken: 'fixture-b', authChecked: false }); masked(f);
     await f.tick(); assert.equal(f.requests.length, 5);
-    await f.update({ authChecked: true }); masked(f); await f.tick(); await f.respond(5);
+    await f.update({ accountId: 'account-b', authChecked: true }); masked(f); await f.tick(); await f.respond(5);
     await f.update({ form: null }); masked(f); assert.equal(f.current.isPricing, false);
   } finally { await f.dispose(); }
 });
@@ -258,8 +258,8 @@ test('rapid A to B to A starts a new quote, failures stay empty, and caller erro
     await f.respond(1); assert.equal(f.current.price, null);
     await act(async () => f.requests[2].reject(new Error('Quote unavailable')));
     assert.equal(f.current.price, null); assert.equal(f.current.preflightError, 'Quote unavailable'); assert.equal(f.current.isPricing, false);
-    await f.update({ authChecked: false }); masked(f); assert.equal(f.current.preflightError, undefined);
-    await f.update({ authChecked: true }); await f.tick();
+    await f.update({ accountId: null, authChecked: false }); masked(f); assert.equal(f.current.preflightError, undefined);
+    await f.update({ accountId: 'account-a', authChecked: true }); await f.tick();
     await act(async () => f.current.showComposerError('A prompt is required'));
     await f.respond(3); assert.equal(f.current.price, 1.25); assert.equal(f.current.preflightError, 'A prompt is required');
     await act(async () => f.current.setPreflightError(undefined)); assert.equal(f.current.preflightError, undefined);
@@ -302,10 +302,10 @@ test('a previous account response stays masked through logout and reauthenticati
   const f = await mount();
   try {
     await f.tick();
-    await f.update({ accessToken: null }); masked(f);
+    await f.update({ accountId: null, accessToken: null }); masked(f);
     await f.respond(0); masked(f);
-    await f.update({ accessToken: 'fixture-b' }); await f.tick();
-    await f.update({ accessToken: 'fixture-c' }); masked(f);
+    await f.update({ accountId: 'account-b', accessToken: 'fixture-b' }); await f.tick();
+    await f.update({ accountId: 'account-c', accessToken: 'fixture-c' }); masked(f);
     await f.tick(); await f.respond(1); assert.equal(f.current.preflight, null); assert.equal(f.current.price, null);
     await f.respond(2); assert.equal(f.current.price, 1.25);
   } finally { await f.dispose(); }

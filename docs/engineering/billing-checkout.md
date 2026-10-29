@@ -57,7 +57,8 @@ The native element waits for currency and quote loading to finish, then waits
 300 ms for the amount selection to settle before requesting a session.
 
 The component's memory-only cache contains at most eight sessions. Its key
-includes user, amount, currency, locale, CAPTCHA state, consent, and attribution.
+includes user, amount, currency, locale, consent, and attribution. The consumed
+CAPTCHA credential is not part of a successfully prepared session's identity.
 Concurrent requests with the same key share a promise. The API returns the
 actual Stripe `expiresAt` value; cached entries expire 30 seconds before that
 deadline. Missing expiration disables client caching. The existing server reuse
@@ -239,6 +240,37 @@ Regression coverage: `transaction-audit-persistence-postgres.test.ts`,
 
 ### Wallet readiness and compact billing layout
 
-The native wallet loading deadline is a soft ten-second notice, not a cancellation. A late Stripe `ready` event can still reveal usable buttons. Explicit retries remount the widget through the existing session cache or in-flight preparation promise; they do not reset Stripe session failure limits or reuse a CAPTCHA proof. Retired effects (amount, identity, or hosted handoff) still ignore late callbacks. `express_checkout_ready.metadata.recoveredAfterTimeout` distinguishes recovered loads from immediately ready wallets. A rate-limited preparation does not offer the connection retry control. Explicit retries also ask BillingClient to reload Stripe.js so a failed initial script promise is recoverable, while the native session cache remains mounted.
+The native wallet loading deadline is a soft ten-second notice, not a cancellation. A late Stripe `ready` event can still reveal usable buttons. Explicit retries remount the widget through the existing session cache or in-flight preparation promise; they do not reset Stripe session failure limits or reuse a CAPTCHA proof. Retired effects (amount, identity, or hosted handoff) still ignore late callbacks. `express_checkout_ready.metadata.recoveredAfterTimeout` distinguishes recovered loads from immediately ready wallets. A rate-limited preparation shows the server's wait message and offers a deliberate retry; the server remains authoritative for the cooldown and CAPTCHA requirements. Explicit retries also ask BillingClient to reload Stripe.js so a failed initial script promise is recoverable, while the native session cache remains mounted.
 
 Billing keeps one visible Add credits heading, a compact balance row and side-by-side payment/credit amounts. The card/hosted fallback stays below the native wallet area regardless of readiness. Keep amount and currency touch targets at least 44 px; preserve visible tax disclosure and error states. `tests/wallet-express-checkout-recovery.test.ts` exercises slow preparation, in-flight and cached retry, late readiness and hosted retirement; the CAPTCHA handoff browser fixture covers Apple Pay, Google Pay and Link switching.
+
+### Checkout request lifetime and account changes
+
+Hosted checkout receives the stable authenticated account ID from Billing and
+the workspace pricing gate. Replacing an access token for the same account must
+not retire an active checkout. Changing account or checkout configuration,
+resetting/closing the workspace modal, or unmounting retires the old attempt.
+Every asynchronous continuation must still belong to the current attempt before
+it changes UI, writes return storage, reports a result, or redirects. An old
+`finally` cannot unlock a newer submission. The reset callback itself remains
+stable so the workspace modal does not reset its selected amount on rerenders.
+
+Hosted and native session preparation have a separate thirty-second transport
+deadline covering both the request and response body. Abort is paired with a
+settled caller promise, so a stalled transport cannot hold the UI lock forever.
+Native retries before that deadline still share the in-flight request; after
+expiry the pending entry is retired and a deliberate retry can make progress.
+An expired response must not replace a newer cache entry or mount a stale wallet.
+Successful prepared sessions retain their existing expiry and reuse rules.
+
+These deadlines do not confirm that server-side preparation stopped. They never
+trigger an automatic POST, payment, refund, or wallet credit. A deliberate retry
+still goes through the existing server authorization, session reuse, CAPTCHA,
+rate-limit and failed-card checks. Browser fixtures use synthetic Stripe objects
+and local requests; they do not certify real Apple Pay or Google Pay payments.
+
+The hosted transport remains in `frontend/lib/wallet/hosted-checkout.ts`; native
+transport lifetime belongs in the route-local `express-checkout-request.ts`.
+`hosted-wallet-checkout-lifecycle.test.ts`, `hosted-wallet-checkout-timeout.test.ts`
+and `wallet-express-request-recovery.test.ts` cover retirement, stalled bodies,
+manual recovery and late responses alongside the existing session/CAPTCHA tests.

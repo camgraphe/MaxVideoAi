@@ -45,7 +45,7 @@ test('wallet and hosted checkout consume separate CAPTCHA tokens without discard
       });
       function App() {
         const [enabled,setEnabled]=useState(!location.search.includes('hosted-first'));
-        const checkout=useHostedWalletCheckout({accessToken:'synthetic-auth',amountCents:2000,currency:'EUR',
+        const checkout=useHostedWalletCheckout({accountId:'synthetic-account',accessToken:'synthetic-auth',amountCents:2000,currency:'EUR',
           locale:'en',source:'billing',stripePromise,onStarted(){},onFailed(){},onRateLimited(){}});
         return <div>
           <button onClick={()=>setEnabled(true)}>Enable wallets</button>

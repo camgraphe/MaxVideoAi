@@ -185,6 +185,7 @@ export default function AppClientPage({
     setForm: routeForm.setForm,
   });
   const pricing = useWorkspacePricingGate({
+    accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,
     locale: app.uiLocale,
     topUpCopy: app.workspaceCopy.topUp,
