@@ -18,6 +18,9 @@ New UI text remains English. It never calls an LLM, buys credits or generates me
    settings/reference/guide context, per-call runtime, token usage and financial
    evidence. Technical completion, quote acceptance, media result and quality are
    distinct. Provider cost uses USD nanounits; reserved cents are not settled charges.
+   Separately labeled provider output includes refused, incomplete or invalid replies
+   and tool arguments, even when no validated reply exists. Large outputs are bounded
+   and marked; absent fields are not labeled as oversized. Hidden reasoning stays out.
 4. Record Useful / Needs work / Unreviewed, common issue tags and a short note.
    These are internal human judgments, not customer satisfaction or automatic scores.
    Saves are explicit/idempotent, retain earlier reviews, and recheck the source.
@@ -49,7 +52,8 @@ New UI text remains English. It never calls an LLM, buys credits or generates me
   and errors remain in the existing operational MCP view.
 
 `src/server/assistant-review/context.ts` owns the bounded projection: text budget,
-depth/node/collection caps, credential/link removal, omission of hidden reasoning
+depth/node/collection caps, credential/link removal (including nested token/cookie
+fields and serialized tool JSON, with known reference-mention tokens preserved), omission of hidden reasoning
 and media bytes. Media counts and the source's retained reference IDs are evidence;
 they are not copies of the actual pixels/audio/video. Stored truncation propagates
 to the UI. The scrubber is not a promise of anonymization: names and private prose
@@ -104,3 +108,9 @@ origin/outcome separation. HTTP tests cover admin/origin/body bounds. DOM/browse
 checks exercise explicit reveal/hide, escaping, failed-save retry, human evaluation
 and desktop/mobile layout. Existing Studio review/assistance tests cover regression.
 No customer conversations or provider calls are used as test fixtures.
+
+Final increment validation: 46 focused checks passed after independent review fixes,
+including malformed/refused/incomplete/oversized output review, nested credentials,
+and null-versus-truncated evidence. TypeScript, targeted server lint, public exposure
+and diff checks pass. The earlier full frontend lint has 0 errors / 7 existing warnings.
+Required Quality CI remains a merge gate; this is not a full-repository green claim.

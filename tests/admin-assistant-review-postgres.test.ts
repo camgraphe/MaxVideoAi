@@ -59,6 +59,32 @@ test('common review scopes native evidence, audits reveals and preserves human a
   const resolved = await api.loadAssistantReviews({ source: 'composer', userId: 'owner', verdict: 'needs_work' });
   assert.equal(resolved.status,'available'); if(resolved.status==='available') assert.equal(resolved.items.length,0,'Only the latest review determines the current filter');
   await assert.rejects(pg.pool.query('UPDATE admin_assistant_review_annotations SET verdict=\'useful\''), /append-only/);
+  // Validated replies are deliberately absent on these failures; retained provider
+  // evidence must still explain what the provider actually returned.
+  for (const failure of [
+    { error: 'OUTPUT_INVALID', status: 'completed', text: 'MALFORMED_JSON_REPLY', content: [{ type: 'output_text', text: 'MALFORMED_JSON_REPLY' }] },
+    { error: 'OUTPUT_INCOMPLETE', status: 'incomplete', text: 'PARTIAL_REPLY', content: [{ type: 'output_text', text: 'PARTIAL_REPLY' }] },
+    { error: 'OUTPUT_REFUSED', status: 'completed', text: '', content: [{ type: 'refusal', refusal: 'REFUSED_REPLY' }] },
+  ]) {
+    await pg.pool.query("UPDATE prompt_assistance_requests SET state='failed',reply_json=NULL,error=$1,response_json=$2 WHERE user_id='owner'", [failure.error, {
+      status: failure.status, incomplete_details: { reason: 'max_output_tokens' }, output_text: failure.text,
+      output: [{ type: 'message', content: failure.content }, { type: 'reasoning', summary: [{ text: 'NEVER_REASONING' }] }],
+    }]);
+    const failed = await api.revealAssistantReview('reviewer', scope);
+    assert.equal(failed.reply, null);
+    const raw = failed.evidence.find(entry => entry.title === 'Recorded provider output (may be rejected or incomplete)');
+    assert.ok(raw, 'Failed replies need separately labeled provider output');
+    assert.equal(raw.data.truncated, false, 'Absent optional response fields are missing, not oversized');
+    assert.match(JSON.stringify(raw.data.value), new RegExp(failure.text || 'REFUSED_REPLY'));
+    assert.match(JSON.stringify(raw.data.value), /max_output_tokens/);
+    assert.doesNotMatch(JSON.stringify(raw), /NEVER_REASONING/);
+  }
+  await pg.pool.query("UPDATE prompt_assistance_requests SET response_json=$1 WHERE user_id='owner'", [{ status: 'completed', output_text: 'OVERSIZED_REPLY ' + 'a '.repeat(300000) }]);
+  const oversized = await api.revealAssistantReview('reviewer', scope);
+  const rawOversized = oversized.evidence.find(entry => entry.title === 'Recorded provider output (may be rejected or incomplete)');
+  assert.equal(rawOversized?.data.truncated, true);
+  assert.match(JSON.stringify(rawOversized?.data.value), /OVERSIZED_REPLY/);
+  assert.ok(Buffer.byteLength(JSON.stringify(rawOversized)) < 170000);
   await pg.pool.query('DELETE FROM prompt_assistance_requests WHERE user_id=\'owner\'');
   await assert.rejects(api.revealAssistantReview('reviewer', scope), { code: 'not_found' });
   await assert.rejects(api.annotateAssistantReview('reviewer', { ...annotation, id: randomUUID() }), { code: 'not_found' });
@@ -77,7 +103,15 @@ test('common review scopes native evidence, audits reveals and preserves human a
   const studio = await api.loadAssistantReviews({ source: 'studio' });
   assert.equal(studio.status, 'available'); if (studio.status !== 'available') throw new Error('Unavailable');
   assert.equal(studio.items.length, 1);
-  assert.equal((await api.revealAssistantReview('reviewer', { source: 'studio', userId: 'owner', scopeId: 'film', requestId: id })).message, 'Studio brief');
+  await pg.pool.query('INSERT INTO studio_conversation_responses VALUES ($1,$2,$3,$4,0,$5,$6,123,now(),NULL)', ['owner', 'film', id, randomUUID(), 'complete', {
+    status: 'completed', output: [{ type: 'function_call', name: 'image_prepare', arguments: 'BROKEN_TOOL_ARGUMENTS' }, { type: 'reasoning', summary: [{ text: 'NEVER_REASONING' }] }],
+  }]);
+  const studioDetail = await api.revealAssistantReview('reviewer', { source: 'studio', userId: 'owner', scopeId: 'film', requestId: id });
+  assert.equal(studioDetail.message, 'Studio brief');
+  const rawStudio = studioDetail.evidence.find(entry => entry.title === 'Recorded provider outputs (may be rejected or incomplete)');
+  assert.ok(rawStudio, 'Studio validation failures need retained tool output');
+  assert.match(JSON.stringify(rawStudio.data.value), /BROKEN_TOOL_ARGUMENTS/);
+  assert.doesNotMatch(JSON.stringify(rawStudio), /NEVER_REASONING/);
   await assert.rejects(api.revealAssistantReview('reviewer', { source: 'studio', userId: 'owner', scopeId: 'deleted', requestId: id }), { code: 'not_found' });
   await pg.pool.query(`CREATE TABLE user_roles(user_id text,role text); INSERT INTO user_roles VALUES ('review-admin','admin'),('ordinary','user')`);
   const { POST } = await import('../frontend/app/api/admin/assistants/review/route');

@@ -39,7 +39,7 @@ docs/engineering/assistant-review.md; browser/DOM tests.
 - [x] Build bounded source/account/conversation browsing and explicit reveal/annotation UI.
 - [x] Verify browser behavior and existing Studio review contracts.
 - [x] Run focused suite, TypeScript, lint, exposure check and diff check.
-- [ ] Independent final review; fix important findings; commit/push current PR without deployment.
+- [x] Independent final review; fix important findings; commit/push current PR without deployment.
 
 ## Execution ledger
 The user delegated this improvement within the ongoing PR. No additional approval
@@ -47,4 +47,11 @@ round is needed for reversible implementation and synthetic validation.
 
 Task 1: complete — shared projection, native composer snapshots including rejected funding, gated Studio reservation-time capture; unit and PG regressions passed.
 Task 2: complete — common audited sources, exact scope/deletion checks, latest-review filters, idempotent annotations and real admin-role boundary passed on disposable PG17.
-Task 3: implementation and browser verification complete — desktop1440/mobile390 explicit reveal/hide and save exercised. Focused suite:45 passed; TypeScript passed; lint0errors/7pre-existing warnings; public exposure and diff checks passed. Final review pending.
+Task 3: complete — desktop1440/mobile390 explicit reveal/hide and save exercised. Final focused suite:46 passed; TypeScript and targeted server lint passed; full frontend lint0errors/7pre-existing warnings; public exposure and diff checks passed.
+
+Final review: fresh read-only GPT-6 Astra review of 27576a7a..21d8c6f82 found two Important issues and no Critical or Minor findings.
+Final: fixed conventional credential fields surviving capture/reveal — nested token/Cookie/Set-Cookie and serialized tool-result test RED→GREEN; known reference tokens retained; final suite46/46.
+Final: fixed failed provider outputs inaccessible to review — invalid/incomplete/refused and Studio tool output tests RED→GREEN, oversized prefix/truncation checked; final suite46/46.
+Final: fixed missing optional evidence incorrectly marked oversized — PostgreSQL null-field regression RED→GREEN; final suite46/46.
+Final: Ruling: customer ratings, Apply/Generate attribution and complete MCP/audio/external-host conversation coverage stay separate — retained native evidence is the delivered scope and the UI/docs expose these gaps; treating it as complete telemetry would yield misleading quality conclusions.
+Final: Ruling: production activation/live provider behavior was not judged — no production changes or customer-data reads are needed for this isolated review foundation; migration90/capture flag and required Quality CI remain explicit rollout gates, so synthetic success is not a live readiness claim.

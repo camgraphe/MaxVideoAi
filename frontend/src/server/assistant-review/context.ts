@@ -3,7 +3,8 @@ import { redactReviewText } from '@/server/admin-studio-review/projection';
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 export type ReviewProjection = { value: Json; truncated: boolean; omitted: number };
-const privateKey = /authorization|password|secret|credential|encrypted|api[_-]?key|access[_-]?token|refresh[_-]?token|(^|_)(url|uri)$|(?:Url|Uri)$|^b64_json$/i;
+const privateKey = /authorization|password|secret|credential|encrypted|api[_-]?key|access[_-]?token|refresh[_-]?token|^token$|^(?:set[-_]?)?cookie$|(^|_)(url|uri)$|(?:Url|Uri)$|^b64_json$/i;
+const referenceToken = /^(?:@(Image|Video|Audio)[1-9]\d{0,3}|<IMAGE_\d{1,4}>)$/;
 const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 
 /** Bounded customer-content projection, not anonymization. Never use for public analytics. */
@@ -44,7 +45,9 @@ export function projectReviewData(input: unknown, maxBytes = 160_000): ReviewPro
       const entries = Object.entries(source);
       if (entries.length > 128) truncated = true;
       for (const [key, child] of entries.slice(0, 128)) {
-        if (privateKey.test(key)) { omitted++; continue; }
+        // Only the known provider mention syntax can survive a generic token field.
+        const isReferenceToken = key === 'token' && typeof child === 'string' && referenceToken.test(child);
+        if (privateKey.test(key) && !isReferenceToken) { omitted++; continue; }
         // Only schema-shaped keys; do not let a hostile property name bypass text scrubbing.
         if (!/^[A-Za-z0-9_.:-]{1,100}$/.test(key) || ['__proto__', 'constructor', 'prototype'].includes(key)) { omitted++; continue; }
         result[key] = /^(instructionsHash|toolsHash|responseFormatHash)$/.test(key) && typeof child === 'string' && /^[a-f0-9]{64}$/.test(child) ? child : visit(child, depth + 1);

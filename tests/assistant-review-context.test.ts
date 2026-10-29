@@ -33,3 +33,18 @@ test('review projections bound oversized hostile stored context and report trunc
   assert.doesNotMatch(JSON.stringify(projected), /private\.test|NEVER_PASSWORD/);
   assert.match(JSON.stringify(projected), /Video 1|@Video1/);
 });
+
+test('review removes conventional credentials from nested objects and serialized tool results while preserving reference mentions', async () => {
+  const { projectReviewData, buildAssistantReviewContext } = await import('../frontend/src/server/assistant-review/context');
+  const secrets = { auth: { token: 'NEVER_SESSION', Cookie: 'sid=NEVER_COOKIE', 'Set-Cookie': 'session=NEVER_SET_COOKIE' } };
+  const payload = { ...secrets, toolResult: JSON.stringify(secrets), references: [{ token: '@Video1' }, { token: '@Image2' }, { token: '<IMAGE_0>' }], usage: { input_tokens: 123 } };
+  const projected = projectReviewData(payload);
+  assert.doesNotMatch(JSON.stringify(projected), /NEVER_/);
+  assert.match(JSON.stringify(projected), /@Video1/);
+  assert.match(JSON.stringify(projected), /@Image2/);
+  assert.match(JSON.stringify(projected), /<IMAGE_0>/);
+  assert.match(JSON.stringify(projected), /input_tokens.*123/);
+  assert.ok(projected.omitted >= 6);
+  const captured = buildAssistantReviewContext({ input: [{ type: 'function_call_output', output: JSON.stringify(payload) }] });
+  assert.doesNotMatch(JSON.stringify(captured), /NEVER_/);
+});
