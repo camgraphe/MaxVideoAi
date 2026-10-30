@@ -18,3 +18,20 @@ test('support apply requires a fingerprint, operator and reason; list cannot mut
   assert.throws(()=>parseStudioAssistanceSupportArgs([...args,'--force','true'],connection));
   assert.throws(()=>parseStudioAssistanceSupportArgs([...base,'--action','settle_recorded'],connection),/duplicate/);
 });
+test('listing accepts bounded pagination and exact filters only in list mode',()=>{
+ const list=['--target','db.example.com:5432/product','--environment','production','--list'];
+ const parsed=parseStudioAssistanceSupportArgs([...list,'--user','test-user','--waiver','automatic','--limit','25','--cursor','abc'],connection);
+ assert.equal(parsed.user,'test-user');assert.equal(parsed.waiver,'automatic');assert.equal(parsed.limit,25);assert.equal(parsed.cursor,'abc');
+ for(const extra of [['--limit','0'],['--limit','101'],['--limit','1.5'],['--limit','01'],['--waiver','bad'],['--user',' '],['--cursor','!']])assert.throws(()=>parseStudioAssistanceSupportArgs([...list,...extra],connection));
+ assert.throws(()=>parseStudioAssistanceSupportArgs([...base,'--limit','5'],connection),/list/i);
+});
+test('composer cap diagnostic requires a user and rejects any resolution or list filters',()=>{
+  const common=['--target','db.example.com:5432/product','--environment','production'];
+  const diagnostic=parseStudioAssistanceSupportArgs([...common,'--diagnose','--user','example-user','--limit','2'],connection);
+  assert.equal(diagnostic.diagnose,'true');assert.equal(diagnostic.user,'example-user');assert.equal(diagnostic.limit,2);
+  const cursor=Buffer.from(JSON.stringify({v:1,userId:'example-user',id:call})).toString('base64url');
+  assert.equal(parseStudioAssistanceSupportArgs([...common,'--diagnose','--user','example-user','--cursor',cursor],connection).cursor,cursor);
+  assert.throws(()=>parseStudioAssistanceSupportArgs([...common,'--diagnose'],connection),/user/i);
+  assert.throws(()=>parseStudioAssistanceSupportArgs([...common,'--diagnose','--user','example-user','--waiver','all'],connection));
+  assert.throws(()=>parseStudioAssistanceSupportArgs([...base,'--diagnose','--user','example-user'],connection));
+});

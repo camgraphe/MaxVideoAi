@@ -9,11 +9,14 @@ import type { Mode } from '../frontend/types/engines';
 import type { ReferenceAsset } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-assets';
 import { useWorkspaceRouteFormState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceEngineModeState } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState';
+import { useWorkspaceVideoSettings } from '../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceVideoSettings';
 import { coerceFormState } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-engine-helpers';
 import { resolveWorkspaceRequestParams } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-hydration';
 
 const engines = getBaseEnginesByCategory('video');
 const noop = () => {};
+const readStorage = () => null;
+const engineMap = new Map(engines.map(engine => [engine.id, engine]));
 const workflowCopy = { generateVideo: 'Generate', removeAudioToUnlock: 'Remove audio', audioUnsupported: 'Unsupported',
   audioLocked: 'Locked', audioLockedFallback: 'Locked', removeAudioToUseEdit: 'Remove audio' };
 
@@ -25,6 +28,8 @@ async function mount(initialEngine = 'wan-3') {
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   let route!: ReturnType<typeof useWorkspaceRouteFormState>;
   let workflow!: ReturnType<typeof useWorkspaceEngineModeState>;
+  let videoSettings!: ReturnType<typeof useWorkspaceVideoSettings>;
+  let availableEngines = engines;
   let search = '';
   let ready = true;
   let assets: Record<string, (ReferenceAsset | null)[]> = {};
@@ -40,7 +45,14 @@ async function mount(initialEngine = 'wan-3') {
       tokenRef.current = request.requestedEngineToken;
       modeRef.current = request.requestedMode;
     }, [request.resolvedRequestedEngineId, request.requestedEngineToken, request.requestedMode]);
-    workflow = useWorkspaceEngineModeState({ ...route, engines, inputAssets: assets, setInputAssets: update => { assets = typeof update === 'function' ? update(assets) : update; },
+    videoSettings = useWorkspaceVideoSettings({ ...route, engines: availableEngines, engineMap, locale: 'en', accountScope: 'owner',
+      activeDraftReady: true, hasActiveSetup: true, provider: 'fal', fromVideoId: null, requestedJobId: null,
+      searchString: search, authChecked: ready, hydratedForScope: ready ? 'owner' : null, storageScope: 'owner',
+      effectiveRequestedEngineId: request.resolvedRequestedEngineId, effectiveRequestedEngineToken: request.requestedEngineToken,
+      rendersLength: 0, readScopedStorage: readStorage, writeScopedStorage: noop, replaceRoute: noop,
+      setSelectedPreview: noop, setNotice: noop,
+      setInputAssets: update => { assets = typeof update === 'function' ? update(assets) : update; } });
+    workflow = useWorkspaceEngineModeState({ ...route, engines: availableEngines, inputAssets: assets, setInputAssets: update => { assets = typeof update === 'function' ? update(assets) : update; },
       effectiveRequestedEngineToken: request.requestedEngineToken, requestedWorkflow: request.requestedWorkflow,
       authChecked: ready, hydratedForScope: ready ? 'owner' : null, storageScope: 'owner',
       preserveStoredDraftRef: React.useRef(false), requestedEngineOverrideIdRef: engineRef,
@@ -57,6 +69,8 @@ async function mount(initialEngine = 'wan-3') {
   });
   return {
     get route() { return route; }, get workflow() { return workflow; },
+    get videoSettings() { return videoSettings; },
+    async refreshCatalog() { availableEngines = engines.map(engine => ({ ...engine })); await act(async () => render()); },
     async navigate(next: string) { search = next; await act(async () => render()); },
     async ready(value: boolean) { ready = value; await act(async () => render()); },
     async clearSources() { assets = {}; await act(async () => render()); },
@@ -74,6 +88,43 @@ async function mount(initialEngine = 'wan-3') {
     },
   };
 }
+
+test('recalling a generation with default advanced controls clears earlier CFG and shot choices', async () => {
+  const view = await mount();
+  try {
+    await act(async () => { view.route.setCfgScale(8); view.route.setShotType('intelligent'); });
+    await act(async () => view.videoSettings.applyVideoSettingsSnapshot({
+      schemaVersion: 1, surface: 'video', engineId: 'wan-3', inputMode: 't2v', prompt: 'New setup',
+      core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' },
+      advanced: { cfgScale: null, shotType: null }, refs: { inputs: null, elements: null },
+    }));
+    assert.equal(view.route.cfgScale, null);
+    assert.equal(view.route.shotType, 'customize');
+  } finally { await view.close(); }
+});
+
+for (const mode of ['v2v', 'extend'] as const) test(`gallery ${mode} settings supersede an earlier model link and survive catalog revalidation`, async () => {
+  const view = await mount('wan-3');
+  try {
+    await view.navigate('engine=seedance-2-5&mode=t2v');
+    assert.equal(view.route.form?.engineId, 'seedance-2-5');
+    await act(async () => {
+      assert.equal(view.videoSettings.applyVideoSettingsSnapshot({
+        schemaVersion: 1, surface: 'video', engineId: 'wan-3', inputMode: mode,
+        prompt: 'Recall this video', core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' },
+        refs: { inputs: [{ slotId: 'video_url', kind: 'video', url: 'https://example.test/source.mp4', durationSec: 5 }] },
+      }), true);
+    });
+    assert.equal(view.route.form?.engineId, 'wan-3');
+    assert.equal(view.workflow.submissionMode, mode);
+    await view.refreshCatalog();
+    assert.equal(view.route.form?.engineId, 'wan-3');
+    assert.equal(view.workflow.submissionMode, mode);
+    await view.navigate('');
+    await view.navigate('engine=seedance-2-5&mode=t2v');
+    assert.equal(view.route.form?.engineId, 'seedance-2-5', 'a new explicit navigation still applies');
+  } finally { await view.close(); }
+});
 
 for (const sourceMode of ['v2v', 'extend'] as const) test(`manual other-engine selection leaves ${sourceMode} for Create, while current engine selection preserves it`, async () => {
   const view = await mount('wan-3');

@@ -2,6 +2,8 @@ import authoredSources from '@/config/public-video-sources.json';
 import { createHash } from 'node:crypto';
 import type { MarketingMediaFile } from '@/lib/marketing-media';
 import { normalizeMediaUrl } from '@/lib/media';
+import { sanitizePublicRecreationSnapshot } from './public-recreation';
+import { sanitizePublicVideoPricingSnapshot } from './public-pricing';
 
 type RecordValue = Record<string, unknown>;
 export type MarketingSource = { job: RecordValue; output?: RecordValue | null; poster_url?: string | null };
@@ -26,7 +28,6 @@ export class MarketingMediaError extends Error {
 export const record = (value: unknown): RecordValue =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as RecordValue) : {};
 const text = (value: unknown) => (typeof value === 'string' ? value : '');
-const portableRefKeys = new Set(['assetId', 'sourceOutputId', 'sourceJobId', 'userId', 'ownerId', 'jobId']);
 const literalKeys = new Set(['prompt', 'negativePrompt', 'negative_prompt', 'name', 'label', 'description']);
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
@@ -42,17 +43,6 @@ export const marketingSourceFingerprint = (source: MarketingSource) =>
   createHash('sha256')
     .update(JSON.stringify(canonical(source)))
     .digest('hex');
-
-function safeReference(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(safeReference);
-  if (value && typeof value === 'object')
-    return Object.fromEntries(
-      Object.entries(value)
-        .filter(([key]) => !portableRefKeys.has(key))
-        .map(([key, item]) => [key, safeReference(item)]),
-    );
-  return value;
-}
 
 /** Capture generation inputs, not billing/provider execution records. No defaults are invented. */
 export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopyPlan {
@@ -83,13 +73,14 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
     throw new MarketingMediaError(
       'This video depends on a provider interaction. Its complete inputs must be restored before copying.',
     );
-  const recreationSnapshot: RecordValue = Object.fromEntries(
+  const recreationSnapshot = sanitizePublicRecreationSnapshot(Object.fromEntries(
     [
       'schemaVersion',
       'surface',
       'engineId',
       'engineLabel',
       'inputMode',
+      'operation',
       'prompt',
       'negativePrompt',
       'core',
@@ -98,7 +89,7 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
     ]
       .filter((key) => key in saved)
       .map((key) => [key, structuredClone(saved[key])]),
-  );
+  )) as RecordValue;
   function rejectCredentials(value: unknown): void {
     if (Array.isArray(value)) {
       value.forEach(rejectCredentials);
@@ -112,7 +103,6 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
     }
   }
   rejectCredentials(recreationSnapshot);
-  recreationSnapshot.refs = safeReference(recreationSnapshot.refs);
   const publication: RecordValue = Object.fromEntries(
     [
       'job_id',
@@ -139,6 +129,9 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
       .filter((key) => key in job)
       .map((key) => [key, structuredClone(job[key])]),
   );
+  if (Object.hasOwn(publication, 'pricing_snapshot')) {
+    publication.pricing_snapshot = sanitizePublicVideoPricingSnapshot(publication.pricing_snapshot);
+  }
   publication.prompt = typeof job.prompt === 'string' ? job.prompt : saved.prompt;
   publication.thumb_url = text(job.thumb_url) || source.poster_url || null;
   publication.user_id = null;
@@ -182,7 +175,7 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
   add(source.output?.playback_video_url ?? job.playback_video_url, 'playback', 'video');
   visit(job.keyframe_urls, 'keyframes');
   visit(recreationSnapshot.refs, 'refs');
-  visit(extra, 'advanced.extraInputValues');
+  visit(record(recreationSnapshot.advanced).extraInputValues, 'advanced.extraInputValues');
   publication.settings_snapshot = recreationSnapshot;
   publication.marketing_output_width = source.output?.width ?? null;
   publication.marketing_output_height = source.output?.height ?? null;

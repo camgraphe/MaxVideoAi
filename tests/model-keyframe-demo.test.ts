@@ -224,7 +224,7 @@ test('the authored Max teaching selection loads only film 10 with all three orde
     createLocalId: prefix => prefix, createFallbackScene: () => ({ id: 'scene', prompt: '', duration: 5 }),
     createFallbackKlingElement: () => ({ id: 'element', frontal: null, references: [] }) });
   assert.ok(restored?.inputAssets);
-  const form = buildVideoSettingsFormState(restored, null);
+  const form = buildVideoSettingsFormState(restored);
   const before = structuredClone(restored.inputAssets);
   const preflight = buildWorkspacePreflightRequest({ form, selectedEngine: engine, submissionMode: restored.mode,
     effectiveDurationSec: 16, supportsAudioToggle: true, voiceControlEnabled: false,

@@ -3,6 +3,9 @@ import { resolveActiveVideoInputField, VIDEO_MEDIA_FIELD_CANDIDATES } from '@/li
 
 export type VideoSourceWorkflow = Extract<Mode, 'extend' | 'v2v' | 'reframe'>;
 
+/** Creation submodes may share Create; source workflows and Retake never do. */
+export const VIDEO_CREATE_MODES: readonly Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
+
 export function isVideoSourceWorkflow(mode: Mode | undefined): mode is VideoSourceWorkflow {
   return mode === 'extend' || mode === 'v2v' || mode === 'reframe';
 }

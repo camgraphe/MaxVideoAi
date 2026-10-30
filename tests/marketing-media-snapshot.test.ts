@@ -100,6 +100,41 @@ test('marketing copy preserves exact generation settings and stable video identi
   assert.deepEqual(source, before, 'promotion never mutates the customer record');
 });
 
+test('public recreation retains the exact Modify, Extend and Reframe operation without private source bindings', () => {
+  for (const [engineId, mode, operation] of [
+    ['kling-o3-pro', 'v2v', 'kling-edit'],
+    ['kling-o3-4k', 'v2v', 'kling-reference'],
+    ['minimax-h3-max', 'v2v', 'h3-recast'],
+    ['minimax-h3-max', 'v2v', 'h3-relight'],
+    ['flux-3', 'v2v', 'flux-fast-edit'],
+    ['flux-3-draft', 'v2v', 'flux-draft-enhance'],
+    ['luma-ray-3-2', 'extend', 'luma-extend'],
+    ['ltx-2-3', 'reframe', 'ltx23-reframe'],
+  ]) {
+    const source = sourceFixture();
+    source.job.engine_id = source.job.settings_snapshot.engineId = engineId;
+    source.job.settings_snapshot.inputMode = mode;
+    Object.assign(source.job.settings_snapshot, {
+      operation,
+      sourceJobId: 'private-source-job',
+      sourceOutputId: 'private-source-output',
+    });
+    const plan = prepareMarketingSnapshot(source);
+    const result = completeMarketingSnapshot(plan, plan.media.map((file, index) => ({
+      sourceUrl: file.sourceUrl,
+      url: `https://media.example/marketing-media/copy/${index}`,
+      key: `marketing-media/copy/${index}`,
+      sizeBytes: 1,
+      mime: `${file.kind}/fixture`,
+      sha256: 'a'.repeat(64),
+    })));
+    assert.equal(result.recreationSnapshot.inputMode, mode, operation);
+    assert.equal(result.recreationSnapshot.operation, operation, 'mode alone cannot distinguish the source operation');
+    assert.equal((result.publication.settings_snapshot as Record<string, unknown>).operation, operation);
+    assert.doesNotMatch(JSON.stringify(result.recreationSnapshot), /private-source|private-owner/);
+  }
+});
+
 test('unavailable references or incomplete settings cannot silently become a ready marketing copy', () => {
   const plan = prepareMarketingSnapshot(sourceFixture());
   assert.throws(() => completeMarketingSnapshot(plan, []), /incomplete/i);

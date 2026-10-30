@@ -31,7 +31,18 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(appSource, /useWorkspaceVideoSettings\(\{/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?accountScope: draftOwner,/);
   assert.match(appSource, /useWorkspaceVideoSettings\(\{[\s\S]*?initialPreviewGroup,/);
+  assert.match(appSource, /const settingsReady = activeDraft.ready && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;/);
+  assert.match(appSource, /useWorkspacePricingGate\(\{[\s\S]*?form: settingsReady \? routeForm.form : null,/);
+  assert.match(appSource, /useWorkspaceGenerationRunner\(\{[\s\S]*?form: settingsReady \? routeForm.form : null,/);
   assert.match(appSource, /hasForm: activeDraft.ready && Boolean\(routeForm.form\) && !videoSettings.sharedVideoImportPending,/);
+  assert.match(appSource, /preflightError: videoSettings.recallError \?\? pricing.preflightError/);
+  assert.match(appSource, /isPricing: pricing.isPricing \|\| videoSettings.recallPending/);
+  assert.match(appSource, /settingsReady=\{settingsReady\}/);
+  const readyViewSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx'), 'utf8');
+  assert.match(readyViewSource, /enabled: settingsReady && seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview/);
+  assert.match(readyViewSource, /useSeedanceDraftWorkflow\(\{[\s\S]*?form: settingsReady \? form : null/);
+  assert.match(readyViewSource, /const draftRequest = settingsReady &&/);
+  assert.doesNotMatch(readyViewSource, /if \(.*!settingsReady.*\) return null/);
   assert.doesNotMatch(appSource, /const applyVideoSettingsSnapshot = useCallback/);
   assert.doesNotMatch(appSource, /const hydrateVideoSettingsFromJob = useCallback/);
   assert.doesNotMatch(appSource, /const applyVideoSettingsFromTile = useCallback/);
@@ -48,7 +59,7 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
 
   const hydrationGuardIndex = hookSource.indexOf('if (!hydrationClaim.shouldApply || !sharedVideoSettings) return;');
   const snapshotApplicationIndex = hookSource.indexOf(
-    'applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));'
+    'publicSnapshot: buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings),'
   );
   const jobHydrationIndex = hookSource.indexOf('void hydrateVideoSettingsFromJob(sharedVideoSettings.id);');
   assert.ok(hydrationGuardIndex >= 0, 'shared-video hydration should use the one-shot claim guard');

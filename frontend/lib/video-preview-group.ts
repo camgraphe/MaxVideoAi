@@ -1,5 +1,7 @@
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { PublicKeyframeRecipe } from '@/lib/public-keyframe-demo';
+import type { VideoOperation } from '@/lib/video-operation';
+import type { Mode } from '@/types/engines';
 import type { ResultProvider, VideoGroup, VideoItem } from '@/types/video-groups';
 
 export type SharedVideoPreview = {
@@ -20,6 +22,8 @@ export type SharedVideoPreview = {
   outputWidth?: number;
   outputHeight?: number;
   requestedResolution?: string;
+  generationMode?: Mode | null;
+  operation?: VideoOperation;
   hasAudio?: boolean;
   createdAt: string;
 };

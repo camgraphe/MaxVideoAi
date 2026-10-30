@@ -1,0 +1,41 @@
+/** Synthetic gallery reads with the production draft/composer/schema/action hook chain. */
+export const galleryRecallBrowserSource = `
+import {createRoot} from 'react-dom/client';
+import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';
+import {groupJobsIntoSummaries} from './lib/job-groups';
+import {I18nProvider} from './lib/i18n/I18nProvider';
+import {Composer} from './components/Composer';
+import {CoreSettingsBar} from './components/CoreSettingsBar';
+import {WorkspaceComposerSurface} from './app/(core)/(workspace)/app/_components/WorkspaceComposerSurface';
+const surfaceNoop=()=>{};
+function Main() {
+ const h=useGalleryRecallHarness(), c=h.composer, form=h.form;
+ const groups=globalThis.fixtureConfig.jobs.map(job=>groupJobsIntoSummaries([job],{includeSinglesAsGroups:true}).groups[0]);
+ const remove=(field,index)=>h.setInputAssets(previous=>({...previous,[field.id]:previous[field.id].map((asset,i)=>i===index?null:asset)}));
+ return <I18nProvider locale="en" dictionary={{}} fallback={{}}><main style={{padding:20,maxWidth:1000,margin:'auto'}}>
+ <p style={{fontSize:12,marginBottom:16}}>Local gallery recall regression · synthetic data · generation disabled</p>
+ <h1 style={{fontSize:24}}>Recall video settings</h1>
+ <nav aria-label="Gallery actions" style={{display:'flex',gap:10,flexWrap:'wrap',margin:'20px 0'}}>{groups.map(group=><button key={group.id} onClick={()=>h.gallery.handleGalleryGroupAction(group,'open')}>Open {group.hero.engineLabel}</button>)}</nav>
+ {form&&c.selectedEngine&&<><p data-model>{c.selectedEngine.label}</p>
+ {globalThis.fixtureConfig.fullSurface?<WorkspaceComposerSurface {...h} {...c}
+ inputSchemaSummary={h.schema.inputSchemaSummary} uiLocale="en" workflowCopy={{generateVideo:'Create video',removeAudioToUnlock:'Remove audio',removeAudioToUseEdit:'Remove audio'}}
+ currency="USD" price={null} isPricing={h.settings.recallPending} isSubmitting={false} preflightError={null} preflight={null}
+ startRender={()=>{throw Error('Generation forbidden in local recall fixture');}} guestUploadLockedReason={null} pendingGenerations={[]}
+ handleAssetAdd={surfaceNoop} handlePrepareVideoExcerpt={surfaceNoop} handleVideoExcerptEditorChange={surfaceNoop} handleAssetRemove={remove} handleOpenAssetLibrary={surfaceNoop} showNotice={surfaceNoop}
+ handleKlingElementAdd={surfaceNoop} handleKlingElementRemove={surfaceNoop} handleKlingElementAssetAdd={surfaceNoop} handleKlingElementAssetRemove={surfaceNoop} handleOpenKlingAssetLibrary={surfaceNoop} setViewMode={surfaceNoop}
+ seedValue={form.seed==null?'':String(form.seed)} handleSeedChange={surfaceNoop} cameraFixedValue={form.cameraFixed??false} handleCameraFixedChange={surfaceNoop}
+ safetyCheckerValue={form.safetyChecker??true} handleSafetyCheckerChange={surfaceNoop}/>:<Composer density="workspace" engine={c.selectedEngine} caps={c.capability} activeManualMode={c.activeManualMode}
+ modeToggles={c.composerModeToggles} onModeToggle={c.handleComposerModeToggle}
+ prompt={h.prompt} onPromptChange={h.setPrompt} promptRequired={false} assetFields={h.schema.inputSchemaSummary.assetFields}
+ assets={h.inputAssets} currency="USD" price={null} isLoading={false} isPricing={h.settings.recallPending} error={h.settings.recallError} onAssetRemove={remove}
+ onGenerate={()=>{throw Error('Generation forbidden in local recall fixture');}}
+ settingsBar={<CoreSettingsBar density="workspace" engine={c.selectedEngine} mode={c.submissionMode} caps={c.capability}
+ durationSec={c.effectiveDurationSec} durationOption={form.durationOption} onDurationChange={c.handleDurationChange}
+ resolution={form.resolution} onResolutionChange={c.handleResolutionChange} aspectRatio={form.aspectRatio}
+ onAspectRatioChange={c.handleAspectRatioChange} fps={form.fps} onFpsChange={c.handleFpsChange}
+ showAudioControl={c.supportsAudioToggle} audioEnabled={form.audio} onAudioChange={value=>h.setForm(previous=>({...previous,audio:value}))}/>}/> }</>}
+ <output data-state hidden>{JSON.stringify({form,prompt:h.prompt,mode:c.submissionMode,assets:h.inputAssets,notice:h.notice,recallPending:h.settings.recallPending,recallBlocked:h.settings.recallBlocked,recallError:h.settings.recallError})}</output>
+ </main></I18nProvider>;
+}
+createRoot(document.getElementById('root')).render(<Main/>);
+`;

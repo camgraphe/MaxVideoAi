@@ -1,6 +1,10 @@
 import { hasPublishedRecreationSnapshot } from '../_lib/workspace-shared-video-snapshot';
+import { writeParkedSources } from '../_lib/workspace-parked-source';
 import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
+import { useWorkspaceUploadOperation } from './useWorkspaceUploadOperation';
+import { saveAssetToLibrary } from '@/lib/api-assets';
+import { importPublicRecipeReferences, publicReferenceImportCopy, type PublicRecipeReferences } from '../_lib/workspace-public-recipe-references';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { MultiPromptScene } from '@/components/Composer';
@@ -46,7 +50,7 @@ import {
 } from '../_lib/workspace-video-settings';
 import { buildWorkspaceStoryboardHandoffState } from '../_lib/workspace-storyboard-handoff';
 import { sharedVideoLoadFailureCopy } from '../_lib/workspace-shared-video-copy';
-import { UnavailableVideoSettingsEngineError, unavailableVideoSettingsCopy } from '../_lib/workspace-recall-engine';
+import { resolveRecalledWorkspaceEngine, UnavailableVideoSettingsEngineError, unavailableVideoSettingsCopy } from '../_lib/workspace-recall-engine';
 
 type MemberTier = 'Member' | 'Plus' | 'Pro';
 type ShotType = 'customize' | 'intelligent';
@@ -55,6 +59,22 @@ type SharedVideoImport = {
   searchString: string;
   generation: () => boolean;
   videoId?: string;
+};
+
+type VideoSettingsRecall = {
+  revision: string;
+  awaitingCommit: boolean;
+  generation: () => boolean;
+  error?: string;
+  cancelImport?: () => void;
+};
+
+type VideoSettingsHydrationOptions = {
+  promptSuffix?: string;
+  publicExample?: boolean;
+  requireSnapshot?: boolean;
+  publicSnapshot?: unknown;
+  onSettled?: (applied: boolean) => void;
 };
 
 type UseWorkspaceVideoSettingsOptions = {
@@ -147,19 +167,57 @@ export function useWorkspaceVideoSettings({
   setNotice,
 }: UseWorkspaceVideoSettingsOptions) {
   const valid = useWorkspaceAssetLifetime(accountScope);
+  const beginPublicImport = useWorkspaceUploadOperation(accountScope === 'public' ? null : accountScope, valid);
   const revisionRef = useRef(draftRevision);
   revisionRef.current = draftRevision;
-  const pendingRecallRef = useRef<{ revision: string | undefined; awaitingCommit: boolean } | null>(null);
+  const pendingRecallRef = useRef<VideoSettingsRecall | null>(null);
+  const [pendingRecall, setPendingRecall] = useState<VideoSettingsRecall | null>(null);
+  const [failedRecall, setFailedRecall] = useState<VideoSettingsRecall | null>(null);
+  const guestPublicRecallRef = useRef<{ jobId: string; options: VideoSettingsHydrationOptions; recall: VideoSettingsRecall } | null>(null);
+  const clearPublicRecallIntent = useCallback(() => {
+    const retained = guestPublicRecallRef.current;
+    guestPublicRecallRef.current = null;
+    if (!fromVideoId && !retained) return;
+    const params = new URLSearchParams(searchString);
+    params.delete('from');
+    const next = params.toString();
+    replaceRoute(next ? `/app?${next}` : '/app');
+  }, [fromVideoId, searchString, replaceRoute]);
+  const recallPending = Boolean(pendingRecall && pendingRecallRef.current === pendingRecall &&
+    pendingRecall.generation === valid && (pendingRecall.awaitingCommit || pendingRecall.revision === draftRevision));
+  const recallFailureMessage = locale === 'fr'
+    ? 'Impossible de restaurer ces réglages vidéo. Sélectionnez de nouveau la vidéo ou modifiez les réglages avant de générer.'
+    : locale === 'es'
+      ? 'No se pudieron restaurar estos ajustes de vídeo. Selecciona el vídeo de nuevo o cambia los ajustes antes de generar.'
+      : 'Unable to restore these video settings. Select the video again or change the settings before generating.';
+  const recallError = failedRecall?.generation === valid && (failedRecall.awaitingCommit || failedRecall.revision === draftRevision)
+    ? failedRecall.error ?? recallFailureMessage : undefined;
+  const recallBlocked = recallPending || Boolean(recallError);
   const snapshotCommitPendingRef = useRef(false);
-  // The immediate tile settings belong to this recall. Later user edits do not.
+  // The immediate complete snapshot belongs to this recall. Later edits do not.
   useLayoutEffect(() => {
     snapshotCommitPendingRef.current = false;
-    const pending = pendingRecallRef.current;
-    if (pending?.awaitingCommit) {
-      pending.revision = draftRevision;
-      pending.awaitingCommit = false;
+    for (const recall of [pendingRecallRef.current, failedRecall]) {
+      if (recall?.generation === valid && recall.awaitingCommit) {
+        recall.revision = draftRevision;
+        recall.awaitingCommit = false;
+      }
     }
   });
+  useLayoutEffect(() => {
+    const pending = pendingRecallRef.current;
+    if (pending && (pending.generation !== valid || pending.revision !== draftRevision)) {
+      // Once another edit commits, undoing it must not revive this request.
+      pending.cancelImport?.();
+      if (pending.generation === valid) clearPublicRecallIntent();
+      pendingRecallRef.current = null;
+      setPendingRecall(current => current === pending ? null : current);
+    }
+    if (failedRecall && (failedRecall.generation !== valid || failedRecall.revision !== draftRevision)) {
+      if (failedRecall.generation === valid) clearPublicRecallIntent();
+      setFailedRecall(null);
+    }
+  }, [valid, draftRevision, failedRecall, clearPublicRecallIntent]);
   const hydratedJobRef = useRef<string | null>(null);
   const restoredPreviewJobRef = useRef<string | null>(null);
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
@@ -199,13 +257,16 @@ export function useWorkspaceVideoSettings({
   useLayoutEffect(() => {
     // A new explicit source owns subsequent writes. Clearing our completed `from`
     // param still lets that source's original job enrich its freshly imported draft.
-    if (fromVideoId) pendingRecallRef.current = null;
+    if (fromVideoId) {
+      pendingRecallRef.current?.cancelImport?.();
+      pendingRecallRef.current = null;
+      guestPublicRecallRef.current = null;
+    }
   }, [fromVideoId, searchString, valid]);
 
   const applyVideoSettingsSnapshot = useCallback(
-    (snapshot: unknown) => {
+    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean } = {}) => {
       if (!valid()) return false;
-      pendingRecallRef.current = null;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
           engines,
@@ -214,24 +275,26 @@ export function useWorkspaceVideoSettings({
           createFallbackScene: createMultiPromptScene,
           createFallbackKlingElement: createKlingElement,
         });
+        // A complete recipe replaces this model's earlier creative setup,
+        // including sources parked in other modes. Commit before React setters.
+        if (!application.preserveParkedSources && !writeParkedSources(storageScope, resolved.engine.id, new Map())) throw new Error(recallFailureMessage);
+        pendingRecallRef.current = null;
+        setPendingRecall(null);
+        setFailedRecall(null);
         snapshotCommitPendingRef.current = true;
-        setPrompt(resolved.prompt);
+        setPrompt(resolved.prompt + promptSuffix);
         setNegativePrompt(resolved.negativePrompt);
         if (resolved.memberTier) {
           setMemberTier(resolved.memberTier);
         }
-        if (resolved.cfgScale !== null) {
-          setCfgScale(resolved.cfgScale);
-        }
-        if (resolved.shotType) {
-          setShotType(resolved.shotType);
-        }
+        setCfgScale(resolved.cfgScale);
+        setShotType(resolved.shotType ?? 'customize');
         setVoiceIdsInput(resolved.voiceIdsInput);
         setMultiPromptEnabled(resolved.multiPrompt.enabled);
         setMultiPromptScenes(resolved.multiPrompt.scenes);
-        setForm((current) => buildVideoSettingsFormState(resolved, current ?? null));
+        setForm(buildVideoSettingsFormState(resolved));
 
-        const nextInputAssets = resolved.inputAssets;
+        const nextInputAssets = preparedReferences ? preparedReferences.inputAssets : resolved.inputAssets;
         if (nextInputAssets) {
           setInputAssets((previous) => {
             Object.values(previous).forEach((entries) => {
@@ -241,7 +304,7 @@ export function useWorkspaceVideoSettings({
           });
         }
 
-        const nextKlingElements = resolved.klingElements;
+        const nextKlingElements = preparedReferences ? preparedReferences.klingElements : resolved.klingElements;
         if (nextKlingElements) {
           setKlingElements((previous) => {
             previous.forEach((element) => {
@@ -266,6 +329,8 @@ export function useWorkspaceVideoSettings({
     },
     [
       valid,
+      storageScope,
+      recallFailureMessage,
       locale,
       engineMap,
       engines,
@@ -286,20 +351,74 @@ export function useWorkspaceVideoSettings({
   );
 
   const hydrateVideoSettingsFromJob = useCallback(
-    async (jobId: string | null | undefined) => {
+    async (jobId: string | null | undefined, options?: VideoSettingsHydrationOptions) => {
       if (!jobId || !valid()) return;
-      const recall = { revision: revisionRef.current, awaitingCommit: snapshotCommitPendingRef.current };
+      pendingRecallRef.current?.cancelImport?.();
+      const recall: VideoSettingsRecall = { revision: revisionRef.current, awaitingCommit: snapshotCommitPendingRef.current, generation: valid };
       pendingRecallRef.current = recall;
+      setPendingRecall(options?.requireSnapshot || options?.publicExample ? recall : null);
+      setFailedRecall(null);
+      if (options?.publicExample && accountScope === 'public' && !options.publicSnapshot) {
+        guestPublicRecallRef.current = { jobId, options, recall };
+      }
+      const isCurrent = () => valid() && pendingRecallRef.current === recall &&
+        (recall.awaitingCommit || revisionRef.current === recall.revision);
       try {
-        const response = await authFetch(`/api/jobs/${encodeURIComponent(jobId)}`);
-        if (!response.ok) {
-          if (response.status === 404) return;
-          return;
+        const response = options?.publicSnapshot ? null
+          : await authFetch(`/api/${options?.publicExample ? 'videos' : 'jobs'}/${encodeURIComponent(jobId)}`, { cache: 'no-store' });
+        if (response && !response.ok) return;
+        const json = options?.publicSnapshot ? { ok: true, settingsSnapshot: options.publicSnapshot }
+          : await response!.json().catch(() => null);
+        if (!json?.ok || !isCurrent()) return;
+        let payload: VideoJobPayload;
+        if (options?.publicExample && !options.publicSnapshot) {
+          if (!json.video || typeof json.video.id !== 'string') return;
+          // Public examples have their own safe recipe. The original job remains
+          // owner-only, including when a signed-in visitor chooses a starter card.
+          const video = normalizeSharedVideoPayload(json.video as SharedVideoPreview);
+          payload = {
+            ok: true,
+            settingsSnapshot: buildVideoSettingsSnapshotFromSharedVideo(video),
+            videoUrl: video.videoUrl ?? undefined,
+            previewVideoUrl: video.previewVideoUrl ?? undefined,
+            thumbUrl: video.thumbUrl ?? undefined,
+            aspectRatio: video.aspectRatio ?? undefined,
+          };
+        } else {
+          payload = json as VideoJobPayload;
         }
-        const payload = (await response.json().catch(() => null)) as VideoJobPayload | null;
-        if (!payload?.ok || !valid() || pendingRecallRef.current !== recall || revisionRef.current !== recall.revision) return;
         if (payload.settingsSnapshot) {
-          applyVideoSettingsSnapshot(payload.settingsSnapshot);
+          let references: PublicRecipeReferences | undefined;
+          if (options?.publicExample) {
+            const operation = beginPublicImport();
+            recall.cancelImport = operation.cancel;
+            try {
+              const resolved = resolveVideoSettingsSnapshot(payload.settingsSnapshot, {
+                engines, engineMap, createLocalId, createFallbackScene: createMultiPromptScene,
+                createFallbackKlingElement: createKlingElement,
+              });
+              references = await importPublicRecipeReferences(resolved, accountScope === 'public' ? null
+                : asset => saveAssetToLibrary({ ...asset, publicVideoId: jobId }, { fetch: operation.request }), isCurrent);
+            } catch (error) {
+              if (isCurrent()) recall.error = error instanceof UnavailableVideoSettingsEngineError
+                ? unavailableVideoSettingsCopy(locale) : publicReferenceImportCopy(locale, accountScope === 'public');
+              if (isCurrent() && accountScope === 'public' && !options.publicSnapshot
+                && error instanceof Error && error.message === 'PUBLIC_REFERENCE_SIGN_IN') {
+                // Preserve the already-loaded public identity across the login page.
+                // Settling this URL first keeps the guest shell available without a second detail read.
+                const params = new URLSearchParams(searchString);
+                params.set('from', jobId);
+                const retained = { sourceId: jobId, videoId: jobId, searchString: params.toString(), generation: valid };
+                sharedVideoImportRef.current = retained;
+                setSettledSharedImport(retained);
+                replaceRoute(`/app?${retained.searchString}`);
+              }
+              throw error;
+            } finally { operation.finish(); }
+          }
+          if (!isCurrent() || !applyVideoSettingsSnapshot(payload.settingsSnapshot, options?.promptSuffix, references)) return;
+          guestPublicRecallRef.current = null;
+          options?.onSettled?.(true);
         }
 
         const mediaPatch = buildVideoJobMediaPatch(payload);
@@ -312,21 +431,53 @@ export function useWorkspaceVideoSettings({
           applyVideoJobMediaPatchToCompositeOverride(current, jobId, mediaPatch),
         );
       } catch {
-        // ignore best-effort recalls from gallery
+        // Complete inline snapshots need only best-effort media enrichment.
+      } finally {
+        if (pendingRecallRef.current === recall) {
+          if ((options?.requireSnapshot || options?.publicExample) && isCurrent()) {
+            setFailedRecall(recall);
+            setNotice(recall.error ?? recallFailureMessage);
+            options?.onSettled?.(false);
+          }
+          pendingRecallRef.current = null;
+          if (valid()) setPendingRecall(current => current === recall ? null : current);
+        }
       }
     },
-    [valid, applyVideoSettingsSnapshot, setCompositeOverride, setSelectedPreview],
+    [valid, accountScope, searchString, replaceRoute, beginPublicImport, engines, engineMap, locale, applyVideoSettingsSnapshot, recallFailureMessage, setNotice, setCompositeOverride, setSelectedPreview],
   );
 
+  useEffect(() => {
+    const selected = guestPublicRecallRef.current;
+    if (!activeDraftReady || !valid() || !selected || !accountScope || accountScope === 'public'
+      || selected.recall.generation === valid) return;
+    guestPublicRecallRef.current = null;
+    void hydrateVideoSettingsFromJob(selected.jobId, selected.options);
+  }, [activeDraftReady, valid, accountScope, hydrateVideoSettingsFromJob]);
+
   const applyVideoSettingsFromTile = useCallback(
-    (tile: QuadPreviewTile) => {
+    (tile: QuadPreviewTile, options?: { promptSuffix?: string }) => {
+      if (!valid()) return false;
+      pendingRecallRef.current?.cancelImport?.();
+      pendingRecallRef.current = null;
+      clearPublicRecallIntent();
+      setPendingRecall(null);
+      setFailedRecall(null);
       try {
-        return applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile));
-      } catch {
+        // Feed metadata is a display summary, not a generation recipe. Keep the
+        // last committed draft intact until detail supplies its full settings.
+        if (tile.settingsSnapshot == null || tile.curated) {
+          return Boolean(resolveRecalledWorkspaceEngine(tile.engineId, engines, engineMap));
+        }
+        return applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromTile(tile), options?.promptSuffix);
+      } catch (error) {
+        setNotice(error instanceof UnavailableVideoSettingsEngineError
+          ? unavailableVideoSettingsCopy(locale)
+          : error instanceof Error ? error.message : 'Failed to apply settings.');
         return false;
       }
     },
-    [applyVideoSettingsSnapshot],
+    [valid, engines, engineMap, locale, setNotice, applyVideoSettingsSnapshot, clearPublicRecallIntent],
   );
 
   useEffect(() => {
@@ -357,8 +508,19 @@ export function useWorkspaceVideoSettings({
           : 'This configuration is no longer available with this model. Choose your settings in the app.');
       // Do not hydrate the original job: it would replace the chosen model and may restore private inputs.
     } else {
-      const applied = applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
-      if (applied && !hasPublishedRecreationSnapshot(sharedVideoSettings)) void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+      // Only the server's copied/public recipe or authored keyframe recipe contains
+      // reusable references. Legacy personal settings are never imported here.
+      void hydrateVideoSettingsFromJob(sharedVideoSettings.id, { publicExample: true, requireSnapshot: true,
+        publicSnapshot: buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings),
+        onSettled: applied => {
+          if (imported?.videoId === sharedVideoSettings.id && imported.generation === valid) {
+            if (applied) setCommittingSharedImport(imported);
+            else finishSharedVideoImport(imported, false); // Retain `from` for sign-in/retry.
+          }
+          if (applied && !hasPublishedRecreationSnapshot(sharedVideoSettings)) void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
+        },
+      });
+      return;
     }
     if (imported?.videoId === sharedVideoSettings.id && imported.generation === valid) {
       setCommittingSharedImport(imported);
@@ -373,6 +535,7 @@ export function useWorkspaceVideoSettings({
     locale,
     setNotice,
     hydrateVideoSettingsFromJob,
+    finishSharedVideoImport,
     sharedVideoSettings,
   ]);
 
@@ -634,7 +797,9 @@ export function useWorkspaceVideoSettings({
         }
 
         if (cancelled || !valid() || revisionRef.current !== revision) return;
-        if (!hasActiveSetup) applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        // Restoring a remembered preview is ordinary hydration, not a new
+        // creative selection. Its per-mode source history still belongs to it.
+        if (!hasActiveSetup) applyVideoSettingsSnapshot(payload.settingsSnapshot, '', undefined, { preserveParkedSources: true });
         setCompositeOverride(mapSharedVideoToGroup(restoredPreview.sharedVideo, provider));
         setCompositeOverrideSummary(null);
         setSelectedPreview(restoredPreview.selectedPreview);
@@ -672,6 +837,9 @@ export function useWorkspaceVideoSettings({
 
   return {
     sharedVideoImportPending,
+    recallPending,
+    recallBlocked,
+    recallError,
     applyVideoSettingsSnapshot,
     hydrateVideoSettingsFromJob,
     applyVideoSettingsFromTile,

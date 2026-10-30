@@ -439,7 +439,7 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, live: assistance.live ? { ...assistance.live,
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, reviewKey:assistance.reviewKey?JSON.stringify([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,negativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
           readOnlyText: {...assistance.live.readOnlyText,...(negativePrompt?{negativePrompt}:{})},
           references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, negativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}

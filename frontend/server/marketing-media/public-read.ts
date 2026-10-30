@@ -1,4 +1,7 @@
 import type { QueryExecutor } from '@/lib/db';
+import { VIDEO_OPERATIONS } from '@/lib/video-operation';
+
+const PUBLIC_OPERATION_VALUES = VIDEO_OPERATIONS.map((operation) => `'${operation}'`).join(',');
 
 /** Opt-in public read boundary. Private job/account readers never use this projection. */
 export function marketingVideoReader(
@@ -11,14 +14,19 @@ export function marketingVideoReader(
       if (!/\bapp_jobs\b/.test(sql) || !/^\s*(SELECT|WITH)\b/i.test(sql)) return db.query(sql, params);
       const projection = `app_jobs AS NOT MATERIALIZED (
       SELECT legacy.*, NULL::jsonb AS marketing_recreation_snapshot,
-        NULL::integer AS marketing_output_width, NULL::integer AS marketing_output_height
+        NULL::integer AS marketing_output_width, NULL::integer AS marketing_output_height,
+        NULL::text AS marketing_recreation_operation
       FROM public.app_jobs legacy WHERE NOT EXISTS (
         SELECT 1 FROM marketing_media m WHERE m.video_id=legacy.job_id
           AND (m.state='ready' OR (m.tombstone AND m.state IN ('deleting','deleted')))
       )
       UNION ALL
       SELECT publication.*, m.recreation_snapshot,
-        (m.publication->>'marketing_output_width')::integer, (m.publication->>'marketing_output_height')::integer
+        (m.publication->>'marketing_output_width')::integer, (m.publication->>'marketing_output_height')::integer,
+        CASE WHEN m.source_snapshot->>'engineId'=publication.engine_id
+          AND m.source_snapshot->>'inputMode'=m.publication->'settings_snapshot'->>'inputMode'
+          AND m.source_snapshot->>'operation' IN (${PUBLIC_OPERATION_VALUES})
+          THEN m.source_snapshot->>'operation' END
       FROM marketing_media m
       CROSS JOIN LATERAL jsonb_populate_record(NULL::public.app_jobs,m.publication) publication
       WHERE m.state='ready'

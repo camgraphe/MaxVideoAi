@@ -2,6 +2,7 @@ import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
+import { VIDEO_CREATE_MODES } from '@/lib/video-source-workflow';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -369,10 +370,12 @@ export function getDefaultEngineMode(engine: EngineCaps): Mode {
   return engine.modes[0] ?? 't2v';
 }
 
+/** Create workflow identity is independent of current generation admission. */
+export const WORKSPACE_CREATE_MODES = VIDEO_CREATE_MODES;
+
 /** An explicit model choice starts Create; saved drafts and deep links keep their own mode policy. */
 export function getWorkspaceCreateMode(engine: EngineCaps): Mode | null {
-  const creationModes: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
-  return creationModes.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
+  return WORKSPACE_CREATE_MODES.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
 }
 
 export function getPreferredEngineModeForEngineRequest({

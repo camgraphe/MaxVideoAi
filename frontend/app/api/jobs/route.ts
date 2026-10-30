@@ -197,6 +197,8 @@ export async function GET(req: NextRequest) {
           audioUrl: undefined,
           createdAt: video.createdAt,
           engineId: video.engineId,
+          generationMode: video.generationMode,
+          operation: video.operation,
           aspectRatio: video.aspectRatio,
           hasAudio: video.hasAudio,
           canUpscale: video.canUpscale,

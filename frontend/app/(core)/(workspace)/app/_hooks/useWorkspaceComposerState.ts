@@ -101,6 +101,7 @@ type UseWorkspaceComposerStateResult = {
   handleSafetyCheckerChange: (value: boolean) => void;
   handleEngineChange: (engineId: string) => void;
   applyPreparedForm: (form: FormState) => void;
+  beforeApplyPreparedForm: (form: FormState) => boolean;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
   handleDurationChange: (raw: number | string) => void;
@@ -170,6 +171,7 @@ export function useWorkspaceComposerState({
     composerWorkflowNotice,
     handleEngineChange,
     applyPreparedForm,
+    beforeApplyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
   } = useWorkspaceEngineModeState({
@@ -434,6 +436,7 @@ export function useWorkspaceComposerState({
     handleSafetyCheckerChange,
     handleEngineChange,
     applyPreparedForm,
+    beforeApplyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
     handleDurationChange,

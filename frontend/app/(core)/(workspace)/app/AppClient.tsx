@@ -184,12 +184,13 @@ export default function AppClientPage({
     setInputAssets: assets.setInputAssets,
     setForm: routeForm.setForm,
   });
+  const settingsReady = activeDraft.ready && !videoSettings.sharedVideoImportPending && !videoSettings.recallBlocked;
   const pricing = useWorkspacePricingGate({
     accountId: confirmedAccount,
     accessToken: app.session?.access_token ?? null,
     locale: app.uiLocale,
     topUpCopy: app.workspaceCopy.topUp,
-    form: routeForm.form,
+    form: settingsReady ? routeForm.form : null,
     selectedEngine: composer.selectedEngine,
     authChecked: draft.authChecked,
     memberTier: routeForm.memberTier,
@@ -203,7 +204,7 @@ export default function AppClientPage({
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,
     klingO3UnsupportedVideoReason: composer.klingO3UnsupportedVideoReason,
-    form: activeDraft.ready ? routeForm.form : null,
+    form: settingsReady ? routeForm.form : null,
     activeMode: composer.activeMode,
     submissionMode: composer.submissionMode,
     effectivePrompt: composer.effectivePrompt,
@@ -301,14 +302,13 @@ export default function AppClientPage({
     loadEnginesError: app.workspaceCopy.errors.loadEngines,
     noEnginesError: app.workspaceCopy.errors.noEngines,
   });
-
   return (
     <>
       {loadState}
       <WorkspaceAppReadyView
         seedanceDraftWorkflowEnabled={seedanceDraftWorkflowEnabled}
         localSeedanceDraftPreview={localSeedanceDraftPreview}
-        suspended={Boolean(loadState)}
+        suspended={Boolean(loadState)} settingsReady={settingsReady}
         activeDraft={activeDraft}
         app={app}
         assets={assets}
@@ -320,7 +320,7 @@ export default function AppClientPage({
         inputSchema={inputSchema}
         noticeState={noticeState}
         previewState={previewState}
-        pricing={pricing}
+        pricing={{ ...pricing, isPricing: pricing.isPricing || videoSettings.recallPending, preflightError: videoSettings.recallError ?? pricing.preflightError }}
         renderState={renderState}
         routeForm={routeForm}
       />

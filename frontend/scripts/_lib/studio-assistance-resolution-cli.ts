@@ -1,10 +1,14 @@
 import {z} from 'zod';
 const schema=z.object({
   target:z.string().min(1),environment:z.enum(['local','staging','production']),
-  list:z.literal('true').optional(),call:z.string().uuid().optional(),
+  list:z.literal('true').optional(),diagnose:z.literal('true').optional(),call:z.string().uuid().optional(),
   action:z.enum(['waive_unknown','settle_recorded']).optional(),
   operator:z.string().trim().min(1).max(128).optional(),reason:z.string().trim().min(1).max(500).optional(),
   apply:z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  user:z.string().min(1).max(128).regex(/^\S(?:.*\S)?$/).optional(),
+  waiver:z.enum(['all','unwaived','waived','automatic']).optional(),
+  limit:z.string().regex(/^(?:[1-9]|[1-9][0-9]|100)$/).transform(Number).optional(),
+  cursor:z.string().max(2048).regex(/^[A-Za-z0-9_-]+$/).optional(),
 }).strict();
 export function studioAssistanceDatabaseIdentity(connection:string){
   const url=new URL(connection);
@@ -18,15 +22,21 @@ export function parseStudioAssistanceSupportArgs(args:string[],connection:string
     const name=args[i];
     if(!name.startsWith('--')||name==='--'||Object.hasOwn(values,name.slice(2)))throw new Error('Invalid or duplicate support option.');
     const key=name.slice(2);
-    if(key==='list'){values[key]='true';continue;}
+    if(key==='list'||key==='diagnose'){values[key]='true';continue;}
     const value=args[++i];if(!value||value.startsWith('--'))throw new Error(`Missing value for ${name}.`);
     values[key]=value;
   }
   const options=schema.parse(values),identity=studioAssistanceDatabaseIdentity(connection);
   if(options.target!==identity)throw new Error('Database target identity does not match --target. No database operation was performed.');
   if(options.environment==='local'&&!/^(localhost|127\.0\.0\.1|\[::1\]|\/)/.test(identity))throw new Error('The local environment requires a loopback or Unix-socket database.');
-  if(options.list){if(options.call||options.action||options.apply||options.operator||options.reason)throw new Error('--list cannot be combined with a resolution.');}
-  else if(!options.call||!options.action)throw new Error('Choose --call and --action, or --list.');
+  if(options.diagnose){
+    if(!options.user)throw new Error('--diagnose requires --user.');
+    if(options.list||options.call||options.action||options.apply||options.operator||options.reason||options.waiver)throw new Error('--diagnose cannot be combined with a list or resolution.');
+  }else if(options.list){if(options.call||options.action||options.apply||options.operator||options.reason)throw new Error('--list cannot be combined with a resolution.');}
+  else {
+    if(!options.call||!options.action)throw new Error('Choose --call and --action, --list, or --diagnose.');
+    if(options.user||options.waiver||options.limit||options.cursor)throw new Error('Pagination and filters require --list or --diagnose.');
+  }
   if(options.apply&&(!options.operator||!options.reason))throw new Error('--apply requires an explicit operator and support reason.');
   return options;
 }

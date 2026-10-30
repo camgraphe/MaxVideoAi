@@ -52,6 +52,19 @@ test('ready originals normalize temporary previews and snapshot arrays are isola
   assert.deepEqual(saved.setup.form.extraInputValues, {});
   assert.deepEqual(parseWorkspaceModelSetup(saved.setup), saved.setup);
 });
+test('legacy ready references with omitted or null previews hydrate with their original URL', () => {
+  for (const preview of [{}, { previewUrl: null }]) {
+    const setup = fixtureSetup();
+    const stored = {
+      ...setup,
+      inputAssets: { video_url: [{ id: 'legacy', fieldId: 'video_url', name: 'Legacy.mp4', kind: 'video',
+        status: 'ready', type: 'video/mp4', size: 12, url: 'https://example.com/legacy.mp4', ...preview }] },
+    };
+    const restored = parseWorkspaceModelSetup(stored);
+    assert.ok(restored);
+    assert.equal(restored.inputAssets.video_url[0]!.previewUrl, 'https://example.com/legacy.mp4');
+  }
+});
 test('saved setups retain each explicit video operation without changing legacy Reference identity', () => {
   for (const { engine } of listFalEngines()) for (const operation of Object.values(engine.operationCaps ?? {})) {
     if (!operation) continue;
@@ -157,5 +170,24 @@ test('all workspace modes and complete scene/subject values are validated withou
   if (result.ok) {
     assert.equal(result.setup.klingElements[0].frontal!.previewUrl, subject.url);
     assert.equal(result.setup.klingElements[0].references[0], null);
+  }
+});
+
+
+test('reference snapshots reject unsafe original excerpt metadata without storing partial recipes', () => {
+  const setup=fixtureSetup();
+  const source={id:'excerpt',assetId:'excerpt',fieldId:'video_url',kind:'video' as const,name:'Excerpt',type:'video/mp4',size:12,status:'ready' as const,url:'https://example.com/excerpt',previewUrl:'https://example.com/excerpt',durationSec:4,
+    ref:{type:'asset' as const,assetId:'excerpt',kind:'video' as const},
+    excerptSource:{id:'original',ref:{type:'job-output' as const,jobId:'owned-job',outputId:'owned-output',kind:'video' as const},name:'Original',type:'video/mp4',size:24,url:'https://example.com/original',previewUrl:'blob:temporary',durationSec:12},
+    excerptRange:{startSec:2,endSec:6}};
+  for(const patch of [
+    {excerptRange:{startSec:-1,endSec:6}},
+    {excerptRange:{startSec:2,endSec:13}},
+    {excerptSource:{...source.excerptSource,url:'javascript:unsafe'}},
+    {excerptSource:{...source.excerptSource,ref:{...source.excerptSource.ref,access_token:'must-not-persist'}}},
+    {excerptEditing:true},
+  ]) {
+    setup.inputAssets={video_url:[{...source,...patch} as any]};
+    assert.equal(serializeWorkspaceModelSetup(setup).ok,false);
   }
 });

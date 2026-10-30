@@ -147,3 +147,14 @@
 .helpLink { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 32px; color: var(--text-muted); border-radius: 6px; }
 .helpLink:hover { color: var(--text); }
 .helpLink:focus-visible { outline: 1px solid var(--text-muted); outline-offset: 2px; }
+
+/* Keep ordinary review geometry; settings review needs room for the diff and editable text. */
+.conversationStage.reviewStage { height: clamp(400px, 55svh, 600px); }
+.settingsReview { flex-shrink: 0; padding: 8px 0; font-size: 12px; line-height: 1.5; color: var(--text-secondary); }
+.settingsReview dl { max-height: 88px; overflow-y: auto; margin-top: 6px; scrollbar-width: thin; }
+.settingsReview dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.settingsReview dd { text-align: right; overflow-wrap: anywhere; }
+.settingsReviewActions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 0 0 10px; font-size: 12px; flex-shrink: 0; }
+.settingsReviewActions p { flex-basis: 100%; color: var(--text-muted); }
+.settingsReviewActions button { min-height: 44px; padding: 0 8px; }
+.settingsReviewActions .confirmSettings { margin-left: auto; padding: 0 12px; border-radius: 7px; background: var(--text-primary); color: var(--surface); }

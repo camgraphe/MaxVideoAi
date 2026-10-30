@@ -26,6 +26,7 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
   const fixture = {
     query: async (sql: string, values: unknown[]) => (await database.pool.query(sql, values)).rows,
     userId: viewer,
+    publicImports: 0,
   };
   const stubs: Record<string, string> = {
     '@/lib/db': 'export const query = (sql, values) => fixture.query(sql, values); export const isTransactionQueryExecutor = () => false; export const withDbTransaction = () => {throw Error("Unexpected transaction");};',
@@ -34,6 +35,7 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
     'next/server': 'export const NextResponse = {json:(body, init) => new Response(JSON.stringify(body), init)};',
     '@/server/storage': `export * from './server/storage'; export const recordUserAsset = async () => {};`,
     '@/server/upload-thumbnails': 'export const createVideoThumbnailFromFile = () => {throw Error("Unexpected thumbnail operation");}; export const createUploadVideoThumbnail = createVideoThumbnailFromFile;',
+    '@/server/marketing-media/import-reference': 'export const importPublicRecipeReference = () => {fixture.publicImports++; throw Error("Unexpected public reference import");};',
     '@/server/marketing-media/access': 'export const canReadMarketingFile = async () => false;',
   };
   const built = await build({
@@ -110,4 +112,5 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       }
     });
   }
+  assert.equal(fixture.publicImports, 0, 'ordinary saving never imports a public recipe or invokes its media owners');
 });
