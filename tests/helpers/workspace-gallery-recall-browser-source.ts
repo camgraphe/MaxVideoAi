@@ -15,8 +15,8 @@ function Main() {
  <h1 style={{fontSize:24}}>Recall video settings</h1>
  <nav aria-label="Gallery actions" style={{display:'flex',gap:10,flexWrap:'wrap',margin:'20px 0'}}>{groups.map(group=><button key={group.id} onClick={()=>h.gallery.handleGalleryGroupAction(group,'open')}>Open {group.hero.engineLabel}</button>)}</nav>
  {form&&c.selectedEngine&&<><p data-model>{c.selectedEngine.label}</p>
- <nav style={{display:'flex',gap:12,margin:'16px 0'}}>{c.composerModeToggles?.map(entry=><button key={entry.mode??'create'} data-mode={entry.mode??'create'} aria-pressed={c.activeManualMode===entry.mode} onClick={()=>c.handleComposerModeToggle(entry.mode)}>{entry.label}</button>)}</nav>
  <Composer density="workspace" engine={c.selectedEngine} caps={c.capability} activeManualMode={c.activeManualMode}
+ modeToggles={c.composerModeToggles} onModeToggle={c.handleComposerModeToggle}
  prompt={h.prompt} onPromptChange={h.setPrompt} promptRequired={false} assetFields={h.schema.inputSchemaSummary.assetFields}
  assets={h.inputAssets} currency="USD" price={null} isLoading={false} isPricing={h.settings.recallPending} error={h.settings.recallError} onAssetRemove={remove}
  onGenerate={()=>{throw Error('Generation forbidden in local recall fixture');}}

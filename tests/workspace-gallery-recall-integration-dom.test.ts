@@ -13,6 +13,8 @@ import { buildRenderGroups, buildPendingGroupSummaries } from '../frontend/app/(
 import type { Job } from '../frontend/types/jobs';
 import { sanitizePublicRecreationSnapshot } from '../frontend/server/marketing-media/public-recreation';
 import { parsePreflightRequestPayload } from '../frontend/app/api/preflight/_lib/preflight-request';
+import { ComposerModeSwitch } from '../frontend/components/composer/ComposerModeSwitch.client';
+import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 
 const source = { slotId: 'video_url', kind: 'video', url: 'https://assets.test/source-original.mp4',
   assetId: 'owned-video', durationSec: 7.5, width: 1080, height: 1920, size: 4096, type: 'video/mp4' };
@@ -55,7 +57,7 @@ async function mount(activeRenderGroups = new Map(), deferImports = false, initi
   const imports: { init: RequestInit; payload: Record<string, unknown>; resolve: (response: Response) => void }[] = [];
   const previous = new Map<string, PropertyDescriptor | undefined>();
   for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document,
-    navigator: dom.window.navigator, sessionStorage: dom.window.sessionStorage, IS_REACT_ACT_ENVIRONMENT: true,
+    navigator: dom.window.navigator, sessionStorage: dom.window.sessionStorage, React, IS_REACT_ACT_ENVIRONMENT: true,
     fetch: (url: string, init: RequestInit) => new Promise<Response>((resolve, reject) => {
       if (url === '/api/media-library/ensure') {
         const payload = JSON.parse(init.body as string);
@@ -84,13 +86,25 @@ async function mount(activeRenderGroups = new Map(), deferImports = false, initi
     }
   };
   let current!: ReturnType<typeof useGalleryRecallHarness>;
-  function Fixture() { current = useGalleryRecallHarness({ owner, catalogRevision, activeRenderGroups, rememberedJobId,
-    fromVideoId, searchString: fromVideoId ? `from=${fromVideoId}` : '', replaceRoute }); return null; }
+  function Fixture() {
+    current = useGalleryRecallHarness({ owner, catalogRevision, activeRenderGroups, rememberedJobId,
+      fromVideoId, searchString: fromVideoId ? `from=${fromVideoId}` : '', replaceRoute });
+    const modes = current.composer.composerModeToggles;
+    return modes ? React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
+      React.createElement(ComposerModeSwitch, { modes, workspaceDensity: true,
+        activeManualMode: current.composer.activeManualMode, onModeToggle: current.composer.handleComposerModeToggle }) }) : null;
+  }
   const root = createRoot(dom.window.document.getElementById('root')!);
   const render = () => root.render(React.createElement(React.StrictMode, null, React.createElement(Fixture)));
   await act(async () => render());
   return {
     get current() { return current; }, requests, imports, routes,
+    modeButton(mode: string | null) { return dom.window.document.querySelector<HTMLButtonElement>(`[data-composer-mode="${mode ?? 'create'}"]`); },
+    async clickMode(mode: string | null) {
+      const button = dom.window.document.querySelector<HTMLButtonElement>(`[data-composer-mode="${mode ?? 'create'}"]`);
+      assert.ok(button, `the ${mode ?? 'Create'} control is visible`);
+      await act(async () => button.click());
+    },
     async imported(request: typeof imports[number]) {
       await act(async () => request.resolve(new Response(JSON.stringify({ ok: true, asset: {
         id: 'owned-public-reference', url: request.payload.url, durationSec: request.payload.durationSec,
@@ -204,6 +218,56 @@ for (const entry of cases) for (const action of ['open', 'continue', 'refine'] a
     await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_inline', entry, true), action));
     assertRestored(view, entry);
     assert.equal(view.current.prompt, `${entry.label} complete prompt${action === 'refine' ? '\n\n// refine here' : ''}`);
+  } finally { await view.close(); }
+});
+
+for (const [engineId, firstField, lastField] of [
+  ['veo-3-1', 'first_frame_url', 'last_frame_url'],
+  ['flux-3', 'start_image_url', 'end_image_url'],
+  ['gemini-omni-flash', 'image_url', 'end_image_url'],
+] as const) for (const mode of ['t2v', 'i2v', 'fl2v'] as const) test(`${engineId} ${mode}: the real Create control stays selected and repeated clicks preserve generation inputs`, async () => {
+  const view = await mount();
+  try {
+    const first = engineId === 'veo-3-1' && mode === 'i2v' ? 'image_url' : firstField;
+    const fields = mode === 't2v' ? [] : mode === 'i2v' ? [first] : [firstField, lastField];
+    const selected = group('job_create_control', cases[0], true);
+    selected.hero.job!.settingsSnapshot = {
+      schemaVersion: 1, surface: 'video', engineId, inputMode: mode, prompt: 'Keep this complete creation recipe', core: {},
+      refs: { inputs: fields.map(slotId => ({ slotId, kind: 'image', assetId: slotId,
+        url: `https://assets.test/${slotId}.png`, width: 1280, height: 720, size: 1024, type: 'image/png' })) },
+    };
+    await act(async () => view.current.gallery.handleGalleryGroupAction(selected, 'open'));
+    const before = JSON.stringify(view.current.inputAssets);
+    assert.equal(view.modeButton(null)?.getAttribute('aria-pressed'), 'true');
+    assert.equal(view.current.composer.submissionMode, mode);
+    for (let click = 0; click < 3; click++) {
+      await view.clickMode(null);
+      assert.equal(view.modeButton(null)?.getAttribute('aria-pressed'), 'true');
+      assert.equal(view.current.composer.submissionMode, mode);
+      assert.equal(JSON.stringify(view.current.inputAssets), before);
+    }
+  } finally { await view.close(); }
+});
+
+for (const [engineId, visibleReference] of [
+  ['veo-3-1', true], ['flux-3', true], ['minimax-h3-max', false], ['happy-horse-1-0', false],
+] as const) test(`${engineId}: Reference belongs to its offered workflow control`, async () => {
+  const view = await mount();
+  try {
+    const selected = group('job_reference_control', cases[0], true);
+    selected.hero.job!.settingsSnapshot = { schemaVersion: 1, surface: 'video', engineId,
+      inputMode: 'ref2v', prompt: 'Keep the reference workflow', core: {}, refs: { inputs: null } };
+    await act(async () => view.current.gallery.handleGalleryGroupAction(selected, 'open'));
+    assert.equal(view.current.composer.submissionMode, 'ref2v');
+    assert.equal(view.modeButton(visibleReference ? 'ref2v' : null)?.getAttribute('aria-pressed'), 'true');
+    if (visibleReference) {
+      await view.clickMode(null);
+      assert.equal(view.modeButton(null)?.getAttribute('aria-pressed'), 'true');
+      assert.equal(view.current.composer.submissionMode, 't2v');
+    } else {
+      await view.clickMode(null);
+      assert.equal(view.current.composer.submissionMode, 'ref2v');
+    }
   } finally { await view.close(); }
 });
 
@@ -676,6 +740,12 @@ for (const [engineId, firstField, lastField] of [
     for (const field of ['durationSec', 'durationOption', 'resolution', 'aspectRatio', 'audio'] as const) {
       assert.equal(view.current.form?.[field], recalledForm[field]);
     }
+    assert.equal(view.modeButton(null)?.getAttribute('aria-pressed'), 'true');
+    await view.clickMode(null);
+    await view.clickMode(null);
+    assert.equal(view.current.composer.submissionMode, 'fl2v');
+    assert.equal(view.current.inputAssets[firstField]?.[0]?.assetId, firstField);
+    assert.equal(view.current.inputAssets[lastField]?.[0]?.assetId, lastField);
     await act(async () => view.current.composer.handleComposerModeToggle('extend'));
     assert.equal(view.current.inputAssets.video_url?.[0]?.assetId, 'extend-source');
     await act(async () => view.current.composer.handleComposerModeToggle(null));

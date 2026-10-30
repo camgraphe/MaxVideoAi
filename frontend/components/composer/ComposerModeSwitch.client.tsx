@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { WorkspaceComposerGlyph } from './WorkspaceComposerGlyph';
 import type { ComposerModeToggle, ComposerProps } from './composer-types';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { resolveComposerWorkflowMode } from '@/lib/composer-workflow-mode';
 
 type Props = Pick<ComposerProps, 'activeManualMode' | 'onModeToggle'> & {
   modes: ComposerModeToggle[];
@@ -14,11 +15,12 @@ type Props = Pick<ComposerProps, 'activeManualMode' | 'onModeToggle'> & {
 
 export function ComposerModeSwitch({ modes, workspaceDensity, activeManualMode, onModeToggle, compact }: Props) {
   const { locale } = useI18n();
+  const selectedWorkflow = resolveComposerWorkflowMode(modes, activeManualMode);
   const labels = locale.startsWith('fr') ? ['Créer', 'Modifier', 'Prolonger'] : locale.startsWith('es') ? ['Crear', 'Modificar', 'Extender'] : ['Create', 'Modify', 'Extend'];
   return (
     <div data-compact-modes={compact || undefined} className={clsx('app-mode-switch flex flex-wrap gap-2', workspaceDensity && 'app-mode-switch-segmented')}>
       {modes.map((entry) => {
-        const active = activeManualMode === entry.mode;
+        const active = selectedWorkflow === entry.mode;
         return (
           <Button
             key={entry.mode ?? 'base'}

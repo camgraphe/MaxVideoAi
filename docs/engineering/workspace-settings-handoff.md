@@ -37,6 +37,10 @@ carry mode and operation without loading every recipe or its references.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.
+- The visible workflow selection follows the model's offered buttons, separately
+  from generation mode and schema. Create includes unlisted creation submodes;
+  an offered Reference button remains distinct. Clicking the already selected
+  Create group leaves the generation recipe intact.
 - Public recipes never import private source job/output bindings. Luma Extend
   and Flux Draft Enhance still require an eligible personal source selection.
   Personal recall retains its original owned-source identity.

@@ -26,6 +26,7 @@ import {
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { getWorkspaceMediaFields, workspaceAssetsSupportMode } from '../_lib/workspace-multimodal-workflow';
 import { useWorkspaceSourceModeAssets } from './useWorkspaceSourceModeAssets';
+import { resolveComposerWorkflowMode } from '@/lib/composer-workflow-mode';
 
 type ShotType = 'customize' | 'intelligent';
 
@@ -398,6 +399,9 @@ export function useWorkspaceEngineModeState({
   const handleComposerModeToggle = useCallback(
     (mode: Mode | null) => {
       if (!selectedEngine) return;
+      // Selecting the current Create group must not rewrite its generation mode
+      // or canonical fields. Explicit Reference buttons remain separate groups.
+      if (mode === null && resolveComposerWorkflowMode(composerModeToggles, activeManualMode) === null) return;
       if (
         referenceInputStatus.hasAudio &&
         !workspaceAssetsSupportMode(getWorkspaceMediaFields(selectedEngine), inputAssets, mode ?? implicitMode, 'audio') &&
@@ -423,7 +427,7 @@ export function useWorkspaceEngineModeState({
           ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null);
       });
     },
-    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3, prepareModeAssets, form, klingElements]
+    [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3, prepareModeAssets, form, klingElements, composerModeToggles, activeManualMode]
   );
 
   const formEngineId = form?.engineId;
