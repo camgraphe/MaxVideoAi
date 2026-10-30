@@ -266,8 +266,18 @@ export function useWorkspaceEngineModeState({
     ]
   );
 
+  const appliedEngineRequestRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!engineOverride) return;
+    if (!effectiveRequestedEngineToken) {
+      appliedEngineRequestRef.current = null;
+      return;
+    }
+    if (!engineOverride || !authChecked || hydratedForScope !== storageScope || !form) return;
+    const requestKey = JSON.stringify([storageScope, effectiveRequestedEngineToken]);
+    if (appliedEngineRequestRef.current === requestKey) return;
+    // A link selects the initial model once. Later gallery recalls and manual
+    // choices own the draft, including when the catalogue revalidates.
+    appliedEngineRequestRef.current = requestKey;
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
@@ -298,7 +308,7 @@ export function useWorkspaceEngineModeState({
       }
       return nextState;
     });
-  }, [engineOverride, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
+  }, [engineOverride, effectiveRequestedEngineToken, authChecked, hydratedForScope, storageScope, form, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
 
   const appliedWorkflowRequestRef = useRef<string | null>(null);
   useEffect(() => {
@@ -326,35 +336,6 @@ export function useWorkspaceEngineModeState({
       return coerceFormStateForEngineChange(engine, mode, {...current,operation});
     });
   }, [authChecked, engines, form, hydratedForScope, requestedWorkflow, setForm, storageScope]);
-
-  useEffect(() => {
-    const pinnedToken = requestedEngineOverrideTokenRef.current;
-    if (!pinnedToken) return;
-    if (!authChecked) return;
-    if (hydratedForScope !== storageScope) return;
-    if (!selectedEngine) return;
-    if (matchesEngineToken(selectedEngine, pinnedToken)) return;
-    const pinnedEngine = engines.find((engine) => matchesEngineToken(engine, pinnedToken));
-    if (!pinnedEngine) return;
-    setForm((current) => {
-      const candidate = current ?? null;
-      const nextMode = getPreferredEngineModeForEngineRequest({
-        engine: pinnedEngine,
-        requestedMode: requestedModeOverrideRef.current,
-        carryoverMode: candidate?.mode ?? null,
-      });
-      return coerceFormStateForEngineChange(pinnedEngine, nextMode, candidate);
-    });
-  }, [
-    authChecked,
-    engines,
-    hydratedForScope,
-    requestedEngineOverrideTokenRef,
-    requestedModeOverrideRef,
-    selectedEngine,
-    setForm,
-    storageScope,
-  ]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {

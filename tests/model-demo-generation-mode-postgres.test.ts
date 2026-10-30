@@ -62,5 +62,27 @@ test('real gallery SQL preserves only the recorded mode through the card, media 
         defaultDemoPresentation: { audioBadgeLabel: '', altContext: '' }, referenceWorkflows: [] });
       assert.equal(vm.demo?.modeLabel, 'Génération vidéo', 'old or invalid metadata must not invent text-to-video');
     }
+    for (const [engineId, mode, operation] of [
+      ['kling-o3-pro', 'v2v', 'kling-edit'],
+      ['minimax-h3-max', 'v2v', 'h3-relight'],
+      ['flux-3', 'v2v', 'flux-fast-edit'],
+      ['luma-ray-3-2', 'extend', 'luma-extend'],
+    ]) {
+      await db.pool.query('UPDATE app_jobs SET engine_id=$1,settings_snapshot=$2', [engineId,
+        JSON.stringify({ inputMode: mode, operation, refs: { privateReference: 'not-a-public-prop' } })]);
+      for (const sql of [BASE_SELECT, BASE_SELECT_FOR_REUSE, BASE_SELECT_WITH_SETTINGS]) {
+        const [sourceRow] = (await db.pool.query(sql)).rows;
+        assert.equal(sourceRow.generation_operation, operation, 'reuse requires the recorded operation as well as mode');
+        const shared = mapGalleryVideoRow(sourceRow);
+        assert.equal(shared.generationMode, mode);
+        assert.equal(shared.operation, operation);
+        if (sql !== BASE_SELECT_WITH_SETTINGS) {
+          assert.equal(JSON.stringify(shared).includes('privateReference'), false);
+        }
+        for (const invalid of [undefined, null, '', 'invented', 'flux-keyframes']) {
+          assert.equal(mapGalleryVideoRow({ ...sourceRow, generation_operation: invalid }).operation, undefined);
+        }
+      }
+    }
   } finally { await db.cleanup(); }
 });

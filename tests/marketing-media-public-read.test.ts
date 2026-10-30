@@ -116,6 +116,44 @@ test('public read overlay preserves page IDs, eligibility, settings and dimensio
     assert.match(comparison, /from=stable-page/);
     assert.match(comparison, /remix=1/);
     assert.match(comparison, /mode=t2v/);
+    const legacyRecipe = { ...snapshot, inputMode: 'extend' };
+    const provenance = {
+      ...legacyRecipe, operation: 'luma-extend', sourceJobId: 'private-source-job',
+      refs: { videoUrls: ['https://private.example/source.mp4'], assetId: 'private-asset' },
+    };
+    await executor.query(`UPDATE marketing_media SET source_snapshot=$1,recreation_snapshot=$2,
+      publication=jsonb_set(publication,'{settings_snapshot}',$2::jsonb) WHERE video_id='stable-page'`,
+      [JSON.stringify(provenance), JSON.stringify(legacyRecipe)]);
+    for (const sql of [BASE_SELECT, BASE_SELECT_FOR_REUSE, BASE_SELECT_WITH_SETTINGS]) {
+      const [recoveredRow] = await reader.query<VideoRow>(sql);
+      const recovered = mapGalleryVideoRow(recoveredRow);
+      assert.equal(recovered.generationMode, 'extend');
+      assert.equal(recovered.operation, 'luma-extend', 'existing copies recover their operation without a database repair');
+      assert.doesNotMatch(JSON.stringify(recovered), /private-source-job|private\.example|private-asset/);
+      if (sql === BASE_SELECT) assert.equal(recovered.recreationSnapshot, undefined, 'the feed stays slim');
+      else assert.deepEqual(recovered.recreationSnapshot, { ...legacyRecipe, operation: 'luma-extend' });
+    }
+    const [stored] = await executor.query<{ recreation_snapshot: unknown; source_snapshot: unknown }>(
+      'SELECT recreation_snapshot,source_snapshot FROM marketing_media WHERE video_id=$1', ['stable-page']);
+    assert.deepEqual(stored.recreation_snapshot, legacyRecipe, 'read recovery does not rewrite stored publications');
+    assert.deepEqual(stored.source_snapshot, provenance, 'private provenance remains unchanged');
+    for (const invalid of [
+      { engineId: 'kling-o3-pro' }, { inputMode: 'v2v' }, { operation: 'not-an-operation' },
+      { operation: 'kling-edit' },
+    ]) {
+      await executor.query('UPDATE marketing_media SET source_snapshot=$1 WHERE video_id=$2',
+        [JSON.stringify({ ...provenance, ...invalid }), 'stable-page']);
+      const [invalidRow] = await reader.query<VideoRow>(BASE_SELECT_FOR_REUSE);
+      assert.equal(mapGalleryVideoRow(invalidRow).operation, undefined);
+      assert.deepEqual(mapGalleryVideoRow(invalidRow).recreationSnapshot, legacyRecipe);
+    }
+    const explicitRecipe = { ...legacyRecipe, engineId: 'kling-o3-pro', inputMode: 'v2v', operation: 'kling-edit' };
+    await executor.query(`UPDATE marketing_media SET source_snapshot=$1,recreation_snapshot=$2,
+      publication=jsonb_set(jsonb_set(publication,'{settings_snapshot}',$2::jsonb),'{engine_id}','"kling-o3-pro"')
+      WHERE video_id='stable-page'`, [JSON.stringify({ ...explicitRecipe, operation: 'kling-reference' }), JSON.stringify(explicitRecipe)]);
+    const [explicitRow] = await reader.query<VideoRow>(BASE_SELECT_FOR_REUSE);
+    assert.equal(mapGalleryVideoRow(explicitRow).operation, 'kling-edit', 'published explicit operation wins over provenance');
+    assert.deepEqual(mapGalleryVideoRow(explicitRow).recreationSnapshot, explicitRecipe);
     await executor.query(`UPDATE marketing_media SET state='failed' WHERE video_id='stable-page'`);
     assert.equal((await reader.query(BASE_SELECT)).length, 0, 'unfinished records never act as a public source');
   } finally {

@@ -11,7 +11,7 @@ const query = (engine='wan-3', overrides={}) => new URL(buildExampleRecreationHr
 function hydrate(searchString:string){
  const snapshot=buildExampleRecreationSnapshot(video,searchString,engines);assert.ok(snapshot,searchString);
  const resolved=resolveVideoSettingsSnapshot(snapshot,{engines,engineMap:new Map(engines.map(e=>[e.id,e])),createLocalId:p=>p,createFallbackScene:()=>({id:'s',prompt:'',duration:5}),createFallbackKlingElement:()=>({id:'e',frontal:null,references:[null],video:null})});
- return {resolved,form:buildVideoSettingsFormState(resolved,null)};
+ return {resolved,form:buildVideoSettingsFormState(resolved)};
 }
 
 test('quoted comparison survives URL, public video hydration and form coercion with the selected model',()=>{

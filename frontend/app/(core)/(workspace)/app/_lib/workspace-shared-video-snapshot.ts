@@ -35,7 +35,8 @@ export function buildVideoSettingsSnapshotFromSharedVideo(sharedVideo: SharedVid
     surface: 'video',
     engineId: sharedVideo.engineId,
     engineLabel: sharedVideo.engineLabel,
-    inputMode: 't2v',
+    inputMode: sharedVideo.generationMode ?? 't2v',
+    ...(sharedVideo.operation ? { operation: sharedVideo.operation } : {}),
     prompt: sharedVideo.prompt ?? sharedVideo.promptExcerpt ?? '',
     negativePrompt: null,
     core: {

@@ -35,14 +35,14 @@ test('marketing deletion protects placements, leaves the personal source intact 
     enabled: true,
   };
   try {
-    await query(`CREATE TABLE app_jobs(job_id text,video_url text);INSERT INTO app_jobs VALUES('stable','https://media.example/personal.mp4');
+    await query(`CREATE TABLE app_jobs(job_id text,video_url text,engine_id text NOT NULL);INSERT INTO app_jobs VALUES('stable','https://media.example/personal.mp4','luma-ray-3-2');
    CREATE TABLE playlists(id text PRIMARY KEY,name text,slug text,is_public boolean);CREATE TABLE playlist_items(playlist_id text,video_id text);
    CREATE TABLE homepage_sections(key text,video_id text);CREATE TABLE playlist_curations(playlist_id text,ordered_ids text[],opening_ids text[]);
    CREATE TABLE video_seo_pages(video_id text,seo_status text);
    INSERT INTO playlists VALUES('gallery','Gallery','gallery',true);INSERT INTO playlist_items VALUES('gallery','stable');`);
     await query(readFileSync('neon/migrations/78_marketing_media.sql', 'utf8'));
     await query(`INSERT INTO marketing_media(video_id,copy_id,state,source_fingerprint,source_snapshot,source_record,publication,attempt_id,copied_by)
-   VALUES('stable','00000000-0000-4000-8000-000000000001','ready','f','{}','{}','{"job_id":"stable","visibility":"public","indexable":true,"video_url":"https://media.example/marketing-media/original.mp4"}',gen_random_uuid(),'admin')`);
+   VALUES('stable','00000000-0000-4000-8000-000000000001','ready','f','{}','{}','{"job_id":"stable","engine_id":"luma-ray-3-2","visibility":"public","indexable":true,"video_url":"https://media.example/marketing-media/original.mp4"}',gen_random_uuid(),'admin')`);
     assert.equal((await listMarketingPlacements((await readMarketingRow('stable', { query }))!, { query })).length, 2);
     await assert.rejects(deleteMarketingVideo('stable', deps), /used|placement/i);
     assert.equal(purged.length, 0);
@@ -74,7 +74,7 @@ test('marketing deletion protects placements, leaves the personal source intact 
     await t.test(
       'cleaning up a never-ready attempt preserves its legacy source and placements throughout',
       async () => {
-        await query(`INSERT INTO app_jobs VALUES('failed','https://media.example/failed.mp4');
+        await query(`INSERT INTO app_jobs VALUES('failed','https://media.example/failed.mp4','luma-ray-3-2');
         INSERT INTO playlist_items VALUES('gallery','failed');
         INSERT INTO marketing_media(video_id,copy_id,state,source_fingerprint,source_snapshot,source_record,attempt_id,copied_by)
         VALUES('failed',gen_random_uuid(),'failed','f','{}','{}',gen_random_uuid(),'admin')`);

@@ -2,6 +2,9 @@
 
 This route is the main signed-in video generation workspace.
 
+For links, examples and Gallery Rail settings restoration, read
+`docs/engineering/workspace-settings-handoff.md`, including the separate current-price ownership.
+
 ## Responsibilities
 
 - `AppClient.tsx`: top-level orchestration only; it wires route-local hooks into route-local surfaces.

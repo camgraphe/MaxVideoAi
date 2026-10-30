@@ -41,6 +41,7 @@ type WorkspaceAppReadyViewProps = {
   localSeedanceDraftPreview?: boolean;
   seedanceDraftWorkflowEnabled?: boolean;
   suspended: boolean;
+  settingsReady: boolean;
   activeDraft: ReturnType<typeof useWorkspaceDraftHydration>;
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
   assets: ReturnType<typeof useWorkspaceAssets>;
@@ -61,6 +62,7 @@ export function WorkspaceAppReadyView({
   localSeedanceDraftPreview = false,
   seedanceDraftWorkflowEnabled = false,
   suspended,
+  settingsReady,
   activeDraft,
   app,
   assets,
@@ -254,20 +256,20 @@ export function WorkspaceAppReadyView({
     accountId: app.authStatus === 'authed' ? app.user?.id ?? null : null,
     accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null, disabledEngineReasons: modelReview.selectorDisabledReasons });
   const draftPreview = useSeedanceDraftLocalPreview({
-    enabled: localSeedanceDraftPreview,
+    enabled: settingsReady && localSeedanceDraftPreview,
     form, engineId: selectedEngine?.id, mode: submissionMode, prompt,
     onResolutionChange: handleResolutionChange, showNotice,
   });
   const workflowAccount = app.authStatus === 'authed' && app.user?.id && app.session?.access_token
     ? { userId: app.user.id, token: app.session.access_token } : null;
-  const draftRequest = selectedEngine?.id === 'seedance-2-5' && form ? prepareSeedanceDraftWorkspaceRequest({
+  const draftRequest = settingsReady && selectedEngine?.id === 'seedance-2-5' && form ? prepareSeedanceDraftWorkspaceRequest({
     selectedEngineId: selectedEngine.id, selectedEngineLabel: selectedEngine.label, activeMode, submissionMode, form, prompt,
     inputSchema: selectedEngine.inputSchema, inputSchemaSummary, extraInputFields, inputAssets,
     primaryAssetFieldIds, referenceAssetFieldIds, genericImageFieldIds, frameAssetFieldIds, referenceAudioFieldIds,
     supportsKlingV3Controls: false, klingElements: [], multiPromptActive: false, multiPromptScenes: [],
   }) : null;
-  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
-    form, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
+  const draftWorkflow = useSeedanceDraftWorkflow({ enabled: settingsReady && seedanceDraftWorkflowEnabled && !localSeedanceDraftPreview,
+    form: settingsReady ? form : null, engineId: selectedEngine?.id, mode: submissionMode, prompt, account: workflowAccount,
     preparedPayload: draftRequest?.ok ? draftRequest.payload : undefined,
     preflightInputs: draftRequest?.ok ? draftRequest.preflightInputs : undefined,
     inputPreparationError: draftRequest && !draftRequest.ok ? draftRequest.message : undefined,
