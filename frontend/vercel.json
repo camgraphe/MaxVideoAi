@@ -7,6 +7,7 @@
     { "source": "/gallery", "destination": "/examples", "permanent": true }
   ],
   "crons": [
+    { "path": "/api/cron/assistant-review-retention", "schedule": "19 * * * *" },
     { "path": "/api/cron/ga4-payments", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/studio-tasks", "schedule": "* * * * *" },
     { "path": "/api/cron/studio-analyses", "schedule": "* * * * *" },

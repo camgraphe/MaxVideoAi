@@ -65,6 +65,23 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.equal((await pg.pool.query('SELECT state FROM studio_assistance_calls WHERE id=$1',[saved.call_id])).rows[0].state,'unknown');
   const evidence={id:'resp_recovered',model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'Recovered answer',text:'A slow camera move.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}};
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[unknownRequest.requestId,JSON.stringify(evidence)]);
+  // Reconstruct a legacy aged row in this disposable database before installing
+  // retention, without disabling any production identity or credit guard.
+  await pg.pool.query(`WITH historical AS (DELETE FROM prompt_assistance_requests WHERE request_id=$1 RETURNING *)
+    INSERT INTO prompt_assistance_requests SELECT (jsonb_populate_record(NULL::prompt_assistance_requests,
+      to_jsonb(historical) || jsonb_build_object('created_at',clock_timestamp()-interval '91 days'))).* FROM historical`,[unknownRequest.requestId]);
+  await pg.pool.query('CREATE TABLE studio_conversation_responses(user_id text,project_id text,request_id uuid,lease_id uuid,response_index int,created_at timestamptz)');
+  for(const file of ['90_assistant_review.sql','91_assistant_review_retention.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  const financialEvidence = async () => Promise.all(['studio_assistance_calls','studio_assistance_credit_lots','studio_assistance_credit_funding','studio_assistance_credit_allocations'].map(async table=>(await pg.pool.query(`SELECT to_jsonb(t) data FROM ${table} t ORDER BY to_jsonb(t)::text`)).rows));
+  const beforeCleanup = await financialEvidence();
+  const {cleanupAssistantReviewContext}=await import('../frontend/server/admin-assistant-review/retention');
+  assert.equal((await cleanupAssistantReviewContext()).composer,1);
+  assert.deepEqual(await financialEvidence(),beforeCleanup,'Review cleanup cannot settle or alter financial evidence');
+  const cleaned=(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[unknownRequest.requestId])).rows[0];
+  assert.equal(cleaned.context_json.reviewInput,undefined);assert.equal(cleaned.context_json.maxChars,20000);
+  assert.deepEqual(cleaned.response_json,evidence);assert.deepEqual(cleaned.input_json,saved.input_json);
+  const recovered = await service.recoverPromptAssistance('owner',unknownRequest.sessionId,unknownRequest.requestId,policy);
+  assert.equal(recovered.state,'complete');assert.equal(recovered.reply?.text,'A slow camera move.');assert.equal(recovered.draftRevision,2);
   assert.equal((await service.sendPromptAssistance('owner',unknownRequest,deps)).state,'complete');
   assert.equal(calls,callsAfterUnknown,'Recorded usage must settle without another model call');
   const unusable=await service.sendPromptAssistance('malformed-owner',{...request,requestId:randomUUID()},{...deps,create:async(params)=>({...await deps.create(params),output_text:'not JSON'}) as never});

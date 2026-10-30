@@ -93,8 +93,8 @@ export const SUBPROCESSORS = {
     },
     {
       "provider": "OpenAI",
-      "service": "Studio assistance and media analysis",
-      "data": "Messages, project context, relevant conversation history and selected references; image frames or audio excerpts for requested analyses."
+      "service": "Milo assistance in the generators and Studio; media analysis",
+      "data": "Messages, selected models and settings, draft/project context, relevant conversation history and selected references; image frames or audio excerpts for requested analyses."
     },
     {
       "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",
@@ -150,8 +150,8 @@ export const SUBPROCESSORS = {
     },
     {
       "provider": "OpenAI",
-      "service": "Assistance Studio et analyse de médias",
-      "data": "Messages, contexte du projet, historique utile et références sélectionnées ; images extraites ou extraits audio pour les analyses demandées."
+      "service": "Assistance Milo dans les générateurs et Studio ; analyse de médias",
+      "data": "Messages, modèles et réglages choisis, contexte du brouillon ou du projet, historique utile et références sélectionnées ; images extraites ou extraits audio pour les analyses demandées."
     },
     {
       "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",
@@ -207,8 +207,8 @@ export const SUBPROCESSORS = {
     },
     {
       "provider": "OpenAI",
-      "service": "Asistencia de Studio y análisis de medios",
-      "data": "Mensajes, contexto del proyecto, historial pertinente y referencias seleccionadas; fotogramas o fragmentos de audio para los análisis solicitados."
+      "service": "Asistencia de Milo en los generadores y Studio; análisis de medios",
+      "data": "Mensajes, modelos y ajustes elegidos, contexto del borrador o del proyecto, historial pertinente y referencias seleccionadas; fotogramas o fragmentos de audio para los análisis solicitados."
     },
     {
       "provider": "Fal.ai · BytePlus ModelArk · Alibaba Model Studio · Kling · Luma · Google Vertex AI",

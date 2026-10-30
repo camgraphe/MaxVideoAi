@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { reviewListSchema, reviewScopeSchema, StudioReviewError, type ReviewDetail, type ReviewList, type ReviewScope, type ReviewSource, type ReviewTurn } from './contracts';
 import { projectAction, projectAssistance, projectTurn, projectUsage, redactReviewText } from './projection';
+import { assertAssistantReviewActive } from '@/server/admin-assistant-review/retention';
+import { AssistantReviewError } from '@/server/admin-assistant-review/contracts';
 
 type Row = Record<string, unknown>;
 // A saved reply (state=ready) can retain unfinished work. Only bounded operational
@@ -65,6 +67,7 @@ export async function revealStudioReview(actorId: string, input: unknown): Promi
       await tx.query("SET LOCAL statement_timeout = '5s'");
       const rows = await tx.query<Row>(`SELECT ${metadata} FROM studio_image_turns t ${ownedProject} WHERE ${exactScope} FOR SHARE OF t,p`, params);
       if (!rows[0]) throw new StudioReviewError('not_found', 404);
+      await assertAssistantReviewActive(tx, projectTurn(rows[0]).createdAt);
       const accessId = randomUUID();
       // Fail closed before reading content if audit persistence is unavailable.
       await tx.query(`INSERT INTO admin_studio_review_access(id,actor_id,user_id,project_id,request_id,projection_version) VALUES ($1,$2,$3,$4,$5,'studio-review-v1')`, [accessId, actorId, ...params]);
@@ -84,6 +87,7 @@ export async function revealStudioReview(actorId: string, input: unknown): Promi
       return { turn: projectTurn(rows[0]), message: redactReviewText(text?.message, 4000), reply: redactReviewText(text?.reply, 2400), actions, responses, legacyUsage, assistance, accessId, coverage: 'partial' };
     });
   } catch (error) {
+    if (error instanceof AssistantReviewError && error.code === 'review_expired') throw new StudioReviewError('review_expired', 410);
     if (error instanceof StudioReviewError) throw error;
     throw new StudioReviewError('unavailable', 503);
   }

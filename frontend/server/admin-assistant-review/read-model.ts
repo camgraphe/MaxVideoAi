@@ -3,6 +3,7 @@ import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { redactReviewText } from '@/server/admin-studio-review/projection';
 import { assistantReviewFilter, assistantReviewScope, assistantReviewAnnotation, AssistantReviewError, type AssistantReviewScope, type AssistantReviewDetail, type Annotation, type ReviewList } from './contracts';
 import { metadataSql, projectItem, readNativeEvidence, scopeClause, scopeValues, sourceDefinitions } from './sources';
+import { assertAssistantReviewActive } from './retention';
 
 export async function loadAssistantReviews(input: unknown): Promise<ReviewList> {
   const parsed = assistantReviewFilter.safeParse(input);
@@ -30,7 +31,9 @@ export async function loadAssistantReviewItem(input: unknown) {
 async function lockedItem(tx: QueryExecutor, scope: AssistantReviewScope) {
   const [row] = await tx.query<Record<string, unknown>>(`${metadataSql(scope.source)} AND ${scopeClause(scope)} FOR SHARE OF ${sourceDefinitions[scope.source].lock}`, scopeValues(scope));
   if (!row) throw new AssistantReviewError('not_found', 404);
-  return projectItem(scope.source, row);
+  const item = projectItem(scope.source, row);
+  await assertAssistantReviewActive(tx, item.createdAt);
+  return item;
 }
 const annotationProjection = (r: Record<string, unknown>): Annotation => ({ id: String(r.id), actorId: String(r.actor_id), verdict: String(r.verdict), issues: Array.isArray(r.issues) ? r.issues as string[] : [], note: redactReviewText(r.note, 2000) ?? '', createdAt: new Date(String(r.created_at)).toISOString() });
 async function annotations(tx: QueryExecutor, scope: AssistantReviewScope): Promise<AssistantReviewDetail['annotations']> {
