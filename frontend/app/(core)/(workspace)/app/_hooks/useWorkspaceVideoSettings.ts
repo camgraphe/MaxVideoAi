@@ -1,4 +1,5 @@
 import { hasPublishedRecreationSnapshot } from '../_lib/workspace-shared-video-snapshot';
+import { writeParkedSources } from '../_lib/workspace-parked-source';
 import { buildExampleRecreationSnapshot } from '../_lib/workspace-example-recreation';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useWorkspaceUploadOperation } from './useWorkspaceUploadOperation';
@@ -264,7 +265,7 @@ export function useWorkspaceVideoSettings({
   }, [fromVideoId, searchString, valid]);
 
   const applyVideoSettingsSnapshot = useCallback(
-    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences) => {
+    (snapshot: unknown, promptSuffix = '', preparedReferences?: PublicRecipeReferences, application: { preserveParkedSources?: boolean } = {}) => {
       if (!valid()) return false;
       try {
         const resolved = resolveVideoSettingsSnapshot(snapshot, {
@@ -274,6 +275,9 @@ export function useWorkspaceVideoSettings({
           createFallbackScene: createMultiPromptScene,
           createFallbackKlingElement: createKlingElement,
         });
+        // A complete recipe replaces this model's earlier creative setup,
+        // including sources parked in other modes. Commit before React setters.
+        if (!application.preserveParkedSources && !writeParkedSources(storageScope, resolved.engine.id, new Map())) throw new Error(recallFailureMessage);
         pendingRecallRef.current = null;
         setPendingRecall(null);
         setFailedRecall(null);
@@ -325,6 +329,8 @@ export function useWorkspaceVideoSettings({
     },
     [
       valid,
+      storageScope,
+      recallFailureMessage,
       locale,
       engineMap,
       engines,
@@ -791,7 +797,9 @@ export function useWorkspaceVideoSettings({
         }
 
         if (cancelled || !valid() || revisionRef.current !== revision) return;
-        if (!hasActiveSetup) applyVideoSettingsSnapshot(payload.settingsSnapshot);
+        // Restoring a remembered preview is ordinary hydration, not a new
+        // creative selection. Its per-mode source history still belongs to it.
+        if (!hasActiveSetup) applyVideoSettingsSnapshot(payload.settingsSnapshot, '', undefined, { preserveParkedSources: true });
         setCompositeOverride(mapSharedVideoToGroup(restoredPreview.sharedVideo, provider));
         setCompositeOverrideSummary(null);
         setSelectedPreview(restoredPreview.selectedPreview);

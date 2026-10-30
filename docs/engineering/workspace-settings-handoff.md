@@ -29,7 +29,11 @@ carry mode and operation without loading every recipe or its references.
   in source fields and source-derived framing/timing.
 - A recalled generation replaces creative settings. Missing legacy values use
   the target model defaults; explicit nulls clear old seeds, CFG and references.
-  Unrelated draft values must not leak into the recalled setup.
+  Unrelated draft values must not leak into the recalled setup. A complete recall
+  also invalidates that model's parked source history before changing the draft;
+  a later mode change or reload cannot reattach an abandoned input. A failed
+  storage invalidation leaves the previous setup intact. Ordinary active-draft
+  and remembered-preview hydration retain the existing per-mode history.
 - Returning to a parked Create setup retains its available recorded mode before
   schema reconciliation. In particular, a recalled two-frame recipe may use
   canonical `first_frame_url`; inferring image-to-video would discard that input.

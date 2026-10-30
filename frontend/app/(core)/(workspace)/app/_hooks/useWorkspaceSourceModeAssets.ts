@@ -42,7 +42,9 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, form
       return null;
     }
     if (currentMode === nextMode && !changingEngine) return { assets };
-    const parked = record.parked ?? readParkedSources(scope, engine.id);
+    // A complete recipe recall can invalidate durable parking while this model
+    // remains mounted. Read that authoritative state before any restoration.
+    const parked = readParkedSources(scope, engine.id);
     const targetParked = changingEngine ? readParkedSources(scope, targetEngine.id) : parked;
     if (!parked || !targetParked) { onWarning('storage'); return null; }
     const fields = getWorkspaceMediaFields(targetEngine);

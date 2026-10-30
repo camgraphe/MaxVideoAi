@@ -48,8 +48,9 @@ function localRenders(entry: typeof cases[number]) {
     videoUrl: 'https://assets.test/result.mp4', startedAt: 0, minReadyAt: 0, priceCents: 1,
   }]);
 }
-async function mount(activeRenderGroups = new Map(), deferImports = false, initialOwner = 'recall-owner', initialFromVideoId: string | null = null, followRoutes = false) {
+async function mount(activeRenderGroups = new Map(), deferImports = false, initialOwner = 'recall-owner', initialFromVideoId: string | null = null, followRoutes = false, initialStorage: Record<string, string> = {}, rememberedJobId: string | null = null) {
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://fixture.test/app' });
+  for (const [key, value] of Object.entries(initialStorage)) dom.window.sessionStorage.setItem(key, value);
   const requests: { url: string; resolve: (response: Response) => void; reject: (error: Error) => void }[] = [];
   const imports: { init: RequestInit; payload: Record<string, unknown>; resolve: (response: Response) => void }[] = [];
   const previous = new Map<string, PropertyDescriptor | undefined>();
@@ -83,7 +84,7 @@ async function mount(activeRenderGroups = new Map(), deferImports = false, initi
     }
   };
   let current!: ReturnType<typeof useGalleryRecallHarness>;
-  function Fixture() { current = useGalleryRecallHarness({ owner, catalogRevision, activeRenderGroups,
+  function Fixture() { current = useGalleryRecallHarness({ owner, catalogRevision, activeRenderGroups, rememberedJobId,
     fromVideoId, searchString: fromVideoId ? `from=${fromVideoId}` : '', replaceRoute }); return null; }
   const root = createRoot(dom.window.document.getElementById('root')!);
   const render = () => root.render(React.createElement(React.StrictMode, null, React.createElement(Fixture)));
@@ -203,6 +204,99 @@ for (const entry of cases) for (const action of ['open', 'continue', 'refine'] a
     await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_inline', entry, true), action));
     assertRestored(view, entry);
     assert.equal(view.current.prompt, `${entry.label} complete prompt${action === 'refine' ? '\n\n// refine here' : ''}`);
+  } finally { await view.close(); }
+});
+
+for (const reload of [false, true]) test(`a complete gallery recipe abandons earlier parked sources${reload ? ' across reload' : ''}`, async () => {
+  let view = await mount();
+  try {
+    await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_old_source', cases[0], true), 'open'));
+    await act(async () => view.current.composer.handleComposerModeToggle(null));
+    assert.equal(view.current.inputAssets.video_url, undefined);
+    const selected = group('job_new_recipe', cases[0], true);
+    selected.hero.job!.settingsSnapshot = {
+      schemaVersion: 1, surface: 'video', engineId: 'wan-3', inputMode: 't2v', prompt: 'An independent new recipe',
+      core: { durationSec: 5, resolution: '720p', aspectRatio: '16:9' }, refs: { inputs: null, elements: null },
+    };
+    await act(async () => view.current.gallery.handleGalleryGroupAction(selected, 'open'));
+    assert.equal(view.current.prompt, 'An independent new recipe');
+    if (reload) {
+      const storage: Record<string, string> = {};
+      for (let index = 0; index < window.sessionStorage.length; index++) {
+        const key = window.sessionStorage.key(index)!;
+        storage[key] = window.sessionStorage.getItem(key)!;
+      }
+      await view.close();
+      view = await mount(new Map(), false, 'recall-owner', null, false, storage);
+    }
+    await act(async () => view.current.composer.handleComposerModeToggle('v2v'));
+    assert.equal(view.current.inputAssets.video_url?.[0], undefined, 'the abandoned source must not join the recalled prompt');
+    assert.equal(view.current.prompt, 'An independent new recipe');
+  } finally { await view.close(); }
+});
+
+test('new explicit gallery references survive invalidation of an earlier parked source', async () => {
+  const view = await mount();
+  try {
+    await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_old_source', cases[0], true), 'open'));
+    await act(async () => view.current.composer.handleComposerModeToggle(null));
+    const selected = group('job_new_source', cases[0], true);
+    selected.hero.job!.settingsSnapshot = {
+      ...snapshot(cases[0], 'A recipe using the new source'),
+      refs: { inputs: [{ ...source, assetId: 'new-owned-source', url: 'https://assets.test/new-owned-source.mp4' }] },
+    };
+    await act(async () => view.current.gallery.handleGalleryGroupAction(selected, 'open'));
+    assert.equal(view.current.inputAssets.video_url?.[0]?.assetId, 'new-owned-source');
+    await act(async () => view.current.composer.handleComposerModeToggle(null));
+    await act(async () => view.current.composer.handleComposerModeToggle('v2v'));
+    assert.equal(view.current.inputAssets.video_url?.[0]?.assetId, 'new-owned-source');
+    assert.equal(view.current.prompt, 'A recipe using the new source');
+  } finally { await view.close(); }
+});
+
+test('a failed parked-source invalidation preserves the prior complete setup', async () => {
+  const view = await mount();
+  const prototype = Object.getPrototypeOf(window.sessionStorage);
+  const removeItem = prototype.removeItem;
+  try {
+    await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_old_source', cases[0], true), 'open'));
+    await act(async () => view.current.composer.handleComposerModeToggle(null));
+    const before = JSON.stringify({ prompt: view.current.prompt, form: view.current.form, assets: view.current.inputAssets });
+    prototype.removeItem = () => { throw new Error('Synthetic storage refusal'); };
+    let applied: boolean | undefined;
+    await act(async () => { applied = view.current.settings.applyVideoSettingsSnapshot({
+      schemaVersion: 1, surface: 'video', engineId: 'wan-3', inputMode: 't2v', prompt: 'A replacement recipe',
+      core: {}, refs: { inputs: null },
+    }); });
+    assert.equal(applied, false);
+    assert.equal(JSON.stringify({ prompt: view.current.prompt, form: view.current.form, assets: view.current.inputAssets }), before);
+  } finally { prototype.removeItem = removeItem; await view.close(); }
+});
+
+for (const legacy of [false, true]) test(`${legacy ? 'legacy preview' : 'active draft'} hydration preserves ordinary parked mode history`, async () => {
+  let view = await mount();
+  try {
+    await act(async () => view.current.gallery.handleGalleryGroupAction(group('job_ordinary_source', cases[0], true), 'open'));
+    await act(async () => view.current.composer.handleComposerModeToggle(null));
+    const storage: Record<string, string> = {};
+    for (let index = 0; index < window.sessionStorage.length; index++) {
+      const key = window.sessionStorage.key(index)!;
+      if (!legacy || key.startsWith('maxvideoai:parked-video-sources:')) storage[key] = window.sessionStorage.getItem(key)!;
+    }
+    await view.close();
+    view = await mount(new Map(), false, 'recall-owner', null, false, storage, legacy ? 'job_legacy_preview' : null);
+    if (legacy) {
+      const request = view.requests.at(-1)!;
+      assert.equal(request?.url, '/api/jobs/job_legacy_preview');
+      await act(async () => request.resolve(new Response(JSON.stringify({
+        ok: true, videoUrl: 'https://assets.test/legacy-result.mp4', status: 'completed',
+        settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId: 'wan-3', inputMode: 't2v',
+          prompt: 'The ordinary restored draft', core: {}, refs: { inputs: null } },
+      }))));
+      assert.equal(view.current.prompt, 'The ordinary restored draft');
+    }
+    await act(async () => view.current.composer.handleComposerModeToggle('v2v'));
+    assert.equal(view.current.inputAssets.video_url?.[0]?.assetId, 'owned-video');
   } finally { await view.close(); }
 });
 

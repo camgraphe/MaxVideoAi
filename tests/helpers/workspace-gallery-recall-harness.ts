@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { getBaseEnginesByCategory } from '../../frontend/src/lib/engines';
 import { useWorkspaceRouteFormState } from '../../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceRouteFormState';
 import { useWorkspaceAssetState } from '../../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetState';
@@ -10,6 +10,7 @@ import { useWorkspaceGalleryActions } from '../../frontend/app/(core)/(workspace
 import type { SelectedVideoPreview } from '../../frontend/lib/video-preview-group';
 import type { Mode } from '../../frontend/types/engines';
 import type { LocalRenderGroup } from '../../frontend/app/(core)/(workspace)/app/_lib/render-persistence';
+import { STORAGE_KEYS } from '../../frontend/app/(core)/(workspace)/app/_lib/workspace-storage';
 
 const catalog = getBaseEnginesByCategory('video');
 const noop = () => {};
@@ -21,7 +22,8 @@ const workflowCopy = { generateVideo: 'Create video', removeAudioToUnlock: 'Remo
 
 /** AppClient's real recall, draft, composer and schema owners in their production order. */
 export function useGalleryRecallHarness({ owner = 'recall-owner' as string | null, catalogRevision = 0, activeRenderGroups = renderGroups,
-  fromVideoId = null as string | null, searchString = '', replaceRoute = noop as (href: string) => void } = {}) {
+  fromVideoId = null as string | null, searchString = '', replaceRoute = noop as (href: string) => void,
+  rememberedJobId = null as string | null } = {}) {
   const catalogRef = useRef({ revision: catalogRevision, engines: catalog });
   if (catalogRef.current.revision !== catalogRevision) {
     catalogRef.current = { revision: catalogRevision, engines: catalog.map(engine => ({ ...engine })) };
@@ -31,6 +33,7 @@ export function useGalleryRecallHarness({ owner = 'recall-owner' as string | nul
   const route = useWorkspaceRouteFormState(owner);
   const storageScope = owner && owner !== 'public' ? owner : 'anon';
   const assets = useWorkspaceAssetState(owner);
+  const readLegacyStorage = useCallback((key: string) => key === STORAGE_KEYS.previewJobId ? rememberedJobId : null, [rememberedJobId]);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
   const [hydratedForScope, setHydratedForScope] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -46,10 +49,11 @@ export function useGalleryRecallHarness({ owner = 'recall-owner' as string | nul
     setSelectedPreview, hydratePendingRendersFromStorage: noop, resetRenderState: noop,
   });
   const settings = useWorkspaceVideoSettings({ ...route, ...assets, engines, engineMap,
-    locale: 'en', accountScope: owner, activeDraftReady: draft.ready, hasActiveSetup: draft.hasActiveSetup,
+    locale: 'en', accountScope: owner, activeDraftReady: draft.ready,
+    hasActiveSetup: rememberedJobId ? false : draft.hasActiveSetup,
     draftRevision: draft.revision, provider: 'fal', fromVideoId, requestedJobId: null, searchString,
     authChecked: Boolean(owner), hydratedForScope, storageScope, effectiveRequestedEngineId: null,
-    effectiveRequestedEngineToken: null, rendersLength: 0, readScopedStorage: readStorage,
+    effectiveRequestedEngineToken: null, rendersLength: 0, readScopedStorage: readLegacyStorage,
     writeScopedStorage: noop, replaceRoute, setSelectedPreview, setNotice,
   });
   const composer = useWorkspaceComposerState({ ...route, ...assets, engines,
