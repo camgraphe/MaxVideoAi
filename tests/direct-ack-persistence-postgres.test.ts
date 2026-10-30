@@ -3,8 +3,12 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { submitKlingDirectGenerateTask } from '../frontend/app/api/generate/_lib/kling-direct-submission';
 import { submitGoogleVertexVeoGenerateTask } from '../frontend/app/api/generate/_lib/google-vertex-veo-submission';
+import { submitLumaAgentsGenerateTask } from '../frontend/app/api/generate/_lib/luma-agents-submission';
+import { submitAlibabaModelStudioGenerateTask } from '../frontend/app/api/generate/_lib/alibaba-model-studio-submission';
 import { KlingDirectError } from '../frontend/src/server/video-providers/kling-direct/errors';
 import { GoogleVertexVeoError } from '../frontend/src/server/video-providers/google-vertex-veo/errors';
+import { LumaAgentsError } from '../frontend/src/server/video-providers/luma-agents/errors';
+import { AlibabaModelStudioError } from '../frontend/src/server/video-providers/alibaba-model-studio/errors';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 import { waitForPostgresBlock } from './helpers/postgres-row-lock';
 
@@ -12,6 +16,8 @@ type QueryFn = <T = unknown>(sql: string, values?: unknown[]) => Promise<T[]>;
 const owners = [
   { key: 'kling', engineId: 'kling-3-turbo-standard', provider: 'kling_direct' },
   { key: 'veo', engineId: 'veo-3-1', provider: 'google_vertex_veo_direct' },
+  { key: 'luma', engineId: 'luma-ray-3-2', provider: 'luma_agents_direct' },
+  { key: 'alibaba', engineId: 'wan-3', provider: 'alibaba_model_studio' },
 ] as const;
 type Owner = typeof owners[number];
 
@@ -49,14 +55,24 @@ function submit(owner: Owner, jobId: string, queryFn: QueryFn, hooks: {
   return owner.key === 'kling'
     ? submitKlingDirectGenerateTask({ ...common, deps: { ...deps,
         getKlingDirectClientFn: (() => ({ createTask: hooks.createTask })) as never } })
-    : submitGoogleVertexVeoGenerateTask({ ...common, deps: { ...deps,
-        getGoogleVertexVeoClientFn: (() => ({ createTask: hooks.createTask })) as never } });
+    : owner.key === 'veo'
+      ? submitGoogleVertexVeoGenerateTask({ ...common, deps: { ...deps,
+          getGoogleVertexVeoClientFn: (() => ({ createTask: hooks.createTask })) as never } })
+      : owner.key === 'luma'
+        ? submitLumaAgentsGenerateTask({ ...common, advancedDirectOnlyEnabled: false, deps: { ...deps,
+            getLumaAgentsClientFn: (() => ({ createGeneration: async (_payload: unknown, options?: { requestId?: string }) => {
+              assert.equal(options?.requestId, jobId);
+              return hooks.createTask();
+            } })) as never } })
+        : submitAlibabaModelStudioGenerateTask({ ...common, deps: { ...deps,
+            getAlibabaModelStudioClientFn: (() => ({ createVideo: hooks.createTask })) as never } });
 }
 
 test('validated direct acknowledgments survive local persistence outages and terminal winners', { timeout: 90_000 }, async t => {
   const db = await startDisposablePostgres('direct-ack-persistence');
   t.after(() => db.cleanup());
-  for (const method of ['warn', 'error', 'info'] as const) t.mock.method(console, method, () => {});
+  const diagnosticLogs: unknown[][] = [];
+  for (const method of ['warn', 'error', 'info'] as const) t.mock.method(console, method, (...args) => { diagnosticLogs.push(args); });
   await createPaidGenerationTestSchema(db.pool);
   await db.pool.query(readFileSync('neon/migrations/21_provider_attempts.sql', 'utf8'));
   const queryFn: QueryFn = async (sql, values) => (await db.pool.query(sql, values)).rows;
@@ -69,12 +85,14 @@ test('validated direct acknowledgments survive local persistence outages and ter
   };
   const read = async (jobId: string) => (await db.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [jobId])).rows[0];
   const receipts = async (jobId: string) => (await db.pool.query('SELECT type,amount_cents,currency FROM app_receipts WHERE job_id=$1 ORDER BY id', [jobId])).rows;
-  const ack = (owner: Owner, id: string) => owner.key === 'kling'
-    ? { providerJobId: id, status: 'queued', raw: { task_id: id } }
-    : { name: id };
+  const ack = (owner: Owner, id: string) => owner.key === 'veo'
+    ? { name: id }
+    : { providerJobId: id, status: 'queued', raw: { task_id: id } };
 
   for (const owner of owners) {
-    for (const scenario of ['attempt_reset', 'attempt_timeout', 'job_reset', 'job_timeout', 'both_saves', 'all_storage', 'read_only', 'metric', 'completed', 'failed', 'identity_winner', 'provider_winner'] as const) {
+    const scenarios = ['attempt_reset', 'attempt_timeout', 'job_reset', 'job_timeout', 'both_saves', 'all_storage', 'read_only', 'metric', 'completed', 'failed', 'identity_winner', 'provider_winner',
+      ...(owner.key === 'luma' || owner.key === 'alibaba' ? ['sanitize_raw', 'sanitize_getter'] : [])];
+    for (const scenario of scenarios) {
       await t.test(`${owner.key}: ${scenario} after ACK cannot submit Fal or roll payment back`, async () => {
         const jobId = `job_ack_${owner.key}_${scenario}`;
         const acceptedId = `${owner.key}-accepted-${scenario}`;
@@ -84,6 +102,7 @@ test('validated direct acknowledgments survive local persistence outages and ter
         let rollbackCalls = 0;
         let attemptSaveTried = false;
         let jobSaveTried = false;
+        const diagnosticStart = diagnosticLogs.length;
         let terminalBefore: Awaited<ReturnType<typeof read>> | undefined;
         const execute: QueryFn = async (sql, values) => {
           const attemptSave = /UPDATE provider_attempts/.test(sql) && values?.[1] === acceptedId;
@@ -113,7 +132,14 @@ test('validated direct acknowledgments survive local persistence outages and ter
                 scenario === 'provider_winner' ? 'fal' : owner.provider, `winner-${acceptedId}`]);
               terminalBefore = await read(jobId);
             }
-            return ack(owner, acceptedId);
+            const task = ack(owner, acceptedId);
+            if (scenario === 'sanitize_raw') Object.defineProperty(task, 'raw', {
+              value: { get echoedInput() { throw new Error('https://private.example/input?X-Amz-Signature=ack-private-secret'); } },
+            });
+            if (scenario === 'sanitize_getter') Object.defineProperty(task, 'raw', {
+              get() { throw new Error('https://private.example/input?X-Amz-Signature=ack-private-secret'); },
+            });
+            return task;
           },
           onFallback: () => { falCalls++; }, onRollback: () => { rollbackCalls++; },
           onMetric: () => { if (scenario === 'metric') throw new Error('Local metric unavailable'); },
@@ -129,10 +155,16 @@ test('validated direct acknowledgments survive local persistence outages and ter
         assert.equal(attemptSaveTried, true);
         assert.equal(jobSaveTried, true, 'attempt-save failure must not skip job-save');
         const row = await read(jobId);
-        const attempts = await queryFn<{ status: string; provider_job_id: string | null }>(
-          'SELECT status,provider_job_id FROM provider_attempts WHERE job_id=$1', [row.id]);
+        const attempts = await queryFn<{ status: string; provider_job_id: string | null; response_snapshot: unknown }>(
+          'SELECT status,provider_job_id,response_snapshot FROM provider_attempts WHERE job_id=$1', [row.id]);
         assert.equal(attempts.length, 1);
         assert.notEqual(attempts[0].status, 'failed');
+        if (scenario.startsWith('sanitize_')) {
+          assert.equal(attempts[0].response_snapshot, null, 'unsafe diagnostics are omitted without losing accepted identity');
+          assert.equal(attempts[0].provider_job_id, acceptedId);
+          assert.doesNotMatch(JSON.stringify({ body: result.body, attempts, logs: diagnosticLogs.slice(diagnosticStart) }),
+            /ack-private-secret|X-Amz-Signature|private\.example/);
+        }
         if (scenario.startsWith('job_') || scenario === 'read_only' || scenario === 'metric') {
           assert.equal(attempts[0].provider_job_id, acceptedId);
         }
@@ -216,6 +248,12 @@ test('validated direct acknowledgments survive local persistence outages and ter
             if (owner.key === 'kling') throw new KlingDirectError(eligible ? 'Account balance not enough' : 'Invalid prompt', {
               status: eligible ? 429 : 400, code: eligible ? '1102' : '1201',
             });
+            if (owner.key === 'luma') throw Object.assign(new LumaAgentsError(eligible ? 'Rate limit exceeded' : 'Invalid prompt', {
+              status: eligible ? 429 : 400, errorClass: eligible ? 'rate_limit' : 'invalid_request',
+            }), { providerJobId: 'untrusted-error-id' });
+            if (owner.key === 'alibaba') throw Object.assign(new AlibabaModelStudioError(eligible ? 'Rate limited' : 'Invalid prompt', {
+              status: eligible ? 429 : 400, body: { code: eligible ? 'Throttling.RateQuota' : 'InvalidParameter', message: 'Offline refusal' },
+            }), { providerJobId: 'untrusted-error-id' });
             throw new GoogleVertexVeoError(eligible ? 'Provider unavailable' : 'Invalid prompt', {
               status: eligible ? 503 : 400, errorClass: eligible ? 'provider_unavailable' : 'invalid_request',
             });

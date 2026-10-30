@@ -1,5 +1,7 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
+import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
 import { getAlibabaModelStudioClient } from '@/server/video-providers/alibaba-model-studio/client';
 import { estimateAlibabaProviderCost } from '@/server/video-providers/alibaba-model-studio/cost';
@@ -363,6 +365,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     queryFn,
   });
 
+  let acceptedTask: NormalizedVideoProviderTask;
   let acceptedProviderJobId: string | null = null;
   let sanitizeDiagnostics: (value: unknown) => unknown = route.family === 'wan3'
     ? sanitizeProviderMediaDiagnostics : value => value;
@@ -394,49 +397,7 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
     sanitizeDiagnostics = transport.sanitize;
     const task = await (deps.getAlibabaModelStudioClientFn ?? getAlibabaModelStudioClient)().createVideo(transport.payload);
     acceptedProviderJobId = task.providerJobId;
-    await markProviderAttemptAccepted({
-      attemptId: attempt.id,
-      providerJobId: acceptedProviderJobId,
-      responseSnapshot: sanitizeDiagnostics(task.raw),
-      queryFn,
-    });
-    const status = task.status === 'running' ? 'running' : 'queued';
-    const progress = task.status === 'running' ? 30 : 10;
-    await queryFn(
-      `UPDATE app_jobs
-          SET status = $2, progress = $3, message = $4, provider = $5,
-              provider_job_id = $6, provisional = FALSE, updated_at = NOW()
-        WHERE job_id = $1`,
-      [params.jobId, status, progress, 'Render submitted.', ALIBABA_MODEL_STUDIO_PROVIDER, acceptedProviderJobId]
-    );
-    params.logMetricFn('accepted', {
-      jobId: params.jobId,
-      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedProviderJobId, providerModel: route.model },
-    });
-    return {
-      ok: true,
-      kind: 'accepted',
-      body: {
-        ok: true,
-        jobId: params.jobId,
-        videoUrl: null,
-        video: null,
-        thumbUrl: params.placeholderThumb,
-        status,
-        progress,
-        pricing: params.pricing,
-        paymentStatus: params.paymentStatus,
-        provider: ALIBABA_MODEL_STUDIO_PROVIDER,
-        providerJobId: acceptedProviderJobId,
-        batchId: params.batchId,
-        groupId: params.groupId,
-        iterationIndex: params.iterationIndex,
-        iterationCount: params.iterationCount,
-        renderIds: params.renderIds,
-        heroRenderId: params.heroRenderId,
-        localKey: params.localKey,
-      },
-    };
+    acceptedTask = task;
   } catch (error) {
     const normalized = classifyAlibabaModelStudioError(error);
     const fallbackEligible = route.fallbackCompatible && shouldFallbackFromAlibabaSubmit({
@@ -512,4 +473,39 @@ export async function submitAlibabaModelStudioGenerateTask(params: {
       },
     };
   }
+  let responseSnapshot: unknown = null;
+  try {
+    responseSnapshot = sanitizeDiagnostics(acceptedTask.raw);
+  } catch {
+    console.warn('[alibaba-model-studio] accepted diagnostics unavailable', { jobId: params.jobId });
+  }
+  const status = acceptedTask.status === 'running' ? 'running' : 'queued';
+  const progress = acceptedTask.status === 'running' ? 30 : 10;
+  return { ok: true, kind: 'accepted', body: await persistDirectProviderAcceptance({
+    jobId: params.jobId, provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId,
+    attemptId: attempt.id, responseSnapshot, status, progress,
+    localKey: params.localKey, queryFn,
+    logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
+      meta: { provider: ALIBABA_MODEL_STUDIO_PROVIDER, providerJobId: acceptedTask.providerJobId, providerModel: route.model } }),
+    acceptedBody: {
+      ok: true,
+      jobId: params.jobId,
+      videoUrl: null,
+      video: null,
+      thumbUrl: params.placeholderThumb,
+      status,
+      progress,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      provider: ALIBABA_MODEL_STUDIO_PROVIDER,
+      providerJobId: acceptedTask.providerJobId,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+    },
+  }) };
 }
