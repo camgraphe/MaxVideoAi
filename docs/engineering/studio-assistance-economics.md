@@ -78,6 +78,33 @@ unchanged.
 
 `assistance-credit-ledger.ts` owns grant creation, purchases, allocation holds,
 settlement and support releases. The account lock serializes these operations.
+The generic missing-media cron must never refund a pack or a legacy assistance
+reservation merely because its identifier has no `app_jobs` row. It excludes
+`studio_assistance_pack` / `studio_assistance` and their `studio-sol-pack:` /
+`studio-assistance:` identities, including when optional assistance tables are
+absent. Where present, exact same-account lot `receipt_id` and call
+`charge_receipt_id` ownership also protects historical receipts without labels.
+These checks read existing schema without initializing it; a present but invalid
+owner table remains an explicit failure.
+
+That cron admits known media surfaces and the exact finishing-tool products;
+unknown explicit surfaces and unknown products on mixed `tool` or unlabelled
+surfaces stay pending review. Unlabelled legacy media
+remains eligible only after the separate-ledger ownership checks. New products
+must establish their settlement owner and cron classification before launch.
+`tests/reconcile-missing-jobs-postgres.test.ts` exercises actual synthetic pack
+purchases, legacy ownership, all media surfaces, optional schema absence and
+concurrent replay. Only inserted refund receipts count in its response.
+Historical charge/refund receipts remain immutable: any accounting repair needs
+an exact reviewed receipt list and its wallet/credit effect; deploying this guard
+does not authorize a customer debit, credit revocation or Stripe action.
+An explicitly authorized erroneous-refund correction uses an appended wallet
+charge with reason `erroneous_refund_credit_reversal`, linked to its original
+refund. The shared receipt classifier records it as a credit reversal rather
+than media spending. A correction without a generation has no `job_id`; it
+cannot become another missing-generation candidate. Purchased lots and original
+receipts stay unchanged.
+
 Reads project an uncreated current-month grant without writing; mutations insert
 it once. The month derives from the database transaction clock in UTC. Settlements
 and releases return unused holds to their original lots, including an expired

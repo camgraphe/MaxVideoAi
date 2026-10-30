@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
+import { FINISHING_QUALITY_CHOICES } from '@/lib/toolbox/finishing';
 import { authorizeCronRequest } from '@/server/vercel-cron';
 
 export const runtime = 'nodejs';
@@ -26,6 +27,10 @@ const maxLookbackMinutesRaw = Number.parseInt(process.env.CRON_RECONCILE_MAX_LOO
 const maxLookbackMinutes = Math.max(minAgeMinutes + 1, Number.isFinite(maxLookbackMinutesRaw) ? maxLookbackMinutesRaw : 180);
 const allowStripeRefunds = (process.env.CRON_RECONCILE_ALLOW_STRIPE_REFUNDS ?? '').trim().toLowerCase() === 'true';
 const CRON_SECRET = (process.env.CRON_SECRET ?? '').trim();
+const mediaSurfaces = ['video', 'image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal'];
+const finishingProducts = Object.entries(FINISHING_QUALITY_CHOICES).flatMap(([tool, qualities]) =>
+  qualities.map(quality => `tool:${tool}:${quality}`)
+);
 
 function unauthorized(reason: string, req: NextRequest) {
   console.warn('[reconcile-orphans] unauthorized', {
@@ -73,7 +78,7 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
   const refundDescription = /^refund\b/i.test(chargeDescription) ? chargeDescription : `Refund ${chargeDescription}`;
 
   // Refund is recorded as a wallet credit; no platform revenue.
-  await query(
+  const inserted = await query<{ id: number }>(
     `INSERT INTO app_receipts (
        user_id, type, amount_cents, currency, description, job_id,
        surface, billing_product_key, pricing_snapshot, application_fee_cents, vendor_account_id,
@@ -86,7 +91,8 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
        $9,$10,$11,
        0,NULL,$12::jsonb
      )
-     ON CONFLICT DO NOTHING`,
+     ON CONFLICT DO NOTHING
+     RETURNING id`,
     [
       row.user_id,
       row.amount_cents,
@@ -106,6 +112,7 @@ async function recordRefund(row: ChargeRow, stripeRefundId: string | null) {
       }),
     ]
   );
+  return inserted.length > 0;
 }
 
 async function reconcile() {
@@ -116,9 +123,14 @@ async function reconcile() {
     );
   }
 
-  // Timeline renders have their own job/settlement owner. Older deployments
-  // may have no export table, so retain product exclusions independently.
-  const exportsTable = (await query<{name: string | null}>("SELECT to_regclass('public.app_timeline_exports') AS name"))[0]?.name;
+  // Separate ledgers own exports, assistance reservations and purchased credits.
+  // Inspect optional schema without initializing it; explicit identity guards
+  // still apply when its tables are absent.
+  const owners = (await query<{ exports: string | null; lots: string | null; calls: string | null }>(`
+    SELECT to_regclass('public.app_timeline_exports') AS exports,
+           to_regclass('public.studio_assistance_credit_lots') AS lots,
+           to_regclass('public.studio_assistance_calls') AS calls
+  `))[0];
   // Find generation charges older than 25 minutes with no matching owner/refund.
   const candidates = await query<ChargeRow>(
     `
@@ -139,17 +151,26 @@ async function reconcile() {
       WHERE r.type = 'charge'
         AND r.job_id IS NOT NULL
         AND COALESCE(r.surface, '') <> 'timeline_export'
-        AND COALESCE(r.billing_product_key, '') <> 'server_render'
+        AND COALESCE(r.billing_product_key, '') NOT IN ('server_render', 'studio_assistance', 'studio_assistance_pack')
+        AND r.job_id NOT LIKE 'studio-sol-pack:%'
+        AND r.job_id NOT LIKE 'studio-assistance:%'
+        AND (
+          r.surface = ANY($3::text[])
+          OR (COALESCE(r.surface, '') IN ('', 'tool') AND r.billing_product_key = ANY($4::text[]))
+          OR (COALESCE(r.surface, '') = '' AND COALESCE(r.billing_product_key, '') = '')
+        )
         AND r.created_at < NOW() - ($1 * INTERVAL '1 minute')
         AND r.created_at >= NOW() - ($2 * INTERVAL '1 minute')
         AND NOT EXISTS (SELECT 1 FROM app_receipts rf WHERE rf.job_id = r.job_id AND rf.type = 'refund')
         AND NOT EXISTS (SELECT 1 FROM app_jobs j WHERE j.job_id = r.job_id)
         AND NOT EXISTS (SELECT 1 FROM fal_queue_log f WHERE f.job_id = r.job_id)
-        ${exportsTable ? 'AND NOT EXISTS (SELECT 1 FROM app_timeline_exports e WHERE e.id = r.job_id AND e.user_id = r.user_id)' : ''}
+        ${owners?.exports ? 'AND NOT EXISTS (SELECT 1 FROM app_timeline_exports e WHERE e.id = r.job_id AND e.user_id = r.user_id)' : ''}
+        ${owners?.lots ? 'AND NOT EXISTS (SELECT 1 FROM studio_assistance_credit_lots l WHERE l.receipt_id = r.id::text AND l.user_id = r.user_id)' : ''}
+        ${owners?.calls ? 'AND NOT EXISTS (SELECT 1 FROM studio_assistance_calls c WHERE c.charge_receipt_id = r.id::text AND c.user_id = r.user_id)' : ''}
       ORDER BY r.created_at ASC
       LIMIT 50
     `,
-    [minAgeMinutes, maxLookbackMinutes]
+    [minAgeMinutes, maxLookbackMinutes, mediaSurfaces, finishingProducts]
   );
 
   if (!candidates.length) {
@@ -173,8 +194,7 @@ async function reconcile() {
       }
     }
     try {
-      await recordRefund(row, stripeRefundId);
-      refunded += 1;
+      if (await recordRefund(row, stripeRefundId)) refunded += 1;
     } catch (error) {
       console.warn('[reconcile-orphans] failed to record refund', { jobId: row.job_id, receiptId: row.id }, error);
     }
