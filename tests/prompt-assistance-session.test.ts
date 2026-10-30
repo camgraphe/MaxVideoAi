@@ -55,7 +55,10 @@ test('session restore is private, read-only, retains the working suggestion and 
  assert.equal(calls,2);
  await pg.pool.query("UPDATE prompt_assistance_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1",[request.sessionId]);
  const unresolved={...request,requestId:randomUUID()};
- await service.sendPromptAssistance('owner',unresolved,{...deps,create:async()=>{throw Error('disconnected');}});
+ let rejectPending!:(error:Error)=>void,startedPending!:()=>void;
+ const pendingReady=new Promise<void>(resolve=>startedPending=resolve);
+ const pendingWork=service.sendPromptAssistance('owner',unresolved,{...deps,create:()=>{startedPending();return new Promise<never>((_resolve,reject)=>rejectPending=reject);}});
+ await pendingReady;
  const pending=await sessions.readPromptSession('owner',request.sessionId,'video:create');assert.equal(pending.pending?.requestId,unresolved.requestId);assert.equal(pending.turns.length,2);
  const {handlePromptAssistance}=await import('../frontend/src/server/prompt-assistance/route-handler');
  const response=await handlePromptAssistance(new NextRequest(`http://localhost/api/prompt-assistance?sessionId=${request.sessionId}&scope=video:create`),{enabled:true,access:async()=>({ok:true,userId:'owner'})});
@@ -64,4 +67,6 @@ test('session restore is private, read-only, retains the working suggestion and 
  await pg.pool.query("INSERT INTO prompt_assistance_sessions(user_id,id,scope) VALUES('full-owner',$1,'video:create')",[fullId]);
  await pg.pool.query("INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model) SELECT 'full-owner',$1,gen_random_uuid(),'hash',$2::jsonb,gen_random_uuid(),'failed','gpt-6-luna' FROM generate_series(1,100)",[fullId,JSON.stringify(request)]);
  assert.equal((await sessions.readPromptSession('full-owner',fullId,'video:create')).status,'full');
+ rejectPending(new Error('disconnected'));await pendingWork;
+ assert.equal((await sessions.readPromptSession('owner',request.sessionId,'video:create')).pending,null,'An ended unanswered call is no longer restored as pending');
 });
