@@ -35,7 +35,7 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'edit': return state.proposal ? { ...state, proposal: { ...state.proposal, text: action.text } } : state;
     case 'send': return state.pending || !action.message.trim() ? state : { ...state, message: '', pending: { id: action.id, revision: state.revision }, messages: [...state.messages, { id: `${action.id}-user`, role: 'user', text: action.message }] };
     case 'reply':
-      return state.pending?.id !== action.id ? state : { ...state, pending: null, proposal: action.text ? { text: action.text, revision: state.pending.revision } : null, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply }] };
+      return state.pending?.id !== action.id ? state : { ...state, pending: null, proposal: action.text ? { text: action.text, revision: state.pending.revision } : state.proposal, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply }] };
     case 'failed': {
       if(state.pending?.id!==action.id)return state;
       const failedId=`${action.id}-user`;

@@ -16,6 +16,20 @@ const engine=(id:string)=>getBaseEngines().find(item=>item.id===id)!;
 const request=(settings:Record<string,unknown>={},mode='t2v',engineId='seedance-2-5')=>promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:0,locale:'en',message:'Refine this shot',draft:{surface:'video',engineId,mode,target:'prompt',text:'A dancer on stage.',settings,references:[]}});
 const asset=(id:string,kind:'image'|'video'|'audio'='image')=>({kind,name:'private filename',url:`https://private.invalid/${id}`,previewUrl:'',size:0,type:'',status:'ready' as const,ref:{type:'asset' as const,assetId:id,kind}});
 
+test('a follow-up edit keeps Milo\'s unapplied suggestion separate from the older editor draft',async()=>{
+  const previous=request({},'t2v');
+  const input=promptAssistanceRequestSchema.parse({
+    ...previous,message:'Replace the dog with a cat',activeSuggestion:'A dog runs behind a slow car.',
+    draft:{...previous.draft,text:'A woman climbs a wall.'},
+  });
+  const context=await buildPromptAssistanceContext('owner',input,{catalog});
+  const params=promptResponseParams({model:'gpt-6-luna',input_json:input} as PromptRequestRow,context,[]);
+  const sent=JSON.parse((params.input as any[]).at(-1).content);
+  assert.equal(sent.currentDraft.text,'A woman climbs a wall.');
+  assert.equal(sent.activeSuggestion,'A dog runs behind a slow car.');
+  assert.match(params.instructions??'',/activeSuggestion.*working text/s);
+});
+
 test('video settings include active advanced controls without hidden-mode fields or private identities',()=>{
   const selected=engine('seedance-2-5');
   const settings=composerAssistanceSettings(selected,'t2v',{durationSec:8,resolution:'1080p',aspectRatio:'9:16',audio:false,extraInputValues:{output_format:'mov',source_job_id:'private-job',video_url:'https://private.invalid/source',imaginary:true}});

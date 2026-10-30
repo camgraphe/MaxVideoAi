@@ -43,7 +43,8 @@ export function usePromptAssistancePreview({ scopeKey, contextKey, live, locale=
   const send = (selection?:Pick<StudioAssistanceStatus,'selectedModel'|'revision'>) => {
     if (!state.message.trim() || state.pending || blocked) return;
     const id=++sequence.current;
-    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target}},id)))return;
+    const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
+    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id)))return;
     sampleDraft.current = draftText;
     dispatch({ type: 'send', id, message: state.message.trim() });
   };
