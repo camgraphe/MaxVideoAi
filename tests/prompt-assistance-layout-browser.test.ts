@@ -36,8 +36,8 @@ test('audio preview applies only to its active text field and retires an intent 
     await expect(page.locator('[data-assistance-message]')).toHaveValue('Keep this voice direction');
     await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
     await page.locator('[data-assistance-message]').fill('Next');await page.locator('[data-assistance-message]').press('Enter');await page.getByRole('button',{name:'Switch to song'}).click();
-    await expect(page.getByRole('tab',{name:'Prompt',exact:true})).toHaveAttribute('aria-selected','true');
-    await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
+    await expect(page.getByRole('tab',{name:'AI assistant',exact:true})).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
     await page.locator('[data-assistance-message]').fill('More rhythm');await page.locator('[data-assistance-message]').press('Enter');await expect(page.getByRole('button',{name:'Use prompt',exact:true})).toBeEnabled();
     await page.locator('[data-assistance-expand]').click();await page.locator('[data-assistance-editor]').fill('Revised music style.');await page.getByRole('button',{name:'Use prompt',exact:true}).click();
     assert.deepEqual(await page.evaluate(()=>{const d=(globalThis as any).currentDraft;return [d.script,d.prompt,d.lyrics]}),['Original speech','Revised music style.','Original lyrics']);

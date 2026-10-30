@@ -57,7 +57,9 @@ async function finishRecorded(row:PromptRequestRow,policy:StudioAssistancePolicy
       reply=null;
       error=cause instanceof Error&&['OUTPUT_INCOMPLETE','OUTPUT_REFUSED','OUTPUT_TOO_LONG'].includes(cause.message)?cause.message:'OUTPUT_INVALID';
     }
-    return (await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
+    const saved=(await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
+    if(!error)await tx.query("UPDATE prompt_assistance_sessions SET expires_at=clock_timestamp()+interval '24 hours' WHERE user_id=$1 AND id=$2",[row.user_id,row.session_id]);
+    return saved;
   }).then(saved=>result(saved,policy));
 }
 export async function sendPromptAssistance(userId:string,raw:PromptAssistanceRequest,deps:Dependencies={}) {

@@ -1,6 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
+import {promptSessionScope} from '@/lib/prompt-assistance/session';
 import {lockAccount,openStudioAssistanceTurn} from '@/server/studio/assistance-ledger';
 import type {StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistance-contract';
@@ -42,8 +43,8 @@ export async function readPromptHistory(row:PromptRequestRow) {
   return previous.reverse().flatMap(item=>[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
 }
 
-export async function ensurePromptSession(userId:string,sessionId:string,draft:{surface:string;mode:string},tx:TransactionQueryExecutor) {
-  const scope=draft.surface==='audio'?`audio:${draft.mode}`:draft.surface;
+export async function ensurePromptSession(userId:string,sessionId:string,draft:{surface:string;mode:string;workflow?:string},tx:TransactionQueryExecutor) {
+  const scope=promptSessionScope(draft);
   await tx.query('INSERT INTO prompt_assistance_sessions(user_id,id,scope) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[userId,sessionId,scope]);
   const session=(await tx.query<{scope:string;active:boolean}>('SELECT scope,expires_at>clock_timestamp() active FROM prompt_assistance_sessions WHERE user_id=$1 AND id=$2',[userId,sessionId]))[0];
   if(!session?.active)throw new Error('SESSION_EXPIRED');

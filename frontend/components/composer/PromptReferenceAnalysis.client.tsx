@@ -7,12 +7,12 @@ import {usePromptReferenceAnalysis} from './usePromptReferenceAnalysis';
 import styles from './prompt-reference-analysis.module.css';
 
 type Draft=PromptAssistanceRequest['draft'];
-export function PromptReferenceAnalysis({scopeKey,draft,model,session,blocked,onBusy,onCompleted}:{
-  scopeKey:string;draft:Draft;model:StudioAssistantModel;session:()=>string;blocked:boolean;
+export function PromptReferenceAnalysis({scopeKey,legacyScopeKey,recoveryOnly,draft,model,session,blocked,onBusy,onCompleted}:{
+  scopeKey:string;legacyScopeKey?:string;recoveryOnly?:boolean;draft:Draft;model:StudioAssistantModel;session:()=>string;blocked:boolean;
   onBusy:(busy:boolean)=>void;onCompleted:()=>void;
 }) {
   const refs=draft.references.filter(item=>item.ref&&item.ref.kind!=='image');
-  const analysis=usePromptReferenceAnalysis(scopeKey,onCompleted,onBusy);
+  const analysis=usePromptReferenceAnalysis(scopeKey,onCompleted,onBusy,legacyScopeKey);
   const [open,setOpen]=useState(false),[selection,setSelection]=useState(''),[modality,setModality]=useState<'visual'|'audio'>('visual');
   const [start,setStart]=useState('0'),[end,setEnd]=useState(''),[quotedContext,setQuotedContext]=useState('');
   const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null),id=useId();
@@ -25,7 +25,7 @@ export function PromptReferenceAnalysis({scopeKey,draft,model,session,blocked,on
   const valid=Number.isFinite(Number(start))&&Number(start)>=0&&(!end||(Number(end)>Number(start)&&Number(end)-Number(start)<=limit));
   useEffect(()=>{if(open)dialog.current?.showModal();else dialog.current?.close();},[open]);
   function close(){setOpen(false);trigger.current?.focus({preventScroll:true});}
-  if(!refs.length&&!analysis.pending)return null;
+  if(!refs.length&&!analysis.pending&&!analysis.status)return null;
   return <>
     <button ref={trigger} type="button" className={styles.trigger} aria-haspopup="dialog" onClick={()=>setOpen(true)}><ScanSearch size={14} aria-hidden/>{analysis.pending?'Reference analysis…':'Analyze references'}</button>
     <dialog ref={dialog} className={styles.dialog} aria-labelledby={`${id}-title`} onCancel={event=>{event.preventDefault();close();}} onClose={()=>setOpen(false)}>
@@ -48,7 +48,7 @@ export function PromptReferenceAnalysis({scopeKey,draft,model,session,blocked,on
       {(state==='unknown'||analysis.recover)?<p role="status">Check the saved analysis before starting another. This does not repeat the analysis.</p>:null}
       {state==='failed'?<p role="alert">The analysis stopped. Recorded usage: {analysis.status?.chargedCredits??'pending'} credits.</p>:null}
       {state==='completed'&&analysis.status?.result?<section className={styles.result}>
-        <p role="status">{analysis.reused?'Saved analysis reused.':'Analysis ready.'} Milo can use it in your next message.</p>
+        <p role="status">{analysis.reused?'Saved analysis reused.':'Analysis ready.'} {recoveryOnly?'Start a new chat to continue.':'Milo can use it in your next message.'}</p>
         <p>{analysis.status.result.summary}</p>
         <p className={styles.note}>{analysis.reused?'No new analysis charge.':`${analysis.status.chargedCredits??0} credits used.`} Coverage: {analysis.status.result.coverage.startSec}–{analysis.status.result.coverage.endSec} s.</p>
       </section>:null}

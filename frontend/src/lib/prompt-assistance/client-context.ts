@@ -23,5 +23,5 @@ export function composerAssistanceReferences(engine:EngineCaps,fields:AssetField
 }
 export function audioAssistanceContext(intent:AudioCreationIntent,draft:AudioCreationDraft):PromptAssistanceDraftContext {
   const request=buildAudioCreationRequest(intent,draft,'en');
-  return {surface:'audio',engineId:getAudioPackConfig(AUDIO_INTENT_PACK[intent]).engineId,mode:AUDIO_INTENT_PACK[intent],settings:assistanceSettings(request),...(intent==='song'?{readOnlyText:{lyrics:draft.lyrics}}:{}),references:intent==='voice'&&draft.reference?[{fieldId:'voice_sample',slot:0,label:'Audio 1',ref:draft.reference.ref??null}]:[]};
+  return {surface:'audio',workflow:intent,engineId:getAudioPackConfig(AUDIO_INTENT_PACK[intent]).engineId,mode:AUDIO_INTENT_PACK[intent],settings:assistanceSettings(request),...(intent==='song'?{readOnlyText:{lyrics:draft.lyrics}}:{}),references:intent==='voice'&&draft.reference?[{fieldId:'voice_sample',slot:0,label:'Audio 1',ref:draft.reference.ref??null}]:[]};
 }

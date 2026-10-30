@@ -9,7 +9,7 @@ import styles from './prompt-assistance.module.css';
 export type PromptAssistancePanelProps = {
   locale: string; modelLabel: string; messages: readonly PreviewMessage[];
   proposal: { text: string; target: 'prompt' | 'script' | 'lyrics'; stale: boolean } | null;
-  message: string; pending: boolean; blocked?: boolean; maxLength?: number;
+  message: string; pending: boolean; blocked?: boolean; inputReadOnly?:boolean; sendBlocked?:boolean; showConversationControl?:boolean; maxLength?: number;
   onMessageChange: (text: string) => void; onSend: () => void;
   onProposalTextChange: (text: string) => void; onApply: () => void;
   onCopy: () => void; references?: ReactNode; messageRef?: RefObject<HTMLTextAreaElement>;
@@ -21,7 +21,7 @@ export type PromptAssistancePanelProps = {
   inputNotice?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, feedback, inputNotice }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, feedback, inputNotice }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
@@ -39,13 +39,13 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   useEffect(() => {
     if (expanded) proposalEditor.current?.focus({ preventScroll: true });
   }, [expanded]);
-  const canSend = Boolean(message.trim()) && !pending && !blocked;
+  const canSend = Boolean(message.trim()) && !pending && !blocked && !sendBlocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
   const reviewLabel = proposal?.target === 'script' ? copy.reviewScript : proposal?.target === 'lyrics' ? copy.reviewLyrics : copy.review;
   const proposalStatus = proposal?.stale ? copy.updateNeeded : tooLong && proposal ? `${proposal.text.length} / ${maxLength}` : copy.ready;
   return <div className={styles.panel} data-assistance-empty={!hasConversation || undefined}>
-    <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={modelLabel}>{copy.forModel} {composerModelLabel(modelLabel)}</span></div><span className={styles.assistanceActions}>{helpControl}{hasConversation ? conversationControl : null}</span></div>
+    <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={modelLabel}>{copy.forModel} {composerModelLabel(modelLabel)}</span></div><span className={styles.assistanceActions}>{helpControl}{hasConversation||showConversationControl ? conversationControl : null}</span></div>
     <div className={styles.conversationStage} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
@@ -72,7 +72,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       <div className={styles.messageField} data-assistance-input-notice={inputNotice ? true : undefined}>
       <label htmlFor={messageId}>{copy.message}</label>
       {inputNotice}
-      <textarea ref={input} id={messageId} data-assistance-message rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
+      <textarea ref={input} id={messageId} data-assistance-message readOnly={inputReadOnly} rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
         event.stopPropagation();
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;

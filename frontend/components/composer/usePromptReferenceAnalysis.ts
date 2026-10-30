@@ -2,23 +2,31 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {studioAnalysisStatusSchema,type StudioAnalysisStatus} from '@/lib/studio/media-analysis-contract';
 
-type Identity={sessionId:string;analysisId:string};
+import {readAnalysisIdentity} from './prompt-chat-storage';
+
 const inFlight=(status:StudioAnalysisStatus|null)=>!!status&&['queued','running','unknown'].includes(status.state);
 /** Durable identity only in storage. Observations and private reference data stay on the server. */
-export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,onBusy:(busy:boolean)=>void) {
-  const owner=useMemo(()=>({key:scopeKey,active:false,busy:false,identity:null as Identity|null}),[scopeKey]);
+export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,onBusy:(busy:boolean)=>void,legacyScopeKey?:string) {
+  const storageKey=`milo-analysis:${scopeKey}`;
+  const legacyStorageKey=legacyScopeKey?`milo-analysis:${legacyScopeKey}`:null;
+  const owner=useMemo(()=>({key:scopeKey,active:false,busy:false,identity:readAnalysisIdentity(storageKey)??(legacyStorageKey?readAnalysisIdentity(legacyStorageKey):null)}),[scopeKey,storageKey,legacyStorageKey]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onCompleted,onBusy});callbacks.current={onCompleted,onBusy};
   const completed=useRef('');
-  const [view,setView]=useState({owner,status:null as StudioAnalysisStatus|null,busy:false,error:null as string|null,recover:false,reused:false});
-  const storageKey=`milo-analysis:${scopeKey}`;
+  const [view,setView]=useState({owner,status:null as StudioAnalysisStatus|null,busy:false,error:null as string|null,recover:!!owner.identity,reused:false});
   const active=()=>owner.active&&current.current===owner;
   function update(values:Partial<typeof view>){if(active())setView(previous=>({...previous,...values,owner}));}
   function save(){try{if(owner.identity)sessionStorage.setItem(storageKey,JSON.stringify(owner.identity));else sessionStorage.removeItem(storageKey);}catch{}}
   function accept(status:StudioAnalysisStatus){
     update({status,recover:false,error:null});
     if(status.state==='completed'&&completed.current!==status.quote.analysisId){completed.current=status.quote.analysisId;callbacks.current.onCompleted();}
-    if(status.state==='completed'||status.state==='failed'){owner.identity=null;save();}
+    if(status.state==='prepared'||status.state==='completed'||status.state==='failed'){
+      if(legacyStorageKey&&readAnalysisIdentity(legacyStorageKey)?.analysisId===status.quote.analysisId)try{sessionStorage.removeItem(legacyStorageKey);}catch{}
+      // A server-confirmed quote has not started work. Keep it in memory for confirmation,
+      // but it must not lock New chat as though usage were still unresolved.
+      if(status.state==='prepared'){try{sessionStorage.removeItem(storageKey);}catch{}}
+      else{owner.identity=null;save();}
+    }
   }
   async function request(body?:unknown,identity=owner.identity){
     if(!active()||owner.busy||(!body&&!identity))return;
@@ -46,13 +54,13 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
   }
   useEffect(()=>{
     owner.active=true;
-    try{const saved=JSON.parse(sessionStorage.getItem(storageKey)??'null');if(/^[a-f0-9-]{36}$/.test(saved?.sessionId)&&/^[a-f0-9-]{36}$/.test(saved?.analysisId))owner.identity=saved;}catch{}
+    if(owner.identity)save();
     if(owner.identity)void request();
     return()=>{owner.active=false;callbacks.current.onBusy(false);};
     // Owner fences late replies on account/workspace changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[owner]);
-  const visible=view.owner===owner?view:{status:null,busy:false,error:null,recover:false,reused:false};
+  const visible=view.owner===owner?view:{status:null,busy:false,error:null,recover:!!owner.identity,reused:false};
   const pending=inFlight(visible.status)||visible.recover;
   useEffect(()=>{callbacks.current.onBusy(visible.busy||pending);},[visible.busy,pending]);
   useEffect(()=>{
