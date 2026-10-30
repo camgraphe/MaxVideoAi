@@ -14,6 +14,7 @@ export const promptAssistanceRequestSchema = z.object({
   sessionId:z.string().uuid(),requestId:z.string().uuid(),draftRevision:z.number().int().nonnegative(),
   assistanceModel:studioAssistantModelSchema.optional(),assistanceRevision:z.number().int().nonnegative().optional(),
   locale:z.enum(['en','fr','es']),message:z.string().trim().min(1).max(8000),draft:promptAssistanceDraftSchema,
+  activeSuggestion:z.string().trim().min(1).max(50000).optional(),
 }).strict().refine(value=>(value.assistanceModel===undefined)===(value.assistanceRevision===undefined),'Model and assistance revision must be provided together.');
 export type PromptAssistanceDraftContext = Omit<z.infer<typeof promptAssistanceDraftSchema>,'text'|'target'>;
 export type PromptAssistanceRequest = z.infer<typeof promptAssistanceRequestSchema>;

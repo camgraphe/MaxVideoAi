@@ -16,6 +16,32 @@ function Fixture(){
  <textarea aria-label="Manual prompt" value={text} onChange={event=>setText(event.target.value)}/></PromptAssistanceComposer>;
 }createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
+test('follow-up edits use Milo\'s latest unapplied suggestion while preserving the manual editor', {timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch({headless:true});
+ try{
+  const page=await browser.newPage();const requests:any[]=[];
+  await page.route('**/api/prompt-assistance',async route=>{
+   if(route.request().method()==='GET'){await route.fulfill({json:{ok:true,result:initialStatus}});return;}
+   const request=route.request().postDataJSON().request;requests.push(request);
+   const text=requests.length===1?'A dog runs behind a car.':'A cat runs behind a car.';
+   await route.fulfill({json:{ok:true,result:{sessionId:request.sessionId,requestId:request.requestId,draftRevision:request.draftRevision,target:'prompt',message:request.message,state:'complete',reply:{reply:'Here is the revised prompt.',text},assistance:initialStatus}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const message=page.getByRole('textbox',{name:'Message Milo',exact:true}),send=page.getByRole('button',{name:'Send message to Milo'});
+  await message.fill('A dog runs behind a car');await send.click();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
+  await message.fill('Replace the dog with a cat');await send.click();await expect.poll(()=>requests.length).toBe(2);
+  assert.equal(requests[1].draft.text,'Keep original detail.');
+  assert.equal(requests[1].activeSuggestion,'A dog runs behind a car.');
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Keep original detail.');
+  await page.getByRole('textbox',{name:'Manual prompt'}).fill('A manually revised scene.');
+  await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await message.fill('Continue with my editor text');await send.click();await expect.poll(()=>requests.length).toBe(3);
+  assert.equal(requests[2].draft.text,'A manually revised scene.');
+  assert.equal(requests[2].activeSuggestion,undefined);
+ }finally{await browser.close();await fixture.close();}
+});
+
 
 test('live composer sends current draft, recovers without resending, and guards late/account replies', {timeout:90_000},async()=>{
  let release:(()=>void)|undefined;

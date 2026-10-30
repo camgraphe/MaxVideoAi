@@ -23,6 +23,16 @@ test('the full edited suggestion is retained and undo is invalidated by an inter
   state = previewReducer(state, { type: 'sync', scope: state.scope, fingerprint: 'edited' });
   assert.equal(canUndoProposal(state), false);
 });
+test('a follow-up question keeps the last unapplied Milo proposal available for the next edit', () => {
+  let state = previewReducer(initial(), { type: 'send', id: 1, message: 'A dog chases a car' });
+  state = previewReducer(state, { type: 'reply', id: 1, text: 'A dog runs behind a slow car.', reply: 'Here is a prompt.' });
+  state = previewReducer(state, { type: 'send', id: 2, message: 'Replace the dog with a cat' });
+  state = previewReducer(state, { type: 'reply', id: 2, text: null, reply: 'Should it be realistic?' });
+  assert.equal(state.proposal?.text, 'A dog runs behind a slow car.');
+  assert.equal(canApplyProposal(state), true);
+  state = previewReducer(state, { type: 'sync', scope: state.scope, fingerprint: 'editor changed' });
+  assert.equal(canApplyProposal(state), false);
+});
 test('workspace changes clear the transcript and a prior request cannot replace a newer one', () => {
   let state = previewReducer(initial(), { type: 'send', id: 1, message: 'First' });
   state = previewReducer(state, { type: 'sync', scope: 'account-a:audio:voice', fingerprint: 'other' });
