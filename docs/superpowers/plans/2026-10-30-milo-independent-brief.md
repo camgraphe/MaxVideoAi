@@ -12,7 +12,7 @@
 
 ## Global constraints
 
-- No provider calls, production mutations, push, merge or deploy.
+- No additional provider calls for the clarification refinement; no production mutations, push, merge or deploy.
 - Synthetic public fixtures only; private user content stays outside Git.
 - Preserve settings authority, active proposal revisions, natural continuation and New chat keeping the editor intact.
 - Implement in the isolated `codex/milo-independent-brief` worktree based on `b46c6db2525f9ea53234f28add4aee9cb968558c`.
@@ -20,7 +20,7 @@
 ## Review focus
 
 - A new creative request must remain independent even with an active proposal.
-- A style-only request must not silently choose the old editor's subject.
+- An ambiguous starting request with existing editor text must ask reuse-versus-new with `text: null`, then honor the answer without asking repeatedly.
 - Explicit editor revisions must still work with an unrelated active proposal.
 - A natural same-idea continuation must not require ritual revision wording.
 - Contract tests cannot establish semantic provider-output quality; report this limit.
@@ -37,3 +37,13 @@
 - [x] Run conversation/context/preview tests and the existing workflow session browser regression. Expected: zero failures; existing restoration and New chat behavior preserved.
 - [x] Run TypeScript, frontend lint, exposure guard and `git diff --check`. Expected: no new errors; report any existing warnings.
 - [x] Review the diff against the spec and commit the isolated change. Root coordinates independent review and corrective provider evaluation before incorporation into PR #571.
+
+## Task 2: Require reuse-or-new clarification for an ambiguous starting request
+
+**Files and interfaces:** Same provider, conversation-contract test, synthetic cases and engineering guide as Task 1. Preserve `promptResponseParams(row, context, history)` and all request fields.
+
+- [x] Add a failing provider-policy contract for nonempty editor plus ambiguous initial request: one concise question in the user's language, `text: null` until clarified, clear new/editor requests bypass it, answers persist through history.
+- [x] Add synthetic clarification→new and clarification→reuse cases in French and Spanish; retain explicit bypass, active proposal and natural-continuation cases.
+- [x] Replace the earlier permission to offer a fresh idea before the reuse choice is resolved. Document the requested rule without changing editor, session or settings behavior.
+- [x] Run conversation/context/preview tests, the existing workflow browser regression, TypeScript, frontend lint, exposure and diff checks. Expected: zero new failures; existing lint warnings reported.
+- [x] Commit a descendant of `69c60fbd70137f83409e9a1dca3de16fa5925aef`. Preserve its private six-sample evaluation as historical evidence; root arranges independent review and separate output evaluation of this refinement before integration.

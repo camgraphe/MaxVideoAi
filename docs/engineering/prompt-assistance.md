@@ -40,13 +40,18 @@ unapplied proposal are optional creative context, not permission to inherit thei
 subject into a new brief. This applies even when `activeSuggestion` is present.
 For a clear follow-up, that suggestion remains the usual working text; an explicit
 editor revision uses `currentDraft.text`, and natural same-chat continuation does
-not require a special revision phrase. A broad style-only brief gets one useful
-question or a fresh idea without silently borrowing the old scene. New chat still
-keeps the manual editor, references and settings physically intact.
+not require a special revision phrase. For an ambiguous initial creative request
+with existing editor text, Milo asks one concise reuse-or-new question in the
+user's language and returns `text: null` until the choice is clarified. The
+question may briefly identify the old prompt's topic. Clear editor revisions and
+independent new briefs proceed directly; the user's answer remains established
+through conversation without repeating the question. New chat still keeps the
+manual editor, references and settings physically intact.
 
 `prompt-assistance-conversation-contract` checks that this intent policy reaches
 every assistance level and preserves separated message/editor/proposal/history
-inputs and authoritative settings. Its contrasting synthetic cases are reusable
+inputs and authoritative settings, including clarification followed by new-idea
+and reuse answers in different languages. Its contrasting synthetic cases are reusable
 for separately authorized output evaluation; offline policy and payload checks do
 not establish model-output quality. No provider calls are part of these tests.
 

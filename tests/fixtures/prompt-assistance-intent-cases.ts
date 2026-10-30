@@ -21,7 +21,27 @@ export const promptAssistanceIntentCases:IntentCase[] = [
     message:'Je voudrais un sketch drôle filmé au téléphone pour les réseaux sociaux.',
     editor:'A deep-sea diver finds a glowing shell inside a sunken ship.',
     history:[],
-    outputExpectation:'Ask one useful subject or gag question, or offer a fresh comic idea; do not silently choose the underwater scene.',
+    outputExpectation:'Ask one concise question in French: reuse the existing prompt or start a new idea. Briefly identifying its underwater topic is allowed in the question. Return text:null; do not silently reuse the scene or propose a fresh gag yet.',
+  },
+  {
+    id:'clarified-new-idea',
+    message:'Une nouvelle idée.',
+    editor:'A deep-sea diver finds a glowing shell inside a sunken ship.',
+    history:[
+      {role:'user',content:'Je voudrais un sketch drôle filmé au téléphone pour les réseaux sociaux.'},
+      {role:'assistant',content:JSON.stringify({reply:'Veux-tu partir du prompt déjà présent ou créer une nouvelle idée ?',text:null})},
+    ],
+    outputExpectation:'Offer a fresh humorous phone-video idea without the underwater subject and without repeating the reuse-or-new question.',
+  },
+  {
+    id:'clarified-reuse-editor',
+    message:'El que ya está.',
+    editor:'A deep-sea diver finds a glowing shell inside a sunken ship.',
+    history:[
+      {role:'user',content:'Quiero un sketch divertido grabado con el teléfono para redes sociales.'},
+      {role:'assistant',content:JSON.stringify({reply:'¿Quieres partir del prompt que ya está en el editor o crear una idea nueva?',text:null})},
+    ],
+    outputExpectation:'Develop the existing diver/shell/ship scene as a humorous phone-style sketch; honor the reuse answer without asking the same question again.',
   },
   {
     id:'independent-brief-with-active-suggestion',

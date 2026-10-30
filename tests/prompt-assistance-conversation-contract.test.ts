@@ -48,6 +48,20 @@ test('every assistance level receives new-brief intent precedence instead of aut
   }
 });
 
+test('an ambiguous starting request with an existing editor requires one reuse-or-new question before a proposal',async()=>{
+  const fixture=promptAssistanceIntentCases.find(entry=>entry.id==='underspecified-style-brief')!;
+  const input=promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:0,locale:'en',message:fixture.message,draft:{surface:'video',workflow:'create',engineId:'wan-3',mode:'t2v',target:'prompt',text:fixture.editor,settings:{durationSec:7,audio:true,aspectRatio:'auto'},references:[]}});
+  const context=await buildPromptAssistanceContext('owner',input,{catalog});
+  const instructions=String(promptResponseParams({model:'gpt-6-luna',input_json:input} as PromptRequestRow,context,[]).instructions);
+  assert.match(instructions,/nonempty currentDraft.text.*(?:unclear|ambiguous).*reuse.*new/i);
+  assert.match(instructions,/one concise question in the user's language/i);
+  assert.match(instructions,/Return text: null until.*(?:choice|intent).*clarified/i);
+  assert.match(instructions,/Explicit.*editor.*independent new brief.*proceed without.*question/i);
+  assert.match(instructions,/user's answer.*conversation.*(?:decision|choice|intent)/i);
+  assert.match(instructions,/do not repeat.*question.*(?:clear|clarified)/i);
+  assert.doesNotMatch(instructions,/ask one focused question.*or offer a fresh idea without silently borrowing the old scene/i);
+});
+
 // This exercises the real request builder, not provider outputs. The semantic
 // expectations in the synthetic cases require separately authorized evaluation.
 test('independent briefs and revisions retain distinct message, editor, proposal and conversation context',async t=>{

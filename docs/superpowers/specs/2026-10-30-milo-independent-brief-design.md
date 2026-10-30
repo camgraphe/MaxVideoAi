@@ -15,9 +15,13 @@ Correct the shared composer provider instructions. Keep the editor and proposal
 as separate context, but remove the rule that automatically uses the editor when
 no active suggestion exists. Resolve intent from meaning and conversation across
 languages, without client-side keyword routing. An independent brief stands on
-its own even when an active suggestion exists. A broad style-only brief may
-receive a fresh idea or one focused question about a consequential missing choice;
-the assistant must not silently choose the old scene for the user.
+its own even when an active suggestion exists. When an initial creative request
+with a nonempty editor leaves reuse-versus-new intent unclear, ask one concise
+question in the user's language: work from the current prompt or start a new one.
+The question may briefly name the current prompt's topic to explain the choice.
+Return `text: null` until that choice is clarified. Explicit editor revisions and
+explicit independent new briefs proceed directly. Honor the user's answer through
+conversation and do not repeat the question once the choice is clear.
 
 For a clear revision or natural continuation, the latest unapplied suggestion
 remains the usual working text. An explicit reference to the manual editor uses
@@ -37,7 +41,8 @@ behavior changes. New chat still preserves the manual editor, references and
 settings. Studio retains its separate conversation owner.
 
 Synthetic provider-boundary cases cover independent briefs with and without an
-active suggestion, underspecified style-only intent, explicit editor revision,
+active suggestion, underspecified style-only intent, the clarification followed by
+new-idea and reuse answers in different languages, explicit editor revision,
 proposal follow-up and natural conversation continuation. These local tests check
 the actual outgoing policy and separated context; they do not claim model-output
 quality. Keep private reported prompts out of source control. No provider calls
