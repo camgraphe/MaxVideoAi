@@ -200,7 +200,12 @@ test('Stripe event recovery survives real process interruption and durable-credi
       await entered.promise;
       const pids = (await db.pool.query("SELECT pid FROM pg_stat_activity WHERE application_name='maxvideoai-stripe-events' AND state='idle in transaction'")).rows;
       assert.equal(pids.length, 1);
-      await db.pool.query('SELECT pg_terminate_backend($1)', [pids[0].pid]);
+      // The default only confirms that SIGTERM was sent. Wait for the backend
+      // to exit so its transaction lock is released before testing recovery.
+      const termination = await db.pool.query<{ terminated: boolean }>(
+        'SELECT pg_terminate_backend($1, 5000) AS terminated', [pids[0].pid],
+      );
+      assert.equal(termination.rows[0]?.terminated, true);
       assert.equal(await api.runStripeEvent(event(id), () => credit(id)), 'handled');
     } finally { release.release(); await rejected; }
     assert.deepEqual(await balance(id), [{ n: 1, cents: 2500 }]);
