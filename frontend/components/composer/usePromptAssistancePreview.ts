@@ -45,9 +45,11 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     const edited=local?.latestRequestId===latestRequestId?local.proposal:undefined;
     const proposal=edited??snapshot?.proposal;
     const proof=edited?.review;
+    const originalDraft=proof&&expected.draft?draftWithReviewSettings(expected.draft,proof.settings):null;
     const reviewContext=proof?.compatible&&proof.requestId===latestRequestId&&expected.applicationContext&&expected.draft&&snapshot?.proposal
+      &&originalDraft
       &&proof.compatibilityFingerprint===await hash(expected.applicationContext.compatibilityKey)
-      &&snapshot.proposal.draftFingerprint===await hash(canonicalPromptDraft(draftWithReviewSettings(expected.draft,proof.settings)))
+      &&snapshot.proposal.draftFingerprint===await hash(canonicalPromptDraft(originalDraft))
       ?{...expected.applicationContext,settings:proof.settings}:undefined;
     const valid=!!proposal&&proposal.draftFingerprint===draftFingerprint&&(!edited||edited.valid);
     return ()=>dispatch({type:'hydrate',scope:scopeKey,fingerprint:expected.fingerprint,compatibilityRevision:expected.compatibilityRevision,message:local?.message??'',

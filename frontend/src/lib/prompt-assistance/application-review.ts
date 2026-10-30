@@ -6,6 +6,7 @@ export type ProposalApplicationContext = {
   settings: PromptAssistanceDraftContext['settings'];
 };
 export const REVIEWABLE_GENERATION_SETTINGS = ['durationSec','durationOption','numFrames','resolution','aspectRatio','fps','iterations','seedLocked','loop','audio','seed','cameraFixed','safetyChecker','cfgScale','shotType'] as const;
+const IMAGE_REVIEWABLE_GENERATION_SETTINGS = ['aspectRatio'] as const;
 export type ApplicationSettingChange = {key:string;before:unknown;current:unknown};
 
 /** Workspace persistence reconstructs objects; property insertion order is not context identity. */
@@ -45,17 +46,29 @@ export function videoPromptReviewKey(context:Record<string,unknown>&{form:object
   });
 }
 
+/** Image parity is deliberately ratio-only; every other control stays exact. */
+export function imagePromptReviewKey(context:Record<string,unknown>):string {
+  return applicationReviewKey({...context,aspectRatio:undefined});
+}
+
+const reviewableSettings=(surface:PromptAssistanceDraftContext['surface']):readonly string[]=>surface==='image'?IMAGE_REVIEWABLE_GENERATION_SETTINGS:surface==='video'?REVIEWABLE_GENERATION_SETTINGS:[];
+
 /** The digest can persist; this full compatibility key never leaves memory. */
 export function proposalApplicationContext(input:{accountKey?:string;scopeKey:string;reviewKey?:string;live?:PromptAssistanceDraftContext;text:string;target:string;perceptionRevision:number}):ProposalApplicationContext|null {
-  if(!input.accountKey||!input.reviewKey||!input.live||input.live.surface!=='video')return null;
+  if(!input.accountKey||!input.reviewKey||!input.live)return null;
+  const {live}=input;
+  // Image edit, masks and reference-guided creation have no qualified local-review path.
+  if(live.surface!=='video'&&(live.surface!=='image'||live.workflow!=='create'||live.mode!=='t2i'||input.target!=='prompt'||live.references.length||live.settings.maskContent!==undefined))return null;
   const settings:PromptAssistanceDraftContext['settings']={},other:PromptAssistanceDraftContext['settings']={};
   for(const [key,value] of Object.entries(input.live.settings)){
-    if((REVIEWABLE_GENERATION_SETTINGS as readonly string[]).includes(key))settings[key]=value;else other[key]=value;
+    if(reviewableSettings(live.surface).includes(key))settings[key]=value;else other[key]=value;
   }
   return {compatibilityKey:applicationReviewKey({...input,live:{...input.live,settings:other}}),settings};
 }
 
 /** Bind cached settings to the original server draft hash, including unreviewable controls. */
-export function draftWithReviewSettings(draft:PromptAssistanceRequest['draft'],settings:ProposalApplicationContext['settings']):PromptAssistanceRequest['draft'] {
-  return {...draft,settings:{...Object.fromEntries(Object.entries(draft.settings).filter(([key])=>!(REVIEWABLE_GENERATION_SETTINGS as readonly string[]).includes(key))),...settings}};
+export function draftWithReviewSettings(draft:PromptAssistanceRequest['draft'],settings:ProposalApplicationContext['settings']):PromptAssistanceRequest['draft']|null {
+  const controls=reviewableSettings(draft.surface);
+  if(Object.keys(settings).some(key=>!controls.includes(key)))return null;
+  return {...draft,settings:{...Object.fromEntries(Object.entries(draft.settings).filter(([key])=>!controls.includes(key))),...settings}};
 }
