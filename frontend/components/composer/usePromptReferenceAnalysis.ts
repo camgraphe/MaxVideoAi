@@ -20,9 +20,12 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
   function accept(status:StudioAnalysisStatus){
     update({status,recover:false,error:null});
     if(status.state==='completed'&&completed.current!==status.quote.analysisId){completed.current=status.quote.analysisId;callbacks.current.onCompleted();}
-    if(status.state==='completed'||status.state==='failed'){
+    if(status.state==='prepared'||status.state==='completed'||status.state==='failed'){
       if(legacyStorageKey&&readAnalysisIdentity(legacyStorageKey)?.analysisId===status.quote.analysisId)try{sessionStorage.removeItem(legacyStorageKey);}catch{}
-      owner.identity=null;save();
+      // A server-confirmed quote has not started work. Keep it in memory for confirmation,
+      // but it must not lock New chat as though usage were still unresolved.
+      if(status.state==='prepared'){try{sessionStorage.removeItem(storageKey);}catch{}}
+      else{owner.identity=null;save();}
     }
   }
   async function request(body?:unknown,identity=owner.identity){

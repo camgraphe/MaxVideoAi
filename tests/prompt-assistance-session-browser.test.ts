@@ -144,8 +144,9 @@ for(const scenario of ['full recovery','failed recovery','slow restore','legacy 
  });
 }
 
-for(const legacy of [false,true]){
- test(`${legacy?'legacy':'expired'} chat retains reference analysis recovery until it is settled`,{timeout:90_000},async()=>{
+for(const scenario of ['expired','legacy','prepared'] as const){
+ const legacy=scenario==='legacy';
+ test(`${scenario} chat retains reference analysis recovery until it is settled`,{timeout:90_000},async()=>{
   const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true,perception:true});const browser=await chromium.launch();
   try{
    const page=await browser.newPage();const sessionId=randomUUID(),analysisId=randomUUID();let completed=false,reads=0;
@@ -161,16 +162,16 @@ for(const legacy of [false,true]){
    });
    await page.route('**/api/prompt-assistance/analyses**',route=>{
     assert.equal(route.request().method(),'GET');assert.equal(new URL(route.request().url()).searchParams.get('sessionId'),sessionId);reads++;
-    return route.fulfill({json:{ok:true,result:{sessionId,reused:false,status:{state:completed?'completed':'unknown',error:null,chargedCredits:completed?2:null,
+    return route.fulfill({json:{ok:true,result:{sessionId,reused:false,status:{state:completed?(scenario==='prepared'?'prepared':'completed'):'unknown',error:null,chargedCredits:completed&&scenario!=='prepared'?2:null,
      quote:{analysisId,ref:{type:'asset',assetId:'test-video',kind:'video'},goal:'Inspect reference',reason:'requested',modality:'visual',startSec:0,endSec:5,maxCredits:10,policyVersion:'test',expiresAt:new Date(Date.now()+900_000).toISOString(),profile:'video-frames-v1',model:'gpt-6.1-terra',confirmationRequired:true},
-     result:completed?{summary:'A dog runs behind a car.',observations:[],coverage:{startSec:0,endSec:5,sampledAtSec:[0,2,5],complete:false}}:null}}}});
+     result:completed&&scenario!=='prepared'?{summary:'A dog runs behind a car.',observations:[],coverage:{startSec:0,endSec:5,sampledAtSec:[0,2,5],complete:false}}:null}}}});
    });
    await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
    await expect(page.getByRole('button',{name:'Reference analysis…'})).toBeVisible();
    await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();
    assert.equal(await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).sessionId,chatKey),sessionId);
    await page.getByRole('button',{name:'Reference analysis…'}).click();completed=true;await page.getByRole('button',{name:'Check analysis'}).click();
-   await expect(page.getByText('A dog runs behind a car.',{exact:true})).toBeVisible();assert.ok(reads>=2);
+   if(scenario==='prepared')await expect(page.getByText('10 credits maximum',{exact:false})).toBeVisible();else await expect(page.getByText('A dog runs behind a car.',{exact:true})).toBeVisible();assert.ok(reads>=2);
    await page.getByRole('button',{name:'Close analysis'}).click();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
    assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),analysisKey),null);
   }finally{await browser.close();await fixture.close();}
