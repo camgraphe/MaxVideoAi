@@ -53,3 +53,12 @@
 - RED → GREEN observed for the missing review action, exact-context/Undo races, durable proof revocation with delayed digests, original-settings/server-fingerprint binding, duration aliases and authored guide behavior.
 - Synthetic real Composer/hooks/CSS fixture; intercepted API; Chromium/WebKit at 320/390/1440; French/Spanish narrow actions; no provider calls or production interactions.
 - Parent coordinates independent review and integration; this branch is not deployed.
+
+
+### Follow-up: acknowledged durable revocation
+
+- [x] Reproduce conditional QuotaExceededError on compatible:false writes in the real browser, with and without a pending request.
+- [x] Return an actual write acknowledgement, then use bounded proof-free/minimal-identity fallbacks; preserve pending message/analysis identities before any discard.
+- [x] Expose complete-storage-refusal accurately and keep local review fail closed across mounted workflow returns; retain epoch fencing and Check reply.
+- [x] Cover silent dropped writes, minimal identity fallback, refusal of removal, pending recovery/reload, and pending analysis ownership.
+- Validation: **58/58 dependent tests pass**, TypeScript, focused ESLint and diff whitespace pass. No provider/production calls.

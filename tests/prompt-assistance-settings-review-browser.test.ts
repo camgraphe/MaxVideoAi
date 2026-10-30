@@ -175,3 +175,66 @@ test('cached original settings must match the server proposal draft fingerprint'
  await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-proposal]')).toBeVisible();await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('9:16');await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);
  }finally{await browser.close();await fixture.close();}
 });
+
+for(const pending of [false,true])test(`refused revocation writes cannot revive review after reload; pending=${pending}`,{timeout:60_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config,assistanceLive:true});const browser=await chromium.launch();
+ try{const page=await browser.newPage();const requests:any[]=[];let waiting=false;const {createHash}=await import('node:crypto');const {canonicalPromptDraft}=await import('../frontend/src/lib/prompt-assistance/session');
+ await page.route('**/api/prompt-assistance*',route=>{
+  const url=new URL(route.request().url());
+  if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:url.searchParams.has('sessionId')?{sessionId:requests[0].sessionId,scope:'video:create',status:'active',turns:[{requestId:requests[0].requestId,message:requests[0].message,reply:'Choose 9:16 in the settings.'}],pending:waiting?{requestId:requests.at(-1).requestId}:null,proposal:{text:proposed,draftFingerprint:createHash('sha256').update(canonicalPromptDraft(requests[0].draft)).digest('hex')}}:initialStatus}});
+  const body=route.request().postDataJSON();if(body.action==='message'){requests.push(body.request);if(requests.length>1){waiting=true;return route.abort('failed');}return route.fulfill({json:complete(body.request)});}
+  assert.equal(body.action,'recover');assert.equal(body.requestId,requests[1].requestId);waiting=false;return route.fulfill({json:{ok:true,result:{sessionId:body.sessionId,requestId:body.requestId,state:'failed',draftRevision:0,target:'prompt',message:requests[1].message,safeToRetry:true,error:'REQUEST_UNANSWERED',assistance:initialStatus}}});
+ });
+ await page.goto(fixture.url);await ask(page);await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
+ const saved=()=>page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","create"]')??'null'));
+ await expect.poll(async()=>(await saved())?.local?.proposal?.review?.compatible).toBe(true);
+ if(pending){await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('A pending refinement');await page.getByRole('button',{name:'Send message to Milo',exact:true}).click();await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();}
+ await page.evaluate(()=>{const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key.startsWith('milo-composer:')&&value.includes('"compatible":false'))throw new DOMException('Synthetic quota refusal','QuotaExceededError');return write.call(this,key,value);};});
+ await page.getByRole('button',{name:'Replace source',exact:true}).click();await page.getByRole('button',{name:'Restore source',exact:true}).click();await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('9:16');
+ assert.notEqual((await saved())?.local?.proposal?.review?.compatible,true,'refused writes must not leave durable eligibility');
+ if(pending)assert.deepEqual((await saved()).pending,{sessionId:requests[1].sessionId,requestId:requests[1].requestId});
+ await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-proposal]')).toBeVisible();
+ await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('9:16');await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);
+ if(pending){await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();await page.getByRole('button',{name:'Check reply',exact:true}).click();await expect(page.getByRole('button',{name:'Check reply',exact:true})).toHaveCount(0);assert.equal(requests.length,2,'recovery must not resend a paid request');}
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('a browser that refuses safe cache revocation shows the limitation and keeps local review blocked',{timeout:60_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config,assistanceLive:true});const browser=await chromium.launch();
+ try{const page=await browser.newPage();await page.route('**/api/prompt-assistance*',route=>route.request().method()==='GET'?route.fulfill({json:{ok:true,result:initialStatus}}):route.fulfill({json:complete(route.request().postDataJSON().request)}));
+ await page.goto(fixture.url);await ask(page);await expect(page.locator('[data-assistance-apply]')).toBeEnabled();await expect.poll(()=>page.evaluate(()=>!!JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","create"]')??'null')?.local?.proposal?.review)).toBe(true);
+ await page.evaluate(()=>{const write=Storage.prototype.setItem,remove=Storage.prototype.removeItem;Storage.prototype.setItem=function(key,value){if(key.startsWith('milo-composer:'))throw new DOMException('Synthetic storage refusal','QuotaExceededError');return write.call(this,key,value);};Storage.prototype.removeItem=function(key){if(key.startsWith('milo-composer:'))throw new DOMException('Synthetic removal refusal','SecurityError');return remove.call(this,key);};});
+ await page.getByRole('button',{name:'Replace source',exact:true}).click();await expect(page.locator('[data-assistance-cache-warning]')).toBeVisible();await expect(page.locator('[data-assistance-cache-warning]')).toContainText('Settings review is unavailable');await page.getByRole('button',{name:'Restore source',exact:true}).click();await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('9:16');await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);
+ }finally{await browser.close();await fixture.close();}
+});
+
+for(const recovery of ['message','analysis'] as const)test(`complete write refusal preserves ${recovery} recovery identity and warns without hiding recovery`,{timeout:60_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config,assistanceLive:true});const browser=await chromium.launch();
+ try{const page=await browser.newPage();const requests:any[]=[];
+ await page.route('**/api/prompt-assistance*',route=>{if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:initialStatus}});const body=route.request().postDataJSON();requests.push(body.request);return requests.length===1?route.fulfill({json:complete(body.request)}):route.abort('failed');});
+ await page.goto(fixture.url);await ask(page);await expect(page.locator('[data-assistance-apply]')).toBeEnabled();await expect.poll(()=>page.evaluate(()=>!!JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","create"]')??'null')?.local?.proposal?.review)).toBe(true);
+ if(recovery==='message'){await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Pending refinement');await page.getByRole('button',{name:'Send message to Milo',exact:true}).click();await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();}
+ const before=await page.evaluate(recovery=>{const key='milo-composer:v2:["owner","video","create"]',saved=JSON.parse(sessionStorage.getItem(key)!);const analysisKey=`milo-analysis:["owner","video","create"]:${saved.sessionId}`;if(recovery==='analysis')sessionStorage.setItem(analysisKey,JSON.stringify({sessionId:saved.sessionId,analysisId:crypto.randomUUID()}));(globalThis as any).cacheRemovals=0;const write=Storage.prototype.setItem,remove=Storage.prototype.removeItem;Storage.prototype.setItem=function(name,value){if(name.startsWith('milo-composer:'))throw new DOMException('Synthetic quota refusal','QuotaExceededError');return write.call(this,name,value);};Storage.prototype.removeItem=function(name){if(name.startsWith('milo-composer:'))(globalThis as any).cacheRemovals++;return remove.call(this,name);};return {sessionId:saved.sessionId,pending:saved.pending,analysisKey,analysis:sessionStorage.getItem(analysisKey)};},recovery);
+ await page.getByRole('button',{name:'Replace source',exact:true}).click();await expect(page.locator('[data-assistance-cache-warning]')).toBeVisible();
+ const after=await page.evaluate(analysisKey=>({saved:JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","create"]')!),analysis:sessionStorage.getItem(analysisKey),removals:(globalThis as any).cacheRemovals}),before.analysisKey);
+ assert.equal(after.saved.sessionId,before.sessionId);assert.deepEqual(after.saved.pending,before.pending);assert.equal(after.analysis,before.analysis);assert.equal(after.removals,0);
+ if(recovery==='message')await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('a failed revocation remains fail closed when returning to the workflow in the same mounted app',{timeout:60_000},async()=>{
+ const scopedSource=source.replace('Change account</button>','Change account</button><button onClick={()=>setOwner(\'owner\')}>Restore account</button>');
+ const fixture=await startWorkspaceReferenceFixture({source:scopedSource,config,assistanceLive:true});const browser=await chromium.launch();
+ try{const page=await browser.newPage();let request:any;const {createHash}=await import('node:crypto');const {canonicalPromptDraft}=await import('../frontend/src/lib/prompt-assistance/session');
+ await page.route('**/api/prompt-assistance*',route=>{const url=new URL(route.request().url());if(route.request().method()==='GET'){
+ if(!url.searchParams.has('sessionId'))return route.fulfill({json:{ok:true,result:initialStatus}});
+ if(url.searchParams.get('sessionId')!==request.sessionId)return route.fulfill({status:404,json:{ok:false,error:'SESSION_NOT_FOUND'}});
+ return route.fulfill({json:{ok:true,result:{sessionId:request.sessionId,scope:'video:create',status:'active',turns:[{requestId:request.requestId,message:request.message,reply:'Choose 9:16 in the settings.'}],pending:null,proposal:{text:proposed,draftFingerprint:createHash('sha256').update(canonicalPromptDraft(request.draft)).digest('hex')}}}});}
+ request=route.request().postDataJSON().request;return route.fulfill({json:complete(request)});});
+ await page.goto(fixture.url);await ask(page);await expect(page.locator('[data-assistance-apply]')).toBeEnabled();await expect.poll(()=>page.evaluate(()=>!!JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","create"]')??'null')?.local?.proposal?.review)).toBe(true);
+ await page.evaluate(()=>{const write=Storage.prototype.setItem,remove=Storage.prototype.removeItem;Storage.prototype.setItem=function(key,value){if(key.startsWith('milo-composer:'))throw new DOMException('Synthetic storage refusal','QuotaExceededError');return write.call(this,key,value);};Storage.prototype.removeItem=function(key){if(key.startsWith('milo-composer:'))throw new DOMException('Synthetic removal refusal','SecurityError');return remove.call(this,key);};});
+ await page.getByRole('button',{name:'Replace source',exact:true}).click();await expect(page.locator('[data-assistance-cache-warning]')).toBeVisible();await page.getByRole('button',{name:'Restore source',exact:true}).click();await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('9:16');
+ await page.getByRole('button',{name:'Change account',exact:true}).click();await page.getByRole('button',{name:'Restore account',exact:true}).click();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+ await expect(page.locator('[data-assistance-proposal]')).toBeVisible();await expect(page.locator('[data-assistance-cache-warning]')).toBeVisible();await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);
+ }finally{await browser.close();await fixture.close();}
+});
