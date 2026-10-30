@@ -1,4 +1,5 @@
 'use client';
+import {videoPromptWorkflow} from '@/lib/prompt-assistance/session';
 import { composerAssistanceReferences, composerAssistanceSettings } from '@/lib/prompt-assistance/client-context';
 import { OwnedGenerationSourcePicker } from './OwnedGenerationSourcePicker.client';
 import { VideoOperationSelector } from './VideoOperationSelector';
@@ -484,7 +485,7 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
-        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video']), live: {surface: 'video', engineId: selectedEngine.id, mode: submissionMode, settings: composerAssistanceSettings(selectedEngine, submissionMode, {...form, cfgScale, shotType, voiceControlEnabled, seed: seedValue, cameraFixed: cameraFixedValue, safetyChecker: safetyCheckerValue, draft: localDraftPreview?.selected,
+        assistance={{ accountKey: sourceAccount?.userId ?? 'anonymous', scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video', videoPromptWorkflow(activeManualMode, selectedEngine.id)]), live: {surface: 'video', workflow: videoPromptWorkflow(activeManualMode, selectedEngine.id), engineId: selectedEngine.id, mode: submissionMode, settings: composerAssistanceSettings(selectedEngine, submissionMode, {...form, cfgScale, shotType, voiceControlEnabled, seed: seedValue, cameraFixed: cameraFixedValue, safetyChecker: safetyCheckerValue, draft: localDraftPreview?.selected,
           ...(klingElements.some(element=>element.frontal||element.video||element.references.some(Boolean))?{subjectIdentities:'unavailable; describe subjects in your message'}:{}),
           ...(ownedGenerationRequired?{sourceGenerationContext:'unavailable; describe the source generation in your message'}:{})}),
           // Keyframe panels own some schema fields outside the compact reference picker.

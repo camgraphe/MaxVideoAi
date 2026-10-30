@@ -2,62 +2,110 @@
 import {assistanceNextActionSchema,type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {promptSessionSnapshotSchema,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
+import {readPromptChat,writePromptChat,promptChatStorageKey,type PromptChatLocal} from './prompt-chat-storage';
 
 type Pending={sessionId:string;requestId:string;uiId:number|null};
-export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void){
-  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false}),[scopeKey]);
+type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined)=>Promise<()=>void>;
+export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;onRestore:Restore}){
+  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:''}),[scopeKey,enabled]);
   const current=useRef(owner);current.current=owner;
-  const callback=useRef(onResult);callback.current=onResult;
-  const [view,setView]=useState({owner,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
-  const storageKey=`milo-composer:${scopeKey}`;
+  const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
+  const [view,setView]=useState({owner,chatId:'',loading:enabled,loadError:false,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
+  const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
-  const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner}));};
-  function save(){try{sessionStorage.setItem(storageKey,JSON.stringify({sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId}:null}));}catch{/* Storage may be disabled; in-memory replay remains available. */}}
+  const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId}));};
+  function save(){if(owner.sessionId)writePromptChat(storageKey,{sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.sessionId,requestId:owner.pending.requestId}:null,local:owner.local});}
+  async function restore(){
+    if(!active()||owner.loading&&owner.controller)return;
+    owner.loading=true;const controller=new AbortController();owner.controller=controller;update({loading:true,loadError:false,error:null});
+    const timeout=window.setTimeout(()=>controller.abort(),15000);
+    try{
+      let snapshot:PromptSessionSnapshot|null=null;
+      if(callbacks.current.options){
+        const url=`/api/prompt-assistance?sessionId=${owner.sessionId}&scope=${encodeURIComponent(callbacks.current.options.scope)}`;
+        const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal});const data=await response.json();
+        if(!response.ok||!data.ok){if(!['SESSION_NOT_FOUND','SESSION_SCOPE_CHANGED'].includes(data.error))throw Error(data.error??'RESTORE_FAILED');}
+        else snapshot=promptSessionSnapshotSchema.parse(data.result);
+        if(!active()||controller.signal.aborted)return;
+        if(snapshot&&(snapshot.sessionId!==owner.sessionId||snapshot.scope!==callbacks.current.options.scope))throw Error('INVALID_RESPONSE');
+        if(snapshot){
+          const done=new Set(snapshot.turns.map(turn=>turn.requestId));
+          if(owner.pending&&done.has(owner.pending.requestId))owner.pending=null;
+          if(snapshot.pending)owner.pending={sessionId:owner.sessionId,requestId:snapshot.pending.requestId,uiId:null};
+          owner.latestRequestId=snapshot.turns.at(-1)?.requestId??'';
+          if(snapshot.status!=='active'&&!owner.pending){
+            const error=snapshot.status==='full'?'SESSION_FULL':'SESSION_EXPIRED';
+            owner.sessionId=crypto.randomUUID();owner.local={message:owner.local?.message??'',proposal:null,latestRequestId:''};owner.latestRequestId='';snapshot=null;update({error});
+          }
+        }
+        const commit=await callbacks.current.options.onRestore(snapshot,owner.local);
+        if(!active()||controller.signal.aborted)return;
+        commit();
+      }
+      save();update({recovery:!!owner.pending,...(owner.pending?{error:'RECOVERY_AVAILABLE'}:{})});
+    }catch(error){if(active()&&!(!owner.active&&controller.signal.aborted))update({loadError:true,error:error instanceof Error&&error.message==='AUTH_REQUIRED'?'AUTH_REQUIRED':'RESTORE_FAILED'});}
+    finally{window.clearTimeout(timeout);if(owner.controller===controller){owner.controller=null;owner.loading=false;update({loading:false});}}
+  }
   useEffect(()=>{
     owner.active=true;
-    if(enabled)try{const saved=JSON.parse(sessionStorage.getItem(storageKey)??'null');if(saved?.pending&&typeof saved.sessionId==='string'&&/^[a-f0-9-]{36}$/.test(saved.sessionId)&&/^[a-f0-9-]{36}$/.test(saved.pending.requestId)){owner.sessionId=saved.sessionId;owner.pending={sessionId:owner.sessionId,requestId:saved.pending.requestId,uiId:null};}}catch{}
-    setView({owner,waiting:false,recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':null,nextAction:null,fundingRevision:null});
-    return()=>{owner.active=false;owner.controller?.abort();};
+    if(enabled){
+      const saved=readPromptChat(storageKey);owner.sessionId=saved?.sessionId??crypto.randomUUID();owner.local=saved?.local;
+      owner.pending=saved?.pending?{...saved.pending,uiId:null}:null;save();
+      setView({owner,chatId:owner.sessionId,loading:!!saved&&!!callbacks.current.options,loadError:false,waiting:false,recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':null,nextAction:null,fundingRevision:null});
+      if(saved&&callbacks.current.options)void restore();else{owner.loading=false;void callbacks.current.options?.onRestore(null,undefined).then(commit=>{if(active())commit();});}
+    }else{owner.loading=false;setView(previous=>({...previous,owner,loading:false}));}
+    return()=>{owner.active=false;owner.controller?.abort();owner.controller=null;};
+    // One owner per account/workflow. Callbacks are read through refs, never a reason to reopen a chat.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[owner,enabled,storageKey]);
   async function perform(body:unknown,pending:Pending){
-    if(!active()||owner.waiting)return;
+    if(!active()||owner.waiting||owner.loading)return;
     owner.waiting=true;owner.controller=new AbortController();update({waiting:true,error:null,nextAction:null});
-    const timeout=window.setTimeout(()=>owner.controller?.abort(),100_000);
+    const controller=owner.controller,timeout=window.setTimeout(()=>controller.abort(),100_000);
     try{
-      const response=await fetch('/api/prompt-assistance',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:owner.controller.signal});
-      const payload=await response.json();
+      const response=await fetch('/api/prompt-assistance',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const payload=await response.json();
       if(!response.ok||!payload.ok){
-        // These route/claim rejections happen before this identity can reserve or dispatch a call.
         const rejected=['ASSISTANCE_SELECTION_CHANGED','INVALID_REQUEST','BODY_TOO_LARGE','SAME_ORIGIN_REQUIRED','AUTH_REQUIRED','UNAUTHORIZED','EMAIL_VERIFICATION_REQUIRED','ASSISTANCE_DISABLED','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED','REQUEST_CLOSED','REQUEST_PENDING'].includes(payload.error);
         if(rejected&&active()){
           owner.pending=null;
-          if(['SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(payload.error))owner.sessionId='';
+          if(['SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(payload.error)){
+            owner.sessionId=crypto.randomUUID();owner.local={message:owner.local?.message||(body as {request?:{message:string}}).request?.message||'',proposal:null,latestRequestId:''};owner.latestRequestId='';
+            const commit=await callbacks.current.options?.onRestore(null,owner.local);if(!active())return;commit?.();
+          }
           save();update({recovery:false,error:payload.error});
-          callback.current({sessionId:pending.sessionId,requestId:pending.requestId,draftRevision:0,target:'prompt',message:'',state:'failed',safeToRetry:true,error:payload.error} as PromptAssistanceResult,pending.uiId);
-          return;
+          callbacks.current.onResult({sessionId:pending.sessionId,requestId:pending.requestId,draftRevision:0,target:'prompt',message:(body as {request?:{message:string}}).request?.message??'',state:'failed',safeToRetry:true,error:payload.error} as PromptAssistanceResult,pending.uiId);return;
         }
         throw new Error(payload.error??'ASSISTANCE_UNAVAILABLE');
       }
       const result=payload.result as PromptAssistanceResult;
       if(result.sessionId!==pending.sessionId||result.requestId!==pending.requestId||!['pending','unknown','complete','failed'].includes(result.state))throw new Error('INVALID_RESPONSE');
-      const action=assistanceNextActionSchema.safeParse(result.nextAction);
-      result.nextAction=action.success?action.data:undefined;
+      const action=assistanceNextActionSchema.safeParse(result.nextAction);result.nextAction=action.success?action.data:undefined;
       if(result.state==='complete')promptAssistanceReplySchema.parse(result.reply);
       if(!active())return;
       if(result.state==='complete'||result.state==='failed'){
-        // Reloads recover the outstanding reply, then start fresh: never send hidden old chat history.
-        if(pending.uiId===null)owner.sessionId='';
-        owner.pending=null;save();update({recovery:false,error:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null,nextAction:result.state==='failed'&&result.safeToRetry===true?result.nextAction??null:null,fundingRevision:result.assistance?.revision??null});callback.current(result,pending.uiId);
+        owner.pending=null;
+        if(result.state==='complete')owner.latestRequestId=result.requestId;
+        save();update({recovery:false,error:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null,nextAction:result.state==='failed'&&result.safeToRetry===true?result.nextAction??null:null,fundingRevision:result.assistance?.revision??null});
+        if(pending.uiId===null&&callbacks.current.options){owner.controller=null;await restore();}
+        else callbacks.current.onResult(result,pending.uiId);
       }else update({recovery:true,error:result.state==='unknown'?'USAGE_UNRESOLVED':'REQUEST_PENDING'});
     }catch(error){if(active())update({recovery:true,error:error instanceof Error&&error.name==='AbortError'?'WAIT_STOPPED':error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});}
-    finally{window.clearTimeout(timeout);owner.waiting=false;update({waiting:false});}
+    finally{window.clearTimeout(timeout);owner.waiting=false;if(owner.controller===controller)owner.controller=null;update({waiting:false});}
   }
   function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number){
-    if(!enabled||!active()||owner.pending||owner.waiting)return false;
-    owner.sessionId ||= crypto.randomUUID();
-    const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;save();update({recovery:false,error:null});
+    if(!enabled||!active()||owner.pending||owner.waiting||owner.loading||view.loadError)return false;
+    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;save();update({recovery:false,error:null});
     void perform({action:'message',request:{...request,sessionId:pending.sessionId,requestId:pending.requestId}},pending);return true;
   }
-  function recover(){if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);}
-  return {session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,recover,stop:()=>owner.controller?.abort(),waiting:view.owner===owner&&view.waiting,recovery:view.owner===owner&&view.recovery,error:view.owner===owner?view.error:null,nextAction:view.owner===owner?view.nextAction:null,fundingRevision:view.owner===owner?view.fundingRevision:null};
+  function newChat(){
+    if(!active()||owner.pending||owner.waiting||owner.loading)return false;
+    owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';save();update({error:null,loadError:false,nextAction:null});return true;
+  }
+  const visible=view.owner===owner?view:{...view,chatId:'',loading:enabled,loadError:false,waiting:false,recovery:false,error:null,nextAction:null,fundingRevision:null};
+  return {...visible,chatKey:`${scopeKey}:${visible.chatId}`,newChat,
+    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>)=>{if(active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};save();}},
+    session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,
+    reload:()=>void restore(),recover:()=>{if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);},stop:()=>owner.controller?.abort(),
+  };
 }

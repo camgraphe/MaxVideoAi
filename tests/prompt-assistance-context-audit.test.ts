@@ -198,3 +198,16 @@ test('Milo gets surface-specific app navigation and answers help without rewriti
   assert.match(String(params.instructions),/Voice.*Language/);
   assert.doesNotMatch(String(params.instructions),/Video to modify/);
 });
+
+test('Milo language policy separates conversation, visual direction and literal speech for every level',async()=>{
+ const input=request();input.locale='fr';input.draft.text='Un chien court derrière une voiture.';
+ const context=await buildPromptAssistanceContext('owner',input,{catalog});
+ for(const model of ['gpt-6-luna','gpt-6.1-terra','gpt-6.1-sol'] as const){
+  const instructions=String(promptResponseParams({model,input_json:input} as PromptRequestRow,context,[]).instructions);
+  assert.match(instructions,/visual.*English.*revisions/i);
+  assert.match(instructions,/dialogue.*captions.*signage/i);
+  assert.match(instructions,/spoken scripts and lyrics.*requested.*language/i);
+  assert.match(instructions,/English-only/);
+  assert.doesNotMatch(instructions,/otherwise preserve the draft's language/);
+ }
+});

@@ -6,6 +6,8 @@ import {studioAssistanceChoiceSchema} from '@/lib/studio/assistance-contract';
 import {promptAssistanceRequestSchema} from '@/lib/prompt-assistance/contract';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {readPromptAssistance,sendPromptAssistance,recoverPromptAssistance} from './service';
+import {readPromptSession} from './sessions';
+import {promptSessionScopeSchema} from '@/lib/prompt-assistance/session';
 
 const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('message'),request:promptAssistanceRequestSchema}).strict(),
@@ -29,6 +31,7 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
   try{
     if(req.method==='GET'){
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
+      if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope')))});
       return json({ok:true,result:session||request?await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)):await readStudioAssistanceStatus(access.userId)});
     }
     const input=bodySchema.parse(await boundedPromptJson(req));
@@ -37,6 +40,6 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);
     if(error instanceof AgentApiError)return json({ok:false,error:error.code,nextAction:error.nextAction},error.code==='ACCOUNT_RESTRICTED'?403:402);
     const code=error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
-    return json({ok:false,error:code},code==='BODY_TOO_LARGE'?413:code==='REQUEST_NOT_FOUND'?404:['ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
+    return json({ok:false,error:code},code==='BODY_TOO_LARGE'?413:['REQUEST_NOT_FOUND','SESSION_NOT_FOUND'].includes(code)?404:['ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
   }
 }

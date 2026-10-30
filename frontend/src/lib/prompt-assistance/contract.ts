@@ -1,15 +1,17 @@
 import {z} from 'zod';
+import {promptWorkflowSchema,promptWorkflows} from './session';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import {studioAssistantModelSchema,type StudioAssistanceStatus,type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 
 const setting = z.union([z.string().max(5000),z.number().finite(),z.boolean(),z.null()]);
 export const promptAssistanceDraftSchema = z.object({
   surface:z.enum(['video','image','audio']), engineId:z.string().min(1).max(100), mode:z.string().min(1).max(60),
+  workflow:promptWorkflowSchema.optional(),
   target:z.enum(['prompt','script','lyrics']), text:z.string().max(50000),
   settings:z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),setting).refine(value=>Object.keys(value).length<=60),
   readOnlyText:z.object({negativePrompt:z.string().max(5000).optional(),lyrics:z.string().max(3500).optional()}).strict().optional(),
   references:z.array(z.object({fieldId:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),slot:z.number().int().min(0).max(99),label:z.string().max(40),ref:toolAssetRefSchema.nullable()}).strict()).max(60),
-}).strict();
+}).strict().refine(value=>!value.workflow||(promptWorkflows[value.surface] as readonly string[]).includes(value.workflow),'Workflow does not belong to this generator.');
 export const promptAssistanceRequestSchema = z.object({
   sessionId:z.string().uuid(),requestId:z.string().uuid(),draftRevision:z.number().int().nonnegative(),
   assistanceModel:studioAssistantModelSchema.optional(),assistanceRevision:z.number().int().nonnegative().optional(),

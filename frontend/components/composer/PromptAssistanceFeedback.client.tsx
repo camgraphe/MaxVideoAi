@@ -1,11 +1,11 @@
 'use client';
 import styles from './prompt-assistance.module.css';
 
-export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onStop}: {
-  error:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;
+export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onStop,onReload}: {
+  error:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
 }) {
   if(!error&&!waiting&&!recovery)return null;
-  const message=recovery
+  const message=error==='RESTORING'?'Restoring this conversation…':error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
     ? 'Check this reply before sending another message. Stopping the wait does not cancel a call already started.'
     : error==='CONTEXT_TOO_LARGE'||error==='DRAFT_TOO_LONG'||error==='BODY_TOO_LARGE'
       ? 'This request is too long. Shorten the draft or message and try again.'
@@ -37,6 +37,6 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
     : error ? 'Milo is unavailable right now. Check your connection or refresh your credits.' : null;
   return <div className={styles.liveFeedback} role="status">
     {message&&<span>{message}</span>}
-    {waiting?<button type="button" onClick={onStop}>Stop waiting</button>:recovery?<button type="button" onClick={onRecover}>Check reply</button>:null}
+    {error==='RESTORE_FAILED'?<button type="button" onClick={onReload}>Retry loading chat</button>:waiting?<button type="button" onClick={onStop}>Stop waiting</button>:recovery?<button type="button" onClick={onRecover}>Check reply</button>:null}
   </div>;
 }

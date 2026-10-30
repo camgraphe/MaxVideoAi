@@ -1,6 +1,6 @@
 # Milo chats by workflow and prompt language
 
-Date: 2026-10-30. Status: proposed for Adrien's review.
+Date: 2026-10-30. Status: approved by Adrien on 2026-10-30; implementation in progress.
 
 ## Intent
 

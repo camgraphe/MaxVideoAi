@@ -16,7 +16,8 @@ const families = [
 export function getPromptAssistanceProfile(engineId:string,mode:string) {
   const selected=families.find(entry=>entry.match.test(engineId));
   return {
-    version:'2026-10-29-v1',reviewedAt:'2026-10-29',family:selected?.family??'capability-guided',
+    version:'2026-10-30-v2',reviewedAt:'2026-10-30',family:selected?.family??'capability-guided',
+    promptLanguage:engineId.startsWith('veo-3-1')?{instructions:'English-only',literalContent:'Keep requested dialogue and visible text in its intended language.',source:'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/veo/3-1-generate?hl=en'}:null,
     provenance:'MaxVideoAI editorial synthesis; technical capabilities override all examples',
     advice:selected?.advice??'Follow the supplied model capabilities. Build a concrete brief with subject, action or desired sound, setting, composition and relevant constraints. Do not claim undocumented model-specific tricks.',
     example:selected?.example??null,

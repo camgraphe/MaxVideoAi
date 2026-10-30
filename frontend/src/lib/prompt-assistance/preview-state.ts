@@ -7,7 +7,9 @@ export type PreviewState = {
   undo: { text: string; revision: number } | null;
 };
 type Action =
-  | { type: 'sync'; scope: string; fingerprint: string }
+  | { type: 'sync'; scope: string; fingerprint: string; keepMode?:boolean }
+  | { type: 'hydrate'; scope:string; fingerprint:string; messages:PreviewMessage[]; message:string; proposal:{text:string;valid:boolean}|null }
+  | { type: 'newChat' }
   | { type: 'mode'; mode: PreviewState['mode'] }
   | { type: 'message' | 'edit'; text: string }
   | { type: 'send'; id: number; message: string }
@@ -28,9 +30,12 @@ export const canUndoProposal = (state: PreviewState) => state.undo !== null && s
 export function previewReducer(state: PreviewState, action: Action): PreviewState {
   switch (action.type) {
     case 'sync':
-      if (action.scope !== state.scope) return createPreviewState(action.scope, action.fingerprint);
+      if (action.scope !== state.scope) return {...createPreviewState(action.scope, action.fingerprint),mode:action.keepMode?state.mode:'prompt'};
       return action.fingerprint === state.fingerprint ? state : { ...state, fingerprint: action.fingerprint, revision: state.revision + 1 };
     case 'mode': return { ...state, mode: action.mode };
+    case 'newChat': return {...createPreviewState(state.scope,state.fingerprint),mode:state.mode};
+    case 'hydrate': return action.scope!==state.scope?state:{...state,pending:null,undo:null,message:action.message,messages:action.messages,
+      proposal:action.proposal?{text:action.proposal.text,revision:action.proposal.valid&&action.fingerprint===state.fingerprint?state.revision:-1}:null};
     case 'message': return { ...state, message: action.text };
     case 'edit': return state.proposal ? { ...state, proposal: { ...state.proposal, text: action.text } } : state;
     case 'send': return state.pending || !action.message.trim() ? state : { ...state, message: '', pending: { id: action.id, revision: state.revision }, messages: [...state.messages, { id: `${action.id}-user`, role: 'user', text: action.message }] };
