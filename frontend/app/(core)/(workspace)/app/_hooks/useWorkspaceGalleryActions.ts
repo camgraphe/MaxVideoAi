@@ -45,8 +45,8 @@ type UseWorkspaceGalleryActionsOptions = {
   sharedPrompt: string | null;
   selectedPreview: SelectedVideoPreview | null;
   compositeOverrideSummary: GroupSummary | null;
-  applyVideoSettingsFromTile: (tile: QuadPreviewTile) => boolean;
-  hydrateVideoSettingsFromJob: (jobId: string | null | undefined) => Promise<void>;
+  applyVideoSettingsFromTile: (tile: QuadPreviewTile, options?: { promptSuffix?: string }) => boolean;
+  hydrateVideoSettingsFromJob: (jobId: string | null | undefined, options?: { promptSuffix?: string; publicExample?: boolean; requireSnapshot?: boolean }) => Promise<void>;
   focusComposer: () => void;
   showNotice: (message: string) => void;
   writeScopedStorage: (base: string, value: string | null) => void;
@@ -94,7 +94,6 @@ export function useWorkspaceGalleryActions({
   focusComposer,
   showNotice,
   writeScopedStorage,
-  setPrompt,
   setActiveGroupId,
   setViewMode,
   setActiveBatchId,
@@ -125,15 +124,14 @@ export function useWorkspaceGalleryActions({
       switch (action) {
         case 'continue': {
           if (!applyVideoSettingsFromTile(tile)) return;
-          void hydrateVideoSettingsFromJob(jobId);
-          setPrompt(tile.prompt);
+          void hydrateVideoSettingsFromJob(jobId, { publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null });
           focusComposer();
           break;
         }
         case 'refine': {
-          if (!applyVideoSettingsFromTile(tile)) return;
-          void hydrateVideoSettingsFromJob(jobId);
-          setPrompt(`${tile.prompt}\n\n// refine here`);
+          const options = { promptSuffix: '\n\n// refine here', publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null };
+          if (!applyVideoSettingsFromTile(tile, options)) return;
+          void hydrateVideoSettingsFromJob(jobId, options);
           focusComposer();
           break;
         }
@@ -153,7 +151,7 @@ export function useWorkspaceGalleryActions({
           break;
         }
         case 'open': {
-          if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(jobId);
+          if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(jobId, { publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null });
           setActiveBatchId(tile.batchId);
           setViewMode('quad');
           setSelectedPreview({
@@ -186,7 +184,6 @@ export function useWorkspaceGalleryActions({
       focusComposer,
       hydrateVideoSettingsFromJob,
       setActiveBatchId,
-      setPrompt,
       setSelectedPreview,
       setViewMode,
       showNotice,
@@ -315,7 +312,7 @@ export function useWorkspaceGalleryActions({
         } catch {
           // ignore storage failures
         }
-        if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(heroJobId);
+        if (applyVideoSettingsFromTile(tile)) void hydrateVideoSettingsFromJob(heroJobId, { publicExample: tile.curated, requireSnapshot: tile.settingsSnapshot == null });
         return;
       }
 

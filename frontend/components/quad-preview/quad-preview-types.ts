@@ -1,11 +1,16 @@
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { PriceFactorKind } from '@/components/PriceFactorsBar';
-import type { EngineCaps, PreflightResponse } from '@/types/engines';
+import type { EngineCaps, Mode, PreflightResponse } from '@/types/engines';
+import type { VideoOperation } from '@/lib/video-operation';
 
 export type QuadTileAction = 'continue' | 'refine' | 'branch' | 'copy' | 'open';
 export type QuadGroupAction = 'open' | 'compare' | 'hero';
 
 export interface QuadPreviewTile {
+  settingsSnapshot?: unknown;
+  generationMode?: Mode | null;
+  operation?: VideoOperation;
+  curated?: boolean;
   observation?: GenerationObservation;
   startedAt?: number;
   etaSource?: 'observed' | 'heuristic';

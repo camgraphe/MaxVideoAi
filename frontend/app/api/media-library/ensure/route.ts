@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset, type MediaKind } from '@/server/media-library';
+import { importPublicRecipeReference } from '@/server/marketing-media/import-reference';
 
 export const runtime = 'nodejs';
 
@@ -22,6 +23,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    if (payload && Object.hasOwn(payload, 'publicVideoId')) {
+      if (typeof payload.publicVideoId !== 'string' || !payload.publicVideoId.trim() || payload.publicVideoId.length > 256) {
+        return NextResponse.json({ ok: false, error: 'PUBLIC_REFERENCE_NOT_AVAILABLE' }, { status: 422 });
+      }
+      const asset = await importPublicRecipeReference({ userId, videoId: payload.publicVideoId.trim(),
+        url, kind: normalizeKind(payload.kind), signal: req.signal });
+      return NextResponse.json({ ok: true, asset });
+    }
     const sourceJobId =
       typeof payload?.jobId === 'string'
         ? payload.jobId

@@ -299,6 +299,10 @@ export function buildQuadTileFromGroupMember(
   fallbackEngineId: string
 ): QuadPreviewTile {
   return {
+    settingsSnapshot: member.job?.settingsSnapshot,
+    generationMode: member.job?.generationMode,
+    operation: member.job?.operation,
+    curated: member.job?.curated,
     localKey: member.localKey ?? member.id,
     batchId: member.batchId ?? group.id,
     id: member.jobId ?? member.id,

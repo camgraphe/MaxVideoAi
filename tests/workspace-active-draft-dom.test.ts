@@ -1120,18 +1120,19 @@ test('ready temporary preview is normalized to its valid original, without persi
 });
 
 for (const initialAuth of ['authed', 'loggedOut']) {
-  test(`gallery recall applies full settings after immediate tile commit (${initialAuth})`, async () => {
+  test(`gallery recall preserves the committed draft until full settings arrive (${initialAuth})`, async () => {
     const view = await mount({ initialAuth });
     try {
+      const before = snapshot(view);
       await act(async () => {
         view.current.videoSettings.applyVideoSettingsFromTile({
           id: 'job_gallery', engineId: 'kling-3-pro', prompt: 'Gallery prompt',
           durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
         });
-        void view.current.videoSettings.hydrateVideoSettingsFromJob('job_gallery');
+        void view.current.videoSettings.hydrateVideoSettingsFromJob('job_gallery', { requireSnapshot: true });
       });
-      assert.equal(view.current.prompt, 'Gallery prompt');
-      assert.equal(view.current.form.engineId, 'kling-3-pro');
+      assert.deepEqual(snapshot(view), before);
+      assert.equal(view.current.videoSettings.recallPending, true);
       await act(async () => view.requests.at(-1)!.resolve(new Response(JSON.stringify({
         ok: true, settingsSnapshot: {
           schemaVersion: 1, surface: 'video', engineId: 'kling-3-pro', inputMode: 't2v',
@@ -1139,6 +1140,7 @@ for (const initialAuth of ['authed', 'loggedOut']) {
           refs: { inputs: [{ slotId: 'image_url', url: 'https://assets.test/frame.jpg', kind: 'image' }] },
         },
       }))));
+      assert.equal(view.current.videoSettings.recallBlocked, false);
       assert.equal(view.current.prompt, 'Full gallery prompt');
       assert.equal(view.current.form.durationSec, 10);
       assert.equal(view.current.form.resolution, '1080p');
@@ -1211,6 +1213,7 @@ for (const [locale, notice] of [
       // A human may still deliberately recall an available model afterward.
       await act(async () => view.current.videoSettings.applyVideoSettingsFromTile({
         id: 'available', engineId: 'kling-3-pro', prompt: 'My explicit new choice',
+        settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId: 'kling-3-pro', inputMode: 't2v', prompt: 'My explicit new choice' },
         durationSec: 5, aspectRatio: '16:9', iterationCount: 1,
       }));
       assert.equal(view.current.form.engineId, 'kling-3-pro');
@@ -1279,9 +1282,15 @@ for (const source of ['history', 'active'] as const) {
             assert.match(view.notices.at(-1)!, /currently unavailable/);
             assert.equal(view.requests.length, initialRequests, 'no detail hydration may follow a refused recall');
           } else {
+            assert.deepEqual(snapshot(view), before, 'incomplete tile metadata cannot replace the committed draft');
+            assert.equal(view.current.videoSettings.recallPending, true);
+            assert.equal(view.requests.length, initialRequests + 1, 'hydrate a successful recall only once');
+            await act(async () => view.requests.at(-1)!.resolve(new Response(JSON.stringify({
+              ok: true, settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId, inputMode: 't2v', prompt: 'Gallery recall prompt' },
+            }))));
+            assert.equal(view.current.videoSettings.recallBlocked, false);
             assert.equal(view.current.form.engineId, engineId);
             assert.equal(view.current.prompt, 'Gallery recall prompt' + (action === 'refine' ? '\n\n// refine here' : ''));
-            assert.equal(view.requests.length, initialRequests + 1, 'hydrate a successful recall only once');
           }
         } finally { await view.close(); }
       });

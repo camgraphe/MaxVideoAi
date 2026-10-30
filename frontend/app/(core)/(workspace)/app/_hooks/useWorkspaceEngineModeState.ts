@@ -21,6 +21,7 @@ import {
   isWorkspaceModeAvailable,
   matchesEngineToken,
   resolveSelectedWorkspaceEngine,
+  WORKSPACE_CREATE_MODES,
 } from '../_lib/workspace-engine-helpers';
 import { STORAGE_KEYS } from '../_lib/workspace-storage';
 import { getWorkspaceMediaFields, workspaceAssetsSupportMode } from '../_lib/workspace-multimodal-workflow';
@@ -284,8 +285,18 @@ export function useWorkspaceEngineModeState({
     ]
   );
 
+  const appliedEngineRequestRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!engineOverride) return;
+    if (!effectiveRequestedEngineToken) {
+      appliedEngineRequestRef.current = null;
+      return;
+    }
+    if (!engineOverride || !authChecked || hydratedForScope !== storageScope || !form) return;
+    const requestKey = JSON.stringify([storageScope, effectiveRequestedEngineToken]);
+    if (appliedEngineRequestRef.current === requestKey) return;
+    // A link selects the initial model once. Later gallery recalls and manual
+    // choices own the draft, including when the catalogue revalidates.
+    appliedEngineRequestRef.current = requestKey;
     setForm((current) => {
       const candidate = current ?? null;
       if (candidate?.engineId === engineOverride.id) return candidate;
@@ -316,7 +327,7 @@ export function useWorkspaceEngineModeState({
       }
       return nextState;
     });
-  }, [engineOverride, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
+  }, [engineOverride, effectiveRequestedEngineToken, authChecked, hydratedForScope, storageScope, form, preserveStoredDraftRef, requestedModeOverrideRef, setForm, writeStorage]);
 
   const appliedWorkflowRequestRef = useRef<string | null>(null);
   useEffect(() => {
@@ -344,35 +355,6 @@ export function useWorkspaceEngineModeState({
       return coerceFormStateForEngineChange(engine, mode, {...current,operation});
     });
   }, [authChecked, engines, form, hydratedForScope, requestedWorkflow, setForm, storageScope]);
-
-  useEffect(() => {
-    const pinnedToken = requestedEngineOverrideTokenRef.current;
-    if (!pinnedToken) return;
-    if (!authChecked) return;
-    if (hydratedForScope !== storageScope) return;
-    if (!selectedEngine) return;
-    if (matchesEngineToken(selectedEngine, pinnedToken)) return;
-    const pinnedEngine = engines.find((engine) => matchesEngineToken(engine, pinnedToken));
-    if (!pinnedEngine) return;
-    setForm((current) => {
-      const candidate = current ?? null;
-      const nextMode = getPreferredEngineModeForEngineRequest({
-        engine: pinnedEngine,
-        requestedMode: requestedModeOverrideRef.current,
-        carryoverMode: candidate?.mode ?? null,
-      });
-      return coerceFormStateForEngineChange(pinnedEngine, nextMode, candidate);
-    });
-  }, [
-    authChecked,
-    engines,
-    hydratedForScope,
-    requestedEngineOverrideTokenRef,
-    requestedModeOverrideRef,
-    selectedEngine,
-    setForm,
-    storageScope,
-  ]);
 
   const handleModeChange = useCallback(
     (mode: Mode) => {
@@ -428,8 +410,13 @@ export function useWorkspaceEngineModeState({
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
       const prepared = prepareModeAssets(mode);
       if (!prepared) return;
-      const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,
-        inputAssets: prepared.assets, klingElements }).implicitMode;
+      // A recalled explicit Create mode can use different canonical fields from
+      // inferred Create. Restore that mode before schema pruning sees its inputs.
+      const restoredCreateMode = prepared.form?.mode;
+      const nextMode = mode ?? (restoredCreateMode && WORKSPACE_CREATE_MODES.includes(restoredCreateMode)
+        && workspaceExecutableModes.includes(restoredCreateMode) ? restoredCreateMode
+        : resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,
+          inputAssets: prepared.assets, klingElements }).implicitMode);
       setForm((current) => {
         const candidate = prepared.form ?? current;
         return coerceFormState(base, nextMode, candidate ? { ...candidate, mode: nextMode,

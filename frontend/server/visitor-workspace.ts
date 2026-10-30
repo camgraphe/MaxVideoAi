@@ -5,7 +5,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { resolveAuthoritativeMembershipTier } from '@/server/membership/user-membership-status';
-import { listStarterPlaylistVideos, type GalleryVideo } from '@/server/videos';
+import { getVideoById, listStarterPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PricingSnapshot } from '@/types/engines';
 import type { Job } from '@/types/jobs';
 import type { JobSurface } from '@/types/billing';
@@ -63,6 +63,8 @@ export function mapVisitorVideoToJob(video: GalleryVideo): Job {
     previewVideoUrl: video.previewVideoUrl ?? undefined,
     createdAt: video.createdAt,
     engineId: video.engineId,
+    generationMode: video.generationMode,
+    operation: video.operation,
     aspectRatio: video.aspectRatio,
     hasAudio: video.hasAudio,
     canUpscale: video.canUpscale,
@@ -87,7 +89,10 @@ export async function listVisitorStarterJobs(limit: number): Promise<Job[]> {
 export async function getVisitorStarterJob(jobId: string): Promise<Job | null> {
   const videos = await listStarterPlaylistVideos(VISITOR_STARTER_LOOKUP_LIMIT);
   const match = videos.find((video) => video.id === jobId);
-  return match ? mapVisitorVideoToJob(match) : null;
+  if (!match) return null;
+  const published = await getVideoById(match.id);
+  if (!published || published.id !== match.id || published.visibility !== 'public' || published.indexable === false) return null;
+  return { ...mapVisitorVideoToJob(published), settingsSnapshot: published.recreationSnapshot };
 }
 
 function buildVisitorImageSurfaceClause(surface: VisitorImageLikeSurface | null | undefined): string {

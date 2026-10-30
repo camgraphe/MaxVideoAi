@@ -1,5 +1,6 @@
 import type { GenerationObservation } from '@/lib/generation-observation';
-import type { PricingSnapshot } from '@/types/engines';
+import type { Mode, PricingSnapshot } from '@/types/engines';
+import type { VideoOperation } from '@/lib/video-operation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 
 export interface Job {
@@ -20,6 +21,8 @@ export interface Job {
   readyVideoUrl?: string | null;
   createdAt: string;
   engineId?: string;
+  generationMode?: Mode | null;
+  operation?: VideoOperation;
   aspectRatio?: string;
   hasAudio?: boolean;
   canUpscale?: boolean;

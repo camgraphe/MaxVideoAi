@@ -28,7 +28,9 @@ export const BASE_SELECT = `
          has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, pricing_snapshot,
          (to_jsonb(app_jobs)->'settings_snapshot') #>> '{core,resolution}' AS requested_resolution,
-         (to_jsonb(app_jobs)->'settings_snapshot')->>'inputMode' AS generation_mode
+         (to_jsonb(app_jobs)->'settings_snapshot')->>'inputMode' AS generation_mode,
+         COALESCE((to_jsonb(app_jobs)->'settings_snapshot')->>'operation',
+           to_jsonb(app_jobs)->>'marketing_recreation_operation') AS generation_operation
   FROM app_jobs
 `;
 
@@ -47,6 +49,8 @@ export const BASE_SELECT_WITH_SETTINGS = `
          aspect_ratio, (${videoOutputDimensionSelect('app_jobs', 'width')}) AS output_width, (${videoOutputDimensionSelect('app_jobs', 'height')}) AS output_height,
          has_audio, can_upscale, created_at, visibility, indexable, featured, featured_order,
          final_price_cents, currency, settings_snapshot,
-         (to_jsonb(app_jobs)->'settings_snapshot')->>'inputMode' AS generation_mode
+         (to_jsonb(app_jobs)->'settings_snapshot')->>'inputMode' AS generation_mode,
+         COALESCE((to_jsonb(app_jobs)->'settings_snapshot')->>'operation',
+           to_jsonb(app_jobs)->>'marketing_recreation_operation') AS generation_operation
   FROM app_jobs
 `;
