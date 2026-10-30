@@ -302,3 +302,72 @@ test('the real input-schema pruner preserves supported Modify references through
   assert.equal(view.w.probe.assets.image_urls[0].assetId,'new-image','a more recent shared reference edit must stay active');
  }finally{await view.close();}
 });
+
+const framedCreateCases=[
+ ['veo-3-1','image_url','last_frame_url'],
+ ['flux-3','start_image_url','end_image_url'],
+ ['gemini-omni-flash','image_url','end_image_url'],
+] as const;
+const frameImage=(fieldId:string)=>({...source(0,fieldId),fieldId,kind:'image',type:'image/png'});
+
+for(const [engineId,firstField,lastField] of framedCreateCases){
+ test(`${engineId}: two-frame Create survives Extend and the real schema pruner`,async()=>{
+  const view=await mount(engineId,'t2v',{[firstField]:[frameImage(firstField)],[lastField]:[frameImage(lastField)]},{},'owner',true);
+  try{
+   assert.equal(view.w.probe.composer.submissionMode,'fl2v');
+   await view.w.fx.act(async()=>view.w.probe.composer.handleComposerModeToggle('extend'));
+   assert.equal(view.w.probe.composer.activeManualMode,'extend');
+   await view.w.fx.act(async()=>view.w.probe.composer.handleComposerModeToggle(null));
+   assert.equal(view.w.probe.composer.activeManualMode,null);
+   assert.equal(view.w.probe.assets[firstField]?.[0]?.assetId,firstField);
+   assert.equal(view.w.probe.assets[lastField]?.[0]?.assetId,lastField);
+   assert.equal(view.w.probe.composer.submissionMode,'fl2v');
+  }finally{await view.close();}
+ });
+
+ test(`${engineId}: two-frame Create survives reload while parked in Extend`,async()=>{
+  const view=await mount(engineId,'t2v',{[firstField]:[frameImage(firstField)],[lastField]:[frameImage(lastField)]},{},'owner',true);
+  const saved:Record<string,string>={};
+  try{
+   assert.equal(view.w.probe.composer.submissionMode,'fl2v');
+   await view.w.fx.act(async()=>view.w.probe.composer.handleComposerModeToggle('extend'));
+   assert.equal(view.w.probe.composer.activeManualMode,'extend');
+   for(let i=0;i<view.w.sessionStorage.length;i++){const key=view.w.sessionStorage.key(i);saved[key]=view.w.sessionStorage.getItem(key);}
+  }finally{await view.close();}
+  const reload=await mount(engineId,'extend',{},saved,'owner',true);
+  try{
+   assert.equal(reload.w.probe.composer.activeManualMode,'extend');
+   await reload.w.fx.act(async()=>reload.w.probe.composer.handleComposerModeToggle(null));
+   assert.equal(reload.w.probe.assets[firstField]?.[0]?.assetId,firstField);
+   assert.equal(reload.w.probe.assets[lastField]?.[0]?.assetId,lastField);
+   assert.equal(reload.w.probe.composer.submissionMode,'fl2v');
+  }finally{await reload.close();}
+ });
+}
+
+for(const [engineId,firstField,lastField] of framedCreateCases){
+ test(`${engineId}: two-frame Create keeps newer frame edits and removals across repeated Extend visits`,async()=>{
+  const view=await mount(engineId,'t2v',{[firstField]:[frameImage(firstField)],[lastField]:[frameImage(lastField)]},{},'owner',true);
+  const visitExtend=async()=>{
+   await view.w.fx.act(async()=>view.w.probe.composer.handleComposerModeToggle('extend'));
+   assert.equal(view.w.probe.composer.activeManualMode,'extend');
+   await view.w.fx.act(async()=>view.w.probe.composer.handleComposerModeToggle(null));
+   assert.equal(view.w.probe.composer.activeManualMode,null);
+  };
+  try{
+   assert.equal(view.w.probe.composer.submissionMode,'fl2v');
+   await visitExtend();
+   const replacement=view.w.JSON.parse(JSON.stringify({...frameImage(lastField),id:'updated-last',assetId:'updated-last'}));
+   await view.w.fx.act(async()=>view.w.probe.commit(previous=>({state:{...previous,[lastField]:[replacement]}})));
+   await visitExtend();
+   assert.equal(view.w.probe.assets[firstField]?.[0]?.assetId,firstField);
+   assert.equal(view.w.probe.assets[lastField]?.[0]?.assetId,'updated-last');
+   assert.equal(view.w.probe.composer.submissionMode,'fl2v');
+   await view.w.fx.act(async()=>view.w.probe.commit(previous=>{const next={...previous};delete next[lastField];return {state:next};}));
+   assert.equal(view.w.probe.assets[lastField],undefined);
+   await visitExtend();
+   assert.equal(view.w.probe.assets[firstField]?.[0]?.assetId,firstField);
+   assert.equal(view.w.probe.assets[lastField],undefined,'an explicitly removed closing frame must not return from an older snapshot');
+  }finally{await view.close();}
+ });
+}

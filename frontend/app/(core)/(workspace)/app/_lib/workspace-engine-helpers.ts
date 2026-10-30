@@ -369,10 +369,12 @@ export function getDefaultEngineMode(engine: EngineCaps): Mode {
   return engine.modes[0] ?? 't2v';
 }
 
+/** Create workflow identity is independent of current generation admission. */
+export const WORKSPACE_CREATE_MODES: readonly Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
+
 /** An explicit model choice starts Create; saved drafts and deep links keep their own mode policy. */
 export function getWorkspaceCreateMode(engine: EngineCaps): Mode | null {
-  const creationModes: Mode[] = ['t2v', 'i2v', 'ref2v', 'fl2v', 'a2v', 'r2v'];
-  return creationModes.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
+  return WORKSPACE_CREATE_MODES.find(mode => isWorkspaceModeAvailable(engine, mode)) ?? null;
 }
 
 export function getPreferredEngineModeForEngineRequest({
