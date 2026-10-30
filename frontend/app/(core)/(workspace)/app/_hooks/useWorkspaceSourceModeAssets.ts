@@ -4,6 +4,7 @@ import type { EngineCaps, Mode } from '@/types/engines';
 import { getVideoWorkflowSourceField, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { fieldAcceptsMode, getWorkspaceMediaFields } from '../_lib/workspace-multimodal-workflow';
 import { revokeAssetPreview } from '../_lib/workspace-assets';
+import { WORKSPACE_CREATE_MODES } from '../_lib/workspace-engine-helpers';
 import type { FormState } from '../_lib/workspace-form-state';
 import type { WorkspaceInputAssetState } from './useWorkspaceAssetState';
 import { readParkedSources, writeParkedSources, type ParkedSourceMode, type ParkedSources } from '../_lib/workspace-parked-source';
@@ -51,7 +52,8 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, form
     const remaining: WorkspaceInputAssetState = { ...assets };
     const currentSourceId = currentMode !== 'create' ? getVideoWorkflowSourceField(engine.inputSchema, currentMode)?.id : undefined;
     const targetSourceId = nextMode !== 'create' ? getVideoWorkflowSourceField(targetEngine.inputSchema, nextMode)?.id : undefined;
-    const createModes: Mode[] = ['t2v', 'i2v', 'ref2v', 'a2v', 'r2v', ...(initialSnapshot?.form?.operation === 'kling-reference' ? ['v2v' as const] : [])];
+    const createModes: readonly Mode[] = initialSnapshot?.form?.operation === 'kling-reference'
+      ? [...WORKSPACE_CREATE_MODES, 'v2v'] : WORKSPACE_CREATE_MODES;
     const acceptsTarget = (id: string) => fields.some(field => field.id === id && (nextMode === 'create'
       ? createModes.some(candidate => targetEngine.modes.includes(candidate) && fieldAcceptsMode(field, candidate))
       : fieldAcceptsMode(field, nextMode)));
@@ -69,7 +71,7 @@ export function useWorkspaceSourceModeAssets({ engine, mode, scope, assets, form
       const updated = { ...saved.assets };
       for (const id of Object.keys(updated)) {
         const shared = !sourceIds.has(id) && currentFields.some(field => field.id === id && (currentMode === 'create'
-          ? (['t2v', 'i2v', 'ref2v', 'a2v', 'r2v'] as Mode[]).some(value => engine.modes.includes(value) && fieldAcceptsMode(field, value))
+          ? WORKSPACE_CREATE_MODES.some(value => engine.modes.includes(value) && fieldAcceptsMode(field, value))
           : fieldAcceptsMode(field, currentMode)));
         if (shared) {
           if (id in assets) updated[id] = assets[id];
