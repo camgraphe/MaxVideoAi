@@ -98,6 +98,12 @@ concurrent replay. Only inserted refund receipts count in its response.
 Historical charge/refund receipts remain immutable: any accounting repair needs
 an exact reviewed receipt list and its wallet/credit effect; deploying this guard
 does not authorize a customer debit, credit revocation or Stripe action.
+An explicitly authorized erroneous-refund correction uses an appended wallet
+charge with reason `erroneous_refund_credit_reversal`, linked to its original
+refund. The shared receipt classifier records it as a credit reversal rather
+than media spending. A correction without a generation has no `job_id`; it
+cannot become another missing-generation candidate. Purchased lots and original
+receipts stay unchanged.
 
 Reads project an uncreated current-month grant without writing; mutations insert
 it once. The month derives from the database transaction clock in UTC. Settlements

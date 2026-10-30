@@ -27,14 +27,15 @@ test('admin render spending excludes payment-credit reversals while wallet balan
              ('customer-1', 'charge', 100, 'USD', '{}'),
              ('customer-1', 'charge', 300, 'USD', '{"reason":"customer_payment_refund_credit_reversal"}'),
              ('customer-1', 'charge', 500, 'USD', '{"reason":"fraud_credit_reversal"}'),
+             ('customer-1', 'charge', 500, 'USD', '{"reason":"erroneous_refund_credit_reversal","original_refund_receipt_id":"synthetic-refund"}'),
              ('customer-1', 'refund', 50, 'USD', NULL)`);
     const { fetchAdminUserOverview } = await import('../frontend/server/admin-users');
     const { fetchAdminMetrics } = await import('../frontend/server/admin-metrics/admin-metrics-main');
     const { fetchAdminMetricsComparison } = await import('../frontend/server/admin-metrics/admin-metrics-comparison');
     const overview = await fetchAdminUserOverview('customer-1');
-    assert.equal(overview.wallet?.balanceCents, 8950);
+    assert.equal(overview.wallet?.balanceCents, 8450);
     assert.equal(overview.wallet?.stats.charge, 300);
-    assert.equal(overview.wallet?.stats.credit_reversal, 800);
+    assert.equal(overview.wallet?.stats.credit_reversal, 1300);
     assert.equal(overview.wallet?.stats.refund, 50);
     const metrics = await fetchAdminMetrics('24h');
     assert.equal(metrics.totals.allTimeRenderChargesUsd, 3);
@@ -43,14 +44,14 @@ test('admin render spending excludes payment-credit reversals while wallet balan
     assert.equal(metrics.monthly.chargesMonthly.reduce((sum, row) => sum + row.amountCents, 0), 300);
     const comparison = await fetchAdminMetricsComparison('24h');
     assert.equal(comparison.current.chargesDaily.reduce((sum, row) => sum + row.amountCents, 0), 300);
-    assert.equal(comparison.current.creditReversalsDaily.reduce((sum, row) => sum + row.amountCents, 0), 800);
+    assert.equal(comparison.current.creditReversalsDaily.reduce((sum, row) => sum + row.amountCents, 0), 1300);
     assert.equal(summarizeWalletFlow({
       topups: comparison.current.topupsDaily,
       grossCharges: comparison.current.chargesDaily,
       refunds: comparison.current.refundsDaily,
       creditReversals: comparison.current.creditReversalsDaily,
-    }).walletBalanceDeltaUsd, 89.5);
-    assert.equal((await db.pool.query('SELECT count(*) FROM app_receipts')).rows[0].count, '6');
+    }).walletBalanceDeltaUsd, 84.5);
+    assert.equal((await db.pool.query('SELECT count(*) FROM app_receipts')).rows[0].count, '7');
     await db.pool.query(`INSERT INTO app_receipts (user_id, type, amount_cents, currency, metadata, created_at)
       VALUES ('customer-1', 'topup', 1000, 'USD', NULL, date_trunc('day', NOW()) - INTERVAL '12 hours'),
              ('customer-1', 'charge', 400, 'USD', '{"reason":"fraud_credit_reversal"}', date_trunc('day', NOW()) - INTERVAL '12 hours')`);
