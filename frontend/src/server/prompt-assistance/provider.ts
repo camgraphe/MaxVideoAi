@@ -38,7 +38,7 @@ export function promptProviderTimeout(deadline:number,maximum=PROMPT_REQUEST_BUD
   return Math.min(remaining,maximum);
 }
 export function promptProviderFailure(error:unknown,elapsedMs:number){
-  return {kind:error instanceof OpenAI.APIConnectionTimeoutError||error instanceof Error&&['AbortError','TimeoutError'].includes(error.name)?'timeout':error instanceof OpenAI.APIConnectionError?'connection':error instanceof OpenAI.APIError?'http':'unknown',elapsedMs,
+  return {kind:error instanceof OpenAI.APIConnectionTimeoutError||error instanceof OpenAI.APIUserAbortError||error instanceof Error&&['AbortError','TimeoutError'].includes(error.name)?'timeout':error instanceof OpenAI.APIConnectionError?'connection':error instanceof OpenAI.APIError?'http':'unknown',elapsedMs,
     ...(error instanceof OpenAI.APIError&&Number.isInteger(error.status)?{status:error.status}:{}),
     ...(error instanceof OpenAI.APIError&&typeof error.requestID==='string'&&/^req_[a-zA-Z0-9_-]{1,128}$/.test(error.requestID)?{providerRequestId:error.requestID}:{})};
 }

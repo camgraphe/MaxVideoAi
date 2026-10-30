@@ -11,6 +11,7 @@ test('provider budget subtracts preparation and refuses a dispatch after the dea
   assert.throws(()=>promptProviderTimeout(40_000),/REQUEST_DEADLINE/);
 });
 test('provider diagnostics classify transport failures without persisting their contents',()=>{
+  assert.deepEqual(promptProviderFailure(new OpenAI.APIUserAbortError(),1234),{kind:'timeout',elapsedMs:1234});
   assert.deepEqual(promptProviderFailure(new OpenAI.APIConnectionTimeoutError(),1234),{kind:'timeout',elapsedMs:1234});
   assert.deepEqual(promptProviderFailure(new Error('secret user text https://private.invalid/token'),1234),{kind:'unknown',elapsedMs:1234});
   const error=new OpenAI.APIError(429,{},'private response body',new Headers({'x-request-id':'req_synthetic'}));
