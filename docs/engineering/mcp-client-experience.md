@@ -777,3 +777,22 @@ reports `35c0f9e9b5d2e1e8ea75c36c8d65d907e54ba7294e14355625c1ca33ca2a24d9`.
 Only the policy fingerprint changed in the curated fixture; all 70 decisions and
 fixture-contract hash `05f0fd68e1f8b0a403760bd68368a1cfeb73d85308750ffbc6808dc7e08cdb04`
 remain unchanged. Offline gates do not establish hosted preparation or deployment.
+
+## Fal delivery recovery — 30 October 2026
+
+MCP quote IDs are UUIDs. Preserve explicit `job_id`/`jobId`/`app_job_id` UUIDs
+through both the authenticated Fal route and its payload mapper; a provider's
+generic `id` or `request_id` UUID is not an application job ID. The callback must
+persist the canonical `fal` provider with its request ID so recovery polling can
+find a job even when its initial model-brand provider was never replaced.
+`tests/mcp-fal-correlation-postgres.test.ts` crosses MCP preparation/confirmation,
+the real submission tracker, authenticated callback and lifecycle persistence,
+including a lost association and repeated confirmations/callbacks. Provider and
+media operations are offline doubles; this is not a paid or real-host canary.
+
+MCP library previews sign owned objects through the configured S3 bucket even
+when stored public URLs use a CDN. Only the private-preview output validator admits
+that exact signing endpoint after source-object ownership checks. Do not broaden
+the shared input-host policy: other consumers may recognize only the configured
+CDN as owned storage. The disposable database preview-ownership test covers this
+configuration, rejects foreign objects and preserves the input-host boundary.

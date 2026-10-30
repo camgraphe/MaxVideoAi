@@ -14,8 +14,13 @@ export function extractIdentifiersFromPayload(payload: unknown): WebhookIdentifi
 
     const record = current as Record<string, unknown>;
     if (!identifiers.jobId) {
-      const candidate = extractStringField(record, ['app_job_id', 'job_id', 'jobId', 'id']);
-      if (candidate && candidate.startsWith('job_')) {
+      const explicitJobId = extractStringField(record, ['app_job_id', 'job_id', 'jobId']);
+      const candidate = explicitJobId ?? extractStringField(record, ['id']);
+      // Authenticated webhook correlation carries MCP UUIDs in an explicit job
+      // field. Generic id/request_id UUIDs identify the provider request instead.
+      const explicitCanonicalId = explicitJobId && (/^tool_upscale_[a-zA-Z0-9_-]+$/.test(explicitJobId)
+        || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(explicitJobId));
+      if (candidate && (candidate.startsWith('job_') || explicitCanonicalId)) {
         identifiers.jobId = candidate;
       } else if (!identifiers.jobId && record === current) {
         const requestIdCandidate = extractStringField(record, ['request_id']);

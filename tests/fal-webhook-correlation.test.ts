@@ -2,6 +2,20 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { transformSync } from 'esbuild';
+import { extractIdentifiersFromPayload } from '../frontend/server/fal-webhook-identifiers';
+
+test('the webhook mapper accepts explicit MCP and upscale job ids without confusing provider UUIDs', () => {
+  const jobId = 'a8d17a6b-44c1-4f6c-9bcc-913930128aad';
+  for (const field of ['job_id', 'jobId', 'app_job_id']) {
+    assert.equal(extractIdentifiersFromPayload({ [field]: jobId }).jobId, jobId);
+    assert.equal(extractIdentifiersFromPayload({ [field]: 'tool_upscale_123' }).jobId, 'tool_upscale_123');
+  }
+  for (const field of ['id', 'request_id']) {
+    assert.equal(extractIdentifiersFromPayload({ [field]: jobId }).jobId, undefined);
+    assert.equal(extractIdentifiersFromPayload({ [field]: 'job_123' }).jobId, 'job_123');
+  }
+  assert.equal(extractIdentifiersFromPayload({ job_id: 'not-a-job' }).jobId, undefined);
+});
 
 function loadRoute() {
   const payloads: Record<string, unknown>[] = [];

@@ -114,6 +114,11 @@ four isolated Studio integrations. It does not include the separately owned
 `tests/integration/` paid-provider scenarios or Playwright specs; those remain
 explicit commands as before.
 
+The deterministic MCP paid-generation scenario is also imported by
+`tests/mcp-paid-generation-postgres.test.ts`, so required database integration CI
+covers its SDK calls, quote claims, wallet accounting, recovery and OAuth isolation.
+It uses disposable PostgreSQL and fake providers; it never submits a paid generation.
+
 To run one CI lane:
 
 ```bash
