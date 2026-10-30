@@ -1,0 +1,25 @@
+# Milo workflow chats
+
+The generator keeps one active chat per authenticated account, surface and visible workflow. Create, Modify, Extend, Reframe, Retake, Keyframes and References are distinct video scopes. Image Create/Edit and audio Voice/Music/Song/SFX/Ambience have their own scopes. Changing the generation model or implicit provider input mode within Create keeps that chat and invalidates an obsolete suggestion.
+
+## Ownership and restoration
+
+`prompt-assistance/session.ts` owns workflow validation and draft canonicalization. `server/prompt-assistance/sessions.ts` projects a bounded display snapshot through the authenticated, no-store session GET. It returns completed turns, the working suggestion/fingerprint and an unresolved request ID, never private reference URLs, raw provider input or billing context. Reads cannot renew sessions or charge credits. A first successful completion renews the existing 24-hour expiry; replay and failures do not. The existing 100-request cap remains.
+
+`usePromptAssistanceTransport` owns the account/workflow lifecycle. Versioned sessionStorage records contain the active UUID, unresolved identity, unsent message and locally edited proposal. They do not contain the transcript or reference URLs. The snapshot rebuilds conversation history; SHA-256 of the canonical current draft protects suggestion application after model/settings/reference changes. Loading is read-only. Scope changes and aborts fence late callbacks.
+
+The same tab restores its active chat after reload. There is no history picker or cross-device recovery. New chat rotates only the active conversation and analysis scope; the manual editor, model, settings and references remain. Exhausted/expired chats retain their replies and suggestion for review until explicit New chat. An unsent retry message survives that transition. Pending exchanges or reference analyses block reset, including their persisted identities before the recovery component mounts.
+
+Deployed legacy clients used broad surface scopes. On first encounter, only their unresolved exchange or analysis identities cross into the new storage. They are settled under the original IDs without importing a mixed transcript or permitting new messages against that old scope. The user then starts a new workflow chat. Recovery never automatically dispatches another model call or repeats an analysis confirmation.
+
+## Language
+
+Milo converses in the user's language. Visual generation instructions default to English, including revisions of drafts in another language. Literal dialogue, captions, signage and names retain the requested wording/language. Voice scripts and lyrics retain their intended spoken/sung language. An explicit alternative instruction language is honored where the generation model supports it; model-specific English-only requirements remain authoritative. These instructions are shared across Lite, Standard and Max; underlying model names stay out of product copy.
+
+## Verification, 2026-10-30
+
+The session and live PostgreSQL tests exercise real disposable PostgreSQL, ownership/scope fences, no-store reads, minimal snapshots, completion-only expiry, replay, failed/pending requests and the session cap. Chromium regressions cover mode/account switching, reload, edited suggestions, New chat, stale context, legacy recovery, failed recovery, a completed 100th request, read-only hydration and expired/legacy reference analysis recovery.
+
+Four synthetic live Lite requests also completed: French conversation with English dog-to-cat revision; English visuals preserving exact French dialogue; a French voice script remaining French; an explicitly requested Spanish visual prompt. Usage across these four checks was 9,332 input and 1,169 output tokens (2,874 cached input). They used direct test provider calls and did not modify a customer's credit ledger. This is sample output evidence, not a broad multilingual quality benchmark.
+
+A fresh whole-change review found four important lifecycle defects. Each was reproduced and corrected: legacy pending identities, exhausted-session result loss, editable input during restoration, and retryable failure text lost during hydration. Focused browser/database checks pass. The initial full validation run reported two affected UI regressions (fixed and rerun), a tariff environment fingerprint mismatch while this worktree was being edited, and an unrelated Turnstile browser assertion. Final CI remains the merge gate; no new database migration is required by this change.

@@ -9,7 +9,7 @@ export type PreviewState = {
 type Action =
   | { type: 'sync'; scope: string; fingerprint: string; keepMode?:boolean }
   | { type: 'hydrate'; scope:string; fingerprint:string; messages:PreviewMessage[]; message:string; proposal:{text:string;valid:boolean}|null }
-  | { type: 'newChat' }
+  | { type: 'newChat'; message?:string }
   | { type: 'mode'; mode: PreviewState['mode'] }
   | { type: 'message' | 'edit'; text: string }
   | { type: 'send'; id: number; message: string }
@@ -33,7 +33,7 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
       if (action.scope !== state.scope) return {...createPreviewState(action.scope, action.fingerprint),mode:action.keepMode?state.mode:'prompt'};
       return action.fingerprint === state.fingerprint ? state : { ...state, fingerprint: action.fingerprint, revision: state.revision + 1 };
     case 'mode': return { ...state, mode: action.mode };
-    case 'newChat': return {...createPreviewState(state.scope,state.fingerprint),mode:state.mode};
+    case 'newChat': return {...createPreviewState(state.scope,state.fingerprint),mode:state.mode,message:action.message??''};
     case 'hydrate': return action.scope!==state.scope?state:{...state,pending:null,undo:null,message:action.message,messages:action.messages,
       proposal:action.proposal?{text:action.proposal.text,revision:action.proposal.valid&&action.fingerprint===state.fingerprint?state.revision:-1}:null};
     case 'message': return { ...state, message: action.text };

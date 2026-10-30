@@ -95,6 +95,6 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, contextKey, l
       input.current?.focus(); input.current?.setSelectionRange(start + insertion.length, start + insertion.length);
     });
   };
-  const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){dispatch({type:'newChat'});return true;}return false;};
+  const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){dispatch({type:'newChat',message:transport.exhausted?state.message:undefined});return true;}return false;};
   return { state, dispatch, input, send, apply, undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
 }
