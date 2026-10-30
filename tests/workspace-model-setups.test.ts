@@ -52,6 +52,19 @@ test('ready originals normalize temporary previews and snapshot arrays are isola
   assert.deepEqual(saved.setup.form.extraInputValues, {});
   assert.deepEqual(parseWorkspaceModelSetup(saved.setup), saved.setup);
 });
+test('legacy ready references with omitted or null previews hydrate with their original URL', () => {
+  for (const preview of [{}, { previewUrl: null }]) {
+    const setup = fixtureSetup();
+    const stored = {
+      ...setup,
+      inputAssets: { video_url: [{ id: 'legacy', fieldId: 'video_url', name: 'Legacy.mp4', kind: 'video',
+        status: 'ready', type: 'video/mp4', size: 12, url: 'https://example.com/legacy.mp4', ...preview }] },
+    };
+    const restored = parseWorkspaceModelSetup(stored);
+    assert.ok(restored);
+    assert.equal(restored.inputAssets.video_url[0]!.previewUrl, 'https://example.com/legacy.mp4');
+  }
+});
 test('saved setups retain each explicit video operation without changing legacy Reference identity', () => {
   for (const { engine } of listFalEngines()) for (const operation of Object.values(engine.operationCaps ?? {})) {
     if (!operation) continue;
