@@ -40,7 +40,11 @@ carry mode and operation without loading every recipe or its references.
 - The visible workflow selection follows the model's offered buttons, separately
   from generation mode and schema. Create includes unlisted creation submodes;
   an offered Reference button remains distinct. Clicking the already selected
-  Create group leaves the generation recipe intact.
+  Create group leaves the generation recipe intact. Source workflows and unknown
+  modes never fall back to Create. LTX 2.3 Retake retains its separate surface
+  action and can exit through that action or Create without losing its parked clip.
+  The 2026-10-30 offline catalog audit covered 39 video engines and 149 authored
+  mode scenarios; Retake was the only unoffered non-creation manual workflow.
 - Public recipes never import private source job/output bindings. Luma Extend
   and Flux Draft Enhance still require an eligible personal source selection.
   Personal recall retains its original owned-source identity.

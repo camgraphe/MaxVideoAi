@@ -181,3 +181,58 @@ test('the visible Create control preserves canonical recalled frames through rep
     }
   } finally { await fixture.close(); }
 });
+
+test('LTX Retake exits through the real surface action or Create while retaining its parked source', { timeout: 180000 }, async () => {
+  const retakeJob = { jobId: 'job_ltx_retake', engineId: 'ltx-2-3', engineLabel: 'LTX Retake', durationSec: 5,
+    aspectRatio: '16:9', prompt: 'Reinterpret this clip', createdAt: '2026-10-01T00:00:00Z', status: 'completed',
+    settingsSnapshot: { schemaVersion: 1, surface: 'video', engineId: 'ltx-2-3', inputMode: 'retake',
+      prompt: 'Reinterpret this clip', core: { durationSec: 5, resolution: '1080p', aspectRatio: '16:9' },
+      refs: { inputs: [{ slotId: 'video_url', kind: 'video', assetId: 'retake-source',
+        url: 'https://assets.test/retake-source.mp4', width: 1280, height: 720, durationSec: 8, size: 4096, type: 'video/mp4' }] } },
+  };
+  const harnessSource = (await readFile('tests/helpers/workspace-gallery-recall-harness.ts', 'utf8')).replaceAll('../../frontend/', './');
+  const source = harnessSource + '\n' + galleryRecallBrowserSource.replace("import {useGalleryRecallHarness} from '../tests/helpers/workspace-gallery-recall-harness';", '');
+  const fixture = await startWorkspaceReferenceFixture({ source, config: { jobs: [retakeJob], fullSurface: true },
+    hostModules: { '@/lib/authFetch': 'export const authFetch=(url,options)=>fetch(url,options);',
+      '@/lib/supabaseClientLoader': `export const loadSupabaseClient=async()=>({auth:{getSession:async()=>({data:{session:{access_token:'synthetic-owned',user:{id:'recall-owner'}}},error:null})}});` },
+  });
+  try {
+    for (const browserType of [chromium, webkit]) {
+      const browser = await browserType.launch({ headless: true });
+      try {
+        const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } });
+        const errors: string[] = [], forbidden: string[] = [];
+        page.on('pageerror', error => errors.push(error.message));
+        await page.route('**/*', route => {
+          const request = route.request(), url = new URL(request.url());
+          if (request.method() !== 'GET') { forbidden.push(request.method()); return route.abort(); }
+          if (url.hostname === 'assets.test') return route.fulfill({ contentType: 'video/mp4', body: '' });
+          if (url.origin !== fixture.url) { forbidden.push(url.origin); return route.abort(); }
+          if (url.pathname.startsWith('/api/jobs/')) return route.fulfill({ json: { ok: true, settingsSnapshot: retakeJob.settingsSnapshot } });
+          return route.continue();
+        });
+        await page.goto(fixture.url);
+        const state = async () => JSON.parse((await page.locator('[data-state]').textContent())!);
+        const create = page.locator('[data-composer-mode="create"]');
+        const retake = page.getByRole('button', { name: 'Retake Video', exact: true });
+        for (const exit of ['create', 'retake'] as const) {
+          await page.getByRole('button', { name: 'Open LTX Retake', exact: true }).click();
+          await expect.poll(async () => (await state()).mode).toBe('retake');
+          await expect(retake).toBeVisible();
+          await expect(create).toHaveAttribute('aria-pressed', 'false');
+          await (exit === 'create' ? create : retake).click();
+          await expect.poll(async () => (await state()).mode).toBe('t2v');
+          await expect(create).toHaveAttribute('aria-pressed', 'true');
+          assert.equal((await state()).assets.video_url, undefined);
+          await retake.click();
+          await expect.poll(async () => (await state()).mode).toBe('retake');
+          assert.equal((await state()).assets.video_url?.[0]?.assetId, 'retake-source');
+          await expect(create).toHaveAttribute('aria-pressed', 'false');
+        }
+        assert.deepEqual(errors, []);
+        assert.deepEqual(forbidden, []);
+        await page.close();
+      } finally { await browser.close(); }
+    }
+  } finally { await fixture.close(); }
+});

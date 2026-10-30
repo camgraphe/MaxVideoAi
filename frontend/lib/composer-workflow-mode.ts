@@ -1,4 +1,5 @@
 import type { Mode } from '@/types/engines';
+import { VIDEO_CREATE_MODES } from '@/lib/video-source-workflow';
 
 /** Visible workflow groups do not replace the model's generation mode or schema. */
 export function resolveComposerWorkflowMode(
@@ -6,6 +7,6 @@ export function resolveComposerWorkflowMode(
   generationMode: Mode | null | undefined,
 ): Mode | null {
   const current = generationMode ?? null;
-  if (!modes?.some(entry => entry.mode === null)) return current;
+  if (current === null || !VIDEO_CREATE_MODES.includes(current) || !modes?.some(entry => entry.mode === null)) return current;
   return modes.some(entry => entry.mode === current) ? current : null;
 }
