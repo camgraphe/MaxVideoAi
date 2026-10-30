@@ -93,7 +93,7 @@ test('top navigation stays aligned and compact while operations, Expand and mode
       await page.getByRole('button',{name:'Expand',exact:true}).click();
       assert.ok(await page.locator('[data-assistance-transcript]').evaluate(el=>el.clientHeight)>height);
       await page.getByRole('button',{name:'Collapse',exact:true}).click();
-      await page.getByRole('button',{name:'Review',exact:true}).click();
+      await page.getByRole('button',{name:'View prompt',exact:true}).click();
       await expect(page.locator('[data-assistance-transcript]')).toBeHidden();
       await expect(message).toBeVisible();
       await page.getByRole('button',{name:'Conversation',exact:true}).click();
