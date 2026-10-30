@@ -84,7 +84,7 @@ test('provider job tracker persists new provider ids and queue log payloads', as
   });
 });
 
-test('provider job tracker deduplicates repeated provider ids and accepts queue status ids', async () => {
+test('an observed provider id is persisted once before repeated acknowledgments are deduplicated', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const tracker = createProviderJobTracker({
     jobId: 'job_123',
@@ -112,5 +112,31 @@ test('provider job tracker deduplicates repeated provider ids and accepts queue 
   await tracker.persistProviderJobId('from_queue');
   await tracker.persistProviderJobId('from_queue');
 
-  assert.equal(queries.length, 0);
+  assert.equal(queries.length, 2);
+  assert.match(queries[0].sql, /UPDATE app_jobs/);
+  assert.deepEqual(queries[0].params, ['job_123', 'from_queue', 'fal']);
+  assert.match(queries[1].sql, /INSERT INTO fal_queue_log/);
+});
+
+test('a failed identity write can be retried for the same accepted provider id', async () => {
+  let attempts = 0;
+  const tracker = createProviderJobTracker({
+    jobId: 'job_retry', providerKey: 'fal', engineId: 'flux-3', prompt: 'Prompt',
+    inputSummary: { primaryImageUrl: null, primaryAudioUrl: null, referenceImageCount: 0,
+      referenceVideoCount: 0, referenceAudioCount: 0, hasFirstFrame: false, hasLastFrame: false, inputSlots: [] },
+    queryFn: async (sql) => {
+      if (sql.includes('UPDATE app_jobs') && ++attempts === 1) throw new Error('Temporary database failure');
+    },
+  });
+  const warn = console.warn;
+  console.warn = () => undefined;
+  try {
+    await tracker.persistProviderJobId('accepted_request');
+    assert.equal(tracker.getLastProviderJobId(), 'accepted_request');
+    await tracker.persistProviderJobId('accepted_request');
+    await tracker.persistProviderJobId('accepted_request');
+    assert.equal(attempts, 2);
+  } finally {
+    console.warn = warn;
+  }
 });
