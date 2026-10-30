@@ -1,4 +1,5 @@
 'use client';
+import {videoPromptReviewKey} from '@/lib/prompt-assistance/application-review';
 import {videoPromptWorkflow} from '@/lib/prompt-assistance/session';
 import { composerAssistanceReferences, composerAssistanceSettings } from '@/lib/prompt-assistance/client-context';
 import { OwnedGenerationSourcePicker } from './OwnedGenerationSourcePicker.client';
@@ -482,6 +483,8 @@ export function WorkspaceComposerSurface({
     [setForm, setViewMode]
   );
 
+  const assistanceContext={ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } };
+
   return (
     <>
       <Composer
@@ -489,7 +492,7 @@ export function WorkspaceComposerSurface({
           ...(klingElements.some(element=>element.frontal||element.video||element.references.some(Boolean))?{subjectIdentities:'unavailable; describe subjects in your message'}:{}),
           ...(ownedGenerationRequired?{sourceGenerationContext:'unavailable; describe the source generation in your message'}:{})}),
           // Keyframe panels own some schema fields outside the compact reference picker.
-          references: composerAssistanceReferences(selectedEngine,inputSchemaSummary.assetFields.filter(entry=>!composerAssetFields.some(visible=>visible.field.id===entry.field.id)),composerAssets,submissionMode)}, contextKey: JSON.stringify({ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } }) }}
+          references: composerAssistanceReferences(selectedEngine,inputSchemaSummary.assetFields.filter(entry=>!composerAssetFields.some(visible=>visible.field.id===entry.field.id)),composerAssets,submissionMode)}, contextKey: JSON.stringify(assistanceContext),reviewKey:videoPromptReviewKey(assistanceContext) }}
         density="workspace"
         engine={selectedEngine}
         caps={capability}

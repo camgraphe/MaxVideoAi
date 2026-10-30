@@ -1,7 +1,9 @@
 import {z} from 'zod';
+import {REVIEWABLE_GENERATION_SETTINGS} from '@/lib/prompt-assistance/application-review';
+const reviewProofSchema=z.object({version:z.literal(1),requestId:z.string().uuid(),compatibilityFingerprint:z.string().regex(/^[a-f0-9]{64}$/),compatible:z.boolean(),settings:z.record(z.string(),z.union([z.string().max(5000),z.number().finite(),z.boolean(),z.null()])).refine(value=>Object.keys(value).every(key=>(REVIEWABLE_GENERATION_SETTINGS as readonly string[]).includes(key)))}).strict();
 const localSchema=z.object({
   message:z.string().max(8000),
-  proposal:z.object({text:z.string().max(50000),draftFingerprint:z.string().max(64),valid:z.boolean()}).nullable(),
+  proposal:z.object({text:z.string().max(50000),draftFingerprint:z.string().max(64),valid:z.boolean(),review:reviewProofSchema.optional().catch(undefined)}).nullable(),
   latestRequestId:z.string(),
 });
 const storedSchema=z.object({sessionId:z.string().uuid(),pending:z.object({sessionId:z.string().uuid(),requestId:z.string().uuid()}).nullable(),local:localSchema.optional(),legacy:z.boolean().optional()});
