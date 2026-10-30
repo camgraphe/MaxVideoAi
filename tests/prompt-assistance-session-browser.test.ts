@@ -35,7 +35,7 @@ test('workflow chats restore, keep local drafts and suggestions, and New chat on
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   const message=page.getByRole('textbox',{name:'Message Milo',exact:true}),send=page.getByRole('button',{name:'Send message to Milo'});
   await message.fill('A dog behind a car');await send.click();await expect(page.getByText('Reply for create 1')).toBeVisible();
-  await page.getByRole('button',{name:'Review',exact:true}).click();
+  await page.getByRole('button',{name:'View prompt',exact:true}).click();
   await page.getByRole('textbox',{name:'Edit the proposed text',exact:true}).fill('A red dog runs behind a car in create.');
   await message.fill('An unsent follow-up');
   await page.evaluate(()=>(globalThis as any).mode('modify'));
