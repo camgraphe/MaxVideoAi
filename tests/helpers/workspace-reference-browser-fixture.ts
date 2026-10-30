@@ -20,7 +20,7 @@ export const workspaceReferenceFixtureSource = `
         <p style={{fontSize:12,marginBottom:16}}>Local interaction fixture · synthetic media · no generation</p>
         <h1 style={{fontSize:22,marginBottom:16}}>{config.engine.label}</h1>
         <Composer density="workspace" engine={config.engine} caps={config.caps} activeManualMode={config.mode}
-          promptField={config.promptField} prompt={prompt} onPromptChange={setPrompt} promptRequired={false}
+          assistance={config.assistance} promptField={config.promptField} prompt={prompt} onPromptChange={setPrompt} promptRequired={false}
           assetFields={config.fields} assets={assets} price={1.23} currency="USD" isLoading={false}
           onAssetRemove={(field,index)=>setAssets(previous=>({...previous,[field.id]:previous[field.id].map((asset,slot)=>slot===index?null:asset)}))}
           onGenerate={()=>{globalThis.submissions=(globalThis.submissions??0)+1;}} />
@@ -31,19 +31,24 @@ export const workspaceReferenceFixtureSource = `
 `;
 
 /** Real Composer/CSS with a local synthetic-data boundary; usable by tests and manual preview. */
-export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown } = {}) {
+export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; assistanceLive?: boolean; perception?:boolean; hostModules?: Record<string, string> } = {}) {
   const frontend = join(process.cwd(), 'frontend');
   const requireFrontend = createRequire(join(frontend, 'package.json'));
   const source = options.source ?? workspaceReferenceFixtureSource;
   const bundle = await build({ stdin: { contents: source, loader: 'tsx', resolveDir: frontend },
-    outdir: '/reference-fixture', write: false, bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
-    tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': '"production"' } });
-  const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css'].map(path => readFile(join(frontend, path), 'utf8')));
+    outdir: '/reference-fixture', external: ['/assets/*'], write: false, bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', minify: true,
+    tsconfig: join(frontend, 'tsconfig.json'), define: { 'process.env.NODE_ENV': JSON.stringify(options.assistancePreview ? 'development' : 'production'), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PERCEPTION': JSON.stringify(options.perception?'1':''), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE': JSON.stringify(options.assistanceLive ? '1' : ''), 'process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_PREVIEW': JSON.stringify(options.assistancePreview ? '1' : '') },
+    plugins: options.hostModules ? [{ name: 'workspace-host-boundaries', setup(builder) {
+      builder.onResolve({ filter: /.*/ }, args => options.hostModules?.[args.path] !== undefined ? { path: args.path, namespace: 'workspace-host' } : undefined);
+      builder.onLoad({ filter: /.*/, namespace: 'workspace-host' }, args => ({ contents: options.hostModules![args.path], loader: 'tsx', resolveDir: frontend }));
+    } }] : [],
+  });
+  const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css', 'src/styles/app-shell.css'].map(path => readFile(join(frontend, path), 'utf8')));
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig, content: [
     ...tailwindConfig.content.map(pattern => join(frontend, pattern)), { raw: source, extension: 'tsx' },
   ] })]).process(styles.join('\n').replace(/@(?:import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });
   const files = new Map(bundle.outputFiles.map(file => [basename(file.path), file.text]));
-  files.set('styles.css', css.css);
+  files.set('styles.css', css.css + bundle.outputFiles.filter(file => file.path.endsWith('.css')).map(file => file.text).join('\n'));
   const script = [...files.keys()].find(name => name.endsWith('.js'))!;
   const server = createServer((request, response) => {
     const name = basename(new URL(request.url ?? '/', 'http://fixture').pathname);

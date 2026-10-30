@@ -21,6 +21,7 @@ import { getFalWebhookUrl } from '@/lib/fal-webhook-url';
 import { submitFalQueueOnce } from '@/lib/fal-queue-submit';
 import type { GenerateHooks, GeneratePayload, GenerateResult } from '@/lib/fal-types';
 import { assertKlingV4ReleaseReady } from '@/server/video-generation/kling-v4-release-policy';
+import { createFalTransportError } from '@/lib/fal-error-provenance';
 
 export { FalGenerationError } from '@/lib/fal-error';
 export {
@@ -33,18 +34,23 @@ export type { GenerateAttachment, GenerateHooks, GeneratePayload, GenerateResult
 let warnedMissingWebhookUrl = false;
 
 export async function generateVideo(payload: GeneratePayload, hooks?: GenerateHooks): Promise<GenerateResult> {
-  assertKlingV4ReleaseReady(payload.engineId);
-  const provider = getResultProviderMode();
-  if (!ENV.FAL_API_KEY) {
-    throw new Error('FAL_API_KEY is missing');
+  let provider: ResultProviderMode;
+  let modelSlug: string;
+  try {
+    assertKlingV4ReleaseReady(payload.engineId);
+    provider = getResultProviderMode();
+    if (!ENV.FAL_API_KEY) throw new Error('FAL_API_KEY is missing');
+    const resolvedFallback = await resolveFalModelId(payload.engineId);
+    const resolvedModelSlug = resolveFalModelSlug(payload, resolvedFallback);
+    if (!resolvedModelSlug && !payload.soraRequest) throw new Error('Unable to resolve FAL model for requested engine');
+    modelSlug = resolvedModelSlug ?? '';
+  } catch (error) {
+    const source = error as { status?: number; code?: string } | null;
+    throw new FalGenerationError(error instanceof Error ? error.message : 'Generation preparation failed', {
+      phase: 'pre_submission', status: source?.status, code: source?.code, cause: error,
+    });
   }
-  const resolvedFallback = await resolveFalModelId(payload.engineId);
-  const resolvedModelSlug = resolveFalModelSlug(payload, resolvedFallback);
-  if (!resolvedModelSlug && !payload.soraRequest) {
-    throw new Error('Unable to resolve FAL model for requested engine');
-  }
-
-  return generateViaFal(payload, provider, resolvedModelSlug ?? '', hooks);
+  return generateViaFal(payload, provider, modelSlug, hooks);
 }
 
 async function generateViaFal(
@@ -55,9 +61,17 @@ async function generateViaFal(
 ): Promise<GenerateResult> {
   const fallbackThumb = getThumbForAspectRatio(payload.aspectRatio);
   const falClient = getFalClient();
-  const { model, requestBody } = buildFalGenerationRequest(payload, defaultModel);
-
-  const submissionProof = nativeFluxDraftSubmission(payload.engineId, payload.mode, model, requestBody);
+  const { model, requestBody, submissionProof } = (() => {
+    try {
+      const request = buildFalGenerationRequest(payload, defaultModel);
+      return { ...request, submissionProof: nativeFluxDraftSubmission(payload.engineId, payload.mode, request.model, request.requestBody) };
+    } catch (error) {
+      const source = error as { status?: number; code?: string } | null;
+      throw new FalGenerationError(error instanceof Error ? error.message : 'Generation request preparation failed', {
+        phase: 'pre_submission', status: source?.status, code: source?.code, cause: error,
+      });
+    }
+  })();
   let latestQueueStatus: QueueStatus | null = null;
   const webhookUrl = getFalWebhookUrl() ?? undefined;
   if (!webhookUrl && !warnedMissingWebhookUrl) {
@@ -65,19 +79,19 @@ async function generateViaFal(
     console.warn('[fal] No webhook URL configured; relying on polling only.');
   }
   let enqueuedRequestId: string | undefined;
+  let resultReadQualified = false;
   let queueReceipt: FalQueueReceipt | undefined;
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
     if (payload.submissionMode === 'enqueue' || payload.engineId === 'kling-v4') {
       enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId, fetch,
-        payload.engineId === 'kling-v4' ? async (requestId, receipt) => {
+        async (requestId, receipt) => {
           // Preserve the accepted identity before persistence can fail. Never resubmit it.
           enqueuedRequestId = requestId;
-          queueReceipt = receipt;
-          await hooks?.onRequestId?.(requestId, submissionProof, receipt);
-        } : undefined);
+          queueReceipt = payload.engineId === 'kling-v4' ? receipt : undefined;
+          await hooks?.onRequestId?.(requestId, submissionProof, queueReceipt);
+        });
       if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
-      if (!queueReceipt) await hooks?.onRequestId?.(enqueuedRequestId, submissionProof);
       return {
         provider,
         thumbUrl: fallbackThumb,
@@ -91,10 +105,10 @@ async function generateViaFal(
       webhookUrl,
       mode: 'polling',
       onEnqueue(requestId) {
-        if (typeof requestId === 'string') {
-          enqueuedRequestId = requestId;
+        if (typeof requestId === 'string' && requestId.trim()) {
+          enqueuedRequestId = requestId.trim();
           if (hooks?.onRequestId) {
-            Promise.resolve(hooks.onRequestId(requestId, submissionProof)).catch((error) => {
+            Promise.resolve(hooks.onRequestId(enqueuedRequestId, submissionProof)).catch((error) => {
               console.warn('[fal] onRequestId hook failed', error);
             });
           }
@@ -107,97 +121,83 @@ async function generateViaFal(
             console.warn('[fal] onQueueUpdate hook failed', error);
           });
         }
+        // SDK 1.7.0 calls this before resolving subscribeToStatus and starting result GET.
+        // A synchronous local hook exception above must never qualify a provider result.
+        if (enqueuedRequestId && update.status === 'COMPLETED'
+          && (!('request_id' in update) || update.request_id === enqueuedRequestId)) {
+          resultReadQualified = true;
+        }
       },
     });
   } catch (error) {
-    const metadataStatus =
-      typeof (error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 'number'
-        ? (error as { $metadata?: { httpStatusCode?: number } }).$metadata!.httpStatusCode
-        : undefined;
-    const statusCandidate =
-      typeof (error as { status?: number } | undefined)?.status === 'number'
-        ? (error as { status?: number }).status
-        : metadataStatus;
-    const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
-    const fallbackProviderJobId =
-      enqueuedRequestId ??
-      queueRequestId ??
-      (error as { providerJobId?: string } | undefined)?.providerJobId ??
-      (error as { requestId?: string } | undefined)?.requestId ??
-      (error as { request_id?: string } | undefined)?.request_id ??
-      (error as { response?: { request_id?: string; id?: string } } | undefined)?.response?.request_id ??
-      (error as { response?: { request_id?: string; id?: string } } | undefined)?.response?.id ??
-      undefined;
-    const bodyCandidate =
-      (error as { body?: unknown } | undefined)?.body ??
-      (error as { response?: unknown } | undefined)?.response ??
-      (error as { data?: unknown } | undefined)?.data ??
-      null;
-    const message = error instanceof Error ? error.message : 'Render request failed';
-    const falError = new FalGenerationError(message, {
-      status: statusCandidate,
-      body: bodyCandidate,
-      providerJobId: fallbackProviderJobId,
-      cause: error,
+    const falError = createFalTransportError(error, {
+      acceptedRequestId: enqueuedRequestId,
+      resultReadQualified,
+      singlePost: payload.submissionMode === 'enqueue' || payload.engineId === 'kling-v4',
     });
-    if ((error as { $metadata?: unknown } | undefined)?.$metadata) {
-      (falError as { $metadata?: unknown }).$metadata = (error as { $metadata?: unknown }).$metadata;
-    }
-    (falError as { originalError?: unknown }).originalError = error;
-    if (fallbackProviderJobId && hooks?.onRequestId) {
-      Promise.resolve(hooks.onRequestId(fallbackProviderJobId, submissionProof, queueReceipt)).catch((hookError) => {
+    if (enqueuedRequestId && hooks?.onRequestId) {
+      Promise.resolve().then(() => hooks.onRequestId?.(enqueuedRequestId!, submissionProof, queueReceipt)).catch((hookError) => {
         console.warn('[fal] onRequestId hook failed after error', hookError);
       });
     }
     throw falError;
   }
 
-  const json = unwrapFalResponse(result.data);
-  const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
-  const providerJobId: string | undefined =
-    enqueuedRequestId ??
-    result.requestId ??
-    json?.request_id ??
-    json?.id ??
-    queueRequestId;
-  const immediateAsset = extractVideoAsset(json);
-  if (immediateAsset) {
-    const asset = ensureAssetShape(immediateAsset);
-    const thumbUrl = asset.thumbnailUrl ?? fallbackThumb;
-    if (providerJobId && hooks?.onRequestId) {
-      Promise.resolve(hooks.onRequestId(providerJobId, submissionProof)).catch((error) => {
-        console.warn('[fal] onRequestId hook failed after immediate result', error);
+  try {
+    const json = unwrapFalResponse(result.data);
+    const queueRequestId = (latestQueueStatus as { request_id?: string } | null)?.request_id;
+    const providerJobId: string | undefined =
+      enqueuedRequestId ??
+      result.requestId ??
+      json?.request_id ??
+      json?.id ??
+      queueRequestId;
+    const immediateAsset = extractVideoAsset(json);
+    if (immediateAsset) {
+      const asset = ensureAssetShape(immediateAsset);
+      const thumbUrl = asset.thumbnailUrl ?? fallbackThumb;
+      if (providerJobId && hooks?.onRequestId) {
+        Promise.resolve(hooks.onRequestId(providerJobId, submissionProof)).catch((error) => {
+          console.warn('[fal] onRequestId hook failed after immediate result', error);
+        });
+      }
+      return {
+        provider,
+        thumbUrl,
+        providerJobId,
+        videoUrl: asset.url,
+        video: asset,
+        status: 'completed',
+        progress: 100,
+      };
+    }
+
+    const fallbackStatus = normalizePendingStatus(latestQueueStatus, json);
+    const fallbackProgress = normalizePendingProgress(latestQueueStatus, json);
+
+    if (!providerJobId && !fallbackStatus.providerJobIdFallback) {
+      throw new Error('FAL response did not contain a video asset');
+    }
+
+    const resolvedProviderJobId = providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined;
+    if (resolvedProviderJobId && hooks?.onRequestId) {
+      Promise.resolve(hooks.onRequestId(resolvedProviderJobId, submissionProof)).catch((error) => {
+        console.warn('[fal] onRequestId hook failed after pending result', error);
       });
     }
     return {
       provider,
-      thumbUrl,
-      providerJobId,
-      videoUrl: asset.url,
-      video: asset,
-      status: 'completed',
-      progress: 100,
+      thumbUrl: fallbackThumb,
+      providerJobId: resolvedProviderJobId,
+      status: fallbackStatus.status,
+      progress: fallbackProgress,
     };
-  }
-
-  const fallbackStatus = normalizePendingStatus(latestQueueStatus, json);
-  const fallbackProgress = normalizePendingProgress(latestQueueStatus, json);
-
-  if (!providerJobId && !fallbackStatus.providerJobIdFallback) {
-    throw new Error('FAL response did not contain a video asset');
-  }
-
-  const resolvedProviderJobId = providerJobId ?? fallbackStatus.providerJobIdFallback ?? undefined;
-  if (resolvedProviderJobId && hooks?.onRequestId) {
-    Promise.resolve(hooks.onRequestId(resolvedProviderJobId, submissionProof)).catch((error) => {
-      console.warn('[fal] onRequestId hook failed after pending result', error);
+  } catch (error) {
+    const source = error as { status?: number; body?: unknown; code?: string } | null;
+    throw new FalGenerationError(error instanceof Error ? error.message : 'Accepted result processing failed', {
+      phase: enqueuedRequestId ? 'accepted' : 'submission_unknown', providerJobId: enqueuedRequestId,
+      status: source?.status, body: source?.body, code: source?.code, cause: error,
     });
   }
-  return {
-    provider,
-    thumbUrl: fallbackThumb,
-    providerJobId: resolvedProviderJobId,
-    status: fallbackStatus.status,
-    progress: fallbackProgress,
-  };
+
 }

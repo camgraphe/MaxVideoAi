@@ -4,7 +4,7 @@ import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 
 export const STUDIO_ANALYSIS_LIMITS={videoSeconds:60,audioSeconds:30,frames:12,sourceBytes:100*1024*1024,decodeMs:60_000} as const;
 export function studioAnalysisCapabilities(model:StudioAssistantModel,available:{video:boolean;audio:boolean}) {
-  return {imageVision:true,simpleEditing:true,videoAnalysis:model==='gpt-6.1-sol'&&available.video,audioAnalysis:model==='gpt-6.1-sol'&&available.audio};
+  return {imageVision:true,simpleEditing:true,videoAnalysis:model!=='gpt-6-luna'&&available.video,audioAnalysis:model!=='gpt-6-luna'&&available.audio};
 }
 export const studioAnalysisPrepareBaseSchema=z.object({
   ref:toolAssetRefSchema.refine(ref=>ref.kind==='video'||ref.kind==='audio','Select video or audio.'),
@@ -34,7 +34,7 @@ export const studioPreparedAnalysisSchema=z.object({
   sourceName:z.string().min(1).max(160).optional(),
   modality:z.enum(['visual','audio']).optional(),
   startSec:z.number().nonnegative(),endSec:z.number().positive(),maxCredits:z.number().int().positive(),policyVersion:z.string(),expiresAt:z.string().datetime(),
-  profile:z.enum(['video-frames-v1','audio-window-v1']),model:z.literal('gpt-6.1-sol'),confirmationRequired:z.literal(true),
+  profile:z.enum(['video-frames-v1','audio-window-v1']),model:z.enum(['gpt-6.1-sol','gpt-6.1-terra']),confirmationRequired:z.literal(true),
 }).strict();
 export type StudioPreparedAnalysis=z.infer<typeof studioPreparedAnalysisSchema>;
 export const studioAnalysisStatusSchema=z.object({quote:studioPreparedAnalysisSchema,state:z.enum(['prepared','queued','running','completed','failed','unknown']),result:studioAnalysisResultSchema.nullable(),chargedCredits:z.number().int().nonnegative().nullable(),error:z.string().nullable()}).strict();
@@ -47,8 +47,8 @@ const reference={anyOf:(['video','audio'] as const).flatMap(kind=>[
   variant({type:{type:'string',enum:['job-output']},jobId:{type:'string'},outputId:{type:'string'},kind:{type:'string',enum:[kind]}}),
 ])};
 export const STUDIO_ANALYSIS_DIRECTOR_TOOLS=[
-  {action:'analysis.prepare',name:'analysis_prepare',description:'Prepare a bounded analysis quote only on request or for necessary unfinished client work. No inspection, provider call or credit reservation. Standard may prepare the handoff; the client selects Max and confirms the ceiling. Use exact attached media or ready project output. Choose visual for video frames, audio for sound from audio/video. Use only qualified modalities and a goal in the client’s language. Never call on completion or unsolicited review. Success ends the turn with a card.',properties:{ref:reference,modality:{type:'string',enum:['visual','audio']},goal:{type:'string'},reason:{type:'string',enum:['requested','required_for_request']},startSec:{type:'number',minimum:0},endSec:{type:'number',exclusiveMinimum:0},reply:{type:'string'}}},
-  {action:'analysis.read',name:'analysis_read',description:'Read this project’s exact saved analysis status and timestamped observations, including on Standard. Does not start, retry, extend or charge an analysis. Sparse coverage and approximate timing are not full inspection or exact beats.',properties:{analysisId:{type:'string'}}},
+  {action:'analysis.prepare',name:'analysis_prepare',description:'Prepare a bounded analysis quote only on request or for necessary unfinished client work. No inspection, provider call or credit reservation. Lite may prepare a Max handoff; Standard and Max retain their level. The client confirms the ceiling. Use exact attached media or ready project output. Choose visual for video frames, audio for sound from audio/video. Use only qualified modalities and a goal in the client’s language. Never call on completion or unsolicited review. Success ends the turn with a card.',properties:{ref:reference,modality:{type:'string',enum:['visual','audio']},goal:{type:'string'},reason:{type:'string',enum:['requested','required_for_request']},startSec:{type:'number',minimum:0},endSec:{type:'number',exclusiveMinimum:0},reply:{type:'string'}}},
+  {action:'analysis.read',name:'analysis_read',description:'Read this project’s exact saved analysis status and timestamped observations, including on Lite. Does not start, retry, extend or charge an analysis. Sparse coverage and approximate timing are not full inspection or exact beats.',properties:{analysisId:{type:'string'}}},
 ] as const;
 export function studioAnalysisDirectorTools(available:{video:boolean;audio:boolean}){
   const prepare=STUDIO_ANALYSIS_DIRECTOR_TOOLS[0];

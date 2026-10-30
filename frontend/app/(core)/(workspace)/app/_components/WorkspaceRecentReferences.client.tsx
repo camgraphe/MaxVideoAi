@@ -38,11 +38,7 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   const [selection, setSelection] = useState<Selection | null>(null);
   const drag = useRef<{ selection: Selection; token: string } | null>(null);
   const copy = recentMediaCopy(locale);
-  // The custom editor owns the composer picker, but an incoming video still
-  // needs its source role in this confirmation dialog.
-  const eligibleFields = getWorkspaceReferenceFields(fields, handoff.asset?.kind === 'video'
-    ? { ...availability, showLumaRay32KeyframeEditor: false }
-    : availability);
+  const eligibleFields = getWorkspaceReferenceFields(fields, availability);
   const selected = handoff.asset ?? (selection?.engineId === engineId ? resolveCurrentRecentAsset(selection, feed.scope, feed.assets) : null);
   const metadataNeeded = Boolean(selected && eligibleFields.some((entry) => !entry.disabled && entry.field.type === selected.kind &&
     getMediaInputEligibility({ asset: selected, field: entry.field, engine, mode }).status === 'unverified'));

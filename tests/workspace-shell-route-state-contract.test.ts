@@ -83,3 +83,16 @@ test('mobile Recents lives in the creation heading action with drawer state and 
   assert.match(shell, /requestAnimationFrame\(\(\) => \{\s*const opener = recentOpenerRef\.current/);
   assert.doesNotMatch(shell, /scrollIntoView/);
 });
+
+
+test('preview shell places gallery navigation in the shared creation header without moving panel ownership', () => {
+  const shell = readFileSync(appShellPath, 'utf8');
+  const chrome = readFileSync('frontend/app/(core)/(workspace)/app/_components/WorkspaceChrome.tsx', 'utf8');
+  const content = readFileSync('frontend/components/app/AppCreationContent.tsx', 'utf8');
+  assert.match(shell, /railNavigation=\{PROMPT_ASSISTANCE_PREVIEW \? railNavigation : null\}/);
+  assert.match(shell, /\{PROMPT_ASSISTANCE_PREVIEW \? null : railNavigation\}/);
+  assert.match(chrome, /<AppCreationContent railNavigation=\{railNavigation\}>/);
+  assert.match(content, /app-creation-topbar-rail/);
+  assert.match(shell, /hidden=\{railView !== 'activity'\}/);
+  assert.match(shell, /hidden=\{railView !== 'recent'\}/);
+});

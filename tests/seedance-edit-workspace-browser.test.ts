@@ -39,7 +39,7 @@ function Fixture() {
   const mode = useWorkspaceEngineModeState({ engines: [engine], form, setForm, inputAssets, klingElements: [], shotType: 'customize', setShotType: noop,
     effectiveRequestedEngineToken: null, authChecked: true, hydratedForScope: 'owner', storageScope: 'owner', preserveStoredDraftRef: useRef(false), requestedEngineOverrideIdRef: useRef(null), requestedEngineOverrideTokenRef: useRef(null), requestedModeOverrideRef: useRef(null), writeStorage: noop, uiLocale: 'en', workflowCopy, showNotice: noop });
   const schema = useWorkspaceInputSchemaState({ ...mode, uiLocale: 'en', authChecked: true, authLoading: false, authenticatedUserId: 'owner', uploadLockedCopy: 'Sign in', setInputAssets, setForm });
-  const quote=useWorkspacePricingGate({accessToken:account.token,authChecked:true,locale:'en',memberTier:'Member',setMemberTier:noop,topUpCopy:{},selectedEngine:mode.selectedEngine,submissionMode:mode.submissionMode,form,effectiveDurationSec:mode.effectiveDurationSec,supportsAudioToggle:mode.supportsAudioToggle,voiceControlEnabled:false,inputAssets});
+  const quote=useWorkspacePricingGate({accountId:account.userId,accessToken:account.token,authChecked:true,locale:'en',memberTier:'Member',setMemberTier:noop,topUpCopy:{},selectedEngine:mode.selectedEngine,submissionMode:mode.submissionMode,form,effectiveDurationSec:mode.effectiveDurationSec,supportsAudioToggle:mode.supportsAudioToggle,voiceControlEnabled:false,inputAssets});
   const toggle = available => setEngine(current => ({ ...current, modeAvailability: { ...current.modeAvailability, v2v: { available, reason: available ? 'available' : 'provider_disabled' } } }));
   return <I18nProvider locale="en" dictionary={{}} fallback={{}}>
     <main><button onClick={() => toggle(true)}>Enable Edit fixture</button><button onClick={() => toggle(false)}>Disable Edit fixture</button>
@@ -201,6 +201,10 @@ test('real workspace source selection enables Edit and preserves unavailable sav
           const source = summary.assetFields.find(({ field, required }) => field.type === 'video' && required)!;
           const owned=(engine.id==='luma-ray-3-2'&&mode==='extend')||(engine.id==='flux-3-draft'&&mode==='v2v');
           if(owned){
+            const sourceTrigger=page.locator('[data-owned-source-trigger]');
+            await sourceTrigger.waitFor();
+            assert.equal(await page.getByTestId('owned-generation-source-picker').count(),0,'source panel stays closed until requested');
+            await sourceTrigger.click();
             await page.getByTestId('owned-generation-source-picker').waitFor();
             assert.equal(await page.getByTestId('owned-generation-source-picker').getAttribute('data-operation'),engine.id==='flux-3-draft'?'flux-draft-enhance':'luma-extend');
             assert.equal(await page.locator('input[type=file]').count(),0,'only an owned generation supplies source authority');
@@ -219,10 +223,12 @@ test('real workspace source selection enables Edit and preserves unavailable sav
             assert.equal(await page.locator('.app-generation-action').isDisabled(),false,'valid zero-cent quote remains executable');
             await picker.getByRole('button',{name:'Remove source',exact:true}).click();
             assert.equal(await page.locator('.app-generation-action').isDisabled(),true,'removal revokes source and quote immediately');
+            await page.getByRole('button',{name:'Close',exact:true}).click();
           } else if (engine.id === 'luma-ray-3-2' && mode === 'v2v') {
-            const editor = page.locator('section').filter({ hasText: 'Ray 3.2 Modify' });
-            await editor.locator('input[type="file"][accept*="video"]').waitFor({ state: 'attached' });
-            assert.equal(await page.locator('[data-reference-command="video_url"]').count(), 0, 'Luma keyframe editor owns its source without a duplicate picker');
+            const editor = page.getByTestId('video-keyframe-editor');
+            await editor.waitFor();
+            assert.equal(await editor.locator('input[type="file"][accept*="video"]').count(), 0, 'keyframes do not duplicate the shared source picker');
+            assert.equal(commands[0], source.field.id, 'Luma uses the common source command');
           } else assert.equal(commands[0], source.field.id, `${engine.id}/${mode}: source comes first`);
           for (const id of commands) {
             if (id === 'collections') {

@@ -16,23 +16,28 @@ const klingReadiness: ModelLaunchReadinessEntry = {
   familyPlaylistSlug: 'family-kling', modelPlaylistSlug: 'examples-kling-v4',
 };
 
-test('Kling V4 stays absent from every public PAYG projection while its pricing gate is closed', () => {
+test('Kling V4 has no PAYG model cards or price links when absent from the supplied pricing catalog', () => {
   for (const locale of locales) {
     const content = getPayAsYouGoContent(locale);
     assert.ok(content.modelTesting.models['kling-v4']);
     assert.ok(content.priceLookups.items['kling-v4']);
-    const data = buildPayAsYouGoPageData({ locale, content });
-    assert.doesNotMatch(JSON.stringify(data), /kling-v4|Kling 4\.0/i);
+    const pricingHub=structuredClone(buildPricingHubData(locale));
+    pricingHub.video.rows=pricingHub.video.rows.filter(row=>row.id!=='kling-v4');
+    const data = buildPayAsYouGoPageData({ locale, content, pricingHub });
+    for(const items of [data.modelTesting.items,data.priceLookups.items,data.exampleCosts.items]) {
+      assert.ok(items.every(item=>item.id!=='kling-v4'));
+    }
   }
 });
 
 test('PAYG selects Kling V4 copy only when the pricing owner supplies a row and preserves its bounded examples', () => {
   for (const locale of locales) {
     const pricingHub = structuredClone(buildPricingHubData(locale));
-    // Test-only future projection; no publication or tariff is changed.
+    // Inject one current quote without changing a real tariff.
     const row = structuredClone(pricingHub.video.rows[0]);
     Object.assign(row, { id: 'kling-v4', engineName: 'Kling 4.0', modelHref: '/models/kling-v4', anchorId: 'kling-v4-pricing' });
     row.quotes['5s-720p'] = { status: 'exact', display: '$9.87' };
+    pricingHub.video.rows=pricingHub.video.rows.filter(item=>item.id!=='kling-v4');
     pricingHub.video.rows.push(row);
     const content = getPayAsYouGoContent(locale);
     const data = buildPayAsYouGoPageData({ locale, content, pricingHub });

@@ -38,6 +38,7 @@ export type ComposerPromotedAction = {
 export interface ComposerProps {
   density?: 'default' | 'workspace';
   compactPrompt?: boolean;
+  assistance?: import('./usePromptAssistancePreview').PromptAssistanceContext;
   engine: EngineCaps;
   caps?: CapabilityCaps;
   prompt: string;
@@ -96,6 +97,8 @@ export interface ComposerProps {
   } | null;
   extraFields?: ReactNode;
   beforeAssets?: React.ReactNode;
+  /** Source selectors whose authority comes from an owned generation rather than an upload. */
+  sourceControl?: ReactNode;
   afterAssets?: ReactNode;
   disableGenerate?: boolean;
   workflowNotice?: string | null;

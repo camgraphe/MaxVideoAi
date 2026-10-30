@@ -461,6 +461,7 @@ test('global surcharge changes expand into engine-specific authoritative coverag
   const audio = requests.filter((request) => request.kind === 'audio');
   const upscale = requests.filter((request) => request.kind === 'upscale');
 
+  assert.ok(!requests.some((request) => request.selector.engineId === 'kling-v4'), 'global legacy surcharges cannot target an approved-tariff-only model');
   assert.ok(audio.length > 1);
   assert.ok(upscale.length > 1);
   assert.ok(requests.every((request) => Boolean(request.selector.engineId)));

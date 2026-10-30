@@ -44,6 +44,20 @@ async function main(): Promise<void> {
     { id: 'json-ld:kling-v4:offer', surface: 'json-ld', engineId: 'kling-v4', status: 'unavailable' },
     { id: 'model-page:kling-v4:default', surface: 'model-page', engineId: 'kling-v4', status: 'unavailable' },
   ])) throw new Error('Invalid reviewed Kling4 public-discovery matrix.');
+  const klingPricingDiscovery = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/kling-v4-pricing-discovery-projections-2026-10-29.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  // Publishing the pricing surface adds explicit unavailable offline rows.
+  // Current approved quotes remain database-owned, never copied into this audit.
+  const klingPricingIds = [
+    ...['member', 'plus', 'pro'].map((tier) => `estimator:kling-v4:${tier}:default`),
+    ...['10s-1080p', '10s-1080p-audio', '10s-720p', '4k-route', '5s-720p', '8s-1080p', 'entry-route']
+      .map((preset) => `pricing-hub-video:kling-v4:${preset}`),
+  ];
+  if (!isDeepStrictEqual(klingPricingDiscovery.rows, klingPricingIds.map((id) => ({
+    id, surface: id.startsWith('estimator:') ? 'estimator' : 'pricing-hub-video',
+    engineId: 'kling-v4', status: 'unavailable',
+  })))) throw new Error('Invalid reviewed Kling4 pricing-discovery matrix.');
   const audioChange = JSON.parse(await readFile(new URL('../../tests/fixtures/audio-pricing-change-2026-09-08.json', import.meta.url), 'utf8')) as { rows: Array<{ id: string; previousCents: number; totalCents: number }> };
   const audioChanges = new Map(audioChange.rows.map(row => [row.id, row]));
   if (audioChanges.size !== audioChange.rows.length || audioChanges.size !== 15) throw new Error('Invalid reviewed Audio pricing change matrix.');
@@ -140,7 +154,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

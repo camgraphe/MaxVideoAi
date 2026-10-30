@@ -24,6 +24,7 @@ import type { BillingSession } from '../_lib/billing-types';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { buildWalletExpressCheckoutRequestKey, createWalletExpressSessionCache } from '../_lib/express-checkout-session-cache';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
+import { requestWalletExpressCheckout } from '../_lib/express-checkout-request';
 
 type StripeWithCheckoutElements = Stripe & {
   initCheckoutElementsSdk?: (options: { clientSecret: Promise<string> | string }) => StripeCheckout;
@@ -230,6 +231,7 @@ export function WalletExpressCheckout({
           }
           if (checkoutSessionResult.type === 'rate_limited') {
             setStatus('error');
+            setCanRetry(true);
             setMessage(formatRateLimitMessage(labelsRef.current.rateLimited, checkoutSessionResult.retryAfterSeconds));
             return;
           }
@@ -446,7 +448,9 @@ export function WalletExpressCheckout({
         }
         return result;
       } finally {
-        pendingCheckoutSessionRef.current.delete(requestKey);
+        if (pendingCheckoutSessionRef.current.get(requestKey) === promise) {
+          pendingCheckoutSessionRef.current.delete(requestKey);
+        }
       }
     }
 
@@ -460,8 +464,7 @@ export function WalletExpressCheckout({
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const submittedCaptchaToken = handlersRef.current.takeCaptchaToken();
-      const response = await fetch('/api/wallet', {
-        method: 'POST',
+      const { response, payload } = await requestWalletExpressCheckout({
         headers,
         body: JSON.stringify({
           amountCents,
@@ -475,7 +478,6 @@ export function WalletExpressCheckout({
           ...(analyticsJourney ? { analyticsJourney } : {}),
         }),
       });
-      const payload = await response.json().catch(() => null);
       if (!response.ok) {
         if (payload?.captchaRequired) {
           return { type: 'captcha_required', payload };
@@ -487,7 +489,7 @@ export function WalletExpressCheckout({
             retryAfterSeconds: Number(payload?.retryAfterSeconds ?? 900),
           };
         }
-        return { type: 'error', error: payload?.error ?? 'express_checkout_session_failed' };
+        return { type: 'error', error: typeof payload?.error === 'string' ? payload.error : 'express_checkout_session_failed' };
       }
 
       const clientSecret =

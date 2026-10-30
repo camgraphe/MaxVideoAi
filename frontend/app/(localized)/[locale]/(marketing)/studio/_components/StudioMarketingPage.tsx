@@ -33,6 +33,7 @@ export function StudioMarketingPage({ copy, locale }: { copy: StudioMarketingCop
         <a className={styles.secondary} href="#workflow">{copy.secondaryCta}<span aria-hidden="true">↓</span></a>
         <p className={styles.accessNote}>{copy.accessNote}</p>
         <p className={styles.costNote}>{copy.costNote}</p>
+      <Link href="/ai-video-prompt-generator" locale={locale} prefetch={false} className={styles.secondary}>{locale === 'fr' ? 'Milo pour vos prompts' : locale === 'es' ? 'Milo para tus prompts' : 'Milo for your prompts'}<ArrowRight size={15} aria-hidden /></Link>
       </div>
     </section>
     <section className={styles.workflow} id="workflow" aria-labelledby="studio-workflow">

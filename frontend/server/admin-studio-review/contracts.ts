@@ -21,5 +21,5 @@ export type ReviewDetail = {
   accessId: string; coverage: 'partial';
 };
 export class StudioReviewError extends Error {
-  constructor(public code: 'not_found' | 'unavailable' | 'invalid_request', public status: number) { super(code); }
+  constructor(public code: 'not_found' | 'unavailable' | 'invalid_request' | 'review_expired', public status: number) { super(code); }
 }

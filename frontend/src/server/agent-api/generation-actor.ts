@@ -96,10 +96,18 @@ export function requireAudioGenerationActor(actor: GenerationActor): void {
     throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before using Audio.');
 }
 
+const OPTIONAL_REFERENCE_FIELDS = new Set([
+  'slot', 'sizeBytes', 'fps', 'decodedFrameCount', 'constantFrameRate', 'sourceSha256', 'originalName',
+]);
+
 export function studioReferenceFingerprint(
   references: readonly ResolvedReference[],
 ): string {
-  return createHash("sha256").update(stableJson(references)).digest("hex");
+  // Resolvers may spell absent optional facts as undefined; every defined fact remains bound.
+  const canonicalReferences = references.map(reference => Object.fromEntries(
+    Object.entries(reference).filter(([key, value]) => value !== undefined || !OPTIONAL_REFERENCE_FIELDS.has(key)),
+  ));
+  return createHash("sha256").update(stableJson(canonicalReferences)).digest("hex");
 }
 
 export function bindStudioReferenceSnapshot(

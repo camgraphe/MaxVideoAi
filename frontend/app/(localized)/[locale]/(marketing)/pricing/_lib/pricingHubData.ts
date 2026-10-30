@@ -296,10 +296,6 @@ function collectFields(engine: EngineCaps) {
   return [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
 }
 
-function findField(engine: EngineCaps, id: string) {
-  return collectFields(engine).find((field) => field.id === id);
-}
-
 function parseDurationValue(value: number | string | undefined) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value !== 'string') return null;
@@ -307,34 +303,40 @@ function parseDurationValue(value: number | string | undefined) {
   return match ? Number(match[1]) : null;
 }
 
-function collectDurationOptions(entry: FalEngineEntry) {
-  const durations = new Set<number>();
-  entry.modes.forEach((mode) => {
-    const duration = mode.ui.duration;
-    if (duration && 'options' in duration) {
-      duration.options.forEach((option) => {
-        const parsed = parseDurationValue(option);
-        if (parsed != null) durations.add(parsed);
-      });
-    }
-  });
-  const durationField = findField(entry.engine, 'duration');
-  durationField?.values?.forEach((value) => {
-    const parsed = parseDurationValue(value);
-    if (parsed != null) durations.add(parsed);
-  });
-  return [...durations].sort((a, b) => a - b);
+function selectedPricingMode(entry: FalEngineEntry, mode?: Mode) {
+  return mode ?? (entry.engine.modes.includes('t2v') ? 't2v' : entry.engine.modes[0]);
+}
+
+function collectDurationOptions(entry: FalEngineEntry, mode?: Mode): number[] | null {
+  const selected = selectedPricingMode(entry, mode);
+  const duration = entry.engine.modeCaps?.[selected]?.duration
+    ?? entry.modes.find((item) => item.mode === selected)?.ui.duration;
+  const field = collectFields(entry.engine).find(
+    (item) => item.id === 'duration' && (!item.modes?.length || item.modes.includes(selected))
+  );
+  const numeric = (values: Array<number | string>) => values.map(parseDurationValue)
+    .filter((value): value is number => value != null && value > 0);
+  const fieldOptions = field?.values ? numeric(field.values) : null;
+  const modeOptions = duration && 'options' in duration ? numeric(duration.options) : null;
+  // Mode and configured schema restrictions intersect; another mode cannot add a duration.
+  const options = modeOptions
+    ? modeOptions.filter((value) => !fieldOptions || fieldOptions.includes(value))
+    : fieldOptions;
+  return options
+    ? [...new Set(options)].filter((value) => value <= getEngineMaxDurationSec(entry)).sort((a, b) => a - b)
+    : null;
 }
 
 function getEngineMaxDurationSec(entry: FalEngineEntry) {
-  return entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec;
+  return Math.min(entry.engine.maxDurationSec, entry.engine.pricingDetails?.maxDurationSec ?? entry.engine.maxDurationSec);
 }
 
-function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number | null, locale: AppLocale) {
+function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: number | null, locale: AppLocale, mode?: Mode) {
   const copy = getPricingHubCopy(locale);
   if (requestedDurationSec == null) return { supported: true, durationSec: null, note: null as string | null };
-  const options = collectDurationOptions(entry);
-  if (options.length) {
+  const options = collectDurationOptions(entry, mode);
+  if (options) {
+    if (!options.length) return { supported: false, durationSec: null, note: copy.quote.unsupported };
     if (options.includes(requestedDurationSec)) {
       return { supported: true, durationSec: requestedDurationSec, note: null as string | null };
     }
@@ -358,12 +360,12 @@ function resolveDurationSupport(entry: FalEngineEntry, requestedDurationSec: num
   return { supported: false, durationSec: maxDurationSec, note: copy.quote.maxDuration(maxDurationSec) };
 }
 
-function chooseFourKDuration(entry: FalEngineEntry) {
-  const options = collectDurationOptions(entry);
+function chooseFourKDuration(entry: FalEngineEntry, mode?: Mode) {
+  const options = collectDurationOptions(entry, mode);
   const preferred = [10, 8, 5];
-  const exactPreferred = preferred.find((duration) => options.includes(duration));
+  const exactPreferred = preferred.find((duration) => options?.includes(duration));
   if (exactPreferred != null) return exactPreferred;
-  if (options.length) {
+  if (options) {
     return options.find((duration) => duration >= 5) ?? options[0] ?? null;
   }
   const maxDurationSec = getEngineMaxDurationSec(entry);
@@ -373,12 +375,12 @@ function chooseFourKDuration(entry: FalEngineEntry) {
   return maxDurationSec > 0 ? maxDurationSec : null;
 }
 
-function chooseEntryDuration(entry: FalEngineEntry) {
-  const options = collectDurationOptions(entry);
+function chooseEntryDuration(entry: FalEngineEntry, mode?: Mode) {
+  const options = collectDurationOptions(entry, mode);
   const preferred = [10, 8, 5, 6, 12, 15, 4];
-  const exactPreferred = preferred.find((duration) => options.includes(duration));
+  const exactPreferred = preferred.find((duration) => options?.includes(duration));
   if (exactPreferred != null) return exactPreferred;
-  if (options.length) return options[0] ?? null;
+  if (options) return options[0] ?? null;
   const maxDurationSec = getEngineMaxDurationSec(entry);
   return maxDurationSec > 0 ? Math.min(maxDurationSec, 10) : null;
 }
@@ -465,8 +467,8 @@ function supportsAudioOff(engine: EngineCaps) {
 }
 
 function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPriceScenario) {
-  if (preset.id === 'entry-route') return chooseEntryDuration(entry);
-  if (preset.id === '4k-route') return chooseFourKDuration(entry);
+  if (preset.id === 'entry-route') return chooseEntryDuration(entry, preset.mode);
+  if (preset.id === '4k-route') return chooseFourKDuration(entry, preset.mode);
   return preset.durationSec;
 }
 
@@ -481,7 +483,7 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
   const audioMode: AudioRateMode = preset.audio ? 'default' : supportsAudioOff(engine) ? 'audio_off' : 'default';
   const canExactAudio = preset.audio ? engine.audio : true;
   const requestedDurationSec = resolvePresetDuration(entry, preset);
-  const duration = resolveDurationSupport(entry, requestedDurationSec, locale);
+  const duration = resolveDurationSupport(entry, requestedDurationSec, locale, preset.mode);
   const exact = resolution.supported && duration.supported && canExactAudio && requestedDurationSec != null;
 
   const exactCents =
@@ -496,14 +498,17 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
         )
       : null;
   if (exact) {
+    const note = preset.id === 'entry-route'
+      ? `${formatCompactSeconds(locale, duration.durationSec!)} ${formatResolutionLabel(resolution.resolution)}${
+          !preset.audio && engine.audio && !supportsAudioOff(engine) ? ` · ${copy.quote.audioIncluded}` : ''}`
+      : preset.id === '4k-route'
+        ? copy.quote.fourKNote(duration.durationSec!)
+        : !preset.audio && engine.audio && !supportsAudioOff(engine) ? copy.quote.audioIncluded : undefined;
     if (exactCents == null || duration.durationSec == null) {
       return {
         status: 'live_quote',
         display: copy.liveQuote,
-        note:
-          preset.id === '4k-route' && duration.durationSec != null
-            ? copy.quote.fourKNote(duration.durationSec)
-            : undefined,
+        note,
         sortValue: Number.POSITIVE_INFINITY,
       };
     }
@@ -512,16 +517,7 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
       status: 'exact',
       amountCents: exactCents ?? undefined,
       display: formatPrice(locale, exactCents, currency),
-      note:
-        preset.id === 'entry-route'
-          ? `${formatCompactSeconds(locale, duration.durationSec)} ${formatResolutionLabel(resolution.resolution)}${
-              !preset.audio && engine.audio && !supportsAudioOff(engine) ? ` · ${copy.quote.audioIncluded}` : ''
-            }`
-          : preset.id === '4k-route'
-          ? copy.quote.fourKNote(duration.durationSec)
-          : !preset.audio && engine.audio && !supportsAudioOff(engine)
-            ? copy.quote.audioIncluded
-            : undefined,
+      note,
       rateDisplay: formatRateDisplay(locale, rateCents, currency),
       sortValue: exactCents ?? Number.POSITIVE_INFINITY,
     };
@@ -541,7 +537,9 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 }
 
 export function getExactVideoPresetInput(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale) {
-  if (getPresetQuote(entry, preset, locale).status !== 'exact') return null;
+  // Compatibility is independent of whether the legacy catalogue has a price.
+  const status = getPresetQuote(entry, preset, locale).status;
+  if (status !== 'exact' && status !== 'live_quote') return null;
   const resolution = preset.id === 'entry-route'
     ? chooseEntryResolution(entry.engine)
     : resolveResolutionSupport(entry.engine, preset.resolution, locale).resolution;
@@ -609,7 +607,7 @@ function buildVideoNotes(entry: FalEngineEntry, locale: AppLocale) {
 
 function formatDurationCap(entry: FalEngineEntry, locale: AppLocale) {
   const options = collectDurationOptions(entry);
-  const seconds = options.length ? Math.max(...options) : getEngineMaxDurationSec(entry);
+  const seconds = options?.length ? Math.max(...options) : getEngineMaxDurationSec(entry);
   return formatCompactSeconds(locale, seconds);
 }
 
@@ -820,12 +818,12 @@ export function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale)
     },
     {
       label: copy.video.highlights.cheapest4k,
-      value: cheapest4k ? `${cheapest4k.row.engineName} · ${cheapest4k.quote.display}` : copy.noExactRoute,
+      value: cheapest4k ? `${cheapest4k.row.engineName} · ${cheapest4k.quote.display} · ${cheapest4k.quote.note}` : copy.noExactRoute,
       href: cheapest4k ? `#${cheapest4k.row.anchorId}` : undefined,
     },
     {
       label: copy.video.highlights.dedicated4k,
-      value: dedicated4k ? `${dedicated4k.row.engineName} · ${dedicated4k.quote.display}` : copy.noExactRoute,
+      value: dedicated4k ? `${dedicated4k.row.engineName} · ${dedicated4k.quote.display} · ${dedicated4k.quote.note}` : copy.noExactRoute,
       href: dedicated4k ? `#${dedicated4k.row.anchorId}` : undefined,
     },
     {

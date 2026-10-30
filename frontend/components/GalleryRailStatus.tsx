@@ -2,12 +2,12 @@
 
 import { Button, ButtonLink } from '@/components/ui/Button';
 
-export function GalleryRailHeader({ title, viewAll }: { title: string; viewAll: string }) {
+export function GalleryRailHeader({ title, viewAll, desktopHidden = false, viewAllHref = '/jobs' }: { title: string; viewAll: string; desktopHidden?: boolean; viewAllHref?: string }) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-2">
+    <header className={`flex flex-wrap items-center justify-between gap-2${desktopHidden ? ' min-[768px]:hidden' : ''}`}>
       <h2 className="text-[12px] font-semibold uppercase tracking-micro text-text-muted">{title}</h2>
       <ButtonLink
-        href="/jobs"
+        href={viewAllHref}
         prefetch={false}
         variant="ghost"
         size="sm"

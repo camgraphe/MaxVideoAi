@@ -198,8 +198,8 @@ test('homepage titles keep the pay-as-you-go differentiator without getting too 
   assert.ok(titles.en.length <= 55, `English title is too long: ${titles.en.length}`);
   assert.ok(titles.fr.length <= 55, `French title is too long: ${titles.fr.length}`);
   assert.ok(titles.es.length <= 55, `Spanish title is too long: ${titles.es.length}`);
-  assert.match(englishMessages.home?.meta?.description ?? '', /Compare Seedance, Kling, Veo, LTX, Wan, Pika/);
-  assert.match(englishMessages.home?.meta?.description ?? '', /pay-as-you-go credits/);
+  assert.match(englishMessages.home?.meta?.description ?? '', /Compare FLUX 3 Max, MiniMax H3, Kling 4\.0, Seedance 2\.5/);
+  assert.match(englishMessages.home?.meta?.description ?? '', /pay as you go/);
 });
 
 test('the locale runtime owns one canonical site organization entity', () => {

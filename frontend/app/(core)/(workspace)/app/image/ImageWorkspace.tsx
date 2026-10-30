@@ -434,8 +434,10 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
 
   return (
     <>
-      <ImageMediaHandoff modelName={selectedEngine?.name} slots={displayedReferenceSlots} limit={referenceSlotLimit} onInsert={composerActionProps.handleLibrarySelect} />
+      <ImageMediaHandoff modelName={selectedEngine?.name} slots={displayedReferenceSlots} limit={referenceSlotLimit} onInsert={composerActionProps.handleLibrarySelect}>
+      {(recentMedia, openRecentMedia) => (
       <ImageWorkspaceShell
+        recentMedia={recentMedia} onOpenRecentMedia={openRecentMedia}
         isDesktopLayout={isDesktopLayout}
         galleryRailProps={{
           activeGroups: pendingGroups,
@@ -447,6 +449,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
         }}
       >
         <ImageWorkspaceComposerSurface
+          assistanceAccountId={accountId}
               starterPreview={starterPreview} starterNavigation={{ ...starterNavigation, ...guardComposerActions({
                 onPrev: starterNavigation.onPrev, onNext: starterNavigation.onNext,
               }) }}
@@ -486,6 +489,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
               statusMessage={statusMessage}
         />
       </ImageWorkspaceShell>
+      )}</ImageMediaHandoff>
       <ImageWorkspaceRuntimeModals
         referenceSlotLimit={referenceSlotLimit}
         authModalOpen={authModalOpen}

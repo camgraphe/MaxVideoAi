@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { inspect } from 'node:util';
 import test from 'node:test';
+import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import type { GeneratePayload, GenerateResult } from '../frontend/src/lib/fal-types';
 
 const requireFrontend = createRequire(resolve('frontend/package.json'));
@@ -24,6 +25,13 @@ const accepted: GenerateResult = { provider: 'fal', thumbUrl: '/thumb.svg', stat
 
 async function submit(payload: GeneratePayload, generateVideoFn: (payload: GeneratePayload, hooks?: import('../frontend/src/lib/fal-types').GenerateHooks) => Promise<GenerateResult>, records: unknown[] = [], userId = 'owner') {
   const { submitFalGenerateTask } = await import('../frontend/app/api/generate/_lib/fal-submission');
+  const job = { job_id: 'job-fixture', user_id: userId, status: 'pending', payment_status: 'paid_wallet' };
+  const queryFn = async <T,>(sql: string, params?: unknown[]): Promise<T[]> => {
+    records.push({ sql, params });
+    if (sql.includes("SET status = 'failed'")) { job.status = 'failed'; return [{ ...job }] as T[]; }
+    if (sql.startsWith('SELECT * FROM app_jobs')) return [{ ...job }] as T[];
+    return [];
+  };
   return submitFalGenerateTask({
     userId, falPayload: payload, jobId: 'job-fixture', engineId: payload.engineId,
     engineLabel: 'Fixture video', isLumaRay2: false, batchId: null, durationSec: 5,
@@ -33,7 +41,12 @@ async function submit(payload: GeneratePayload, generateVideoFn: (payload: Gener
     logMetricFn: (kind, event) => { records.push({ kind, event }); },
     deps: {
       generateVideoFn, withFalTimeoutFn: async promise => promise,
-      queryFn: async (sql, params) => { records.push({ sql, params }); return []; },
+      queryFn,
+      withFailureSettlementFn: async (_jobId, _context, persist) => {
+        const result = await persist({ query: queryFn } as TransactionQueryExecutor);
+        if (job.status === 'failed') job.payment_status = 'refunded_wallet';
+        return result;
+      },
       rollbackPendingPaymentFn: async () => { records.push('rollback'); },
     },
   });

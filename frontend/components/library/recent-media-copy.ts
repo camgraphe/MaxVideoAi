@@ -1,6 +1,6 @@
 export function recentMediaCopy(locale: string) {
   if (locale.startsWith('fr')) return {
-    title: 'Récents', activity: 'Activité', open: 'Ouvrir les récents', close: 'Fermer',
+    title: 'Récents', activity: 'Activité', viewAll: 'Tout voir', open: 'Ouvrir les récents', close: 'Fermer',
     image: 'Images', video: 'Vidéos', audio: 'Audio', use: 'Utiliser en référence',
     loading: 'Chargement des médias…', error: 'Impossible de charger les médias. Réessayez.', retry: 'Réessayer', refresh: 'Actualiser', refreshing: 'Actualisation…',
     empty: 'Aucun média terminé dans cette catégorie.', auth: 'Connectez-vous pour retrouver vos médias.',
@@ -11,7 +11,7 @@ export function recentMediaCopy(locale: string) {
     issues: { dimensions: 'Dimensions incompatibles avec ce rôle.', mode: 'Rôle indisponible dans ce mode.', aspect_ratio: 'Proportions de l’image incompatibles.', kind: 'Type de média incompatible.', metadata: 'Certaines métadonnées sont indisponibles. Elles seront vérifiées avant la génération.', duration: 'Durée incompatible avec ce rôle.', size: 'Fichier trop volumineux pour ce rôle.', format: 'Format incompatible avec ce rôle.', field_limit: 'Ce rôle est plein. Choisissez explicitement un emplacement à remplacer.', reference_budget: 'Limite totale des références atteinte.' },
   };
   if (locale.startsWith('es')) return {
-    title: 'Recientes', activity: 'Actividad', open: 'Abrir recientes', close: 'Cerrar',
+    title: 'Recientes', activity: 'Actividad', viewAll: 'Ver todo', open: 'Abrir recientes', close: 'Cerrar',
     image: 'Imágenes', video: 'Vídeos', audio: 'Audio', use: 'Usar como referencia',
     loading: 'Cargando medios…', error: 'No se pueden cargar los medios. Inténtalo de nuevo.', retry: 'Reintentar', refresh: 'Actualizar', refreshing: 'Actualizando…',
     empty: 'No hay medios terminados en esta categoría.', auth: 'Inicia sesión para ver tus medios.',
@@ -22,7 +22,7 @@ export function recentMediaCopy(locale: string) {
     issues: { dimensions: 'Dimensiones incompatibles con este rol.', mode: 'Rol no disponible en este modo.', aspect_ratio: 'Proporciones de imagen incompatibles.', kind: 'Tipo de medio incompatible.', metadata: 'Algunos datos no están disponibles. Se verificarán antes de generar.', duration: 'Duración incompatible con este rol.', size: 'Archivo demasiado grande para este rol.', format: 'Formato incompatible con este rol.', field_limit: 'Este rol está lleno. Elige una posición para reemplazar.', reference_budget: 'Se alcanzó el límite total de referencias.' },
   };
   return {
-    title: 'Recents', activity: 'Activity', open: 'Open recent media', close: 'Close',
+    title: 'Recents', activity: 'Activity', viewAll: 'View all', open: 'Open recent media', close: 'Close',
     image: 'Images', video: 'Videos', audio: 'Audio', use: 'Use as reference',
     loading: 'Loading media…', error: 'Unable to load media. Please try again.', retry: 'Retry', refresh: 'Refresh', refreshing: 'Refreshing…',
     empty: 'No completed media in this category.', auth: 'Sign in to see your media.',

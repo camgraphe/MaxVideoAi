@@ -78,6 +78,14 @@ Fallback is permitted only when all of these are true:
 
 Once a provider task ID has been accepted, Alibaba remains authoritative. Never submit the same paid job to Fal after acceptance; polling must reconcile the accepted task instead.
 
+Local snapshot, persistence or metric errors after that acknowledgement do not
+turn it into a failed submission. The video owner uses the shared
+`direct-provider-acceptance.ts` boundary outside its rejection catch, with
+independent identity writes and a durable read preserving terminal winners. A
+failed diagnostic sanitizer omits the snapshot rather than saving raw grants.
+Polling requires the ID in `app_jobs`; an ID retained only in a response or attempt
+record is not an automatic recovery guarantee. See the [acceptance contract](fal-job-failures.md#direct-acknowledgements-and-fallback-outcome-projection-30-october-2026).
+
 ## Capacity, polling, and output ownership
 
 Treat 5 requests per second and 5 concurrent tasks as the current account safety ceiling. Verify the actual account quota before any later enablement and throttle below the lower of the documented and account-specific limits.

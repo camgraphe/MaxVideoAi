@@ -226,7 +226,7 @@ const en: PricingHubCopy = {
     intro:
       'Compare preset MaxVideoAI total prices for common video scenarios. Unsupported combinations are marked clearly. Open the app for the exact live quote before generation.',
     currencyLabel: 'Prices shown in USD credits.',
-    cheapestCurrentGen: 'Cheapest current-gen',
+    cheapestCurrentGen: 'Lowest quoted',
     tableHeaders: { engine: 'Engine', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Video', image: 'Image', audio: 'Audio', tools: 'Tools & Upscale' },
     presetSubLabels: {
@@ -255,11 +255,11 @@ const en: PricingHubCopy = {
       draftIntent: 'Try a short idea',
       detailIntent: 'Give the scene more room',
       soundIntent: 'Create a scene with sound',
-      bestDraft: 'Cheapest current-gen 5s 720p',
-      cheapest8s: 'Cheapest current-gen 8s 1080p',
-      cheapest10s: 'Cheapest current-gen 10s 1080p',
-      cheapestAudio: 'Cheapest current-gen 10s 1080p + audio',
-      cheapest4k: 'Cheapest 4K output',
+      bestDraft: 'Lowest quoted 5s 720p',
+      cheapest8s: 'Lowest quoted 8s 1080p',
+      cheapest10s: 'Lowest quoted 10s 1080p',
+      cheapestAudio: 'Lowest quoted 10s 1080p + audio',
+      cheapest4k: '4K entry price · durations vary',
       dedicated4k: 'Dedicated 4K engine',
       currentGenCount: 'Current-gen engines available',
       currentGenValue: (count) => `${count} engines`,
@@ -271,7 +271,7 @@ const en: PricingHubCopy = {
     title: 'Popular price checks',
     columns: {
       priceCheck: 'Price check',
-      cheapestEngine: 'Cheapest current-gen option',
+      cheapestEngine: 'Lowest quoted option',
       typicalPrice: 'Typical exact price',
       link: 'Link',
     },
@@ -350,7 +350,7 @@ const en: PricingHubCopy = {
         },
         {
           "title": "Milo assistance credits",
-          "body": "Milo Max (GPT-6.1 Sol) includes 500 credits per UTC calendar month. Unused included credits do not carry over. Purchased Max packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Standard (GPT-6 Luna) has no extra assistance fee, subject to request limits and service availability."
+          "body": "Milo Standard and Max share 500 included assistance credits per UTC calendar month. Unused included credits do not carry over. Purchased Milo packs accumulate without expiry or automatic refill. Each pack purchase is confirmed and funded from your MaxVideoAI wallet. Media generation has its own separate quote. Milo Lite has no extra assistance fee, subject to request limits and service availability."
         }
       ],
       "links": {
@@ -374,7 +374,7 @@ const en: PricingHubCopy = {
       },
       {
         title: 'Exact price before launch',
-        body: "The app shows the live price for your selected engine, duration, resolution and options before generation, even as a guest. Using Studio? Milo Max uses included or purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
+        body: "The app shows the live price for your selected engine, duration, resolution and options before generation, even as a guest. Using Milo in a generator or Studio? Standard and Max share included and purchased assistance credits. Media generation has its own quote. Review both when planning your budget.",
       },
       {
         title: 'Failed generations refunded',
@@ -441,7 +441,7 @@ const fr: PricingHubCopy = {
     intro:
       'Comparez les prix totaux MaxVideoAI pour des scénarios vidéo courants. Les combinaisons non disponibles sont indiquées clairement. Ouvrez l’app pour le devis exact avant génération.',
     currencyLabel: 'Prix affichés en crédits USD.',
-    cheapestCurrentGen: 'Moins cher génération actuelle',
+    cheapestCurrentGen: 'Prix le plus bas affiché',
     tableHeaders: { engine: 'Moteur', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Vidéo', image: 'Image', audio: 'Audio', tools: 'Outils & upscale' },
     presetSubLabels: {
@@ -470,11 +470,11 @@ const fr: PricingHubCopy = {
       draftIntent: 'Tester une idée courte',
       detailIntent: 'Développer une scène',
       soundIntent: 'Créer une scène avec du son',
-      bestDraft: 'Moins cher actuel 5 s 720p',
-      cheapest8s: 'Moins cher actuel 8 s 1080p',
-      cheapest10s: 'Moins cher actuel 10 s 1080p',
-      cheapestAudio: 'Moins cher actuel 10 s 1080p + audio',
-      cheapest4k: 'Sortie 4K la moins chère',
+      bestDraft: 'Prix le plus bas affiché 5 s 720p',
+      cheapest8s: 'Prix le plus bas affiché 8 s 1080p',
+      cheapest10s: 'Prix le plus bas affiché 10 s 1080p',
+      cheapestAudio: 'Prix le plus bas affiché 10 s 1080p + audio',
+      cheapest4k: 'Prix d’entrée 4K · durées variables',
       dedicated4k: 'Moteur 4K dédié',
       currentGenCount: 'Moteurs actuels disponibles',
       currentGenValue: (count) => `${count} moteurs`,
@@ -486,7 +486,7 @@ const fr: PricingHubCopy = {
     title: 'Vérifications de prix fréquentes',
     columns: {
       priceCheck: 'Scénario',
-      cheapestEngine: 'Option actuelle la moins chère',
+      cheapestEngine: 'Option au prix le plus bas affiché',
       typicalPrice: 'Prix exact typique',
       link: 'Lien',
     },
@@ -565,7 +565,7 @@ const fr: PricingHubCopy = {
         },
         {
           "title": "Crédits d’assistance Milo",
-          "body": "Milo Max (GPT-6.1 Sol) inclut 500 crédits par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Max achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Standard (GPT-6 Luna) n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
+          "body": "Milo Standard et Max partagent 500 crédits d’assistance inclus par mois civil UTC. Les crédits inclus non utilisés ne sont pas reportés. Les packs Milo achetés se cumulent sans expiration ni recharge automatique. Chaque achat de pack est confirmé et financé depuis votre portefeuille MaxVideoAI. La génération média a son propre devis distinct. Milo Lite n’entraîne pas de frais d’assistance supplémentaires, sous réserve des limites de requête et de la disponibilité du service."
         }
       ],
       "links": {
@@ -589,7 +589,7 @@ const fr: PricingHubCopy = {
       },
       {
         title: 'Prix exact avant lancement',
-        body: "L’app affiche le prix live selon le moteur, la durée, la résolution et les options sélectionnés avant génération, même en invité. Vous utilisez Studio ? Milo Max consomme des crédits d’assistance inclus ou achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
+        body: "L’app affiche le prix live selon le moteur, la durée, la résolution et les options sélectionnés avant génération, même en invité. Vous utilisez Milo dans un générateur ou dans Studio ? Standard et Max partagent les crédits d’assistance inclus et achetés. La génération média dispose de son propre devis. Tenez compte des deux dans votre budget.",
       },
       {
         title: 'Échecs remboursés',
@@ -656,7 +656,7 @@ const es: PricingHubCopy = {
     intro:
       'Compara precios totales de MaxVideoAI para escenarios de video comunes. Las combinaciones no disponibles se marcan claramente. Abre la app para ver el precio exacto antes de generar.',
     currencyLabel: 'Precios mostrados en créditos USD.',
-    cheapestCurrentGen: 'Más barato generación actual',
+    cheapestCurrentGen: 'Menor precio cotizado',
     tableHeaders: { engine: 'Motor', caps: 'Caps', actions: 'Acciones' },
     tabs: { video: 'Video', image: 'Imagen', audio: 'Audio', tools: 'Herramientas & upscale' },
     presetSubLabels: {
@@ -685,11 +685,11 @@ const es: PricingHubCopy = {
       draftIntent: 'Probar una idea corta',
       detailIntent: 'Dar más espacio a la escena',
       soundIntent: 'Crear una escena con sonido',
-      bestDraft: 'Más barato actual 5 s 720p',
-      cheapest8s: 'Más barato actual 8 s 1080p',
-      cheapest10s: 'Más barato actual 10 s 1080p',
-      cheapestAudio: 'Más barato actual 10 s 1080p + audio',
-      cheapest4k: 'Salida 4K más barata',
+      bestDraft: 'Menor precio cotizado 5 s 720p',
+      cheapest8s: 'Menor precio cotizado 8 s 1080p',
+      cheapest10s: 'Menor precio cotizado 10 s 1080p',
+      cheapestAudio: 'Menor precio cotizado 10 s 1080p + audio',
+      cheapest4k: 'Precio de entrada 4K · duraciones variables',
       dedicated4k: 'Motor 4K dedicado',
       currentGenCount: 'Motores actuales disponibles',
       currentGenValue: (count) => `${count} motores`,
@@ -701,7 +701,7 @@ const es: PricingHubCopy = {
     title: 'Consultas de precio frecuentes',
     columns: {
       priceCheck: 'Escenario',
-      cheapestEngine: 'Opción actual más barata',
+      cheapestEngine: 'Opción con menor precio cotizado',
       typicalPrice: 'Precio exacto típico',
       link: 'Enlace',
     },
@@ -780,7 +780,7 @@ const es: PricingHubCopy = {
         },
         {
           "title": "Créditos de asistencia de Milo",
-          "body": "Milo Max (GPT-6.1 Sol) incluye 500 créditos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Max comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Standard (GPT-6 Luna) no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
+          "body": "Milo Standard y Max comparten 500 créditos de asistencia incluidos por mes natural UTC. Los créditos incluidos no usados no se acumulan. Los paquetes Milo comprados se acumulan sin caducidad ni recarga automática. Cada compra de paquete se confirma y se financia desde tu monedero MaxVideoAI. La generación de medios tiene su propia cotización. Milo Lite no tiene coste adicional de asistencia, sujeto a límites de solicitudes y disponibilidad del servicio."
         }
       ],
       "links": {
@@ -804,7 +804,7 @@ const es: PricingHubCopy = {
       },
       {
         title: 'Precio exacto antes de lanzar',
-        body: "La app muestra el precio vivo según el motor, la duración, la resolución y las opciones antes de generar, incluso como invitado. ¿Usas Studio? Milo Max utiliza créditos de asistencia incluidos o comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
+        body: "La app muestra el precio vivo según el motor, la duración, la resolución y las opciones antes de generar, incluso como invitado. ¿Usas Milo en un generador o en Studio? Standard y Max comparten los créditos de asistencia incluidos y comprados. La generación de medios tiene su propia cotización. Ten en cuenta ambos al planificar tu presupuesto.",
       },
       {
         title: 'Fallos reembolsados',

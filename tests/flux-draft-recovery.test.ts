@@ -37,7 +37,7 @@ test('Draft optional cache qualification follows all critical completion persist
  const source=readFileSync('frontend/server/fal-webhook-handler.ts','utf8');
  const capture=source.indexOf('await captureCompletedFalDraftCache(job,nextStatus)');
  assert.ok(capture>=0,'the optional capture remains awaited in the handler');
- for(const before of ['await upsertLegacyJobOutputs(', 'await maybeAutoRefundWalletCharge(', 'failed to record Fal lifecycle log', 'failed to record no-media log']) {
+ for(const before of ['await upsertLegacyJobOutputs(', 'await withWalletFailureSettlement(', 'failed to record Fal lifecycle log', 'failed to record no-media log']) {
    assert.ok(source.indexOf(before)>=0 && capture>source.indexOf(before),`capture follows ${before}`);
  }
  assert.ok(capture>source.lastIndexOf('if (forcedNoMediaFailure)'));

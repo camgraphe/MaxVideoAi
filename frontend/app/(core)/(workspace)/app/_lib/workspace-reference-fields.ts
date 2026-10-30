@@ -22,7 +22,6 @@ export type WorkspaceReferenceAvailability = {
   showLumaRay32KeyframeEditor: boolean;
   showFlux3MaxKeyframeEditor?: boolean;
 };
-const LUMA_CUSTOM_ASSETS = new Set(['video_url', 'start_image_url', 'edit_keyframe_urls']);
 
 /** Shared availability for the composer and recent-reference destination chooser. */
 export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options: WorkspaceReferenceAvailability): AssetFieldConfig[] {
@@ -32,7 +31,7 @@ export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options:
     && hasMultimodalReferenceFields(fields.map(({ field }) => field));
   const populatedFields = fields.filter(({ field }) =>
     (inputAssets[field.id] ?? []).some((asset) => asset?.kind === field.type));
-  return fields.filter(({ field }) => !(showLumaRay32KeyframeEditor && LUMA_CUSTOM_ASSETS.has(field.id)) && !(showFlux3MaxKeyframeEditor && field.id === 'reference_image_urls')).map((entry) => {
+  return fields.filter(({ field }) => !(showLumaRay32KeyframeEditor && field.id === 'edit_keyframe_urls') && !(showFlux3MaxKeyframeEditor && field.id === 'reference_image_urls')).map((entry) => {
       const fieldHasOwnAssets = (inputAssets[entry.field.id] ?? []).some((asset) => asset != null);
       const blockKey = isUnifiedSeedance
         ? getSeedanceFieldBlockKey(entry.field.id, inputAssets, fieldHasOwnAssets)
@@ -65,7 +64,11 @@ export function getWorkspaceReferenceFields(fields: AssetFieldConfig[], options:
             ? workflowCopy.clearStartEndToUseReferences
             : workflowCopy.clearIncompatibleMedia ?? 'Remove incompatible media before adding this reference.'
         : null;
-      const derivedDisabledReason = omniDisabledReason ?? klingO3DisabledReason ?? workflowDisabledReason ?? schemaDisabledReason ?? guestUploadLockedReason;
+      const lumaGuideDisabledReason = showLumaRay32KeyframeEditor && entry.field.id === 'start_image_url'
+        && inputAssets.edit_keyframe_urls?.some(Boolean)
+        ? 'Remove keyframes to use a single guide frame.'
+        : null;
+      const derivedDisabledReason = omniDisabledReason ?? klingO3DisabledReason ?? lumaGuideDisabledReason ?? workflowDisabledReason ?? schemaDisabledReason ?? guestUploadLockedReason;
       const preservesIncomingRestriction = entry.disabled === true;
       const disabledReason = preservesIncomingRestriction
         ? entry.disabledReason ?? derivedDisabledReason

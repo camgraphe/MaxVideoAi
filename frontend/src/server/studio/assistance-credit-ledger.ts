@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import type {QueryExecutor,TransactionQueryExecutor} from '@/lib/db';
 import {reserveWalletChargeInExecutor} from '@/lib/wallet';
 import {AgentApiError} from '@/server/agent-api/errors';
-import {STUDIO_SOL_MONTHLY_CREDITS,STUDIO_SOL_CREDITS_PER_DOLLAR,STUDIO_ASSISTANCE_CREDIT_TARIFF,type StudioCreditBalance} from '@/lib/studio/assistance-contract';
+import {STUDIO_SOL_MONTHLY_CREDITS,STUDIO_SOL_CREDITS_PER_DOLLAR,studioAssistanceTariff,type StudioCreditBalance} from '@/lib/studio/assistance-contract';
 import {STUDIO_ASSISTANCE_CAMPAIGN_ID} from './assistance-policy';
 
 export type StudioCreditConsumer='chat'|'analysis';
@@ -35,7 +35,7 @@ export async function existingStudioCreditPurchase(tx:TransactionQueryExecutor,u
 }
 export async function purchaseStudioCreditPack(tx:TransactionQueryExecutor,userId:string,choice:{purchaseKey:string;amountCents:number;tariffVersion:string}){
   const id=randomUUID();
-  const debit=await reserveWalletChargeInExecutor(tx,{userId,amountCents:choice.amountCents,currency:'USD',description:'Milo Max credit pack',jobId:'studio-sol-pack:'+id,surface:'tool',billingProductKey:'studio_assistance_pack',pricingSnapshotJson:JSON.stringify({tariff:STUDIO_ASSISTANCE_CREDIT_TARIFF,credits:choice.amountCents*creditsPerCent,creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,purchaseKey:choice.purchaseKey}),applicationFeeCents:null,vendorAccountId:null},{preferredCurrency:null});
+  const debit=await reserveWalletChargeInExecutor(tx,{userId,amountCents:choice.amountCents,currency:'USD',description:'Milo credit pack',jobId:'studio-sol-pack:'+id,surface:'tool',billingProductKey:'studio_assistance_pack',pricingSnapshotJson:JSON.stringify({tariff:studioAssistanceTariff(choice.tariffVersion),credits:choice.amountCents*creditsPerCent,creditsPerDollar:STUDIO_SOL_CREDITS_PER_DOLLAR,purchaseKey:choice.purchaseKey}),applicationFeeCents:null,vendorAccountId:null},{preferredCurrency:null});
   if(!debit.ok)throw new AgentApiError('INSUFFICIENT_FUNDS','Your MaxVideoAI balance cannot fund this Max pack. Top up your balance before purchasing.');
   await tx.query(`INSERT INTO studio_assistance_credit_lots(id,user_id,kind,total_credits,amount_cents,purchase_key,tariff_version,receipt_id) VALUES($1,$2,'purchased',$3,$4,$5,$6,$7)`,[id,userId,choice.amountCents*creditsPerCent,choice.amountCents,choice.purchaseKey,choice.tariffVersion,debit.receiptId]);
 }

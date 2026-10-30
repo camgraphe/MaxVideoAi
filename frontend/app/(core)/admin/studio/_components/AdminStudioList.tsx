@@ -8,7 +8,7 @@ import { reviewProgressLabel, reviewStateLabel } from './StudioReviewStatus';
 export function AdminStudioList({ data, filter, invalid = false }: { data?: ReviewList; filter?: ReviewListFilter; invalid?: boolean }) {
   const pageHref = (page: number) => '/admin/studio?' + new URLSearchParams(Object.entries({ ...filter, page }).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)]));
   return <div className="space-y-6">
-    <AdminPageHeader title="Studio interaction review" description="Metadata for retained Studio turns. Recorded user text and the visible assistant reply require an explicit, audited reveal." actions={<Link href="/admin/mcp" prefetch={false} className="text-sm underline">MCP activity</Link>} />
+    <AdminPageHeader title="Studio interaction review" description="Metadata for retained Studio turns. Recorded user text and the visible assistant reply require an explicit, audited reveal." actions={<Link href="/admin/assistants?source=studio" prefetch={false} className="text-sm underline">Context and human reviews</Link>} />
     <AdminNotice>Coverage is partial. Ready means a visible reply was saved. Preparation outcomes require reviewing the recorded actions and any quote. Historical full context and instruction versions are not captured. External MCP host transcripts are unavailable; the MCP page reports server-observed activity.</AdminNotice>
     <AdminSection title="Find a turn" description="Up to 50 metadata rows per page. Deleted projects are excluded.">
       <form action="/admin/studio" className="flex flex-wrap items-end gap-3">

@@ -31,15 +31,17 @@ function recordingDependencies(
   };
 
   return {
-    beginStripeEvent: async (event) => {
+    runStripeEvent: async (event, handle) => {
       calls.push(`claim:${event.id}`);
-      return options.claimed ?? true;
-    },
-    markStripeEventProcessed: async (eventId) => {
-      calls.push(`mark:${eventId}`);
-    },
-    rollbackStripeEvent: async (eventId) => {
-      calls.push(`rollback:${eventId}`);
+      if (options.claimed === false) return 'duplicate';
+      try {
+        await handle();
+        calls.push(`mark:${event.id}`);
+        return 'handled';
+      } catch (error) {
+        calls.push(`rollback:${event.id}`);
+        throw error;
+      }
     },
     replayMcpTopupAttribution: async (event) => {
       calls.push(`replay:${event.id}`);

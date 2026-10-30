@@ -203,6 +203,7 @@ export const routing = defineRouting({
       fr: '/docs/[slug]',
       es: '/docs/[slug]',
     },
+    '/ai-video-prompt-generator': { en: '/ai-video-prompt-generator', fr: '/ai-video-prompt-generator', es: '/ai-video-prompt-generator' },
     '/studio': { en: '/studio', fr: '/studio', es: '/studio' },
     '/mcp': {
       en: '/mcp',

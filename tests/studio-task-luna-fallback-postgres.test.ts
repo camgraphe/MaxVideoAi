@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
-import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
+import {createLegacyTaskService as createStudioTaskService} from './helpers/legacy-task-service';
 import {runStudioTaskWorkerOnce} from '../frontend/src/server/studio/tasks/worker';
 import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-conversation-service';
 import {STUDIO_TASK_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
@@ -11,14 +11,14 @@ import {chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanc
 const generationFactory=(()=>({resolveReferences:async()=>[],walletSummary:async()=>({balanceCents:0,currency:'USD'}),catalog:async()=>[],getQuote:async()=>null})) as unknown as ImageGenerationFactory;
 const response=(model:string,id:string)=>({id,model,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply:'Continued from the saved project.'}),output:[]});
 
-test('a large input context with zero remaining Max credits continues with sponsored Standard',async t=>{
+test('a large input context with zero remaining Max credits historically continues with sponsored Lite',async t=>{
   const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input('complex','Keep the approved vertical framing and continue.');await service.enqueue(input);
   await f.pool.query('UPDATE studio_assistance_credit_lots SET consumed_credits=500 WHERE user_id=$1',[actor.userId]);
   const counted:string[]=[],models:string[]=[];
   const worker={enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,
     countInputTokens:async params=>{counted.push(params.model!);return params.model==='gpt-6.1-sol'?30000:100;},
-    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'medium');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
+    createActionResponse:async params=>{models.push(params.model!);assert.equal(params.max_output_tokens,2200);assert.equal(params.reasoning?.effort,'high');assert.match(JSON.stringify(params.input),/approved vertical framing/);return response(params.model!,'luna-funded');}}};
   assert.equal(await runStudioTaskWorkerOnce(worker),true);
   const task=await service.read(input.requestId);
   assert.equal(task.state,'completed','Funding should continue with Luna instead of pausing');assert.equal(task.model,'gpt-6-luna');
@@ -132,7 +132,7 @@ test('Luna tool round trips retain their own reasoning and native function-call 
   await runStudioTaskWorkerOnce({enabled:true,assistancePolicy:f.policy,serviceOptions:{generationFactory,countInputTokens:async params=>params.model==='gpt-6.1-sol'?30000:100,createActionResponse:async params=>{
     assert.equal(params.model,'gpt-6-luna');
     assert.equal(params.max_output_tokens,2200,'Each fallback round keeps its recorded output allowance');
-    assert.equal(params.reasoning?.effort,'medium','Each fallback round keeps its recorded reasoning allowance');
+    assert.equal(params.reasoning?.effort,'high','Each fallback round keeps its recorded reasoning allowance');
     if(++calls===1)return {...response(params.model!,'luna-with-tool'),output_text:'',output:[{type:'reasoning' as const,id:'luna-thinking',summary:[],encrypted_content:'luna-opaque'},{type:'function_call' as const,id:'fc-luna-read',status:'completed' as const,name:'project_read',call_id:'luna-project-read',arguments:'{}'}]};
     assert.match(JSON.stringify(params.input),/luna-opaque/);assert.match(JSON.stringify(params.input),/fc-luna-read/);assert.match(JSON.stringify(params.input),/function_call_output/);
     return response(params.model!,'luna-roundtrip-done');

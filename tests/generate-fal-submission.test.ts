@@ -8,7 +8,7 @@ import {
   submitFalGenerateTask,
 } from '../frontend/app/api/generate/_lib/fal-submission';
 import { FalTimeoutError } from '../frontend/app/api/generate/_lib/fal-error-handling';
-import { persistRefundReceipt } from '../frontend/app/api/generate/_lib/payment-rollback';
+import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import type { PendingReceipt } from '../frontend/app/api/generate/_lib/initial-video-job';
 import { FalGenerationError } from '../frontend/src/lib/fal-error';
 import type { GeneratePayload, GenerateResult } from '../frontend/src/lib/fal';
@@ -213,7 +213,7 @@ for (const { status, message } of [
   { status: 429, message: 'Quota exceeded' },
 ]) {
   test(`enqueue rejection ${status} refunds the charge instead of polling a local batch id`, async () => {
-    const { result, queries } = await submitRejectedEnqueue(new FalGenerationError(
+    const { result, queries, settlements } = await submitRejectedEnqueue(new FalGenerationError(
       'Generation submission could not be confirmed.',
       { status, body: { detail: message } }
     ));
@@ -225,14 +225,15 @@ for (const { status, message } of [
     const jobUpdate = queries.find(({ sql }) => sql.includes('UPDATE app_jobs'));
     assert.match(jobUpdate?.sql ?? '', /SET status = 'failed'/);
     assert.equal(jobUpdate?.params?.[2], null, 'a local batch is not a Fal request id');
-    assert.equal(jobUpdate?.params?.[3], 'refunded_wallet');
-    assertExactWalletRefund(queries);
+    assert.equal(jobUpdate?.params?.length, 3, 'the terminal write must not presume a refund');
+    assert.equal(result.body.paymentStatus, 'refunded_wallet');
+    assert.equal(settlements, 1);
   });
 }
 
 for (const status of [403, 422]) {
   test(`a definitive ${status} error with a Fal request id still follows the refund policy`, async () => {
-    const { result, queries } = await submitRejectedEnqueue(new FalGenerationError(
+    const { result, settlements } = await submitRejectedEnqueue(new FalGenerationError(
       'Render request failed',
       {
         status,
@@ -245,7 +246,8 @@ for (const status of [403, 422]) {
     if (result.ok) return;
     assert.equal(result.status, status);
     assert.notEqual(result.body.deferred, true);
-    assertExactWalletRefund(queries);
+    assert.equal(result.body.paymentStatus, 'refunded_wallet');
+    assert.equal(settlements, 1);
   });
 }
 
@@ -300,8 +302,15 @@ async function submitRejectedEnqueue(error: Error) {
     applicationFeeCents: 23,
     vendorAccountId: null,
   };
+  let settlements = 0;
+  const job = { job_id: 'job_enqueue', status: 'pending', payment_status: 'paid_wallet' };
   const queryFn = async <T>(sql: string, params?: unknown[]): Promise<T[]> => {
     queries.push({ sql, params });
+    if (sql.includes("SET status = 'failed'")) {
+      job.status = 'failed';
+      return [{ ...job }] as T[];
+    }
+    if (sql.startsWith('SELECT * FROM app_jobs')) return [{ ...job }] as T[];
     return [];
   };
   const result = await withMutedFalLogs(() => submitFalGenerateTask({
@@ -323,22 +332,16 @@ async function submitRejectedEnqueue(error: Error) {
       generateVideoFn: async () => { throw error; },
       withFalTimeoutFn: async (promise) => promise,
       queryFn,
-      rollbackPendingPaymentFn: async ({ pendingReceipt: receipt, refundDescription }) => {
-        assert.ok(receipt);
-        await persistRefundReceipt({ receipt, description: refundDescription, stripeRefundId: null, priceOnly: true, queryFn });
+      rollbackPendingPaymentFn: async () => { assert.fail('Wallet failures must use atomic settlement'); },
+      withFailureSettlementFn: async (_jobId, _context, persist) => {
+        const outcome = await persist({ query: queryFn } as TransactionQueryExecutor);
+        settlements++;
+        job.payment_status = 'refunded_wallet';
+        return outcome;
       },
     },
   }));
-  return { result, queries };
-}
-
-function assertExactWalletRefund(queries: CapturedQuery[]) {
-  const refunds = queries.filter(({ sql }) => sql.includes('INSERT INTO app_receipts'));
-  assert.equal(refunds.length, 1);
-  assert.match(refunds[0].sql, /'refund'/);
-  assert.match(refunds[0].sql, /ON CONFLICT DO NOTHING/);
-  assert.deepEqual(refunds[0].params?.slice(0, 3), ['user_enqueue', 98, 'USD']);
-  assert.equal(refunds[0].params?.[4], 'job_enqueue');
+  return { result, queries, settlements };
 }
 
 async function withMutedFalLogs<T>(fn: () => Promise<T>): Promise<T> {

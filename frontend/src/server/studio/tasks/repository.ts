@@ -2,12 +2,12 @@ import {query,type QueryExecutor} from '@/lib/db';
 import {AgentApiError} from '@/server/agent-api/errors';
 import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import type {ImageTurnInput} from '@/lib/studio/image-conversation-contract';
-import {studioTaskStatusSchema,STUDIO_TASK_POLICY_VERSION,type StudioTaskStatus,type StudioTaskProfile,type StudioTaskResourceProfile,type StudioTaskPolicyVersion} from '@/lib/studio/task-budget-contract';
+import {studioTaskStatusSchema,STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V2_POLICY_VERSION,type StudioTaskStatus,type StudioTaskProfile,type StudioTaskResourceProfile,type StudioTaskPolicyVersion} from '@/lib/studio/task-budget-contract';
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
 export type StudioTaskRow={user_id:string;project_id:string;request_id:string;segment_request_id:string;segment_max_calls?:number;input_hash:string;source_fingerprint:string;input_json:ImageTurnInput;profile:StudioTaskProfile;profile_json:StudioTaskResourceProfile;policy_version:StudioTaskPolicyVersion;model:StudioAssistantModel;state:StudioTaskStatus['state'];phase:StudioTaskStatus['phase'];max_credits:number;allowed_calls:number;revision:number;worker_id:string|null;recovery_attempts:number;replay_only:boolean;lease_expires_at:Date|null;deadline_at:Date|null;partial_reply:string|null;error:StudioTaskStatus['error'];created_at:Date;updated_at:Date;project_deleted?:Date|null;lease_valid?:boolean};
 export async function studioTaskSchemaReady(db:QueryExecutor={query},policyVersion?:StudioTaskPolicyVersion) {
   if(db.query===query&&!process.env.DATABASE_URL?.trim())return false;
-  return (await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_tasks') IS NOT NULL AND to_regclass('public.studio_task_segments') IS NOT NULL AND to_regclass('public.studio_task_approvals') IS NOT NULL AND to_regclass('public.studio_task_memory_notes') IS NOT NULL AND ($1::boolean=false OR to_regprocedure('public.enforce_studio_task_resource_policy_v2()') IS NOT NULL) ready",[policyVersion===STUDIO_TASK_POLICY_VERSION]))[0]?.ready===true;
+  return (await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_tasks') IS NOT NULL AND to_regclass('public.studio_task_segments') IS NOT NULL AND to_regclass('public.studio_task_approvals') IS NOT NULL AND to_regclass('public.studio_task_memory_notes') IS NOT NULL AND ($1::text IS NULL OR to_regprocedure($1::text) IS NOT NULL) ready",[policyVersion===STUDIO_TASK_POLICY_VERSION?'public.enforce_studio_task_resource_policy_v3()':policyVersion===STUDIO_TASK_V2_POLICY_VERSION?'public.enforce_studio_task_resource_policy_v2()':null]))[0]?.ready===true;
 }
 export async function readStudioTaskRow(actor:StudioGenerationActor,requestId:string,db:QueryExecutor={query},lock=false) {
   const row=(await db.query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t JOIN studio_projects p ON p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL
@@ -35,7 +35,8 @@ export async function studioTaskFundingRequestIds(db:QueryExecutor,scope:{user_i
 }
 export async function projectStudioTask(row:StudioTaskRow,db:QueryExecutor={query}):Promise<StudioTaskStatus> {
   const usage=await readStudioTaskUsage(row,db);
-  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:usage.usedLuna?'gpt-6-luna':row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
+  const segment=(await db.query<{model:StudioAssistantModel}>('SELECT model FROM studio_assistance_turns WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[row.user_id,row.project_id,row.segment_request_id]))[0];
+  return studioTaskStatusSchema.parse({requestId:row.request_id,profile:row.profile,policyVersion:row.policy_version,model:usage.usedLuna?'gpt-6-luna':segment?.model??row.model,state:row.state,phase:row.phase,maxCredits:row.max_credits,
     consumedCredits:usage.consumedCredits,reservedCredits:usage.reservedCredits,completedCalls:usage.completedCalls,allowedCalls:row.allowed_calls,revision:row.revision,error:row.error,
     canContinue:row.state==='paused'&&usage.unknownCalls===0&&row.allowed_calls<24});
 }

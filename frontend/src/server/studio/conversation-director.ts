@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
+import {studioReasoning} from './assistance-reasoning';
 import {STUDIO_ANALYSIS_DIRECTOR_TOOLS,studioAnalysisDirectorTools} from '@/lib/studio/media-analysis-contract';
-import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
+import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistance-contract';
 import {buildStudioDirectorInstructions,STUDIO_GENERATION_RECOVERY_INSTRUCTIONS} from './conversation-director-instructions';
 import {STUDIO_EXPORT_DIRECTOR_TOOLS} from '@/lib/studio/conversation-export-contract';
 import type { Response, ResponseCreateParamsNonStreaming, ResponseInputItem } from 'openai/resources/responses/responses';
@@ -90,7 +91,7 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioConstraintMismatch,isStudioComparisonMismatch,studioComparisonFingerprint,studioComparisonAttemptFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     const locale=studioConversationLanguage(context.message,context.history,context.locale??options.taskExecution?.locale??'en');
     const greeting=studioGreetingReply(context.message,context.references.length>0);
@@ -150,9 +151,9 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         : index === maxResponses-1 ? availableTools.filter(tool => tool.action.endsWith('.prepare') || tool.action === 'timeline.edit' || tool.action === 'quote.discard' || tool.action === 'pricing.compare')
         : index === Math.max(0,maxResponses-2) ? availableTools.filter(tool => tool.action !== 'project.remember') : availableTools;
       const model=options.modelForNextCall?.()??options.model??'gpt-6.1-sol';
-      const effort=options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):model==='gpt-6-luna'?'high':'medium';
+      const effort=options.taskExecution?.profile.explicitLiteChoice&&model==='gpt-6-luna'?'high':options.taskExecution?(model==='gpt-6.1-sol'&&options.taskExecution.profile.reasoning==='high'&&lastResult?.action==='catalog.read'?'medium':options.taskExecution.profile.reasoning):options.runtimePolicy?.reasoning??(model==='gpt-6-luna'?'high':'medium');
       const params: ResponseCreateParamsNonStreaming = {
-        model, service_tier: 'default', store: false, reasoning: {effort}, max_output_tokens: options.taskExecution?.profile.maxOutputTokens??2200,
+        model, service_tier: 'default', store: false, reasoning: studioReasoning(effort), max_output_tokens: options.taskExecution?.profile.maxOutputTokens??options.runtimePolicy?.maxOutputTokens??2200,
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: needsFilmComparison?{type:'function',name:'pricing_compare'}:'auto',
@@ -191,13 +192,13 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
           // A sponsored final Max response may still reach its output bound. Its incomplete
           // tools are never executed; the next metered step can finish with sponsored Standard.
           // Keep the task's existing call cap, including replay of this saved response.
-          if(options.taskExecution&&response.model==='gpt-6.1-sol'&&(creditCompletion||(params.max_output_tokens??0)<options.taskExecution.profile.maxOutputTokens)&&index<maxResponses-1)continue;
+          if(options.taskExecution&&response.model!=='gpt-6-luna'&&(creditCompletion||(params.max_output_tokens??0)<options.taskExecution.profile.maxOutputTokens)&&index<maxResponses-1)continue;
           return pendingDirectorReply('output_limit',completedEdits,lastResult,false,locale);
         }
         throw new AgentApiError('INTERNAL_ERROR', 'Studio could not finish this message. Resume the saved request.', true);
       }
       const calls = response.output.filter(item => item.type === 'function_call');
-      if(response.model==='gpt-6.1-sol')for(const item of response.output)solOutput.add(item);
+      if(response.model!=='gpt-6-luna')for(const item of response.output)solOutput.add(item);
       if (!calls.length) {
         try { return {...replySchema.parse(JSON.parse(response.output_text)), image: null}; }
         catch { throw new AgentApiError('INTERNAL_ERROR', 'Studio returned an incomplete reply. Resume the saved request.', true); }

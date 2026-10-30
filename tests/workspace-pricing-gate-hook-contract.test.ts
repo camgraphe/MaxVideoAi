@@ -44,6 +44,7 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(appSource, /import \{ useWorkspacePricingGate \} from '\.\/_hooks\/useWorkspacePricingGate';/);
   assert.match(appSource, /import \{ WorkspaceAppReadyView \} from '\.\/_components\/WorkspaceAppReadyView';/);
   assert.match(appSource, /useWorkspacePricingGate\(\{/);
+  assert.match(appSource, /useWorkspacePricingGate\(\{\s*accountId: confirmedAccount,/);
   assert.match(appSource, /inputAssets: assets\.inputAssets/);
   assert.doesNotMatch(appSource, /WorkspaceRuntimeModals/);
 

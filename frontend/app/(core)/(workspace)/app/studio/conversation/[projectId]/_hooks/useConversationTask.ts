@@ -8,12 +8,12 @@ export function useConversationTask(projectId:string,accountKey:string,task:Stud
   const [state,setState]=useState({owner:session,busy:false,error:null as string|null});
   const isCurrent=useCallback(()=>session.active&&current.current===session,[session]);
   useEffect(()=>{session.active=true;return()=>{session.active=false;session.version++;session.controller?.abort();};},[session]);
-  const mutate=useCallback(async(action:'continue'|'extend'|'recover'|'cancel',maxCredits?:number)=>{
+  const mutate=useCallback(async(action:'continue'|'extend'|'continue_lite'|'recover'|'cancel',maxCredits?:number)=>{
     if(!isCurrent()||session.mutation)return false;
     session.mutation=true;const version=++session.version,controller=new AbortController();session.controller=controller;
     setState({owner:session,busy:true,error:null});
     const key=`studio-task-approval:${accountKey}:${projectId}:${task.requestId}:${task.revision}:${action}:${maxCredits??0}`;
-    const financial=action==='continue'||action==='extend';
+    const financial=action==='continue'||action==='extend'||action==='continue_lite';
     let approvalId=crypto.randomUUID();
     if(financial)try{const saved=sessionStorage.getItem(key);if(saved&&/^[\da-f-]{36}$/i.test(saved))approvalId=saved;else sessionStorage.setItem(key,approvalId);}catch{}
     const body={requestId:task.requestId,expectedRevision:task.revision,action,policyVersion:task.policyVersion,confirmed:true,...(financial?{approvalId,maxCredits}: {})};
@@ -21,10 +21,10 @@ export function useConversationTask(projectId:string,accountKey:string,task:Stud
     try{
       const response=await fetch(`/api/studio/projects/${encodeURIComponent(projectId)}/conversation-tasks/${task.requestId}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
       const payload=await response.json(),result=studioTaskStatusSchema.safeParse(payload.result);
-      if(!response.ok||!payload.ok||!result.success||result.data.requestId!==task.requestId)throw new Error(payload.error??'STUDIO_TASK_UNAVAILABLE');
+      if(!response.ok||!payload.ok||!result.success||result.data.requestId!==task.requestId)throw new Error(payload.error==='SPENDING_LIMIT_EXCEEDED'&&payload.nextAction?.type==='studio_assistance'&&payload.nextAction?.reason==='campaign_exhausted'?'LITE_UNAVAILABLE':payload.error??'STUDIO_TASK_UNAVAILABLE');
       if(!isCurrent()||version!==session.version)return false;
       setState({owner:session,busy:false,error:null});changed.current();return true;
-    }catch(error){if(isCurrent()&&version===session.version)setState({owner:session,busy:false,error:error instanceof Error?error.message:'STUDIO_TASK_UNAVAILABLE'});return false;}
+    }catch(error){if(isCurrent()&&version===session.version){setState({owner:session,busy:false,error:error instanceof Error?error.message:'STUDIO_TASK_UNAVAILABLE'});if(error instanceof Error&&error.message==='LITE_UNAVAILABLE')changed.current();}return false;}
     finally{window.clearTimeout(timeout);if(version===session.version){session.mutation=false;if(isCurrent())setState(previous=>({...previous,busy:false}));}}
   },[accountKey,projectId,task.requestId,task.revision,task.policyVersion,isCurrent,session]);
   return {busy:state.owner===session&&state.busy,error:state.owner===session?state.error:null,mutate};

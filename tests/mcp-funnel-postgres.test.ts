@@ -363,24 +363,21 @@ test('funnel migrations and helpers enforce constraints, canonical receipt repla
       },
     };
     const stripeProcessor = createStripeWebhookEventProcessor({
-      async beginStripeEvent(event) {
+      async runStripeEvent(event, handle) {
         const rows = await executor.query<{ event_id: string }>(
           `INSERT INTO stripe_webhook_events (event_id, event_type)
-           VALUES ($1, $2)
-           ON CONFLICT (event_id) DO NOTHING
-           RETURNING event_id`,
+           VALUES ($1, $2) ON CONFLICT (event_id) DO NOTHING RETURNING event_id`,
           [event.id, event.type],
         );
-        return rows.length === 1;
-      },
-      async markStripeEventProcessed(eventId) {
-        await executor.query(
-          'UPDATE stripe_webhook_events SET processed_at = NOW() WHERE event_id = $1',
-          [eventId],
-        );
-      },
-      async rollbackStripeEvent(eventId) {
-        await executor.query('DELETE FROM stripe_webhook_events WHERE event_id = $1', [eventId]);
+        if (!rows.length) return 'duplicate';
+        try {
+          await handle();
+          await executor.query('UPDATE stripe_webhook_events SET processed_at = NOW() WHERE event_id = $1', [event.id]);
+          return 'handled';
+        } catch (error) {
+          await executor.query('DELETE FROM stripe_webhook_events WHERE event_id = $1', [event.id]);
+          throw error;
+        }
       },
       async replayMcpTopupAttribution(event) {
         return replayMcpTopupAttributionForProcessedEvent(event, {

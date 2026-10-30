@@ -142,7 +142,8 @@ test('shared composer clears and safely restores prompts with touch and keyboard
           assert.equal(await undo.count(), 0, 'undo cannot overwrite new text');
           await input.fill('');
           assert.equal(await undo.count(), 0, 'manual deletion must not revive a stale backup');
-          assert.equal(await clear.count(), 0);
+          await expect(clear).toBeVisible();
+          await expect(clear).toBeDisabled();
           await input.fill('   ');
           await activate(clear); await activate(undo);
           assert.equal(await input.inputValue(), '   ', 'whitespace is preserved exactly');

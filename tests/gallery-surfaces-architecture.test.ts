@@ -24,6 +24,8 @@ test('gallery rail delegates cards, snackbar, status blocks, scrollbar, and pure
   assert.match(railSource, /GalleryRailHeader/);
   assert.match(railSource, /useGalleryRailScrollbar/);
   assert.match(railSource, /from '\.\/gallery-rail-utils';/);
+  assert.match(railSource, /export type \{ GalleryFeedState, GalleryRailProps \} from '\.\/gallery-rail-types';/);
+  assert.doesNotMatch(railSource, /export interface GalleryRailProps/);
   assert.doesNotMatch(railSource, /function resolveBackgroundWarmPreviewLimit/);
   assert.doesNotMatch(railSource, /function Snackbar/);
   assert.doesNotMatch(railSource, /createPortal/);

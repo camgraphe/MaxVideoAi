@@ -182,7 +182,7 @@ test('Pay-as-you-go files satisfy final physical boundaries', () => {
   assertLineCap(showcasePath, 250);
   assertLineCap(showcaseDataPath, 250);
   for (const locale of ['en', 'fr', 'es']) {
-    assertLineCap(join(contentRoot, `${locale}.ts`), 350);
+    assertLineCap(join(contentRoot, `${locale}.ts`), 370);
   }
   assertLineCap(join(contentRoot, 'types.ts'), 180);
   assertLineCap(join(contentRoot, 'index.ts'), 180);

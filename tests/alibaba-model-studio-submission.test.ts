@@ -264,11 +264,13 @@ test('Alibaba submission falls back once for a retryable error before acceptance
 });
 
 test('Alibaba submission never falls back after a provider task ID was accepted', async () => {
-  const { queryFn } = createQueryRecorder({ failAppJobUpdateAfterAcceptance: true });
+  const { queryFn, queries } = createQueryRecorder({ failAppJobUpdateAfterAcceptance: true });
   let falCalls = 0;
+  let rollbackCalls = 0;
   const { params } = baseParams({
     deps: {
       queryFn,
+      rollbackPendingPaymentFn: async () => { rollbackCalls++; },
       getAlibabaModelStudioClientFn: () => ({
         createVideo: async () => acceptedTask(),
         getTask: async () => acceptedTask(),
@@ -281,8 +283,16 @@ test('Alibaba submission never falls back after a provider task ID was accepted'
   });
 
   const result = await submitAlibabaModelStudioGenerateTask(params);
-  assert.equal(result.ok, false);
+  assert.equal(result.ok, true);
+  if (!result.ok || result.kind !== 'accepted') assert.fail('keep the accepted identity while persistence is unavailable');
+  assert.equal(result.body.jobId, params.jobId);
+  assert.equal(result.body.providerJobId, 'task_alibaba_123');
+  assert.equal(result.body.provider, 'alibaba_model_studio');
+  assert.equal(result.body.deferred, true);
+  assert.equal(Object.hasOwn(result.body, 'paymentStatus'), false);
   assert.equal(falCalls, 0);
+  assert.equal(rollbackCalls, 0);
+  assert.equal(queries.some(entry => /UPDATE provider_attempts/.test(entry.sql) && entry.params[1] === 'failed'), false);
 });
 
 test('Alibaba submission does not fallback on moderation or authentication errors', async () => {

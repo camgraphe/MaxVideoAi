@@ -91,7 +91,7 @@ const ANALYTICS_WORKSPACE_SECTIONS = new Set([
   'studio',
 ]);
 const SAFE_MARKETING_LANDING_SURFACES = new Set([
-  '/', '/about', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
+  '/', '/about', '/ai-video-prompt-generator', '/ai-video-engines', '/benchmarks', '/best-for', '/blog', '/changelog',
   '/company', '/compare', '/contact', '/docs', '/editorial-standards', '/examples',
   ...getMcpPublicIntegrationPaths(), '/legal',
   '/legal/acceptable-use', '/legal/cookies', '/legal/cookies-list', '/legal/mentions',
@@ -611,7 +611,7 @@ const ENGINE_IDS = new Set([
   'bria-video-background-removal-v3',
 ]);
 const CTA_NAMES = new Set([
-  'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
+  'milo_try', 'home_milo', 'studio_open', 'mcp_setup_guide', 'mcp_choose_integration',
   'reuse_example', 'view_example_details',
   'pricing_scenario',
   'marketing_nav_login', 'marketing_nav_start_app', 'homepage_ai_video_plugin', 'all_comparisons',
@@ -623,7 +623,7 @@ const CTA_NAMES = new Set([
 ]);
 const CTA_LOCATIONS = new Set([
   'creator_tool_hero', 'creator_tool_final', 'creator_tools_hub',
-  'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
+  'milo_hero', 'milo_closing', 'home_conversation', 'studio_hero', 'studio_closing', 'integration_hero', 'mcp_hero',
   'examples_hero', 'examples_gallery', 'watch_hero', 'watch_sidebar',
   'pricing_hero',
   'marketing_nav_mobile', 'marketing_nav_desktop', 'home_assistant_workflow', 'comparison_intro',

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Stripe } from '@stripe/stripe-js';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { recordCheckoutInteractionEvent, type CheckoutInteractionSource } from '@/lib/analytics/checkout-interaction-events';
 import { readGa4CheckoutContext } from '@/lib/analytics/ga-session-browser';
@@ -37,6 +37,7 @@ type CheckoutFailureContext = CheckoutEventContext & {
 };
 
 type UseHostedWalletCheckoutOptions = {
+  accountId: string | null;
   accessToken: string | null;
   amountCents: number;
   currency: string;
@@ -50,6 +51,7 @@ type UseHostedWalletCheckoutOptions = {
 };
 
 export function useHostedWalletCheckout({
+  accountId,
   accessToken,
   amountCents,
   currency,
@@ -71,6 +73,18 @@ export function useHostedWalletCheckout({
   const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(null);
   const captchaTokenRef = useRef<string | null>(null);
   const submissionGuardRef = useRef(createHostedCheckoutSubmissionGuard());
+  // Token/callback refreshes for the same account do not retire a payment attempt.
+  const scope = useMemo(() => ({ accountId, amountCents, currency, locale, source, returnTarget, suppliedStripePromise }),
+    [accountId, amountCents, currency, locale, source, returnTarget, suppliedStripePromise]);
+  const committedScopeRef = useRef<object | null>(null);
+  const activeAttemptRef = useRef<AbortController | null>(null);
+  const retireAttempt = useCallback(() => {
+    const previous = activeAttemptRef.current;
+    activeAttemptRef.current = null;
+    submissionGuardRef.current.finish();
+    captchaTokenRef.current = null;
+    previous?.abort();
+  }, []);
   const stripePromiseRef = useRef<{ locale: AppLocale; promise: Promise<Stripe | null> } | null>(null);
   const getStripePromise = useCallback(
     () => {
@@ -88,38 +102,49 @@ export function useHostedWalletCheckout({
   );
 
   const resetCheckout = useCallback(() => {
-    captchaTokenRef.current = null;
+    retireAttempt();
+    setIsSubmitting(false);
     dispatchChallenge({ type: 'reset' });
     setFailureReason(null);
     setRetryAfterSeconds(null);
-  }, []);
+  }, [retireAttempt]);
 
-  useEffect(() => {
+  // Commit-time invalidation also closes the window before passive effects run.
+  useLayoutEffect(() => {
+    committedScopeRef.current = scope;
     resetCheckout();
-  }, [amountCents, currency, resetCheckout]);
+    return () => {
+      committedScopeRef.current = null;
+      retireAttempt();
+    };
+  }, [scope, resetCheckout, retireAttempt]);
 
   const requireCaptcha = useCallback(() => {
+    if (committedScopeRef.current !== scope) return;
     captchaTokenRef.current = null;
     dispatchChallenge({ type: 'captcha_required' });
-  }, []);
+  }, [scope]);
 
   const handleCaptchaToken = useCallback((token: string | null) => {
+    if (committedScopeRef.current !== scope) return;
     captchaTokenRef.current = token;
     dispatchChallenge({ type: 'captcha_token_changed', token });
-  }, []);
+  }, [scope]);
 
   const handleCaptchaError = useCallback(() => {
+    if (committedScopeRef.current !== scope) return;
     captchaTokenRef.current = null;
     dispatchChallenge({ type: 'captcha_error' });
-  }, []);
+  }, [scope]);
 
   const takeCaptchaToken = useCallback(() => {
+    if (committedScopeRef.current !== scope) return null;
     const token = captchaTokenRef.current;
     // Both payment paths claim the same single-use proof synchronously, before
     // awaiting a request. Refresh the widget without discarding a Stripe session.
     if (token) requireCaptcha();
     return token;
-  }, [requireCaptcha]);
+  }, [requireCaptcha, scope]);
 
   const reportFailure = useCallback((reason: HostedWalletCheckoutFailureReason, checkoutAttemptId: number | null) => {
     clearPendingWalletCheckoutReturn();
@@ -136,7 +161,10 @@ export function useHostedWalletCheckout({
   }, [amountCents, currency, onFailed, source]);
 
   const startCheckout = useCallback(async () => {
-    if (!submissionGuardRef.current.tryStart()) return;
+    if (!accountId || committedScopeRef.current !== scope || !submissionGuardRef.current.tryStart()) return;
+    const attempt = new AbortController();
+    activeAttemptRef.current = attempt;
+    const isCurrent = () => committedScopeRef.current === scope && activeAttemptRef.current === attempt;
     beginHostedWalletCheckoutAttempt();
     setIsSubmitting(true);
     setFailureReason(null);
@@ -152,6 +180,7 @@ export function useHostedWalletCheckout({
       const analyticsJourney = readWalletAnalyticsJourney();
       let ga4LookupStatus = 'unobserved';
       const ga4Context = await readGa4CheckoutContext({ onDiagnostic: status => { ga4LookupStatus = status; } });
+      if (!isCurrent()) return;
       const submittedCaptchaToken = takeCaptchaToken();
       const result = await requestHostedWalletCheckout({
         amountCents,
@@ -163,7 +192,8 @@ export function useHostedWalletCheckout({
         gaClientId: ga4Context.clientId,
         gaSessionId: ga4Context.sessionId,
         analyticsJourney,
-      });
+      }, fetch, attempt.signal);
+      if (!isCurrent()) return;
 
       if (result.kind === 'captcha_required') {
         requireCaptcha();
@@ -196,6 +226,7 @@ export function useHostedWalletCheckout({
       }
 
       onStarted({ amountCents, currency });
+      if (!isCurrent()) return;
       recordCheckoutInteractionEvent({
         amountCents,
         checkoutAttemptId: result.checkoutAttemptId,
@@ -221,21 +252,27 @@ export function useHostedWalletCheckout({
         const stripePromise = getStripePromise();
         if (stripePromise) {
           const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
+          if (!isCurrent()) return;
           if (stripe?.redirectToCheckout) {
             if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
             const redirectResult = await stripe.redirectToCheckout({ sessionId: result.sessionId });
+            if (!isCurrent()) return;
             if (redirectResult && !redirectResult.error) return;
           }
         }
       }
       reportFailure('stripe', result.checkoutAttemptId);
     } catch {
-      reportFailure('stripe', null);
+      if (isCurrent()) reportFailure('stripe', null);
     } finally {
-      submissionGuardRef.current.finish();
-      setIsSubmitting(false);
+      if (isCurrent()) {
+        activeAttemptRef.current = null;
+        submissionGuardRef.current.finish();
+        setIsSubmitting(false);
+      }
     }
   }, [
+    accountId,
     accessToken,
     amountCents,
     currency,
@@ -246,6 +283,7 @@ export function useHostedWalletCheckout({
     reportFailure,
     requireCaptcha,
     returnTarget,
+    scope,
     source,
     takeCaptchaToken,
   ]);

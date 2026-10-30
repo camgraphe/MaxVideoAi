@@ -1,4 +1,5 @@
 'use client';
+import { assistanceSettings } from '@/lib/prompt-assistance/client-context';
 
 import type { FormEvent } from 'react';
 import type { PendingGeneration } from '@/lib/pending-generations';
@@ -12,6 +13,9 @@ import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/comp
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
+import { ComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
+import { WorkspaceComposerModel } from '@/components/composer/WorkspaceComposerModel.client';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
@@ -26,6 +30,7 @@ type ControlOption = {
 };
 
 interface ImageWorkspaceComposerSurfaceProps {
+  assistanceAccountId?: string | null;
   starterPreview?: StarterMedia | null;
   starterNavigation?: ImageStarterNavigation;
   advancedSettingsTitle: string;
@@ -123,6 +128,7 @@ interface ImageWorkspaceComposerSurfaceProps {
 }
 
 export function ImageWorkspaceComposerSurface({
+  assistanceAccountId,
   starterPreview,
   starterNavigation,
   advancedSettingsTitle,
@@ -247,7 +253,7 @@ export function ImageWorkspaceComposerSurface({
       <WorkspaceCreationHeading media="image" />
       {/* History can replace the preview without remounting the open model picker. */}
       <div className="min-w-0">
-        <section className="app-model-strip app-image-model-strip">{engineSettings}</section>
+        {!PROMPT_ASSISTANCE_PREVIEW ? <section className="app-model-strip app-image-model-strip">{engineSettings}</section> : null}
         {!compositePreviewEntry ? (
           <div className="mt-1">
             {starterPreview && starterNavigation
@@ -275,6 +281,9 @@ export function ImageWorkspaceComposerSurface({
         )}
       </div>
 
+      <ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={engineCapsList} engineId={selectedEngineId}
+        onEngineChange={setEngineId} mode={mode} onModeChange={nextMode => setMode(nextMode as ImageGenerationMode)}
+        modeOptions={['t2i', 'i2i']} picker={modelPicker} />}>
       <form onSubmit={handleRun} className="app-image-composer space-y-4">
         {statusMessage ? (
           <p
@@ -287,6 +296,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
+          assistance={{ scopeKey: JSON.stringify([assistanceAccountId, 'image']), live: {surface: 'image', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify([selectedEngineId, mode, aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}
@@ -480,6 +490,7 @@ export function ImageWorkspaceComposerSurface({
           }
         />
       </form>
+      </ComposerWorkspaceControls>
     </div>
   );
 }

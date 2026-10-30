@@ -43,7 +43,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     imageAlt: t('title'),
     ogType: 'website',
     titleBranding: 'none',
-    keywords: ['AI video engines', 'AI video engine comparison', 'compare AI video generators', 'Sora vs Veo', 'MaxVideoAI'],
+    keywords: ['AI video engines', 'AI video engine comparison', 'compare AI video generators', 'Kling 4 vs Seedance 2.5', 'MaxVideoAI'],
   });
 }
 
@@ -107,28 +107,17 @@ export default async function AiVideoEnginesPage() {
     ])
   );
   const defaultComparison = allComparisonEntries[0];
-  const strategicSeedanceVeoComparison =
-    allComparisonEntries.find((entry) => entry.slug === 'seedance-2-0-vs-veo-3-1') ?? null;
-  const strategicKlingVeoComparison =
-    allComparisonEntries.find((entry) => entry.slug === 'kling-3-pro-vs-veo-3-1') ?? null;
-  const strategicSeedanceSoraComparison =
-    allComparisonEntries.find((entry) => entry.slug === 'seedance-2-0-vs-sora-2') ?? null;
-  const pikaSeedanceCompareSlug = buildCanonicalCompareSlug('pika-text-to-video', 'seedance-2-0');
-  const strategicPikaSeedanceComparison =
-    allComparisonEntries.find((entry) => entry.slug === pikaSeedanceCompareSlug) ?? null;
-  const seedancePrelaunch = enginesWithWaitlist.find((engine) => engine.modelSlug === 'seedance-2-0') ?? null;
-  const showSeedanceSpotlight = Boolean(seedancePrelaunch && !engines.some((engine) => engine.modelSlug === 'seedance-2-0'));
-  const seedanceCompareSlug = buildCanonicalCompareSlug('seedance-2-0', 'sora-2');
   const enginesToggleLabel = copy.sections.enginesToggle.replace('{count}', String(engineCards.length));
   const quickStartComparisons = [
-    strategicSeedanceVeoComparison ?? defaultComparison ?? null,
-    strategicKlingVeoComparison,
-    showSeedanceSpotlight ? null : strategicSeedanceSoraComparison,
-    showSeedanceSpotlight ? null : strategicPikaSeedanceComparison,
-  ]
-    .filter((entry): entry is { slug: string; label: string } => entry != null)
-    .filter((entry) => isIndexablePair(entry.slug))
-    .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.slug === entry.slug) === index);
+    'kling-v4-vs-seedance-2-5',
+    'minimax-h3-vs-seedance-2-5',
+    'flux-3-vs-flux-3-max',
+    'wan-3-vs-wan-3-prime',
+  ].flatMap((slug) => {
+    const pair = allComparisonEntries.find((entry) => entry.slug === slug);
+    return pair ? [pair] : [];
+  }).filter((entry) => isIndexablePair(entry.slug));
+  if (!quickStartComparisons.length && defaultComparison) quickStartComparisons.push(defaultComparison);
 
   const faqJsonLdEntries = copy.faq.slice(0, 5).map((entry) => ({
     question: entry.question,
@@ -146,35 +135,14 @@ export default async function AiVideoEnginesPage() {
                 {copy.hero.title}
               </h1>
               <p className="mx-auto mt-5 max-w-[680px] text-base leading-7 text-text-secondary">{copy.hero.intro}</p>
-              {showSeedanceSpotlight ? (
-                <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs font-semibold">
-                  <Link
-                    href={{ pathname: '/models/[slug]', params: { slug: 'seedance-2-0' } }}
-                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-text-secondary transition hover:border-text-muted hover:text-text-primary"
-                  >
-                    {copy.sections.prelaunchModelLabel}
-                  </Link>
-                  <Link
-                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: seedanceCompareSlug } }}
-                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-brand transition hover:border-brand hover:text-brandHover"
-                  >
-                    {copy.sections.prelaunchCompareLabel}
-                  </Link>
-                  <Link
-                    href={{ pathname: '/ai-video-engines/[slug]', params: { slug: pikaSeedanceCompareSlug } }}
-                    className="rounded-full border border-hairline bg-bg px-3 py-1.5 text-brand transition hover:border-brand hover:text-brandHover"
-                  >
-                    {copy.sections.prelaunchCompareSecondaryLabel}
-                  </Link>
-                </div>
-              ) : null}
+
             </header>
 
             <div className="compare-workbench stack-gap-sm">
               <CompareNowWidget
                 options={engineOptions}
-                defaultLeft="seedance-2-0"
-                defaultRight="veo-3-1"
+                defaultLeft="seedance-2-5"
+                defaultRight="kling-v4"
                 engineMetaBySlug={engineMetaBySlug}
                 labels={copy.hero.compareNow}
                 embedded

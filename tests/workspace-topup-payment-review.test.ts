@@ -124,6 +124,7 @@ test('workspace top-up uses the preferred charge currency and a fresh quote for 
   let pricing!: ReturnType<typeof useWorkspacePricingGate>;
   function Probe() {
     pricing = useWorkspacePricingGate({
+      accountId: 'test-account',
       accessToken: 'test-token',
       locale: 'en',
       topUpCopy: DEFAULT_WORKSPACE_COPY.topUp,
@@ -156,6 +157,7 @@ test('workspace top-up uses the preferred charge currency and a fresh quote for 
 
     await act(async () => pricing.handleSelectPresetAmount(2500));
     await settle();
+    assert.equal(pricing.topUpAmount, 2500, 'rerender/reset callback must preserve the selected credits');
     assert.equal(pricing.topUpPaymentAmountMinor, 2300);
     assert.deepEqual(quoteRequests.at(-1), { currency: 'EUR', amounts: [2500] });
 

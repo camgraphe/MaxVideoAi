@@ -26,7 +26,7 @@ test('assistance choice requires a click, preserves tariff revision, and restore
    assert.deepEqual(choices,[{action:'authorize_paid',budgetCents:800,tariffVersion:status.tariff.version,expectedRevision:3}]);
    assert.equal(changed,1);assert.equal(dom.window.document.activeElement,button('Milo settings and credits'));
    await act(async()=>button('Milo settings and credits').click());
-   const luna=Array.from(dom.window.document.querySelectorAll('button')).find(el=>el.textContent?.startsWith('Continue with Standard'))!;
+   const luna=Array.from(dom.window.document.querySelectorAll('button')).find(el=>el.textContent?.startsWith('Continue with Lite'))!;
    await act(async()=>luna.click());assert.deepEqual(choices[1],{action:'select_luna',expectedRevision:3});
    await render({...status,paid:{...status.paid,enabled:false,authorizedCents:2000,spentCents:0,reservedCents:0,remainingCents:2000,maxAdditionalBudgetCents:0}});
    await act(async()=>button('Milo settings and credits').click());

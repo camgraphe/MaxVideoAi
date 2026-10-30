@@ -98,6 +98,36 @@ Creative retries are new paid attempts and require a new quote and approval. Pro
 
 New prepared generation quotes use a server-owned 45-minute confirmation window. Clients cannot choose or extend that lifetime. Migration 39 keeps the historical 10-minute shape readable and database-valid without rewriting immutable quotes created before the change; all newly prepared quotes use 45 minutes.
 
+Owned image/video references are bound at preparation through
+`pricingSnapshot.ownedReferenceFingerprint`, using the existing ordered SHA-256
+fingerprint of resolved reference records: identity, role/slot, original URL and
+stored media facts. Confirmation resolves them again and compares the snapshot
+before spending checks or job reservation, even when asset IDs and price have
+not changed. The same verified records are passed to reservation and execution.
+
+The shared fingerprint normalizes absent optional reference facts: an explicitly
+`undefined` optional field has the same meaning as an omitted field. Only the
+known optional fields in `ResolvedReference` receive this normalization; defined
+values (including zero, false and null), reference order and repeated references
+remain bound. Existing JSON reference records retain their fingerprint bytes.
+The general `stableJson` serializer stays strict, including for non-finite numbers
+and explicitly undefined required fields. `tests/generation-reference-fingerprint.test.ts`
+and the Studio pricing/Kling owned-reference tests cover this boundary.
+
+Prepared quotes with owned assets from before this binding must be prepared and
+explicitly approved again, including those prepared through the shared Studio
+and Toolbox services. No stored quote is rewritten. Claimed, accepted and failed
+quotes recover their existing job before mutable-reference checks; quotes without
+owned assets retain their existing snapshot shape. Existing Kling V4, Studio,
+Toolbox and owned-source lineage bindings remain in force.
+
+This freezes stored identity and facts, not the bytes behind an unchanged URL.
+Direct HTTPS references, where allowed, retain their canonical request URL
+binding. The fingerprint introduces no new storage download, provider call,
+automatic retry or permission to reuse an approval for a replacement quote.
+Regression coverage is in `tests/mcp-confirm-generation.test.ts`, alongside the
+existing PostgreSQL concurrency and Studio/Toolbox scope tests.
+
 The MCP HTTP route reserves the idempotent job before contacting a provider and allows up to 120 seconds for provider acceptance. If a client connection still ends ambiguously, recover that same job with `get_generation_status`; never resubmit the confirmed quote as a creative retry.
 
 ## Public surfaces and maintenance

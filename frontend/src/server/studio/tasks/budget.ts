@@ -20,7 +20,7 @@ export async function readStudioTaskBudget(db:QueryExecutor,scope:{userId:string
   try{
     const selection=row.input_json.taskBudget;
     if(!selection||selection.policyVersion!==row.policy_version||selection.profile!==row.profile
-      ||stableJson(row.profile_json)!==stableJson(studioTaskProfileForModel(selection,row.model)))throw new Error('Resource policy changed');
+      ||stableJson(row.profile_json)!==stableJson({...studioTaskProfileForModel(selection,row.model),...(row.profile_json.explicitLiteChoice===true?{explicitLiteChoice:true}:{})}))throw new Error('Resource policy changed');
   }catch{throw new StudioTaskStop('unavailable','This task resource policy is not available.');}
   try{
     const fingerprint=await studioTaskSourceFingerprint({userId:scope.userId,projectId:scope.projectId,authMethod:'studio-session',clientId:null},row.input_json,db,true);

@@ -1,10 +1,6 @@
 import type Stripe from 'stripe';
 
-import {
-  beginStripeEvent,
-  markStripeEventProcessed,
-  rollbackStripeEvent,
-} from './stripe-webhook-event-state';
+import { runStripeEvent } from './stripe-webhook-event-state';
 import { handleChargeFailed, handlePaymentIntentFailed } from './stripe-webhook-failed-payments';
 import { handleChargeRefunded } from './stripe-webhook-refunds';
 import { handleInvoicePaid } from './stripe-webhook-invoice-events';
@@ -27,9 +23,7 @@ const HANDLED_EVENT_TYPES = new Set([
 export type StripeWebhookEventResult = 'handled' | 'unhandled' | 'duplicate';
 
 export type StripeWebhookEventProcessorDependencies = {
-  beginStripeEvent: typeof beginStripeEvent;
-  markStripeEventProcessed: typeof markStripeEventProcessed;
-  rollbackStripeEvent: typeof rollbackStripeEvent;
+  runStripeEvent: typeof runStripeEvent;
   replayMcpTopupAttribution: typeof replayMcpTopupAttributionForProcessedEvent;
   handleCheckoutSessionCompleted: typeof handleCheckoutSessionCompleted;
   handleInvoicePaid: typeof handleInvoicePaid;
@@ -61,20 +55,7 @@ export function createStripeWebhookEventProcessor(
       return 'unhandled';
     }
 
-    if (!(await dependencies.beginStripeEvent(event))) {
-      console.log('[stripe-webhook] Skipping duplicate event', { eventId: event.id, type: event.type });
-      try {
-        await dependencies.replayMcpTopupAttribution(event);
-      } catch (error) {
-        console.warn('[stripe-webhook] MCP attribution replay unavailable', {
-          eventId: event.id,
-          error,
-        });
-      }
-      return 'duplicate';
-    }
-
-    try {
+    const result = await dependencies.runStripeEvent(event, async () => {
       switch (event.type) {
         case 'checkout.session.completed':
         case 'checkout.session.async_payment_succeeded':
@@ -102,20 +83,26 @@ export function createStripeWebhookEventProcessor(
           await dependencies.handleChargeFailed(event, options.stripe);
           break;
       }
-
-      await dependencies.markStripeEventProcessed(event.id);
-      return 'handled';
-    } catch (error) {
-      await dependencies.rollbackStripeEvent(event.id);
-      throw error;
+    });
+    if (result === 'duplicate') {
+      console.log('[stripe-webhook] Skipping duplicate event', { eventId: event.id, type: event.type });
+      try {
+        await dependencies.replayMcpTopupAttribution(event);
+      } catch (error) {
+        console.warn('[stripe-webhook] MCP attribution replay unavailable', {
+          eventId: event.id,
+          error,
+        });
+      }
+      return 'duplicate';
     }
+
+    return result;
   };
 }
 
 export const processStripeWebhookEvent = createStripeWebhookEventProcessor({
-  beginStripeEvent,
-  markStripeEventProcessed,
-  rollbackStripeEvent,
+  runStripeEvent,
   replayMcpTopupAttribution: replayMcpTopupAttributionForProcessedEvent,
   handleCheckoutSessionCompleted,
   handleInvoicePaid,

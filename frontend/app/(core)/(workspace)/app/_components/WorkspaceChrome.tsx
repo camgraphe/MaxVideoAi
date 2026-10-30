@@ -6,18 +6,20 @@ import { HeaderBar } from '@/components/HeaderBar';
 type WorkspaceChromeProps = {
   children: ReactNode;
   rail: ReactNode;
+  railNavigation?: ReactNode;
 };
 
 export function WorkspaceChrome({
   children,
   rail,
+  railNavigation,
 }: WorkspaceChromeProps) {
   return (
     <div className="flex min-h-screen flex-col bg-bg">
       <HeaderBar />
       <div className="flex min-w-0 flex-1">
         <AppSidebar />
-        <AppCreationContent>
+        <AppCreationContent railNavigation={railNavigation}>
           <div className="flex min-w-0 flex-1 flex-col min-[768px]:flex-row">
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <main className="app-workspace-main flex min-w-0 flex-none flex-col gap-[var(--stack-gap-lg)] p-4 min-[768px]:flex-1 lg:px-7 lg:py-2">

@@ -143,7 +143,7 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(imageSurfaceSource, /<ImageCompositePreviewDock[\s\S]*density="workspace"/);
   assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
   assert.match(composerTypesSource, /compactPrompt\?: boolean/);
-  assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
+  assert.match(composerSource, /hidden=\{workspaceDensity && \(assistanceEnabled \|\| !visibleModeToggles\)/);
   assert.match(composerSource, /rows=\{workspaceDensity \? 3 : compactPrompt \? 2 : 6\}/);
   assert.match(composerSource, /min-h-\[96px\]/);
   assert.doesNotMatch(composerSource, /sm:h-10 sm:min-h-0/);

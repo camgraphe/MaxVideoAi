@@ -31,7 +31,8 @@ test('composer delegates copy, contracts, modes, multi-prompt, promoted action i
   assert.match(composerSource, /<ComposerPromotedActionIcon/, 'Composer should compose the focused promoted action icon');
   assert.match(composerSource, /<ComposerGenerationQuote workspace=\{workspaceDensity\}/, 'workspace quote presentation belongs in the focused owner');
   assert.match(composerSource, /<ComposerNotices /, 'Composer should delegate guidance and error presentation');
-  assert.match(composerSource, /<ComposerModeSwitch modes=\{visibleModeToggles\}/, 'mode presentation has a focused owner');
+  assert.match(composerSource, /<ComposerCommandBar modes=\{visibleModeToggles\}/, 'command placement has a focused owner');
+  assert.match(readFileSync('frontend/components/composer/ComposerWorkspaceControls.client.tsx', 'utf8'), /<ComposerModeSwitch modes=\{modes\}/, 'command placement retains the existing mode presentation owner');
   assert.doesNotMatch(composerSource, /app-mode-switch|data-composer-mode/, 'mode control markup belongs in ComposerModeSwitch');
   assert.doesNotMatch(composerSource, /role="alert"/, 'notice severity belongs in ComposerNotices');
   assert.match(composerSource, /<ComposerReferenceMentionNotice\b/, 'reference review presentation belongs in the notice owner');

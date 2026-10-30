@@ -136,7 +136,7 @@ export const about: Dictionary['about'] = {
     },
     paragraphs: [
       'We believe professional teams deserve clarity before they hit render. That means price transparency, reliable routing, and shared context between creatives, producers, and stakeholders.',
-      'Independence matters: we stay neutral across engines, integrate with Seedance 2.5, MiniMax H3, Wan 3, Veo 3.1, Veo 3 Fast, Pika 2.2, MiniMax Hailuo 02, Hunyuan Image, and rotating betas, and list trademarks only to describe compatibility.',
+      "Choose among FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, Veo, LTX, Wan and image models in one workspace. Milo helps turn an idea into a prompt; Studio helps plan a project. Check each model’s inputs, examples and quote before choosing. Third-party trademarks describe compatibility.",
       'The product is engineered for teams that need precision without noise. Quiet UI, premium defaults, precise controls, and price-before chips that keep finance in the loop.',
     ],
     note:

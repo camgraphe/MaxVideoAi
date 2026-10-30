@@ -139,3 +139,62 @@
   .app-experience .app-navigation-rail a { flex: none; min-height: 44px; padding: 3px 1px; gap: 3px; }
   .app-experience .app-navigation-rail .app-glyph { width: 18px; height: 18px; }
 }
+
+/* Prompt assistance preview: aligned creation and gallery navigation. */
+.app-experience .app-creation-topbar { position: sticky; top: var(--header-height); z-index: 30; display: flex; flex: none; min-width: 0; background: var(--app-canvas); border-bottom: 1px solid var(--app-line); }
+.app-experience .app-creation-topbar-main { flex: 1; min-width: 0; }
+.app-experience .app-creation-topbar .app-navigation-activities { position: static; max-width: 1160px; margin-inline: auto; padding: 0 24px; gap: 6px; border: 0; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar-rail { display: none; }
+.app-experience .app-creation-topbar .app-media-rail-switch { width: 100%; min-width: 0; margin: 0; gap: 12px; flex-wrap: nowrap; }
+.app-experience .app-creation-topbar :is(.app-navigation-activities a, .app-media-rail-switch > button, .app-media-rail-view-all) { position: relative; display: inline-flex; align-items: center; flex: none; gap: 6px; min-height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: transparent; color: var(--app-muted); font-size: 12px; font-weight: 400; box-shadow: none; }
+.app-experience .app-creation-topbar .app-media-rail-view-all { margin-left: auto; white-space: nowrap; }
+.app-experience .app-creation-topbar .app-glyph { width: 16px; height: 16px; }
+.app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"], a:hover, button:hover) { color: var(--app-ink); background: transparent; }
+.app-experience .app-creation-topbar :is(a[aria-current="page"], button[aria-pressed="true"])::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--app-accent); }
+.app-experience .app-creation-topbar :is(a, button):focus-visible { outline: 1px solid var(--app-accent); outline-offset: -3px; border-radius: 4px; }
+.app-experience .app-creation-topbar .app-navigation-activities a { gap: 7px; padding-inline: 12px; border-block: 4px solid transparent; border-radius: 10px; background-clip: padding-box; font-size: 13px; font-weight: 500; }
+.app-experience .app-creation-topbar .app-navigation-activities .app-glyph { width: 18px; height: 18px; }
+.app-experience .app-creation-topbar .app-navigation-activities a:hover { color: var(--app-ink); background-color: var(--surface-2); }
+.app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"] { color: var(--app-accent); background-color: var(--app-accent-soft); }
+.app-experience .app-creation-topbar .app-navigation-activities a[aria-current="page"]::after { content: none; }
+@media (min-width: 768px) {
+  /* Image and video rails share their width with the navigation above them. */
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 216px; }
+  .app-experience .app-creation-topbar-rail { display: flex; flex: 0 0 var(--app-creation-rail-width, 240px); min-width: 0; align-items: center; padding-inline: 18px; border-left: 1px solid var(--app-line); }
+  .app-experience .app-results-rail [data-gallery-header-in-navigation] { padding-top: 0; }
+  .app-experience .app-image-media-rail [data-gallery-header-in-navigation] .app-gallery-rail-grid { padding-top: 0; }
+  .app-experience .app-image-media-rail [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 0; }
+  /* Match the preview's 8 px media inset once the rail title moves into navigation. */
+  .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-grid { margin-top: 0; padding-top: 8px; }
+  .app-experience [data-gallery-header-in-navigation] .app-gallery-rail-scrollbar { top: 8px; }
+}
+.app-experience .app-image-mobile-rail-navigation { display: none; }
+.app-experience .app-image-recent-panel { padding: 0 13px; }
+.app-experience .app-image-recent-panel .app-recent-list { overscroll-behavior-y: contain; }
+.app-experience .app-image-media-rail { scroll-margin-top: calc(var(--header-height) + 52px); }
+@media (min-width: 768px) and (max-width: 899px) {
+  /* Preserve the 216 px column with wider system/fallback font metrics. */
+  .app-experience .app-creation-topbar-rail { padding-inline: 12px; }
+  .app-experience .app-creation-topbar .app-media-rail-switch { gap: 6px; }
+}
+@media (max-width: 767px) {
+  .app-experience .app-image-mobile-rail-navigation { display: block; }
+  .app-experience .app-image-mobile-rail-navigation .app-media-rail-switch { align-items: center; gap: 16px; }
+  .app-experience .app-image-mobile-rail-navigation :is(button, a) { min-height: 44px; border: 0; padding: 0; background: transparent; font-size: 12px; color: var(--app-muted); }
+  .app-experience .app-image-mobile-rail-navigation button[aria-pressed="true"] { color: var(--app-ink); box-shadow: inset 0 -2px var(--app-accent); }
+  .app-experience .app-image-mobile-rail-navigation a { margin-left: auto; }
+  .app-experience .app-image-media-rail header { display: none; }
+}
+@media (min-width: 900px) {
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 240px; }
+  .app-experience .app-creation-topbar-rail { flex-basis: var(--app-creation-rail-width, 272px); }
+}
+@media (min-width: 1088px) {
+  .app-experience .app-creation-content:has(> .app-creation-topbar):has(.app-results-rail) { --app-creation-rail-width: 280px; }
+  .app-experience .app-creation-topbar-rail { flex-basis: var(--app-creation-rail-width, 320px); padding-inline: 21px; }
+}
+@media (max-width: 767px) {
+  .app-experience .app-creation-topbar .app-navigation-activities { padding-inline: 12px; }
+  .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open { padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--app-muted); font-size: 12px; }
+  .app-experience .app-creation-content:has(> .app-creation-topbar) .app-recent-mobile-open .app-glyph { width: 16px; height: 16px; }
+}

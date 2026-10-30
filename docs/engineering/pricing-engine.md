@@ -1234,8 +1234,8 @@ PAYG does not consume image, audio or tool prices and must not start those reads
 The narrow return type prevents unrefreshed base amounts from escaping as current
 prices. PAYG's pure projection accepts `Pick<PricingHubData, 'video'>`.
 
-With the current catalog, the full hub runs 132 distinct image/video quotes plus
-21 audio/tool quotes; the video-only owner runs the same 114 video quotes through
+With the current catalog, the full hub runs 143 distinct image/video quotes plus
+21 audio/tool quotes; the video-only owner runs the same 123 video quotes through
 at most eight workers. This is a count of canonical quote calls, not SQL commands.
 `tests/payg-current-video-pricing.test.ts` compares the entire EN/FR/ES PAYG output
 against the full hub for exact and unavailable results. Existing hub queue tests
@@ -1377,3 +1377,27 @@ upward normalization and historical amounts. This is not a provider invoice clai
 or a new retail markup. Runtime reads literal cells/bands. MCP/Studio reservation
 keeps exact source seconds in the canonical snapshot and projects only the legacy
 integer job display column; caller duration cannot replace a trusted source quantity.
+
+### Current marketing availability (2026-10-29)
+
+Pricing and PAYG read the configured enabled catalog once per render before
+requesting prices. Failed availability reads fail the render instead of reviving
+static rows. The canonical quote remains the price authority. A supported preset
+without a legacy catalogue amount still requests a current quote; unsupported
+settings never do. Kling 4.0 pricing publication is authored in the registry.
+PAYG model cards also require a current row, so an editorial fallback URL cannot
+reintroduce a disabled model. Entry-route/4K durations remain explicit; only
+matching preset settings receive a lowest-quoted highlight. Historical media and
+model URLs keep their original identity.
+
+The duration projection intersects the selected mode's choices with configured
+input values and effective maximum duration; another mode or stale pricing
+metadata cannot reopen a disabled duration.
+
+Publishing Kling 4 on Pricing does not give it a historical percentage-policy
+baseline. Like Nano21, its native customer tariffs are qualified separately.
+The original billing/public fixtures and the October 27 discovery evidence stay
+unchanged. `kling-v4-pricing-discovery-projections-2026-10-29.json` adds exactly ten
+**unavailable offline** rows (three estimator tiers, seven Pricing presets), with
+no monetary values. The read-only public audit now covers 610 rows; live current
+quotes and configured availability remain covered by the pricing-policy tests.

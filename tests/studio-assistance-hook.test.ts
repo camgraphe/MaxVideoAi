@@ -217,3 +217,15 @@ test('a malformed refresh cannot replace a known allowance with invalid amounts 
     assert.equal(requests.filter(request => request.init.method === 'POST').length, 0);
   });
 });
+
+test('authentication expiry is actionable and clears a previously funded status',async()=>{
+  await withHook(async({state,requests,reply})=>{
+    await reply(requests[0],{ok:true,result:initialStatus});
+    let refreshing!:Promise<void>;
+    await act(async()=>{refreshing=state().refresh();});
+    await reply(requests[1],{ok:false,error:'UNAUTHORIZED'},401);
+    await refreshing;
+    assert.equal(state().error,'AUTH_REQUIRED');
+    assert.equal(state().status,null);
+  });
+});

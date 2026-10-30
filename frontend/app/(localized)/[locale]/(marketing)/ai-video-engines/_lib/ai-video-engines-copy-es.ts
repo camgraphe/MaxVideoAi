@@ -40,9 +40,6 @@ export const ES_HUB_COPY: HubCopy = {
       complianceLabel: 'Ver notas de cumplimiento',
       quickStartLabel: 'Acceso rápido',
       prelaunchSpotlightLabel: 'Enfoque de prelanzamiento',
-      prelaunchModelLabel: 'Perfil de Seedance 2.0',
-      prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
-      prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback:
         'Elige un uso para encontrar las comparaciones que se ajustan a tu proyecto.',
     },

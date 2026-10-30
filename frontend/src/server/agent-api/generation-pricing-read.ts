@@ -162,6 +162,9 @@ export function buildGenerationPricingSnapshot(
     engineId: request.engineId,
     membership,
     canonicalPricing: canonicalRecord,
+    // Bind owned originals and their ordered execution facts, not only mutable asset IDs.
+    ...(request.references.some(reference => reference.kind === 'asset')
+      ? { ownedReferenceFingerprint: studioReferenceFingerprint(resolvedReferences) } : {}),
     ...(request.engineId==='kling-v4'?{klingV4ReferenceFingerprint:studioReferenceFingerprint(resolvedReferences)}:{}),
   };
 }

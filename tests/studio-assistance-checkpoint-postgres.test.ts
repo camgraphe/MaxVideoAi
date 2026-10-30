@@ -20,10 +20,12 @@ test('mandatory response checkpoint reserves before dispatch and replay settles 
  const policy={enabled:true,solAllowanceNanoUsd:1_000_000_000,lunaAllowanceNanoUsd:250_000_000,campaignNanoUsd:100_000_000_000,maxAdditionalBudgetCents:2000};
  const claim=await claimImageTurn(actor,{requestId:randomUUID(),message:'Hello',references:[]});await openStudioAssistanceTurn(actor,claim.turn.request_id,policy);
  const response={id:'saved-response',model:'gpt-6.1-sol',status:'completed' as const,service_tier:'default' as const,usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50,output_tokens_details:{reasoning_tokens:0},total_tokens:150},output_text:JSON.stringify({reply:'A saved direction'}),output:[]};
+ await pg.pool.query('ALTER TABLE studio_conversation_responses ADD COLUMN review_context_json jsonb');
  let dispatch=0,count=0;
+ const reviewContext=()=>({version:'assistant-input-v1',model:'gpt-6.1-sol'});
  const meter={prepare:async()=>{count++;return {inputTokens:1000,outputTokens:2200,policy};}};
- const create=async()=>{dispatch++;assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE state='reserved'")).rows[0].n,1,'Allowance must be durably reserved before model dispatch');return response;};
- await checkpointStudioResponse(actor,claim.turn,0,create,meter);
+ const create=async()=>{dispatch++;assert.equal((await pg.pool.query('SELECT review_context_json FROM studio_conversation_responses WHERE request_id=$1',[claim.turn.request_id])).rows[0].review_context_json?.model,'gpt-6.1-sol','Review context must be retained before dispatch');assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE state='reserved'")).rows[0].n,1,'Allowance must be durably reserved before model dispatch');return response;};
+ await checkpointStudioResponse(actor,claim.turn,0,create,meter,{reviewContext});
  assert.equal(dispatch,1);assert.equal(count,1);
  await checkpointStudioResponse(actor,claim.turn,0,create,meter);
  assert.equal(dispatch,1);assert.equal(count,1,'Replay must not repeat even token counting');
@@ -58,10 +60,11 @@ test('mandatory response checkpoint reserves before dispatch and replay settles 
  await chooseStudioAssistance('owner',{action:'select_luna',expectedRevision:0},policy);
  const lunaInput={requestId:randomUUID(),message:'Continue planning',references:[]};
  const lunaTurn=(await claimImageTurn(actor,lunaInput)).turn;
+ const oldCapture=process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED;process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED='true';t.after(()=>{if(oldCapture===undefined)delete process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED;else process.env.ASSISTANT_REVIEW_CONTEXT_ENABLED=oldCapture;});
  let countedPayload:unknown,calls=0;
  const draft=await runStudioImageActions({actor,turn:lunaTurn,input:lunaInput,references:[],referenceFingerprint:'0'.repeat(64),history:[],enabled:true,factory:createStudioImageGenerationService,assistancePolicy:policy,
    countInputTokens:async params=>{countedPayload=params;assert.equal(params.model,'gpt-6-luna');return 1000;},
-   createResponse:async params=>{calls++;assert.equal(params,countedPayload);assert.equal((await pg.pool.query("SELECT model FROM studio_assistance_calls WHERE request_id=$1",[lunaInput.requestId])).rows[0].model,'gpt-6-luna');return {...response,id:'actual-luna',model:'gpt-6-luna'};},
+   createResponse:async params=>{calls++;assert.equal((await pg.pool.query('SELECT review_context_json FROM studio_conversation_responses WHERE request_id=$1',[lunaInput.requestId])).rows[0].review_context_json.model,'gpt-6-luna');assert.equal(params,countedPayload);assert.equal((await pg.pool.query("SELECT model FROM studio_assistance_calls WHERE request_id=$1",[lunaInput.requestId])).rows[0].model,'gpt-6-luna');return {...response,id:'actual-luna',model:'gpt-6-luna'};},
  });
  assert.equal(draft.reply,'A saved direction');assert.equal(calls,1);
  assert.equal((await pg.pool.query("SELECT state FROM studio_assistance_calls WHERE request_id=$1",[lunaInput.requestId])).rows[0].state,'settled');

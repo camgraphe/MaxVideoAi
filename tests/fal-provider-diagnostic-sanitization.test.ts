@@ -26,7 +26,7 @@ async function webhookBundle() {
   const stubs: Record<string, string> = {
     '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
     './fal-webhook-draft-cache': 'export const captureCompletedFalDraftCache = async () => {};',
-    './fal-webhook-refunds': 'export const maybeAutoRefundWalletCharge = async (...args) => fixture.refunds.push(args);',
+    './fal-webhook-refunds': 'export const withWalletFailureSettlement = async (jobId, context, persist) => { const result = await persist({ query: fixture.query }); fixture.refunds.push([jobId, context]); return result; };',
     './fal-webhook-provisional': 'export const createProvisionalJobFromWebhook = async () => { throw Error("Unexpected provisional"); };',
     '@/lib/fal-client': 'export const getFalClient = () => ({ queue: { result: async () => { if (fixture.readError) throw fixture.readError; return { data: fixture.result }; } } });',
     '@/lib/fal-catalog': 'export const resolveFalModelId = async () => "fixture/model";',

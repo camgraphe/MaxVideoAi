@@ -1,6 +1,8 @@
 import type { AssetFieldConfig, ComposerAttachment } from './composer-types';
 import type { EngineCaps, EngineInputField } from '@/types/engines';
 import { isKlingOmniEngine, normalizeKlingOmniPromptReferences } from '@/lib/kling-provider-limits';
+import { isWorkspaceModifyGuide } from './workspace-reference-commands';
+import { referenceRoleHelpCopy } from './reference-role-help-copy';
 
 export type ReferenceMention = { fieldId: string; slotIndex: number; token: string; identity: string; syntax?: 'kling-omni' };
 
@@ -57,6 +59,7 @@ export function insertReferenceMention(prompt: string, token: string, selectionS
 }
 
 export function selectedReferenceLabel(engine: EngineCaps, field: EngineInputField, kind: ComposerAttachment['kind'], sequence: number, locale: string, source = false): string {
+  if (isWorkspaceModifyGuide(field)) return referenceRoleHelpCopy(locale).guide.title;
   if (engine.activeVideoOperation === 'h3-recast' && field.id === 'reference_image_urls') return `${locale === 'es' ? 'Retrato' : 'Portrait'} ${sequence}`;
   if (engine.activeVideoOperation === 'h3-relight' && field.id === 'reference_image_url') return locale === 'fr' ? 'Éclairage' : locale === 'es' ? 'Iluminación' : 'Lighting';
   if (source && !field.description?.includes('@Video1')) {

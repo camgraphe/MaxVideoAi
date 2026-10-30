@@ -59,9 +59,8 @@ for (const file of tariffs) {
 const tariffSet = new Set(tariffs);
 const browser = [
   'tests/connected-studio-montage-browser-integration.test.ts',
-  // This integrated fixture chooses Chromium or WebKit before calling .launch().
-  ...standard.filter(file => file === 'tests/post-kling-app-integration-browser.test.ts'
-    || /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*studio-connected-browser-fixture/.test(readFileSync(file, 'utf8'))),
+  // Shared fixtures also cover tests choosing a browser type before .launch().
+  ...standard.filter(file => /\b(?:chromium|firefox|webkit)\s*\.\s*(?:launch|launchPersistentContext|executablePath)\s*\(|\bfrom\s*['"][^'"]*(?:studio-connected-browser-fixture|workspace-reference-browser-fixture|image-rail-browser-fixture)/.test(readFileSync(file, 'utf8'))),
 ];
 const browserSet = new Set(browser);
 // Named exceptions use executable version doubles or temporary APT text fixtures;

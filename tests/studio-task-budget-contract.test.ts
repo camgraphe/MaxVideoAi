@@ -29,9 +29,9 @@ test('task status exposes bounded resource progress without private worker or me
   for(const delta of [{sourceUrl:'https://private.invalid/video'},{workerId:randomUUID()},{allowedCalls:25},{maxCredits:2010},{consumedCredits:61},{phase:'100% complete'}])assert.equal(studioTaskStatusSchema.safeParse({...value,...delta}).success,false);
 });
 
-test('new Luna requests allow high reasoning without changing Sol or client ceilings',()=>{
+test('historical v2 Luna requests retain high reasoning without changing Sol or client ceilings',()=>{
   for(const profile of ['quick','standard'] as const){
-    const selection=studioTaskSelectionSchema.parse({profile,maxCredits:profile==='quick'?100:250,policyVersion:STUDIO_TASK_POLICY_VERSION});
+    const selection=studioTaskSelectionSchema.parse({profile,maxCredits:profile==='quick'?100:250,policyVersion:'studio-task-budget-2026-10-11-v2'});
     const luna=studioTaskProfileForModel(selection,'gpt-6-luna');
     assert.equal(luna.reasoning,'high');
     assert.equal(luna.maxOutputTokens,6000);

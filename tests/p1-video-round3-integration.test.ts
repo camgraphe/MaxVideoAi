@@ -295,6 +295,7 @@ test('Kling Turbo i2v workspace preflight and generation omit unsupported framin
         let pricingResult: ReturnType<typeof useWorkspacePricingGate> | null = null;
         function Fixture() {
           pricingResult = useWorkspacePricingGate({
+            accountId: CANARY_USER_ID,
             accessToken: CANARY_TOKEN,
             locale: 'en',
             topUpCopy: DEFAULT_WORKSPACE_COPY.topUp,

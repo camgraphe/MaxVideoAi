@@ -50,7 +50,8 @@ test('workspace sample cards give visible feedback when their footer is clicked'
   );
 
   assert.match(shellSource, /selectedGroupId=\{compositeOverrideSummary\?\.id \?\? null\}/);
-  assert.match(railSource, /selectedGroupId\?: string \| null/);
+  assert.match(railSource, /export type \{ GalleryFeedState, GalleryRailProps \} from '\.\/gallery-rail-types';/);
+  assert.match(fs.readFileSync(path.join(process.cwd(), 'frontend/components/gallery-rail-types.ts'), 'utf8'), /selectedGroupId\?: string \| null/);
   assert.match(railCardsSource, /selected=\{selectedGroupId === group\.id\}/);
   assert.match(cardSource, /selected\?: boolean/);
   assert.match(cardSource, /aria-pressed=\{selected\}/);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {createStudioConversationDirector,type StudioResponseCreator} from '../frontend/src/server/studio/conversation-director';
+import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
 
 const legacyVersion='studio-beta-2026-10-03-v1',creditVersion='studio-credits-2026-10-05-v2';
 test('production v1 remains enabled without credits while production v2 requires its own approval',()=>{
@@ -24,11 +25,13 @@ test('the actual director explains the selected assistance regime with bounded g
   for(const credits of [undefined,false,true]){
     const options={assistanceCreditsEnabled:credits,mediaEnabled:true,editingEnabled:true,exportsEnabled:true,createResponse:async(params:Parameters<StudioResponseCreator>[0])=>{
       const instructions=String(params.instructions);
-      assert.ok(instructions.length<8500,'Permanent guidance must remain bounded.');
+      assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,'Creative guidance retains its existing budget.');
+      assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800);
+      assert.ok(instructions.length<9300,'Creative guidance plus the shared product boundary must remain bounded.');
       assert.match(instructions,/creative partner|MaxVideoAI.*quote/i);
       assert.match(instructions,/Never silently replace|never silently replace/);
-      if(credits===true){assert.match(instructions,/monthly free credits.*before purchased/);assert.match(instructions,/purchase debits.*once/);assert.match(instructions,/Standard.*no monthly quota/);}
-      else {assert.match(instructions,/one-time.*allowance|allowance.*one-time/);assert.match(instructions,/spending limit/);assert.match(instructions,/Standard.*limited allowance|limited.*Standard/);assert.doesNotMatch(instructions,/monthly free credits|cumulative Max packs|no monthly quota/);}
+      if(credits===true){assert.match(instructions,/monthly free credits.*before purchased/);assert.match(instructions,/purchase debits.*once/);assert.match(instructions,/Lite.*no monthly quota/);}
+      else {assert.match(instructions,/one-time.*allowance|allowance.*one-time/);assert.match(instructions,/spending limit/);assert.match(instructions,/Lite.*limited allowance|limited.*Lite/);assert.doesNotMatch(instructions,/monthly free credits|cumulative Milo packs|no monthly quota/);}
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name)??[];
       if(expectedNames)assert.deepEqual(names,expectedNames);else expectedNames=names;
       assert.ok(!names.some(name=>/purchase|confirm|recharge/.test(name)));

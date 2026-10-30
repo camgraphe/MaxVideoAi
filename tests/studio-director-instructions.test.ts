@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createStudioConversationDirector} from '../frontend/src/server/studio/conversation-director';
 import {buildStudioDirectorInstructions} from '../frontend/src/server/studio/conversation-director-instructions';
+import {MILO_SCOPE_INSTRUCTIONS} from '../frontend/src/server/studio/milo-scope';
 
 test('legacy assistance explains its introductory allowance while export help follows the session capability', () => {
   const instructions = buildStudioDirectorInstructions({mediaEnabled:true,editingEnabled:true,exportsEnabled:false,assistanceCreditsEnabled:false});
   assert.match(instructions, /limited one-time introductory allowance/);
   assert.doesNotMatch(instructions, /preview allowance/);
   assert.match(instructions, /authorize an assistance spending limit/);
-  assert.match(instructions, /Standard.*limited allowance/);
+  assert.match(instructions, /Lite.*limited allowance/);
   assert.match(instructions, /Export tools are unavailable in this session/);
   assert.doesNotMatch(instructions, /export_prepare may prepare/);
 });
@@ -31,15 +32,17 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/competitor|provider prices/i);
       assert.match(instructions,/Projects opens/);
       assert.doesNotMatch(instructions,/My projects/);
-      assert.match(instructions,/Milo modes.*Max: GPT-6\.1 Sol.*Standard: GPT-6 Luna.*Studio assistance/);
+      assert.match(instructions,/Milo modes.*Lite: GPT-6 Luna\/high.*Standard: GPT-6\.1 Terra\/high.*Max: GPT-6\.1 Sol\/xhigh.*Studio assistance/);
       assert.match(instructions,/monthly free credits.*before purchased/);
       assert.match(instructions,/purchase debits.*once.*usage consumes.*credits/);
-      assert.match(instructions,/Standard.*no monthly quota.*one active message/);
+      assert.match(instructions,/Lite.*no monthly quota.*one active message/);
       assert.match(instructions,/cannot read current credits.*wallet.*tariff/);
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
       assert.match(instructions,/Open library/);
-      assert.ok(instructions.length<8500,`Keep permanent guidance bounded (${instructions.length}/8500); exact model facts belong in tools.`);
+      assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,'Keep creative guidance within its existing budget; exact model facts belong in tools.');
+      assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800,'The shared product boundary has its own bounded budget.');
+      assert.ok(instructions.length<9300,'Keep the combined permanent guidance bounded.');
       assert.doesNotMatch(instructions,/seedance|kling|wan-3|pika|\$\d|€\d/i);
       const names=params.tools?.filter(tool=>tool.type==='function').map(tool=>tool.name) ?? [];
       assert.equal(names.includes('video_prepare'),enabled);

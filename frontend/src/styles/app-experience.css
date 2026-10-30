@@ -121,13 +121,13 @@
   .app-experience .app-results-rail { border-left: 0; border-top: 1px solid var(--app-line); }
 }
 @media (min-width: 768px) {
-  .app-experience .app-results-rail { flex: none; width: 240px; padding: 16px 0 16px 8px; border-top: 0; background: transparent; }
+  .app-experience .app-results-rail { flex: none; width: var(--app-creation-rail-width, 240px); padding: 16px 0 16px 8px; border-top: 0; background: transparent; }
 }
 @media (min-width: 900px) {
-  .app-experience .app-results-rail { width: 272px; }
+  .app-experience .app-results-rail { width: var(--app-creation-rail-width, 272px); }
 }
 @media (min-width: 1088px) {
-  .app-experience .app-results-rail { width: 320px; }
+  .app-experience .app-results-rail { width: var(--app-creation-rail-width, 320px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-experience *, .app-experience *::before, .app-experience *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
@@ -190,6 +190,9 @@
 .app-experience .app-prompt-heading { padding: 8px 12px 0; align-items: center; }
 .app-experience .app-prompt-heading label { font-size: 13px; font-weight: 550; text-transform: none; letter-spacing: 0; color: var(--app-ink); }
 .app-experience [data-workspace-prompt] { display: block; height: 96px; min-height: 96px; max-height: 240px; padding: 9px 12px 12px; font-size: 15px; line-height: 1.5; border-radius: 7px; }
+@media (pointer: coarse), (max-width: 639px) {
+  .app-experience [data-composer-density] :is(textarea, input) { font-size: 16px; }
+}
 .app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--app-muted) 55%, transparent) transparent; scrollbar-gutter: stable; }
 @supports selector(::-webkit-scrollbar) {
   .app-experience :is([data-workspace-prompt], .app-scroll-surface) { scrollbar-width: auto; scrollbar-color: auto; }
@@ -237,6 +240,9 @@
 .app-settings-menu [role="option"][aria-selected="true"] { background: var(--app-accent-soft); color: var(--app-accent); }
 .app-experience .app-quote-status { max-width: 80px; font-size: 11px; color: var(--app-muted); }
 .app-experience .app-preview-frame.is-workspace { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+/* The preview composer already separates the player, prompt and generation controls. */
+.app-experience .app-workspace-main:has([data-prompt-assistance-preview]) .app-preview-frame.is-workspace > header { border-bottom: 0; }
+.app-experience [data-prompt-assistance-preview] + .app-composer-toolbar { border-top: 0; }
 .app-experience .app-preview-frame.is-workspace .app-preview-media { border: 1px solid var(--app-line); border-bottom: 0; border-radius: 8px 8px 0 0; }
 .app-experience .app-preview-frame.is-workspace .app-preview-toolbar { min-height: 52px; border-color: var(--app-line); border-radius: 0 0 8px 8px; background: var(--app-panel); box-shadow: none; }
 .app-experience .app-preview-toolbar-actions { gap: 4px; }
@@ -619,12 +625,28 @@
 .app-experience .app-reference-popup .app-reference-empty-actions > button { flex: 1; min-width: 0; min-height: 64px; justify-content: center; padding: 10px !important; border: 1px solid var(--app-line) !important; }
 .app-experience .app-reference-popup .app-reference-empty-actions > .app-reference-add-target { border-style: dashed !important; }
 .app-experience .app-reference-popup[data-single-role] .app-reference-field-heading { display: none; }
-.app-experience .app-reference-role-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px 0 12px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-reference-role-nav { display: grid; gap: 6px; padding: 8px 0 12px; border-bottom: 1px solid var(--app-line); }
+.app-experience .app-reference-role-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .app-experience .app-reference-role-nav button { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 52px; padding: 6px 8px; text-align: left; border: 1px solid var(--app-line); border-radius: 6px; font-size: 12px; color: var(--app-muted); }
 .app-experience .app-reference-role-nav button[aria-pressed="true"] { background: var(--app-accent-soft); border-color: var(--app-accent); color: var(--app-accent); }
 .app-experience .app-reference-role-nav svg { width: 20px; height: 20px; flex: none; }
+.app-experience .app-reference-role-nav button > span { min-width: 0; overflow-wrap: anywhere; }
 .app-experience .app-reference-role-nav small { display: block; font-size: 10px; }
-@media (max-width: 479px) { .app-experience .app-reference-role-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 479px) {
+  .app-experience .app-reference-role-nav button { gap: 5px; padding-inline: 6px; font-size: 11px; }
+  .app-experience .app-reference-role-nav svg { width: 16px; height: 16px; }
+}
+.app-experience .app-reference-role-choice { position: relative; min-width: 0; }
+.app-experience .app-reference-role-choice > button { width: 100%; height: 100%; }
+.app-experience .app-reference-role-choice small { padding-right: 16px; }
+.app-experience .app-reference-roles-help { position: absolute; inset: 0; pointer-events: none; }
+.app-experience .app-reference-roles-help > button { position: absolute; bottom: 1px; right: 1px; display: inline-flex; justify-content: center; width: 24px; min-height: 24px; padding: 0; border: 0; border-radius: 50%; color: var(--app-muted); background: transparent; pointer-events: auto; }
+.app-experience .app-reference-roles-help > button svg { width: 13px; height: 13px; stroke-width: 1.5; }
+.app-experience .app-reference-roles-help > button:hover { color: var(--app-ink); }
+.app-experience .app-reference-roles-help > button:focus-visible { outline: 1px solid var(--app-accent); outline-offset: -2px; }
+.app-experience .app-reference-roles-tooltip { position: absolute; top: 100%; left: 0; z-index: 5; width: min(240px, calc(100vw - 72px)); padding: 8px 10px; border: 1px solid var(--app-line); border-radius: 6px; background: var(--app-panel); color: var(--app-muted); box-shadow: 0 4px 14px rgb(0 0 0 / .1); font-size: 12px; line-height: 1.45; pointer-events: auto; }
+.app-experience .app-reference-role-choice:nth-child(3n + 2) .app-reference-roles-tooltip { left: 50%; transform: translateX(-50%); }
+.app-experience .app-reference-role-choice:nth-child(3n) .app-reference-roles-tooltip { left: auto; right: 0; }
 .app-experience .app-picker-guidance { margin-bottom: 12px; color: var(--app-muted); font-size: 12px; }
 .app-experience .app-picker-guidance summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
 .app-experience .app-picker-guidance p { padding: 4px 0 12px; }

@@ -1,5 +1,6 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { query } from '@/lib/db';
+import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import {
   buildGoogleVertexVeoPayload,
@@ -27,6 +28,7 @@ import { rollbackPendingPayment } from './payment-rollback';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
+import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -185,7 +187,7 @@ async function submitFalFromGoogleVeo(params: {
   });
   const falSubmission = await params.submitFalGenerateTaskFn({
     userId: params.userId,
-    falPayload: params.falPayload,
+    falPayload: { ...params.falPayload, submissionMode: 'enqueue' },
     jobId: params.jobId,
     engineId: params.engineId,
     engineLabel: params.engineLabel,
@@ -200,6 +202,9 @@ async function submitFalFromGoogleVeo(params: {
     persistProviderJobId: falTracker.persistProviderJobId,
     logMetricFn: params.logMetricFn,
   });
+  const recovered = await reconcileFalFallbackTerminalResponse({ jobId: params.jobId, result: falSubmission,
+    attemptId: falAttempt?.id ?? null, acceptedProviderJobId: falTracker.getLastProviderJobId(), queryFn: params.queryFn });
+  if (recovered) return recovered;
   const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
   if (falAttempt && falProviderJobId) {
     await markProviderAttemptAccepted({
@@ -377,6 +382,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
     queryFn,
   });
 
+  let acceptedOperation: { providerJobId: string; raw: unknown };
   try {
     const payload = await buildGoogleVertexVeoPayload({
       engineId: params.engineId,
@@ -398,56 +404,7 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
       });
     }
 
-    await markProviderAttemptAccepted({
-      attemptId: googleAttempt.id,
-      providerJobId: operationName,
-      responseSnapshot: operation,
-      queryFn,
-    });
-    await queryFn(
-      `UPDATE app_jobs
-          SET status = 'queued',
-              progress = GREATEST(progress, 10),
-              message = $2,
-              provider = $3,
-              provider_job_id = $4,
-              provisional = FALSE,
-              updated_at = NOW()
-        WHERE job_id = $1`,
-      [params.jobId, 'Render submitted.', GOOGLE_VERTEX_VEO_PROVIDER, operationName]
-    );
-    params.logMetricFn('accepted', {
-      jobId: params.jobId,
-      meta: {
-        provider: GOOGLE_VERTEX_VEO_PROVIDER,
-        providerJobId: operationName,
-        providerModel: route.providerModel,
-      },
-    });
-    return {
-      ok: true,
-      kind: 'accepted',
-      body: {
-        ok: true,
-        jobId: params.jobId,
-        videoUrl: null,
-        video: null,
-        thumbUrl: params.placeholderThumb,
-        status: 'queued',
-        progress: 10,
-        pricing: params.pricing,
-        paymentStatus: params.paymentStatus,
-        provider: GOOGLE_VERTEX_VEO_PROVIDER,
-        providerJobId: operationName,
-        batchId: params.batchId,
-        groupId: params.groupId,
-        iterationIndex: params.iterationIndex,
-        iterationCount: params.iterationCount,
-        renderIds: params.renderIds,
-        heroRenderId: params.heroRenderId,
-        localKey: params.localKey,
-      },
-    };
+    acceptedOperation = { providerJobId: operationName, raw: operation };
   } catch (error) {
     const normalized = classifyGoogleVertexVeoError(error);
     const fallbackEligible = shouldFallbackFromGoogleVertexVeoSubmit({
@@ -528,4 +485,31 @@ export async function submitGoogleVertexVeoGenerateTask(params: {
       logMetricFn: params.logMetricFn,
     });
   }
+  return { ok: true, kind: 'accepted', body: await persistDirectProviderAcceptance({
+    jobId: params.jobId, provider: GOOGLE_VERTEX_VEO_PROVIDER, providerJobId: acceptedOperation.providerJobId,
+    attemptId: googleAttempt.id, responseSnapshot: acceptedOperation.raw, status: 'queued', progress: 10,
+    localKey: params.localKey, queryFn,
+    logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
+      meta: { provider: GOOGLE_VERTEX_VEO_PROVIDER, providerJobId: acceptedOperation.providerJobId, providerModel: route.providerModel } }),
+    acceptedBody: {
+      ok: true,
+      jobId: params.jobId,
+      videoUrl: null,
+      video: null,
+      thumbUrl: params.placeholderThumb,
+      status: 'queued',
+      progress: 10,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      provider: GOOGLE_VERTEX_VEO_PROVIDER,
+      providerJobId: acceptedOperation.providerJobId,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+    },
+  }) };
 }

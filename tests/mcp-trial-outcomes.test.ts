@@ -402,7 +402,7 @@ test('confirmation, shared final persistence, and BytePlus polling delegate to t
   assert.match(confirmation, /applyTrialJobOutcome/);
   assert.match(confirmation, /submitTrialGeneration[\s\S]*applyTrialJobOutcome/);
   assert.match(finalPersistence, /applyTrialJobOutcome/);
-  assert.match(finalPersistence, /paymentStatus\s*===\s*'included_mcp_trial'/);
+  assert.match(finalPersistence, /payment_status\s*===\s*'included_mcp_trial'/);
   assert.match(bytePlusPoll, /applyBytePlusTrialOutcomeSafely/);
   assert.match(bytePlusTrial, /applyTrialJobOutcome/);
   assert.match(bytePlusTrial, /try\s*\{[\s\S]*applyOutcome[\s\S]*catch/u);
@@ -542,7 +542,7 @@ test('shared final persistence consumes durable output but leaves generic failur
     settingsSnapshotJson: '{}',
     queryFn: async (sql: string, params?: unknown[]) => {
       writes.push({ sql, params });
-      return undefined;
+      return [{ job_id: JOB_ID, status: params?.[7], payment_status: 'included_mcp_trial' }];
     },
     applyTrialOutcomeFn: async (_jobId: string, outcome: { kind: string }) => {
       seen.push(outcome.kind);

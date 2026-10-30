@@ -64,7 +64,13 @@ export type AssetUploadMeta = {
 };
 
 type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
+export type WorkspaceAssetPresentation = {
+  label: string;
+  actions?: ReactNode;
+  selected?: boolean;
+};
 export type AssetDropzoneSlotProps = {
+  workspacePresentation?: WorkspaceAssetPresentation;
   accept: string;
   mediaKind?: 'image' | 'video' | 'audio';
   asset: AssetSlotAttachment | null;

@@ -101,6 +101,17 @@ test('admin Studio review bounds metadata, scopes every read and fails closed wi
     const response = await POST(request());
     assert.equal(response.status,200);
     assert.equal((await response.json()).detail.reply,'film visible reply');
+    const oldId = randomUUID();
+    await pg.pool.query(`INSERT INTO studio_image_turns VALUES ('owner','film',$1,'ready',1,clock_timestamp()-interval '2160 hours',NULL,'{"message":"Expired private brief"}','{"reply":"Expired reply"}')`,[oldId]);
+    const oldScope = {...scope,requestId:oldId};
+    const audits = (await pg.pool.query('SELECT count(*)::int n FROM admin_studio_review_access')).rows[0].n;
+    await assert.rejects(api.revealStudioReview('admin',oldScope),{code:'review_expired',status:410});
+    const expiredResponse = await POST(new NextRequest('http://localhost/api/admin/studio/review', {method:'POST',headers:{host:'localhost',origin:'http://localhost','content-type':'application/json',cookie:'mva_local_admin_bypass=1'},body:JSON.stringify(oldScope)}));
+    assert.equal(expiredResponse.status,410);
+    assert.doesNotMatch(await expiredResponse.text(),/Expired private brief|Expired reply/);
+    assert.equal((await pg.pool.query('SELECT count(*)::int n FROM admin_studio_review_access')).rows[0].n,audits,'The legacy review cannot bypass expiry or record a content reveal');
+    assert.equal((await api.loadStudioReviewTurn(oldScope)).state,'ready','Expired metadata and original history remain available');
+    assert.equal((await pg.pool.query('SELECT input_json FROM studio_image_turns WHERE request_id=$1',[oldId])).rows[0].input_json.message,'Expired private brief');
     process.env.LOCAL_ADMIN_BYPASS_USER_ID='ordinary';
     assert.equal((await POST(request())).status,401, 'the real admin gate denies a configured local identity without an admin role');
   } finally {

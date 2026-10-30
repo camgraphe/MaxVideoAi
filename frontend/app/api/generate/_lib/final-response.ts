@@ -33,9 +33,7 @@ export function resolveGenerateResponsePaymentStatus(params: {
   paymentMode: PaymentMode;
   paymentStatus: string;
 }): string {
-  return params.status === 'failed' && params.pendingReceipt && params.paymentMode === 'wallet'
-    ? 'refunded_wallet'
-    : params.paymentStatus;
+  return params.paymentStatus;
 }
 
 export function buildFinalGenerateResponse(params: {

@@ -171,3 +171,15 @@ The outbox SQL was initially qualified/applied as `76_ga4_payment_outbox.sql` on
 2026-10-20 before the parallel external-import migration landed. Its contents are
 unchanged under `77_ga4_payment_outbox.sql`; do not treat the rename as a new schema
 change or replay financial data. Existing outbox tables need no reapplication.
+
+## Shared assistant review retention (90 → 91)
+
+Apply `90_assistant_review.sql` after Studio 52 and composer 85, then
+`91_assistant_review_retention.sql` before activating expanded review capture and
+its hourly cron. Apply only pending files on a verified target; 91 is re-applicable
+and must follow 90 if history is replayed. It permits only age-qualified removal
+of review-only snapshots/notes; original history, replay evidence, audit identity
+and financial rows stay intact. No data is purged by the migration itself.
+The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlog.
+Keep retention guards/job when rolling back assistance features. See
+`docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.

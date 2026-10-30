@@ -5,10 +5,10 @@ import {readFileSync} from 'node:fs';
 import {studioTaskFixture} from './helpers/studio-task-fixture';
 import {createStudioTaskService} from '../frontend/src/server/studio/tasks/service';
 import {chooseStudioAssistance,readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
-import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_LEGACY_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
+import {STUDIO_TASK_V2_POLICY_VERSION as STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_LEGACY_POLICY_VERSION} from '../frontend/src/lib/studio/task-budget-contract';
 
 test('new Luna tasks reserve and settle 6000 output tokens while old tasks retain their frozen policy',async t=>{
-  const f=await studioTaskFixture(t);
+  const f=await studioTaskFixture(t,{legacyRuntime:true});
   async function lunaActor(){
     const actor=await f.actor(),status=await readStudioAssistanceStatus(actor.userId,f.policy);
     await chooseStudioAssistance(actor.userId,{action:'select_luna',expectedRevision:status.revision},f.policy);
@@ -43,7 +43,7 @@ test('new Luna tasks reserve and settle 6000 output tokens while old tasks retai
 });
 
 test('the explicit Luna migration replays without rewriting tasks and rejects an unknown policy constraint',async t=>{
-  const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+  const f=await studioTaskFixture(t,{legacyRuntime:true}),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   const input=f.input();
   await service.enqueue(input);
   const before=(await f.pool.query('SELECT policy_version,profile_json FROM studio_tasks WHERE request_id=$1',[input.requestId])).rows[0];
@@ -61,7 +61,7 @@ test('the explicit Luna migration replays without rewriting tasks and rejects an
 });
 
 test('new Luna policy refuses dispatch before its explicit migration while the historical policy remains available',async t=>{
-  const f=await studioTaskFixture(t),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
+  const f=await studioTaskFixture(t,{legacyRuntime:true}),actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy});
   await f.pool.query('DROP FUNCTION enforce_studio_task_resource_policy_v2() CASCADE');
   await assert.rejects(service.enqueue(f.input()),/explicit Studio task migration/);
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM studio_tasks')).rows[0].n,0);

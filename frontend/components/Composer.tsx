@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
-import { ComposerModeSwitch } from '@/components/composer/ComposerModeSwitch.client';
+import { ComposerCommandBar, useComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
 import { ComposerReferenceFields } from '@/components/composer/ComposerReferenceFields';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
@@ -26,6 +26,10 @@ import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
+import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { composerAssistanceReferences } from '@/lib/prompt-assistance/client-context';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
+import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
 import type { ComposerProps } from '@/components/composer/composer-types';
 
 export type {
@@ -38,15 +42,13 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
-  density = 'default', compactPrompt = false,
-  engine,
-  caps,
+  density = 'default', compactPrompt = false, assistance,
+  engine, caps,
   prompt,
   onPromptChange,
   negativePrompt,
   onNegativePromptChange,
-  price,
-  currency,
+  price, currency,
   isLoading,
   error,
   messages,
@@ -81,6 +83,7 @@ export function Composer({
   multiPrompt,
   extraFields,
   beforeAssets,
+  sourceControl,
   afterAssets,
   disableGenerate,
   workflowNotice,
@@ -90,10 +93,14 @@ export function Composer({
 }: ComposerProps) {
   const { t, locale } = useI18n();
   const promptId = useId();
+  const workspaceControls = useComposerWorkspaceControls();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
+  const hasVideoSourceControl = Boolean(videoSourceWorkflow || (sourceControl && extensionWorkflow));
+  const leadingExtensionNotice = assistanceEnabled ? null : extensionNotice;
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -144,7 +151,9 @@ export function Composer({
     }
   }, [price, currency, isPricing, preflight?.ok, videoSourceWorkflow, extensionSourceState, excerptEditorOpen, excerptNeedsRange]);
   const promptLabel = promptField?.label ?? 'Prompt';
-  const promptDescription = videoSourceWorkflow ? undefined : promptField?.description;
+  // Length limits already appear in the prompt counter and validation feedback.
+  const redundantLengthHint = /^Provider (?:prompt length|maximum):/i.test(promptField?.description ?? '');
+  const promptDescription = videoSourceWorkflow || sourceControl || redundantLengthHint ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
   const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
@@ -199,7 +208,7 @@ export function Composer({
   const assetFieldLayoutClass = workspaceDensity
     ? getWorkspaceAssetGridClass(orderedAssetFields.length)
     : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
-  const promptPlaceholderValue = videoSourceWorkflow ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
+  const promptPlaceholderValue = hasVideoSourceControl ? extensionCopy.prompt : workspaceDensity && !promptPlaceholder && !promptPlaceholderWithAsset ? workbenchCopy.placeholder : hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
   const visibleModeToggles = modeToggles && modeToggles.length > 1 ? modeToggles : null;
@@ -238,7 +247,7 @@ export function Composer({
   }, [isLoading]);
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? (workspaceDensity ? workbenchCopy.sending : composerCopy.button.loading)
-    : generateLabel ?? (videoSourceWorkflow ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
+    : generateLabel ?? (hasVideoSourceControl ? (extensionWorkflow ? videoExtensionCopy(locale).extend : videoModifyCopy(locale, sourceMode === 'reframe').action) : composerCopy.button.idle);
   // Keep requested values saved, but do not present them as a configured result
   // until the required source is usable. Create's optional references stay independent.
   const sourceSettingsPending = Boolean(videoSourceWorkflow &&
@@ -318,41 +327,19 @@ export function Composer({
               </div>
             ) : null;
 
-  return (
-    <Card
-      data-composer-density={density}
-      className={clsx(
-        'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
-        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
-      )}
-    >
-      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
-        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !extensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3">
-            {visibleModeToggles ? (
-              <ComposerModeSwitch modes={visibleModeToggles} workspaceDensity={workspaceDensity}
-                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
-            ) : null}
-            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={extensionNotice} error={error} />
-          </div>
-        </div>
-
-        {beforeAssets}
-        {workspaceDensity && (assetFields.length > 0 || subjectReferences) ? <>
-          <WorkspaceReferenceSection engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
-            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? referenceMentions.insert : undefined}
+  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
+          {sourceControl}
+          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+            mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
             onPrepareVideoExcerpt={onPrepareVideoExcerpt} onVideoExcerptEditorChange={handleExcerptEditorChange}
             onAssetAdd={onAssetAdd} onAssetRemove={onAssetRemove} onNotice={onNotice}
-            onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} />
+            onOpenLibrary={onOpenLibrary} onAssetUrlSelect={onAssetUrlSelect} referenceWarning={composerCopy.assetSlots.referenceWarning} /> : null}
           {showSoraImageWarning ? <ComposerSoraImageNotice workspace /> : null}
           {afterAssets}
-        </> : null}
-
-        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
-          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
-
+        </> : null;
+  const promptEditor = (
         <div hidden={Boolean(engine.activeVideoOperation && !promptField)} className="space-y-3">
             <div
               className={clsx(
@@ -365,7 +352,7 @@ export function Composer({
               'app-prompt-heading flex items-start justify-between px-4',
               workspaceDensity ? 'flex-wrap gap-2 pb-2 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
-              <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} prompt={prompt} onPromptChange={onPromptChange}
+              <ComposerPromptHeader promptId={promptId} promptLabel={promptLabel} hideLabel={assistanceEnabled} prompt={prompt} onPromptChange={onPromptChange}
                 promptMaxChars={promptMaxChars} promptTooLong={promptTooLong} multiPromptEnabled={multiPromptEnabled} locale={locale}
                 multiPromptAction={multiPrompt ? <Button type="button" size="sm" variant={multiPromptEnabled ? 'primary' : 'ghost'}
                   aria-label={multiPromptEnabled ? 'Multi-prompt on' : 'Multi-prompt'} aria-pressed={multiPromptEnabled}
@@ -424,7 +411,42 @@ export function Composer({
             {!workspaceDensity ? composerToolbar : null}
           </div>
         </div>
+  );
+  return (
+    <Card
+      data-composer-density={density}
+      className={clsx(
+        assistanceEnabled && assistanceStyles.composer,
+        'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
+        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
+      )}
+    >
+      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
+        <div hidden={workspaceDensity && (assistanceEnabled || !visibleModeToggles) && !promptDescription && !workflowNotice && !leadingExtensionNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1 space-y-3">
+            {!assistanceEnabled && visibleModeToggles ? (
+              <ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity}
+                activeManualMode={activeManualMode} onModeToggle={onModeToggle} />
+            ) : null}
+            <ComposerNotices promptDescription={promptDescription} workflowNotice={workflowNotice} extensionNotice={leadingExtensionNotice} error={error} />
+          </div>
+        </div>
+
+        {beforeAssets}
+        {!assistanceEnabled ? workspaceControls?.modelControl : null}
+        {!assistanceEnabled ? renderReferences() : null}
+
+        {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
+          locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
+
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, live: assistance.live ? { ...assistance.live,
+          readOnlyText: {...assistance.live.readOnlyText,...(negativePrompt?{negativePrompt}:{})},
+          references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, negativePrompt, multiPrompt?.scenes]) }}
+          modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
+          locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
+          disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
+        {assistanceEnabled ? <ComposerNotices extensionNotice={extensionNotice} /> : null}
 
         {!workspaceDensity && assetFields.length > 0 ? (
           <div className="space-y-2">

@@ -11574,7 +11574,7 @@
         "enabled": true
       },
       "pricing": {
-        "includeInEstimator": false
+        "includeInEstimator": true
       }
     },
     "surfacesSource": "registry",

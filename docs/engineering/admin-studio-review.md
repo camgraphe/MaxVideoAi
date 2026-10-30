@@ -1,5 +1,7 @@
 # Studio interaction review
 
+The compatible v1 viewer remains at this route. [Shared assistant review](assistant-review.md) adds `/admin/assistants?source=studio` for new historical input manifests and common human annotations across composer Milo, Studio and MCP preparations.
+
 `/admin/studio` exposes retained Studio interaction evidence to existing administrators. It does not change generation, assistance pricing, source-content retention, or MCP collection.
 
 ## Owners

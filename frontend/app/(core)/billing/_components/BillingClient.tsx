@@ -236,6 +236,7 @@ export function BillingClient({
   }, [copy.wallet.rateLimited]);
 
   const hostedCheckout = useHostedWalletCheckout({
+    accountId: session?.user?.id ?? null,
     accessToken: session?.access_token ?? null,
     amountCents: selectedTopupCents,
     currency: normalizedChargeCurrency,

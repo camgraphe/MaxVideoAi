@@ -1,4 +1,5 @@
 'use client';
+import { composerAssistanceReferences, composerAssistanceSettings } from '@/lib/prompt-assistance/client-context';
 import { OwnedGenerationSourcePicker } from './OwnedGenerationSourcePicker.client';
 import { VideoOperationSelector } from './VideoOperationSelector';
 import { supportsVideoCfgScaleControl } from '@/lib/video-input-schema';
@@ -10,7 +11,7 @@ import dynamic from 'next/dynamic';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
 import { Composer, type MultiPromptScene } from '@/components/Composer';
 import type { SeedanceDraftControls } from '@/lib/seedance-workflow-contract';
-import { SeedanceDraftLocalPreviewMode } from './SeedanceDraftLocalPreviewMode.client';
+import { SeedanceDraftSettingsNotice } from './SeedanceDraftSettingsNotice.client';
 import { getSeedanceDraftCopy } from '../_lib/seedance-draft-copy';
 import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
@@ -483,6 +484,11 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
+        assistance={{ scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video']), live: {surface: 'video', engineId: selectedEngine.id, mode: submissionMode, settings: composerAssistanceSettings(selectedEngine, submissionMode, {...form, cfgScale, shotType, voiceControlEnabled, seed: seedValue, cameraFixed: cameraFixedValue, safetyChecker: safetyCheckerValue, draft: localDraftPreview?.selected,
+          ...(klingElements.some(element=>element.frontal||element.video||element.references.some(Boolean))?{subjectIdentities:'unavailable; describe subjects in your message'}:{}),
+          ...(ownedGenerationRequired?{sourceGenerationContext:'unavailable; describe the source generation in your message'}:{})}),
+          // Keyframe panels own some schema fields outside the compact reference picker.
+          references: composerAssistanceReferences(selectedEngine,inputSchemaSummary.assetFields.filter(entry=>!composerAssetFields.some(visible=>visible.field.id===entry.field.id)),composerAssets,submissionMode)}, contextKey: JSON.stringify({ form: { ...form, prompt: undefined }, klingElements, cfgScale, shotType, voiceIdsInput, voiceControlEnabled, multiPromptEnabled, seedValue, cameraFixedValue, safetyCheckerValue, draft: localDraftPreview && { selected: localDraftPreview.selected, phase: localDraftPreview.phase, live: localDraftPreview.live } }) }}
         density="workspace"
         engine={selectedEngine}
         caps={capability}
@@ -541,33 +547,13 @@ export function WorkspaceComposerSurface({
             : null
         }
         disableGenerate={videoDurationBlocked || Boolean(klingV4Error) || Boolean(modeUnavailableMessage) || quoteUnavailable || draftSettingsLocked || multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
-        beforeAssets={<>
-            <VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />
-            {ownedGenerationRequired ?
-              <OwnedGenerationSourcePicker key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
+        beforeAssets={<VideoOperationSelector locale={uiLocale} engine={selectedEngine} mode={submissionMode} form={form} setForm={setForm} />}
+        sourceControl={ownedGenerationRequired ?
+              <OwnedGenerationSourcePicker compact authAction={referenceAuthAction} key={`${sourceAccount?.userId ?? ''}:${form.operation ?? 'luma-extend'}`} account={sourceAccount}
                 operation={form.operation === 'flux-draft-enhance' ? 'flux-draft-enhance' : 'luma-extend'} locale={uiLocale}
                 sourceJobId={String(form.extraInputValues.source_job_id ?? '')}
                 onSelect={source => setForm(current => current ? {...current,extraInputValues:{...current.extraInputValues,
                   source_job_id:source?.sourceJobId ?? '',source_output_id:source?.sourceOutputId ?? ''}} : current)} /> : null}
-            {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
-              <LumaRay32KeyframeEditor
-                uiLocale={uiLocale}
-                engine={selectedEngine}
-                caps={capability}
-                form={form}
-                setForm={setForm}
-                assetFields={inputSchemaSummary.assetFields}
-                inputAssets={inputAssets}
-                onAssetAdd={handleAssetAdd}
-                onPrepareVideoExcerpt={handlePrepareVideoExcerpt}
-                onVideoExcerptEditorChange={handleVideoExcerptEditorChange}
-                onAssetRemove={handleAssetRemove}
-                onOpenLibrary={handleOpenAssetLibrary}
-                onNotice={showNotice}
-                disabledReason={guestUploadLockedReason}
-              />
-            ) : null}
-        </>}
         subjectReferences={showKlingElementsBuilder ? {
           hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
           content: <KlingElementsBuilder
@@ -584,6 +570,21 @@ export function WorkspaceComposerSurface({
         extraFields={showExtraFields ? (
           <>
             {klingV4Error ? <p role="alert" className="text-xs text-error">{klingV4Error}</p> : null}
+            {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
+              <LumaRay32KeyframeEditor
+                uiLocale={uiLocale}
+                engine={selectedEngine}
+                form={form}
+                setForm={setForm}
+                assetFields={inputSchemaSummary.assetFields}
+                inputAssets={inputAssets}
+                onAssetAdd={handleAssetAdd}
+                onAssetRemove={handleAssetRemove}
+                onOpenLibrary={handleOpenAssetLibrary}
+                onNotice={showNotice}
+                disabledReason={guestUploadLockedReason}
+              />
+            ) : null}
             {showOmniStudioPanel ? (
               <OmniStudioPanel
                 form={form}
@@ -668,19 +669,8 @@ export function WorkspaceComposerSurface({
           </>
         ) : undefined}
         optionsControl={showOptionsControl ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
-        settingsNotice={localDraftPreview ? (
-          <div className="mt-2 border-t border-hairline pt-2">
-            <SeedanceDraftLocalPreviewMode preview={localDraftPreview} locale={uiLocale} />
-            <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
-              {localDraftPreview.selected
-                ? draftSettingsLocked
-                  ? draftCopy.locked
-                  : draftCopy.selected
-                : draftCopy.inactive}
-            </p>
-            {!localDraftPreview.live ? <p className="mt-1 text-[10px] text-text-muted">{draftCopy.prototype}</p> : null}
-          </div>
-        ) : undefined}
+        settingsNotice={<SeedanceDraftSettingsNotice controls={localDraftPreview} locale={uiLocale}
+          setup={{ engineId: selectedEngine.id, mode: submissionMode, iterations: form.iterations, aspectRatio: form.aspectRatio }} />}
         settingsBar={ownedGenerationRequired && !form.extraInputValues.source_job_id ? undefined : (
           <>
             <fieldset disabled={draftSettingsLocked} className="contents [&>div]:contents" title={draftSettingsLocked ? draftCopy.lockTitle : undefined}>

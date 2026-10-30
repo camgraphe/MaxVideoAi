@@ -103,7 +103,6 @@ Allowed pre-acceptance fallback cases:
 - HTTP 429 rate limit or concurrent-job limit.
 - transient HTTP 5xx provider errors.
 - network failure or submit timeout.
-- invalid direct response with no accepted generation id.
 - a public request shape that is supported by fal but not by Luma direct.
 
 Never fallback automatically for:
@@ -113,9 +112,18 @@ Never fallback automatically for:
 - moderation or policy rejection;
 - invalid user request;
 - unsupported direct-only options;
+- a response classified as `invalid_response` without a verified generation id;
 - any failure after Luma returns an accepted generation id.
 
 Once Luma returns a generation id, polling stays on Luma. If the accepted job fails later, mark the job failed and refund according to normal job/payment rules. Do not launch a second fal render.
+
+An accepted video followed by a local snapshot, persistence or metric failure is
+not such a provider failure. Its submission owner uses the shared
+`direct-provider-acceptance.ts` boundary outside the pre-acceptance rejection
+catch. Independent identity writes and a durable read preserve terminal winners;
+failed diagnostic sanitization omits the snapshot without exposing raw media
+grants. Automatic polling still requires the ID in `app_jobs`; a deferred response
+alone does not establish durable recovery. See the [acceptance contract](fal-job-failures.md#direct-acknowledgements-and-fallback-outcome-projection-30-october-2026).
 
 ## Polling And Output Copy
 

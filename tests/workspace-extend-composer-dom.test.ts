@@ -44,7 +44,7 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       React.createElement(I18nProvider, { locale: 'en', dictionary: {} as Dictionary, fallback: {} as Dictionary,
         children: React.createElement(Composer, { density: 'workspace', engine, caps, activeManualMode: 'extend',
           prompt: '', onPromptChange: noop, price: null, currency: 'USD', isLoading: false, error,
-          beforeAssets: id === 'luma-ray-3-2' ? React.createElement(OwnedGenerationSourcePicker,{account:null,operation:'luma-extend',sourceJobId:'',locale:'en',onSelect:noop}) : undefined,
+          sourceControl: id === 'luma-ray-3-2' ? React.createElement(OwnedGenerationSourcePicker,{compact:true,account:null,operation:'luma-extend',sourceJobId:'',locale:'en',onSelect:noop}) : undefined,
           promptRequired: summary.promptRequired, assetFields: summary.assetFields, assets, settingsBar: settings,
           onGenerate: noop, onAssetRemove: noop, onOpenLibrary: (field, index) => libraryCalls.push([field.id, index]) }),
       }),
@@ -53,12 +53,18 @@ for (const { id } of listFalEngines().filter(entry => entry.modes.some(mode => m
       await render();
       const doc = dom.window.document;
       if (id === 'luma-ray-3-2') {
-        const picker = doc.querySelector('[data-testid="owned-generation-source-picker"]');
+        const trigger = doc.querySelector<HTMLButtonElement>('[data-owned-source-trigger]');
+        assert.ok(trigger);
+        assert.match(trigger.textContent ?? '', /Video to extend.*Required/);
+        assert.equal(doc.querySelector('select'), null, 'source details stay inside the dialog');
+        await act(async () => trigger.click());
+        const picker = doc.querySelector('[role="dialog"] [data-testid="owned-generation-source-picker"]');
         assert.ok(picker);
-        assert.match(picker.textContent ?? '', /Choose an owned generation.*exact price/);
+        assert.match(picker.textContent ?? '', /Luma Extend requires a completed Ray 3.2/);
+        assert.match(picker.textContent ?? '', /Sign in to choose a video/);
         assert.equal(doc.querySelector('input[type="file"]'), null);
-        assert.ok(picker.compareDocumentPosition(doc.querySelector('textarea')!) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
         assert.equal(doc.querySelector<HTMLButtonElement>('.app-generation-action')!.disabled, true);
+        assert.match(doc.querySelector('.app-generation-action')!.textContent ?? '', /Extend video/);
         return;
       }
       assert.match(doc.body.textContent ?? '', /Upload the video to extend.*calculate the price/);

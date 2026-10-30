@@ -219,6 +219,8 @@ test('audio source picker mounts no native video, preserves payload and portal f
 test('reference role navigation defaults to compatible images and preserves actual field/index callbacks', async () => {
   const h = await harness();
   const fields: AssetFieldConfig[] = [
+    { field: { id: 'end_image_url', label: 'End image', type: 'image', maxCount: 1 }, required: false, role: 'frame' },
+    { field: { id: 'image_url', label: 'Start image', type: 'image', maxCount: 1 }, required: false, role: 'primary' },
     { field: { id: 'video_url', label: 'Source video', type: 'video', maxCount: 1 }, required: false },
     { field: { id: 'image_urls', label: 'Images', type: 'image', maxCount: 30 }, required: false },
     { field: { id: 'video_urls', label: 'Video refs', type: 'video', maxCount: 3 }, required: false },
@@ -231,7 +233,8 @@ test('reference role navigation defaults to compatible images and preserves actu
     await h.render(React.createElement(WorkspaceReferenceInventory, { fields, assets, locale: 'en', renderField: entry => React.createElement('div', { 'data-rendered-field': entry.field.id }, entry.disabledReason, React.createElement('button', { 'data-library': true, onClick: () => calls.push(`${entry.field.id}:2`) }, 'Library')) }));
     assert.equal(h.doc.querySelector('[data-rendered-field]')!.getAttribute('data-rendered-field'), 'image_urls');
     assert.match(h.doc.querySelector('[data-reference-role="image_urls"]')!.textContent!, /1\/30/);
-    assert.equal(h.doc.querySelectorAll('[data-reference-role]').length, 4);
+    assert.deepEqual([...h.doc.querySelectorAll('.app-reference-role-row')].map(row => [...row.querySelectorAll('[data-reference-role]')].map(button => button.getAttribute('data-reference-role'))),
+      [['image_urls', 'video_urls', 'audio_urls'], ['image_url', 'end_image_url', 'video_url']]);
     await h.click('[data-reference-role="audio_urls"]');
     assert.match(h.doc.body.textContent!, /Model does not allow audio/);
     assert.equal(h.doc.querySelectorAll('[data-rendered-field]').length, 1);

@@ -49,6 +49,7 @@ export type HostedCheckoutChallengeAction =
   | { type: 'checkout_not_redirected'; submittedCaptchaToken: string | null };
 
 const MIN_TOPUP_CENTS = 1000;
+const HOSTED_CHECKOUT_TIMEOUT_MS = 30_000;
 
 export function createHostedCheckoutChallengeState(): HostedCheckoutChallengeState {
   return {
@@ -131,7 +132,8 @@ function failureReasonForStatus(status: number): HostedWalletCheckoutFailureReas
 
 export async function requestHostedWalletCheckout(
   input: HostedWalletCheckoutInput,
-  fetchImpl: typeof fetch = fetch
+  fetchImpl: typeof fetch = fetch,
+  signal?: AbortSignal
 ): Promise<HostedWalletCheckoutResult> {
   const currency = input.currency.trim().toUpperCase();
   if (!Number.isSafeInteger(input.amountCents) || input.amountCents < MIN_TOPUP_CENTS) {
@@ -146,11 +148,24 @@ export async function requestHostedWalletCheckout(
     headers.set('Authorization', `Bearer ${input.accessToken}`);
   }
 
-  try {
+  const networkFailure: HostedWalletCheckoutResult = { kind: 'failed', reason: 'network', checkoutAttemptId: null };
+  if (signal?.aborted) return networkFailure;
+  const controller = new AbortController();
+  let cancel!: (result: HostedWalletCheckoutResult) => void;
+  const cancelled = new Promise<HostedWalletCheckoutResult>(resolve => { cancel = resolve; });
+  const abort = () => {
+    controller.abort();
+    cancel(networkFailure);
+  };
+  signal?.addEventListener('abort', abort, { once: true });
+  // Race the whole operation: an injected transport or body reader may ignore abort.
+  const timeout = setTimeout(abort, HOSTED_CHECKOUT_TIMEOUT_MS);
+  const request = async (): Promise<HostedWalletCheckoutResult> => {
     const response = await fetchImpl('/api/wallet', {
       method: 'POST',
       headers,
       credentials: 'include',
+      signal: controller.signal,
       body: JSON.stringify({
         amountCents: input.amountCents,
         currency: currency.toLowerCase(),
@@ -162,7 +177,9 @@ export async function requestHostedWalletCheckout(
         ...(input.analyticsJourney ? { analyticsJourney: input.analyticsJourney } : {}),
       }),
     });
+    if (controller.signal.aborted) return networkFailure;
     const payload = await response.json().catch(() => null);
+    if (controller.signal.aborted) return networkFailure;
 
     if (!response.ok) {
       if (payload?.captchaRequired === true) {
@@ -188,7 +205,13 @@ export async function requestHostedWalletCheckout(
       return { kind: 'failed', reason: 'unknown', checkoutAttemptId };
     }
     return { kind: 'ready', url, sessionId, checkoutAttemptId };
+  };
+  try {
+    return await Promise.race([request(), cancelled]);
   } catch {
-    return { kind: 'failed', reason: 'network', checkoutAttemptId: null };
+    return networkFailure;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', abort);
   }
 }

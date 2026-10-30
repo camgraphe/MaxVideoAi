@@ -1,5 +1,7 @@
 # Studio assistance credits
 
+The 2026-10-29 candidate extends the same lots to **Lite/Luna, Standard/Terra and Max/Sol**. See [shared Milo levels](milo-levels.md) for exact rates, frozen runtime versions and pending migrations. It performs no production activation or balance reset.
+
 The 2026-10-06 branch candidate adds a separately confirmed media-analysis consumer
 of these same credit lots and campaign/account locks. It activates no production
 analysis tariff and preserves historical chat prices. See
@@ -25,21 +27,20 @@ remain disabled; neither approval implies the other. `assistance-policy.ts` sele
 monthly credits and Luna fair use; the public contract lives in
 `frontend/src/lib/studio/assistance-contract.ts`.
 
-Studio presents its assistant as Milo. The compact Standard / Max controls below
+Studio presents its assistant as Milo. The compact Lite / Standard / Max controls below
 the composer open the existing settings and credits dialog; opening it does not
 select a model or buy credits. Max maps to GPT‑6.1 Sol and remains the default with
-the existing 500 included credits. Standard maps to GPT‑6 Luna and keeps the
-current high-reasoning policy. These public mode names do not rename stored task
+the existing 500 included credits. Lite maps to GPT‑6 Luna/high, Standard to GPT‑6.1 Terra/high, and Max to GPT‑6.1 Sol/xhigh. Standard and Max share these credit lots at their model-specific rates. These public mode names do not rename stored task
 profiles: there is no public Quick/Standard/Complex work-profile picker. New
-requests use the existing internal Standard work bounds; stored profiles and
-approvals remain valid. A Standard task, including a funding fallback, offers an
+requests use the internal Standard profile with the level’s frozen reasoning and 6,000-token output allowance; stored profiles and
+approvals remain valid. A Lite task, including a funding fallback, offers an
 Explore Max link. Assistance details stay in the dialog rather than an extra
 explanatory sentence below the composer.
 Complex requests may receive a brief contextual recommendation in the chat.
 Credits and pack purchases remain in the on-demand assistance dialog, with
 explicit purchase confirmation. No default-model migration is required.
 
-New purchase receipts say `Milo Max credit pack`. Historical receipt descriptions,
+New purchase receipts say `Milo credit pack`. Historical receipt descriptions,
 `studio_assistance_pack`, tariff versions, model IDs and idempotency keys are not
 renamed or migrated. The homepage, Studio landing and pricing/PAYG copy use the
 same public names while retaining the underlying model names in pricing details.
@@ -120,7 +121,7 @@ balances change in multiples of 10 credits. There is no new tariff, negative bal
 automatic pack purchase or second wallet charge.
 
 At zero spendable credits or zero remaining customer task allowance, sponsored
-Standard can continue within the existing task resource limits. A final Max output
+Lite can continue within the existing task resource limits. A final Max output
 that still reaches its full output bound can use another existing step; incomplete
 tools are discarded and mandatory first film comparisons remain required. Saved
 completion authorization and output bounds survive checkpoint replay. Unknown
@@ -134,8 +135,7 @@ and historical financial evidence are unaffected.
 GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation
 lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
-128,000 input tokens; the existing 2,200 output-token and four-call message bounds
-remain. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
+128,000 input tokens; new non-task runtimes allow 6,000 output tokens and four calls per message. Historical snapshots retain 2,200 output tokens. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
 an explicit customer choice. New Luna task requests use the current high-reasoning
 policy and 6,000 output-token allowance. Historical task and fallback allowances
 retain their frozen policy. The sponsored campaign remains an operational availability gate, with
@@ -176,7 +176,7 @@ external assistant's plan/limits apply. They do not install, authorize or spend.
 2. The Responses input-token-count endpoint counts the exact prospective payload,
    including image inputs and tool schemas. This is a non-generative preflight,
    not a second assistant response. A counting error stops before reservation or
-   model dispatch. Input must be at most 272,000 tokens; output is capped at 2,200.
+   model dispatch. Input must be at most 272,000 tokens; output is capped by the frozen runtime (historically 2,200; new levels 6,000).
    Native requests use `service_tier=default`, global OpenAI processing, no SDK
    retries, no built-in billable tools, and at most four dispatched responses per client message, including retries.
 3. Each model dispatch requires a committed conversation-response checkpoint and

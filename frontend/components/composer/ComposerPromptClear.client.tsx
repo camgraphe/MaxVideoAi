@@ -38,13 +38,14 @@ export function ComposerPromptClear({ prompt, onPromptChange, inputId, locale }:
     input.setSelectionRange(next.length, next.length);
   };
   return <span className="inline-flex min-h-11 shrink-0 items-center">
-    {prompt.length || canUndo ? <Button type="button" variant="ghost" size="sm"
+    <Button type="button" variant="ghost" size="sm"
       className="!min-h-11 min-w-11 rounded-full px-3 py-0 text-xs"
+      disabled={!prompt.length && !canUndo}
       aria-controls={inputId} aria-label={canUndo ? copy.undo : copy.clear} title={canUndo ? copy.undo : copy.clear}
       onPointerDown={event => event.preventDefault()} onClick={activate}>
       {canUndo ? <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 5 4 10l5 5M4 10h9a7 7 0 0 1 7 7v2" />
       </svg> : copy.clear}
-    </Button> : null}
+    </Button>
   </span>;
 }

@@ -1,0 +1,75 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import {getDb} from '../frontend/src/lib/db';
+import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/disposable-postgres';
+import {createComposerAnalysisService} from '../frontend/src/server/studio/media-analysis/service';
+import {runStudioAnalysisWorkerOnce} from '../frontend/src/server/studio/media-analysis/worker';
+import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
+import {readStudioAssistanceStatus,chooseStudioAssistance} from '../frontend/src/server/studio/assistance-ledger';
+import {resolveStudioMedia} from '../frontend/src/server/studio/media-resolver';
+import {readPromptReferenceAnalyses} from '../frontend/src/server/prompt-assistance/reference-analysis';
+
+test('composer analysis preserves tiers, shares credits, reuses observations and fences replay/ownership',async t=>{
+  const pg=await startDisposablePostgres('milo-perception');const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text NOT NULL,deleted_at timestamptz);
+    CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,url text,mime_type text,status text);
+    CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,status text,original_name text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text,thumb_url text,preview_url text,size_bytes bigint);`);
+  for(const name of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','64_studio_media_analysis.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','89_composer_reference_analysis.sql'])await pg.pool.query(readFileSync('neon/migrations/'+name,'utf8'));
+  const user='composer-owner',session=randomUUID();
+  const assistancePolicy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
+  const policy={version:'context-analysis-v1',processingNanoUsdPerSecond:100_000,marginPercent:1,video:{maxInputTokens:12000,maxOutputTokens:2200},audio:{maxInputTokens:4096,maxOutputTokens:1200,rateVersion:'qualified-audio',textInputNanoUsd:2500,audioInputNanoUsd:32000,textOutputNanoUsd:10000}};
+  await pg.pool.query("INSERT INTO prompt_assistance_sessions(user_id,id,scope) VALUES($1,$2,'video')",[user,session]);
+  const ref={type:'asset' as const,assetId:'ma_'+'a'.repeat(32),kind:'video' as const};
+  await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,size_bytes,metadata) VALUES('media',$1,$2,'video','https://cdn.maxvideoai.com/owned.mp4','video/mp4','ready',1000,$3::jsonb)`,[ref.assetId,user,JSON.stringify({mediaFacts:{source:'probe',durationSec:20,hasAudio:true}})]);
+  const service=createComposerAnalysisService(user,session,{policy,assistancePolicy});
+  const request={ref,modality:'visual' as const,goal:'Describe motion',reason:'requested' as const,startSec:0,endSec:20};
+  await assert.rejects(service.prepare(request,randomUUID()),/Standard or Max/,'A new composer account must not implicitly select Max');
+  await chooseStudioAssistance(user,{action:'select_terra',expectedRevision:0},assistancePolicy);
+  const key=randomUUID();const [quote,duplicate]=await Promise.all([service.prepare(request,key),service.prepare(request,key)]);
+  assert.equal(quote.analysisId,duplicate.analysisId);assert.equal(quote.model,'gpt-6.1-terra');
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_projects')).rows[0].n,0,'No synthetic Studio project');
+  await assert.rejects(createComposerAnalysisService('foreign',session,{policy,assistancePolicy}).read(quote.analysisId),/available/);
+  const confirm={analysisId:quote.analysisId,maxCredits:quote.maxCredits,policyVersion:quote.policyVersion,confirmed:true};
+  await Promise.all([service.confirm(confirm),service.confirm(confirm)]);
+  assert.equal((await readStudioAssistanceStatus(user,assistancePolicy)).selectedModel,'gpt-6.1-terra');
+  let calls=0;
+  const scope={userId:user,projectId:`composer:${session}`,requestId:quote.analysisId};
+  const worker={policy,assistancePolicy,scope,extract:async()=>({frames:[{atSec:2,imageUrl:'data:image/jpeg;base64,AAAA'}],sourceHash:'digest'}),
+    provider:async(_policy:unknown,_request:unknown,_source:unknown,model:string)=>({inputTokens:100,dispatch:async()=>{calls++;assert.equal(model,'gpt-6.1-terra');return {id:'observed',model,serviceTier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:20},outputText:'{"summary":"A person walks left.","observations":[{"startSec":2,"endSec":3,"text":"Walks left.","kind":"observed"}]}',inputTokens:100,outputTokenBound:2200,providerNanoUsd:null};}})};
+  await runStudioAnalysisWorkerOnce(worker);
+  const done=await service.read(quote.analysisId);assert.equal(done.state,'completed');assert.ok(done.chargedCredits!<=quote.maxCredits);
+  assert.equal((await readStudioAssistanceStatus(user,assistancePolicy)).credits?.included.reserved,0);
+  await service.confirm(confirm);await runStudioAnalysisWorkerOnce(worker);assert.equal(calls,1);
+  const source=await resolveStudioMedia(user,ref);
+  assert.equal((await readPromptReferenceAnalyses(user,session,source))[0].summary,'A person walks left.');
+  assert.equal((await readPromptReferenceAnalyses(user,randomUUID(),source)).length,1,'Owned observations survive a fresh composer session');
+  assert.equal((await readPromptReferenceAnalyses('another-owner',session,source)).length,0);
+  assert.equal((await readPromptReferenceAnalyses(user,session,{...source,url:'https://cdn.maxvideoai.com/replaced.mp4'})).length,0);
+  // A requested new excerpt cannot silently fall back to an older cached observation.
+  const another=await service.prepare({...request,endSec:10},randomUUID());
+  const {analysisSourceFingerprint}=await import('../frontend/src/server/studio/media-analysis/source');
+  await pg.pool.query(`INSERT INTO prompt_assistance_analysis_selections VALUES($1,$2,$3,'visual',$4)`,[user,session,analysisSourceFingerprint(source),another.analysisId]);
+  assert.equal((await readPromptReferenceAnalyses(user,session,source)).length,0);
+  await pg.pool.query('UPDATE prompt_assistance_analysis_selections SET analysis_id=$1 WHERE session_id=$2',[quote.analysisId,session]);
+  assert.equal((await readPromptReferenceAnalyses(user,session,source))[0].summary,'A person walks left.');
+  // Native audio is a separate paid consumer; the selected writing tier remains Standard.
+  const audio=await service.prepare({...request,modality:'audio'},randomUUID());await service.confirm({...confirm,analysisId:audio.analysisId,maxCredits:audio.maxCredits});
+  await runStudioAnalysisWorkerOnce({...worker,scope:{...scope,requestId:audio.analysisId},provider:async()=>({inputTokens:4096,dispatch:async()=>{calls++;return {id:'heard',model:'gpt-audio-1.5',serviceTier:'default',usage:{prompt_tokens:120,completion_tokens:20,prompt_tokens_details:{audio_tokens:100}},outputText:'{"summary":"Piano music, no speech.","observations":[]}',inputTokens:4096,outputTokenBound:1200,providerNanoUsd:null};}})});
+  assert.equal((await service.read(audio.analysisId)).state,'completed');assert.equal((await readStudioAssistanceStatus(user,assistancePolicy)).selectedModel,'gpt-6.1-terra');
+  const status=await readStudioAssistanceStatus(user,assistancePolicy);
+  await chooseStudioAssistance(user,{action:'select_luna',expectedRevision:status.revision},assistancePolicy);
+  await assert.rejects(service.prepare(request,randomUUID()),/Standard or Max/);assert.equal(calls,2);
+  // A prepared quote cannot bill a different tier after a preference change.
+  await chooseStudioAssistance(user,{action:'select_sol',expectedRevision:status.revision+1},assistancePolicy);
+  const max=await service.prepare(request,randomUUID());assert.equal(max.model,'gpt-6.1-sol');
+  await chooseStudioAssistance(user,{action:'select_terra',expectedRevision:status.revision+2},assistancePolicy);
+  await assert.rejects(service.confirm({...confirm,analysisId:max.analysisId,maxCredits:max.maxCredits}),/Milo changed/);
+  await pg.pool.query("UPDATE prompt_assistance_sessions SET expires_at=clock_timestamp()-interval '1 second' WHERE id=$1",[session]);
+  assert.equal((await service.read(quote.analysisId)).state,'completed','Expiry must not hide paid evidence');
+  await assert.rejects(service.prepare(request,randomUUID()),/not available/);
+  await assert.rejects(service.confirm({...confirm,analysisId:max.analysisId,maxCredits:max.maxCredits}),/not available/);
+});

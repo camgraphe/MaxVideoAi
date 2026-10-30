@@ -10,7 +10,8 @@ import { recentMediaCopy } from './recent-media-copy';
 export type RecentMediaCardAsset = {
   id: string; url: string; thumbUrl?: string | null; kind: 'image' | 'video' | 'audio'; createdAt?: string;
 };
-export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, onKindChange, onSelect, onDragStart, onDragEnd, loading, refreshing = false, error, authenticated, onRetry, locale, actionLabel }: {
+export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, onKindChange, onSelect, onDragStart, onDragEnd, loading, refreshing = false, error, authenticated, onRetry, locale, actionLabel, kinds = ['image', 'video', 'audio'] }: {
+  kinds?: readonly T['kind'][];
   assets: T[]; kind: T['kind']; onKindChange: (kind: T['kind']) => void;
   onSelect: (asset: T) => void; onDragStart?: (event: DragEvent, asset: T) => void; onDragEnd?: () => void;
   loading: boolean; refreshing?: boolean; error: boolean; authenticated: boolean; onRetry: () => void; locale: string; actionLabel?: string;
@@ -20,7 +21,7 @@ export function RecentMediaList<T extends RecentMediaCardAsset>({ assets, kind, 
   return <section className="app-recent-media" aria-label={copy.title}>
     <div className="app-recent-filters">
       <div className="app-recent-kind-selector" role="group" aria-label={copy.title}>
-        {(['image', 'video', 'audio'] as const).map((value) => <button type="button" key={value} aria-pressed={value === kind} onClick={() => onKindChange(value)}>{copy[value]}</button>)}
+        {kinds.map((value) => <button type="button" key={value} aria-pressed={value === kind} onClick={() => onKindChange(value)}>{copy[value]}</button>)}
       </div>
       {authenticated && !error ? <button className="app-recent-refresh" type="button" onClick={onRetry} disabled={loading || refreshing} aria-busy={refreshing} aria-label={refreshing ? copy.refreshing : copy.refresh} title={refreshing ? copy.refreshing : copy.refresh}><RefreshCw aria-hidden className={refreshing ? 'animate-spin' : undefined} /></button> : null}
     </div>

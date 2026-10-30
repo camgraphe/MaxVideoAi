@@ -6,11 +6,12 @@ import styles from './conversation-analysis.module.css';
 export function ConversationAnalysis({quote,projectId,accountKey,locale,busy,onConfirmed,onRenew}:{quote:StudioPreparedAnalysis;projectId:string;accountKey:string;locale:'en'|'fr';busy:boolean;onConfirmed:()=>void;onRenew:()=>void}){
   const analysis=useConversationAnalysis(projectId,accountKey,quote);
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
+  const level=quote.model==='gpt-6.1-terra'?'Standard':'Max';
   const state=analysis.status?.state;
   const expired=Date.parse(quote.expiresAt)<=Date.now();
   const blocked=busy||analysis.busy;
   return <section className={styles.card} aria-label={t('Media analysis','Analyse du média')}>
-    <h3>{t('Analyse with Milo Max','Analyser avec Milo Max')}</h3>
+    <h3>{t(`Analyse with Milo ${level}`,`Analyser avec Milo ${level}`)}</h3>
     {quote.sourceName&&<p>{t('Source','Source')} : {quote.sourceName}</p>}
     <p>{quote.goal}</p>
     <p>{quote.startSec.toFixed(2)}–{quote.endSec.toFixed(2)} s · {quote.profile==='audio-window-v1'?t('Sound','Son'):t('Video frames','Images de la vidéo')}</p>
@@ -25,7 +26,7 @@ export function ConversationAnalysis({quote,projectId,accountKey,locale,busy,onC
       <p className={styles.note}>{t('Only the stated interval and sampled frames or audio window were inspected. Timings may be approximate.','Seuls l’intervalle indiqué et les images échantillonnées ou l’extrait audio ont été examinés. Les repères peuvent être approximatifs.')}</p>
       <ul>{analysis.status.result.observations.map((item,index)=><li key={index}><strong>{item.startSec.toFixed(2)}–{item.endSec.toFixed(2)} s</strong> · {item.text} {item.kind==='inferred'?t('(inferred)','(déduit)'):''}</li>)}</ul>
     </>}
-    {state==='prepared'&&!expired&&<button disabled={blocked} onClick={()=>void analysis.confirm().then(confirmed=>{if(confirmed)onConfirmed();})}>{t('Analyse with Milo Max','Analyser avec Milo Max')} · {quote.maxCredits} {t('credits maximum','crédits maximum')}</button>}
+    {state==='prepared'&&!expired&&<button disabled={blocked} onClick={()=>void analysis.confirm().then(confirmed=>{if(confirmed)onConfirmed();})}>{t(`Analyse with Milo ${level}`,`Analyser avec Milo ${level}`)} · {quote.maxCredits} {t('credits maximum','crédits maximum')}</button>}
     {state==='prepared'&&expired&&<button disabled={blocked} onClick={onRenew}>{t('Prepare a current analysis quote','Préparer un nouveau devis d’analyse')}</button>}
     {state!=='prepared'&&state!=='queued'&&state!=='running'&&<button disabled={blocked} onClick={()=>void analysis.refresh()}>{t('Refresh analysis status','Actualiser l’état de l’analyse')}</button>}
     <p className={styles.note}>{t('This confirms only the selected analysis. New generations and exports have their own quotes.','Cette confirmation concerne uniquement l’analyse sélectionnée. Les nouvelles générations et les exports ont leurs propres devis.')}</p>

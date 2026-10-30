@@ -203,10 +203,12 @@ function quoteCanonicalScenarios(
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
-      if (scenario.engineId === NANO21_ENGINE_ID) {
+      if (scenario.engineId === NANO21_ENGINE_ID || scenario.engineId === 'kling-v4') {
         return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
           reason: 'product_policy_not_authoritative',
-          warning: 'Nano Banana 2.1 uses its fixed per-image customer tariff; percentage-policy previews cannot reprice it.',
+          warning: scenario.engineId === 'kling-v4'
+            ? 'Kling 4 uses approved customer tariffs; legacy percentage-policy previews cannot reprice it.'
+            : 'Nano Banana 2.1 uses its fixed per-image customer tariff; percentage-policy previews cannot reprice it.',
           policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };
       }
       if (projection === 'live' && scenario.input.adminProduct === 'finishing' && policy.rule.engineId !== 'toolbox-finishing') {

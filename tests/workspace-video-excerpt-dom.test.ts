@@ -20,7 +20,7 @@ const actions=useWorkspaceVideoExcerpt({accountScope:window.owner,engine,mode:wi
 const form={engineId:window.engineId,mode:window.mode,operation:window.operation,durationSec:15,resolution:'720p',aspectRatio:'16:9',fps:24,iterations:1,audio:false,extraInputValues:{}};
 const workflow=resolveWorkspaceWorkflow({engine,form,inputAssets:state.inputAssets,klingElements:[]});
 const facts=resolveWorkspaceComposerFacts({engine,form,workflow:{...workflow,submissionMode:window.mode},prompt:'edit',multiPromptEnabled:false,multiPromptScenes:[],voiceIdsInput:''});
-const pricing=useWorkspacePricingGate({accessToken:'token-'+window.owner,locale:'en',topUpCopy:{},form,selectedEngine:engine,authChecked:!!window.pricingEnabled,memberTier:'Member',setMemberTier:()=>{},supportsAudioToggle:false,effectiveDurationSec:facts.effectiveDurationSec,voiceControlEnabled:false,submissionMode:window.mode,inputAssets:state.inputAssets});
+const pricing=useWorkspacePricingGate({accountId:window.owner,accessToken:'token-'+window.owner,locale:'en',topUpCopy:{},form,selectedEngine:engine,authChecked:!!window.pricingEnabled,memberTier:'Member',setMemberTier:()=>{},supportsAudioToggle:false,effectiveDurationSec:facts.effectiveDurationSec,voiceControlEnabled:false,submissionMode:window.mode,inputAssets:state.inputAssets});
 window.probe={...state,...actions,pricing,facts,form,sourceState:getVideoWorkflowSourceState(engine.inputSchema,state.inputAssets,window.mode,getVideoExcerptLimits(engine,window.mode)),attachments:buildComposerAttachments(state.inputAssets)};return null;}
 const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;
 window.fx={act,render:()=>root.render(<Main/>),unmount:()=>root.unmount()};`,

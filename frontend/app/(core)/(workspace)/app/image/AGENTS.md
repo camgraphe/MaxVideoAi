@@ -20,6 +20,8 @@ This route owns the dedicated still-image generation workspace.
 - Keep preview copy/download actions and generated-library save/remove orchestration in `_hooks/useImagePreviewActions.ts`.
 - Keep image setting field derivation, select options, and schema-driven default resets in `_hooks/useImageSettingsFields.ts`.
 - Keep browser-only library UI in `_components/ImageLibraryModal.tsx`.
+- `ImageWorkspaceShell` owns the creation navigation and gallery layout, including the preview Activity/Recents switch. Loading and empty surfaces retain the same creation-navigation wrapper; the page owns only the outer header/sidebar.
+- `ImageMediaHandoff` owns recent-image selection and the shared add/replace confirmation. Reuse the account-scoped recent-output hook, load it on first opening, and insert through the guarded image library callback. Do not copy selected media directly into composer storage.
 - Keep `ImageWorkspace.tsx` focused on orchestration; do not add new inline helper blocks or route-local modal implementations there.
 - Keep image composer storage keys and stored payload shape backward compatible.
 - Keep upload, generation, pricing, and auth behavior unchanged unless the task explicitly targets those flows.

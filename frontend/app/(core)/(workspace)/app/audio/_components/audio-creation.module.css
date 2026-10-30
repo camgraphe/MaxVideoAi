@@ -3,9 +3,10 @@
   flex: 1; min-width: 0; color: var(--audio-ink); padding: 26px clamp(16px, 3vw, 48px) 112px;
 }
 .root * { box-sizing: border-box; }
-.root button,.root a,.root select,.root input,.root summary { min-height:44px; }
+/* The shared prompt composer owns its control geometry and focus treatment. */
+.root :is(button,a,select,input,summary):not(:where([data-prompt-assistance-preview] *)) { min-height:44px; }
 .root button,.root select,.root summary { cursor:pointer; }
-.root :is(button,a,select,textarea,input,summary):focus-visible { outline: 2px solid var(--audio-accent); outline-offset:4px; }
+.root :is(button,a,select,textarea,input,summary):not(:where([data-prompt-assistance-preview] *)):focus-visible { outline: 2px solid var(--audio-accent); outline-offset:4px; }
 .root button:disabled { opacity:.45; cursor:not-allowed; }
 .header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
 .header h1 { font-size:24px; letter-spacing:-.7px; font-weight:650; margin:0; }
@@ -155,3 +156,9 @@
 .libraryDialog article { display:flex; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--hairline); padding:16px 0; }
 .libraryDialog article div { flex:1; font-size:13px; } .libraryDialog small { display:block; margin-top:4px; }
 .libraryDialog audio { width:100%; height:44px; order:3; }
+
+.assistanceReferences { display:flex; align-items:center; gap:8px; font-size:12px; }
+.assistanceReferences button { min-height:44px; padding:0 6px; background:transparent; border:0; }
+.assistanceReferences button:first-child { display:inline-flex; align-items:center; gap:6px; font-size:12px; }
+.assistanceReferences button:first-child span { font-size:21px; font-weight:300; }
+[data-assistance-manual-input] .writing { border:0; background:transparent; }

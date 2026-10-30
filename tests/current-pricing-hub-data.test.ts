@@ -1,7 +1,43 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildCurrentPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
+import { buildCurrentPricingHubData, buildCurrentVideoPricingData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/currentPricingHubData';
+import { getFalEngineById } from '../frontend/src/config/falEngines';
+import type { PublicModelQuoteInput } from '../frontend/lib/pricing-public-model-contract';
+
+test('new models receive current quotes without requiring an old catalogue price', async () => {
+  const calls: PublicModelQuoteInput[] = [];
+  const data = await buildCurrentVideoPricingData('en', async (input) => {
+    calls.push(input);
+    return { status: 'exact', amountCents: input.modelId === 'kling-v4' ? 12 : 999,
+      currency: 'USD', revision: 'current', scenarioLabel: 'test' };
+  });
+  for (const id of ['kling-v4', 'flux-3-max', 'minimax-h3', 'seedance-2-5']) {
+    assert.ok(calls.some(input => input.modelId === id), `Missing current quote: ${id}`);
+    assert.equal(data.video.rows.find(row => row.id === id)?.quotes['entry-route'].status, 'exact');
+  }
+  assert.ok(data.video.highlights.some(item => item.featured?.engineName === 'Kling 4.0' && item.featured.price === '$0.12'));
+  assert.ok(!calls.some(input => input.modelId === 'minimax-h3' && input.resolution === '1080p'), 'Do not invent an unsupported H3 resolution');
+});
+
+test('disabled models never enter current pricing rows, requests or cheapest highlights', async () => {
+  const calls: string[] = [];
+  const data = await buildCurrentVideoPricingData('en', async (input) => {
+    calls.push(input.modelId);
+    return { status: 'exact', amountCents: input.modelId === 'pika-text-to-video' ? 1 : 123,
+      currency: 'USD', revision: 'current', scenarioLabel: 'test' };
+  }, async () => [getFalEngineById('kling-v4')!.engine]);
+  assert.deepEqual(data.video.rows.map(row => row.id), ['kling-v4']);
+  assert.deepEqual([...new Set(calls)], ['kling-v4']);
+  assert.doesNotMatch(JSON.stringify(data.video.highlights), /pika/i);
+});
+
+test('missing current quotes and failed catalog reads cannot invent a cheapest model', async () => {
+  const data = await buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }));
+  assert.ok(data.video.highlights.every(item => !item.featured));
+  await assert.rejects(buildCurrentVideoPricingData('en', async () => ({ status: 'unavailable' }),
+    async () => { throw new Error('catalog unavailable'); }), /catalog unavailable/);
+});
 
 test('Pricing image rows and popular image check use current customer quotes', async () => {
   const data = await buildCurrentPricingHubData('en', async (input) => ({
@@ -73,4 +109,26 @@ test('current video quote notes describe the submitted audio setting, including 
     assert.ok(inputs.filter(input => input.modelId === fixedAudio.id).every(input => input.audio === undefined));
     assert.match(fixedAudio.quotes['8s-1080p'].note ?? '', /audio incl/);
   }
+});
+
+test('configured duration limits constrain quote requests and ranking even with older static mode options', async () => {
+  const {projectConfiguredEngine}=await import('../frontend/src/server/engine-configuration-projection');
+  const base=getFalEngineById('veo-3-1')!.engine;
+  const configured=projectConfiguredEngine(base,new Map([[base.id,{engine_id:base.id,options:{maxDurationSec:4},pricing:base.pricingDetails??null,updated_by:'admin',updated_at:''}]]),new Map()).engine;
+  const calls:PublicModelQuoteInput[]=[];
+  const data=await buildCurrentVideoPricingData('en',async input=>{calls.push(input);return {status:'exact',amountCents:1,currency:'USD',revision:'configured',scenarioLabel:'test'};},async()=>[configured]);
+  assert.ok(calls.length>0);
+  assert.ok(calls.every(input=>input.durationSec<=4),JSON.stringify(calls));
+  const row=data.video.rows[0];
+  assert.equal(row.quotes['8s-1080p'].status,'unsupported');
+  assert.notEqual(row.quotes['8s-1080p'].isCheapest,true);
+  assert.ok(data.video.highlights.filter(item=>item.featured).every(item=>!JSON.stringify(item.featured).includes('8s')));
+});
+
+test('pricing uses the selected mode duration choices, without borrowing from another mode',async()=>{
+  const base=getFalEngineById('veo-3-1')!.engine;
+  const configured={...base,modes:['t2v' as const],modeCaps:{...base.modeCaps,t2v:{modes:['t2v' as const],duration:{options:[4],default:4}}}};
+  const calls:PublicModelQuoteInput[]=[];
+  await buildCurrentVideoPricingData('en',async input=>{calls.push(input);return {status:'unavailable'};},async()=>[configured]);
+  assert.ok(calls.length>0);assert.ok(calls.every(input=>input.durationSec===4),JSON.stringify(calls));
 });

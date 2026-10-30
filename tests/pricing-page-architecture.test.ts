@@ -251,10 +251,10 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubCopySource, /Vidéo/);
   assert.match(hubCopySource, /Tools & Upscale/);
   assert.match(hubCopySource, /Outils & upscale/);
-  assert.match(hubCopySource, /Cheapest/);
-  assert.match(hubCopySource, /Cheapest current-gen 5s 720p/);
+  assert.match(hubCopySource, /Lowest quoted/);
+  assert.match(hubCopySource, /Lowest quoted 5s 720p/);
   assert.doesNotMatch(hubCopySource, /Best-value current-gen 5s 720p/);
-  assert.match(hubCopySource, /Moins cher/);
+  assert.match(hubCopySource, /Prix le plus bas affiché/);
   assert.match(videoMatrixSource, /tabular-nums/);
   assert.match(videoMatrixSource, /sticky left-0/);
   assert.match(videoMatrixSource, /scope="colgroup"/);
@@ -263,7 +263,7 @@ test('video matrix renders exact scenario columns and compact links', () => {
   assert.match(hubCopySource, /More/);
   assert.match(hubCopySource, /Prix live/);
   assert.match(hubCopySource, /Plus/);
-  assert.match(hubCopySource, /Cheapest 4K output/);
+  assert.match(hubCopySource, /4K entry price · durations vary/);
   assert.match(hubCopySource, /Dedicated 4K engine/);
   assert.match(hubCopySource, /Prices are current MaxVideoAI display prices for preset scenarios/);
   assert.match(hubCopySource, /Les prix sont les prix affichés MaxVideoAI/);

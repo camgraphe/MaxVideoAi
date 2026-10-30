@@ -5,8 +5,14 @@ import {
   type NormalizedTrialJobOutcome,
 } from '@/server/agent-api/trial-outcomes';
 import type { FalInputSummary } from './fal-request';
+import { withWalletFailureSettlement } from '@/server/fal-webhook-refunds';
+import { persistedVideoJobRows, readPersistedVideoJob, type PersistedVideoJob } from './persisted-video-job';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
+
+export type FinalVideoJobPersistenceResult =
+  | { kind: 'applied'; job: PersistedVideoJob }
+  | { kind: 'superseded'; job: PersistedVideoJob };
 
 export async function persistFinalVideoJobUpdate(params: {
   jobId: string;
@@ -33,7 +39,8 @@ export async function persistFinalVideoJobUpdate(params: {
   settingsSnapshotJson: string;
   queryFn?: QueryFn;
   applyTrialOutcomeFn?: typeof applyTrialJobOutcome;
-}): Promise<void> {
+  withFailureSettlementFn?: typeof withWalletFailureSettlement;
+}): Promise<FinalVideoJobPersistenceResult> {
   const queryFn = params.queryFn ?? query;
   const normalizedStatus = params.status.trim().toLowerCase();
   const trialDisposition: NormalizedTrialJobOutcome['kind'] = normalizedStatus === 'completed'
@@ -44,78 +51,101 @@ export async function persistFinalVideoJobUpdate(params: {
       : normalizedStatus === 'failed'
         ? 'unknown'
         : 'accepted';
-  await queryFn(
-    `UPDATE app_jobs
-     SET thumb_url = $2,
-         aspect_ratio = $3,
-         preview_frame = $4,
-         eta_seconds = $5,
-         eta_label = $6,
-         video_url = $7,
-         status = $8,
-         progress = $9,
-         provider_job_id = COALESCE($10, provider_job_id),
-         final_price_cents = $11,
-         pricing_snapshot = $12::jsonb,
-         cost_breakdown_usd = $13::jsonb,
-         currency = $14,
-         vendor_account_id = $15,
-         payment_status = $16,
-         stripe_payment_intent_id = $17,
-         stripe_charge_id = $18,
-         visibility = $19,
-         indexable = $20,
-         message = $21,
-         settings_snapshot = CASE
-           WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($10, provider_job_id) IS NOT NULL
-             THEN jsonb_set(COALESCE($22::jsonb, '{}'::jsonb), '{falQueueReceiptRequired}',
-               jsonb_build_object('requestId', COALESCE($10, provider_job_id)), true)
-           ELSE $22::jsonb
-         END,
-         mcp_trial_outcome_disposition = CASE
-           WHEN $16 <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
-           WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
-             THEN mcp_trial_outcome_disposition
-           WHEN $23 IN ('completed', 'canceled') THEN $23
-           WHEN $23 = 'unknown'
-             AND (mcp_trial_outcome_disposition IS NULL OR mcp_trial_outcome_disposition = 'accepted')
-             THEN 'unknown'
-           WHEN $23 = 'accepted' AND mcp_trial_outcome_disposition IS NULL THEN 'accepted'
-           ELSE mcp_trial_outcome_disposition
-         END,
-         provisional = FALSE,
-         updated_at = NOW()
-     WHERE job_id = $1`,
-    [
-      params.jobId,
-      params.thumb,
-      params.aspectRatio,
-      params.previewFrame,
-      params.etaSeconds,
-      params.etaLabel,
-      params.video,
-      params.status,
-      params.progress,
-      params.providerJobId,
-      params.finalPriceCents,
-      params.pricingSnapshotJson,
-      params.costBreakdownJson,
-      params.currency,
-      params.vendorAccountId,
-      params.paymentStatus,
-      params.stripePaymentIntentId,
-      params.stripeChargeId,
-      params.visibility,
-      params.indexable,
-      params.message,
-      params.settingsSnapshotJson,
-      trialDisposition,
-    ]
-  );
-  if (params.paymentStatus === 'included_mcp_trial') {
+  // A webhook can finish while submission/media resolution is still awaiting I/O.
+  // Keep its terminal state and output together; only a later completion may recover failure.
+  const persist = async (execute: QueryFn): Promise<FinalVideoJobPersistenceResult> => {
+    const updated = persistedVideoJobRows(await execute(
+      `UPDATE app_jobs
+       SET thumb_url = $2,
+           aspect_ratio = $3,
+           preview_frame = $4,
+           eta_seconds = $5,
+           eta_label = $6,
+           video_url = $7,
+           status = $8,
+           progress = $9,
+           provider_job_id = COALESCE($10, provider_job_id),
+           final_price_cents = $11,
+           pricing_snapshot = $12::jsonb,
+           cost_breakdown_usd = $13::jsonb,
+           currency = $14,
+           vendor_account_id = $15,
+           payment_status = CASE WHEN payment_status IN ('refunded_wallet', 'refunded') THEN payment_status ELSE $16 END,
+           stripe_payment_intent_id = $17,
+           stripe_charge_id = $18,
+           visibility = $19,
+           indexable = $20,
+           message = $21,
+           settings_snapshot = CASE
+             WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($10, provider_job_id) IS NOT NULL
+               THEN jsonb_set(COALESCE($22::jsonb, '{}'::jsonb), '{falQueueReceiptRequired}',
+                 jsonb_build_object('requestId', COALESCE($10, provider_job_id)), true)
+             ELSE $22::jsonb
+           END,
+           mcp_trial_outcome_disposition = CASE
+             WHEN $16 <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
+             WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
+               THEN mcp_trial_outcome_disposition
+             WHEN $23 IN ('completed', 'canceled') THEN $23
+             WHEN $23 = 'unknown'
+               AND (mcp_trial_outcome_disposition IS NULL OR mcp_trial_outcome_disposition = 'accepted')
+               THEN 'unknown'
+             WHEN $23 = 'accepted' AND mcp_trial_outcome_disposition IS NULL THEN 'accepted'
+             ELSE mcp_trial_outcome_disposition
+           END,
+           provisional = FALSE,
+           updated_at = NOW()
+       WHERE job_id = $1
+         AND NOT (status = 'completed' AND $8 <> 'completed')
+         AND NOT (status = 'failed' AND $8 IN ('pending','queued','running','processing','in_progress'))
+       RETURNING *`,
+      [
+        params.jobId,
+        params.thumb,
+        params.aspectRatio,
+        params.previewFrame,
+        params.etaSeconds,
+        params.etaLabel,
+        params.video,
+        params.status,
+        params.progress,
+        params.providerJobId,
+        params.finalPriceCents,
+        params.pricingSnapshotJson,
+        params.costBreakdownJson,
+        params.currency,
+        params.vendorAccountId,
+        params.paymentStatus,
+        params.stripePaymentIntentId,
+        params.stripeChargeId,
+        params.visibility,
+        params.indexable,
+        params.message,
+        params.settingsSnapshotJson,
+        trialDisposition,
+      ]
+    ));
+    if (updated.length) return { kind: 'applied', job: updated[0] };
+    // A separate statement gets a fresh READ COMMITTED snapshot after a lock wait.
+    return { kind: 'superseded', job: await readPersistedVideoJob(params.jobId, execute) };
+  };
+  const settleWallet = params.paymentStatus === 'paid_wallet' && ['failed', 'completed'].includes(normalizedStatus);
+  const result = settleWallet
+    ? await (params.withFailureSettlementFn ?? withWalletFailureSettlement)(params.jobId, {
+        providerJobId: params.providerJobId, failureMessage: params.message, failureOrigin: 'direct_finalization',
+      }, executor => persist((sql, values) => executor.query(sql, values)))
+    : await persist(queryFn);
+  if (settleWallet) {
+    result.job = await readPersistedVideoJob(params.jobId, queryFn);
+    if (result.job.status?.trim().toLowerCase() !== normalizedStatus) {
+      return { kind: 'superseded', job: result.job };
+    }
+  }
+  if (result.kind === 'applied' && result.job.payment_status === 'included_mcp_trial') {
     const kind = trialDisposition;
     await (params.applyTrialOutcomeFn ?? applyTrialJobOutcome)(params.jobId, { kind });
   }
+  return result;
 }
 
 export async function recordFinalGenerateQueueLog(params: {

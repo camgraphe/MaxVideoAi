@@ -40,9 +40,6 @@ export const EN_HUB_COPY: HubCopy = {
       complianceLabel: 'Read compliance details',
       quickStartLabel: 'Quick start',
       prelaunchSpotlightLabel: 'Pre-launch spotlight',
-      prelaunchModelLabel: 'Seedance 2.0 profile',
-      prelaunchCompareLabel: 'Seedance 2.0 vs Sora 2',
-      prelaunchCompareSecondaryLabel: 'Pika 2.2 vs Seedance 2.0',
       useCasesFallback: 'Interactive chips refine recommendations instantly. All links remain crawlable and available in plain HTML.',
     },
     tagLabels: {

@@ -180,8 +180,9 @@ export function EngineSelect({
       </svg>
     </button>
   );
-  const variantControl = showVariantSelector && !picker ? (
+  const variantControl = showVariantSelector && (!picker || trigger) ? (
     <EngineVariantControl
+      inline={Boolean(trigger)} buttonClassName={trigger?.variantClassName}
       bar={isBarVariant}
       compact={isCompact}
       disabledEngineReasons={disabledEngineReasons}
@@ -404,6 +405,7 @@ export function EngineSelect({
   if (trigger) return <div ref={containerRef} className={className}>
     <button ref={triggerRef} id={triggerId} type="button" className={trigger.className} aria-label={trigger.label}
       aria-haspopup="dialog" aria-expanded={open} onClick={toggleOpen} onKeyDown={handleTriggerKeyDown}>{trigger.content}</button>
+    {variantControl}
     {dropdown}
     {browseOpen ? <BrowseEnginesModal engines={engines} selectedEngineId={selectedEngine.id} copy={copy}
       onClose={() => { setBrowseOpen(false); triggerRef.current?.focus(); }}

@@ -43,7 +43,7 @@ test('generate route delegates final receipt persistence', () => {
 test('final receipts helper exposes the route contract', () => {
   assert.match(helperSource, /export async function persistFinalChargeReceipt/, 'persistFinalChargeReceipt should be exported');
   assert.match(helperSource, /export async function persistWalletFailureRefundReceipt/, 'persistWalletFailureRefundReceipt should be exported');
-  assert.match(helperSource, /ON CONFLICT DO NOTHING/, 'wallet refund insert should stay idempotent');
+  assert.match(helperSource, /maybeAutoRefundWalletCharge/, 'wallet refunds use the transaction settlement owner');
 });
 
 test('final charge receipt helper skips wallet-reserved receipts', async () => {
@@ -91,74 +91,22 @@ test('final charge receipt helper inserts non-wallet-reserved charges', async ()
   ]);
 });
 
-test('wallet failure refund helper records refund and marks the job refunded', async () => {
-  const queries: Array<{ sql: string; params?: unknown[] }> = [];
-
-  await persistWalletFailureRefundReceipt({
-    status: 'failed',
-    pendingReceipt,
-    paymentMode: 'wallet',
-    engineLabel: 'Seedance',
-    durationSec: 8,
-    priceOnlyReceipts: false,
-    queryFn: async (sql, params) => {
-      queries.push({ sql, params });
-    },
+test('wallet failure refund delegates by job identity rather than caller amount or Stripe ids', async () => {
+  const calls: unknown[] = [];
+  await persistWalletFailureRefundReceipt({ status: 'failed', pendingReceipt, paymentMode: 'wallet',
+    engineLabel: 'Seedance', durationSec: 8, priceOnlyReceipts: false,
+    refundFn: async (...args) => { calls.push(args); return true; },
   });
-
-  assert.equal(queries.length, 2);
-  assert.match(queries[0]?.sql ?? '', /INSERT INTO app_receipts/);
-  assert.deepEqual(queries[0]?.params, [
-    'user_123',
-    1200,
-    'USD',
-    'Refund Seedance - 8s',
-    'job_123',
-    'video',
-    null,
-    '{"totalCents":1200}',
-    0,
-    'acct_123',
-    'pi_123',
-    'ch_123',
-    0,
-    'acct_123',
-  ]);
-  assert.match(queries[1]?.sql ?? '', /UPDATE app_jobs SET payment_status = 'refunded_wallet'/);
-  assert.deepEqual(queries[1]?.params, ['job_123']);
+  assert.deepEqual(calls, [['job_123', { engineLabel: 'Seedance', failureOrigin: 'generate_finalization' }]]);
 });
 
-test('wallet failure refund helper honors price-only receipts and skips non-wallet states', async () => {
-  const queries: Array<{ sql: string; params?: unknown[] }> = [];
-
-  await persistWalletFailureRefundReceipt({
-    status: 'completed',
-    pendingReceipt,
-    paymentMode: 'wallet',
-    engineLabel: 'Seedance',
-    durationSec: 8,
-    priceOnlyReceipts: true,
-    queryFn: async (sql, params) => {
-      queries.push({ sql, params });
-    },
-  });
-  assert.deepEqual(queries, []);
-
-  await persistWalletFailureRefundReceipt({
-    status: 'failed',
-    pendingReceipt,
-    paymentMode: 'wallet',
-    engineLabel: 'Seedance',
-    durationSec: 8,
-    priceOnlyReceipts: true,
-    queryFn: async (sql, params) => {
-      queries.push({ sql, params });
-    },
-  });
-
-  assert.equal(queries.length, 2);
-  assert.equal(queries[0]?.params?.[8], null);
-  assert.equal(queries[0]?.params?.[9], null);
-  assert.equal(queries[0]?.params?.[12], null);
-  assert.equal(queries[0]?.params?.[13], null);
+test('wallet failure refund skips non-wallet states and propagates settlement outages', async () => {
+  let calls = 0;
+  const common = { pendingReceipt, engineLabel: 'Seedance', durationSec: 8, priceOnlyReceipts: true,
+    refundFn: async () => { calls++; throw new Error('settlement outage'); } };
+  await persistWalletFailureRefundReceipt({ ...common, status: 'completed', paymentMode: 'wallet' });
+  await persistWalletFailureRefundReceipt({ ...common, status: 'failed', paymentMode: 'platform' });
+  assert.equal(calls, 0);
+  await assert.rejects(persistWalletFailureRefundReceipt({ ...common, status: 'failed', paymentMode: 'wallet' }), /settlement outage/);
+  assert.equal(calls, 1);
 });

@@ -26,9 +26,9 @@ export function priceStudioAnalysis(policy:StudioAnalysisPolicy,durationSec:numb
     compatibilityProfile:{id:'studio-analysis-v1',vendorSubtotalRounding:'preserve',marginRounding:'down',surchargeRounding:'down',discountRounding:'down',subtotalRounding:'up',totalRounding:'up'}});
   return {credits:price.customerTotalCents*10,cents:price.customerTotalCents,supplierNanoUsd,processingNanoUsd};
 }
-export function quoteStudioAnalysis(policy:StudioAnalysisPolicy,kind:'video'|'audio',durationSec:number) {
+export function quoteStudioAnalysis(policy:StudioAnalysisPolicy,kind:'video'|'audio',durationSec:number,model:'gpt-6.1-sol'|'gpt-6.1-terra'='gpt-6.1-sol') {
   const profile=policy[kind];if(!profile)throw new Error('ANALYSIS_PROFILE_UNAVAILABLE');
-  const providerNanoUsd=kind==='video'?studioProviderReservation('gpt-6.1-sol',profile.maxInputTokens,profile.maxOutputTokens)
+  const providerNanoUsd=kind==='video'?studioProviderReservation(model,profile.maxInputTokens,profile.maxOutputTokens)
     : policy.audio!.maxInputTokens*Math.max(policy.audio!.textInputNanoUsd,policy.audio!.audioInputNanoUsd)+policy.audio!.maxOutputTokens*policy.audio!.textOutputNanoUsd;
   const priced=priceStudioAnalysis(policy,durationSec,providerNanoUsd);
   return {maxCredits:Math.max(10,priced.credits),reservedCents:Math.max(1,priced.cents),reservedSupplierNanoUsd:priced.supplierNanoUsd};

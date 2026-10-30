@@ -122,6 +122,12 @@ test('P1 PAYG cards and lookups copy localized canonical pricing rows', () => {
       pricingHub,
     });
 
+    assert.equal(data.exampleCosts.items.length, 6);
+    for (const example of data.exampleCosts.items) {
+      const lookup = data.priceLookups.items.find((item) => item.id === example.id);
+      assert.ok(lookup, `${locale}:${example.id}:example lookup`);
+      assert.equal(example.price, lookup.price, `${locale}:${example.id}:example parity`);
+    }
     for (const scenario of SCENARIOS) {
       const row = pricingHub.video.rows.find((candidate) => candidate.id === scenario.id);
       assert.ok(row, `${locale}:${scenario.id}:row`);
@@ -131,7 +137,8 @@ test('P1 PAYG cards and lookups copy localized canonical pricing rows', () => {
       const lookup = data.priceLookups.items.find((item) => item.id === scenario.id);
       assert.equal(lookup?.price, row.quotes[paygPreset].display, `${locale}:${scenario.id}:lookup`);
       const example = data.exampleCosts.items.find((item) => item.id === scenario.id);
-      assert.equal(example?.price, row.quotes[paygPreset].display, `${locale}:${scenario.id}:example`);
+      // Six examples feature the current selection; older models retain their lookup.
+      if (example) assert.equal(example.price, row.quotes[paygPreset].display, `${locale}:${scenario.id}:example`);
     }
   }
 });
