@@ -1,5 +1,6 @@
 'use client';
 import { assistanceSettings } from '@/lib/prompt-assistance/client-context';
+import { imagePromptReviewKey } from '@/lib/prompt-assistance/application-review';
 
 import type { FormEvent } from 'react';
 import type { PendingGeneration } from '@/lib/pending-generations';
@@ -223,6 +224,9 @@ export function ImageWorkspaceComposerSurface({
   thinkingLevelSelectOptions,
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
+  const assistanceContext={selectedEngineId,mode,aspectRatio,resolution,quality,numImages,background,customImageHeight,customImageWidth,enableWebSearch,limitGenerations,maskUrl,outputFormat,seed,style,thinkingLevel,watermark,
+    referenceFields:referenceAssetFields.map(({field,required,disabled})=>({field,required,disabled}))};
+  const canReviewImageRatio=mode==='t2i'&&!maskUrl&&!Object.values(composerReferenceAssets).some(slots=>slots.some(Boolean));
   const engineSettings = (
     <div className="app-image-model-selector min-w-0">
       <EngineSelect
@@ -296,7 +300,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
-          assistance={{ accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'image', mode === 'i2i' ? 'edit' : 'create']), live: {surface: 'image', workflow: mode === 'i2i' ? 'edit' : 'create', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify([selectedEngineId, mode, aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, outputFormat, seed, style, thinkingLevel, watermark]) }}
+          assistance={{ accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'image', mode === 'i2i' ? 'edit' : 'create']), live: {surface: 'image', workflow: mode === 'i2i' ? 'edit' : 'create', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify(assistanceContext), reviewKey:canReviewImageRatio?imagePromptReviewKey(assistanceContext):undefined }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}
