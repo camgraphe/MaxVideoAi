@@ -246,6 +246,7 @@ export function WorkspaceAppReadyView({
     accountId: app.authStatus === 'authed' && app.session?.access_token ? app.user?.id ?? null : null,
     accessToken: app.authStatus === 'authed' ? app.session?.access_token ?? null : null,
     memberTier: routeForm.memberTier, disabledEngineReasons: klingO3DisabledEngineReasons, engineScores,
+    beforeApplyPreparedForm: composer.beforeApplyPreparedForm,
     applyPreparedForm: composer.applyPreparedForm, setInputAssets: assets.setInputAssets,
     setKlingElements: routeForm.setKlingElements, setPrompt, setNegativePrompt, setMultiPromptEnabled,
     setMultiPromptScenes: routeForm.setMultiPromptScenes, setShotType, setVoiceIdsInput, setCfgScale,

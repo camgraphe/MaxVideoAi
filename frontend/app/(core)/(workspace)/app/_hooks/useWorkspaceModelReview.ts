@@ -40,6 +40,7 @@ export type WorkspaceModelReviewOptions = Omit<Setters, 'setForm'> & {
   onModelSwitchNotice: (message: string) => void;
   current: WorkspaceModelSetup | null;
   applyPreparedForm: (form: WorkspaceModelSetup['form']) => void;
+  beforeApplyPreparedForm?: (form: WorkspaceModelSetup['form']) => boolean;
   engines: EngineCaps[];
   locale: string;
   /** Only a confirmed authenticated account. Never pass last-known draft storageScope. */
@@ -369,6 +370,7 @@ export function useWorkspaceModelReview(options: WorkspaceModelReviewOptions) {
       })
     )
       return false;
+    if (latest.current.options.beforeApplyPreparedForm?.(prepared.form) === false) return false;
     // All owners receive the already prepared values in the same React event, before schema effects run.
     applyWorkspacePreparedSetup(committed, {
       ...latest.current.options,
