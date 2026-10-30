@@ -52,16 +52,19 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       builder.onLoad({ filter: /.*/, namespace: 'fixture' }, args => ({ contents: stubs[args.path], loader: 'js', resolveDir: frontend }));
     } }],
   });
-  const module = { exports: {} as any };
-  runInNewContext(built.outputFiles[0].text, {
-    module, exports: module.exports, fixture, require: createRequire(resolve(frontend, 'package.json')),
-    process: { cwd: () => frontend, env: {
-      S3_BUCKET: 'preview-ownership-fixture', S3_REGION: 'us-east-1', S3_PUBLIC_BASE_URL: base,
-      S3_ACCESS_KEY_ID: 'fixture-key', S3_SECRET_ACCESS_KEY: 'fixture-secret',
-    } }, URL, Response, Buffer, Date, AbortController, setTimeout, clearTimeout, console,
-    fetch: () => { throw Error('No network access permitted'); },
-  });
-  const api = module.exports;
+  const loadApi = (storageBase = base) => {
+    const module = { exports: {} as any };
+    runInNewContext(built.outputFiles[0].text, {
+      module, exports: module.exports, fixture, require: createRequire(resolve(frontend, 'package.json')),
+      process: { cwd: () => frontend, env: {
+        S3_BUCKET: 'preview-ownership-fixture', S3_REGION: 'us-east-1', S3_PUBLIC_BASE_URL: storageBase,
+        S3_ACCESS_KEY_ID: 'fixture-key', S3_SECRET_ACCESS_KEY: 'fixture-secret',
+      } }, URL, Response, Buffer, Date, AbortController, setTimeout, clearTimeout, console,
+      fetch: () => { throw Error('No network access permitted'); },
+    });
+    return module.exports;
+  };
+  const api = loadApi();
   const principal = { authMethod: 'oauth', userId: viewer, clientId: 'fixture-client', scopes: [] };
   const ownPath = `/user-assets/${viewer}`;
   const foreignUrl = `${base}/user-assets/${owner}/private.png`;
@@ -112,5 +115,29 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       }
     });
   }
+  await t.test('owned CDN originals retain a usable signed S3 preview without granting foreign objects', async () => {
+    const cdnApi = loadApi('https://media.maxvideoai.com');
+    for (const [url, expectedPath] of [
+      [`https://media.maxvideoai.com${ownPath}/cdn-image.png`, `${ownPath}/cdn-image.png`],
+      [`https://media.maxvideoai.com/user-assets/${owner}/foreign-cdn-image.png`, null],
+    ]) {
+      const response = await cdnApi.POST({ json: async () => ({ kind: 'image', mime: 'image/png', source: 'upload', url }) });
+      assert.equal(response.status, 200);
+      const payload = await response.json();
+      const stored = (await database.pool.query('SELECT * FROM media_assets WHERE id=$1 AND user_id=$2', [payload.asset.id, viewer])).rows[0];
+      const page = await cdnApi.listAgentMedia({}, principal, {
+        listAssetPage: async () => ({ items: [cdnApi.mapAssetRow(stored)], nextCursor: null, hasMore: false }),
+      });
+      if (expectedPath === null) assert.equal(page.items[0].previewUrl, null);
+      else {
+        assert.ok(page.items[0].previewUrl, 'The storage CDN must not cause our own signed S3 preview to be dropped');
+        const preview = new URL(page.items[0].previewUrl);
+        assert.equal(preview.hostname, 'preview-ownership-fixture.s3.us-east-1.amazonaws.com');
+        assert.equal(preview.pathname, expectedPath);
+        assert.ok(preview.searchParams.get('X-Amz-Signature'));
+        assert.equal(preview.searchParams.get('X-Amz-Expires'), '300');
+      }
+    }
+  });
   assert.equal(fixture.publicImports, 0, 'ordinary saving never imports a public recipe or invokes its media owners');
 });

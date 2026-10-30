@@ -519,6 +519,7 @@ export async function updateJobFromFalWebhook(rawPayload: unknown, copiedVideoFa
   const persistUpdate = (executor: QueryExecutor) => executor.query<{ job_id: string }>(
     `UPDATE app_jobs
      SET status = $2,
+         provider = 'fal',
          progress = $3,
          video_url = CASE WHEN $9 THEN NULL ELSE COALESCE($4, video_url) END,
          thumb_url = CASE WHEN $10 THEN NULL ELSE COALESCE($5, thumb_url) END,
