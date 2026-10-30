@@ -36,7 +36,7 @@ function Fixture(){
 }
 createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
-test('real video adapter invalidates suggestions and undo when subjects or external settings change', {timeout:90_000}, async()=>{
+test('real video adapter guards subjects and drafts while scalar settings require explicit review', {timeout:90_000}, async()=>{
  const engine=listFalEngines().find(entry=>entry.id==='kling-o3-pro')!.engine;
  const nextEngine=listFalEngines().find(entry=>entry.id==='seedance-2-5')!.engine;
  const fixture=await startWorkspaceReferenceFixture({source,assistancePreview:true,config:{engine,nextEngine}});
@@ -51,11 +51,12 @@ test('real video adapter invalidates suggestions and undo when subjects or exter
   const subject={id:'person',frontal:{id:'portrait',kind:'image',name:'portrait.png',url:'/first.svg',previewUrl:'/first.svg',status:'ready'},video:null,references:[]};
   for(const patch of [{klingElements:[subject]},{shotType:'intelligent'},{voiceIdsInput:'new-voice'},{cfgScale:0.7}]){
    await request();await page.evaluate(patch=>(globalThis as any).changeContext(patch),patch);
-   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
+   if('shotType' in patch||'cfgScale' in patch){await expect(page.getByRole('button',{name:'Review & use',exact:true})).toBeEnabled();await expect(page.locator('[data-workspace-prompt]')).toHaveValue('Original prompt');}
+   else await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
   }
   await request();
   await page.evaluate(()=>(globalThis as any).changeContext({cfgScale:0.2}));
-  await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Review & use',exact:true})).toBeEnabled();
   await page.evaluate(()=>(globalThis as any).changeContext({cfgScale:0.7}));
   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
   await page.locator('[data-assistance-message]').fill('Delayed suggestion');await page.locator('[data-assistance-message]').press('Enter');

@@ -8,7 +8,7 @@ import {readPromptChat,writePromptChat,promptChatStorageKey,readLegacyPromptReco
 type Pending={sessionId:string;requestId:string;uiId:number|null};
 type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined)=>Promise<()=>void>;
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;onRestore:Restore}){
-  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
+  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
   const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
@@ -113,11 +113,13 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
   function newChat(){
     if(!active()||owner.pending||owner.waiting||owner.loading||pendingAnalysis())return false;
-    owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;save();update({error:null,loadError:false,nextAction:null});return true;
+    owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;save();update({error:null,loadError:false,nextAction:null});return true;
   }
   const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,waiting:false,recovery:false,error:null,nextAction:null,fundingRevision:null};
   return {...visible,analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
-    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>)=>{if(active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};save();}},
+    localEpoch:()=>owner.localEpoch,
+    revokeReviewProof:()=>{if(!active())return;owner.localEpoch++;const proof=owner.local?.proposal?.review;if(proof){proof.compatible=false;save();}},
+    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>,expectedEpoch:number)=>{if(expectedEpoch===owner.localEpoch&&active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};save();}},
     session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,
     reload:()=>void restore(),recover:()=>{if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);},stop:()=>owner.controller?.abort(),
   };
