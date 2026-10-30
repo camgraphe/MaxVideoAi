@@ -44,6 +44,7 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       export {POST} from './app/api/media-library/ensure/route';
       export {listAgentMedia} from './src/server/agent-api/media-library';
       export {mapAssetRow} from './server/media-library-records';
+      export {isAllowedAssetHost} from './server/asset-url-policy';
     `, resolveDir: frontend, loader: 'ts' },
     tsconfig: resolve(frontend, 'tsconfig.json'), bundle: true, platform: 'node', format: 'cjs',
     packages: 'external', write: false,
@@ -117,6 +118,8 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
   }
   await t.test('owned CDN originals retain a usable signed S3 preview without granting foreign objects', async () => {
     const cdnApi = loadApi('https://media.maxvideoai.com');
+    assert.equal(cdnApi.isAllowedAssetHost(`${base}/user-assets/${owner}/private.png`), false,
+      'private preview delivery must not admit raw S3 aliases through the shared reference-input policy');
     for (const [url, expectedPath] of [
       [`https://media.maxvideoai.com${ownPath}/cdn-image.png`, `${ownPath}/cdn-image.png`],
       [`https://media.maxvideoai.com/user-assets/${owner}/foreign-cdn-image.png`, null],

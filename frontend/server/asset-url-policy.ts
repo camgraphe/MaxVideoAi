@@ -19,9 +19,7 @@ function buildHostAllowList(): Set<string> {
     } catch {
       // ignore invalid URL
     }
-  }
-  // Private reads use this bucket's signed S3 endpoint even when public URLs use a CDN.
-  if (S3_BUCKET) {
+  } else if (S3_BUCKET) {
     const regionalHost = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
     hosts.add(regionalHost);
   }

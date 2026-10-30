@@ -791,6 +791,8 @@ including a lost association and repeated confirmations/callbacks. Provider and
 media operations are offline doubles; this is not a paid or real-host canary.
 
 MCP library previews sign owned objects through the configured S3 bucket even
-when stored public URLs use a CDN. URL admissibility includes both exact configured
-hosts; object ownership remains a separate required check. The disposable database
-preview-ownership test covers this configuration and rejects foreign objects.
+when stored public URLs use a CDN. Only the private-preview output validator admits
+that exact signing endpoint after source-object ownership checks. Do not broaden
+the shared input-host policy: other consumers may recognize only the configured
+CDN as owned storage. The disposable database preview-ownership test covers this
+configuration, rejects foreign objects and preserves the input-host boundary.
