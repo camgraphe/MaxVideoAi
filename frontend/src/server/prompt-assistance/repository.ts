@@ -25,9 +25,14 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     if((await tx.query('SELECT 1 FROM prompt_assistance_abandoned_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId])).length)throw new Error('REQUEST_CLOSED');
     const prior=(await tx.query<PromptRequestRow>(requestProjection+' WHERE r.user_id=$1 AND r.session_id=$2 AND r.request_id=$3',[userId,input.sessionId,input.requestId]))[0];
     if(prior){if(prior.input_hash!==hash)throw new Error('REQUEST_CONFLICT');return {row:prior,claimed:false};}
-    // Never redispatch an expired call. Only pre-dispatch failures can be closed automatically.
+    // Never redispatch an expired call. Dispatched closeout requires the financial resolution path.
     await tx.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp()",[userId]);
     if((await tx.query("SELECT 1 FROM prompt_assistance_requests WHERE user_id=$1 AND state IN ('preparing','calling','reported','unknown') LIMIT 1",[userId])).length)throw new Error('REQUEST_PENDING');
+    // Customer waivers cannot recycle purchased credits into unlimited unbilled
+    // supplier calls. Manual support decisions do not consume this automatic cap.
+    if((await tx.query(`SELECT c.id FROM studio_assistance_calls c JOIN studio_assistance_resolutions r ON r.call_id=c.id
+      WHERE c.user_id=$1 AND c.state<>'settled' AND r.action='waive_unknown' AND r.operator_id='system:composer-unanswered'
+      LIMIT 1 OFFSET 2`,[userId])).length)throw new Error('ASSISTANCE_RECOVERY_REQUIRED');
     await ensurePromptSession(userId,input.sessionId,input.draft,tx);
     const count=(await tx.query<{n:string}>('SELECT count(*)::text n FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2',[userId,input.sessionId]))[0];
     if(Number(count.n)>=100)throw new Error('SESSION_FULL');

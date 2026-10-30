@@ -40,6 +40,6 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);
     if(error instanceof AgentApiError)return json({ok:false,error:error.code,nextAction:error.nextAction},error.code==='ACCOUNT_RESTRICTED'?403:402);
     const code=error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
-    return json({ok:false,error:code},code==='BODY_TOO_LARGE'?413:['REQUEST_NOT_FOUND','SESSION_NOT_FOUND'].includes(code)?404:['ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
+    return json({ok:false,error:code},code==='BODY_TOO_LARGE'?413:['REQUEST_NOT_FOUND','SESSION_NOT_FOUND'].includes(code)?404:['ASSISTANCE_RECOVERY_REQUIRED','ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
   }
 }

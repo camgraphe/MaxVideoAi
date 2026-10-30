@@ -131,3 +131,28 @@ test('every changed live context invalidates a pending suggestion even when the 
   await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Original prompt');
  }finally{release?.();await browser.close();await fixture.close();}
 });
+
+
+test('unanswered replies unlock sending and the exposure cap does not create a false recovery loop',{timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch({headless:true});
+ try{
+  const page=await browser.newPage();let posts=0;
+  await page.route('**/api/prompt-assistance*',async route=>{
+   if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:initialStatus}});
+   posts++;const body=route.request().postDataJSON();assert.equal(body.action,'message');
+   if(posts===2)return route.fulfill({status:409,json:{ok:false,error:'ASSISTANCE_RECOVERY_REQUIRED'}});
+   const request=body.request;
+   return route.fulfill({json:{ok:true,result:{sessionId:request.sessionId,requestId:request.requestId,draftRevision:request.draftRevision,target:'prompt',message:request.message,state:'failed',safeToRetry:false,error:'REQUEST_UNANSWERED',assistance:initialStatus}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const input=page.getByRole('textbox',{name:'Message Milo',exact:true}),send=page.getByRole('button',{name:'Send message to Milo'});
+  await input.fill('A slow tracking shot');await send.click();
+  await expect(page.getByText('this request’s credit hold was released.',{exact:false})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toHaveCount(0);
+  await input.fill('Keep this new request');await expect(send).toBeEnabled();await send.click();
+  await expect(page.getByText('Contact support before sending another message.',{exact:false})).toBeVisible();
+  await expect(input).toHaveValue('Keep this new request');await expect(page.getByRole('button',{name:'Check reply',exact:true})).toHaveCount(0);
+  assert.equal(posts,2);
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Keep original detail.');
+ }finally{await browser.close();await fixture.close();}
+});
