@@ -3,12 +3,13 @@ import {randomUUID} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import OpenAI from 'openai';
+import {Client} from 'pg';
 import {getDb} from '../frontend/src/lib/db';
 import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
 import {sendPromptAssistance,recoverPromptAssistance} from '../frontend/src/server/prompt-assistance/service';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {promptAssistanceRequestSchema} from '../frontend/src/lib/prompt-assistance/contract';
-import {readStudioAssistanceStatus,chooseStudioAssistance} from '../frontend/src/server/studio/assistance-ledger';
+import {readStudioAssistanceStatus,chooseStudioAssistance,settleStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
 
 test('unanswered composer calls release only customer holds and never redispatch or lock the account',async t=>{
   const pg=await startDisposablePostgres('milo-timeout'),old=process.env.DATABASE_URL;
@@ -66,7 +67,7 @@ test('unanswered composer calls release only customer holds and never redispatch
     assert.equal((await readStudioAssistanceStatus('evidence-owner',policy)).credits?.included.remaining,470);
     assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_resolutions WHERE call_id=$1',[(await row(input.requestId)).call_id])).rows[0].n,0);
   });
-  await t.test('purchased-only repeated failures release holds but stop before unbounded supplier exposure',async()=>{
+  await t.test('purchased-only repeated failures release holds but stop before unbounded supplier exposure',async inner=>{
     await pg.pool.query("INSERT INTO app_receipts(user_id,type,amount_cents,currency) VALUES('paid-owner','topup',2000,'USD')");
     const status=await readStudioAssistanceStatus('paid-owner',policy);
     await chooseStudioAssistance('paid-owner',{action:'purchase_pack',amountCents:200,tariffVersion:status.tariff.version,expectedRevision:0,purchaseKey:randomUUID()},policy);
@@ -92,12 +93,84 @@ test('unanswered composer calls release only customer holds and never redispatch
     await assert.rejects(sendPromptAssistance('paid-owner',request(),failing),/ASSISTANCE_RECOVERY_REQUIRED/);
     assert.equal(calls,3);
     assert.equal((await pg.pool.query("SELECT count(*)::int n FROM prompt_assistance_requests WHERE user_id='paid-owner'")).rows[0].n,4,'Rejected fourth automatic attempt creates no request or hold');
+    const diagnostic=await import('../frontend/src/server/prompt-assistance/support-diagnostic');
+    const blocked=await diagnostic.diagnoseComposerRecovery('paid-owner');
+    assert.equal(blocked.blocked,true);assert.equal(blocked.unreconciledCount,3);
+    assert.equal(blocked.calls.length,3);assert.ok(blocked.calls.every(call=>call.settlement==='evidence_unavailable'));
+    const page1=await diagnostic.diagnoseComposerRecovery('paid-owner',{limit:2});
+    const page2=await diagnostic.diagnoseComposerRecovery('paid-owner',{limit:2,cursor:page1.nextCursor!});
+    assert.equal(page1.unreconciledCount,3);assert.equal(page2.unreconciledCount,3);
+    assert.deepEqual([...page1.calls,...page2.calls].map(call=>call.callId).sort(),blocked.calls.map(call=>call.callId).sort());
+    assert.equal(page2.nextCursor,null);
+    await inner.test('diagnostic pagination remains bound to the exact account',async()=>{
+      await assert.rejects(diagnostic.diagnoseComposerRecovery('other-owner',{cursor:page1.nextCursor!}),/cursor/i);
+      await assert.rejects(diagnostic.diagnoseComposerRecovery(' paid-owner'));
+      await assert.rejects(diagnostic.diagnoseComposerRecovery('paid-owner',{userId:'other-owner'} as never));
+    });
+    await inner.test('support diagnostic bounds concurrent evidence reads and preserves page order',async concurrencyTest=>{
+      const financialSnapshot=async()=>Promise.all(['studio_assistance_calls','studio_assistance_accounts','studio_assistance_credit_lots','studio_assistance_credit_allocations','studio_assistance_resolutions','app_receipts','prompt_assistance_requests'].map(async table=>(await pg.pool.query(`SELECT to_jsonb(t) data FROM ${table} t ORDER BY to_jsonb(t)::text`)).rows));
+      const before=await financialSnapshot();
+      const original=Client.prototype.query;
+      let active=0,maximum=0;
+      concurrencyTest.mock.method(Client.prototype,'query',function(this:Client,...args:unknown[]){
+        if(typeof args[0]!=='string'||args[0]!=='SELECT * FROM studio_assistance_calls WHERE id=$1')return Reflect.apply(original,this,args);
+        active++;maximum=Math.max(maximum,active);
+        return new Promise<void>(resolve=>setImmediate(resolve)).then(()=>Reflect.apply(original,this,args)).finally(()=>active--);
+      });
+      const bounded=await diagnostic.diagnoseComposerRecovery('paid-owner',{limit:100});
+      assert.deepEqual(bounded.calls.map(call=>call.callId),blocked.calls.map(call=>call.callId));
+      assert.ok(maximum<=2,`Observed ${maximum} simultaneous evidence reads; support must retain DB capacity.`);
+      assert.equal(active,0);
+      assert.deepEqual(await financialSnapshot(),before,'Read-only diagnostic preserves financial evidence and request leases.');
+    });
+    await assert.rejects(diagnostic.diagnoseComposerRecovery('paid-owner',{limit:101}));
+    assert.equal((await diagnostic.diagnoseComposerRecovery('other-owner')).unreconciledCount,0);
     const first=await row(originals[0].requestId);
     assert.equal((await sendPromptAssistance('paid-owner',originals[0],failing)).state,'failed');assert.equal(calls,3);
     assert.equal((await pg.pool.query('SELECT campaign_id FROM studio_assistance_calls WHERE id=$1',[first.call_id])).rows[0].campaign_id,null);
+    await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[originals[1].requestId,JSON.stringify({id:'invalid',model:'gpt-6.1-sol'})]);
+    const invalid=await row(originals[1].requestId);
+    assert.equal((await diagnostic.diagnoseComposerRecovery('paid-owner')).calls.find(call=>call.callId===invalid.call_id)?.settlement,'evidence_unavailable');
     await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[originals[0].requestId,JSON.stringify(evidence())]);
+    assert.equal((await diagnostic.diagnoseComposerRecovery('paid-owner')).calls.find(call=>call.callId===first.call_id)?.settlement,'ready');
+    const preview=await support.inspectStudioAssistanceResolution(first.call_id,'settle_recorded');
+    const approval={callId:first.call_id,action:'settle_recorded' as const,expectedFingerprint:preview.fingerprint,operator:'offline-support',reason:'Review recorded provider evidence'};
+    await inner.test('a support settlement after page selection is reported explicitly',async raceTest=>{
+      const original=Client.prototype.query;let settled=false;
+      raceTest.mock.method(Client.prototype,'query',function(this:Client,...args:unknown[]){
+        const result=Reflect.apply(original,this,args);
+        if(typeof args[0]!=='string'||!args[0].startsWith('WITH scoped AS'))return result;
+        return Promise.resolve(result).then(async page=>{
+          assert.equal((await support.applyStudioAssistanceResolution(approval)).applied,true);
+          settled=true;return page;
+        });
+      });
+      const raced=await diagnostic.diagnoseComposerRecovery('paid-owner');
+      assert.equal(settled,true);assert.equal(raced.unreconciledCount,3);
+      assert.equal(raced.calls.find(call=>call.callId===first.call_id)?.settlement,'already_settled');
+    });
+    assert.equal((await support.applyStudioAssistanceResolution(approval)).applied,false);
     const late=await recoverPromptAssistance('paid-owner',originals[0].sessionId,originals[0].requestId,policy);
     assert.equal(late.state,'failed');assert.equal(late.reply,undefined);assert.equal(late.assistance.credits?.purchased.remaining,2000);
+    assert.equal((await diagnostic.diagnoseComposerRecovery('paid-owner')).unreconciledCount,2);
+    const last=await row(originals[2].requestId),lateEvidence=evidence();
+    await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[originals[2].requestId,JSON.stringify(lateEvidence)]);
+    await inner.test('normal late settlement after page selection never advertises ready',async raceTest=>{
+      const original=Client.prototype.query;let settled=false;
+      raceTest.mock.method(Client.prototype,'query',function(this:Client,...args:unknown[]){
+        const result=Reflect.apply(original,this,args);
+        if(typeof args[0]!=='string'||!args[0].startsWith('WITH scoped AS'))return result;
+        return Promise.resolve(result).then(async page=>{
+          assert.equal(await settleStudioAssistanceCall(last.call_id,'paid-owner',lateEvidence),true);
+          settled=true;return page;
+        });
+      });
+      const raced=await diagnostic.diagnoseComposerRecovery('paid-owner');
+      assert.equal(settled,true);assert.equal(raced.unreconciledCount,2);
+      assert.equal(raced.calls.find(call=>call.callId===last.call_id)?.settlement,'already_settled');
+    });
+    assert.equal((await diagnostic.diagnoseComposerRecovery('paid-owner')).unreconciledCount,1);
+    assert.equal((await readStudioAssistanceStatus('paid-owner',policy)).credits?.purchased.remaining,2000);
     assert.equal((await sendPromptAssistance('paid-owner',request(),{...deps,create:async()=>evidence()})).state,'complete');
   });
   await t.test('preparation consumes the creation budget and expired preparation never reserves',async inner=>{

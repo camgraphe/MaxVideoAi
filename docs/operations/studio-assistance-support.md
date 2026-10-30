@@ -20,7 +20,18 @@ From the repository root:
 frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json frontend/scripts/resolve-studio-assistance.ts --target "$STUDIO_SUPPORT_TARGET" --environment production --list
 ```
 
-This is a read-only, bounded queue of 100 unresolved supplier calls. Customer holds
+This is a read-only queue of unresolved supplier calls, with at most 100 rows per page.
+The JSON result has `items` and `nextCursor`; when the latter is not null, repeat
+the same command with `--cursor <nextCursor>`. Optional `--limit` accepts 1–100,
+`--user <exact-user-id>` restricts the account, and `--waiver` accepts `all`,
+`unwaived`, `waived` or `automatic`. The automatic filter selects customer waivers
+recorded by `system:composer-unanswered`. A cursor is tied to its user and waiver
+filters. Rows are ordered by waiver status, creation time and call ID. This is not
+a snapshot: settlements or other changes during a scan can remove or move rows;
+repeat the scan when a complete current inventory is required. Only unknown calls
+and reservations older than three minutes are included.
+
+Customer holds
 come first; rows marked `customer_waived` retain supplier exposure but no longer hold
 the customer's money or prevent their assistance choices. Use the exact call ID
 for the next command. Review this queue at opening, during the opening support
@@ -32,6 +43,38 @@ The admin Studio interaction view shows known/unknown supplier cost, the origina
 customer reservation, and any support release. It is scoped to nondeleted Projects
 and requires an audited reveal. The queue also covers financially retained calls
 whose Project was deleted. Neither queue nor command outputs prompts or responses.
+
+## Diagnose the composer exposure cap
+
+For an account reporting that support recovery is required, verify its exact user
+ID through the approved support process, then run this read-only diagnostic:
+
+```sh
+frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json frontend/scripts/resolve-studio-assistance.ts --target "$STUDIO_SUPPORT_TARGET" --environment production --diagnose --user "$STUDIO_SUPPORT_USER"
+```
+
+`unreconciledCount` uses the admission cap's exact predicate: automatic composer
+waivers whose supplier calls are not settled. `blocked` means at least three such
+calls, not that every other admission condition is clear. This diagnostic includes
+recent reserved calls if present, unlike the age-filtered general queue. Follow
+`nextCursor` with `--cursor`, keeping the same exact user; the opaque cursor is
+bound to that account and `--limit` is bounded to 100.
+Each page and its count are a statement snapshot, while per-call evidence checks and
+subsequent pages can race with settlement. Evidence previews run at most two at a
+time. Rerun from the start after changes.
+
+`ready` means the existing settlement preview accepted recorded, scoped usage at
+inspection time; run the usual `settle_recorded` preview and fingerprinted apply
+below. `evidence_unavailable` includes missing or invalid evidence and never means
+zero usage. `already_settled` means the preview observed a settlement after page
+selection; that row and its original reserved exposure can still appear in the
+page's earlier count, so restart the diagnostic to refresh the cap state. An HTTP
+provider request ID alone is not usage evidence, and provider
+responses use `store:false`; do not assume they can be retrieved. If no valid
+recorded evidence exists, retain the exposure and escalate rather than resetting
+the counter, inventing usage, or applying another waiver. A settlement after a
+customer waiver records supplier facts without charging that customer again.
+The diagnostic is read-only and does not reveal prompts or responses.
 
 ## Recover a recorded response first
 

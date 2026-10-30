@@ -135,6 +135,30 @@ async function applyResolution(raw:z.input<typeof applySchema>,unansweredCompose
   });
 }
 
-export async function listStudioAssistanceUnresolved(){
-  return query<{id:string;user_id:string;project_id:string;request_id:string;state:string;mode:string;reserved_cents:number;reserved_nano_usd:string;created_at:string;customer_waived:boolean}>(`SELECT c.id,c.user_id,c.project_id,c.request_id,c.state,c.mode,c.reserved_cents,c.reserved_nano_usd::text,c.created_at::text,w.call_id IS NOT NULL customer_waived FROM studio_assistance_calls c LEFT JOIN studio_assistance_resolutions w ON w.call_id=c.id AND w.action='waive_unknown' WHERE c.state='unknown' OR (c.state='reserved' AND c.created_at<clock_timestamp()-interval '3 minutes') ORDER BY (w.call_id IS NOT NULL),c.created_at,c.id LIMIT 100`);
+const listOptionsSchema=z.object({limit:z.number().int().min(1).max(100).optional(),userId:z.string().min(1).max(128).regex(/^\S(?:.*\S)?$/).optional(),waiver:z.enum(['all','unwaived','waived','automatic']).optional(),cursor:z.string().min(1).max(2048).regex(/^[A-Za-z0-9_-]+$/).optional()}).strict();
+const listCursorSchema=z.object({v:z.literal(1),userId:z.string().nullable(),waiver:z.enum(['all','unwaived','waived','automatic']),waived:z.boolean(),createdAt:z.string().datetime({precision:6}),id:z.string().uuid()}).strict();
+type UnresolvedRow={id:string;user_id:string;project_id:string;request_id:string;state:string;mode:string;reserved_cents:number;reserved_nano_usd:string;created_at:string;customer_waived:boolean};
+/** Read-only keyset pagination. Changes to calls between pages are not a snapshot. */
+export async function listStudioAssistanceUnresolved(raw:z.input<typeof listOptionsSchema>={}){
+  const {limit=100,userId,waiver='all',cursor}=listOptionsSchema.parse(raw);
+  let after:z.infer<typeof listCursorSchema>|undefined;
+  if(cursor){
+    try{
+      const decoded=Buffer.from(cursor,'base64url');
+      if(decoded.toString('base64url')!==cursor)throw new Error('Invalid cursor');
+      after=listCursorSchema.parse(JSON.parse(decoded.toString('utf8')));
+      if(after.userId!==(userId??null)||after.waiver!==waiver)throw new Error('Cursor filters changed');
+    }catch{throw new Error('Invalid or mismatched support cursor.');}
+  }
+  const rows=await query<UnresolvedRow>(`SELECT c.id,c.user_id,c.project_id,c.request_id,c.state,c.mode,c.reserved_cents,c.reserved_nano_usd::text,to_char(c.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') created_at,w.call_id IS NOT NULL customer_waived
+    FROM studio_assistance_calls c LEFT JOIN studio_assistance_resolutions w ON w.call_id=c.id AND w.action='waive_unknown'
+    WHERE (c.state='unknown' OR (c.state='reserved' AND c.created_at<clock_timestamp()-interval '3 minutes'))
+      AND ($1::text IS NULL OR c.user_id=$1)
+      AND ($2='all' OR ($2='unwaived' AND w.call_id IS NULL) OR ($2='waived' AND w.call_id IS NOT NULL)
+        OR ($2='automatic' AND c.state<>'settled' AND EXISTS(SELECT 1 FROM studio_assistance_resolutions a WHERE a.call_id=c.id AND a.action='waive_unknown' AND a.operator_id='system:composer-unanswered')))
+      AND ($3::boolean IS NULL OR (w.call_id IS NOT NULL,c.created_at,c.id)>($3::boolean,$4::timestamptz,$5::uuid))
+    ORDER BY (w.call_id IS NOT NULL),c.created_at,c.id LIMIT $6`,[userId??null,waiver,after?.waived??null,after?.createdAt??null,after?.id??null,limit+1]);
+  const items=rows.slice(0,limit),last=items.at(-1);
+  const nextCursor=rows.length>limit&&last?Buffer.from(JSON.stringify({v:1,userId:userId??null,waiver,waived:last.customer_waived,createdAt:last.created_at,id:last.id})).toString('base64url'):null;
+  return {items,nextCursor};
 }
