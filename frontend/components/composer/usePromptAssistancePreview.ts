@@ -98,7 +98,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     dispatch({ type: 'applied', previous: draftText, fingerprint: fingerprintFor(state.proposal.text) });
   };
   const applyReviewed=()=>{
-    if(blocked||transport.loading||transport.loadError||transport.waiting||transport.recovery||transport.analysisPending||!canApplyReviewedProposal(state)||!state.proposal||(maxLength&&state.proposal.text.length>maxLength))return;
+    if(blocked||transport.cacheError||transport.loading||transport.loadError||transport.waiting||transport.recovery||transport.analysisPending||!canApplyReviewedProposal(state)||!state.proposal||(maxLength&&state.proposal.text.length>maxLength))return;
     onApplyText(state.proposal.text);dispatch({type:'appliedReviewed',previous:draftText,fingerprint:fingerprintFor(state.proposal.text)});
   };
   const undo = () => {
@@ -118,5 +118,5 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     });
   };
   const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){dispatch({type:'newChat',message:transport.exhausted?state.message:undefined});return true;}return false;};
-  return { state, dispatch, input, send, apply, applyReviewed,beginReview:()=>dispatch({type:'review'}),canReview:canReviewProposal(state),canApplyReviewed:canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
+  return { state, dispatch, input, send, apply, applyReviewed,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
 }

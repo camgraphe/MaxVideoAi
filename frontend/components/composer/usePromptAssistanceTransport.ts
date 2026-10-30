@@ -3,19 +3,28 @@ import {assistanceNextActionSchema,type AssistanceNextAction} from '@/lib/studio
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {promptSessionSnapshotSchema,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
-import {readPromptChat,writePromptChat,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal} from './prompt-chat-storage';
+import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal} from './prompt-chat-storage';
 
 type Pending={sessionId:string;requestId:string;uiId:number|null};
 type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined)=>Promise<()=>void>;
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;onRestore:Restore}){
-  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
+  const blockedScopes=useRef(new Set<string>());
+  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
-  const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
+  const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
   const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
   const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId,exhausted:owner.exhausted}));};
-  function save(){if(owner.sessionId)writePromptChat(storageKey,{sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.sessionId,requestId:owner.pending.requestId}:null,local:owner.local,legacy:owner.legacy});}
+  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.sessionId,requestId:owner.pending.requestId}:null,local:owner.local,legacy:owner.legacy};}
+  function save(){return !!owner.sessionId&&writePromptChat(storageKey,snapshot());}
+  function persistRevocation(){
+    if(owner.local?.proposal?.review)owner.local.proposal.review.compatible=false;
+    const result=revokePromptChatReview(storageKey,snapshot(),!!owner.pending||pendingAnalysis());
+    if(result.kind==='saved')owner.local=result.record.local;
+    else if(result.kind==='discarded')owner.local=undefined;
+    owner.cacheError=result.kind!=='saved';if(owner.cacheError)blockedScopes.current.add(scopeKey);else blockedScopes.current.delete(scopeKey);update({cacheError:owner.cacheError});
+  }
   async function restore(){
     if(!active()||owner.loading&&owner.controller)return;
     owner.loading=true;const controller=new AbortController();owner.controller=controller;update({loading:true,loadError:false,error:null});
@@ -49,8 +58,8 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     owner.active=true;
     if(enabled){
       const saved=readPromptChat(storageKey)??readLegacyPromptRecovery(scopeKey);owner.legacy=!!saved?.legacy&&!!callbacks.current.options;owner.exhausted=owner.legacy?'LEGACY_SESSION':null;owner.sessionId=saved?.sessionId??crypto.randomUUID();owner.local=saved?.local;
-      owner.pending=saved?.pending?{...saved.pending,uiId:null}:null;save();
-      setView({owner,chatId:owner.sessionId,exhausted:owner.exhausted,loading:!!callbacks.current.options,loadError:false,waiting:false,recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted,nextAction:null,fundingRevision:null});
+      owner.pending=saved?.pending?{...saved.pending,uiId:null}:null;if(owner.cacheError)persistRevocation();else save();
+      setView({owner,chatId:owner.sessionId,exhausted:owner.exhausted,loading:!!callbacks.current.options,loadError:false,cacheError:owner.cacheError,waiting:false,recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted,nextAction:null,fundingRevision:null});
       if(saved&&callbacks.current.options&&!owner.legacy)void restore();
       else if(callbacks.current.options){
         void callbacks.current.options.onRestore(null,owner.local).then(commit=>{if(active()){commit();owner.loading=false;update({loading:false});}}).catch(()=>{owner.loading=false;update({loading:false,loadError:true,error:'RESTORE_FAILED'});});
@@ -113,13 +122,13 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
   function newChat(){
     if(!active()||owner.pending||owner.waiting||owner.loading||pendingAnalysis())return false;
-    owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;save();update({error:null,loadError:false,nextAction:null});return true;
+    owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}update({error:null,loadError:false,nextAction:null,cacheError:owner.cacheError});return true;
   }
-  const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,waiting:false,recovery:false,error:null,nextAction:null,fundingRevision:null};
+  const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,error:null,nextAction:null,fundingRevision:null};
   return {...visible,analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
     localEpoch:()=>owner.localEpoch,
-    revokeReviewProof:()=>{if(!active())return;owner.localEpoch++;const proof=owner.local?.proposal?.review;if(proof){proof.compatible=false;save();}},
-    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>,expectedEpoch:number)=>{if(expectedEpoch===owner.localEpoch&&active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};save();}},
+    revokeReviewProof:()=>{if(!active())return;owner.localEpoch++;const proof=owner.local?.proposal?.review;if(proof){proof.compatible=false;persistRevocation();}},
+    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>,expectedEpoch:number)=>{if(expectedEpoch===owner.localEpoch&&active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};if(owner.cacheError)persistRevocation();else save();}},
     session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,
     reload:()=>void restore(),recover:()=>{if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);},stop:()=>owner.controller?.abort(),
   };
