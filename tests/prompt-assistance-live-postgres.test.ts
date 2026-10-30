@@ -55,6 +55,8 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const luna=await service.sendPromptAssistance('owner',{...request,requestId:randomUUID()},deps);
   assert.equal(luna.assistance.selectedModel,'gpt-6-luna');
   assert.equal(luna.assistance.credits?.included.remaining,470);
+  // Simulate a failed closeout transaction: unknown usage must remain recoverable.
+  await pg.pool.query(`CREATE FUNCTION reject_composer_resolution() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'closeout unavailable'; END $$;CREATE TRIGGER reject_composer_resolution BEFORE INSERT ON studio_assistance_resolutions FOR EACH ROW EXECUTE FUNCTION reject_composer_resolution()`);
   const unknownRequest={...request,requestId:randomUUID()};
   const unknown=await service.sendPromptAssistance('owner',unknownRequest,{...deps,create:async()=>{calls++;throw new Error('connection lost');}});
   assert.equal(unknown.state,'unknown');const callsAfterUnknown=calls;
@@ -65,6 +67,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.equal((await pg.pool.query('SELECT state FROM studio_assistance_calls WHERE id=$1',[saved.call_id])).rows[0].state,'unknown');
   const evidence={id:'resp_recovered',model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'Recovered answer',text:'A slow camera move.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}};
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[unknownRequest.requestId,JSON.stringify(evidence)]);
+  await pg.pool.query('DROP TRIGGER reject_composer_resolution ON studio_assistance_resolutions');
   // Reconstruct a legacy aged row in this disposable database before installing
   // retention, without disabling any production identity or credit guard.
   await pg.pool.query(`WITH historical AS (DELETE FROM prompt_assistance_requests WHERE request_id=$1 RETURNING *)
@@ -109,7 +112,11 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const unavailable=await service.sendPromptAssistance('invalid-owner',{...request,requestId:randomUUID()},{...deps,buildContext:async()=>{throw new Error('MODEL_UNAVAILABLE');}});
   assert.equal(unavailable.state,'failed');assert.equal(unavailable.assistance.credits?.included.remaining,500);
   assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id='invalid-owner'")).rows[0].n,0);
-  const lost=await service.sendPromptAssistance('support-owner',{...request,requestId:randomUUID()}, {...deps,create:async()=>{throw new Error('lost');}});
+  const lost={...request,requestId:randomUUID()};
+  let rejectLost!:(error:Error)=>void,startedLost!:()=>void;
+  const lostReady=new Promise<void>(resolve=>startedLost=resolve);
+  const lostWork=service.sendPromptAssistance('support-owner',lost,{...deps,create:async()=>{startedLost();return new Promise<never>((_resolve,reject)=>rejectLost=reject);}});
+  await lostReady;
   const lostRow=(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[lost.requestId])).rows[0];
   const support=await import('../frontend/src/server/studio/assistance-resolution');
   await assert.rejects(support.inspectStudioAssistanceResolution(lostRow.call_id,'waive_unknown'),/active lease/);
@@ -123,5 +130,6 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[lost.requestId,JSON.stringify({...evidence,id:'resp_late',model:'gpt-6.1-sol'})]);
   assert.equal((await service.sendPromptAssistance('support-owner',{...request,requestId:lost.requestId},deps)).state,'failed');
   assert.equal((await pg.pool.query('SELECT response_json FROM prompt_assistance_requests WHERE request_id=$1',[lost.requestId])).rows[0].response_json.id,'resp_late');
+  rejectLost(new Error('lost'));await lostWork;
   assert.equal((await readStudioAssistanceStatus('support-owner',policy)).credits?.included.remaining,500);
 });

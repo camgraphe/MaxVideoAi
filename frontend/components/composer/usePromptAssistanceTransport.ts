@@ -67,7 +67,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     try{
       const response=await fetch('/api/prompt-assistance',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const payload=await response.json();
       if(!response.ok||!payload.ok){
-        const rejected=['ASSISTANCE_SELECTION_CHANGED','INVALID_REQUEST','BODY_TOO_LARGE','SAME_ORIGIN_REQUIRED','AUTH_REQUIRED','UNAUTHORIZED','EMAIL_VERIFICATION_REQUIRED','ASSISTANCE_DISABLED','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED','REQUEST_CLOSED','REQUEST_PENDING'].includes(payload.error);
+        const rejected=['ASSISTANCE_SELECTION_CHANGED','INVALID_REQUEST','BODY_TOO_LARGE','SAME_ORIGIN_REQUIRED','AUTH_REQUIRED','UNAUTHORIZED','EMAIL_VERIFICATION_REQUIRED','ASSISTANCE_DISABLED','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED','REQUEST_CLOSED','REQUEST_PENDING','ASSISTANCE_RECOVERY_REQUIRED'].includes(payload.error);
         if(rejected&&active()){
           owner.pending=null;
           if(['SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(payload.error)){

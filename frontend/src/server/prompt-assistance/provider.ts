@@ -29,6 +29,19 @@ export function promptResponseParams(row:PromptRequestRow,context:PerceivedConte
     text:{format:{type:'json_schema',name:'prompt_assistance_reply',strict:true,schema:{type:'object',additionalProperties:false,required:['reply','text'],properties:{reply:{type:'string'},text:{type:['string','null']}}}}},
   };
 }
-const client=()=>new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0,timeout:65000});
-export async function countPromptTokens(params:ResponseCreateParamsNonStreaming){return (await client().responses.inputTokens.count(studioTokenCountInput(params))).input_tokens;}
-export async function createPromptResponse(params:ResponseCreateParamsNonStreaming){return client().responses.create(params);}
+// The entire request gets 90s, leaving time for durable closeout before the
+// browser's 100s wait and the route's 120s limit. Preparation consumes this budget.
+export const PROMPT_REQUEST_BUDGET_MS=90_000;
+export function promptProviderTimeout(deadline:number,maximum=PROMPT_REQUEST_BUDGET_MS){
+  const remaining=deadline-Date.now();
+  if(remaining<1000)throw new Error('REQUEST_DEADLINE');
+  return Math.min(remaining,maximum);
+}
+export function promptProviderFailure(error:unknown,elapsedMs:number){
+  return {kind:error instanceof OpenAI.APIConnectionTimeoutError||error instanceof Error&&['AbortError','TimeoutError'].includes(error.name)?'timeout':error instanceof OpenAI.APIConnectionError?'connection':error instanceof OpenAI.APIError?'http':'unknown',elapsedMs,
+    ...(error instanceof OpenAI.APIError&&Number.isInteger(error.status)?{status:error.status}:{}),
+    ...(error instanceof OpenAI.APIError&&typeof error.requestID==='string'&&/^req_[a-zA-Z0-9_-]{1,128}$/.test(error.requestID)?{providerRequestId:error.requestID}:{})};
+}
+const client=()=>new OpenAI({apiKey:process.env.OPENAI_API_KEY,maxRetries:0});
+export async function countPromptTokens(params:ResponseCreateParamsNonStreaming,timeout=15_000){return (await client().responses.inputTokens.count(studioTokenCountInput(params),{timeout,signal:AbortSignal.timeout(timeout)})).input_tokens;}
+export async function createPromptResponse(params:ResponseCreateParamsNonStreaming,timeout=PROMPT_REQUEST_BUDGET_MS){return client().responses.create(params,{timeout,signal:AbortSignal.timeout(timeout)});}

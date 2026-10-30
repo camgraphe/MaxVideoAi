@@ -76,7 +76,15 @@ export async function inspectStudioAssistanceResolution(callId:string,action:Stu
   return preview(await snapshot(callId,{query}),action);
 }
 
-export async function applyStudioAssistanceResolution(raw:z.input<typeof applySchema>){
+export async function applyStudioAssistanceResolution(raw:z.input<typeof applySchema>){return applyResolution(raw);}
+
+/** Composer-only automatic closeout. Any recorded response, even unusable usage,
+ * belongs to settlement/support; expiry alone never establishes zero supplier cost. */
+export async function waiveUnansweredComposerCall(userId:string,callId:string){
+  const inspected=preview(await snapshot(callId,{query}),'waive_unknown');
+  return applyResolution({callId,action:'waive_unknown',expectedFingerprint:inspected.fingerprint,operator:'system:composer-unanswered',reason:'Unanswered composer request ended or its lease expired; customer hold released, supplier exposure retained.'},userId);
+}
+async function applyResolution(raw:z.input<typeof applySchema>,unansweredComposerUserId?:string){
   const input=applySchema.parse(raw),initial=await snapshot(input.callId,{query});
   return withDbTransaction(async tx=>{
     await tx.query("SET LOCAL lock_timeout='5s'");await tx.query("SET LOCAL statement_timeout='15s'");
@@ -90,6 +98,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
     await tx.query('SELECT id FROM studio_assistance_calls WHERE id=$1 FOR UPDATE',[input.callId]);
     await lockUserWalletInExecutor(tx,initial.call.user_id);
     const state=await snapshot(input.callId,tx);
+    if(unansweredComposerUserId!==undefined&&(state.call.user_id!==unansweredComposerUserId||!isComposerAssistanceScope(state.call.project_id)||state.evidence||state.call.response_id||state.turn?.state!=='thinking'||state.turn.lease_active))throw new Error('Unanswered composer closeout is no longer eligible.');
     const prior=state.resolutions.find(row=>row.action===input.action);
     if(prior){
       // Replaying the original approval is safe even though the resulting snapshot changed.
@@ -99,6 +108,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
     }
     const proposed=preview(state,input.action);
     if(proposed.fingerprint!==input.expectedFingerprint)throw new Error('Support preview changed; inspect the call again.');
+    if(unansweredComposerUserId!==undefined)await tx.query("UPDATE studio_assistance_calls SET state='unknown' WHERE id=$1 AND state='reserved'",[input.callId]);
     let refundReceiptId:string|null=null;
     if(input.action==='settle_recorded'){
       if(!await settleStudioAssistanceCall(input.callId,state.call.user_id,state.evidence!,tx))throw new Error('Recorded provider evidence could not be settled.');
@@ -108,7 +118,7 @@ export async function applyStudioAssistanceResolution(raw:z.input<typeof applySc
         const inserted=await tx.query<{id:string}>(`INSERT INTO app_receipts(user_id,type,amount_cents,currency,description,job_id,surface,billing_product_key,metadata) VALUES($1,'refund',$2,'USD','Studio assistance customer waiver; supplier usage remains unresolved',$3,'tool','studio_assistance',$4::jsonb) RETURNING id::text`,[state.call.user_id,proposed.refundCents,'studio-assistance:'+input.callId,JSON.stringify({reason:'studio_assistance_customer_waiver',original_receipt_id:state.call.charge_receipt_id,operator_id:input.operator})]);
         refundReceiptId=inserted[0].id;
       }
-      if(state.turn&&isComposerAssistanceScope(state.call.project_id))await closeComposerAssistanceRecovery(state.call,tx);
+      if(state.turn&&isComposerAssistanceScope(state.call.project_id))await closeComposerAssistanceRecovery(state.call,tx,unansweredComposerUserId!==undefined?'REQUEST_UNANSWERED':'SUPPORT_CLOSED');
       else if(state.turn){
         const reply='This message was closed after an assistance connection problem. Its unresolved assistance reservation was released for you; any earlier settled assistance charges remain. Earlier completed work stays saved. Send a new follow-up from the current project without repeating completed changes.';
         const close=state.otherUnresolved===0;
