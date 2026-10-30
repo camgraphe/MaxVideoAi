@@ -139,5 +139,7 @@ test('the video app guide describes only the available settings review path and 
  assert.match(video,/If Review & use is available/);assert.match(video,/Use with current settings/);assert.match(video,/does not require another Milo message/);
  assert.match(video,/source, reference, model, operation or manual editor.*not bypassable/i);
  assert.match(video,/never promise.*Review & use/i);
- for(const surface of ['image','audio'] as const)assert.ok(!promptAssistanceAppGuide(surface).includes('Review & use'));
+ const image=promptAssistanceAppGuide('image');
+ assert.match(image,/only aspect ratio/i);assert.match(image,/text-to-image.*without references or a mask/i);assert.match(image,/If Review & use is available/);assert.match(image,/Use with current settings/);
+ assert.ok(!promptAssistanceAppGuide('audio').includes('Review & use'));
 });

@@ -20,11 +20,12 @@ export type PromptAssistancePanelProps = {
   conversationControl?: ReactNode;
   helpControl?: ReactNode;
   reasoningControl?: ReactNode;
+  identityStatus?: string|null;
   feedback?: ReactNode;
   inputNotice?: ReactNode;
 };
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, feedback, inputNotice }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, feedback, inputNotice }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const [reviewMode,setReviewMode]=useState(false);
@@ -52,7 +53,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const review=()=>{setExpanded(true);setReviewMode(true);onReview?.();};
   const togglePrompt=()=>{if(expanded){setExpanded(false);setReviewMode(false);}else if(settingsReview)review();else setExpanded(true);};
   return <div className={styles.panel} data-assistance-empty={!hasConversation || undefined}>
-    <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={modelLabel}>{copy.forModel} {composerModelLabel(modelLabel)}</span></div><span className={styles.assistanceActions}>{helpControl}{hasConversation||showConversationControl ? conversationControl : null}</span></div>
+    <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={identityStatus??modelLabel} role={identityStatus?'status':undefined} data-assistance-loading={identityStatus?true:undefined}>{identityStatus??<>{copy.forModel} {composerModelLabel(modelLabel)}</>}</span></div><span className={styles.assistanceActions}>{helpControl}{hasConversation||showConversationControl ? conversationControl : null}</span></div>
     <div className={`${styles.conversationStage}${reviewMode&&expanded?` ${styles.reviewStage}`:''}`} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
