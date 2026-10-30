@@ -364,25 +364,33 @@ async function submitRealFalFailure(input: {
     engineId: input.engine.id,
     prompt: 'A controlled provider-error projection test.',
     mode: 't2v',
+    submissionMode: 'enqueue',
   };
+  const jobId = `job_${input.engine.id}`;
+  const job = { job_id: jobId, user_id: 'owner', status: 'pending', progress: 0, provider: 'fal',
+    provider_job_id: null, payment_status: 'paid_platform', video_url: null, settings_snapshot: {} };
+  const unexpectedQueries: string[] = [];
+  let rollbackCalls = 0;
   const error = new FalGenerationError('fal.ai endpoint rejected the request', {
     status: input.status,
+    phase: input.status >= 500 ? 'submission_unknown' : 'submission_rejected',
     body: {
       code: input.code,
       message: 'fal.ai endpoint /queue/submit rejected the request',
     },
   });
   (error as FalGenerationError & { code: string }).code = input.code;
-  return withMutedFalLogs(() => submitFalGenerateTask({
+  const result = await withMutedFalLogs(() => submitFalGenerateTask({
     userId: 'owner',
     falPayload: payload,
-    jobId: `job_${input.engine.id}`,
+    jobId,
     engineId: input.engine.id,
     engineLabel: input.engine.label,
     isLumaRay2: false,
     batchId: null,
     durationSec: 5,
-    pendingReceipt: null,
+    pendingReceipt: input.status >= 500 ? { userId: 'owner', jobId, amountCents: 125, currency: 'USD',
+      description: 'Recorded platform fixture', snapshot: {}, applicationFeeCents: null, vendorAccountId: null } : null,
     paymentMode: 'platform',
     walletChargeReserved: false,
     getLastProviderJobId: () => null,
@@ -393,25 +401,60 @@ async function submitRealFalFailure(input: {
     deps: {
       generateVideoFn: async () => { throw error; },
       withFalTimeoutFn: async (promise) => promise,
-      queryFn: async () => [],
+      rollbackPendingPaymentFn: async () => { rollbackCalls++; },
+      queryFn: async <T = unknown>(sql: string, values: unknown[] = []): Promise<T[]> => {
+        assert.equal(values[0], jobId);
+        if (/UPDATE app_jobs/.test(sql) && /SET status = 'failed'/.test(sql)) {
+          job.status = 'failed'; job.progress = 0;
+          return [{ ...job }] as T[];
+        }
+        if (/UPDATE app_jobs/.test(sql) && /SET status = 'running'/.test(sql)) {
+          job.status = 'running'; job.progress = Number(values[1]);
+          return [];
+        }
+        if (/SELECT \* FROM app_jobs/.test(sql)) return [{ ...job }] as T[];
+        unexpectedQueries.push(sql);
+        throw new Error('Unexpected query in provider policy fixture');
+      },
     },
   }));
+  assert.deepEqual(unexpectedQueries, []);
+  assert.equal(rollbackCalls, 0);
+  assert.equal(job.status, input.status >= 500 ? 'running' : 'failed');
+  return result;
 }
 
-test('opaque infrastructure policy masks real Fal submission errors for public Kling and H3', async () => {
+test('opaque infrastructure policy masks confirmed Fal submission rejections for public Kling and H3', async () => {
   const cases = [
     { engine: KLING_3_TURBO_STANDARD_ENGINE, status: 422, code: 'FAL_UNPROCESSABLE_ENTITY' },
-    { engine: MINIMAX_H3_MAX_ENGINE, status: 500, code: 'FAL_ENDPOINT_FAILURE' },
+    { engine: MINIMAX_H3_MAX_ENGINE, status: 422, code: 'FAL_UNPROCESSABLE_ENTITY' },
   ];
   for (const fixture of cases) {
     const result = await submitRealFalFailure(fixture);
     assert.equal(result.ok, false);
     if (result.ok) continue;
+    assert.equal(result.status, 422);
     assert.equal(result.body.error, 'PROVIDER_REQUEST_FAILED');
     assert.equal(result.body.providerMessage, null);
     assert.equal(result.body.detail, null);
     assert.doesNotMatch(JSON.stringify(result.body), /\bfal(?:\.ai)?\b|endpoint/iu);
   }
+});
+
+test('an unacknowledged Fal 500 remains deferred without provider disclosure or rollback', async () => {
+  const result = await submitRealFalFailure({ engine: MINIMAX_H3_MAX_ENGINE, status: 500, code: 'FAL_ENDPOINT_FAILURE' });
+  assert.equal(result.ok, false);
+  if (result.ok) assert.fail('uncertainty must retain the existing job');
+  assert.equal(result.status, 202);
+  assert.equal(result.body.ok, true);
+  assert.equal(result.body.jobId, `job_${MINIMAX_H3_MAX_ENGINE.id}`);
+  assert.equal(result.body.status, 'running');
+  assert.equal(result.body.deferred, true);
+  assert.equal(result.body.providerJobId, null);
+  assert.equal(Object.hasOwn(result.body, 'error'), false);
+  assert.equal(result.body.providerMessage ?? null, null);
+  assert.equal(result.body.detail ?? null, null);
+  assert.doesNotMatch(JSON.stringify(result.body), /\bfal(?:\.ai)?\b|endpoint/iu);
 });
 
 test('public Fal engines retain their existing provider error codes', async () => {
@@ -423,7 +466,10 @@ test('public Fal engines retain their existing provider error codes', async () =
     code: 'FAL_UNPROCESSABLE_ENTITY',
   });
   assert.equal(result.ok, false);
-  if (!result.ok) assert.equal(result.body.error, 'FAL_UNPROCESSABLE_ENTITY');
+  if (!result.ok) {
+    assert.equal(result.status, 422);
+    assert.equal(result.body.error, 'FAL_UNPROCESSABLE_ENTITY');
+  }
 });
 
 async function withMutedFalLogs<T>(callback: () => Promise<T>): Promise<T> {

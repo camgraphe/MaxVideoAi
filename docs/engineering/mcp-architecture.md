@@ -105,6 +105,15 @@ stored media facts. Confirmation resolves them again and compares the snapshot
 before spending checks or job reservation, even when asset IDs and price have
 not changed. The same verified records are passed to reservation and execution.
 
+The shared fingerprint normalizes absent optional reference facts: an explicitly
+`undefined` optional field has the same meaning as an omitted field. Only the
+known optional fields in `ResolvedReference` receive this normalization; defined
+values (including zero, false and null), reference order and repeated references
+remain bound. Existing JSON reference records retain their fingerprint bytes.
+The general `stableJson` serializer stays strict, including for non-finite numbers
+and explicitly undefined required fields. `tests/generation-reference-fingerprint.test.ts`
+and the Studio pricing/Kling owned-reference tests cover this boundary.
+
 Prepared quotes with owned assets from before this binding must be prepared and
 explicitly approved again, including those prepared through the shared Studio
 and Toolbox services. No stored quote is rewritten. Claimed, accepted and failed

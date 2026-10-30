@@ -57,10 +57,16 @@ test('Alibaba direct runtime keeps provider details out of user-facing messages'
     path.join(process.cwd(), 'frontend/server/user-facing-failure-messages.ts'),
     'utf8'
   );
+  const directAcceptance = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/generate/_lib/direct-provider-acceptance.ts'),
+    'utf8'
+  );
+  const runtimeCopy = [submission, directAcceptance].join('\n');
 
-  assert.match(submission, /Render submitted\./);
+  assert.match(submission, /persistDirectProviderAcceptance/);
+  assert.match(runtimeCopy, /Render submitted\./);
   assert.match(submission, /This render option is temporarily unavailable\./);
   assert.match(userFacingMessages, /alibaba\|dashscope\|model\\s\+studio/);
-  assert.doesNotMatch(submission, /Alibaba render submitted\./);
-  assert.doesNotMatch(submission, /DashScope (?:request|render)/);
+  assert.doesNotMatch(runtimeCopy, /Alibaba render submitted\./);
+  assert.doesNotMatch(runtimeCopy, /DashScope (?:request|render)/);
 });
