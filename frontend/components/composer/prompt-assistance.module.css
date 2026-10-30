@@ -33,11 +33,18 @@
 .user { align-self: flex-end; max-width: 88%; border-radius: 12px 12px 3px 12px; padding: 8px 12px; background: var(--surface-2); }
 .user, .reply { white-space: pre-wrap; overflow-wrap: anywhere; }
 .proposal { border-top: 1px solid var(--border); padding: 4px 12px; min-width: 0; flex-shrink: 0; }
-.proposalHeader { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-shrink: 0; }
+.proposalHeader { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-shrink: 0; container: prompt-proposal / inline-size; }
 .proposalBody { flex: 1; min-height: 0; padding: 0 16px; display: flex; flex-direction: column; }
 .proposalStatus { margin-right: auto; color: var(--text-muted); font-size: 11px; }
 .proposalHeader button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0; font-size: 12px; }
 .proposalHeader .apply { min-height: 38px; padding: 0 12px; border-radius: 7px; background: var(--text-primary); color: var(--surface); flex-shrink: 0; }
+.proposalHeader .proposalPreview { flex: 1; min-width: 0; height: 44px; flex-direction: column; justify-content: center; align-items: stretch; gap: 2px; text-align: left; }
+.proposalPreview .proposalStatus { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 14px; }
+.proposalExcerpt { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 18px; }
+.proposalPreview:hover .proposalExcerpt { text-decoration: underline; text-underline-offset: 3px; }
+.proposalHeader .review { flex-shrink: 0; min-height: 38px; padding: 0 9px; border: 1px solid var(--border); border-radius: 7px; white-space: nowrap; }
+.proposalHeader .review:hover { background: var(--surface-2); }
+@container prompt-proposal (max-width: 300px) { .reviewLabel { display: none; } }
 
 .editor { display: block; width: 100%; flex: 1; min-height: 0; resize: none; padding: 4px 2px; background: transparent; border: 0; font-size: 13px; line-height: 1.65; scrollbar-width: thin; overscroll-behavior: contain; }
 .copyRow, .sendRow, .undo { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; color: var(--text-muted); }
@@ -118,6 +125,7 @@
   .proposalHeader { gap: 6px; }
 }
 @media (pointer: coarse) {
+  .proposalHeader .review, .proposalHeader .apply { min-width: 44px; min-height: 44px; }
   .commandBar :global(.app-mode-switch[data-compact-modes] button), .modelTrigger, .root .variantTrigger, .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command) { min-height: 44px !important; }
 }
 

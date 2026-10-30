@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { ArrowUp, ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowUp, ArrowLeft, Eye, Sparkles } from 'lucide-react';
 import type { PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import { composerModelLabel } from './composer-model-label';
@@ -38,6 +38,8 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
+  const reviewLabel = proposal?.target === 'script' ? copy.reviewScript : proposal?.target === 'lyrics' ? copy.reviewLyrics : copy.review;
+  const proposalStatus = proposal?.stale ? copy.updateNeeded : tooLong && proposal ? `${proposal.text.length} / ${maxLength}` : copy.ready;
   return <div className={styles.panel} data-assistance-empty={!hasConversation || undefined}>
     <div className={styles.assistant}><div className={styles.assistantIdentity}>{reasoningControl ?? <><Sparkles size={15} aria-hidden /><strong>Milo</strong></>}<span className={styles.assistantModel} title={modelLabel}>{copy.forModel} {composerModelLabel(modelLabel)}</span></div><span className={styles.assistanceActions}>{helpControl}{hasConversation ? conversationControl : null}</span></div>
     <div className={styles.conversationStage} hidden={!hasConversation}>
@@ -51,10 +53,13 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         <label className="sr-only" htmlFor={`${proposalId}-text`}>{copy.edit}</label><textarea id={`${proposalId}-text`} data-assistance-editor className={styles.editor} value={proposal.text} onChange={event => onProposalTextChange(event.target.value)} />
         <div className={styles.copyRow}><span>{maxLength ? `${proposal.text.length} / ${maxLength}` : null}</span><button type="button" onClick={onCopy}>{copy.copy}</button></div>
       </div> : null}
-      {proposal ? <section className={styles.proposal} aria-label={copy[proposal.target]}>
+      {proposal ? <section className={styles.proposal} data-assistance-proposal aria-label={copy[proposal.target]}>
         <div className={styles.proposalHeader}>
-          <span className={styles.proposalStatus} title={proposal.stale ? copy.stale : undefined}>{proposal.stale ? copy.updateNeeded : tooLong ? `${proposal.text.length} / ${maxLength}` : copy.ready}</span>
-          <button type="button" data-assistance-expand aria-expanded={expanded} aria-controls={proposalId} onClick={() => setExpanded(value => !value)}>{expanded ? <><ArrowLeft size={13} aria-hidden />{copy.back}</> : copy.review}</button>
+          {expanded ? <span className={styles.proposalStatus} title={proposal.stale ? copy.stale : undefined}>{proposalStatus}</span> : <button type="button" data-assistance-preview-open className={styles.proposalPreview} aria-label={`${reviewLabel}: ${copy[proposal.target]}`} aria-expanded={false} aria-controls={proposalId} title={proposal.stale ? copy.stale : undefined} onClick={() => setExpanded(true)}>
+            <span className={styles.proposalStatus}>{proposalStatus}</span>
+            <span className={styles.proposalExcerpt} data-assistance-preview>{proposal.text.replace(/\s+/g, ' ').trim()}</span>
+          </button>}
+          <button type="button" data-assistance-expand className={expanded ? undefined : styles.review} aria-label={expanded ? copy.back : reviewLabel} aria-expanded={expanded} aria-controls={proposalId} onClick={() => setExpanded(value => !value)}>{expanded ? <><ArrowLeft size={13} aria-hidden />{copy.back}</> : <><Eye size={14} aria-hidden /><span className={styles.reviewLabel}>{reviewLabel}</span></>}</button>
           <button type="button" data-assistance-apply className={styles.apply} disabled={proposal.stale || pending || blocked || tooLong || !proposal.text.trim()} onClick={onApply}>{proposal.target === 'prompt' ? copy.usePrompt : copy.useScript}</button>
         </div>
       </section> : null}

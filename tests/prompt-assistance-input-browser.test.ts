@@ -37,7 +37,11 @@ test('preview writing fields avoid small mobile type and keep Clear beside Multi
           const message=page.locator('[data-assistance-message]');
           await message.fill('Keep the camera still.'); await message.press('Enter');
           await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
-          await page.getByRole('button',{name:'Review',exact:true}).click();
+          if(width<600) {
+            const reviewBox=await page.locator('[data-assistance-expand]').boundingBox();
+            assert.ok(reviewBox && reviewBox.width>=44 && reviewBox.height>=44, 'the narrow eye button retains a full touch target');
+          }
+          await page.getByRole('button',{name:'View prompt',exact:true}).click();
           if(width<600) for(const selector of ['[data-assistance-message]','[data-assistance-editor]']) {
             assert.ok(await page.locator(selector).evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=16));
           }
