@@ -8,6 +8,13 @@ export type ProposalApplicationContext = {
 export const REVIEWABLE_GENERATION_SETTINGS = ['durationSec','durationOption','numFrames','resolution','aspectRatio','fps','iterations','seedLocked','loop','audio','seed','cameraFixed','safetyChecker','cfgScale','shotType'] as const;
 export type ApplicationSettingChange = {key:string;before:unknown;current:unknown};
 
+/** Workspace persistence reconstructs objects; property insertion order is not context identity. */
+export function applicationReviewKey(value:unknown):string {
+  const sorted=(entry:unknown):unknown=>Array.isArray(entry)?entry.map(sorted):entry&&typeof entry==='object'
+    ?Object.fromEntries(Object.entries(entry).filter(([,item])=>item!==undefined).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([key,item])=>[key,sorted(item)])):entry;
+  return JSON.stringify(sorted(value));
+}
+
 export function applicationSettingChanges(before:ProposalApplicationContext,current:ProposalApplicationContext):ApplicationSettingChange[] {
   const normalized=(settings:ProposalApplicationContext['settings'])=>{
     const values={...settings},choice=values.durationOption;
@@ -32,7 +39,7 @@ export function applicationSettingChanges(before:ProposalApplicationContext,curr
 /** Only the video adapter's known scalar controls are reviewable; unknown/source controls fail closed. */
 export function videoPromptReviewKey(context:Record<string,unknown>&{form:object}):string {
   const controls=new Set(['durationSec','durationOption','numFrames','resolution','aspectRatio','fps','iterations','seedLocked','loop','audio','seed','cameraFixed','safetyChecker']);
-  return JSON.stringify({...context,
+  return applicationReviewKey({...context,
     form:Object.fromEntries(Object.entries(context.form).filter(([key])=>!controls.has(key))),
     cfgScale:undefined,shotType:undefined,seedValue:undefined,cameraFixedValue:undefined,safetyCheckerValue:undefined,
   });
@@ -45,8 +52,7 @@ export function proposalApplicationContext(input:{accountKey?:string;scopeKey:st
   for(const [key,value] of Object.entries(input.live.settings)){
     if((REVIEWABLE_GENERATION_SETTINGS as readonly string[]).includes(key))settings[key]=value;else other[key]=value;
   }
-  const sorted=(value:unknown):unknown=>Array.isArray(value)?value.map(sorted):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([,entry])=>entry!==undefined).sort(([a],[b])=>a.localeCompare(b)).map(([key,entry])=>[key,sorted(entry)])):value;
-  return {compatibilityKey:JSON.stringify(sorted({...input,live:{...input.live,settings:other}})),settings};
+  return {compatibilityKey:applicationReviewKey({...input,live:{...input.live,settings:other}}),settings};
 }
 
 /** Bind cached settings to the original server draft hash, including unreviewable controls. */

@@ -72,6 +72,27 @@ test('duration aliases have one readable diff and video compatibility retains un
  assert.notEqual(videoPromptReviewKey(before),videoPromptReviewKey({...before,form:{...before.form,extraInputValues:{source_job_id:'other'}}}));
 });
 
+test('workspace serialization preserves review identity despite reconstructed object property order',async()=>{
+ const {videoPromptReviewKey}=await import('../frontend/src/lib/prompt-assistance/application-review');
+ const {serializeWorkspaceModelSetup}=await import('../frontend/app/(core)/(workspace)/app/_lib/workspace-model-setups');
+ const original={form:{engineId:'wan-3-prime',mode:'t2v',durationSec:6,durationOption:6,resolution:'720p',aspectRatio:'auto',fps:30,iterations:1,audio:false,extraInputValues:{}},inputAssets:{},klingElements:[{id:'same-element',frontal:null,references:[null,null,null],video:null}],prompt:'Same manual text',negativePrompt:'',multiPromptEnabled:false,multiPromptScenes:[],shotType:'customize',voiceIdsInput:'',cfgScale:null};
+ const saved=serializeWorkspaceModelSetup(original);assert.ok(saved.ok);
+ const context={form:original.form,klingElements:original.klingElements};
+ assert.equal(videoPromptReviewKey({form:saved.setup.form,klingElements:saved.setup.klingElements}),videoPromptReviewKey(context));
+ assert.notEqual(videoPromptReviewKey({...context,klingElements:[{...original.klingElements[0],id:'another-element'}]}),videoPromptReviewKey(context),'canonicalization must retain element identity');
+ assert.notEqual(videoPromptReviewKey({...context,form:{...context.form,extraInputValues:{unknown_source:'changed'}}}),videoPromptReviewKey(context),'unknown inputs remain exact hard context');
+});
+
+test('canonical review keys ignore only object property order and retain all hard-context values',async()=>{
+ const {applicationReviewKey}=await import('../frontend/src/lib/prompt-assistance/application-review');
+ const source={id:'source-a',fieldId:'video_url',range:{startSec:1,endSec:3}};
+ const context={model:'wan-3-prime',mode:'v2v',editor:'Keep this draft',extraInput:{unknownControl:'same'},references:[source,{id:'subject-a',fieldId:'image_url'}]};
+ const reconstructed={references:[{range:{endSec:3,startSec:1},fieldId:'video_url',id:'source-a'},{fieldId:'image_url',id:'subject-a'}],extraInput:{unknownControl:'same'},editor:'Keep this draft',mode:'v2v',model:'wan-3-prime'};
+ assert.equal(applicationReviewKey(context),applicationReviewKey(reconstructed));
+ const variants=[{model:'wan-3'},{mode:'extend'},{editor:'New draft'},{extraInput:{unknownControl:'changed'}},{references:[{...source,id:'source-b'},context.references[1]]},{references:[source,{id:'subject-b',fieldId:'image_url'}]},{references:[{...source,range:{startSec:1,endSec:4}},context.references[1]]},{references:[...context.references].reverse()},{references:[source]},{extraInput:{unknownControl:'same',newControl:null}}];
+ for(const change of variants)assert.notEqual(applicationReviewKey(context),applicationReviewKey({...context,...change}),JSON.stringify(change));
+});
+
 test('anticipated Apply/Undo fingerprints update hard context without invalidating the new Undo revision',()=>{
  let state=previewReducer(change(proposal()),{type:'review'});
  state=previewReducer(state,{type:'appliedReviewed',previous:'Original manual prompt',fingerprint:'applied'});
