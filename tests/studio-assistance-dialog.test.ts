@@ -12,10 +12,10 @@ test('assistance choice requires a click, preserves tariff revision, and restore
  Object.assign(dom.window.HTMLDialogElement.prototype,{showModal(){this.open=true;},close(){this.open=false;}});
  const globals={window:dom.window,self:dom.window,document:dom.window.document,navigator:dom.window.navigator,HTMLElement:dom.window.HTMLElement,React,IS_REACT_ACT_ENVIRONMENT:true};
  const previous=new Map(Object.keys(globals).map(key=>[key,Object.getOwnPropertyDescriptor(globalThis,key)]));for(const[key,value]of Object.entries(globals))Object.defineProperty(globalThis,key,{configurable:true,writable:true,value});
- const root=createRoot(dom.window.document.getElementById('root')!),choices:unknown[]=[];let changed=0;
+ const root=createRoot(dom.window.document.getElementById('root')!),choices:unknown[]=[];let changed=0,hostSubmits=0,refreshes=0;
  try{
    const {StudioAssistance}=await import('../frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistance.client');
-   const render=async(value=status)=>act(async()=>root.render(React.createElement(StudioAssistance,{status:value,locale:'en',busy:false,error:null,conversationBusy:false,choose:async choice=>{choices.push(choice);return true;},refresh:async()=>{},onChoice:()=>changed++})));
+   const render=async(value=status,error:string|null=null)=>act(async()=>root.render(React.createElement('form',{onSubmit:(event:React.FormEvent)=>{event.preventDefault();hostSubmits++;}},React.createElement(StudioAssistance,{status:value,locale:'en',busy:false,error,conversationBusy:false,choose:async choice=>{choices.push(choice);return true;},refresh:async()=>{refreshes++;},onChoice:()=>changed++}))));
    const button=(name:string)=>Array.from(dom.window.document.querySelectorAll('button')).find(el=>(el.getAttribute('aria-label')??el.textContent??'').trim()===name)!;
    await render();assert.deepEqual(choices,[]);
    await act(async()=>button('Milo settings and credits').click());assert.deepEqual(choices,[]);
@@ -33,6 +33,12 @@ test('assistance choice requires a click, preserves tariff revision, and restore
    const resume=button('Resume authorized Max · $20.00');assert.ok(resume,'a stopped full budget can resume without increasing authorization');
    await act(async()=>resume.click());assert.deepEqual(choices[2],{action:'authorize_paid',budgetCents:2000,tariffVersion:status.tariff.version,expectedRevision:3});
    await render({...status,unresolvedCalls:1});await act(async()=>button('Milo settings and credits').click());assert.equal(button('Authorize $5.00 more').disabled,true);
+   await render();await act(async()=>button('$10.00').click());assert.equal(choices.length,3,'budget inspection does not authorize usage');
+   await act(async()=>button('Close assistance').click());
+   await render(status,'STALE');await act(async()=>button('Milo settings and credits').click());await act(async()=>button('Refresh usage').click());assert.equal(refreshes,1);
+   await render();await act(async()=>button('Stop paid assistance').click());assert.deepEqual(choices[3],{action:'disable_paid',expectedRevision:3});
+   await render({...status,mode:'sponsored_luna'});await act(async()=>button('Milo settings and credits').click());await act(async()=>button('Resume paid Max · $1.50 left').click());assert.deepEqual(choices[4],{action:'select_sol',expectedRevision:3});
    await render({...status,enabled:false});assert.equal(dom.window.document.querySelector('button'),null);
+   assert.equal(hostSubmits,0,'legacy assistance controls must never submit a containing host form');
  }finally{await act(async()=>root.unmount());dom.window.close();for(const[key,value]of previous){if(value)Object.defineProperty(globalThis,key,value);else Reflect.deleteProperty(globalThis,key);}if(oldCss)require.extensions['.css']=oldCss;else delete require.extensions['.css'];}
 });
