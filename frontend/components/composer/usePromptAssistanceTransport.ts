@@ -42,7 +42,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         commit();
       }
       save();update({recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted});
-    }catch(error){if(active())update({loadError:true,error:error instanceof Error&&error.message==='AUTH_REQUIRED'?'AUTH_REQUIRED':'RESTORE_FAILED'});}
+    }catch(error){if(active())update({loadError:true,error:error instanceof Error&&['AUTH_REQUIRED','UNAUTHORIZED'].includes(error.message)?'AUTH_REQUIRED':'RESTORE_FAILED'});}
     finally{window.clearTimeout(timeout);if(owner.controller===controller){owner.controller=null;owner.loading=false;update({loading:false});}}
   }
   useEffect(()=>{
@@ -69,6 +69,11 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       if(!response.ok||!payload.ok){
         const rejected=['ASSISTANCE_SELECTION_CHANGED','INVALID_REQUEST','BODY_TOO_LARGE','SAME_ORIGIN_REQUIRED','AUTH_REQUIRED','UNAUTHORIZED','EMAIL_VERIFICATION_REQUIRED','ASSISTANCE_DISABLED','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED','REQUEST_CLOSED','REQUEST_PENDING','ASSISTANCE_RECOVERY_REQUIRED'].includes(payload.error);
         if(rejected&&active()){
+          // A rejected recovery did not establish the original request's outcome.
+          // Keep its identity until the server returns an explicit terminal result.
+          if((body as {action?:string}).action==='recover'){
+            update({recovery:true,error:payload.error});return;
+          }
           owner.pending=null;
           if(['SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(payload.error)){
             owner.exhausted=payload.error;

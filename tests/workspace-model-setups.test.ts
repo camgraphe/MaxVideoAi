@@ -159,3 +159,22 @@ test('all workspace modes and complete scene/subject values are validated withou
     assert.equal(result.setup.klingElements[0].references[0], null);
   }
 });
+
+
+test('reference snapshots reject unsafe original excerpt metadata without storing partial recipes', () => {
+  const setup=fixtureSetup();
+  const source={id:'excerpt',assetId:'excerpt',fieldId:'video_url',kind:'video' as const,name:'Excerpt',type:'video/mp4',size:12,status:'ready' as const,url:'https://example.com/excerpt',previewUrl:'https://example.com/excerpt',durationSec:4,
+    ref:{type:'asset' as const,assetId:'excerpt',kind:'video' as const},
+    excerptSource:{id:'original',ref:{type:'job-output' as const,jobId:'owned-job',outputId:'owned-output',kind:'video' as const},name:'Original',type:'video/mp4',size:24,url:'https://example.com/original',previewUrl:'blob:temporary',durationSec:12},
+    excerptRange:{startSec:2,endSec:6}};
+  for(const patch of [
+    {excerptRange:{startSec:-1,endSec:6}},
+    {excerptRange:{startSec:2,endSec:13}},
+    {excerptSource:{...source.excerptSource,url:'javascript:unsafe'}},
+    {excerptSource:{...source.excerptSource,ref:{...source.excerptSource.ref,access_token:'must-not-persist'}}},
+    {excerptEditing:true},
+  ]) {
+    setup.inputAssets={video_url:[{...source,...patch} as any]};
+    assert.equal(serializeWorkspaceModelSetup(setup).ok,false);
+  }
+});

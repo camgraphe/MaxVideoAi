@@ -95,6 +95,7 @@ type UseWorkspaceEngineModeStateResult = {
   composerWorkflowNotice: string | null;
   handleEngineChange: (engineId: string) => void;
   applyPreparedForm: (form: FormState) => void;
+  beforeApplyPreparedForm: (form: FormState) => boolean;
   handleModeChange: (mode: Mode) => void;
   handleComposerModeToggle: (mode: Mode | null) => void;
 };
@@ -186,7 +187,14 @@ export function useWorkspaceEngineModeState({
   );
 
   const prepareModeAssets = useWorkspaceSourceModeAssets({
-    engine: capabilityEngine, mode: activeManualMode ?? undefined, scope: storageScope, assets: inputAssets, setAssets: setInputAssets,
+    engine: capabilityEngine, mode: activeManualMode ?? undefined, scope: storageScope, assets: inputAssets, form, setAssets: setInputAssets,
+    onWarning: reason => showNotice(reason === 'uploading'
+      ? uiLocale === 'fr' ? 'Terminez ou annulez l’import ou la préparation de l’extrait avant de changer de mode. Le mode actuel est conservé.'
+        : uiLocale === 'es' ? 'Termina o cancela la subida o la preparación del extracto antes de cambiar de modo. Se mantiene el modo actual.'
+          : 'Finish or cancel the upload or excerpt preparation before switching modes. Your current mode is kept.'
+      : uiLocale === 'fr' ? 'Impossible d’enregistrer les références et les réglages dans cette session. Le mode et la source actuels sont conservés. Vérifiez le stockage du navigateur, puis réessayez.'
+        : uiLocale === 'es' ? 'No se pudieron guardar las referencias y los ajustes en esta sesión. Se mantienen el modo y la fuente actuales. Comprueba el almacenamiento del navegador y vuelve a intentarlo.'
+          : 'Could not save references and settings in this session. Your current mode and source are kept. Check browser storage and try again.'),
   });
 
   const klingO3DisabledEngineReasons = useMemo(
@@ -222,6 +230,15 @@ export function useWorkspaceEngineModeState({
     }
   }, [activeMode, setShotType, shotType, supportsKlingV3Controls]);
 
+  const beforeApplyPreparedForm = useCallback((prepared: FormState) => {
+    const nextEngine = engines.find(engine => engine.id === prepared.engineId);
+    if (!nextEngine) return false;
+    const target = resolveWorkspaceWorkflow({ engine: nextEngine, form: prepared, inputAssets: {}, klingElements: [] }).activeManualMode;
+    // Model review applies all prepared fields together after this guard. Capture
+    // the departing source without changing any current setter or its scenario.
+    return Boolean(prepareModeAssets(target, nextEngine, false));
+  }, [engines, prepareModeAssets]);
+
   const applyPreparedForm = useCallback((prepared: FormState) => {
     requestedEngineOverrideIdRef.current = null;
     requestedEngineOverrideTokenRef.current = null;
@@ -241,13 +258,14 @@ export function useWorkspaceEngineModeState({
       }
       const createMode = getWorkspaceCreateMode(nextEngine);
       if (!createMode) { showNotice(uiLocale === 'fr' ? 'Créer est indisponible pour ce modèle.' : uiLocale === 'es' ? 'Crear no está disponible para este modelo.' : 'Create is unavailable for this model.'); return; }
-      prepareModeAssets(null);
+      const prepared = prepareModeAssets(null, nextEngine);
+      if (!prepared) return;
       requestedEngineOverrideIdRef.current = null;
       requestedEngineOverrideTokenRef.current = null;
       requestedModeOverrideRef.current = null;
       preserveStoredDraftRef.current = false;
       setForm((current) => {
-        const candidate = current ?? null;
+        const candidate = prepared.form ?? current ?? null;
         return coerceFormStateForEngineChange(nextEngine, createMode, candidate ? { ...candidate, operation: undefined } : null);
       });
     },
@@ -361,9 +379,14 @@ export function useWorkspaceEngineModeState({
       if (!selectedEngine) return;
       if (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
       const nextMode = getPreferredEngineMode(capabilityEngine, mode);
-      setForm((current) => coerceFormState(capabilityEngine, nextMode, current ? { ...current, mode: nextMode } : null));
+      const prepared = prepareModeAssets(nextMode);
+      if (!prepared) return;
+      setForm((current) => {
+        const candidate = prepared.form ?? current;
+        return coerceFormState(capabilityEngine, nextMode, candidate ? { ...candidate, mode: nextMode } : null);
+      });
     },
-    [selectedEngine, capabilityEngine, setForm, workspaceExecutableModes]
+    [selectedEngine, capabilityEngine, setForm, workspaceExecutableModes, prepareModeAssets]
   );
 
   const composerModeToggles = useMemo(
@@ -403,11 +426,15 @@ export function useWorkspaceEngineModeState({
       }
       if (mode && (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
-      const nextAssets = prepareModeAssets(mode);
+      const prepared = prepareModeAssets(mode);
+      if (!prepared) return;
       const nextMode = mode ?? resolveWorkspaceWorkflow({ engine: base, form: form ? { ...form, mode: 't2v', operation: undefined } : null,
-        inputAssets: nextAssets, klingElements }).implicitMode;
-      setForm((current) => coerceFormState(base, nextMode, current ? { ...current, mode: nextMode,
-        ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null));
+        inputAssets: prepared.assets, klingElements }).implicitMode;
+      setForm((current) => {
+        const candidate = prepared.form ?? current;
+        return coerceFormState(base, nextMode, candidate ? { ...candidate, mode: nextMode,
+          ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null);
+      });
     },
     [implicitMode, inputAssets, referenceInputStatus.hasAudio, selectedEngine, capabilityEngine, setForm, showNotice, workflowCopy, workspaceExecutableModes, engines, isUnifiedKlingO3, prepareModeAssets, form, klingElements]
   );
@@ -455,6 +482,7 @@ export function useWorkspaceEngineModeState({
     composerWorkflowNotice,
     handleEngineChange,
     applyPreparedForm,
+    beforeApplyPreparedForm,
     handleModeChange,
     handleComposerModeToggle,
   };

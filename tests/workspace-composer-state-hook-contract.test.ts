@@ -67,3 +67,16 @@ test('workspace composer mode and settings state is owned by a route-local hook'
   assert.match(projectionSource, /getUnifiedHappyHorseMode/);
   assert.match(projectionSource, /resolveMultimodalReferenceMode/);
 });
+
+
+test('workflow source parking owns private storage and guards the real model picker before applying setters', () => {
+  const root = 'frontend/app/(core)/(workspace)/app';
+  const source = fs.readFileSync(`${root}/_hooks/useWorkspaceSourceModeAssets.ts`, 'utf8');
+  const engine = fs.readFileSync(`${root}/_hooks/useWorkspaceEngineModeState.ts`, 'utf8');
+  const ready = fs.readFileSync(`${root}/_components/WorkspaceAppReadyView.tsx`, 'utf8');
+  assert.match(source, /readParkedSources/);
+  assert.match(source, /writeParkedSources/);
+  assert.doesNotMatch(source, /sessionStorage/);
+  assert.match(engine, /useWorkspaceSourceModeAssets/);
+  assert.match(ready, /beforeApplyPreparedForm: composer.beforeApplyPreparedForm/);
+});
