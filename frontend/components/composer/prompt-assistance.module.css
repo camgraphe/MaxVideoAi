@@ -12,7 +12,7 @@
 .conversationStage { height: clamp(240px, 25svh, 280px); display: flex; flex-direction: column; gap: 0; min-width: 0; }
 .transcript { flex: 1; min-height: 64px; overflow-y: auto; scrollbar-width: thin; padding: 6px 16px 12px; overscroll-behavior: contain; font-size: 14px; line-height: 1.65; }
 .assistant { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 0 16px; font-size: 12px; }
-.assistantIdentity { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.assistantIdentity { display: flex; flex: 1; align-items: center; gap: 7px; min-width: 0; }
 .assistantIdentity > svg, .assistantIdentity > strong { flex-shrink: 0; }
 .assistantModel { color: var(--text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reasoningControl { flex-shrink: 0; margin-left: -6px; }
@@ -141,12 +141,21 @@
 .liveFeedback span { flex: 1 1 18rem; }
 .liveFeedback button { flex: none; text-decoration: underline; text-underline-offset: .2em; }
 
-.root .miloTrigger{display:inline-flex;align-items:center;gap:7px;min-width:0;min-height:36px;padding:0 5px;border:0;border-radius:6px;background:transparent;color:var(--text-primary);font-size:12px}.miloTrigger strong{font-weight:600}.miloTrigger span{color:var(--text-muted)}.root .miloTrigger:hover{background:var(--surface-2)}.root .miloTrigger:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
-
+.root .miloTrigger{display:inline-flex;flex-shrink:0;align-items:center;gap:7px;min-width:0;min-height:36px;padding:0 5px;border:0;border-radius:6px;background:transparent;color:var(--text-primary);font-size:12px}.miloTrigger strong{font-weight:600}.miloTrigger span{color:var(--text-muted)}.root .miloTrigger:hover{background:var(--surface-2)}.root .miloTrigger:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
+/* Reserve only the longest level label; loading stays in the existing identity row. */
+.miloLevel { display: inline-grid; white-space: nowrap; }
+.miloLevel::before { content: 'Standard'; visibility: hidden; pointer-events: none; grid-area: 1 / 1; }
+.miloLevel > span { grid-area: 1 / 1; }
 .assistanceActions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .helpLink { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 32px; color: var(--text-muted); border-radius: 6px; }
 .helpLink:hover { color: var(--text); }
 .helpLink:focus-visible { outline: 1px solid var(--text-muted); outline-offset: 2px; }
+@media (max-width: 360px) {
+  .assistant { padding-inline: 12px; }
+  .assistanceActions { gap: 6px; }
+  .root .miloTrigger { gap: 4px; padding-inline: 3px; }
+  .miloTrigger > svg:last-child { display: none; }
+}
 
 /* Keep ordinary review geometry; settings review needs room for the diff and editable text. */
 .conversationStage.reviewStage { height: clamp(400px, 55svh, 600px); }
