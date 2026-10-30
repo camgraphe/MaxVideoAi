@@ -25,6 +25,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const transcript = useRef<HTMLDivElement>(null);
+  const proposalEditor = useRef<HTMLTextAreaElement>(null);
   const ownInput = useRef<HTMLTextAreaElement>(null);
   const input = messageRef ?? ownInput;
   const proposalId = useId(), messageId = useId();
@@ -35,6 +36,9 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     if (transcript.current) transcript.current.scrollTop = transcript.current.scrollHeight;
     if (messages.at(-1)?.role === 'assistant') { setExpanded(false); input.current?.focus({ preventScroll: true }); }
   }, [messages, input]);
+  useEffect(() => {
+    if (expanded) proposalEditor.current?.focus({ preventScroll: true });
+  }, [expanded]);
   const canSend = Boolean(message.trim()) && !pending && !blocked;
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
@@ -50,7 +54,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         {pending ? <p role="status">{copy.pending}</p> : null}
       </div>
       {expanded && proposal ? <div id={proposalId} className={styles.proposalBody} data-assistance-body>
-        <label className="sr-only" htmlFor={`${proposalId}-text`}>{copy.edit}</label><textarea id={`${proposalId}-text`} data-assistance-editor className={styles.editor} value={proposal.text} onChange={event => onProposalTextChange(event.target.value)} />
+        <label className="sr-only" htmlFor={`${proposalId}-text`}>{copy.edit}</label><textarea ref={proposalEditor} id={`${proposalId}-text`} data-assistance-editor className={styles.editor} value={proposal.text} onChange={event => onProposalTextChange(event.target.value)} />
         <div className={styles.copyRow}><span>{maxLength ? `${proposal.text.length} / ${maxLength}` : null}</span><button type="button" onClick={onCopy}>{copy.copy}</button></div>
       </div> : null}
       {proposal ? <section className={styles.proposal} data-assistance-proposal aria-label={copy[proposal.target]}>

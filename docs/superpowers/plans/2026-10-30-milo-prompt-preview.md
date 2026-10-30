@@ -27,7 +27,7 @@ expanded review state, editor and guarded Apply callback.
   and assert stable height, ellipsis and review/apply behavior; observe failure.
 - [x] Update `PromptAssistancePanel.client.tsx`, `prompt-assistance.module.css`
   and `prompt-assistance-copy.ts`. Update two existing Review locators.
-- [ ] Run focused DOM/browser coverage, TypeScript, lint and public exposure.
+- [x] Run focused DOM/browser coverage, TypeScript, lint and public exposure.
   Inspect desktop/mobile screenshots and review the diff.
 - [ ] Commit and open a separate follow-up PR. Incorporate #563 and current main
   before delivery and follow the repository's GitHub/Vercel checks.
@@ -41,3 +41,7 @@ expanded review state, editor and guarded Apply callback.
   unchanged review geometry, no generation, and no browser runtime errors.
 - TypeScript and public exposure pass. ESLint: zero errors, seven unrelated
   existing warnings. Browser plugin absent; used repository Playwright fixtures.
+- Independent review found one keyboard-focus issue when the excerpt unmounted.
+  Its regression failed before the fix; review now focuses the editor without
+  scrolling. The 12-test suite and TypeScript pass after the fix.
+- Follow-up PR: #564. Delivery is held behind #563 and required Quality CI.
