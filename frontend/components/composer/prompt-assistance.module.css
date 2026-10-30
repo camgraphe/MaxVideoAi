@@ -80,6 +80,9 @@
 .manualSurface textarea:focus-visible { outline: none; box-shadow: none; }
 .root :global([data-compact-references]) { display: contents; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command) { flex-direction: row; min-width: 0; min-height: 36px; gap: 6px; padding: 0 9px; border-radius: 7px; font-size: 12px; }
+/* Wrap the compact controls before squeezing source words around the required badge. */
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-commands > .app-reference-command) { min-width: min-content; }
+.root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-commands > .app-reference-command .app-reference-command-label) { overflow-wrap: normal; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-command-media) { width: 17px; height: 17px; }
 .root[data-prompt-assistance-preview] :global([data-compact-references] .app-reference-add-compact) { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; flex-shrink: 0; padding: 0 3px; font-size: 12px; font-weight: 450; color: var(--text-secondary); border: 0; background: transparent; }
 .root[data-prompt-assistance-preview] :global(.app-reference-add-compact svg) { width: 22px; height: 22px; flex-shrink: 0; color: var(--text-primary); }
