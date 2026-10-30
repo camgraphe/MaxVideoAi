@@ -30,9 +30,25 @@ The first connection was verified offline. The subsequent [2026-10-29 live check
 
 - `Composer.tsx` and the route adapters supply the selected model, operation, current text, scalar settings and exact owned reference identities. The manual draft, quotes and Generate remain with their existing owners.
 - `PromptAssistanceComposer.client.tsx` handles writing tabs, Milo level and existing credits dialog. `PromptAssistancePanel.client.tsx` only presents the conversation, suggestion and reply field.
-- `usePromptAssistancePreview.ts` delegates to the live transport when enabled. Its existing reducer captures a monotonic revision from the complete draft/settings/reference fingerprint. Changing model or mode keeps the conversation and invalidates old suggestions. Account changes clear local conversation state. Apply/Undo cannot overwrite a later revision.
-- `usePromptAssistanceTransport.ts` sends one authenticated request identity and stores only its session/request IDs in account/workspace-scoped sessionStorage. A reload can recover the outstanding response, which is always stale for application. The visible chat is otherwise local to the mounted workspace; after reload the next message starts a new session, so hidden old history is never silently supplied.
-- Completed requests remain saved on the server. Within a session, the last eight completed exchanges accompany the current draft. New messages are limited to 100 per session, with a 24-hour session expiry. Usage evidence and replay identities are not deleted at expiry. A retention/deletion policy is still required before a broader history product.
+- `usePromptAssistancePreview.ts` delegates to the live transport when enabled. Its reducer captures a monotonic revision from the complete draft/settings/reference fingerprint. Context changes invalidate old suggestions; visible workflows have distinct chats. Account changes clear local conversation state. Apply/Undo cannot overwrite a later revision.
+- `usePromptAssistanceTransport.ts` owns authenticated request identities and same-tab chat restoration. It stores only the active IDs, unsent message and locally edited proposal in account/workflow-scoped sessionStorage; the authenticated session snapshot restores completed conversation. See [Milo workflow chats](milo-workflow-chats.md) for pending recovery, stale-application guards and New chat behavior.
+- Completed requests remain saved on the server. Within a session, the last eight completed exchanges accompany the current draft. New messages are limited to 100 per session, with a 24-hour window renewed by completion. Session expiry does not delete usage evidence or replay identities; internal review retention is separate from the active chat.
+
+The latest message and relevant conversation establish whether a request starts an
+independent creative brief or revises the same idea. Existing editor text and an
+unapplied proposal are optional creative context, not permission to inherit their
+subject into a new brief. This applies even when `activeSuggestion` is present.
+For a clear follow-up, that suggestion remains the usual working text; an explicit
+editor revision uses `currentDraft.text`, and natural same-chat continuation does
+not require a special revision phrase. A broad style-only brief gets one useful
+question or a fresh idea without silently borrowing the old scene. New chat still
+keeps the manual editor, references and settings physically intact.
+
+`prompt-assistance-conversation-contract` checks that this intent policy reaches
+every assistance level and preserves separated message/editor/proposal/history
+inputs and authoritative settings. Its contrasting synthetic cases are reusable
+for separately authorized output evaluation; offline policy and payload checks do
+not establish model-output quality. No provider calls are part of these tests.
 
 The approved compact reference/footer, visible generator settings, player and galleries retain their existing owners. Review opens the complete suggestion inside the bounded conversation area; Use prompt/Use script stays outside its scroll region. Send never invokes Generate. Multi-prompt scene editing remains manual. Audio voice updates only `script`; music/song style, ambience and effects update only `prompt`. Lyrics and Soundtrack a video are outside this increment.
 
