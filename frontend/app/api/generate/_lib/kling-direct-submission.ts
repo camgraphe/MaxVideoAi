@@ -1,6 +1,8 @@
 import type { GeneratePayload, GenerateResult } from '@/lib/fal';
 import { isKlingV4EngineId } from '@/lib/kling-v4';
 import type { Mode, PricingSnapshot, ProviderClientErrorPolicy } from '@/types/engines';
+import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
+import { persistDirectProviderAcceptance } from './direct-provider-acceptance';
 import { query } from '@/lib/db';
 import { getKlingDirectClient } from '@/server/video-providers/kling-direct/client';
 import {
@@ -28,6 +30,7 @@ import { rollbackPendingPayment } from './payment-rollback';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { createProviderJobTracker } from './provider-job-tracker';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
+import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -327,6 +330,7 @@ export async function submitKlingDirectGenerateTask(params: {
     queryFn,
   });
 
+  let acceptedTask: NormalizedVideoProviderTask;
   try {
     if ((params.falPayload.elements?.length ?? 0) > 0 && !params.elementRegistrationEnabled) {
       throw new KlingDirectError('Kling direct subject reference registration is disabled.', {
@@ -363,59 +367,7 @@ export async function submitKlingDirectGenerateTask(params: {
       cfgScale: typeof params.cfgScale === 'number' ? params.cfgScale : null,
       extraInputValues: params.falPayload.extraInputValues ?? null,
     });
-    const task = await client.createTask(payload);
-    await markProviderAttemptAccepted({
-      attemptId: klingAttempt.id,
-      providerJobId: task.providerJobId,
-      responseSnapshot: task.raw,
-      queryFn,
-    });
-    const status = task.status === 'running' ? 'running' : 'queued';
-    const progress = task.status === 'running' ? 30 : 10;
-    await queryFn(
-      `UPDATE app_jobs
-          SET status = $2,
-              progress = $3,
-              message = $4,
-              provider = 'kling_direct',
-              provider_job_id = $5,
-              provisional = FALSE,
-              updated_at = NOW()
-        WHERE job_id = $1`,
-      [params.jobId, status, progress, 'Render submitted.', task.providerJobId]
-    );
-    params.logMetricFn('accepted', {
-      jobId: params.jobId,
-      meta: {
-        provider: 'kling_direct',
-        providerJobId: task.providerJobId,
-        providerModel: route.providerModel,
-      },
-    });
-    return {
-      ok: true,
-      kind: 'accepted',
-      body: {
-        ok: true,
-        jobId: params.jobId,
-        videoUrl: null,
-        video: null,
-        thumbUrl: params.placeholderThumb,
-        status,
-        progress,
-        pricing: params.pricing,
-        paymentStatus: params.paymentStatus,
-        provider: 'kling_direct',
-        providerJobId: task.providerJobId,
-        batchId: params.batchId,
-        groupId: params.groupId,
-        iterationIndex: params.iterationIndex,
-        iterationCount: params.iterationCount,
-        renderIds: params.renderIds,
-        heroRenderId: params.heroRenderId,
-        localKey: params.localKey,
-      },
-    };
+    acceptedTask = await client.createTask(payload);
   } catch (error) {
     const normalized = classifyKlingDirectError(error);
     const fallbackEligible =
@@ -521,6 +473,9 @@ export async function submitKlingDirectGenerateTask(params: {
       logMetricFn: params.logMetricFn,
       clientErrorPolicy: params.clientErrorPolicy,
     });
+    const recovered = await reconcileFalFallbackTerminalResponse({ jobId: params.jobId, result: falSubmission,
+      attemptId: falAttempt.id, acceptedProviderJobId: falTracker.getLastProviderJobId(), queryFn });
+    if (recovered) return recovered;
     const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
     if (falProviderJobId) {
       await markProviderAttemptAccepted({
@@ -556,4 +511,33 @@ export async function submitKlingDirectGenerateTask(params: {
       generationResult: falSubmission.generationResult,
     };
   }
+  const status = acceptedTask.status === 'running' ? 'running' : 'queued';
+  const progress = acceptedTask.status === 'running' ? 30 : 10;
+  return { ok: true, kind: 'accepted', body: await persistDirectProviderAcceptance({
+    jobId: params.jobId, provider: 'kling_direct', providerJobId: acceptedTask.providerJobId,
+    attemptId: klingAttempt.id, responseSnapshot: acceptedTask.raw, status, progress,
+    localKey: params.localKey, queryFn,
+    logAccepted: () => params.logMetricFn('accepted', { jobId: params.jobId,
+      meta: { provider: 'kling_direct', providerJobId: acceptedTask.providerJobId, providerModel: route.providerModel } }),
+    acceptedBody: {
+      ok: true,
+      jobId: params.jobId,
+      videoUrl: null,
+      video: null,
+      thumbUrl: params.placeholderThumb,
+      status,
+      progress,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      provider: 'kling_direct',
+      providerJobId: acceptedTask.providerJobId,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+    },
+  }) };
 }

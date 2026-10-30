@@ -199,3 +199,40 @@ token and for `job_` / `tool_upscale_` IDs. UUID jobs used by canonical
 MCP/Studio/Toolbox submissions are outside this query-correlation fallback.
 Do not describe enqueue mode as universal recovery of lost acknowledgements or
 widen webhook correlation without its own authorization and ownership tests.
+
+## Direct acknowledgements and fallback outcome projection (30 October 2026)
+
+Kling direct and Google Vertex Veo separate the validated creation acknowledgement
+from local persistence. After that acknowledgement, an attempt-save, job-save,
+readback or diagnostic failure is not a provider rejection and must not enter the
+pre-acknowledgement fallback or payment-rollback policy. The existing rules for
+actual failures before an acknowledgement remain with each provider owner.
+
+`direct-provider-acceptance.ts` owns their post-acknowledgement persistence and
+response. Attempt and job writes are independent so a failed attempt update does
+not prevent saving the identity on the job. The job write preserves terminal
+states and an already-bound different provider identity. A separate durable read
+forms the response when available, including a winning completion or failure and
+its actual payment state. These direct accepted responses return before the
+common final-generation persistence; they cannot rely on that later owner to
+repair their state or response.
+
+If readback is also unavailable, retain the validated acknowledgement in the
+deferred response without inventing a persisted payment outcome. This prevents a
+new provider request or local refund, but does not guarantee automatic recovery:
+the direct polls require the provider ID in `app_jobs`. An ID saved only in
+`provider_attempts` or returned to the client is evidence for reconciliation, not
+an automatic poll repair. No background identity discovery or historical repair
+is introduced here. Alibaba and Luma direct persistence remain separate owners.
+
+`fal-fallback-outcome.ts` handles durable terminal responses before the four
+fallback wrappers interpret their internal `ok: false` discriminant as a failure.
+An HTTP 200 response with a completed job is not a failed submission. The response
+must belong to the requested job; a different job's body cannot supply its output,
+payment state or provider ID. Preserve the known local acknowledgement rather
+than adopting an ID from a concurrent winner. Terminal attempt projection uses
+the existing exact job/provider/request binding. Without that binding, preserve
+the winning job response without claiming that the current attempt produced it.
+The journal remains separate from job settlement: this projection never submits,
+reserves or refunds payment, and a journal-write failure cannot replace the
+durable job outcome with a fabricated provider failure.

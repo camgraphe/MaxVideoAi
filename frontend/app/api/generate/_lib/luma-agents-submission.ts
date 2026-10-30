@@ -28,6 +28,7 @@ import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-m
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
+import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -303,6 +304,9 @@ async function submitFalFromLumaAgents(params: {
     logMetricFn: params.logMetricFn,
     clientErrorPolicy: params.clientErrorPolicy,
   });
+  const recovered = await reconcileFalFallbackTerminalResponse({ jobId: params.jobId, result: falSubmission,
+    attemptId: falAttempt?.id ?? null, acceptedProviderJobId: falTracker.getLastProviderJobId(), queryFn: params.queryFn });
+  if (recovered) return recovered;
   const falProviderJobId = falProviderJobIdFromResult(falSubmission, falTracker.getLastProviderJobId);
   if (falAttempt && falProviderJobId) {
     await markProviderAttemptAccepted({

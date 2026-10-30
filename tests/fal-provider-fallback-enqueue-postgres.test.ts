@@ -25,7 +25,11 @@ const providers = [
   { key: 'veo', engineId: 'veo-3-1', directProvider: 'google_vertex_veo_direct' },
   { key: 'kling', engineId: 'kling-3-turbo-standard', directProvider: 'kling_direct' },
 ] as const;
-const scenarios = ['http503', 'network', 'network_status403', 'missing_id', 'malformed_json', 'accepted', 'tracking_failure', 'completed_winner'] as const;
+const scenarios = ['http503', 'network', 'network_status403', 'missing_id', 'malformed_json', 'accepted', 'tracking_failure',
+  'completed_winner', 'failed_winner', 'matched_completed', 'matched_failed', 'unmatched_completed',
+  'other_provider_completed', 'foreign_job_terminal', 'foreign_job_storage_outage', 'terminal_ledger_outage'] as const;
+const completedCases = new Set<string>(['completed_winner', 'matched_completed', 'unmatched_completed', 'other_provider_completed', 'terminal_ledger_outage']);
+const failedCases = new Set<string>(['failed_winner', 'matched_failed']);
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { 'content-type': 'application/json' },
 });
@@ -60,6 +64,14 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
         let fallbackCalls = 0;
         let rollbacks = 0;
         let trackingFailures = 0;
+        let terminalApplied = false;
+        const execute: typeof queryFn = async (sql, values) => {
+          if (scenario === 'terminal_ledger_outage' && /UPDATE provider_attempts pa/.test(sql)) {
+            throw new Error('Ancillary terminal projection unavailable');
+          }
+          if (scenario === 'foreign_job_storage_outage' && /SELECT \* FROM app_jobs/.test(sql)) throw new Error('Own job read unavailable');
+          return queryFn(sql, values);
+        };
         await db.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,engine_id,engine_label,status,progress,
           provider,payment_status,final_price_cents,currency,pricing_snapshot,provisional)
           VALUES($1,'owner','video',$2,'Offline fixture','running',10,$3,'paid_wallet',125,'USD','{}',TRUE)`,
@@ -78,11 +90,15 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
             : { video_url: 'https://cdn.maxvideoai.com/offline-result.mp4' });
           posts++;
           if (posts > 1) return response({ request_id: acceptedId }, 202);
-          if (scenario === 'completed_winner') {
-            await db.pool.query(`UPDATE app_jobs SET status='completed',progress=100,
-              video_url='https://cdn.maxvideoai.com/concurrent-winner.mp4',message=NULL WHERE job_id=$1`, [jobId]);
+          if (scenario === 'completed_winner' || scenario === 'failed_winner') {
+            await db.pool.query(`UPDATE app_jobs SET status=$2,progress=100,video_url=$3,payment_status=$4,message=NULL WHERE job_id=$1`,
+            [jobId, scenario === 'failed_winner' ? 'failed' : 'completed',
+              scenario === 'failed_winner' ? null : 'https://cdn.maxvideoai.com/concurrent-winner.mp4',
+              scenario === 'failed_winner' ? 'refunded_wallet' : 'paid_wallet']);
+            if (scenario === 'failed_winner') await db.pool.query("INSERT INTO app_receipts(user_id,type,job_id,amount_cents,currency) VALUES('owner','refund',$1,125,'USD')", [jobId]);
           }
-          if (scenario === 'http503' || scenario === 'completed_winner') return response({ detail: 'Temporarily unavailable' }, 503);
+          if (scenario === 'http503' || scenario === 'completed_winner' || scenario === 'failed_winner'
+            || scenario === 'foreign_job_terminal' || scenario === 'foreign_job_storage_outage') return response({ detail: 'Temporarily unavailable' }, 503);
           if (scenario === 'network' || scenario === 'network_status403') {
             throw Object.assign(new Error('Ambiguous network response'), scenario === 'network_status403' ? { status: 403 } : {});
           }
@@ -100,16 +116,32 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
           fallbackCalls++;
           assert.equal(params.jobId, jobId);
           assert.equal(params.falPayload.jobId, jobId);
-          return submitFalGenerateTask({ ...params,
+          const result = await submitFalGenerateTask({ ...params,
             persistProviderJobId: async (...args) => {
               await params.persistProviderJobId(...args);
+              if (!terminalApplied && (scenario === 'matched_completed' || scenario === 'matched_failed'
+                || scenario === 'unmatched_completed' || scenario === 'other_provider_completed' || scenario === 'terminal_ledger_outage')) {
+                terminalApplied = true;
+                await db.pool.query(`UPDATE app_jobs SET status=$2,provider=$3,provider_job_id=$4,progress=100,
+                  video_url=$5,payment_status=$6,message=NULL WHERE job_id=$1`, [jobId,
+                  scenario === 'matched_failed' ? 'failed' : 'completed',
+                  scenario === 'other_provider_completed' ? provider.directProvider : 'fal',
+                  scenario === 'unmatched_completed' || scenario === 'other_provider_completed' ? `winner-${acceptedId}` : acceptedId,
+                  scenario === 'matched_failed' ? null : 'https://cdn.maxvideoai.com/concurrent-winner.mp4',
+                  scenario === 'matched_failed' ? 'refunded_wallet' : 'paid_wallet']);
+                if (scenario === 'matched_failed') await db.pool.query("INSERT INTO app_receipts(user_id,type,job_id,amount_cents,currency) VALUES('owner','refund',$1,125,'USD')", [jobId]);
+                throw Object.assign(new Error('Local acknowledgement projection unavailable'), { status: 422 });
+              }
               if (scenario === 'tracking_failure' && trackingFailures++ === 0) {
                 throw Object.assign(new Error('Local accepted-identity persistence outage'), { status: 422 });
               }
             },
-            deps: { queryFn, generateVideoFn: generateVideo, rollbackPendingPaymentFn,
+            deps: { queryFn: execute, generateVideoFn: generateVideo, rollbackPendingPaymentFn,
               withFalTimeoutFn: promise => promise },
           });
+          return scenario === 'foreign_job_terminal' || scenario === 'foreign_job_storage_outage' ? { ok: false, status: 200, body: { ok: true,
+            jobId: 'another-private-job', provider: 'fal', providerJobId: 'foreign-winner', status: 'completed',
+            videoUrl: 'https://cdn.maxvideoai.com/foreign.mp4' } } : result;
         };
         const durationSec = provider.key === 'veo' ? 8 : 5;
         const common = {
@@ -127,7 +159,7 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
           isLumaRay2: false, batchId: null, groupId: null, iterationIndex: null, iterationCount: null,
           renderIds: null, heroRenderId: null, localKey: null, logMetricFn() {},
         };
-        const deps = { queryFn, rollbackPendingPaymentFn, submitFalGenerateTaskFn };
+        const deps = { queryFn: execute, rollbackPendingPaymentFn, submitFalGenerateTaskFn };
         const directRejection = async () => {
           directCalls++;
           if (provider.key === 'alibaba') throw new AlibabaModelStudioError('Rate limited', {
@@ -155,8 +187,8 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
         assert.equal(fallbackCalls, 1, 'no second fallback or provider is invoked');
         assert.deepEqual(methods, ['POST'], 'fallback rendering must not enter SDK subscribe or retry its queue POST');
         assert.equal(rollbacks, 0);
-        const attempts = await queryFn<{ provider: string; status: string; provider_job_id: string | null }>(
-          `SELECT a.provider,a.status,a.provider_job_id FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id
+        const attempts = await queryFn<{ provider: string; status: string; provider_job_id: string | null; error_class: string | null }>(
+          `SELECT a.provider,a.status,a.provider_job_id,a.error_class FROM provider_attempts a JOIN app_jobs j ON j.id=a.job_id
            WHERE j.job_id=$1 ORDER BY a.attempt_index`, [jobId]);
         assert.equal(attempts.length, 2);
         assert.equal(attempts[0].provider, provider.directProvider);
@@ -179,29 +211,43 @@ test('every direct-video Fal fallback uses one queue POST and preserves the paid
         } else {
           assert.equal(result.ok, false);
           if (result.ok) assert.fail('an ambiguous submission or concurrent winner should use the durable response');
-          assert.equal(result.status, scenario === 'completed_winner' ? 200 : 202);
+          assert.equal(result.status, completedCases.has(scenario) || failedCases.has(scenario) ? 200 : 202);
           assert.equal(result.body.jobId, jobId);
-          assert.equal(result.body.status, scenario === 'completed_winner' ? 'completed' : 'running');
-          if (scenario === 'completed_winner') assert.equal(result.body.videoUrl, 'https://cdn.maxvideoai.com/concurrent-winner.mp4');
+          if (scenario === 'foreign_job_storage_outage') assert.equal(Object.hasOwn(result.body, 'paymentStatus'), false);
+          assert.equal(result.body.status, completedCases.has(scenario) ? 'completed' : failedCases.has(scenario) ? 'failed' : 'running');
+          if (completedCases.has(scenario)) assert.equal(result.body.videoUrl, 'https://cdn.maxvideoai.com/concurrent-winner.mp4');
           if (scenario === 'tracking_failure') {
             assert.equal(result.body.providerJobId, acceptedId);
             assert.equal(attempts[1].provider_job_id, acceptedId);
             assert.equal(attempts[1].status, 'accepted');
-          } else if (scenario !== 'completed_winner') {
+          } else if (scenario === 'matched_completed' || scenario === 'matched_failed') {
+            assert.equal(attempts[1].provider_job_id, acceptedId);
+            assert.equal(attempts[1].status, scenario === 'matched_completed' ? 'completed' : 'failed');
+            assert.equal(attempts[1].error_class, null, 'do not invent a Fal rejection diagnostic for a durable winner');
+          } else if (scenario === 'unmatched_completed' || scenario === 'other_provider_completed' || scenario === 'terminal_ledger_outage') {
+            assert.equal(attempts[1].provider_job_id, acceptedId, 'only this attempt ACK is its identity');
+            assert.equal(attempts[1].status, 'accepted', 'another ID/provider winner or ledger outage cannot settle this attempt');
+            assert.equal(attempts[1].error_class, null);
+          } else {
             assert.equal(attempts[1].status, 'fallback_started', 'uncertainty is not a definitive Fal failure');
+            assert.equal(attempts[1].provider_job_id, null, 'a missing local ACK cannot adopt the winner identity');
+            assert.equal(attempts[1].error_class, null);
           }
         }
         const stored = await readPersistedVideoJob(jobId, queryFn);
-        assert.equal(stored.payment_status, 'paid_wallet');
-        assert.equal(stored.provider, 'fal');
-        assert.equal(stored.status, scenario === 'completed_winner' ? 'completed' : scenario === 'accepted' ? 'queued' : 'running');
-        assert.equal(stored.provider_job_id, scenario === 'accepted' || scenario === 'tracking_failure' ? acceptedId : null);
+        assert.equal(stored.payment_status, failedCases.has(scenario) ? 'refunded_wallet' : 'paid_wallet');
+        assert.equal(stored.provider, scenario === 'other_provider_completed' ? provider.directProvider : 'fal');
+        assert.equal(stored.status, completedCases.has(scenario) ? 'completed' : failedCases.has(scenario) ? 'failed' : scenario === 'accepted' ? 'queued' : 'running');
+        assert.equal(stored.provider_job_id, scenario === 'unmatched_completed' || scenario === 'other_provider_completed'
+          ? `winner-${acceptedId}` : scenario === 'accepted' || scenario === 'tracking_failure' || scenario.startsWith('matched_')
+            || scenario === 'terminal_ledger_outage' ? acceptedId : null);
         const recovered = buildPersistedVideoJobResponse(await readPersistedVideoJob(jobId, queryFn));
         assert.equal(recovered.jobId, jobId);
         assert.equal(recovered.status, stored.status);
-        assert.equal(recovered.paymentStatus, 'paid_wallet');
+        assert.equal(recovered.paymentStatus, stored.payment_status);
         assert.deepEqual(await queryFn("SELECT type,amount_cents FROM app_receipts WHERE job_id=$1 ORDER BY id", [jobId]),
-          [{ type: 'charge', amount_cents: 125 }]);
+          failedCases.has(scenario) ? [{ type: 'charge', amount_cents: 125 }, { type: 'refund', amount_cents: 125 }]
+            : [{ type: 'charge', amount_cents: 125 }]);
         assert.deepEqual(methods, ['POST'], 'reading the durable job must not submit anything');
       });
     }

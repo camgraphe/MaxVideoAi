@@ -27,6 +27,7 @@ import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-m
 import { createProviderJobTracker } from './provider-job-tracker';
 import { rollbackPendingPayment } from './payment-rollback';
 import { isDeferredFalSubmission, submitFalGenerateTask, type FalGenerateSubmissionResult } from './fal-submission';
+import { reconcileFalFallbackTerminalResponse } from './fal-fallback-outcome';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 
@@ -253,6 +254,9 @@ async function submitFalFallback(params: {
     logMetricFn: params.logMetricFn,
     clientErrorPolicy: params.clientErrorPolicy,
   });
+  const recovered = await reconcileFalFallbackTerminalResponse({ jobId: params.jobId, result,
+    attemptId: attempt.id, acceptedProviderJobId: tracker.getLastProviderJobId(), queryFn: params.queryFn });
+  if (recovered) return recovered;
   const providerJobId = falProviderJobId(result, tracker.getLastProviderJobId);
   if (providerJobId) {
     await markProviderAttemptAccepted({
