@@ -365,7 +365,7 @@ export function SelectMenu({
               role="listbox"
               aria-labelledby={triggerId}
               className={clsx(
-                'min-h-0 space-y-1 overflow-y-auto overflow-x-hidden text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
+                'min-h-0 space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
                 searchable ? 'max-h-56 pr-1' : 'max-h-60'
               )}
             >
