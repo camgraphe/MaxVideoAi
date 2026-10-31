@@ -22,6 +22,12 @@ The provider receives the latest eight completed exchanges before the current me
 
 Proposed-text language is chosen separately. Visual generation instructions default to English, including revisions of drafts in another language. Literal dialogue, captions, signage and names retain the requested wording/language. Voice scripts and lyrics retain their intended spoken/sung language. An explicit alternative instruction language is honored where the generation model supports it; model-specific English-only requirements remain authoritative. These instructions are shared across Lite, Standard and Max; underlying model names stay out of product copy.
 
+## Creative constraints
+
+Milo should preserve each negative constraint's intended scope. A specific exclusion must not become a ban on related content, and an element that is unnecessary is not automatically forbidden. For example, an image that communicates without a slogan does not imply excluding every other visible word. Explicit exclusions and supported setting constraints remain authoritative; unspecified creative details still allow reasonable choices.
+
+This policy belongs to the shared provider instructions for every assistance level. Request transport and destination decoding preserve the supplied context and valid proposed text without a keyword filter. Offline scope fixtures check that boundary and policy inclusion; they do not establish real-model semantic compliance.
+
 ## Verification, 2026-10-30
 
 The session and live PostgreSQL tests exercise real disposable PostgreSQL, ownership/scope fences, no-store reads, minimal snapshots, completion-only expiry, replay, failed/pending requests and the session cap. Chromium regressions cover mode/account switching, reload, edited suggestions, New chat, stale context, legacy recovery, failed recovery, a completed 100th request, read-only hydration and expired/legacy reference analysis recovery.
