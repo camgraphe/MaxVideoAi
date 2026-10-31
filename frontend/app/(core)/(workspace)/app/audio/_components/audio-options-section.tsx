@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   AudioLines,
   Check,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { UIIcon } from '@/components/ui/UIIcon';
+import { getMenuVerticalBounds, MENU_SCROLL_CUE_HEIGHT, MenuScrollCue, useMenuScrollCues } from '@/components/ui/MenuScrollCues';
 import {
   coerceAudioIntensity,
   coerceAudioLyria3Bpm,
@@ -326,17 +327,43 @@ function SeedAudioVoiceDropdown({
   options: AudioOption[];
   onChange: (next: AudioSeedAudioVoice) => void;
 }) {
-  const voiceOptions = options
+  const voiceOptions = useMemo(() => options
     .map((option) => {
       const voice = coerceSeedAudioVoice(String(option.value));
       return voice ? buildSeedAudioVoiceOption(voice, option.label) : null;
     })
-    .filter((option): option is NonNullable<typeof option> => Boolean(option));
+    .filter((option): option is NonNullable<typeof option> => Boolean(option)), [options]);
   const selectedVoice =
     voiceOptions.find((option) => option.value === value) ??
     buildSeedAudioVoiceOption(DEFAULT_SEED_AUDIO_VOICE, copy.controls.seedAudioVoices[DEFAULT_SEED_AUDIO_VOICE]);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDetailsElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const scrollCues = useMenuScrollCues(viewportRef, open, voiceOptions);
+  const [menuBounds, setMenuBounds] = useState<{ placement: 'top' | 'bottom'; maxHeight?: number }>({ placement: 'top' });
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const update = (event?: Event) => {
+      if (event?.type === 'scroll' && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      const anchor = dropdownRef.current, menu = menuRef.current, viewport = viewportRef.current;
+      if (!anchor || !menu || !viewport) return;
+      const cueHeight = scrollCues.overflow ? MENU_SCROLL_CUE_HEIGHT * 2 : 0;
+      const menuHeight = menu.offsetHeight;
+      const rowHeight = Math.max(44, ...Array.from(viewport.children, option => option.clientHeight));
+      const bounds = getMenuVerticalBounds(anchor.getBoundingClientRect(), window.innerHeight, menuHeight,
+        viewport.scrollHeight, menuHeight - viewport.clientHeight - cueHeight, 'top', rowHeight);
+      setMenuBounds(current => current.placement === bounds.placement && current.maxHeight === bounds.maxHeight ? current : bounds);
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
+  }, [open, scrollCues.overflow, voiceOptions.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -361,7 +388,12 @@ function SeedAudioVoiceDropdown({
         onToggle={(event) => setOpen(event.currentTarget.open)}
         className="group relative min-w-0"
       >
-        <summary className="inline-flex h-10 w-full min-w-[140px] cursor-pointer list-none items-center justify-between gap-2 rounded-full border border-border bg-surface px-3 py-0 text-[12px] font-medium text-text-primary shadow-none transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-surface dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-surface-hover">
+        <summary onClick={(event) => {
+          // Native onToggle arrives after an unmeasured frame. Keep the same
+          // summary activation, but open with its layout state before paint.
+          event.preventDefault();
+          setOpen(current => !current);
+        }} className="inline-flex h-10 w-full min-w-[140px] cursor-pointer list-none items-center justify-between gap-2 rounded-full border border-border bg-surface px-3 py-0 text-[12px] font-medium text-text-primary shadow-none transition hover:border-border-hover hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-surface dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-surface-hover">
           <span className="inline-flex min-w-0 flex-1 items-center gap-2">
             <UIIcon icon={Mic2} size={15} strokeWidth={1.8} />
             <span className="truncate">{selectedVoice.name}</span>
@@ -385,11 +417,14 @@ function SeedAudioVoiceDropdown({
           <ChevronDown className="h-4 w-4 shrink-0 text-text-muted transition group-open:rotate-180" aria-hidden />
         </summary>
         <div
+          ref={menuRef}
           role="listbox"
           aria-label={copy.controls.seedAudioVoice}
-          className="absolute bottom-full left-0 z-[80] mb-2 w-[min(520px,calc(100vw-2rem))] overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]"
+          className="absolute bottom-full left-0 z-[80] mb-2 flex w-[min(520px,calc(100vw-2rem))] flex-col overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]"
+          style={{ maxHeight: menuBounds.maxHeight, ...(menuBounds.placement === 'bottom' ? { bottom: 'auto', top: 'calc(100% + 8px)', marginBottom: 0 } : {}) }}
         >
-          <div className="max-h-[320px] space-y-1 overflow-y-auto overflow-x-hidden pr-1 text-[12px]">
+          <MenuScrollCue state={scrollCues} direction="up" />
+          <div ref={viewportRef} className="min-h-0 max-h-[320px] space-y-1 overflow-y-auto overflow-x-hidden pr-1 text-[12px]">
             {voiceOptions.map((option) => {
               const active = option.value === value;
               return (
@@ -449,6 +484,7 @@ function SeedAudioVoiceDropdown({
               );
             })}
           </div>
+          <MenuScrollCue state={scrollCues} direction="down" />
         </div>
       </details>
     </div>

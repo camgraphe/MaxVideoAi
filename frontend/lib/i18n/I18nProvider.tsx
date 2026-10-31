@@ -65,9 +65,14 @@ export function I18nProvider({ locale, dictionary, fallback, children }: I18nPro
 }
 
 export function useI18n() {
-  const context = useContext(I18nContext);
+  const context = useOptionalI18n();
   if (!context) {
     throw new Error('useI18n must be used within an I18nProvider');
   }
   return context;
+}
+
+/** Shared primitives can also render outside the localized application shell. */
+export function useOptionalI18n() {
+  return useContext(I18nContext);
 }
