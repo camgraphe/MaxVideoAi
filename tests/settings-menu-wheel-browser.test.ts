@@ -33,7 +33,8 @@ async function wheel(page: Page, viewport: Locator, deltaY: number, point?: {x:n
 
 async function prepare(page: Page, url: string, surface: string) {
   await page.goto(url+'/?surface='+surface+'&locale=en');
-  await page.evaluate(()=>{document.body.style.minHeight='3200px';document.querySelector('main')!.style.marginTop='850px';});
+  const main=page.locator('main');await main.waitFor({state:'visible'});
+  await main.evaluate(n=>{document.body.style.minHeight='3200px';n.style.marginTop='850px';});
   const trigger=surface==='voice'?page.locator('summary').first():page.locator('button[aria-haspopup="listbox"]').first();
   const rect=await trigger.boundingBox();assert.ok(rect);
   await page.evaluate(y=>scrollTo(0,y),rect.y-600);
