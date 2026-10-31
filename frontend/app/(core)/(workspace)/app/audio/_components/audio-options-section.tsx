@@ -424,7 +424,7 @@ function SeedAudioVoiceDropdown({
           style={{ maxHeight: menuBounds.maxHeight, ...(menuBounds.placement === 'bottom' ? { bottom: 'auto', top: 'calc(100% + 8px)', marginBottom: 0 } : {}) }}
         >
           <MenuScrollCue state={scrollCues} direction="up" />
-          <div ref={viewportRef} className="min-h-0 max-h-[320px] space-y-1 overflow-y-auto overflow-x-hidden pr-1 text-[12px]">
+          <div ref={viewportRef} className="min-h-0 max-h-[320px] space-y-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pr-1 text-[12px]">
             {voiceOptions.map((option) => {
               const active = option.value === value;
               return (
