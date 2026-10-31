@@ -111,12 +111,26 @@ export function SelectMenu({
     () => filteredOptions.findIndex((option) => String(option.value) === String(value)),
     [filteredOptions, value]
   );
+  const navigation = useRef<{ open: boolean; value: SelectOption['value']; query: string; values: SelectOption['value'][] } | null>(null);
 
   useEffect(() => {
+    const previous = navigation.current;
+    navigation.current = { open, value, query, values: filteredOptions.map(option => option.value) };
     if (!open) return;
-    const nextIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
-    setHighlightedIndex(nextIndex);
-  }, [filteredOptions, open, selectedFilteredIndex]);
+    const initial = selectedFilteredIndex >= 0 && !filteredOptions[selectedFilteredIndex]?.disabled
+      ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
+    setHighlightedIndex(current => {
+      if (!previous?.open || !Object.is(previous.value, value) || previous.query !== query) return initial;
+      if (current < 0 || current >= previous.values.length) return initial;
+      // Parents recreate rich labels/options during unrelated updates. Preserve
+      // the active value and do not turn that render into a scroll request.
+      const activeValue = previous.values[current];
+      const same = filteredOptions[current];
+      if (same && !same.disabled && Object.is(same.value, activeValue)) return current;
+      const moved = filteredOptions.findIndex(option => !option.disabled && Object.is(option.value, activeValue));
+      return moved >= 0 ? moved : initial;
+    });
+  }, [filteredOptions, open, query, selectedFilteredIndex, value]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -266,13 +280,6 @@ export function SelectMenu({
 
   useEffect(() => {
     if (!open) return;
-    if (!searchable) return;
-    const nextIndex = selectedFilteredIndex >= 0 ? selectedFilteredIndex : findFirstEnabled(filteredOptions);
-    setHighlightedIndex(nextIndex);
-  }, [filteredOptions, open, searchable, selectedFilteredIndex]);
-
-  useEffect(() => {
-    if (!open) return;
     const target = optionRefs.current[highlightedIndex];
     const viewport = viewportRef.current;
     if (target && viewport) {
@@ -386,6 +393,7 @@ export function SelectMenu({
                       title={option.title}
                       disabled={option.disabled}
                       onMouseEnter={() => setHighlightedIndex(index)}
+                      onFocus={() => setHighlightedIndex(index)}
                       onClick={() => {
                         if (option.disabled) return;
                         onChange(option.value);

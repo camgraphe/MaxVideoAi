@@ -33,7 +33,8 @@ async function wheel(page: Page, viewport: Locator, deltaY: number, point?: {x:n
 
 async function prepare(page: Page, url: string, surface: string) {
   await page.goto(url+'/?surface='+surface+'&locale=en');
-  await page.evaluate(()=>{document.body.style.minHeight='3200px';document.querySelector('main')!.style.marginTop='850px';});
+  const main=page.locator('main');await main.waitFor({state:'visible'});
+  await main.evaluate(n=>{document.body.style.minHeight='3200px';n.style.marginTop='850px';});
   const trigger=surface==='voice'?page.locator('summary').first():page.locator('button[aria-haspopup="listbox"]').first();
   const rect=await trigger.boundingBox();assert.ok(rect);
   await page.evaluate(y=>scrollTo(0,y),rect.y-600);
@@ -75,6 +76,7 @@ test('native wheel stays in overflowing settings and voice lists at both boundar
           await page.evaluate(y=>scrollTo(0,y),initial.pageY);await settled(viewport);
           const bottom=await wheel(page,viewport,160);
           assert.ok(bottom.hit,'the native wheel begins inside the options viewport');
+          assert.ok(Math.abs(bottom.after.top-bottom.before.top)<=1,'a downward boundary wheel retains the lower endpoint');
           if(Math.abs(bottom.after.pageY-bottom.before.pageY)>1)failures.push(name+'/'+width+'/'+surface+': bottom chained '+(bottom.after.pageY-bottom.before.pageY)+'px');
           await page.evaluate(y=>scrollTo(0,y),initial.pageY);await settled(viewport);
           for(let i=0;i<12;i++){
@@ -86,6 +88,7 @@ test('native wheel stays in overflowing settings and voice lists at both boundar
           await page.evaluate(y=>scrollTo(0,y),initial.pageY);await settled(viewport);
           const top=await wheel(page,viewport,-160);
           assert.ok(top.hit);
+          assert.ok(Math.abs(top.after.top-top.before.top)<=1,'an upward boundary wheel retains the upper endpoint');
           if(Math.abs(top.after.pageY-top.before.pageY)>1)failures.push(name+'/'+width+'/'+surface+': top chained '+(top.after.pageY-top.before.pageY)+'px');
           assert.equal(top.after.selection,initial.selection,'wheel never selects an option');
           await page.evaluate(y=>scrollTo(0,y),initial.pageY);await settled(viewport);
