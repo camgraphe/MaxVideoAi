@@ -1,6 +1,6 @@
 import {assistanceNextActionSchema} from '@/lib/studio/assistance-contract';
 import {query,withDbTransaction} from '@/lib/db';
-import {promptAssistanceReplySchema,promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import {readStudioAssistanceStatus,reserveStudioAssistanceCall,settleStudioAssistanceCall,markStudioAssistanceUnknown} from '@/server/studio/assistance-ledger';
 import {buildPromptAssistanceContext} from './context';
@@ -10,6 +10,7 @@ import {countPromptTokens,createPromptResponse,promptResponseParams,promptProvid
 import {preparePromptPerception} from './perception';
 import {closeUnansweredPromptRequest,closeExpiredPromptRequests} from './unanswered';
 import {AgentApiError} from '@/server/agent-api/errors';
+import {PROMPT_REPLY_FORMAT,parsePromptProviderReply} from './reply-format';
 
 type Dependencies={policy?:StudioAssistancePolicy;buildContext?:typeof buildPromptAssistanceContext;count?:typeof countPromptTokens;create?:typeof createPromptResponse;perception?:typeof preparePromptPerception};
 async function result(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
@@ -59,7 +60,7 @@ async function finishRecorded(row:PromptRequestRow,policy:StudioAssistancePolicy
       if(response.status==='incomplete')throw new Error('OUTPUT_INCOMPLETE');
       if(response.status!=='completed')throw new Error('OUTPUT_INVALID');
       if(response.output?.some(item=>item.type==='message'&&item.content.some(part=>part.type==='refusal')))throw new Error('OUTPUT_REFUSED');
-      reply=promptAssistanceReplySchema.parse(JSON.parse(response.output_text));
+      reply=parsePromptProviderReply(response.output_text,row.context_json);
       const maxChars=(row.context_json as {maxChars:number}).maxChars;
       if(reply.text&&reply.text.length>maxChars)throw new Error('OUTPUT_TOO_LONG');
     }catch(cause){
@@ -84,7 +85,7 @@ export async function sendPromptAssistance(userId:string,raw:PromptAssistanceReq
     const context=await (deps.buildContext??buildPromptAssistanceContext)(userId,input);
     const perceived=await(deps.perception??preparePromptPerception)(userId,input,row.model,context);
     const params=promptResponseParams(row,perceived.context,await readPromptHistory(row),perceived.content);
-    reviewContext={...perceived.context,reviewInput:buildAssistantReviewContext(params)};
+    reviewContext={...perceived.context,replyFormat:PROMPT_REPLY_FORMAT,reviewInput:buildAssistantReviewContext(params)};
     const inputTokens=await(deps.count??countPromptTokens)(params,promptProviderTimeout(deadline,15_000));
     if(!Number.isSafeInteger(inputTokens)||inputTokens<1||inputTokens>32000)throw new Error('CONTEXT_TOO_LARGE');
     const call=await withDbTransaction(async tx=>{

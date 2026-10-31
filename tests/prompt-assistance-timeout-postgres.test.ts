@@ -21,7 +21,7 @@ test('unanswered composer calls release only customer holds and never redispatch
   const request=()=>promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:2,locale:'en',message:'Slow the camera movement',draft:{surface:'video',engineId:'seedance-2-5',mode:'t2v',target:'prompt',text:'A dancer on stage.',settings:{durationSec:5},references:[]}});
   const context={model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt' as const,maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only' as const};
   const deps={policy,buildContext:async()=>context as never,count:async()=>1000};
-  const evidence=()=>({id:'resp_'+randomUUID(),model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'Done',text:'A slow tracking shot.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never);
+  const evidence=()=>({id:'resp_'+randomUUID(),model:'gpt-6.1-sol',status:'completed',service_tier:'default',output_text:JSON.stringify({kind:'replacement',reply:'Done',text:'A slow tracking shot.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never);
   const row=async(id:string)=>(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[id])).rows[0];
   await t.test('timeout, repeat recovery and fresh message preserve supplier uncertainty',async()=>{
     const input=request();let calls=0;

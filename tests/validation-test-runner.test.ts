@@ -121,6 +121,8 @@ test('CI suites partition every validation file without losing expensive financi
   assert.ok(plan.fast.includes('tests/ci-ubuntu-mirror.test.ts'), 'Transport fixtures use no real validation tools');
   assert.equal(plan.integration.includes('tests/ci-ubuntu-mirror.test.ts'), false);
   assert.ok(plan.integration.includes('tests/admin-customer-tariff-service-postgres.test.ts'));
+  assert.ok(plan.integration.includes('tests/prompt-assistance-reply-boundary-postgres.test.ts'));
+  assert.ok(plan.fast.includes('tests/prompt-assistance-reply-boundary.test.ts'));
   assert.ok(plan.integration.includes('tests/preflight-media-pricing.test.ts'), 'LAS preflight uses a real PostgreSQL fixture');
   assert.equal(plan.fast.includes('tests/preflight-media-pricing.test.ts'), false);
   assert.ok(plan.fast.includes('tests/seedance-2-pricing.test.ts'), 'Pure literal tariff fixtures require no PostgreSQL');
@@ -138,6 +140,7 @@ test('CI suites partition every validation file without losing expensive financi
     'tests/post-kling-app-integration-browser.test.ts',
     'tests/image-rail-layout-browser.test.ts',
     'tests/prompt-assistance-audio-browser.test.ts',
+    'tests/prompt-assistance-advice-browser.test.ts',
     'tests/prompt-assistance-input-browser.test.ts',
     'tests/prompt-assistance-model-browser.test.ts',
     'tests/prompt-assistance-mode-layout-browser.test.ts',

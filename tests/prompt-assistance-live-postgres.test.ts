@@ -20,7 +20,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const request=promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:2,locale:'en',message:'Make the motion slower',draft:{surface:'video',engineId:'seedance-2-5',mode:'t2v',target:'prompt',text:'A dancer on a stage.',settings:{durationSec:5},references:[]}});
   let calls=0;
   const context={model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt' as const,maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only' as const};
-  const deps={policy,buildContext:async()=>context as never,count:async()=>1000,create:async(params:{model?:string|null})=>{calls++;return {id:'resp_'+randomUUID(),model:params.model!,status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'I slowed the motion.',text:'A dancer moves slowly across the stage.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never;}};
+  const deps={policy,buildContext:async()=>context as never,count:async()=>1000,create:async(params:{model?:string|null})=>{calls++;return {id:'resp_'+randomUUID(),model:params.model!,status:'completed',service_tier:'default',output_text:JSON.stringify({kind:'replacement',reply:'I slowed the motion.',text:'A dancer moves slowly across the stage.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:1000}} as never;}};
   const {ensureStudioMonthlyCredits}=await import('../frontend/src/server/studio/assistance-credit-ledger');
   const {withDbTransaction}=await import('../frontend/src/lib/db');
   const {lockAccount}=await import('../frontend/src/server/studio/assistance-ledger');
@@ -65,7 +65,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const saved=(await pg.pool.query("SELECT * FROM prompt_assistance_requests WHERE request_id=$1",[unknownRequest.requestId])).rows[0];
   assert.ok(saved.call_id);assert.equal(saved.state,'unknown');
   assert.equal((await pg.pool.query('SELECT state FROM studio_assistance_calls WHERE id=$1',[saved.call_id])).rows[0].state,'unknown');
-  const evidence={id:'resp_recovered',model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify({reply:'Recovered answer',text:'A slow camera move.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}};
+  const evidence={id:'resp_recovered',model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify({kind:'replacement',reply:'Recovered answer',text:'A slow camera move.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}};
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[unknownRequest.requestId,JSON.stringify(evidence)]);
   await pg.pool.query('DROP TRIGGER reject_composer_resolution ON studio_assistance_resolutions');
   // Reconstruct a legacy aged row in this disposable database before installing
@@ -82,6 +82,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.deepEqual(await financialEvidence(),beforeCleanup,'Review cleanup cannot settle or alter financial evidence');
   const cleaned=(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[unknownRequest.requestId])).rows[0];
   assert.equal(cleaned.context_json.reviewInput,undefined);assert.equal(cleaned.context_json.maxChars,20000);
+  assert.equal(cleaned.context_json.replyFormat,'destination-v1','Review retention must preserve the operational recovery decoder');
   assert.deepEqual(cleaned.response_json,evidence);assert.deepEqual(cleaned.input_json,saved.input_json);
   const recovered = await service.recoverPromptAssistance('owner',unknownRequest.sessionId,unknownRequest.requestId,policy);
   assert.equal(recovered.state,'complete');assert.equal(recovered.reply?.text,'A slow camera move.');assert.equal(recovered.draftRevision,2);
@@ -93,7 +94,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   for (const [owner, responsePatch, expectedError] of [
     ['incomplete-owner', {status:'incomplete',incomplete_details:{reason:'max_output_tokens'}}, 'OUTPUT_INCOMPLETE'],
     ['refusal-owner', {output:[{type:'message',content:[{type:'refusal',refusal:'I cannot help with that request.'}]}]}, 'OUTPUT_REFUSED'],
-    ['long-output-owner', {output_text:JSON.stringify({reply:'Done.',text:'x'.repeat(20001)})}, 'OUTPUT_TOO_LONG'],
+    ['long-output-owner', {output_text:JSON.stringify({kind:'replacement',reply:'Done.',text:'x'.repeat(20001)})}, 'OUTPUT_TOO_LONG'],
   ] as const) {
     const rejectedRequest={...request,requestId:randomUUID()};
     const rejected=await service.sendPromptAssistance(owner,rejectedRequest,{...deps,create:async(params)=>({...await deps.create(params),...responsePatch}) as never});
