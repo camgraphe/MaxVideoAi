@@ -38,3 +38,10 @@ Post-commit handoff: record exact base, HEAD/tree, commands, results and limits 
 - Initial fast suite found the existing 500-line Composer cap exceeded by one. Folding the single-use placeholder description alias keeps identical presentation and preserves the cap; no assertion was relaxed.
 - Final focused run: 86/86. Final fast suite: 10,234 passed, zero failed, one existing authoring-validator skip. TypeScript, exposure and full build passed (990 static pages); lint had zero errors and seven pre-existing warnings.
 - Author self-review complete; root owns the independent review, publication, exact-HEAD CI/Preview and delivery. No live semantic quality or private-state occurrence is claimed.
+
+## CI fixture follow-up after d1fef7f
+
+- The pending-review browser test reproduced the CI failure: its original companion case did not offer the field, so its hard-invalidation expectation contradicted the approved inactive-companion contract. A disposable PostgreSQL probe identified that failed case's unfinished request as the blocker of the next case; no product guard change was needed.
+- The reload fixture now supplies the negative field from the prepared schema. Keep the original inactive case and add an offered Wan 2.6 case edited through its visible input, observing persistence and compatibility between changes and after return. Keep the optional historical preflight comparison for all original scenarios; exclude only the explicitly added different-engine scenario.
+- A subcase cleanup hook targets only unfinished request identities that it successfully claimed. A deliberate failing probe preserved the first assertion failure while the next case passed without a blocker; terminal history and financial rows are untouched.
+- Final follow-up validation: 66/66 across all three reload-fixture consumers and related guard tests, TypeScript/exposure/diff checks passed, frontend lint retained its seven existing warnings. The product frontend tree is unchanged from d1fef7f; its earlier build/fast results above are not presented as a new-HEAD CI run.
