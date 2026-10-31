@@ -16,7 +16,11 @@ Deployed legacy clients used broad surface scopes. On first encounter, only thei
 
 ## Language
 
-Milo converses in the user's language. Visual generation instructions default to English, including revisions of drafts in another language. Literal dialogue, captions, signage and names retain the requested wording/language. Voice scripts and lyrics retain their intended spoken/sung language. An explicit alternative instruction language is honored where the generation model supports it; model-specific English-only requirements remain authoritative. These instructions are shared across Lite, Standard and Max; underlying model names stay out of product copy.
+Milo's conversational reply honors the most recent applicable explicit reply-language instruction, including an ongoing preference still available in the conversation context. Otherwise it follows the language of the user's current own instruction, separately from quoted or supplied material, the editor and requested scripts/lyrics. If that language is unclear, it keeps the established conversation language; UI locale is only the last fallback.
+
+The provider receives the latest eight completed exchanges before the current message. A reply-language preference outside that context is not retained by this policy, even when its earlier message is still displayed in the chat. This clarification adds no persistent preference or translation of stored replies.
+
+Proposed-text language is chosen separately. Visual generation instructions default to English, including revisions of drafts in another language. Literal dialogue, captions, signage and names retain the requested wording/language. Voice scripts and lyrics retain their intended spoken/sung language. An explicit alternative instruction language is honored where the generation model supports it; model-specific English-only requirements remain authoritative. These instructions are shared across Lite, Standard and Max; underlying model names stay out of product copy.
 
 ## Verification, 2026-10-30
 
