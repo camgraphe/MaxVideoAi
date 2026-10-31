@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import test from 'node:test';
-import {chromium,expect} from '@playwright/test';
+import {chromium,webkit,expect} from '@playwright/test';
 import {listFalEngines} from '../frontend/src/config/falEngines';
 import {sortImageWorkspaceEngineOptions} from '../frontend/app/(core)/(workspace)/app/image/_lib/image-workspace-engine-options';
 import {startDisposablePostgres} from './helpers/disposable-postgres';
@@ -15,12 +15,14 @@ const settings={seed:'',style:null,quality:null,numImages:1,watermark:false,back
 const publicCase={draft:{mode:'t2i',text:manual,target:'prompt',surface:'image',engineId:'nano-banana-2-1',settings,workflow:'create',references:[],readOnlyText:{}},message:'A new photographic portrait of a synthetic sports referee.',reply:{text:'A natural square photographic portrait in an empty sports hall.',reply:'Review this square composition.'}};
 const owner='image-reload-owner',chatKey=`milo-composer:v2:${JSON.stringify([owner,'image','create'])}`,formKey=`maxvideoai.image.composer.v1:${owner}`;
 
-for(const variant of ['selected-model','default-catalog','custom-to-nano','unchanged-nano','custom-unchanged','custom-size-guard'])test(variant==='custom-size-guard'?'full Image workspace restores supported custom dimensions and refuses their changes':`full Image workspace preserves serialized context on reload (${variant})`,{timeout:90_000},async t=>{
+for(const variant of ['immediate-reload','immediate-reload-webkit','selected-model','default-catalog','custom-to-nano','unchanged-nano','custom-unchanged','custom-size-guard'])test(variant==='custom-size-guard'?'full Image workspace restores supported custom dimensions and refuses their changes':`full Image workspace preserves serialized context on reload (${variant})`,{timeout:90_000},async t=>{
  // Optional local-only replay reads request/reply facts from evidence; no private content is a repository fixture.
  const receiptPath=process.env.R07_IMAGE_RECEIPT_PATH;
  const receipt=receiptPath?JSON.parse(await readFile(receiptPath,'utf8')):null;
+ const preflightPath=process.env.R11_IMAGE_PREFLIGHT_PATH;
+ const preflight=preflightPath?JSON.parse(await readFile(preflightPath,'utf8')).request:null;
  const gptCase=variant==='custom-size-guard'||variant==='custom-unchanged';
- const scenario=receipt&&!gptCase?{draft:receipt.input_json.draft,message:receipt.input_json.message,reply:receipt.reply_json}:publicCase;
+ const scenario=receipt&&!gptCase?{draft:receipt.input_json.draft,message:receipt.input_json.message,reply:receipt.reply_json}:preflight&&!gptCase?{...publicCase,draft:preflight.draft}:publicCase;
  const pg=await startDisposablePostgres('image-owner-reload');
  const oldDatabase=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  const {getDb}=await import('../frontend/src/lib/db');
@@ -32,9 +34,9 @@ for(const variant of ['selected-model','default-catalog','custom-to-nano','uncha
  const selected=variant==='default-catalog'?all.filter(x=>x.category==='image'):custom?[all.find(x=>x.id==='gpt-image-2')!,all.find(x=>x.id===scenario.draft.engineId)!]:[all.find(x=>x.id===scenario.draft.engineId)!];
  const options=selected.map(entry=>({id:entry.id,name:entry.marketingName,engineCaps:entry.engine,modes:entry.modes.map(x=>x.mode).filter(x=>x==='t2i'||x==='i2i'),aliases:[entry.id],prompts:[],pricePerImage:0.07,currency:'USD'}));
  const engines=variant==='default-catalog'?sortImageWorkspaceEngineOptions(options):options;
- const fixture=await startWorkspaceReferenceFixture({source,config:{engines,query:variant==='default-catalog'?`engine=${scenario.draft.engineId}`:''},hostModules,assistanceLive:true}),browser=await chromium.launch();
+ const fixture=await startWorkspaceReferenceFixture({source,config:{engines,query:variant==='default-catalog'?`engine=${scenario.draft.engineId}`:''},hostModules,assistanceLive:true}),browser=await(variant==='immediate-reload-webkit'?webkit:chromium).launch();
  try{
-  const page=await browser.newPage({viewport:{width:390,height:1000}}),requests:any[]=[],errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const page=await browser.newPage({viewport:{width:variant==='immediate-reload'?1105:390,height:1000}}),requests:any[]=[],errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/api/prompt-assistance*',async route=>{
    const url=new URL(route.request().url());
    if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:url.searchParams.has('sessionId')?await readPromptSession(owner,url.searchParams.get('sessionId')!,'image:create'):initialStatus}});
@@ -85,11 +87,12 @@ for(const variant of ['selected-model','default-catalog','custom-to-nano','uncha
    await expect(page.locator('[data-assistance-apply]')).toBeDisabled();await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);assert.equal(requests.length,1);assert.deepEqual(errors,[]);return;
   }
   await page.getByRole('button',{name:/^Format:/}).click();await page.getByRole('option',{name:/16:9/}).click();await expect(page.getByRole('button',{name:'Review & use',exact:true})).toBeEnabled();
-  await expect.poll(async()=>(await form())?.aspectRatio).toBe('16:9');assert.equal((await form()).customImageSize,null);
+  if(!variant.startsWith('immediate-reload'))await expect.poll(async()=>(await form())?.aspectRatio).toBe('16:9');assert.equal((await form()).customImageSize,null);
   const proof=(await chat()).local.proposal.review;
+  const persistedBeforeReload=await form();
   await page.reload();await expect(page.locator('form.app-image-composer')).toBeVisible();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-proposal]')).toBeVisible();
   const after=await page.evaluate(()=>(globalThis as any).imageOwnerFrames.at(-1));
-  if(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR){const prefix=`${receipt?'r07':'public'}-${variant}`;await writeFile(join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-state.json`),JSON.stringify({before,after,serializedForm:await form(),proofBefore:proof,chatAfter:await chat(),framesAfter:await page.evaluate(()=>(globalThis as any).imageOwnerFrames)},null,2));await page.screenshot({path:join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-after-reload.png`),fullPage:true});}
+  if(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR){const prefix=`${receipt?'r07':preflight?'r11':'public'}-${variant}`;await writeFile(join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-state.json`),JSON.stringify({before,after,persistedBeforeReload,serializedForm:await form(),proofBefore:proof,chatAfter:await chat(),framesAfter:await page.evaluate(()=>(globalThis as any).imageOwnerFrames)},null,2));await page.screenshot({path:join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-after-reload.png`),fullPage:true});}
   assert.deepEqual(after,{...before,aspectRatio:'16:9'},'real hydration must preserve every hard-context field before proof restoration');
   assert.equal((await chat()).local.proposal.review?.compatible,true);
   assert.equal((await page.locator('[data-assistance-proposal]').boundingBox())!.height,53);

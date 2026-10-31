@@ -1,5 +1,5 @@
 import { listenForGuestCreationLogin, consumeGuestCreationFromLocation } from '@/lib/guest-creation-continuation';
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import {
   clampRequestedImageCount,
@@ -121,15 +121,46 @@ export function useImageComposerPersistence({
   setReferenceSlots,
 }: UseImageComposerPersistenceParams) {
   const storageKey = `${IMAGE_COMPOSER_STORAGE_KEY}:${accountId ?? 'guest'}`;
-  const currentPayloadRef = useRef<string | null>(null);
+  const currentPayloadRef = useRef<{ storageKey: string; serialized: string } | null>(null);
   useEffect(() => {
     if (accountId) return;
-    return listenForGuestCreationLogin('/app/image', () => currentPayloadRef.current);
+    return listenForGuestCreationLogin('/app/image', () => currentPayloadRef.current?.serialized ?? null);
   }, [accountId]);
   const hasHydratedStorageRef = useRef(false);
   const persistTimerRef = useRef<number | null>(null);
   const persistedSignatureRef = useRef<string | null>(null);
   const [storageHydrated, setStorageHydrated] = useState(false);
+  const persist = useCallback((serialized: string) => {
+    try {
+      window.localStorage.setItem(storageKey, serialized);
+      if (window.localStorage.getItem(storageKey) !== serialized) return false;
+      persistedSignatureRef.current = serialized;
+      return true;
+    } catch {
+      return false;
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    const flush = () => {
+      const payload = currentPayloadRef.current;
+      if (!payload || payload.storageKey !== storageKey || payload.serialized === persistedSignatureRef.current) return;
+      if (persist(payload.serialized) && persistTimerRef.current !== null) {
+        window.clearTimeout(persistTimerRef.current);
+        persistTimerRef.current = null;
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      flush();
+    };
+  }, [persist, storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -322,18 +353,14 @@ export function useImageComposerPersistence({
     } catch {
       return;
     }
-    currentPayloadRef.current = serialized;
+    // Keep the latest hydrated snapshot available when navigation beats the debounce.
+    currentPayloadRef.current = { storageKey, serialized };
     if (serialized === persistedSignatureRef.current) return;
     if (persistTimerRef.current !== null) {
       window.clearTimeout(persistTimerRef.current);
     }
     persistTimerRef.current = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(storageKey, serialized);
-        persistedSignatureRef.current = serialized;
-      } catch {
-        // ignore storage failures
-      }
+      persist(serialized);
     }, IMAGE_COMPOSER_STORAGE_DEBOUNCE_MS);
     return () => {
       if (persistTimerRef.current !== null) {
@@ -342,6 +369,7 @@ export function useImageComposerPersistence({
       }
     };
   }, [
+    persist,
     storageKey,
     aspectRatio,
     customImageHeight,
