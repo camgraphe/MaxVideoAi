@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
+import { getMenuVerticalBounds, MENU_SCROLL_CUE_HEIGHT, MenuScrollCue, useMenuScrollCues } from '@/components/ui/MenuScrollCues';
 
 export type SelectOption = {
   value: string | number | boolean;
@@ -78,8 +79,10 @@ export function SelectMenu({
     menuPlacement === 'top' ? 'top' : 'bottom'
   );
   const [portalStyle, setPortalStyle] = useState<CSSProperties | null>(null);
+  const [menuMaxHeight, setMenuMaxHeight] = useState<number>();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLUListElement | null>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const triggerId = useId();
   const listboxId = useId();
@@ -103,6 +106,7 @@ export function SelectMenu({
       return haystack.toLowerCase().includes(normalizedQuery);
     });
   }, [filterText, options, query, searchable]);
+  const scrollCues = useMenuScrollCues(viewportRef, open, filteredOptions);
   const selectedFilteredIndex = useMemo(
     () => filteredOptions.findIndex((option) => String(option.value) === String(value)),
     [filteredOptions, value]
@@ -116,25 +120,21 @@ export function SelectMenu({
 
   useLayoutEffect(() => {
     if (!open) return;
-    if (menuPlacement !== 'auto') {
-      setResolvedPlacement(menuPlacement === 'top' ? 'top' : 'bottom');
-      return;
-    }
-
     const updatePlacement = (event?: Event) => {
       // Scrolling fixed options cannot change their menu's placement or geometry.
-      if (portal && event?.type === 'scroll' && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      if (event?.type === 'scroll' && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
       const container = containerRef.current;
       const menu = menuRef.current;
       if (!container || !menu) return;
 
       const rect = container.getBoundingClientRect();
       const menuHeight = menu.offsetHeight;
-      const viewportHeight = window.innerHeight;
-      const gap = 8;
-      const spaceBelow = viewportHeight - rect.bottom - gap;
-      const spaceAbove = rect.top - gap;
-      setResolvedPlacement(spaceBelow < menuHeight && spaceAbove > spaceBelow ? 'top' : 'bottom');
+      const viewport = viewportRef.current;
+      const cueHeight = scrollCues.overflow ? MENU_SCROLL_CUE_HEIGHT * 2 : 0;
+      const bounds = getMenuVerticalBounds(rect, window.innerHeight, menuHeight, viewport?.scrollHeight ?? 0,
+        menuHeight - (viewport?.clientHeight ?? 0) - cueHeight, menuPlacement);
+      setResolvedPlacement(bounds.placement);
+      setMenuMaxHeight(bounds.maxHeight);
     };
 
     updatePlacement();
@@ -144,7 +144,7 @@ export function SelectMenu({
       window.removeEventListener('resize', updatePlacement);
       window.removeEventListener('scroll', updatePlacement, true);
     };
-  }, [menuPlacement, open, filteredOptions.length, portal]);
+  }, [menuPlacement, open, filteredOptions.length, portal, scrollCues.overflow]);
 
   useLayoutEffect(() => {
     if (!open || !portal) return;
@@ -274,8 +274,16 @@ export function SelectMenu({
   useEffect(() => {
     if (!open) return;
     const target = optionRefs.current[highlightedIndex];
-    if (target) {
-      target.scrollIntoView({ block: 'nearest' });
+    const viewport = viewportRef.current;
+    if (target && viewport) {
+      // Highlighting an option must scroll this list, not the page behind an
+      // inline popup while its bounded placement is being resolved.
+      const rect = target.getBoundingClientRect();
+      const top = rect.top - viewport.getBoundingClientRect().top - viewport.clientTop + viewport.scrollTop;
+      if (top < viewport.scrollTop) viewport.scrollTop = top;
+      else if (top + rect.height > viewport.scrollTop + viewport.clientHeight) {
+        viewport.scrollTop = top + rect.height - viewport.clientHeight;
+      }
     }
   }, [highlightedIndex, open]);
 
@@ -332,15 +340,15 @@ export function SelectMenu({
           <div
             ref={menuRef}
             className={clsx(
-              'z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
+              'z-[80] flex w-full flex-col overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
               portal ? 'fixed min-w-[8rem] max-w-[calc(100vw-1.5rem)]' : 'absolute left-0',
               !portal && (resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'),
               menuClassName
             )}
-            style={portal ? portalStyle ?? { left: 0, top: 0, visibility: 'hidden', width: 0 } : undefined}
+            style={{ ...(portal ? portalStyle ?? { left: 0, top: 0, visibility: 'hidden', width: 0 } : {}), maxHeight: menuMaxHeight }}
           >
             {searchable ? (
-              <div className="px-1 pb-1">
+              <div className="shrink-0 px-1 pb-1">
                 <input
                   type="text"
                   value={query}
@@ -350,12 +358,14 @@ export function SelectMenu({
                 />
               </div>
             ) : null}
+            <MenuScrollCue state={scrollCues} direction="up" />
             <ul
+              ref={viewportRef}
               id={listboxId}
               role="listbox"
               aria-labelledby={triggerId}
               className={clsx(
-                'space-y-1 overflow-y-auto overflow-x-hidden text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
+                'min-h-0 space-y-1 overflow-y-auto overflow-x-hidden text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
                 searchable ? 'max-h-56 pr-1' : 'max-h-60'
               )}
             >
@@ -403,6 +413,7 @@ export function SelectMenu({
                 );
               })}
             </ul>
+            <MenuScrollCue state={scrollCues} direction="down" />
             {searchable && filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-[12px] text-text-muted">{noResultsLabel}</div>
             ) : null}

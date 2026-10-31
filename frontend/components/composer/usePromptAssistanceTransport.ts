@@ -3,26 +3,27 @@ import {assistanceNextActionSchema,type AssistanceNextAction} from '@/lib/studio
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {promptSessionSnapshotSchema,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
-import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal} from './prompt-chat-storage';
+import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal,type PromptPendingReview} from './prompt-chat-storage';
 
 type Pending={sessionId:string;requestId:string;uiId:number|null};
-type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined)=>Promise<()=>void>;
+type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined,pendingReview?:PromptPendingReview)=>Promise<()=>void>;
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;onRestore:Restore}){
   const blockedScopes=useRef(new Set<string>());
-  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
+  const owner=useMemo(()=>({key:scopeKey,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
   const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
   const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
   const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId,exhausted:owner.exhausted}));};
-  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.sessionId,requestId:owner.pending.requestId}:null,local:owner.local,legacy:owner.legacy};}
+  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.sessionId,requestId:owner.pending.requestId}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
   function save(){return !!owner.sessionId&&writePromptChat(storageKey,snapshot());}
-  function persistRevocation(){
+  function persistRevocation(revokePending=true){
     if(owner.local?.proposal?.review)owner.local.proposal.review.compatible=false;
-    const result=revokePromptChatReview(storageKey,snapshot(),!!owner.pending||pendingAnalysis());
-    if(result.kind==='saved')owner.local=result.record.local;
-    else if(result.kind==='discarded')owner.local=undefined;
+    if(revokePending&&owner.pendingReview)owner.pendingReview.compatible=false;
+    const result=revokePromptChatReview(storageKey,snapshot(),!!owner.pending||pendingAnalysis(),revokePending);
+    if(result.kind==='saved'){owner.local=result.record.local;owner.pendingReview=result.record.pendingReview;}
+    else if(result.kind==='discarded'){owner.local=undefined;owner.pendingReview=undefined;}
     owner.cacheError=result.kind!=='saved';if(owner.cacheError)blockedScopes.current.add(scopeKey);else blockedScopes.current.delete(scopeKey);update({cacheError:owner.cacheError});
   }
   async function restore(){
@@ -46,7 +47,21 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
           owner.exhausted=snapshot.status==='active'?null:snapshot.status==='full'?'SESSION_FULL':'SESSION_EXPIRED';
 
         }
-        const commit=await callbacks.current.options.onRestore(snapshot,owner.local);
+        // A session snapshot may retain an older proposal after a text-less reply.
+        // Only the original identity's terminal text can promote its Send-time proof.
+        let pendingReview:PromptPendingReview|undefined;
+        const baseline=owner.pendingReview;
+        if(snapshot?.proposal&&baseline?.compatible&&baseline.requestId===owner.latestRequestId&&baseline.draftFingerprint===snapshot.proposal.draftFingerprint){
+          const response=await fetch(`/api/prompt-assistance?sessionId=${owner.sessionId}&requestId=${baseline.requestId}`,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+          const data=await response.json();
+          if(!active()||controller.signal.aborted)return;
+          if(!response.ok||!data.ok)throw Error(data.error??'RESTORE_FAILED');
+          const result=data.result as PromptAssistanceResult;
+          if(result.sessionId!==owner.sessionId||result.requestId!==baseline.requestId||result.state!=='complete')throw Error('INVALID_RESPONSE');
+          const reply=promptAssistanceReplySchema.parse(result.reply);
+          if(reply.text&&reply.text===snapshot.proposal.text)pendingReview=baseline;
+        }
+        const commit=await callbacks.current.options.onRestore(snapshot,owner.local,pendingReview);
         if(!active()||controller.signal.aborted)return;
         commit();
       }
@@ -57,7 +72,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   useEffect(()=>{
     owner.active=true;
     if(enabled){
-      const saved=readPromptChat(storageKey)??readLegacyPromptRecovery(scopeKey);owner.legacy=!!saved?.legacy&&!!callbacks.current.options;owner.exhausted=owner.legacy?'LEGACY_SESSION':null;owner.sessionId=saved?.sessionId??crypto.randomUUID();owner.local=saved?.local;
+      const saved=readPromptChat(storageKey)??readLegacyPromptRecovery(scopeKey);owner.legacy=!!saved?.legacy&&!!callbacks.current.options;owner.exhausted=owner.legacy?'LEGACY_SESSION':null;owner.sessionId=saved?.sessionId??crypto.randomUUID();owner.local=saved?.local;owner.pendingReview=owner.legacy?undefined:saved?.pendingReview;
       owner.pending=saved?.pending?{...saved.pending,uiId:null}:null;if(owner.cacheError)persistRevocation();else save();
       setView({owner,chatId:owner.sessionId,exhausted:owner.exhausted,loading:!!callbacks.current.options,loadError:false,cacheError:owner.cacheError,waiting:false,recovery:!!owner.pending,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted,nextAction:null,fundingRevision:null});
       if(saved&&callbacks.current.options&&!owner.legacy)void restore();
@@ -114,21 +129,29 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     }catch(error){if(active())update({recovery:true,error:error instanceof Error&&error.name==='AbortError'?'WAIT_STOPPED':error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});}
     finally{window.clearTimeout(timeout);owner.waiting=false;if(owner.controller===controller)owner.controller=null;update({waiting:false});}
   }
-  function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number){
+  function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number,review?:()=>Promise<Omit<PromptPendingReview,'requestId'>>){
     if(!enabled||!active()||owner.pending||owner.waiting||owner.loading||view.loadError||owner.exhausted)return false;
-    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;save();update({recovery:false,error:null});
-    void perform({action:'message',request:{...request,sessionId:pending.sessionId,requestId:pending.requestId}},pending);return true;
+    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;owner.pendingReview=undefined;save();update({recovery:false,error:null});
+    const epoch=owner.localEpoch;
+    void (async()=>{
+      try{
+        const proof=await review?.();
+        if(!active()||owner.pending!==pending)return;
+        if(proof&&epoch===owner.localEpoch){owner.pendingReview={...proof,requestId:pending.requestId};if(!save())persistRevocation();}
+      }catch{/* A failed digest grants no review permission; retain ordinary request recovery. */}
+      if(active()&&owner.pending===pending)await perform({action:'message',request:{...request,sessionId:pending.sessionId,requestId:pending.requestId}},pending);
+    })();return true;
   }
   function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
   function newChat(){
     if(!active()||owner.pending||owner.waiting||owner.loading||pendingAnalysis())return false;
-    owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}update({error:null,loadError:false,nextAction:null,cacheError:owner.cacheError});return true;
+    owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local=undefined;owner.pendingReview=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}update({error:null,loadError:false,nextAction:null,cacheError:owner.cacheError});return true;
   }
   const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,error:null,nextAction:null,fundingRevision:null};
   return {...visible,analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
     localEpoch:()=>owner.localEpoch,
-    revokeReviewProof:()=>{if(!active())return;owner.localEpoch++;const proof=owner.local?.proposal?.review;if(proof){proof.compatible=false;persistRevocation();}},
-    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>,expectedEpoch:number)=>{if(expectedEpoch===owner.localEpoch&&active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};if(owner.cacheError)persistRevocation();else save();}},
+    revokeReviewProof:(includePending=false)=>{if(!active())return;owner.localEpoch++;const proof=owner.local?.proposal?.review;if(proof)proof.compatible=false;if(includePending&&owner.pendingReview)owner.pendingReview.compatible=false;if(proof||includePending&&owner.pendingReview)persistRevocation(includePending);},
+    saveLocal:(local:Omit<PromptChatLocal,'latestRequestId'>,expectedEpoch:number)=>{if(expectedEpoch===owner.localEpoch&&active()&&!owner.loading&&!visible.loading&&!visible.loadError){owner.local={...local,latestRequestId:owner.latestRequestId};if(local.proposal&&owner.pendingReview?.requestId===owner.latestRequestId)owner.pendingReview=undefined;if(owner.cacheError)persistRevocation();else save();}},
     session:()=>{owner.sessionId ||= crypto.randomUUID();save();return owner.sessionId;},send,
     reload:()=>void restore(),recover:()=>{if(owner.pending)void perform({action:'recover',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId},owner.pending);},stop:()=>owner.controller?.abort(),
   };

@@ -25,6 +25,13 @@ export type PromptAssistancePanelProps = {
   inputNotice?: ReactNode;
 };
 
+function assistantReplyText(text: string) {
+  // Inline emphasis only. Every segment stays React text, including HTML,
+  // links, images and incomplete or ambiguous Markdown markers.
+  return text.split(/((?<!\*)\*\*[^*\r\n]+\*\*(?!\*))/g).map((part, index) =>
+    index % 2 ? <strong key={index}>{part.slice(2, -2)}</strong> : part);
+}
+
 export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, feedback, inputNotice }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
@@ -57,7 +64,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     <div className={`${styles.conversationStage}${reviewMode&&expanded?` ${styles.reviewStage}`:''}`} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
-          {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.text}</div>)}
+          {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.role === 'assistant' ? assistantReplyText(item.text) : item.text}</div>)}
         </div>
         {pending ? <p role="status">{copy.pending}</p> : null}
       </div>
