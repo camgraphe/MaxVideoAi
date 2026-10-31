@@ -51,6 +51,8 @@ test('real Core manual endpoints survive hover, native wheel and an identical pa
           const box=await viewport.boundingBox();assert.ok(box);
           await page.mouse.move(box.x+box.width/2,box.y+(end==='bottom'?112:22));await settle(viewport);
           const before=await viewport.evaluate(n=>({top:n.scrollTop,page:scrollY,max:n.scrollHeight-n.clientHeight}));
+          assert.ok(before.max>1,'the real duration list must overflow before the gesture');
+          assert.ok(Math.abs(before.top-(end==='top'?0:before.max))<=1,'native wheel setup must reach the requested '+end+' boundary');
           await page.evaluate(()=>globalThis.mark('hover-only'));await page.mouse.wheel(0,end==='bottom'?640:-640);await settle(viewport);
           assert.equal(await viewport.evaluate(n=>n.scrollTop),before.top,'wheel alone retains its reached endpoint');
           await page.evaluate(()=>globalThis.mark('wheel-only'));
