@@ -11,7 +11,8 @@ import {useWorkspaceComposerState} from './app/(core)/(workspace)/app/_hooks/use
 import {readScopedWorkspaceStorage,writeScopedWorkspaceStorage} from './app/(core)/(workspace)/app/_lib/workspace-storage';
 import {composerAssistanceSettings,composerAssistanceReferences} from './src/lib/prompt-assistance/client-context';
 import {videoPromptReviewKey} from './src/lib/prompt-assistance/application-review';
-const config=globalThis.fixtureConfig,engines=[config.engine,config.otherEngine],noop=()=>{},jobs=[];
+import {summarizeWorkspaceInputSchema} from './app/(core)/(workspace)/app/_lib/workspace-input-schema';
+const config=globalThis.fixtureConfig,engines=[config.engine,config.otherEngine,...(config.companionEngine?[config.companionEngine]:[])],noop=()=>{},jobs=[];
 const readStorage=key=>readScopedWorkspaceStorage(key,'owner');
 const writeStorage=(key,value)=>writeScopedWorkspaceStorage(key,'owner',value);
 function Fixture(){
@@ -24,10 +25,11 @@ function Fixture(){
  globalThis.workspaceActions={setPrompt:route.setPrompt,setNegativePrompt:route.setNegativePrompt,setForm:route.setForm,setInputAssets:assets.setInputAssets};
  globalThis.workspaceProbe={form,klingElements,multiPromptScenes,assets:assets.inputAssets,ready:hydration.ready};
  if(!form||!hydration.ready)return <p>Restoring workspace draft</p>;
+ const schema=summarizeWorkspaceInputSchema({selectedEngine:c.selectedEngine,activeMode:c.activeMode,allowsUnifiedVeoFirstLast:c.allowsUnifiedVeoFirstLast,isUnifiedHappyHorse:c.isUnifiedHappyHorse,isUnifiedSeedance:c.isUnifiedSeedance,isUnifiedGeminiOmni:c.isUnifiedGeminiOmni,uiLocale:'en'});
  const context={form:{...form,prompt:undefined},klingElements,cfgScale,shotType,voiceIdsInput,voiceControlEnabled,multiPromptEnabled,seedValue,cameraFixedValue,safetyCheckerValue,draft:undefined};
  return <I18nProvider locale="en" dictionary={{}} fallback={{}}><main style={{maxWidth:900,margin:'20px auto',padding:16}}>
  <label>Aspect ratio<select aria-label="Aspect ratio" value={form.aspectRatio} onChange={e=>c.handleAspectRatioChange(e.target.value)}><option value="auto">Auto</option><option value="9:16">9:16</option><option value="16:9">16:9</option></select></label>
- <Composer density="workspace" engine={c.selectedEngine} activeManualMode={c.activeManualMode} prompt={prompt} onPromptChange={route.setPrompt} negativePrompt={negativePrompt} assetFields={[]} assets={assets.inputAssets} multiPrompt={{enabled:multiPromptEnabled,scenes:multiPromptScenes}} price={1.23} currency="USD" isLoading={false} onGenerate={()=>{throw Error('Generation forbidden in local fixture');}}
+ <Composer density="workspace" engine={c.selectedEngine} activeManualMode={c.activeManualMode} prompt={prompt} onPromptChange={route.setPrompt} negativePrompt={negativePrompt} onNegativePromptChange={route.setNegativePrompt} negativePromptField={schema.negativePromptField} negativePromptRequired={schema.negativePromptRequired} assetFields={[]} assets={assets.inputAssets} multiPrompt={{enabled:multiPromptEnabled,scenes:multiPromptScenes}} price={1.23} currency="USD" isLoading={false} onGenerate={()=>{throw Error('Generation forbidden in local fixture');}}
  assistance={{accountKey:'owner',scopeKey:JSON.stringify(['owner','video','create']),contextKey:JSON.stringify(context),reviewKey:videoPromptReviewKey(context),live:{surface:'video',workflow:'create',engineId:c.selectedEngine.id,mode:c.submissionMode,settings:composerAssistanceSettings(c.selectedEngine,c.submissionMode,{...form,cfgScale,shotType,voiceControlEnabled,seed:seedValue,cameraFixed:cameraFixedValue,safetyChecker:safetyCheckerValue}),references:composerAssistanceReferences(c.selectedEngine,[],assets.inputAssets,c.submissionMode)}}}/>
  </main></I18nProvider>;
 }createRoot(document.getElementById('root')).render(<Fixture/>);

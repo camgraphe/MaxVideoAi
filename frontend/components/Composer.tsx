@@ -156,8 +156,8 @@ export function Composer({
   const redundantLengthHint = /^Provider (?:prompt length|maximum):/i.test(promptField?.description ?? '');
   const promptDescription = videoSourceWorkflow || sourceControl || redundantLengthHint ? undefined : promptField?.description;
   const negativePromptLabel = negativePromptField?.label ?? 'Negative prompt';
-  const negativePromptDescription = negativePromptField?.description;
   const negativePromptValue = (negativePrompt ?? '').trim();
+  const assistanceNegativePrompt = negativePromptField || negativePrompt === undefined ? negativePrompt : '';
   const multiPromptEnabled = Boolean(multiPrompt?.enabled);
   const promptMaxChars = engine.inputLimits.promptMaxChars;
   const promptCharCount = prompt.length;
@@ -440,9 +440,9 @@ export function Composer({
         {referenceMentions.needsReview ? <ComposerReferenceMentionNotice
           locale={locale} changed={referenceMentions.changed} onReview={referenceMentions.review} /> : null}
 
-        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,negativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
-          readOnlyText: {...assistance.live.readOnlyText,...(negativePrompt?{negativePrompt}:{})},
-          references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, negativePrompt, multiPrompt?.scenes]) }}
+        {assistanceEnabled && assistance ? <PromptAssistanceComposer context={{ ...assistance, reviewKey:assistance.reviewKey?applicationReviewKey([assistance.reviewKey,engine.id,engine.activeVideoOperation,activeManualMode,assets,assistanceNegativePrompt,multiPrompt?.scenes]):undefined, live: assistance.live ? { ...assistance.live,
+          readOnlyText: {...assistance.live.readOnlyText,...(assistanceNegativePrompt?{negativePrompt:assistanceNegativePrompt}:{})},
+          references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, assistanceNegativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
@@ -479,7 +479,7 @@ export function Composer({
               type="text"
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
-              placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
+              placeholder={negativePromptField?.description ?? composerCopy.negativePrompt.placeholder}
               className={clsx('w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35', workspaceDensity ? 'h-9' : 'h-11')}
             />
           </div>
