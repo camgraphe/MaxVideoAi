@@ -172,14 +172,19 @@ export function useImageComposerPersistence({
         setResolution(nextResolution);
         const parsedSizeFromResolution = parseGptImage2SizeKey(nextResolution);
         const restoredCustomSize = parsed.customImageSize ?? parsedSizeFromResolution;
+        const hasCustomSizeFields = Boolean(
+          getImageInputField(engineMatch.engineCaps, 'image_width', nextMode) &&
+          getImageInputField(engineMatch.engineCaps, 'image_height', nextMode)
+        );
         const defaultCustomWidth =
           getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_width', nextMode) ??
           GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultWidth;
         const defaultCustomHeight =
           getImageFieldDefaultNumber(engineMatch.engineCaps, 'image_height', nextMode) ??
           GPT_IMAGE_2_SIZE_CONSTRAINTS.defaultHeight;
-        setCustomImageWidth(String(restoredCustomSize?.width ?? defaultCustomWidth));
-        setCustomImageHeight(String(restoredCustomSize?.height ?? defaultCustomHeight));
+        // Match the settings owner: unavailable dimension controls stay empty on reload.
+        setCustomImageWidth(hasCustomSizeFields ? String(restoredCustomSize?.width ?? defaultCustomWidth) : '');
+        setCustomImageHeight(hasCustomSizeFields ? String(restoredCustomSize?.height ?? defaultCustomHeight) : '');
         const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, nextMode);
         const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, nextMode);
         setAspectRatio(
