@@ -90,6 +90,8 @@ test('mobile chat keeps reading space, references and navigation without changin
     if(process.env.STUDIO_MOBILE_CAPTURE_ONLY==='1')return;
     await page.setViewportSize({width:390,height:844});
     await expect(page.getByRole('button',{name:'Open MaxVideoAI menu',exact:true}).locator('.app-glyph')).toBeVisible();
+    // CSS can switch before React closes the desktop reference and film panels.
+    await expect(page.locator('[data-mobile-chat]')).toHaveAttribute('data-mobile-chat','true');
     assert.ok((await geometry()).logHeight>=844*.6,'The conversation receives at least 60% of the mobile viewport with three references and a film.');
     const references=page.getByRole('button',{name:'References · 3 attached',exact:true});
     await references.click();

@@ -21,6 +21,18 @@ function barrier() {
   return { promise, release };
 }
 
+async function waitForBackendExit(pool: Pool, pid: number) {
+  const deadline = Date.now() + 5_000;
+  for (;;) {
+    const { rows: [state] } = await pool.query<{ active: boolean; locked: boolean }>(`SELECT
+      EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1) AS active,
+      EXISTS(SELECT 1 FROM pg_locks WHERE pid=$1) AS locked`, [pid]);
+    if (!state.active && !state.locked) return;
+    assert.ok(Date.now() < deadline, 'The disconnected lifecycle backend must exit and release its locks.');
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+}
+
 // The fixture replaces schema bootstrap and remote attribution, not the lifecycle,
 // credit transaction, wallet lock, canonical receipt lookup or PostgreSQL drivers.
 test('Stripe event recovery survives real process interruption and durable-credit replay', { timeout: 90_000 }, async t => {
@@ -111,9 +123,15 @@ test('Stripe event recovery survives real process interruption and durable-credi
       assert.deepEqual(message, { phase });
       assert.deepEqual(await balance(id), [{ n: phase === 'after-credit' ? 1 : 0, cents: phase === 'after-credit' ? 2500 : 0 }]);
       await assert.rejects(api.runStripeEvent(event(id), () => credit(id)), /still processing/);
+      const backends = (await db.pool.query<{ pid: number }>(`SELECT a.pid FROM pg_stat_activity a
+        WHERE a.application_name='maxvideoai-stripe-events' AND a.state='idle in transaction'
+        AND EXISTS(SELECT 1 FROM pg_locks l WHERE l.pid=a.pid AND l.locktype='advisory' AND l.granted)`)).rows;
+      assert.equal(backends.length, 1, 'The worker must own exactly one lifecycle backend before interruption.');
       const exited = once(child, 'exit');
       child.kill('SIGKILL');
       await exited;
+      // Node exit can precede PostgreSQL observing the closed connection.
+      await waitForBackendExit(db.pool, backends[0].pid);
       assert.deepEqual(await state(id), []);
       assert.equal(await api.runStripeEvent(event(id), () => credit(id)), 'handled');
       assert.equal(await api.runStripeEvent(event(id), () => credit(id)), 'duplicate');
