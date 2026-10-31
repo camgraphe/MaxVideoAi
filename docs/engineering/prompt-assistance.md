@@ -90,6 +90,35 @@ not change accounting: a generated redirect still has ordinary model usage. Revi
 captures the instruction version/hash so failures can become regression cases.
 The boundary is shared across all tiers; reference perception retains its own gates.
 
+## Conversation versus editor replacement
+
+The private provider protocol `destination-v1` declares `kind: conversation` or
+`kind: replacement`. Advice, explanations, questions and external editing plans
+belong entirely in `reply` (the existing 6,000-character public limit), with null
+`text`. Only complete text intended for the selected `draft.target` belongs in a
+replacement. This includes valid creative sequences, multi-action prompts and
+Voiceover scripts; destination is not inferred from keywords, duration or action
+count. A mixed answer may explain in `reply` and provide the requested editor text
+in `text`.
+
+`reply-format.ts` strictly validates this private shape and converts it to the
+unchanged public `{reply,text}`. Contradictions or malformed tags fail with
+`OUTPUT_INVALID`; no partial replacement escapes. The flat required-field JSON
+Schema uses the [supported Structured Outputs subset](https://developers.openai.com/api/docs/guides/structured-outputs#supported-schemas),
+with conditional consistency enforced by the server decoder.
+
+The format is fixed before token counting and persisted as `context_json.replyFormat`
+in the existing calling transaction before provider dispatch. Recovery selects
+its decoder only from that durable marker. A truly absent marker retains the
+legacy parser; a present unknown, null or corrupt marker fails closed. Retention
+of `reviewInput` does not remove this operational marker. Completed historical
+replies are not reclassified. No client contract, compatibility proof, provider
+retry or accounting policy changes.
+
+The tag is a model declaration, not a semantic guarantee. Simulated service/JSONB
+and browser tests prove structural gating, restoration and exact apply/Undo;
+authorized real-model qualification must still verify destination choice.
+
 ## Selected-model fiches
 
 `server/prompt-assistance/context.ts` resolves model, public operation and audio variant from the same canonical capability owners used by the application/MCP. It rejects unknown combinations and target limits before reserving credits.
