@@ -38,13 +38,13 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
     }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
     else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
-  },live?.workflow?{scope:promptSessionScope(live),onRestore:async(snapshot,local)=>{
+  },live?.workflow?{scope:promptSessionScope(live),onRestore:async(snapshot,local,pendingReview)=>{
     const expected=currentDraftRef.current;
     const draftFingerprint=await hash(expected.currentDraft);
     const latestRequestId=snapshot?.turns.at(-1)?.requestId??'';
     const edited=local?.latestRequestId===latestRequestId?local.proposal:undefined;
     const proposal=edited??snapshot?.proposal;
-    const proof=edited?.review;
+    const proof=edited?edited.review:pendingReview;
     const originalDraft=proof&&expected.draft?draftWithReviewSettings(expected.draft,proof.settings):null;
     const reviewContext=proof?.compatible&&proof.requestId===latestRequestId&&expected.applicationContext&&expected.draft&&snapshot?.proposal
       &&originalDraft
@@ -61,7 +61,8 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     // Revoke durable proof before hashing or painting a hard-context change.
     // The transport epoch also fences digest completions from earlier renders.
     const previous=previousCompatibility.current;
-    if(previous.scope===scopeKey&&previous.revision!==state.compatibilityRevision||state.proposal&&(!state.proposal.applicationContext||state.proposal.compatibilityRevision!==state.compatibilityRevision))transport.revokeReviewProof();
+    const hardChange=previous.scope===scopeKey&&previous.revision!==state.compatibilityRevision;
+    if(hardChange||state.proposal&&(!state.proposal.applicationContext||state.proposal.compatibilityRevision!==state.compatibilityRevision))transport.revokeReviewProof(hardChange);
     previousCompatibility.current={scope:scopeKey,revision:state.compatibilityRevision};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[scopeKey,state.proposal,state.compatibilityRevision,transport.chatId]);
@@ -90,7 +91,8 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     if (!state.message.trim() || state.pending || blocked) return;
     const id=++sequence.current;
     const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
-    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id)))return;
+    const review=applicationContext?async()=>{const [draftFingerprint,compatibilityFingerprint]=await Promise.all([hash(currentDraft),hash(applicationContext.compatibilityKey)]);return {version:1 as const,draftFingerprint,compatibilityFingerprint,compatible:true,settings:applicationContext.settings};}:undefined;
+    if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id,review)))return;
     sampleDraft.current = draftText;
     dispatch({ type: 'send', id, message: state.message.trim() });
   };

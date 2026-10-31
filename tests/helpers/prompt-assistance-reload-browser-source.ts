@@ -21,11 +21,12 @@ function Fixture(){
  const c=useWorkspaceComposerState({...route,...assets,engines,effectiveRequestedEngineToken:null,authChecked:true,hydratedForScope,storageScope:'owner',preserveStoredDraftRef,requestedEngineOverrideIdRef:useRef(null),requestedEngineOverrideTokenRef:useRef(null),requestedModeOverrideRef:useRef(null),writeStorage,uiLocale:'en',workflowCopy:{generateVideo:'Create video'},showNotice:noop});
  const {form,prompt,negativePrompt,klingElements,cfgScale,shotType,voiceIdsInput,multiPromptEnabled,multiPromptScenes}=route;
  const {voiceControlEnabled,seedValue,cameraFixedValue,safetyCheckerValue}=c;
+ globalThis.workspaceActions={setPrompt:route.setPrompt,setNegativePrompt:route.setNegativePrompt,setForm:route.setForm,setInputAssets:assets.setInputAssets};
  globalThis.workspaceProbe={form,klingElements,multiPromptScenes,assets:assets.inputAssets,ready:hydration.ready};
  if(!form||!hydration.ready)return <p>Restoring workspace draft</p>;
  const context={form:{...form,prompt:undefined},klingElements,cfgScale,shotType,voiceIdsInput,voiceControlEnabled,multiPromptEnabled,seedValue,cameraFixedValue,safetyCheckerValue,draft:undefined};
  return <I18nProvider locale="en" dictionary={{}} fallback={{}}><main style={{maxWidth:900,margin:'20px auto',padding:16}}>
- <label>Aspect ratio<select aria-label="Aspect ratio" value={form.aspectRatio} onChange={e=>c.handleAspectRatioChange(e.target.value)}><option value="auto">Auto</option><option value="9:16">9:16</option></select></label>
+ <label>Aspect ratio<select aria-label="Aspect ratio" value={form.aspectRatio} onChange={e=>c.handleAspectRatioChange(e.target.value)}><option value="auto">Auto</option><option value="9:16">9:16</option><option value="16:9">16:9</option></select></label>
  <Composer density="workspace" engine={c.selectedEngine} activeManualMode={c.activeManualMode} prompt={prompt} onPromptChange={route.setPrompt} negativePrompt={negativePrompt} assetFields={[]} assets={assets.inputAssets} multiPrompt={{enabled:multiPromptEnabled,scenes:multiPromptScenes}} price={1.23} currency="USD" isLoading={false} onGenerate={()=>{throw Error('Generation forbidden in local fixture');}}
  assistance={{accountKey:'owner',scopeKey:JSON.stringify(['owner','video','create']),contextKey:JSON.stringify(context),reviewKey:videoPromptReviewKey(context),live:{surface:'video',workflow:'create',engineId:c.selectedEngine.id,mode:c.submissionMode,settings:composerAssistanceSettings(c.selectedEngine,c.submissionMode,{...form,cfgScale,shotType,voiceControlEnabled,seed:seedValue,cameraFixed:cameraFixedValue,safetyChecker:safetyCheckerValue}),references:composerAssistanceReferences(c.selectedEngine,[],assets.inputAssets,c.submissionMode)}}}/>
  </main></I18nProvider>;
