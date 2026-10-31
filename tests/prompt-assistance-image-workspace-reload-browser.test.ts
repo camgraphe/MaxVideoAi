@@ -15,11 +15,12 @@ const settings={seed:'',style:null,quality:null,numImages:1,watermark:false,back
 const publicCase={draft:{mode:'t2i',text:manual,target:'prompt',surface:'image',engineId:'nano-banana-2-1',settings,workflow:'create',references:[],readOnlyText:{}},message:'A new photographic portrait of a synthetic sports referee.',reply:{text:'A natural square photographic portrait in an empty sports hall.',reply:'Review this square composition.'}};
 const owner='image-reload-owner',chatKey=`milo-composer:v2:${JSON.stringify([owner,'image','create'])}`,formKey=`maxvideoai.image.composer.v1:${owner}`;
 
-for(const variant of ['selected-model','default-catalog','custom-to-nano','custom-size-guard'])test(variant==='custom-size-guard'?'full Image workspace restores supported custom dimensions and refuses their changes':`full Image workspace preserves serialized context on reload (${variant})`,{timeout:90_000},async t=>{
+for(const variant of ['selected-model','default-catalog','custom-to-nano','unchanged-nano','custom-unchanged','custom-size-guard'])test(variant==='custom-size-guard'?'full Image workspace restores supported custom dimensions and refuses their changes':`full Image workspace preserves serialized context on reload (${variant})`,{timeout:90_000},async t=>{
  // Optional local-only replay reads request/reply facts from evidence; no private content is a repository fixture.
  const receiptPath=process.env.R07_IMAGE_RECEIPT_PATH;
  const receipt=receiptPath?JSON.parse(await readFile(receiptPath,'utf8')):null;
- const scenario=receipt&&variant!=='custom-size-guard'?{draft:receipt.input_json.draft,message:receipt.input_json.message,reply:receipt.reply_json}:publicCase;
+ const gptCase=variant==='custom-size-guard'||variant==='custom-unchanged';
+ const scenario=receipt&&!gptCase?{draft:receipt.input_json.draft,message:receipt.input_json.message,reply:receipt.reply_json}:publicCase;
  const pg=await startDisposablePostgres('image-owner-reload');
  const oldDatabase=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  const {getDb}=await import('../frontend/src/lib/db');
@@ -38,7 +39,7 @@ for(const variant of ['selected-model','default-catalog','custom-to-nano','custo
    const url=new URL(route.request().url());
    if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:url.searchParams.has('sessionId')?await readPromptSession(owner,url.searchParams.get('sessionId')!,'image:create'):initialStatus}});
    const body=route.request().postDataJSON();assert.equal(body.action,'message','only the simulated initial exchange is admitted');const request=body.request;requests.push(request);
-   if(variant==='custom-size-guard'){assert.equal(request.draft.engineId,'gpt-image-2');assert.equal(request.draft.settings.customImageWidth,'1536');assert.equal(request.draft.settings.customImageHeight,'1024');}
+   if(gptCase){assert.equal(request.draft.engineId,'gpt-image-2');assert.equal(request.draft.settings.customImageWidth,'1536');assert.equal(request.draft.settings.customImageHeight,'1024');}
    else assert.deepEqual(request.draft,scenario.draft,'the real form must produce the evidenced request shape and settings');
    await pg.pool.query("INSERT INTO prompt_assistance_sessions VALUES($1,$2,'image:create',clock_timestamp()+interval '1 day')",[owner,request.sessionId]);
    await pg.pool.query("INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,state,input_json,reply_json) VALUES($1,$2,$3,'complete',$4::jsonb,$5::jsonb)",[owner,request.sessionId,request.requestId,JSON.stringify(request),JSON.stringify(scenario.reply)]);
@@ -62,9 +63,18 @@ for(const variant of ['selected-model','default-catalog','custom-to-nano','custo
   const form=()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)??'null'),formKey);
   const chat=()=>page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)??'null'),chatKey);
   await expect.poll(async()=>(await form())?.prompt).toBe(scenario.draft.text);
-  const before=await page.evaluate(()=>(globalThis as any).imageOwnerFrames.at(-1));assert.equal(before.customImageWidth,variant==='custom-size-guard'?'1536':'');assert.equal(before.customImageHeight,variant==='custom-size-guard'?'1024':'');
+  const before=await page.evaluate(()=>(globalThis as any).imageOwnerFrames.at(-1));assert.equal(before.customImageWidth,gptCase?'1536':'');assert.equal(before.customImageHeight,gptCase?'1024':'');
   await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill(scenario.message);await page.getByRole('button',{name:'Send message to Milo',exact:true}).click();
   await expect(page.locator('[data-assistance-apply]')).toBeEnabled();await expect.poll(async()=>!!(await chat())?.local?.proposal?.review).toBe(true);
+  if(variant==='unchanged-nano'||variant==='custom-unchanged'){
+   const proof=(await chat()).local.proposal.review;
+   await page.reload();await expect(page.locator('form.app-image-composer')).toBeVisible();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.locator('[data-assistance-proposal]')).toBeVisible();
+   const after=await page.evaluate(()=>(globalThis as any).imageOwnerFrames.at(-1));
+   if(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR){const prefix=`${receipt&&!gptCase?'r07':'public'}-${variant}`;await writeFile(join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-state.json`),JSON.stringify({before,after,serializedForm:await form(),proofBefore:proof,chatAfter:await chat()},null,2));await page.screenshot({path:join(process.env.PROMPT_ASSISTANCE_EVIDENCE_DIR,`${prefix}-real-owner-after-reload.png`),fullPage:true});}
+   await expect(page.getByRole('button',{name:'Use prompt',exact:true})).toBeEnabled();assert.deepEqual(after,before,'no user edit may be invented by hydration');
+   await page.getByRole('button',{name:'Use prompt',exact:true}).click();await expect(page.locator('[data-workspace-prompt]')).toHaveValue(scenario.reply.text);
+   await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(page.locator('[data-workspace-prompt]')).toHaveValue(scenario.draft.text);assert.equal(requests.length,1);assert.deepEqual(errors,[]);return;
+  }
   if(variant==='custom-size-guard'){
    await page.getByRole('tab',{name:'Prompt',exact:true}).click();await page.getByRole('spinbutton',{name:'Width',exact:true}).fill('1600');
    await expect.poll(async()=>(await form())?.customImageSize).toEqual({width:1600,height:1024});

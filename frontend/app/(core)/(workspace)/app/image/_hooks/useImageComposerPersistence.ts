@@ -188,7 +188,9 @@ export function useImageComposerPersistence({
         const allowedAspectRatios = getAspectRatioOptions(engineMatch.engineCaps, nextMode);
         const defaultAspectRatio = getDefaultAspectRatio(engineMatch.engineCaps, nextMode);
         setAspectRatio(
-          parsed.aspectRatio && allowedAspectRatios.includes(parsed.aspectRatio) ? parsed.aspectRatio : defaultAspectRatio
+          getImageInputField(engineMatch.engineCaps, 'aspect_ratio', nextMode) && allowedAspectRatios.length
+            ? parsed.aspectRatio && allowedAspectRatios.includes(parsed.aspectRatio) ? parsed.aspectRatio : defaultAspectRatio
+            : null
         );
         const seedDefault = getImageFieldDefaultNumber(engineMatch.engineCaps, 'seed', nextMode);
         setSeed(parsed.seed == null ? (seedDefault == null ? '' : String(seedDefault)) : String(parsed.seed));
