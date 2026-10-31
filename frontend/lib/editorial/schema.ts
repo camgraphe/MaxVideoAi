@@ -32,7 +32,14 @@ const promptBlock = z.object({ id: blockId, type: z.literal('prompt'), heading: 
 const conclusionBlock = z.object({ id: blockId, type: z.literal('conclusion'), heading: text, paragraphs: z.array(text).min(1).max(5), cta: link.optional() }).strict();
 
 const diagramBlock = z.object({id:blockId,type:z.literal('diagram'),heading:text.or(z.literal('')),nodes:z.array(z.object({kind:z.enum(['image','model','video','file']),label:text.pipe(z.string().max(120))}).strict()).min(2).max(6),connections:z.array(text.pipe(z.string().max(120))).min(1).max(5),alt:text,caption:text}).strict();
-const videoBlock = z.object({id:blockId,type:z.literal('video'),heading:text.or(z.literal('')),videoId:z.string().regex(/^[\w-]{11}$/),sourceId:blockId,credit:text.pipe(z.string().max(200)),startSeconds:z.number().int().min(0).max(86400),caption:text}).strict();
+const videoBlock = z.object({
+  id:blockId,type:z.literal('video'),heading:text.or(z.literal('')),
+  videoId:z.string().regex(/^[\w-]{11}$/),sourceId:blockId,credit:text.pipe(z.string().max(200)),
+  startSeconds:z.number().int().min(0).max(86400),caption:text,
+  // Keep omitted fields absent so existing payloads and digests remain stable.
+  presentation:z.enum(['inline','disclosure']).optional(),
+  aspectRatio:z.enum(['16:9','9:16']).optional(),
+}).strict();
 export function sourceVideoId(url:string){const u=new URL(url);return u.hostname==='youtu.be'?u.pathname.slice(1):['youtube.com','www.youtube.com'].includes(u.hostname)?u.pathname==='/watch'?u.searchParams.get('v'):u.pathname.match(/^\/(?:shorts|embed)\/([\w-]{11})$/)?.[1]:null;}
 
 export const editorialBlockSchema = z.discriminatedUnion('type', [textBlock, mediaBlock, comparisonBlock, stepsBlock, promptBlock, conclusionBlock, diagramBlock, videoBlock]);
@@ -165,7 +172,7 @@ export const editorialDraftSchema = z.object({
       }
       if (block.type === 'video') {
         const source=draft.sources.find(s=>s.id===block.sourceId),master=draft.locales.en.blocks.find(b=>b.id===block.id);
-        if(!source || sourceVideoId(source.url)!==block.videoId || master?.type!=='video' || master.videoId!==block.videoId || master.sourceId!==block.sourceId || master.credit!==block.credit || master.startSeconds!==block.startSeconds) context.addIssue({code:z.ZodIssueCode.custom,message:'Unverified or changed source video'});
+        if(!source || sourceVideoId(source.url)!==block.videoId || master?.type!=='video' || master.videoId!==block.videoId || master.sourceId!==block.sourceId || master.credit!==block.credit || master.startSeconds!==block.startSeconds || (master.presentation??'disclosure')!==(block.presentation??'disclosure') || (master.aspectRatio??'16:9')!==(block.aspectRatio??'16:9')) context.addIssue({code:z.ZodIssueCode.custom,message:'Unverified or changed source video'});
       }
       if (block.type === 'media') {
         const master = draft.locales.en.blocks.find((item) => item.id === block.id);
