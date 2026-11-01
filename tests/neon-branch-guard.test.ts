@@ -30,5 +30,8 @@ test('Neon branch guard checks completed and abandoned previews hourly without o
   assert.match(workflow, /node scripts\/neon-branch-guard\.mjs --delete-merged --delete-abandoned/);
   assert.match(workflow, /group: neon-branch-guard/);
   assert.match(workflow, /cancel-in-progress: false/);
+  assert.match(workflow, /actions\/cache\/restore@/);
+  assert.match(workflow, /actions\/cache\/save@/);
+  assert.match(workflow, /always\(\) && steps\.cleanup\.outcome != 'skipped'/);
   assert.match(workflow, /pull-requests: read/);
 });

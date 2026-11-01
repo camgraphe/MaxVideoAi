@@ -3,7 +3,7 @@ import test from 'node:test';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -43,8 +43,8 @@ test('guard dry run consumes every branch page without issuing deletions', async
   assert.ok(requests.every(request => request.startsWith('GET ')));
 });
 
-for (const reopened of [false, true]) {
-  test(`abandoned cleanup ${reopened ? 'preserves a PR reopened during the final recheck' : 'deletes an inactive preview without a PR through the CLI'}`, async t => {
+for (const scenario of ['abandoned', 'reopened', 'changed-head', 'newly-observed', 'over-limit'] as const) {
+  test(`abandoned cleanup protects current work: ${scenario}`, async t => {
     const requests: string[] = [];
     const main = { id: 'main', name: 'main', primary: true, default: true, current_state: 'ready' };
     const preview = { id: 'preview', name: 'preview/codex/abandoned', parent_id: 'main', creation_source: 'vercel', current_state: 'ready', created_at: '2026-01-01T00:00:00Z' };
@@ -63,9 +63,9 @@ for (const reopened of [false, true]) {
         return res.end(JSON.stringify({ branches: present ? [main, preview] : [main] }));
       }
       if (url.pathname.endsWith('/endpoints')) return res.end(JSON.stringify({ endpoints: [{ branch_id: 'preview', current_state: 'idle', last_active: '2026-01-01T00:00:00Z' }] }));
-      if (url.pathname.includes('/git/ref/')) return res.end(JSON.stringify({ object: { sha: 'old-sha' } }));
-      if (url.pathname.endsWith('/git/commits/old-sha')) return res.end(JSON.stringify({ sha: 'old-sha', committer: { date: '2026-01-01T00:00:00Z' } }));
-      if (url.pathname.endsWith('/pulls')) return res.end(JSON.stringify(reopened && inventories >= 2 ? [{ state: 'open' }] : []));
+      if (url.pathname.includes('/git/ref/')) return res.end(JSON.stringify({ object: { sha: scenario === 'changed-head' && inventories >= 2 ? 'another-old-sha' : 'old-sha' } }));
+      if (url.pathname.includes('/git/commits/')) return res.end(JSON.stringify({ sha: url.pathname.split('/').at(-1), committer: { date: '2026-01-01T00:00:00Z' } }));
+      if (url.pathname.endsWith('/pulls')) return res.end(JSON.stringify(scenario === 'reopened' && inventories >= 2 ? [{ state: 'open' }] : []));
       res.statusCode = 404;
       res.end('{}');
     });
@@ -78,18 +78,27 @@ for (const reopened of [false, true]) {
     const directory = await mkdtemp(join(tmpdir(), 'neon-cleanup-test-'));
     t.after(() => rm(directory, { recursive: true, force: true }));
     const preload = join(directory, 'github-fetch.mjs');
+    const observationsFile = join(directory, 'observations.json');
+    const now = Date.now();
+    const newlyObserved = scenario === 'newly-observed' || scenario === 'over-limit';
+    if (!newlyObserved) await writeFile(observationsFile, JSON.stringify({ version: 1, projectId: 'test-project', repository: 'owner/repo', heads: { preview: { gitBranch: 'codex/abandoned', head: 'old-sha', firstSeenAt: new Date(now - 25 * 3600000).toISOString(), lastSeenAt: new Date(now - 3600000).toISOString() } } }));
     await writeFile(preload, `const original = globalThis.fetch; globalThis.fetch = (input, init) => { const url = new URL(input); return original(url.hostname === 'api.github.com' ? ${JSON.stringify(base)} + url.pathname + url.search : input, init); };`);
     const child = spawn(process.execPath, ['--import', pathToFileURL(preload).href, 'scripts/neon-branch-guard.mjs', '--delete-abandoned'], {
-      env: { ...process.env, NEON_API_KEY: 'test-neon', NEON_API_BASE_URL: `${base}/api/v2`, GITHUB_TOKEN: 'test-github', GITHUB_REPOSITORY: 'owner/repo', NEON_BRANCH_LIMIT: '8', NEON_BRANCH_DELETE_ABANDONED: '0', NEON_BRANCH_DELETE_MERGED: '0', NEON_BRANCH_DELETE_ARCHIVED: '0' },
+      env: { ...process.env, NEON_API_KEY: 'test-neon', NEON_API_BASE_URL: `${base}/api/v2`, GITHUB_TOKEN: 'test-github', GITHUB_REPOSITORY: 'owner/repo', NEON_BRANCH_GUARD_PROJECT_ID: 'test-project', NEON_BRANCH_OBSERVATIONS_FILE: observationsFile, NEON_BRANCH_LIMIT: scenario === 'over-limit' ? '1' : '8', NEON_BRANCH_DELETE_ABANDONED: '0', NEON_BRANCH_DELETE_MERGED: '0', NEON_BRANCH_DELETE_ARCHIVED: '0' },
     });
     let output = '';
     child.stdout.on('data', chunk => { output += chunk; });
     child.stderr.on('data', chunk => { output += chunk; });
     const [code] = await once(child, 'close');
-    assert.equal(code, 0, output);
-    assert.ok(inventories >= 2, 'inventory must be checked again before deletion');
-    assert.equal(requests.filter(request => request.startsWith('DELETE ')).length, reopened ? 0 : 1, output);
-    assert.equal(present, reopened);
-    assert.match(output, reopened ? /preserved changed branch/ : /after prune:.*total=1/);
+    assert.equal(code, scenario === 'over-limit' ? 1 : 0, output);
+    if (!newlyObserved) assert.ok(inventories >= 2, 'inventory must be checked again before deletion');
+    assert.equal(requests.filter(request => request.startsWith('DELETE ')).length, scenario === 'abandoned' ? 1 : 0, output);
+    assert.equal(present, scenario !== 'abandoned');
+    assert.match(output, scenario === 'abandoned' ? /after prune:.*total=1/ : newlyObserved ? /eligible for deletion=0/ : /preserved changed branch/);
+    if (newlyObserved) {
+      const state = JSON.parse(await readFile(observationsFile, 'utf8'));
+      assert.equal(state.heads.preview.head, 'old-sha');
+      assert.ok(Date.parse(state.heads.preview.firstSeenAt) >= now, 'an old commit must start a fresh observation window');
+    }
   });
 }

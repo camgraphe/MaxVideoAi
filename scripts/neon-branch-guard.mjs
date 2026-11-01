@@ -2,7 +2,7 @@
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createGitBranchLookup, findCompletedPreviewCandidates } from './lib/neon-preview-cleanup-policy.mjs';
+import { createGitBranchLookup, findCompletedPreviewCandidates, observeGitHead } from './lib/neon-preview-cleanup-policy.mjs';
 
 const DEFAULT_PROJECT_ID = 'shy-flower-71253790';
 const DEFAULT_BRANCH_LIMIT = 8;
@@ -19,6 +19,7 @@ function parseArgs(argv) {
     deletePattern: process.env.NEON_BRANCH_DELETE_PATTERN || DEFAULT_DELETE_PATTERN,
     dryRun: process.env.NEON_BRANCH_GUARD_DRY_RUN === '1',
     apiBaseUrl: process.env.NEON_API_BASE_URL || DEFAULT_API_BASE_URL,
+    observationsFile: process.env.NEON_BRANCH_OBSERVATIONS_FILE,
   };
 
   argv.forEach((arg, index) => {
@@ -34,6 +35,7 @@ function parseArgs(argv) {
     if (arg.startsWith('--delete-pattern=')) options.deletePattern = arg.slice('--delete-pattern='.length);
   });
 
+  options.observationsFile ??= path.join(os.tmpdir(), `maxvideoai-neon-${encodeURIComponent(options.projectId)}-observations.json`);
   return options;
 }
 
@@ -104,6 +106,29 @@ async function deleteBranch(options, token, branchId) {
   return neonApi(options, token, `projects/${options.projectId}/branches/${branchId}`, { method: 'DELETE' });
 }
 
+async function readHeadObservations(options) {
+  let state;
+  try {
+    state = JSON.parse(await fs.readFile(options.observationsFile, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return {};
+    throw error;
+  }
+  if (state.version !== 1 || state.projectId !== options.projectId || state.repository !== process.env.GITHUB_REPOSITORY ||
+      !state.heads || typeof state.heads !== 'object' || Array.isArray(state.heads)) {
+    throw new Error('Invalid Neon head observation state; refusing cleanup.');
+  }
+  return state.heads;
+}
+
+async function saveHeadObservations(options, heads) {
+  await fs.mkdir(path.dirname(options.observationsFile), { recursive: true });
+  const temporary = `${options.observationsFile}.${process.pid}.tmp`;
+  const state = { version: 1, projectId: options.projectId, repository: process.env.GITHUB_REPOSITORY, heads };
+  await fs.writeFile(temporary, JSON.stringify(state), { mode: 0o600 });
+  await fs.rename(temporary, options.observationsFile);
+}
+
 function branchStateSummary(branches) {
   const counts = new Map();
   branches.forEach((branch) => {
@@ -149,35 +174,44 @@ async function main() {
   printBranchSummary('before', options, branches);
 
   if (options.deleteArchived || options.deleteMerged || options.deleteAbandoned) {
-    const lookupGitBranch = createGitBranchLookup({ repository: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN });
+    const remoteLookup = createGitBranchLookup({ repository: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN });
+    const heads = options.deleteAbandoned ? await readHeadObservations(options) : null;
+    const lookupGitBranch = async (gitBranch, branch) => {
+      const git = await remoteLookup(gitBranch);
+      return { ...git, headUnchangedSince: heads ? observeGitHead(heads, { branchId: branch.id, gitBranch, head: git.head }) : null };
+    };
     const findCandidates = async (currentBranches) => {
       const endpoints = await listEndpoints(options, token);
       const candidates = await findCompletedPreviewCandidates({ branches: currentBranches, endpoints, lookupGitBranch, archivedOnly: !options.deleteMerged && !options.deleteAbandoned, includeAbandoned: options.deleteAbandoned });
       return candidates.filter(branch => new RegExp(options.deletePattern).test(branch.name));
     };
-    const candidates = await findCandidates(branches);
-    console.log(
-      `[neon-branch-guard] completed preview branches eligible for deletion=${candidates.length} dry_run=${options.dryRun}`
-    );
+    try {
+      const candidates = await findCandidates(branches);
+      console.log(
+        `[neon-branch-guard] completed preview branches eligible for deletion=${candidates.length} dry_run=${options.dryRun}`
+      );
 
-    for (const [index, branch] of candidates.entries()) {
-      if (!options.dryRun) {
-        // Recheck remote state immediately before each destructive operation.
-        const freshCandidates = await findCandidates(await listBranches(options, token));
-        if (!freshCandidates.some(candidate => candidate.id === branch.id && candidate.name === branch.name)) {
-          console.log(`[neon-branch-guard] preserved changed branch id=${branch.id}`);
-          continue;
+      for (const [index, branch] of candidates.entries()) {
+        if (!options.dryRun) {
+          // Recheck remote state immediately before each destructive operation.
+          const freshCandidates = await findCandidates(await listBranches(options, token));
+          if (!freshCandidates.some(candidate => candidate.id === branch.id && candidate.name === branch.name && candidate.cleanupGitHead === branch.cleanupGitHead)) {
+            console.log(`[neon-branch-guard] preserved changed branch id=${branch.id}`);
+            continue;
+          }
+          await deleteBranch(options, token, branch.id);
         }
-        await deleteBranch(options, token, branch.id);
+        if ((index + 1) % 25 === 0 || index + 1 === candidates.length) {
+          console.log(`[neon-branch-guard] prune progress ${index + 1}/${candidates.length}`);
+        }
       }
-      if ((index + 1) % 25 === 0 || index + 1 === candidates.length) {
-        console.log(`[neon-branch-guard] prune progress ${index + 1}/${candidates.length}`);
-      }
-    }
 
-    if (candidates.length && !options.dryRun) {
-      branches = await listBranches(options, token);
-      printBranchSummary('after prune', options, branches);
+      if (candidates.length && !options.dryRun) {
+        branches = await listBranches(options, token);
+        printBranchSummary('after prune', options, branches);
+      }
+    } finally {
+      if (heads && !options.dryRun) await saveHeadObservations(options, heads);
     }
   }
 
