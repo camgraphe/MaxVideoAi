@@ -76,6 +76,25 @@ for (const seoStatus of VIDEO_SEO_STATUSES.filter(status => status !== 'approved
   });
 }
 
+test('unapproved entry intent cannot change public fallback titles or advice between direct and popup readers', async () => {
+  const quote = async () => ({ totalCents: 200, currency: 'USD' });
+  for (const seoStatus of VIDEO_SEO_STATUSES.filter(status => status !== 'approved')) {
+    const unapproved = { ...editorial, seoStatus };
+    const popup = await projectExampleWatchDetail(video, unapproved, quote, getBaseEngines());
+    assert.ok(popup);
+    for (const videoPrimaryIntent of ['camera-motion', 'product-ad'] as const) {
+      const prepared = deriveWatchPageSignals({ video, editorial: unapproved, entry: { ...entry, videoPrimaryIntent } });
+      assert.equal(prepared.primaryIntent, videoPrimaryIntent, 'retain the structural intent for audit and QA');
+      const direct = await projectExampleWatchDetail(video, unapproved, quote, getBaseEngines(), prepared);
+      assert.ok(direct);
+      assert.equal(direct.title, popup.title);
+      assert.equal(direct.context.intro, popup.context.intro);
+      assert.deepEqual(direct.context.notes, popup.context.notes);
+      assert.deepEqual(direct.quotes, popup.quotes);
+    }
+  }
+});
+
 test('approved editorial copy is still projected to titles, descriptions and visual context', () => {
   const signals = deriveWatchPageSignals({ video, entry, editorial });
   assert.equal(signals.title, 'EDITORIAL title');

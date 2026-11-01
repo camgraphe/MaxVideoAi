@@ -44,8 +44,9 @@ export function deriveWatchPageSignals(params: {
   const styleTags = extractStyleTags(promptText, entry?.styleTags ?? []);
   const capabilityTags = buildCapabilityTags(snapshot, video, entry?.capabilityTags ?? []);
   const primaryIntent = (entry?.videoPrimaryIntent as WatchPageIntent | undefined) ?? pickPrimaryIntent(capabilityTags, styleTags);
+  const publicCopyIntent = (publicCopyEntry?.videoPrimaryIntent as WatchPageIntent | undefined) ?? pickPrimaryIntent(capabilityTags, styleTags);
   const descriptor = extractDescriptor(promptText) ?? 'generated scene';
-  const fallbackTitle = titlePattern(primaryIntent, engineLabel, descriptor);
+  const fallbackTitle = titlePattern(publicCopyIntent, engineLabel, descriptor);
   const title = publicEditorial?.h1 ?? truncateText(publicCopyEntry?.seoTitleOverride ?? fallbackTitle, 86);
   const metaTitle = publicEditorial?.seoTitle ?? truncateText(publicCopyEntry?.seoTitleOverride ?? publicCopyEntry?.seoTitle ?? title, 86);
   const introSentences = [
@@ -89,7 +90,7 @@ export function deriveWatchPageSignals(params: {
   const compareLinks = buildCompareLinks({ engineSlug, engineLabel, engineEntry });
   const promptImprovementNotes = buildPromptImprovementNotes({
     capabilityTags,
-    primaryIntent,
+    primaryIntent: publicCopyIntent,
     hasNegativePrompt: Boolean(snapshot.negativePrompt),
   });
   const stableVideoAsset = isStablePublicMediaUrl(video.videoUrl);
