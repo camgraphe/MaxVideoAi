@@ -171,3 +171,8 @@
 .settingsReviewActions p { flex-basis: 100%; color: var(--text-muted); }
 .settingsReviewActions button { min-height: 44px; padding: 0 8px; }
 .settingsReviewActions .confirmSettings { margin-left: auto; padding: 0 12px; border-radius: 7px; background: var(--text-primary); color: var(--surface); }
+.previousReply { margin-top: .5rem; border: 1px solid var(--border); border-radius: .75rem; padding: .75rem; color: var(--text-muted); font-size: .8rem; }
+.previousReplyHeader { display: flex; justify-content: space-between; gap: .75rem; align-items: center; }
+.previousReplyHeader button { text-decoration: underline; text-underline-offset: .2em; }
+.previousReply > p { margin-top: .5rem; }
+.previousReplyText { margin-top: .75rem; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 20rem; overflow-y: auto; }

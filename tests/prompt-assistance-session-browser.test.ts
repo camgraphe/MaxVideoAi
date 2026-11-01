@@ -124,7 +124,7 @@ test('reload and workflow changes recover a pending identity exactly once and fe
   });
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Dog behind a car');await page.getByRole('button',{name:'Send message to Milo'}).click();
-  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
   await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Check reply',exact:true}).click();
