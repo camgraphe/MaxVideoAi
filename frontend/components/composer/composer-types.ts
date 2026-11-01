@@ -52,7 +52,9 @@ export interface ComposerProps {
   error?: string;
   messages?: string[];
   textareaRef?: Ref<HTMLTextAreaElement>;
-  onGenerate?: () => void;
+  onGenerate?: (canContinue?:()=>boolean) => void;
+  /** Enclosing submission owners must enforce the same effective button guard. */
+  onGenerationPermissionChange?: (allowed:boolean) => void;
   iterations?: number;
   preflight?: PreflightResponse | null;
   promptField?: EngineInputField;

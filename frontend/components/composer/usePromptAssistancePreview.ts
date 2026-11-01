@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useLayoutEffect,useReducer, useRef } from 'react';
+import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
 import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
-import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings} from '@/lib/prompt-assistance/application-review';
+import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
 import {canonicalPromptDraft,promptSessionScope} from '@/lib/prompt-assistance/session';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
@@ -23,6 +23,11 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   const state = previewReducer(stored, sync);
   if (state !== stored) dispatch(sync);
   previousAccount.current=accountKey;
+  // An explicit application is a separate permission from having a working proposal.
+  // Text is checked independently so qualified scalar settings (including ratio) stay compatible.
+  const generationContext = proposalApplicationContext({accountKey,scopeKey,reviewKey,live,text:'',target,perceptionRevision})?.compatibilityKey
+    ?? applicationReviewKey({accountKey,scopeKey,contextKey,live,target,perceptionRevision});
+  const [appliedPrompt, setAppliedPrompt] = useState<{text:string;context:string;chat:string}|null>(null);
   const sequence = useRef(0);
   const input = useRef<HTMLTextAreaElement>(null);
   const currentScope = useRef(scopeKey);
@@ -56,6 +61,14 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       messages:snapshot?.turns.flatMap(turn=>[{id:`${turn.requestId}-user`,role:'user' as const,text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant' as const,text:turn.reply}])??[],
       proposal:proposal?{text:proposal.text,valid,applicationContext:reviewContext,requestId:latestRequestId}:null});
   }}:undefined);
+  const appliedPromptCurrent = Boolean(appliedPrompt && appliedPrompt.text === draftText
+    && appliedPrompt.context === generationContext && appliedPrompt.chat === transport.chatKey
+    && appliedPrompt.text === state.proposal?.text);
+  useLayoutEffect(() => {
+    // Reverting an edit or a context must never resurrect a permission already revoked.
+    if (appliedPrompt && !appliedPromptCurrent) setAppliedPrompt(null);
+  }, [appliedPrompt, appliedPromptCurrent]);
+  const rememberApplication = (text:string) => setAppliedPrompt({text,context:generationContext,chat:transport.chatKey});
   const previousCompatibility=useRef({scope:scopeKey,revision:state.compatibilityRevision});
   useLayoutEffect(()=>{
     // Revoke durable proof before hashing or painting a hard-context change.
@@ -93,20 +106,24 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
     const review=applicationContext?async()=>{const [draftFingerprint,compatibilityFingerprint]=await Promise.all([hash(currentDraft),hash(applicationContext.compatibilityKey)]);return {version:1 as const,draftFingerprint,compatibilityFingerprint,compatible:true,settings:applicationContext.settings};}:undefined;
     if(PROMPT_ASSISTANCE_LIVE&&(!live||!transport.send({...(selection?{assistanceModel:selection.selectedModel,assistanceRevision:selection.revision}:{}),draftRevision:state.revision,locale:locale.startsWith('fr')?'fr':locale.startsWith('es')?'es':'en',message:state.message.trim(),draft:{...live,text:draftText,target},...(activeSuggestion?{activeSuggestion}:{})},id,review)))return;
+    setAppliedPrompt(null);
     sampleDraft.current = draftText;
     dispatch({ type: 'send', id, message: state.message.trim() });
   };
   const apply = () => {
     if (blocked || transport.loading || transport.recovery || !canApplyProposal(state) || !state.proposal || (maxLength && state.proposal.text.length > maxLength)) return;
+    rememberApplication(state.proposal.text);
     onApplyText(state.proposal.text);
     dispatch({ type: 'applied', previous: draftText, fingerprint: fingerprintFor(state.proposal.text) });
   };
   const applyReviewed=()=>{
     if(blocked||transport.cacheError||transport.loading||transport.loadError||transport.waiting||transport.recovery||transport.analysisPending||!canApplyReviewedProposal(state)||!state.proposal||(maxLength&&state.proposal.text.length>maxLength))return;
+    rememberApplication(state.proposal.text);
     onApplyText(state.proposal.text);dispatch({type:'appliedReviewed',previous:draftText,fingerprint:fingerprintFor(state.proposal.text)});
   };
   const undo = () => {
     if (blocked || !canUndoProposal(state) || !state.undo) return;
+    setAppliedPrompt(null);
     onApplyText(state.undo.text);
     dispatch({ type: 'undone', fingerprint: fingerprintFor(state.undo.text) });
   };
@@ -121,6 +138,6 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       input.current?.focus(); input.current?.setSelectionRange(start + insertion.length, start + insertion.length);
     });
   };
-  const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){dispatch({type:'newChat',message:transport.exhausted?state.message:undefined});return true;}return false;};
-  return { state, dispatch, input, send, apply, applyReviewed,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
+  const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){setAppliedPrompt(null);dispatch({type:'newChat',message:transport.exhausted?state.message:undefined});return true;}return false;};
+  return { state, dispatch, input, send, apply, applyReviewed, appliedPromptCurrent,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
 }

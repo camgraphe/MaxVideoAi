@@ -66,6 +66,7 @@ for(const browserType of [chromium,webkit])test(`Milo controls never submit the 
   await open();await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);await noMediaRun(page,'Escape');
   await open();await page.getByRole('button',{name:'Standard',exact:true}).focus();await page.keyboard.press('Enter');await noMediaRun(page,'Keyboard Standard');await click('Close assistance');
   assert.deepEqual(errors,[]);
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();
   await page.getByRole('button',{name:/^Generate/}).click();assert.deepEqual(await page.evaluate(()=>(globalThis as any).formRuns),[{source:'generate',submitter:null}],'the real dedicated Generate control must still invoke its host handler exactly once');
  }finally{await browser.close();await fixture.close();}
 });

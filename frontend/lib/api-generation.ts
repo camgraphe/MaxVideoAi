@@ -212,7 +212,7 @@ export async function runGenerate(
   };
 }
 
-export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null, request?: { accessToken: string; signal: AbortSignal }): Promise<ImageGenerationResponse> {
+export async function runImageGeneration(payload: ImageGenerationRequest, pricingSnapshot?: PricingSnapshot | null, request?: { accessToken: string; signal?: AbortSignal }): Promise<ImageGenerationResponse> {
   const response = await authFetch('/api/images/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
@@ -237,12 +237,12 @@ export async function runImageGeneration(payload: ImageGenerationRequest, pricin
   return data;
 }
 
-export async function runAudioGenerate(payload: AudioGenerateRequestBody): Promise<AudioGenerateResponse> {
+export async function runAudioGenerate(payload: AudioGenerateRequestBody, options?: { canContinue?:()=>boolean }): Promise<AudioGenerateResponse> {
   const response = await authFetch('/api/audio/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION, [AUDIO_PRICING_POLICY_HEADER]: AUDIO_PRICING_POLICY_REVISION },
     body: JSON.stringify(payload),
-  });
+  }, options?.canContinue);
   const data = (await response.json().catch(() => null)) as
     | (AudioGenerateResponse & { error?: string; message?: string; field?: string; providerFailures?: unknown })
     | null;

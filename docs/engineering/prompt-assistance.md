@@ -2,6 +2,16 @@
 
 The video and image composers and audio creation editor share **Prompt / AI assistant**. The isolated PR includes an opt-in real text-assistance service as well as the development-only visual sample. Default behavior remains off. This service cannot generate media or change generator settings.
 
+## Generate after a Milo conversation
+
+The Prompt tab remains an explicit manual generation path. In AI assistant, a reply, a review, or a ready proposal does not authorize generating the previous hidden draft. Generate keeps its current quote visible but its guarded action requires an explicit Use prompt / Use script application from the current conversation. Applying returns to the existing Prompt tab; returning to the chat can retain that permission while the applied text and compatible context still match.
+
+`usePromptAssistancePreview` keeps this application proof in memory, bound to the chat, editor/proposal text and hard context. A sent request, New chat, undo, text/proposal divergence or incompatible account/model/workflow/reference change revokes it. Qualified scalar controls reuse the existing settings-review compatibility boundary, so a compatible ratio change and live quote updates do not revoke application. Restored suggestions, cached text and history never restore generation permission by themselves.
+
+`PromptAssistanceComposer` publishes the mode-specific gate; shared `Composer` enforces it before its generation callback and publishes effective eligibility to enclosing owners. The image owner also guards native form submission. Video and image runners recheck a supplied permission predicate after asynchronous auth/wallet admission, so opening an unauthorized assistant before dispatch cannot continue with the hidden draft. Image dispatch passes its admitted session token to avoid a second unguarded lookup. Audio creation guards its own generation handler and passes a live continuation predicate through `runAudioGenerate` to `authFetch`, which checks it after session recovery immediately before the actual fetch. Revoked audio attempts finish quietly without a misleading generation failure. Existing pricing, media, source, model and account checks still apply, and quote requests are not gated by Milo permission. Studio and surfaces without the shared Milo composer retain their existing flow.
+
+`GenerationActionHelp` exposes localized guidance through hover, focus and touch. Its aria-disabled action remains focusable so users can discover the explanation, while the real handlers enforce blocking. The amount is not dimmed by the Milo gate. The compact proposal/review surface remains unchanged.
+
 ## Activation and rollback
 
 Before enabling real assistance in a controlled environment:

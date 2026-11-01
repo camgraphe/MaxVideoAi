@@ -17,12 +17,15 @@ import {MiloAccessNotice} from './MiloAccessNotice.client';
 import {needsMiloCredits,canUseMiloLite} from '@/lib/studio/milo-funding';
 import { PromptReferenceAnalysis } from './PromptReferenceAnalysis.client';
 
-export function PromptAssistanceComposer({ context, locale, modelLabel, draftText, onApplyText, children, renderReferences, modeControl, target = 'prompt', maxLength, blocked, disabledReason }: {
+export type PromptAssistanceGenerationState = { blocked:boolean; hint:string|null };
+
+export function PromptAssistanceComposer({ context, locale, modelLabel, draftText, onApplyText, children, renderReferences, modeControl, target = 'prompt', maxLength, blocked, disabledReason, onGenerationStateChange }: {
   context: PromptAssistanceContext; locale: string; modelLabel: string; draftText: string;
   onApplyText: (text: string) => void; children: ReactNode;
   renderReferences?: (insert?: (token: string) => void) => ReactNode;
   modeControl?: ReactNode;
   target?: 'prompt' | 'script' | 'lyrics'; maxLength?: number; blocked?: boolean; disabledReason?: string;
+  onGenerationStateChange?: (state:PromptAssistanceGenerationState) => void;
 }) {
   const [perceptionRevision, setPerceptionRevision] = useState(0);
   const [analysisBusy, setAnalysisBusy] = useState(false);
@@ -64,6 +67,11 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   const [expandedConversation, setExpandedConversation] = useState(false);
   const controls = useComposerWorkspaceControls();
   const milo = state.mode === 'milo' && !disabledReason;
+  const generationBlocked = milo && (!controller.appliedPromptCurrent || liveBusy || Boolean(state.pending));
+  const generationHint = generationBlocked ? state.proposal && !state.pending ? copy.generateUsePrompt : copy.generateContinue : null;
+  useLayoutEffect(() => {
+    onGenerationStateChange?.({blocked:generationBlocked,hint:generationHint});
+  }, [generationBlocked,generationHint,onGenerationStateChange]);
   const frame = useRef<HTMLDivElement>(null);
   const manualWriting = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {

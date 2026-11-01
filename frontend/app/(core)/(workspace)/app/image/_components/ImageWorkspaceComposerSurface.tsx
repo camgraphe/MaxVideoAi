@@ -9,7 +9,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { WorkspaceOptionsButton } from '@/components/composer/WorkspaceOptionsButton.client';
-import { useState } from 'react';
+import { useState, useRef, useCallback, useLayoutEffect } from 'react';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
 import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
@@ -60,7 +60,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   handleReferenceUrl: (slotIndex: number, url: string, source: 'paste' | 'library') => void;
   handleRemoveFromLibrary: () => void;
   handleRemoveReferenceSlot: (index: number) => void;
-  handleRun: (event?: FormEvent<HTMLFormElement> | null) => Promise<void> | void;
+  handleRun: (event?: FormEvent<HTMLFormElement> | null, canContinue?:()=>boolean) => Promise<void> | void;
   imageCountOptions: ControlOption[];
   pendingGenerations: readonly PendingGeneration[];
   isInLibrary: boolean;
@@ -251,6 +251,9 @@ export function ImageWorkspaceComposerSurface({
       />
     </div>
   );
+  const generationAllowed = useRef(false);
+  useLayoutEffect(()=>()=>{generationAllowed.current=false;},[]);
+  const updateGenerationPermission=useCallback((allowed:boolean)=>{generationAllowed.current=allowed;},[]);
   const [optionsOpen, setOptionsOpen] = useState(false);
   return (
     <div className="app-image-workspace-surface flex flex-col gap-1">
@@ -288,7 +291,7 @@ export function ImageWorkspaceComposerSurface({
       <ComposerWorkspaceControls modelControl={<WorkspaceComposerModel engines={engineCapsList} engineId={selectedEngineId}
         onEngineChange={setEngineId} mode={mode} onModeChange={nextMode => setMode(nextMode as ImageGenerationMode)}
         modeOptions={['t2i', 'i2i']} picker={modelPicker} />}>
-      <form onSubmit={handleRun} className="app-image-composer space-y-4">
+      <form onSubmit={event=>{event.preventDefault();if(generationAllowed.current)void handleRun(event,()=>generationAllowed.current);}} className="app-image-composer space-y-4">
         {statusMessage ? (
           <p
             role="status"
@@ -300,6 +303,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
+          onGenerationPermissionChange={updateGenerationPermission}
           assistance={{ accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'image', mode === 'i2i' ? 'edit' : 'create']), live: {surface: 'image', workflow: mode === 'i2i' ? 'edit' : 'create', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify(assistanceContext), reviewKey:canReviewImageRatio?imagePromptReviewKey(assistanceContext):undefined }}
           density="workspace"
           compactPrompt
@@ -395,7 +399,7 @@ export function ImageWorkspaceComposerSurface({
             ) : undefined
           }
           onGenerate={() => {
-            void handleRun();
+            if(generationAllowed.current)void handleRun(null,()=>generationAllowed.current);
           }}
           generateLabel={resolvedCopy.runButton.idle}
           generateLoadingLabel={resolvedCopy.runButton.running}

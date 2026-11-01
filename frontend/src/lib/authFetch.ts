@@ -6,7 +6,7 @@ import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 type FetchInput = Parameters<typeof fetch>[0];
 type FetchInit = Parameters<typeof fetch>[1];
 
-export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Response> {
+export async function authFetch(input: FetchInput, init?: FetchInit, canContinue?:()=>boolean): Promise<Response> {
   const headers = new Headers(init?.headers ?? {});
   let token: string | null = null;
   // An explicit token is authoritative; do not insert a session await before its dispatch.
@@ -26,6 +26,8 @@ export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Re
 
   const credentials = init?.credentials ?? 'include';
 
+  // Admission may have been revoked while the session lookup was pending.
+  if (canContinue?.() === false) throw new DOMException('Request canceled before dispatch.', 'AbortError');
   return fetch(input, {
     ...init,
     headers,
