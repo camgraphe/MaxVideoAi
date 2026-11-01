@@ -159,3 +159,20 @@ Generic admin refunds reject Studio assistance charges. Only the assistance owne
 may reconcile them, because it also owns subsequent usage settlement and the
 customer's remaining budget. There is no automatic expiration, bulk apply,
 automatic supplier retry, or background credit issuance in this procedure.
+
+## Composer pending replies
+
+Composer admission/worker recovery is documented in
+[bounded Milo reply recovery](../engineering/prompt-assistance-recovery.md).
+The browser may stop waiting or leave the chat while its saved request continues;
+Check previous reply remains attached to the original chat and never applies or
+generates automatically. A new Send may stay account-blocked up to its fixed 600 s
+deadline plus closeout grace. This is not cancellation or a second charge.
+
+Durable work checkpoints late supplier evidence even after customer waiver. Cron
+can settle valid saved evidence without recharging the customer or reopening the
+failed reply. Invalid evidence marked `lateSettlementError=USAGE_UNRESOLVED` needs
+explicit recovery/support and retains unknown exposure; it is not proof of zero
+cost. A transient database failure leaves automatic settlement retryable. Use the
+same exact-call diagnostic and fingerprinted support owners above. Never reset
+the exposure cap or rewrite a stored response to restore access.
