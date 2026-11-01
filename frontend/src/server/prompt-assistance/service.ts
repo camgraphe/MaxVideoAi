@@ -44,7 +44,14 @@ export async function finishRecorded(row:PromptRequestRow,policy:StudioAssistanc
     if(row.state==='failed'){
       // A waived request stays closed, but late supplier evidence can reconcile
       // exposure without recharging the customer or exposing a late suggestion.
-      await settleStudioAssistanceCall(row.call_id!,row.user_id,row.response_json!,tx);
+      if(!await settleStudioAssistanceCall(row.call_id!,row.user_id,row.response_json!,tx)){
+        // Invalid/insufficient saved evidence needs explicit support/recovery;
+        // it must not permanently occupy the global cron's first candidate.
+        // A transient DB error throws instead and never writes this marker.
+        await tx.query(`UPDATE prompt_assistance_requests SET context_json=COALESCE(context_json,'{}'::jsonb)
+          ||'{"lateSettlementError":"USAGE_UNRESOLVED"}'::jsonb,updated_at=clock_timestamp()
+          WHERE user_id=$1 AND session_id=$2 AND request_id=$3`,promptScopeValues(row));
+      }
       return row;
     }
     const response=row.response_json!;

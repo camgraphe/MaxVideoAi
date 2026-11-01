@@ -8,14 +8,17 @@ type Work={kind:'execute'|'settle'|'close'|'closed';row:PromptRequestRow};
  * advisory lock and request row lock. No transaction surrounds external work. */
 export async function claimPromptWork(scope:PromptRequestScope|undefined,executionOwner:string):Promise<Work|null>{
   if(!await promptWorkersReady())return null;
-  const candidates=await query<PromptRequestRow>(`SELECT * FROM prompt_assistance_requests
-    WHERE execution_version='durable-v1' AND execution_owner=$1
-    AND ($2::text IS NULL OR (user_id=$2 AND session_id=$3 AND request_id=$4)) AND (
-      (response_json IS NOT NULL AND state IN ('reported','unknown') AND error IS DISTINCT FROM 'USAGE_UNRESOLVED')
-      OR (response_json IS NULL AND call_id IS NOT NULL AND state IN ('calling','unknown') AND lease_expires_at<=clock_timestamp())
-      OR (response_json IS NULL AND call_id IS NULL AND state='preparing'
-        AND (worker_started_at IS NULL OR lease_expires_at<=clock_timestamp() OR execution_deadline_at<=clock_timestamp())))
-    ORDER BY (response_json IS NOT NULL) DESC,created_at LIMIT 10`,[executionOwner,scope?.userId??null,scope?.sessionId??null,scope?.requestId??null]);
+  const candidates=await query<PromptRequestRow>(`SELECT r.* FROM prompt_assistance_requests r
+    LEFT JOIN studio_assistance_calls c ON c.id=r.call_id
+    WHERE r.execution_version='durable-v1' AND r.execution_owner=$1
+    AND ($2::text IS NULL OR (r.user_id=$2 AND r.session_id=$3 AND r.request_id=$4)) AND (
+      (r.response_json IS NOT NULL AND (
+        (r.state IN ('reported','unknown') AND r.error IS DISTINCT FROM 'USAGE_UNRESOLVED')
+        OR (r.state='failed' AND c.state<>'settled' AND r.context_json->>'lateSettlementError' IS DISTINCT FROM 'USAGE_UNRESOLVED')))
+      OR (r.response_json IS NULL AND r.call_id IS NOT NULL AND r.state IN ('calling','unknown') AND r.lease_expires_at<=clock_timestamp())
+      OR (r.response_json IS NULL AND r.call_id IS NULL AND r.state='preparing'
+        AND (r.worker_started_at IS NULL OR r.lease_expires_at<=clock_timestamp() OR r.execution_deadline_at<=clock_timestamp())))
+    ORDER BY (r.response_json IS NOT NULL) DESC,r.created_at LIMIT 10`,[executionOwner,scope?.userId??null,scope?.sessionId??null,scope?.requestId??null]);
   for(const candidate of candidates){
     const work=await withDbTransaction(async tx=>{
       await tx.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`prompt-assistance:${candidate.user_id}`]);
@@ -23,7 +26,12 @@ export async function claimPromptWork(scope:PromptRequestScope|undefined,executi
         execution_deadline_at>clock_timestamp() deadline_live,lease_expires_at>clock_timestamp() lease_live
         FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3
         AND execution_version='durable-v1' AND execution_owner=$4 FOR UPDATE`,[...promptScopeValues(candidate),executionOwner]))[0];
-      if(!row||row.state==='complete'||row.state==='failed')return null;
+      if(!row||row.state==='complete')return null;
+      if(row.state==='failed'){
+        if(!row.response_json||!row.call_id||(row.context_json as {lateSettlementError?:string}|null)?.lateSettlementError==='USAGE_UNRESOLVED')return null;
+        const unsettled=await tx.query("SELECT id FROM studio_assistance_calls WHERE id=$1 AND state<>'settled'",[row.call_id]);
+        return unsettled.length?{kind:'settle' as const,row}:null;
+      }
       if(row.response_json)return row.error==='USAGE_UNRESOLVED'?null:{kind:'settle' as const,row};
       if(row.call_id)return !row.lease_live?{kind:'close' as const,row}:null;
       if(row.state!=='preparing'||(row.worker_started_at&&row.lease_live&&row.deadline_live))return null;

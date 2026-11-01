@@ -23,6 +23,16 @@ BEGIN
     OR NEW.worker_attempts<OLD.worker_attempts OR NEW.worker_attempts>OLD.worker_attempts+1 THEN
     RAISE EXCEPTION 'Prompt assistance execution identity and deadline are immutable';
   END IF;
+  -- Compatibility with an old recover/claim UPDATE. Its RETURNING must still
+  -- report pending while the saved preparation has a remaining retry/deadline.
+  -- No context, identity, lease, evidence or financial mutation is swallowed.
+  IF OLD.execution_version='durable-v1' AND OLD.state='preparing'
+    AND OLD.call_id IS NULL AND OLD.response_json IS NULL
+    AND OLD.lease_expires_at<=clock_timestamp() AND OLD.execution_deadline_at>clock_timestamp()
+    AND OLD.worker_attempts<2 AND NEW.state='failed' AND NEW.error='REQUEST_INTERRUPTED'
+    AND (to_jsonb(NEW)-'state'-'error'-'updated_at')=(to_jsonb(OLD)-'state'-'error'-'updated_at') THEN
+    RETURN OLD;
+  END IF;
   RETURN NEW;
 END;
 $$;
@@ -30,4 +40,4 @@ DROP TRIGGER IF EXISTS prompt_assistance_execution_identity ON prompt_assistance
 CREATE TRIGGER prompt_assistance_execution_identity BEFORE UPDATE ON prompt_assistance_requests
   FOR EACH ROW EXECUTE FUNCTION enforce_prompt_assistance_execution_identity();
 CREATE INDEX IF NOT EXISTS prompt_assistance_worker_candidates ON prompt_assistance_requests(execution_owner,lease_expires_at,created_at)
-  WHERE execution_version='durable-v1' AND state IN ('preparing','calling','reported','unknown');
+  WHERE execution_version='durable-v1' AND state IN ('preparing','calling','reported','unknown','failed');

@@ -144,6 +144,51 @@ test('saved workers fence dispatch, leases, expiry and financial recovery',async
   await run(owner,input,{create:async()=>{creates++;return evidence();}});
   assert.equal((await row(input.requestId)).state,'complete');assert.equal(creates,1);assert.equal(await run(owner,input),false);
  });
+ await t.test('late evidence checkpoint after waiver survives process loss and settles once',async()=>{
+  const owner='waived-checkpoint-owner',input=request(),started=gate<void>(),release=gate<void>();let creates=0;await admit(owner,input);
+  const running=run(owner,input,{create:async()=>{creates++;started.resolve();await release.promise;
+   await pg.pool.query("UPDATE prompt_assistance_requests SET response_json=$2::jsonb,state=CASE WHEN state='failed' THEN state ELSE 'reported' END WHERE request_id=$1",[input.requestId,JSON.stringify(evidence())]);
+   throw Error('Synthetic process loss after late evidence checkpoint');
+  }});await started.promise;
+  await pg.pool.query("UPDATE prompt_assistance_requests SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=$1",[input.requestId]);
+  await run(owner,input);assert.equal((await row(input.requestId)).error,'REQUEST_UNANSWERED');release.resolve();await running;
+  const saved=await row(input.requestId);assert.ok(saved.response_json);
+  assert.equal((await pg.pool.query('SELECT state FROM studio_assistance_calls WHERE id=$1',[saved.call_id])).rows[0].state,'unknown');
+  await pg.pool.query(`CREATE FUNCTION reject_late_settlement() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.state='settled' THEN RAISE EXCEPTION 'Synthetic settlement database failure'; END IF; RETURN NEW; END $$;
+    CREATE TRIGGER reject_late_settlement BEFORE UPDATE ON studio_assistance_calls FOR EACH ROW EXECUTE FUNCTION reject_late_settlement()`);
+  try{
+   await assert.rejects(run(owner,input),/Synthetic settlement database failure/);
+   assert.equal((await row(input.requestId)).context_json.lateSettlementError,undefined,'a transient database error must remain retryable by cron');
+  }finally{await pg.pool.query('DROP TRIGGER reject_late_settlement ON studio_assistance_calls');}
+  assert.equal(await run(owner,input),true,'cron must settle saved late evidence even while the customer request stays failed');
+  const call=(await pg.pool.query('SELECT * FROM studio_assistance_calls WHERE id=$1',[saved.call_id])).rows[0];
+  assert.equal(call.state,'settled');assert.ok(call.usage_facts);assert.equal(call.charged_cents,0);assert.equal(creates,1);
+  const result=await readPromptAssistance(owner,input.sessionId,input.requestId,policy);
+  assert.equal(result.state,'failed');assert.equal(result.error,'REQUEST_UNANSWERED');assert.equal(result.reply,undefined);assert.equal(result.assistance.credits?.included.remaining,500);
+  assert.equal(await run(owner,input),false,'settled late evidence is no longer a cron candidate');
+ });
+ await t.test('old recover and claim cannot close reclaimable durable preparation before its deadline',async()=>{
+  const owner='coexistence-owner',input=request();await admit(owner,input);
+  const claimed=await repo.claimPromptWork(scope(owner,input),'local');assert.equal(claimed?.kind,'execute');
+  await pg.pool.query("UPDATE prompt_assistance_requests SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=$1",[input.requestId]);
+  const legacyRecovered=(await pg.pool.query("UPDATE prompt_assistance_requests SET state='failed',error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *",[owner,input.sessionId,input.requestId])).rows[0];
+  assert.equal(legacyRecovered.state,'preparing','legacy RETURNING must report the still-recoverable admission');
+  await pg.pool.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp()",[owner]);
+  assert.equal((await row(input.requestId)).state,'preparing');
+  const resumed=await repo.claimPromptWork(scope(owner,input),'local');assert.equal(resumed?.kind,'execute');assert.equal(resumed?.row.worker_attempts,2);
+  await pg.pool.query("UPDATE prompt_assistance_requests SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=$1",[input.requestId]);
+  assert.equal((await pg.pool.query("UPDATE prompt_assistance_requests SET state='failed',error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE request_id=$1 RETURNING state",[input.requestId])).rows[0].state,'failed','an exhausted attempt budget is a true closure');
+  for(const kind of ['actual-error','changed-context','changed-owner'] as const){
+   const next=request(),nextOwner='coexistence-'+kind;await admit(nextOwner,next);await repo.claimPromptWork(scope(nextOwner,next),'local');
+   await pg.pool.query("UPDATE prompt_assistance_requests SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE request_id=$1",[next.requestId]);
+   if(kind==='changed-owner')await assert.rejects(pg.pool.query("UPDATE prompt_assistance_requests SET state='failed',error='REQUEST_INTERRUPTED',execution_owner='another' WHERE request_id=$1",[next.requestId]),/immutable/);
+   else{
+    const sql=kind==='actual-error'?"UPDATE prompt_assistance_requests SET state='failed',error='CONTEXT_TOO_LARGE',updated_at=clock_timestamp() WHERE request_id=$1 RETURNING state"
+     :"UPDATE prompt_assistance_requests SET state='failed',error='REQUEST_INTERRUPTED',context_json='{}'::jsonb,updated_at=clock_timestamp() WHERE request_id=$1 RETURNING state";
+    assert.equal((await pg.pool.query(sql,[next.requestId])).rows[0].state,'failed','the guard cannot swallow a different error/update shape');
+   }
+  }
+ });
  await t.test('Preview and production workers cannot take each other’s queued request',async()=>{
   const owner='environment-owner',input=request();await admit(owner,input,{executionOwner:'preview:dpl_fixture'});let creates=0;
   assert.equal(await run(owner,input,{create:async()=>{creates++;return evidence();}},{executionOwner:'production'}),false);
@@ -208,4 +253,20 @@ test('missed wakeup is recovered by the real global cron worker; duplicates cann
  assert.equal(await runPromptAssistanceWorkerOnce({scope:{userId:owner,sessionId:input.sessionId,requestId:input.requestId},policy,enabled:true,executionOwner:'local',executionDependencies:executeDefaults}),false);
  response.resolve(evidence());assert.equal((await(await first).json()).handled,true);
  assert.equal((await readPromptAssistance(owner,input.sessionId,input.requestId,policy)).state,'complete');assert.equal(creates,1);
+});
+
+test('invalid late evidence is inspected once and cannot starve a later global candidate',async t=>{
+ const pg=await fixture(t),bad=request(),fresh=request();let creates=0;
+ const {runPromptAssistanceWorkerOnce}=await import('../frontend/src/server/prompt-assistance/worker');
+ const admission=(owner:string,input:ReturnType<typeof request>)=>sendPromptAssistance(owner,input,{policy,workersEnabled:true,executionOwner:'local'});
+ const run=(scope?:{userId:string;sessionId:string;requestId:string},fail=false)=>runPromptAssistanceWorkerOnce({scope,policy,enabled:true,executionOwner:'local',executionDependencies:{...executeDefaults,
+  create:async()=>{creates++;if(fail)throw Error('Synthetic disconnected transport');return evidence();}}});
+ await admission('bad-late-owner',bad);await run({userId:'bad-late-owner',sessionId:bad.sessionId,requestId:bad.requestId},true);
+ const invalid={...evidence() as any,usage:undefined};await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[bad.requestId,JSON.stringify(invalid)]);
+ await admission('fresh-after-bad-owner',fresh);assert.equal(await run(),true);
+ const badRow=(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[bad.requestId])).rows[0];
+ assert.equal(badRow.context_json.lateSettlementError,'USAGE_UNRESOLVED');assert.equal(badRow.state,'failed');assert.equal(badRow.error,'REQUEST_UNANSWERED');
+ const unknown=(await pg.pool.query('SELECT * FROM studio_assistance_calls WHERE id=$1',[badRow.call_id])).rows[0];assert.equal(unknown.state,'unknown');assert.equal(unknown.usage_facts,null);assert.ok(Number(unknown.reserved_nano_usd)>0);
+ assert.equal(await run(),true);assert.equal((await readPromptAssistance('fresh-after-bad-owner',fresh.sessionId,fresh.requestId,policy)).state,'complete');
+ assert.equal(await run(),false);assert.equal(creates,2);
 });
