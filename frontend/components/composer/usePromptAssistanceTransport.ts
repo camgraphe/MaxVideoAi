@@ -12,16 +12,23 @@ type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefine
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;accountKey?:string;onRestore:Restore}){
   const accountKey=previousReplyAccount(scopeKey,options?.accountKey),serverScope=options?.scope??'';
   const blockedScopes=useRef(new Set<string>());
-  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
+  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,previousViewRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
   const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined as PromptAssistanceResult['phase'],previousRef:null as PreviousReplyRef|null,previousOpen:false,previousWaiting:false,previousResult:null as PromptAssistanceResult|null,previousError:null as string|null,persistenceError:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
   const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
   const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId,exhausted:owner.exhausted,previousRef:owner.previousRef,persistenceError:owner.persistenceError}));};
+  function closePreviousReply(){
+    owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;
+    update({previousOpen:false,previousWaiting:false,previousResult:null,previousError:null});
+  }
   function remember(ref:PreviousReplyRef,expected?:PreviousReplyRef|null){
+    const previous=owner.previousRef;
     if(!writePreviousReply(accountKey,ref,expected))owner.persistenceError=true;
-    owner.previousRef=readPreviousReply(accountKey)??ref;update({});
+    owner.previousRef=readPreviousReply(accountKey)??ref;
+    // An open view belongs to one identity even when admission or another tab replaces the account pointer.
+    if(!samePreviousReply(previous,owner.previousRef))closePreviousReply();else update({});
   }
   function rememberStatus(pending:Pending,result:PromptAssistanceResult){
     const previous=readPreviousReply(accountKey);
@@ -152,10 +159,9 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       else if(active()&&owner.chatEpoch===epoch&&!owner.controller){owner.waiting=false;update({waiting:false});}
     }
   }
-  async function checkPreviousReply(){
-    const pointer=owner.previousRef;
-    if(!active()||!pointer||owner.previousController)return;
-    const controller=new AbortController(),epoch=owner.chatEpoch;owner.previousController=controller;
+  async function checkPreviousReply(pointer=owner.previousRef){
+    if(!active()||!pointer||owner.previousController||!samePreviousReply(owner.previousRef,pointer)||owner.pending&&samePreviousReply(pointer,owner.pending))return;
+    const controller=new AbortController(),epoch=owner.chatEpoch;owner.previousController=controller;owner.previousViewRef=pointer;
     const valid=()=>active()&&owner.chatEpoch===epoch&&owner.previousController===controller&&samePreviousReply(readPreviousReply(accountKey),pointer);
     update({previousOpen:true,previousWaiting:true,previousError:null,previousResult:null});
     try{
@@ -183,13 +189,14 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
   function newChat(unsentMessage=''){
     if(!active()||pendingAnalysis())return false;
-    owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;
+    owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;
     owner.chatEpoch++;owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local={message:unsentMessage,proposal:null,latestRequestId:''};owner.pending=null;owner.waiting=false;owner.loading=false;owner.pendingReview=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;
     const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}else owner.persistenceError=true;
     update({error:null,loadError:false,loading:false,waiting:false,recovery:false,phase:undefined,previousOpen:false,previousWaiting:false,previousResult:null,nextAction:null,cacheError:owner.cacheError});return true;
   }
   const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined,previousRef:null,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:false,error:null,nextAction:null,fundingRevision:null};
-  return {...visible,observePendingRequest,accountPending:!!owner.previousRef&&owner.previousRef.status!=='terminal',previousAvailable:!!owner.previousRef&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending)),checkPreviousReply,closePreviousReply:()=>{owner.previousController?.abort();owner.previousController=null;update({previousOpen:false,previousWaiting:false});},stopPreviousReply:()=>owner.previousController?.abort(),analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
+  const previousViewRef=owner.previousViewRef;
+  return {...visible,observePendingRequest,recheckPreviousReply:()=>{if(previousViewRef&&owner.previousViewRef===previousViewRef)void checkPreviousReply(previousViewRef);},accountPending:!!owner.previousRef&&owner.previousRef.status!=='terminal',previousAvailable:!!owner.previousRef&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending)),checkPreviousReply,closePreviousReply,stopPreviousReply:()=>owner.previousController?.abort(),analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
     localEpoch:()=>owner.localEpoch,
     messageForNewChat:(message:string)=>owner.loading?(message||owner.local?.message||''):message,
     saveMessage:(message:string)=>{if(active()&&!owner.loading){owner.local={...owner.local,message,proposal:owner.local?.proposal??null,latestRequestId:owner.latestRequestId};if(!save()){owner.persistenceError=true;update({});}}},
