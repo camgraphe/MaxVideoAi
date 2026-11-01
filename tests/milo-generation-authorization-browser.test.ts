@@ -49,7 +49,7 @@ async function setup(page:Page,origin:string){
   }
   if(url.pathname==='/api/wallet'){walletWaiting=true;if(holdWallet)await new Promise<void>(resolve=>{releaseWallet=resolve;});return route.fulfill({json:{balanceCents:10000}}).catch(()=>{});}
   if(url.pathname==='/api/audio/quote')return route.fulfill({json:{ok:true,inputKey:JSON.stringify(request.postDataJSON()),pricing:{totalCents:7,currency:'USD'},expiresAt:Date.now()+600000}});
-  if(['/api/generate','/api/images/generate','/api/audio/generate'].includes(url.pathname)){generated.push({path:url.pathname,payload:request.postDataJSON()});return route.fulfill({status:409,json:{error:'SYNTHETIC_CAPTURE_ONLY',message:'No job created.'}});}
+  if(['/api/generate','/api/images/generate','/api/audio/generate'].includes(url.pathname)){generated.push({path:url.pathname,payload:request.postDataJSON(),authorization:request.headers()['authorization']});return route.fulfill({status:409,json:{error:'SYNTHETIC_CAPTURE_ONLY',message:'No job created.'}});}
   if(url.pathname.startsWith('/api/')){unexpected.push(url.pathname);return route.abort('blockedbyclient');}
   return route.continue();
  });
@@ -167,5 +167,29 @@ test('the real image runner rechecks Milo permission after delayed authenticatio
   await page.evaluate(()=>{(globalThis as any).delayImageAuth=true;});await page.getByRole('button',{name:/^Generate/}).click();await page.waitForFunction(()=>typeof (globalThis as any).releaseImageAuth==='function');
   await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await page.evaluate(()=>(globalThis as any).releaseImageAuth());await page.waitForTimeout(150);assert.equal(wire.generated.length,0,'delayed authentication cannot resurrect revoked permission');
   await page.getByRole('tab',{name:'Prompt',exact:true}).click();await page.getByRole('button',{name:/^Generate/}).click();await expect.poll(()=>wire.generated.length).toBe(1);assert.equal(wire.generated[0].path,'/api/images/generate');assert.deepEqual(wire.errors,[]);
+ }finally{await browser.close();await fixture.close();}
+});
+
+
+test('image dispatch keeps the admitted session token without a second unguarded authentication',{timeout:60000},async()=>{
+ const imageEngine=listFalEngines().find(entry=>entry.id==='nano-banana-2')!.engine;
+ const hostModules={...nextHost,'@/lib/supabaseClient':`export const supabase={auth:{getSession:async()=>{const n=globalThis.imageAuthCalls=(globalThis.imageAuthCalls??0)+1;return {data:{session:{access_token:n===1?'admitted-token':'replacement-token',user:{id:'owner'}}},error:null};}}};`};
+ const fixture=await startWorkspaceReferenceFixture({source:miloGenerationRealImageSource,config:{engine:imageEngine},assistanceLive:true,hostModules});const browser=await chromium.launch();
+ try{const page=await browser.newPage(),wire=await setup(page,new URL(fixture.url).origin);await page.addInitScript(()=>sessionStorage.setItem('last-known:user-id','owner'));await page.goto(fixture.url);
+  await page.getByRole('button',{name:/^Generate/}).click();await expect.poll(()=>wire.generated.length).toBe(1);assert.equal(wire.generated[0].authorization,'Bearer admitted-token','the guarded admission token must remain authoritative');assert.equal(await page.evaluate(()=>(globalThis as any).imageAuthCalls),1);
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('audio dispatch rechecks current permission after authFetch session recovery',{timeout:60000},async()=>{
+ const hostModules={...nextHost,
+  '@/lib/supabaseClient':`export const supabase={auth:{getSession:async()=>{if(globalThis.delayInnerAudioAuth){globalThis.delayInnerAudioAuth=false;await new Promise(resolve=>{globalThis.releaseInnerAudioAuth=resolve;});}return {data:{session:{access_token:'synthetic-token',user:{id:'owner'}}},error:null};}}};`,
+  '@/hooks/useRequireAuth':`const user={id:'owner'};export function useRequireAuth(){return {user};}`,
+  '@/lib/api-jobs':`const result={stableJobs:[],isLoading:true,error:null,mutate:async()=>{}};export function useInfiniteJobs(){return result;}export async function hideJob(){}`,
+  'next/dynamic':`export default function dynamic(){return function Deferred(){return null;};}`,
+ };
+ const fixture=await startWorkspaceReferenceFixture({source:miloGenerationAudioSource,config:{},assistanceLive:true,hostModules});const browser=await chromium.launch();
+ try{const page=await browser.newPage(),wire=await setup(page,new URL(fixture.url).origin);await page.addInitScript(()=>sessionStorage.setItem('last-known:user-id','owner'));await page.goto(fixture.url);await page.locator('#audio-creation-text').fill('A clear authored script.');await expect(page.getByRole('button',{name:/^Generate/})).toBeEnabled();
+  await page.evaluate(()=>{(globalThis as any).delayInnerAudioAuth=true;});await page.getByRole('button',{name:/^Generate/}).click();await page.waitForFunction(()=>typeof (globalThis as any).releaseInnerAudioAuth==='function');
+  await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.getByRole('button',{name:/^Generate/})).toBeDisabled();await page.evaluate(()=>(globalThis as any).releaseInnerAudioAuth());await page.waitForTimeout(150);assert.equal(wire.generated.length,0,'authorization must be current immediately before the actual audio POST');assert.deepEqual(wire.errors,[]);
  }finally{await browser.close();await fixture.close();}
 });

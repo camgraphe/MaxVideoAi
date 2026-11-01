@@ -32,7 +32,7 @@
 **Files:**
 - Modify: frontend/components/composer/usePromptAssistancePreview.ts; PromptAssistanceComposer.client.tsx; prompt-assistance-copy.ts
 - Modify: frontend/components/Composer.tsx; frontend/components/composer/composer-types.ts
-- Create: frontend/components/composer/GenerationActionHelp.client.tsx and its CSS module
+- Create: frontend/components/composer/GenerationActionHelp.client.tsx, its CSS module and useComposerGenerationGate.ts
 - Modify: image/_components/ImageWorkspaceComposerSurface.tsx; audio/_components/AudioCreationEditor.tsx; audio/AudioCreationWorkspace.tsx
 - Test: tests/milo-generation-authorization-browser.test.ts plus focused existing fixture helpers as needed
 
@@ -54,7 +54,7 @@
 **Files:** same change set; no new feature scope.
 **Interfaces:** consumes the committed implementation and verification record; produces a clean commit for parent review.
 
-- [ ] Inspect complete diff and run git diff --check plus relevant selected validation lanes required by repository CI rules. Expected: clean / passing.
+- [x] Inspect complete diff and run git diff --check plus relevant selected validation lanes required by repository CI rules. Expected: clean / passing.
 - [ ] Obtain a fresh whole-branch review using parent coordination; address important findings with failing behavior tests before fixes.
 - [ ] Report worktree, branch, commit SHA, exact commands/results and any limitations. Wait for parent review; do not merge or deploy.
 
@@ -69,3 +69,14 @@
 - Synthetic desktop/mobile captures of discussion, ready and applied states were reviewed; preview bar/review behavior and amount readability retained. No provider/media/payment request or customer account was used.
 - In-memory proof is deliberately not restored from storage/history. Qualified scalar controls reuse the existing compatibility owner; hard changes and text/proposal divergence revoke it.
 - Parent review, Quality CI, exact preview and production gates remain outstanding. No merge or deployment is part of this implementation handoff.
+
+
+## Independent review follow-up
+
+Two P2 dispatch gaps were reproduced before correction: image performed a second unguarded session lookup inside authFetch, and audio retained its entry-time permission during that lookup. Image now uses the admitted token through the existing request interface; its optional signal does not introduce a new timeout. Audio passes a current permission/account/quote predicate to authFetch, checked immediately before fetch after session recovery. Both gaps have permanent synthetic browser regressions. Revoked audio dispatch is quiet and clears its local pending state.
+
+The new bridge lives in `useComposerGenerationGate.ts`, keeping Composer within its existing 500-line contract. Targeted review-fix behavior, auth and owner checks pass; the architecture check passes without changing its limit. TypeScript/exposure pass and lint retains only the same seven unrelated warnings.
+
+A broader local fast run reported **10,231 pass, 3 fail, 1 skip**. The relevant Composer line-budget failure is corrected above. Two local dependency mismatches remain explicit: `media-optimizer-contract.test.ts` found installed libheif 1.20.2 below required 1.23.2; `sharp-runtime-version.test.ts` found installed Sharp 0.34.5 instead of declared 0.35.4. Shared dependencies and the machine were not modified. Fresh Quality CI on the final candidate must verify the required versions; this branch does not bypass either check. The targeted regression rerun on the first committed candidate completed 108/108; review fixes have their own follow-up checks.
+
+Final follow-up command: `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/milo-generation-authorization-browser.test.ts tests/composer-architecture.test.ts` — **20/20 pass** (16 behavior cases plus 4 architecture assertions). Fresh TypeScript, exposure and `git diff --check` pass. Whole-branch review follow-up and final CI/preview gates remain with the parent.

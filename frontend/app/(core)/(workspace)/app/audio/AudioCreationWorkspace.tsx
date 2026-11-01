@@ -46,6 +46,9 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   const body = useMemo(() => buildAudioCreationRequest(intent, draft, locale), [intent, draft, locale]);
   const { quote, loading, error: quoteError, retry, isCurrent: isCurrentQuote } = useAudioCreationQuote(body, userId, isAudioDraftReady(intent, draft) && requestedIntent !== 'video');
   const [miloGeneration,setMiloGeneration] = useState<PromptAssistanceGenerationState>({blocked:false,hint:null});
+  const miloGenerationCurrent = useRef(true);
+  useLayoutEffect(() => { miloGenerationCurrent.current = !miloGeneration.blocked; }, [miloGeneration.blocked]);
+  useLayoutEffect(() => () => { miloGenerationCurrent.current = false; }, []);
   const submissionIds = useRef(new Map<string, string>());
   const [selection, setSelection] = useState<{ owner: string | null; result: AudioJobDetail | null }>({ owner: null, result: null });
   const result = selection.owner === userId ? selection.result : null;
@@ -139,18 +142,19 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
   };
 
   const generate = async () => {
-    if (miloGeneration.blocked || !stillOwned() || !isCurrentQuote() || !quote || !userId || quote.expiresAt <= Date.now() || submitting.current.has(quote.inputKey)) return;
+    if (!miloGenerationCurrent.current || !stillOwned() || !isCurrentQuote() || !quote || !userId || quote.expiresAt <= Date.now() || submitting.current.has(quote.inputKey)) return;
+    const canContinue = () => miloGenerationCurrent.current && stillOwned() && isCurrentQuote() && quote.expiresAt > Date.now();
     const submitted = { ...body }; const inputKey = quote.inputKey;
     const sequence = ++restoreSequence.current;
     submitting.current.add(inputKey); setPending(previous => [...previous, inputKey]); setNotice(null);
     try {
-      const response = await runAudioGenerate({ ...submitted, submissionId: getAudioSubmissionId(userId, inputKey, submissionIds.current), expectedQuote: { inputKey, totalCents: quote.pricing.totalCents, currency: quote.pricing.currency, expiresAt: quote.expiresAt } });
+      const response = await runAudioGenerate({ ...submitted, submissionId: getAudioSubmissionId(userId, inputKey, submissionIds.current), expectedQuote: { inputKey, totalCents: quote.pricing.totalCents, currency: quote.pricing.currency, expiresAt: quote.expiresAt } }, { canContinue });
       if (!stillOwned()) return;
       clearAudioSubmissionId(userId, inputKey, submissionIds.current);
       if (sequence === restoreSequence.current) setResult({ ...response, engineLabel: copy.intents[intent][0], settingsSnapshot: { pack: submitted.pack, script: submitted.script, prompt: submitted.prompt, lyrics: submitted.lyrics, providers: response.providers, voiceModel: submitted.voiceModel, elevenVoiceId: submitted.elevenVoiceId, elevenStability: submitted.elevenStability, elevenSimilarityBoost: submitted.elevenSimilarityBoost, minimaxVoiceId: submitted.minimaxVoiceId, seedAudioVoice: submitted.seedAudioVoice, seedAudioOutputFormat: submitted.seedAudioOutputFormat, seedAudioSampleRate: Number(submitted.seedAudioSampleRate) || null, voiceDelivery: submitted.voiceDelivery, voiceProfile: submitted.voiceProfile, voiceGender: submitted.voiceGender, seedAudioSpeed: draft.speed, seedAudioVolume: draft.volume, seedAudioPitch: draft.pitch, language: draft.language, musicModel: submitted.musicModel, musicBpm: draft.bpm, refs: { voiceSampleUrl: draft.reference?.url }, measuredDurationSec: response.durationSec, requestedDurationSec: response.requestedDurationSec } });
       window.dispatchEvent(new CustomEvent('jobs:status', { detail: { ...response, finalPriceCents: response.pricing.totalCents } }));
       void mutate();
-    } catch { if (stillOwned()) { setNotice(copy.error); retry(); } }
+    } catch { if (canContinue()) { setNotice(copy.error); retry(); } }
     finally { if (stillOwned()) { submitting.current.delete(inputKey); setPending(previous => previous.filter(key => key !== inputKey)); } }
   };
   const addReference = async (file: File) => {

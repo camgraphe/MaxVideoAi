@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useMemo, useCallback, useRef, useEffect, useState, useId, useLayoutEffect } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -26,8 +26,9 @@ import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
+import { useComposerGenerationGate } from '@/components/composer/useComposerGenerationGate';
 import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
-import { PromptAssistanceComposer, type PromptAssistanceGenerationState } from '@/components/composer/PromptAssistanceComposer.client';
+import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
 import { composerAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
@@ -98,8 +99,6 @@ export function Composer({
   const workspaceControls = useComposerWorkspaceControls();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
-  const [assistanceGeneration,setAssistanceGeneration] = useState<PromptAssistanceGenerationState>({blocked:false,hint:null});
-  const updateAssistanceGeneration=useCallback((next:PromptAssistanceGenerationState)=>setAssistanceGeneration(previous=>previous.blocked===next.blocked&&previous.hint===next.hint?previous:next),[]);
   const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
@@ -178,13 +177,6 @@ export function Composer({
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
     missingRequiredAsset;
-  const miloGenerationBlocked = assistanceEnabled && assistanceGeneration.blocked;
-  const generationContinuation = useRef(true);
-  useLayoutEffect(() => {
-    generationContinuation.current = !miloGenerationBlocked;
-    onGenerationPermissionChange?.(!isGenerateDisabled && !miloGenerationBlocked);
-  }, [isGenerateDisabled,miloGenerationBlocked,onGenerationPermissionChange]);
-  useLayoutEffect(()=>()=>{generationContinuation.current=false;},[]);
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
   const hasReferenceImage = useMemo(() => {
     return assetFields.some((entry) => {
@@ -237,11 +229,7 @@ export function Composer({
     }, 240);
   }, []);
 
-  const handleGenerateClick = useCallback(() => {
-    if (isGenerateDisabled || miloGenerationBlocked) return;
-    triggerButtonAnimation();
-    onGenerate?.(()=>generationContinuation.current);
-  }, [isGenerateDisabled, miloGenerationBlocked, onGenerate, triggerButtonAnimation]);
+  const generationGate = useComposerGenerationGate({enabled:assistanceEnabled,disabled:isGenerateDisabled,onStart:triggerButtonAnimation,onGenerate,onGenerationPermissionChange});
 
   useEffect(() => {
     return () => {
@@ -288,11 +276,11 @@ export function Composer({
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {!workspaceDensity ? generateControl : null}
                         <ComposerGenerationActivity entries={pendingGenerations} submitting={isLoading}>
-                          <GenerationActionHelp hint={miloGenerationBlocked ? assistanceGeneration.hint : null}><Button
+                          <GenerationActionHelp hint={generationGate.hint}><Button
                             type="button"
                             size="md"
                             disabled={isGenerateDisabled}
-                            aria-disabled={miloGenerationBlocked || undefined}
+                            aria-disabled={generationGate.blocked || undefined}
                             aria-busy={isLoading || undefined}
                             className={clsx(
                               'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
@@ -306,7 +294,7 @@ export function Composer({
                               isGenerateDisabled ? '' : 'active:scale-[0.97]',
                               formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
                             )}
-                            onClick={handleGenerateClick}
+                            onClick={generationGate.generate}
                           >
                             <span className="app-generation-label relative z-10 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-micro">{isLoading && workspaceDensity ? <GenerationSpinner /> : null}{resolvedGenerateLabel}</span>
                             <ComposerGenerationQuote workspace={workspaceDensity} hasPrice={Boolean(formattedPrice)} isPricing={isPricing} waitingLabel={extensionQuoteStatus}>{formattedPrice ? (
@@ -455,7 +443,7 @@ export function Composer({
           readOnlyText: {...assistance.live.readOnlyText,...(assistanceNegativePrompt?{negativePrompt:assistanceNegativePrompt}:{})},
           references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, assistanceNegativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
-          onGenerationStateChange={updateAssistanceGeneration}
+          onGenerationStateChange={generationGate.update}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
