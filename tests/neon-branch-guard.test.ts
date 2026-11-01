@@ -21,12 +21,14 @@ test('Neon branch guard delegates deletion to the completed-preview policy', () 
   assert.doesNotMatch(source, /console\.(log|error)\([^)]*token/i);
 });
 
-test('Neon branch guard runs daily in GitHub Actions', () => {
+test('Neon branch guard checks completed and abandoned previews hourly without overlapping runs', () => {
   const workflow = readFileSync(join(root, '.github/workflows/neon-branch-guard.yml'), 'utf8');
   assert.match(workflow, /name: Neon Branch Guard/);
-  assert.match(workflow, /cron: '17 5 \* \* \*'/);
+  assert.match(workflow, /cron: '17 \* \* \* \*'/);
   assert.match(workflow, /NEON_API_KEY: \$\{\{ secrets\.NEON_API_KEY \}\}/);
   assert.match(workflow, /NEON_BRANCH_LIMIT: '8'/);
-  assert.match(workflow, /node scripts\/neon-branch-guard\.mjs --delete-merged/);
+  assert.match(workflow, /node scripts\/neon-branch-guard\.mjs --delete-merged --delete-abandoned/);
+  assert.match(workflow, /group: neon-branch-guard/);
+  assert.match(workflow, /cancel-in-progress: false/);
   assert.match(workflow, /pull-requests: read/);
 });

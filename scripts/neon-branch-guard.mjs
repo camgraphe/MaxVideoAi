@@ -15,6 +15,7 @@ function parseArgs(argv) {
     limit: parsePositiveInteger(process.env.NEON_BRANCH_LIMIT, DEFAULT_BRANCH_LIMIT),
     deleteArchived: process.env.NEON_BRANCH_DELETE_ARCHIVED === '1',
     deleteMerged: process.env.NEON_BRANCH_DELETE_MERGED === '1',
+    deleteAbandoned: process.env.NEON_BRANCH_DELETE_ABANDONED === '1',
     deletePattern: process.env.NEON_BRANCH_DELETE_PATTERN || DEFAULT_DELETE_PATTERN,
     dryRun: process.env.NEON_BRANCH_GUARD_DRY_RUN === '1',
     apiBaseUrl: process.env.NEON_API_BASE_URL || DEFAULT_API_BASE_URL,
@@ -23,6 +24,7 @@ function parseArgs(argv) {
   argv.forEach((arg, index) => {
     if (arg === '--delete-archived') options.deleteArchived = true;
     if (arg === '--delete-merged') options.deleteMerged = true;
+    if (arg === '--delete-abandoned') options.deleteAbandoned = true;
     if (arg === '--dry-run') options.dryRun = true;
     if (arg === '--project-id') options.projectId = argv[index + 1] ?? options.projectId;
     if (arg.startsWith('--project-id=')) options.projectId = arg.slice('--project-id='.length);
@@ -146,11 +148,11 @@ async function main() {
   let branches = await listBranches(options, token);
   printBranchSummary('before', options, branches);
 
-  if (options.deleteArchived || options.deleteMerged) {
+  if (options.deleteArchived || options.deleteMerged || options.deleteAbandoned) {
     const lookupGitBranch = createGitBranchLookup({ repository: process.env.GITHUB_REPOSITORY, token: process.env.GITHUB_TOKEN });
     const findCandidates = async (currentBranches) => {
       const endpoints = await listEndpoints(options, token);
-      const candidates = await findCompletedPreviewCandidates({ branches: currentBranches, endpoints, lookupGitBranch, archivedOnly: !options.deleteMerged });
+      const candidates = await findCompletedPreviewCandidates({ branches: currentBranches, endpoints, lookupGitBranch, archivedOnly: !options.deleteMerged && !options.deleteAbandoned, includeAbandoned: options.deleteAbandoned });
       return candidates.filter(branch => new RegExp(options.deletePattern).test(branch.name));
     };
     const candidates = await findCandidates(branches);

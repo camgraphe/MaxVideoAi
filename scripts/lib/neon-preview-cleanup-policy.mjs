@@ -1,6 +1,6 @@
 const GRACE_MS = 24 * 60 * 60 * 1000;
 
-export async function findCompletedPreviewCandidates({ branches, endpoints, lookupGitBranch, now = Date.now(), archivedOnly = false }) {
+export async function findCompletedPreviewCandidates({ branches, endpoints, lookupGitBranch, now = Date.now(), archivedOnly = false, includeAbandoned = false }) {
   const primary = branches.find(branch => branch.default === true);
   if (!primary) throw new Error('Neon default branch could not be identified; refusing cleanup.');
   const parents = new Set(branches.map(branch => branch.parent_id).filter(Boolean));
@@ -17,7 +17,7 @@ export async function findCompletedPreviewCandidates({ branches, endpoints, look
     if (computes.some(endpoint => endpoint.current_state !== 'idle' || !Number.isFinite(Date.parse(endpoint.last_active)) || Date.parse(endpoint.last_active) > now - GRACE_MS)) continue;
 
     const gitBranch = branch.name.slice('preview/'.length);
-    const { head, pulls } = await lookupGitBranch(gitBranch);
+    const { head, headCommittedAt, pulls } = await lookupGitBranch(gitBranch);
     if (pulls.some(pull => pull.state === 'open')) continue;
     const merged = pulls.some(pull => {
       const mergedAt = Date.parse(pull.merged_at);
@@ -25,7 +25,18 @@ export async function findCompletedPreviewCandidates({ branches, endpoints, look
         Number.isFinite(mergedAt) && mergedAt >= created && mergedAt <= now - GRACE_MS &&
         typeof pull.head?.sha === 'string' && (head === null || head === pull.head.sha);
     });
-    if (merged) candidates.push(branch);
+    let abandoned = false;
+    const committed = Date.parse(headCommittedAt);
+    if (includeAbandoned && (head === null || (Number.isFinite(committed) && committed <= now - GRACE_MS))) {
+      // Every PR must be old and closed; a later close or a changed head means ongoing work.
+      abandoned = pulls.length === 0 ? typeof head === 'string' && head.length > 0 : pulls.every(pull => {
+        const closed = Date.parse(pull.closed_at);
+        return pull.state === 'closed' && pull.merged_at === null && pull.base?.ref === 'main' &&
+          Number.isFinite(closed) && closed >= created && closed <= now - GRACE_MS &&
+          typeof pull.head?.sha === 'string' && (head === null || head === pull.head.sha);
+      });
+    }
+    if (merged || abandoned) candidates.push(branch);
   }
   return candidates.sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
@@ -46,6 +57,15 @@ export function createGitBranchLookup({ repository, token, fetchFn = fetch }) {
   return async gitBranch => {
     const ref = await get(`git/ref/heads/${encodeURIComponent(gitBranch)}`, true);
     if (ref !== null && typeof ref.object?.sha !== 'string') throw new Error('GitHub returned an invalid branch ref.');
+    const head = ref?.object.sha ?? null;
+    let headCommittedAt = null;
+    if (head !== null) {
+      const commit = await get(`git/commits/${encodeURIComponent(head)}`);
+      if (commit?.sha !== head || typeof commit.committer?.date !== 'string' || !Number.isFinite(Date.parse(commit.committer.date))) {
+        throw new Error('GitHub returned invalid head commit evidence; refusing cleanup.');
+      }
+      headCommittedAt = commit.committer.date;
+    }
     const pulls = [];
     for (let page = 1; ; page++) {
       const params = new URLSearchParams({ state: 'all', head: `${owner}:${gitBranch}`, per_page: '100', page: String(page) });
@@ -54,6 +74,6 @@ export function createGitBranchLookup({ repository, token, fetchFn = fetch }) {
       pulls.push(...rows);
       if (rows.length < 100) break;
     }
-    return { head: ref?.object.sha ?? null, pulls };
+    return { head, headCommittedAt, pulls };
   };
 }

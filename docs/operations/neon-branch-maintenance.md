@@ -1,6 +1,6 @@
 # Neon branch maintenance
 
-`scripts/neon-branch-guard.mjs` reports the production Neon project branch count. The daily GitHub workflow uses `--delete-merged` to remove completed Vercel previews after a 24-hour grace period.
+`scripts/neon-branch-guard.mjs` reports the production Neon project branch count. The hourly GitHub workflow uses `--delete-merged --delete-abandoned` to remove completed and abandoned Vercel previews after a 24-hour grace period. Deletion occurs on the next successful hourly run after eligibility, not exactly 24 hours after branch creation. Runs are serialized so manual and scheduled cleanup cannot overlap.
 
 ## Required credentials
 
@@ -13,13 +13,18 @@ Never log either token. A Vercel environment variable marked sensitive cannot be
 
 A branch must be created by Vercel, named `preview/codex/*`, and be a direct child of the default branch. Primary, default, protected, staging, backup and parent branches are preserved. Computes must be suspended and their last activity must be at least 24 hours old.
 
-Deletion also requires a PR merged into `main` at least 24 hours ago, no currently open PR for that Git branch, and no later Git commits. A Neon branch created after the matching merge is preserved, so reused branch names are not mistaken for finished work. Deleted Git refs still require the matching merged PR. Missing or invalid API data stops cleanup. Branch inventory, computes and GitHub evidence are checked again before each deletion.
+The original merged-PR policy requires a PR merged into `main` at least 24 hours ago, no currently open PR for that Git branch, and no later Git commits. A Neon branch created after the matching merge is preserved, so reused branch names are not mistaken for finished work. Deleted Git refs still require the matching merged PR.
+
+`--delete-abandoned` explicitly extends eligibility to abandoned work. A preview with PRs requires every PR to be closed without merging into `main` for at least 24 hours, each closure after Neon branch creation, and each PR head to match the current Git head when the ref still exists. A preview without any PR requires an existing Git ref. Existing refs also require a verified current head commit at least 24 hours old, in addition to the same branch-age and compute-inactivity checks. A deleted ref can qualify through the dated PR closures; a missing ref without PR evidence is preserved. Open PRs, changed heads, recent commits, recent closes, manual branches, production, staging, backups and parent branches are preserved. Missing or invalid API evidence stops cleanup.
+
+Branch inventory, computes and GitHub evidence are checked again before each deletion. The 24-hour window starts after the latest required inactivity/closure condition; this is not a blanket expiration of active development environments.
 
 `--delete-archived` applies the same checks but only to archived branches. `--delete-pattern` can further restrict candidates; it cannot expand eligibility beyond the policy. `--dry-run` logs the count without deleting. The check-only mode needs only the Neon credential.
 
 ```bash
 npm run neon:branches:check
 node scripts/neon-branch-guard.mjs --delete-merged --dry-run
+node scripts/neon-branch-guard.mjs --delete-merged --delete-abandoned --dry-run
 ```
 
 The guard limit of 8 is an operational threshold, separate from Neon's billing allowance. Launch includes 10 branches per project and Scale includes 25. The infra-cost report preserves metered historical branch-hours and projects future excess with `max(project branch count - included allowance, 0)` for each project independently. Branch state does not indicate whether compute is active.
