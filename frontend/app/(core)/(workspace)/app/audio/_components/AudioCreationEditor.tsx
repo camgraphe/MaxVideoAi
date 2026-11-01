@@ -1,6 +1,6 @@
 'use client';
 import { useRef } from 'react';
-import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { PromptAssistanceComposer, type PromptAssistanceGenerationState } from '@/components/composer/PromptAssistanceComposer.client';
 import { audioAssistanceContext } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import { AUDIO_ELEVEN_VOICES, findElevenVoice } from '@/lib/audio-eleven-voices';
@@ -20,8 +20,8 @@ import type { AudioCreationCopy } from '../_lib/audio-creation-copy';
 import { AudioVoicePreview } from './AudioVoicePreview.client';
 import styles from './audio-creation.module.css';
 
-type Props = { assistanceAccountId?: string | null; intent: AudioCreationIntent; draft: AudioCreationDraft; copy: AudioCreationCopy; onChange: (patch: Partial<AudioCreationDraft>) => void; onFile: (file: File) => void; uploading: boolean; onLibrary: () => void };
-export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, onChange, onFile, uploading, onLibrary }: Props) {
+type Props = { locale?:string; assistanceAccountId?: string | null; intent: AudioCreationIntent; draft: AudioCreationDraft; copy: AudioCreationCopy; onChange: (patch: Partial<AudioCreationDraft>) => void; onFile: (file: File) => void; uploading: boolean; onLibrary: () => void; onGenerationStateChange?: (state:PromptAssistanceGenerationState)=>void };
+export function AudioCreationEditor({ locale='en', assistanceAccountId, intent, draft, copy, onChange, onFile, uploading, onLibrary, onGenerationStateChange }: Props) {
   const assistanceEnabled = PROMPT_ASSISTANCE_PREVIEW && assistanceAccountId !== undefined;
   const input = useRef<HTMLInputElement>(null);
   const eleven = !draft.reference && draft.voiceModel === 'eleven-v4';
@@ -56,7 +56,8 @@ export function AudioCreationEditor({ assistanceAccountId, intent, draft, copy, 
       </div> : <div className={styles.modelIdentity}><span>{copy.model}</span><strong>{modelName}</strong></div>}
     </div>
     {assistanceEnabled ? <PromptAssistanceComposer context={{accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'audio', intent]), contextKey: JSON.stringify({...draft, [key]: undefined}), live: audioAssistanceContext(intent, draft)}}
-      locale="en" modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
+      onGenerationStateChange={onGenerationStateChange}
+      locale={locale} modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
       renderReferences={spoken && (draft.reference || draft.voiceModel === 'seed') ? insert => <div className={styles.assistanceReferences}>
         <button type="button" aria-label="Add audio reference" disabled={uploading} onClick={() => input.current?.click()}><span aria-hidden>＋</span> Reference</button>
         {draft.reference ? <><button type="button" onClick={() => insert?.('@Audio1')} disabled={!insert}>Audio 1</button><button type="button" aria-label="Remove Audio 1" onClick={() => onChange({reference: null})}>×</button></> : null}

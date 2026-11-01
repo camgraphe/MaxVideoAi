@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState, useId, useLayoutEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -26,7 +26,8 @@ import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
-import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
+import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
+import { PromptAssistanceComposer, type PromptAssistanceGenerationState } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
 import { composerAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
@@ -54,7 +55,7 @@ export function Composer({
   error,
   messages,
   textareaRef,
-  onGenerate,
+  onGenerate, onGenerationPermissionChange,
   preflight,
   promptField,
   promptRequired,
@@ -97,6 +98,8 @@ export function Composer({
   const workspaceControls = useComposerWorkspaceControls();
   const workbenchCopy = workspaceReferenceCopy(locale);
   const workspaceDensity = density === 'workspace';
+  const [assistanceGeneration,setAssistanceGeneration] = useState<PromptAssistanceGenerationState>({blocked:false,hint:null});
+  const updateAssistanceGeneration=useCallback((next:PromptAssistanceGenerationState)=>setAssistanceGeneration(previous=>previous.blocked===next.blocked&&previous.hint===next.hint?previous:next),[]);
   const assistanceEnabled = Boolean(workspaceDensity && assistance && PROMPT_ASSISTANCE_PREVIEW && (!engine.activeVideoOperation || promptField));
   const referenceMentions = useComposerReferenceMentions({ engine, assetFields, assets, prompt, onPromptChange, textareaRef, multiPrompt });
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
@@ -175,6 +178,13 @@ export function Composer({
     (promptRequired && !promptValueReady) ||
     (negativePromptField && negativePromptRequired && !negativePromptValue) ||
     missingRequiredAsset;
+  const miloGenerationBlocked = assistanceEnabled && assistanceGeneration.blocked;
+  const generationContinuation = useRef(true);
+  useLayoutEffect(() => {
+    generationContinuation.current = !miloGenerationBlocked;
+    onGenerationPermissionChange?.(!isGenerateDisabled && !miloGenerationBlocked);
+  }, [isGenerateDisabled,miloGenerationBlocked,onGenerationPermissionChange]);
+  useLayoutEffect(()=>()=>{generationContinuation.current=false;},[]);
   const showSoraImageWarning = engine.id.startsWith('sora-2') && assetFields.some((entry) => entry.field.type === 'image');
   const hasReferenceImage = useMemo(() => {
     return assetFields.some((entry) => {
@@ -228,10 +238,10 @@ export function Composer({
   }, []);
 
   const handleGenerateClick = useCallback(() => {
-    if (isGenerateDisabled) return;
+    if (isGenerateDisabled || miloGenerationBlocked) return;
     triggerButtonAnimation();
-    onGenerate?.();
-  }, [isGenerateDisabled, onGenerate, triggerButtonAnimation]);
+    onGenerate?.(()=>generationContinuation.current);
+  }, [isGenerateDisabled, miloGenerationBlocked, onGenerate, triggerButtonAnimation]);
 
   useEffect(() => {
     return () => {
@@ -278,10 +288,11 @@ export function Composer({
                       <div className={clsx('flex w-full items-center gap-2 lg:w-auto', workspaceDensity && 'app-generation-controls')}>
                         {!workspaceDensity ? generateControl : null}
                         <ComposerGenerationActivity entries={pendingGenerations} submitting={isLoading}>
-                          <Button
+                          <GenerationActionHelp hint={miloGenerationBlocked ? assistanceGeneration.hint : null}><Button
                             type="button"
                             size="md"
                             disabled={isGenerateDisabled}
+                            aria-disabled={miloGenerationBlocked || undefined}
                             aria-busy={isLoading || undefined}
                             className={clsx(
                               'app-generation-action relative w-full justify-between overflow-hidden rounded-[24px] text-left',
@@ -318,7 +329,7 @@ export function Composer({
                                 isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
                               )}
                             />
-                          </Button>
+                          </Button></GenerationActionHelp>
                         </ComposerGenerationActivity>
                       </div>
                     </div>
@@ -444,6 +455,7 @@ export function Composer({
           readOnlyText: {...assistance.live.readOnlyText,...(assistanceNegativePrompt?{negativePrompt:assistanceNegativePrompt}:{})},
           references: [...assistance.live.references,...composerAssistanceReferences(engine, assetFields, assets, assistance.live.mode as import('@/types/engines').Mode)] } : undefined, contextKey: JSON.stringify([assistance.contextKey, engine.id, activeManualMode, assets, assistanceNegativePrompt, multiPrompt?.scenes]) }}
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
+          onGenerationStateChange={updateAssistanceGeneration}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}

@@ -124,15 +124,16 @@ export function useImageGenerationRunner({
   watermark,
 }: UseImageGenerationRunnerParams) {
   return useCallback(
-    async (event?: FormEvent<HTMLFormElement> | null) => {
+    async (event?: FormEvent<HTMLFormElement> | null, canContinue?:()=>boolean) => {
       event?.preventDefault();
-      if (!selectedEngine) return;
+      if (!selectedEngine || canContinue && !canContinue()) return;
       if (!readLastKnownUserId() && !hasSupabaseAuthCookie()) {
         setAuthModalOpen(true);
         return;
       }
       const { supabase } = await import('@/lib/supabaseClient');
       const { data } = await supabase.auth.getSession();
+      if (canContinue && !canContinue()) return;
       if (!data.session?.access_token) {
         setAuthModalOpen(true);
         return;

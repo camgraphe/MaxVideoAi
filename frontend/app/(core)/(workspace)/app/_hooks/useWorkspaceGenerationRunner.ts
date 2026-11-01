@@ -187,8 +187,8 @@ export function useWorkspaceGenerationRunner({
     setTopUpModal,
     showComposerError,
   });
-  const startRender = useCallback(async () => {
-    if (!form || !selectedEngine) return;
+  const startRender = useCallback(async (canContinue?:()=>boolean) => {
+    if (!form || !selectedEngine || canContinue?.() === false) return;
     const modeUnavailableMessage = getWorkspaceGenerationModeMessage(selectedEngine, submissionMode, uiLocale);
     if (modeUnavailableMessage) return showComposerError(modeUnavailableMessage);
     if (klingO3UnsupportedVideoReason) {
@@ -210,7 +210,7 @@ export function useWorkspaceGenerationRunner({
         setAuthModalOpen(true);
         return;
       }
-      const isSubmissionCurrent = () => attempt.isQuoteCurrent(token);
+      const isSubmissionCurrent = () => attempt.isQuoteCurrent(token) && (canContinue?.() ?? true);
       if (!isSubmissionCurrent()) return;
       setPreflightError(undefined);
       const trimmedPrompt = effectivePrompt.trim();
