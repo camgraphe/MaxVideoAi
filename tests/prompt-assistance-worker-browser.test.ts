@@ -166,3 +166,32 @@ test('a blocker admitted in the same session still opens an isolated previous-re
  await wire(page,async route=>{const body=route.request().method()==='POST'?route.request().postDataJSON():undefined;if(body?.action==='message'){posts++;original={sessionId:body.request.sessionId,requestId:randomUUID()};return route.fulfill({status:409,json:{ok:false,error:'REQUEST_PENDING',pendingRequest:{...original,scope:'video:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()}}});}if(body){posts++;assert.equal(body.requestId,original.requestId);}return route.fulfill({json:{ok:true,result:complete(original)}});});
  await open(page,url);await submit(page);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toBeVisible();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,2);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
 }));
+
+test('a real reload with blocked storage discovers the private blocker from the existing authenticated status GET',{timeout:90_000},()=>withFixture(async(page,url)=>{
+ let r:any,messages=0,recoveries=0,statusReads=0,done=false;
+ await page.addInitScript(()=>{Storage.prototype.getItem=()=>{throw Error('storage unavailable');};Storage.prototype.setItem=()=>{throw Error('storage unavailable');};Storage.prototype.removeItem=()=>{throw Error('storage unavailable');};});
+ await page.route('**/api/prompt-assistance*',async route=>{
+  const u=new URL(route.request().url());
+  if(route.request().method()==='GET'&&!u.searchParams.has('sessionId')){statusReads++;return route.fulfill({json:{ok:true,result:{...initialStatus,unresolvedCalls:r&&!done?1:0},...(r&&!done?{pendingRequest:{sessionId:r.sessionId,requestId:r.requestId,scope:'video:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()}}:{})}});}
+  if(route.request().method()==='POST'){const body=route.request().postDataJSON();if(body.action==='message'){messages++;r=body.request;return route.fulfill({json:{ok:true,result:result(r)}});}recoveries++;assert.equal(body.action,'recover');assert.equal(body.sessionId,r.sessionId);assert.equal(body.requestId,r.requestId);done=true;return route.fulfill({json:{ok:true,result:complete(r)}});}
+  assert.equal(u.searchParams.get('sessionId'),r.sessionId);assert.equal(u.searchParams.get('requestId'),r.requestId);return route.fulfill({json:{ok:true,result:result(r)}});
+ });
+ await open(page,url);await submit(page);await expect.poll(()=>messages).toBe(1);await expect(page.getByRole('button',{name:'Stop waiting',exact:true})).toBeVisible();const beforeReload=statusReads;
+ await page.evaluate(()=>(globalThis as any).bootMarker='old module state');await page.reload();assert.equal(await page.evaluate(()=>(globalThis as any).bootMarker),undefined);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(message(page)).toBeEditable();await message(page).fill('My new brief after the reload');await expect(send(page)).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toBeVisible();assert.equal(statusReads-beforeReload,1,'reuse the existing credits status GET instead of another discovery fetch');assert.equal(messages,1);assert.equal(recoveries,0,'status discovery never starts recovery or resends');
+ await page.getByRole('button',{name:'Check previous reply',exact:true}).click();const panel=page.getByRole('region',{name:'Previous Milo reply'});await expect(panel.getByText('Original isolated answer',{exact:true})).toBeVisible();await expect(panel.getByRole('textbox')).toHaveCount(0);await expect(panel.getByRole('button',{name:/Use prompt|Review|Generate/})).toHaveCount(0);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);await expect(message(page)).toHaveValue('My new brief after the reload');await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
+ await page.getByRole('button',{name:'Close previous reply',exact:true}).click();await expect(message(page)).toHaveValue('My new brief after the reload');await expect(send(page)).toBeEnabled();assert.equal(messages,1);assert.equal(recoveries,1);
+}));
+
+for(const failure of ['unauthenticated','invalid status','old account'] as const)test(`status discovery ignores ${failure} metadata`,{timeout:90_000},()=>withFixture(async(page,url)=>{
+ const pendingRequest={sessionId:randomUUID(),requestId:randomUUID(),scope:'video:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()};let reads=0,posts=0,release:(()=>void)|undefined;
+ await page.route('**/api/prompt-assistance*',async route=>{if(route.request().method()==='POST'){posts++;return route.abort();}reads++;
+  if(failure==='old account'&&reads===1){await new Promise<void>(resolve=>release=resolve);return route.fulfill({json:{ok:true,result:{...initialStatus,unresolvedCalls:1},pendingRequest}}).catch(()=>{});}
+  if(failure==='unauthenticated')return route.fulfill({status:401,json:{ok:false,error:'AUTH_REQUIRED',result:initialStatus,pendingRequest}});
+  if(failure==='invalid status')return route.fulfill({json:{ok:true,result:{enabled:true},pendingRequest}});
+  return route.fulfill({json:{ok:true,result:initialStatus}});
+ });
+ try{await page.goto(url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();if(failure==='old account'){await expect.poll(()=>!!release).toBe(true);await page.evaluate(()=>(globalThis as any).owner('another'));await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect.poll(()=>reads).toBe(2);release?.();}else await expect.poll(()=>reads).toBe(1);
+  if(failure==='unauthenticated')await expect(page.getByRole('link',{name:'Sign in to chat'})).toBeVisible();await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toHaveCount(0);await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);assert.equal(posts,0);
+ }finally{release?.();}
+}));

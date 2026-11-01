@@ -38,7 +38,7 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
   }, [context.scopeKey, disabledReason, dispatch]);
   const helpLabel = locale.startsWith('fr') ? 'Découvrir Milo' : locale.startsWith('es') ? 'Conocer a Milo' : 'Meet Milo';
   const helpHref = `${locale.startsWith('fr') ? '/fr' : locale.startsWith('es') ? '/es' : ''}/ai-video-prompt-generator`;
-  const credits = useStudioAssistance(context.scopeKey, controller.transport.waiting, { endpoint: PROMPT_ASSISTANCE_LIVE ? '/api/prompt-assistance' : '/api/studio/assistance', wrapChoice: PROMPT_ASSISTANCE_LIVE });
+  const credits = useStudioAssistance(JSON.stringify([context.accountKey??null,context.scopeKey]), controller.transport.waiting || controller.transport.previousWaiting, { onPendingRequest:PROMPT_ASSISTANCE_LIVE?controller.transport.observePendingRequest:undefined, endpoint: PROMPT_ASSISTANCE_LIVE ? '/api/prompt-assistance' : '/api/studio/assistance', wrapChoice: PROMPT_ASSISTANCE_LIVE });
   const [creditsOpen, setCreditsOpen] = useState(false);
   const creditsTrigger = useRef<HTMLButtonElement>(null);
   const liveBusy = controller.transport.waiting || controller.transport.recovery || controller.transport.loading || controller.transport.loadError || analysisBusy || controller.transport.analysisPending;

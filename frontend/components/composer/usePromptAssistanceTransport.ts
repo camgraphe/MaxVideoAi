@@ -12,7 +12,7 @@ type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefine
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;accountKey?:string;onRestore:Restore}){
   const accountKey=previousReplyAccount(scopeKey,options?.accountKey),serverScope=options?.scope??'';
   const blockedScopes=useRef(new Set<string>());
-  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,previousController:null as AbortController|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
+  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
   const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined as PromptAssistanceResult['phase'],previousRef:null as PreviousReplyRef|null,previousOpen:false,previousWaiting:false,previousResult:null as PromptAssistanceResult|null,previousError:null as string|null,persistenceError:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
@@ -26,6 +26,16 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function rememberStatus(pending:Pending,result:PromptAssistanceResult){
     const previous=readPreviousReply(accountKey);
     if(previous&&samePreviousReply(previous,pending))remember({...previous,deadlineAt:previous.deadlineAt??result.deadlineAt,status:result.state==='complete'||result.state==='failed'?'terminal':result.state==='unknown'?'unknown':'pending'},previous);
+  }
+  function observePendingRequest(value:unknown){
+    if(!enabled||!active())return;
+    const pointer=privatePreviousReply(value,scopeKey),previous=readPreviousReply(accountKey);
+    if(!pointer)return;
+    if(owner.terminalRequest?.sessionId===pointer.sessionId&&owner.terminalRequest.requestId===pointer.requestId)return;
+    if(previous&&samePreviousReply(previous,pointer)&&previous.status==='terminal')return;
+    if(previous&&previous.status!=='terminal'&&!samePreviousReply(previous,pointer))return;
+    const same=previous&&samePreviousReply(previous,pointer);
+    remember({...pointer,deadlineAt:same?previous.deadlineAt??pointer.deadlineAt:pointer.deadlineAt,status:same&&previous.status==='unknown'?'unknown':'pending'},previous??undefined);
   }
   function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
   function save(){return !!owner.sessionId&&writePromptChat(storageKey,snapshot());}
@@ -54,7 +64,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         if(snapshot&&(snapshot.sessionId!==owner.sessionId||snapshot.scope!==callbacks.current.options.scope))throw Error('INVALID_RESPONSE');
         if(snapshot){
           const done=new Set(snapshot.turns.map(turn=>turn.requestId));
-          if(owner.pending&&done.has(owner.pending.requestId)){const previous=readPreviousReply(accountKey);if(previous&&samePreviousReply(previous,owner.pending)){clearPreviousReply(accountKey,previous);owner.previousRef=null;}owner.pending=null;}
+          if(owner.pending&&done.has(owner.pending.requestId)){owner.terminalRequest={sessionId:owner.pending.sessionId,requestId:owner.pending.requestId};const previous=readPreviousReply(accountKey);if(previous&&samePreviousReply(previous,owner.pending)){clearPreviousReply(accountKey,previous);owner.previousRef=null;}owner.pending=null;}
           if(snapshot.pending){owner.pending={sessionId:owner.sessionId,requestId:snapshot.pending.requestId,uiId:null};if(!owner.previousRef)remember({version:1,scopeKey,serverScope:callbacks.current.options.scope,sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,status:'pending'} as PreviousReplyRef);}
           owner.latestRequestId=lastCompletedPromptRequestId(snapshot);
           owner.exhausted=snapshot.status==='active'?null:snapshot.status==='full'?'SESSION_FULL':'SESSION_EXPIRED';
@@ -109,6 +119,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       result=await pollPromptReply(pending,controller.signal,status=>{if(valid()){rememberStatus(pending,status);update({phase:status.phase});}},result);
       if(!valid()||controller.signal.aborted)return;
       if(result.state==='complete'||result.state==='failed'){
+        owner.terminalRequest={sessionId:result.sessionId,requestId:result.requestId};
         rememberStatus(pending,result);
         const previous=readPreviousReply(accountKey);if(previous&&samePreviousReply(previous,pending)){if(!clearPreviousReply(accountKey,previous))owner.persistenceError=true;owner.previousRef=null;}
         owner.pending=null;
@@ -178,7 +189,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     update({error:null,loadError:false,loading:false,waiting:false,recovery:false,phase:undefined,previousOpen:false,previousWaiting:false,previousResult:null,nextAction:null,cacheError:owner.cacheError});return true;
   }
   const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined,previousRef:null,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:false,error:null,nextAction:null,fundingRevision:null};
-  return {...visible,accountPending:!!owner.previousRef&&owner.previousRef.status!=='terminal',previousAvailable:!!owner.previousRef&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending)),checkPreviousReply,closePreviousReply:()=>{owner.previousController?.abort();owner.previousController=null;update({previousOpen:false,previousWaiting:false});},stopPreviousReply:()=>owner.previousController?.abort(),analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
+  return {...visible,observePendingRequest,accountPending:!!owner.previousRef&&owner.previousRef.status!=='terminal',previousAvailable:!!owner.previousRef&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending)),checkPreviousReply,closePreviousReply:()=>{owner.previousController?.abort();owner.previousController=null;update({previousOpen:false,previousWaiting:false});},stopPreviousReply:()=>owner.previousController?.abort(),analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
     localEpoch:()=>owner.localEpoch,
     messageForNewChat:(message:string)=>owner.loading?(message||owner.local?.message||''):message,
     saveMessage:(message:string)=>{if(active()&&!owner.loading){owner.local={...owner.local,message,proposal:owner.local?.proposal??null,latestRequestId:owner.latestRequestId};if(!save()){owner.persistenceError=true;update({});}}},
