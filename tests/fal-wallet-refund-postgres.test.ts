@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getDb } from '../frontend/src/lib/db';
-import { maybeAutoRefundWalletCharge } from '../frontend/server/fal-webhook-refunds';
+import { maybeAutoRefundWalletCharge, withWalletFailureSettlement } from '../frontend/server/fal-webhook-refunds';
 import { createPaidGenerationTestSchema, startDisposablePostgres } from './helpers/disposable-postgres';
 
 async function fixture() {
@@ -9,6 +9,8 @@ async function fixture() {
   const previous = process.env.DATABASE_URL;
   process.env.DATABASE_URL = db.databaseUrl;
   await createPaidGenerationTestSchema(db.pool);
+  // Match production: the fee is integer, while platform revenue is bigint.
+  await db.pool.query('ALTER TABLE app_receipts ALTER COLUMN platform_revenue_cents TYPE bigint');
   await db.pool.query(`DROP INDEX app_receipts_charge_job_unique;
     INSERT INTO app_jobs (job_id,user_id,engine_id,engine_label,status,payment_status,final_price_cents,currency,duration_sec)
     VALUES ('job','owner','test-model','Test','failed','paid_wallet',9999,'EUR',5);
@@ -26,6 +28,44 @@ async function fixture() {
 }
 
 const context = { failureMessage: 'Generation failed.', failureOrigin: 'test' };
+
+for (const fee of [18, null]) {
+  test(`a provider refusal atomically fails and refunds once with application fee ${fee}`, async () => {
+    const db = await fixture();
+    const failureMessage = 'This request was blocked by safety checks. Review the prompt and any reference images, video, or audio before trying again.';
+    try {
+      await db.pool.query("UPDATE app_jobs SET status='running', provisional=TRUE");
+      await db.pool.query('UPDATE app_receipts SET amount_cents=78, application_fee_cents=$1', [fee]);
+      const settle = () => withWalletFailureSettlement('job', {
+        engineLabel: 'MiniMax H3', providerJobId: 'provider-rejected',
+        failureMessage, failureOrigin: 'provider_terminal',
+      }, (executor) => executor.query(
+        "UPDATE app_jobs SET status='failed', provisional=FALSE, message=$1 WHERE job_id='job' AND status<>'completed' RETURNING job_id",
+        [failureMessage],
+      ));
+
+      await Promise.all([settle(), settle()]);
+      await settle();
+
+      assert.deepEqual(await db.state(), { status: 'failed', payment_status: 'refunded_wallet' });
+      assert.deepEqual((await db.pool.query("SELECT provisional, message FROM app_jobs WHERE job_id='job'")).rows,
+        [{ provisional: false, message: failureMessage }]);
+      const receipts = (await db.pool.query(`SELECT type, amount_cents, currency, application_fee_cents,
+        platform_revenue_cents, metadata FROM app_receipts ORDER BY id`)).rows;
+      assert.equal(receipts.length, 2);
+      assert.equal(receipts[0].type, 'charge');
+      assert.equal(receipts[0].amount_cents, 78);
+      assert.equal(receipts[0].application_fee_cents, fee);
+      assert.deepEqual(receipts[1], {
+        type: 'refund', amount_cents: 78, currency: 'USD',
+        application_fee_cents: fee === null ? null : 0,
+        platform_revenue_cents: fee === null ? null : '0',
+        metadata: { reason: 'auto_render_failure_refund', original_receipt_id: '1',
+          provider_job_id: 'provider-rejected', failure_origin: 'provider_terminal', note: failureMessage },
+      });
+    } finally { await db.cleanup(); }
+  });
+}
 
 test('a completion already committed cannot be automatically refunded', async () => {
   const db = await fixture();
