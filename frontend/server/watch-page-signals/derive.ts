@@ -24,6 +24,9 @@ export function deriveWatchPageSignals(params: {
 }): WatchPageDerivedSignals {
   const { entry, video } = params;
   const editorial = params.editorial ?? getVideoSeoEditorialEntry(video.id);
+  // Draft copy remains available to admin QA; public readers use factual fallbacks.
+  const publicEditorial = editorial?.seoStatus === 'approved' ? editorial : null;
+  const publicCopyEntry = editorial && !publicEditorial ? null : entry;
   const snapshot = parseSnapshot(video);
   const engineEntry = resolveEngineEntry(editorial?.modelSlug ?? entry?.engineSlug ?? snapshot.engineId ?? video.engineId);
   const engineSlug = editorial?.modelSlug ?? engineEntry?.modelSlug ?? entry?.engineSlug ?? normalizeEngineId(video.engineId ?? '') ?? null;
@@ -43,8 +46,8 @@ export function deriveWatchPageSignals(params: {
   const primaryIntent = (entry?.videoPrimaryIntent as WatchPageIntent | undefined) ?? pickPrimaryIntent(capabilityTags, styleTags);
   const descriptor = extractDescriptor(promptText) ?? 'generated scene';
   const fallbackTitle = titlePattern(primaryIntent, engineLabel, descriptor);
-  const title = editorial?.h1 ?? truncateText(entry?.seoTitleOverride ?? fallbackTitle, 86);
-  const metaTitle = editorial?.seoTitle ?? truncateText(entry?.seoTitleOverride ?? entry?.seoTitle ?? title, 86);
+  const title = publicEditorial?.h1 ?? truncateText(publicCopyEntry?.seoTitleOverride ?? fallbackTitle, 86);
+  const metaTitle = publicEditorial?.seoTitle ?? truncateText(publicCopyEntry?.seoTitleOverride ?? publicCopyEntry?.seoTitle ?? title, 86);
   const introSentences = [
     `This ${engineLabel} ${formatModeLabel(snapshot.inputMode).toLowerCase()} example shows ${descriptor}.`,
     (() => {
@@ -65,9 +68,9 @@ export function deriveWatchPageSignals(params: {
       return tailParts.length ? `${head} with ${tailParts.join(' · ')} output.` : `${head}.`;
     })(),
   ];
-  const intro = editorial?.shortDescription ?? truncateText(entry?.seoSummaryOverride ?? introSentences.join(' '), 240);
-  const metaDescription = editorial?.metaDescription ?? truncateText(`${intro} Prompt: ${promptPreview}`, 170);
-  const videoDescription = editorial?.shortDescription ?? truncateText(`${intro} ${promptPreview}`, 280);
+  const intro = publicEditorial?.shortDescription ?? truncateText(publicCopyEntry?.seoSummaryOverride ?? introSentences.join(' '), 240);
+  const metaDescription = publicEditorial?.metaDescription ?? truncateText(`${intro} Prompt: ${promptPreview}`, 170);
+  const videoDescription = publicEditorial?.shortDescription ?? truncateText(`${intro} ${promptPreview}`, 280);
   const badges = [
     engineLabel,
     formatModeLabel(snapshot.inputMode),
@@ -175,7 +178,7 @@ export function deriveWatchPageSignals(params: {
     title,
     metaTitle,
     metaDescription,
-    videoObjectName: editorial?.videoObjectName ?? title,
+    videoObjectName: publicEditorial?.videoObjectName ?? title,
     canonicalSlug,
     canonicalUrl: canonical.canonicalUrl,
     expectedCanonicalUrl: canonical.validation.expectedCanonicalUrl,
