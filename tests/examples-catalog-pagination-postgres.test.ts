@@ -410,12 +410,33 @@ test('public gallery traverses every eligible video beyond the old window and hy
     assert.equal(await reader.getVideoWatchPageDataById('kling-dance-film'),null,'an approved slug cannot expose a deleted output');
     assert.equal(await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false}),null);
     await postgres.pool.query(`DELETE FROM media_assets WHERE url='https://media.maxvideoai.com/fixture/kling-21.mp4'`);
-    await postgres.pool.query(`UPDATE video_seo_pages SET h1='A new editorial title',seo_status='disabled' WHERE video_id='kling-21'`);
+    await postgres.pool.query(`UPDATE video_seo_pages SET h1='A new editorial title' WHERE video_id='kling-21'`);
+    const edited=await reader.getExampleWatchDetail('kling-21');
+    assert.equal(edited.title,'A new editorial title','approved admin edits remain visible');
+    await postgres.pool.query(`UPDATE video_seo_pages SET seo_status='disabled',short_description='Internal review note: inspect this scene before approval.' WHERE video_id='kling-21'`);
     const changed=await reader.getExampleWatchDetail('kling-21');
     const disabledPage=await reader.getVideoWatchPageDataById('kling-dance-film');
-    assert.equal(changed.title,'A new editorial title');assert.equal(disabledPage.isEligible,false);
+    assert.deepEqual((await postgres.pool.query(`SELECT h1,seo_status,short_description FROM video_seo_pages WHERE video_id='kling-21'`)).rows,
+      [{h1:'A new editorial title',seo_status:'disabled',short_description:'Internal review note: inspect this scene before approval.'}],
+      'public fallback must preserve persisted admin copy and review status');
+    assert.equal(changed.title,'Kling 3 Pro video example: An original cinematic scene showing a');
+    assert.match(changed.context.intro,/^This Kling 3 Pro text to video example shows/);
+    assert.doesNotMatch(JSON.stringify(changed),/A new editorial title|Internal review note/);
+    assert.equal(disabledPage.isEligible,false);
+    assert.equal(disabledPage.signals.seoStatus,'disabled');
+    assert.equal(changed.watchHref,'/video/kling-dance-film');
+    assert.equal(changed.videoUrl,popup.videoUrl);
+    assert.equal(changed.prompt,popup.prompt);
     assert.equal(disabledPage.signals.title,changed.title);
+    assert.deepEqual(await reader.buildExampleWatchDetail(disabledPage.video,disabledPage.signals),changed,
+      'disabled prose uses the same factual fallback in the popup and prepared direct reader');
     assert.deepEqual(await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false}),{...disabledPage,related:[]});
+    await postgres.pool.query(`UPDATE video_seo_pages SET seo_status='approved',h1=$1,short_description=$2 WHERE video_id='kling-21'`,[popup.title,popup.context.intro]);
+    const restored=await reader.getExampleWatchDetail('kling-21');
+    const restoredPage=await reader.getVideoWatchPageDataById('kling-dance-film',{includeRelated:false});
+    assert.deepEqual(restored,popup,'explicit reapproval restores the approved public prose');
+    assert.equal(restoredPage.isEligible,true);
+    assert.deepEqual(await reader.buildExampleWatchDetail(restoredPage.video,restoredPage.signals),restored);
   });
 
   await t.test('ready marketing publication retains catalog order, approved watch slug and editorial output after deleting its source', async () => {

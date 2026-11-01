@@ -227,6 +227,8 @@ export interface EngineModeUiCaps {
   aspectRatio?: string[];
   fps?: number | number[];
   audioToggle?: boolean;
+  /** Display-only provenance: source audio (including silence) is retained. Does not change requests or controls. */
+  audioPresentation?: 'source';
   acceptsImageFormats?: string[];
   maxUploadMB?: number;
   notes?: string;

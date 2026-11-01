@@ -21417,6 +21417,7 @@
               "1080P"
             ],
             "audioToggle": false,
+            "audioPresentation": "source",
             "notes": "Replace people with ordered portraits; preserves source motion, cuts and audio. Each shot must be at most 15 seconds."
           }
         },
@@ -21534,6 +21535,7 @@
               "2K"
             ],
             "audioToggle": false,
+            "audioPresentation": "source",
             "aspectRatio": [
               "auto",
               "21:9",

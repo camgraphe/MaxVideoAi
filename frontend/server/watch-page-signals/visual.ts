@@ -108,7 +108,7 @@ export function buildWatchPageVisualContext(params: {
   const promptTooShortForSeo = countEditorialWords(promptText) < 28;
   const hasVisualPromptException =
     promptTooShortForSeo && canUseVideoSeoVisualPromptException(editorial, baseEditorialQaContext);
-  const editorialPromptContext = resolveVideoSeoPromptContext(editorial);
+  const editorialPromptContext = editorial?.seoStatus === 'approved' ? resolveVideoSeoPromptContext(editorial) : null;
   const seoPromptContext =
     visualReferenceWorkflow &&
     editorialPromptContext &&

@@ -24,13 +24,53 @@ test('same-model price scenario is isolated, disclosed and matches the quote', (
   assert.equal(row.iterations, 2);
   assert.deepEqual(current, before);
 });
-test('explicit audio choice survives model switching and mandatory audio is disclosed', () => {
+for (const [locale, fixedAudio, optionalAudio] of [
+  ['en', 'Audio: Always on', 'Audio off'],
+  ['fr', 'Son: Toujours activé', 'Sans audio'],
+  ['es', 'Audio: Siempre activado', 'Sin audio'],
+]) test(`${locale}: an explicit audio choice stays editable while native audio is disclosed as fixed`, () => {
   const current = setup();
-  const candidate = preparePickerScenario({ current, engine: engine('wan-3'), currentEngine: engine('wan-3-prime'), locale: 'en', overrides: { audio: false } });
+  const before = structuredClone(current);
+  const candidate = preparePickerScenario({ current, engine: engine('wan-3'), currentEngine: engine('wan-3-prime'), locale, overrides: { audio: false } });
   assert.equal(candidate.setup.form.audio, false);
-  const row = buildWorkspacePickerOptions({ current, engines, locale: 'en', memberTier: 'Member', overrides: { audio: false } })['minimax-h3'];
-  assert.match(row.summary, /Audio on/);
+  const rows = buildWorkspacePickerOptions({ current, engines, locale, memberTier: 'Member', overrides: { audio: false } });
+  assert.ok(rows['wan-3'].summary.endsWith(optionalAudio));
+  assert.equal(rows['wan-3'].request?.audio, false);
+  for (const id of ['minimax-h3', 'minimax-h3-max', 'happy-horse-1-0']) {
+    assert.ok(rows[id].summary.endsWith(fixedAudio), rows[id].summary);
+    assert.ok(rows[id].request);
+    assert.equal('audio' in rows[id].request!, false);
+  }
+  assert.deepEqual(current, before);
 });
+for (const operation of ['h3-recast', 'h3-relight'] as const) {
+  for (const [locale, retainedAudio] of [
+    ['en', 'Source audio retained'],
+    ['fr', 'Audio source conservé'],
+    ['es', 'Audio original conservado'],
+  ]) test(`${locale}: ${operation} discloses retained source audio for a complete silent-source setup`, () => {
+    const current = setup('minimax-h3-max', 'v2v');
+    current.prompt = '';
+    current.form = { ...current.form, operation, resolution: '768P', aspectRatio: 'auto' };
+    const imageField = operation === 'h3-recast' ? 'reference_image_urls' : 'reference_image_url';
+    const source = { id: 'silent-source', assetId: 'silent-source', fieldId: 'video_url', kind: 'video' as const,
+      status: 'ready' as const, name: 'silent-source.mp4', type: 'video/mp4', size: 1024, width: 1920, height: 1080,
+      durationSec: 124 / 24, fps: 24, decodedFrameCount: 124, constantFrameRate: true, hasAudio: false,
+      url: 'https://example.com/silent.mp4', previewUrl: 'https://example.com/silent.mp4' };
+    current.inputAssets = { video_url: [source], [imageField]: [{ id: imageField, assetId: imageField, fieldId: imageField,
+      kind: 'image', status: 'ready', name: 'reference.png', type: 'image/png', size: 1024, width: 512, height: 512,
+      url: 'https://example.com/reference.png', previewUrl: 'https://example.com/reference.png' }] };
+    const before = structuredClone(current);
+    const row = buildWorkspacePickerOptions({ current, engines, locale, memberTier: 'Member' })['minimax-h3-max'];
+    assert.ok(row.request, 'the complete silent-source operation remains estimable');
+    assert.ok(row.summary.endsWith(retainedAudio), row.summary);
+    assert.equal(row.request.operation, operation);
+    assert.equal(row.request.durationSec, 124 / 24);
+    assert.equal('audio' in row.request, false);
+    assert.deepEqual(row.request.inputs?.map(input => input.assetId), ['silent-source', imageField]);
+    assert.deepEqual(current, before);
+  });
+}
 test('source timing is read-only and a forged duration cannot replace measured media timing', () => {
   const current = setup('kling-o3-pro', 'v2v');
   current.form.operation = 'kling-edit';
@@ -81,4 +121,11 @@ test('source audio retention is editable and matches the Modify quote input', ()
   assert.equal(candidate.setup.form.extraInputValues.keep_audio, true);
   const row = buildWorkspacePickerOptions({ current, engines, locale: 'en', memberTier: 'Member' })[current.form.engineId];
   assert.match(row.summary, /Mute source audio/);
+  const markedEngines = engines.map(entry => entry.id !== current.form.engineId ? entry : {
+    ...entry, operationCaps: { ...entry.operationCaps, 'kling-edit': { ...entry.operationCaps!['kling-edit']!,
+      ui: { ...entry.operationCaps!['kling-edit']!.ui, audioPresentation: 'source' as const } } },
+  });
+  const markedRow = buildWorkspacePickerOptions({ current, engines: markedEngines, locale: 'en', memberTier: 'Member' })[current.form.engineId];
+  assert.equal(markedRow.summary, row.summary, 'the explicit source-audio control remains authoritative');
+  assert.deepEqual(markedRow.request, row.request, 'display provenance cannot change the request');
 });
