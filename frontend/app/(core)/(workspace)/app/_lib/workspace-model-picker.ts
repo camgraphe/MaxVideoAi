@@ -21,6 +21,7 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
   disabledEngineReasons?: Record<string, string>;
 }): Record<string, PickerPreparedOption> {
   const fr = locale.startsWith('fr'), es = locale.startsWith('es');
+  const audioCopy = workspaceModelReviewCopy(locale);
   const currentEngine = engines.find(engine => engine.id === current.form.engineId);
   const source = resolveWorkspaceWorkflow({ engine: currentEngine ?? null, ...current });
   const sourceMode = source.submissionMode;
@@ -45,9 +46,11 @@ export function buildWorkspacePickerOptions({ current, engines, locale, memberTi
     const priceUnavailableReason = missingSource
       ? (fr ? 'Ajoutez une vidéo source pour estimer' : es ? 'Añade un vídeo de origen para estimar' : 'Add a source video to estimate') : invalidQuoteInput?.message;
     const audioControl = pickerAudioControl(candidate.setup, candidate.engine, locale);
-    const audioLabel = !audioControl.options && candidate.engine.audio
-      ? `${audioControl.label}: ${workspaceModelReviewCopy(locale).includedAudio}`
-      : audioControl.options?.find(option => option.value === audioControl.value)?.label ?? audioControl.value;
+    const audioLabel = audioControl.options
+      ? audioControl.options.find(option => option.value === audioControl.value)?.label ?? audioControl.value
+      : candidate.workflow.capability?.audioPresentation === 'source'
+        ? audioCopy.retainedSourceAudio
+        : candidate.engine.audio ? `${audioControl.label}: ${audioCopy.includedAudio}` : audioControl.value;
     const operationLabel = sourceWorkflow ? currentModel ? getEngineModeLabel(engine.id, candidateMode, locale) : (fr ? 'Créer' : es ? 'Crear' : 'Create') : null;
     const summary = [operationLabel, Number.isFinite(candidate.effectiveDurationSec) ? `${candidate.effectiveDurationSec} s` : null,
       candidate.setup.form.resolution?.toLowerCase(), audioLabel,

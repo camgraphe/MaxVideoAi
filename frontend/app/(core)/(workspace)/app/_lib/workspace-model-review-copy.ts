@@ -1,6 +1,7 @@
 const en = {
   optionalAudio: 'Optional',
   includedAudio: 'Always on',
+  retainedSourceAudio: 'Source audio retained',
   noAudio: 'No audio',
   authPending: 'Checking account…',
   close: 'Close',
@@ -112,6 +113,7 @@ const fr: Copy = {
   ...en,
   optionalAudio: 'Au choix',
   includedAudio: 'Toujours activé',
+  retainedSourceAudio: 'Audio source conservé',
   noAudio: 'Sans audio',
   authPending: 'Vérification du compte…',
   close: 'Fermer',
@@ -223,6 +225,7 @@ const es: Copy = {
   ...en,
   optionalAudio: 'Opcional',
   includedAudio: 'Siempre activado',
+  retainedSourceAudio: 'Audio original conservado',
   noAudio: 'Sin audio',
   authPending: 'Verificando la cuenta…',
   close: 'Cerrar',
