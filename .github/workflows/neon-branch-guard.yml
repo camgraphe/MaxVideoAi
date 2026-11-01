@@ -2,8 +2,12 @@ name: Neon Branch Guard
 
 on:
   schedule:
-    - cron: '17 5 * * *'
+    - cron: '17 * * * *'
   workflow_dispatch:
+
+concurrency:
+  group: neon-branch-guard
+  cancel-in-progress: false
 
 jobs:
   prune-preview-branches:
@@ -18,7 +22,9 @@ jobs:
       NEON_BRANCH_GUARD_PROJECT_ID: shy-flower-71253790
       NEON_BRANCH_LIMIT: '8'
       NEON_BRANCH_DELETE_MERGED: '1'
+      NEON_BRANCH_DELETE_ABANDONED: '1'
       NEON_BRANCH_DELETE_PATTERN: '^preview/codex/'
+      NEON_BRANCH_OBSERVATIONS_FILE: /tmp/maxvideoai-neon-branch-observations.json
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -29,5 +35,20 @@ jobs:
           node-version: '22'
           package-manager-cache: false
 
+      - name: Restore Git head observations
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.NEON_BRANCH_OBSERVATIONS_FILE }}
+          key: neon-head-observations-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: neon-head-observations-v1-
+
       - name: Run Neon branch guard
-        run: node scripts/neon-branch-guard.mjs --delete-merged
+        id: cleanup
+        run: node scripts/neon-branch-guard.mjs --delete-merged --delete-abandoned
+
+      - name: Save Git head observations even when the count exceeds the guard limit
+        if: ${{ always() && steps.cleanup.outcome != 'skipped' }}
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.NEON_BRANCH_OBSERVATIONS_FILE }}
+          key: neon-head-observations-v1-${{ github.run_id }}-${{ github.run_attempt }}
