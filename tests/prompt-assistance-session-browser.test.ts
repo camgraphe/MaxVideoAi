@@ -12,6 +12,48 @@ globalThis.mode=setWorkflow;globalThis.owner=setOwner;globalThis.model=setModel;
 return <PromptAssistanceComposer context={{accountKey:owner,scopeKey:JSON.stringify([owner,'video',workflow]),contextKey:model,live:{surface:'video',workflow,engineId:model,mode:workflow==='create'?'t2v':'v2v',settings:{durationSec:5},references:[]}}} locale="en" modelLabel={model} draftText={text} onApplyText={setText}><textarea aria-label="Manual prompt" value={text} onChange={e=>setText(e.target.value)}/></PromptAssistanceComposer>}
 createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
+test('failed user turns restore with a delivery notice and never relabel the prior proposal',{timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch();
+ try{
+  const page=await browser.newPage();let snapshot:any;const sent:any[]=[];
+  await page.route('**/api/prompt-assistance*',async route=>{
+   if(route.request().method()==='GET'){
+    const url=new URL(route.request().url());
+    if(!url.searchParams.has('sessionId'))return route.fulfill({json:{ok:true,result:initialStatus}});
+    return route.fulfill({json:{ok:true,result:snapshot}});
+   }
+   const r=route.request().postDataJSON().request;sent.push(r);
+   snapshot??={sessionId:r.sessionId,scope:'video:create',status:'active',turns:[],proposal:null,pending:null};
+   if(sent.length===2){
+    snapshot.turns.push({requestId:r.requestId,message:r.message,state:'failed',reply:null,error:'REQUEST_UNANSWERED'});
+    return route.fulfill({json:{ok:true,result:{sessionId:r.sessionId,requestId:r.requestId,draftRevision:r.draftRevision,target:'prompt',message:r.message,state:'failed',safeToRetry:false,error:'REQUEST_UNANSWERED',assistance:initialStatus}}});
+   }
+   const text=sent.length===1?'A telescope turns under a twilight sky.':null,reply='A completed synthetic answer.';
+   snapshot.turns.push({requestId:r.requestId,message:r.message,reply});
+   if(text)snapshot.proposal={text,draftFingerprint:createHash('sha256').update(canonicalPromptDraft(r.draft)).digest('hex')};
+   return route.fulfill({json:{ok:true,result:{sessionId:r.sessionId,requestId:r.requestId,draftRevision:r.draftRevision,target:'prompt',message:r.message,state:'complete',reply:{reply,text},assistance:initialStatus}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
+  await message.fill('An observatory visit');await page.getByRole('button',{name:'Send message to Milo'}).click();
+  await expect(page.getByText('A completed synthetic answer.',{exact:true})).toBeVisible();
+  await message.fill('Add a mountain observatory view.');await page.getByRole('button',{name:'Send message to Milo'}).click();
+  await expect(page.locator('[data-assistance-delivery-failed]')).toHaveText('No usable reply was returned.');
+  await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await expect(page.getByText('Add a mountain observatory view.',{exact:false})).toBeVisible();
+  await expect(page.locator('[data-assistance-delivery-failed]')).toHaveCount(1);
+  await expect(page.getByText('A completed synthetic answer.',{exact:true})).toHaveCount(1);
+  await page.getByRole('button',{name:'View prompt',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Edit the proposed text',exact:true})).toHaveValue('A telescope turns under a twilight sky.');
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Old parkour prompt');
+  await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await message.fill('Keep the telescope.');await page.getByRole('button',{name:'Send message to Milo'}).click();
+  await expect.poll(()=>sent.length).toBe(3);
+  assert.equal(sent[2].activeSuggestion,'A telescope turns under a twilight sky.');
+ }finally{await browser.close();await fixture.close();}
+});
+
 test('workflow chats restore, keep local drafts and suggestions, and New chat only clears the active conversation',{timeout:90_000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch();
  try{

@@ -134,17 +134,29 @@ Reload or another workflow cannot deliver a late reply into the wrong chat. A
 late result is never applied to an editor or used to generate media automatically.
 No new server-side cancellation semantics or wallet refund action is introduced.
 
-The existing account-wide pending policy is retained. Stop waiting, closing the
-assistant or selecting New chat does not free an in-flight request. The UI explains
-this explicitly and keeps New chat unavailable until its terminal state. A rejected
-send in another chat preserves its unsent text and returns a private pointer to
-the same account's blocking request. Check previous reply performs authenticated
-recovery/status checks on that identity only; it never routes its reply, proposal
-or review proof into the new chat, nor retries the rejected message. Completion
-unblocks a later explicit send. A still-running request remains blocked until it
-finishes or its bounded closeout occurs. This deliberate concurrency limit can
-last up to 600 seconds plus closeout grace and is documented, not disguised as a
-cancelled call or a failed new request.
+The existing account-wide pending SEND policy is retained. Stop waiting, closing
+the assistant, navigation and New chat remain available; none cancels supplier
+work or frees the active send slot. New chat changes the active session, clears
+its proposal/proofs and preserves unsent user text. A separate account-scoped
+recovery pointer retains the previous session/request/scope before admission is
+sent; its updates compare the original identity. It contains no prompt, media URL
+or review proof. There is one such pointer, not an old-chat library; replace it
+only when the prior identity is explicitly terminal and another send starts.
+
+Check previous reply opens an isolated read-only view of that original identity.
+It performs authenticated recovery/status checks without invoking the active
+chat's onResult/onRestore, proposal hydration or proof promotion. Closing this
+view preserves the active chat's unsent message. A stale callback after New chat
+is fenced by captured session/request/chat epoch, not only component ownership.
+Account changes abort view/polling and hide the other account's recovery state.
+
+A rejected send in another chat preserves its unsent text and receives a private
+pointer to that account's blocker, allowing the same explicit check even when
+local storage is unavailable. Storage failure keeps in-memory recovery and a
+truthful persistence warning, without locking navigation. A terminal previous
+reply unblocks a later explicit send; a running request blocks only SEND until
+it finishes or bounded closeout occurs. This concurrency limit can last up to
+600 seconds plus closeout grace and is documented, not disguised as cancellation.
 
 Keep the existing compact command bar and explicit application/review proofs.
 Queued work is shown as saved, running work as waiting, and unresolved/failed work
@@ -173,7 +185,7 @@ browser stop/reload/account changes and failed-turn proposal identity. No live p
 model/media run is authorized for implementation verification.
 
 Apply the additive migration and prepare the true worker flag in Preview and
-production before the candidate deployment. Old code ignores that flag and the
+production before the functional Preview/final deployment. Old code ignores that flag and the
 additional columns, so existing admissions continue during preparation. Verify
 cron authentication, schedule, capacity and both route duration declarations.
 Qualify a functional Preview on the exact candidate commit before main delivery;

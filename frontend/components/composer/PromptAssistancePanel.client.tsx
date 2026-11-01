@@ -70,7 +70,10 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     <div className={`${styles.conversationStage}${reviewMode&&expanded?` ${styles.reviewStage}`:''}`} hidden={!hasConversation}>
       <div className={styles.transcript} data-assistance-transcript hidden={expanded} ref={transcript} tabIndex={0} aria-label={copy.history}>
         <div className={styles.messages} role="log" aria-live="polite" aria-relevant="additions">
-          {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>{item.role === 'assistant' ? assistantReplyText(item.text) : item.text}</div>)}
+          {messages.map(item => <div key={item.id} className={item.role === 'user' ? styles.user : styles.reply}>
+            {item.role === 'assistant' ? assistantReplyText(item.text) : item.text}
+            {item.role==='user'&&item.deliveryFailed?<span className={styles.deliveryFailed} data-assistance-delivery-failed>{copy.deliveryFailed}</span>:null}
+          </div>)}
         </div>
         {pending ? <p role="status">{copy.pending}</p> : null}
       </div>

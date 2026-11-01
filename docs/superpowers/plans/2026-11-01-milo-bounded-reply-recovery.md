@@ -44,11 +44,11 @@
 - Export `lastCompletedPromptRequestId(snapshot)` from the browser-safe session contract; every proof-matching caller uses it.
 - Extend user `PreviewMessage` with an optional failed-delivery flag; the transcript renders a localized failure notice, not an assistant response.
 
-- [ ] **Step 1: Write RED tests** for failed long brief → short continuation. Assert provider history includes the complete failed message, emits no assistant reply for it, keeps chronological order and excludes another account/session. Assert a session GET restores that failed user text and does not extend expiry or mutate financial rows.
-- [ ] **Step 2: Run focused tests** with `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-session.test.ts tests/prompt-assistance-preview-state.test.ts`; record the expected missing-history/failed-turn assertions.
-- [ ] **Step 3: Implement** terminal history projection, failed-turn snapshot union, completed-request identity helper and failed-delivery transcript rendering. Preserve successful turn payloads and public `{reply,text}`.
-- [ ] **Step 4: Add identity regression**: success proposal, later failed user turn, reload. The old proposal retains its actual completed request ID; failed review proof cannot promote it, and no proposal is applied.
-- [ ] **Step 5: Verify** focused unit/PostgreSQL tests and `tests/prompt-assistance-session-browser.test.ts`; use only synthetic records. Commit this independently useful correction.
+- [x] **Step 1: Write RED tests** for failed long brief → short continuation. Assert provider history includes the complete failed message, emits no assistant reply for it, keeps chronological order and excludes another account/session. Assert a session GET restores that failed user text and does not extend expiry or mutate financial rows.
+- [x] **Step 2: Run focused tests** with `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-session.test.ts tests/prompt-assistance-preview-state.test.ts`; record the expected missing-history/failed-turn assertions.
+- [x] **Step 3: Implement** terminal history projection, failed-turn snapshot union, completed-request identity helper and failed-delivery transcript rendering. Preserve successful turn payloads and public `{reply,text}`.
+- [x] **Step 4: Add identity regression**: success proposal, later failed user turn, reload. The old proposal retains its actual completed request ID; failed review proof cannot promote it, and no proposal is applied.
+- [x] **Step 5: Verify** focused unit/PostgreSQL tests and `tests/prompt-assistance-session-browser.test.ts`; use only synthetic records. Commit this independently useful correction.
 
 ### Task 2: Durable admission and one fenced execution
 
@@ -83,6 +83,7 @@
 
 **Files:**
 - Create: `frontend/components/composer/prompt-assistance-polling.ts` (browser-safe polling orchestration).
+- Create: `frontend/components/composer/prompt-previous-reply-storage.ts`, `PromptPreviousReply.client.tsx` (one account recovery pointer and its isolated read-only view).
 - Modify: `frontend/components/composer/usePromptAssistanceTransport.ts`, `usePromptAssistancePreview.ts`, `PromptAssistanceFeedback.client.tsx`, and existing copy/module styles only as needed for a status notice.
 - Create: `tests/prompt-assistance-worker-browser.test.ts`.
 - Modify: existing live/recovery/session browser tests where the new admission response is relevant.
@@ -91,11 +92,13 @@
 - Polling consumes the saved session/request identity, an AbortSignal and the server deadline; it returns only validated status for that identity.
 - Admission/recovery POSTs use 15-second HTTP limits, then poll private GETs every two seconds with no overlapping request. The worker never receives the browser signal.
 - The owner stores pending identity before send, retains it after interruption and clears it only on a valid terminal result. Existing account/workflow fencing and explicit proposal application remain authoritative.
+- `PreviousReplyRef` stores `{version:1,scopeKey,serverScope,sessionId,requestId,deadlineAt?,status:'admitting'|'pending'|'unknown'|'terminal'}` under an account key, separately from the active chat. Compare identity on writes; no proposal/review proof or raw message is stored in it.
+- `checkPreviousReply()` reads/recovers the original identity into a separate read-only panel, never active onResult/onRestore. `newChat(unsentMessage)` remains available while pending, saves unsent input synchronously, rotates session/epoch and leaves the original recovery pointer intact.
 
 - [ ] **Step 1: Write RED browser tests**: POST acknowledges pending immediately, GET remains pending beyond the former boundary, then returns a complete proposal. Assert one message POST, no automatic Use prompt/Generate, exact request identity, and no overlapping GET while a slow poll is unresolved.
-- [ ] **Step 2: Add stop/reload/account tests**: Stop waiting aborts only local polling; Check reply resumes the same request without another message POST; reload restores pending; an old workflow/account result cannot update the new owner; deadline/failed/unknown states retain an honest recovery path. New chat remains unavailable with an explanation. Another-chat REQUEST_PENDING preserves its unsent message; Check previous reply recovers only the blocker and never puts its old reply/proposal/review proof in that chat or resends the rejected message.
+- [ ] **Step 2: Add stop/reload/account tests**: Stop waiting aborts only local polling; Check reply resumes the same request without another message POST; reload restores pending; an old workflow/account result cannot update the new owner; deadline/failed/unknown states retain an honest recovery path. New chat/close/navigation remain available while only SEND is blocked. New chat preserves unsent text, rotates the active identity/epoch and retains the separate original pointer. Check previous reply displays original content only in its read-only view; closing it preserves new-chat input. Account changes hide it; storage failure warns without locking navigation. Another-chat REQUEST_PENDING supplies an owned pointer and never resends the rejected message.
 - [ ] **Step 3: Run** `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/prompt-assistance-worker-browser.test.ts`; record the expected missing automatic polling behavior.
-- [ ] **Step 4: Implement bounded polling** and saved phase/deadline presentation, keeping the approved command bar geometry and existing review/application safeguards. Add an isolated blocker-check path that consumes only terminal status, never the prior reply/proposal, and clears only the account-blocking notice. Do not claim percentage progress or cancellation of supplier work, and do not relax account-wide pending admission.
+- [ ] **Step 4: Implement bounded polling** and saved phase/deadline presentation, keeping the approved command bar geometry and existing review/application safeguards. Add the bounded account recovery pointer, synchronous unsent-input persistence and explicit read-only previous-reply view. Fence every callback by session/request/chat epoch so an owner surviving New chat cannot deliver an old reply into its new session. Do not claim percentage progress or cancellation of supplier work, and do not relax account-wide pending SEND admission.
 - [ ] **Step 5: Verify** new browser tests plus existing recovery/auth/session/pending-review/response-focus suites. Test restored failed briefs and an older valid proposal together. Commit the complete browser lifecycle.
 
 ### Task 4: Whole-candidate validation and operational handoff

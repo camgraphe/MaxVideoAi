@@ -1,5 +1,5 @@
 import {applicationSettingChanges,type ProposalApplicationContext} from './application-review';
-export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string };
+export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string; deliveryFailed?:boolean };
 export type PreviewState = {
   scope: string; fingerprint: string; revision: number; mode: 'prompt' | 'milo'; message: string;
   messages: PreviewMessage[];
@@ -60,7 +60,7 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'failed': {
       if(state.pending?.id!==action.id)return state;
       const failedId=`${action.id}-user`;
-      return {...state,pending:null,...(action.restore?{message:state.message||state.messages.find(item=>item.id===failedId)?.text||'',messages:state.messages.filter(item=>item.id!==failedId)}:{})};
+      return {...state,pending:null,...(action.restore?{message:state.message||state.messages.find(item=>item.id===failedId)?.text||'',messages:state.messages.filter(item=>item.id!==failedId)}:{messages:state.messages.map(item=>item.id===failedId?{...item,deliveryFailed:true}:item)})};
     }
     case 'rejected': return {...state,message:state.message||action.message};
     case 'restored': return {...state,pending:null,review:null,proposal:action.text?{text:action.text,revision:-1}:null,messages:[...state.messages,{id:'recovered-user',role:'user',text:action.message},{id:'recovered-assistant',role:'assistant',text:action.reply}]};

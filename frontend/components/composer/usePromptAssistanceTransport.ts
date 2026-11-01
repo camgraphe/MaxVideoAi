@@ -2,7 +2,7 @@
 import {assistanceNextActionSchema,type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
-import {promptSessionSnapshotSchema,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
+import {promptSessionSnapshotSchema,lastCompletedPromptRequestId,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
 import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal,type PromptPendingReview} from './prompt-chat-storage';
 
 type Pending={sessionId:string;requestId:string;uiId:number|null};
@@ -43,7 +43,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
           const done=new Set(snapshot.turns.map(turn=>turn.requestId));
           if(owner.pending&&done.has(owner.pending.requestId))owner.pending=null;
           if(snapshot.pending)owner.pending={sessionId:owner.sessionId,requestId:snapshot.pending.requestId,uiId:null};
-          owner.latestRequestId=snapshot.turns.at(-1)?.requestId??'';
+          owner.latestRequestId=lastCompletedPromptRequestId(snapshot);
           owner.exhausted=snapshot.status==='active'?null:snapshot.status==='full'?'SESSION_FULL':'SESSION_EXPIRED';
 
         }

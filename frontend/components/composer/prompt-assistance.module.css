@@ -32,6 +32,7 @@
 .messages { display: flex; flex-direction: column; gap: 14px; }
 .user { align-self: flex-end; max-width: 88%; border-radius: 12px 12px 3px 12px; padding: 8px 12px; background: var(--surface-2); }
 .user, .reply { white-space: pre-wrap; overflow-wrap: anywhere; }
+.deliveryFailed { display: block; margin-top: 4px; font-size: 11px; color: var(--text-secondary); }
 .proposal { border-top: 1px solid var(--border); padding: 4px 12px; min-width: 0; flex-shrink: 0; }
 .proposalHeader { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-shrink: 0; container: prompt-proposal / inline-size; }
 .proposalBody { flex: 1; min-height: 0; padding: 0 16px; display: flex; flex-direction: column; }

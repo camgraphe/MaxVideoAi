@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
-import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
+import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
-import {canonicalPromptDraft,promptSessionScope} from '@/lib/prompt-assistance/session';
+import {canonicalPromptDraft,promptSessionScope,lastCompletedPromptRequestId} from '@/lib/prompt-assistance/session';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
 export type PromptAssistanceContext = { accountKey?:string; scopeKey: string; reviewKey?:string; contextKey: string; live?:PromptAssistanceDraftContext };
@@ -46,7 +46,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   },live?.workflow?{scope:promptSessionScope(live),onRestore:async(snapshot,local,pendingReview)=>{
     const expected=currentDraftRef.current;
     const draftFingerprint=await hash(expected.currentDraft);
-    const latestRequestId=snapshot?.turns.at(-1)?.requestId??'';
+    const latestRequestId=lastCompletedPromptRequestId(snapshot);
     const edited=local?.latestRequestId===latestRequestId?local.proposal:undefined;
     const proposal=edited??snapshot?.proposal;
     const proof=edited?edited.review:pendingReview;
@@ -58,7 +58,9 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       ?{...expected.applicationContext,settings:proof.settings}:undefined;
     const valid=!!proposal&&proposal.draftFingerprint===draftFingerprint&&(!edited||edited.valid);
     return ()=>dispatch({type:'hydrate',scope:scopeKey,fingerprint:expected.fingerprint,compatibilityRevision:expected.compatibilityRevision,message:local?.message??'',
-      messages:snapshot?.turns.flatMap(turn=>[{id:`${turn.requestId}-user`,role:'user' as const,text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant' as const,text:turn.reply}])??[],
+      messages:snapshot?.turns.flatMap<PreviewMessage>(turn=>turn.reply===null
+        ?[{id:`${turn.requestId}-user`,role:'user',text:turn.message,deliveryFailed:true}]
+        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply}])??[],
       proposal:proposal?{text:proposal.text,valid,applicationContext:reviewContext,requestId:latestRequestId}:null});
   }}:undefined);
   const appliedPromptCurrent = Boolean(appliedPrompt && appliedPrompt.text === draftText

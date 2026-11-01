@@ -44,8 +44,10 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
   });
 }
 export async function readPromptHistory(row:PromptRequestRow) {
-  const previous=await query<Pick<PromptRequestRow,'input_json'|'reply_json'>>(`SELECT input_json,reply_json FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND state='complete' AND request_id<>$3 ORDER BY created_at DESC LIMIT 8`,promptScopeValues(row));
-  return previous.reverse().flatMap(item=>[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
+  const previous=await query<Pick<PromptRequestRow,'input_json'|'reply_json'|'state'>>(`SELECT input_json,reply_json,state FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND state IN ('complete','failed') AND request_id<>$3 ORDER BY created_at DESC,request_id DESC LIMIT 8`,promptScopeValues(row));
+  return previous.reverse().flatMap(item=>item.state==='failed'
+    ?[{role:'user' as const,content:JSON.stringify({message:item.input_json.message,replyUnavailable:true})}]
+    :[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
 }
 
 export async function ensurePromptSession(userId:string,sessionId:string,draft:{surface:string;mode:string;workflow?:string},tx:TransactionQueryExecutor) {
