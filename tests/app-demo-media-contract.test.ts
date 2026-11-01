@@ -20,6 +20,6 @@ test('selected app demos use prepared display derivatives with original fallback
  assert.match(video,/src=\{attempt.rendition.src\}/);
  const dock=read('components/groups/CompositePreviewDockTile.tsx');
  assert.match(dock,/shouldPlayVideo && item.meta\?\.curated === true/);
- assert.match(dock,/\) : shouldPlayVideo \? \(/);
+ assert.match(dock,/\) : shouldLoadVideo \? \(/);
  assert.match(read('lib/video-group-adapter.ts'),/member.job\?\.curated/);
 });
