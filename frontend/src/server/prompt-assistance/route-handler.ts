@@ -8,6 +8,8 @@ import {AgentApiError} from '@/server/agent-api/errors';
 import {readPromptAssistance,sendPromptAssistance,recoverPromptAssistance} from './service';
 import {readPromptSession} from './sessions';
 import {promptSessionScopeSchema} from '@/lib/prompt-assistance/session';
+import {readPendingPromptRequestPointer} from './repository';
+import {schedulePromptAssistanceWorker} from './worker-host';
 
 const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('message'),request:promptAssistanceRequestSchema}).strict(),
@@ -22,7 +24,7 @@ export async function boundedPromptJson(req:NextRequest){
   finally{reader.releaseLock();}
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
-export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>}={}){
+export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>;send?:typeof sendPromptAssistance;recover?:typeof recoverPromptAssistance;schedule?:typeof schedulePromptAssistanceWorker}={}){
   if(!(overrides.enabled??process.env.PROMPT_ASSISTANCE_ENABLED==='true'))return json({ok:false,error:'NOT_FOUND'},404);
   // Shared cookie authentication only; this endpoint never authorizes a Studio project or generation actor.
   const access=await(overrides.access??(request=>resolveStudioApiAccess(request,{enabled:true,adminOnly:false})))(req);
@@ -32,14 +34,22 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
     if(req.method==='GET'){
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
       if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope')))});
-      return json({ok:true,result:session||request?await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)):await readStudioAssistanceStatus(access.userId)});
+      if(session||request)return json({ok:true,result:await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request))});
+      return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId)});
     }
     const input=bodySchema.parse(await boundedPromptJson(req));
-    return json({ok:true,result:input.action==='choose'?await chooseStudioAssistance(access.userId,input.choice):input.action==='recover'?await recoverPromptAssistance(access.userId,input.sessionId,input.requestId):await sendPromptAssistance(access.userId,input.request)});
+    if(input.action==='choose')return json({ok:true,result:await chooseStudioAssistance(access.userId,input.choice)});
+    const result=input.action==='recover'?await(overrides.recover??recoverPromptAssistance)(access.userId,input.sessionId,input.requestId):await(overrides.send??sendPromptAssistance)(access.userId,input.request);
+    if(result.state==='pending'){
+      try{(overrides.schedule??schedulePromptAssistanceWorker)({userId:access.userId,sessionId:result.sessionId,requestId:result.requestId});}
+      catch{console.warn('[prompt-assistance] wakeup_deferred',{requestId:result.requestId});}
+    }
+    return json({ok:true,result});
   }catch(error){
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);
     if(error instanceof AgentApiError)return json({ok:false,error:error.code,nextAction:error.nextAction},error.code==='ACCOUNT_RESTRICTED'?403:402);
     const code=error instanceof Error&&/^[A-Z_]+$/.test(error.message)?error.message:'ASSISTANCE_UNAVAILABLE';
-    return json({ok:false,error:code},code==='BODY_TOO_LARGE'?413:['REQUEST_NOT_FOUND','SESSION_NOT_FOUND'].includes(code)?404:['ASSISTANCE_RECOVERY_REQUIRED','ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
+    const pendingRequest=code==='REQUEST_PENDING'?await readPendingPromptRequestPointer(access.userId).catch(()=>undefined):undefined;
+    return json({ok:false,error:code,...(pendingRequest?{pendingRequest}:{})},code==='BODY_TOO_LARGE'?413:['REQUEST_NOT_FOUND','SESSION_NOT_FOUND'].includes(code)?404:['ASSISTANCE_RECOVERY_REQUIRED','ASSISTANCE_SELECTION_CHANGED','REQUEST_PENDING','REQUEST_CONFLICT','SESSION_EXPIRED','SESSION_FULL','SESSION_SCOPE_CHANGED'].includes(code)?409:503);
   }
 }

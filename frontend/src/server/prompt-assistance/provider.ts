@@ -1,3 +1,4 @@
+import {PROMPT_REQUEST_BUDGET_MS} from './worker-policy';
 import OpenAI from 'openai';
 import {studioReasoning} from '../studio/assistance-reasoning';
 import type {ResponseCreateParamsNonStreaming} from 'openai/resources/responses/responses';
@@ -37,9 +38,9 @@ export function promptResponseParams(row:PromptRequestRow,context:PerceivedConte
     text:{format:promptReplyTextFormat},
   };
 }
-// The entire request gets 90s, leaving time for durable closeout before the
-// browser's 100s wait and the route's 120s limit. Preparation consumes this budget.
-export const PROMPT_REQUEST_BUDGET_MS=90_000;
+// The saved admission owns a fixed600s deadline, including queue and preparation.
+// HTTP returns before provider work;800s routes retain closeout headroom.
+export {PROMPT_REQUEST_BUDGET_MS} from './worker-policy';
 export function promptProviderTimeout(deadline:number,maximum=PROMPT_REQUEST_BUDGET_MS){
   const remaining=deadline-Date.now();
   if(remaining<1000)throw new Error('REQUEST_DEADLINE');

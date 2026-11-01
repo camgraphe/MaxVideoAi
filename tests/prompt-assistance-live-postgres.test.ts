@@ -6,13 +6,13 @@ import {getDb} from '../frontend/src/lib/db';
 import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
 
 test('Composer conversations share real Milo credits, replay once and retain unknown usage', async t=>{
-  const service=await import('../frontend/src/server/prompt-assistance/service').catch(()=>null);
+  const service=await import('./helpers/prompt-assistance-service').catch(()=>null);
   assert.ok(service,'The composer needs a durable real service');
   const pg=await startDisposablePostgres('milo-composer');
   const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
   const {readStudioAssistanceStatus,chooseStudioAssistance}=await import('../frontend/src/server/studio/assistance-ledger');
   const {promptAssistanceRequestSchema}=await import('../frontend/src/lib/prompt-assistance/contract');
@@ -68,11 +68,11 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const evidence={id:'resp_recovered',model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify({kind:'replacement',reply:'Recovered answer',text:'A slow camera move.'}),usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}};
   await pg.pool.query('UPDATE prompt_assistance_requests SET response_json=$2::jsonb WHERE request_id=$1',[unknownRequest.requestId,JSON.stringify(evidence)]);
   await pg.pool.query('DROP TRIGGER reject_composer_resolution ON studio_assistance_resolutions');
-  // Reconstruct a legacy aged row in this disposable database before installing
+  // Reconstruct an aged row with its original relative execution deadline in this disposable database before installing
   // retention, without disabling any production identity or credit guard.
   await pg.pool.query(`WITH historical AS (DELETE FROM prompt_assistance_requests WHERE request_id=$1 RETURNING *)
     INSERT INTO prompt_assistance_requests SELECT (jsonb_populate_record(NULL::prompt_assistance_requests,
-      to_jsonb(historical) || jsonb_build_object('created_at',clock_timestamp()-interval '91 days'))).* FROM historical`,[unknownRequest.requestId]);
+      to_jsonb(historical) || jsonb_build_object('created_at',historical.created_at-interval '91 days','execution_deadline_at',historical.execution_deadline_at-interval '91 days'))).* FROM historical`,[unknownRequest.requestId]);
   await pg.pool.query('CREATE TABLE studio_conversation_responses(user_id text,project_id text,request_id uuid,lease_id uuid,response_index int,created_at timestamptz)');
   for(const file of ['90_assistant_review.sql','91_assistant_review_retention.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const financialEvidence = async () => Promise.all(['studio_assistance_calls','studio_assistance_credit_lots','studio_assistance_credit_funding','studio_assistance_credit_allocations'].map(async table=>(await pg.pool.query(`SELECT to_jsonb(t) data FROM ${table} t ORDER BY to_jsonb(t)::text`)).rows));

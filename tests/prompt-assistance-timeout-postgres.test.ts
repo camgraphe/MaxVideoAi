@@ -6,7 +6,7 @@ import OpenAI from 'openai';
 import {Client} from 'pg';
 import {getDb} from '../frontend/src/lib/db';
 import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
-import {sendPromptAssistance,recoverPromptAssistance} from '../frontend/src/server/prompt-assistance/service';
+import {sendPromptAssistance,recoverPromptAssistance} from './helpers/prompt-assistance-service';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {promptAssistanceRequestSchema} from '../frontend/src/lib/prompt-assistance/contract';
 import {readStudioAssistanceStatus,chooseStudioAssistance,settleStudioAssistanceCall} from '../frontend/src/server/studio/assistance-ledger';
@@ -16,7 +16,7 @@ test('unanswered composer calls release only customer holds and never redispatch
   process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
   const request=()=>promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:2,locale:'en',message:'Slow the camera movement',draft:{surface:'video',engineId:'seedance-2-5',mode:'t2v',target:'prompt',text:'A dancer on stage.',settings:{durationSec:5},references:[]}});
   const context={model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt' as const,maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only' as const};
@@ -178,9 +178,9 @@ test('unanswered composer calls release only customer holds and never redispatch
     inner.mock.method(Date,'now',()=>base+elapsed);
     let timeout=0;
     await sendPromptAssistance('budget-owner',request(),{...deps,buildContext:async()=>{elapsed=40_000;return context as never;},create:async(_params,remaining)=>{timeout=remaining!;return evidence();}});
-    assert.equal(timeout,50_000);
+    assert.ok(timeout>=559_000&&timeout<=561_000,'Preparation consumes40s of the fixed600s admission budget');
     elapsed=0;
-    const expired=await sendPromptAssistance('expired-owner',request(),{...deps,buildContext:async()=>{elapsed=91_000;return context as never;},create:async()=>{throw Error('must not dispatch');}});
+    const expired=await sendPromptAssistance('expired-owner',request(),{...deps,buildContext:async()=>{elapsed=601_000;return context as never;},create:async()=>{throw Error('must not dispatch');}});
     assert.equal(expired.error,'REQUEST_DEADLINE');assert.equal(expired.safeToRetry,true);
     assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id='expired-owner'")).rows[0].n,0);
   });
@@ -200,7 +200,7 @@ test('unanswered composer calls release only customer holds and never redispatch
     inner.mock.method(Date,'now',()=>base+elapsed);
     await pg.pool.query(`CREATE FUNCTION delay_composer_reservation() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN PERFORM pg_sleep(0.2); RETURN NEW; END $$;CREATE TRIGGER delay_composer_reservation BEFORE INSERT ON studio_assistance_calls FOR EACH ROW EXECUTE FUNCTION delay_composer_reservation()`);
     try{
-      const result=await sendPromptAssistance('slow-reservation-owner',request(),{...deps,count:async()=>{timer=setTimeout(()=>elapsed=91_000,100);return 1000;},create:async()=>{calls++;return evidence();}});
+      const result=await sendPromptAssistance('slow-reservation-owner',request(),{...deps,count:async()=>{timer=setTimeout(()=>elapsed=601_000,100);return 1000;},create:async()=>{calls++;return evidence();}});
       assert.equal(result.error,'REQUEST_DEADLINE');assert.equal(calls,0);
       assert.equal((await pg.pool.query("SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id='slow-reservation-owner'")).rows[0].n,0);
       assert.equal(result.assistance.credits?.included.remaining,500);

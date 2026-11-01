@@ -23,8 +23,8 @@ test('session restore is private, read-only, retains the working suggestion and 
  const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
- const service=await import('../frontend/src/server/prompt-assistance/service');
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ const service=await import('./helpers/prompt-assistance-service');
  const sessions=await import('../frontend/src/server/prompt-assistance/sessions');
  const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
  const {chooseStudioAssistance}=await import('../frontend/src/server/studio/assistance-ledger');
@@ -77,8 +77,8 @@ test('a failed long brief remains human context for a short follow-up and surviv
  process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
- const {sendPromptAssistance}=await import('../frontend/src/server/prompt-assistance/service');
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ const {sendPromptAssistance}=await import('./helpers/prompt-assistance-service');
  const {readPromptSession}=await import('../frontend/src/server/prompt-assistance/sessions');
  const {readPromptHistory}=await import('../frontend/src/server/prompt-assistance/repository');
  const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');

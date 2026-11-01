@@ -9,7 +9,7 @@ import {createAgentModelCatalogDeps} from '../frontend/src/server/agent-api/mode
 import {getBaseEngines} from '../frontend/src/lib/engines';
 import {listAudioCapabilities} from '../frontend/src/server/agent-api/audio-capabilities';
 import {buildPromptAssistanceContext} from '../frontend/src/server/prompt-assistance/context';
-import {sendPromptAssistance,readPromptAssistance} from '../frontend/src/server/prompt-assistance/service';
+import {sendPromptAssistance,readPromptAssistance} from './helpers/prompt-assistance-service';
 import {readPromptSession} from '../frontend/src/server/prompt-assistance/sessions';
 import {chooseStudioAssistance,readStudioAssistanceStatus} from '../frontend/src/server/studio/assistance-ledger';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
@@ -39,7 +39,7 @@ test('advice remains conversation across restore; real video and Voiceover repla
  const pg=await startDisposablePostgres('milo-advice-ui'),previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});await chooseStudioAssistance('owner',{action:'select_luna',expectedRevision:0},policy);
  const evidence=process.env.MILO_ADVICE_EVIDENCE_DIR,results:unknown[]=[];if(evidence)await mkdir(evidence,{recursive:true});
  for(const surface of ['video','voice'] as const){

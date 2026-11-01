@@ -24,7 +24,7 @@ export const promptAssistanceReplySchema = z.object({reply:z.string().trim().min
 export type PromptAssistanceReply = z.infer<typeof promptAssistanceReplySchema>;
 export type PromptAssistanceResult = {
   sessionId:string;requestId:string;draftRevision:number;target:PromptAssistanceRequest['draft']['target'];message:string;
-  state:'pending'|'unknown'|'complete'|'failed'; reply?:PromptAssistanceReply; error?:string;
+  state:'pending'|'unknown'|'complete'|'failed';phase?:'queued'|'preparing'|'calling'|'recovering';deadlineAt?:string; reply?:PromptAssistanceReply; error?:string;
   assistance:StudioAssistanceStatus; safeToRetry?:boolean; nextAction?:AssistanceNextAction;
 };
 export const PROMPT_ASSISTANCE_LIVE = process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE === '1';
