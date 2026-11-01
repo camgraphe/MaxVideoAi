@@ -107,7 +107,7 @@ async function reconcileLockedWalletRefund(
          user_id, type, amount_cents, currency, description, job_id, surface, billing_product_key,
          pricing_snapshot, application_fee_cents, vendor_account_id, stripe_payment_intent_id,
          stripe_charge_id, platform_revenue_cents, destination_acct, metadata
-       ) VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,NULL,NULL,$9,$11,$12::jsonb)
+       ) VALUES ($1,'refund',$2,$3,$4,$5,$6,$7,$8::jsonb,$9::integer,$10,NULL,NULL,$9::integer,$11,$12::jsonb)
        ON CONFLICT DO NOTHING RETURNING id`,
       [charge.user_id, charge.amount_cents, normalizeCurrency(charge.currency),
         description,
