@@ -184,7 +184,7 @@ test('independent tab observers can read the same durable identity and cancellat
  try{
   const {observePreviousPromptReply}=await import('../frontend/components/composer/prompt-previous-reply-observer');
   const pointer:PreviousReplyRef={version:1,scopeKey:f.scopeKey,serverScope:'video:create',sessionId:randomUUID(),requestId:randomUUID(),status:'pending',deadlineAt:new Date(base+600_000).toISOString(),observationStartedAt:new Date(base).toISOString()},a=new AbortController(),b=new AbortController(),left:unknown[]=[],right:unknown[]=[];
-  const one=observePreviousPromptReply(pointer,a.signal,value=>left.push(value)).catch(error=>error),two=observePreviousPromptReply(pointer,b.signal,value=>right.push(value));
+  const one=observePreviousPromptReply(pointer,a.signal,value=>left.push(value),()=>true).catch(error=>error),two=observePreviousPromptReply(pointer,b.signal,value=>right.push(value),()=>true);
   assert.equal(reads(f).length,2);await f.run(()=>a.abort());assert.equal(reads(f)[0].aborted,true);assert.equal(reads(f)[1].aborted,false);
   await f.respond(reads(f)[1],{ok:true,result:status(pointer,'complete')});await Promise.all([one,two]);assert.equal(left.length,0);assert.equal(right.length,1);assert.equal(f.calls.some(call=>call.init.method==='POST'),false);
  }finally{await f.dispose();}
@@ -239,5 +239,22 @@ test('a durable pointer replacement stops polling A even before the replacement 
   const a=f.storage.readPreviousReply(f.account)!,b={...a,sessionId:randomUUID(),requestId:randomUUID()};
   assert.equal(f.storage.writePreviousReply(f.account,b,a),true);await f.respond(reads(f)[0],{ok:true,result:status(a)});await f.tick(2_000);
   assert.equal(reads(f).length,1,'an invalidated observer must not schedule another stale GET');assert.equal(f.state.previousResult,null);assert.equal(f.state.accountPending,true);
+ }finally{await f.dispose();}
+});
+
+for(const replacement of ['before404','during404pause'] as const)test(`a durable replacement ${replacement} stops stale 404 retries without changing B or the current draft`,async()=>{
+ const f=await fixture({status:'pending',deadlineAt:new Date(base+600_000).toISOString()});
+ try{
+  const a=f.storage.readPreviousReply(f.account)!,b={...a,sessionId:randomUUID(),requestId:randomUUID()};
+  await f.run(()=>f.state.saveLocal({message:'Current unsent brief',proposal:{text:'Current local suggestion',draftFingerprint:'a'.repeat(64),valid:true}},f.state.localEpoch()));
+  const draft=sessionStorage.getItem(`milo-composer:v2:${f.scopeKey}`);
+  if(replacement==='before404')assert.equal(f.storage.writePreviousReply(f.account,b,a),true);
+  await f.respond(reads(f)[0],{ok:false,error:'REQUEST_NOT_FOUND'},404);
+  if(replacement==='during404pause')assert.equal(f.storage.writePreviousReply(f.account,b,a),true);
+  const pointer=JSON.stringify(f.storage.readPreviousReply(f.account));await f.tick(2_000);
+  assert.equal(reads(f).length,1,'the retired identity must not issue another GET after a 404');
+  assert.equal(JSON.stringify(f.storage.readPreviousReply(f.account)),pointer);assert.equal(f.storage.readPreviousReply(f.account)?.requestId,b.requestId);
+  assert.equal(f.state.previousResult,null);assert.equal(f.state.accountPending,true);await f.run(()=>assert.equal(f.state.send(request,99),false));
+  assert.equal(sessionStorage.getItem(`milo-composer:v2:${f.scopeKey}`),draft);assert.equal(f.results.length,0);assert.equal(f.calls.some(call=>call.init.method==='POST'),false);
  }finally{await f.dispose();}
 });

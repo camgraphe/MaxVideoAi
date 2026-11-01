@@ -9,7 +9,7 @@ function pause(ms:number,signal:AbortSignal){return new Promise<void>((resolve,r
 });}
 
 /** Observation only: never POST recovery, create an abandoned-request tombstone or settle a call. */
-export async function observePreviousPromptReply(identity:PreviousReplyRef,signal:AbortSignal,onStatus:(result:PromptAssistanceResult)=>void){
+export async function observePreviousPromptReply(identity:PreviousReplyRef,signal:AbortSignal,onStatus:(result:PromptAssistanceResult)=>void,isCurrent:()=>boolean){
   const admissionUntil=Date.parse(identity.observationStartedAt??'')+30_000;
   let deadline=Date.parse(identity.deadlineAt??'');
   let until=Number.isFinite(deadline)?deadline+30_000:admissionUntil;
@@ -18,11 +18,13 @@ export async function observePreviousPromptReply(identity:PreviousReplyRef,signa
   const once=!Number.isFinite(until)||until<=Date.now();
   const controller=new AbortController();
   const abort=()=>controller.abort();signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
+  const assertCurrent=()=>{if(controller.signal.aborted||!isCurrent()){abort();throw new DOMException('Wait stopped','AbortError');}};
   let timeout:number|undefined;
   const arm=()=>{window.clearTimeout(timeout);if(!once)timeout=window.setTimeout(abort,Math.max(0,until-Date.now()));};
   arm();
   try{
     for(;;){
+      assertCurrent();
       let result:PromptAssistanceResult;
       try{
         result=validatedPromptReply(await promptReplyHttp(`/api/prompt-assistance?sessionId=${encodeURIComponent(identity.sessionId)}&requestId=${encodeURIComponent(identity.requestId)}`,{},controller.signal),identity);
@@ -30,11 +32,12 @@ export async function observePreviousPromptReply(identity:PreviousReplyRef,signa
         // Send may still be hashing or reaching admission when New chat retires
         // its HTTP wait. A missing row is uncertainty, never terminal failure.
         if(!once&&error instanceof PromptReplyHttpError&&error.message==='REQUEST_NOT_FOUND'&&Date.now()<admissionUntil){
+          assertCurrent();
           await pause(Math.min(2_000,admissionUntil-Date.now()),controller.signal);continue;
         }
         throw error;
       }
-      if(controller.signal.aborted)throw new DOMException('Wait stopped','AbortError');
+      assertCurrent();
       onStatus(result);
       if(result.state==='complete'||result.state==='failed'||once||result.state==='unknown'&&!result.deadlineAt)return result;
       if(!Number.isFinite(deadline)&&result.deadlineAt){deadline=Date.parse(result.deadlineAt);until=deadline+30_000;arm();}

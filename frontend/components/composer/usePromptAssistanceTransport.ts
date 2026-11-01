@@ -217,7 +217,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       if(!valid()){controller.abort();return;}
       owner.previousResult=result;rememberStatus({...pointer,uiId:null},result);
       update({previousResult:result,previousError:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null});
-    }).catch(error=>{if(valid())update({previousError:error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});})
+    },valid).catch(error=>{if(valid())update({previousError:error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});})
       .finally(()=>{if(owner.previousObserverController===controller){owner.previousObserverController=null;update({previousWaiting:false});}});
     return()=>{controller.abort();if(owner.previousObserverController===controller){owner.previousObserverController=null;update({previousWaiting:false});}};
     // One observer per retired identity/epoch; status renders never renew its budget.
