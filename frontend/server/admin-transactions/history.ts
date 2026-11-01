@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { query } from '@/lib/db';
+import { MILO_PACK_JOB_PREFIX, MILO_PACK_PRODUCT_KEY } from '@/lib/admin/transaction-review';
 import { adminReportingWindow } from '@/lib/admin/reporting-window';
 import {
   TransactionHistoryInputError,
@@ -60,7 +61,7 @@ export async function fetchTransactionHistory(
   if (from) where.push(`r.created_at>=${bind(from)}::timestamptz`);
   if (filters.type === 'attention')
     where.push(
-      `((r.job_id IS NOT NULL AND j.status IS NULL AND j.payment_status IS NULL AND j.engine_label IS NULL AND j.video_url IS NULL) OR (r.type='charge' AND r.amount_cents<=0))`,
+      `((r.job_id IS NOT NULL AND COALESCE(to_jsonb(r) ->> 'billing_product_key', '') <> '${MILO_PACK_PRODUCT_KEY}' AND r.job_id NOT LIKE '${MILO_PACK_JOB_PREFIX}%' AND j.status IS NULL AND j.payment_status IS NULL AND j.engine_label IS NULL AND j.video_url IS NULL) OR (r.type='charge' AND r.amount_cents<=0))`,
     );
   else if (filters.type !== 'all') where.push(`r.type=${bind(filters.type)}`);
   if (filters.query) {

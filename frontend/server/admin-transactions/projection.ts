@@ -17,6 +17,7 @@ function buildTransactionSelect(mcpQuotesAvailable: boolean) {
        r.description,
        CASE WHEN r.type = 'refund' THEN r.metadata ->> 'reason' END AS refund_reason_code,
        CASE WHEN r.type = 'refund' THEN r.metadata ->> 'note' END AS refund_note,
+       to_jsonb(r) ->> 'billing_product_key' AS billing_product_key,
        r.job_id,
        r.created_at,
        j.status AS job_status,

@@ -1,5 +1,6 @@
 import { transactionSelectForCurrentSchema } from './projection';
 import { query } from '@/lib/db';
+import { isMiloPackTransaction } from '@/lib/admin/transaction-review';
 import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getUserIdentity } from '@/server/supabase-admin';
@@ -28,6 +29,7 @@ function refundReason(reasonCode: string | null, refundNote: string | null): str
 
 export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string | null): AdminTransactionRecord {
   const type = row.type as AdminTransactionRecord['type'];
+  const isMiloPack = isMiloPackTransaction({ billingProductKey: row.billing_product_key, jobId: row.job_id });
   const jobExists = Boolean(
     row.job_status || row.job_payment_status || row.job_engine_label || row.job_video_url || row.job_thumb_url,
   );
@@ -44,6 +46,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     currency: normalizeCurrency(row.currency),
     description: row.description,
     refundReason: type === 'refund' ? refundReason(row.refund_reason_code, row.refund_note) : null,
+    billingProductKey: row.billing_product_key ?? null,
     jobId: row.job_id,
     jobStatus: row.job_status,
     jobPaymentStatus: row.job_payment_status,
@@ -59,7 +62,7 @@ export function mapAdminTransactionRow(row: RawTransactionRow, userEmail: string
     hasRefund: row.has_refund,
     latestChargeId: row.latest_charge_id,
     isLatestCharge,
-    canRefund: type === 'charge' && !row.has_refund && Boolean(row.user_id) && isLatestCharge && refundableStatus,
+    canRefund: !isMiloPack && type === 'charge' && !row.has_refund && Boolean(row.user_id) && isLatestCharge && refundableStatus,
   };
 }
 
