@@ -106,7 +106,7 @@ test('pending and recovery block review, and recovery on the original mounted re
  await expect(page.getByRole('button',{name:'Use with current settings',exact:true})).toBeEnabled();
  await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Another refinement');await page.getByRole('button',{name:'Send message to Milo',exact:true}).click();
  await expect.poll(()=>!!release).toBe(true);await expect(page.getByRole('button',{name:'Use with current settings',exact:true})).toBeDisabled();
- await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();release?.();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();assert.equal(posts,3);
+ await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();release?.();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();assert.equal(posts,3);
  }finally{release?.();await browser.close();await fixture.close();}
 });
 
