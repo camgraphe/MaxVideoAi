@@ -24,7 +24,7 @@ jobs:
       NEON_BRANCH_DELETE_MERGED: '1'
       NEON_BRANCH_DELETE_ABANDONED: '1'
       NEON_BRANCH_DELETE_PATTERN: '^preview/codex/'
-      NEON_BRANCH_OBSERVATIONS_FILE: ${{ runner.temp }}/neon-branch-observations.json
+      NEON_BRANCH_OBSERVATIONS_FILE: /tmp/maxvideoai-neon-branch-observations.json
     steps:
       - name: Checkout
         uses: actions/checkout@v5
