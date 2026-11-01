@@ -46,13 +46,14 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     if (messages.length <= previousMessages.current) return;
     previousMessages.current = messages.length;
     if (transcript.current) transcript.current.scrollTop = transcript.current.scrollHeight;
-    if (messages.at(-1)?.role === 'assistant') { setExpanded(false);setReviewMode(false); input.current?.focus({ preventScroll: true }); }
+    if (messages.at(-1)?.role === 'assistant') { setExpanded(false);setReviewMode(false); }
   }, [messages, input]);
   useEffect(()=>{if(!proposal){setExpanded(false);setReviewMode(false);}},[proposal]);
   useEffect(() => {
     if (expanded) proposalEditor.current?.focus({ preventScroll: true });
   }, [expanded]);
   const canSend = Boolean(message.trim()) && !pending && !blocked && !sendBlocked;
+  const sendMessage = () => { input.current?.focus({ preventScroll: true }); onSend(); };
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
   const reviewLabel = proposal?.target === 'script' ? copy.reviewScript : proposal?.target === 'lyrics' ? copy.reviewLyrics : copy.review;
@@ -99,10 +100,10 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         if (event.key !== 'Enter') return;
         event.stopPropagation();
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
-        event.preventDefault(); if (canSend) onSend();
+        event.preventDefault(); if (canSend) sendMessage();
       }} />
       </div>
-      <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={onSend}><ArrowUp size={19} aria-hidden /></button></div>
+      <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={sendMessage}><ArrowUp size={19} aria-hidden /></button></div>
       {feedback}
     </div>
   </div>;
