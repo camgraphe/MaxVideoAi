@@ -411,8 +411,11 @@ original, never the short rail preview. A native playback error reports preview
 unavailability without relabeling a completed generation or restarting job polling.
 `workspace-generation-preview-dom` covers local submission, accepted server identity,
 completion/history transfer, manual selection, poster/media failure and original
-download separation. DOM checks do not qualify frame decoding on Safari/iOS or live
-storage delivery; retain a browser check of the selected first frame for rollout.
+download separation. `workspace-generation-preview-browser` additionally checks the
+real dock with a local H264 fixture in Chromium and WebKit: the first frame is
+decoded and painted in pause, and Play then Pause retains the video node and frame.
+This does not qualify physical Safari/iOS or live storage delivery; retain those
+checks for rollout.
 
 For a direct guest entry into `/app`, the server-selected first Starter playlist
 video remains selected when the gallery hydrates, even if its chronological sort

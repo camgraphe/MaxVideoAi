@@ -60,6 +60,33 @@ Play then Pause also retains the same video node and its current playback time.
 Frontend TypeScript, lint and public-exposure checks passed. Lint reported seven
 existing warnings in unrelated Image, Studio conversation and Billing files, with
 no errors or warnings in the edited components. `git diff --check` passed.
-No connected browser, paid generation or live storage request was used. Production
-first-frame, manual-play and download checks, including Safari/iOS qualification,
-remain rollout verification.
+No connected browser, paid generation or live storage request was used.
+
+### Additional native first-frame qualification
+
+`workspace-generation-preview-browser` uses the existing local fixture server,
+real dock/CSS, bounded Range-response helper and committed
+`tests/fixtures/studio-media/pattern-a.mp4` (H264/yuv420p, AAC, 320×180, 6 seconds,
+115,331 bytes). Playwright 1.59.1 runs isolated headless Chromium and WebKit at
+1280×900. The Browser plugin is absent; the requested path uses the repository's
+Playwright infrastructure, without a user browser or account.
+
+Both browsers passed: the initial video had `readyState=4`, 320×180 decoded
+dimensions, `paused=true`, `muted=true`, `autoplay=false` and `currentTime=0`.
+The screenshot's RGB pixels matched the current decoded frame, with mean absolute
+errors of 3.29 (Chromium) and 7.26 (WebKit), against a tolerance of 18. A separate
+nonwhite check rejects the original blank cover. Play then Pause retained the
+same video node and stable playback position, with visible-frame errors of 3.55
+and 7.67. Only the exact local original was requested; there were no remote
+requests or page errors. WebKit used two requests against that same local source.
+
+The same Chromium test against the pre-fix tile from `69d71ce21` failed because
+there were zero video elements rather than one. Restoring the corrected tile
+returned both browsers to green. Optional screenshot and JSON evidence is written
+outside the repository through `WORKSPACE_PREVIEW_EVIDENCE_DIR`; this run used
+`/tmp/maxvideoai-preview-native-followup/`.
+
+Production storage delivery, actual customer media, downloads and physical
+Safari/iOS remain rollout checks. This local qualification proves the native
+paused-frame boundary for the selected H264 fixture; it does not establish
+all-codec, all-device or performance coverage.
