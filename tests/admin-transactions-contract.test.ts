@@ -30,6 +30,7 @@ function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransact
     refund_reason_code: null,
     refund_note: null,
     job_id: 'job_1',
+    billing_product_key: null,
     created_at: '2026-07-14T10:00:00.000Z',
     job_status: 'completed',
     job_payment_status: 'paid_wallet',
@@ -113,6 +114,25 @@ test('ledger mapper preserves rejection and historical missing-job behavior', ()
 
   const orphanReceipt = rawTransaction({ job_id: null, latest_charge_id: null });
   assert.equal(mapAdminTransactionRow(orphanReceipt, null).canRefund, true);
+});
+
+test('pack receipts project product identity and never advertise a media wallet refund', () => {
+  for (const identity of [
+    { billing_product_key: 'studio_assistance_pack', job_id: 'product-receipt-reference' },
+    { billing_product_key: 'studio_assistance_pack', job_id: null },
+    { billing_product_key: null, job_id: 'studio-sol-pack:synthetic-pack' },
+  ]) {
+    const record = mapAdminTransactionRow(rawTransaction({
+      ...identity, job_status: null, job_payment_status: null, job_engine_label: null,
+      job_video_url: null, job_thumb_url: null, latest_charge_id: null,
+    }), null);
+    assert.equal(record.billingProductKey, identity.billing_product_key);
+    assert.equal(record.canRefund, false, JSON.stringify(identity));
+    assert.equal(record.amountCents, 900);
+    assert.equal(record.type, 'charge');
+  }
+  assert.equal(mapAdminTransactionRow(rawTransaction({ billing_product_key: 'studio_assistance_pack' }), null).canRefund, false,
+    'the product is authoritative even when a media job happens to match');
 });
 
 test('ledger limit remains clamped to the public 1 through 500 range', () => {

@@ -6,7 +6,7 @@ import { TransactionHistoryControls } from './transactions/TransactionHistoryCon
 import type { TransactionHistoryQuery } from '@/lib/admin/transaction-history';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { needsTransactionReview as needsReview, isMissingJobRecord } from '@/lib/admin/transaction-review';
+import { needsTransactionReview as needsReview, isMissingJobRecord, isMiloPackTransaction } from '@/lib/admin/transaction-review';
 import clsx from 'clsx';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import type { AdminTransactionRecord } from '@/server/admin-transactions';
@@ -31,6 +31,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Madrid',
 });
 const durationFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+
+const MILO_PACK_LABEL = 'Milo credit pack';
 
 const TYPE_LABEL: Record<AdminTransactionRecord['type'], string> = {
   charge: 'Charge',
@@ -65,6 +67,7 @@ export function AdminTransactionTable({
   const selected =
     rows.find((row) => String(row.receiptId) === selectedId) ??
     (String(initialReceipt?.receiptId) === selectedId ? initialReceipt : null);
+  const selectedIsMiloPack = Boolean(selected && isMiloPackTransaction(selected));
   const selectedDuration = selected ? formatJobDuration(selected.jobDurationSec) : null;
   const [pendingReceiptId, setPendingReceiptId] = useState<number | null>(null);
   const [status, setStatus] = useState<{ message: string; variant: StatusVariant } | null>(null);
@@ -266,7 +269,13 @@ export function AdminTransactionTable({
                 </dd>
               </div>
             </dl>
-            {selected.jobId ? (
+            {selectedIsMiloPack ? (
+              <div className="mt-5 border-t border-border pt-4">
+                <p className="mb-1 text-xs text-text-secondary">Product</p>
+                <p className="text-sm">{MILO_PACK_LABEL}</p>
+                {selected.jobId ? <p className="mt-1 break-all text-xs text-text-secondary">Reference: {selected.jobId}</p> : null}
+              </div>
+            ) : selected.jobId ? (
               <div className="mt-5 border-t border-border pt-4">
                 <p className="mb-1 text-xs text-text-secondary">Linked generation</p>
                 <Link
@@ -294,7 +303,7 @@ export function AdminTransactionTable({
               </div>
             ) : null}
             <div className="mt-5 border-t border-border pt-4">
-              {selected.canRefund ? (
+              {selected.canRefund && !selectedIsMiloPack ? (
                 <>
                   <p className="mb-3 text-xs text-text-secondary">
                     A wallet refund restores credits to this account. It does not refund a card payment.
@@ -323,13 +332,14 @@ export function AdminTransactionTable({
 }
 
 function TransactionAmount({ row }: { row: AdminTransactionRecord }) {
-  const model = row.jobId ? row.jobEngineLabel?.trim() : null;
-  const duration = row.jobId ? formatJobDuration(row.jobDurationSec) : null;
+  const isMiloPack = isMiloPackTransaction(row);
+  const model = isMiloPack ? MILO_PACK_LABEL : row.jobId ? row.jobEngineLabel?.trim() : null;
+  const duration = !isMiloPack && row.jobId ? formatJobDuration(row.jobDurationSec) : null;
   return (
     <td className="whitespace-nowrap px-3 py-2.5 font-medium tabular-nums">
       <div className="flex items-center gap-2">
         <span>{formatCurrency(row.amountCents, row.currency)}</span>
-        {row.isStudioGeneration || row.isMcpGeneration ? (
+        {!isMiloPack && (row.isStudioGeneration || row.isMcpGeneration) ? (
           <span
             className={clsx(
               'rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none',

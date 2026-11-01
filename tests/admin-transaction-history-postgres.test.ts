@@ -122,6 +122,35 @@ test('history filters before pagination, retains precision and resolves receipts
       assert.equal(receipt.isMcpGeneration, false);
       assert.equal(receipt.isStudioGeneration, true);
     }
+
+    // The first reader has no product column: historical prefix identity must still work.
+    await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at)
+      VALUES (140,$1,'charge',500,'USD','studio-sol-pack:synthetic-pack','2026-09-22T10:05:00Z')`, [owner]);
+    const legacyPack = await fetchTransactionReceipt('140');
+    await db.pool.query(`ALTER TABLE app_receipts ADD COLUMN billing_product_key text`);
+    await db.pool.query(`INSERT INTO app_receipts(id,user_id,type,amount_cents,currency,job_id,created_at,billing_product_key)
+      VALUES (141,$1,'charge',500,'USD',NULL,'2026-09-22T10:10:00Z','studio_assistance_pack'),
+             (142,$1,'charge',500,'USD','product-only-reference','2026-09-22T10:11:00Z','studio_assistance_pack'),
+             (143,$1,'charge',500,'USD','missing-media','2026-09-22T10:09:00Z',NULL),
+             (144,$1,'charge',500,'USD','studio-sol-pack-lookalike','2026-09-22T10:08:00Z',NULL),
+             (145,$1,'charge',0,'USD',NULL,'2026-09-22T10:07:00Z','studio_assistance_pack')`, [owner]);
+    const attention = await fetchTransactionHistory({ period: 'all', query: '', type: 'attention', limit: 2 }, now);
+    assert.deepEqual(attention.transactions.map(row => String(row.receiptId)), ['143', '144'],
+      'positive packs are excluded before the attention page limit, while NULL-product media remains');
+    assert.ok(attention.nextCursor);
+    const nextAttention = await fetchTransactionHistory({ period: 'all', query: '', type: 'attention', limit: 2, cursor: attention.nextCursor! }, now);
+    assert.equal(String(nextAttention.transactions[0]?.receiptId), '145', 'a nonpositive pack charge still needs review');
+    const allAttention = await fetchTransactionHistory({ period: 'all', query: '', type: 'attention', limit: 50 }, now);
+    assert.equal(allAttention.transactions.some(row => ['140','141','142'].includes(String(row.receiptId))), false);
+    for (const id of ['141', '142']) {
+      const pack = await fetchTransactionReceipt(id);
+      assert.equal(pack?.billingProductKey, 'studio_assistance_pack');
+      assert.equal(pack?.canRefund, false);
+    }
+    assert.equal(legacyPack?.billingProductKey, null);
+    assert.equal(legacyPack?.canRefund, false);
+    assert.equal((await fetchTransactionReceipt('143'))?.canRefund, true, 'real historical missing-media eligibility is unchanged');
+    assert.equal((await fetchTransactionReceipt('123'))?.canRefund, true, 'real paid media remains refundable');
   } finally {
     await getDb().end();
     await db.cleanup();
