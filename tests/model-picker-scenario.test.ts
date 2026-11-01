@@ -24,12 +24,24 @@ test('same-model price scenario is isolated, disclosed and matches the quote', (
   assert.equal(row.iterations, 2);
   assert.deepEqual(current, before);
 });
-test('explicit audio choice survives model switching and mandatory audio is disclosed', () => {
+for (const [locale, fixedAudio, optionalAudio] of [
+  ['en', 'Audio: Always on', 'Audio off'],
+  ['fr', 'Son: Toujours activé', 'Sans audio'],
+  ['es', 'Audio: Siempre activado', 'Sin audio'],
+]) test(`${locale}: an explicit audio choice stays editable while native audio is disclosed as fixed`, () => {
   const current = setup();
-  const candidate = preparePickerScenario({ current, engine: engine('wan-3'), currentEngine: engine('wan-3-prime'), locale: 'en', overrides: { audio: false } });
+  const before = structuredClone(current);
+  const candidate = preparePickerScenario({ current, engine: engine('wan-3'), currentEngine: engine('wan-3-prime'), locale, overrides: { audio: false } });
   assert.equal(candidate.setup.form.audio, false);
-  const row = buildWorkspacePickerOptions({ current, engines, locale: 'en', memberTier: 'Member', overrides: { audio: false } })['minimax-h3'];
-  assert.match(row.summary, /Audio on/);
+  const rows = buildWorkspacePickerOptions({ current, engines, locale, memberTier: 'Member', overrides: { audio: false } });
+  assert.ok(rows['wan-3'].summary.endsWith(optionalAudio));
+  assert.equal(rows['wan-3'].request?.audio, false);
+  for (const id of ['minimax-h3', 'minimax-h3-max']) {
+    assert.ok(rows[id].summary.endsWith(fixedAudio), rows[id].summary);
+    assert.ok(rows[id].request);
+    assert.equal('audio' in rows[id].request!, false);
+  }
+  assert.deepEqual(current, before);
 });
 test('source timing is read-only and a forged duration cannot replace measured media timing', () => {
   const current = setup('kling-o3-pro', 'v2v');
