@@ -90,7 +90,11 @@ for(const browserType of [chromium,webkit])test(`cached pending recovery keeps i
    await new Promise<void>(resolve=>release=resolve);return route.fulfill({json:{ok:true,result:initialStatus}});
   });
   await page.goto(fixture.url);await expect.poll(()=>Boolean(release&&restoreRelease)).toBe(true);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
-  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();await expect(page.getByText('Restoring this conversation…',{exact:true})).toBeVisible();restoreRelease!();await expect(page.getByText('Check this reply before sending another message. Stopping the wait does not cancel a call already started.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Send message to Milo',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();await expect(page.getByText('Restoring this conversation…',{exact:true})).toBeVisible();restoreRelease!();await expect(page.getByText('Check this reply before sending another message. Stopping the wait does not cancel a call already started.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Send message to Milo',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
   assert.equal(await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).pending.requestId,key),requestId);release!();await expect(page.locator('[data-assistance-level]')).toHaveAttribute('data-verified','true');await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();assert.equal(posts,0);
+  // Even with verified availability and nonempty input, the saved request blocks Send rather than navigation.
+  await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('An unsent follow-up');
+  await expect(page.getByRole('button',{name:'Send message to Milo',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
+  assert.equal(await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).pending.requestId,key),requestId);assert.equal(posts,0);
  }finally{restoreRelease?.();release?.();await browser.close();await fixture.close();}
 });
