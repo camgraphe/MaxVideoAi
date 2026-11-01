@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createHash,randomUUID} from 'node:crypto';
-import {chromium,expect,type Page,type Route} from '@playwright/test';
+import {chromium,webkit,expect,type Page,type Route} from '@playwright/test';
 import {startWorkspaceReferenceFixture} from './helpers/workspace-reference-browser-fixture';
 import {canonicalPromptDraft} from '../frontend/src/lib/prompt-assistance/session';
 import {initialStatus} from './helpers/milo-status-fixture';
@@ -17,7 +17,7 @@ async function open(page:Page,url:string){await page.goto(url);await page.getByR
 async function submit(page:Page){await message(page).fill('An observatory above the clouds');await send(page).click();}
 function result(r:any,state='pending',extra:object={}){return {sessionId:r.sessionId,requestId:r.requestId,draftRevision:r.draftRevision??0,target:'prompt',message:r.message??'Original brief',state,phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString(),assistance:initialStatus,...extra};}
 function complete(r:any){return result(r,'complete',{reply:{reply:'Original isolated answer',text:'A telescope turns under twilight.'}});}
-async function withFixture(run:(page:Page,url:string)=>Promise<void>){const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await chromium.launch();try{await run(await browser.newPage(),fixture.url);}finally{await browser.close();await fixture.close();}}
+async function withFixture(run:(page:Page,url:string)=>Promise<void>,browserType=chromium){const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true});const browser=await browserType.launch();try{await run(await browser.newPage(),fixture.url);}finally{await browser.close();await fixture.close();}}
 async function wire(page:Page,handler:(route:Route)=>Promise<unknown>){await page.route('**/api/prompt-assistance*',async route=>{const url=new URL(route.request().url());if(route.request().method()==='GET'&&!url.searchParams.has('sessionId'))return route.fulfill({json:{ok:true,result:initialStatus}});return handler(route);});}
 
 test('saved admission polls beyond the former 90 seconds with one POST and never applies or generates',{timeout:90_000},()=>withFixture(async(page,url)=>{
@@ -41,21 +41,22 @@ test('slow GETs never overlap and Stop waiting then Check reply reuses only the 
  await expect(page.getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,1);assert.equal(recoveries,1);assert.equal(max,1);
 }));
 
-test('New chat during polling preserves unsent input synchronously and previous reply stays read-only after reload',{timeout:90_000},()=>withFixture(async(page,url)=>{
- let r:any,posts=0,done=false;
- await wire(page,async route=>{if(route.request().method()==='POST'){const body=route.request().postDataJSON();if(body.action==='message'){posts++;r=body.request;}else{assert.equal(body.sessionId,r.sessionId);assert.equal(body.requestId,r.requestId);}return route.fulfill({json:{ok:true,result:done?complete(r):result(r)}});}const u=new URL(route.request().url());return route.fulfill({json:{ok:true,result:u.searchParams.has('requestId')?(done?complete(r):result(r)):{sessionId:u.searchParams.get('sessionId'),scope:'video:create',status:'active',turns:[],pending:null,proposal:null}}});});
+for(const browserType of [chromium,webkit])test(`New chat automatically observes the old reply after reload and keeps it read-only (${browserType.name()})`,{timeout:90_000},()=>withFixture(async(page,url)=>{
+ let r:any,posts=0,recoveries=0,done=false;
+ await page.clock.install();
+ await wire(page,async route=>{if(route.request().method()==='POST'){const body=route.request().postDataJSON();if(body.action==='message'){posts++;r=body.request;}else{recoveries++;assert.equal(body.sessionId,r.sessionId);assert.equal(body.requestId,r.requestId);}return route.fulfill({json:{ok:true,result:done?complete(r):result(r)}});}const u=new URL(route.request().url());return route.fulfill({json:{ok:true,result:u.searchParams.has('requestId')?(done?complete(r):result(r)):{sessionId:u.searchParams.get('sessionId'),scope:'video:create',status:'active',turns:[],pending:null,proposal:null}}});});
  await open(page,url);await submit(page);await message(page).fill('My next unsent creative brief');
  const newChat=page.getByRole('button',{name:'New chat',exact:true});await expect(newChat).toBeEnabled();await newChat.click();
  await expect(message(page)).toHaveValue('My next unsent creative brief');
  const saved=await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!),chatKey);assert.notEqual(saved.sessionId,r.sessionId);assert.equal(saved.local.message,'My next unsent creative brief');
  await expect(send(page)).toBeDisabled();await expect(page.getByText('Original isolated answer',{exact:true})).toHaveCount(0);
  await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(message(page)).toHaveValue('My next unsent creative brief');
- done=true;await page.getByRole('button',{name:'Check previous reply',exact:true}).click();
+ done=true;await page.clock.runFor(2_100);await expect(send(page)).toBeEnabled();await expect(page.getByRole('region',{name:'Previous Milo reply',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Check previous reply',exact:true}).click();
  const panel=page.getByRole('region',{name:'Previous Milo reply',exact:true});await expect(panel.getByText('Original isolated answer',{exact:true})).toBeVisible();await expect(panel.getByText('A telescope turns under twilight.',{exact:true})).toBeVisible();
  await expect(panel.getByRole('textbox')).toHaveCount(0);await expect(panel.getByRole('button',{name:/Use prompt|Generate|Review/})).toHaveCount(0);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
- await page.getByRole('button',{name:'Close previous reply',exact:true}).click();await expect(message(page)).toHaveValue('My next unsent creative brief');await expect(send(page)).toBeEnabled();assert.equal(posts,1);
+ await page.getByRole('button',{name:'Close previous reply',exact:true}).click();await expect(message(page)).toHaveValue('My next unsent creative brief');await expect(send(page)).toBeEnabled();assert.equal(posts,1);assert.equal(recoveries,0,'observing and reading the original reply cannot start recovery');
  await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
-}));
+},browserType));
 
 test('late callbacks after New chat, workflow or account change never hydrate the new chat',{timeout:90_000},()=>withFixture(async(page,url)=>{
  let r:any,gets=0;let release:(()=>void)|undefined;
@@ -75,11 +76,11 @@ for(const state of ['unknown','failed','deadline'] as const)test(`${state} prese
  await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
 }));
 
-test('another-chat REQUEST_PENDING preserves rejected brief and checks the private pointer without resend',{timeout:90_000},()=>withFixture(async(page,url)=>{
+test('another-chat REQUEST_PENDING preserves rejected brief and observes the private pointer without recovery',{timeout:90_000},()=>withFixture(async(page,url)=>{
  const original={sessionId:randomUUID(),requestId:randomUUID()};let posts=0;
  await wire(page,async route=>{if(route.request().method()==='POST'){posts++;const body=route.request().postDataJSON();if(body.action==='message')return route.fulfill({status:409,json:{ok:false,error:'REQUEST_PENDING',pendingRequest:{...original,scope:'image:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()}}});assert.equal(body.action,'recover');assert.equal(body.sessionId,original.sessionId);assert.equal(body.requestId,original.requestId);return route.fulfill({json:{ok:true,result:complete(original)}});}return route.fulfill({json:{ok:true,result:complete(original)}});});
- await open(page,url);await submit(page);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(send(page)).toBeDisabled();const pointer=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-previous-reply:v1:"owner"')!));assert.equal(pointer.scopeKey,'["owner","image","create"]');await page.getByRole('button',{name:'Check previous reply',exact:true}).click();
- await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,2);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
+ await open(page,url);await submit(page);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(send(page)).toBeEnabled();await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);const pointer=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-previous-reply:v1:"owner"')!));assert.equal(pointer.scopeKey,'["owner","image","create"]');await page.getByRole('button',{name:'Check previous reply',exact:true}).click();
+ await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,1);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
 }));
 
 test('storage failure retains in-memory previous recovery without disabling navigation',{timeout:90_000},()=>withFixture(async(page,url)=>{
@@ -90,8 +91,9 @@ test('storage failure retains in-memory previous recovery without disabling navi
 }));
 
 test('slow review digest preserves the admitting pointer and synchronous input without reviving a replaced chat',{timeout:90_000},()=>withFixture(async(page,url)=>{
- let r:any,posts=0;
- await wire(page,async route=>{if(route.request().method()==='POST'){posts++;r=route.request().postDataJSON().request;return route.fulfill({json:{ok:true,result:result(r)}});}return route.fulfill({json:{ok:true,result:result(r)}});});
+ let r:any,posts=0,reads=0,recoveries=0;
+ await page.clock.install();
+ await wire(page,async route=>{if(route.request().method()==='POST'){const body=route.request().postDataJSON();if(body.action==='message'){posts++;r=body.request;return route.fulfill({json:{ok:true,result:result(r)}});}recoveries++;assert.equal(body.action,'recover');return route.fulfill({json:{ok:true,result:result(body,'failed',{error:'REQUEST_NOT_FOUND',deadlineAt:undefined})}});}reads++;return route.fulfill({status:404,json:{ok:false,error:'REQUEST_NOT_FOUND'}});});
  await open(page,url);
  await page.evaluate(()=>{const digest=crypto.subtle.digest.bind(crypto.subtle);(globalThis as any).releaseDigests=[];crypto.subtle.digest=(...args:Parameters<SubtleCrypto['digest']>)=>new Promise(resolve=>{(globalThis as any).releaseDigests.push(()=>digest(...args).then(resolve));});});
  await message(page).fill('Keep this exact input before hashing');
@@ -100,7 +102,9 @@ test('slow review digest preserves the admitting pointer and synchronous input w
  await message(page).fill('My new unsent input');await page.getByRole('button',{name:'New chat',exact:true}).click();
  await page.evaluate(()=>(globalThis as any).releaseDigests.forEach((release:()=>void)=>release()));await expect(message(page)).toHaveValue('My new unsent input');assert.equal(posts,0);
  const pointer=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-previous-reply:v1:"owner"')!));
- assert.equal(pointer.status,'admitting');assert.deepEqual(Object.keys(pointer).sort(),['requestId','scopeKey','serverScope','sessionId','status','version']);
+ assert.equal(pointer.status,'admitting');assert.ok(Number.isFinite(Date.parse(pointer.observationStartedAt)));await expect.poll(()=>reads).toBe(1);await page.clock.runFor(31_000);const stoppedReads=reads;await page.clock.runFor(60_000);assert.equal(reads,stoppedReads);assert.equal(posts,0);assert.equal(recoveries,0);await expect(send(page)).toBeDisabled();
+ const after=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-previous-reply:v1:"owner"')!));assert.equal(after.status,'admitting');assert.equal(after.observationStartedAt,pointer.observationStartedAt);assert.equal(after.requestId,pointer.requestId);
+ await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect.poll(()=>recoveries).toBe(1);await expect(send(page)).toBeEnabled();await expect(message(page)).toHaveValue('My new unsent input');await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
 }));
 
 test('admission and recovery HTTP waits stop at 15 seconds and retain the same pointer',{timeout:90_000},()=>withFixture(async(page,url)=>{
@@ -164,7 +168,7 @@ test('a failed later brief reloads intact without lending its review proof to th
 test('a blocker admitted in the same session still opens an isolated previous-reply check',{timeout:90_000},()=>withFixture(async(page,url)=>{
  let original:any,posts=0;
  await wire(page,async route=>{const body=route.request().method()==='POST'?route.request().postDataJSON():undefined;if(body?.action==='message'){posts++;original={sessionId:body.request.sessionId,requestId:randomUUID()};return route.fulfill({status:409,json:{ok:false,error:'REQUEST_PENDING',pendingRequest:{...original,scope:'video:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()}}});}if(body){posts++;assert.equal(body.requestId,original.requestId);}return route.fulfill({json:{ok:true,result:complete(original)}});});
- await open(page,url);await submit(page);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toBeVisible();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,2);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
+ await open(page,url);await submit(page);await expect(message(page)).toHaveValue('An observatory above the clouds');await expect(send(page)).toBeEnabled();await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toBeVisible();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();assert.equal(posts,1);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);
 }));
 
 test('a real reload with blocked storage discovers the private blocker from the existing authenticated status GET',{timeout:90_000},()=>withFixture(async(page,url)=>{
@@ -196,30 +200,32 @@ for(const failure of ['unauthenticated','invalid status','old account'] as const
  }finally{release?.();}
 }));
 
-for(const rechecking of [false,true])test(`a new Send closes a previous view ${rechecking?'with a re-check in flight':'after its terminal read'}`,{timeout:90_000},()=>withFixture(async(page,url)=>{
- let old:any,current:any,oldChecks=0,wrongRecovery=0,activeReads=0,maxReads=0,releaseOld:(()=>void)|undefined;const releases:Array<()=>void>=[];
+for(const reopening of [false,true])test(`a new Send closes a previous view ${reopening?'after reopening its cached result':'after its terminal read'}`,{timeout:90_000},()=>withFixture(async(page,url)=>{
+ let old:any,current:any,oldChecks=0,wrongRecovery=0,activeReads=0,maxReads=0;const releases:Array<()=>void>=[];
  await wire(page,async route=>{const body=route.request().method()==='POST'?route.request().postDataJSON():null;
   if(body?.action==='message'){if(!old)old=body.request;else current=body.request;return route.fulfill({json:{ok:true,result:result(body.request)}});}
-  if(body?.action==='recover'){if(body.requestId===old.requestId){oldChecks++;if(oldChecks===2)await new Promise<void>(resolve=>releaseOld=resolve);return route.fulfill({json:{ok:true,result:complete(old)}}).catch(()=>{});}wrongRecovery++;return route.fulfill({json:{ok:true,result:result(current)}});}
+  if(body?.action==='recover'){if(body.requestId===old.requestId){oldChecks++;return route.fulfill({json:{ok:true,result:complete(old)}}).catch(()=>{});}wrongRecovery++;return route.fulfill({json:{ok:true,result:result(current)}});}
   const id=new URL(route.request().url()).searchParams.get('requestId');if(current&&id===current.requestId){activeReads++;maxReads=Math.max(maxReads,activeReads);await new Promise<void>(resolve=>releases.push(resolve));activeReads--;return route.fulfill({json:{ok:true,result:result(current)}}).catch(()=>{});}return route.fulfill({json:{ok:true,result:result(old)}});
  });
  try{await open(page,url);await submit(page);await expect.poll(()=>!!old).toBe(true);await page.getByRole('button',{name:'New chat',exact:true}).click();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();
-  if(rechecking){await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect.poll(()=>!!releaseOld).toBe(true);}
-  await message(page).fill('My next explicit active request');await expect(send(page)).toBeEnabled();await send(page).click();await expect.poll(()=>!!current).toBe(true);await expect.poll(()=>activeReads).toBe(1);await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);releaseOld?.();
+  if(reopening){await page.getByRole('button',{name:'Close previous reply',exact:true}).click();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();}
+  assert.equal(oldChecks,1,'a known terminal reply is read from cache');
+  await message(page).fill('My next explicit active request');await expect(send(page)).toBeEnabled();await send(page).click();await expect.poll(()=>!!current).toBe(true);await expect.poll(()=>activeReads).toBe(1);await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);
   await message(page).fill('Preserve this current follow-up');await expect(page.getByRole('button',{name:'Check previous reply',exact:true})).toHaveCount(0);await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);assert.equal(wrongRecovery,0);assert.equal(maxReads,1);await expect(message(page)).toHaveValue('Preserve this current follow-up');await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
- }finally{releaseOld?.();releases.forEach(release=>release());}
+ }finally{releases.forEach(release=>release());}
 }));
 
-test('a new identity discovered by status closes the previous re-check without retargeting its view',{timeout:90_000},()=>withFixture(async(page,url)=>{
- let old:any,oldChecks=0,statusPointer:any,discoveries=0,otherDone=false,releaseOld:(()=>void)|undefined;const other={sessionId:randomUUID(),requestId:randomUUID()};const checked:string[]=[];
+test('a new identity discovered by status closes the previous cached view and observes only the new identity',{timeout:90_000},()=>withFixture(async(page,url)=>{
+ let old:any,statusPointer:any,discoveries=0,otherDone=false,releaseOther:(()=>void)|undefined;const other={sessionId:randomUUID(),requestId:randomUUID()};const checked:string[]=[];
  await page.route('**/api/prompt-assistance*',async route=>{const u=new URL(route.request().url()),body=route.request().method()==='POST'?route.request().postDataJSON():null;
   if(route.request().method()==='GET'&&!u.searchParams.has('sessionId')){if(statusPointer)discoveries++;return route.fulfill({json:{ok:true,result:{...initialStatus,unresolvedCalls:statusPointer&&!otherDone?1:0},...(statusPointer?{pendingRequest:statusPointer}:{})}});}
   if(body?.action==='message'){old=body.request;return route.fulfill({json:{ok:true,result:result(old)}});}
-  if(body?.action==='recover'){checked.push(body.requestId);if(body.requestId===old.requestId){oldChecks++;if(oldChecks===2)await new Promise<void>(resolve=>releaseOld=resolve);return route.fulfill({json:{ok:true,result:complete(old)}}).catch(()=>{});}assert.equal(body.requestId,other.requestId);otherDone=true;return route.fulfill({json:{ok:true,result:result(other,'complete',{reply:{reply:'The other original reply',text:'The other read-only proposal'}})}});}
+  if(body?.action==='recover'){checked.push(body.requestId);assert.equal(body.requestId,old.requestId);return route.fulfill({json:{ok:true,result:complete(old)}});}
+  if(u.searchParams.get('requestId')===other.requestId){await new Promise<void>(resolve=>releaseOther=resolve);otherDone=true;return route.fulfill({json:{ok:true,result:result(other,'complete',{reply:{reply:'The other original reply',text:'The other read-only proposal'}})}}).catch(()=>{});}
   return route.fulfill({json:{ok:true,result:result(old)}});
  });
- try{await open(page,url);await submit(page);await expect.poll(()=>!!old).toBe(true);await page.getByRole('button',{name:'New chat',exact:true}).click();await message(page).fill('Keep this active unsent brief');await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect.poll(()=>!!releaseOld).toBe(true);
-  statusPointer={...other,scope:'image:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()};await page.getByRole('button',{name:'Milo settings and credits'}).click();await expect.poll(()=>discoveries).toBeGreaterThan(0);await page.getByRole('button',{name:'Close assistance',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);releaseOld?.();await expect(message(page)).toHaveValue('Keep this active unsent brief');await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
-  await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('The other original reply',{exact:true})).toBeVisible();assert.deepEqual(checked,[old.requestId,old.requestId,other.requestId]);await expect(message(page)).toHaveValue('Keep this active unsent brief');await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
- }finally{releaseOld?.();}
+ try{await open(page,url);await submit(page);await expect.poll(()=>!!old).toBe(true);await page.getByRole('button',{name:'New chat',exact:true}).click();await message(page).fill('Keep this active unsent brief');await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('Original isolated answer',{exact:true})).toBeVisible();
+  statusPointer={...other,scope:'image:create',phase:'calling',deadlineAt:new Date(Date.now()+600_000).toISOString()};await page.getByRole('button',{name:'Milo settings and credits'}).click();await expect.poll(()=>discoveries).toBeGreaterThan(0);await page.getByRole('button',{name:'Close assistance',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'})).toHaveCount(0);await expect.poll(()=>!!releaseOther).toBe(true);await expect(message(page)).toHaveValue('Keep this active unsent brief');await expect(send(page)).toBeDisabled();releaseOther!();await expect(send(page)).toBeEnabled();
+  await page.getByRole('button',{name:'Check previous reply',exact:true}).click();await expect(page.getByRole('region',{name:'Previous Milo reply'}).getByText('The other original reply',{exact:true})).toBeVisible();assert.deepEqual(checked,[old.requestId]);await expect(message(page)).toHaveValue('Keep this active unsent brief');await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);await expect(page.getByRole('button',{name:'Generate $1.23'})).toBeDisabled();
+ }finally{releaseOther?.();}
 }));

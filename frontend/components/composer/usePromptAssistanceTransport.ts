@@ -7,18 +7,20 @@ import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageK
 
 import {promptReplyHttp,validatedPromptReply,pollPromptReply,PromptReplyHttpError} from './prompt-assistance-polling';
 import {readPreviousReply,writePreviousReply,clearPreviousReply,samePreviousReply,privatePreviousReply,previousReplyAccount,type PreviousReplyRef} from './prompt-previous-reply-storage';
+import {observePreviousPromptReply} from './prompt-previous-reply-observer';
 type Pending={sessionId:string;requestId:string;uiId:number|null;deadlineAt?:string};
 type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined,pendingReview?:PromptPendingReview)=>Promise<()=>void>;
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;accountKey?:string;onRestore:Restore}){
   const accountKey=previousReplyAccount(scopeKey,options?.accountKey),serverScope=options?.scope??'';
   const blockedScopes=useRef(new Set<string>());
-  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,previousViewRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
+  const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,previousViewRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,previousObserverController:null as AbortController|null,previousResult:null as PromptAssistanceResult|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
   const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined as PromptAssistanceResult['phase'],previousRef:null as PreviousReplyRef|null,previousOpen:false,previousWaiting:false,previousResult:null as PromptAssistanceResult|null,previousError:null as string|null,persistenceError:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
   const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
   const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId,exhausted:owner.exhausted,previousRef:owner.previousRef,persistenceError:owner.persistenceError}));};
+  function stopPreviousObserver(){if(owner.previousObserverController){owner.previousObserverController.abort();owner.previousObserverController=null;update({previousWaiting:false});}}
   function closePreviousReply(){
     owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;
     update({previousOpen:false,previousWaiting:false,previousResult:null,previousError:null});
@@ -28,7 +30,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     if(!writePreviousReply(accountKey,ref,expected))owner.persistenceError=true;
     owner.previousRef=readPreviousReply(accountKey)??ref;
     // An open view belongs to one identity even when admission or another tab replaces the account pointer.
-    if(!samePreviousReply(previous,owner.previousRef))closePreviousReply();else update({});
+    if(!samePreviousReply(previous,owner.previousRef)){stopPreviousObserver();owner.previousResult=null;closePreviousReply();}else update({});
   }
   function rememberStatus(pending:Pending,result:PromptAssistanceResult){
     const previous=readPreviousReply(accountKey);
@@ -110,7 +112,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         const sessionId=owner.sessionId,epoch=owner.chatEpoch;void callbacks.current.options.onRestore(null,owner.local).then(commit=>{if(active()&&sessionId===owner.sessionId&&epoch===owner.chatEpoch){commit();owner.loading=false;update({loading:false});}}).catch(()=>{if(active()&&sessionId===owner.sessionId&&epoch===owner.chatEpoch){owner.loading=false;update({loading:false,loadError:true,error:'RESTORE_FAILED'});}});
       }else owner.loading=false;
     }else{owner.loading=false;setView(previous=>({...previous,owner,loading:false}));}
-    return()=>{owner.active=false;owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;};
+    return()=>{owner.active=false;owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;stopPreviousObserver();};
     // One owner per account/workflow. Callbacks are read through refs, never a reason to reopen a chat.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[owner,enabled,storageKey]);
@@ -161,15 +163,22 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   }
   async function checkPreviousReply(pointer=owner.previousRef){
     if(!active()||!pointer||owner.previousController||!samePreviousReply(owner.previousRef,pointer)||owner.pending&&samePreviousReply(pointer,owner.pending))return;
+    const known=owner.previousResult;
+    if(known&&samePreviousReply(known,pointer)&&(known.state==='complete'||known.state==='failed')){
+      owner.previousViewRef=pointer;update({previousOpen:true,previousWaiting:false,previousResult:known,previousError:known.state==='failed'?known.error??'ASSISTANCE_UNAVAILABLE':null});return;
+    }
+    stopPreviousObserver();
     const controller=new AbortController(),epoch=owner.chatEpoch;owner.previousController=controller;owner.previousViewRef=pointer;
     const valid=()=>active()&&owner.chatEpoch===epoch&&owner.previousController===controller&&samePreviousReply(readPreviousReply(accountKey),pointer);
     update({previousOpen:true,previousWaiting:true,previousError:null,previousResult:null});
     try{
-      let result=validatedPromptReply(await promptReplyHttp('/api/prompt-assistance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'recover',sessionId:pointer.sessionId,requestId:pointer.requestId})},controller.signal),pointer);
+      let result=validatedPromptReply(await (pointer.status==='terminal'
+        ?promptReplyHttp(`/api/prompt-assistance?sessionId=${encodeURIComponent(pointer.sessionId)}&requestId=${encodeURIComponent(pointer.requestId)}`,{},controller.signal)
+        :promptReplyHttp('/api/prompt-assistance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'recover',sessionId:pointer.sessionId,requestId:pointer.requestId})},controller.signal)),pointer);
       if(!valid())return;
-      rememberStatus({...pointer,uiId:null},result);update({previousResult:result});
-      result=await pollPromptReply({...pointer,deadlineAt:pointer.deadlineAt??result.deadlineAt},controller.signal,status=>{if(valid()){rememberStatus({...pointer,uiId:null},status);update({previousResult:status});}},result);
-      if(valid()){rememberStatus({...pointer,uiId:null},result);update({previousResult:result,previousError:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null});}
+      owner.previousResult=result;rememberStatus({...pointer,uiId:null},result);update({previousResult:result});
+      result=await pollPromptReply({...pointer,deadlineAt:pointer.deadlineAt??result.deadlineAt},controller.signal,status=>{if(valid()){owner.previousResult=status;rememberStatus({...pointer,uiId:null},status);update({previousResult:status});}},result);
+      if(valid()){owner.previousResult=result;rememberStatus({...pointer,uiId:null},result);update({previousResult:result,previousError:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null});}
     }catch(error){if(valid())update({previousError:error instanceof Error&&error.name==='AbortError'?'WAIT_STOPPED':error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});}
     finally{if(owner.previousController===controller){owner.previousController=null;update({previousWaiting:false});}}
   }
@@ -189,12 +198,31 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function pendingAnalysis(){return !!readAnalysisIdentity(`milo-analysis:${options?`${scopeKey}:${owner.sessionId}`:scopeKey}`)||(owner.legacy&&!!readAnalysisIdentity(`milo-analysis:${legacyPromptScopeKey(scopeKey)}`));}
   function newChat(unsentMessage=''){
     if(!active()||pendingAnalysis())return false;
-    owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;
+    owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;stopPreviousObserver();
     owner.chatEpoch++;owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local={message:unsentMessage,proposal:null,latestRequestId:''};owner.pending=null;owner.waiting=false;owner.loading=false;owner.pendingReview=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;
     const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}else owner.persistenceError=true;
     update({error:null,loadError:false,loading:false,waiting:false,recovery:false,phase:undefined,previousOpen:false,previousWaiting:false,previousResult:null,nextAction:null,cacheError:owner.cacheError});return true;
   }
   const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined,previousRef:null,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:false,error:null,nextAction:null,fundingRevision:null};
+  const observationKey=enabled&&owner.previousRef&&owner.previousRef.status!=='terminal'&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending))?JSON.stringify([owner.previousRef.sessionId,owner.previousRef.requestId,owner.chatEpoch]):null;
+  useEffect(()=>{
+    if(!observationKey||owner.previousController)return;
+    let pointer=owner.previousRef!;
+    if(!pointer.observationStartedAt){remember(pointer,pointer);pointer=owner.previousRef!;}
+    const controller=new AbortController(),epoch=owner.chatEpoch;owner.previousObserverController=controller;
+    // The existing credits reader refreshes when this separate wait ends.
+    update({previousWaiting:true});
+    const valid=()=>active()&&owner.chatEpoch===epoch&&owner.previousObserverController===controller&&samePreviousReply(readPreviousReply(accountKey),pointer);
+    void observePreviousPromptReply(pointer,controller.signal,result=>{
+      if(!valid()){controller.abort();return;}
+      owner.previousResult=result;rememberStatus({...pointer,uiId:null},result);
+      update({previousResult:result,previousError:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null});
+    }).catch(error=>{if(valid())update({previousError:error instanceof Error?error.message:'ASSISTANCE_UNAVAILABLE'});})
+      .finally(()=>{if(owner.previousObserverController===controller){owner.previousObserverController=null;update({previousWaiting:false});}});
+    return()=>{controller.abort();if(owner.previousObserverController===controller){owner.previousObserverController=null;update({previousWaiting:false});}};
+    // One observer per retired identity/epoch; status renders never renew its budget.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[owner,observationKey]);
   const previousViewRef=owner.previousViewRef;
   return {...visible,observePendingRequest,recheckPreviousReply:()=>{if(previousViewRef&&owner.previousViewRef===previousViewRef)void checkPreviousReply(previousViewRef);},accountPending:!!owner.previousRef&&owner.previousRef.status!=='terminal',previousAvailable:!!owner.previousRef&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending)),checkPreviousReply,closePreviousReply,stopPreviousReply:()=>owner.previousController?.abort(),analysisPending:pendingAnalysis(),legacyScopeKey:owner.legacy?legacyPromptScopeKey(scopeKey):undefined,chatKey:options?`${scopeKey}:${visible.chatId}`:scopeKey,newChat,
     localEpoch:()=>owner.localEpoch,
