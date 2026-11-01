@@ -1,4 +1,5 @@
 import {createHash,randomUUID} from 'node:crypto';
+import {promptWorkersEnabled,promptWorkersReady,promptExecutionOwner} from './worker-policy';
 import {query,withDbTransaction,type QueryExecutor,type TransactionQueryExecutor} from '@/lib/db';
 import {stableJson} from '@/server/agent-api/generation-normalization';
 import {promptSessionScope} from '@/lib/prompt-assistance/session';
@@ -8,7 +9,8 @@ import type {StudioAssistantModel,MiloRuntimePolicy} from '@/lib/studio/assistan
 import type {PromptAssistanceReply,PromptAssistanceRequest} from '@/lib/prompt-assistance/contract';
 import type {Response} from 'openai/resources/responses/responses';
 
-export type PromptRequestRow={user_id:string;session_id:string;request_id:string;input_hash:string;input_json:PromptAssistanceRequest;lease_id:string;lease_expires_at:Date;state:'preparing'|'calling'|'reported'|'complete'|'failed'|'unknown';model:StudioAssistantModel;runtime_policy?:MiloRuntimePolicy;call_id:string|null;context_json:unknown;response_json:Response|null;reply_json:PromptAssistanceReply|null;error:string|null};
+export type PromptRequestScope={userId:string;sessionId:string;requestId:string};
+export type PromptRequestRow={execution_version?:'legacy-sync-v1'|'durable-v1';execution_deadline_at?:Date|null;execution_owner?:string|null;worker_started_at?:Date|null;worker_attempts?:number;created_at?:Date;user_id:string;session_id:string;request_id:string;input_hash:string;input_json:PromptAssistanceRequest;lease_id:string;lease_expires_at:Date;state:'preparing'|'calling'|'reported'|'complete'|'failed'|'unknown';model:StudioAssistantModel;runtime_policy?:MiloRuntimePolicy;call_id:string|null;context_json:unknown;response_json:Response|null;reply_json:PromptAssistanceReply|null;error:string|null};
 const requestProjection="SELECT r.*,t.tariff_snapshot->'runtime' runtime_policy FROM prompt_assistance_requests r JOIN studio_assistance_turns t ON t.user_id=r.user_id AND t.project_id='composer:'||r.session_id::text AND t.request_id=r.request_id";
 export const composerScope=(userId:string,sessionId:string)=>({userId,projectId:`composer:${sessionId}`});
 export const promptScopeValues=(row:PromptRequestRow)=>[row.user_id,row.session_id,row.request_id];
@@ -17,7 +19,7 @@ export async function readPromptRequest(userId:string,sessionId:string,requestId
   if(!row)throw new Error('REQUEST_NOT_FOUND');
   return row;
 }
-export async function claimPromptRequest(userId:string,input:PromptAssistanceRequest,policy:StudioAssistancePolicy) {
+export async function claimPromptRequest(userId:string,input:PromptAssistanceRequest,policy:StudioAssistancePolicy,workers:{enabled?:boolean;executionOwner?:string}={}) {
   if(!userId)throw new Error('UNAUTHORIZED');
   const hash=createHash('sha256').update(stableJson(input)).digest('hex');
   return withDbTransaction(async tx=>{
@@ -25,8 +27,10 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     if((await tx.query('SELECT 1 FROM prompt_assistance_abandoned_requests WHERE user_id=$1 AND session_id=$2 AND request_id=$3',[userId,input.sessionId,input.requestId])).length)throw new Error('REQUEST_CLOSED');
     const prior=(await tx.query<PromptRequestRow>(requestProjection+' WHERE r.user_id=$1 AND r.session_id=$2 AND r.request_id=$3',[userId,input.sessionId,input.requestId]))[0];
     if(prior){if(prior.input_hash!==hash)throw new Error('REQUEST_CONFLICT');return {row:prior,claimed:false};}
+    if(!(workers.enabled??promptWorkersEnabled())||!await promptWorkersReady(tx))throw new Error('WORKER_UNAVAILABLE');
+    const executionOwner=workers.executionOwner??promptExecutionOwner();
     // Never redispatch an expired call. Dispatched closeout requires the financial resolution path.
-    await tx.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error='REQUEST_INTERRUPTED',updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp()",[userId]);
+    await tx.query("UPDATE prompt_assistance_requests SET state=CASE WHEN call_id IS NULL THEN 'failed' ELSE 'unknown' END,error=CASE WHEN call_id IS NULL AND execution_version='durable-v1' THEN 'REQUEST_DEADLINE' ELSE 'REQUEST_INTERRUPTED' END,updated_at=clock_timestamp() WHERE user_id=$1 AND state IN ('preparing','calling') AND lease_expires_at<clock_timestamp() AND (execution_version='legacy-sync-v1' OR execution_deadline_at<=clock_timestamp())",[userId]);
     if((await tx.query("SELECT 1 FROM prompt_assistance_requests WHERE user_id=$1 AND state IN ('preparing','calling','reported','unknown') LIMIT 1",[userId])).length)throw new Error('REQUEST_PENDING');
     // Customer waivers cannot recycle purchased credits into unlimited unbilled
     // supplier calls. Manual support decisions do not consume this automatic cap.
@@ -39,13 +43,15 @@ export async function claimPromptRequest(userId:string,input:PromptAssistanceReq
     const account=await lockAccount(tx,userId,policy);
     if(input.assistanceModel!==undefined&&(account.selected_model!==input.assistanceModel||Number(account.revision)!==input.assistanceRevision))throw new Error('ASSISTANCE_SELECTION_CHANGED');
     const turn=await openStudioAssistanceTurn(composerScope(userId,input.sessionId),input.requestId,policy,tx);
-    const row=(await tx.query<PromptRequestRow>(`INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model) VALUES($1,$2,$3,$4,$5::jsonb,$6,'preparing',$7) RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model]))[0];
+    const row=(await tx.query<PromptRequestRow>(`WITH admission AS (SELECT clock_timestamp() admitted_at) INSERT INTO prompt_assistance_requests(user_id,session_id,request_id,input_hash,input_json,lease_id,state,model,created_at,execution_version,execution_deadline_at,execution_owner,lease_expires_at) SELECT $1,$2,$3,$4,$5::jsonb,$6,'preparing',$7,admitted_at,'durable-v1',admitted_at+interval '600 seconds',$8,admitted_at+interval '630 seconds' FROM admission RETURNING *`,[userId,input.sessionId,input.requestId,hash,JSON.stringify(input),randomUUID(),turn.model,executionOwner]))[0];
     return {row:{...row,runtime_policy:turn.tariff_snapshot?.runtime},claimed:true};
   });
 }
 export async function readPromptHistory(row:PromptRequestRow) {
-  const previous=await query<Pick<PromptRequestRow,'input_json'|'reply_json'>>(`SELECT input_json,reply_json FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND state='complete' AND request_id<>$3 ORDER BY created_at DESC LIMIT 8`,promptScopeValues(row));
-  return previous.reverse().flatMap(item=>[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
+  const previous=await query<Pick<PromptRequestRow,'input_json'|'reply_json'|'state'>>(`SELECT input_json,reply_json,state FROM prompt_assistance_requests WHERE user_id=$1 AND session_id=$2 AND state IN ('complete','failed') AND request_id<>$3 ORDER BY created_at DESC,request_id DESC LIMIT 8`,promptScopeValues(row));
+  return previous.reverse().flatMap(item=>item.state==='failed'
+    ?[{role:'user' as const,content:JSON.stringify({message:item.input_json.message,replyUnavailable:true})}]
+    :[{role:'user' as const,content:item.input_json.message},{role:'assistant' as const,content:JSON.stringify(item.reply_json)}]);
 }
 
 export async function ensurePromptSession(userId:string,sessionId:string,draft:{surface:string;mode:string;workflow?:string},tx:TransactionQueryExecutor) {
@@ -54,4 +60,18 @@ export async function ensurePromptSession(userId:string,sessionId:string,draft:{
   const session=(await tx.query<{scope:string;active:boolean}>('SELECT scope,expires_at>clock_timestamp() active FROM prompt_assistance_sessions WHERE user_id=$1 AND id=$2',[userId,sessionId]))[0];
   if(!session?.active)throw new Error('SESSION_EXPIRED');
   if(session.scope!==scope)throw new Error('SESSION_SCOPE_CHANGED');
+}
+
+/** Private blocker identity only: never import an old reply/proposal into a new chat. */
+export async function readPendingPromptRequestPointer(userId:string){
+  const row=(await query<PromptRequestRow&{scope:string}>(`SELECT r.*,s.scope FROM prompt_assistance_requests r
+    JOIN prompt_assistance_sessions s ON s.user_id=r.user_id AND s.id=r.session_id
+    WHERE r.user_id=$1 AND r.state IN ('preparing','calling','reported','unknown') ORDER BY r.created_at LIMIT 1`,[userId]))[0];
+  if(!row)return undefined;
+  return {sessionId:row.session_id,requestId:row.request_id,scope:row.scope,phase:promptRequestPhase(row),
+    ...(row.execution_deadline_at?{deadlineAt:new Date(row.execution_deadline_at).toISOString()}:{} )};
+}
+export function promptRequestPhase(row:PromptRequestRow):'queued'|'preparing'|'calling'|'recovering'|undefined{
+  if(row.state==='complete'||row.state==='failed')return undefined;
+  return row.state==='unknown'||row.state==='reported'?'recovering':row.call_id?'calling':row.worker_started_at?'preparing':'queued';
 }

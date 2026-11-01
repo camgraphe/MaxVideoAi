@@ -27,7 +27,7 @@ test('authentication failure during recovery retains the pending identity until 
   await expect(page.getByRole('link',{name:'Sign in to chat'})).toBeVisible();
   const key='milo-composer:v2:["owner","video","create"]';
   await expect.poll(()=>page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).pending?.requestId,key)).toBe(original.requestId);
-  await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
   await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await page.getByRole('button',{name:'Check reply'}).click();
   await expect(page.getByText('this request’s credit hold was released.',{exact:false})).toBeVisible();assert.equal(messages,1);assert.equal(recoveries,2);
  }finally{await browser.close();await fixture.close();}
@@ -46,7 +46,7 @@ test('expired authentication during chat restoration prompts sign-in and keeps r
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await expect(page.getByRole('link',{name:'Sign in to chat'})).toBeVisible();
   assert.equal(await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).pending.requestId,key),requestId);
-  await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'New chat',exact:true})).toBeEnabled();
   authorized=true;await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await expect(page.getByRole('button',{name:'Check reply'})).toBeVisible();
  }finally{await browser.close();await fixture.close();}
 });
@@ -72,7 +72,7 @@ test('stopping the local wait retains recovery and serializes checks until a ter
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   const input=page.getByRole('textbox',{name:'Message Milo'}),send=page.getByRole('button',{name:'Send message to Milo'}),newChat=page.getByRole('button',{name:'New chat',exact:true});
   await input.fill('Add mist');await send.click();await expect(page.getByRole('button',{name:'Stop waiting',exact:true})).toBeVisible();
-  await input.fill('New writing must wait');await expect(send).toBeDisabled();await expect(newChat).toBeDisabled();
+  await input.fill('New writing must wait');await expect(send).toBeDisabled();await expect(newChat).toBeEnabled();
   await page.getByRole('button',{name:'Stop waiting',exact:true}).click();
   const check=page.getByRole('button',{name:'Check reply',exact:true});await expect(check).toBeVisible();
   await expect(page.getByText('Stopping the wait does not cancel a call already started.',{exact:false})).toBeVisible();
@@ -80,10 +80,10 @@ test('stopping the local wait retains recovery and serializes checks until a ter
   const storedRequest=()=>page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)!).pending?.requestId,key);
   assert.equal(await storedRequest(),original.requestId);
   await check.evaluate(button=>{(button as HTMLButtonElement).click();(button as HTMLButtonElement).click();});await expect.poll(()=>recoveries).toBe(1);
-  await expect(page.getByRole('button',{name:'Stop waiting',exact:true})).toBeVisible();await expect(send).toBeDisabled();await expect(newChat).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Stop waiting',exact:true})).toBeVisible();await expect(send).toBeDisabled();await expect(newChat).toBeEnabled();
   finishRecovery?.();await expect(check).toBeVisible();assert.equal(await storedRequest(),original.requestId);
   await check.click();await expect.poll(()=>recoveries).toBe(2);await expect(check).toBeVisible();assert.equal(await storedRequest(),original.requestId);
-  await expect(send).toBeDisabled();await expect(newChat).toBeDisabled();await expect(input).toHaveValue('New writing must wait');
+  await expect(send).toBeDisabled();await expect(newChat).toBeEnabled();await expect(input).toHaveValue('New writing must wait');
   await check.click();await expect(page.getByText('Recovered terminal reply',{exact:true})).toBeVisible();
   await expect(check).toHaveCount(0);await expect(send).toBeEnabled();await expect(newChat).toBeEnabled();assert.equal(await storedRequest(),undefined);
   finishOriginal?.();await expect.poll(()=>originalFinished).toBe(true);await expect(page.getByText('Late original reply',{exact:true})).toHaveCount(0);

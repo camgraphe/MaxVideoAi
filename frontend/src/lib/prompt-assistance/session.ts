@@ -27,8 +27,19 @@ export function canonicalPromptDraft(draft: PromptAssistanceRequest['draft']): s
 export const promptSessionSnapshotSchema = z.object({
   sessionId: z.string().uuid(), scope: promptSessionScopeSchema,
   status: z.enum(['active','expired','full']),
-  turns: z.array(z.object({requestId:z.string().uuid(),message:z.string().max(8000),reply:z.string().max(6000)}).strict()).max(100),
+  turns: z.array(z.union([
+    z.object({requestId:z.string().uuid(),message:z.string().max(8000),reply:z.string().max(6000)}).strict(),
+    z.object({requestId:z.string().uuid(),message:z.string().max(8000),state:z.literal('failed'),reply:z.null(),error:z.string().regex(/^[A-Z_]{1,80}$/)}).strict(),
+  ])).max(100),
   proposal: z.object({text:z.string().max(50000),draftFingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().nullable(),
   pending: z.object({requestId:z.string().uuid()}).strict().nullable(),
 }).strict();
 export type PromptSessionSnapshot = z.infer<typeof promptSessionSnapshotSchema>;
+
+/** Failed user turns cannot own a completed suggestion or its application proof. */
+export function lastCompletedPromptRequestId(snapshot:PromptSessionSnapshot|null|undefined):string {
+  for(let index=(snapshot?.turns.length??0)-1;index>=0;index--){
+    const turn=snapshot!.turns[index];if(turn.reply!==null)return turn.requestId;
+  }
+  return '';
+}

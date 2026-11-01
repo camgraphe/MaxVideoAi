@@ -27,8 +27,8 @@ for(const variant of ['immediate-reload','immediate-reload-webkit','selected-mod
  const oldDatabase=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  const {getDb}=await import('../frontend/src/lib/db');
  t.after(async()=>{await getDb().end();if(oldDatabase===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=oldDatabase;await pg.cleanup();});
- // The actual read owner receives JSONB rows in its production shape, without model/provider/billing services.
- await pg.pool.query(`CREATE TABLE prompt_assistance_sessions(user_id text,id uuid,scope text,expires_at timestamptz);CREATE TABLE prompt_assistance_requests(user_id text,session_id uuid,request_id uuid,state text,input_json jsonb,reply_json jsonb,created_at timestamptz DEFAULT clock_timestamp());`);
+ // Match the read owner's columns, including migration 85's nullable failure code, without provider/billing services.
+ await pg.pool.query(`CREATE TABLE prompt_assistance_sessions(user_id text,id uuid,scope text,expires_at timestamptz);CREATE TABLE prompt_assistance_requests(user_id text,session_id uuid,request_id uuid,state text,input_json jsonb,reply_json jsonb,error text,created_at timestamptz DEFAULT clock_timestamp());`);
  const {readPromptSession}=await import('../frontend/src/server/prompt-assistance/sessions');
  const all=listFalEngines(),custom=variant.startsWith('custom-');
  const selected=variant==='default-catalog'?all.filter(x=>x.category==='image'):custom?[all.find(x=>x.id==='gpt-image-2')!,all.find(x=>x.id===scenario.draft.engineId)!]:[all.find(x=>x.id===scenario.draft.engineId)!];

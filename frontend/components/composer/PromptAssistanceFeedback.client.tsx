@@ -1,13 +1,14 @@
 'use client';
+import type {PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import styles from './prompt-assistance.module.css';
 
 export const promptAssistanceLoadingMessage=(error:string|null)=>error==='RESTORING'?'Restoring this conversation…':error==='LOADING'?'Checking Milo availability…':null;
 
-export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onStop,onReload}: {
-  error:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
+export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onStop,onReload,phase}: {
+  phase?:PromptAssistanceResult['phase'];error:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
 }) {
   if(!error&&!waiting&&!recovery)return null;
-  const message=error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
+  const message=waiting?(phase==='queued'?'Your request is saved and waiting to start.':phase==='preparing'?'Milo is preparing your saved request.':phase==='recovering'?'Checking the saved reply and recorded usage.':'Waiting for Milo’s saved reply. You can stop waiting or start a new chat.'):error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
     ? 'Check this reply before sending another message. Stopping the wait does not cancel a call already started.'
     : error==='CONTEXT_TOO_LARGE'||error==='DRAFT_TOO_LONG'||error==='BODY_TOO_LARGE'
       ? 'This request is too long. Shorten the draft or message and try again.'
@@ -21,6 +22,8 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
       ? 'Open Milo settings to check your credits and available levels.'
     : error==='SESSION_EXPIRED'||error==='SESSION_FULL'||error==='SESSION_SCOPE_CHANGED'||error==='LEGACY_SESSION'
       ? 'This conversation is closed. You can still review its replies. Start a new chat to continue.'
+    : error==='WAIT_DEADLINE'
+      ? 'The saved waiting deadline has passed. Check the same reply to resolve its status before sending again.'
     : error==='REQUEST_PENDING'
       ? 'Another Milo request is still pending. Check it in the workspace where you sent it.'
     : error==='OUTPUT_INVALID'

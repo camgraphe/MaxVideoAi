@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
-import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer } from '@/lib/prompt-assistance/preview-state';
+import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
-import {canonicalPromptDraft,promptSessionScope} from '@/lib/prompt-assistance/session';
+import {canonicalPromptDraft,promptSessionScope,lastCompletedPromptRequestId} from '@/lib/prompt-assistance/session';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
 export type PromptAssistanceContext = { accountKey?:string; scopeKey: string; reviewKey?:string; contextKey: string; live?:PromptAssistanceDraftContext };
@@ -43,10 +43,10 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
     }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
     else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
-  },live?.workflow?{scope:promptSessionScope(live),onRestore:async(snapshot,local,pendingReview)=>{
+  },live?.workflow?{scope:promptSessionScope(live),accountKey,onRestore:async(snapshot,local,pendingReview)=>{
     const expected=currentDraftRef.current;
     const draftFingerprint=await hash(expected.currentDraft);
-    const latestRequestId=snapshot?.turns.at(-1)?.requestId??'';
+    const latestRequestId=lastCompletedPromptRequestId(snapshot);
     const edited=local?.latestRequestId===latestRequestId?local.proposal:undefined;
     const proposal=edited??snapshot?.proposal;
     const proof=edited?edited.review:pendingReview;
@@ -58,7 +58,9 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       ?{...expected.applicationContext,settings:proof.settings}:undefined;
     const valid=!!proposal&&proposal.draftFingerprint===draftFingerprint&&(!edited||edited.valid);
     return ()=>dispatch({type:'hydrate',scope:scopeKey,fingerprint:expected.fingerprint,compatibilityRevision:expected.compatibilityRevision,message:local?.message??'',
-      messages:snapshot?.turns.flatMap(turn=>[{id:`${turn.requestId}-user`,role:'user' as const,text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant' as const,text:turn.reply}])??[],
+      messages:snapshot?.turns.flatMap<PreviewMessage>(turn=>turn.reply===null
+        ?[{id:`${turn.requestId}-user`,role:'user',text:turn.message,deliveryFailed:true}]
+        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply}])??[],
       proposal:proposal?{text:proposal.text,valid,applicationContext:reviewContext,requestId:latestRequestId}:null});
   }}:undefined);
   const appliedPromptCurrent = Boolean(appliedPrompt && appliedPrompt.text === draftText
@@ -79,6 +81,10 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     previousCompatibility.current={scope:scopeKey,revision:state.compatibilityRevision};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[scopeKey,state.proposal,state.compatibilityRevision,transport.chatId]);
+  useLayoutEffect(()=>{if(PROMPT_ASSISTANCE_LIVE&&!transport.loading&&!transport.loadError)transport.saveMessage(state.message);
+    // Persist input before any async digest or navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[scopeKey,state.message,transport.loading,transport.loadError,transport.chatId]);
   useEffect(()=>{
     if(!PROMPT_ASSISTANCE_LIVE||transport.loading||transport.loadError)return;
     let cancelled=false;
@@ -138,6 +144,6 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       input.current?.focus(); input.current?.setSelectionRange(start + insertion.length, start + insertion.length);
     });
   };
-  const newChat=()=>{if(!PROMPT_ASSISTANCE_LIVE||transport.newChat()){setAppliedPrompt(null);dispatch({type:'newChat',message:transport.exhausted?state.message:undefined});return true;}return false;};
+  const newChat=()=>{const message=transport.messageForNewChat(state.message);if(!PROMPT_ASSISTANCE_LIVE||transport.newChat(message)){setAppliedPrompt(null);dispatch({type:'newChat',message});return true;}return false;};
   return { state, dispatch, input, send, apply, applyReviewed, appliedPromptCurrent,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
 }

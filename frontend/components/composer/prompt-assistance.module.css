@@ -32,6 +32,7 @@
 .messages { display: flex; flex-direction: column; gap: 14px; }
 .user { align-self: flex-end; max-width: 88%; border-radius: 12px 12px 3px 12px; padding: 8px 12px; background: var(--surface-2); }
 .user, .reply { white-space: pre-wrap; overflow-wrap: anywhere; }
+.deliveryFailed { display: block; margin-top: 4px; font-size: 11px; color: var(--text-secondary); }
 .proposal { border-top: 1px solid var(--border); padding: 4px 12px; min-width: 0; flex-shrink: 0; }
 .proposalHeader { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-shrink: 0; container: prompt-proposal / inline-size; }
 .proposalBody { flex: 1; min-height: 0; padding: 0 16px; display: flex; flex-direction: column; }
@@ -170,3 +171,8 @@
 .settingsReviewActions p { flex-basis: 100%; color: var(--text-muted); }
 .settingsReviewActions button { min-height: 44px; padding: 0 8px; }
 .settingsReviewActions .confirmSettings { margin-left: auto; padding: 0 12px; border-radius: 7px; background: var(--text-primary); color: var(--surface); }
+.previousReply { margin-top: .5rem; border: 1px solid var(--border); border-radius: .75rem; padding: .75rem; color: var(--text-muted); font-size: .8rem; }
+.previousReplyHeader { display: flex; justify-content: space-between; gap: .75rem; align-items: center; }
+.previousReplyHeader button { text-decoration: underline; text-underline-offset: .2em; }
+.previousReply > p { margin-top: .5rem; }
+.previousReplyText { margin-top: .75rem; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 20rem; overflow-y: auto; }

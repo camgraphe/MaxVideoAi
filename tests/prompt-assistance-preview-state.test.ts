@@ -46,3 +46,27 @@ test('simulation is opt-in and never enabled by the flag in production or test',
   for (const env of ['production', 'test', undefined]) assert.equal(previewEnabled(env, '1'), false);
   assert.equal(previewEnabled('development', undefined), false);
 });
+
+test('a failed delivered request keeps its human message with an honest delivery notice', () => {
+  let state = previewReducer(initial(), {type:'send',id:3,message:'Keep this detailed creative brief.'});
+  state = previewReducer(state, {type:'failed',id:3});
+  assert.equal(state.messages.length,1);
+  assert.equal(state.messages[0].text,'Keep this detailed creative brief.');
+  assert.equal((state.messages[0] as {deliveryFailed?:boolean}).deliveryFailed,true);
+  assert.equal(state.messages.some(message=>message.role==='assistant'),false);
+  assert.equal(state.proposal,null);
+});
+
+test('a failed restored turn cannot become the owner of an older completed proposal', async () => {
+  const session = await import('../frontend/src/lib/prompt-assistance/session');
+  const completed = '00000000-0000-4000-8000-000000000001';
+  const failed = '00000000-0000-4000-8000-000000000002';
+  const snapshot = {sessionId:'00000000-0000-4000-8000-000000000003',scope:'video:create',status:'active',
+    turns:[{requestId:completed,message:'First idea',reply:'A real response'},
+      {requestId:failed,message:'A later unanswered brief',state:'failed',reply:null,error:'REQUEST_UNANSWERED'}],proposal:null,pending:null};
+  assert.equal(session.promptSessionSnapshotSchema.safeParse(snapshot).success,true);
+  const latest = (session as unknown as {lastCompletedPromptRequestId:(snapshot:unknown)=>string}).lastCompletedPromptRequestId;
+  assert.equal(typeof latest,'function');
+  assert.equal(latest(snapshot),completed);
+  assert.equal(latest({...snapshot,turns:[snapshot.turns[1]]}),'');
+});

@@ -2,10 +2,11 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {assistanceStatusSchema} from '../_lib/conversation-assistance';
-export function useStudioAssistance(accountKey:string,conversationBusy:boolean,options:{endpoint?:string;enabled?:boolean;wrapChoice?:boolean}={}) {
+export function useStudioAssistance(accountKey:string,conversationBusy:boolean,options:{endpoint?:string;enabled?:boolean;wrapChoice?:boolean;onPendingRequest?:(pointer:unknown)=>void}={}) {
   const endpoint=options.endpoint??'/api/studio/assistance',enabled=options.enabled??true,wrapChoice=options.wrapChoice??false;
   const session=useMemo(()=>({accountKey,active:false,status:null as StudioAssistanceStatus|null,epoch:0,mutation:false,controller:null as AbortController|null}),[accountKey]);
   const current=useRef(session);current.current=session;
+  const pendingObserver=useRef(options.onPendingRequest);pendingObserver.current=options.onPendingRequest;
   const [state,setState]=useState<{owner:typeof session;status:StudioAssistanceStatus|null;busy:boolean;error:string|null}>({owner:session,status:null,busy:false,error:null});
   const isCurrent=useCallback(()=>session.active&&current.current===session,[session]);
   const update=useCallback((values:Partial<Omit<typeof state,'owner'>>)=>{if(isCurrent()){if('status' in values)session.status=values.status??null;setState(previous=>({...previous,...values,owner:session}));}},[isCurrent,session]);
@@ -16,7 +17,11 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
     try {
       const response=await fetch(endpoint,{cache:'no-store',signal:request.signal});const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
       if(!response.ok||!body.ok||!parsed.success)throw new Error(response.status===401?'AUTH_REQUIRED':'UNAVAILABLE');
-      if(isCurrent()&&session.epoch===version)update({status:parsed.data,error:null});
+      if(isCurrent()&&session.epoch===version&&!request.signal.aborted){
+        update({status:parsed.data,error:null});
+        // Only a validated, authenticated read belonging to this owner may supply discovery metadata.
+        pendingObserver.current?.(body.pendingRequest);
+      }
     }catch(failure){if(isCurrent()&&session.epoch===version)update(failure instanceof Error&&failure.message==='AUTH_REQUIRED'?{error:'AUTH_REQUIRED',status:null}:{error:'UNAVAILABLE'});}finally{window.clearTimeout(timeout);}
   },[isCurrent,session,update,enabled,endpoint]);
   useEffect(()=>{session.active=true;update({status:null,busy:false,error:null});void refresh();return()=>{session.active=false;session.epoch++;session.controller?.abort();};},[refresh,session,update]);
