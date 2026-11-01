@@ -89,7 +89,7 @@ test('Kling and mandatory-audio H3 disclose the effective quote settings', () =>
   const rows = buildWorkspacePickerOptions({ current: setup(), engines, locale: 'fr', memberTier: 'Member' });
   assert.equal(rows['kling-o3-pro'].request?.resolution, '1080p');
   assert.ok(rows['kling-o3-pro'].changes.some(change => change.after === '1080p'));
-  assert.match(rows['minimax-h3'].summary, /audio/i);
+  assert.match(rows['minimax-h3'].summary, /Son: Toujours activé/);
   assert.ok(rows['minimax-h3'].changes.some(change => change.label === 'Son' && change.after === 'Toujours activé'));
 });
 test('an explicit other-model choice from Modify prepares Create without reusing its source', () => {

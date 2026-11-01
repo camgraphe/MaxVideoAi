@@ -75,7 +75,7 @@ export function buildH3OperationCaps(): Record<H3SourceOperation, VideoOperation
         {id:'seed',type:'number',label:'Seed',modes:['v2v'],min:0,step:1},
         {id:'enable_safety_checker',type:'boolean',label:'Safety checker',modes:['v2v'],default:true},
       ], constraints:{ownedAssetModes:['v2v']} },
-      ui:{modes:['v2v'],durationPolicy:'source_video',resolution,audioToggle:false,
+      ui:{modes:['v2v'],durationPolicy:'source_video',resolution,audioToggle:false,audioPresentation:'source',
         ...(!recast ? {aspectRatio:['auto','21:9','16:9','4:3','1:1','3:4','9:16']} : {}),
         notes:recast ? 'Replace people with ordered portraits; preserves source motion, cuts and audio. Each shot must be at most 15 seconds.' : 'Relight from a sphere render. Prepared source timing and audio are retained; review any compatible-copy trim.'} };
   };
