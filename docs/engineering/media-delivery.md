@@ -402,6 +402,21 @@ Selecting Play in the main preview mounts `AppDemoVideo`, which consumes the sha
 public rendition selector and exact-original error fallback. Personal media retain
 their existing reader, and download/reuse/edit URLs remain originals.
 
+The central preview loads a completed, selected personal video in pause when its
+poster is missing, is a local placeholder, or fails to load. This exposes the first
+decoded frame without automatic playback or audio. A valid poster still keeps the
+idle reader unmounted; curated demonstrations and gallery cards retain their own
+loading policy. Use the full `playbackVideoUrl` when available, otherwise the exact
+original, never the short rail preview. A native playback error reports preview
+unavailability without relabeling a completed generation or restarting job polling.
+`workspace-generation-preview-dom` covers local submission, accepted server identity,
+completion/history transfer, manual selection, poster/media failure and original
+download separation. `workspace-generation-preview-browser` additionally checks the
+real dock with a local H264 fixture in Chromium and WebKit: the first frame is
+decoded and painted in pause, and Play then Pause retains the video node and frame.
+This does not qualify physical Safari/iOS or live storage delivery; retain those
+checks for rollout.
+
 For a direct guest entry into `/app`, the server-selected first Starter playlist
 video remains selected when the gallery hydrates, even if its chronological sort
 puts another video first. The gallery action hook applies that same video's prompt

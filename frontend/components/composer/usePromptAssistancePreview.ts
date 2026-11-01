@@ -6,6 +6,7 @@ import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
 import {canonicalPromptDraft,promptSessionScope,lastCompletedPromptRequestId} from '@/lib/prompt-assistance/session';
+import {promptWritingModeStorageKey,readPromptWritingMode,writePromptWritingMode} from './prompt-writing-mode-storage';
 
 /** Scope owns the conversation (account/workspace); context changes only invalidate suggestions. */
 export type PromptAssistanceContext = { accountKey?:string; scopeKey: string; reviewKey?:string; contextKey: string; live?:PromptAssistanceDraftContext };
@@ -18,11 +19,24 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   const fingerprintFor = (text:string) => JSON.stringify([contextKey, reviewKey, live, target, text, perceptionRevision]);
   const fingerprint = fingerprintFor(draftText);
   const [stored, dispatch] = useReducer(previewReducer, undefined, () => createPreviewState(scopeKey, fingerprint,applicationContext));
-  const previousAccount=useRef(accountKey);
-  const sync={ type: 'sync' as const, scope: scopeKey, fingerprint,applicationContext,keepMode:accountKey!==undefined&&accountKey===previousAccount.current };
+  const writingOwner=accountKey?JSON.stringify([accountKey,live?.surface??null]):null;
+  const writingModeKey=accountKey&&live?.workflow?promptWritingModeStorageKey(accountKey,live.surface,live.workflow):null;
+  const previousWritingOwner=useRef<{owner:string|null}|null>(null);
+  const sync={ type: 'sync' as const, scope: scopeKey, fingerprint,applicationContext,keepMode:writingOwner!==null&&writingOwner===previousWritingOwner.current?.owner };
   const state = previewReducer(stored, sync);
   if (state !== stored) dispatch(sync);
-  previousAccount.current=accountKey;
+  const [hydratedWritingModeKey,setHydratedWritingModeKey]=useState<string|null>(null);
+  useLayoutEffect(()=>{
+    const previous=previousWritingOwner.current;
+    previousWritingOwner.current={owner:writingOwner};
+    // A mounted workflow switch keeps its active writer. A new owner or mount
+    // restores its own choice before paint and before any default can be saved.
+    if(!previous||previous.owner!==writingOwner)dispatch({type:'mode',mode:readPromptWritingMode(writingModeKey)??'prompt'});
+    setHydratedWritingModeKey(writingModeKey);
+  },[writingModeKey,writingOwner]);
+  useLayoutEffect(()=>{
+    if(hydratedWritingModeKey===writingModeKey)writePromptWritingMode(writingModeKey,state.mode);
+  },[hydratedWritingModeKey,writingModeKey,state.mode]);
   // An explicit application is a separate permission from having a working proposal.
   // Text is checked independently so qualified scalar settings (including ratio) stay compatible.
   const generationContext = proposalApplicationContext({accountKey,scopeKey,reviewKey,live,text:'',target,perceptionRevision})?.compatibilityKey

@@ -113,8 +113,9 @@ test('retained tabs survive cutover and rollback, then recover by explicit reloa
   await validate(newTab, true);
   await validate(oldTab, true);
   await newTab.getByRole('button', { name: 'New challenge', exact: true }).click();
+  await expect(newTab.getByRole('button', { name: 'Validate', exact: true })).toBeEnabled();
   await newTab.evaluate(() => (window as unknown as { expireDiagnosticToken: () => void }).expireDiagnosticToken());
-  assert.equal(await newTab.getByRole('button', { name: 'Validate', exact: true }).isDisabled(), true);
+  await expect(newTab.getByRole('button', { name: 'Validate', exact: true })).toBeDisabled();
   assert.deepEqual(errors, []);
   assert.deepEqual(forbiddenRequests, []);
   assert.equal((await f.pg.pool.query('SELECT count(*)::int AS n FROM checkout_attempts WHERE captcha_passed')).rows[0].n, 5);

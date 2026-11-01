@@ -386,6 +386,7 @@ export function CompositePreviewDock({
                       registerVideo={registerVideo}
                       showGroupError={showGroupError}
                       tileCount={tileCount || slots.length}
+                      unavailableLabel={copy.errorTitle}
                     />
                   );
                 })}

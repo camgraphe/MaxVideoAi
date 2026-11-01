@@ -1,6 +1,8 @@
 'use client';
 
 import { normalizeGenerationObservation } from '@/lib/generation-observation';
+import { isPlaceholderMediaUrl } from '@/lib/media';
+import { useState } from 'react';
 
 import { AppDemoVideo } from '@/components/media/AppDemoVideo.client';
 import clsx from 'clsx';
@@ -30,6 +32,7 @@ interface CompositePreviewDockTileProps {
   registerVideo: (itemKey: string) => (element: HTMLVideoElement | null) => void;
   showGroupError: boolean;
   tileCount: number;
+  unavailableLabel?: string;
 }
 
 export function CompositePreviewDockTile({
@@ -48,13 +51,23 @@ export function CompositePreviewDockTile({
   registerVideo,
   showGroupError,
   tileCount,
+  unavailableLabel = 'Preview unavailable',
 }: CompositePreviewDockTileProps) {
+  const [failedThumbUrl, setFailedThumbUrl] = useState<string | null>(null);
+  const [failedVideoUrl, setFailedVideoUrl] = useState<string | null>(null);
   const video = isVideo(item);
   const mediaFitClass = 'object-contain';
   const itemStatus = resolvePreviewItemStatus(item);
   const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
-  const inlinePreviewUrl = shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
-  const showReadyThumb = Boolean(item.thumb);
+  const curated = item.meta?.curated === true;
+  const showReadyThumb = Boolean(
+    item.thumb && (curated || (!isPlaceholderMediaUrl(item.thumb) && failedThumbUrl !== item.thumb))
+  );
+  // A selected personal result still needs a first frame when no poster exists.
+  // Curated demos retain their intent-only reader, and other gallery cards stay idle.
+  const shouldLoadVideo = shouldPlayVideo || (!curated && !showReadyThumb);
+  const inlinePreviewUrl = shouldLoadVideo ? getInlinePreviewUrl(item) : undefined;
+  const hasVideoError = Boolean(inlinePreviewUrl && failedVideoUrl === inlinePreviewUrl);
   const itemMessage = typeof item.meta?.message === 'string' ? (item.meta.message as string) : undefined;
   const hasAudio = resolvePreviewItemHasAudio(item);
 
@@ -79,15 +92,16 @@ export function CompositePreviewDockTile({
                 className={clsx(
                   'pointer-events-none z-10 transition-opacity duration-150',
                   mediaFitClass,
-                  shouldPlayVideo && isVideoReady ? 'opacity-0' : 'opacity-100'
+                  shouldPlayVideo && isVideoReady && !hasVideoError ? 'opacity-0' : 'opacity-100'
                 )}
+                onError={() => setFailedThumbUrl(item.thumb as string)}
               />
             ) : null}
             {shouldPlayVideo && item.meta?.curated === true ? (
               <AppDemoVideo src={inlinePreviewUrl!} muted={isMuted} loop={isLooping}
                 className={clsx('relative z-0 h-full w-full', mediaFitClass)} register={registerVideo(itemKey)}
                 onLoadedData={video => onVideoLoadedData(itemKey, video)} onCanPlay={video => onVideoCanPlay(itemKey, video)} />
-            ) : shouldPlayVideo ? (
+            ) : shouldLoadVideo ? (
               <video
                 ref={registerVideo(itemKey)}
                 data-preview-video="active"
@@ -95,12 +109,24 @@ export function CompositePreviewDockTile({
                 className={clsx('relative z-0 h-full w-full', mediaFitClass)}
                 muted={isMuted}
                 playsInline
-                autoPlay
+                autoPlay={shouldPlayVideo}
                 preload="auto"
                 loop={isLooping}
-                onLoadedData={(event) => onVideoLoadedData(itemKey, event.currentTarget)}
-                onCanPlay={(event) => onVideoCanPlay(itemKey, event.currentTarget)}
+                onLoadedData={(event) => {
+                  setFailedVideoUrl(null);
+                  onVideoLoadedData(itemKey, event.currentTarget);
+                }}
+                onCanPlay={(event) => {
+                  setFailedVideoUrl(null);
+                  onVideoCanPlay(itemKey, event.currentTarget);
+                }}
+                onError={() => setFailedVideoUrl(inlinePreviewUrl ?? null)}
               />
+            ) : null}
+            {hasVideoError ? (
+              <div role="status" className="absolute inset-0 z-20 flex items-center justify-center bg-surface-glass-80 px-4 text-center text-sm text-text-secondary">
+                {unavailableLabel}
+              </div>
             ) : null}
           </>
         ) : item.thumb ? (

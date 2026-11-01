@@ -58,6 +58,8 @@ test('gallery recall renders Modify and Extend controls after delayed job detail
           for (const [index, label, mode, resolution, duration] of [
             [0, 'Wan Modify', 'v2v', '1080p', 5], [1, 'Wan Extend', 'extend', '720p', 8],
           ] as const) {
+            // Gallery navigation mounts before draft hydration; snapshot the rendered composer.
+            await expect(page.getByRole('textbox', { name: 'Prompt', exact: true })).toBeVisible();
             const beforeRecall = await state();
             await page.getByRole('button', { name: `Open ${label}`, exact: true }).click();
             await expect.poll(() => requests.length).toBe(index + 1);
