@@ -1,0 +1,4 @@
+.root { position: relative; display: inline-flex; min-width: 0; max-width: 100%; }
+.root > button[aria-disabled="true"] { background: var(--surface-2); color: var(--text-muted); opacity: 1; cursor: not-allowed; }
+.root > button[aria-disabled="true"] :global(.app-generation-price) { color: var(--text-primary); opacity: 1; }
+.hint { position: absolute; z-index: 60; inset-inline-end: 0; bottom: calc(100% + 8px); width: max-content; max-width: min(300px, calc(100vw - 32px)); padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text-primary); box-shadow: var(--shadow-card); font-size: 12px; line-height: 1.5; font-weight: 400; text-align: start; white-space: normal; }

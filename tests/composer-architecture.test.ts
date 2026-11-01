@@ -26,6 +26,7 @@ test('composer delegates copy, contracts, modes, multi-prompt, promoted action i
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
+  assert.match(composerSource, /useComposerGenerationGate\(/, 'Milo action/continuation permission has a focused owner');
   assert.match(composerSource, /useComposerVideoSourceWorkflow\(/, 'shared source eligibility and excerpt presentation state have a focused owner');
   assert.match(composerSource, /<ComposerMultiPromptEditor/, 'Composer should compose the focused multi-prompt editor');
   assert.match(composerSource, /<ComposerPromotedActionIcon/, 'Composer should compose the focused promoted action icon');
