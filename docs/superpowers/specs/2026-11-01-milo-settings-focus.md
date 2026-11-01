@@ -13,12 +13,16 @@ it but does not instrument the causal focus event; no live replay is required.
 Chosen minimal design: move the existing focus call to the synchronous Send
 gesture, before onSend, for both button and Enter. Message input stays focusable
 while pending. The asynchronous reply keeps transcript/proposal presentation
-updates and does not claim focus. This avoids guessing whether body focus came
-from a disabled Send button or from a later intentional interaction. A panel-wide
-contains guard would still steal focus from other controls inside the panel.
+updates. Before closing the expanded proposal reader, it captures whether focus
+is inside that exact subtree and returns it to Message Milo only in that case.
+This preserves keyboard continuity when the focused editor or Copy button will
+unmount, without guessing why body might be focused. Settings and persistent
+controls, including controls inside the panel, retain their focus. A panel-wide
+contains guard would still steal focus from those controls.
 
 Verification: real Panel, CoreSettingsBar/SelectMenu and CSS in Chromium/WebKit;
 controlled synthetic completion while Audio/Duration is open; internal and
-external focus retained; input Enter and keyboard activation of Send still useful
-before and after completion. Existing keyboard/form guard remains covered.
+external focus retained; focused proposal editor and Copy return to the message
+when the real reader closes; input Enter and keyboard activation of Send still
+useful before and after completion. Existing keyboard/form guard remains covered.
 Local tests prove this mechanism, not attribution of the earlier live incident.

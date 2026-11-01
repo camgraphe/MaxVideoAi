@@ -37,6 +37,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const [expanded, setExpanded] = useState(false);
   const [reviewMode,setReviewMode]=useState(false);
   const transcript = useRef<HTMLDivElement>(null);
+  const proposalBody = useRef<HTMLDivElement>(null);
   const proposalEditor = useRef<HTMLTextAreaElement>(null);
   const ownInput = useRef<HTMLTextAreaElement>(null);
   const input = messageRef ?? ownInput;
@@ -46,7 +47,11 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
     if (messages.length <= previousMessages.current) return;
     previousMessages.current = messages.length;
     if (transcript.current) transcript.current.scrollTop = transcript.current.scrollHeight;
-    if (messages.at(-1)?.role === 'assistant') { setExpanded(false);setReviewMode(false); }
+    if (messages.at(-1)?.role === 'assistant') {
+      const restoreReaderFocus = proposalBody.current?.contains(document.activeElement);
+      setExpanded(false);setReviewMode(false);
+      if (restoreReaderFocus) input.current?.focus({ preventScroll: true });
+    }
   }, [messages, input]);
   useEffect(()=>{if(!proposal){setExpanded(false);setReviewMode(false);}},[proposal]);
   useEffect(() => {
@@ -69,7 +74,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
         </div>
         {pending ? <p role="status">{copy.pending}</p> : null}
       </div>
-      {expanded && proposal ? <div id={proposalId} className={styles.proposalBody} data-assistance-body>
+      {expanded && proposal ? <div ref={proposalBody} id={proposalId} className={styles.proposalBody} data-assistance-body>
         {reviewMode?<div className={styles.settingsReview} role="status">
           <p>{settingsReview?copy.settingsChanged:copy.reviewUnavailable}</p>
           {settingsReview?<dl data-assistance-settings-changes>{settingsReview.changes.map(change=>{const item=promptSettingCopy(change,locale);return <div key={change.key}><dt>{item.label}</dt><dd><span className="sr-only">{copy.previousSetting}: </span>{item.before}<span aria-hidden> → </span><span className="sr-only"> {copy.currentSetting}: </span><strong>{item.current}</strong></dd></div>;})}</dl>:null}

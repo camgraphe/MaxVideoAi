@@ -18,7 +18,7 @@ function Conversation(){
  const send=()=>{setMessages(list=>[...list,{id:'user-'+(sends+1),role:'user',text:message}]);setSends(sends+1);setMessage('');setPending(true);};
  return <>
   <output data-pending={pending} data-completed={completed} data-sends={sends}/>
-  <PromptAssistancePanel locale="en" modelLabel="Wan 3" messages={messages} proposal={null} message={message} pending={pending}
+  <PromptAssistancePanel locale="en" modelLabel="Wan 3" messages={messages} proposal={config.reader?{text:'Current synthetic proposal',target:'prompt',stale:false}:null} message={message} pending={pending}
    onMessageChange={setMessage} onSend={send} onProposalTextChange={()=>{}} onApply={()=>{}} onCopy={()=>{}}
    helpControl={<button type="button" data-internal-control>Help control</button>}/>
  </>;
@@ -53,13 +53,15 @@ async function finish(page: Page, sends=1) {
 
 for (const browserType of [chromium,webkit]) {
   test(`${browserType.name()}: assistant completion preserves an open setting and moved focus`, {timeout:60_000}, async () => {
-    const fixture=await startWorkspaceReferenceFixture({source,config});
+    const fixture=await startWorkspaceReferenceFixture({source,config:{...config,reader:true}});
     const browser=await browserType.launch({headless:true});
     try {
       for (const setting of ['Audio','Duration']) {
         const page=await browser.newPage();
         try {
           await page.goto(fixture.url);await begin(page);
+          await page.locator('[data-assistance-expand]').click();
+          await expect(page.locator('[data-assistance-editor]')).toBeFocused();
           const trigger=page.getByRole('button',{name:new RegExp('^'+setting+':')});
           await trigger.focus();await trigger.press('Enter');
           const menu=page.getByRole('listbox');await expect(menu).toBeVisible();
@@ -76,6 +78,8 @@ for (const browserType of [chromium,webkit]) {
         const page=await browser.newPage();
         try {
           await page.goto(fixture.url);await begin(page);
+          await page.locator('[data-assistance-expand]').click();
+          await expect(page.locator('[data-assistance-editor]')).toBeFocused();
           const control=page.locator(selector);await control.focus();await finish(page);
           await expect(control).toBeFocused();
         } finally {await page.close();}
@@ -103,4 +107,27 @@ for (const browserType of [chromium,webkit]) {
       assert.equal(await page.locator('[data-sends]').getAttribute('data-sends'),'2');
     } finally {await browser.close();await fixture.close();}
   });
+}
+
+for (const browserType of [chromium,webkit]) {
+  for (const target of ['editor','Copy']) {
+    test(`${browserType.name()}: closing reader restores focus from ${target} to the message`, {timeout:60_000}, async () => {
+      const fixture=await startWorkspaceReferenceFixture({source,config:{...config,reader:true}});
+      const browser=await browserType.launch({headless:true});
+      try {
+        const page=await browser.newPage();await page.goto(fixture.url);await begin(page);
+        const input=page.locator('[data-assistance-message]');
+        await input.fill('Keep the next unsent question');
+        await page.locator('[data-assistance-expand]').click();
+        const reader=page.locator('[data-assistance-body]');await expect(reader).toBeVisible();
+        const control=target==='editor'?reader.locator('[data-assistance-editor]'):reader.getByRole('button',{name:'Copy',exact:true});
+        await control.focus();await expect(control).toBeFocused();
+        await finish(page);
+        await expect(reader).toHaveCount(0);
+        await expect(input).toBeFocused();
+        await expect(input).toHaveValue('Keep the next unsent question');
+        await expect(page.locator('[data-sends]')).toHaveAttribute('data-sends','1');
+      } finally {await browser.close();await fixture.close();}
+    });
+  }
 }
