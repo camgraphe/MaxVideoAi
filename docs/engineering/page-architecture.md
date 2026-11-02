@@ -201,6 +201,9 @@ the browser-safe `localizeMarketingPathname` mapping. Complete comparison links 
 switches. Studio retains its explicit locale handoff;
 the direct App action retains its existing cookie-based handoff. Never infer a
 watch locale from `from` or cache a visitor's cookies in the public video DTO.
+The marketing language control also displays that runtime preference on `/video`
+and its child paths; ordinary marketing URLs retain their URL-authoritative
+language indicator and switching behavior.
 
 Build schema payloads in pure helpers, then render them at the route/shell level:
 
