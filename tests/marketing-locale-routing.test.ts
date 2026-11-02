@@ -25,6 +25,20 @@ test('current-language marketing destinations map localized segments without iss
   ] as const) assert.equal(localizeMarketingPathname(path, locale), want);
 });
 
+test('internal marketing hrefs preserve query encoding, repeated values and fragments', async () => {
+  const { localizeMarketingHref } = await import('../frontend/lib/i18n/marketing-locale-switch.ts');
+  for (const [href, locale, want] of [
+    ['/ai-video-engines/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video&filter=a%2Fb&filter=c+d#pricing', 'fr',
+      '/fr/comparatif/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video&filter=a%2Fb&filter=c+d#pricing'],
+    ['/fr/comparatif/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video#pricing', 'es',
+      '/es/comparativa/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video#pricing'],
+    ['/es/comparativa/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video', 'en',
+      '/ai-video-engines/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video'],
+    ['/ai-video-engines/kling-2-5-turbo-vs-pika-text-to-video#pricing?tab=video', 'es',
+      '/es/comparativa/kling-2-5-turbo-vs-pika-text-to-video#pricing?tab=video'],
+  ] as const) assert.equal(localizeMarketingHref(href, locale), want);
+});
+
 function resolveRedirectLocation(url: string): string | null {
   const request = new NextRequest(url);
   return handleMarketingSlug(request, request.nextUrl.pathname)?.headers.get('location') ?? null;

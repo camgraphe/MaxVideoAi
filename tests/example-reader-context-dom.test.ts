@@ -6,6 +6,8 @@ import { createRoot } from 'react-dom/client';
 import { JSDOM } from 'jsdom';
 import { ExampleReaderContext } from '../frontend/components/examples/ExampleReaderContext';
 import type { ExampleWatchDetail } from '../frontend/lib/example-watch-detail';
+import { buildCompareLinks } from '../frontend/server/watch-page-signals/recommendations';
+import { resolveEngineEntry } from '../frontend/server/watch-page-signals/engine';
 
 const emptyContext: ExampleWatchDetail['context'] = {
   intro: 'Video description', visualContext: null, negativePrompt: null, createdAt: '',
@@ -51,6 +53,26 @@ test('useful context stays in the initial watch HTML and sparse records have no 
       ['Pour améliorer le prompt', 'Réglages du rendu original', 'Comparer ce modèle']);
     assert.equal(doc.querySelectorAll('ul:empty, dl:empty, p:empty').length, 0);
   } finally { dom.window.close(); }
+});
+
+test('localized reader comparisons retain the original model orientation and optional fragment', () => {
+  const engine = resolveEngineEntry('pika-text-to-video');
+  assert.ok(engine);
+  const link = buildCompareLinks({ engineSlug: 'pika-text-to-video', engineLabel: engine.marketingName, engineEntry: engine })
+    .find(item => item.href === '/ai-video-engines/kling-2-5-turbo-vs-pika-text-to-video?order=pika-text-to-video');
+  assert.ok(link, 'exercise a real published comparison whose selected model is not first in its canonical slug');
+  for (const [locale, path] of [
+    ['en', '/ai-video-engines/kling-2-5-turbo-vs-pika-text-to-video'],
+    ['fr', '/fr/comparatif/kling-2-5-turbo-vs-pika-text-to-video'],
+    ['es', '/es/comparativa/kling-2-5-turbo-vs-pika-text-to-video'],
+  ] as const) {
+    for (const hash of ['', '#pricing']) {
+      const dom = renderContext({ ...emptyContext, compareLinks: [{ ...link, href: `${link.href}${hash}` }] }, locale);
+      try {
+        assert.equal(dom.window.document.querySelector('a')?.getAttribute('href'), `${path}?order=pika-text-to-video${hash}`);
+      } finally { dom.window.close(); }
+    }
+  }
 });
 
 test('opening details at the bottom reveals the content; mounting, closing and already-visible content do not scroll', async () => {

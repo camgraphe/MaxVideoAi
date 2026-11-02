@@ -195,8 +195,10 @@ The direct watch reader uses that same cookie selector per request, outside its
 shared public data/quote and SEO builders. Its UI and related-gallery links follow
 the active preference; the prompt, editorial text, canonical URL and JSON-LD stay
 shared. Localize model/comparison and breadcrumb destinations at presentation with
-the browser-safe `localizeMarketingPathname` mapping, without the `lang` command
-used for deliberate language switches. Studio retains its explicit locale handoff;
+the browser-safe `localizeMarketingPathname` mapping. Complete comparison links use
+`localizeMarketingHref` to retain their exact query (including selected-model
+`order`) and fragment. Neither adds the `lang` command used for deliberate language
+switches. Studio retains its explicit locale handoff;
 the direct App action retains its existing cookie-based handoff. Never infer a
 watch locale from `from` or cache a visitor's cookies in the public video DTO.
 
