@@ -84,6 +84,12 @@ function localizeEnglishPath(englishPath: string, targetLocale: Locale): string 
   return normalizePath([prefix, localizedFirst, ...localizedRest].filter(Boolean));
 }
 
+/** A current-language destination, without the language-switch query command. */
+export function localizeMarketingPathname(pathname: string, targetLocale: Locale): string {
+  const englishPath = resolveEnglishPath(pathname || '/');
+  return localizeEnglishPath(marketingPageFallback(englishPath, targetLocale) ?? englishPath, targetLocale);
+}
+
 export function buildMarketingLocaleSwitchHref({
   pathname,
   targetLocale,

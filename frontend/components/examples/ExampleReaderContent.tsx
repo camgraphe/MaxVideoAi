@@ -13,6 +13,8 @@ import styles from './example-reader-styles';
 import { ExampleReaderContext } from './ExampleReaderContext';
 import { ExampleContinuationActions } from './ExampleContinuationActions.client';
 import { exampleRequestSource } from '@/lib/example-continuation';
+import { normalizeAppLocale } from '@/i18n/locales';
+import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
 
 type Props = { detail: ExampleWatchDetail; copy: ReaderCopy; locale: string; navigation?: ReaderNavigation; onClose?: () => void; headingLevel?: 'h1' | 'h2' };
 
@@ -69,7 +71,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
           <div className={styles.modelIdentity}>
             <div data-theme="dark" aria-hidden="true"><EngineIcon engine={{ id: originalModel?.engineId ?? detail.modelHref?.split('/').pop() ?? '', label: detail.engineLabel, brandId: originalModel?.brandId }} size={42}/></div>
             <div><p className={styles.model}>{detail.engineLabel}</p>
-              {detail.modelHref && <a className={styles.modelLink} href={detail.modelHref}>{copy.model}<ArrowUpRight size={14}/></a>}
+              {detail.modelHref && <a className={styles.modelLink} href={localizeMarketingPathname(detail.modelHref, normalizeAppLocale(locale))}>{copy.model}<ArrowUpRight size={14}/></a>}
             </div>
           </div>
           <div className={styles.creationActions}>

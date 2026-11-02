@@ -12,6 +12,19 @@ const togglePath = 'frontend/components/marketing/LanguageToggle.tsx';
 const middlewarePath = 'frontend/middleware.ts';
 const routingLocalePath = 'frontend/lib/middleware/routing-locale.ts';
 
+test('current-language marketing destinations map localized segments without issuing a language switch', async () => {
+  const { localizeMarketingPathname } = await import('../frontend/lib/i18n/marketing-locale-switch.ts');
+  for (const [path, locale, want] of [
+    ['/models/minimax-hailuo-02-text', 'fr', '/fr/modeles/minimax-hailuo-02-text'],
+    ['/fr/modeles/minimax-hailuo-02-text', 'fr', '/fr/modeles/minimax-hailuo-02-text'],
+    ['/fr/modeles/minimax-hailuo-02-text', 'es', '/es/modelos/minimax-hailuo-02-text'],
+    ['/es/modelos/minimax-hailuo-02-text', 'en', '/models/minimax-hailuo-02-text'],
+    ['/examples/hailuo', 'es', '/es/galeria/hailuo'],
+    ['/ai-video-engines/kling-vs-wan', 'fr', '/fr/comparatif/kling-vs-wan'],
+    ['/', 'fr', '/fr'],
+  ] as const) assert.equal(localizeMarketingPathname(path, locale), want);
+});
+
 function resolveRedirectLocation(url: string): string | null {
   const request = new NextRequest(url);
   return handleMarketingSlug(request, request.nextUrl.pathname)?.headers.get('location') ?? null;

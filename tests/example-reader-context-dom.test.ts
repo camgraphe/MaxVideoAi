@@ -40,13 +40,13 @@ test('intro-only and blank context do not offer an empty disclosure or empty sec
 test('useful context stays in the initial watch HTML and sparse records have no empty headings', () => {
   const dom = renderContext({ ...emptyContext, notes: ['Keep one camera movement.'],
     controls: [{ key: 'seed', label: 'Seed', value: '42' }],
-    compareLinks: [{ href: '/compare/kling-vs-wan', label: 'Kling vs Wan', reason: '' }] }, 'fr');
+    compareLinks: [{ href: '/ai-video-engines/kling-vs-wan', label: 'Kling vs Wan', reason: '' }] }, 'fr');
   try {
     const doc = dom.window.document;
     assert.ok(doc.querySelector('details:not([open])'), 'native disclosure stays closed initially');
     assert.ok(doc.body.textContent?.includes('Keep one camera movement.'), 'editorial content is server-rendered before opening');
     assert.equal(doc.querySelector('dd')?.textContent, '42');
-    assert.equal(doc.querySelector('a')?.getAttribute('href'), '/compare/kling-vs-wan');
+    assert.equal(doc.querySelector('a')?.getAttribute('href'), '/fr/comparatif/kling-vs-wan');
     assert.deepEqual([...doc.querySelectorAll('h3')].map(node => node.textContent),
       ['Pour améliorer le prompt', 'Réglages du rendu original', 'Comparer ce modèle']);
     assert.equal(doc.querySelectorAll('ul:empty, dl:empty, p:empty').length, 0);
