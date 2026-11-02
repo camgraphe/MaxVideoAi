@@ -143,3 +143,16 @@ test('the video app guide describes only the available settings review path and 
  assert.match(image,/only aspect ratio/i);assert.match(image,/text-to-image.*without references or a mask/i);assert.match(image,/If Review & use is available/);assert.match(image,/Use with current settings/);
  assert.ok(!promptAssistanceAppGuide('audio').includes('Review & use'));
 });
+
+for(const reviewed of [false,true])test(`successful ${reviewed?'reviewed':'ordinary'} application keeps ordinary Apply without rebasing review proof`,()=>{
+ let state=proposal();if(reviewed)state=previewReducer(change(state),{type:'review'});
+ const baseline=state.proposal!.applicationContext,compatibilityRevision=state.proposal!.compatibilityRevision;
+ state=previewReducer(state,{type:reviewed?'appliedReviewed':'applied',previous:'Original manual prompt',fingerprint:'applied'});
+ assert.equal(canApplyProposal(state),true);
+ assert.equal(state.proposal!.applicationContext,baseline);assert.equal(state.proposal!.compatibilityRevision,compatibilityRevision);
+ state=previewReducer(state,{type:'sync',scope:state.scope,fingerprint:'applied',applicationContext:context({aspectRatio:reviewed?'9:16':'auto',durationSec:7},'applied editor')});
+ assert.equal(canApplyProposal(state),true);assert.equal(canReviewProposal(state),false);assert.equal(canUndoProposal(state),true);
+ state=previewReducer(state,{type:'applied',previous:state.proposal!.text,fingerprint:'applied'});
+ assert.equal(state.undo!.text,'Original manual prompt','identical reapply preserves useful Undo');
+ state=previewReducer(state,{type:'undone',fingerprint:'original'});assert.equal(canApplyProposal(state),false);
+});
