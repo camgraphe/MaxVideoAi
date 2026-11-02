@@ -67,6 +67,7 @@ for (const seoStatus of VIDEO_SEO_STATUSES.filter(status => status !== 'approved
       const detail = await projectExampleWatchDetail(video, unapproved, async () => ({ totalCents: 200, currency: 'USD' }), getBaseEngines(), prepared);
       assert.ok(detail);
       assert.doesNotMatch(JSON.stringify(detail.context), /EDITORIAL/);
+      assert.equal(detail.analyticsPath, null, 'unapproved editorial identity must not reach analytics');
       assert.equal(detail.videoUrl, video.videoUrl);
       assert.equal(detail.posterUrl, video.thumbUrl);
       assert.equal(detail.prompt, video.prompt);

@@ -1,3 +1,4 @@
+import { projectPublicVideoAnalyticsPath } from '@/lib/analytics/public-video';
 import type { EngineCaps } from '@/types/engines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import type { VideoSeoEditorialEntry } from '@/config/video-seo-editorial';
@@ -49,6 +50,7 @@ export async function projectExampleWatchDetail(video: GalleryVideo, editorial: 
   return {
     id: video.id, title: signals.title, prompt: signals.promptText, videoUrl: video.videoUrl,
     posterUrl: video.thumbUrl ?? null, engineLabel: signals.engineLabel,
+    analyticsPath: projectPublicVideoAnalyticsPath(signals),
     watchHref: new URL(signals.canonicalUrl).pathname, modelHref: signals.modelPath,
     recreateHref: canRecreatePublicExample(video.engineId) && engines.some(engine => engine.id === (normalizeEngineId(video.engineId) ?? video.engineId)) ? signals.recreatePath : null,
     aspectRatio: signals.aspectRatio ?? video.aspectRatio ?? '16:9',

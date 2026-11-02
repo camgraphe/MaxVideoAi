@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { sanitizeVercelAnalyticsEvent } from '@/lib/analytics/vercel-context';
+import { createVercelAnalyticsBeforeSend } from '@/lib/analytics/vercel-context';
 
 export default function VercelAnalytics() {
-  return <Analytics beforeSend={sanitizeVercelAnalyticsEvent} />;
+  const [beforeSend] = useState(createVercelAnalyticsBeforeSend);
+  return <Analytics beforeSend={beforeSend} />;
 }

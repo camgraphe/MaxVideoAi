@@ -1,4 +1,5 @@
 'use client';
+import { trackPublicVideoPlay } from '@/lib/analytics/public-video-client';
 import { useRef, type CSSProperties } from 'react';
 import { Maximize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { usePublicVideoControls } from '@/components/media/usePublicVideoControls';
@@ -8,8 +9,13 @@ import styles from './example-reader-styles';
 
 export type ReaderNavigation = { previous: () => void; next: () => void; canPrevious: boolean; canNext: boolean; busy: boolean };
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
-export function DiscoveryVideoPlayer({ detail, copy }: { detail: ExampleWatchDetail; copy: ReaderCopy }) {
-  const controls = usePublicVideoControls(detail.videoUrl, 'watch');
+export function DiscoveryVideoPlayer({ detail, copy, surface = 'watch' }: { detail: ExampleWatchDetail; copy: ReaderCopy; surface?: 'watch' | 'gallery' }) {
+  const trackedPath = useRef<string | null>(null);
+  const controls = usePublicVideoControls(detail.videoUrl, 'watch', 'auto', undefined, () => {
+    if (detail.analyticsPath && trackedPath.current !== detail.analyticsPath && trackPublicVideoPlay(detail.analyticsPath, surface)) {
+      trackedPath.current = detail.analyticsPath;
+    }
+  });
   const frame = useRef<HTMLDivElement>(null);
   const playbackButton = useRef<HTMLButtonElement>(null);
   const [width, height] = detail.aspectRatio.split(':').map(Number);
