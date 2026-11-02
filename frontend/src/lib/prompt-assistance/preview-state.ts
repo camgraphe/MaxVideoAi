@@ -65,8 +65,18 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'rejected': return {...state,message:state.message||action.message};
     case 'restored': return {...state,pending:null,review:null,proposal:action.text?{text:action.text,revision:-1}:null,messages:[...state.messages,{id:'recovered-user',role:'user',text:action.message},{id:'recovered-assistant',role:'assistant',text:action.reply}]};
     case 'review': return !canReviewProposal(state)?state:{...state,review:{proposalId:state.proposal!.id!,revision:state.revision,fingerprint:state.fingerprint,text:state.proposal!.text,requestId:state.proposal!.requestId}};
-    case 'appliedReviewed': return !canApplyReviewedProposal(state)?state:{...state,mode:'prompt',review:null,revision:state.revision+1,fingerprint:action.fingerprint,undo:{text:action.previous,revision:state.revision+1}};
-    case 'applied': return !canApplyProposal(state) ? state : { ...state, mode: 'prompt', review:null,revision: state.revision + 1, fingerprint: action.fingerprint, undo: { text: action.previous, revision: state.revision + 1 } };
+    case 'appliedReviewed':
+    case 'applied': {
+      if (!(action.type === 'appliedReviewed' ? canApplyReviewedProposal(state) : canApplyProposal(state))) return state;
+      const revision = state.revision + 1;
+      // Own application keeps ordinary validity; historical settings-review proof stays unchanged.
+      // Reaffirming identical text must not replace a useful Undo with a no-op.
+      const undo = action.previous === state.proposal!.text
+        ? canUndoProposal(state) ? { ...state.undo!, revision } : null
+        : { text: action.previous, revision };
+      return { ...state, mode: 'prompt', review: null, revision, fingerprint: action.fingerprint,
+        proposal: { ...state.proposal!, revision }, undo };
+    }
     case 'undone': return !canUndoProposal(state) ? state : { ...state, revision: state.revision + 1, fingerprint: action.fingerprint, undo: null };
   }
 }

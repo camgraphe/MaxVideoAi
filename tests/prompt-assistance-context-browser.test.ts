@@ -63,7 +63,12 @@ test('real video adapter guards subjects and drafts while scalar settings requir
   await page.evaluate(()=>(globalThis as any).changeContext({klingElements:[]}));
   await expect(page.getByText('Milo is writing…',{exact:true})).toHaveCount(0);
   await expect(page.locator('[data-assistance-apply]')).toBeDisabled();
-  await request();await page.locator('[data-assistance-apply]').click();
+  await request();
+  // The development reply echoes the draft: make a real edit before testing Undo invalidation.
+  await page.locator('[data-assistance-expand]').click();
+  await page.locator('[data-assistance-editor]').fill('A revised scene with the original subject.');
+  await page.locator('[data-assistance-apply]').click();
+  await expect(page.locator('[data-workspace-prompt]')).toHaveValue('A revised scene with the original subject.');
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeEnabled();
   await page.evaluate(subject=>(globalThis as any).changeContext({klingElements:[subject]}),subject);
   await expect(page.getByRole('button',{name:'Undo',exact:true})).toBeDisabled();
