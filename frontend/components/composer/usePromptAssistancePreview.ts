@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
-import { canApplyProposal, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
+import { canApplyProposal, proposalReviewContext, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
@@ -15,7 +15,8 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   draftText: string; target: 'prompt' | 'script' | 'lyrics'; onApplyText: (text: string) => void; maxLength?: number; blocked?: boolean;
 }) {
   // The request itself participates: a new control cannot accidentally bypass the stale guard.
-  const applicationContext=proposalApplicationContext({accountKey,scopeKey,reviewKey,live,text:draftText,target,perceptionRevision});
+  const applicationContextFor=(text:string)=>proposalApplicationContext({accountKey,scopeKey,reviewKey,live,text,target,perceptionRevision});
+  const applicationContext=applicationContextFor(draftText);
   const fingerprintFor = (text:string) => JSON.stringify([contextKey, reviewKey, live, target, text, perceptionRevision]);
   const fingerprint = fingerprintFor(draftText);
   const [stored, dispatch] = useReducer(previewReducer, undefined, () => createPreviewState(scopeKey, fingerprint,applicationContext));
@@ -134,12 +135,12 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     if (blocked || transport.loading || transport.recovery || !canApplyProposal(state) || !state.proposal || (maxLength && state.proposal.text.length > maxLength)) return;
     rememberApplication(state.proposal.text);
     onApplyText(state.proposal.text);
-    dispatch({ type: 'applied', previous: draftText, fingerprint: fingerprintFor(state.proposal.text) });
+    dispatch({ type: 'applied', previous: draftText, fingerprint: fingerprintFor(state.proposal.text), applicationContext:applicationContextFor(state.proposal.text) });
   };
   const applyReviewed=()=>{
     if(blocked||transport.cacheError||transport.loading||transport.loadError||transport.waiting||transport.recovery||transport.analysisPending||!canApplyReviewedProposal(state)||!state.proposal||(maxLength&&state.proposal.text.length>maxLength))return;
     rememberApplication(state.proposal.text);
-    onApplyText(state.proposal.text);dispatch({type:'appliedReviewed',previous:draftText,fingerprint:fingerprintFor(state.proposal.text)});
+    onApplyText(state.proposal.text);dispatch({type:'appliedReviewed',previous:draftText,fingerprint:fingerprintFor(state.proposal.text),applicationContext:applicationContextFor(state.proposal.text)});
   };
   const undo = () => {
     if (blocked || !canUndoProposal(state) || !state.undo) return;
@@ -159,5 +160,5 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     });
   };
   const newChat=()=>{const message=transport.messageForNewChat(state.message);if(!PROMPT_ASSISTANCE_LIVE||transport.newChat(message)){setAppliedPrompt(null);dispatch({type:'newChat',message});return true;}return false;};
-  return { state, dispatch, input, send, apply, applyReviewed, appliedPromptCurrent,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:state.proposal?.applicationContext&&state.applicationContext?applicationSettingChanges(state.proposal.applicationContext,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
+  return { state, dispatch, input, send, apply, applyReviewed, appliedPromptCurrent,beginReview:()=>{if(!transport.cacheError)dispatch({type:'review'});},canReview:!transport.cacheError&&canReviewProposal(state),canApplyReviewed:!transport.cacheError&&canApplyReviewedProposal(state),settingChanges:proposalReviewContext(state)&&state.applicationContext?applicationSettingChanges(proposalReviewContext(state)!,state.applicationContext):[], undo, insertMention, newChat, canUndo: canUndoProposal(state), target,transport };
 }
