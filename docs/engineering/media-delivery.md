@@ -1005,9 +1005,13 @@ as the legacy upload record. Authenticated library search includes `originalName
 in both stored sources. The private assets API supplies a display name with
 `label`, `fileName`, `filename`, then `originalName` priority; cards and inspectors
 retain that name without deriving public titles from it. Publication readers are
-unchanged. Existing rows without a retained name remain unnamed: this change does
-not mutate stored assets or backfill historical metadata. Search can still find an
-older legacy record when its original name survives there.
+unchanged. A canonical row missing a usable original name can read that one field
+from a legacy row with the exact owner, media kind and logical origin. The newest
+matching legacy row wins, then its ID breaks timestamp ties; other legacy metadata
+never overwrites the canonical row. Search matches the logical group and keeps its
+canonical winner, custom label, identity and pagination. Legacy-only media remains
+readable. No stored asset is mutated or backfilled; rows with no surviving name
+remain unnamed.
 
 ### Library import account lifetime
 

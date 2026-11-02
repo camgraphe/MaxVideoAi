@@ -233,6 +233,63 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
     assert.equal(creations.items[0].sourceOutputId, null);
     assert.equal((await listLibraryAssetPage({userId:'user-a',kind:'image',source:'saved_job_output'})).items.some(item=>item.id==='creator-final'), false);
     assert.equal((await listLibraryAssetPage({userId:'user-b',kind:'video',source:'saved_job_output'})).items.length, 0);
+
+    await t.test('filename search preserves canonical identity and custom metadata across legacy copies', async () => {
+      const logicalOrigin = 'https://origin.example.test/private-watch.png';
+      await database.pool.query(`INSERT INTO media_assets
+        (id,user_id,kind,url,mime_type,source,status,metadata,created_at)
+        VALUES ('named-canonical','user-a','image','https://storage.example.test/private-watch.png','image/png','upload','ready',
+          $1::jsonb,$2),
+          ('named-own-original','user-a','image','https://example.test/own-original.png','image/png','upload','ready',
+          '{"label":"Own title","originalName":"watch-own.png"}'::jsonb,$2),
+          ('named-other-kind','user-a','image','https://example.test/kind-collision.png','image/png','upload','ready','{}'::jsonb,$2)`,
+        [JSON.stringify({ originUrl: logicalOrigin, label: 'My chosen title', custom: 'retained' }), timestamp]);
+      const legacyRows = [
+        ['named-legacy-old','user-a',logicalOrigin,'image/png','watch-old.png','2026-09-01T09:00:00Z'],
+        ['named-legacy-a','user-a',logicalOrigin,'image/png','watch-tie-loser.png',timestamp],
+        ['named-legacy-z','user-a',logicalOrigin,'image/png','watch 100%_original\\.png',timestamp],
+        ['named-foreign','user-b',logicalOrigin,'image/png','watch-foreign.png','2026-09-02T10:00:00Z'],
+        ['named-legacy-own','user-a','https://example.test/own-original.png','image/png','watch-obsolete.png',timestamp],
+        ['named-legacy-only','user-a','https://example.test/legacy-only.png','image/png','watch-only.png',timestamp],
+        ['named-legacy-video','user-a','https://example.test/kind-collision.png','video/mp4','watch-wrong-kind.mp4',timestamp],
+      ];
+      for (const [id,owner,url,mime,originalName,createdAt] of legacyRows) {
+        await database.pool.query(`INSERT INTO user_assets
+          (asset_id,user_id,url,mime_type,source,metadata,created_at)
+          VALUES ($1,$2,$3,$4,'upload',$5::jsonb,$6)`,
+          [id,owner,url,mime,JSON.stringify({ originalName, label: 'Legacy label', custom: 'legacy' }),createdAt]);
+      }
+      const list = (q?: string) => listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', originUrl: logicalOrigin, q });
+      const normal = await list();
+      const searched = await list('watch 100%_original\\');
+      assert.deepEqual(normal.items.map(item => item.id), ['named-canonical']);
+      assert.deepEqual(searched.items.map(item => item.id), ['named-canonical']);
+      for (const item of [normal.items[0], searched.items[0]]) {
+        assert.equal(item.metadata.originalName, 'watch 100%_original\\.png');
+        assert.equal(item.metadata.label, 'My chosen title');
+        assert.equal(item.metadata.custom, 'retained');
+        assert.equal(item.createdAt, timestamp);
+      }
+      assert.equal(searched.items[0].publicId, normal.items[0].publicId);
+      assert.equal((await list('foreign')).items.length, 0);
+      const noCrossKind = await listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', originUrl: 'https://example.test/kind-collision.png' });
+      assert.deepEqual(noCrossKind.items.map(item => item.id), ['named-other-kind']);
+      assert.equal(noCrossKind.items[0].metadata.originalName, undefined);
+      assert.equal((await listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', originUrl: 'https://example.test/kind-collision.png', q: 'watch' })).items.length, 0);
+      const own = await listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', q: 'watch-own' });
+      assert.deepEqual(own.items.map(item => item.id), ['named-own-original']);
+      assert.equal(own.items[0].metadata.originalName, 'watch-own.png');
+      const obsolete = await listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', q: 'watch-obsolete' });
+      assert.deepEqual(obsolete.items.map(item => item.id), ['named-own-original']);
+      assert.equal(obsolete.items[0].metadata.originalName, 'watch-own.png');
+      const pagedIds: string[] = [];
+      let nameCursor: string | null = null;
+      do {
+        const page = await listLibraryAssetPage({ userId: 'user-a', kind: 'image', source: 'upload', q: 'watch', limit: 1, cursor: nameCursor });
+        pagedIds.push(...page.items.map(item => item.id)); nameCursor = page.nextCursor;
+      } while (nameCursor);
+      assert.deepEqual(pagedIds.sort(), ['named-canonical','named-legacy-only','named-own-original']);
+    });
   } finally {
     const { getDb } = await import('../frontend/src/lib/db');
     await getDb().end();

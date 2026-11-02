@@ -337,27 +337,53 @@ export async function listLibraryAssetPage(params: {
        WHERE u.user_id = $1
          AND COALESCE(u.source, '') <> 'storyboard_template_reference'
      ),
-     filtered AS (
+     identified AS (
        SELECT *,
-         COALESCE(NULLIF(metadata->>'originUrl', ''), url) AS logical_origin
+         COALESCE(NULLIF(metadata->>'originUrl', ''), url) AS logical_origin,
+         CASE WHEN jsonb_typeof(metadata->'originalName') = 'string'
+           THEN NULLIF(BTRIM(metadata->>'originalName'), '') END AS original_name
        FROM candidates
+     ),
+     legacy_names AS (
+       SELECT DISTINCT ON (user_id, kind, logical_origin)
+         user_id, kind, logical_origin, original_name
+       FROM identified
+       WHERE source_priority = 2 AND original_name IS NOT NULL
+       ORDER BY user_id, kind, logical_origin, created_at DESC, id DESC
+     ),
+     resolved AS (
+       SELECT c.*,
+         CASE WHEN legacy.original_name IS NOT NULL
+           THEN c.metadata || jsonb_build_object('originalName', legacy.original_name)
+           ELSE c.metadata END AS resolved_metadata,
+         CONCAT_WS(' ', c.search_text, legacy.original_name) AS resolved_search_text
+       FROM identified c
+       LEFT JOIN legacy_names legacy
+         ON c.source_priority = 0 AND c.original_name IS NULL
+        AND legacy.user_id = c.user_id AND legacy.kind = c.kind
+        AND legacy.logical_origin = c.logical_origin
+     ),
+     filtered AS (
+       SELECT * FROM resolved
        WHERE ($3::text IS NULL OR kind = $3::text)
          AND ($4::text IS NULL OR source = $4::text)
          AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
-         AND ($9::text IS NULL OR search_text ILIKE $9::text ESCAPE '\\')
      ),
      deduplicated AS (
        SELECT *,
          ROW_NUMBER() OVER (
            PARTITION BY kind, logical_origin
            ORDER BY source_priority ASC, created_at DESC, id DESC
-         ) AS logical_rank
+         ) AS logical_rank,
+         BOOL_OR($9::text IS NULL OR resolved_search_text ILIKE $9::text ESCAPE '\\') OVER (
+           PARTITION BY kind, logical_origin
+         ) AS matches_search
        FROM filtered
      )
      SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
-            source, source_job_id, source_output_id, status, metadata, created_at
+            source, source_job_id, source_output_id, status, resolved_metadata AS metadata, created_at
      FROM deduplicated
-     WHERE logical_rank = 1
+     WHERE logical_rank = 1 AND matches_search
        AND (
          $6::timestamptz IS NULL
          OR (created_at, id) < ($6::timestamptz, $7::text)
