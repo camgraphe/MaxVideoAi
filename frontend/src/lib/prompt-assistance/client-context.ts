@@ -16,8 +16,13 @@ export function composerAssistanceReferences(engine:EngineCaps,fields:AssetField
     if(!asset)return [];
     const mention=mentions.find(item=>item.fieldId===field.id&&item.slotIndex===slot);
     const sequence=mention?Number(mention.token.match(/\d+/)?.[0]??1)+(mention.token.startsWith('<IMAGE_')?1:0):(assets[field.id]??[]).slice(0,slot+1).filter(Boolean).length;
-    const role=assistanceReferenceRole(engine,field,mode);
-    return [{fieldId:field.id,slot,label:role==='start'?'Start image':role==='end'?'End image':selectedReferenceLabel(engine,field,asset.kind,sequence,'en',role==='source'),
+    // The dedicated Image composer has one UI reference list; Milo uses the model's native field.
+    const nativeField=field.id==='reference_images'&&(mode==='t2i'||mode==='i2i')
+      ?[...engine.inputSchema?.required??[],...engine.inputSchema?.optional??[]].find(candidate=>candidate.type==='image'
+        &&(!candidate.modes?.length||candidate.modes.includes(mode))&&assistanceReferenceRole(engine,candidate,mode)!=='mask')
+      :field;
+    const role=assistanceReferenceRole(engine,nativeField??field,mode);
+    return [{fieldId:nativeField?.id??field.id,slot,label:role==='start'?'Start image':role==='end'?'End image':selectedReferenceLabel(engine,field,asset.kind,sequence,'en',role==='source'),
       ref:asset.status==='uploading'||asset.status==='error'||asset.excerptEditing?null:asset.ref??(asset.assetId?{type:'asset' as const,assetId:asset.assetId,kind:asset.kind}:null)}];
   }));
 }

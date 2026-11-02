@@ -276,6 +276,7 @@ export function useImageComposerPersistence({
               ? createCharacterReferenceSlot(slot.characterReference, `stored-${index}`)
               : {
                   id: `stored-${index}`,
+                  ref: slot.ref,
                   url: slot.url,
                   previewUrl: slot.url,
                   status: 'ready',
@@ -289,7 +290,7 @@ export function useImageComposerPersistence({
             const prior = previous[idx];
             if (!slot && !prior) return false;
             if (!slot || !prior) return true;
-            return slot.url !== prior.url || slot.status !== prior.status;
+            return slot.url !== prior.url || slot.status !== prior.status || JSON.stringify(slot.ref) !== JSON.stringify(prior.ref);
           });
           return changed ? migratedNext : previous;
         });

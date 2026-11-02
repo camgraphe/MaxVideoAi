@@ -1,3 +1,4 @@
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import type {
@@ -55,6 +56,7 @@ export type HistoryEntry = {
 export type UploadFailure = Error & { code?: string; maxMB?: number };
 
 export type ReferenceSlotValue = {
+  ref?: ToolAssetRef;
   id: string;
   url: string;
   previewUrl?: string;
@@ -71,6 +73,7 @@ export type PersistedCharacterReference = CharacterReferenceSelection;
 export type PersistedReferenceSlot =
   | {
       url: string;
+      ref?: ToolAssetRef;
       source?: ReferenceSlotValue['source'];
       width?: number | null;
       height?: number | null;
@@ -102,6 +105,8 @@ export type PersistedImageComposerState = {
 };
 
 export type LibraryAsset = {
+  assetId?: string;
+  ref?: ToolAssetRef;
   id: string;
   url: string;
   mime?: string | null;

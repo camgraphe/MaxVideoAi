@@ -1,4 +1,5 @@
 'use client';
+import { imageReferenceIdentity } from '../_lib/image-reference-slot-state';
 
 import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
@@ -163,6 +164,7 @@ function OpenImageLibraryModal({
         const accepted = onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
+          ref: imageReferenceIdentity(uploadedAsset),
           mime: uploadedAsset.mime ?? null,
           width: uploadedAsset.width ?? null,
           height: uploadedAsset.height ?? null,
