@@ -128,6 +128,7 @@ export function resolveBrowserCommercialAnalyticsAuthContext(
 
 export function isBrowserCommercialAnalyticsExcluded(): boolean {
   if (typeof window === 'undefined') return false;
+  if (window.location?.hostname === 'api.maxvideoai.com') return true;
   if (typeof window.__mvaiCommercialAnalyticsExcluded === 'boolean') return window.__mvaiCommercialAnalyticsExcluded;
   try { return window.sessionStorage.getItem(ADMIN_EXCLUSION_KEY) === '1'; }
   catch { return false; }

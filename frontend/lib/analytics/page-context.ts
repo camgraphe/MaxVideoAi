@@ -14,7 +14,7 @@ export type AnalyticsPageContext = AnalyticsCampaignContext & {
   page_referrer: string;
 };
 
-const SITE_HOSTS = new Set(['maxvideoai.com', 'www.maxvideoai.com', 'api.maxvideoai.com']);
+const SITE_HOSTS = new Set(['maxvideoai.com', 'www.maxvideoai.com']);
 const WORKSPACE_SECTIONS = new Set([
   'home', 'studio', 'image', 'audio', 'library', 'tools', 'generate', 'dashboard',
   'jobs', 'settings', 'connect', 'video',
@@ -104,7 +104,8 @@ export function readBrowserAnalyticsPageContext(): AnalyticsPageContext | null {
 }
 
 export function isBrowserAnalyticsRouteExcluded(): boolean {
-  return typeof window !== 'undefined' && getAnalyticsRouteContext(window.location.pathname).excludedFromGa4;
+  return typeof window !== 'undefined' && (window.location.hostname === 'api.maxvideoai.com'
+    || getAnalyticsRouteContext(window.location.pathname).excludedFromGa4);
 }
 
 export function withSafeAnalyticsPageContext(payload: Record<string, unknown>): Record<string, unknown> {

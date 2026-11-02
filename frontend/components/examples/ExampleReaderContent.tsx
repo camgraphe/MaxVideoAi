@@ -1,5 +1,6 @@
 'use client';
 
+import { PublicVideoAnalytics } from '@/components/analytics/PublicVideoAnalytics.client';
 import { useState } from 'react';
 import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Volume2, VolumeX, X } from 'lucide-react';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -37,6 +38,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
   const comparisonNote = !detail.scenario ? copy.proposedNote : detail.quotes.some(quote => quote.changed.length > 0) ? copy.compareNote : null;
 
   return <>
+    <PublicVideoAnalytics key={detail.id} videoId={detail.id} watchPath={detail.watchHref} analyticsPath={detail.analyticsPath}/>
     {navigation && <nav className={styles.playerNavigation} aria-label={copy.reader}>
       <span>{copy.reader}</span>
       <div>
@@ -47,7 +49,7 @@ export function ExampleReaderContent({ detail, copy, locale, navigation, onClose
     </nav>}
     <div className={`${styles.layout} ${portrait ? styles.portrait : ''}`}>
       <div className={styles.media}>
-        <DiscoveryVideoPlayer detail={detail} copy={copy}/>
+        <DiscoveryVideoPlayer detail={detail} copy={copy} surface={headingLevel === 'h1' ? 'watch' : 'gallery'}/>
         <header className={styles.heading}>
           <Heading id="example-reader-title">{detail.title}</Heading>
           <div className={styles.renderDetails}>

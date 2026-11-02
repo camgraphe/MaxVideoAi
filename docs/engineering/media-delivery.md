@@ -615,6 +615,40 @@ The default complete data projection remains available to existing consumers.
 `video-seo-no-unused-price`, `video-page-quote-context-route` and the real PostgreSQL
 `examples-catalog-pagination-postgres` tests protect parity and bounded hydration.
 
+### Video audience analytics
+
+From the public-video analytics release, Vercel **Pages** separates approved,
+indexable watch videos by canonical `/video/<slug>`. `public_video_play` in
+**Events** records an actual manual playback start with `video_slug` and
+`surface` (`watch` or `gallery`). These are new observations; the historical
+`/video/:video` group cannot be backfilled. Plays require analytics consent, so
+play counts and Vercel page views do not share the same population.
+
+`projectExampleWatchDetail` alone projects `analyticsPath` from approved,
+indexable watch signals. Publishing through admin SEO enables it automatically;
+existing revalidation owns freshness. Draft/disabled/unapproved videos keep an
+anonymous aggregate path and emit no identified play. No prompt, owner/job ID,
+query, signed URL or media source enters this audience payload.
+
+`PublicVideoAnalytics.client.tsx` marks each rendered standalone/gallery reader
+and requests its page view. The Vercel `beforeSend` owner waits for this marker on
+watch routes and deduplicates automatic/explicit views per mounted reader. This
+avoids counting a loading placeholder and then the resolved video; failed or
+unavailable readers do not count as successful opens. Legacy ID links may resolve
+to an approved slug in measurement only, without changing navigation or SEO.
+
+Manual controls notify `DiscoveryVideoPlayer` only on accepted, visible, intended
+`playing`; the reader emits at most one play per opening. Pauses, resumes,
+rebuffering and quality retries do not add plays. Incidental card previews and
+autoplay are outside this measure. API-host browser analytics and administrators
+remain excluded. Client filtering does not prevent forged direct HTTP analytics
+submissions and cannot prove bot or training attribution.
+
+The marker adds no fetch, video preload, schema, visible content or layout.
+Canonical, redirects, robots, VideoObject, sitemap and media delivery owners stay
+unchanged. Coverage: `public-video-audience-analytics`,
+`public-video-audience-browser`, existing watch editorial/SEO and playback tests.
+
 ### Playback observations
 
 The shared observer emits only `public_video_startup`, `public_video_rebuffer` and `public_video_error` through the existing consented analytics dispatcher. Common fields are allowlisted `asset_id`, `playback_profile` (`original`, `mobile`, `desktop`), `playback_surface` (`home`, `model`, `examples`, `watch`, `comparison`, `examples-card`) and `playback_trigger` (`user`, `automatic`). Startup adds `measurement_method` (`video_frame_callback` or explicitly labelled `playing_fallback`) and `duration_ms` from 0 to 120,000. Rebuffer adds `duration_ms` from 0 to 120,000 and `rebuffer_count` from 1 to 5. Error may add the native `media_error_code` from 1 to 4 and emits at most twice per observer.

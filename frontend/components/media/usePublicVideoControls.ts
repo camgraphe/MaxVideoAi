@@ -6,7 +6,7 @@ import type { PublicVideoPlaybackAttempt, PublicVideoPlaybackSurface, PublicVide
 import { usePublicVideoPlayback } from './usePublicVideoPlayback';
 
 /** Manual readers share attempts; native/custom controls retain their own presentation. */
-export function usePublicVideoControls(src: string, surface: PublicVideoPlaybackSurface, defaultQuality: PublicVideoQuality = 'auto', visibilityTargetRef?: RefObject<Element | null>) {
+export function usePublicVideoControls(src: string, surface: PublicVideoPlaybackSurface, defaultQuality: PublicVideoQuality = 'auto', visibilityTargetRef?: RefObject<Element | null>, onUserPlaybackStarted?: () => void) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const activeRef = useRef<PublicVideoPlaybackAttempt | null>(null);
   const intentRef = useRef(false);
@@ -172,6 +172,7 @@ export function usePublicVideoControls(src: string, surface: PublicVideoPlayback
       setIsPlaying(true);
       setIsLoading(false);
       measurePlaying(event.currentTarget);
+      onUserPlaybackStarted?.();
     },
     onWaiting: () => { if (intentRef.current) { setIsLoading(true); measureWaiting(); } },
     onPause: (event: React.SyntheticEvent<HTMLVideoElement>) => {
