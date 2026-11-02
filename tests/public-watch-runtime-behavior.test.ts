@@ -27,6 +27,7 @@ async function loadLayout(entry: string) {
   for (const [path, name] of [
     ['components/AppExperienceRoot', 'AppExperienceRoot'],
     ['components/analytics/AnalyticsScripts', 'AnalyticsScripts'],
+    ['components/analytics/VercelAnalytics', 'VercelAnalytics'],
     ['components/analytics/GA4EventBridge', 'GA4EventBridge'],
     ['components/analytics/GA4RouteTracker', 'GA4RouteTracker'],
     ['components/legal/CookieBanner', 'CookieBanner'],
