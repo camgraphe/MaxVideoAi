@@ -10,7 +10,9 @@ export function PublicVideoAnalytics({ watchPath, analyticsPath, videoId }: { wa
     if (window.location.pathname === watchPath || window.location.pathname === idPath) {
       // Automatic navigation may precede the async detail. beforeSend deduplicates
       // this request with the SDK's automatic view using the mounted marker.
-      pageview({ path: window.location.href });
+      // The SDK retains path overrides for later navigation and custom events.
+      // An empty payload measures the current location without overriding it.
+      pageview({});
     }
   }, [watchPath, analyticsPath, idPath]);
   return <span hidden data-video-watch-path={watchPath} data-video-watch-id-path={idPath} data-video-analytics-path={analyticsPath ?? ''} />;

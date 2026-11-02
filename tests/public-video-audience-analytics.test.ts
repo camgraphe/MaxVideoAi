@@ -70,3 +70,23 @@ test('legacy ID navigation resolves to the approved slug without losing unapprov
     for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }
   }
 });
+
+test('a queued play cannot be attributed to a different video after navigation', () => {
+  const dom = new JSDOM('<span data-video-watch-path="/video/second-public-video" data-video-analytics-path="/video/second-public-video"></span>', { url: 'https://maxvideoai.com/video/second-public-video' });
+  const saved = new Map<string, PropertyDescriptor | undefined>();
+  for (const [key, value] of Object.entries({ window: dom.window, document: dom.window.document })) {
+    saved.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
+    Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
+  }
+  try {
+    dom.window.localStorage.setItem('mv-consent-analytics', 'granted');
+    const send = createVercelAnalyticsBeforeSend();
+    const event = { type: 'event' as const, url: dom.window.location.href,
+      payload: { name: 'public_video_play', data: { video_slug: 'first-public-video', surface: 'watch' } } };
+    assert.equal(send(event), null);
+    assert.ok(send({ ...event, payload: { ...event.payload, data: { ...event.payload.data, video_slug: 'second-public-video' } } }));
+  } finally {
+    dom.window.close();
+    for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); }
+  }
+});

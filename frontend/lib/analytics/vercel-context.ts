@@ -11,6 +11,11 @@ export function sanitizeVercelAnalyticsEvent(event: BeforeSendEvent): BeforeSend
   if (!context || getAnalyticsRouteContext(new URL(event.url).pathname).excludedFromGa4) return null;
   const url = new URL(context.page_location);
   const publicVideoPath = getPublicVideoAnalyticsPath(new URL(event.url));
+  // The delivery script exposes custom payloads even though SDK 1.5's type
+  // predates that field. A queued play may flush after the reader has changed.
+  const payload = (event as BeforeSendEvent & { payload?: { name?: string; data?: { video_slug?: string } } }).payload;
+  if (event.type === 'event' && payload?.name === 'public_video_play'
+    && (!publicVideoPath || payload.data?.video_slug !== publicVideoPath.slice('/video/'.length))) return null;
   if (publicVideoPath) url.pathname = publicVideoPath;
   // Keep approved acquisition values; free query strings and private IDs never pass.
   for (const [key, value] of [

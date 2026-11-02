@@ -633,6 +633,7 @@ query, signed URL or media source enters this audience payload.
 `PublicVideoAnalytics.client.tsx` marks each rendered standalone/gallery reader
 and requests its page view. The Vercel `beforeSend` owner waits for this marker on
 watch routes and deduplicates automatic/explicit views per mounted reader. This
+uses `pageview({})` to avoid the SDK's persistent pathname override and
 avoids counting a loading placeholder and then the resolved video; failed or
 unavailable readers do not count as successful opens. Legacy ID links may resolve
 to an approved slug in measurement only, without changing navigation or SEO.
