@@ -103,6 +103,29 @@ test('recent video asset payload keeps thumbnails and hover previews for the pic
   assert.equal(asset?.source, 'recent');
 });
 
+test('workspace library names survive assets and recent-output normalization with safe legacy fallbacks', () => {
+  for (const source of ['all', 'upload', 'recent'] as const) {
+    for (const kind of ['image', 'video', 'audio'] as const) {
+      const payload = { [source === 'recent' ? 'outputs' : 'assets']: [
+        { id: 'named', url: '/hash-original', kind, name: '  chosen-source.png  ' },
+        { id: 'blank', url: '/legacy-original', kind, name: '  ' },
+        { id: 'missing', url: '/missing-name', kind },
+        { id: 'malformed', url: '/malformed-name', kind, name: 7 },
+      ] };
+      const [named, blank, missing, malformed] = normalizeAssetLibraryPayload(payload, source, kind);
+      assert.equal(named.name, 'chosen-source.png', `${source}/${kind}`);
+      assert.equal(blank.name, undefined);
+      assert.equal(missing.name, undefined);
+      assert.equal(malformed.name, undefined);
+      const field = { id: 'reference', type: kind };
+      const selected = buildReferenceAssetFromLibraryAsset(field, named);
+      assert.equal(selected.name, 'chosen-source.png');
+      assert.equal(selected.url, '/hash-original');
+      assert.equal(buildReferenceAssetFromLibraryAsset(field, blank).name, 'legacy-original');
+    }
+  }
+});
+
 test('library video assets preserve duration when selected as references', () => {
   const selected = buildReferenceAssetFromLibraryAsset(videoField, userAsset({
     id: 'video_asset',
@@ -113,6 +136,19 @@ test('library video assets preserve duration when selected as references', () =>
   }));
 
   assert.equal(selected.durationSec, 8.2);
+});
+
+test('Kling library selection uses the display filename without changing its source identity', () => {
+  for (const kind of ['image', 'video'] as const) {
+    const source = userAsset({ kind, name: '  watch-source.png  ' });
+    const selected = buildKlingLibraryAsset(source);
+    assert.equal(selected.name, 'watch-source.png');
+    assert.equal(selected.id, 'asset_1');
+    assert.equal(selected.assetId, 'asset_1');
+    assert.equal(selected.url, 'https://cdn.example.com/source.jpg');
+    assert.equal(buildKlingLibraryAsset({ ...source, name: null }).name, 'source.jpg');
+    assert.equal(buildKlingLibraryAsset({ ...source, name: ' ' }).name, 'source.jpg');
+  }
 });
 
 test('reference asset insertion fills slots, replaces assets, and preserves max count', () => {

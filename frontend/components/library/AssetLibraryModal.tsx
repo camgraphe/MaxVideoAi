@@ -30,6 +30,7 @@ export type AssetLibrarySource =
 export type AssetLibraryKind = 'image' | 'video' | 'audio';
 
 export type UserAsset = {
+  name?: string | null;
   id: string;
   url: string;
   thumbUrl?: string | null;

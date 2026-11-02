@@ -47,6 +47,7 @@ export type ReferenceAssetInsertionResult =
     };
 
 export type UserAsset = MediaReadAccess & {
+  name?: string | null;
   assetId?: string;
   ref?: ComposerAttachment['ref'];
   id: string;
@@ -126,6 +127,7 @@ export function normalizeAssetLibraryPayload(
         const mime = asset.mime ?? null;
         return {
           id: asset.id,
+          name: typeof asset.name === 'string' ? asset.name.trim() || undefined : undefined,
           assetId: asset.assetId,
           ref: asset.ref,
           url: asset.url,
@@ -221,7 +223,7 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
     previewUrl: field.type === 'video' ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url : asset.accessUrl ?? asset.url,
     thumbnailUrl: asset.thumbnailAccessUrl ?? asset.thumbUrl ?? null,
     kind: field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image',
-    name: asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image'),
+    name: asset.name?.trim() || (asset.url.split('/').pop() ?? (field.type === 'video' ? 'Video' : field.type === 'audio' ? 'Audio' : 'Image')),
     size: asset.size ?? 0,
     type: asset.mime ?? (field.type === 'video' ? 'video/*' : field.type === 'audio' ? 'audio/*' : 'image/*'),
     url: asset.url,
@@ -505,7 +507,7 @@ export function buildKlingLibraryAsset(asset: UserAsset): KlingElementAsset {
       ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url
       : asset.previewAccessUrl ?? asset.previewUrl ?? asset.thumbnailAccessUrl ?? asset.thumbUrl ?? asset.accessUrl ?? asset.url,
     kind: isVideo ? 'video' : 'image',
-    name: asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image'),
+    name: asset.name?.trim() || (asset.url.split('/').pop() ?? (isVideo ? 'Video' : 'Image')),
     status: 'ready',
     url: asset.url,
     width: asset.width ?? null,
