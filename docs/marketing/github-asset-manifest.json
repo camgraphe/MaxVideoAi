@@ -155,8 +155,8 @@
       "alt": "MaxVideoAI white monogram on a dark rounded square",
       "reviewTrigger": "Refresh after an approved MaxVideoAI identity or plugin-icon change.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-03T22:18:50Z",
-      "lastReviewedRevision": "247e3b6d6404ef446c068e6a352941a4728d9fe4",
+      "lastReviewedAt": "2026-11-02T22:48:49Z",
+      "lastReviewedRevision": "a340f55a1da212c47455903376fb9ed410c95edb",
       "freshnessStatus": "current"
     },
     {
@@ -204,8 +204,8 @@
       "alt": "Cinematic MaxVideoAI production direction with a professional camera and five distinct visual worlds",
       "reviewTrigger": "Refresh after an approved README art-direction change; never cite this editorial image as product or host proof.",
       "approvedBy": "MaxVideoAI owner",
-      "lastReviewedAt": "2026-10-03T22:18:50Z",
-      "lastReviewedRevision": "247e3b6d6404ef446c068e6a352941a4728d9fe4",
+      "lastReviewedAt": "2026-11-02T22:48:49Z",
+      "lastReviewedRevision": "a340f55a1da212c47455903376fb9ed410c95edb",
       "freshnessStatus": "current",
       "generationMethod": "OpenAI built-in ImageGen",
       "generationPrompt": "Premium ultra-wide editorial GitHub README hero for MaxVideoAI. Warm ivory-to-pearl studio architecture, restrained cool gray and cobalt accents, a professional cinema camera on the right third, generous calm space, and five distinct cinematic frames along the lower edge. No text, logo, UI, badge, fake interface, or watermark."

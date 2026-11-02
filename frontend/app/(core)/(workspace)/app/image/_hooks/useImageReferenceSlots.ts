@@ -371,6 +371,7 @@ export function useImageReferenceSlots({
         cleanupSlotPreview(next[index]);
         next[index] = {
           id: asset.id,
+          name: asset.name?.trim() || undefined,
           ref: imageReferenceIdentity(asset),
           url: asset.url,
           previewUrl: asset.url,

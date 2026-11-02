@@ -21,7 +21,7 @@ function App(){
  const state=useImageReferenceSlots({accountId:'owner',selectedEngineCaps:engine,autoModeFromReferences:true,mode:'i2i',resolvedCopy:DEFAULT_COPY,setError:noop,supportedReferenceFormats:['png'],supportedReferenceFormatsLabel:'PNG',toolsEnabled:true});
  const assets=useImageWorkspaceReferenceAssets({...state,mode:'i2i',resolvedCopy:DEFAULT_COPY});
  const persistence=useImageComposerPersistence({...setters,accountId:'owner',engineId:'seedream',engines,mode:'i2i',prompt:'Poster',numImages:1,aspectRatio:'auto',resolution:'2k',seed:'',outputFormat:'jpeg',quality:null,background:null,style:null,maskUrl:'',enableWebSearch:false,thinkingLevel:null,limitGenerations:false,watermark:false,customImageWidth:'',customImageHeight:'',persistableReferenceSlots:state.persistableReferenceSlots,setReferenceSlots:state.setReferenceSlots});
- window.probe={...state,references:composerAssistanceReferences(engine,assets.referenceAssetFields,assets.composerReferenceAssets,'i2i'),hydrated:persistence.storageHydrated};return null;
+ window.probe={...state,references:composerAssistanceReferences(engine,assets.referenceAssetFields,assets.composerReferenceAssets,'i2i'),hydrated:persistence.storageHydrated};return <output data-reference-name>{assets.composerReferenceAssets.reference_images?.[0]?.name}</output>;
 }`;
 const stubs={'@/lib/supabaseClient':`export const supabase={auth:{getSession:async()=>({data:{session:{user:{id:'owner'},access_token:'synthetic'}},error:null})}};`};
 const plain=(value:any)=>JSON.parse(JSON.stringify(value));
@@ -70,4 +70,13 @@ test('a Media card ID or URL alone never becomes an owned image ref',async()=>{
 
 test('an uploading Image slot cannot lend its canonical identity to Milo or persistence',async()=>{
  const f=await mount();try{await f.act(()=>f.w.probe.setReferenceSlots([{id:'pending',url:'blob:pending',status:'uploading',ref}]));assert.equal(f.w.probe.references[0].ref,null);assert.equal(f.w.probe.persistableReferenceSlots[0],null);}finally{await f.close();}
+});
+
+for(const name of ['  My chosen title  ',undefined])test(`Image selected name priority and real snapshot hydration (${name??'legacy fallback'})`,async()=>{
+ const f=await mount();try{
+  await f.act(()=>f.w.probe.handleLibrarySelect({id:'legacy-row',ref,url:'https://example.invalid/photo.png',mime:'image/png',name},0));
+  const want=name?.trim()??'photo.png';assert.equal(f.w.document.querySelector('[data-reference-name]').textContent,want);assert.equal(f.w.probe.references[0].label,'Image 1');
+  const slots=plain(f.w.probe.persistableReferenceSlots);if(name)assert.equal(slots[0].name,'My chosen title');
+  const restored=await mount(snapshot(slots));try{assert.equal(restored.w.document.querySelector('[data-reference-name]').textContent,want);assert.deepEqual(plain(restored.w.probe.references[0].ref),ref);assert.equal(restored.w.probe.references[0].label,'Image 1');}finally{await restored.close();}
+ }finally{await f.close();}
 });

@@ -74,6 +74,7 @@ export type PersistedReferenceSlot =
   | {
       url: string;
       ref?: ToolAssetRef;
+      name?: string;
       source?: ReferenceSlotValue['source'];
       width?: number | null;
       height?: number | null;
@@ -105,6 +106,7 @@ export type PersistedImageComposerState = {
 };
 
 export type LibraryAsset = {
+  name?: string | null;
   assetId?: string;
   ref?: ToolAssetRef;
   id: string;

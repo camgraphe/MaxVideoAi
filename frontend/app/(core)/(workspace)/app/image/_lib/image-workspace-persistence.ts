@@ -52,7 +52,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       .map((entry): PersistedReferenceSlot => {
         if (entry === null) return null;
         if (!entry || typeof entry !== 'object') return null;
-        const record = entry as { url?: unknown; ref?: unknown; source?: unknown; characterReference?: unknown };
+        const record = entry as { url?: unknown; ref?: unknown; name?: unknown; source?: unknown; characterReference?: unknown };
         const url = typeof record.url === 'string' ? record.url.trim() : '';
         if (!url || url.startsWith('blob:')) return null;
         const source =
@@ -71,7 +71,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
             ? Math.round((record as { height: number }).height)
             : null;
         const characterReference = parseCharacterReferenceEntry(record.characterReference);
-        return { url, ref: imageReferenceIdentity(record), source, width, height, characterReference };
+        return { url, ref: imageReferenceIdentity(record), name: typeof record.name === 'string' ? record.name.trim() || undefined : undefined, source, width, height, characterReference };
       });
     const characterReferencesRaw = Array.isArray(raw.characterReferences) ? raw.characterReferences : [];
     const characterReferences = characterReferencesRaw.reduce<PersistedCharacterReference[]>((acc, entry) => {
