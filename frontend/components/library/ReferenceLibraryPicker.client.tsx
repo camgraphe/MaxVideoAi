@@ -39,8 +39,8 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
   const eligibility = new Map(assets.map(asset => [asset, selection.getEligibility?.(asset)]));
   const isDisabled = (asset: AssetBrowserAsset) => Boolean(selection.isDisabled?.(asset) || eligibility.get(asset)?.status === 'blocked');
   const displayName = (asset: AssetBrowserAsset, index: number) => asset.name?.trim() || `${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}`;
-  const filtered = assets.filter(asset => (compatibility === 'all' || eligibility.get(asset)?.status !== 'blocked')
-    && [asset.name, asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
+  const filtered = assets.filter((asset, index) => (compatibility === 'all' || eligibility.get(asset)?.status !== 'blocked')
+    && [displayName(asset,index), asset.name, asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
   const selected = assets.find(asset => asset.id === chosen?.id && asset.url === chosen.url);
   const loadMoreControl = hasMore && onLoadMore ? <div className="flex flex-col items-center gap-2 pt-4">
     {query.trim() ? <p role="status" className="text-center text-xs text-text-secondary">{copy.searchMore}</p> : null}
@@ -85,7 +85,8 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
       {error || failure ? <p role="alert" className="app-picker-error">{error ?? failure}</p> : null}
       {isLoading ? <div className="app-picker-grid" aria-label={copy.busy}>{Array.from({ length: 6 }, (_, index) => <div key={index} className="app-picker-skeleton skeleton" />)}</div> : filtered.length ? <>
         <div className="app-picker-grid">
-          {filtered.map((asset, index) => {
+          {filtered.map(asset => {
+            const index = assets.indexOf(asset);
             const active = immediate ? selection.selectedIds?.has(asset.id) : selected?.id === asset.id;
             const result = eligibility.get(asset);
             const message = result ? mediaInputEligibilityMessage(result, locale) : null;

@@ -19,3 +19,17 @@ test('desktop picker displays, searches and confirms real names with a localized
   await page.locator('.app-picker-use').click();assert.equal(await page.evaluate(()=>(globalThis as any).chosen.id),'exact-c');assert.equal(await page.evaluate(()=>(globalThis as any).chosen.url),'/original-exact-c.png');assert.deepEqual(errors,[]);
  }finally{await browser.close();await fixture.close();}
 });
+
+test('unnamed picker fallback stays consistent through dimension filtering and confirmation',{timeout:60000},async()=>{
+ const filteredAssets=assets.map((asset,index)=>({...asset,width:index===1?640:800,height:index===1?480:600}));
+ const fixture=await startWorkspaceReferenceFixture({source,config:{assets:filteredAssets}}),browser=await chromium.launch();
+ try{const page=await browser.newPage({viewport:{width:1440,height:1000}});await page.goto(fixture.url);
+  const cards=page.locator('.app-picker-card');await expect(cards.nth(1)).toContainText('Images 2');
+  await page.getByRole('searchbox').fill('640x480');await expect(cards).toHaveCount(1);
+  await expect(cards.first()).toContainText('Images 2');await expect(cards.first()).toHaveAccessibleName('Choose · Images 2 · 640 × 480');
+  await cards.first().click();await expect(page.locator('.app-picker-selection')).toContainText('Selected · Images 2 · 640 × 480');
+  await page.getByRole('searchbox').fill('Images 2');await expect(cards).toHaveCount(1);await expect(cards.first()).toContainText('Images 2');
+  if(process.env.REFERENCE_NAMES_REVIEW_EVIDENCE)await page.screenshot({path:process.env.REFERENCE_NAMES_REVIEW_EVIDENCE});
+  await page.locator('.app-picker-use').click();assert.equal(await page.evaluate(()=>(globalThis as any).chosen.id),'exact-b');assert.equal(await page.evaluate(()=>(globalThis as any).chosen.url),'/original-exact-b.png');
+ }finally{await browser.close();await fixture.close();}
+});
