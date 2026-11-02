@@ -176,7 +176,8 @@ Core and direct public watch pages use the same server `app/_components/AppRunti
 under the existing HTML root. Core calls it without a namespace selection and keeps full
 messages; `(public-watch)/layout.tsx` selects the existing `nav`/`footer` namespaces.
 The runtime selects valid cookies in `mvid_locale`, then `NEXT_LOCALE`, then default
-order and filters both the dictionary and its English fallback before the client
+order through the pure `resolveCookieLocale` selector and filters both the
+dictionary and its English fallback before the client
 provider. If the resolver shares its EN dictionary/fallback object, keep that identity
 after selection. `LocaleRuntime` has separate public locale/fallback semantics and
 must not substitute for this runtime.
@@ -189,6 +190,20 @@ the unchanged marketing auth snapshot, reader copy, data, redirects and SEO owne
 Group transitions remount these lower layouts. The runtime behavior and remount tests
 cover dictionary props, fallback, effect cleanup, cache and theme; production browser
 navigation and comparable loading measurements remain required for performance work.
+
+The direct watch reader uses that same cookie selector per request, outside its
+shared public data/quote and SEO builders. Its UI and related-gallery links follow
+the active preference; the prompt, editorial text, canonical URL and JSON-LD stay
+shared. Localize model/comparison and breadcrumb destinations at presentation with
+the browser-safe `localizeMarketingPathname` mapping. Complete comparison links use
+`localizeMarketingHref` to retain their exact query (including selected-model
+`order`) and fragment. Neither adds the `lang` command used for deliberate language
+switches. Studio retains its explicit locale handoff;
+the direct App action retains its existing cookie-based handoff. Never infer a
+watch locale from `from` or cache a visitor's cookies in the public video DTO.
+The marketing language control also displays that runtime preference on `/video`
+and its child paths; ordinary marketing URLs retain their URL-authoritative
+language indicator and switching behavior.
 
 Build schema payloads in pure helpers, then render them at the route/shell level:
 

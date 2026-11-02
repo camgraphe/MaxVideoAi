@@ -23,7 +23,7 @@ const LOCALE_BYPASS_PREFIXES = ['/video'];
 
 function shouldBypassLocale(pathname: string | null | undefined) {
   if (!pathname) return false;
-  return LOCALE_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  return LOCALE_BYPASS_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 type LanguageToggleVariant = 'select' | 'icon';
@@ -44,7 +44,8 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setPendingLocale(resolveMarketingLocaleFromPathname(window.location.pathname, locale));
+    const pathname = window.location.pathname;
+    setPendingLocale(shouldBypassLocale(pathname) ? locale : resolveMarketingLocaleFromPathname(pathname, locale));
   }, [locale]);
 
   const handleChange = (value: Locale) => {

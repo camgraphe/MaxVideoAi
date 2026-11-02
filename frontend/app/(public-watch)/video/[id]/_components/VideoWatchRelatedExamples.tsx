@@ -4,15 +4,19 @@ import { ArrowRight } from 'lucide-react';
 import { getVideoWatchRelatedPages } from '@/server/video-seo';
 import type { WatchPageData } from '../_lib/video-watch-page-utils';
 import { VideoWatchCard } from './VideoWatchCard';
+import type { AppLocale } from '@/i18n/locales';
+import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
+import { videoWatchCopy } from '../_lib/video-watch-copy';
 
 type VideoWatchRelatedExamplesProps = {
   related: WatchPageData['related'];
+  locale?: AppLocale;
 };
 
-export async function DeferredVideoWatchRelatedExamples({ page }: { page: WatchPageData }) {
+export async function DeferredVideoWatchRelatedExamples({ page, locale = 'en' }: { page: WatchPageData; locale?: AppLocale }) {
   try {
     const related = await getVideoWatchRelatedPages(page);
-    return related.length > 0 ? <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related}/></div> : null;
+    return related.length > 0 ? <div className="mt-8 px-5 sm:px-0"><VideoWatchRelatedExamples related={related} locale={locale}/></div> : null;
   } catch {
     // Optional recommendations must not replace the already streamed reader.
     console.warn('[video-watch] related examples unavailable');
@@ -20,15 +24,16 @@ export async function DeferredVideoWatchRelatedExamples({ page }: { page: WatchP
   }
 }
 
-export function VideoWatchRelatedExamples({ related }: VideoWatchRelatedExamplesProps) {
+export function VideoWatchRelatedExamples({ related, locale = 'en' }: VideoWatchRelatedExamplesProps) {
   if (!related.length) return null;
+  const copy = videoWatchCopy(locale);
 
   return (
     <VideoWatchCard className="p-5 sm:p-6 [content-visibility:auto] [contain-intrinsic-size:360px]">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-text-primary">Related examples</h2>
-        <Link href="/examples" prefetch={false} className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary hover:text-brand">
-          View all examples
+        <h2 className="text-lg font-semibold text-text-primary">{copy.related}</h2>
+        <Link href={localizeMarketingPathname('/examples', locale)} prefetch={false} className="inline-flex items-center gap-2 text-sm font-semibold text-text-primary hover:text-brand">
+          {copy.allExamples}
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       </div>
@@ -47,7 +52,7 @@ export function VideoWatchRelatedExamples({ related }: VideoWatchRelatedExamples
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-micro text-text-secondary">
-                    No preview
+                    {copy.noPreview}
                   </div>
                 )}
                 <span className="absolute left-2 top-2 rounded-pill bg-surface-on-media-dark-70 px-2 py-1 text-[10px] font-semibold text-on-inverse">

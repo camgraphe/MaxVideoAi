@@ -69,6 +69,9 @@ test('reader shows current original-model prices without historical charges and 
       const oldPrice = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(1.39);
       assert.ok(!doc.body.textContent?.includes(oldPrice), `${locale}: hide the stored charge`);
       assert.ok(doc.querySelector('.video-reader-recorded')?.textContent?.includes(readerCopy(locale).currentPrice));
+      assert.equal(doc.querySelector('.video-reader-modelLink')?.getAttribute('href'), locale === 'fr' ? '/fr/modeles/kling-3-turbo-pro' : '/es/modelos/kling-3-turbo-pro');
+      assert.equal(doc.querySelector('a[href^="/app/studio?"]')?.getAttribute('href'), `/app/studio?example=example&lang=${locale}`);
+      assert.equal(doc.querySelector('#example-reader-prompt')?.textContent, detail.prompt);
     }
     await act(async () => root.render(React.createElement(ExampleReaderContent, { detail: { ...detail, quotes: [] }, copy: readerCopy('en'), locale: 'en', headingLevel: 'h1' })));
     assert.equal(doc.querySelector('.video-reader-recorded'), null, 'an unavailable current quote must never fall back to the stored charge');

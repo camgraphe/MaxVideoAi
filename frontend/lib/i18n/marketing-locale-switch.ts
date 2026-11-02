@@ -84,6 +84,20 @@ function localizeEnglishPath(englishPath: string, targetLocale: Locale): string 
   return normalizePath([prefix, localizedFirst, ...localizedRest].filter(Boolean));
 }
 
+/** A current-language destination, without the language-switch query command. */
+export function localizeMarketingPathname(pathname: string, targetLocale: Locale): string {
+  const englishPath = resolveEnglishPath(pathname || '/');
+  return localizeEnglishPath(marketingPageFallback(englishPath, targetLocale) ?? englishPath, targetLocale);
+}
+
+/** Internal marketing links retain their exact query and fragment when localized. */
+export function localizeMarketingHref(href: string, targetLocale: Locale): string {
+  const suffixStart = href.search(/[?#]/);
+  const pathname = suffixStart < 0 ? href : href.slice(0, suffixStart);
+  const suffix = suffixStart < 0 ? '' : href.slice(suffixStart);
+  return `${localizeMarketingPathname(pathname, targetLocale)}${suffix}`;
+}
+
 export function buildMarketingLocaleSwitchHref({
   pathname,
   targetLocale,

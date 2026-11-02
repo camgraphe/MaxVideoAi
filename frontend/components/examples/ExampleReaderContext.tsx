@@ -2,6 +2,8 @@ import { WatchKeyFrames } from '@/components/watch/WatchKeyFrames';
 import type { ExampleWatchDetail } from '@/lib/example-watch-detail';
 import { ExampleReaderDisclosure } from './ExampleReaderDisclosure.client';
 import styles from './example-reader-styles';
+import { normalizeAppLocale } from '@/i18n/locales';
+import { localizeMarketingHref } from '@/lib/i18n/marketing-locale-switch';
 
 /** The same lightweight editorial disclosure is server-rendered on the watch URL. */
 export function ExampleReaderContext({ context, detail, locale }: { context: ExampleWatchDetail['context']; detail: ExampleWatchDetail; locale: string }) {
@@ -42,7 +44,7 @@ export function ExampleReaderContext({ context, detail, locale }: { context: Exa
             {context.engineDescription.trim() && <p>{context.engineDescription}</p>}
             {engineBadges.length > 0 && <ul>{engineBadges.map(text => <li key={text}>{text}</li>)}</ul>}
           </>}
-          {compareLinks.length > 0 && <><h3>{fr ? 'Comparer ce modèle' : es ? 'Comparar este modelo' : 'Compare this model'}</h3><ul>{compareLinks.map(link => <li key={link.href}><a href={link.href}>{link.label}</a>{link.reason.trim() && <p>{link.reason}</p>}</li>)}</ul></>}
+          {compareLinks.length > 0 && <><h3>{fr ? 'Comparer ce modèle' : es ? 'Comparar este modelo' : 'Compare this model'}</h3><ul>{compareLinks.map(link => <li key={link.href}><a href={localizeMarketingHref(link.href, normalizeAppLocale(locale))}>{link.label}</a>{link.reason.trim() && <p>{link.reason}</p>}</li>)}</ul></>}
         </section>}
       </div>}
       {hasKeyframes && <section><h3>{fr ? 'Images clés' : es ? 'Fotogramas clave' : 'Key frames'}</h3><WatchKeyFrames videoUrl={detail.videoUrl} posterUrl={detail.posterUrl ?? ''} title={detail.title} durationSec={detail.durationSec} keyframeUrls={context.keyframes}/></section>}

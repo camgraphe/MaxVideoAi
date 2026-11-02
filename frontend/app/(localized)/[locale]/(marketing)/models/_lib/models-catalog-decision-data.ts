@@ -140,7 +140,7 @@ function textByLocale<T>(locale: AppLocale, values: Record<AppLocale | 'en', T>)
 
 function buildBadges(locale: AppLocale): ModelsCatalogDecisionBadge[] {
   const labels = textByLocale(locale, {
-    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Vidéo, image et audio'],
+    en: ['Price before render', 'Pay-as-you-go', 'Updated specs', 'Video, image and audio'],
     fr: ['Prix avant rendu', "Paiement à l’usage", 'Caractéristiques à jour', 'Vidéo, image et audio'],
     es: ['Precio antes de renderizar', 'Pago por uso', 'Características actualizadas', 'Video, imagen y audio'],
   });
