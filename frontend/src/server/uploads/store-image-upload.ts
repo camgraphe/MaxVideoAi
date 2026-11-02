@@ -519,7 +519,7 @@ export function createStoreImageUploadService(
           height,
           sizeBytes,
           thumbUrl: imageThumbUrl,
-          metadata: { mediaFacts: { source: 'probe', width, height } },
+          metadata: { originalName: params.fileName, mediaFacts: { source: 'probe', width, height } },
         })
         .catch(() => {
           dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');

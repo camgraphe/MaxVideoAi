@@ -6,7 +6,7 @@ export type PreviewState = {
   applicationContext: ProposalApplicationContext | null; compatibilityRevision: number;
   review: { proposalId: number; revision: number; fingerprint: string; text: string; requestId?:string } | null;
   pending: { id: number; revision: number; applicationContext: ProposalApplicationContext | null; compatibilityRevision: number } | null;
-  proposal: { text: string; revision: number; id?: number; requestId?:string; applicationContext?: ProposalApplicationContext | null; compatibilityRevision?: number } | null;
+  proposal: { text: string; revision: number; id?: number; requestId?:string; applicationContext?: ProposalApplicationContext | null; compatibilityRevision?: number; appliedReview?: { context: ProposalApplicationContext; compatibilityRevision: number } } | null;
   undo: { text: string; revision: number } | null;
 };
 type Action =
@@ -21,8 +21,8 @@ type Action =
   | { type: 'rejected'; message:string }
   | { type: 'restored'; message: string; text: string | null; reply: string; requestId?:string }
   | { type: 'review' }
-  | { type: 'appliedReviewed'; previous: string; fingerprint: string }
-  | { type: 'applied'; previous: string; fingerprint: string }
+  | { type: 'appliedReviewed'; previous: string; fingerprint: string; applicationContext?:ProposalApplicationContext|null }
+  | { type: 'applied'; previous: string; fingerprint: string; applicationContext?:ProposalApplicationContext|null }
   | { type: 'undone'; fingerprint: string };
 
 export const previewEnabled = (environment: string | undefined, flag: string | undefined) => environment === 'development' && flag === '1';
@@ -32,12 +32,19 @@ export const createPreviewState = (scope: string, fingerprint: string, applicati
 export const canApplyProposal = (state: PreviewState) => Boolean(state.proposal?.text.trim() && state.proposal.revision === state.revision && !state.pending);
 export const canUndoProposal = (state: PreviewState) => state.undo !== null && state.undo.revision === state.revision;
 
+/** Explicit Use may establish a fresh in-memory baseline, without rewriting the request's proof. */
+export function proposalReviewContext(state:PreviewState):ProposalApplicationContext|null {
+  const baseline=state.proposal?.appliedReview??(state.proposal?.applicationContext?{context:state.proposal.applicationContext,compatibilityRevision:state.proposal.compatibilityRevision}:null);
+  return baseline&&baseline.compatibilityRevision===state.compatibilityRevision
+    &&baseline.context.compatibilityKey===state.applicationContext?.compatibilityKey?baseline.context:null;
+}
 /** Review is a separate permission; an old proposal never becomes ordinarily applicable. */
-export const canReviewProposal = (state:PreviewState) => Boolean(state.proposal?.text.trim() && state.proposal.id !== undefined && !state.pending
-  && state.proposal.revision !== state.revision && state.applicationContext && state.proposal.applicationContext
-  && state.proposal.compatibilityRevision === state.compatibilityRevision
-  && state.proposal.applicationContext.compatibilityKey === state.applicationContext.compatibilityKey
-  && applicationSettingChanges(state.proposal.applicationContext,state.applicationContext).length);
+export const canReviewProposal = (state:PreviewState) => {
+  const baseline=proposalReviewContext(state);
+  return Boolean(state.proposal?.text.trim() && state.proposal.id !== undefined && !state.pending
+    && state.proposal.revision !== state.revision && baseline && state.applicationContext
+    && applicationSettingChanges(baseline,state.applicationContext).length);
+};
 export const canApplyReviewedProposal = (state:PreviewState) => Boolean(canReviewProposal(state) && state.review
   && state.review.proposalId === state.proposal?.id && state.review.revision === state.revision
   && state.review.fingerprint === state.fingerprint && state.review.requestId === state.proposal?.requestId && state.review.text === state.proposal.text);
@@ -74,10 +81,14 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
       const undo = action.previous === state.proposal!.text
         ? canUndoProposal(state) ? { ...state.undo!, revision } : null
         : { text: action.previous, revision };
+      // Only explicit application can bind the applied text to its current hard context.
+      // The anticipated sync may advance compatibility once for our own editor write.
+      const appliedReview=action.applicationContext?{context:action.applicationContext,compatibilityRevision:state.compatibilityRevision
+        +(state.applicationContext?.compatibilityKey===action.applicationContext.compatibilityKey?0:1)}:undefined;
       return { ...state, mode: 'prompt', review: null, revision, fingerprint: action.fingerprint,
-        proposal: { ...state.proposal!, revision }, undo };
+        proposal: { ...state.proposal!, revision, ...(appliedReview?{appliedReview}:{}) }, undo };
     }
-    case 'undone': return !canUndoProposal(state) ? state : { ...state, revision: state.revision + 1, fingerprint: action.fingerprint, undo: null };
+    case 'undone': return !canUndoProposal(state) ? state : { ...state, revision: state.revision + 1, fingerprint: action.fingerprint, undo: null, proposal:state.proposal?{...state.proposal,appliedReview:undefined}:null };
   }
 }
 import {PROMPT_ASSISTANCE_LIVE} from './contract';
