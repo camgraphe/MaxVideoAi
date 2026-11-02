@@ -164,6 +164,7 @@ function OpenImageLibraryModal({
         const accepted = onSelect({
           id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
           url: uploadedAsset.url,
+          name: uploadedAsset.name,
           ref: imageReferenceIdentity(uploadedAsset),
           mime: uploadedAsset.mime ?? null,
           width: uploadedAsset.width ?? null,

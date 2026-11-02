@@ -38,8 +38,9 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
   const immediate = Boolean(selection.onToggle);
   const eligibility = new Map(assets.map(asset => [asset, selection.getEligibility?.(asset)]));
   const isDisabled = (asset: AssetBrowserAsset) => Boolean(selection.isDisabled?.(asset) || eligibility.get(asset)?.status === 'blocked');
+  const displayName = (asset: AssetBrowserAsset, index: number) => asset.name?.trim() || `${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}`;
   const filtered = assets.filter(asset => (compatibility === 'all' || eligibility.get(asset)?.status !== 'blocked')
-    && [asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
+    && [asset.name, asset.id, asset.source, asset.mime, asset.createdAt, asset.url, `${asset.width ?? ''}x${asset.height ?? ''}`].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
   const selected = assets.find(asset => asset.id === chosen?.id && asset.url === chosen.url);
   const loadMoreControl = hasMore && onLoadMore ? <div className="flex flex-col items-center gap-2 pt-4">
     {query.trim() ? <p role="status" className="text-center text-xs text-text-secondary">{copy.searchMore}</p> : null}
@@ -89,13 +90,13 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
             const result = eligibility.get(asset);
             const message = result ? mediaInputEligibilityMessage(result, locale) : null;
             return <button key={asset.id} type="button" className="app-picker-card" aria-pressed={Boolean(active)} disabled={busy || isDisabled(asset)}
-              aria-label={`${active ? copy.selected : copy.choose} · ${workspaceReferenceCopy(locale).kinds[asset.kind]} ${index + 1}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
+              aria-label={`${active ? copy.selected : copy.choose} · ${displayName(asset,index)}${asset.width && asset.height ? ` · ${asset.width} × ${asset.height}` : ""}`}
               onClick={() => { setFailure(null); if (immediate) selection.onToggle?.(asset); else setChosen({ id: asset.id, url: asset.url }); }}>
               <span className="app-picker-cover" data-media-kind={asset.kind}>
                 {asset.kind === 'image' ? <LibraryImageThumbnail asset={asset} /> : asset.thumbUrl ? <LibraryImageThumbnail asset={{ url: asset.thumbnailAccessUrl ?? asset.thumbUrl }} /> : <AppGlyph name={asset.kind} />}
                 <span className="app-picker-check" aria-hidden>{active ? '✓' : '+'}</span>
               </span>
-              <span className="app-picker-card-meta"><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>
+              <span className="app-picker-card-meta"><span title={displayName(asset,index)}>{displayName(asset,index)}</span><span>{asset.width && asset.height ? `${asset.width} × ${asset.height}` : compactMediaSource((asset.source ?? source) as typeof source, locale, sourceLabels[source] ?? '')}</span>{renderAssetMeta?.(asset)}</span>
               {message ? <span className="px-2 pb-2 text-xs text-text-secondary">{message}</span> : null}
             </button>;
           })}
@@ -104,7 +105,7 @@ export function ReferenceLibraryPicker(props: AssetLibraryBrowserProps & { selec
       </> : <><p className="app-picker-empty">{query.trim() ? emptySearchLabel : selection.getEligibility && compatibility !== 'all' && assets.length > 0 ? copy.noCompatible : emptyLabel}</p>{loadMoreControl}</>}
     </div>
     <footer className="app-picker-footer">
-      <div className="app-picker-selection" aria-live="polite">{immediate ? <span>{selection.selectedIds?.size ?? 0} · {copy.instant}</span> : selected ? <><span>{copy.selected} · {selected.width && selected.height ? `${selected.width} × ${selected.height}` : workspaceReferenceCopy(locale).kinds[selected.kind]}</span><button type="button" disabled={busy} onClick={() => setChosen(null)}>{copy.clear}</button></> : <span>{copy.empty}</span>}</div>
+      <div className="app-picker-selection" aria-live="polite">{immediate ? <span>{selection.selectedIds?.size ?? 0} · {copy.instant}</span> : selected ? <><span className="min-w-0 truncate" title={displayName(selected,assets.indexOf(selected))}>{copy.selected} · {displayName(selected,assets.indexOf(selected))}{selected.width && selected.height ? ` · ${selected.width} × ${selected.height}` : ''}</span><button type="button" disabled={busy} onClick={() => setChosen(null)}>{copy.clear}</button></> : <span>{copy.empty}</span>}</div>
       <div className="app-picker-footer-actions"><button type="button" disabled={busy} onClick={onClose}>{immediate ? copy.done : copy.cancel}</button>{!immediate ? <button type="button" className="app-picker-use" disabled={!selected || busy || isLoading || isDisabled(selected)} onClick={() => void confirm()}>{busy ? copy.busy : copy.use}</button> : null}</div>
     </footer>
   </div>;
