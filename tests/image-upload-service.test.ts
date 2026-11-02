@@ -359,6 +359,7 @@ test('service uploads, records, mirrors, and returns the exact public projection
     thumbUrl: 'https://cdn.example.com/reference-thumb.webp',
   });
   assert.equal(calls[3][1].thumbUrl, 'https://cdn.example.com/reference-thumb.webp');
+  assert.equal(calls[3][1].metadata.originalName, 'reference.tiff');
 });
 
 test('media_assets mirror failure stays non-fatal while upload and record failures are typed', async () => {

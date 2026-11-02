@@ -4,6 +4,7 @@ import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 export type MediaLibraryAssetKind = 'image' | 'video' | 'audio';
 
 export type MediaLibraryAsset = MediaReadAccess & {
+  name?: string | null;
   id: string;
   url: string;
   thumbUrl?: string | null;

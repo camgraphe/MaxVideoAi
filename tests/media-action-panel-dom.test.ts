@@ -16,8 +16,10 @@ test('media inspector keeps actions with one original reader and restores focus'
   const opener = dom.window.document.getElementById('opener') as HTMLButtonElement;
   opener.focus();
   try {
-    await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'original', url: original, kind: 'video', source: 'gallery', jobId: 'private-job' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
+    await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'original', name: 'watch-scroll.mp4', url: original, kind: 'video', source: 'gallery', jobId: 'private-job' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
+    assert.equal(dom.window.document.querySelector('[role=dialog] h2')?.textContent, 'watch-scroll.mp4');
+    assert.match(dom.window.document.querySelector('.app-media-panel-filename')?.textContent ?? '', /watch-scroll\.mp4/);
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /aaaaa|signature|secret/);
     assert.equal(dom.window.document.querySelector('video'), null);
     await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Lire la vidéo"]')!.click());

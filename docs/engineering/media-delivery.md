@@ -998,6 +998,17 @@ Wan 3 and Kling 3 Pro retain their positions. The authored source registration,
 canonical rendition activation and new immutable first-poster evidence are in
 [the selected-media review](../qa/flux-3-max-selected-media-2026-10-21.md).
 
+### Private uploaded media names
+
+Image uploads retain the original filename in the canonical library mirror as well
+as the legacy upload record. Authenticated library search includes `originalName`
+in both stored sources. The private assets API supplies a display name with
+`label`, `fileName`, `filename`, then `originalName` priority; cards and inspectors
+retain that name without deriving public titles from it. Publication readers are
+unchanged. Existing rows without a retained name remain unnamed: this change does
+not mutate stored assets or backfill historical metadata. Search can still find an
+older legacy record when its original name survives there.
+
 ### Library import account lifetime
 
 `LibraryPageClient` keeps its account-keyed subtree. `useLibraryAssetMutations`

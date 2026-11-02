@@ -18,7 +18,7 @@ export function MediaActionPanel({ asset, locale, onClose, children, title, boun
   boundaryRef?: Ref<HTMLDivElement>; navigation?: ReactNode; details?: ReactNode;
 }) {
   const copy = mediaActionCopy(locale);
-  return <MediaDialog title={title ?? copy.title} closeLabel={copy.close} onClose={onClose} boundaryRef={boundaryRef} navigation={navigation}>
+  return <MediaDialog title={title ?? asset.name ?? copy.title} closeLabel={copy.close} onClose={onClose} boundaryRef={boundaryRef} navigation={navigation}>
     <MediaContent key={`${asset.id}:${asset.url}`} asset={asset} locale={locale} details={details}>{children}</MediaContent>
   </MediaDialog>;
 }
@@ -36,7 +36,7 @@ function MediaContent({ asset, locale, children, details }: { asset: AssetBrowse
   const originalReadUrl = asset.accessUrl ?? asset.url;
   const thumbnailReadUrl = asset.thumbnailAccessUrl ?? asset.thumbUrl;
   const playbackUrl = asset.playbackAccessUrl ?? asset.playbackVideoUrl ?? originalReadUrl;
-  const label = meaningfulMediaLabel(asset.url, recentMediaCopy(locale)[asset.kind]);
+  const label = asset.name ?? meaningfulMediaLabel(asset.url, recentMediaCopy(locale)[asset.kind]);
   const share = async () => {
     if (asset.kind === 'video') { setSharing(value => !value); return; }
     if (typeof navigator.share !== 'function') { setSharing(value => !value); return; }

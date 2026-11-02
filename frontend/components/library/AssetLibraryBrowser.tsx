@@ -24,6 +24,7 @@ export type AssetLibrarySource =
   | 'upscale';
 
 export type AssetBrowserAsset = MediaReadAccess & {
+  name?: string | null;
   id: string;
   url: string;
   thumbUrl?: string | null;
@@ -168,7 +169,7 @@ function AssetLibraryCollection({
     if (onSearchQueryChange || !normalizedQuery) return assets;
     return assets.filter((asset) => {
       const dimensions = asset.width && asset.height ? `${asset.width}x${asset.height}` : '';
-      const haystack = [asset.id, asset.url, asset.source, asset.mime, asset.createdAt, dimensions]
+      const haystack = [asset.name, asset.id, asset.url, asset.source, asset.mime, asset.createdAt, dimensions]
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
         .join(' ')
         .toLowerCase();
@@ -437,7 +438,7 @@ function AssetLibraryCollection({
                           ) : (
                             <LibraryImageThumbnail asset={asset} className="absolute inset-0 h-full w-full object-cover" />
                           )}
-                          {isPageLayout ? <button type="button" className="app-media-card-open absolute inset-0 z-10" onClick={() => setSelectedId(asset.id)} aria-label={actionCopy.title} title={actionCopy.title}>
+                          {isPageLayout ? <button type="button" className="app-media-card-open absolute inset-0 z-10" onClick={() => setSelectedId(asset.id)} aria-label={asset.name ?? actionCopy.title} title={asset.name ?? actionCopy.title}>
                             <span className="app-media-card-action-chip" aria-hidden><Ellipsis /></span>
                             <span className="sr-only">{actionCopy.actions}</span>
                           </button> : assetHref ? (
@@ -455,6 +456,7 @@ function AssetLibraryCollection({
                         </div>
                         <div className="flex flex-col gap-2 border-t border-border/70 bg-surface-glass-90 px-2 py-2 text-[10px] text-text-secondary md:px-3 md:text-[12px] lg:gap-2">
                           <div className="flex min-w-0 flex-col gap-0.5">
+                            {asset.name ? <span className="truncate text-text-primary" title={asset.name}>{asset.name}</span> : null}
                             <span className="truncate">{[dimensions, sizeLabel].filter(Boolean).join(' · ')}</span>
                             {renderAssetMeta ? renderAssetMeta(asset) : null}
                           </div>

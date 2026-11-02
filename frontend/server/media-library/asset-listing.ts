@@ -236,6 +236,7 @@ export async function listLibraryAssetPage(params: {
          CONCAT_WS(' ',
            a.metadata->>'label',
            COALESCE(a.metadata->>'fileName', a.metadata->>'filename'),
+           a.metadata->>'originalName',
            a.source_job_id,
            a.metadata->>'jobId',
            a.metadata->>'sourceJobId'
@@ -327,6 +328,7 @@ export async function listLibraryAssetPage(params: {
          CONCAT_WS(' ',
            u.metadata->>'label',
            COALESCE(u.metadata->>'fileName', u.metadata->>'filename'),
+           u.metadata->>'originalName',
            u.metadata->>'jobId',
            u.metadata->>'sourceJobId',
            u.asset_id

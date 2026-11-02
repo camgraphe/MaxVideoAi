@@ -116,6 +116,7 @@ export function useLibraryPageData({
     () =>
       assets.map((asset) => ({
         id: asset.id,
+        name: asset.name,
         url: asset.url,
         accessUrl: asset.accessUrl,
         thumbnailAccessUrl: asset.thumbnailAccessUrl,

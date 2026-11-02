@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { privateMediaAssetName } from '@/server/media-library/private-asset-name';
 import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createLibraryMediaReadAccess } from '@/server/media-library/read-access';
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
     ok: true,
     assets: page.items.map((asset, index) => ({
       id: asset.id,
+      name: privateMediaAssetName(asset.metadata),
       ...canonicalMediaAssetFields(asset.publicId, asset.kind),
       mediaFacts: readMediaFacts(asset.metadata.mediaFacts),
       url: asset.url,
