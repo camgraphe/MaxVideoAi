@@ -201,10 +201,17 @@ export async function prepareModelsCatalogCards({
     const providerLabel = formatProviderLabel(engine, catalogEntry);
     const engineName = stripProvider(displayName, providerLabel, providerId) || displayName;
     const normalizedVersion = versionLabel.replace(/^v\s*/i, '').trim();
+    const versionTokens = normalizedVersion.toLowerCase().split(/\s+/);
+    let matchedVersionTokens = 0;
+    // The display name may place a descriptor between version tokens: "3 Video Draft".
+    for (const token of engineName.toLowerCase().split(/\s+/)) {
+      if (token === versionTokens[matchedVersionTokens]) matchedVersionTokens += 1;
+    }
     const hasVersion =
       normalizedVersion &&
       (engineName.toLowerCase().includes(normalizedVersion.toLowerCase()) ||
-        engineName.toLowerCase().includes(versionLabel.toLowerCase()));
+        engineName.toLowerCase().includes(versionLabel.toLowerCase()) ||
+        matchedVersionTokens === versionTokens.length);
     const titleLabel = normalizedVersion && !hasVersion ? `${engineName} ${normalizedVersion}` : engineName;
     const modes = new Set(catalogEntry?.engine?.modes ?? engine.engine.modes ?? []);
     const isImageOnly = isImageOnlyModel(engine);
