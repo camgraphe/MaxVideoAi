@@ -85,6 +85,7 @@ export function useImageWorkspaceReferenceAssets({
         slot
           ? {
               kind: 'image',
+              ref: slot.ref,
               name: slot.name ?? slot.url.split('/').pop() ?? resolvedCopy.composer.referenceSlotNameFallback,
               size: 0,
               type: 'image/*',

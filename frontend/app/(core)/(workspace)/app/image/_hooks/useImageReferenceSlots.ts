@@ -14,6 +14,7 @@ import { createCharacterReferenceSlot } from '../_lib/image-workspace-character-
 import { formatTemplate, type ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 import {
   buildPersistableReferenceSlots,
+  imageReferenceIdentity,
   cleanupSlotPreview,
   countRegularReferenceSelections,
   getReadyReferenceSlots,
@@ -232,6 +233,8 @@ export function useImageReferenceSlots({
           url: string;
           width?: number | null;
           height?: number | null;
+          ref?: unknown;
+          assetId?: string;
         };
         setReferenceSlots((previous) => {
           const next = previous.slice();
@@ -241,6 +244,7 @@ export function useImageReferenceSlots({
           }
           next[index] = {
             id: slotId,
+            ref: imageReferenceIdentity(asset),
             url: asset.url,
             previewUrl: asset.url,
             name: file.name,
@@ -367,6 +371,7 @@ export function useImageReferenceSlots({
         cleanupSlotPreview(next[index]);
         next[index] = {
           id: asset.id,
+          ref: imageReferenceIdentity(asset),
           url: asset.url,
           previewUrl: asset.url,
           status: 'ready',

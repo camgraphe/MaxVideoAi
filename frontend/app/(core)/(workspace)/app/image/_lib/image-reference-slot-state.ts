@@ -1,8 +1,20 @@
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
+import { toolAssetRefSchema, type ToolAssetRef } from '@/lib/toolbox/contract';
 import type { CharacterReferenceSelection } from '@/types/image-generation';
 import type {
   PersistedReferenceSlot,
   ReferenceSlotValue,
 } from './image-workspace-types';
+
+/** Preserve an explicit owned-media identity; URLs and local/legacy card IDs are not proof. */
+export function imageReferenceIdentity(value:{ref?:unknown;assetId?:unknown}):ToolAssetRef|undefined {
+  if(value.ref!==undefined){
+    const parsed=toolAssetRefSchema.safeParse(value.ref);
+    if(!parsed.success||parsed.data.kind!=='image')return undefined;
+    return parsed.data.type==='asset'?canonicalMediaAssetFields(parsed.data.assetId,'image').ref:parsed.data;
+  }
+  return canonicalMediaAssetFields(value.assetId,'image').ref;
+}
 
 export function cleanupSlotPreview(slot: ReferenceSlotValue | null) {
   if (slot?.previewUrl && slot.previewUrl.startsWith('blob:')) {
@@ -46,6 +58,7 @@ export function buildPersistableReferenceSlots(
     if (!url || url.startsWith('blob:')) return null;
     return {
       url,
+      ref: imageReferenceIdentity(slot),
       source: slot.source,
       width: slot.width ?? null,
       height: slot.height ?? null,
