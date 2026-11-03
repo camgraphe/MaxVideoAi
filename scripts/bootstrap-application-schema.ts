@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
 const target = process.env.APPLICATION_DATABASE_URL?.trim();
 
 if (!target) {
@@ -69,6 +72,7 @@ async function main(): Promise<void> {
     await ensureMediaLibrarySchema();
     await ensureEmailSchema();
     await ensureMcpSchema();
+    await getDb().query(await readFile(resolve('neon/migrations/93_character_studio.sql'), 'utf8'));
     console.info(
       `Application schema bootstrap completed for host=${hostname} database=${decodeURIComponent(parsed.pathname.slice(1))}.`,
     );

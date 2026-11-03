@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { resolveStudioLookRequest } from '@/server/character-studio/look';
 import {
   getCharacterFormatMultiplier,
   getCharacterFormatResolution,
@@ -25,7 +26,7 @@ import {
 } from './utils';
 
 export async function runCharacterBuilder(input: RunCharacterBuilderInput): Promise<CharacterBuilderResponse> {
-  const request = sanitizeRequest(input);
+  const request = sanitizeRequest(await resolveStudioLookRequest(input));
   const prompt = buildPrompt(request);
   const imageUrls = buildImageUrls(request);
   const inputMode = buildInputMode(request, imageUrls);

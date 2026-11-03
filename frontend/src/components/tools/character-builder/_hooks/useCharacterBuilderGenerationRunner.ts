@@ -96,6 +96,7 @@ export function useCharacterBuilderGenerationRunner({
       try {
         const response = await runCharacterBuilderTool({
           jobId: clientJobId,
+          characterId: state.characterId ?? null,
           action,
           sourceMode: state.sourceMode,
           outputMode: state.outputMode,

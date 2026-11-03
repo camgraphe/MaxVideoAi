@@ -134,6 +134,7 @@ export function sanitizeRequest(input: RunCharacterBuilderInput): CharacterBuild
     referenceImages,
     traits,
     outputOptions,
+    characterId: trimString(input.characterId) || null,
     advancedNotes: trimString(input.advancedNotes),
     mustRemainVisible: uniqueStrings(Array.isArray(input.mustRemainVisible) ? input.mustRemainVisible : []),
     generateCount: input.generateCount === 4 ? 4 : 1,

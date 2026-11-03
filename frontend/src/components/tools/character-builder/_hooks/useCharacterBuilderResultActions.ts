@@ -44,6 +44,7 @@ export function useCharacterBuilderResultActions({
     (snapshot: CharacterBuilderSettingsSnapshot, selectedId?: string) => {
       setState((previous) => ({
         ...previous,
+        characterId: snapshot.builder.characterId ?? null,
         sourceMode: snapshot.builder.sourceMode,
         referenceImages: snapshot.builder.referenceImages,
         traits: snapshot.builder.traits,

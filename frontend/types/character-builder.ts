@@ -59,6 +59,7 @@ export interface CharacterBuilderLineage {
 }
 
 export interface CharacterBuilderRequest {
+  characterId?: string | null;
   jobId?: string | null;
   action: CharacterBuilderAction;
   sourceMode: CharacterBuilderSourceMode;
@@ -95,6 +96,7 @@ export interface CharacterBuilderSettingsSnapshot {
   inputMode: 't2i' | 'i2i';
   prompt: string;
   builder: {
+    characterId?: string | null;
     sourceMode: CharacterBuilderSourceMode;
     outputMode: CharacterBuilderOutputMode;
     consistencyMode: CharacterBuilderConsistencyMode;
@@ -157,6 +159,7 @@ export interface CharacterBuilderRefinement {
 }
 
 export interface CharacterBuilderState {
+  characterId?: string | null;
   sourceMode: CharacterBuilderSourceMode;
   referenceImages: CharacterBuilderReferenceImage[];
   traits: CharacterBuilderTraits;

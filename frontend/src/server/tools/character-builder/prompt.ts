@@ -53,6 +53,11 @@ function buildReferenceBlock(input: CharacterBuilderRequest, referenceImages: Ch
   const identityImages = collectReferenceImages(referenceImages, 'identity');
   const styleImages = collectReferenceImages(referenceImages, 'style');
   const blocks: string[] = [];
+  if (input.characterId) {
+    blocks.push(
+      'Create a new look of the saved character identity shown in the first reference. Preserve its face, age, species, anatomy and distinctive identity markers. Only change the requested hairstyle, wardrobe, accessories, setting or lighting. Styling directions must not replace this identity.',
+    );
+  }
 
   if (identityImages.length) {
     blocks.push(

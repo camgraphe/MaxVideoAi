@@ -183,3 +183,14 @@ and financial rows stay intact. No data is purged by the migration itself.
 The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlog.
 Keep retention guards/job when rolling back assistance features. See
 `docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.
+
+## Character Studio library (93)
+
+Apply `93_character_studio.sql` on a verified initialized application database
+before deploying the saved-character endpoints. It adds account-owned identities
+and looks, with composite ownership references and unique source-output keys.
+It does not alter jobs, original media, wallets or existing generation history.
+Keep these tables if rolling back the UI; no runtime reader performs DDL.
+The explicit application bootstrap includes the same additive SQL. Validation
+used disposable PostgreSQL 17 only; no hosted migration was applied for this
+implementation. See `docs/engineering/character-studio.md` for endpoint ownership.

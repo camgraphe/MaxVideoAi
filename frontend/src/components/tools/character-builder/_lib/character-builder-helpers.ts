@@ -409,6 +409,7 @@ export function parseCharacterBuilderSnapshot(snapshot: unknown): Partial<Charac
 
   return {
     sourceMode: builder.sourceMode ?? base.sourceMode,
+    characterId: builder.characterId ?? null,
     referenceImages: Array.isArray(builder.referenceImages) ? builder.referenceImages : [],
     traits: normalizeHairAndOutfitModes({
       ...base.traits,
