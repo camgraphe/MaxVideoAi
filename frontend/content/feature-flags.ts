@@ -39,7 +39,7 @@ export const FEATURES = {
     webPush: false,
   },
   docs: {
-    libraryDocs: false,
+    libraryDocs: true,
     apiPublicRefs: false,
   },
   mcp: {
