@@ -359,10 +359,12 @@ test('visual studio keeps catalogue, composition and generation ownership separa
   const composer = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioComposer.client.tsx'), 'utf8');
   const catalogue = readFileSync(join(root, 'frontend/src/lib/character-studio-catalog.ts'), 'utf8');
   assert.match(composer, /StudioVisualChoices/);
-  assert.match(composer, /normalizeCharacterFormatMode/);
+  assert.match(composer, /CharacterStudioOutputSettings/);
+  const outputSettings = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioOutputSettings.client.tsx'), 'utf8');
+  assert.match(outputSettings, /normalizeCharacterFormatMode/);
   assert.doesNotMatch(composer, /runCharacterBuilderTool|authFetch|fetch\(|localStorage/);
   assert.doesNotMatch(catalogue, /server-only|node:|process\.env|fetch\(/);
   assert.ok(composer.split('\n').length < 500, 'visual composer should remain a bounded feature surface');
-  assert.match(workspaceSource, /enabled: studioTab === 'history'/, 'pagination must attach when the image tab mounts');
+  assert.match(workspaceSource, /enabled: studioMode === 'character' && studioTab === 'history'/, 'pagination must attach when the image tab mounts');
   assert.match(workspaceSource, /startNewCharacter/, 'new draft transitions must preserve historical results');
 });

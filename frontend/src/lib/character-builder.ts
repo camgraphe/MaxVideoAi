@@ -249,6 +249,7 @@ export const AUTO_TRAIT_KEYS = new Set<keyof CharacterBuilderTraits>([
   'hairstyle',
   'eyeColor',
   'eyeShape',
+  'characterType',
   'bodyBuild',
 ]);
 
@@ -341,6 +342,7 @@ export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'sc
     hairstyle: traitValue(autoValue, autoSource),
     eyeColor: traitValue(autoValue, autoSource),
     eyeShape: traitValue(autoValue, autoSource),
+    characterType: traitValue(autoValue, autoSource),
     sceneId: null,
     bodyBuild: traitValue(autoValue, autoSource),
     outfitEnabled: false,

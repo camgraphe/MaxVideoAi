@@ -23,7 +23,7 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
     '@/components/ui/Button': `export const ButtonLink=({children})=>children;`,
     '@/components/ui/Card': `export const Card=({children})=>children;`,
     './character-builder/_components/character-builder-workspace-components': `export const CharacterBuilderResultsGallery=(props)=>{window.resultActions=props;return null};export const CharacterReferenceLibraryModal=()=>null;export const SectionTitle=()=>null;`,
-    './character-builder/_components/CharacterStudioComposer.client': `import React from 'react';export const CharacterStudioComposer=(props)=>{window.controls={...props,onGenerateOne:props.onGenerate};window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <pre id="draft">{JSON.stringify(props.state)}</pre>};`,
+    './character-builder/_components/CharacterStudioComposer.client': `import React from 'react';export const CharacterStudioComposer=(props)=>{window.controls={...props,onGenerateOne:props.onGenerate};window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <>{props.navigation}<pre id="draft">{JSON.stringify(props.state)}</pre></>};`,
     './character-builder/_components/CharacterStudioReference.client': `export const CharacterStudioReference=()=>null;`,
     './character-builder/_components/character-builder-page-shell': `import React from 'react';export const CharacterBuilderAuthGateModal=()=>null;export const CharacterBuilderDisabledState=()=>null;export const CharacterBuilderLoadingSkeleton=()=> <p id="loading">Loading</p>;export const CharacterBuilderPageFrame=({children,overlays})=><>{children}{overlays}</>;`,
   };
@@ -140,7 +140,7 @@ test('an upload prepared for A is not dispatched after switching accounts', asyn
     let finishPreparation!: (file: File) => void;
     f.w.prepareUpload = () => new Promise(resolve => { finishPreparation = resolve; });
     const file = new f.w.File(['image'], 'reference.png', { type: 'image/png' });
-    const input = f.w.document.querySelector('input[type=file]');
+    const input = f.w.document.querySelector('input[data-character-reference=identity]');
     Object.defineProperty(input, 'files', { configurable: true, value: [file] });
     await f.w.fx.act(async () => input.dispatchEvent(new f.w.Event('change', { bubbles: true })));
     await f.auth('account-B');
@@ -243,7 +243,7 @@ test('an upload response cannot add A references to B even if cancellation loses
   const f = await mountWorkspace();
   try {
     const file = new f.w.File(['image'], 'reference.png', { type: 'image/png' });
-    const input = f.w.document.querySelector('input[type=file]');
+    const input = f.w.document.querySelector('input[data-character-reference=identity]');
     Object.defineProperty(input, 'files', { configurable: true, value: [file] });
     await f.w.fx.act(async () => input.dispatchEvent(new f.w.Event('change', { bubbles: true })));
     const request = f.w.requests.find((entry: any) => entry.url === '/api/uploads/image');
@@ -302,12 +302,12 @@ test('new-character navigation clears only the draft while keeping finished outp
   const pending = { id: 'pending-A', jobId: 'pending-job-A', createdAt: '2026-11-03T10:00:00Z', action: 'generate', generateCount: 1, outputMode: 'portrait-reference', qualityMode: 'draft', formatMode: 'standard' };
   const f = await mountWorkspace({ storage: { [ownedKey]: legacyState, [ownedPendingKey]: JSON.stringify({ version: 1, runs: [pending] }) } });
   try {
-    await f.w.fx.act(async () => [...f.w.document.querySelectorAll('button')].find((button: any) => button.textContent === 'New character')?.click());
+    await f.w.fx.act(async () => [...f.w.document.querySelectorAll('button')].find((button: any) => button.getAttribute('aria-label') === 'New character')?.click());
     assert.equal(f.draft().advancedNotes, '');
     assert.deepEqual(f.draft().referenceImages, []);
     assert.equal(f.draft().runs[0].id, 'A-run');
     assert.equal(JSON.parse(f.w.localStorage.getItem(ownedPendingKey)).runs[0].jobId, 'pending-job-A');
-    assert.equal(f.w.document.querySelector('[aria-pressed="true"]')?.textContent, 'Explore');
+    assert.equal(f.w.document.querySelector('nav [aria-pressed="true"]')?.textContent, 'Explore');
     await f.w.fx.act(async () => f.w.document.querySelector('[aria-label="Use inspiration Iris"]').click());
     assert.equal(f.draft().traits.hairstyle.value, 'curly');
     assert.equal(f.draft().traits.outfitStyle.value, 'bohemian');

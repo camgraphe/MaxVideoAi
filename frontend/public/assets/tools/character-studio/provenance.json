@@ -3,7 +3,8 @@
     "gallery.webp",
     "eyes.webp",
     "fashion.webp",
-    "hairCatalog.webp"
+    "hairCatalog.webp",
+    "identity.webp"
   ],
   "origin": "Original generated images from the approved Character Studio proposal, 2026-11-03. Fictional people.",
   "scenes": [
@@ -151,5 +152,11 @@
       "sourceUrl": "https://polyhaven.com/a/gamrig",
       "license": "CC0-1.0"
     }
-  ]
+  ],
+  "identityAtlas": {
+    "origin": "Original image generated for Character Studio on 2026-11-03; fictional adults, no competitor assets.",
+    "layout": "4 columns × 3 rows; type cells 0–2, upload samples 3/7, presentation 4–6, adult ages 8–11",
+    "source": "exec-c7f563d1-5524-4499-973c-2a86c592f78c.png",
+    "use": "Visual selection only; never an identity reference sent to the generation provider."
+  }
 }

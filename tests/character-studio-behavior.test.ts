@@ -93,3 +93,17 @@ test('a bald choice does not compile stale hair color or length into a contradic
   assert.ok(!prompt.includes('red hair'));
   assert.ok(!prompt.includes('long hair length'));
 });
+
+test('character type is whitelisted, compiled and retained when a generation is reused', () => {
+  const input = request();
+  input.traits.characterType = { value: 'exaggerated', source: 'manual' };
+  const sanitized = sanitizeRequest(input);
+  const prompt = buildPrompt(sanitized);
+  assert.ok(prompt.includes('deliberately exaggerated unusual human facial proportions'));
+  const snapshot = buildSettingsSnapshot(sanitized, prompt, 'fixture-engine', 'Fixture', 't2i');
+  assert.equal(parseCharacterBuilderSnapshot(snapshot)?.traits?.characterType?.value, 'exaggerated');
+  input.traits.characterType = {value:'untrusted-type',source:'manual'};
+  assert.equal(sanitizeRequest(input).traits.characterType?.value,null);
+  delete input.traits.characterType;
+  assert.doesNotThrow(()=>buildPrompt(sanitizeRequest(input)));
+});

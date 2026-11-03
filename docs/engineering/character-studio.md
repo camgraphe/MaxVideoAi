@@ -68,3 +68,39 @@ returned 503 before provider dispatch. The final UI disables authenticated
 generation while its current price is unavailable and never retains a previous
 quality's price during loading. Paid generation, real imports and durable
 account media must be validated in an appropriately configured test environment.
+
+## Compact editor and Recast draft (2026-11-03)
+
+The editor now fills the available viewport below the shared header and above
+`--app-bottom-nav-height`. The settings and results panels scroll independently;
+the mode selector and generation dock remain outside the settings scroller.
+Mobile switches between the editor and results without discarding either state.
+The former title/back/new-character banner is removed; the accessible new-character
+button is a compact plus next to Character / Recast.
+
+`CharacterStudioNavigation.client.tsx` owns mode/navigation presentation.
+`CharacterStudioOutputSettings.client.tsx` owns output/quality/format controls;
+quality still normalizes the allowed format. The composer owns nine disclosures,
+including new photographic type/presentation/adult-age choices. The optional
+`traits.characterType` is whitelisted in sanitation, compiled by the server prompt
+owner and retained through snapshots, without invalidating older requests.
+The new original identity atlas is presentation only, as documented in provenance.
+
+`CharacterStudioRecast.client.tsx` is explicitly a **local draft**, not a generation
+integration. It accepts a local source video, a replacement image and optional
+instructions, provides native manual playback with `preload="none"`, and keeps
+those choices while switching modes. Blob URLs are revoked on replacement/removal
+and unmount; leaving Recast pauses both readers. The account-keyed workspace owns
+its lifetime. There is no upload, provider call, generated output, quote or debit.
+The disabled generation action explains that generation is not available. No
+provider name or hypothetical tariff is shown. Durable Recast jobs and the public
+service identity across billing/transactions remain a separate delivery.
+
+Verification: 30 focused tests, TypeScript, lint (seven pre-existing warnings,
+zero errors) and exposure checks. IAB checks cover a normal desktop, 1280×720,
+390×844 and 320×700, navigation, selected cards and the fixed dock. At 320px the
+document is 320×700 with no horizontally overflowing controls and the dock ends
+at y=621, above the app navigation. A repository public 8-second dance fixture
+verified local video import/playback, image import, instructions, tab preservation
+and pause-on-leave. Test media was removed afterwards. Paid generation and
+remote image uploads remain unverified in this environment without database keys.

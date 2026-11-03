@@ -1,4 +1,4 @@
-import { getStudioScene, STUDIO_EYES } from '@/lib/character-studio-catalog';
+import { getStudioScene, STUDIO_EYES, STUDIO_CHARACTER_TYPES } from '@/lib/character-studio-catalog';
 import {
   getAccessoryPrompt,
   getDistinctiveFeaturePrompt,
@@ -88,6 +88,7 @@ function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterB
     pushValue(getTraitOptionPrompt(key, trait.value));
   };
 
+  pushValue(STUDIO_CHARACTER_TYPES.find((entry) => entry.id === traits.characterType?.value)?.prompt ?? null);
   pushTrait('genderPresentation');
   pushTrait('ageRange');
   pushTrait('skinTone');

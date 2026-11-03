@@ -5,6 +5,7 @@ import type { StudioChoice, StudioLocale } from '@/lib/character-studio-catalog'
 
 const atlases = {
   gallery: [4, 2],
+  identity: [4, 3],
   eyes: [3, 2],
   hairCatalog: [4, 3],
   fashion: [4, 2],
@@ -56,7 +57,7 @@ export function StudioVisualChoices({
           key={option.id}
           type="button"
           aria-pressed={value === option.id}
-          className={`group relative flex min-w-0 flex-col overflow-hidden rounded-lg border text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${value === option.id ? 'border-brand ring-1 ring-brand' : 'border-border hover:border-border-hover'}`}
+          className={`group relative flex min-w-0 flex-col overflow-hidden rounded-xl border text-left shadow-sm transition hover:-translate-y-0.5 motion-reduce:transform-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand ${value === option.id ? 'border-brand ring-1 ring-brand' : 'border-border hover:border-border-hover hover:shadow-md'}`}
           onClick={() => onChange(value === option.id ? null : option.id)}
         >
           {atlas === 'eyes' ? (
@@ -67,7 +68,7 @@ export function StudioVisualChoices({
             <StudioImage
               atlas={atlas}
               tile={option.tile}
-              className={`w-full ${atlas === 'hairCatalog' ? 'aspect-square' : wide ? 'aspect-[4/3]' : 'aspect-[3/4]'}`}
+              className={`w-full ${atlas === 'hairCatalog' || atlas === 'identity' ? 'aspect-square' : wide ? 'aspect-[4/3]' : 'aspect-[3/4]'}`}
             />
           )}
           <span className="block w-full flex-1 bg-surface px-2 py-2 text-xs leading-snug text-text-primary">

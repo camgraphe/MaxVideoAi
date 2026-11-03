@@ -26,6 +26,7 @@ export interface CharacterBuilderReferenceImage {
 }
 
 export interface CharacterBuilderTraits {
+  characterType?: TraitValue<string>;
   genderPresentation: TraitValue<'woman' | 'man' | 'androgynous' | 'custom'>;
   customGenderDescription?: string;
   ageRange: TraitValue<'teen' | 'young-adult' | 'adult' | 'mature' | 'senior'>;

@@ -55,3 +55,33 @@ this is a reviewed implementation slice, not a claim of complete mockup parity.
 The local preview uses public frontend configuration only. Database-backed
 pricing/history, real uploads and provider output quality remain to be checked
 in a configured test environment before release.
+
+## Visual iteration — compact studio, 2026-11-03
+
+User-requested reference: the live Higgsfield AI Influencer settings panel,
+https://higgsfield.ai/ai-influencer-studio . This iteration adopts its compact
+mode control, large photo upload target, illustrated choices and fixed generation
+action. It intentionally retains MaxVideoAI's palette, typography, navigation and
+own generated images. It removes the previous route title/back/new-character row.
+
+| Reference point | Implementation and verification |
+| --- | --- |
+| Header density | Compact Character / Recast selector with AI badge; accessible plus action, no extra page banner |
+| Photo upload | Whole large target is clickable, overlapping original photo cards, optional badge and subtle shadow; existing upload/library handlers retained |
+| Choices | Own photographic type, presentation and adult-age thumbnails; existing eye/hair/clothing/scene atlases retained |
+| Scrolling | Independent constrained settings/results panels; Generate remains visible at normal height and 720px desktop height |
+| Mobile | Editor/results toggle preserves state; dock accounts for the existing bottom navigation; checked at 390px and 320px |
+| Copy/visual system | Deliberate deviation: localized MaxVideoAI copy, original gold accent and app header; no competitor branding or assets |
+| Recast | Visible mode and usable local preparation; clearly unavailable generation, no fake video examples or provider output |
+
+The live reference and latest implementation were captured and inspected in IAB;
+local screenshots are QA artifacts outside the repository. New visible copy is
+limited to the requested mode/identity controls, photo guidance, local Recast inputs
+and truthful availability. No new hero or marketing sections were added.
+
+Final screenshot comparison: reference 1228×1112 and implementation 1106×1112
+at their normal browser sizes, plus explicit 1280×720 / 390×844 / 320×700 checks.
+The reference and latest rendered screenshot were both inspected with `view_image`.
+This verifies the requested compact layout and visual-control treatment, not exact
+competitor parity. After a clean reload, no new feature runtime error was recorded;
+the existing cookie-policy warning remains because the local server lacks its DB.

@@ -3,14 +3,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import deepmerge from 'deepmerge';
-import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { ArrowLeft, Plus, Images, Compass, UserRound } from 'lucide-react';
+import { Images, Compass, SlidersHorizontal } from 'lucide-react';
 import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -23,11 +21,19 @@ import {
   CharacterReferenceLibraryModal,
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
+import {
+  CharacterStudioNavigation,
+  type CharacterStudioMode,
+} from './character-builder/_components/CharacterStudioNavigation.client';
+import { CharacterStudioRecast } from './character-builder/_components/CharacterStudioRecast.client';
 import { CharacterStudioComposer } from './character-builder/_components/CharacterStudioComposer.client';
 import { CharacterStudioExplore } from './character-builder/_components/CharacterStudioExplore.client';
 import { CharacterStudioReference } from './character-builder/_components/CharacterStudioReference.client';
 import { getCharacterStudioCopy } from './character-builder/_lib/character-studio-copy';
-import { startNewCharacter, applyCharacterInspiration } from './character-builder/_lib/character-studio-state';
+import {
+  startNewCharacter,
+  applyCharacterInspiration,
+} from './character-builder/_lib/character-studio-state';
 import type { StudioLocale } from '@/lib/character-studio-catalog';
 import {
   CharacterBuilderAuthGateModal,
@@ -61,7 +67,9 @@ import type {
 } from './character-builder/_lib/character-builder-types';
 
 export default function CharacterBuilderPage() {
-  const { loading, user, session } = useRequireAuth({ redirectIfLoggedOut: false });
+  const { loading, user, session } = useRequireAuth({
+    redirectIfLoggedOut: false,
+  });
   if (loading) return <CharacterBuilderLoadingSkeleton />;
   return (
     <CharacterBuilderAccountWorkspace
@@ -72,12 +80,20 @@ export default function CharacterBuilderPage() {
   );
 }
 
-function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | null; accessToken: string | null }) {
+function CharacterBuilderAccountWorkspace({
+  user,
+  accessToken,
+}: {
+  user: User | null;
+  accessToken: string | null;
+}) {
   const authLoading = false;
   const captureAccountRequest = useCharacterBuilderAccountScope(accessToken);
   const { t, locale } = useI18n();
   const studioCopy = getCharacterStudioCopy(locale);
   const studioLocale: StudioLocale = locale === 'fr' || locale === 'es' ? locale : 'en';
+  const [studioMode, setStudioMode] = useState<CharacterStudioMode>('character');
+  const [showMobileResults, setShowMobileResults] = useState(false);
   const [studioTab, setStudioTab] = useState<'explore' | 'history'>('explore');
   const [editorKey, setEditorKey] = useState(0);
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
@@ -90,7 +106,9 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
   const [, setAdvancedOpen] = useState(false);
   const [, setHairOpen] = useState(false);
   const [, setActiveBuildSection] = useState<BuildLookSectionKey>('identity');
-  const [libraryModalRole, setLibraryModalRole] = useState<CharacterBuilderReferenceImage['role'] | null>(null);
+  const [libraryModalRole, setLibraryModalRole] = useState<CharacterBuilderReferenceImage['role'] | null>(
+    null,
+  );
   const [, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
@@ -141,7 +159,7 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
   } = useCharacterBuilderHistoricalResults(flattenedResults);
   const { resultsScrollContainerRef, resultsSentinelRef } = useCharacterBuilderResultsInfiniteScroll({
     hasMore: historicalHasMore,
-    enabled: studioTab === 'history',
+    enabled: studioMode === 'character' && studioTab === 'history',
     pageScroll: true,
     loadMoreResults: loadMoreHistoricalResults,
     resultsLength: historicalResults.length,
@@ -196,19 +214,20 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     user,
   });
   const resetState = useMemo(() => startNewCharacter(state), [state]);
-  const { handleSelectResult, removeIdentityReference, removeStyleReference } = useCharacterBuilderTraitActions({
-    copy,
-    mustRemainDraft,
-    resetState,
-    setActiveBuildSection,
-    setAdvancedOpen,
-    setError,
-    setHairOpen,
-    setMustRemainDraft,
-    setShowStyleReferenceSlot,
-    setState,
-    setStatusMessage,
-  });
+  const { handleSelectResult, removeIdentityReference, removeStyleReference } =
+    useCharacterBuilderTraitActions({
+      copy,
+      mustRemainDraft,
+      resetState,
+      setActiveBuildSection,
+      setAdvancedOpen,
+      setError,
+      setHairOpen,
+      setMustRemainDraft,
+      setShowStyleReferenceSlot,
+      setState,
+      setStatusMessage,
+    });
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
   const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
   useCharacterBuilderPendingRunsSync({
@@ -246,7 +265,8 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     billingProductData?.unitPriceCents != null
       ? Number(
           (
-            (billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) /
+            (billingProductData.unitPriceCents *
+              getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) /
             100
           ).toFixed(2),
         )
@@ -286,6 +306,8 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
   }
 
   function newCharacter() {
+    setStudioMode('character');
+    setShowMobileResults(false);
     setState(startNewCharacter);
     setStudioTab('explore');
     setEditorKey((key) => key + 1);
@@ -294,6 +316,16 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     setError(null);
     setStatusMessage(null);
   }
+
+  const studioNavigation = (
+    <CharacterStudioNavigation
+      mode={studioMode}
+      onMode={setStudioMode}
+      onNew={newCharacter}
+      onExplore={() => setShowMobileResults(true)}
+      copy={studioCopy}
+    />
+  );
 
   if (authLoading || !hydrated) {
     return <CharacterBuilderLoadingSkeleton />;
@@ -332,27 +364,7 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
         </>
       }
     >
-      <div className="mx-auto w-full max-w-[1500px] space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-          <div className="flex items-center gap-3">
-            <ButtonLink href="/app/tools" variant="ghost" size="sm" linkComponent={Link} aria-label={copy.back}>
-              <ArrowLeft size={16} />
-            </ButtonLink>
-            <h1 className="text-lg font-medium text-text-primary">Character Studio</h1>
-          </div>
-          <button
-            type="button"
-            onClick={newCharacter}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary hover:bg-surface-hover"
-          >
-            <Plus size={16} />
-            {studioCopy.newCharacter}
-          </button>
-        </div>
-        <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
-          <UserRound size={16} />
-          {studioCopy.character}
-        </div>
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1700px] flex-col gap-2">
         {error ? (
           <Card role="alert" className="border border-border p-4 text-sm text-text-primary">
             {error}
@@ -363,44 +375,71 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
             {statusMessage}
           </p>
         ) : null}
-        <div className="grid items-start gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-          <CharacterStudioComposer
-            key={editorKey}
-            state={state}
-            setState={setState}
-            locale={studioLocale}
-            copy={copy}
-            labels={studioCopy}
-            price={estimatedImageCostUsd}
-            canGenerate={!user || estimatedImageCostUsd !== null}
-            busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
-            onGenerate={(count = 1) => {
-              if (user) setStudioTab('history');
-              void handleRun('generate', count);
-            }}
-            identitySlot={
-              <CharacterStudioReference
-                image={identityReference}
-                label={studioCopy.reference}
-                copy={studioCopy}
-                onUpload={() => (user ? identityFileRef.current?.click() : openAuthGate())}
-                onLibrary={() => (user ? setLibraryModalRole('identity') : openAuthGate())}
-                onRemove={removeIdentityReference}
-              />
-            }
-            styleSlot={
-              <CharacterStudioReference
-                image={styleReference}
-                label={studioCopy.styleReference}
-                copy={studioCopy}
-                onUpload={() => (user ? styleFileRef.current?.click() : openAuthGate())}
-                onLibrary={() => (user ? setLibraryModalRole('style') : openAuthGate())}
-                onRemove={removeStyleReference}
-              />
-            }
-          />
-          <section className="min-w-0 rounded-xl border border-border bg-surface" aria-label={copy.top.resultsTitle}>
-            <nav className="flex gap-5 border-b border-border px-4 sm:px-6" aria-label={copy.top.resultsTitle}>
+        <div
+          className={
+            studioMode === 'character'
+              ? 'grid min-h-0 flex-1 gap-3 lg:grid-cols-[340px_minmax(0,1fr)]'
+              : 'hidden'
+          }
+        >
+          <div className={`min-h-0 ${showMobileResults ? 'hidden lg:block' : ''}`}>
+            <CharacterStudioComposer
+              key={editorKey}
+              navigation={studioNavigation}
+              state={state}
+              setState={setState}
+              locale={studioLocale}
+              copy={copy}
+              labels={studioCopy}
+              price={estimatedImageCostUsd}
+              canGenerate={!user || estimatedImageCostUsd !== null}
+              busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
+              onGenerate={(count = 1) => {
+                if (user) {
+                  setStudioTab('history');
+                  setShowMobileResults(true);
+                }
+                void handleRun('generate', count);
+              }}
+              identitySlot={
+                <CharacterStudioReference
+                  prominent
+                  image={identityReference}
+                  label={studioCopy.reference}
+                  copy={studioCopy}
+                  onUpload={() => (user ? identityFileRef.current?.click() : openAuthGate())}
+                  onLibrary={() => (user ? setLibraryModalRole('identity') : openAuthGate())}
+                  onRemove={removeIdentityReference}
+                />
+              }
+              styleSlot={
+                <CharacterStudioReference
+                  image={styleReference}
+                  label={studioCopy.styleReference}
+                  copy={studioCopy}
+                  onUpload={() => (user ? styleFileRef.current?.click() : openAuthGate())}
+                  onLibrary={() => (user ? setLibraryModalRole('style') : openAuthGate())}
+                  onRemove={removeStyleReference}
+                />
+              }
+            />
+          </div>
+          <section
+            className={`min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface ${showMobileResults ? 'flex' : 'hidden lg:flex'}`}
+            aria-label={copy.top.resultsTitle}
+          >
+            <nav
+              className="flex shrink-0 items-center gap-4 border-b border-border px-3 sm:px-5"
+              aria-label={copy.top.resultsTitle}
+            >
+              <button
+                type="button"
+                onClick={() => setShowMobileResults(false)}
+                aria-label={studioCopy.character}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border lg:hidden"
+              >
+                <SlidersHorizontal size={15} />
+              </button>
               <button
                 type="button"
                 aria-pressed={studioTab === 'explore'}
@@ -421,24 +460,35 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
                 {pendingRuns.length ? <span className="text-xs">({pendingRuns.length})</span> : null}
               </button>
             </nav>
-            {studioTab === 'explore' ? (
-              <CharacterStudioExplore
-                copy={studioCopy}
-                onNew={newCharacter}
-                onChoose={(name) => {
-                  setState((previous) => applyCharacterInspiration(previous, name));
-                  setEditorKey((key) => key + 1);
-                  setError(null);
-                  setStatusMessage(null);
-                }}
-              />
-            ) : (
-              <div className="p-4 sm:p-6">{renderResultsGallery('grid')}</div>
-            )}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-studio-scroll="results">
+              {studioTab === 'explore' ? (
+                <CharacterStudioExplore
+                  copy={studioCopy}
+                  onNew={newCharacter}
+                  onChoose={(name) => {
+                    setShowMobileResults(false);
+                    setState((previous) => applyCharacterInspiration(previous, name));
+                    setEditorKey((key) => key + 1);
+                    setError(null);
+                    setStatusMessage(null);
+                  }}
+                />
+              ) : (
+                <div className="p-4 sm:p-6">{renderResultsGallery('grid')}</div>
+              )}
+            </div>
           </section>
+        </div>
+        <div className={studioMode === 'recast' ? 'min-h-0 flex-1' : 'hidden'}>
+          <CharacterStudioRecast
+            active={studioMode === 'recast'}
+            copy={studioCopy}
+            navigation={studioNavigation}
+          />
         </div>
         <input
           ref={identityFileRef}
+          data-character-reference="identity"
           type="file"
           accept="image/*"
           className="hidden"
@@ -449,6 +499,7 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
         />
         <input
           ref={styleFileRef}
+          data-character-reference="style"
           type="file"
           accept="image/*"
           className="hidden"

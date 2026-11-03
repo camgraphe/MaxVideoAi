@@ -1,14 +1,61 @@
 /** Shared authored choice IDs/prompts. Preview images are inspiration, never generation references. */
 export type StudioLocale = 'en' | 'fr' | 'es';
 export type StudioLabel = Record<StudioLocale, string>;
-export type StudioChoice = { id: string; label: StudioLabel; prompt: string; tile: number };
-const label = (en: string, fr: string, es: string): StudioLabel => ({ en, fr, es });
-const choice = (id: string, tile: number, en: string, fr: string, es: string, prompt: string): StudioChoice => ({
+export type StudioChoice = {
+  id: string;
+  label: StudioLabel;
+  prompt: string;
+  tile: number;
+};
+const label = (en: string, fr: string, es: string): StudioLabel => ({
+  en,
+  fr,
+  es,
+});
+const choice = (
+  id: string,
+  tile: number,
+  en: string,
+  fr: string,
+  es: string,
+  prompt: string,
+): StudioChoice => ({
   id,
   tile,
   label: label(en, fr, es),
   prompt,
 });
+
+export const STUDIO_CHARACTER_TYPES = [
+  choice('natural', 0, 'Natural', 'Naturel', 'Natural', 'natural balanced human facial proportions'),
+  choice(
+    'distinctive',
+    1,
+    'Distinctive',
+    'Singulier',
+    'Singular',
+    'striking distinctive facial geometry and pronounced features, still believable',
+  ),
+  choice(
+    'exaggerated',
+    2,
+    'Exaggerated',
+    'Exagéré',
+    'Exagerado',
+    'deliberately exaggerated unusual human facial proportions, highly distinctive character',
+  ),
+];
+export const STUDIO_PRESENTATIONS = [
+  choice('woman', 4, 'Feminine', 'Féminine', 'Femenina', ''),
+  choice('man', 5, 'Masculine', 'Masculine', 'Masculina', ''),
+  choice('androgynous', 6, 'Androgynous', 'Androgyne', 'Andrógina', ''),
+];
+export const STUDIO_AGES = [
+  choice('young-adult', 8, 'Young adult', 'Jeune adulte', 'Adulto joven', ''),
+  choice('adult', 9, 'Adult', 'Adulte', 'Adulto', ''),
+  choice('mature', 10, 'Mature', 'Mature', 'Maduro', ''),
+  choice('senior', 11, 'Senior', 'Senior', 'Mayor', ''),
+];
 
 export const STUDIO_EYES = [
   choice('almond', 0, 'Almond', 'En amande', 'Almendrados', 'almond-shaped eyes'),
@@ -44,7 +91,14 @@ export const STUDIO_CLOTHING = [
 ];
 
 export const STUDIO_SCENES = [
-  choice('blue_photo_studio', 0, 'Blue studio', 'Studio bleu', 'Estudio azul', 'blue photography studio backdrop'),
+  choice(
+    'blue_photo_studio',
+    0,
+    'Blue studio',
+    'Studio bleu',
+    'Estudio azul',
+    'blue photography studio backdrop',
+  ),
   choice(
     'brown_photostudio_01',
     1,
@@ -105,7 +159,14 @@ export const STUDIO_SCENES = [
     'artist studio with workshop details',
   ),
   choice('crossfit_gym', 11, 'Gym', 'Salle de sport', 'Gimnasio', 'gym interior'),
-  choice('homecoming_center_rooftop', 12, 'City rooftop', 'Toit-terrasse', 'Azotea urbana', 'urban rooftop terrace'),
+  choice(
+    'homecoming_center_rooftop',
+    12,
+    'City rooftop',
+    'Toit-terrasse',
+    'Azotea urbana',
+    'urban rooftop terrace',
+  ),
   choice(
     'hotel_rooftop_balcony',
     13,
@@ -122,16 +183,61 @@ export const STUDIO_SCENES = [
     'Calle de noche',
     'cobblestone street at night',
   ),
-  choice('german_town_street', 15, 'Town street', 'Rue contemporaine', 'Calle urbana', 'contemporary town street'),
+  choice(
+    'german_town_street',
+    15,
+    'Town street',
+    'Rue contemporaine',
+    'Calle urbana',
+    'contemporary town street',
+  ),
   choice('birbeck_street_underpass', 16, 'Underpass', 'Passage urbain', 'Paso urbano', 'urban underpass'),
-  choice('braustuble_alley', 17, 'Historic alley', 'Ruelle historique', 'Callejón histórico', 'historic narrow alley'),
-  choice('fish_hoek_beach', 18, 'Sandy beach', 'Plage de sable', 'Playa de arena', 'sandy beach by the ocean'),
-  choice('autumn_forest_01', 19, 'Autumn forest', 'Forêt d’automne', 'Bosque de otoño', 'forest with autumn foliage'),
-  choice('epping_forest_02', 20, 'Forest clearing', 'Clairière', 'Claro del bosque', 'natural forest clearing'),
+  choice(
+    'braustuble_alley',
+    17,
+    'Historic alley',
+    'Ruelle historique',
+    'Callejón histórico',
+    'historic narrow alley',
+  ),
+  choice(
+    'fish_hoek_beach',
+    18,
+    'Sandy beach',
+    'Plage de sable',
+    'Playa de arena',
+    'sandy beach by the ocean',
+  ),
+  choice(
+    'autumn_forest_01',
+    19,
+    'Autumn forest',
+    'Forêt d’automne',
+    'Bosque de otoño',
+    'forest with autumn foliage',
+  ),
+  choice(
+    'epping_forest_02',
+    20,
+    'Forest clearing',
+    'Clairière',
+    'Claro del bosque',
+    'natural forest clearing',
+  ),
   choice('borghese_gardens', 21, 'Garden', 'Parc arboré', 'Parque arbolado', 'lush park with mature trees'),
-  choice('lake_pier', 22, 'Lake pier', 'Ponton sur un lac', 'Muelle en el lago', 'wooden pier on a calm lake'),
+  choice(
+    'lake_pier',
+    22,
+    'Lake pier',
+    'Ponton sur un lac',
+    'Muelle en el lago',
+    'wooden pier on a calm lake',
+  ),
   choice('gamrig', 23, 'Mountains', 'Montagne', 'Montaña', 'natural mountain landscape'),
-].map((entry, index) => ({ ...entry, family: ['studio', 'interior', 'urban', 'nature'][Math.floor(index / 6)] }));
+].map((entry, index) => ({
+  ...entry,
+  family: ['studio', 'interior', 'urban', 'nature'][Math.floor(index / 6)],
+}));
 
 export function getStudioScene(id: unknown) {
   return typeof id === 'string' ? STUDIO_SCENES.find((entry) => entry.id === id) : undefined;
