@@ -360,9 +360,29 @@ export function CharacterStudioComposer({
         {group(
           'scene',
           labels.scene,
-          STUDIO_SCENES.find((entry) => entry.id === traits.sceneId)?.label[locale] ?? labels.free,
+          traits.customSceneDescription?.trim()
+            ? labels.customScene
+            : STUDIO_SCENES.find((entry) => entry.id === traits.sceneId)?.label[locale] ?? labels.free,
           MapPin,
           <>
+            <label className="block text-xs font-medium text-text-secondary">
+              {labels.sceneNotes}
+              <textarea
+                className={fieldClass}
+                rows={3}
+                maxLength={1000}
+                placeholder={labels.scenePlaceholder}
+                value={traits.customSceneDescription ?? ''}
+                onChange={(event) => patchTraits({ customSceneDescription: event.target.value })}
+                aria-describedby="studio-scene-hint"
+              />
+            </label>
+            <p id="studio-scene-hint" className="text-xs leading-relaxed text-text-secondary">{labels.sceneHint}</p>
+            {traits.sceneId && traits.customSceneDescription?.trim() ? (
+              <button type="button" onClick={() => patchTraits({ sceneId: null })} className="text-xs text-text-secondary underline underline-offset-4 hover:text-text-primary">
+                {labels.clearScene}
+              </button>
+            ) : null}
             <StudioChips
               label={labels.scene}
               options={(['all', 'studio', 'interior', 'urban', 'nature'] as const).map((id) => ({

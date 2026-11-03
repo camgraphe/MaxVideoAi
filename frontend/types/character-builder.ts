@@ -40,6 +40,7 @@ export interface CharacterBuilderTraits {
   eyeColor: TraitValue<string>;
   eyeShape?: TraitValue<string>;
   sceneId?: string | null;
+  customSceneDescription?: string;
   bodyBuild: TraitValue<string>;
   outfitEnabled: boolean;
   customOutfitDescription?: string;

@@ -212,8 +212,13 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
 function buildOutputOptionBlock(input: CharacterBuilderRequest): string[] {
   const blocks: string[] = [];
   const scene = getStudioScene(input.traits.sceneId);
-  if (scene) {
-    blocks.push(`Place the character in this environment: ${scene.prompt}. Keep the environment consistent across every view.`);
+  const customScene = trimString(input.traits.customSceneDescription);
+  if (scene || customScene) {
+    blocks.push(`Place the character in this environment: ${scene?.prompt ?? customScene}.`);
+    if (scene && customScene) {
+      blocks.push(`Customize the environment with these directions, taking priority over any conflicting preset details: ${customScene}.`);
+    }
+    blocks.push('Keep the environment consistent across every view.');
   } else if (input.outputOptions.neutralStudioBackground) {
     blocks.push('Use a clean neutral studio background.');
   }

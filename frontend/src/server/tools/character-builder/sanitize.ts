@@ -48,6 +48,7 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     eyeShape: sanitizeTrait(STUDIO_EYES.some((entry) => entry.id === traits.eyeShape?.value) || traits.eyeShape?.value === 'auto' ? traits.eyeShape : undefined),
     characterType: sanitizeTrait(STUDIO_CHARACTER_TYPES.some((entry) => entry.id === traits.characterType?.value) || traits.characterType?.value === 'auto' ? traits.characterType : undefined),
     sceneId: getStudioScene(traits.sceneId)?.id ?? null,
+    customSceneDescription: trimString(traits.customSceneDescription).slice(0, 1000),
     bodyBuild: sanitizeTrait(traits.bodyBuild),
     outfitEnabled: isOutfitEnabled(traits),
     customOutfitDescription: trimString(traits.customOutfitDescription),

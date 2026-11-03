@@ -107,3 +107,37 @@ test('character type is whitelisted, compiled and retained when a generation is 
   delete input.traits.characterType;
   assert.doesNotThrow(()=>buildPrompt(sanitizeRequest(input)));
 });
+
+test('custom scene directions work alone or with a preset and survive settings reuse', () => {
+  for (const outputMode of ['portrait-reference', 'character-sheet'] as const) {
+    for (const sceneId of [null, 'comfy_cafe']) {
+      const input = request();
+      input.outputMode = outputMode;
+      input.traits.sceneId = sceneId;
+      input.traits.customSceneDescription = '  A quiet rooftop at night, warm lanterns and light rain  ';
+      const sanitized = sanitizeRequest(input);
+      const prompt = buildPrompt(sanitized);
+      assert.ok(prompt.includes('A quiet rooftop at night, warm lanterns and light rain'));
+      assert.ok(!prompt.includes('neutral studio background'));
+      assert.ok(prompt.includes('Keep the environment consistent across every view.'));
+      if (sceneId) {
+        assert.ok(prompt.includes('cozy cafe interior'));
+        assert.ok(prompt.includes('taking priority over any conflicting preset details'));
+      }
+      const restored = parseCharacterBuilderSnapshot(buildSettingsSnapshot(sanitized, prompt, 'fixture-engine', 'Fixture', 't2i'));
+      assert.equal(restored?.traits?.customSceneDescription, 'A quiet rooftop at night, warm lanterns and light rain');
+      assert.equal(restored?.traits?.sceneId, sceneId);
+      assert.equal(startNewCharacter(input).traits.customSceneDescription, '');
+    }
+  }
+});
+
+test('scene description length is bounded and blank or legacy input retains the background fallback', () => {
+  const input = request();
+  input.traits.customSceneDescription = 'x'.repeat(1100);
+  assert.equal(sanitizeRequest(input).traits.customSceneDescription?.length, 1000);
+  input.traits.customSceneDescription = ' \n ';
+  assert.ok(buildPrompt(sanitizeRequest(input)).includes('Use a clean neutral studio background'));
+  delete input.traits.customSceneDescription;
+  assert.ok(buildPrompt(sanitizeRequest(input)).includes('Use a clean neutral studio background'));
+});

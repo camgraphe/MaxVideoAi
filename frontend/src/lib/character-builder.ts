@@ -344,6 +344,7 @@ export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'sc
     eyeShape: traitValue(autoValue, autoSource),
     characterType: traitValue(autoValue, autoSource),
     sceneId: null,
+    customSceneDescription: '',
     bodyBuild: traitValue(autoValue, autoSource),
     outfitEnabled: false,
     customOutfitDescription: '',

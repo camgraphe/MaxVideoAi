@@ -104,3 +104,11 @@ at y=621, above the app navigation. A repository public 8-second dance fixture
 verified local video import/playback, image import, instructions, tab preservation
 and pause-on-leave. Test media was removed afterwards. Paid generation and
 remote image uploads remain unverified in this environment without database keys.
+
+The Scene disclosure also offers `traits.customSceneDescription` above the image
+catalogue, limited to 1,000 characters in the UI and server sanitizer. It can define
+a scene by itself or refine a selected preset; explicit directions take priority
+in case of conflict. Either suppresses the neutral studio background instruction,
+including on character sheets. The field follows existing draft/snapshot storage
+and resets with New character. No reference image is generated or uploaded by this
+text control.
