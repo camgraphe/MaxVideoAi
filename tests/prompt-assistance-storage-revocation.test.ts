@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {writePromptChat,revokePromptChatReview,type PromptChatRecord} from '../frontend/components/composer/prompt-chat-storage';
+import {readPromptChat,writePromptChat,revokePromptChatReview,type PromptChatRecord} from '../frontend/components/composer/prompt-chat-storage';
 
 const key='milo-composer:v2:["owner","video","create"]';
 const sessionId='00000000-0000-4000-8000-000000000001',requestId='00000000-0000-4000-8000-000000000002';
@@ -14,6 +14,16 @@ async function withStorage<T>(value:ReturnType<typeof storage>,run:()=>T|Promise
 test('cache writes report their actual acknowledgement',async()=>{
  const value=record();await withStorage(storage(value,()=>true),()=>assert.equal(writePromptChat(key,value),false));
  await withStorage(storage(value,()=>false),()=>assert.equal(writePromptChat(key,value),true));
+});
+
+test('invalid overlimit local prose cannot discard valid chat and pending recovery identities',async()=>{
+ const value=record(true);value.local!.message='B'+'x'.repeat(50000);
+ await withStorage(storage(value,()=>false),()=>{
+  const restored=readPromptChat(key);assert.ok(restored);
+  assert.equal(restored.sessionId,sessionId);assert.deepEqual(restored.pending,{sessionId,requestId});
+  assert.equal(restored.local,undefined,'unrestorable prose is omitted, never silently shortened');
+ });
+ await withStorage(storage({...value,sessionId:'invalid'},()=>false),()=>assert.equal(readPromptChat(key),null,'invalid chat identity remains rejected'));
 });
 
 test('a refused false proof falls back to proof-free cache while preserving pending identities',async()=>{

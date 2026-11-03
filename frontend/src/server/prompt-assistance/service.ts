@@ -7,6 +7,7 @@ import {readStudioAssistanceStatus,settleStudioAssistanceCall} from '@/server/st
 import {claimPromptRequest,readPromptRequest,promptScopeValues,promptRequestPhase,type PromptRequestRow} from './repository';
 import {closeUnansweredPromptRequest,closeExpiredPromptRequests} from './unanswered';
 import {parsePromptProviderReply} from './reply-format';
+import {refundInvalidPromptOutput} from '@/server/studio/assistance-output-refund';
 
 export async function projectPromptResult(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
   const nextAction=assistanceNextActionSchema.safeParse((row.context_json as {failureAction?:unknown}|null)?.failureAction);
@@ -70,7 +71,11 @@ export async function finishRecorded(row:PromptRequestRow,policy:StudioAssistanc
       reply=null;
       error=cause instanceof Error&&['OUTPUT_INCOMPLETE','OUTPUT_REFUSED','OUTPUT_TOO_LONG'].includes(cause.message)?cause.message:'OUTPUT_INVALID';
     }
-    const saved=(await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
+    let saved=(await tx.query<PromptRequestRow>('UPDATE prompt_assistance_requests SET state=$4,reply_json=$5::jsonb,error=$6,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *',[...promptScopeValues(row),error?'failed':'complete',JSON.stringify(reply),error]))[0];
+    if(error==='OUTPUT_INVALID'&&response.status==='completed'&&!response.output?.some(item=>item.type==='message'&&item.content.some(part=>part.type==='refusal'))){
+      const restored=await refundInvalidPromptOutput(tx,{callId:row.call_id!,userId:row.user_id});
+      if(restored?.refundCredits)saved=(await tx.query<PromptRequestRow>("UPDATE prompt_assistance_requests SET error='OUTPUT_INVALID_CREDITS_RESTORED' WHERE user_id=$1 AND session_id=$2 AND request_id=$3 RETURNING *",promptScopeValues(row)))[0];
+    }
     if(!error)await tx.query("UPDATE prompt_assistance_sessions SET expires_at=clock_timestamp()+interval '24 hours' WHERE user_id=$1 AND id=$2",[row.user_id,row.session_id]);
     return saved;
   }).then(saved=>projectPromptResult(saved,policy));

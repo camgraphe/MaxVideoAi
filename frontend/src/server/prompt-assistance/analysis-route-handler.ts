@@ -8,6 +8,8 @@ import {scheduleStudioWorker} from '@/server/studio/worker-host';
 import {composerScope} from './repository';
 import {preparePromptReferenceAnalysis} from './reference-analysis';
 import {boundedPromptJson} from './route-handler';
+// Reference-analysis actions retain their original bound; long chat bodies use a separate envelope.
+const PROMPT_ANALYSIS_BODY_MAX_BYTES=64*1024;
 const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
 export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolean;access?:(req:NextRequest)=>Promise<StudioAccessDecision>}={}) {
   if(!(deps.enabled??process.env.PROMPT_ASSISTANCE_ENABLED==='true'))return json({ok:false,error:'NOT_FOUND'},404);
@@ -19,7 +21,7 @@ export async function handlePromptAnalysis(req:NextRequest,deps:{enabled?:boolea
       const session=z.string().uuid().parse(req.nextUrl.searchParams.get('sessionId')),id=z.string().uuid().parse(req.nextUrl.searchParams.get('analysisId'));
       return json({ok:true,result:{status:await createComposerAnalysisService(access.userId,session).read(id)}});
     }
-    const input=promptAnalysisActionSchema.parse(await boundedPromptJson(req));
+    const input=promptAnalysisActionSchema.parse(await boundedPromptJson(req,PROMPT_ANALYSIS_BODY_MAX_BYTES));
     if(input.action==='prepare')return json({ok:true,result:await preparePromptReferenceAnalysis(access.userId,input)});
     if(process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED!=='true')throw new Error('ANALYSIS_UNAVAILABLE');
     const status=await createComposerAnalysisService(access.userId,input.sessionId).confirm(input.confirmation);
