@@ -9,6 +9,13 @@ export async function studioTaskSchemaReady(db:QueryExecutor={query},policyVersi
   if(db.query===query&&!process.env.DATABASE_URL?.trim())return false;
   return (await db.query<{ready:boolean}>("SELECT to_regclass('public.studio_tasks') IS NOT NULL AND to_regclass('public.studio_task_segments') IS NOT NULL AND to_regclass('public.studio_task_approvals') IS NOT NULL AND to_regclass('public.studio_task_memory_notes') IS NOT NULL AND ($1::text IS NULL OR to_regprocedure($1::text) IS NOT NULL) ready",[policyVersion===STUDIO_TASK_POLICY_VERSION?'public.enforce_studio_task_resource_policy_v3()':policyVersion===STUDIO_TASK_V2_POLICY_VERSION?'public.enforce_studio_task_resource_policy_v2()':null]))[0]?.ready===true;
 }
+/** Dispatch readiness is separate from recognizing existing task ownership and reads. */
+export async function studioTaskReplyEnvelopeReady(db:QueryExecutor={query}) {
+  if(db.query===query&&!process.env.DATABASE_URL?.trim())return false;
+  return (await db.query<{ready:boolean}>(`SELECT
+    EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid=to_regclass('public.studio_tasks') AND conname='studio_tasks_reply_envelope_v1' AND contype='c' AND convalidated AND pg_get_expr(conbin,conrelid)='(length(partial_reply) <= 50000)')
+    AND NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid=to_regclass('public.studio_tasks') AND conname='studio_tasks_partial_reply_check') ready`))[0]?.ready===true;
+}
 export async function readStudioTaskRow(actor:StudioGenerationActor,requestId:string,db:QueryExecutor={query},lock=false) {
   const row=(await db.query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t JOIN studio_projects p ON p.id=t.project_id AND p.user_id=t.user_id AND p.deleted_at IS NULL
     WHERE t.user_id=$1 AND t.project_id=$2 AND t.request_id=$3${lock?' FOR UPDATE OF t':''}`,[actor.userId,actor.projectId,requestId]))[0];

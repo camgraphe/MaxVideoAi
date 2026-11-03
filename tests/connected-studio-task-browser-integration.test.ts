@@ -23,7 +23,7 @@ test('Milo modes preserve model selection, credits, references and explicit cons
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
     await initializeStudioConnectedFixture(db);
-    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','88_milo_task_profiles.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
+    for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','88_milo_task_profiles.sql','94_studio_conversation_reply_envelope.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text, ADD COLUMN message text, ADD COLUMN settings_snapshot jsonb, ADD COLUMN payment_status text');
     await db.pool.query('ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN size_bytes bigint');
     await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[randomUUID(),selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
@@ -152,9 +152,12 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     const finish=(reply:string)=>({...worker,serviceOptions:{...worker.serviceOptions,countInputTokens:async()=>100,createActionResponse:async(params:Parameters<StudioResponseCreator>[0])=>{
       calls++;assert.equal(params.model,'gpt-6-luna');assert.equal(params.reasoning?.effort,'high');return {id:'finished-'+calls,model:params.model!,status:'completed' as const,service_tier:'default',usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:50},output_text:JSON.stringify({reply}),output:[]};
     }}});
-    await runStudioTaskWorkerOnce(finish('The requested guidance is complete.'));
-    await expect(page.getByText('The requested guidance is complete.')).toBeVisible({timeout:15_000});assert.equal(calls,2);
-    await page.reload();await expect(page.getByText('The requested guidance is complete.')).toBeVisible();assert.equal(calls,2);
+    const prefix='Complete direction: ',longReply=prefix+'é'.repeat(50000-prefix.length);
+    const longParagraph=page.locator('p').filter({hasText:/^Complete direction: /});
+    await runStudioTaskWorkerOnce(finish(longReply));
+    await expect(longParagraph).toBeVisible({timeout:15_000});await expect.poll(async()=>await longParagraph.textContent()===longReply).toBe(true);assert.equal(calls,2);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'a complete long reply remains inside the mobile chat');
+    await page.reload();await expect(longParagraph).toBeVisible();await expect.poll(async()=>await longParagraph.textContent()===longReply).toBe(true);assert.equal(calls,2,'restoring a long Studio reply cannot repurchase it');
     await page.setViewportSize({width:1440,height:900});await expect(lite).toHaveAttribute('aria-pressed','true');
     await message.fill('Continue with the approved vertical framing.');
     const followupPosted=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='POST');

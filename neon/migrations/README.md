@@ -196,3 +196,22 @@ need the same migration on their own database branch. See
 fingerprinted apply, supported failure policy and expiry semantics. This source
 change is qualified on disposable PostgreSQL; a hosted apply is a separate reviewed
 operation on a verified target.
+
+## Studio conversation reply envelope (migration 94)
+
+Apply `94_studio_conversation_reply_envelope.sql` after the existing Studio task
+migrations and before deploying the long-reply runtime. It widens only task
+`partial_reply` storage from 2,400 to 50,000 characters, replacing the known old
+constraint with validated `studio_tasks_reply_envelope_v1`. Unknown constraint
+definitions stop for inspection. Admission and worker dispatch require that exact
+validated bound and absence of the old restrictive check before spending; task
+ownership and historical reads remain available. No token/resource policy,
+credit, tariff, approval or existing response changes. Keep the widened constraint
+because long replies may already be stored. Prefer a forward fix: old-runtime
+history context and saved-response recovery need separate qualification, even if
+ordinary history reads still work. Never truncate or rewrite long data for a
+rollback. See
+`docs/engineering/studio-conversation-reply-envelope.md` for exact prerequisites,
+timeouts and local verification. Migration 93 was delivered by PR 607 at main
+`3239a5a1ec487724616d9c9b30612637322d0f53`; migration 94 has no collision
+in that base. Recheck main before publication if another migration lands.

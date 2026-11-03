@@ -123,6 +123,19 @@ Studio entry opens the recent supported project or idempotently creates a fresh 
 
 The chat builds intent through the common agent/generation services. Owned media and measured reference facts are resolved before pricing or submission. Every generation requires a current exact quote and explicit confirmation. Request/response journal and assistance usage recovery are durable so lost replies can resume without repeating paid dispatch.
 
+Creative guidance belongs to `conversation-director-instructions.ts` and reaches
+all tiers through the active `createStudioConversationDirector`. Clients without
+assets receive concrete native direction, including coherent images then animation
+when useful and enabled, with optional references for realism, period details,
+places and continuity. This is advice, not a required recipe or permission to
+prepare/generate. Explicit real-footage constraints stay saved: any generated
+alternative is labeled and requires acceptance before substitution or preparation.
+External sourcing serves an explicit request or insistence on actual capture.
+Reference fidelity, enabled capabilities and individual-media/timeline/export
+boundaries remain authoritative. The synthetic scenario matrix in
+`../superpowers/specs/2026-11-03-studio-native-creation-guidance.md` distinguishes
+request-envelope/gate tests from a separately authorized real-model quality review.
+
 For an open simple image/video model choice, `pricing_compare` reads compatible
 current prices in one action before selection. It shares the MCP comparison
 owner and preserves certification, attached owned references and explicit

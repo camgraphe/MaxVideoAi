@@ -11,7 +11,7 @@ import {chooseStudioAssistance,lockAccount,openStudioAssistanceTurn,readStudioAs
 import {studioTaskSavedUsageKnown} from './saved-usage';
 import {studioTasksEnabled} from './policy';
 import {studioTaskSourceFingerprint} from './source';
-import {studioTaskSchemaReady,readStudioTaskRow,readStudioTaskUsage,projectStudioTask,type StudioTaskRow} from './repository';
+import {studioTaskSchemaReady,studioTaskReplyEnvelopeReady,readStudioTaskRow,readStudioTaskUsage,projectStudioTask,type StudioTaskRow} from './repository';
 
 export function createStudioTaskService(actor:StudioGenerationActor,dependencies:{enabled?:boolean;assistancePolicy?:StudioAssistancePolicy}={}) {
   requireGenerationActor(actor);if(actor.authMethod!=='studio-session')throw new AgentApiError('AUTH_REQUIRED','Studio session required.');
@@ -38,7 +38,7 @@ export function createStudioTaskService(actor:StudioGenerationActor,dependencies
       if(!input.taskBudget)throw new AgentApiError('CONFIRMATION_REQUIRED','Review the assistance ceiling before sending.');
       const hash=createHash('sha256').update(stableJson(input)).digest('hex');
       return withDbTransaction(async tx=>{
-        if(!await studioTaskSchemaReady(tx,input.taskBudget!.policyVersion))throw new AgentApiError('ENGINE_UNAVAILABLE','Apply the explicit Studio task migration before activation.');
+        if(!await studioTaskSchemaReady(tx,input.taskBudget!.policyVersion)||!await studioTaskReplyEnvelopeReady(tx))throw new AgentApiError('ENGINE_UNAVAILABLE','Apply the explicit Studio task migration before activation.');
         const account=await authorize(tx);
         const prior=(await tx.query<StudioTaskRow>('SELECT * FROM studio_tasks WHERE user_id=$1 AND project_id=$2 AND request_id=$3',[actor.userId,actor.projectId,input.requestId]))[0];
         if(prior){if(prior.input_hash!==hash)throw new AgentApiError('PARAMETER_INVALID','This request identity belongs to another intent.');return projectStudioTask(prior,tx);}
