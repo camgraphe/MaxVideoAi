@@ -53,4 +53,27 @@
 - [x] Extract workspace presentation to keep the orchestrator bounded, update architecture contracts, implement named save dialog with keyboard handling, paginated library and locked-identity look mode.
 - [x] Verify real rendered empty/error/loading states and desktop/mobile navigation via CUA; use test fixtures only in automated tests for successful save/generation states.
 - [x] Run focused suites, TypeScript, lint, exposure and diff checks. Document migration and local/provider verification limits.
-- [ ] Fresh-context review of the finished change, fix important issues, commit final slice on the same branch.
+- [x] Fresh-context review of the finished change, fix important issues, commit final slice on the same branch.
+
+## Delivery evidence
+
+Implemented in `18c6a4dde` and `6bcdfa41d`, followed by the review race fixes.
+The independent review identified two important same-account draft races. Four
+workspace regressions reproduced them before the fix and pass afterwards; the
+focused suite totals 63 passing tests. Draft loads/uploads now share an intent
+revision; completed generation jobs and durable saves keep account scope.
+
+Decisions: tasks 1/2 shipped together because they share the optional characterId
+contract; list/detail pages are bounded to 12/24 items; layout, overlays and draft
+transitions were extracted to preserve the existing orchestrator size contract.
+The tradeoffs are a coupled backend commit, additional pagination requests and
+small component interfaces. Explicit approval of this implementation slice
+allowed native execution without another design confirmation.
+
+No minor findings were deferred. Actual Recast generation and billing, provider
+fidelity canaries, hosted migration/live authenticated persistence, and broader
+audit enhancements (undo, catalogue additions and example videos) are outside
+this delivery. Local browser QA covers navigation/loading/unavailable states;
+successful persistence was verified on disposable PG17 and client fixtures.
+Migration 93 and a configured application database are prerequisites for live
+saving. The branch/worktree remain in place without push, merge or deployment.

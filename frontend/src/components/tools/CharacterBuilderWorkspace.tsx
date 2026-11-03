@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { buildStudioLookDraft } from '@/lib/character-studio-look';
+import { createStudioDraftTransitions } from './character-builder/_lib/character-studio-transitions';
 import type { StudioRecastSelection } from '@/types/character-studio';
 import { useCharacterStudioLibrary } from './character-builder/_hooks/useCharacterStudioLibrary';
 import { getStudioLibraryCopy } from './character-builder/_lib/character-studio-library-copy';
@@ -41,10 +41,7 @@ import {
   CharacterStudioReferenceInputs,
 } from './character-builder/_components/CharacterStudioReference.client';
 import { getCharacterStudioCopy } from './character-builder/_lib/character-studio-copy';
-import {
-  startNewCharacter,
-  applyCharacterInspiration,
-} from './character-builder/_lib/character-studio-state';
+import { startNewCharacter } from './character-builder/_lib/character-studio-state';
 import type { StudioLocale } from '@/lib/character-studio-catalog';
 import {
   CharacterBuilderDisabledState,
@@ -55,7 +52,10 @@ import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks
 import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks/useCharacterBuilderJobSnapshotLoader';
 import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/useCharacterBuilderGenerationRunner';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
-import { useCharacterBuilderAccountScope } from './character-builder/_hooks/useCharacterBuilderAccountScope';
+import {
+  useCharacterBuilderAccountScope,
+  useCharacterBuilderDraftScope,
+} from './character-builder/_hooks/useCharacterBuilderAccountScope';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
 import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
@@ -99,6 +99,7 @@ function CharacterBuilderAccountWorkspace({
 }) {
   const authLoading = false;
   const captureAccountRequest = useCharacterBuilderAccountScope(accessToken);
+  const { beginDraftIntent, captureDraftRequest } = useCharacterBuilderDraftScope(captureAccountRequest);
   const { t, locale } = useI18n();
   const studioCopy = getCharacterStudioCopy(locale);
   const studioLocale: StudioLocale = locale === 'fr' || locale === 'es' ? locale : 'en';
@@ -112,6 +113,7 @@ function CharacterBuilderAccountWorkspace({
     userId: user?.id ?? null,
     enabled: studioTab === 'characters',
     captureAccountRequest,
+    captureDraftRequest,
   });
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
   const copy = useMemo<CharacterCopy>(() => {
@@ -154,6 +156,8 @@ function CharacterBuilderAccountWorkspace({
     setSavingResultId,
   } = useCharacterBuilderResultActions({
     captureAccountRequest,
+    captureDraftRequest,
+    beginDraftIntent,
     copy,
     openAuthGate,
     setAdvancedOpen,
@@ -220,7 +224,7 @@ function CharacterBuilderAccountWorkspace({
     user,
   });
   const { handleLibrarySelect, triggerUpload } = useCharacterBuilderReferenceAssets({
-    captureAccountRequest,
+    captureAccountRequest: captureDraftRequest,
     copy,
     libraryModalRole,
     openAuthGate,
@@ -259,7 +263,7 @@ function CharacterBuilderAccountWorkspace({
     user,
   });
   useCharacterBuilderJobSnapshotLoader({
-    captureAccountRequest,
+    captureAccountRequest: captureDraftRequest,
     hydrated,
     jobIdFromQuery,
     loadFromJobDoneMessage: copy.loadFromJobDone,
@@ -331,43 +335,28 @@ function CharacterBuilderAccountWorkspace({
     );
   }
 
-  async function newLook(id: string) {
-    const character = await library.openCharacter(id);
-    if (!character) return;
-    setState((previous) => buildStudioLookDraft(previous, character));
-    setStudioMode('character');
-    setShowMobileResults(false);
-    setEditorKey((key) => key + 1);
-    setError(null);
-    setStatusMessage(null);
-  }
-  function handoffRecast(source: { jobId: string; imageUrl: string }, name: string, characterId?: string) {
-    library.cancelDetails();
-    setRecastSelection({ ...source, name, characterId, transferId: crypto.randomUUID() });
-    setStudioMode('recast');
-    setError(null);
-    setStatusMessage(null);
-  }
-  function newCharacter() {
-    library.closeCharacter();
-    setStudioMode('character');
-    setShowMobileResults(false);
-    setState(startNewCharacter);
-    setStudioTab('explore');
-    setEditorKey((key) => key + 1);
-    setShowStyleReferenceSlot(false);
-    setMustRemainDraft('');
-    setError(null);
-    setStatusMessage(null);
-  }
+  const { newLook, handoffRecast, newCharacter, chooseInspiration, changeMode, changeTab } =
+    createStudioDraftTransitions({
+      library,
+      beginDraftIntent,
+      setState,
+      setMode: setStudioMode,
+      setMobileResults: setShowMobileResults,
+      setTab: setStudioTab,
+      setEditorKey,
+      setRecastSelection,
+      setError,
+      setStatusMessage,
+      onReset: () => {
+        setShowStyleReferenceSlot(false);
+        setMustRemainDraft('');
+      },
+    });
 
   const studioNavigation = (
     <CharacterStudioNavigation
       mode={studioMode}
-      onMode={(mode) => {
-        library.cancelDetails();
-        setStudioMode(mode);
-      }}
+      onMode={changeMode}
       onNew={newCharacter}
       onExplore={() => {
         setStudioTab('explore');
@@ -412,7 +401,7 @@ function CharacterBuilderAccountWorkspace({
       <CharacterStudioWorkspaceView
         mode={studioMode}
         tab={studioTab}
-        onTab={setStudioTab}
+        onTab={changeTab}
         mobileResults={showMobileResults}
         onEditor={() => setShowMobileResults(false)}
         copy={studioCopy}
@@ -474,18 +463,7 @@ function CharacterBuilderAccountWorkspace({
           />
         }
         explore={
-          <CharacterStudioExplore
-            copy={studioCopy}
-            onNew={newCharacter}
-            onChoose={(name) => {
-              library.closeCharacter();
-              setShowMobileResults(false);
-              setState((previous) => applyCharacterInspiration(previous, name));
-              setEditorKey((key) => key + 1);
-              setError(null);
-              setStatusMessage(null);
-            }}
-          />
+          <CharacterStudioExplore copy={studioCopy} onNew={newCharacter} onChoose={chooseInspiration} />
         }
         characters={
           <CharacterStudioLibrary

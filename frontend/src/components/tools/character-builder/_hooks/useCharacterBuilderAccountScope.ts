@@ -26,3 +26,16 @@ export function useCharacterBuilderAccountScope(accessToken: string | null): Cap
     };
   }, []);
 }
+
+/** Draft replacements invalidate only draft-bound reads/uploads, not jobs or durable saves. */
+export function useCharacterBuilderDraftScope(captureAccountRequest: CaptureCharacterBuilderAccountRequest) {
+  const revision = useRef(0);
+  const beginDraftIntent = useCallback(() => { revision.current++; }, []);
+  const captureDraftRequest = useCallback(() => {
+    const request = captureAccountRequest();
+    if (!request) return null;
+    const capturedRevision = revision.current;
+    return { ...request, isCurrent: () => request.isCurrent() && revision.current === capturedRevision };
+  }, [captureAccountRequest]);
+  return { beginDraftIntent, captureDraftRequest };
+}

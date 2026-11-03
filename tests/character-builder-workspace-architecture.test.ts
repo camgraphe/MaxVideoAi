@@ -379,6 +379,11 @@ test('saved library presentation and overlays stay outside the workspace orchest
   assert.doesNotMatch(workspaceSource, /<dialog\b|<MediaLightbox\b|data-studio-scroll/);
   assert.match(view, /data-studio-scroll="results"/);
   assert.match(overlays, /CharacterStudioSaveDialog/);
+  assert.match(workspaceSource, /createStudioDraftTransitions/);
+  assert.match(workspaceSource, /useCharacterBuilderDraftScope/);
+  const transitions = readFileSync(join(area, '_lib/character-studio-transitions.ts'), 'utf8');
+  assert.match(transitions, /beginDraftIntent/);
+  assert.match(transitions, /buildStudioLookDraft/);
   const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
   assert.match(runner, /sanitizeRequest\(await resolveStudioLookRequest\(input\)\)/);
 });

@@ -113,6 +113,11 @@ reuse; a legacy snapshot or New character clears the context. This guides an
 AI generation, so visual identity fidelity still requires review of the output.
 
 `useCharacterStudioLibrary` owns account-scoped requests and guards late responses.
+`useCharacterBuilderDraftScope` adds a shared draft revision for identity/look
+loads, historical settings reuse and reference uploads. New look, settings reuse,
+New character and inspiration invalidate older draft operations even within the
+same account; generation completion and durable saves keep the account lifetime.
+`character-studio-transitions.ts` owns these navigation/reset transitions.
 `CharacterStudioWorkspaceView` owns layout/tabs and `CharacterStudioOverlays`
 owns dialogs/lightbox composition. Results expose Save and Recast; Mes personnages
 exposes rename, New look, saved looks and Recast. New look opens styling controls

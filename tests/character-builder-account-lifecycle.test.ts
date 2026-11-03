@@ -315,3 +315,60 @@ test('new-character navigation clears only the draft while keeping finished outp
     assert.equal(f.draft().runs[0].id, 'A-run');
   } finally { await f.close(); }
 });
+
+async function savedCharacterFixture(f: Awaited<ReturnType<typeof mountWorkspace>>) {
+  const character = { id: '17', name: 'Alba', identity: { jobId: 'identity-A', imageUrl: 'https://example.invalid/identity.png', thumbUrl: 'https://example.invalid/thumb.png', settingsSnapshot: { schemaVersion: 1, surface: 'character-builder', builder: f.w.makeState('saved A') } }, looks: [], lookCount: 0, nextLookCursor: null };
+  const click = async (name: string) => f.w.fx.act(async () => {
+    const button = [...f.w.document.querySelectorAll('button')].find((el: any) => el.textContent === name) as any;
+    assert.ok(button, `button ${name}`); button.click();
+  });
+  await click('My characters');
+  await f.respond(f.w.requests.find((r: any) => r.url === '/api/character-studio/characters'), { ok: true, characters: [character], nextCursor: null });
+  return { character, click, start: async () => { await click('New look'); return f.w.requests.filter((r: any) => r.url === '/api/character-studio/characters/17').at(-1); } };
+}
+
+test('newer local settings win over a pending new look through actual workspace navigation', async () => {
+  const f = await mountWorkspace();
+  try {
+    const saved = await savedCharacterFixture(f);
+    const pending = await saved.start(); assert.ok(pending);
+    await saved.click('My images');
+    await f.w.fx.act(async () => f.w.resultActions.onDuplicateSettings({ builder: f.w.makeState('Newer B') }, 'B-result'));
+    await f.respond(pending, { ok: true, character: saved.character });
+    assert.equal(f.draft().advancedNotes, 'Newer B');
+    assert.equal(f.draft().characterId, null);
+  } finally { await f.close(); }
+});
+
+test('a newer saved look wins over pending historical settings reuse', async () => {
+  const f = await mountWorkspace();
+  try {
+    const saved = await savedCharacterFixture(f);
+    await saved.click('My images');
+    await f.w.fx.act(async () => { f.w.resultActions.onDuplicateHistoricalSettings({ id: 'B-result', jobId: 'historical-B' }); });
+    const historical = f.w.requests.find((r: any) => r.url === '/api/jobs/historical-B'); assert.ok(historical);
+    await saved.click('My characters');
+    const pending = await saved.start();
+    await f.respond(pending, { ok: true, character: saved.character });
+    assert.equal(f.draft().characterId, '17');
+    await f.respond(historical, { ok: true, settingsSnapshot: { schemaVersion: 1, surface: 'character-builder', builder: f.w.makeState('Stale B') } });
+    assert.equal(f.draft().characterId, '17');
+    assert.notEqual(f.draft().advancedNotes, 'Stale B');
+  } finally { await f.close(); }
+});
+
+for (const role of ['identity', 'style']) test(`a pending ${role} upload cannot alter a newly selected saved character`, async () => {
+  const f = await mountWorkspace();
+  try {
+    const input = f.w.document.querySelector(`[data-character-reference="${role}"]`);
+    Object.defineProperty(input, 'files', { value: [new f.w.File(['fixture'], 'previous.png', { type: 'image/png' })] });
+    await f.w.fx.act(async () => input.dispatchEvent(new f.w.Event('change', { bubbles: true })));
+    const upload = f.w.requests.find((r: any) => r.init.method === 'POST'); assert.ok(upload);
+    const saved = await savedCharacterFixture(f);
+    const pending = await saved.start();
+    await f.respond(pending, { ok: true, character: saved.character });
+    await f.respond(upload, { ok: true, asset: { url: 'https://example.invalid/stale-upload.png', name: 'previous.png' } });
+    assert.equal(f.draft().referenceImages.length, 1);
+    assert.equal(f.draft().referenceImages[0].url, saved.character.identity.imageUrl);
+  } finally { await f.close(); }
+});

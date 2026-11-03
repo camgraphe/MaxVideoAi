@@ -95,8 +95,8 @@ export function CharacterStudioReferenceInputs({
   styleRef,
   onUpload,
 }: {
-  identityRef: RefObject<HTMLInputElement | null>;
-  styleRef: RefObject<HTMLInputElement | null>;
+  identityRef: RefObject<HTMLInputElement>;
+  styleRef: RefObject<HTMLInputElement>;
   onUpload: (role: 'identity' | 'style', files: FileList | null) => void;
 }) {
   return (

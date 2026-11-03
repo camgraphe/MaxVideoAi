@@ -20,10 +20,12 @@ export function useCharacterStudioLibrary({
   userId,
   enabled,
   captureAccountRequest,
+  captureDraftRequest = captureAccountRequest,
 }: {
   userId: string | null;
   enabled: boolean;
   captureAccountRequest: CaptureCharacterBuilderAccountRequest;
+  captureDraftRequest?: CaptureCharacterBuilderAccountRequest;
 }) {
   const [characters, setCharacters] = useState<StudioCharacterSummary[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export function useCharacterStudioLibrary({
 
   const openCharacter = useCallback(
     async (id: string, beforeLook?: string | null) => {
-      const request = captureAccountRequest();
+      const request = captureDraftRequest();
       if (!request) return;
       const version = ++detailVersion.current;
       if (!beforeLook) setSelected(null);
@@ -105,7 +107,7 @@ export function useCharacterStudioLibrary({
         if (request.isCurrent() && version === detailVersion.current) setDetailLoading(false);
       }
     },
-    [captureAccountRequest],
+    [captureDraftRequest],
   );
   const cancelDetails = () => {
     detailVersion.current++;
