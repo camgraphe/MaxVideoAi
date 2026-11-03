@@ -103,7 +103,7 @@ Si le brief suffit et demande de créer, image contient un prompt précis et un 
                 ? [
                     {
                       role: "assistant" as const,
-                      content: projectStudioReply(turn.reply).slice(0, 2400),
+                      content: projectStudioReply(turn.reply),
                     },
                   ]
                 : []),

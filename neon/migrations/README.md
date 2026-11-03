@@ -183,3 +183,18 @@ and financial rows stay intact. No data is purged by the migration itself.
 The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlog.
 Keep retention guards/job when rolling back assistance features. See
 `docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.
+
+## Studio conversation reply envelope (migration 94)
+
+Apply `94_studio_conversation_reply_envelope.sql` after the existing Studio task
+migrations and before deploying the long-reply runtime. It widens only task
+`partial_reply` storage from 2,400 to 50,000 characters, replacing the known old
+constraint with validated `studio_tasks_reply_envelope_v1`. Unknown constraint
+definitions stop for inspection. Admission and worker dispatch require that exact
+validated bound and absence of the old restrictive check before spending; task
+ownership and historical reads remain available. No token/resource policy,
+credit, tariff, approval or existing response changes. Keep the widened constraint
+on application rollback because long replies may already be stored. See
+`docs/engineering/studio-conversation-reply-envelope.md` for exact prerequisites,
+timeouts and local verification. Migration 93 is reserved by PR 607; recheck main
+for index collisions before this follow-up is published.

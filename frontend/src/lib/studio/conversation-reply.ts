@@ -1,3 +1,6 @@
+/** Text envelope only; model token limits and preparation prompt limits remain separate. */
+export const STUDIO_CONVERSATION_REPLY_MAX_CHARS=50_000;
+
 const unavailableReply='The explanation is unavailable. Review any available quote before deciding, or send a follow-up to continue.';
 
 // Recognize explicit model protocol markers, not ordinary prose or creative HTML.

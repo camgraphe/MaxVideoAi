@@ -4,7 +4,7 @@ import type {StudioGenerationActor} from '@/server/agent-api/generation-actor';
 import {createImageConversationService} from '../image-conversation-service';
 import {studioTaskSavedUsageKnown} from './saved-usage';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '../assistance-policy';
-import {studioTaskSchemaReady,readStudioTaskUsage,type StudioTaskRow} from './repository';
+import {studioTaskSchemaReady,studioTaskReplyEnvelopeReady,readStudioTaskUsage,type StudioTaskRow} from './repository';
 import {studioTasksEnabled,StudioTaskStop} from './policy';
 import type {StudioTaskExecution} from './execution';
 import type {StudioWorkerScope} from '../worker-host';
@@ -14,7 +14,7 @@ type ServiceOptions=Omit<Parameters<typeof createImageConversationService>[1],'e
 type WorkerDependencies={enabled?:boolean;assistancePolicy?:StudioAssistancePolicy;serviceOptions?:ServiceOptions;scope?:StudioWorkerScope};
 /** Only a worker runs this entry. UI status reads never call it. */
 export async function runStudioTaskWorkerOnce(dependencies:WorkerDependencies={}):Promise<boolean> {
-  if(!await studioTaskSchemaReady())return false;
+  if(!await studioTaskSchemaReady()||!await studioTaskReplyEnvelopeReady())return false;
   const scopeFilter=dependencies.scope;
   const candidate=(await query<StudioTaskRow>(`SELECT t.* FROM studio_tasks t WHERE (state='queued' OR (state='running' AND lease_expires_at<=clock_timestamp())
     OR (state='unknown' AND error='provider' AND EXISTS(SELECT 1 FROM studio_conversation_responses r WHERE r.user_id=t.user_id AND r.project_id=t.project_id AND r.request_id=t.segment_request_id AND r.state='reported'))

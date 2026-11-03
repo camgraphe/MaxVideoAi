@@ -9,7 +9,7 @@ import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract'
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
 import {imageSelectionSchema,STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
-import {projectStudioReply} from './conversation-reply';
+import {projectStudioReply,STUDIO_CONVERSATION_REPLY_MAX_CHARS} from './conversation-reply';
 import type {StudioPricingEstimate} from '@/lib/studio/conversation-pricing-contract';
 import {studioTaskSelectionSchema,type StudioTaskSelection,type StudioTaskStatus} from './task-budget-contract';
 
@@ -58,7 +58,7 @@ export const studioExtensionAssemblyPlanSchema=z.object({
 export type StudioExtensionAssemblyPlan=z.infer<typeof studioExtensionAssemblyPlanSchema>;
 export const imageDraftSchema = z
   .object({
-    reply: z.string().min(1).max(2400).transform(projectStudioReply),
+    reply: z.string().min(1).max(STUDIO_CONVERSATION_REPLY_MAX_CHARS).transform(projectStudioReply),
     image: imageSelectionSchema.nullable(),
     media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),

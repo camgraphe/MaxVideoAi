@@ -16,7 +16,7 @@ import {STUDIO_EDITING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-editing-c
 import {imageSelectionStripSchema} from '@/lib/studio/conversation-creation-contract';
 import {studioToolReferenceProperties} from './conversation-tool-reference-schema';
 import {isStudioPreparationCorrection} from './conversation-preparation-validation';
-import {projectStudioReply} from '@/lib/studio/conversation-reply';
+import {projectStudioReply,STUDIO_CONVERSATION_REPLY_MAX_CHARS} from '@/lib/studio/conversation-reply';
 import {studioCurrentComparisonReply} from './conversation-current-comparison-reply';
 import {studioGreetingReply,studioExplicitFilmDuration,studioSelectedFilmPlan} from './conversation-intent';
 import {studioFilmComparisonReply} from './conversation-film-reply';
@@ -40,7 +40,15 @@ export type StudioDirectorContext = {
   comparisonCatalogFingerprint?(request:Extract<StudioActionRequest,{action:'pricing.compare'}>):Promise<string|null>;
   checkpoint(index: number, create: () => Promise<StudioDirectorResponse>, params?: ResponseCreateParamsNonStreaming, options?: {replayOnly?: boolean;prepareLunaInput?:()=>void;onCreditCompletion?:()=>void}): Promise<StudioDirectorResponse>;
 };
-const replySchema = z.object({reply: z.string().min(1).max(2400).transform(projectStudioReply)}).strict();
+const replyEnvelopeSchema=z.object({reply:z.string().min(1)}).strict();
+const replySchema=replyEnvelopeSchema.extend({reply:z.string().min(1).max(STUDIO_CONVERSATION_REPLY_MAX_CHARS).transform(projectStudioReply)});
+
+function overlongDirectorReply(completedEdits:number,locale:'en'|'fr'|'es'):ImageDraft {
+  const message=locale==='fr'?'La réponse de Studio dépassait la limite de texte de la conversation et n’a pas pu être livrée. Aucun nouvel essai automatique ne sera effectué.'
+    :locale==='es'?'La respuesta de Studio superó el límite de texto de la conversación y no se pudo entregar. No se volverá a intentar automáticamente.'
+    :'Studio’s reply exceeded the conversation text limit and could not be delivered. It will not be retried automatically.';
+  return {image:null,reply:message,continuation:{reason:'output_limit',completedEdits,lastError:{code:'STUDIO_REPLY_TOO_LONG',message}}};
+}
 function pendingDirectorReply(reason: 'action_limit'|'output_limit',completedEdits: number,lastResult?: StudioActionResult,correctionRejected = false,locale:'en'|'fr'|'es'='en'): ImageDraft {
   const lastError = lastResult && !lastResult.ok ? {code: lastResult.error.code,message: lastResult.error.message.slice(0,800)} : undefined;
   if(locale!=='en'){
@@ -67,7 +75,9 @@ export function isReplayableStudioResponse(response: StudioDirectorResponse): bo
   if (response.status !== 'completed') return false;
   const calls = response.output.filter(item => item.type === 'function_call');
   try {
-    if (!calls.length) return replySchema.safeParse(JSON.parse(response.output_text)).success;
+    // A strict conversation beyond the envelope replays a stable limit notice,
+    // never another purchased response. Malformed bodies and tools retain their policy.
+    if (!calls.length) return replyEnvelopeSchema.safeParse(JSON.parse(response.output_text)).success;
     if (calls.length !== 1) return false;
     actionFromTool(calls[0].name, JSON.parse(calls[0].arguments));
     return true;
@@ -110,7 +120,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       ...(options.taskExecution?[{role:"developer" as const,content:"Current task data (completed previous work must not be repeated): "+JSON.stringify({previousWork:options.taskExecution.previousWork??[],maxCalls:options.taskExecution.maxCalls})}]:[]),
       ...context.history.slice(-(options.taskExecution?.profile.historyTurns??8)).flatMap(turn => [
         {role: 'user' as const, content: studioHistoryMessage(turn)},
-        ...(turn.reply ? [{role: 'assistant' as const, content: projectStudioReply(turn.reply).slice(0, 2400)}] : []),
+        ...(turn.reply ? [{role: 'assistant' as const, content: projectStudioReply(turn.reply)}] : []),
       ]),
       {role: 'user', content: [{type: 'input_text', text: context.message}, ...(context.shotPlanRevision?[{type:'input_text' as const,text:'Exact client-authored shot plan revision. Preserve model, mode, total and every ordered shot; use video_prepare.shotPlan, empty prompt, and settings.durationSec. Prepare a new quote and wait for client confirmation: '+JSON.stringify(context.shotPlanRevision)}]:[]), ...studioReferenceInputContent(context.references, context.referenceMentions)]},
     ];
@@ -170,7 +180,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         input:model==='gpt-6-luna'?lunaInput():input,
         tools: tools.map(tool => ({type: 'function' as const, name: tool.name, description: tool.description, strict: true,
           parameters: {type: 'object', additionalProperties: false, properties: studioToolReferenceProperties(tool.name,tool.properties,context.references), required: Object.keys(tool.properties)}})),
-        text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string'}}}}},
+        text: {format: {type: 'json_schema', name: 'studio_reply', strict: true, schema: {type: 'object', additionalProperties: false, required: ['reply'], properties: {reply: {type: 'string',description:`The complete conversational answer, within ${STUDIO_CONVERSATION_REPLY_MAX_CHARS} characters. Preparation tools retain their own prompt limits.`}}}}},
       };
       let freshResponse = false;
       let creditCompletion = false;
@@ -200,7 +210,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
       const calls = response.output.filter(item => item.type === 'function_call');
       if(response.model!=='gpt-6-luna')for(const item of response.output)solOutput.add(item);
       if (!calls.length) {
-        try { return {...replySchema.parse(JSON.parse(response.output_text)), image: null}; }
+        try {
+          const value=replyEnvelopeSchema.parse(JSON.parse(response.output_text));
+          if(value.reply.length>STUDIO_CONVERSATION_REPLY_MAX_CHARS)return overlongDirectorReply(completedEdits,locale);
+          return {...replySchema.parse(value), image: null};
+        }
         catch { throw new AgentApiError('INTERNAL_ERROR', 'Studio returned an incomplete reply. Resume the saved request.', true); }
       }
       if (calls.length !== 1) throw new AgentApiError('PARAMETER_INVALID', 'Studio must finish this message before another action.');
