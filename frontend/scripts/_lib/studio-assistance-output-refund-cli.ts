@@ -12,7 +12,7 @@ export function parseStudioAssistanceOutputRefundArgs(args:string[],connection:s
  }
  const options=schema.parse(values),identity=studioAssistanceDatabaseIdentity(connection);
  if(options.target!==identity)throw new Error('Database target identity does not match --target. No database operation was performed.');
- if(options.environment==='local'&&!/^(localhost|127\.0\.0\.1|\[::1\]|\/)/.test(identity))throw new Error('The local environment requires a loopback or Unix-socket database.');
+ if(options.environment==='local'&&!/^(localhost:|127\.0\.0\.1:|\[::1\]:|\/)/.test(identity))throw new Error('The local environment requires a loopback or Unix-socket database.');
  if(options.apply&&(!options.operator||!options.reason))throw new Error('--apply requires an explicit operator and support reason.');
  if(!options.apply&&(options.operator||options.reason))throw new Error('Operator and reason belong to a fingerprinted --apply.');
  return options;

@@ -10,7 +10,7 @@ import {getBaseEngines} from '../frontend/src/lib/engines';
 import {readStudioAssistanceStatus,openStudioAssistanceTurn,reserveStudioAssistanceCall,settleStudioAssistanceCall,chooseStudioAssistance} from '../frontend/src/server/studio/assistance-ledger';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {inspectStudioAssistanceOutputRefund,applyStudioAssistanceOutputRefund} from '../frontend/src/server/studio/assistance-output-refund';
-import {sendPromptAssistance} from './helpers/prompt-assistance-service';
+import {sendPromptAssistance,recoverPromptAssistance} from './helpers/prompt-assistance-service';
 import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
 
 const catalog={...createAgentModelCatalogDeps(),listEngines:async()=>getBaseEngines(),isModeExecutable:()=>true,isEngineExecutable:()=>true};
@@ -35,6 +35,10 @@ test('completed application-invalid Milo output restores customer credits and pr
  assert.equal((await pg.pool.query('SELECT charged_credits FROM studio_assistance_credit_allocations WHERE call_id=$1',[call.id])).rows[0].charged_credits,'30');
  assert.equal((await readStudioAssistanceStatus(userId,policy)).canContinue,true);
  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM app_receipts')).rows[0].n,0);
+ const replay=await recoverPromptAssistance(userId,input.sessionId,input.requestId,policy);
+ assert.equal(replay.error,'OUTPUT_INVALID_CREDITS_RESTORED');assert.equal(replay.assistance.credits?.included.remaining,500);assert.equal(replay.assistance.revision,1);
+ assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_output_refunds WHERE call_id=$1',[call.id])).rows[0].n,1);
+
  for(const [name,patch,want] of [
   ['incomplete',{status:'incomplete'},'OUTPUT_INCOMPLETE'],
   ['refusal',{output:[{type:'message',content:[{type:'refusal',refusal:'Provider refusal.'}]}]},'OUTPUT_REFUSED'],
@@ -114,13 +118,33 @@ test('completed application-invalid Milo output restores customer credits and pr
   assert.equal(status.credits?.included.remaining,210);assert.equal(status.credits?.included.reserved,0);assert.equal(status.revision,2);assert.equal(status.canContinue,true);assert.equal(status.unresolvedCalls,0);
   assert.deepEqual(await financialSnapshot(first.callId),beforeFirst);assert.deepEqual(await financialSnapshot(second.callId),beforeSecond);
  });
+ await t.test('failure to persist refund evidence rolls back the lot balance and account revision',async()=>{
+  const scope=await legacy(),before=await readStudioAssistanceStatus(scope.userId,policy),preview=await inspectStudioAssistanceOutputRefund({callId:scope.callId,userId:scope.userId});
+  await pg.pool.query(`CREATE FUNCTION fail_fixture_refund_evidence() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture evidence unavailable'; END; $$;
+    CREATE TRIGGER fail_fixture_refund_evidence BEFORE INSERT ON studio_assistance_output_refund_allocations FOR EACH ROW EXECUTE FUNCTION fail_fixture_refund_evidence()`);
+  try{await assert.rejects(apply(scope,preview.fingerprint),/fixture evidence unavailable/);}
+  finally{await pg.pool.query('DROP TRIGGER fail_fixture_refund_evidence ON studio_assistance_output_refund_allocations;DROP FUNCTION fail_fixture_refund_evidence()');}
+  assert.deepEqual(await readStudioAssistanceStatus(scope.userId,policy),before);
+  assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_output_refunds WHERE call_id=$1',[scope.callId])).rows[0].n,0);
+ });
+ await t.test('admin review separates gross charged credits, exact refunds and net consumption by account/request',async()=>{
+  const scope=await legacy(),other=await legacy({userId:scope.userId}),foreign=await legacy();
+  for(const item of [scope,other,foreign]){const preview=await inspectStudioAssistanceOutputRefund({callId:item.callId,userId:item.userId});await apply(item,preview.fingerprint);}
+  const {readNativeEvidence}=await import('../frontend/server/admin-assistant-review/sources');
+  const detail=await withDbTransaction(tx=>readNativeEvidence(tx,{source:'composer',userId:scope.userId,scopeId:scope.sessionId,requestId:scope.requestId}));
+  const refund=detail.evidence.find(row=>row.title==='Application-invalid credit refunds and net consumption (supplier costs unchanged)');
+  assert.ok(refund);assert.equal(refund.status,'available');
+  const rows=refund.data.value as Array<Record<string,unknown>>;
+  assert.equal(rows.length,1);assert.equal(rows[0].call_id,scope.callId);assert.equal(rows[0].gross_charged_credits,30);assert.equal(rows[0].refund_credits,30);assert.equal(rows[0].net_consumed_credits,0);
+  assert.doesNotMatch(JSON.stringify(refund),new RegExp(other.callId+'|'+foreign.callId));
+ });
  await t.test('purchased credits return to the original pack without a wallet refund',async()=>{
   const scope=await legacy({purchased:true}),before=await financialSnapshot(scope.callId);
-  assert.equal((await readStudioAssistanceStatus(scope.userId,policy)).credits?.purchased.remaining,1970);
+  assert.equal((await readStudioAssistanceStatus(scope.userId,policy)).credits?.purchased.remaining,1970);assert.equal((await readStudioAssistanceStatus(scope.userId,policy)).paid.spentCents,3);
   const preview=await inspectStudioAssistanceOutputRefund({callId:scope.callId,userId:scope.userId});
   assert.equal(preview.allocations[0].kind,'purchased');await apply(scope,preview.fingerprint);
   const status=await readStudioAssistanceStatus(scope.userId,policy);
-  assert.equal(status.credits?.purchased.remaining,2000);assert.equal(status.credits?.included.remaining,0);assert.equal(status.credits?.purchased.packs.length,1);
+  assert.equal(status.credits?.purchased.remaining,2000);assert.equal(status.paid.spentCents,0,'Customer status reports net purchased credits consumed');assert.equal(status.credits?.included.remaining,0);assert.equal(status.credits?.purchased.packs.length,1);
   assert.deepEqual(await financialSnapshot(scope.callId),before);
  });
  await t.test('prior-month included credits retain their original expiry and never enlarge this month',async()=>{
@@ -152,6 +176,13 @@ test('completed application-invalid Milo output restores customer credits and pr
   await assert.rejects(inspectStudioAssistanceOutputRefund({callId:scope.callId,userId:scope.userId}));
   await assert.rejects(apply(scope,'a'.repeat(64)));
   assert.deepEqual(await financialSnapshot(scope.callId),before);
+ });
+ await t.test('reapplying migration93 preserves balances and immutable refund evidence',async()=>{
+  const before=(await pg.pool.query('SELECT * FROM studio_assistance_output_refunds ORDER BY call_id')).rows;
+  const balances=(await pg.pool.query('SELECT * FROM studio_assistance_credit_lots ORDER BY id')).rows;
+  await pg.pool.query(readFileSync('neon/migrations/93_milo_output_credit_refunds.sql','utf8'));
+  assert.deepEqual((await pg.pool.query('SELECT * FROM studio_assistance_output_refunds ORDER BY call_id')).rows,before);
+  assert.deepEqual((await pg.pool.query('SELECT * FROM studio_assistance_credit_lots ORDER BY id')).rows,balances);
  });
  await t.test('a waived call cannot be refunded as a completed-output failure',async()=>{
   const scope=await legacy();

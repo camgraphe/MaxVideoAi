@@ -16,3 +16,9 @@ test('output refund apply requires fingerprint, named operator and reason',()=>{
  assert.throws(()=>parseStudioAssistanceOutputRefundArgs([...base,'--reason','No reviewed fingerprint'],connection),/fingerprinted/);
  assert.throws(()=>parseStudioAssistanceOutputRefundArgs([...base,'--apply','invalid'],connection));
 });
+
+test('local output refund mode refuses remote hosts that merely start with a loopback name',()=>{
+ const local=(host:string)=>['--target',host+':5432/product','--environment','local',...base.slice(4)];
+ for(const host of ['localhost','127.0.0.1','[::1]'])assert.equal(parseStudioAssistanceOutputRefundArgs(local(host),'postgres://operator@'+host+'/product').environment,'local');
+ for(const host of ['localhost.example.com','127.0.0.1.example.com'])assert.throws(()=>parseStudioAssistanceOutputRefundArgs(local(host),'postgres://operator@'+host+'/product'),/loopback/);
+});
