@@ -18,10 +18,10 @@ const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('recover'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
 ]);
 const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
-export async function boundedPromptJson(req:NextRequest){
+export async function boundedPromptJson(req:NextRequest,maxBytes=PROMPT_ASSISTANCE_BODY_MAX_BYTES){
   if(!req.body)throw new SyntaxError('Missing body');
   const reader=req.body.getReader(),chunks:Uint8Array[]=[];let size=0;
-  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>PROMPT_ASSISTANCE_BODY_MAX_BYTES){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(part.value);}}
+  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>maxBytes){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(part.value);}}
   finally{reader.releaseLock();}
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
