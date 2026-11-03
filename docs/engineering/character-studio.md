@@ -45,6 +45,16 @@ are cropped in a wide frame without stretching their pixels.
 
 ## Checks and scope
 
+The dated usability/competitor review lives in
+`docs/redesign/2026-11-03-character-studio-usability-audit.md`. History loading,
+empty and unavailable states are separate from pending generation cards.
+`useCharacterBuilderHistoricalResults` projects feed failure as a boolean;
+`CharacterStudioHistoryFeedback.client.tsx` owns localized feedback and retry.
+Existing local outputs remain visible when remote history fails. Navigation's
+new-character action is confined to character mode; mobile Explore explicitly
+selects the exploration view. Custom hair/outfit descriptions take precedence
+in collapsed summaries as they do in generation.
+
 Focused checks cover catalogue-to-prompt mapping, sanitation and settings
 recovery, new-draft transitions, preserved legacy choices, and all existing
 account isolation/race conditions. Run:

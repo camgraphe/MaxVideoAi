@@ -44,15 +44,17 @@ export function CharacterStudioNavigation({
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={onNew}
-        aria-label={copy.newCharacter}
-        title={copy.newCharacter}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-      >
-        <Plus size={16} />
-      </button>
+      {mode === 'character' && (
+        <button
+          type="button"
+          onClick={onNew}
+          aria-label={copy.newCharacter}
+          title={copy.newCharacter}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+        >
+          <Plus size={16} />
+        </button>
+      )}
       {mode === 'character' && (
         <button
           type="button"

@@ -154,6 +154,7 @@ function CharacterBuilderAccountWorkspace({
     historicalHasMore,
     historicalIsFetchingMore,
     historicalJobsLoading,
+    historicalJobsError,
     loadMoreHistoricalResults,
     mutateHistoricalJobs,
   } = useCharacterBuilderHistoricalResults(flattenedResults);
@@ -281,6 +282,8 @@ function CharacterBuilderAccountWorkspace({
         historicalHasMore={historicalHasMore}
         historicalIsFetchingMore={historicalIsFetchingMore}
         historicalJobsLoading={historicalJobsLoading}
+        historicalJobsError={historicalJobsError}
+        onRetryHistory={() => void mutateHistoricalJobs(undefined, { throwOnError: false })}
         historicalResults={historicalResults}
         outputModeLabelOptions={outputModeLabelOptions}
         pendingRuns={pendingRuns}
@@ -322,7 +325,7 @@ function CharacterBuilderAccountWorkspace({
       mode={studioMode}
       onMode={setStudioMode}
       onNew={newCharacter}
-      onExplore={() => setShowMobileResults(true)}
+      onExplore={() => { setStudioTab('explore'); setShowMobileResults(true); }}
       copy={studioCopy}
     />
   );

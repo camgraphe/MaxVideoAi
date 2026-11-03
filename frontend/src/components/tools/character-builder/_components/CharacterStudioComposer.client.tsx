@@ -275,7 +275,8 @@ export function CharacterStudioComposer({
         {group(
           'hair',
           labels.hair,
-          STUDIO_HAIR.find((entry) => entry.id === traits.hairstyle.value)?.label[locale] ?? labels.free,
+          traits.customHairDescription?.trim() ? labels.customType :
+            STUDIO_HAIR.find((entry) => entry.id === traits.hairstyle.value)?.label[locale] ?? labelFor('hairColor', options.hairColorOptions),
           Scissors,
           <>
             <StudioVisualChoices
@@ -328,7 +329,8 @@ export function CharacterStudioComposer({
         {group(
           'clothing',
           labels.clothing,
-          STUDIO_CLOTHING.find((entry) => entry.id === traits.outfitStyle.value)?.label[locale] ??
+          traits.customOutfitDescription?.trim() ? labels.customType :
+            STUDIO_CLOTHING.find((entry) => entry.id === traits.outfitStyle.value)?.label[locale] ??
             labels.free,
           Shirt,
           <>

@@ -21,10 +21,10 @@ import type {
   PendingCharacterRun,
 } from '../_lib/character-builder-types';
 import {
-  EmptyResultsRail,
   PendingResultCard,
   ResultCard,
 } from './character-builder-result-cards';
+import { CharacterStudioHistoryFeedback } from './CharacterStudioHistoryFeedback.client';
 
 interface CharacterBuilderResultsGalleryProps {
   copy: CharacterCopy;
@@ -32,6 +32,8 @@ interface CharacterBuilderResultsGalleryProps {
   historicalHasMore: boolean;
   historicalIsFetchingMore: boolean;
   historicalJobsLoading: boolean;
+  historicalJobsError: boolean;
+  onRetryHistory: () => void;
   historicalResults: HistoricalCharacterGalleryItem[];
   outputModeLabelOptions: ChoiceOption[];
   pendingRuns: PendingCharacterRun[];
@@ -57,6 +59,8 @@ export function CharacterBuilderResultsGallery({
   historicalHasMore,
   historicalIsFetchingMore,
   historicalJobsLoading,
+  historicalJobsError,
+  onRetryHistory,
   historicalResults,
   outputModeLabelOptions,
   pendingRuns,
@@ -77,12 +81,13 @@ export function CharacterBuilderResultsGallery({
 }: CharacterBuilderResultsGalleryProps) {
   const hasResults = flattenedResults.length > 0 || pendingRuns.length > 0 || historicalResults.length > 0;
   if (!hasResults) {
-    return variant !== 'mobile' ? <EmptyResultsRail copy={copy} /> : null;
+    return <CharacterStudioHistoryFeedback loading={historicalJobsLoading} error={historicalJobsError} onRetry={onRetryHistory} />;
   }
 
   const itemClassName = variant !== 'mobile' ? 'min-w-0' : 'min-w-[280px] shrink-0 snap-start';
   const items = (
     <>
+      {historicalJobsError ? <CharacterStudioHistoryFeedback error onRetry={onRetryHistory} /> : null}
       {pendingRuns.map((pendingRun) => {
         const pendingOutputLabel =
           findChoiceLabel(outputModeLabelOptions, pendingRun.outputMode) ?? copy.generatePanel.portraitTitle;
