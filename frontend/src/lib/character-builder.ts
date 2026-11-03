@@ -1,4 +1,5 @@
 import { STUDIO_CLOTHING, STUDIO_HAIR } from './character-studio-catalog';
+import { getStudioColorPrompt } from './character-studio-colors';
 import type {
   CharacterBuilderConsistencyMode,
   CharacterBuilderFormatMode,
@@ -418,7 +419,7 @@ export function getTraitOptionPrompt(
   value: string | null | undefined
 ): string | null {
   const option = findTraitOption(CHARACTER_TRAIT_OPTION_MAP[traitKey], value);
-  return option?.prompt ?? null;
+  return getStudioColorPrompt(traitKey, value) ?? option?.prompt ?? null;
 }
 
 export function getAccessoryPrompt(value: string): string | null {

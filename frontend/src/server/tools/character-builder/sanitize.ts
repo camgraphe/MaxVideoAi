@@ -1,6 +1,7 @@
 import { getStudioScene, STUDIO_EYES, STUDIO_CHARACTER_TYPES } from '@/lib/character-studio-catalog';
 import { randomUUID } from 'crypto';
-import { normalizeCharacterFormatMode } from '@/lib/character-builder';
+import { CHARACTER_TRAIT_OPTION_MAP, findTraitOption, normalizeCharacterFormatMode } from '@/lib/character-builder';
+import { normalizeStudioColor, type StudioColorTrait } from '@/lib/character-studio-colors';
 import type {
   CharacterBuilderReferenceImage,
   CharacterBuilderRequest,
@@ -33,18 +34,26 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     source: validateTraitSource(value?.source),
   });
 
+  const sanitizeColorTrait = (key: StudioColorTrait, value: TraitValue<string> | undefined): TraitValue<string> => {
+    const trait = sanitizeTrait(value);
+    const color = normalizeStudioColor(trait.value);
+    if (color) return { ...trait, value: color };
+    if (!trait.value || trait.value === 'auto' || findTraitOption(CHARACTER_TRAIT_OPTION_MAP[key], trait.value)) return trait;
+    return { ...trait, value: null };
+  };
+
   return {
     genderPresentation: sanitizeTrait(traits.genderPresentation),
     customGenderDescription: trimString(traits.customGenderDescription),
     ageRange: sanitizeTrait(traits.ageRange),
-    skinTone: sanitizeTrait(traits.skinTone),
+    skinTone: sanitizeColorTrait('skinTone', traits.skinTone),
     faceCues: sanitizeTrait(traits.faceCues),
     hairEnabled: isHairEnabled(traits),
     customHairDescription: trimString(traits.customHairDescription),
-    hairColor: sanitizeTrait(traits.hairColor),
+    hairColor: sanitizeColorTrait('hairColor', traits.hairColor),
     hairLength: sanitizeTrait(traits.hairLength),
     hairstyle: sanitizeTrait(traits.hairstyle),
-    eyeColor: sanitizeTrait(traits.eyeColor),
+    eyeColor: sanitizeColorTrait('eyeColor', traits.eyeColor),
     eyeShape: sanitizeTrait(STUDIO_EYES.some((entry) => entry.id === traits.eyeShape?.value) || traits.eyeShape?.value === 'auto' ? traits.eyeShape : undefined),
     characterType: sanitizeTrait(STUDIO_CHARACTER_TYPES.some((entry) => entry.id === traits.characterType?.value) || traits.characterType?.value === 'auto' ? traits.characterType : undefined),
     customCharacterDescription: trimString(traits.customCharacterDescription).slice(0, 1000),

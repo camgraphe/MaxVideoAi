@@ -2,6 +2,8 @@
 import type { CSSProperties } from 'react';
 import { Check } from 'lucide-react';
 import type { StudioChoice, StudioLocale } from '@/lib/character-studio-catalog';
+import { normalizeStudioColor } from '@/lib/character-studio-colors';
+import { CharacterStudioColorPicker, type StudioColorCopy } from './CharacterStudioColorPicker.client';
 
 const atlases = {
   gallery: [4, 2],
@@ -90,11 +92,13 @@ export function StudioChips({
   options,
   value,
   onChange,
+  colorCopy,
 }: {
   label: string;
   options: Array<{ id: string; label: string; swatch?: string }>;
   value: string | null | undefined;
   onChange: (id: string | null) => void;
+  colorCopy?: StudioColorCopy;
 }) {
   return (
     <fieldset className="min-w-0 space-y-2">
@@ -117,6 +121,15 @@ export function StudioChips({
             {option.label}
           </button>
         ))}
+        {colorCopy ? (
+          <CharacterStudioColorPicker
+            label={label}
+            value={value}
+            initialColor={normalizeStudioColor(value) ?? options.find((option) => option.id === value)?.swatch ?? '#8B5CF6'}
+            onChange={onChange}
+            copy={colorCopy}
+          />
+        ) : null}
       </div>
     </fieldset>
   );

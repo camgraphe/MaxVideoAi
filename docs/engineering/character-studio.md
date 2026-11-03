@@ -142,3 +142,28 @@ rendering, selected cards, custom override, persistence after reload and clearin
 text on a new preset. At 390px the document remains 390px wide and Generate stays
 above the bottom navigation. The local tariff remains unavailable, so no paid
 character generation was performed; the new images are catalogue assets only.
+
+## Custom colors
+
+Hair, iris and complexion palettes share `CharacterStudioColorPicker.client.tsx`:
+a compact Other chip opens a native color control plus a hex field. Apply commits
+a valid choice; Cancel/Escape leave the existing trait unchanged. Presets close
+the custom editor, and a custom chip can be removed. Other chip groups keep their
+existing behavior. The panel stays in the settings scroller, preserving the fixed
+generation dock.
+
+`character-studio-colors.ts` owns color-key detection, strict hex normalization
+(`#RGB`/`#RRGGBB` → uppercase `#RRGGBB`) and generation wording. Custom colors use
+the existing trait `value`, so source-mode normalization, account-scoped drafts
+and schema-1 settings reuse need no new storage format. The server accepts named
+catalogue colors, auto/null and validated hex for these three fields; unsupported
+values are discarded. Prompts identify hair, iris or skin/surface and treat the
+hex as an sRGB reference adapted to scene lighting, not a pixel-exact guarantee.
+Bald/custom-hairstyle overrides still suppress contradictory hair-color text.
+
+Verification: 40 focused tests, TypeScript, exposure and lint checks pass (the
+same seven unrelated lint warnings remain). IAB checks at 1227×1112 and 390×844
+cover native-picker opening, invalid hex, apply, cancel, removal, preset return,
+persistence after reload and the color summary. No horizontal overflow at 390px;
+Generate remains visible. The existing local cookie-policy warning and unavailable
+tariff remain unchanged; no paid generation was submitted.

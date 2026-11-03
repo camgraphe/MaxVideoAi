@@ -27,6 +27,7 @@ import type { CharacterCopy } from '../_lib/character-builder-copy';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import { useCharacterBuilderOptions } from '../_hooks/useCharacterBuilderOptions';
 import { StudioChips, StudioVisualChoices } from './CharacterStudioChoices.client';
+import { isStudioColorTrait, normalizeStudioColor } from '@/lib/character-studio-colors';
 
 type TraitKey =
   | 'characterType'
@@ -92,6 +93,8 @@ export function CharacterStudioComposer({
     patchTraits(patch);
   }
   function labelFor(key: TraitKey, choices: Array<{ id: string; label: string }>) {
+    const color = isStudioColorTrait(key) ? normalizeStudioColor(traits[key]?.value) : null;
+    if (color) return color;
     return choices.find((entry) => entry.id === traits[key]?.value)?.label ?? labels.free;
   }
   function chips(
@@ -105,6 +108,7 @@ export function CharacterStudioComposer({
         options={choices}
         value={traits[key]?.value}
         onChange={(id) => choose(key, id)}
+        colorCopy={isStudioColorTrait(key) ? labels : undefined}
       />
     );
   }
