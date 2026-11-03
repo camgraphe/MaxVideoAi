@@ -89,9 +89,21 @@ export async function readNativeEvidence(tx: QueryExecutor, scope: AssistantRevi
       FROM mcp_generation_quotes t WHERE ${scopeClause(scope)} AND t.auth_origin='oauth'`, params);
     evidence.push({ title: 'Server-observed MCP preparation and generation outcome', status: 'available', data: projectReviewData(row) });
   }
-  if (scope.source !== 'mcp') evidence.push(await optionalEvidence(tx, 'Assistant runtime, costs and credits (reservations are not charges)', `SELECT state,model,returned_model,mode,policy_version,rate_version,tariff_version,
+  if (scope.source !== 'mcp') evidence.push(await optionalEvidence(tx, 'Assistant runtime, supplier costs and gross settled charges (reservations are not charges)', `SELECT state,model,returned_model,mode,policy_version,rate_version,tariff_version,
     input_token_bound,output_token_bound,reserved_nano_usd::text,provider_min_nano_usd::text,provider_max_nano_usd::text,reserved_cents,
     CASE WHEN state='settled' THEN charged_cents ELSE NULL END AS charged_cents,created_at
     FROM studio_assistance_calls WHERE user_id=$1 AND project_id=$2 AND request_id=$3 ORDER BY created_at,response_index LIMIT 25`, [scope.userId, scope.source === 'composer' ? `composer:${scope.scopeId}` : scope.scopeId, scope.requestId]));
+  if (scope.source === 'composer') evidence.push(await optionalEvidence(tx, 'Application-invalid credit refunds and net consumption (supplier costs unchanged)', `SELECT c.id AS call_id,
+    f.charged_cents*10 AS gross_charged_credits,r.refund_credits,f.charged_cents*10-r.refund_credits AS net_consumed_credits,
+    c.charged_cents AS gross_purchased_credit_cents,
+    p.refunded_cents AS refunded_purchased_credit_cents,c.charged_cents-p.refunded_cents AS net_purchased_credit_cents,
+    r.operator_id,r.created_at
+    FROM studio_assistance_calls c JOIN studio_assistance_output_refunds r ON r.call_id=c.id AND r.user_id=c.user_id
+    JOIN studio_assistance_credit_funding f ON f.call_id=c.id
+    CROSS JOIN LATERAL (SELECT (COALESCE(sum(a.refund_credits),0)/10)::integer AS refunded_cents
+      FROM studio_assistance_output_refund_allocations a JOIN studio_assistance_credit_lots l ON l.id=a.lot_id
+      WHERE a.call_id=c.id AND l.user_id=c.user_id AND l.kind='purchased') p
+    WHERE c.user_id=$1 AND c.project_id='composer:'||$2 AND c.request_id=$3 AND r.session_id::text=$2 AND r.request_id=c.request_id
+    ORDER BY r.created_at,c.id LIMIT 25`, params));
   return { message, reply, proposal, evidence };
 }

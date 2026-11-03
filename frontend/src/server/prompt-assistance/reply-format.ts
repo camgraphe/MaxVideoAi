@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {promptAssistanceReplySchema,type PromptAssistanceReply} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 
 /** Private provider protocol; persist beside the call before dispatch, not in reviewInput. */
 export const PROMPT_REPLY_FORMAT='destination-v1';
@@ -8,7 +9,7 @@ export const PROMPT_REPLY_FORMAT='destination-v1';
 export const promptReplyTextFormat={type:'json_schema' as const,name:'prompt_assistance_reply',strict:true,schema:{
   type:'object',additionalProperties:false,required:['kind','reply','text'],properties:{
     kind:{type:'string',enum:['conversation','replacement'],description:'conversation for advice/questions; replacement only for text intended for the selected editor target.'},
-    reply:{type:'string',description:'The complete conversational answer, including advice or an external plan (up to 6000 characters); a short explanation for a replacement.'},
+    reply:{type:'string',description:`The complete conversational answer, including advice or an external plan (up to ${PROMPT_ASSISTANCE_TEXT_MAX_CHARS} characters); a short explanation for a replacement.`},
     text:{type:['string','null'],description:'Complete replacement for currentDraft.target only; null for conversation, including external editing plans.'},
   },
 }};

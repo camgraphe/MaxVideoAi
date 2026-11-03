@@ -2,6 +2,7 @@
 import {type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import {promptSessionSnapshotSchema,lastCompletedPromptRequestId,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
 import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal,type PromptPendingReview} from './prompt-chat-storage';
 
@@ -184,6 +185,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   }
   function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number,review?:()=>Promise<Omit<PromptPendingReview,'requestId'>>){
     if(!enabled||!active()||owner.pending||owner.waiting||owner.loading||view.loadError||owner.exhausted||owner.previousRef&&owner.previousRef.status!=='terminal')return false;
+    if(request.message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS){update({error:'MESSAGE_TOO_LONG'});return false;}
     owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;owner.pendingReview=undefined;remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:pending.sessionId,requestId:pending.requestId,status:'admitting'});save();update({recovery:false,error:null});
     const epoch=owner.localEpoch,chatEpoch=owner.chatEpoch;
     void (async()=>{

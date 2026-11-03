@@ -21,7 +21,7 @@ async function fixture(t:{after:(callback:()=>Promise<void>)=>void},migration=tr
  const pg=await startDisposablePostgres('milo-reply-worker'),old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const f of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql',...(migration?['92_milo_reply_workers.sql']:[])]){
+ for(const f of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql',...(migration?['92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql']:[])]){
   if(f.startsWith('92_')&&!existsSync('neon/migrations/'+f))continue;
   await pg.pool.query(readFileSync('neon/migrations/'+f,'utf8'));
  }

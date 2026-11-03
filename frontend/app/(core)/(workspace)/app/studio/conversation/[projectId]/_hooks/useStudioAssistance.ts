@@ -25,6 +25,12 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
     }catch(failure){if(isCurrent()&&session.epoch===version)update(failure instanceof Error&&failure.message==='AUTH_REQUIRED'?{error:'AUTH_REQUIRED',status:null}:{error:'UNAVAILABLE'});}finally{window.clearTimeout(timeout);}
   },[isCurrent,session,update,enabled,endpoint]);
   useEffect(()=>{session.active=true;update({status:null,busy:false,error:null});void refresh();return()=>{session.active=false;session.epoch++;session.controller?.abort();};},[refresh,session,update]);
+  useEffect(()=>{
+    if(!enabled)return;
+    const visible=()=>{if(document.visibilityState==='visible')void refresh();};
+    window.addEventListener('focus',visible);document.addEventListener('visibilitychange',visible);
+    return()=>{window.removeEventListener('focus',visible);document.removeEventListener('visibilitychange',visible);};
+  },[enabled,refresh]);
   const wasBusy=useRef(conversationBusy);
   useEffect(()=>{if(wasBusy.current&&!conversationBusy)void refresh();wasBusy.current=conversationBusy;},[conversationBusy,refresh]);
   const choose=useCallback(async(choice:StudioAssistanceChoice)=>{

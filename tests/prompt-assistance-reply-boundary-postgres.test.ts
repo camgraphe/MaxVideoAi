@@ -6,6 +6,7 @@ import {getDb} from '../frontend/src/lib/db';
 import {promptAssistanceRequestSchema} from '../frontend/src/lib/prompt-assistance/contract';
 import {sendPromptAssistance,recoverPromptAssistance} from './helpers/prompt-assistance-service';
 import {readPromptSession} from '../frontend/src/server/prompt-assistance/sessions';
+import {promptSessionSnapshotSchema} from '../frontend/src/lib/prompt-assistance/session';
 import {buildPromptAssistanceContext} from '../frontend/src/server/prompt-assistance/context';
 import {createAgentModelCatalogDeps} from '../frontend/src/server/agent-api/model-catalog';
 import {getBaseEngines} from '../frontend/src/lib/engines';
@@ -22,11 +23,35 @@ test('provider destination is frozen before dispatch; conversation output never 
  const pg=await startDisposablePostgres('milo-reply-boundary'),previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
  const deps={policy,buildContext:async(userId:string,input:ReturnType<typeof request>)=>buildPromptAssistanceContext(userId,input,{catalog}),count:async()=>100};
  const row=async(id:string)=>(await pg.pool.query('SELECT * FROM prompt_assistance_requests WHERE request_id=$1',[id])).rows[0];
  const owner=async()=>{const id=randomUUID();await chooseStudioAssistance(id,{action:'select_luna',expectedRevision:0},policy);return id;};
+ await t.test('long conversation and human brief survive dispatch, exact history, JSONB and recovery',async()=>{
+  const userId=await owner(),input=request();input.message='B'+'é'.repeat(49998)+'Z';let creates=0;const replies:string[]=[];
+  for(const length of [6081,6452,50000]){
+   const reply='R'+'ñ'.repeat(length-2)+'Z';replies.push(reply);
+   const current={...input,requestId:randomUUID()};
+   const result=await sendPromptAssistance(userId,current,{...deps,count:async params=>{
+    const history=params.input as Array<{role:string;content:string}>;
+    assert.equal(JSON.parse(history.at(-1)!.content).message,input.message);
+    if(creates){assert.equal(history[0].content,input.message);assert.equal(JSON.parse(history[1].content).reply,replies[0]);}
+    return 100;
+   },create:async()=>{creates++;return evidence({kind:'conversation',reply,text:null});}});
+   assert.equal(result.state,'complete',JSON.stringify({state:result.state,error:result.error}));assert.deepEqual(result.reply,{reply,text:null});
+   const snapshot=promptSessionSnapshotSchema.parse(await readPromptSession(userId,input.sessionId,'video:create'));
+   assert.equal(snapshot.turns.at(-1)?.message,input.message);assert.equal(snapshot.turns.at(-1)?.reply,reply);assert.equal(snapshot.proposal,null);
+   assert.deepEqual((await recoverPromptAssistance(userId,input.sessionId,current.requestId,policy)).reply,{reply,text:null});
+  }
+  assert.equal(creates,3,'recovering complete advice never redispatches it');
+ });
+ await t.test('a replacement above Wan target limit still fails without becoming conversation',async()=>{
+  const userId=await owner(),input=request();
+  const result=await sendPromptAssistance(userId,input,{...deps,create:async()=>evidence({kind:'replacement',reply:'For the selected editor.',text:'x'.repeat(20001)})});
+  assert.equal(result.state,'failed');assert.equal(result.error,'OUTPUT_TOO_LONG');assert.equal(result.reply,undefined);
+  assert.equal((await row(input.requestId)).reply_json,null);assert.equal((await readPromptSession(userId,input.sessionId,'video:create')).proposal,null);
+ });
  await t.test('full advice is readable in result and JSONB session restore without a proposal',async()=>{
   const userId=await owner(),input=request();let creates=0;
   const result=await sendPromptAssistance(userId,input,{...deps,create:async()=>{creates++;return evidence({kind:'conversation',reply:plan,text:null});}});
@@ -55,7 +80,7 @@ test('provider destination is frozen before dispatch; conversation output never 
   ['replacement without text',{kind:'replacement',reply:'Done',text:null}],
   ['empty replacement',{kind:'replacement',reply:'Done',text:'   '}],
   ['extra field',{kind:'conversation',reply:plan,text:null,apply:true}],
-  ['overlong advice',{kind:'conversation',reply:'x'.repeat(6001),text:null}],
+  ['overlong advice',{kind:'conversation',reply:'x'.repeat(50001),text:null}],
  ] as const)await t.test(name+' fails closed on newly dispatched calls',async()=>{
   const userId=await owner(),input=request();const result=await sendPromptAssistance(userId,input,{...deps,create:async()=>evidence(output)});
   assert.equal(result.state,'failed');assert.equal(result.error,'OUTPUT_INVALID');assert.equal(result.reply,undefined);

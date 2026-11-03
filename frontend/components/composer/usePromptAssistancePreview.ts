@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
 import { canApplyProposal, proposalReviewContext, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
@@ -122,7 +123,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     return () => window.clearTimeout(timeout);
   }, [state.pending, scopeKey, target]);
   const send = (selection?:Pick<StudioAssistanceStatus,'selectedModel'|'revision'>) => {
-    if (!state.message.trim() || state.pending || blocked) return;
+    if (!state.message.trim() || state.message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS || state.pending || blocked) return;
     const id=++sequence.current;
     const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
     const review=applicationContext?async()=>{const [draftFingerprint,compatibilityFingerprint]=await Promise.all([hash(currentDraft),hash(applicationContext.compatibilityKey)]);return {version:1 as const,draftFingerprint,compatibilityFingerprint,compatible:true,settings:applicationContext.settings};}:undefined;

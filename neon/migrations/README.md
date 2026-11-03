@@ -183,3 +183,16 @@ and financial rows stay intact. No data is purged by the migration itself.
 The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlog.
 Keep retention guards/job when rolling back assistance features. See
 `docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.
+
+## Composer application-output credit refunds (migration 93)
+
+Apply `93_milo_output_credit_refunds.sql` explicitly after 54, 62, 63 and 85 before
+deploying its matching composer settlement runtime. It adds immutable per-call and
+per-original-lot refund evidence, without backfills, grants, wallet changes or
+changes to settled supplier/charge history. Re-applying the DDL is safe; retain
+these tables/guards and compatible financial readers on rollback. Normal previews
+need the same migration on their own database branch. See
+`docs/operations/studio-assistance-support.md` for exact-owned-call preview and
+fingerprinted apply, supported failure policy and expiry semantics. This source
+change is qualified on disposable PostgreSQL; a hosted apply is a separate reviewed
+operation on a verified target.
