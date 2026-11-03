@@ -1,3 +1,4 @@
+import { getStudioScene, STUDIO_EYES } from '@/lib/character-studio-catalog';
 import {
   getAccessoryPrompt,
   getDistinctiveFeaturePrompt,
@@ -96,12 +97,15 @@ function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterB
     if (customHairDescription) {
       parts.push(customHairDescription);
     } else {
-      pushTrait('hairColor');
-      pushTrait('hairLength');
+      if (traits.hairstyle.value !== 'bald') {
+        pushTrait('hairColor');
+        pushTrait('hairLength');
+      }
       pushTrait('hairstyle');
     }
   }
   pushTrait('eyeColor');
+  pushValue(STUDIO_EYES.find((entry) => entry.id === traits.eyeShape?.value)?.prompt ?? null);
   pushTrait('bodyBuild');
   if (isOutfitEnabled(traits)) {
     const customOutfitDescription = getCustomOutfitDescription(traits);
@@ -184,7 +188,7 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
       blocks.push('Each top-row panel must include the full head, full legs, ankles, and feet with no crop.');
       blocks.push('Bottom row: four compact close-up head-and-shoulders portraits directly underneath, matching the same view order.');
       blocks.push('Keep the bottom row to roughly one-third of the total canvas height so the close-ups read as a shorter strip and do not steal height from the full-body views.');
-      blocks.push('Keep all eight panels aligned with even spacing, the same neutral background, and consistent lighting.');
+      blocks.push('Keep all eight panels aligned with even spacing, the same background, and consistent lighting.');
       blocks.push(
         `The close-ups must clearly show the ${buildCloseUpIdentityParts(input.traits)} as the full-body views.`
       );
@@ -206,7 +210,10 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
 
 function buildOutputOptionBlock(input: CharacterBuilderRequest): string[] {
   const blocks: string[] = [];
-  if (input.outputOptions.neutralStudioBackground) {
+  const scene = getStudioScene(input.traits.sceneId);
+  if (scene) {
+    blocks.push(`Place the character in this environment: ${scene.prompt}. Keep the environment consistent across every view.`);
+  } else if (input.outputOptions.neutralStudioBackground) {
     blocks.push('Use a clean neutral studio background.');
   }
   if (input.outputOptions.preserveFacialDetails) {

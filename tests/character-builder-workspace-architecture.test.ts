@@ -67,9 +67,9 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(traitActionsHookPath), 'trait actions should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-build-look-section'/, 'workspace should import build look section component');
+  assert.match(workspaceSource, /CharacterStudioComposer/, 'workspace delegates visual controls to the studio composer');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-start-section'/, 'workspace should import start section component');
+  assert.match(workspaceSource, /CharacterStudioExplore/, 'workspace delegates inspiration cards to the explore surface');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
@@ -79,7 +79,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultActions'/, 'workspace should import result actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultsInfiniteScroll'/, 'workspace should import result infinite scroll hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderLookSummaries'/, 'workspace should import look summaries hook');
+  assert.match(workspaceSource, /character-studio-state/, 'workspace delegates new draft and preset transitions');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderTraitActions'/, 'workspace should import trait actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
@@ -353,4 +353,16 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.ok(buildLookAdvancedControlsSource.split('\n').length <= 260, 'build look advanced controls should stay below 260 lines');
   assert.ok(helpersSource.split('\n').length <= 500, 'generic character builder helpers should stay below 500 lines after summary helper extraction');
   assert.ok(summaryHelpersSource.split('\n').length <= 180, 'summary helpers should stay focused and below 180 lines');
+});
+
+test('visual studio keeps catalogue, composition and generation ownership separate', () => {
+  const composer = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioComposer.client.tsx'), 'utf8');
+  const catalogue = readFileSync(join(root, 'frontend/src/lib/character-studio-catalog.ts'), 'utf8');
+  assert.match(composer, /StudioVisualChoices/);
+  assert.match(composer, /normalizeCharacterFormatMode/);
+  assert.doesNotMatch(composer, /runCharacterBuilderTool|authFetch|fetch\(|localStorage/);
+  assert.doesNotMatch(catalogue, /server-only|node:|process\.env|fetch\(/);
+  assert.ok(composer.split('\n').length < 500, 'visual composer should remain a bounded feature surface');
+  assert.match(workspaceSource, /enabled: studioTab === 'history'/, 'pagination must attach when the image tab mounts');
+  assert.match(workspaceSource, /startNewCharacter/, 'new draft transitions must preserve historical results');
 });

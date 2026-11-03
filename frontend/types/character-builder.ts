@@ -37,6 +37,8 @@ export interface CharacterBuilderTraits {
   hairLength: TraitValue<string>;
   hairstyle: TraitValue<string>;
   eyeColor: TraitValue<string>;
+  eyeShape?: TraitValue<string>;
+  sceneId?: string | null;
   bodyBuild: TraitValue<string>;
   outfitEnabled: boolean;
   customOutfitDescription?: string;

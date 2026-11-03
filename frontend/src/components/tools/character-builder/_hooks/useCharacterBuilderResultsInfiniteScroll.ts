@@ -2,12 +2,16 @@ import { useEffect, useRef } from 'react';
 
 interface UseCharacterBuilderResultsInfiniteScrollOptions {
   hasMore: boolean;
+  enabled?: boolean;
+  pageScroll?: boolean;
   resultsLength: number;
   loadMoreResults: () => void;
 }
 
 export function useCharacterBuilderResultsInfiniteScroll({
   hasMore,
+  enabled = true,
+  pageScroll = false,
   resultsLength,
   loadMoreResults,
 }: UseCharacterBuilderResultsInfiniteScrollOptions) {
@@ -16,7 +20,7 @@ export function useCharacterBuilderResultsInfiniteScroll({
 
   useEffect(() => {
     const sentinel = resultsSentinelRef.current;
-    if (!sentinel || !hasMore) return;
+    if (!enabled || !sentinel || !hasMore) return;
 
     let previousY = 0;
     let previousRatio = 0;
@@ -35,18 +39,18 @@ export function useCharacterBuilderResultsInfiniteScroll({
         });
       },
       {
-        root: resultsScrollContainerRef.current,
+        root: pageScroll ? null : resultsScrollContainerRef.current,
         threshold: 0.2,
       }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, resultsLength, loadMoreResults]);
+  }, [enabled, pageScroll, hasMore, resultsLength, loadMoreResults]);
 
   useEffect(() => {
     const scrollContainer = resultsScrollContainerRef.current;
-    if (!scrollContainer || !hasMore) return undefined;
+    if (!enabled || pageScroll || !scrollContainer || !hasMore) return undefined;
 
     const maybeLoadMore = () => {
       const remainingScroll = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
@@ -58,7 +62,7 @@ export function useCharacterBuilderResultsInfiniteScroll({
     maybeLoadMore();
     scrollContainer.addEventListener('scroll', maybeLoadMore, { passive: true });
     return () => scrollContainer.removeEventListener('scroll', maybeLoadMore);
-  }, [hasMore, resultsLength, loadMoreResults]);
+  }, [enabled, pageScroll, hasMore, resultsLength, loadMoreResults]);
 
   return {
     resultsScrollContainerRef,

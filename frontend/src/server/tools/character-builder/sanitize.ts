@@ -1,3 +1,4 @@
+import { getStudioScene, STUDIO_EYES } from '@/lib/character-studio-catalog';
 import { randomUUID } from 'crypto';
 import { normalizeCharacterFormatMode } from '@/lib/character-builder';
 import type {
@@ -44,6 +45,8 @@ function sanitizeTraits(traits: CharacterBuilderRequest['traits'] | undefined): 
     hairLength: sanitizeTrait(traits.hairLength),
     hairstyle: sanitizeTrait(traits.hairstyle),
     eyeColor: sanitizeTrait(traits.eyeColor),
+    eyeShape: sanitizeTrait(STUDIO_EYES.some((entry) => entry.id === traits.eyeShape?.value) || traits.eyeShape?.value === 'auto' ? traits.eyeShape : undefined),
+    sceneId: getStudioScene(traits.sceneId)?.id ?? null,
     bodyBuild: sanitizeTrait(traits.bodyBuild),
     outfitEnabled: isOutfitEnabled(traits),
     customOutfitDescription: trimString(traits.customOutfitDescription),

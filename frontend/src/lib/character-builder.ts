@@ -1,3 +1,4 @@
+import { STUDIO_CLOTHING, STUDIO_HAIR } from './character-studio-catalog';
 import type {
   CharacterBuilderConsistencyMode,
   CharacterBuilderFormatMode,
@@ -179,14 +180,8 @@ export const HAIR_LENGTH_OPTIONS: TraitOption[] = [
 ];
 
 export const HAIRSTYLE_OPTIONS: TraitOption[] = [
-  { id: 'straight', label: 'Straight', prompt: 'straight hairstyle' },
-  { id: 'wavy-bob', label: 'Wavy bob', prompt: 'wavy bob hairstyle' },
-  { id: 'curly', label: 'Curly', prompt: 'curly hairstyle' },
+  ...STUDIO_HAIR.map(({ id, label, prompt }) => ({ id, label: label.en, prompt })),
   { id: 'ponytail', label: 'Ponytail', prompt: 'ponytail hairstyle' },
-  { id: 'braids', label: 'Braids', prompt: 'braided hairstyle' },
-  { id: 'buzz-cut', label: 'Buzz cut', prompt: 'buzz cut hairstyle' },
-  { id: 'afro', label: 'Afro', prompt: 'afro hairstyle' },
-  { id: 'tied-back', label: 'Tied back', prompt: 'tied-back hairstyle' },
 ];
 
 export const EYE_COLOR_OPTIONS: TraitOption[] = [
@@ -207,10 +202,8 @@ export const BODY_BUILD_OPTIONS: TraitOption[] = [
 ];
 
 export const OUTFIT_STYLE_OPTIONS: TraitOption[] = [
-  { id: 'casual', label: 'Casual', prompt: 'casual wardrobe styling' },
-  { id: 'business', label: 'Business', prompt: 'business wardrobe styling' },
-  { id: 'streetwear', label: 'Streetwear', prompt: 'streetwear styling' },
-  { id: 'formal', label: 'Formal', prompt: 'formal wardrobe styling' },
+  ...STUDIO_CLOTHING.map(({ id, label, prompt }) => ({ id, label: label.en, prompt })),
+  // Historical choices remain resolvable when an old job is reused.
   { id: 'luxury', label: 'Luxury', prompt: 'luxury wardrobe styling' },
   { id: 'sci-fi', label: 'Sci-fi', prompt: 'sci-fi wardrobe styling' },
   { id: 'fantasy', label: 'Fantasy', prompt: 'fantasy wardrobe styling' },
@@ -255,6 +248,7 @@ export const AUTO_TRAIT_KEYS = new Set<keyof CharacterBuilderTraits>([
   'hairLength',
   'hairstyle',
   'eyeColor',
+  'eyeShape',
   'bodyBuild',
 ]);
 
@@ -346,6 +340,8 @@ export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'sc
     hairLength: traitValue(autoValue, autoSource),
     hairstyle: traitValue(autoValue, autoSource),
     eyeColor: traitValue(autoValue, autoSource),
+    eyeShape: traitValue(autoValue, autoSource),
+    sceneId: null,
     bodyBuild: traitValue(autoValue, autoSource),
     outfitEnabled: false,
     customOutfitDescription: '',

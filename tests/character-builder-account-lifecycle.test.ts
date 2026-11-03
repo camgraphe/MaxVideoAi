@@ -23,8 +23,8 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
     '@/components/ui/Button': `export const ButtonLink=({children})=>children;`,
     '@/components/ui/Card': `export const Card=({children})=>children;`,
     './character-builder/_components/character-builder-workspace-components': `export const CharacterBuilderResultsGallery=(props)=>{window.resultActions=props;return null};export const CharacterReferenceLibraryModal=()=>null;export const SectionTitle=()=>null;`,
-    './character-builder/_components/character-builder-build-look-section': `import React from 'react';export const CharacterBuilderBuildLookSection=(props)=>{window.controls=props;window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <pre id="draft">{JSON.stringify(props.state)}</pre>};`,
-    './character-builder/_components/character-builder-start-section': `export const CharacterBuilderStartSection=()=>null;`,
+    './character-builder/_components/CharacterStudioComposer.client': `import React from 'react';export const CharacterStudioComposer=(props)=>{window.controls={...props,onGenerateOne:props.onGenerate};window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <pre id="draft">{JSON.stringify(props.state)}</pre>};`,
+    './character-builder/_components/CharacterStudioReference.client': `export const CharacterStudioReference=()=>null;`,
     './character-builder/_components/character-builder-page-shell': `import React from 'react';export const CharacterBuilderAuthGateModal=()=>null;export const CharacterBuilderDisabledState=()=>null;export const CharacterBuilderLoadingSkeleton=()=> <p id="loading">Loading</p>;export const CharacterBuilderPageFrame=({children,overlays})=><>{children}{overlays}</>;`,
   };
   const bundle = await build({ absWorkingDir: frontend, bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', write: false,
@@ -64,6 +64,7 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
   await w.fx.act(async () => w.fx.render());
   const tick = () => w.fx.act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
   await tick();
+  await w.fx.act(async () => [...w.document.querySelectorAll('button')].find((button: any) => button.textContent === 'My images')?.click());
   return {
     w,
     draft: () => JSON.parse(w.document.getElementById('draft')?.textContent ?? 'null'),
@@ -292,5 +293,24 @@ test('pending-job polling uses the refreshed token and retains a valid completio
     await f.respond(next, { ok: true, status: 'completed', renderIds: ['https://example.invalid/A-output.png'] });
     assert.equal(f.draft().runs[0].jobId, 'job-A');
     assert.equal(f.w.localStorage.getItem(`${pendingKey}:account-A`), null);
+  } finally { await f.close(); }
+});
+
+test('new-character navigation clears only the draft while keeping finished outputs and pending jobs', async () => {
+  const ownedKey = `${stateKey}:account-A`;
+  const ownedPendingKey = `${pendingKey}:account-A`;
+  const pending = { id: 'pending-A', jobId: 'pending-job-A', createdAt: '2026-11-03T10:00:00Z', action: 'generate', generateCount: 1, outputMode: 'portrait-reference', qualityMode: 'draft', formatMode: 'standard' };
+  const f = await mountWorkspace({ storage: { [ownedKey]: legacyState, [ownedPendingKey]: JSON.stringify({ version: 1, runs: [pending] }) } });
+  try {
+    await f.w.fx.act(async () => [...f.w.document.querySelectorAll('button')].find((button: any) => button.textContent === 'New character')?.click());
+    assert.equal(f.draft().advancedNotes, '');
+    assert.deepEqual(f.draft().referenceImages, []);
+    assert.equal(f.draft().runs[0].id, 'A-run');
+    assert.equal(JSON.parse(f.w.localStorage.getItem(ownedPendingKey)).runs[0].jobId, 'pending-job-A');
+    assert.equal(f.w.document.querySelector('[aria-pressed="true"]')?.textContent, 'Explore');
+    await f.w.fx.act(async () => f.w.document.querySelector('[aria-label="Use inspiration Iris"]').click());
+    assert.equal(f.draft().traits.hairstyle.value, 'curly');
+    assert.equal(f.draft().traits.outfitStyle.value, 'bohemian');
+    assert.equal(f.draft().runs[0].id, 'A-run');
   } finally { await f.close(); }
 });

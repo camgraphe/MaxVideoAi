@@ -42,7 +42,7 @@ interface CharacterBuilderResultsGalleryProps {
   runs: CharacterBuilderRun[];
   savingResultId: string | null;
   selectedResultId: string | null;
-  variant: 'desktop' | 'mobile';
+  variant: 'desktop' | 'mobile' | 'grid';
   onDuplicateHistoricalSettings: (item: HistoricalCharacterGalleryItem) => void;
   onDuplicateSettings: (snapshot: CharacterBuilderSettingsSnapshot, selectedId: string) => void;
   onOpenLightbox: (entry: MediaLightboxEntry) => void;
@@ -77,10 +77,10 @@ export function CharacterBuilderResultsGallery({
 }: CharacterBuilderResultsGalleryProps) {
   const hasResults = flattenedResults.length > 0 || pendingRuns.length > 0 || historicalResults.length > 0;
   if (!hasResults) {
-    return variant === 'desktop' ? <EmptyResultsRail copy={copy} /> : null;
+    return variant !== 'mobile' ? <EmptyResultsRail copy={copy} /> : null;
   }
 
-  const itemClassName = variant === 'desktop' ? '' : 'min-w-[280px] shrink-0 snap-start';
+  const itemClassName = variant !== 'mobile' ? 'min-w-0' : 'min-w-[280px] shrink-0 snap-start';
   const items = (
     <>
       {pendingRuns.map((pendingRun) => {
@@ -208,6 +208,13 @@ export function CharacterBuilderResultsGallery({
     </>
   );
 
+  if (variant === 'grid') {
+    return <div ref={resultsScrollContainerRef}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{items}</div>
+      {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
+      {historicalIsFetchingMore || historicalJobsLoading ? <p role="status" className="py-3 text-sm text-text-secondary">{copy.resultCard.pending}</p> : null}
+    </div>;
+  }
   if (variant === 'desktop') {
     return (
       <div className="relative flex-1 min-h-0">

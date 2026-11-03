@@ -23,7 +23,7 @@ export function CharacterBuilderPageFrame({
         <div className="hidden xl:block">
           <AppSidebar />
         </div>
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-80 lg:p-7 lg:pb-40 xl:pb-64">
+        <main className="flex-1 min-w-0 overflow-y-auto p-3 pb-24 sm:p-5 lg:p-7">
           {children}
         </main>
       </div>
