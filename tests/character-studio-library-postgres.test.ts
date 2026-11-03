@@ -120,23 +120,27 @@ test(
       );
       await assert.rejects(saveStudioCharacterOutput(owner, deleted));
     });
-    await t.test('character and look pages have bounded disjoint cursors without losing older entries', async () => {
-      for (let n = 0; n < 13; n++) await saveStudioCharacterOutput(owner, await addJob(`character-${n}`));
-      for (let n = 0; n < 25; n++) await saveStudioCharacterOutput(owner, await addJob(`look-${n}`, owner, id));
-      const first = await listStudioCharacters(owner);
-      const second = await listStudioCharacters(owner, first.nextCursor);
-      assert.equal(first.characters.length, 12);
-      assert.equal(second.characters.length, 2);
-      assert.equal(new Set([...first.characters, ...second.characters].map(c => c.id)).size, 14);
-      assert.equal(second.nextCursor, null);
-      assert.equal('settingsSnapshot' in first.characters[0].identity, false);
-      const looks = await getStudioCharacter(owner, id);
-      const older = await getStudioCharacter(owner, id, looks.nextLookCursor);
-      assert.equal(looks.lookCount, 26);
-      assert.equal(looks.looks.length, 24);
-      assert.equal(older.looks.length, 2);
-      assert.equal(new Set([...looks.looks, ...older.looks].map(l => l.id)).size, 26);
-      assert.equal(older.nextLookCursor, null);
-    });
+    await t.test(
+      'character and look pages have bounded disjoint cursors without losing older entries',
+      async () => {
+        for (let n = 0; n < 13; n++) await saveStudioCharacterOutput(owner, await addJob(`character-${n}`));
+        for (let n = 0; n < 25; n++)
+          await saveStudioCharacterOutput(owner, await addJob(`look-${n}`, owner, id));
+        const first = await listStudioCharacters(owner);
+        const second = await listStudioCharacters(owner, first.nextCursor);
+        assert.equal(first.characters.length, 12);
+        assert.equal(second.characters.length, 2);
+        assert.equal(new Set([...first.characters, ...second.characters].map((c) => c.id)).size, 14);
+        assert.equal(second.nextCursor, null);
+        assert.equal('settingsSnapshot' in first.characters[0].identity, false);
+        const looks = await getStudioCharacter(owner, id);
+        const older = await getStudioCharacter(owner, id, looks.nextLookCursor);
+        assert.equal(looks.lookCount, 26);
+        assert.equal(looks.looks.length, 24);
+        assert.equal(older.looks.length, 2);
+        assert.equal(new Set([...looks.looks, ...older.looks].map((l) => l.id)).size, 26);
+        assert.equal(older.nextLookCursor, null);
+      },
+    );
   },
 );

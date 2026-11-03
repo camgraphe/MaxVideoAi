@@ -1,4 +1,5 @@
 'use client';
+import type { RefObject } from 'react';
 import { ImagePlus, FolderOpen, Plus, X } from 'lucide-react';
 import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
 import type { CharacterBuilderReferenceImage } from '@/types/character-builder';
@@ -87,5 +88,33 @@ export function CharacterStudioReference({
         {copy.library}
       </button>
     </div>
+  );
+}
+export function CharacterStudioReferenceInputs({
+  identityRef,
+  styleRef,
+  onUpload,
+}: {
+  identityRef: RefObject<HTMLInputElement | null>;
+  styleRef: RefObject<HTMLInputElement | null>;
+  onUpload: (role: 'identity' | 'style', files: FileList | null) => void;
+}) {
+  return (
+    <>
+      {(['identity', 'style'] as const).map((role) => (
+        <input
+          key={role}
+          ref={role === 'identity' ? identityRef : styleRef}
+          data-character-reference={role}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => {
+            onUpload(role, event.target.files);
+            event.target.value = '';
+          }}
+        />
+      ))}
+    </>
   );
 }

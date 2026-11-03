@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Clapperboard, ImagePlus, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
+import type { StudioRecastSelection } from '@/types/character-studio';
 
 type LocalMedia = { url: string; name: string };
 /** Local draft only: no upload, provider request, fabricated output, or billing. */
@@ -10,10 +11,12 @@ export function CharacterStudioRecast({
   copy,
   navigation,
   active,
+  selection,
 }: {
   copy: StudioCopy;
   navigation: ReactNode;
   active: boolean;
+  selection?: StudioRecastSelection | null;
 }) {
   const readerRoot = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -21,6 +24,9 @@ export function CharacterStudioRecast({
   }, [active]);
   const [video, setVideo] = useState<LocalMedia | null>(null);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
+  useEffect(() => {
+    if (selection) setPortrait({ url: selection.imageUrl, name: selection.name });
+  }, [selection]);
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
   const videoInput = useRef<HTMLInputElement>(null);
@@ -33,7 +39,7 @@ export function CharacterStudioRecast({
   );
   useEffect(
     () => () => {
-      if (portrait) URL.revokeObjectURL(portrait.url);
+      if (portrait?.url.startsWith('blob:')) URL.revokeObjectURL(portrait.url);
     },
     [portrait],
   );
@@ -99,6 +105,7 @@ export function CharacterStudioRecast({
                   alt={portrait.name}
                   className="h-40 w-full rounded-xl bg-bg object-contain"
                 />
+                <p className="mt-2 truncate text-xs text-text-secondary">{portrait.name}</p>
                 <button
                   type="button"
                   aria-label={`${copy.remove} · ${copy.replacement}`}

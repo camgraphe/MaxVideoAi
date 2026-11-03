@@ -24,7 +24,8 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
     '@/components/ui/Card': `export const Card=({children})=>children;`,
     './character-builder/_components/character-builder-workspace-components': `export const CharacterBuilderResultsGallery=(props)=>{window.resultActions=props;return null};export const CharacterReferenceLibraryModal=()=>null;export const SectionTitle=()=>null;`,
     './character-builder/_components/CharacterStudioComposer.client': `import React from 'react';export const CharacterStudioComposer=(props)=>{window.controls={...props,onGenerateOne:props.onGenerate};window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <>{props.navigation}<pre id="draft">{JSON.stringify(props.state)}</pre></>};`,
-    './character-builder/_components/CharacterStudioReference.client': `export const CharacterStudioReference=()=>null;`,
+    './character-builder/_components/CharacterStudioReference.client': `export {CharacterStudioReferenceInputs} from './src/components/tools/character-builder/_components/CharacterStudioReference.client';export const CharacterStudioReference=()=>null;`,
+    './character-builder/_components/CharacterStudioOverlays.client': `export const CharacterStudioOverlays=()=>null;`,
     './character-builder/_components/character-builder-page-shell': `import React from 'react';export const CharacterBuilderAuthGateModal=()=>null;export const CharacterBuilderDisabledState=()=>null;export const CharacterBuilderLoadingSkeleton=()=> <p id="loading">Loading</p>;export const CharacterBuilderPageFrame=({children,overlays})=><>{children}{overlays}</>;`,
   };
   const bundle = await build({ absWorkingDir: frontend, bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', write: false,

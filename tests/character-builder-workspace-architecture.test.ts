@@ -368,3 +368,17 @@ test('visual studio keeps catalogue, composition and generation ownership separa
   assert.match(workspaceSource, /enabled: studioMode === 'character' && studioTab === 'history'/, 'pagination must attach when the image tab mounts');
   assert.match(workspaceSource, /startNewCharacter/, 'new draft transitions must preserve historical results');
 });
+
+test('saved library presentation and overlays stay outside the workspace orchestrator', () => {
+  const area = join(root, 'frontend/src/components/tools/character-builder');
+  const view = readFileSync(join(area, '_components/CharacterStudioWorkspaceView.client.tsx'), 'utf8');
+  const overlays = readFileSync(join(area, '_components/CharacterStudioOverlays.client.tsx'), 'utf8');
+  assert.match(workspaceSource, /<CharacterStudioWorkspaceView/);
+  assert.match(workspaceSource, /<CharacterStudioOverlays/);
+  assert.match(workspaceSource, /useCharacterStudioLibrary/);
+  assert.doesNotMatch(workspaceSource, /<dialog\b|<MediaLightbox\b|data-studio-scroll/);
+  assert.match(view, /data-studio-scroll="results"/);
+  assert.match(overlays, /CharacterStudioSaveDialog/);
+  const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
+  assert.match(runner, /sanitizeRequest\(await resolveStudioLookRequest\(input\)\)/);
+});

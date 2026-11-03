@@ -85,19 +85,21 @@ export function CharacterStudioOutputSettings({
               if (id) setGenerateCount(id === '4' ? 4 : 1);
             }}
           />
-          <StudioChips
-            label={copy.sections.consistency}
-            options={options.consistencyOptions}
-            value={state.consistencyMode}
-            onChange={(id) => {
-              if (id)
-                setState((previous) => ({
-                  ...previous,
-                  consistencyMode: id as CharacterBuilderState['consistencyMode'],
-                }));
-            }}
-          />
-          {state.sourceMode === 'reference-image' ? (
+          {!state.characterId && (
+            <StudioChips
+              label={copy.sections.consistency}
+              options={options.consistencyOptions}
+              value={state.consistencyMode}
+              onChange={(id) => {
+                if (id)
+                  setState((previous) => ({
+                    ...previous,
+                    consistencyMode: id as CharacterBuilderState['consistencyMode'],
+                  }));
+              }}
+            />
+          )}
+          {!state.characterId && state.sourceMode === 'reference-image' ? (
             <StudioChips
               label={copy.sections.referenceStrength}
               options={options.referenceStrengthOptions}

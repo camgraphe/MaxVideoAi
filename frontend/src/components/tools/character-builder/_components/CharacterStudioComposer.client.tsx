@@ -69,7 +69,7 @@ export function CharacterStudioComposer({
   canGenerate: boolean;
   onGenerate: (count: 1 | 4) => void;
 }) {
-  const [section, setSection] = useState<string | null>('type');
+  const [section, setSection] = useState<string | null>(state.characterId ? 'clothing' : 'type');
   const [moreHair, setMoreHair] = useState(false);
   const [sceneFamily, setSceneFamily] = useState('all');
   const [generateCount, setGenerateCount] = useState<1 | 4>(1);
@@ -113,6 +113,8 @@ export function CharacterStudioComposer({
     );
   }
   function group(id: string, title: string, summary: string, Icon: typeof UserRound, content: ReactNode) {
+    if (state.characterId && ['type', 'presentation', 'age', 'skin', 'face', 'body'].includes(id))
+      return null;
     return (
       <section className="mx-3 mb-2 overflow-hidden rounded-xl border border-border bg-bg">
         <h3>
@@ -157,8 +159,10 @@ export function CharacterStudioComposer({
         {group(
           'type',
           labels.type,
-          traits.customCharacterDescription?.trim() ? labels.customType :
-            STUDIO_CHARACTER_TYPES.find((x) => x.id === traits.characterType?.value)?.label[locale] ?? labels.free,
+          traits.customCharacterDescription?.trim()
+            ? labels.customType
+            : (STUDIO_CHARACTER_TYPES.find((x) => x.id === traits.characterType?.value)?.label[locale] ??
+                labels.free),
           Sparkles,
           <>
             <StudioVisualChoices
@@ -180,7 +184,9 @@ export function CharacterStudioComposer({
                 aria-describedby="studio-type-hint"
               />
             </label>
-            <p id="studio-type-hint" className="text-xs leading-relaxed text-text-secondary">{labels.typeHint}</p>
+            <p id="studio-type-hint" className="text-xs leading-relaxed text-text-secondary">
+              {labels.typeHint}
+            </p>
           </>,
         )}
         {group(
@@ -275,8 +281,10 @@ export function CharacterStudioComposer({
         {group(
           'hair',
           labels.hair,
-          traits.customHairDescription?.trim() ? labels.customType :
-            STUDIO_HAIR.find((entry) => entry.id === traits.hairstyle.value)?.label[locale] ?? labelFor('hairColor', options.hairColorOptions),
+          traits.customHairDescription?.trim()
+            ? labels.customType
+            : (STUDIO_HAIR.find((entry) => entry.id === traits.hairstyle.value)?.label[locale] ??
+                labelFor('hairColor', options.hairColorOptions)),
           Scissors,
           <>
             <StudioVisualChoices
@@ -329,9 +337,10 @@ export function CharacterStudioComposer({
         {group(
           'clothing',
           labels.clothing,
-          traits.customOutfitDescription?.trim() ? labels.customType :
-            STUDIO_CLOTHING.find((entry) => entry.id === traits.outfitStyle.value)?.label[locale] ??
-            labels.free,
+          traits.customOutfitDescription?.trim()
+            ? labels.customType
+            : (STUDIO_CLOTHING.find((entry) => entry.id === traits.outfitStyle.value)?.label[locale] ??
+                labels.free),
           Shirt,
           <>
             <StudioVisualChoices
@@ -384,7 +393,7 @@ export function CharacterStudioComposer({
           labels.scene,
           traits.customSceneDescription?.trim()
             ? labels.customScene
-            : STUDIO_SCENES.find((entry) => entry.id === traits.sceneId)?.label[locale] ?? labels.free,
+            : (STUDIO_SCENES.find((entry) => entry.id === traits.sceneId)?.label[locale] ?? labels.free),
           MapPin,
           <>
             <label className="block text-xs font-medium text-text-secondary">
@@ -399,9 +408,15 @@ export function CharacterStudioComposer({
                 aria-describedby="studio-scene-hint"
               />
             </label>
-            <p id="studio-scene-hint" className="text-xs leading-relaxed text-text-secondary">{labels.sceneHint}</p>
+            <p id="studio-scene-hint" className="text-xs leading-relaxed text-text-secondary">
+              {labels.sceneHint}
+            </p>
             {traits.sceneId && traits.customSceneDescription?.trim() ? (
-              <button type="button" onClick={() => patchTraits({ sceneId: null })} className="text-xs text-text-secondary underline underline-offset-4 hover:text-text-primary">
+              <button
+                type="button"
+                onClick={() => patchTraits({ sceneId: null })}
+                className="text-xs text-text-secondary underline underline-offset-4 hover:text-text-primary"
+              >
                 {labels.clearScene}
               </button>
             ) : null}
@@ -456,7 +471,7 @@ export function CharacterStudioComposer({
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-3 text-sm font-medium text-on-brand transition hover:brightness-95 disabled:opacity-50"
         >
           {busy ? <Loader2 size={17} className="animate-spin" /> : <Sparkles size={17} />}
-          {busy ? labels.generating : labels.generate}
+          {busy ? labels.generating : state.characterId ? labels.generateLook : labels.generate}
           {generateCount === 4 ? ' ×4' : ''}
         </button>
       </div>

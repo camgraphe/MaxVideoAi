@@ -66,8 +66,9 @@ npm run lint:exposure
 pnpm --dir frontend exec tsc --noEmit
 ```
 
-This first delivery does not create a durable named-character/looks database or
-Recast jobs. The existing image gallery is accurately labeled “My images”.
+The saved-character delivery adds a durable named-character/looks library, described
+below. The existing generation gallery remains separately labeled “My images”.
+It does not create Recast jobs.
 MaxVideoAI Recast service identity, quotes/transactions and the proposed provider
 cost multiplier belong to subsequent deliveries. No tariff or model registry
 change is included.
@@ -78,6 +79,58 @@ returned 503 before provider dispatch. The final UI disables authenticated
 generation while its current price is unavailable and never retains a previous
 quality's price during loading. Paid generation, real imports and durable
 account media must be validated in an appropriately configured test environment.
+
+## Saved characters, looks and Recast handoff (2026-11-03)
+
+`frontend/server/character-studio/` owns authenticated persistence and source
+validation. Apply `neon/migrations/93_character_studio.sql` explicitly before
+enabling the new endpoints; the application baseline bootstrap also includes it.
+No request creates tables. Missing schema/configuration returns private, no-store
+503 responses and a retryable library error; no local success is fabricated.
+
+`GET/POST /api/character-studio/characters` lists/saves characters;
+`GET/PATCH /api/character-studio/characters/[characterId]` loads/renames them.
+Lists page by immutable ID (12 identity summaries); detail pages contain the
+identity recipe and 24 looks. Bodies are bounded and names are trimmed to 80
+characters. Every read/write is account scoped. The composite look foreign key
+prevents cross-account parent links; unique output keys make retries idempotent.
+
+A save accepts only a job ID, exact original URL and display name. `source.ts`
+verifies an owned, completed, visible Character Builder job and its output
+projection. The stored recipe and thumbnail come from the server. A stored
+`builder.characterId` determines which identity receives a look, regardless of
+the draft currently open in the browser. Original URLs remain distinct from
+display thumbnails. Saved records reference media; they do not create a second
+copy or change media retention. A deleted/hidden identity source cannot start a
+new look until it is available again.
+
+`character-studio-look.ts` builds a new look and binds identity fields to the
+saved recipe. The server resolves ownership and revalidates the original before
+the existing generation runner can dispatch. Hair, clothes, accessories and
+scene remain editable; the original identity reference is strong/strict. The
+optional `characterId` travels through request, snapshot, draft and settings
+reuse; a legacy snapshot or New character clears the context. This guides an
+AI generation, so visual identity fidelity still requires review of the output.
+
+`useCharacterStudioLibrary` owns account-scoped requests and guards late responses.
+`CharacterStudioWorkspaceView` owns layout/tabs and `CharacterStudioOverlays`
+owns dialogs/lightbox composition. Results expose Save and Recast; Mes personnages
+exposes rename, New look, saved looks and Recast. New look opens styling controls
+with an identity banner. Save resolves the clicked result's recipe before naming
+it; the native dialog provides keyboard focus/cancel handling.
+
+Recast receives the chosen **original** and name with a unique transfer ID. It
+stays mounted between modes, preserves the source video and instructions, and
+revokes only local blob URLs. This handoff makes the existing draft usable; paid
+video generation, provider routing, quotes and transactions remain a later slice.
+
+Focused coverage: `character-studio-library-postgres`, `character-studio-routes`,
+`character-studio-look`, `character-studio-library-client`, `character-studio-ui`
+plus the existing account lifecycle and workspace/server architecture suites.
+Database success paths run on disposable PostgreSQL 17. Browser QA covers desktop
+1280×720 and mobile 390×844 navigation and honest unavailable states; this local
+server has no database/provider configuration. No hosted migration or paid
+generation was performed in this delivery.
 
 ## Compact editor and Recast draft (2026-11-03)
 

@@ -11,22 +11,18 @@ import type {
 } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
 import { findChoiceLabel } from '../_lib/character-builder-summary-helpers';
-import {
-  getFormatDisplayLabel,
-  getResultActionLabel,
-} from '../_lib/character-builder-helpers';
+import { getFormatDisplayLabel, getResultActionLabel } from '../_lib/character-builder-helpers';
 import type {
   ChoiceOption,
   HistoricalCharacterGalleryItem,
   PendingCharacterRun,
 } from '../_lib/character-builder-types';
-import {
-  PendingResultCard,
-  ResultCard,
-} from './character-builder-result-cards';
+import { PendingResultCard, ResultCard } from './character-builder-result-cards';
 import { CharacterStudioHistoryFeedback } from './CharacterStudioHistoryFeedback.client';
 
 interface CharacterBuilderResultsGalleryProps {
+  onKeepCharacter: (source: { jobId: string; imageUrl: string }) => void;
+  onRecastResult: (source: { jobId: string; imageUrl: string }, name: string) => void;
   copy: CharacterCopy;
   flattenedResults: CharacterBuilderResult[];
   historicalHasMore: boolean;
@@ -54,6 +50,8 @@ interface CharacterBuilderResultsGalleryProps {
 }
 
 export function CharacterBuilderResultsGallery({
+  onKeepCharacter,
+  onRecastResult,
   copy,
   flattenedResults,
   historicalHasMore,
@@ -81,7 +79,13 @@ export function CharacterBuilderResultsGallery({
 }: CharacterBuilderResultsGalleryProps) {
   const hasResults = flattenedResults.length > 0 || pendingRuns.length > 0 || historicalResults.length > 0;
   if (!hasResults) {
-    return <CharacterStudioHistoryFeedback loading={historicalJobsLoading} error={historicalJobsError} onRetry={onRetryHistory} />;
+    return (
+      <CharacterStudioHistoryFeedback
+        loading={historicalJobsLoading}
+        error={historicalJobsError}
+        onRetry={onRetryHistory}
+      />
+    );
   }
 
   const itemClassName = variant !== 'mobile' ? 'min-w-0' : 'min-w-[280px] shrink-0 snap-start';
@@ -113,7 +117,11 @@ export function CharacterBuilderResultsGallery({
           findChoiceLabel(outputModeLabelOptions, result.outputMode) ?? copy.generatePanel.portraitTitle;
         const resultQualityLabel =
           findChoiceLabel(qualityLabelOptions, result.qualityMode) ?? copy.options.quality.draft.label;
-        const resultFormatLabel = getFormatDisplayLabel(copy, run?.formatMode ?? 'standard', result.qualityMode);
+        const resultFormatLabel = getFormatDisplayLabel(
+          copy,
+          run?.formatMode ?? 'standard',
+          result.qualityMode,
+        );
         const subtitle = `${resultOutputLabel} · ${resultQualityLabel} · ${resultFormatLabel}`;
         const badge = run && run.results.length > 1 ? `${run.results.length}x` : null;
         const title = getResultActionLabel(copy, result.action);
@@ -145,10 +153,15 @@ export function CharacterBuilderResultsGallery({
               onDownload={() =>
                 triggerAppDownload(
                   result.url,
-                  suggestDownloadFilename(result.url, `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`)
+                  suggestDownloadFilename(
+                    result.url,
+                    `character-reference-${result.id.replace(/[^a-z0-9]+/gi, '-')}`,
+                  ),
                 )
               }
               onSave={() => onSaveResult(result)}
+              onKeepCharacter={() => onKeepCharacter({ jobId: result.jobId, imageUrl: result.url })}
+              onRecast={() => onRecastResult({ jobId: result.jobId, imageUrl: result.url }, title)}
               onDuplicateSettings={() => {
                 if (run?.settingsSnapshot) {
                   onDuplicateSettings(run.settingsSnapshot, result.id);
@@ -200,10 +213,20 @@ export function CharacterBuilderResultsGallery({
               onDownload={() =>
                 triggerAppDownload(
                   item.imageUrl,
-                  suggestDownloadFilename(item.imageUrl, `character-reference-${item.id.replace(/[^a-z0-9]+/gi, '-')}`)
+                  suggestDownloadFilename(
+                    item.imageUrl,
+                    `character-reference-${item.id.replace(/[^a-z0-9]+/gi, '-')}`,
+                  ),
                 )
               }
               onSave={() => onSaveHistoricalResult(item)}
+              onKeepCharacter={() => onKeepCharacter({ jobId: item.jobId, imageUrl: item.imageUrl })}
+              onRecast={() =>
+                onRecastResult(
+                  { jobId: item.jobId, imageUrl: item.imageUrl },
+                  copy.resultCard.referenceOutput,
+                )
+              }
               onDuplicateSettings={() => onDuplicateHistoricalSettings(item)}
               copy={copy}
             />
@@ -214,16 +237,25 @@ export function CharacterBuilderResultsGallery({
   );
 
   if (variant === 'grid') {
-    return <div ref={resultsScrollContainerRef}>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{items}</div>
-      {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
-      {historicalIsFetchingMore || historicalJobsLoading ? <p role="status" className="py-3 text-sm text-text-secondary">{copy.resultCard.pending}</p> : null}
-    </div>;
+    return (
+      <div ref={resultsScrollContainerRef}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{items}</div>
+        {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
+        {historicalIsFetchingMore || historicalJobsLoading ? (
+          <p role="status" className="py-3 text-sm text-text-secondary">
+            {copy.resultCard.pending}
+          </p>
+        ) : null}
+      </div>
+    );
   }
   if (variant === 'desktop') {
     return (
       <div className="relative flex-1 min-h-0">
-        <div ref={resultsScrollContainerRef} className="scrollbar-rail h-full overflow-y-auto space-y-3 pr-4 pt-1">
+        <div
+          ref={resultsScrollContainerRef}
+          className="scrollbar-rail h-full overflow-y-auto space-y-3 pr-4 pt-1"
+        >
           {items}
           {historicalHasMore ? <div ref={resultsSentinelRef} className="h-6" /> : null}
           {historicalIsFetchingMore || historicalJobsLoading ? (
@@ -241,7 +273,9 @@ export function CharacterBuilderResultsGallery({
 
 function formatHistoricalCreatedAt(createdAt: string): string {
   try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(createdAt));
+    return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(
+      new Date(createdAt),
+    );
   } catch {
     return createdAt;
   }

@@ -2,14 +2,23 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { buildStudioLookDraft } from '@/lib/character-studio-look';
+import type { StudioRecastSelection } from '@/types/character-studio';
+import { useCharacterStudioLibrary } from './character-builder/_hooks/useCharacterStudioLibrary';
+import { getStudioLibraryCopy } from './character-builder/_lib/character-studio-library-copy';
+import {
+  CharacterStudioWorkspaceView,
+  type StudioTab,
+} from './character-builder/_components/CharacterStudioWorkspaceView.client';
+import { CharacterStudioLibrary } from './character-builder/_components/CharacterStudioLibrary.client';
+import { CharacterStudioOverlays } from './character-builder/_components/CharacterStudioOverlays.client';
+import { CharacterStudioIdentity } from './character-builder/_components/CharacterStudioIdentity.client';
 import deepmerge from 'deepmerge';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { Images, Compass, SlidersHorizontal } from 'lucide-react';
-import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { Card } from '@/components/ui/Card';
+import { type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { createDefaultCharacterBuilderState, getCharacterFormatMultiplier } from '@/lib/character-builder';
@@ -18,7 +27,6 @@ import { FEATURES } from '@/content/feature-flags';
 import type { CharacterBuilderState, CharacterBuilderReferenceImage } from '@/types/character-builder';
 import {
   CharacterBuilderResultsGallery,
-  CharacterReferenceLibraryModal,
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
 import {
@@ -28,7 +36,10 @@ import {
 import { CharacterStudioRecast } from './character-builder/_components/CharacterStudioRecast.client';
 import { CharacterStudioComposer } from './character-builder/_components/CharacterStudioComposer.client';
 import { CharacterStudioExplore } from './character-builder/_components/CharacterStudioExplore.client';
-import { CharacterStudioReference } from './character-builder/_components/CharacterStudioReference.client';
+import {
+  CharacterStudioReference,
+  CharacterStudioReferenceInputs,
+} from './character-builder/_components/CharacterStudioReference.client';
 import { getCharacterStudioCopy } from './character-builder/_lib/character-studio-copy';
 import {
   startNewCharacter,
@@ -36,7 +47,6 @@ import {
 } from './character-builder/_lib/character-studio-state';
 import type { StudioLocale } from '@/lib/character-studio-catalog';
 import {
-  CharacterBuilderAuthGateModal,
   CharacterBuilderDisabledState,
   CharacterBuilderLoadingSkeleton,
   CharacterBuilderPageFrame,
@@ -94,8 +104,15 @@ function CharacterBuilderAccountWorkspace({
   const studioLocale: StudioLocale = locale === 'fr' || locale === 'es' ? locale : 'en';
   const [studioMode, setStudioMode] = useState<CharacterStudioMode>('character');
   const [showMobileResults, setShowMobileResults] = useState(false);
-  const [studioTab, setStudioTab] = useState<'explore' | 'history'>('explore');
+  const [studioTab, setStudioTab] = useState<StudioTab>('explore');
   const [editorKey, setEditorKey] = useState(0);
+  const [recastSelection, setRecastSelection] = useState<StudioRecastSelection | null>(null);
+  const libraryCopy = getStudioLibraryCopy(locale);
+  const library = useCharacterStudioLibrary({
+    userId: user?.id ?? null,
+    enabled: studioTab === 'characters',
+    captureAccountRequest,
+  });
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
   const copy = useMemo<CharacterCopy>(() => {
     return deepmerge(DEFAULT_CHARACTER_COPY, (rawCopy ?? {}) as Partial<CharacterCopy>);
@@ -278,6 +295,11 @@ function CharacterBuilderAccountWorkspace({
     return (
       <CharacterBuilderResultsGallery
         copy={copy}
+        onKeepCharacter={(source) => {
+          if (user) void library.openSave(source);
+          else openAuthGate();
+        }}
+        onRecastResult={handoffRecast}
         flattenedResults={flattenedResults}
         historicalHasMore={historicalHasMore}
         historicalIsFetchingMore={historicalIsFetchingMore}
@@ -298,6 +320,7 @@ function CharacterBuilderAccountWorkspace({
         onDuplicateHistoricalSettings={(item) => void handleDuplicateHistoricalSettings(item)}
         onDuplicateSettings={(snapshot, selectedId) => {
           applySettingsSnapshot(snapshot, selectedId);
+          setShowMobileResults(false);
           setEditorKey((key) => key + 1);
         }}
         onOpenLightbox={setLightboxEntry}
@@ -308,7 +331,25 @@ function CharacterBuilderAccountWorkspace({
     );
   }
 
+  async function newLook(id: string) {
+    const character = await library.openCharacter(id);
+    if (!character) return;
+    setState((previous) => buildStudioLookDraft(previous, character));
+    setStudioMode('character');
+    setShowMobileResults(false);
+    setEditorKey((key) => key + 1);
+    setError(null);
+    setStatusMessage(null);
+  }
+  function handoffRecast(source: { jobId: string; imageUrl: string }, name: string, characterId?: string) {
+    library.cancelDetails();
+    setRecastSelection({ ...source, name, characterId, transferId: crypto.randomUUID() });
+    setStudioMode('recast');
+    setError(null);
+    setStatusMessage(null);
+  }
   function newCharacter() {
+    library.closeCharacter();
     setStudioMode('character');
     setShowMobileResults(false);
     setState(startNewCharacter);
@@ -323,9 +364,15 @@ function CharacterBuilderAccountWorkspace({
   const studioNavigation = (
     <CharacterStudioNavigation
       mode={studioMode}
-      onMode={setStudioMode}
+      onMode={(mode) => {
+        library.cancelDetails();
+        setStudioMode(mode);
+      }}
       onNew={newCharacter}
-      onExplore={() => { setStudioTab('explore'); setShowMobileResults(true); }}
+      onExplore={() => {
+        setStudioTab('explore');
+        setShowMobileResults(true);
+      }}
       copy={studioCopy}
     />
   );
@@ -341,70 +388,68 @@ function CharacterBuilderAccountWorkspace({
   return (
     <CharacterBuilderPageFrame
       overlays={
-        <>
-          {lightboxEntry ? (
-            <MediaLightbox
-              title={copy.top.resultsTitle}
-              subtitle={lightboxEntry.engineLabel ?? undefined}
-              prompt={lightboxEntry.prompt ?? null}
-              entries={[lightboxEntry]}
-              onClose={() => setLightboxEntry(null)}
-            />
-          ) : null}
-          <CharacterReferenceLibraryModal
-            open={libraryModalRole !== null}
-            userId={user?.id ?? null}
-            onClose={() => setLibraryModalRole(null)}
-            onSelect={handleLibrarySelect}
-            copy={copy}
-          />
-          <CharacterBuilderAuthGateModal
-            open={authModalOpen}
-            copy={copy}
-            loginRedirectTarget={loginRedirectTarget}
-            onClose={() => setAuthModalOpen(false)}
-          />
-        </>
+        <CharacterStudioOverlays
+          library={library}
+          libraryCopy={libraryCopy}
+          copy={copy}
+          lightboxEntry={lightboxEntry}
+          onCloseLightbox={() => setLightboxEntry(null)}
+          referenceOpen={libraryModalRole !== null}
+          userId={user?.id ?? null}
+          onCloseReference={() => setLibraryModalRole(null)}
+          onSelectReference={handleLibrarySelect}
+          authOpen={authModalOpen}
+          onCloseAuth={() => setAuthModalOpen(false)}
+          loginRedirectTarget={loginRedirectTarget}
+          onSaved={() => {
+            setStudioTab('characters');
+            setShowMobileResults(true);
+            setStatusMessage(libraryCopy.saved);
+          }}
+        />
       }
     >
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1700px] flex-col gap-2">
-        {error ? (
-          <Card role="alert" className="border border-border p-4 text-sm text-text-primary">
-            {error}
-          </Card>
-        ) : null}
-        {statusMessage ? (
-          <p role="status" aria-live="polite" className="text-sm text-text-secondary">
-            {statusMessage}
-          </p>
-        ) : null}
-        <div
-          className={
-            studioMode === 'character'
-              ? 'grid min-h-0 flex-1 gap-3 lg:grid-cols-[340px_minmax(0,1fr)]'
-              : 'hidden'
-          }
-        >
-          <div className={`min-h-0 ${showMobileResults ? 'hidden lg:block' : ''}`}>
-            <CharacterStudioComposer
-              key={editorKey}
-              navigation={studioNavigation}
-              state={state}
-              setState={setState}
-              locale={studioLocale}
-              copy={copy}
-              labels={studioCopy}
-              price={estimatedImageCostUsd}
-              canGenerate={!user || estimatedImageCostUsd !== null}
-              busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
-              onGenerate={(count = 1) => {
-                if (user) {
-                  setStudioTab('history');
-                  setShowMobileResults(true);
-                }
-                void handleRun('generate', count);
-              }}
-              identitySlot={
+      <CharacterStudioWorkspaceView
+        mode={studioMode}
+        tab={studioTab}
+        onTab={setStudioTab}
+        mobileResults={showMobileResults}
+        onEditor={() => setShowMobileResults(false)}
+        copy={studioCopy}
+        libraryCopy={libraryCopy}
+        pendingCount={pendingRuns.length}
+        error={error}
+        status={statusMessage}
+        composer={
+          <CharacterStudioComposer
+            key={`${editorKey}:${state.characterId ?? 'create'}`}
+            navigation={studioNavigation}
+            state={state}
+            setState={setState}
+            locale={studioLocale}
+            copy={copy}
+            labels={studioCopy}
+            price={estimatedImageCostUsd}
+            canGenerate={!user || estimatedImageCostUsd !== null}
+            busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
+            onGenerate={(count = 1) => {
+              if (user) {
+                setStudioTab('history');
+                setShowMobileResults(true);
+              }
+              void handleRun('generate', count);
+            }}
+            identitySlot={
+              state.characterId ? (
+                <CharacterStudioIdentity
+                  image={identityReference}
+                  copy={libraryCopy}
+                  onLibrary={() => {
+                    setStudioTab('characters');
+                    setShowMobileResults(true);
+                  }}
+                />
+              ) : (
                 <CharacterStudioReference
                   prominent
                   image={identityReference}
@@ -414,104 +459,61 @@ function CharacterBuilderAccountWorkspace({
                   onLibrary={() => (user ? setLibraryModalRole('identity') : openAuthGate())}
                   onRemove={removeIdentityReference}
                 />
-              }
-              styleSlot={
-                <CharacterStudioReference
-                  image={styleReference}
-                  label={studioCopy.styleReference}
-                  copy={studioCopy}
-                  onUpload={() => (user ? styleFileRef.current?.click() : openAuthGate())}
-                  onLibrary={() => (user ? setLibraryModalRole('style') : openAuthGate())}
-                  onRemove={removeStyleReference}
-                />
-              }
-            />
-          </div>
-          <section
-            className={`min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface ${showMobileResults ? 'flex' : 'hidden lg:flex'}`}
-            aria-label={copy.top.resultsTitle}
-          >
-            <nav
-              className="flex shrink-0 items-center gap-4 border-b border-border px-3 sm:px-5"
-              aria-label={copy.top.resultsTitle}
-            >
-              <button
-                type="button"
-                onClick={() => setShowMobileResults(false)}
-                aria-label={studioCopy.character}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border lg:hidden"
-              >
-                <SlidersHorizontal size={15} />
-              </button>
-              <button
-                type="button"
-                aria-pressed={studioTab === 'explore'}
-                onClick={() => setStudioTab('explore')}
-                className={`flex min-h-12 items-center gap-2 border-b-2 text-sm ${studioTab === 'explore' ? 'border-brand text-text-primary' : 'border-transparent text-text-secondary'}`}
-              >
-                <Compass size={16} />
-                {studioCopy.explore}
-              </button>
-              <button
-                type="button"
-                aria-pressed={studioTab === 'history'}
-                onClick={() => setStudioTab('history')}
-                className={`flex min-h-12 items-center gap-2 border-b-2 text-sm ${studioTab === 'history' ? 'border-brand text-text-primary' : 'border-transparent text-text-secondary'}`}
-              >
-                <Images size={16} />
-                {studioCopy.history}
-                {pendingRuns.length ? <span className="text-xs">({pendingRuns.length})</span> : null}
-              </button>
-            </nav>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-studio-scroll="results">
-              {studioTab === 'explore' ? (
-                <CharacterStudioExplore
-                  copy={studioCopy}
-                  onNew={newCharacter}
-                  onChoose={(name) => {
-                    setShowMobileResults(false);
-                    setState((previous) => applyCharacterInspiration(previous, name));
-                    setEditorKey((key) => key + 1);
-                    setError(null);
-                    setStatusMessage(null);
-                  }}
-                />
-              ) : (
-                <div className="p-4 sm:p-6">{renderResultsGallery('grid')}</div>
-              )}
-            </div>
-          </section>
-        </div>
-        <div className={studioMode === 'recast' ? 'min-h-0 flex-1' : 'hidden'}>
+              )
+            }
+            styleSlot={
+              <CharacterStudioReference
+                image={styleReference}
+                label={studioCopy.styleReference}
+                copy={studioCopy}
+                onUpload={() => (user ? styleFileRef.current?.click() : openAuthGate())}
+                onLibrary={() => (user ? setLibraryModalRole('style') : openAuthGate())}
+                onRemove={removeStyleReference}
+              />
+            }
+          />
+        }
+        explore={
+          <CharacterStudioExplore
+            copy={studioCopy}
+            onNew={newCharacter}
+            onChoose={(name) => {
+              library.closeCharacter();
+              setShowMobileResults(false);
+              setState((previous) => applyCharacterInspiration(previous, name));
+              setEditorKey((key) => key + 1);
+              setError(null);
+              setStatusMessage(null);
+            }}
+          />
+        }
+        characters={
+          <CharacterStudioLibrary
+            library={library}
+            copy={libraryCopy}
+            userId={user?.id ?? null}
+            onSignIn={openAuthGate}
+            onNewLook={(id) => void newLook(id)}
+            onRecast={handoffRecast}
+          />
+        }
+        results={renderResultsGallery('grid')}
+        recast={
           <CharacterStudioRecast
             active={studioMode === 'recast'}
             copy={studioCopy}
             navigation={studioNavigation}
+            selection={recastSelection}
           />
-        </div>
-        <input
-          ref={identityFileRef}
-          data-character-reference="identity"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => {
-            void triggerUpload('identity', event.target.files);
-            event.target.value = '';
-          }}
-        />
-        <input
-          ref={styleFileRef}
-          data-character-reference="style"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => {
-            void triggerUpload('style', event.target.files);
-            event.target.value = '';
-          }}
-        />
-      </div>
+        }
+      />
+      <CharacterStudioReferenceInputs
+        identityRef={identityFileRef}
+        styleRef={styleFileRef}
+        onUpload={(role, files) => {
+          void triggerUpload(role, files);
+        }}
+      />
     </CharacterBuilderPageFrame>
   );
 }

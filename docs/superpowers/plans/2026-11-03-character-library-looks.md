@@ -30,27 +30,27 @@
 **Interfaces:** `listStudioCharacters(userId, before?) -> {characters,nextCursor}`; `getStudioCharacter(userId,id) -> StudioCharacter`; `saveStudioCharacterOutput(userId,{name,jobId,imageUrl}) -> {character,kind}`; `renameStudioCharacter(userId,id,name)`.
 `StudioCharacter` has id/name/identity/looks/createdAt. `StudioImage` has jobId/imageUrl/thumbUrl/settingsSnapshot; a look adds id/name/createdAt. Saving a job with a stored builder.characterId attaches a look to that owned identity, not a new character.
 
-- [ ] Write PG17 tests: owned completed output succeeds; foreign, pending, hidden and mismatched URL fail; stored snapshot wins; duplicate save is idempotent; same output cannot attach to a different identity; rename/list remain scoped.
-- [ ] Run `tsx --tsconfig frontend/tsconfig.json --test tests/character-studio-library-postgres.test.ts`; expect failure before implementation, then pass after schema/store/routes.
-- [ ] Add bounded GET/POST/PATCH routes, private no-store responses, migration/bootstrap and server-derived media identity.
-- [ ] Commit tested persistence slice.
+- [x] Write PG17 tests: owned completed output succeeds; foreign, pending, hidden and mismatched URL fail; stored snapshot wins; duplicate save is idempotent; same output cannot attach to a different identity; rename/list remain scoped.
+- [x] Run `tsx --tsconfig frontend/tsconfig.json --test tests/character-studio-library-postgres.test.ts`; expect failure before implementation, then pass after schema/store/routes.
+- [x] Add bounded GET/POST/PATCH routes, private no-store responses, migration/bootstrap and server-derived media identity.
+- [x] Commit tested persistence slice.
 
 ### Task 2: Identity-bound generation and draft recovery
 
 **Files:** `frontend/src/lib/character-studio-look.ts`; request/state/snapshot types and existing sanitizer/snapshot/runner; `frontend/server/character-studio/look.ts`; `tests/character-studio-look.test.ts`.
 **Interfaces:** `buildStudioLookDraft(previous, character)` initializes a look with the exact saved identity; `bindStudioLookRequest(input, character)` enforces identity traits and references server-side. Optional `characterId` travels through request, builder snapshot, drafts and settings reuse.
 
-- [ ] Write tests covering stale identity/photo overrides, mutable clothing/hair/scene, strict identity reference, snapshot round trip, resetting to a new character, preserved completed runs.
-- [ ] Watch tests fail, implement pure transitions plus owned server lookup before generation, rerun focused tests.
-- [ ] Commit tested identity contract.
+- [x] Write tests covering stale identity/photo overrides, mutable clothing/hair/scene, strict identity reference, snapshot round trip, resetting to a new character, preserved completed runs.
+- [x] Watch tests fail, implement pure transitions plus owned server lookup before generation, rerun focused tests.
+- [x] Commit tested identity contract.
 
 ### Task 3: Saved library, save dialog, look editor and Recast handoff
 
 **Files:** colocated `CharacterStudioLibrary`, `CharacterStudioSaveDialog`, `CharacterStudioWorkspaceView`, `useCharacterStudioLibrary` and copy; existing result cards/gallery/composer/Recast/workspace; architecture/account/UI tests.
 **Interfaces:** Results expose Save character/look and Recast actions. Library exposes New look and Recast for identity/looks. Parent owns Recast image selection with a fresh transfer id; Recast remains mounted between modes and receives `selection`.
 
-- [ ] Add integration tests for result-specific save context, delayed/account-switched requests, persisted new-look context and Recast portrait/video preservation.
-- [ ] Extract workspace presentation to keep the orchestrator bounded, update architecture contracts, implement named save dialog with keyboard handling, paginated library and locked-identity look mode.
-- [ ] Verify real rendered empty/error/loading states and desktop/mobile navigation via CUA; use test fixtures only in automated tests for successful save/generation states.
-- [ ] Run focused suites, TypeScript, lint, exposure and diff checks. Document migration and local/provider verification limits.
+- [x] Add integration tests for result-specific save context, delayed/account-switched requests, persisted new-look context and Recast portrait/video preservation.
+- [x] Extract workspace presentation to keep the orchestrator bounded, update architecture contracts, implement named save dialog with keyboard handling, paginated library and locked-identity look mode.
+- [x] Verify real rendered empty/error/loading states and desktop/mobile navigation via CUA; use test fixtures only in automated tests for successful save/generation states.
+- [x] Run focused suites, TypeScript, lint, exposure and diff checks. Document migration and local/provider verification limits.
 - [ ] Fresh-context review of the finished change, fix important issues, commit final slice on the same branch.
