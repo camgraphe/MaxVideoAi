@@ -4,6 +4,7 @@ import {resolveStudioApiAccess,type StudioAccessDecision} from '@/server/studio/
 import {readStudioAssistanceStatus,chooseStudioAssistance} from '@/server/studio/assistance-ledger';
 import {studioAssistanceChoiceSchema} from '@/lib/studio/assistance-contract';
 import {promptAssistanceRequestSchema} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_BODY_MAX_BYTES} from '@/lib/prompt-assistance/limits';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {readPromptAssistance,sendPromptAssistance,recoverPromptAssistance} from './service';
 import {readPromptSession} from './sessions';
@@ -20,7 +21,7 @@ const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'C
 export async function boundedPromptJson(req:NextRequest){
   if(!req.body)throw new SyntaxError('Missing body');
   const reader=req.body.getReader(),chunks:Uint8Array[]=[];let size=0;
-  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>65536){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(part.value);}}
+  try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>PROMPT_ASSISTANCE_BODY_MAX_BYTES){await reader.cancel();throw new Error('BODY_TOO_LARGE');}chunks.push(part.value);}}
   finally{reader.releaseLock();}
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }

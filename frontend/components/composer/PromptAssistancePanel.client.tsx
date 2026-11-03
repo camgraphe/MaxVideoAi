@@ -6,6 +6,7 @@ import type {ApplicationSettingChange} from '@/lib/prompt-assistance/application
 import {promptSettingCopy} from './prompt-assistance-settings-copy';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import { composerModelLabel } from './composer-model-label';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import styles from './prompt-assistance.module.css';
 
 export type PromptAssistancePanelProps = {
@@ -57,7 +58,8 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   useEffect(() => {
     if (expanded) proposalEditor.current?.focus({ preventScroll: true });
   }, [expanded]);
-  const canSend = Boolean(message.trim()) && !pending && !blocked && !sendBlocked;
+  const messageTooLong=message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS;
+  const canSend = Boolean(message.trim()) && !messageTooLong && !pending && !blocked && !sendBlocked;
   const sendMessage = () => { input.current?.focus({ preventScroll: true }); onSend(); };
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
   const hasConversation = messages.length > 0 || pending || Boolean(proposal);
@@ -104,7 +106,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       <div className={styles.messageField} data-assistance-input-notice={inputNotice ? true : undefined}>
       <label htmlFor={messageId}>{copy.message}</label>
       {inputNotice}
-      <textarea ref={input} id={messageId} data-assistance-message readOnly={inputReadOnly} rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
+      <textarea ref={input} id={messageId} data-assistance-message aria-invalid={messageTooLong||undefined} aria-describedby={messageTooLong?`${messageId}-limit`:undefined} readOnly={inputReadOnly} rows={2} value={message} placeholder={inputNotice ? undefined : copy.placeholder} onChange={event => onMessageChange(event.target.value)} onKeyDown={event => {
         if (event.key !== 'Enter') return;
         event.stopPropagation();
         if (event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
@@ -112,6 +114,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       }} />
       </div>
       <div className={styles.sendRow}><div className={styles.inputReferences}>{modelControl}{references}</div><button type="button" aria-label={copy.send} className={styles.send} disabled={!canSend} onClick={sendMessage}><ArrowUp size={19} aria-hidden /></button></div>
+      {messageTooLong?<div id={`${messageId}-limit`} className={styles.liveFeedback} role="status">{copy.messageTooLong(PROMPT_ASSISTANCE_TEXT_MAX_CHARS.toLocaleString(locale))}</div>:null}
       {feedback}
     </div>
   </div>;
