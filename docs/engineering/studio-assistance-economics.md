@@ -333,3 +333,32 @@ Existing conversation-run, route, usage and canonical-pricing contracts also run
 Before production review, qualify actual token-count/response parity, representative
 Sol and Luna tasks, non-default provider billing settings, support reconciliation,
 and the new customer-visible consent and wallet-hold language.
+
+## Composer completed-output credit restorations
+
+Migration 93 and `assistance-output-refund.ts` own the narrow customer restoration
+for a completed non-refusal composer response rejected by application validation.
+Known supplier usage is still settled normally. New positive credit charges are
+restored atomically with the failed request and return
+`OUTPUT_INVALID_CREDITS_RESTORED`; historical `OUTPUT_INVALID` failures use an
+exact-owned-call, fingerprinted support preview/apply. Other provider statuses,
+refusals, incomplete responses and the real replacement target limit retain their
+existing known-usage charge policy. This is separate from an unknown-usage waiver.
+
+Original call costs, funding and charged allocations remain gross immutable
+history. Immutable `studio_assistance_output_refunds` and
+`studio_assistance_output_refund_allocations` identify the returned credits and
+original lots. Net credit consumption subtracts these restorations; supplier cost
+and sponsored campaign expenditure do not. The existing credit-balance/status
+reader reports the resulting lot balances and net purchased usage. The common
+assistant review explicitly separates gross charges, refunds and net consumption
+under the original account/request scope. Pack purchase receipts are unchanged;
+a restoration is neither new wallet revenue nor a second wallet refund.
+
+Only the original lot's `consumed_credits` decreases. No grant, new pack or allowance
+is created. Old included periods retain their expiry rather than replenishing the
+current month. A restoration increments account revision to invalidate stale
+funding decisions while preserving the model, consent and budget. It does not
+reopen history, repeat actions or dispatch a provider request. See the exact-call
+procedure in `docs/operations/studio-assistance-support.md`; keep immutable refund
+evidence and compatible readers if the application runtime is rolled back.

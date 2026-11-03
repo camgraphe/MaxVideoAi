@@ -46,10 +46,11 @@ counting, reserving or dispatching. Base task-schema recognition remains separat
 so missing migration 94 does not erase ownership or route an existing task through
 legacy spending. Existing history/status reads remain available.
 
-Migration index 94 was absent from fetched `origin/main` at `390ac3e86`; PR 607 owns
-93. Recheck the merged migration index before publishing this follow-up. Do not
-renumber or modify a migration already applied elsewhere. No production migration
-was performed during implementation.
+The integrated `origin/main` at
+`3239a5a1ec487724616d9c9b30612637322d0f53` includes PR 607’s migration 93;
+migration index 94 remains available. Recheck main before publication if another
+migration lands. Do not renumber or modify a migration already applied elsewhere.
+No production migration was performed during implementation.
 
 Prefer a forward correction. Do not assume that restoring a pre-envelope runtime
 is a safe application rollback after long replies exist. At base `390ac3e86`, the

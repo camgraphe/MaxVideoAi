@@ -176,3 +176,73 @@ explicit recovery/support and retains unknown exposure; it is not proof of zero
 cost. A transient database failure leaves automatic settlement retryable. Use the
 same exact-call diagnostic and fingerprinted support owners above. Never reset
 the exposure cap or rewrite a stored response to restore access.
+
+## Restore credits for a completed reply rejected by application validation
+
+Migration `93_milo_output_credit_refunds.sql` must be applied explicitly after
+54, 62, 63 and 85, before deploying the matching runtime. It adds immutable refund
+and original-lot allocation evidence; it performs no backfill or balance change.
+Keep this evidence and compatible readers on rollback. Do not run request-time DDL.
+
+New composer responses with supported settled usage that complete at the provider
+but fail application reply validation restore their charged credits atomically
+with the failed outcome. The returned error is
+`OUTPUT_INVALID_CREDITS_RESTORED` only when positive credits were actually restored.
+Supplier usage and cost remain settled. Refusals, incomplete responses, other
+provider statuses, and a replacement exceeding its real editor target keep their
+existing known-usage charge policy. A zero-credit or non-credit call does not issue
+credits or claim that credits were restored.
+
+Historical failed replies require a separate exact-call support decision. After
+verifying the account and failed request through the approved support process,
+set `STUDIO_SUPPORT_USER` and `STUDIO_SUPPORT_CALL` to their exact identities:
+
+```sh
+frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json frontend/scripts/refund-studio-assistance-output.ts --target "$STUDIO_SUPPORT_TARGET" --environment production --user "$STUDIO_SUPPORT_USER" --call "$STUDIO_SUPPORT_CALL"
+```
+
+This is a repeatable read-only preview with a bounded statement timeout. It shows
+identity, response ID, exact credit amount, original lots/periods, account revision
+and fingerprint, without prompts or response text. It accepts only an owned
+composer request already failed with `OUTPUT_INVALID`, no delivered reply,
+a completed non-refusal provider response, supported usage matching the settled
+supplier record, and exact positive charged credit allocations. It does not
+reparse historical output against a newer decoder: a later validation fix cannot
+change the fact that the original request failed. Active, successful, waived,
+unsettled, unsupported, zero-charge and other failure outcomes are refused.
+
+Review the exact result and apply that fingerprint with a named operator and
+support case reason:
+
+```sh
+frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json frontend/scripts/refund-studio-assistance-output.ts --target "$STUDIO_SUPPORT_TARGET" --environment production --user "$STUDIO_SUPPORT_USER" --call "$STUDIO_SUPPORT_CALL" --apply "$STUDIO_SUPPORT_FINGERPRINT" --operator "$STUDIO_SUPPORT_OPERATOR" --reason "Support case STUDIO-123: completed reply rejected by application validation"
+```
+
+The transaction uses bounded lock/statement timeouts, serializes with composer and
+account financial operations, restores exactly the original charged credits once,
+records immutable per-call and per-lot evidence, and increments account revision.
+The revision invalidates an earlier insufficient-credit decision without changing
+the selected model, purchased-pack consent, budget or allowance. Refresh the saved
+account status and verify its balance, revision, unresolved calls and `canContinue`;
+other independent admission conditions still apply. Preview each subsequent call
+after the previous apply, because account revision is part of the fingerprint.
+Concurrent or repeated apply of the same approved fingerprint is a no-op after the
+first successful commit. A different fingerprint or changed evidence is refused.
+
+Credits return to their original lots. Current-period included credits become
+available again in that period; prior-period included credits keep their original
+expiry and cannot enlarge the current monthly grant. Purchased credits return to
+the original pack. No wallet receipt, generic top-up, new lot, allowance reset or
+model request is created. Original call, funding and charged-allocation rows stay
+as gross historical evidence; refund rows separately identify the returned amount.
+Net consumed credits are gross charged credits minus recorded output refunds.
+Supplier cost and sponsored campaign expenditure are unchanged. A purchased pack's
+wallet receipt remains its original purchase, rather than becoming a second wallet
+refund. The common assistant review shows the separate gross charge and credit
+refund/net-consumption evidence under the same exact account/request scope.
+
+Support never reopens the failed message, inserts a newly accepted reply, reapplies
+a prompt, resumes an action or sends the original instructions again. The customer
+can compose a new follow-up after account status refresh. This procedure is distinct
+from `waive_unknown`; never disguise a settled call as unknown to release credits.
+There is no bulk apply, arbitrary amount option or public support HTTP endpoint.

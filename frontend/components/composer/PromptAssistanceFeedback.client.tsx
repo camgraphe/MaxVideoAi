@@ -10,7 +10,7 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
   if(!error&&!waiting&&!recovery)return null;
   const message=waiting?(phase==='queued'?'Your request is saved and waiting to start.':phase==='preparing'?'Milo is preparing your saved request.':phase==='recovering'?'Checking the saved reply and recorded usage.':'Waiting for Milo’s saved reply. You can stop waiting or start a new chat.'):error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
     ? 'Check this reply before sending another message. Stopping the wait does not cancel a call already started.'
-    : error==='CONTEXT_TOO_LARGE'||error==='DRAFT_TOO_LONG'||error==='BODY_TOO_LARGE'
+    : error==='MESSAGE_TOO_LONG'||error==='CONTEXT_TOO_LARGE'||error==='DRAFT_TOO_LONG'||error==='BODY_TOO_LARGE'
       ? 'This request is too long. Shorten the draft or message and try again.'
     : error==='REFERENCE_IMAGES_TOO_LARGE'
       ? 'These images are too large to inspect together. Remove some references and try again.'
@@ -28,6 +28,8 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
       ? 'Another Milo request is still pending. Check it in the workspace where you sent it.'
     : error==='OUTPUT_INVALID'
       ? 'Milo could not return a usable suggestion. Recorded usage still applies; you can try a simpler request.'
+    : error==='OUTPUT_INVALID_CREDITS_RESTORED'
+      ? 'Milo’s reply could not be delivered. The credits charged for this request were restored. Your draft is unchanged; you can send a new message.'
     : error==='OUTPUT_INCOMPLETE'||error==='OUTPUT_TOO_LONG'
       ? 'Milo could not finish a suggestion within this request’s limits. Your draft is unchanged. Recorded usage still applies.'
     : error==='OUTPUT_REFUSED'

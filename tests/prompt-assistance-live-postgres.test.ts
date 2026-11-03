@@ -12,7 +12,7 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   const old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
-  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
   const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
   const {readStudioAssistanceStatus,chooseStudioAssistance}=await import('../frontend/src/server/studio/assistance-ledger');
   const {promptAssistanceRequestSchema}=await import('../frontend/src/lib/prompt-assistance/contract');
@@ -89,8 +89,8 @@ test('Composer conversations share real Milo credits, replay once and retain unk
   assert.equal((await service.sendPromptAssistance('owner',unknownRequest,deps)).state,'complete');
   assert.equal(calls,callsAfterUnknown,'Recorded usage must settle without another model call');
   const unusable=await service.sendPromptAssistance('malformed-owner',{...request,requestId:randomUUID()},{...deps,create:async(params)=>({...await deps.create(params),output_text:'not JSON'}) as never});
-  assert.equal(unusable.safeToRetry,false);assert.equal(unusable.nextAction,undefined);assert.equal(unusable.state,'failed');assert.equal(unusable.error,'OUTPUT_INVALID');assert.equal(unusable.reply,undefined);
-  assert.equal(unusable.assistance.credits?.included.remaining,470,'Known provider usage is charged even for unusable output');
+  assert.equal(unusable.safeToRetry,false);assert.equal(unusable.nextAction,undefined);assert.equal(unusable.state,'failed');assert.equal(unusable.error,'OUTPUT_INVALID_CREDITS_RESTORED');assert.equal(unusable.reply,undefined);
+  assert.equal(unusable.assistance.credits?.included.remaining,500,'Application-invalid output restores customer credits while preserving supplier usage');
   for (const [owner, responsePatch, expectedError] of [
     ['incomplete-owner', {status:'incomplete',incomplete_details:{reason:'max_output_tokens'}}, 'OUTPUT_INCOMPLETE'],
     ['refusal-owner', {output:[{type:'message',content:[{type:'refusal',refusal:'I cannot help with that request.'}]}]}, 'OUTPUT_REFUSED'],

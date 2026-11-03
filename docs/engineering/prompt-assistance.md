@@ -105,7 +105,7 @@ The boundary is shared across all tiers; reference perception retains its own ga
 
 The private provider protocol `destination-v1` declares `kind: conversation` or
 `kind: replacement`. Advice, explanations, questions and external editing plans
-belong entirely in `reply` (the existing 6,000-character public limit), with null
+belong entirely in `reply` (the shared 50,000-character text envelope), with null
 `text`. Only complete text intended for the selected `draft.target` belongs in a
 replacement. This includes valid creative sequences, multi-action prompts and
 Voiceover scripts; destination is not inferred from keywords, duration or action
@@ -156,11 +156,11 @@ The agreed next perception scope is **images on Lite; images, video and audio on
 
 ## Calls and existing credits
 
-`/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
+`/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a streamed 1 MiB aggregate request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
 
-The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 6,000 output tokens (including reasoning) for newly frozen runtimes; historical requests retain their 2,200-token limit. The current draft is never silently truncated. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
+The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 6,000 output tokens (including reasoning) for newly frozen runtimes; historical requests retain their 2,200-token limit. Human messages, conversation replies, draft/suggestion text, session snapshots and browser draft storage share a bounded 50,000-character envelope. The selected model’s replacement limit stays authoritative (for example, Wan 3 Prime remains 20,000 characters). A longer conversation answer stays in `reply` with `text: null`; it cannot become a replacement to escape a limit. Text is never silently truncated. JSON escaping, UTF-8 and metadata count toward the independent body bound. Oversized human messages remain editable with a limit notice and cannot be sent. The composer measures the full editable input, including outer whitespace, against its cache envelope. If optional local edits are invalid, restoration omits them without shortening text while retaining the valid chat and pending request identities; the overlimit notice explains that the unsent text cannot be restored after reload. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled. Completed output rejected by the app’s structural decoder receives the dedicated recorded credit restoration under migration 93; selected-target `OUTPUT_TOO_LONG`, incomplete and refused outputs keep their existing charging policy. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
 
-Lite/Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
+Lite/Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Returning to a visible/focused tab refreshes account-owned availability. A newer account revision clears a cached funding rejection after support restores credits, without replaying the old request. Generator media quotes remain separate.
 
 ## Interruption and support
 

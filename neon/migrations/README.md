@@ -184,6 +184,19 @@ The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlo
 Keep retention guards/job when rolling back assistance features. See
 `docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.
 
+## Composer application-output credit refunds (migration 93)
+
+Apply `93_milo_output_credit_refunds.sql` explicitly after 54, 62, 63 and 85 before
+deploying its matching composer settlement runtime. It adds immutable per-call and
+per-original-lot refund evidence, without backfills, grants, wallet changes or
+changes to settled supplier/charge history. Re-applying the DDL is safe; retain
+these tables/guards and compatible financial readers on rollback. Normal previews
+need the same migration on their own database branch. See
+`docs/operations/studio-assistance-support.md` for exact-owned-call preview and
+fingerprinted apply, supported failure policy and expiry semantics. This source
+change is qualified on disposable PostgreSQL; a hosted apply is a separate reviewed
+operation on a verified target.
+
 ## Studio conversation reply envelope (migration 94)
 
 Apply `94_studio_conversation_reply_envelope.sql` after the existing Studio task
@@ -199,5 +212,6 @@ history context and saved-response recovery need separate qualification, even if
 ordinary history reads still work. Never truncate or rewrite long data for a
 rollback. See
 `docs/engineering/studio-conversation-reply-envelope.md` for exact prerequisites,
-timeouts and local verification. Migration 93 is reserved by PR 607; recheck main
-for index collisions before this follow-up is published.
+timeouts and local verification. Migration 93 was delivered by PR 607 at main
+`3239a5a1ec487724616d9c9b30612637322d0f53`; migration 94 has no collision
+in that base. Recheck main before publication if another migration lands.
