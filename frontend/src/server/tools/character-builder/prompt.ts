@@ -1,10 +1,6 @@
-import { getStudioScene, STUDIO_EYES, STUDIO_CHARACTER_TYPES } from '@/lib/character-studio-catalog';
-import {
-  getAccessoryPrompt,
-  getDistinctiveFeaturePrompt,
-  getRealismPrompt,
-  getTraitOptionPrompt,
-} from '@/lib/character-builder';
+import { getStudioScene } from '@/lib/character-studio-catalog';
+import { buildTraitPrompt } from './trait-prompt';
+import { getDistinctiveFeaturePrompt } from '@/lib/character-builder';
 import type {
   CharacterBuilderConsistencyMode,
   CharacterBuilderReferenceImage,
@@ -17,9 +13,7 @@ import {
   buildCloseUpIdentityParts,
   buildLightingPreservationParts,
   buildPreservationParts,
-  getCustomHairDescription,
-  getCustomOutfitDescription,
-  isHairEnabled,
+  hasFlexibleCharacterAnatomy,
   isOutfitEnabled,
 } from './traits';
 import { collectReferenceImages, trimString, uniqueStrings } from './utils';
@@ -46,89 +40,13 @@ function buildConsistencyBlock(
 ): string {
   switch (consistencyMode) {
     case 'exploratory':
-      return 'Keep the same person recognizable while allowing a little stylistic variation.';
+      return 'Keep the same character recognizable while allowing a little stylistic variation.';
     case 'strict':
       return `Preserve the same identity, ${buildAnchorParts(traits)}, and distinctive markers as consistently as possible.`;
     case 'balanced':
     default:
       return 'Aim for stable identity and styling while still allowing small cleanup improvements.';
   }
-}
-
-function buildTraitPrompt(traits: CharacterBuilderTraits, sourceMode: CharacterBuilderRequest['sourceMode']): string[] {
-  const parts: string[] = [];
-  const pushValue = (value: string | null) => {
-    if (value) parts.push(value);
-  };
-  const pushTrait = (
-    key: keyof Pick<
-      CharacterBuilderTraits,
-      | 'genderPresentation'
-      | 'ageRange'
-      | 'skinTone'
-      | 'faceCues'
-      | 'hairColor'
-      | 'hairLength'
-      | 'hairstyle'
-      | 'eyeColor'
-      | 'bodyBuild'
-      | 'outfitStyle'
-    >
-  ) => {
-    const trait = traits[key];
-    if (!trait || typeof trait !== 'object' || !('value' in trait)) return;
-    if (trait.value == null || trait.value === 'auto') return;
-    if (key === 'genderPresentation' && trait.value === 'custom') {
-      const customGenderDescription = trimString(traits.customGenderDescription);
-      if (customGenderDescription) {
-        parts.push(customGenderDescription);
-      }
-      return;
-    }
-    pushValue(getTraitOptionPrompt(key, trait.value));
-  };
-
-  pushValue(STUDIO_CHARACTER_TYPES.find((entry) => entry.id === traits.characterType?.value)?.prompt ?? null);
-  pushTrait('genderPresentation');
-  pushTrait('ageRange');
-  pushTrait('skinTone');
-  pushTrait('faceCues');
-  if (isHairEnabled(traits)) {
-    const customHairDescription = getCustomHairDescription(traits);
-    if (customHairDescription) {
-      parts.push(customHairDescription);
-    } else {
-      if (traits.hairstyle.value !== 'bald') {
-        pushTrait('hairColor');
-        pushTrait('hairLength');
-      }
-      pushTrait('hairstyle');
-    }
-  }
-  pushTrait('eyeColor');
-  pushValue(STUDIO_EYES.find((entry) => entry.id === traits.eyeShape?.value)?.prompt ?? null);
-  pushTrait('bodyBuild');
-  if (isOutfitEnabled(traits)) {
-    const customOutfitDescription = getCustomOutfitDescription(traits);
-    if (customOutfitDescription) {
-      parts.push(customOutfitDescription);
-    } else {
-      pushTrait('outfitStyle');
-    }
-  }
-
-  traits.accessories.forEach((value) => pushValue(getAccessoryPrompt(value)));
-  traits.distinctiveFeatures.forEach((value) => pushValue(getDistinctiveFeaturePrompt(value)));
-  if (trimString(traits.customDetailsDescription)) {
-    pushValue(trimString(traits.customDetailsDescription));
-  }
-  pushValue(getRealismPrompt(traits.realismStyle));
-
-  if (sourceMode === 'reference-image') {
-    return parts;
-  }
-
-  return parts;
 }
 
 function buildReferenceBlock(input: CharacterBuilderRequest, referenceImages: CharacterBuilderReferenceImage[]): string[] {
@@ -152,7 +70,9 @@ function buildReferenceBlock(input: CharacterBuilderRequest, referenceImages: Ch
   }
 
   if (identityImages.length && input.sourceMode === 'reference-image') {
-    blocks.push('Apply manual builder choices as supporting constraints rather than hard replacements.');
+    blocks.push(hasFlexibleCharacterAnatomy(input.traits)
+      ? 'Transform the reference into the requested character concept. Keep recognizable identity cues only where compatible; the reference must not override the requested species or material.'
+      : 'Apply manual builder choices as supporting constraints rather than hard replacements.');
   }
 
   return blocks;
@@ -160,11 +80,14 @@ function buildReferenceBlock(input: CharacterBuilderRequest, referenceImages: Ch
 
 function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   const { action, outputMode, outputOptions } = input;
+  const flexibleAnatomy = hasFlexibleCharacterAnatomy(input.traits);
 
   if (action === 'full-body-fix') {
     return [
       'Rebuild the character as a clean head-to-toe reference image.',
-      'Ensure the full head, torso, arms, hands, legs, ankles, and feet are visible with no crop.',
+      flexibleAnatomy
+        ? 'Show the entire character, including all appendages appropriate to its design, with no crop.'
+        : 'Ensure the full head, torso, arms, hands, legs, ankles, and feet are visible with no crop.',
       `Preserve the same ${buildPreservationParts(input.traits)} from the source image.`,
     ];
   }
@@ -186,7 +109,9 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
       blocks.push('Arrange the sheet as a clean two-row grid.');
       blocks.push('Top row: four full-body views showing front, side, three-quarter, and back.');
       blocks.push('Reserve roughly two-thirds of the total canvas height for the top row so each full-body panel is tall enough to show the complete head-to-toe figure.');
-      blocks.push('Each top-row panel must include the full head, full legs, ankles, and feet with no crop.');
+      blocks.push(flexibleAnatomy
+        ? 'Each top-row panel must include the complete character and all its appendages with no crop.'
+        : 'Each top-row panel must include the full head, full legs, ankles, and feet with no crop.');
       blocks.push('Bottom row: four compact close-up head-and-shoulders portraits directly underneath, matching the same view order.');
       blocks.push('Keep the bottom row to roughly one-third of the total canvas height so the close-ups read as a shorter strip and do not steal height from the full-body views.');
       blocks.push('Keep all eight panels aligned with even spacing, the same background, and consistent lighting.');
@@ -198,9 +123,11 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
   }
 
   const blocks = [
-    'Create a clean front-facing character reference portrait framed as a balanced medium portrait, with strong facial clarity and readable hair and signature details.',
+    'Create a clean front-facing character reference portrait framed as a balanced medium portrait, with strong facial clarity and readable signature details.',
     'The face must be clearly visible and facing the camera, but avoid an extreme close-up that crops too tightly around the face.',
-    'Frame from roughly mid-torso or chest-up, showing the full head, neck, shoulders, and upper torso. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
+    flexibleAnatomy
+      ? 'Frame the complete head or defining form with space for ears, antennae, leaves or other signature parts. Adapt portrait framing to the character anatomy without inventing human body parts.'
+      : 'Frame from roughly mid-torso or chest-up, showing the full head, neck, shoulders, and upper torso. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
   ];
   if (outputMode !== 'portrait-reference' && outputOptions.fullBodyRequired) {
@@ -223,13 +150,17 @@ function buildOutputOptionBlock(input: CharacterBuilderRequest): string[] {
     blocks.push('Use a clean neutral studio background.');
   }
   if (input.outputOptions.preserveFacialDetails) {
-    blocks.push('Preserve facial detail clarity and readable skin texture.');
+    blocks.push(hasFlexibleCharacterAnatomy(input.traits)
+      ? 'Preserve clear expressive features and the textures appropriate to the character: fur, chitin, fruit peel, alien skin or the described material.'
+      : 'Preserve facial detail clarity and readable skin texture.');
   }
   if (input.outputOptions.avoid3dRenderLook) {
     blocks.push('Avoid a glossy 3D-render look.');
   }
   if (input.outputMode === 'character-sheet') {
-    blocks.push('Keep the character fully visible with realistic anatomy and complete framing.');
+    blocks.push(hasFlexibleCharacterAnatomy(input.traits)
+      ? 'Keep the character fully visible with consistent anatomy appropriate to its concept and complete framing.'
+      : 'Keep the character fully visible with realistic anatomy and complete framing.');
   }
   return blocks;
 }
@@ -263,7 +194,7 @@ export function buildPrompt(input: CharacterBuilderRequest): string {
   const sections: string[] = [
     'Create a reusable AI character reference asset as a single still image output. Do not imply motion, timeline editing, or video generation.',
   ];
-  const traitPrompt = buildTraitPrompt(input.traits, input.sourceMode);
+  const traitPrompt = buildTraitPrompt(input.traits);
   const referenceBlock = buildReferenceBlock(input, referenceImages);
   const layoutBlock = buildLayoutBlock(input);
   const outputBlock = buildOutputOptionBlock(input);
@@ -290,7 +221,7 @@ export function buildPrompt(input: CharacterBuilderRequest): string {
   }
 
   if (detailLockBlock.length) {
-    sections.push(detailLockBlock.join(' '));
+    sections.push(`${hasFlexibleCharacterAnatomy(input.traits) ? 'Apply these detail locks only where compatible with the character concept. ' : ''}${detailLockBlock.join(' ')}`);
   }
 
   if (advancedNotes) {

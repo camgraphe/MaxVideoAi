@@ -6,6 +6,7 @@ export type StudioChoice = {
   label: StudioLabel;
   prompt: string;
   tile: number;
+  atlas?: 'identity' | 'creatures';
 };
 const label = (en: string, fr: string, es: string): StudioLabel => ({
   en,
@@ -26,7 +27,7 @@ const choice = (
   prompt,
 });
 
-export const STUDIO_CHARACTER_TYPES = [
+export const STUDIO_CHARACTER_TYPES: Array<StudioChoice & { nonHuman?: boolean }> = [
   choice('natural', 0, 'Natural', 'Naturel', 'Natural', 'natural balanced human facial proportions'),
   choice(
     'distinctive',
@@ -44,6 +45,22 @@ export const STUDIO_CHARACTER_TYPES = [
     'Exagerado',
     'deliberately exaggerated unusual human facial proportions, highly distinctive character',
   ),
+  {
+    ...choice('animal', 0, 'Animal', 'Animal', 'Animal', 'an anthropomorphic animal character with an unmistakably animal head, muzzle, ears and species-specific features'),
+    atlas: 'creatures', nonHuman: true,
+  },
+  {
+    ...choice('insect', 1, 'Insect', 'Insecte', 'Insecto', 'an expressive insect character with an insect head, compound eyes, antennae and a chitinous exoskeleton'),
+    atlas: 'creatures', nonHuman: true,
+  },
+  {
+    ...choice('fruit', 2, 'Fruit head', 'Tête de fruit', 'Cabeza de fruta', 'an imaginative character with a recognizable fruit for a head, expressive features integrated into its natural fruit texture'),
+    atlas: 'creatures', nonHuman: true,
+  },
+  {
+    ...choice('alien', 3, 'Alien', 'Extraterrestre', 'Extraterrestre', 'an extraterrestrial character with clearly nonhuman facial structure, unusual eyes and alien surface textures'),
+    atlas: 'creatures', nonHuman: true,
+  },
 ];
 export const STUDIO_PRESENTATIONS = [
   choice('woman', 4, 'Feminine', 'Féminine', 'Femenina', ''),

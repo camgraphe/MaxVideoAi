@@ -88,6 +88,7 @@ export function CharacterStudioComposer({
       patch.customHairDescription = '';
     }
     if (key === 'outfitStyle') patch.customOutfitDescription = '';
+    if (key === 'characterType') patch.customCharacterDescription = '';
     patchTraits(patch);
   }
   function labelFor(key: TraitKey, choices: Array<{ id: string; label: string }>) {
@@ -152,16 +153,31 @@ export function CharacterStudioComposer({
         {group(
           'type',
           labels.type,
-          STUDIO_CHARACTER_TYPES.find((x) => x.id === traits.characterType?.value)?.label[locale] ??
-            labels.free,
+          traits.customCharacterDescription?.trim() ? labels.customType :
+            STUDIO_CHARACTER_TYPES.find((x) => x.id === traits.characterType?.value)?.label[locale] ?? labels.free,
           Sparkles,
-          <StudioVisualChoices
-            options={STUDIO_CHARACTER_TYPES}
-            atlas="identity"
-            value={traits.characterType?.value}
-            onChange={(id) => choose('characterType', id)}
-            locale={locale}
-          />,
+          <>
+            <StudioVisualChoices
+              options={STUDIO_CHARACTER_TYPES}
+              atlas="identity"
+              value={traits.customCharacterDescription?.trim() ? null : traits.characterType?.value}
+              onChange={(id) => choose('characterType', id)}
+              locale={locale}
+            />
+            <label className="block text-xs font-medium text-text-secondary">
+              {labels.typeNotes}
+              <textarea
+                className={fieldClass}
+                rows={3}
+                maxLength={1000}
+                placeholder={labels.typePlaceholder}
+                value={traits.customCharacterDescription ?? ''}
+                onChange={(event) => patchTraits({ customCharacterDescription: event.target.value })}
+                aria-describedby="studio-type-hint"
+              />
+            </label>
+            <p id="studio-type-hint" className="text-xs leading-relaxed text-text-secondary">{labels.typeHint}</p>
+          </>,
         )}
         {group(
           'presentation',

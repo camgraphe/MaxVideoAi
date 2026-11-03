@@ -2,6 +2,10 @@ import type { StudioLocale } from '@/lib/character-studio-catalog';
 
 const en = {
   type: 'Character type',
+  typeNotes: 'Imagine your character',
+  typePlaceholder: 'A strawberry head, a blue fox, a robot made of flowers…',
+  typeHint: 'Describe your own idea. Your description replaces the selected type; other traits apply where compatible.',
+  customType: 'Custom',
   presentation: 'Presentation',
   optional: 'Optional',
   uploadPhoto: 'Upload your photo',
@@ -78,6 +82,10 @@ const en = {
 type StudioCopy = { [K in keyof typeof en]: string };
 const fr: StudioCopy = {
   type: 'Type de personnage',
+  typeNotes: 'Imaginer ton personnage',
+  typePlaceholder: 'Une tête de fraise, un renard bleu, un robot fait de fleurs…',
+  typeHint: 'Décris ton idée. Elle remplace le type sélectionné ; les autres traits s’appliquent s’ils sont compatibles.',
+  customType: 'Sur mesure',
   presentation: 'Présentation',
   optional: 'Facultatif',
   uploadPhoto: 'Importer ta photo',
@@ -154,6 +162,10 @@ const fr: StudioCopy = {
 };
 const es: StudioCopy = {
   type: 'Tipo de personaje',
+  typeNotes: 'Imagina tu personaje',
+  typePlaceholder: 'Una cabeza de fresa, un zorro azul, un robot hecho de flores…',
+  typeHint: 'Describe tu idea. Sustituye el tipo elegido; los demás rasgos se aplican si son compatibles.',
+  customType: 'Personalizado',
   presentation: 'Presentación',
   optional: 'Opcional',
   uploadPhoto: 'Sube tu foto',

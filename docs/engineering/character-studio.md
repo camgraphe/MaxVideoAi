@@ -10,7 +10,7 @@ pipeline. The approved proposal and phased scope live in
 
 - `CharacterBuilderWorkspace.tsx` retains account isolation and wires generation,
   references, billing-product reads, results, persistence and runtime overlays.
-- `CharacterStudioComposer.client.tsx` owns the six collapsible groups and output
+- `CharacterStudioComposer.client.tsx` owns the collapsible trait groups and output
   settings. Choice cards, reference slots and the exploration surface are separate
   colocated components. There is no composited or live generated preview.
 - `character-studio-state.ts` owns new-character and inspiration transitions.
@@ -36,7 +36,7 @@ by the current save/download/continuation actions.
 
 ## Media
 
-`frontend/public/assets/tools/character-studio/` contains five compact atlases.
+`frontend/public/assets/tools/character-studio/` contains compact image atlases.
 The original generated images are illustrative catalogue choices, never uploaded
 as the user's reference or inserted into result history. `provenance.json`
 records their origin and each Poly Haven scene's source and CC0 attribution.
@@ -112,3 +112,33 @@ in case of conflict. Either suppresses the neutral studio background instruction
 including on character sheets. The field follows existing draft/snapshot storage
 and resets with New character. No reference image is generated or uploaded by this
 text control.
+
+
+## Nonhuman and custom character concepts
+
+The type selector retains Naturel/Singulier/Exagéré and adds animal, insect,
+fruit-head and alien choices. The original `creatures.webp` atlas adds 44 KB,
+with four fixed square cells; provenance records its generation prompt and source.
+These are inspiration thumbnails, never generation inputs.
+
+Optional `traits.customCharacterDescription` is limited to 1,000 characters by
+both the editor and server. Nonempty text replaces the selected type prompt;
+selecting a card clears the text, matching hair/clothing overrides. Draft and
+settings reuse preserve it; New character and inspirations reset it.
+
+`trait-prompt.ts` owns trait-to-prompt compilation, while `prompt.ts` composes
+references, layout and output instructions. `hasFlexibleCharacterAnatomy` in
+`traits.ts` identifies nonhuman presets or a custom concept. Supporting appearance
+choices are conditional on compatibility with that concept, and reference images
+must not override its species/material. Portraits, sheets and full-body repairs
+use concept-appropriate framing/textures instead of requiring human skin or feet.
+Default/legacy human prompts retain their existing behavior.
+
+
+Verification for this addition: 36 focused behavior/account/architecture tests,
+TypeScript and exposure checks pass; frontend lint has no errors (seven existing
+warnings elsewhere). Local IAB checks at 1227×1112 and 390×844 verify actual atlas
+rendering, selected cards, custom override, persistence after reload and clearing
+text on a new preset. At 390px the document remains 390px wide and Generate stays
+above the bottom navigation. The local tariff remains unavailable, so no paid
+character generation was performed; the new images are catalogue assets only.

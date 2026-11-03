@@ -4,7 +4,8 @@
     "eyes.webp",
     "fashion.webp",
     "hairCatalog.webp",
-    "identity.webp"
+    "identity.webp",
+    "creatures.webp"
   ],
   "origin": "Original generated images from the approved Character Studio proposal, 2026-11-03. Fictional people.",
   "scenes": [
@@ -158,5 +159,13 @@
     "layout": "4 columns × 3 rows; type cells 0–2, upload samples 3/7, presentation 4–6, adult ages 8–11",
     "source": "exec-c7f563d1-5524-4499-973c-2a86c592f78c.png",
     "use": "Visual selection only; never an identity reference sent to the generation provider."
+  },
+  "creatureAtlas": {
+    "origin": "Original fictional characters generated with the built-in image_gen tool on 2026-11-03; no competitor assets.",
+    "layout": "2 columns × 2 rows; animal 0, insect 1, fruit 2, alien 3; square cells",
+    "source": "exec-e7be9434-cdb5-4a76-8272-7d203028b0d9.png",
+    "display": "640 × 640 WebP, 44,164 bytes; fixed square cards",
+    "use": "Visual selection only; never sent as a reference or presented as a generated user result.",
+    "prompt": "A single 2 by 2 square contact-sheet atlas of four character-type selector portraits. Equal square cells, no gutters, borders or text. Cinematic photographic creature design, complete heads and shoulders, soft studio light, muted charcoal/olive backgrounds. Top left: anthropomorphic red fox in dark jacket. Top right: green praying mantis humanoid with compound eyes and antennae in dark shirt. Bottom left: orange-fruit head with integrated expressive face, green leaf and stem, oatmeal sweatshirt. Bottom right: teal extraterrestrial with elongated skull, dark almond eyes and charcoal collarless shirt. Detailed tactile materials, consistent framing, no logos or watermark."
   }
 }
