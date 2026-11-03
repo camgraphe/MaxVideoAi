@@ -194,7 +194,10 @@ definitions stop for inspection. Admission and worker dispatch require that exac
 validated bound and absence of the old restrictive check before spending; task
 ownership and historical reads remain available. No token/resource policy,
 credit, tariff, approval or existing response changes. Keep the widened constraint
-on application rollback because long replies may already be stored. See
+because long replies may already be stored. Prefer a forward fix: old-runtime
+history context and saved-response recovery need separate qualification, even if
+ordinary history reads still work. Never truncate or rewrite long data for a
+rollback. See
 `docs/engineering/studio-conversation-reply-envelope.md` for exact prerequisites,
 timeouts and local verification. Migration 93 is reserved by PR 607; recheck main
 for index collisions before this follow-up is published.

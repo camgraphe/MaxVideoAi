@@ -37,8 +37,10 @@ timeout and 30-second statement timeout. A lock failure rolls back; do not bypas
 or apply request-time DDL.
 
 Apply migration 94 explicitly on the approved direct database connection before
-deploying this runtime, after the existing Studio task migrations. Old deployments
-accept the widened constraint. New task admission and worker selection require the
+deploying this runtime, after the existing Studio task migrations. The widened
+constraint accepts the prior runtime's existing short writes; this does not
+establish compatibility of that runtime with newly stored long data. New task
+admission and worker selection require the
 validated new constraint and absence of the old restrictive constraint before
 counting, reserving or dispatching. Base task-schema recognition remains separate,
 so missing migration 94 does not erase ownership or route an existing task through
@@ -49,10 +51,22 @@ Migration index 94 was absent from fetched `origin/main` at `390ac3e86`; PR 607 
 renumber or modify a migration already applied elsewhere. No production migration
 was performed during implementation.
 
-For rollback, restore the previous application while retaining the widened
-constraint. Reintroducing 2,400 would reject already stored long replies and is not
-a safe automatic rollback. Historical raw checkpoints are never rewritten or
-automatically reopened by deployment; saved recovery stays an explicit operation.
+Prefer a forward correction. Do not assume that restoring a pre-envelope runtime
+is a safe application rollback after long replies exist. At base `390ac3e86`, the
+ordinary history GET projects stored `draft_json` without the old draft-schema
+length check, so a basic long-reply read can work. That same runtime still rejects
+long saved provider responses during recovery and truncates assistant history to
+2,400 characters; a saved response can consequently be purchased again. Basic
+readability does not establish recovery or continued-conversation compatibility.
+
+Any rollback candidate must retain the long-reply decoder, complete history and
+terminal length-limit replay behavior, or be independently qualified against
+newly stored long turns and saved-response recovery before release. If dispatch
+must stop, use the existing task activation gate while retaining a compatible
+history/status reader. Keep the widened database constraint: reintroducing 2,400
+would reject already stored long replies. Never shorten, hide, delete or rewrite
+long history or raw checkpoints to make an old runtime fit. Deployment does not
+automatically reopen historical requests; saved recovery remains explicit.
 
 ## Verification
 
