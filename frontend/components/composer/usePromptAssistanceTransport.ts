@@ -54,7 +54,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     const same=previous&&samePreviousReply(previous,pointer);
     remember({...pointer,deadlineAt:same?previous.deadlineAt??pointer.deadlineAt:pointer.deadlineAt,status:same&&previous.status==='unknown'?'unknown':'pending'},previous??undefined);
   }
-  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
+  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,references:owner.pending.references}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
   function save(){return !!owner.sessionId&&writePromptChat(storageKey,snapshot());}
   function persistRevocation(revokePending=true){
     if(owner.local?.proposal?.review)owner.local.proposal.review.compatible=false;
@@ -82,7 +82,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         if(snapshot){
           const done=new Set(snapshot.turns.map(turn=>turn.requestId));
           if(owner.pending&&done.has(owner.pending.requestId)){owner.terminalRequest={sessionId:owner.pending.sessionId,requestId:owner.pending.requestId};const previous=readPreviousReply(accountKey);if(previous&&samePreviousReply(previous,owner.pending)){clearPreviousReply(accountKey,previous);owner.previousRef=null;}owner.pending=null;}
-          if(snapshot.pending){owner.pending={sessionId:owner.sessionId,requestId:snapshot.pending.requestId,uiId:null};if(!owner.previousRef)remember({version:1,scopeKey,serverScope:callbacks.current.options.scope,sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,status:'pending'} as PreviousReplyRef);}
+          if(snapshot.pending){const references=owner.pending?.sessionId===owner.sessionId&&owner.pending.requestId===snapshot.pending.requestId?owner.pending.references:undefined;owner.pending={sessionId:owner.sessionId,requestId:snapshot.pending.requestId,uiId:null,references};if(!owner.previousRef)remember({version:1,scopeKey,serverScope:callbacks.current.options.scope,sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,status:'pending'} as PreviousReplyRef);}
           owner.latestRequestId=lastCompletedPromptRequestId(snapshot);
           owner.exhausted=snapshot.status==='active'?null:snapshot.status==='full'?'SESSION_FULL':'SESSION_EXPIRED';
 

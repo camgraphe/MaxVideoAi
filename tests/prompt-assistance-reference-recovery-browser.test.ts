@@ -90,3 +90,28 @@ test('unverified or historical reference locations use generic guidance and neve
   assert.equal(requests.length,4);await expect(page.locator('.app-reference-selected-item')).toHaveCount(3);
  }finally{await browser.close();await fixture.close();}
 });
+
+test('a real reload recovers the submitted reference label and message without resending',{timeout:90000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config,assistanceLive:true});const browser=await chromium.launch();
+ try{
+  const page=await browser.newPage();let original:any;let messages=0,recoveries=0;
+  await page.route('**/api/prompt-assistance*',route=>{
+   const request=route.request(),url=new URL(request.url());
+   if(request.method()==='GET')return route.fulfill({json:{ok:true,result:url.searchParams.has('sessionId')?{sessionId:original.sessionId,scope:'video:modify',status:'active',turns:recoveries?[{requestId:original.requestId,message:original.message,state:'failed',reply:null,error:'MEDIA_NOT_AVAILABLE'}]:[],pending:recoveries?null:{requestId:original.requestId},proposal:null}:initialStatus}});
+   const body=request.postDataJSON();
+   if(body.action==='message'){messages++;original=body.request;return route.abort('failed');}
+   recoveries++;assert.equal(body.action,'recover');assert.equal(body.requestId,original.requestId);
+   return route.fulfill({json:{ok:true,result:{sessionId:original.sessionId,requestId:original.requestId,draftRevision:original.draftRevision,target:'prompt',message:original.message,assistance:initialStatus,state:'failed',safeToRetry:true,error:'MEDIA_NOT_AVAILABLE',unavailableReference:{fieldId:'image_urls',slot:0}}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill(MESSAGE);await page.getByRole('button',{name:'Send message to Milo'}).click();
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toBeVisible();
+  const pending=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('milo-composer:v2:["owner","video","modify"]')!).pending);
+  assert.deepEqual(pending.references,[{fieldId:'image_urls',slot:0,label:'Image 1'},{fieldId:'image_urls',slot:1,label:'Image 2'},{fieldId:'video_url',slot:0,label:'Source video'}]);
+  await page.reload();await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await page.getByRole('button',{name:'Check reply',exact:true}).click();
+  await expect(page.getByText('The Image 1 attached to this message is unavailable.',{exact:false})).toBeVisible();
+  await expect(page.getByRole('textbox',{name:'Message Milo',exact:true})).toHaveValue(MESSAGE);assert.equal(messages,1);assert.equal(recoveries,1);
+  await expect(page.getByRole('button',{name:'Send message to Milo'})).toBeEnabled();
+  await expect(page.locator('.app-reference-selected-item')).toHaveCount(3);await page.getByRole('tab',{name:'Prompt',exact:true}).click();await expect(page.locator('[data-workspace-prompt]')).toHaveValue(DRAFT);
+ }finally{await browser.close();await fixture.close();}
+});
