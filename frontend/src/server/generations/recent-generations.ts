@@ -174,7 +174,7 @@ export function buildRecentGenerationSurfaceFilterClause(
       )
       AND NOT (
         COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
-        OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+        OR COALESCE(settings_snapshot->>'surface', surface) IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
         OR job_id LIKE 'tool_angle_%'
         OR job_id LIKE 'tool_upscale_%'
         OR job_id LIKE 'tool_background_removal_%'
@@ -213,7 +213,7 @@ function addFeedFilter(
   }
   conditions.push(`NOT (
     surface IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
-    OR settings_snapshot->>'surface' IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
+    OR COALESCE(settings_snapshot->>'surface', surface) IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
     OR job_id LIKE 'tool_angle_%'
     OR job_id LIKE 'tool_upscale_%'
     OR job_id LIKE 'tool_background_removal_%'
