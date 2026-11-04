@@ -11,13 +11,15 @@ import {readPromptSession} from './sessions';
 import {promptSessionScopeSchema} from '@/lib/prompt-assistance/session';
 import {readPendingPromptRequestPointer} from './repository';
 import {schedulePromptAssistanceWorker} from './worker-host';
+import {PROMPT_INLINE_ANALYSIS_HEADER} from '@/lib/prompt-assistance/client-capability';
+import {publicPromptResult,publicPromptSession} from './public-response';
 
 const bodySchema=z.discriminatedUnion('action',[
   z.object({action:z.literal('message'),request:promptAssistanceRequestSchema}).strict(),
   z.object({action:z.literal('choose'),choice:studioAssistanceChoiceSchema}).strict(),
   z.object({action:z.literal('recover'),sessionId:z.string().uuid(),requestId:z.string().uuid()}).strict(),
 ]);
-const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
+const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'private, no-store','Vary':`Cookie, ${PROMPT_INLINE_ANALYSIS_HEADER}`}});
 export async function boundedPromptJson(req:NextRequest,maxBytes=PROMPT_ASSISTANCE_BODY_MAX_BYTES){
   if(!req.body)throw new SyntaxError('Missing body');
   const reader=req.body.getReader(),chunks:Uint8Array[]=[];let size=0;
@@ -32,10 +34,11 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
   if(!access.ok)return json({ok:false,error:access.error},access.status);
   if(req.method==='POST'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return json({ok:false,error:'SAME_ORIGIN_REQUIRED'},403);
   try{
+    const inlineAnalysis=req.headers.get(PROMPT_INLINE_ANALYSIS_HEADER)==='1';
     if(req.method==='GET'){
       const session=req.nextUrl.searchParams.get('sessionId'),request=req.nextUrl.searchParams.get('requestId');
-      if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope')))});
-      if(session||request)return json({ok:true,result:await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request))});
+      if(req.nextUrl.searchParams.has('scope'))return json({ok:true,result:publicPromptSession(await readPromptSession(access.userId,z.string().uuid().parse(session),promptSessionScopeSchema.parse(req.nextUrl.searchParams.get('scope'))),inlineAnalysis)});
+      if(session||request)return json({ok:true,result:publicPromptResult(await readPromptAssistance(access.userId,z.string().uuid().parse(session),z.string().uuid().parse(request)),inlineAnalysis)});
       return json({ok:true,result:await readStudioAssistanceStatus(access.userId),pendingRequest:await readPendingPromptRequestPointer(access.userId)});
     }
     const input=bodySchema.parse(await boundedPromptJson(req));
@@ -45,7 +48,7 @@ export async function handlePromptAssistance(req:NextRequest,overrides:{enabled?
       try{(overrides.schedule??schedulePromptAssistanceWorker)({userId:access.userId,sessionId:result.sessionId,requestId:result.requestId});}
       catch{console.warn('[prompt-assistance] wakeup_deferred',{requestId:result.requestId});}
     }
-    return json({ok:true,result});
+    return json({ok:true,result:publicPromptResult(result,inlineAnalysis)});
   }catch(error){
     if(error instanceof ZodError||error instanceof SyntaxError)return json({ok:false,error:'INVALID_REQUEST'},400);
     if(error instanceof AgentApiError)return json({ok:false,error:error.code,nextAction:error.nextAction},error.code==='ACCOUNT_RESTRICTED'?403:402);

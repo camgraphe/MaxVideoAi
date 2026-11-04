@@ -1,11 +1,12 @@
 'use client';
+import Link from 'next/link';
 import type {PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import styles from './prompt-assistance.module.css';
 
 export const promptAssistanceLoadingMessage=(error:string|null)=>error==='RESTORING'?'Restoring this conversation…':error==='LOADING'?'Checking Milo availability…':null;
 
-export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recovery,waiting,onRecover,onStop,onReload,phase}: {
-  phase?:PromptAssistanceResult['phase'];error:string|null;unavailableReferenceLabel?:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
+export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recovery,waiting,onRecover,onStop,onReload,onCredits,phase}: {
+  phase?:PromptAssistanceResult['phase'];error:string|null;unavailableReferenceLabel?:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;onCredits?:()=>void;
 }) {
   if(!error&&!waiting&&!recovery)return null;
   const message=waiting?(phase==='queued'?'Your request is saved and waiting to start.':phase==='preparing'?'Milo is preparing your saved request.':phase==='recovering'?'Checking the saved reply and recorded usage.':'Waiting for Milo’s saved reply. You can stop waiting or start a new chat.'):error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
@@ -21,7 +22,7 @@ export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recove
     : error==='ASSISTANCE_SELECTION_CHANGED'
       ? 'Milo changed in another tab. Review the selected level before sending again.'
     : error==='SPENDING_LIMIT_EXCEEDED'
-      ? 'Open Milo settings to check your credits and available levels.'
+      ? 'There aren’t enough Milo credits for this message’s credit reservation at the selected level. Some credits may remain. Click Milo to review your credits and available levels.'
     : error==='SESSION_EXPIRED'||error==='SESSION_FULL'||error==='SESSION_SCOPE_CHANGED'||error==='LEGACY_SESSION'
       ? 'This conversation is closed. You can still review its replies. Start a new chat to continue.'
     : error==='WAIT_DEADLINE'
@@ -52,6 +53,8 @@ export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recove
     : error ? 'Milo is unavailable right now. Check your connection or refresh your credits.' : null;
   return <div className={styles.liveFeedback} role="status">
     {message&&<span>{message}</span>}
+    {!waiting&&!recovery&&error==='SPENDING_LIMIT_EXCEEDED'&&onCredits?<button type="button" onClick={onCredits}>Credits and levels</button>:null}
+    {!waiting&&!recovery&&error==='ASSISTANCE_RECOVERY_REQUIRED'?<Link href="/contact" prefetch={false}>Contact support</Link>:null}
     {error==='RESTORE_FAILED'?<button type="button" onClick={onReload}>Retry loading chat</button>:waiting?<button type="button" onClick={onStop}>Stop waiting</button>:recovery?<button type="button" onClick={onRecover}>Check reply</button>:null}
   </div>;
 }

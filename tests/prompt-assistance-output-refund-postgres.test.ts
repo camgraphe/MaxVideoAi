@@ -24,7 +24,7 @@ test('completed application-invalid Milo output restores customer credits and pr
  await createPaidGenerationTestSchema(pg.pool);
  for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const userId=randomUUID(),input=request();
- const result=await sendPromptAssistance(userId,input,{policy,buildContext:async(user,input)=>buildPromptAssistanceContext(user,input,{catalog}),count:async()=>1000,create:async()=>response({kind:'conversation',reply:'Invalid tagged advice.',text:'Must not become a replacement.'})});
+ const result=await sendPromptAssistance(userId,input,{policy,buildContext:async(user,input)=>buildPromptAssistanceContext(user,input,{catalog}),count:async()=>1000,create:async()=>response({kind:'conversation',reply:'Invalid tagged advice.',text:'Must not become a replacement.',analysisRequest:null})});
  assert.equal(result.state,'failed');
  assert.equal(result.error,'OUTPUT_INVALID_CREDITS_RESTORED');
  assert.equal(result.assistance.credits?.included.remaining,500,'Undeliverable completed output cannot consume credits');
@@ -43,10 +43,10 @@ test('completed application-invalid Milo output restores customer credits and pr
   ['incomplete',{status:'incomplete'},'OUTPUT_INCOMPLETE'],
   ['refusal',{output:[{type:'message',content:[{type:'refusal',refusal:'Provider refusal.'}]}]},'OUTPUT_REFUSED'],
   ['other provider status',{status:'failed'},'OUTPUT_INVALID'],
-  ['actual target length',{output_text:JSON.stringify({kind:'replacement',reply:'Ready.',text:'x'.repeat(20001)})},'OUTPUT_TOO_LONG'],
+  ['actual target length',{output_text:JSON.stringify({kind:'replacement',reply:'Ready.',text:'x'.repeat(20001),analysisRequest:null})},'OUTPUT_TOO_LONG'],
  ] as const)await t.test(name+' retains the existing known-usage charge policy',async()=>{
   const user=randomUUID(),input=request();
-  const result=await sendPromptAssistance(user,input,{policy,buildContext:async(user,input)=>buildPromptAssistanceContext(user,input,{catalog}),count:async()=>1000,create:async()=>response({kind:'conversation',reply:'Invalid advice.',text:'Bad'},patch)});
+  const result=await sendPromptAssistance(user,input,{policy,buildContext:async(user,input)=>buildPromptAssistanceContext(user,input,{catalog}),count:async()=>1000,create:async()=>response({kind:'conversation',reply:'Invalid advice.',text:'Bad',analysisRequest:null},patch)});
   assert.equal(result.state,'failed');assert.equal(result.error,want);assert.equal(result.assistance.credits?.included.remaining,470);
   assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_output_refunds WHERE user_id=$1',[user])).rows[0].n,0);
  });

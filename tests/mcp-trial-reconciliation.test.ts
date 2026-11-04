@@ -464,7 +464,7 @@ test('migrated PostgreSQL persists trial dispositions and deletes only a bounded
       localKey: null,
       deps: {
         getBytePlusArkConfigFn: () => ({ seedanceMiniModelId: 'model-mini' }) as never,
-        buildBytePlusSeedancePayloadFn: (payload) => payload as never,
+        buildBytePlusSeedancePayloadFn: (payload) => ({ ...payload, content: [] }) as never,
         getBytePlusModelArkClientFn: () => ({
           createSeedanceFastTask: async () => {
             throw new BytePlusModelArkError('rejected', { status: 422, code: 'invalid_request' });

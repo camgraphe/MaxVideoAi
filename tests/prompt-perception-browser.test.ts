@@ -38,7 +38,8 @@ test('reference analysis reviews an excerpt, confirms once, restores by GET and 
   await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
   await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Refine this');await page.getByRole('button',{name:'Send message to Milo'}).click();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();
   await page.getByRole('button',{name:'Analyze references',exact:true}).click();
-  const dialog=page.getByRole('dialog',{name:'Analyze references'});
+  const dialog=page.locator('[data-assistance-transcript]').getByRole('region',{name:'Analyze references'});
+  await expect(dialog).toBeVisible();await expect(page.getByRole('dialog',{name:'Analyze references'})).toHaveCount(0);
   assert.equal(posts.length,0,'Opening must not prepare or spend');
   await dialog.getByLabel('From (seconds)').fill('2');await dialog.getByLabel('To (seconds)').fill('7');
   await dialog.getByRole('button',{name:'Review analysis cost'}).click();await expect(dialog.getByText('15 credits maximum',{exact:false})).toBeVisible();

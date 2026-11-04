@@ -18,7 +18,7 @@ export async function readPromptSession(userId:string,sessionId:string,scope:str
     if(row.state==='failed')snapshot.turns.push({requestId:row.request_id,message:row.input_json.message,state:'failed',reply:null,
       error:row.error&&/^[A-Z_]{1,80}$/.test(row.error)?row.error:'ASSISTANCE_UNAVAILABLE'});
     if(row.state!=='complete'||!row.reply_json)continue;
-    snapshot.turns.push({requestId:row.request_id,message:row.input_json.message,reply:row.reply_json.reply});
+    snapshot.turns.push({requestId:row.request_id,message:row.input_json.message,reply:row.reply_json.reply,...(row.reply_json.analysisRequest?{analysisRequest:row.reply_json.analysisRequest}:{})});
     const text=row.reply_json.text??row.input_json.activeSuggestion;
     if(text)snapshot.proposal={text,draftFingerprint:createHash('sha256').update(canonicalPromptDraft(row.input_json.draft)).digest('hex')};
   }

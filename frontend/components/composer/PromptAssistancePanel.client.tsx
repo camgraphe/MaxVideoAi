@@ -24,6 +24,7 @@ export type PromptAssistancePanelProps = {
   identityStatus?: string|null;
   feedback?: ReactNode;
   inputNotice?: ReactNode;
+  conversationContent?: ReactNode; conversationContentVisible?: boolean;
 };
 
 function assistantReplyText(text: string) {
@@ -33,7 +34,7 @@ function assistantReplyText(text: string) {
     index % 2 ? <strong key={index}>{part.slice(2, -2)}</strong> : part);
 }
 
-export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, feedback, inputNotice }: PromptAssistancePanelProps) {
+export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, message, pending, blocked, inputReadOnly, sendBlocked, showConversationControl, maxLength, settingsReview,onReview,onApplyReviewed,onMessageChange, onSend, onProposalTextChange, onApply, onCopy, references, messageRef, modelControl, conversationControl, helpControl, reasoningControl, identityStatus, feedback, inputNotice, conversationContent, conversationContentVisible }: PromptAssistancePanelProps) {
   const copy = promptAssistanceCopy(locale);
   const [expanded, setExpanded] = useState(false);
   const [reviewMode,setReviewMode]=useState(false);
@@ -54,6 +55,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
       if (restoreReaderFocus) input.current?.focus({ preventScroll: true });
     }
   }, [messages, input]);
+  useEffect(()=>{if(conversationContentVisible){setExpanded(false);setReviewMode(false);}},[conversationContentVisible]);
   useEffect(()=>{if(!proposal){setExpanded(false);setReviewMode(false);}},[proposal]);
   useEffect(() => {
     if (expanded) proposalEditor.current?.focus({ preventScroll: true });
@@ -62,7 +64,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
   const canSend = Boolean(message.trim()) && !messageTooLong && !pending && !blocked && !sendBlocked;
   const sendMessage = () => { input.current?.focus({ preventScroll: true }); onSend(); };
   const tooLong = Boolean(proposal && maxLength && proposal.text.length > maxLength);
-  const hasConversation = messages.length > 0 || pending || Boolean(proposal);
+  const hasConversation = messages.length > 0 || pending || Boolean(proposal) || Boolean(conversationContentVisible);
   const reviewLabel = proposal?.target === 'script' ? copy.reviewScript : proposal?.target === 'lyrics' ? copy.reviewLyrics : copy.review;
   const proposalStatus = proposal?.stale ? settingsReview?copy.settingsReviewReady:copy.updateNeeded : tooLong && proposal ? `${proposal.text.length} / ${maxLength}` : copy.ready;
   const review=()=>{setExpanded(true);setReviewMode(true);onReview?.();};
@@ -78,6 +80,7 @@ export function PromptAssistancePanel({ locale, modelLabel, messages, proposal, 
           </div>)}
         </div>
         {pending ? <p role="status">{copy.pending}</p> : null}
+        {conversationContent}
       </div>
       {expanded && proposal ? <div ref={proposalBody} id={proposalId} className={styles.proposalBody} data-assistance-body>
         {reviewMode?<div className={styles.settingsReview} role="status">

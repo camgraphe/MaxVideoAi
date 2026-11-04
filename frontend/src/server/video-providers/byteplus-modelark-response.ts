@@ -8,9 +8,11 @@ import {
   SEEDANCE_REFERENCE_IMAGE_BLOCKED,
   SEEDANCE_REFERENCE_VIDEO_BLOCKED,
   SEEDANCE_REFERENCE_MEDIA_BLOCKED,
+  SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE,
   SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED,
 } from '@/lib/video-failure-codes';
 import { getSeedanceFailureMessage } from '@/lib/seedance-failure-messages';
+import { sanitizeProviderMediaDiagnostics } from '@/server/provider-media-diagnostics';
 
 export type BytePlusTaskResponse = Record<string, unknown>;
 
@@ -106,6 +108,7 @@ export function normalizeBytePlusTask(task: unknown): NormalizedVideoProviderTas
 }
 
 export function scrubBytePlusError(error: unknown): string {
+  error = sanitizeProviderMediaDiagnostics(error);
   const nestedError = isRecord(error) && isRecord(error.error) ? error.error : null;
   const raw =
     error instanceof Error
@@ -124,7 +127,7 @@ export function scrubBytePlusError(error: unknown): string {
 }
 
 const SEEDANCE_START_FAILURE_MESSAGE =
-  'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.';
+  'Seedance could not start this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
 const SEEDANCE_TASK_FAILURE_MESSAGE =
   'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.';
 const SEEDANCE_COPYRIGHT_FAILURE_MESSAGE =
@@ -175,12 +178,21 @@ function isBytePlusTaskTypeConstraint(providerErrorCode?: string | null): boolea
   return providerErrorCode?.trim().toLowerCase() === 'invalidparameter.tasktypeconstraint';
 }
 
+function isBytePlusReferenceAccessFailure(message: string, code?: string | null): boolean {
+  return ((code === 'REFERENCE_INVALID' || code === 'REFERENCE_ACCESS_FAILED')
+      && message.trim() === 'Reference media could not be read.')
+    || (/resource inaccessible/i.test(message) && /(?:audio|image|video)_url/i.test(message));
+}
+
 function getBytePlusUserSafeFailureMessage(
   providerMessage: string,
   fallbackMessage: string,
   providerErrorCode?: string | null
 ): string {
   const normalized = providerMessage.toLowerCase();
+  if (isBytePlusReferenceAccessFailure(providerMessage, providerErrorCode)) {
+    return getSeedanceFailureMessage({ failureCode: SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE })!;
+  }
   if (isBytePlusOutputAudioFailure(providerErrorCode)) {
     return getSeedanceFailureMessage({ failureCode: SEEDANCE_OUTPUT_AUDIO_BLOCKED })!;
   }
@@ -246,6 +258,7 @@ export function getBytePlusTaskFailureCode(
   providerErrorCode?: string | null
 ): string | null {
   const message = providerMessage ?? '';
+  if (isBytePlusReferenceAccessFailure(message, providerErrorCode)) return SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE;
   if (isBytePlusOutputAudioFailure(providerErrorCode)) return SEEDANCE_OUTPUT_AUDIO_BLOCKED;
   if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
     return SEEDANCE_TASK_TYPE_CONSTRAINT;

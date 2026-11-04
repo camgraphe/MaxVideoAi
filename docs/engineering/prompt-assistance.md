@@ -103,7 +103,7 @@ The boundary is shared across all tiers; reference perception retains its own ga
 
 ## Conversation versus editor replacement
 
-The private provider protocol `destination-v1` declares `kind: conversation` or
+The private provider protocol `destination-analysis-v2` declares `kind: conversation` or
 `kind: replacement`. Advice, explanations, questions and external editing plans
 belong entirely in `reply` (the shared 50,000-character text envelope), with null
 `text`. Only complete text intended for the selected `draft.target` belongs in a
@@ -112,19 +112,48 @@ Voiceover scripts; destination is not inferred from keywords, duration or action
 count. A mixed answer may explain in `reply` and provide the requested editor text
 in `text`.
 
-`reply-format.ts` strictly validates this private shape and converts it to the
-unchanged public `{reply,text}`. Contradictions or malformed tags fail with
+`reply-format.ts` strictly validates this private shape and converts it to public
+`{reply,text,analysisRequest?}`. Contradictions or malformed tags fail with
 `OUTPUT_INVALID`; no partial replacement escapes. The flat required-field JSON
 Schema uses the [supported Structured Outputs subset](https://developers.openai.com/api/docs/guides/structured-outputs#supported-schemas),
 with conditional consistency enforced by the server decoder.
 
+The required private `analysisRequest` is null or a suggestion containing the
+current reference's `fieldId`, `slot`, `modality` (`visual` or `audio`), `startSec`
+and nullable `endSec`. It grants no execution or consent. The decoder accepts a
+suggestion only for an owned reference admitted with this request, an available
+qualified modality and a verified duration. Visuals require video; sound accepts
+video or audio. Positive intervals stay within the source and the existing
+60-second visual / 30-second audio bounds. A null end becomes a concrete bounded
+end. Invalid optional suggestions are omitted while the useful answer survives.
+Public actions include only the server-bound canonical asset/job-output `ref`,
+never a provider-invented identity or URL. The browser compares that identity with
+the current attached reference, so replacing an item in the same slot cannot
+redirect an old recommendation. Reply state, recovery and session snapshots keep
+the binding. Lite may offer the recommendation with an explicit Standard/Max
+choice; it cannot prepare or confirm analysis at Lite. The existing quote and
+separate confirmation remain the only path to paid analysis, and no writing
+follow-up runs automatically.
+
 The format is fixed before token counting and persisted as `context_json.replyFormat`
 in the existing calling transaction before provider dispatch. Recovery selects
 its decoder only from that durable marker. A truly absent marker retains the
-legacy parser; a present unknown, null or corrupt marker fails closed. Retention
+legacy parser; `destination-v1` retains its exact historical decoder, including
+refusal of the new action field. A present unknown, null or corrupt marker fails closed. Retention
 of `reviewInput` does not remove this operational marker. Completed historical
-replies are not reclassified. No client contract, compatibility proof, provider
-retry or accounting policy changes.
+replies are not reclassified. Target limits, application compatibility proofs,
+provider retry and accounting policy are unchanged. No database migration is
+needed for the additive reply/session JSON field.
+
+HTTP clients advertise `x-milo-inline-analysis: 1` on the composer chat endpoint
+to receive the additive action in results and session turns. Already-open older
+tabs send no capability and keep their strict `{reply,text}` / history shapes:
+the route removes only `analysisRequest` during serialization. This also applies
+to replayed message responses, explicit recovery and read-only previous-reply
+checks. Unknown capability values retain the older shape. Saved v2 responses,
+request hashes, context and history are unchanged, so a capable tab can still
+retrieve the bound action later. This header has no authentication or consent
+meaning. Responses remain private/no-store and vary on Cookie and the capability.
 
 The tag is a model declaration, not a semantic guarantee. Simulated service/JSONB
 and browser tests prove structural gating, restoration and exact apply/Undo;

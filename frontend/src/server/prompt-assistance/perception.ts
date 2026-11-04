@@ -6,18 +6,23 @@ import type {buildPromptAssistanceContext} from './context';
 import {resolvePromptReference} from './reference-resolution';
 import {loadPromptReferenceImage} from './reference-images';
 import {readPromptReferenceAnalyses} from './reference-analysis';
+import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
 
 type Context=Awaited<ReturnType<typeof buildPromptAssistanceContext>>;
 type Perception={image?:'provided';analyses?:Awaited<ReturnType<typeof readPromptReferenceAnalyses>>};
 export type PerceivedContext=Omit<Context,'references'|'referencePerception'>&{
   references:Array<Context['references'][number]&{perception?:Perception}>;
   referencePerception:'metadata_only'|'provided_content';
+  analysisAvailability?:{visual:boolean;audio:boolean;requiresUpgrade:boolean};
 };
 export async function preparePromptPerception(userId:string,input:PromptAssistanceRequest,model:StudioAssistantModel,context:Context,
-  deps:{enabled?:boolean;resolve?:typeof resolveStudioMedia;image?:(media:StudioResolvedMedia,signal:AbortSignal)=>Promise<string>;analyses?:typeof readPromptReferenceAnalyses}={}) {
+  deps:{enabled?:boolean;resolve?:typeof resolveStudioMedia;image?:(media:StudioResolvedMedia,signal:AbortSignal)=>Promise<string>;analyses?:typeof readPromptReferenceAnalyses;analysisPolicy?:typeof studioAnalysisPolicy}={}) {
   const content:ResponseInputContent[]=[];
   const enriched:PerceivedContext={...context,references:context.references.map(ref=>({...ref}))};
-  if(!(deps.enabled??process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true'))return {context:enriched,content};
+  const policy=(deps.analysisPolicy??studioAnalysisPolicy)();
+  const enabled=deps.enabled??process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED==='true';
+  enriched.analysisAvailability={visual:enabled&&!!policy?.video,audio:enabled&&!!policy?.audio,requiresUpgrade:model==='gpt-6-luna'};
+  if(!enabled)return {context:enriched,content};
   const deadline=AbortSignal.timeout(45_000);let size=0;
   for(const reference of enriched.references){
     const selected=input.draft.references.find(item=>item.fieldId===reference.field&&item.slot===reference.slot);

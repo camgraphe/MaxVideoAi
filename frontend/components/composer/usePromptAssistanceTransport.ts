@@ -1,4 +1,5 @@
 'use client';
+import {promptInlineAnalysisHeaders} from '@/lib/prompt-assistance/client-capability';
 import {type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {promptAssistanceReplySchema,promptReferenceLocationSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
@@ -74,7 +75,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
       let snapshot:PromptSessionSnapshot|null=null;
       if(callbacks.current.options&&!owner.legacy){
         const url=`/api/prompt-assistance?sessionId=${owner.sessionId}&scope=${encodeURIComponent(callbacks.current.options.scope)}`;
-        const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal});const data=await response.json();
+        const response=await fetch(url,{headers:promptInlineAnalysisHeaders(),credentials:'same-origin',cache:'no-store',signal:controller.signal});const data=await response.json();
         if(!response.ok||!data.ok){if(!['SESSION_NOT_FOUND','SESSION_SCOPE_CHANGED'].includes(data.error))throw Error(data.error??'RESTORE_FAILED');}
         else snapshot=promptSessionSnapshotSchema.parse(data.result);
         if(!valid()||controller.signal.aborted)return;
@@ -92,7 +93,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         let pendingReview:PromptPendingReview|undefined;
         const baseline=owner.pendingReview;
         if(snapshot?.proposal&&baseline?.compatible&&baseline.requestId===owner.latestRequestId&&baseline.draftFingerprint===snapshot.proposal.draftFingerprint){
-          const response=await fetch(`/api/prompt-assistance?sessionId=${owner.sessionId}&requestId=${baseline.requestId}`,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+          const response=await fetch(`/api/prompt-assistance?sessionId=${owner.sessionId}&requestId=${baseline.requestId}`,{headers:promptInlineAnalysisHeaders(),credentials:'same-origin',cache:'no-store',signal:controller.signal});
           const data=await response.json();
           if(!valid()||controller.signal.aborted)return;
           if(!response.ok||!data.ok)throw Error(data.error??'RESTORE_FAILED');

@@ -55,8 +55,8 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   const currentDraftRef=useRef({draft,currentDraft,fingerprint,applicationContext,compatibilityRevision:state.compatibilityRevision});currentDraftRef.current={draft,currentDraft,fingerprint,applicationContext,compatibilityRevision:state.compatibilityRevision};
   const transport=usePromptAssistanceTransport(scopeKey,PROMPT_ASSISTANCE_LIVE,(result,uiId)=>{
     if(result.state==='complete'&&result.reply){
-      if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
-      else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
+      if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId,analysisRequest:result.reply.analysisRequest});
+      else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId,analysisRequest:result.reply.analysisRequest});
     }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
     else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
   },live?.workflow?{scope:promptSessionScope(live),accountKey,onRestore:async(snapshot,local,pendingReview)=>{
@@ -76,7 +76,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     return ()=>dispatch({type:'hydrate',scope:scopeKey,fingerprint:expected.fingerprint,compatibilityRevision:expected.compatibilityRevision,message:local?.message??'',
       messages:snapshot?.turns.flatMap<PreviewMessage>(turn=>turn.reply===null
         ?[{id:`${turn.requestId}-user`,role:'user',text:turn.message,deliveryFailed:true}]
-        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply}])??[],
+        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply,...(turn.analysisRequest?{analysisRequest:turn.analysisRequest}:{})}])??[],
       proposal:proposal?{text:proposal.text,valid,applicationContext:reviewContext,requestId:latestRequestId}:null});
   }}:undefined);
   const appliedPromptCurrent = Boolean(appliedPrompt && appliedPrompt.text === draftText

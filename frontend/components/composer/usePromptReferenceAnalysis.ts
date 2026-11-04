@@ -5,6 +5,9 @@ import {studioAnalysisStatusSchema,type StudioAnalysisStatus} from '@/lib/studio
 import {readAnalysisIdentity} from './prompt-chat-storage';
 
 const inFlight=(status:StudioAnalysisStatus|null)=>!!status&&['queued','running','unknown'].includes(status.state);
+class AnalysisResponseError extends Error {
+  constructor(message:string,readonly code:string|null,readonly status:number){super(message);}
+}
 /** Durable identity only in storage. Observations and private reference data stay on the server. */
 export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,onBusy:(busy:boolean)=>void,legacyScopeKey?:string) {
   const storageKey=`milo-analysis:${scopeKey}`;
@@ -13,12 +16,12 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onCompleted,onBusy});callbacks.current={onCompleted,onBusy};
   const completed=useRef('');
-  const [view,setView]=useState({owner,status:null as StudioAnalysisStatus|null,busy:false,error:null as string|null,recover:!!owner.identity,reused:false});
+  const [view,setView]=useState({owner,status:null as StudioAnalysisStatus|null,busy:false,error:null as string|null,errorCode:null as string|null,recover:!!owner.identity,reused:false});
   const active=()=>owner.active&&current.current===owner;
   function update(values:Partial<typeof view>){if(active())setView(previous=>({...previous,...values,owner}));}
   function save(){try{if(owner.identity)sessionStorage.setItem(storageKey,JSON.stringify(owner.identity));else sessionStorage.removeItem(storageKey);}catch{}}
   function accept(status:StudioAnalysisStatus){
-    update({status,recover:false,error:null});
+    update({status,recover:false,error:null,errorCode:null});
     if(status.state==='completed'&&completed.current!==status.quote.analysisId){completed.current=status.quote.analysisId;callbacks.current.onCompleted();}
     if(status.state==='prepared'||status.state==='completed'||status.state==='failed'){
       if(legacyStorageKey&&readAnalysisIdentity(legacyStorageKey)?.analysisId===status.quote.analysisId)try{sessionStorage.removeItem(legacyStorageKey);}catch{}
@@ -30,7 +33,8 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
   }
   async function request(body?:unknown,identity=owner.identity){
     if(!active()||owner.busy||(!body&&!identity))return;
-    owner.busy=true;update({busy:true,error:null});
+    const preparedConfirmation=(body as {action?:string}|undefined)?.action==='confirm'&&view.owner===owner&&view.status?.state==='prepared'&&view.status.quote.analysisId===identity?.analysisId?view.status:null;
+    owner.busy=true;update({busy:true,error:null,errorCode:null});
     const controller=new AbortController(),timeout=window.setTimeout(()=>controller.abort(),30_000);
     try {
       const url='/api/prompt-assistance/analyses'+(body?'':`?sessionId=${identity!.sessionId}&analysisId=${identity!.analysisId}`);
@@ -38,7 +42,7 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
       const data=await response.json();
       if(!response.ok||!data.ok){
         const messages:Record<string,string>={REFERENCE_DURATION_UNKNOWN:'This reference has no verified duration yet. Choose it again from Media.',REFERENCE_INVALID:'This reference is no longer available. Choose it again from Media.',SESSION_EXPIRED:'Start a new conversation, then review the analysis cost again.',INVALID_REQUEST:'Check the selected reference and time interval.',ANALYSIS_UNAVAILABLE:'Reference analysis is not available right now.',SPENDING_LIMIT_EXCEEDED:'Check your Milo credits before analyzing this reference.'};
-        throw new Error(data.message??messages[data.error]??'Could not read the analysis. Check your connection and try again.');
+        throw new AnalysisResponseError(data.message??messages[data.error]??'Could not read the analysis. Check your connection and try again.',typeof data.error==='string'?data.error:null,response.status);
       }
       const status=studioAnalysisStatusSchema.parse(data.result.status);
       if(!active())return;
@@ -49,7 +53,14 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
         update({reused:!!data.result.reused});
       }
       accept(status);
-    }catch(error){update({error:error instanceof Error?error.message:'Analysis is unavailable.',recover:!!owner.identity});}
+    }catch(error){
+      if(!active())return;
+      const fundingRejected=preparedConfirmation&&error instanceof AnalysisResponseError&&error.code==='SPENDING_LIMIT_EXCEEDED'&&[402,409].includes(error.status);
+      // These explicit confirm rejections precede reservation/dispatch. Unknown
+      // responses and lost acknowledgements must retain the saved recovery lock.
+      if(fundingRejected)accept(preparedConfirmation);
+      update({error:error instanceof Error?error.message:'Analysis is unavailable.',errorCode:error instanceof AnalysisResponseError?error.code:null,recover:fundingRejected?false:!!owner.identity});
+    }
     finally{window.clearTimeout(timeout);owner.busy=false;update({busy:false});}
   }
   useEffect(()=>{
@@ -60,7 +71,7 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
     // Owner fences late replies on account/workspace changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[owner]);
-  const visible=view.owner===owner?view:{status:null,busy:false,error:null,recover:!!owner.identity,reused:false};
+  const visible=view.owner===owner?view:{status:null,busy:false,error:null,errorCode:null,recover:!!owner.identity,reused:false};
   const pending=inFlight(visible.status)||visible.recover;
   useEffect(()=>{callbacks.current.onBusy(visible.busy||pending);},[visible.busy,pending]);
   useEffect(()=>{
@@ -77,6 +88,6 @@ export function usePromptReferenceAnalysis(scopeKey:string,onCompleted:()=>void,
       void request({action:'confirm',sessionId:owner.identity.sessionId,confirmation:{analysisId:quote.analysisId,maxCredits:quote.maxCredits,policyVersion:quote.policyVersion,confirmed:true}},owner.identity);
     },
     refresh:()=>void request(),
-    reset:()=>{if(!owner.busy&&!pending){owner.identity=null;save();update({status:null,error:null,recover:false,reused:false});}},
+    reset:()=>{if(!owner.busy&&!pending){owner.identity=null;save();update({status:null,error:null,errorCode:null,recover:false,reused:false});}},
   };
 }
