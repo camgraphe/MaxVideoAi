@@ -347,7 +347,10 @@ export async function submitBytePlusGenerateTask(params: {
         : providerStatus && providerStatus >= 400 && providerStatus < 500
           ? 502
           : 503;
-    const trialDisposition = providerStatus && providerStatus >= 400 && providerStatus < 500
+    const localReferenceAccessFailure = !providerAttempted
+      && error instanceof BytePlusModelArkError && error.code === 'REFERENCE_ACCESS_FAILED';
+    // A failed local grant cannot have dispatched work or consumed the free trial.
+    const trialDisposition = localReferenceAccessFailure || (providerStatus && providerStatus >= 400 && providerStatus < 500)
       ? 'definitive_failure'
       : 'unknown';
     if (reliableLasSubmission) {
