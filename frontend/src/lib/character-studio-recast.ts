@@ -1,8 +1,14 @@
+import type { VideoExcerptRange } from '@/lib/video-excerpt';
+
+type BriefPassage = VideoExcerptRange & { originalDurationSec: number };
+
 /** Portable brief: no browser object URLs, signed media or account identifiers. */
 export function buildRecastBrief(input: {
   source?: string;
   durationSec?: number;
   sourceDurationSec?: number;
+  videoPassage?: BriefPassage;
+  audioPassage?: BriefPassage;
   character: string;
   product?: string;
   direction?: string;
@@ -18,6 +24,8 @@ export function buildRecastBrief(input: {
     ...(input.durationSec !== undefined
       ? { durationSec: input.durationSec, sourceDurationSec: input.sourceDurationSec ?? 0 }
       : {}),
+    ...(input.source && input.videoPassage ? { videoPassage: input.videoPassage } : {}),
+    ...(input.audio && input.audioPassage ? { audioPassage: input.audioPassage } : {}),
     images: [
       { role: 'character', file: input.character },
       ...(input.product ? [{ role: 'product', file: input.product }] : []),

@@ -63,6 +63,7 @@ async function fixture(surface: 'recast' | 'dialog' | 'look') {
   w.URL.revokeObjectURL = (url: string) => w.revoked.push(url);
   w.URL.createObjectURL = (file: File) => `blob:${file.name}`;
   w.HTMLMediaElement.prototype.pause = () => {};
+  w.HTMLMediaElement.prototype.load = () => {};
   w.HTMLDialogElement.prototype.showModal = function () {
     this.open = true;
   };
@@ -92,6 +93,14 @@ test('Recast handoff replaces only the portrait and preserves video/prompt throu
   const f = await fixture('recast');
   const { w } = f;
   try {
+    const doc = w.document;
+    let probe: HTMLMediaElement | undefined;
+    const create = doc.createElement.bind(doc);
+    doc.createElement = (name: string, ...args: unknown[]) => {
+      const el = create(name, ...args);
+      if (name === 'video') probe = el;
+      return el;
+    };
     for (const kind of ['video', 'image']) {
       const input = w.document.querySelector(`input[accept="${kind}/*"]`);
       Object.defineProperty(input, 'files', {
@@ -99,6 +108,25 @@ test('Recast handoff replaces only the portrait and preserves video/prompt throu
       });
       await f.act(() => input.dispatchEvent(new w.Event('change', { bubbles: true })));
     }
+    assert.ok(probe);
+    Object.defineProperty(probe, 'duration', { value: 25.6 });
+    await f.act(() => probe!.dispatchEvent(new w.Event('loadedmetadata')));
+    const dialog = doc.querySelector('[role=dialog]');
+    assert.ok(dialog, 'importing a long take opens the editor');
+    const setPoint = async (field: string, value: string) =>
+      f.act(() => {
+        const input = dialog.querySelector('input[aria-label="' + field + ' (secondes)"]');
+        Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype, 'value').set.call(input, value);
+        input.dispatchEvent(new w.Event('input', { bubbles: true }));
+      });
+    const apply = [...dialog.querySelectorAll('button')].find(
+      (el: any) => el.textContent === 'Utiliser ce passage',
+    );
+    await setPoint('Fin', '25.5');
+    assert.ok(apply.disabled, 'the whole take exceeds the reference limit');
+    await setPoint('Début', '18');
+    await f.act(() => apply.click());
+    assert.equal(doc.querySelector('#recast-duration').value, '8');
     const prompt = w.document.querySelector('textarea');
     await f.act(() => {
       Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype, 'value').set.call(
@@ -117,9 +145,9 @@ test('Recast handoff replaces only the portrait and preserves video/prompt throu
       w.fx.render();
     });
     assert.equal(w.document.querySelector('img').getAttribute('src'), w.selection.imageUrl);
-    assert.ok(
-      [...w.document.querySelectorAll('video')].every((v: any) => v.getAttribute('src') === 'blob:video.mp4'),
-    );
+    const readers = [...w.document.querySelectorAll('video[controls]')];
+    assert.equal(readers.length, 2);
+    assert.ok(readers.every((v: any) => v.getAttribute('src') === 'blob:video.mp4#t=18,25.5'));
     assert.deepEqual([...w.revoked], ['blob:image.mp4']);
     await f.act(() => {
       w.active = false;
@@ -221,8 +249,16 @@ test('Recast retains the product, spoken line and accepted audio when editor tab
       probe.dispatchEvent(new w.Event('loadedmetadata'));
       await Promise.resolve();
     });
-    assert.ok(doc.querySelector('[role=alert]'));
-    assert.ok(w.revoked.includes('blob:too-long.wav'));
+    assert.ok(doc.querySelector('[role=dialog]'), 'a long recording opens the shared passage editor');
+    assert.ok(!w.revoked.includes('blob:too-long.wav'), 'the original remains available');
+    await clickText('Annuler');
+    assert.match(doc.body.textContent, /Choisis un passage de 15 s maximum/);
+    assert.doesNotMatch(doc.body.textContent, /Télécharger la fiche de tournage/);
+    await clickText('Choisir un passage');
+    assert.ok(doc.querySelector('[role=dialog]'));
+    await clickText('Utiliser ce passage');
+    assert.equal(doc.querySelector('audio[controls]').getAttribute('src'), 'blob:too-long.wav#t=0,15');
+    assert.equal(doc.querySelector('#recast-duration').value, '15');
     await upload('input[accept^=".mp3"]', 'voice.wav', 'audio/wav');
     Object.defineProperty(probe, 'duration', { value: 3.27 });
     await f.act(async () => {

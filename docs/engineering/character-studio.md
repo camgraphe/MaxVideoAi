@@ -163,7 +163,7 @@ integration. It accepts a local source video, a replacement image and optional
 instructions, provides native manual playback with `preload="none"`, and keeps
 those choices while switching modes. Blob URLs are revoked on replacement/removal
 and unmount; leaving Recast pauses both readers. The account-keyed workspace owns
-its lifetime. There is no upload, provider call, generated output, quote or debit.
+its lifetime. The draft sends only timing and mode to the read-only estimate route. It does not upload media or reserve funds.
 The disabled generation action explains that generation is not available. No
 provider name or hypothetical tariff is shown. Durable Recast jobs and the public
 service identity across billing/transactions remain a separate delivery.
@@ -245,7 +245,7 @@ tariff remain unchanged; no paid generation was submitted.
 A replacement portrait and a product photograph occupy independent slots. A
 handoff changes only the portrait. The Direction / Dialogue switch retains the
 scene instruction, optional spoken line and optional MP3/WAV performance guide.
-Audio input has a 15 MiB file cap and a 15-second decoded duration cap. Unmounting
+Audio input has a 15 MiB file cap. The applied passage, rather than the original recording, is limited to 15 seconds. Unmounting
 the editor, replacing or removing media and navigation must not leak object URLs
 or let a delayed audio probe replace a newer selection. Leaving Recast pauses
 its video and audio players.
@@ -276,8 +276,8 @@ viewer keeps the original file intact alongside the identity reference.
 
 ### Duration and estimated price in the Recast draft
 
-The draft suggests the measured duration of the source video, then the measured
-audio duration, then the script length at the Audio tool’s 150 words per minute.
+The draft suggests the length of the selected video passage, then that of the
+selected audio passage, then the script length at the Audio tool’s 150 words per minute.
 A direction without timing starts at six seconds. Suggestions round up to whole
 output seconds. An explicit selection takes precedence until the user chooses
 the automatic suggestion again. Overlong speech remains visible for editing.
@@ -290,3 +290,15 @@ the displayed estimate. The isolated development preview can opt into the public
 price reader with CHARACTER_STUDIO_PREVIEW_PUBLIC_PRICING=1. Only the normalized
 mode, audio flag, resolution and durations are sent. Reserving funds would require
 a separate server quote from owned media, including its verified duration.
+
+
+Recast uses the same lazy `VideoExcerptSelector` as Modify. Local MP4/MOV (up
+to 100 MiB) and MP3/WAV (up to 15 MiB) retain their original object URL. A file
+over 15 s requires an explicit selection before a price or brief is available.
+Shorter files default to the whole track and can be trimmed too. Cancelling
+leaves the committed range unchanged. The local readers are cued and bounded to
+the selected interval. The JSON brief records each original name and its separate
+`videoPassage` / `audioPassage` (startSec inclusive, endSec exclusive and
+originalDurationSec). This is a non-destructive edit list, not encoded media.
+Before paid generation, prepare and verify the selected owned-media excerpts
+through the existing media preparation pipeline and quote their measured facts.

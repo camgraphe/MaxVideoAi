@@ -1,7 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
+
+import type { RecastTrackControl } from './useRecastTrack';
+import { CharacterStudioRecastPassage } from './CharacterStudioRecastPassage.client';
 
 export function CharacterStudioRecastDirection({
   copy,
@@ -9,18 +12,16 @@ export function CharacterStudioRecastDirection({
   onPrompt,
   dialogue,
   onDialogue,
-  audio,
+  audioControl,
   addAudio,
-  removeAudio,
 }: {
   copy: StudioCopy;
   prompt: string;
   onPrompt: (value: string) => void;
   dialogue: string;
   onDialogue: (value: string) => void;
-  audio: { name: string; url: string } | null;
+  audioControl: RecastTrackControl;
   addAudio: () => void;
-  removeAudio: () => void;
 }) {
   const [tab, setTab] = useState<'direction' | 'dialogue'>('direction');
   const field = 'mt-2 w-full resize-y rounded-xl border border-border bg-bg p-3 text-sm font-normal';
@@ -43,7 +44,7 @@ export function CharacterStudioRecastDirection({
             }
           >
             {copy[t]}
-            {t === 'dialogue' && (dialogue.trim() || audio) ? ' •' : ''}
+            {t === 'dialogue' && (dialogue.trim() || audioControl.track) ? ' •' : ''}
           </button>
         ))}
       </div>
@@ -72,22 +73,13 @@ export function CharacterStudioRecastDirection({
               className={field}
             />
           </label>
-          {audio ? (
-            <div className="rounded-xl border border-border p-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-xs">{audio.name}</span>
-                <button type="button" onClick={removeAudio} aria-label={copy.remove + ' · ' + copy.addAudio}>
-                  <X size={16} />
-                </button>
-              </div>
-              <audio
-                src={audio.url}
-                controls
-                preload="none"
-                className="mt-2 w-full"
-                aria-label={audio.name}
-              />
-            </div>
+          {audioControl.track ? (
+            <CharacterStudioRecastPassage
+              kind="audio"
+              control={audioControl}
+              copy={copy}
+              label={copy.addAudio}
+            />
           ) : (
             <button
               type="button"

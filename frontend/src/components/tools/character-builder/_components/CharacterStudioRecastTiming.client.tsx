@@ -12,6 +12,7 @@ export function CharacterStudioRecastTiming({
   timing,
   sourceSeconds,
   hasVideo,
+  pendingHint,
   hasAudio,
   manual,
   mode,
@@ -22,6 +23,7 @@ export function CharacterStudioRecastTiming({
   timing: ReturnType<typeof getRecastTiming>;
   sourceSeconds: number | null;
   hasVideo: boolean;
+  pendingHint: string | null;
   hasAudio: boolean;
   manual: number | null;
   mode: 'i2v' | 'v2v' | 'ref2v';
@@ -95,11 +97,7 @@ export function CharacterStudioRecastTiming({
         </select>
       </div>
       <div className="text-xs leading-relaxed text-text-secondary">
-        <span>
-          {hasVideo && sourceSeconds === null
-            ? copy.readDuration
-            : suggestion.replace('{seconds}', String(timing.suggested))}
-        </span>
+        <span>{pendingHint ?? suggestion.replace('{seconds}', String(timing.suggested))}</span>
         {manual !== null && (
           <button type="button" onClick={() => onManual(null)} className="ml-2 underline">
             {copy.restoreAuto}

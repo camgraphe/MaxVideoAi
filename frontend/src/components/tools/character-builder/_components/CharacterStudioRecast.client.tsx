@@ -4,14 +4,18 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Clapperboard, ImagePlus, Plus, Download, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioRecastSelection } from '@/types/character-studio';
-
 import { buildRecastBrief, isRecastAudioFile } from '@/lib/character-studio-recast';
 import { CharacterStudioRecastDirection } from './CharacterStudioRecastDirection.client';
-
-import { getRecastTiming, RECAST_MAX_SOURCE_SECONDS } from '@/lib/character-studio-recast-timing';
+import { getRecastTiming } from '@/lib/character-studio-recast-timing';
 import { CharacterStudioRecastTiming } from './CharacterStudioRecastTiming.client';
+import {
+  CharacterStudioRecastPassage,
+  RecastPassageDialog,
+  RecastPassagePlayer,
+} from './CharacterStudioRecastPassage.client';
+import { passageSeconds, useRecastTrack } from './useRecastTrack';
 
-type LocalMedia = { url: string; name: string; seconds?: number };
+type LocalMedia = { url: string; name: string };
 /** Local draft only: no upload, provider request, fabricated output, or billing. */
 export function CharacterStudioRecast({
   copy,
@@ -25,62 +29,47 @@ export function CharacterStudioRecast({
   selection?: StudioRecastSelection | null;
 }) {
   const readerRoot = useRef<HTMLDivElement>(null);
+  const videoControl = useRecastTrack('video');
+  const audioControl = useRecastTrack('audio');
+  const video = videoControl.track;
+  const audio = audioControl.track;
+  const editing = videoControl.editing || audioControl.editing;
   useEffect(() => {
-    if (!active)
+    if (!active || editing)
       readerRoot.current
         ?.querySelectorAll<HTMLMediaElement>('video, audio')
         .forEach((video) => video.pause());
-  }, [active]);
-  const [video, setVideo] = useState<LocalMedia | null>(null);
+  }, [active, editing]);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
   useEffect(() => {
     if (selection) setPortrait({ url: selection.imageUrl, name: selection.name });
   }, [selection]);
   const [product, setProduct] = useState<LocalMedia | null>(null);
-  const [audio, setAudio] = useState<LocalMedia | null>(null);
   const [dialogue, setDialogue] = useState('');
   const productInput = useRef<HTMLInputElement>(null);
   const audioInput = useRef<HTMLInputElement>(null);
-  const audioEpoch = useRef(0);
-  useEffect(
-    () => () => {
-      audioEpoch.current++;
-    },
-    [],
-  );
   useEffect(
     () => () => {
       if (product) URL.revokeObjectURL(product.url);
     },
     [product],
   );
-  useEffect(
-    () => () => {
-      if (audio) URL.revokeObjectURL(audio.url);
-    },
-    [audio],
-  );
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
   const [manualSeconds, setManualSeconds] = useState<number | null>(null);
   const timing = getRecastTiming({
-    sourceSeconds: video?.seconds ?? null,
-    audioSeconds: audio?.seconds ?? null,
+    sourceSeconds: passageSeconds(video),
+    audioSeconds: passageSeconds(audio),
     dialogue,
     manualSeconds,
   });
   const mode = video ? 'v2v' : audio || product ? 'ref2v' : 'i2v';
   const hasDirection = Boolean(video || prompt.trim() || dialogue.trim() || audio);
-  const canEstimate = hasDirection && (!video || video.seconds !== undefined);
+  const unresolved = [video, audio].find((track) => track && !track.range);
+  const canEstimate = hasDirection && !unresolved && !editing;
   const canExport = Boolean(portrait && canEstimate && timing.valid);
   const videoInput = useRef<HTMLInputElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
-  useEffect(
-    () => () => {
-      if (video) URL.revokeObjectURL(video.url);
-    },
-    [video],
-  );
   useEffect(
     () => () => {
       if (portrait?.url.startsWith('blob:')) URL.revokeObjectURL(portrait.url);
@@ -91,7 +80,11 @@ export function CharacterStudioRecast({
     if (!file) return;
     if (
       (kind === 'video'
-        ? !(/\.(mp4|mov)$/i.test(file.name) && file.type.startsWith('video/'))
+        ? !(
+            file.size > 0 &&
+            /\.(mp4|mov)$/i.test(file.name) &&
+            (!file.type || file.type.startsWith('video/'))
+          )
         : !file.type.startsWith('image/')) ||
       file.size > (kind === 'video' ? 100 : 20) * 1024 * 1024
     ) {
@@ -99,48 +92,31 @@ export function CharacterStudioRecast({
       return;
     }
     setError('');
+    if (kind === 'video') {
+      videoControl.select(file);
+      return;
+    }
     const asset = { url: URL.createObjectURL(file), name: file.name };
-    if (kind === 'video') setVideo(asset);
-    else if (kind === 'product') setProduct(asset);
+    if (kind === 'product') setProduct(asset);
     else setPortrait(asset);
   }
-  async function selectAudio(file?: File) {
+  function selectAudio(file?: File) {
     if (!file) return;
-    const epoch = ++audioEpoch.current;
     if (!isRecastAudioFile(file)) {
       setError(copy.invalidAudio);
       return;
     }
-    const url = URL.createObjectURL(file);
-    const probe = document.createElement('audio');
-    const duration = await new Promise<number>((resolve) => {
-      const settle = (n: number) => {
-        clearTimeout(timer);
-        probe.onloadedmetadata = null;
-        probe.onerror = null;
-        probe.removeAttribute('src');
-        resolve(n);
-      };
-      const timer = setTimeout(() => settle(NaN), 8000);
-      probe.onloadedmetadata = () => settle(probe.duration);
-      probe.onerror = () => settle(NaN);
-      probe.preload = 'metadata';
-      probe.src = url;
-    });
-    if (epoch !== audioEpoch.current || !Number.isFinite(duration) || duration <= 0 || duration > 15) {
-      URL.revokeObjectURL(url);
-      if (epoch === audioEpoch.current) setError(copy.invalidAudio);
-      return;
-    }
-    setAudio({ url, name: file.name, seconds: duration });
     setError('');
+    audioControl.select(file);
   }
   function downloadBrief() {
     if (!canExport || !portrait) return;
     const brief = buildRecastBrief({
       source: video?.name,
       durationSec: timing.seconds,
-      sourceDurationSec: video?.seconds,
+      sourceDurationSec: passageSeconds(video) ?? undefined,
+      videoPassage: video?.range && { ...video.range, originalDurationSec: video.originalSeconds! },
+      audioPassage: audio?.range && { ...audio.range, originalDurationSec: audio.originalSeconds! },
       character: portrait.name,
       product: product?.name,
       direction: prompt,
@@ -168,39 +144,12 @@ export function CharacterStudioRecast({
               01 · {copy.sourceVideo} · {copy.optional}
             </h3>
             {video ? (
-              <div className="relative overflow-hidden rounded-xl border border-border">
-                <video
-                  key={video.url}
-                  onLoadedMetadata={(event) => {
-                    const seconds = event.currentTarget.duration;
-                    if (Number.isFinite(seconds) && seconds > 0 && seconds <= RECAST_MAX_SOURCE_SECONDS) {
-                      setVideo((current) => (current?.url === video.url ? { ...current, seconds } : current));
-                    } else {
-                      setVideo(null);
-                      setError(copy.invalidVideo);
-                    }
-                  }}
-                  onError={() => {
-                    setVideo(null);
-                    setError(copy.invalidVideo);
-                  }}
-                  src={video.url}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="max-h-48 w-full bg-black"
-                  aria-label={copy.sourceVideo}
-                />
-                <button
-                  type="button"
-                  aria-label={`${copy.remove} · ${copy.sourceVideo}`}
-                  onClick={() => setVideo(null)}
-                  className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white"
-                >
-                  <X size={14} />
-                </button>
-                <p className="truncate p-2 text-xs text-text-secondary">{video.name}</p>
-              </div>
+              <CharacterStudioRecastPassage
+                kind="video"
+                control={videoControl}
+                copy={copy}
+                label={copy.sourceVideo}
+              />
             ) : (
               <button
                 type="button"
@@ -279,12 +228,8 @@ export function CharacterStudioRecast({
             onPrompt={setPrompt}
             dialogue={dialogue}
             onDialogue={setDialogue}
-            audio={audio}
+            audioControl={audioControl}
             addAudio={() => audioInput.current?.click()}
-            removeAudio={() => {
-              audioEpoch.current++;
-              setAudio(null);
-            }}
           />
           <input
             ref={productInput}
@@ -302,7 +247,7 @@ export function CharacterStudioRecast({
             accept=".mp3,.wav,audio/mpeg,audio/wav"
             className="hidden"
             onChange={(e) => {
-              void selectAudio(e.target.files?.[0]);
+              selectAudio(e.target.files?.[0]);
               e.target.value = '';
             }}
           />
@@ -319,9 +264,9 @@ export function CharacterStudioRecast({
               <p className="mt-1 text-xs text-text-secondary">{copy.exportHint}</p>
             </div>
           )}
-          {error && (
+          {(error || videoControl.invalid || audioControl.invalid) && (
             <p role="alert" className="text-xs text-text-secondary">
-              {error}
+              {error || (videoControl.invalid ? copy.invalidVideo : copy.invalidAudio)}
             </p>
           )}
           <p className="text-xs leading-relaxed text-text-secondary">{copy.localDraft}</p>
@@ -331,7 +276,10 @@ export function CharacterStudioRecast({
             copy={copy}
             timing={timing}
             hasVideo={Boolean(video)}
-            sourceSeconds={video?.seconds ?? null}
+            pendingHint={
+              unresolved ? (unresolved.originalSeconds ? copy.passageNeeded : copy.readDuration) : null
+            }
+            sourceSeconds={passageSeconds(video)}
             hasAudio={Boolean(audio || dialogue.trim())}
             manual={manualSeconds}
             onManual={setManualSeconds}
@@ -372,24 +320,34 @@ export function CharacterStudioRecast({
       <section className="hidden min-h-0 flex-col rounded-2xl border border-border bg-surface lg:flex">
         <h2 className="border-b border-border p-4 text-sm font-medium">{copy.recastPreview}</h2>
         <div className="flex min-h-0 flex-1 items-center justify-center p-6">
-          {video ? (
-            <video
-              key={video.url}
-              src={video.url}
-              controls
-              playsInline
-              preload="none"
+          {video?.range ? (
+            <RecastPassagePlayer
+              kind="video"
+              track={video}
+              label={copy.recastPreview}
               className="max-h-full max-w-full rounded-xl bg-black"
-              aria-label={copy.recastPreview}
             />
           ) : (
             <div className="max-w-xs text-center">
               <Clapperboard size={36} className="mx-auto mb-4 text-text-secondary" />
-              <p className="text-sm leading-relaxed text-text-secondary">{copy.recastPreviewHint}</p>
+              <p className="text-sm leading-relaxed text-text-secondary">
+                {video
+                  ? video.originalSeconds
+                    ? copy.passageNeeded
+                    : copy.readDuration
+                  : copy.recastPreviewHint}
+              </p>
             </div>
           )}
         </div>
       </section>
+      {active && editing && (
+        <RecastPassageDialog
+          kind={videoControl.editing ? 'video' : 'audio'}
+          control={videoControl.editing ? videoControl : audioControl}
+          copy={copy}
+        />
+      )}
     </div>
   );
 }
