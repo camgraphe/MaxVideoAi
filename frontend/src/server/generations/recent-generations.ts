@@ -1,5 +1,10 @@
 import { applicationJobSql } from '@/server/app-job-origin';
-import { getEngineAliases, listFalEngines } from '@/config/falEngines';
+import {
+  buildRecentGenerationSurfaceFilterClause,
+  RECENT_IMAGE_ENGINE_ALIASES,
+  type RecentGenerationQueryParam,
+  type RecentGenerationSurface,
+} from './recent-generation-surface-filter';
 import { query } from '@/lib/db';
 import {
   mapGenerationStatusRecordToAgent,
@@ -8,20 +13,8 @@ import {
 } from './generation-status';
 import { mapRecentGenerationRecordToWeb } from './recent-generation-web-mapper';
 
-export { mapRecentGenerationRecordToWeb };
-
-export type RecentGenerationSurface =
-  | 'video'
-  | 'image'
-  | 'storyboard'
-  | 'character'
-  | 'angle'
-  | 'audio'
-  | 'upscale'
-  | 'background-removal'
-  | 'tool';
-
-export type RecentGenerationQueryParam = string | number | Date | string[];
+export { mapRecentGenerationRecordToWeb, buildRecentGenerationSurfaceFilterClause, RECENT_IMAGE_ENGINE_ALIASES };
+export type { RecentGenerationQueryParam, RecentGenerationSurface };
 
 export type RecentGenerationRecord = Omit<GenerationStatusRecord, 'thumb_url'> & {
   updated_at: string;
@@ -38,10 +31,6 @@ export type RecentGenerationsResult = {
 };
 
 export const RECENT_GENERATIONS_SELECT = `id, job_id, user_id, updated_at, surface, billing_product_key, settings_snapshot, engine_id, engine_label, duration_sec, prompt, thumb_url, video_url, preview_video_url, audio_url, created_at, aspect_ratio, has_audio, can_upscale, preview_frame, final_price_cents, pricing_snapshot, currency, vendor_account_id, payment_status, stripe_payment_intent_id, stripe_charge_id, batch_id, group_id, iteration_index, iteration_count, render_ids, hero_render_id, local_key, message, eta_seconds, eta_label, visibility, indexable, status, progress, provider, provider_job_id`;
-
-export const RECENT_IMAGE_ENGINE_ALIASES = listFalEngines()
-  .filter((engine) => (engine.category ?? 'video') === 'image')
-  .flatMap((engine) => getEngineAliases(engine));
 
 const MAX_AGENT_RECENT_LIMIT = 50;
 const MAX_WEB_RECENT_LIMIT = 100;
@@ -123,68 +112,6 @@ export function formatRecentGenerationCursor(record: { created_at: string; id: n
   const createdAt = new Date(record.created_at);
   if (Number.isNaN(createdAt.getTime())) return String(record.id);
   return `${createdAt.toISOString()}|${record.id}`;
-}
-
-export function buildRecentGenerationSurfaceFilterClause(
-  surface: RecentGenerationSurface,
-  params: RecentGenerationQueryParam[]
-): string {
-  params.push(surface);
-  const directIndex = params.length;
-  if (surface === 'character') {
-    return `(surface = $${directIndex} OR settings_snapshot->>'surface' = 'character-builder')`;
-  }
-  if (surface === 'angle') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_angle_%' OR settings_snapshot->>'surface' = 'angle')`;
-  }
-  if (surface === 'upscale') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_upscale_%' OR settings_snapshot->>'surface' = 'upscale')`;
-  }
-  if (surface === 'background-removal') {
-    return `(surface = $${directIndex} OR job_id LIKE 'tool_background_removal_%' OR settings_snapshot->>'surface' = 'background-removal')`;
-  }
-  if (surface === 'image') {
-    params.push(RECENT_IMAGE_ENGINE_ALIASES);
-    const aliasesIndex = params.length;
-    return `(
-      surface = $${directIndex}
-      OR (
-        (
-          settings_snapshot->>'surface' = 'image'
-          OR render_ids IS NOT NULL
-          OR COALESCE(engine_id, '') = ANY($${aliasesIndex}::text[])
-        )
-        AND COALESCE(surface, '') NOT IN ('storyboard', 'character', 'angle', 'upscale', 'background-removal', 'tool')
-        AND COALESCE(settings_snapshot->>'surface', '') NOT IN ('storyboard', 'character-builder', 'angle', 'upscale', 'background-removal', 'video', 'tool')
-        AND job_id NOT LIKE 'tool_angle_%'
-        AND job_id NOT LIKE 'tool_upscale_%'
-        AND job_id NOT LIKE 'tool_background_removal_%'
-        AND job_id NOT LIKE 'storyboard_%'
-      )
-    )`;
-  }
-  if (surface === 'video') {
-    params.push(RECENT_IMAGE_ENGINE_ALIASES);
-    const aliasesIndex = params.length;
-    return `(
-      (
-        surface = $${directIndex}
-        OR COALESCE(video_url, '') <> ''
-        OR settings_snapshot->>'surface' = 'video'
-      )
-      AND NOT (
-        COALESCE(surface, '') IN ('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
-        OR COALESCE(settings_snapshot->>'surface', surface) IN ('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool')
-        OR job_id LIKE 'tool_angle_%'
-        OR job_id LIKE 'tool_upscale_%'
-        OR job_id LIKE 'tool_background_removal_%'
-        OR job_id LIKE 'storyboard_%'
-        OR render_ids IS NOT NULL
-        OR COALESCE(engine_id, '') = ANY($${aliasesIndex}::text[])
-      )
-    )`;
-  }
-  return `surface = $${directIndex}`;
 }
 
 function addFeedFilter(

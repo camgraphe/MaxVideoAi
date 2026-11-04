@@ -19,6 +19,7 @@ const surfaceFilterSource = readFileSync(surfaceFilterPath, 'utf8');
 const staleAudioSource = readFileSync(staleAudioPath, 'utf8');
 const falRefreshSource = readFileSync(falRefreshPath, 'utf8');
 const recentServiceSource = readFileSync(recentServicePath, 'utf8');
+const surfaceOwnerSource = readFileSync(join(root, 'frontend/src/server/generations/recent-generation-surface-filter.ts'), 'utf8');
 
 test('jobs API route delegates server helper responsibilities', () => {
   assert.ok(existsSync(typesPath), 'jobs API row types should live in a route-local lib module');
@@ -64,7 +65,8 @@ test('jobs API route helper modules expose expected contracts', () => {
   assert.match(falRefreshSource, /getFalClient/);
   assert.match(falRefreshSource, /updateJobFromFalWebhook/);
   assert.match(recentServiceSource, /export const RECENT_GENERATIONS_SELECT/);
-  assert.match(recentServiceSource, /export function buildRecentGenerationSurfaceFilterClause/);
+  assert.match(surfaceOwnerSource, /export function buildRecentGenerationSurfaceFilterClause/);
+  assert.match(recentServiceSource, /from '\.\/recent-generation-surface-filter'/);
   assert.match(recentServiceSource, /export async function readRecentGenerationRecordsForWeb/);
 });
 
@@ -86,7 +88,7 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
     'type=image should not absorb storyboard jobs through image heuristics'
   );
   assert.match(
-    recentServiceSource,
+    surfaceOwnerSource,
     /COALESCE\(surface, ''\) IN \('image', 'storyboard', 'character', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'surface=video should explicitly reject storyboard jobs'
   );

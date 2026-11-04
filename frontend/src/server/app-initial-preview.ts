@@ -4,7 +4,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { listStarterPlaylistVideos } from '@/server/videos';
 import { applicationJobSql } from '@/server/app-job-origin';
-import { buildRecentGenerationSurfaceFilterClause, type RecentGenerationQueryParam } from './generations/recent-generations';
+import { buildRecentGenerationSurfaceFilterClause, type RecentGenerationQueryParam } from './generations/recent-generation-surface-filter';
 import type { ResultProvider, VideoGroup, VideoItem } from '@/types/video-groups';
 
 type InitialPreview = {

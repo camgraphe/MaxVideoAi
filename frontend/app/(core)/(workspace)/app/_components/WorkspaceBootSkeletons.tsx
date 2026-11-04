@@ -5,22 +5,6 @@ import { WorkspacePreviewColumn } from '@/components/groups/WorkspacePreviewColu
 
 const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
 
-export function CompositePreviewDockSkeleton() {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
-      <WorkspacePreviewHeaderSkeleton />
-      <div className="px-0 py-0">
-        <WorkspacePreviewColumn>
-          <div className="aspect-video w-full rounded-card border border-surface-on-media-25 bg-placeholder p-[8px]">
-            <div className="skeleton h-full w-full rounded-card" />
-          </div>
-          <WorkspacePreviewToolbarSkeleton />
-        </WorkspacePreviewColumn>
-      </div>
-    </section>
-  );
-}
-
 export function GalleryRailSkeleton({ responsive = false }: { responsive?: boolean }) {
   if (!responsive) {
     return (

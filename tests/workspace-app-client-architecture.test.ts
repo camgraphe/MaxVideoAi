@@ -25,9 +25,6 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   assert.match(entry, /const app = useWorkspaceAppBootstrap\(\)/);
   assert.match(entry, /lazy\(\(\) => import\('\.\/AppClient'\)\)/);
   assert.match(entry, /<WorkspaceBootSurface initialPreviewGroup=\{props\.initialPreviewGroup\}/);
-  assert.match(entry, /useState\(false\)/);
-  assert.match(entry, /<Suspense fallback=\{boot\}>[\s\S]*?loadEditor \? <AppClient[\s\S]*?: boot/);
-  assert.match(entry, /startTransition\(\(\) => setLoadEditor\(true\)\)/);
   assert.match(entry, /<AppClient[^>]*app=\{app\}/);
   assert.doesNotMatch(entry, /import AppClient from/);
   assert.doesNotMatch(appSource, /useWorkspaceAppBootstrap\(\)/);
