@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle2, ChevronDown, Play } from 'lucide-react';
-import { NEON_RACER_FILM } from '@/config/neon-racer-film';
+import { CALIFORNIA_CURSOR_FILM } from '@/config/california-cursor-film';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoHeroData, PayAsYouGoPageData } from '../_lib/payg-page-data';
@@ -12,7 +12,7 @@ type PayAsYouGoPageDataProps = {
 };
 
 export function PayAsYouGoHeroSection({ data, quoteCard }: { data: PayAsYouGoHeroData; quoteCard: ReactNode }) {
-  const film = NEON_RACER_FILM;
+  const film = CALIFORNIA_CURSOR_FILM;
   return (
     <header className="border-b border-hairline bg-bg">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-8 sm:py-12 lg:py-16`}>
@@ -33,21 +33,23 @@ export function PayAsYouGoHeroSection({ data, quoteCard }: { data: PayAsYouGoHer
               </Link>
             </div>
           </div>
-          <figure className="min-w-0">
-            <Link href={`/video/${film.jobId}?from=%2Fpay-as-you-go-ai-video-generator`} prefetch={false}
-              className="group relative block aspect-video overflow-hidden rounded-xl bg-zinc-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
-              aria-label={`${data.hero.film.watch} · ${data.hero.film.title} · ${film.model} · ${film.durationSeconds} s`}>
-              <Image src={film.poster} alt={data.hero.film.posterAlt} fill priority
-                sizes="(min-width: 1280px) 655px, (min-width: 1024px) 54vw, 92vw" className="object-cover" />
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/75 px-3.5 py-2 text-xs font-semibold text-white group-hover:bg-black">
-                <Play aria-hidden className="h-3 w-3 fill-current" /> {data.hero.film.watch}
-              </span>
-            </Link>
-            <figcaption className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
-              <strong className="font-semibold text-text-primary">{data.hero.film.title}</strong>
-              <span className="text-text-secondary">{film.model} · {film.durationSeconds} s</span>
-            </figcaption>
-          </figure>
+          <div className="min-w-0" data-nosnippet="">
+            <figure>
+              <Link href={`${film.watchHref}?from=%2Fpay-as-you-go-ai-video-generator`} prefetch={false}
+                className="group relative block aspect-video overflow-hidden rounded-xl bg-zinc-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
+                aria-label={`${data.hero.film.watch} · ${data.hero.film.title} · ${film.model} · ${film.durationSeconds} s`}>
+                <Image src={film.poster} alt={data.hero.film.posterAlt} fill priority
+                  sizes="(min-width: 1280px) 655px, (min-width: 1024px) 54vw, 92vw" className="object-cover" />
+                <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/75 px-3.5 py-2 text-xs font-semibold text-white group-hover:bg-black">
+                  <Play aria-hidden className="h-3 w-3 fill-current" /> {data.hero.film.watch}
+                </span>
+              </Link>
+              <figcaption className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-sm">
+                <strong className="font-semibold text-text-primary">{data.hero.film.title}</strong>
+                <span className="text-text-secondary">{film.model} · {film.durationSeconds} s</span>
+              </figcaption>
+            </figure>
+          </div>
         </div>
         <div className="mt-7 grid gap-3 border-t border-hairline pt-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-12">
           {quoteCard}

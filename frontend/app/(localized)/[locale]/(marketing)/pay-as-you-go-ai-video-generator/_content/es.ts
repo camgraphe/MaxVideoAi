@@ -17,11 +17,11 @@ export const esPayAsYouGoContent = {
   hero: {
     eyebrow: 'Créditos de video con IA, sin compromiso mensual',
     title: 'Generador de video con IA de pago por uso',
-    intro: "Empieza con una idea o una imagen. Recarga desde 10 USD, elige un modelo de video y consulta el precio de tu clip antes de generarlo.",
+    intro: "Parte de tu idea, elige un modelo y consulta el precio antes de crear el video. Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más con créditos de pago por uso. ¿Necesitas ayuda con el prompt? Pregunta a Milo.",
     primaryCta: 'Ver cotización del video',
     secondaryCta: 'Ver precios por modelo',
     trustItems: ['Sin suscripción obligatoria', 'Créditos iniciales desde 10 USD', 'Precio visible antes de generar', 'Fallos del proveedor reembolsados'],
-    film: { title: "La piloto del túnel de neón", watch: "Ver el video", posterAlt: "Una piloto y su moto en un túnel iluminado con neón." },
+    film: { title: "Un clic en California", watch: "Ver el video", posterAlt: "Un cursor gigante apunta al helado rosa que una mujer tiene en la mano." },
     quote: {
       consoleLabel: "Ejemplo de precio para un nuevo clip",
       detailsLabel: "Ver el prompt del ejemplo y más precios",

@@ -84,7 +84,9 @@ const representative = {
       'What happens if a generation fails?',
       'FAQ',
     ],
-    heroIntro: "Start with an idea or an image. Add credits from $10, choose a video model and see what your clip will cost before you generate.",
+    searchTitle: "Pay-as-you-go AI Video Generator with Upfront Pricing",
+    searchDescription: "Make AI videos without a subscription. Compare FLUX 3 Max, MiniMax H3, Kling 4.0 and Seedance 2.5, get help from Milo, and see the price before you generate.",
+    heroIntro: "Start with your idea, choose a model, and see the price before you make the video. Compare FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 and more with pay-as-you-go credits. Need help writing the prompt? Ask Milo.",
     naturalQuestion: 'Where can I test AI video models without subscription?',
     pricingIntro: 'These examples help you estimate cost quickly. Use the pricing page for the full model-by-model matrix, then open the app for the exact live quote before rendering.',
     refundText: 'You review the price before launching a generation.',
@@ -119,7 +121,9 @@ const representative = {
       'Que se passe-t-il si une génération échoue ?',
       'FAQ',
     ],
-    heroIntro: "Partez d’une idée ou d’une image. Rechargez votre compte dès 10 $, choisissez un modèle vidéo et consultez le prix de votre clip avant de le générer.",
+    searchTitle: "Générateur de vidéos IA sans abonnement, paiement à l’usage",
+    searchDescription: "Créez des vidéos IA sans abonnement. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0 et Seedance 2.5, préparez le prompt avec Milo et voyez le prix avant de générer.",
+    heroIntro: "Partez de votre idée, choisissez un modèle et voyez le prix avant de créer la vidéo. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 et d’autres avec des crédits à la demande. Besoin d’aide pour le prompt ? Demandez à Milo.",
     naturalQuestion: 'Où tester des modèles de vidéo IA sans abonnement ?',
     pricingIntro: 'Ces exemples permettent d’estimer rapidement le coût. Utilisez la page des tarifs pour la matrice complète par modèle, puis ouvrez l’application pour obtenir le devis exact avant de générer.',
     refundText: 'Vous examinez le prix avant de lancer une génération.',
@@ -154,7 +158,9 @@ const representative = {
       '¿Qué ocurre si falla una generación?',
       'FAQ',
     ],
-    heroIntro: "Empieza con una idea o una imagen. Recarga desde 10 USD, elige un modelo de video y consulta el precio de tu clip antes de generarlo.",
+    searchTitle: "Generador de video con IA de pago por uso y precio por adelantado",
+    searchDescription: "Crea videos IA sin suscripción. Compara FLUX 3 Max, MiniMax H3, Kling 4.0 y Seedance 2.5, prepara el prompt con Milo y consulta el precio antes de generar.",
+    heroIntro: "Parte de tu idea, elige un modelo y consulta el precio antes de crear el video. Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más con créditos de pago por uso. ¿Necesitas ayuda con el prompt? Pregunta a Milo.",
     naturalQuestion: '¿Dónde puedo probar modelos de video con IA sin suscripción?',
     pricingIntro: 'Estos ejemplos ayudan a estimar el costo rápidamente. Usa la página de precios para consultar la matriz completa por modelo y abre la app para ver la cotización exacta antes de generar.',
     refundText: 'Revisas el precio antes de iniciar una generación.',
@@ -308,7 +314,11 @@ for (const locale of locales) {
         assert.ok(links.every(link => link.hasAttribute('href')));
       }
       const film = doc.querySelector('header figure a');
-      assert.ok(film?.getAttribute('href')?.includes('job_78cb3e71-cab5-48e2-9965-9f521ba51c0f'));
+      assert.equal(film?.getAttribute('href')?.split('?')[0], '/video/seedance-2-5-california-pop-cursor-ad');
+      assert.ok(film?.closest('div[data-nosnippet]'), 'The decorative film copy is excluded from Google snippets');
+      const intro = [...doc.querySelectorAll('header p')].find(p => p.textContent === representative[locale].heroIntro);
+      assert.ok(intro && !intro.closest('[data-nosnippet]'));
+      assert.ok(!doc.querySelector('[data-nosnippet] [data-payg-quote-amount]'));
       assert.ok(film?.querySelector('img'));
       assert.equal(doc.querySelector('header video'), null, 'Watching the film is an explicit action');
       assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]'));
@@ -379,6 +389,8 @@ for (const locale of locales) {
     });
 
     assert.deepEqual(metadata, expected);
+    assert.deepEqual(metadata.title, { absolute: representative[locale].searchTitle });
+    assert.equal(metadata.description, representative[locale].searchDescription);
     assert.deepEqual(metadata.keywords, content.metadata.keywords);
     const images = metadata.openGraph?.images;
     assert.ok(Array.isArray(images));

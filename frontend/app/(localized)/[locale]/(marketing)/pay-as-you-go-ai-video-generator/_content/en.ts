@@ -17,11 +17,11 @@ export const enPayAsYouGoContent = {
   hero: {
     eyebrow: 'AI video credits, no monthly lock-in',
     title: 'Pay-as-you-go AI Video Generator',
-    intro: "Start with an idea or an image. Add credits from $10, choose a video model and see what your clip will cost before you generate.",
+    intro: "Start with your idea, choose a model, and see the price before you make the video. Compare FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 and more with pay-as-you-go credits. Need help writing the prompt? Ask Milo.",
     primaryCta: 'Get a video quote',
     secondaryCta: 'View model pricing',
     trustItems: ['No subscription required', 'Starter credits from $10', 'Price shown before generation', 'Provider failures refunded'],
-    film: { title: "Neon racer reveal", watch: "Watch the film", posterAlt: "A rider and a motorcycle in a neon-lit tunnel." },
+    film: { title: "A click in California", watch: "Watch the film", posterAlt: "A giant pixel cursor reaches for the pink ice cream in a woman’s hand." },
     quote: {
       consoleLabel: "Example price for a new clip",
       detailsLabel: "See the sample prompt and more prices",

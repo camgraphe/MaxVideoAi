@@ -17,11 +17,11 @@ export const frPayAsYouGoContent = {
   hero: {
     eyebrow: 'Crédits vidéo IA, sans engagement mensuel',
     title: 'Générateur de vidéos IA sans abonnement',
-    intro: "Partez d’une idée ou d’une image. Rechargez votre compte dès 10 $, choisissez un modèle vidéo et consultez le prix de votre clip avant de le générer.",
+    intro: "Partez de votre idée, choisissez un modèle et voyez le prix avant de créer la vidéo. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 et d’autres avec des crédits à la demande. Besoin d’aide pour le prompt ? Demandez à Milo.",
     primaryCta: 'Obtenir un devis vidéo',
     secondaryCta: 'Voir les prix par modèle',
     trustItems: ['Aucun abonnement requis', 'Crédits de départ dès 10 USD', 'Prix affiché avant la génération', 'Échecs du fournisseur remboursés'],
-    film: { title: "La pilote du tunnel néon", watch: "Voir le film", posterAlt: "Une pilote et sa moto dans un tunnel éclairé au néon." },
+    film: { title: "Un clic en Californie", watch: "Voir le film", posterAlt: "Un grand curseur pixelisé pointe la glace rose qu’une femme tient à la main." },
     quote: {
       consoleLabel: "Exemple de prix pour un nouveau clip",
       detailsLabel: "Voir le prompt de l’exemple et d’autres tarifs",
