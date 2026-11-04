@@ -5,6 +5,36 @@ import test from 'node:test';
 import {chromium,webkit} from '@playwright/test';
 import {createMarketingNavigationBrowserFixture} from './helpers/marketing-navigation-browser-fixture';
 
+test('an early mobile opening gains accessible focus without waiting for desktop menu hydration', async () => {
+  const fixture = await createMarketingNavigationBrowserFixture();
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({viewport: {width: 390, height: 844}, isMobile: true, hasTouch: true});
+    await page.addInitScript(() => {
+      const win = window as any;
+      win.__fixtureDesktopLabelGate = new Promise<void>(resolve => {
+        win.__releaseDesktopLabels = () => { win.__fixtureDesktopLabelGate = null; resolve(); };
+      });
+    });
+    await page.goto(fixture.url, {waitUntil: 'commit'});
+    await page.getByRole('button', {name: 'Open menu', exact: true}).tap();
+    const menu = page.getByRole('dialog');
+    await menu.waitFor();
+    assert.equal(await menu.getAttribute('aria-modal'), null, 'a native opening precedes React');
+    fixture.releaseHydration();
+    await page.waitForFunction(() => !!document.querySelector('main')?.inert, null, {timeout: 3000});
+    assert.equal(await menu.getAttribute('aria-modal'), 'true');
+    assert.equal(await menu.evaluate(node => node.contains(document.activeElement)), true);
+    await page.evaluate(() => (window as any).__releaseDesktopLabels());
+    await page.keyboard.press('Escape');
+    await menu.waitFor({state: 'hidden'});
+    await page.setViewportSize({width: 1280, height: 900});
+    await page.locator('button[aria-controls="marketing-models-dropdown"]').click();
+    assert.equal(await page.locator('#marketing-models-dropdown a[href="/models"]').first().isVisible(), true);
+    assert.deepEqual(await page.evaluate(() => (window as any).__fixtureHydrationErrors), []);
+  } finally { await browser.close(); await fixture.close(); }
+});
+
 test('native mobile navigation keeps a small SSR DOM and stable decoration slots', async () => {
   const fixture=await createMarketingNavigationBrowserFixture();
   const browser=await chromium.launch({headless:true});

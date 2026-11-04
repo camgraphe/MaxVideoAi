@@ -38,6 +38,7 @@ const boundaries: Record<string, string> = {
 const fixture = `
   import {useEffect,useState} from 'react';
   import {MarketingNav} from './components/marketing/MarketingNav';
+  import {marketingHeaderNavigation} from './config/public-marketing-navigation';
   import {I18nProvider} from './lib/i18n/I18nProvider';
   import en from './messages/en.json';
   import fr from './messages/fr.json';
@@ -45,6 +46,7 @@ const fixture = `
   for (const dictionary of [en,fr,es]) {
     const labels=dictionary.nav.dropdown.models.items;
     Object.defineProperty(dictionary.nav.dropdown.models,'items',{enumerable:true,get(){
+      if(globalThis.__fixtureDesktopLabelGate)throw globalThis.__fixtureDesktopLabelGate;
       globalThis.__fixtureModelLabelReads=(globalThis.__fixtureModelLabelReads??0)+1;return labels;
     }});
   }
@@ -53,7 +55,7 @@ const fixture = `
     useEffect(()=>{window.__fixtureSetLocale=setLocale},[]);
     useEffect(()=>{window.__fixtureHydrated=true;window.__fixtureHydrationDuration=performance.now()-window.__fixtureHydrationStarted},[]);
     return <I18nProvider locale={locale} dictionary={{en,fr,es}[locale]} fallback={en}>
-      <div className={globalThis.__fixtureConfiguration.marketingSite ? "marketing-site" : undefined}><MarketingNav/><main style={{minHeight:'1800px'}}><h1>Navigation fixture</h1><a href="#after">After navigation</a></main></div>
+      <div className={globalThis.__fixtureConfiguration.marketingSite ? "marketing-site" : undefined}><MarketingNav navigation={marketingHeaderNavigation}/><main style={{minHeight:'1800px'}}><h1>Navigation fixture</h1><a href="#after">After navigation</a></main></div>
       <aside className="cookie-consent-overlay"><button type="button">Consent fixture</button></aside>
     </I18nProvider>;
   }

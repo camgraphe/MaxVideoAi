@@ -5,8 +5,7 @@ import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { MarketingFooterAssistants } from '@/components/marketing/MarketingFooterAssistants';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
-import { MARKETING_NAV_BEST_FOR_HUB } from '@/config/navigation';
-import { FOOTER_MODELS, FOOTER_COMPARISONS, FOOTER_EXAMPLES } from '@/config/marketing-footer';
+import type { MarketingFooterNavigation } from '@/config/public-marketing-navigation';
 
 type FooterLink = { key: string; label: string; href: LocalizedLinkHref };
 type PolicyLink = { label: string; href: string; locale?: boolean };
@@ -21,7 +20,9 @@ function localizeFooterPath(locale: SupportedLocale, englishPath: string) {
   return `/${locale}${englishPath}`;
 }
 
-export function MarketingFooter() {
+export function MarketingFooter({ navigation }: { navigation: MarketingFooterNavigation }) {
+  const { models: FOOTER_MODELS, comparisons: FOOTER_COMPARISONS, examples: FOOTER_EXAMPLES,
+    bestFor: MARKETING_NAV_BEST_FOR_HUB, assistants } = navigation;
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const { locale, t } = useI18n();
@@ -147,7 +148,7 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <MarketingFooterAssistants copy={{
+        <MarketingFooterAssistants assistants={assistants} copy={{
           title: labelFor('footer.mcpFeature.title', 'Create with your AI assistant.'),
           body: labelFor('footer.mcpFeature.body', 'Your models and credits, from your conversation.'),
           cta: labelFor('footer.mcpFeature.cta', 'Discover MaxVideoAI MCP'),
