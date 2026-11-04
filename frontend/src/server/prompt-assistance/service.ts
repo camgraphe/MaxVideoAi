@@ -72,7 +72,7 @@ export async function finishRecorded(row:PromptRequestRow,policy:StudioAssistanc
       if(response.status==='incomplete')throw new Error('OUTPUT_INCOMPLETE');
       if(response.status!=='completed')throw new Error('OUTPUT_INVALID');
       if(response.output?.some(item=>item.type==='message'&&item.content.some(part=>part.type==='refusal')))throw new Error('OUTPUT_REFUSED');
-      reply=parsePromptProviderReply(response.output_text,row.context_json);
+      reply=parsePromptProviderReply(response.output_text,row.context_json,row.input_json.draft.references);
       const maxChars=(row.context_json as {maxChars:number}).maxChars;
       if(reply.text&&reply.text.length>maxChars)throw new Error('OUTPUT_TOO_LONG');
     }catch(cause){

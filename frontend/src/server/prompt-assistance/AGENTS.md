@@ -1,7 +1,9 @@
 # Composer Milo server boundary
 
 - `provider.ts` owns instructions and request parameters; `reply-format.ts` owns
-  the private provider response protocol and its conversion to public `{reply,text}`.
+  the private provider response protocol and its conversion to public
+  `{reply,text,analysisRequest?}`. Analysis recommendations bind only to the
+  admitted owned reference; they do not prepare, confirm or execute paid work.
   Conversation advice is not editor replacement text. Valid prompts and spoken
   scripts remain replacements according to their destination, without keyword filters.
 - Freeze the response format before count, use the same parameters for create,

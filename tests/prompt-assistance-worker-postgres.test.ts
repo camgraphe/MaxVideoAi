@@ -14,7 +14,7 @@ const context={model:{id:'seedance-2-5'},maxChars:20000,references:[],referenceP
 const request=()=>promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:0,locale:'en',
  message:'Prepare a welcoming astronomy-club film with reference photographs.',draft:{surface:'video',workflow:'create',engineId:'seedance-2-5',mode:'t2v',target:'prompt',text:'An unrelated sample.',settings:{durationSec:5},references:[]}});
 const evidence=()=>({id:'resp_'+randomUUID(),model:'gpt-6.1-sol',status:'completed',service_tier:'default',
- output_text:JSON.stringify({kind:'replacement',reply:'A direction is ready.',text:'A telescope turns slowly under a twilight sky.'}),
+ output_text:JSON.stringify({analysisRequest:null,kind:'replacement',reply:'A direction is ready.',text:'A telescope turns slowly under a twilight sky.'}),
  usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}} as never);
 function gate<T>(){let resolve!:(value:T)=>void;const promise=new Promise<T>(done=>resolve=done);return {promise,resolve};}
 async function fixture(t:{after:(callback:()=>Promise<void>)=>void},migration=true){

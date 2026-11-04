@@ -3,12 +3,10 @@ import {promptWorkflowSchema,promptWorkflows} from './session';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import {studioAssistantModelSchema,type StudioAssistanceStatus,type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from './limits';
+import {promptReferenceLocationSchema,promptAnalysisRequestSchema} from './analysis-request';
+export {promptReferenceLocationSchema} from './analysis-request';
 
 const setting = z.union([z.string().max(5000),z.number().finite(),z.boolean(),z.null()]);
-export const promptReferenceLocationSchema = z.object({
-  fieldId: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),
-  slot: z.number().int().min(0).max(99),
-}).strict();
 export type PromptReferenceLocation = z.infer<typeof promptReferenceLocationSchema>;
 export const promptAssistanceDraftSchema = z.object({
   surface:z.enum(['video','image','audio']), engineId:z.string().min(1).max(100), mode:z.string().min(1).max(60),
@@ -26,7 +24,7 @@ export const promptAssistanceRequestSchema = z.object({
 }).strict().refine(value=>(value.assistanceModel===undefined)===(value.assistanceRevision===undefined),'Model and assistance revision must be provided together.');
 export type PromptAssistanceDraftContext = Omit<z.infer<typeof promptAssistanceDraftSchema>,'text'|'target'>;
 export type PromptAssistanceRequest = z.infer<typeof promptAssistanceRequestSchema>;
-export const promptAssistanceReplySchema = z.object({reply:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),text:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS).nullable()}).strict();
+export const promptAssistanceReplySchema = z.object({reply:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),text:z.string().trim().min(1).max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS).nullable(),analysisRequest:promptAnalysisRequestSchema.optional()}).strict();
 export type PromptAssistanceReply = z.infer<typeof promptAssistanceReplySchema>;
 export type PromptAssistanceResult = {
   sessionId:string;requestId:string;draftRevision:number;target:PromptAssistanceRequest['draft']['target'];message:string;

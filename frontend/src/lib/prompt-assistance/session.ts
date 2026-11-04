@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import type {PromptAssistanceRequest} from './contract';
 import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from './limits';
+import {promptAnalysisRequestSchema} from './analysis-request';
 
 export const promptWorkflows = {
   video: ['create', 'modify', 'extend', 'reframe', 'retake', 'keyframes', 'references'],
@@ -29,7 +30,7 @@ export const promptSessionSnapshotSchema = z.object({
   sessionId: z.string().uuid(), scope: promptSessionScopeSchema,
   status: z.enum(['active','expired','full']),
   turns: z.array(z.union([
-    z.object({requestId:z.string().uuid(),message:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),reply:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS)}).strict(),
+    z.object({requestId:z.string().uuid(),message:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),reply:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),analysisRequest:promptAnalysisRequestSchema.optional()}).strict(),
     z.object({requestId:z.string().uuid(),message:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),state:z.literal('failed'),reply:z.null(),error:z.string().regex(/^[A-Z_]{1,80}$/)}).strict(),
   ])).max(100),
   proposal: z.object({text:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),draftFingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict().nullable(),
