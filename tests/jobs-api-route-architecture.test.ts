@@ -76,7 +76,7 @@ test('jobs API keeps storyboard renders out of generic video and image feeds', (
   );
   assert.match(
     recentServiceSource,
-    /settings_snapshot->>'surface' IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
+    /COALESCE\(settings_snapshot->>'surface', surface\) IN \('image', 'storyboard', 'character-builder', 'angle', 'audio', 'upscale', 'background-removal', 'tool'\)/,
     'type=video should explicitly exclude storyboard jobs by snapshot surface'
   );
   assert.match(recentServiceSource, /job_id LIKE 'storyboard_%'/, 'type=video should exclude legacy storyboard job ids');

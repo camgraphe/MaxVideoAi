@@ -12,4 +12,3 @@ test('marketing header and footer browser bundles do not initialize model public
     .filter(input => /frontend\/config\/(navigation\.ts|model-runtime\.json|marketing-footer\.ts)$/.test(input));
   assert.deepEqual(publication, [], 'the browser should receive the resolved links instead of executing the catalog and menu builders');
 });
-
