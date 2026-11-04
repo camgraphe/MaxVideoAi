@@ -16,7 +16,7 @@ export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recove
       ? 'These images are too large to inspect together. Remove some references and try again.'
     : error==='REFERENCE_REATTACH_REQUIRED'||error?.startsWith('REFERENCE_')||error==='MEDIA_NOT_AVAILABLE'
       ? unavailableReferenceLabel
-        ? `The ${unavailableReferenceLabel} attached to this message is unavailable. Remove or replace it in References before resending. Your message and draft are kept.`
+        ? `Milo couldn’t use ${unavailableReferenceLabel} for this message. Open References to replace or remove it, then send again.`
         : 'A reference is unavailable. Open References to remove or replace it before resending.'
     : error==='ASSISTANCE_SELECTION_CHANGED'
       ? 'Milo changed in another tab. Review the selected level before sending again.'
