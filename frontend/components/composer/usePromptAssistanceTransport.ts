@@ -1,7 +1,7 @@
 'use client';
 import {type AssistanceNextAction} from '@/lib/studio/assistance-contract';
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {promptAssistanceReplySchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {promptAssistanceReplySchema,promptReferenceLocationSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import {promptSessionSnapshotSchema,lastCompletedPromptRequestId,type PromptSessionSnapshot} from '@/lib/prompt-assistance/session';
 import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageKey,readLegacyPromptRecovery,clearLegacyPromptRecovery,legacyPromptScopeKey,readAnalysisIdentity,type PromptChatLocal,type PromptPendingReview} from './prompt-chat-storage';
@@ -9,7 +9,14 @@ import {readPromptChat,writePromptChat,revokePromptChatReview,promptChatStorageK
 import {promptReplyHttp,validatedPromptReply,pollPromptReply,PromptReplyHttpError} from './prompt-assistance-polling';
 import {readPreviousReply,writePreviousReply,clearPreviousReply,samePreviousReply,privatePreviousReply,previousReplyAccount,type PreviousReplyRef} from './prompt-previous-reply-storage';
 import {observePreviousPromptReply} from './prompt-previous-reply-observer';
-type Pending={sessionId:string;requestId:string;uiId:number|null;deadlineAt?:string};
+type Pending={sessionId:string;requestId:string;uiId:number|null;deadlineAt?:string;references?:Pick<PromptAssistanceRequest['draft']['references'][number],'fieldId'|'slot'|'label'>[]};
+function unavailableReferenceLabel(result:PromptAssistanceResult,pending:Pending):string|null{
+  if(result.state!=='failed'||result.safeToRetry!==true||!(result.error==='MEDIA_NOT_AVAILABLE'||result.error?.startsWith('REFERENCE_')))return null;
+  const location=promptReferenceLocationSchema.safeParse(result.unavailableReference);
+  if(!location.success)return null;
+  // Only the original submitted labels can name a failed reference. Current slots may have changed.
+  return pending.references?.find(ref=>ref.fieldId===location.data.fieldId&&ref.slot===location.data.slot)?.label??null;
+}
 type Restore=(snapshot:PromptSessionSnapshot|null,local:PromptChatLocal|undefined,pendingReview?:PromptPendingReview)=>Promise<()=>void>;
 export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onResult:(result:PromptAssistanceResult,uiId:number|null)=>void,options?:{scope:string;accountKey?:string;onRestore:Restore}){
   const accountKey=previousReplyAccount(scopeKey,options?.accountKey),serverScope=options?.scope??'';
@@ -17,7 +24,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   const owner=useMemo(()=>({key:scopeKey,accountKey,serverScope,active:false,sessionId:'',pending:null as Pending|null,pendingReview:undefined as PromptPendingReview|undefined,controller:null as AbortController|null,waiting:false,loading:enabled,local:undefined as PromptChatLocal|undefined,latestRequestId:'',localEpoch:0,chatEpoch:0,previousRef:null as PreviousReplyRef|null,previousViewRef:null as PreviousReplyRef|null,terminalRequest:null as {sessionId:string;requestId:string}|null,previousController:null as AbortController|null,previousObserverController:null as AbortController|null,previousResult:null as PromptAssistanceResult|null,persistenceError:false,cacheError:blockedScopes.current.has(scopeKey),legacy:false,exhausted:null as string|null}),[scopeKey,enabled,accountKey,serverScope]);
   const current=useRef(owner);current.current=owner;
   const callbacks=useRef({onResult,options});callbacks.current={onResult,options};
-  const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined as PromptAssistanceResult['phase'],previousRef:null as PreviousReplyRef|null,previousOpen:false,previousWaiting:false,previousResult:null as PromptAssistanceResult|null,previousError:null as string|null,persistenceError:false,error:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
+  const [view,setView]=useState({owner,chatId:'',exhausted:null as string|null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined as PromptAssistanceResult['phase'],previousRef:null as PreviousReplyRef|null,previousOpen:false,previousWaiting:false,previousResult:null as PromptAssistanceResult|null,previousError:null as string|null,persistenceError:false,error:null as string|null,unavailableReferenceLabel:null as string|null,nextAction:null as AssistanceNextAction|null,fundingRevision:null as number|null});
   const storageKey=promptChatStorageKey(scopeKey);
   const active=()=>owner.active&&current.current===owner;
   const update=(values:Partial<Omit<typeof view,'owner'>>)=>{if(active())setView(previous=>({...previous,...values,owner,chatId:owner.sessionId,exhausted:owner.exhausted,previousRef:owner.previousRef,persistenceError:owner.persistenceError}));};
@@ -107,7 +114,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     if(enabled){
       const saved=readPromptChat(storageKey)??readLegacyPromptRecovery(scopeKey);owner.legacy=!!saved?.legacy&&!!callbacks.current.options;owner.exhausted=owner.legacy?'LEGACY_SESSION':null;owner.sessionId=saved?.sessionId??crypto.randomUUID();owner.local=saved?.local;owner.pendingReview=owner.legacy?undefined:saved?.pendingReview;
       owner.pending=saved?.pending?{...saved.pending,uiId:null}:null;if(owner.pending&&!owner.previousRef)remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,status:'pending'});if(owner.cacheError)persistRevocation();else save();
-      setView({owner,chatId:owner.sessionId,exhausted:owner.exhausted,loading:!!callbacks.current.options,loadError:false,cacheError:owner.cacheError,waiting:false,recovery:!!owner.pending,phase:undefined,previousRef:owner.previousRef,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:owner.persistenceError,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted,nextAction:null,fundingRevision:null});
+      setView({owner,chatId:owner.sessionId,exhausted:owner.exhausted,loading:!!callbacks.current.options,loadError:false,cacheError:owner.cacheError,waiting:false,recovery:!!owner.pending,phase:undefined,previousRef:owner.previousRef,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:owner.persistenceError,error:owner.pending?'RECOVERY_AVAILABLE':owner.exhausted,unavailableReferenceLabel:null,nextAction:null,fundingRevision:null});
       if(saved&&callbacks.current.options&&!owner.legacy)void restore();
       else if(callbacks.current.options){
         const sessionId=owner.sessionId,epoch=owner.chatEpoch;void callbacks.current.options.onRestore(null,owner.local).then(commit=>{if(active()&&sessionId===owner.sessionId&&epoch===owner.chatEpoch){commit();owner.loading=false;update({loading:false});}}).catch(()=>{if(active()&&sessionId===owner.sessionId&&epoch===owner.chatEpoch){owner.loading=false;update({loading:false,loadError:true,error:'RESTORE_FAILED'});}});
@@ -121,7 +128,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     if(!active()||owner.waiting||owner.loading)return;
     const epoch=owner.chatEpoch;
     const valid=()=>active()&&owner.chatEpoch===epoch&&owner.sessionId===pending.sessionId&&owner.pending===pending;
-    const controller=new AbortController();owner.controller=controller;owner.waiting=true;update({waiting:true,error:null,nextAction:null});
+    const controller=new AbortController();owner.controller=controller;owner.waiting=true;update({waiting:true,error:null,unavailableReferenceLabel:null,nextAction:null});
     try{
       let result=validatedPromptReply(await promptReplyHttp('/api/prompt-assistance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)},controller.signal),pending);
       if(!valid()||controller.signal.aborted)return;
@@ -134,7 +141,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
         const previous=readPreviousReply(accountKey);if(previous&&samePreviousReply(previous,pending)){if(!clearPreviousReply(accountKey,previous))owner.persistenceError=true;owner.previousRef=null;}
         owner.pending=null;
         if(result.state==='complete')owner.latestRequestId=result.requestId;
-        save();update({recovery:false,phase:undefined,error:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null,nextAction:result.state==='failed'&&result.safeToRetry===true?result.nextAction??null:null,fundingRevision:result.assistance?.revision??null});
+        save();update({recovery:false,phase:undefined,error:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':null,unavailableReferenceLabel:unavailableReferenceLabel(result,pending),nextAction:result.state==='failed'&&result.safeToRetry===true?result.nextAction??null:null,fundingRevision:result.assistance?.revision??null});
         const sameChat=()=>active()&&owner.chatEpoch===epoch&&owner.sessionId===pending.sessionId;
         if(owner.legacy){clearLegacyPromptRecovery(scopeKey,result.requestId);callbacks.current.onResult(result,pending.uiId);update({error:result.state==='failed'?result.error??'ASSISTANCE_UNAVAILABLE':owner.exhausted});}
         else if(pending.uiId===null&&callbacks.current.options){
@@ -186,7 +193,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number,review?:()=>Promise<Omit<PromptPendingReview,'requestId'>>){
     if(!enabled||!active()||owner.pending||owner.waiting||owner.loading||view.loadError||owner.exhausted||owner.previousRef&&owner.previousRef.status!=='terminal')return false;
     if(request.message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS){update({error:'MESSAGE_TOO_LONG'});return false;}
-    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId};owner.pending=pending;owner.pendingReview=undefined;remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:pending.sessionId,requestId:pending.requestId,status:'admitting'});save();update({recovery:false,error:null});
+    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId,references:request.draft.references.map(({fieldId,slot,label})=>({fieldId,slot,label}))};owner.pending=pending;owner.pendingReview=undefined;remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:pending.sessionId,requestId:pending.requestId,status:'admitting'});save();update({recovery:false,error:null,unavailableReferenceLabel:null});
     const epoch=owner.localEpoch,chatEpoch=owner.chatEpoch;
     void (async()=>{
       try{
@@ -203,9 +210,9 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     owner.controller?.abort();owner.controller=null;owner.previousController?.abort();owner.previousController=null;owner.previousViewRef=null;stopPreviousObserver();
     owner.chatEpoch++;owner.localEpoch++;owner.sessionId=crypto.randomUUID();owner.local={message:unsentMessage,proposal:null,latestRequestId:''};owner.pending=null;owner.waiting=false;owner.loading=false;owner.pendingReview=undefined;owner.latestRequestId='';owner.legacy=false;owner.exhausted=null;
     const saved=save();if(saved){owner.cacheError=false;blockedScopes.current.delete(scopeKey);}else owner.persistenceError=true;
-    update({error:null,loadError:false,loading:false,waiting:false,recovery:false,phase:undefined,previousOpen:false,previousWaiting:false,previousResult:null,nextAction:null,cacheError:owner.cacheError});return true;
+    update({error:null,unavailableReferenceLabel:null,loadError:false,loading:false,waiting:false,recovery:false,phase:undefined,previousOpen:false,previousWaiting:false,previousResult:null,nextAction:null,cacheError:owner.cacheError});return true;
   }
-  const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined,previousRef:null,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:false,error:null,nextAction:null,fundingRevision:null};
+  const visible=view.owner===owner?view:{...view,chatId:'',exhausted:null,loading:enabled,loadError:false,cacheError:false,waiting:false,recovery:false,phase:undefined,previousRef:null,previousOpen:false,previousWaiting:false,previousResult:null,previousError:null,persistenceError:false,error:null,unavailableReferenceLabel:null,nextAction:null,fundingRevision:null};
   const observationKey=enabled&&owner.previousRef&&owner.previousRef.status!=='terminal'&&(!owner.pending||!samePreviousReply(owner.previousRef,owner.pending))?JSON.stringify([owner.previousRef.sessionId,owner.previousRef.requestId,owner.chatEpoch]):null;
   useEffect(()=>{
     if(!observationKey||owner.previousController)return;
