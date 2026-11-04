@@ -123,14 +123,14 @@ test('Seedance recognizable-person failures explain reference-image limits', () 
   assert.doesNotMatch(reason, forbidden);
 });
 
-test('Seedance start failures keep actionable customer guidance', () => {
+test('generic Seedance start failures do not infer recognizable-person moderation', () => {
   const message = toUserFacingFailureMessage(
     'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.'
   );
 
   assert.equal(
     message,
-    'Seedance could not start this render. Remove recognizable people from reference images, reduce media complexity, or retry in a few moments.'
+    'Seedance could not start this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.'
   );
   assert.doesNotMatch(message, forbidden);
 });
