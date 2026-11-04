@@ -316,3 +316,20 @@ The isolated loopback preview can explicitly opt into
 bucket. It encodes and probes the selected passages locally, then shows their
 published price. It issues no confirmable wallet quote. Live ordering defaults to off. Enable `CHARACTER_STUDIO_RECAST_LIVE_ENABLED=1`
 only for a qualified environment with a private HTTPS storage backend and an enabled provider for the selected mode.
+
+### Recast passage regression checks (2026-11-04)
+
+`lib/media-excerpt-timing.ts` removes subtraction noise only within floating-point
+precision. The shared selector, range validation and Recast request use it so
+1.1–16.1 seconds is accepted as a 15-second passage. Start/end values and
+frame-derived fractional minima retain their precision. Recast's native readers
+pause at the selected endpoint and cue the beginning on replay.
+
+`character-studio-recast-pricing-ui` exercises real React controls and transport
+with controlled HTTP/media boundaries: independent selections, cancel, file
+replacement, late responses, reviewed-price invalidation, cached original uploads,
+manual/automatic output timing and all three resolutions. The media-content test
+decodes the prepared late video/audio sections to verify their content, not only
+their duration. The PostgreSQL quote/charge test keeps its simulated provider.
+See `docs/redesign/2026-11-04-character-studio/recast-test-report.md` for the local
+rehearsal results and remaining live-browser/provider verification limits.

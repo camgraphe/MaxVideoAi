@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { VideoExcerptRange } from '@/lib/video-excerpt';
+import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
 import { RECAST_MAX_SOURCE_SECONDS } from '@/lib/character-studio-recast-timing';
 
 export type RecastTrack = {
@@ -15,7 +16,7 @@ export type RecastTrack = {
 // Remove binary subtraction noise before rounding a suggestion to whole seconds.
 export const passageSeconds = (track: RecastTrack | null) =>
   track?.range
-    ? Number((track.range.endSec - track.range.startSec).toFixed(9))
+    ? mediaExcerptDuration(track.range)
     : null;
 
 /** Keep the local original for re-editing. An overlong source is never implicitly shortened. */

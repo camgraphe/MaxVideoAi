@@ -32,7 +32,7 @@ export function RecastPassagePlayer({
   const constrain = (node: HTMLMediaElement) => {
     if (!trimmed) return;
     if (node.currentTime < range.startSec) node.currentTime = range.startSec;
-    else if (node.currentTime > range.endSec) {
+    else if (node.currentTime >= range.endSec) {
       node.pause();
       node.currentTime = range.endSec;
     }
