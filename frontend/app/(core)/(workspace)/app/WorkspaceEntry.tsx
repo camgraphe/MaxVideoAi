@@ -22,9 +22,10 @@ export default function WorkspaceEntry(props: WorkspaceEntryProps) {
     startTransition(() => setLoadEditor(true));
   }, []);
   const boot = <WorkspaceBootSurface initialPreviewGroup={props.initialPreviewGroup} />;
+  if (!loadEditor) return boot;
   return (
     <Suspense fallback={boot}>
-      {loadEditor ? <AppClient {...props} app={app} /> : boot}
+      <AppClient {...props} app={app} />
     </Suspense>
   );
 }

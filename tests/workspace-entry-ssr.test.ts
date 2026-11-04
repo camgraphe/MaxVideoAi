@@ -11,7 +11,16 @@ test('direct video entry sends one selected preview before the editor loads', as
   const frontend = resolve('frontend');
   const stubs = new Map([
     ['./_hooks/useWorkspaceAppBootstrap', 'export const useWorkspaceAppBootstrap = () => ({});'],
-    ['./_components/WorkspaceBootSurface', 'export const WorkspaceBootSurface = ({initialPreviewGroup}) => <img alt="" src={initialPreviewGroup.items[0].thumb} />;'],
+    ['./_components/WorkspaceBootSurface', `
+      let pending = true;
+      export function WorkspaceBootSurface({initialPreviewGroup}) {
+        if (pending) {
+          pending = false;
+          // The request-bound navigation can suspend during the first render.
+          throw new Promise(resolve => setTimeout(resolve, 10));
+        }
+        return <img alt="" src={initialPreviewGroup.items[0].thumb} />;
+      }`],
     ['./AppClient', 'export default function Editor() { return <main>Editor mounted</main>; }'],
   ]);
   const result = await build({
