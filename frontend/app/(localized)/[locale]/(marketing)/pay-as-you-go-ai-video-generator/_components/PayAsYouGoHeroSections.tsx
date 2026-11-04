@@ -116,7 +116,7 @@ export function PayAsYouGoModelTestingOrderSection({ data, videos }: PayAsYouGoP
               <li key={model.id}>
                 <Link href={model.href} className="group grid grid-cols-[100px_1fr] items-center gap-3 sm:block">
                   <div className="overflow-hidden border border-hairline bg-surface p-1 shadow-sm">
-                    <Image src={src} alt="" width={520} height={454} sizes="(min-width: 1024px) 210px, (min-width: 640px) 30vw, 100px"
+                    <Image src={src} alt={video.useCase} width={520} height={454} sizes="(min-width: 1024px) 210px, (min-width: 640px) 30vw, 100px"
                       className="h-auto w-full motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-[1.025]" />
                   </div>
                   <div className="sm:mt-3">
