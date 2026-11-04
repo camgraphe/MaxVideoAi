@@ -465,14 +465,22 @@ for (const locale of locales) {
 }
 
 test('film contact sheets appear only when the exact film and model are both present', () => {
-  const editions = PAYG_FILM_PROGRAMME.filter(film => film.contactSheet);
-  const videos = editions.map(film => ({ ...showcaseVideo, id: film.id, engineId: film.model }));
+  const editions = PAYG_FILM_PROGRAMME.filter(film => film.prints[0].contactSheet);
+  const videos = editions.map(film => ({ ...showcaseVideo, id: film.prints[0].id, engineId: film.model }));
   const complete = new JSDOM(render('fr', [showcaseVideo, ...videos]).markup);
   const partial = new JSDOM(render('fr', [showcaseVideo, { ...videos[0], engineId: 'kling-3-pro' }, videos[2]]).markup);
   try {
     const links = (document: Document) => [...document.querySelectorAll<HTMLImageElement>('#payg-models img[src*="contact.webp"]')].map(image => image.closest('a')?.href);
     assert.deepEqual(links(complete.window.document), editions.map(film => `/fr/modeles/${film.model}`));
     assert.deepEqual(links(partial.window.document), ['/fr/modeles/seedance-2-5']);
+    const alternate = editions[0].prints[1];
+    const reserve = new JSDOM(render('fr', [showcaseVideo, { ...videos[0], id: alternate.id }]).markup);
+    try {
+      assert.deepEqual(links(reserve.window.document), ['/fr/modeles/kling-v4']);
+      assert.ok(reserve.window.document.querySelector('#payg-models img[src*="kling-portrait-contact.webp"]'));
+    } finally {
+      reserve.window.close();
+    }
   } finally {
     complete.window.close();
     partial.window.close();

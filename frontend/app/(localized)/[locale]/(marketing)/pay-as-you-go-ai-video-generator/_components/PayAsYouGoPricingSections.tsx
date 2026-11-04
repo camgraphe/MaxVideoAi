@@ -24,7 +24,7 @@ export function PayAsYouGoPricePerModelSection({ data }: PayAsYouGoPageDataProps
         <div role="region" aria-label={data.pricing.header.title} tabIndex={0} className="mt-6 max-h-[32rem] overflow-auto rounded-lg border border-hairline bg-surface focus-visible:outline-brand">
           <table className="w-full min-w-[840px] border-separate border-spacing-0 text-left text-sm">
             <thead className="sticky top-0 z-20 bg-surface-2">
-              <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
+              <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-secondary">
                 <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-4 py-3">{data.pricing.columns.model}</th>
                 <th className="px-4 py-3">{data.pricing.columns.bestFor}</th>
                 {priceHeaders.map((cell) => (

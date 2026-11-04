@@ -1,6 +1,6 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import type { AppLocale } from '@/i18n/locales';
-import { PAYG_FILM_PROGRAMME } from './payg-film-programme';
+import { findProgrammePrint, PAYG_FILM_PROGRAMME } from './payg-film-programme';
 import { getSeoVideosByIds, listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PayAsYouGoContent, PaygShowcaseTitleId } from '../_content/types';
 
@@ -9,10 +9,6 @@ const SHOWCASE_LIMIT = 7;
 const FALLBACK_FETCH_LIMIT = 18;
 const SHOWCASE_DISALLOWED_MODEL_PATTERN = /\b(?:sora|openai|pika)\b/i;
 const SHOWCASE_MODEL_PRIORITY: Array<{ key: string; pattern: RegExp }> = [
-  { key: 'kling-v4', pattern: /kling[\s-]*(?:v?4)/i },
-  { key: 'flux-3-max', pattern: /flux[.\s-]*3[\s-]*max/i },
-  { key: 'seedance-2-5', pattern: /seedance[\s-]*2[.-]5/i },
-  { key: 'minimax-h3', pattern: /minimax[\s-]*h3/i },
   { key: 'seedance-2', pattern: /seedance(?:[-\s]?2|[-\s]?2\.0)(?!.*mini)/i },
   { key: 'kling', pattern: /kling/i },
   { key: 'google-veo', pattern: /\b(?:google\s+)?veo\b/i },
@@ -49,7 +45,7 @@ function isAllowedShowcaseModel(video: GalleryVideo) {
 }
 
 function modelPriorityIndex(video: GalleryVideo) {
-  const searchText = `${video.engineId} ${video.engineLabel}`;
+  const searchText = videoModelSearchText(video);
   const index = SHOWCASE_MODEL_PRIORITY.findIndex(({ pattern }) => pattern.test(searchText));
   return index === -1 ? SHOWCASE_MODEL_PRIORITY.length : index;
 }
@@ -170,10 +166,12 @@ async function loadFallbackVideos() {
 
 async function loadProgramme() {
   try {
-    const records = await getSeoVideosByIds(PAYG_FILM_PROGRAMME.map(film => film.id));
-    return PAYG_FILM_PROGRAMME.flatMap(film => {
-      const clip = records.get(film.id);
-      return clip?.engineId === film.model && clip.thumbUrl && clip.videoUrl ? [clip] : [];
+    const ids = PAYG_FILM_PROGRAMME.flatMap(entry => entry.prints.map(print => print.id));
+    const records = await getSeoVideosByIds(ids);
+    const playable = new Map([...records].filter(([, video]) => video.thumbUrl && video.videoUrl));
+    return PAYG_FILM_PROGRAMME.flatMap(entry => {
+      const selected = findProgrammePrint(entry, playable);
+      return selected ? [selected.video] : [];
     });
   } catch (error) {
     console.warn('[payg-video-showcase] featured films unavailable', error);

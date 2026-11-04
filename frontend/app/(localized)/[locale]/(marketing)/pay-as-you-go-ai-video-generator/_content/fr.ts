@@ -307,6 +307,7 @@ export const frPayAsYouGoContent = {
     },
     runtime: {
       videoOverrides: {
+        'b645e55e-a837-4350-a27c-6198b4f8208a': { title: "Ne bougez plus", useCase: "Une photographe ajuste le portrait de son client en tenue de démineur." },
         'job_external_fal_fa631c836a5a7905ab77206bc87be7f16721d99e': { title: "Nilo et le tambour d’orage", useCase: "Un apprenti lève son maillet face à un tambour qui commande l’orage." },
         'job_external_fal_56ea1db8b2c3657977478a1d30c64272758d2b6c': { title: "La laverie de nuit", useCase: "Un pied bat la mesure entre deux rangées de machines." },
         'job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9': { title: "Hard Bounce", useCase: "Une balle orange donne le tempo et relie les plans du clip." },

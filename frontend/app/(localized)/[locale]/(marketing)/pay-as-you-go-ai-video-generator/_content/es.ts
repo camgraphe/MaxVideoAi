@@ -307,6 +307,7 @@ export const esPayAsYouGoContent = {
     },
     runtime: {
       videoOverrides: {
+        'b645e55e-a837-4350-a27c-6198b4f8208a': { title: "No se mueva", useCase: "Una fotógrafa encuadra el retrato de un cliente con traje de artificiero." },
         'job_external_fal_fa631c836a5a7905ab77206bc87be7f16721d99e': { title: "Nilo y el tambor del trueno", useCase: "Un aprendiz levanta su maza ante un tambor que controla el tiempo." },
         'job_external_fal_56ea1db8b2c3657977478a1d30c64272758d2b6c': { title: "De noche en la lavandería", useCase: "Un pie marca el ritmo entre dos filas de lavadoras." },
         'job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9': { title: "Hard Bounce", useCase: "Una pelota naranja marca el ritmo y enlaza los planos." },

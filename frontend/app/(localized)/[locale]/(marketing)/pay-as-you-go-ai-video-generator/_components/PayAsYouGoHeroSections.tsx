@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle2, ChevronDown, Play } from 'lucide-react';
 import { PayAsYouGoQuoteReceipt } from './PayAsYouGoQuoteReceipt.client';
-import { PAYG_FILM_PROGRAMME } from '../_lib/payg-film-programme';
+import { findProgrammePrint, PAYG_FILM_PROGRAMME } from '../_lib/payg-film-programme';
 import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
 import { CALIFORNIA_CURSOR_FILM } from '@/config/california-cursor-film';
 import { EngineIcon } from '@/components/ui/EngineIcon';
@@ -98,10 +98,11 @@ export function PayAsYouGoNaturalQuestionsSection({ data }: PayAsYouGoPageDataPr
 }
 
 export function PayAsYouGoModelTestingOrderSection({ data, videos }: PayAsYouGoPageDataProps & { videos: PayAsYouGoShowcaseVideo[] }) {
+  const byId = new Map(videos.map(video => [video.id, video]));
   const sheets = PAYG_FILM_PROGRAMME.flatMap((film, index) => {
     const model = data.modelTesting.items.find(item => item.id === film.model);
-    const video = videos.find(item => item.id === film.id && item.engineId === film.model);
-    return model && video && film.contactSheet ? [{ model, video, src: film.contactSheet, intent: data.modelTesting.intents[index] }] : [];
+    const selected = findProgrammePrint(film, byId);
+    return model && selected?.contactSheet ? [{ model, video: selected.video, src: selected.contactSheet, intent: data.modelTesting.intents[index] }] : [];
   });
   return (
     <section id="payg-models" className="scroll-mt-16 border-b border-hairline bg-bg">

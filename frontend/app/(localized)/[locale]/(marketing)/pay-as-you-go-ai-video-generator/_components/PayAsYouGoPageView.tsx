@@ -43,7 +43,7 @@ export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAs
 
 export function PayAsYouGoPageSections({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
   const productFilm = PAYG_FILM_PROGRAMME.find(film => film.model === 'minimax-h3');
-  const productExample = showcaseVideos.find(video => video.id === productFilm?.id && video.engineId === productFilm?.model);
+  const productExample = showcaseVideos.find(video => video.engineId === productFilm?.model && productFilm.prints.some(print => print.id === video.id));
   return (
     <>
       <PayAsYouGoContents chapters={data.common.chapters} hasFilms={showcaseVideos.length > 0} />
