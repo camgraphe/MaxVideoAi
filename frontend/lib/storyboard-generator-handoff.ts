@@ -1,3 +1,6 @@
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
+import { storyboardImageRef } from '@/lib/storyboard-reference-identity';
+
 export const STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY = 'maxvideoai.storyboard.generatorHandoff.v1';
 
 export type StoryboardGeneratorTargetModel = 'seedance' | 'kling';
@@ -11,10 +14,12 @@ export type StoryboardGeneratorHandoff = {
   imageUrl: string;
   thumbUrl?: string | null;
   jobId?: string | null;
+  imageRef?: ToolAssetRef;
   startFrameFieldId?: 'image_url' | 'start_image_url' | null;
   startFrameImageUrl?: string | null;
   startFrameThumbUrl?: string | null;
   startFrameJobId?: string | null;
+  startFrameRef?: ToolAssetRef;
   startFrameWidth?: number | null;
   startFrameHeight?: number | null;
   targetModel: StoryboardGeneratorTargetModel;
@@ -33,9 +38,11 @@ export type BuildStoryboardGeneratorHandoffOptions = {
   imageUrl?: string | null;
   thumbUrl?: string | null;
   jobId?: string | null;
+  imageRef?: ToolAssetRef;
   startFrameImageUrl?: string | null;
   startFrameThumbUrl?: string | null;
   startFrameJobId?: string | null;
+  startFrameRef?: ToolAssetRef;
   startFrameWidth?: number | null;
   startFrameHeight?: number | null;
   subject?: string | null;
@@ -287,10 +294,12 @@ export function buildStoryboardGeneratorHandoff(
     imageUrl,
     thumbUrl: options.thumbUrl ?? null,
     jobId: options.jobId ?? null,
+    imageRef: storyboardImageRef(options.imageRef, options.jobId),
     startFrameFieldId: startFrameImageUrl ? 'image_url' : null,
     startFrameImageUrl,
     startFrameThumbUrl: options.startFrameThumbUrl ?? null,
     startFrameJobId: options.startFrameJobId ?? null,
+    startFrameRef: storyboardImageRef(options.startFrameRef, options.startFrameJobId),
     startFrameWidth:
       typeof options.startFrameWidth === 'number' && Number.isFinite(options.startFrameWidth)
         ? Math.round(options.startFrameWidth)
@@ -352,6 +361,7 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
       imageUrl: raw.imageUrl.trim(),
       thumbUrl: typeof raw.thumbUrl === 'string' ? raw.thumbUrl : null,
       jobId: typeof raw.jobId === 'string' ? raw.jobId : null,
+      imageRef: storyboardImageRef(raw.imageRef, raw.jobId),
       startFrameFieldId:
         typeof raw.startFrameImageUrl === 'string' && raw.startFrameImageUrl.trim() ? 'image_url' : null,
       startFrameImageUrl:
@@ -360,6 +370,7 @@ export function parseStoryboardGeneratorHandoff(value: string | null | undefined
           : null,
       startFrameThumbUrl: typeof raw.startFrameThumbUrl === 'string' ? raw.startFrameThumbUrl : null,
       startFrameJobId: typeof raw.startFrameJobId === 'string' ? raw.startFrameJobId : null,
+      startFrameRef: storyboardImageRef(raw.startFrameRef, raw.startFrameJobId),
       startFrameWidth:
         typeof raw.startFrameWidth === 'number' && Number.isFinite(raw.startFrameWidth)
           ? Math.round(raw.startFrameWidth)

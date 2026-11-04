@@ -8,9 +8,17 @@ import {assistanceSettings} from './settings';
 import {assistanceReferenceRole} from './reference-role';
 export {assistanceSettings,composerAssistanceSettings} from './settings';
 
+function activeReferenceFields(fields:AssetFieldConfig[],mode?:Mode) {
+  return fields.filter(({field,disabled})=>!disabled&&(!mode||!field.modes?.length||field.modes.includes(mode)));
+}
+
+export function hasResolvingAssistanceReferences(fields:AssetFieldConfig[],assets:Record<string,(ComposerAttachment|null)[]>,mode?:Mode):boolean {
+  return activeReferenceFields(fields,mode).some(({field})=>(assets[field.id]??[]).some(asset=>asset?.identityResolving&&asset.status==='ready'));
+}
+
 /** Use the current, prepared owned reference identity; private media URLs stay local. */
 export function composerAssistanceReferences(engine:EngineCaps,fields:AssetFieldConfig[],assets:Record<string,(ComposerAttachment|null)[]>,mode?:Mode):PromptAssistanceDraftContext['references'] {
-  fields=fields.filter(({field,disabled})=>!disabled&&(!mode||!field.modes?.length||field.modes.includes(mode)));
+  fields=activeReferenceFields(fields,mode);
   const mentions=buildReferenceMentions(engine,fields,assets);
   return fields.flatMap(({field})=>(assets[field.id]??[]).flatMap((asset,slot)=>{
     if(!asset)return [];

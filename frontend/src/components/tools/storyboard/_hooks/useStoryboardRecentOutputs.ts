@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
 import type { CaptureStoryboardAccountRequest } from './useStoryboardAccountScope';
 import type { StoryboardGeneratorHandoffDraft } from '@/lib/storyboard-generator-handoff';
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 
 export type StoryboardRecentOutput = {
+  ref?: ToolAssetRef;
   id: string;
   jobId: string | null;
   url: string;

@@ -4,8 +4,8 @@ import styles from './prompt-assistance.module.css';
 
 export const promptAssistanceLoadingMessage=(error:string|null)=>error==='RESTORING'?'Restoring this conversation…':error==='LOADING'?'Checking Milo availability…':null;
 
-export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onStop,onReload,phase}: {
-  phase?:PromptAssistanceResult['phase'];error:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
+export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recovery,waiting,onRecover,onStop,onReload,phase}: {
+  phase?:PromptAssistanceResult['phase'];error:string|null;unavailableReferenceLabel?:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;
 }) {
   if(!error&&!waiting&&!recovery)return null;
   const message=waiting?(phase==='queued'?'Your request is saved and waiting to start.':phase==='preparing'?'Milo is preparing your saved request.':phase==='recovering'?'Checking the saved reply and recorded usage.':'Waiting for Milo’s saved reply. You can stop waiting or start a new chat.'):error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
@@ -15,7 +15,9 @@ export function PromptAssistanceFeedback({error,recovery,waiting,onRecover,onSto
     : error==='REFERENCE_IMAGES_TOO_LARGE'
       ? 'These images are too large to inspect together. Remove some references and try again.'
     : error==='REFERENCE_REATTACH_REQUIRED'||error?.startsWith('REFERENCE_')||error==='MEDIA_NOT_AVAILABLE'
-      ? 'One reference is unavailable. Choose it again from Media before retrying.'
+      ? unavailableReferenceLabel
+        ? `Milo couldn’t use ${unavailableReferenceLabel} for this message. Open References to replace or remove it, then send again.`
+        : 'A reference is unavailable. Open References to remove or replace it before resending.'
     : error==='ASSISTANCE_SELECTION_CHANGED'
       ? 'Milo changed in another tab. Review the selected level before sending again.'
     : error==='SPENDING_LIMIT_EXCEEDED'

@@ -11,10 +11,23 @@ Reviewed 2026-10-30. Settings restoration and current pricing are separate conce
 | Curated Gallery Rail card | Lightweight mode/operation metadata, then the selected public recipe from `/api/videos/:id` | Curated feed projections and the same gallery/settings hooks |
 | Public example/watch link (`from`) | Public recreation snapshot, authored keyframe recipe, or measured metadata fallback | `workspace-shared-video-snapshot.ts`, `useWorkspaceVideoSettings.ts` |
 | Exact comparison link (`from` + `remix`) | Explicit supported target scenario | `workspace-example-recreation.ts` |
+| Storyboard tool | Account-scoped handoff plus explicit owned output reference | `storyboard-generator-handoff.ts`, `workspace-storyboard-handoff.ts`, `useWorkspaceStoryboardReferences.ts` |
 
 The private job endpoint remains owner-only. A signed-in visitor selecting a
 curated card must use the public recipe endpoint, just like a guest. Whole feeds
 carry mode and operation without loading every recipe or its references.
+
+Storyboard handoffs preserve explicit image `job-output`/canonical asset references.
+New boards without an output ID and old cached `storyboard_<UUID>` markers use the
+authenticated exact-job recent-output reader. Only one ready image with matching
+job/output identity and a complete page can supply the reference; URLs and posters
+never establish it. Account, slot and effect retirement fence late responses,
+including StrictMode replay. Active references block Milo sending during the bounded
+15-second read, then retain their slot if recovery fails. Hidden outputs, including
+hidden Kling first-frame helpers, remain refused by the server. The legacy generation
+input marker stays compatible with preflight's existing shape; the composer projection
+never promotes that marker to a Milo asset reference. Private setup persistence retains
+the explicit reference and the Storyboard job hint separately.
 
 ## Restoration rules
 

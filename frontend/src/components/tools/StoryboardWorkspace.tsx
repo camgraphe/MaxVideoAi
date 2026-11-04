@@ -369,10 +369,12 @@ function OwnedStoryboardWorkspace({ auth }: { auth: ReturnType<typeof useRequire
       imageUrl: selectedImage.url,
       thumbUrl: selectedImage.thumbUrl ?? null,
       jobId: selectedImageJobId,
+      imageRef: selectedRecentOutput?.ref,
       startFrameImageUrl: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.url ?? null : null,
       startFrameThumbUrl:
         targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.thumbUrl ?? null : null,
       startFrameJobId: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.jobId ?? null : null,
+      startFrameRef: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.ref : undefined,
       startFrameWidth: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.width ?? null : null,
       startFrameHeight: targetModelForHandoff === 'kling' ? selectedKlingFirstFrame?.image.height ?? null : null,
       subject: handoffDraft?.subject ?? subject,

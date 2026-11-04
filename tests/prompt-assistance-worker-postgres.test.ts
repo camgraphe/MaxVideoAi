@@ -70,6 +70,41 @@ test('saved workers fence dispatch, leases, expiry and financial recovery',async
    await c.query('SELECT user_id FROM studio_assistance_accounts WHERE user_id=$1 FOR UPDATE NOWAIT',[owner]);
   }finally{await c.query('ROLLBACK');c.release();}
  }
+ await t.test('unavailable reference identifies only its submitted slot on poll and recovery, before charging',async()=>{
+  const owner='stale-reference-owner';
+  const input=request();
+  input.draft={...input.draft,engineId:'seedance-2-0',workflow:'modify',mode:'v2v',references:[
+    {fieldId:'image_urls',slot:0,label:'Image 1',ref:{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'image'}},
+    {fieldId:'image_urls',slot:1,label:'Image 2',ref:{type:'asset',assetId:'ma_'+'b'.repeat(32),kind:'image'}},
+  ]};
+  const {buildPromptAssistanceContext}=await import('../frontend/src/server/prompt-assistance/context');
+  const {createAgentModelCatalogDeps}=await import('../frontend/src/server/agent-api/model-catalog');
+  const {getBaseEngines}=await import('../frontend/src/lib/engines');
+  const {recoverPromptAssistance}=await import('../frontend/src/server/prompt-assistance/service');
+  const catalog={...createAgentModelCatalogDeps(),listEngines:async()=>getBaseEngines(),isModeExecutable:()=>true,isEngineExecutable:()=>true};
+  let counts=0,creates=0;
+  await admit(owner,input);
+  await run(owner,input,{
+    buildContext:()=>buildPromptAssistanceContext(owner,input,{catalog,resolveMedia:async(_owner,ref:any)=>{
+      if(ref.assetId==='ma_'+'b'.repeat(32))throw new Error('MEDIA_NOT_AVAILABLE');
+      return {kind:'image',url:'https://fixture.invalid/image.png'} as never;
+    }}),
+    count:async()=>{counts++;return 1;},create:async()=>{creates++;return evidence();},
+  });
+  for(const result of [await readPromptAssistance(owner,input.sessionId,input.requestId,policy),
+    await recoverPromptAssistance(owner,input.sessionId,input.requestId,policy),await admit(owner,input)]){
+    assert.equal(result.state,'failed');
+    assert.equal(result.error,'MEDIA_NOT_AVAILABLE');
+    assert.deepEqual(result.unavailableReference,{fieldId:'image_urls',slot:1});
+    assert.equal(result.safeToRetry,true);
+  }
+  assert.equal((await row(input.requestId)).call_id,null);
+  const calls=await pg.pool.query('SELECT count(*)::int AS n FROM studio_assistance_calls WHERE user_id=$1',[owner]);
+  assert.equal(calls.rows[0].n,0);
+  assert.equal(await run(owner,input),false);
+  assert.equal(counts,0);
+  assert.equal(creates,0);
+ });
  await t.test('one paid create survives the old90s boundary and racing wakeups',async inner=>{
   const owner='race-owner',input=request(),started=gate<void>(),response=gate<ReturnType<typeof evidence>>();let creates=0,timeout=0,countParams:unknown;
   input.message=('Prepare a welcoming astronomy-club film with a carefully paced night-sky sequence. ').repeat(85).trim();
