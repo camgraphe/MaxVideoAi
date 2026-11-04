@@ -1,8 +1,9 @@
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { CreditPurchaseNotes } from '@/components/marketing/CreditPurchaseNotes';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
-import { PAYG_CONTAINER_CLASS_NAME, PayAsYouGoSectionHeader } from './PayAsYouGoSectionPrimitives';
+import { PAYG_CONTAINER_CLASS_NAME, PayAsYouGoCatalog, PayAsYouGoSectionHeader } from './PayAsYouGoSectionPrimitives';
 
 type PayAsYouGoPageDataProps = {
   data: PayAsYouGoPageData;
@@ -12,22 +13,22 @@ export function PayAsYouGoPricePerModelSection({ data }: PayAsYouGoPageDataProps
   const priceHeaders = data.pricing.rows[0]?.priceCells ?? [];
 
   return (
-    <section id="compare-price-per-model" className="border-b border-hairline bg-bg">
+    <section id="compare-price-per-model" className="scroll-mt-20 border-b border-hairline bg-bg">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <PayAsYouGoSectionHeader {...data.pricing.header} />
-          <Link href={data.pricing.fullMatrixHref} className="text-sm font-semibold text-[#1F5EFF] transition hover:underline">
+          <Link href={data.pricing.fullMatrixHref} className="text-sm font-semibold text-brand transition hover:underline">
             {data.pricing.fullMatrixLabel}
           </Link>
         </div>
-        <div className="mt-6 overflow-x-auto rounded-[8px] border border-hairline bg-surface shadow-card">
-          <table className="min-w-[840px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
-                <th className="px-4 py-3">{data.pricing.columns.model}</th>
+        <div role="region" aria-label={data.pricing.header.title} tabIndex={0} className="mt-6 max-h-[32rem] overflow-auto rounded-lg border border-hairline bg-surface focus-visible:outline-brand">
+          <table className="w-full min-w-[840px] border-separate border-spacing-0 text-left text-sm">
+            <thead className="sticky top-0 z-20 bg-surface-2">
+              <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-secondary">
+                <th scope="col" className="sticky left-0 z-10 bg-surface-2 px-4 py-3">{data.pricing.columns.model}</th>
                 <th className="px-4 py-3">{data.pricing.columns.bestFor}</th>
                 {priceHeaders.map((cell) => (
-                  <th key={cell.label} className="px-4 py-3 text-right">
+                  <th key={cell.label} className="border-b border-hairline px-4 py-3 text-right">
                     {cell.label}
                   </th>
                 ))}
@@ -37,8 +38,8 @@ export function PayAsYouGoPricePerModelSection({ data }: PayAsYouGoPageDataProps
             <tbody>
               {data.pricing.rows.map((row) => (
                 <tr key={row.id} className="border-b border-hairline last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
+                  <td className="sticky left-0 z-10 border-b border-r border-hairline bg-surface px-3 py-3 sm:px-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <EngineIcon engine={row.engineIcon} imageAlt={`${row.engineName} ${data.common.aiVideoModelAlt}`} size={34} rounded="full" />
                       <div>
                         <p className="font-semibold text-text-primary">{row.engineName}</p>
@@ -46,22 +47,22 @@ export function PayAsYouGoPricePerModelSection({ data }: PayAsYouGoPageDataProps
                       </div>
                     </div>
                   </td>
-                  <td className="max-w-[270px] px-4 py-3 text-text-secondary">{row.bestFor}</td>
+                  <td className="max-w-[270px] border-b border-hairline px-4 py-3 text-text-secondary">{row.bestFor}</td>
                   {row.priceCells.map((cell) => (
-                    <td key={`${row.id}-${cell.label}`} className="px-4 py-3 text-right">
+                    <td key={`${row.id}-${cell.label}`} className="border-b border-hairline px-4 py-3 text-right">
                       <span className="font-mono font-semibold tabular-nums text-text-primary">{cell.displayValue}</span>
                       {cell.note ? <span className="block text-[11px] text-text-muted">{cell.note}</span> : null}
                     </td>
                   ))}
-                  <td className="px-4 py-3">
+                  <td className="border-b border-hairline px-4 py-3">
                     <div className="flex flex-col gap-1">
                       {row.modelHref ? (
-                        <Link href={row.modelHref} className="text-xs font-semibold text-[#1F5EFF] hover:underline">
+                        <Link href={row.modelHref} className="text-xs font-semibold text-brand hover:underline">
                           {data.pricing.modelLinkLabel}
                         </Link>
                       ) : null}
                       {row.compareHref ? (
-                        <Link href={row.compareHref} className="text-xs font-semibold text-[#1F5EFF] hover:underline">
+                        <Link href={row.compareHref} className="text-xs font-semibold text-brand hover:underline">
                           {data.pricing.compareLinkLabel}
                         </Link>
                       ) : null}
@@ -82,29 +83,31 @@ export function PayAsYouGoPriceLookupShortcutsSection({ data }: PayAsYouGoPageDa
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.priceLookups.header} />
-        <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {data.priceLookups.items.map((lookup) => (
-            <Link
-              key={lookup.id}
-              href={lookup.href}
-              className="group flex min-h-[220px] flex-col rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <EngineIcon engine={lookup.engineIcon} imageAlt={`${lookup.engineIcon.label} ${data.common.aiVideoModelAlt}`} size={36} rounded="full" />
-                <span className="rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-text-primary">
-                  {lookup.price}
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-text-muted">{lookup.context}</p>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-micro text-text-muted">{lookup.query}</p>
-              <h3 className="mt-2 text-base font-semibold leading-snug text-text-primary">{lookup.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">{lookup.body}</p>
-              {lookup.modelHref ? (
-                <span className="mt-auto pt-4 text-xs font-semibold text-[#1F5EFF] group-hover:underline">{data.priceLookups.openRowLabel}</span>
-              ) : null}
-            </Link>
-          ))}
-        </div>
+        <PayAsYouGoCatalog id="prices" label={data.priceLookups.disclosure} count={data.priceLookups.items.length}>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {data.priceLookups.items.map((lookup) => (
+              <Link
+                key={lookup.id}
+                href={lookup.href}
+                className="group flex flex-col rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <EngineIcon engine={lookup.engineIcon} imageAlt={`${lookup.engineIcon.label} ${data.common.aiVideoModelAlt}`} size={36} rounded="full" />
+                  <span className="rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-text-primary">
+                    {lookup.price}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs text-text-muted">{lookup.context}</p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-micro text-text-muted">{lookup.query}</p>
+                <h3 className="mt-2 text-base font-semibold leading-snug text-text-primary">{lookup.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{lookup.body}</p>
+                {lookup.modelHref ? (
+                  <span className="mt-auto pt-4 text-xs font-semibold text-brand group-hover:underline">{data.priceLookups.openRowLabel}</span>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </PayAsYouGoCatalog>
       </div>
     </section>
   );
@@ -115,14 +118,17 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.exampleCosts.header} />
-        <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-text-secondary">{data.exampleCosts.quoteReminder}</p>
+        <div className="mt-6 grid border-t border-hairline lg:grid-cols-2 lg:gap-x-8">
           {data.exampleCosts.items.map((cost) => (
-            <Link key={cost.label} href={cost.href} className="rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:border-text-muted">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{cost.label}</p>
-              <p className="mt-3 text-sm font-semibold text-text-primary">{cost.engine}</p>
-              <p className="mt-2 font-mono text-lg font-semibold tabular-nums text-text-primary">{cost.price}</p>
-              <p className="mt-1 text-xs font-semibold text-text-muted">{cost.context}</p>
-              <p className="mt-3 text-xs text-text-secondary">{data.exampleCosts.quoteReminder}</p>
+            <Link key={cost.label} href={cost.href} prefetch={false} className="group flex min-h-20 items-center justify-between gap-4 border-b border-hairline py-4 text-text-primary hover:text-brand">
+              <div className="min-w-0">
+                <p className="font-semibold">{cost.engine}</p>
+                <p className="mt-1 text-xs leading-5 text-text-secondary">{cost.label} · {cost.context}</p>
+              </div>
+              <span className="flex max-w-[45%] shrink-0 items-center gap-1.5 text-right font-mono text-base tabular-nums">
+                {cost.price}<ArrowUpRight aria-hidden className="h-4 w-4 shrink-0" />
+              </span>
             </Link>
           ))}
         </div>
@@ -132,11 +138,16 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
           ) : null}
           <p>{data.exampleCosts.budgetCaveat}</p>
           <p>{data.exampleCosts.studioAssistance}</p>
-          <Link href="/app/studio" className="inline-flex min-h-11 items-center font-semibold text-[#1F5EFF] hover:underline">
+          <Link href="/app/studio" className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline">
             {data.exampleCosts.studioLinkLabel}
           </Link>
         </div>
-        <CreditPurchaseNotes copy={data.exampleCosts.creditNotes} />
+        <details className="group/terms mt-4 border-y border-hairline">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-text-primary [&::-webkit-details-marker]:hidden">
+            {data.exampleCosts.creditNotes.title}<ChevronDown aria-hidden className="h-4 w-4 group-open/terms:rotate-180" />
+          </summary>
+          <CreditPurchaseNotes copy={data.exampleCosts.creditNotes} />
+        </details>
       </div>
     </section>
   );

@@ -16,7 +16,7 @@ type Props = {
   showcaseVideos: Promise<PayAsYouGoReadResult<PayAsYouGoShowcaseVideo[]>>;
 };
 
-const DETAILS_ANCHORS = ['compare-price-per-model'];
+const DETAILS_ANCHORS = ['payg-workspace', 'payg-films', 'payg-models', 'compare-price-per-model', 'payg-questions'];
 
 async function CurrentHeroQuote({ data }: { data: CurrentData }) {
   return <PayAsYouGoHeroQuoteCard data={await resolvePayAsYouGoRead(data)} />;
