@@ -61,7 +61,7 @@ const fixture = `
   }
 `;
 
-export async function createMarketingNavigationBrowserFixture({forcePopoverFallback=false,marketingSite=true}: {forcePopoverFallback?:boolean;marketingSite?:boolean}={}) {
+export async function createMarketingNavigationBrowserFixture({forcePopoverFallback=false,marketingSite=true,deferDesktopServer=false}: {forcePopoverFallback?:boolean;marketingSite?:boolean;deferDesktopServer?:boolean}={}) {
   const directory = await mkdtemp(join(tmpdir(), 'marketing-navigation-browser-'));
   const nodeOutput = join(directory, 'fixture.cjs');
   const plugin = (external: boolean) => ({ name: 'navigation-next-boundaries', setup(builder: import('esbuild').PluginBuild) {
@@ -104,7 +104,13 @@ export async function createMarketingNavigationBrowserFixture({forcePopoverFallb
     const locale = pathname.startsWith('/fr') ? 'fr' : pathname.startsWith('/es') ? 'es' : 'en';
     const configuration = {locale,pathname,marketingSite};
     Object.assign(globalThis,{__fixtureConfiguration:configuration});
-    const markup = renderFixture();
+    let markup: string;
+    try {
+      if (deferDesktopServer) Object.assign(globalThis, { __fixtureDesktopLabelGate: new Promise(() => {}) });
+      markup = renderFixture();
+    } finally {
+      if (deferDesktopServer) Reflect.deleteProperty(globalThis, '__fixtureDesktopLabelGate');
+    }
     response.writeHead(200,{'content-type':'text/html; charset=utf-8'});
     response.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${css}</style></head><body><div id="root">${markup}</div><script>
       window.process={env:{NODE_ENV:"production"}};

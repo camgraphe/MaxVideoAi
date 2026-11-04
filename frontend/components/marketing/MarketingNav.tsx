@@ -9,7 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { MarketingAccountMenu } from '@/components/marketing/MarketingAccountMenu';
-import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav';
+import { MarketingDesktopNav, MarketingDesktopSectionLinks } from '@/components/marketing/MarketingDesktopNav';
 import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
@@ -296,7 +296,7 @@ export function MarketingNav({ navigation: { links, dropdowns }, initialEmail = 
             <span className="text-sm font-semibold tracking-tight max-[420px]:sr-only sm:text-lg">{compactBrand}</span>
           </Link>
           {/* Keep the SSR desktop links independent of a first touch on the mobile menu. */}
-          <Suspense fallback={null}>
+          <Suspense fallback={<MarketingDesktopSectionLinks links={links} dropdowns={dropdowns} pathname={pathname} locale={locale} t={t} />}>
             <MarketingDesktopNav
               desktopDropdownOpen={desktopDropdownOpen}
               dropdowns={dropdowns}

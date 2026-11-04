@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { memo, useEffect, useRef } from 'react';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/locales';
+import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
 import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 
@@ -17,6 +19,24 @@ type Props = {
   onCloseDesktopDropdown: (delay?: number) => void;
   onOpenDesktopDropdown: (key: string) => void;
 };
+
+// A streamed menu needs JavaScript to reveal its full subtree. Keep the six
+// section destinations usable in the original desktop document while it waits.
+export function MarketingDesktopSectionLinks({ links, dropdowns, pathname, locale, t }:
+  Pick<Props, 'links' | 'dropdowns' | 'pathname' | 't'> & { locale: AppLocale }) {
+  return (
+    <nav aria-label={t('nav.primaryNavigation', 'Main navigation')} className="marketing-desktop-nav marketing-section-links hidden lg:flex">
+      {links.map(item => (
+        <a key={item.key} href={localizeMarketingPathname(item.href, locale)} className="marketing-nav-trigger"
+          aria-current={pathname === item.href ? 'page' : undefined}>
+          {t<string>(`nav.linkLabels.${item.key}`, item.key)}
+          {item.key === 'connect' ? <span className="marketing-mcp-tag">MCP</span> : null}
+          {dropdowns[item.key] ? <span aria-hidden="true" className="inline-block size-3" /> : null}
+        </a>
+      ))}
+    </nav>
+  );
+}
 
 // Mobile/account state must not rebuild the unchanged, CSS-hidden desktop menus.
 // Keep all links server-rendered; actual desktop, route and locale changes still render.

@@ -35,6 +35,36 @@ test('an early mobile opening gains accessible focus without waiting for desktop
   } finally { await browser.close(); await fixture.close(); }
 });
 
+test('desktop visitors can follow the section links without JavaScript while the full menu is streaming', async () => {
+  const fixture = await createMarketingNavigationBrowserFixture({ deferDesktopServer: true });
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, javaScriptEnabled: false });
+    const expected = {
+      '/': ['/models', '/examples', '/ai-video-engines', '/tools', '/mcp', '/pricing'],
+      '/fr': ['/fr/modeles', '/fr/galerie', '/fr/comparatif', '/fr/outils', '/fr/mcp', '/fr/tarifs'],
+      '/es': ['/es/modelos', '/es/galeria', '/es/comparativa', '/es/herramientas', '/es/mcp', '/es/precios'],
+    };
+    for (const [path, hrefs] of Object.entries(expected)) {
+      await page.goto(new URL(path, fixture.url).href, { waitUntil: 'domcontentloaded' });
+      const bar = page.locator('header nav:visible');
+      assert.equal(await bar.count(), 1, `the desktop section bar is visible at ${path}`);
+      const links = bar.getByRole('link');
+      assert.deepEqual(await links.evaluateAll(nodes => nodes.map(node => node.getAttribute('href'))), hrefs);
+      await links.last().focus();
+      await page.keyboard.press('Enter');
+      await page.waitForURL(url => url.pathname === hrefs.at(-1));
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await page.setViewportSize({ width: 390, height: 844 });
+      assert.equal(await bar.count(), 0, 'the desktop fallback must not appear beside the mobile popover');
+      await page.setViewportSize({ width: 1440, height: 900 });
+    }
+  } finally {
+    await browser.close();
+    await fixture.close();
+  }
+});
+
 test('native mobile navigation keeps a small SSR DOM and stable decoration slots', async () => {
   const fixture=await createMarketingNavigationBrowserFixture();
   const browser=await chromium.launch({headless:true});
