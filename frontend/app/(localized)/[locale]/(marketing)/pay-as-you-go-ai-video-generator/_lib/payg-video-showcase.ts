@@ -1,6 +1,7 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import type { AppLocale } from '@/i18n/locales';
-import { listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
+import { PAYG_FILM_PROGRAMME } from './payg-film-programme';
+import { getSeoVideosByIds, listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PayAsYouGoContent, PaygShowcaseTitleId } from '../_content/types';
 
 export const PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator';
@@ -8,6 +9,10 @@ const SHOWCASE_LIMIT = 7;
 const FALLBACK_FETCH_LIMIT = 18;
 const SHOWCASE_DISALLOWED_MODEL_PATTERN = /\b(?:sora|openai|pika)\b/i;
 const SHOWCASE_MODEL_PRIORITY: Array<{ key: string; pattern: RegExp }> = [
+  { key: 'kling-v4', pattern: /kling[\s-]*(?:v?4)/i },
+  { key: 'flux-3-max', pattern: /flux[.\s-]*3[\s-]*max/i },
+  { key: 'seedance-2-5', pattern: /seedance[\s-]*2[.-]5/i },
+  { key: 'minimax-h3', pattern: /minimax[\s-]*h3/i },
   { key: 'seedance-2', pattern: /seedance(?:[-\s]?2|[-\s]?2\.0)(?!.*mini)/i },
   { key: 'kling', pattern: /kling/i },
   { key: 'google-veo', pattern: /\b(?:google\s+)?veo\b/i },
@@ -44,7 +49,7 @@ function isAllowedShowcaseModel(video: GalleryVideo) {
 }
 
 function modelPriorityIndex(video: GalleryVideo) {
-  const searchText = videoModelSearchText(video);
+  const searchText = `${video.engineId} ${video.engineLabel}`;
   const index = SHOWCASE_MODEL_PRIORITY.findIndex(({ pattern }) => pattern.test(searchText));
   return index === -1 ? SHOWCASE_MODEL_PRIORITY.length : index;
 }
@@ -163,6 +168,19 @@ async function loadFallbackVideos() {
   }
 }
 
+async function loadProgramme() {
+  try {
+    const records = await getSeoVideosByIds(PAYG_FILM_PROGRAMME.map(film => film.id));
+    return PAYG_FILM_PROGRAMME.flatMap(film => {
+      const clip = records.get(film.id);
+      return clip?.engineId === film.model && clip.thumbUrl && clip.videoUrl ? [clip] : [];
+    });
+  } catch (error) {
+    console.warn('[payg-video-showcase] featured films unavailable', error);
+    return [];
+  }
+}
+
 export async function loadPayAsYouGoVideoShowcase({
   locale,
   copy,
@@ -170,10 +188,11 @@ export async function loadPayAsYouGoVideoShowcase({
   locale: AppLocale;
   copy: PayAsYouGoShowcaseRuntimeCopy;
 }): Promise<PayAsYouGoShowcaseVideo[]> {
-  if (!isDatabaseConfigured()) {
+  if (!isDatabaseConfigured() || process.env.NEXT_PHASE === 'phase-production-build') {
     return [];
   }
 
+  const programme = loadProgramme();
   let videos: GalleryVideo[] = [];
   try {
     videos = await listPlaylistVideos(PAYG_VIDEO_PLAYLIST_SLUG, SHOWCASE_LIMIT);
@@ -185,6 +204,8 @@ export async function loadPayAsYouGoVideoShowcase({
     videos = await loadFallbackVideos();
   }
 
-  const selected = pickDiverseVideos(videos);
+  const featured = await programme;
+  const featuredIds = new Set(featured.map(video => video.id));
+  const selected = [...featured, ...pickDiverseVideos(videos).filter(video => !featuredIds.has(video.id))];
   return selected.map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy));
 }

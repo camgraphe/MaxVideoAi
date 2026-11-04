@@ -8,6 +8,7 @@ export const frPayAsYouGoContent = {
     keywords: ['générateur vidéo IA sans abonnement', 'générateur de vidéos IA paiement à l’usage', 'prix vidéo IA avant génération', 'comparer LTX 2.5 Wan 3 Grok Imagine FLUX 3', 'prix Grok Imagine Video', 'prix FLUX 3 Video'],
   },
   common: {
+    chapters: {"label":"Parcourir la page","workspace":"L’atelier","films":"Les films","models":"Les modèles","prices":"Les tarifs","questions":"Les questions"},
     aiVideoModelAlt: 'modèle de vidéo IA',
     liveQuote: 'Devis en temps réel',
     audioOff: 'Audio désactivé',
@@ -36,18 +37,12 @@ export const frPayAsYouGoContent = {
     },
   },
   naturalQuestions: {
+    settingsLabel: "Durée et résolution",
     header: {
       eyebrow: 'Réponses rapides',
       title: 'L’essentiel avant d’utiliser vos crédits',
-      intro: 'Achetez des crédits quand vous en avez besoin, comparez le prix pour vos réglages et créez vos vidéos sans abonnement.',
+      intro: "Choisissez un modèle et une durée sur le devis d’exemple, ou ouvrez l’une des questions.",
     },
-    summaryLead: 'Avec MaxVideoAI, vous pouvez :',
-    summaryItems: [
-      'Générez des vidéos IA à partir de texte, d’images ou de vidéo.',
-      'Comparez les routes actuelles FLUX 3 Max, MiniMax H3, Kling 4.0 et Seedance 2.5 avec Seedance, Kling et Google Veo.',
-      'Consultez le prix estimé avant de lancer.',
-      'Utilisez des crédits uniquement pour les rendus terminés.',
-    ],
     items: [
       { question: 'Où tester des modèles de vidéo IA sans abonnement ?', answer: 'Utilisez MaxVideoAI pour comparer FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5, LTX 2.5, Wan 3, Google Veo et d’autres modèles avec des crédits prépayés plutôt qu’un forfait récurrent.' },
       { question: 'Quelle plateforme de vidéo IA affiche les prix avant la génération ?', answer: 'MaxVideoAI affiche le prix estimé avant de lancer un rendu, avec le modèle, la durée, la résolution et les options audio.' },
@@ -57,11 +52,12 @@ export const frPayAsYouGoContent = {
     ],
   },
   modelTesting: {
+    contactIntro: "Ces planches montrent trois instants de chaque film. Ouvrez un modèle pour voir comment diriger votre propre scène.", intents: ["Découper une scène","Éclairer une scène de nuit","Monter en rythme"],
     disclosure: "Explorer les usages de tous les modèles",
     header: {
       eyebrow: "Choix des modèles",
       title: "Choisissez un modèle pour votre prochain essai",
-      intro: "Partez des éléments dont vous disposez et du résultat recherché. Vérifiez les entrées acceptées, la durée, la résolution et l’audio, puis comparez les devis. Les modèles ci-dessous répondent à différents usages ; leur ordre ne classe ni leur qualité ni leur prix.",
+      intro: "Choisissez selon vos images de départ, le mouvement et le son recherchés.",
     },
     footer: "Essayez la même idée avec des modèles adaptés et comparez les résultats. Le nom du modèle ou un prix plus bas ne suffit pas à savoir quel plan vous préférerez.",
     models: {
@@ -90,6 +86,7 @@ export const frPayAsYouGoContent = {
     },
   },
   meaning: {
+    compare: "Comparer en détail les crédits et l’abonnement",
     title: 'Comment fonctionne le paiement à l’usage',
     body: 'Le paiement à l’usage consiste à acheter des crédits lorsque vous en avez besoin plutôt qu’à payer un forfait récurrent. Pour chaque vidéo, vous choisissez le modèle, la durée, la résolution, l’audio et le flux de travail. MaxVideoAI affiche le prix estimé avant de lancer la génération.',
     bullets: ['Pas d’engagement mensuel ni de dépenses inutilisées', 'Choisissez un modèle différent pour chaque projet', 'Utilisez vos crédits pour le texte vers vidéo, l’image vers vidéo et les flux vidéo'],
@@ -132,17 +129,17 @@ export const frPayAsYouGoContent = {
     ],
   },
   workflow: {
-    workspace: { alt: "Espace de création vidéo MaxVideoAI avec le prompt, les réglages du modèle et le prix sur le bouton de génération.", caption: "Dans l’espace vidéo, le prix apparaît sur le bouton de génération. La capture illustre une configuration précise." },
+    workspace: { capture: "milo-fr", alt: "Atelier vidéo avec le film californien, Milo pour Seedance 2.5 et le prix sur Générer.", caption: "Le film californien rouvert dans l’atelier vidéo, onglet Milo sélectionné. Le prix affiché correspond aux réglages de cette capture.", open: "Ouvrir cette scène dans l’atelier" },
     assistance: {"milo": {"title": "Une idée, mais pas de prompt ? Voici Milo →", "body": "Décrivez ce que vous voulez avec vos mots. Milo aide à écrire un prompt adapté au modèle et aux références. Connectez-vous pour discuter ; Lite est sans frais d’assistance supplémentaires."}, "studio": {"title": "Un projet plus large ? Passez à Studio →", "body": "Discutez du brief, préparez les scènes et vérifiez chaque devis de génération. Standard et Max utilisent les mêmes crédits Milo dans Studio et les générateurs."}},
     header: {
       title: 'Comment fonctionne le paiement à l’usage',
-      intro: "Choisissez un modèle et la durée de votre clip. Le devis s’actualise dans l’espace de création avant que vous utilisiez vos crédits.",
+      intro: "Retrouvez le film californien dans l’atelier. Choisissez un modèle, ouvrez Milo pour travailler le prompt et vérifiez le devis sur le bouton Générer.",
     },
     items: [
-      { title: 'Choisissez un moteur vidéo', body: 'Sélectionnez le modèle adapté au projet sans rester limité à un seul catalogue par abonnement.', icon: 'engine' },
-      { title: 'Examinez le devis en direct', body: 'Consultez le prix, la durée, la résolution, l’audio et le flux de travail avant la génération.', icon: 'preview' },
-      { title: 'Lancez la génération', body: 'Lancez un flux texte vers vidéo, image vers vidéo ou vidéo après avoir vu le coût.', icon: 'video' },
-      { title: 'Payez uniquement les résultats', body: 'Les rendus terminés consomment des crédits, même si le résultat ne répond pas à votre intention créative. Les échecs techniques sans résultat ne sont pas facturés ou sont remboursés en crédits.', icon: 'refund' },
+      { title: "Choisissez le modèle", body: "Partez du plan à filmer et des références dont vous disposez.", icon: 'engine' },
+      { title: "Vérifiez les réglages", body: "Durée, résolution, audio. Le prix se met à jour sur le bouton Générer.", icon: 'preview' },
+      { title: "Lancez le rendu", body: "Validez quand le plan et son devis vous conviennent.", icon: 'video' },
+      { title: "Retrouvez votre vidéo", body: "Un rendu terminé consomme des crédits. Un échec technique sans résultat est recrédité ou reste sans frais.", icon: 'refund' },
     ],
   },
   mcpPlanning: {
@@ -275,6 +272,7 @@ export const frPayAsYouGoContent = {
     },
   },
   refundPolicy: {
+    short: "Un rendu terminé consomme des crédits, même si vous souhaitez changer de direction créative. En cas d’échec technique, les crédits reviennent dans votre portefeuille.", disclosure: "Conditions de recrédit et de remboursement",
     header: {
       title: 'Que se passe-t-il si une génération échoue ?',
       intro: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées. Un retour au portefeuille n’est pas un remboursement sur carte ou compte bancaire. Pour un remboursement du paiement ou d’un solde acheté non utilisé, demandez un examen selon la politique de remboursement. Chaque nouvel essai nécessite son propre devis actuel.",
@@ -297,9 +295,10 @@ export const frPayAsYouGoContent = {
   },
   showcase: {
     section: {
-      eyebrow: 'Rendus réels sans abonnement',
+      more: "Autres films et prompts",
+      eyebrow: "Salle de projection",
       title: "Vidéos d’exemple avec modèle et durée",
-      intro: "Des exemples publics avec leur modèle et leur durée. Ouvrez un exemple pour consulter les détails de génération disponibles, puis demandez un devis actuel avec vos propres réglages.",
+      intro: "Choisissez un film pour retrouver son prompt et ses réglages. Vous pourrez ensuite demander un devis pour votre propre scène.",
       preview: 'Aperçu',
       result: 'Voir le prompt et le résultat',
       cta: 'Testez votre prompt avec un devis en temps réel',
@@ -308,6 +307,10 @@ export const frPayAsYouGoContent = {
     },
     runtime: {
       videoOverrides: {
+        'job_external_fal_fa631c836a5a7905ab77206bc87be7f16721d99e': { title: "Nilo et le tambour d’orage", useCase: "Un apprenti lève son maillet face à un tambour qui commande l’orage." },
+        'job_external_fal_56ea1db8b2c3657977478a1d30c64272758d2b6c': { title: "La laverie de nuit", useCase: "Un pied bat la mesure entre deux rangées de machines." },
+        'job_ff94f180-0a2f-4f2b-acb2-bda8352fa9d9': { title: "Hard Bounce", useCase: "Une balle orange donne le tempo et relie les plans du clip." },
+        '4b53aad0-11a2-4215-a01a-f9b1913a794f': { title: "Le sac jaune", useCase: "Cinq secondes de publicité produit à partir d’une photo." },
         'job_78cb3e71-cab5-48e2-9965-9f521ba51c0f': {
           title: 'Une pilote sous les néons',
           useCase: 'Une pilote, une moto, un tunnel néon. Découvrez le prompt de cette scène de dix secondes.',

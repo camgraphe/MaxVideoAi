@@ -20,6 +20,7 @@ import {
   buildPayAsYouGoServiceJsonLd,
   buildPayAsYouGoWebApplicationJsonLd,
 } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-jsonld.ts';
+import { PAYG_FILM_PROGRAMME } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-film-programme.ts';
 import type { PayAsYouGoShowcaseVideo } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-video-showcase.ts';
 import { generateMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/page.tsx';
 
@@ -38,19 +39,19 @@ const homeByLocale = {
 } as const;
 const emptySectionOpenings = [
   '<header class="border-b border-hairline bg-bg">',
-  '<section data-payg-workflow="" class="border-b border-hairline bg-bg">',
+  '<section id="payg-workspace" data-payg-workflow="" class="scroll-mt-20 bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section id="payg-models" class="scroll-mt-16 border-b border-hairline bg-bg">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section class="border-b border-hairline bg-surface">',
+  '<section id="compare-price-per-model" class="scroll-mt-20 border-b border-hairline bg-bg">',
+  '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-bg">',
-  '<section class="border-b border-hairline bg-bg">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section id="compare-price-per-model" class="border-b border-hairline bg-bg">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-bg">',
-  '<section class="bg-surface">',
+  '<section id="payg-questions" class="scroll-mt-20 bg-surface">',
 ] as const;
 const emptySectionHeadingCounts = [1, 1, 6, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1] as const;
 const approvedHeadingsPerSection = [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
@@ -98,7 +99,7 @@ const representative = {
     lookupHref: '/pricing#seedance-2-0-pricing',
     showcase: {
       title: "Example videos with model and duration",
-      intro: "Public examples with their model and duration. Open an example for its available generation details, then check a current quote for your own settings.",
+      intro: "Open a film to explore its prompt and settings. Then get a fresh quote for a scene of your own.",
       cta: 'Test your prompt with a live quote',
       mediaPhrase: 'example video generated with',
     },
@@ -135,7 +136,7 @@ const representative = {
     lookupHref: '/fr/tarifs#seedance-2-0-pricing',
     showcase: {
       title: "Vidéos d’exemple avec modèle et durée",
-      intro: "Des exemples publics avec leur modèle et leur durée. Ouvrez un exemple pour consulter les détails de génération disponibles, puis demandez un devis actuel avec vos propres réglages.",
+      intro: "Choisissez un film pour retrouver son prompt et ses réglages. Vous pourrez ensuite demander un devis pour votre propre scène.",
       cta: 'Testez votre prompt avec un devis en temps réel',
       mediaPhrase: 'vidéo d’exemple générée avec',
     },
@@ -172,7 +173,7 @@ const representative = {
     lookupHref: '/es/precios#seedance-2-0-pricing',
     showcase: {
       title: "Videos de ejemplo con modelo y duración",
-      intro: "Ejemplos públicos con su modelo y duración. Abre un ejemplo para consultar los detalles disponibles y comprueba una cotización actual con tus propios ajustes.",
+      intro: "Abre una película para ver su prompt y sus ajustes. Después puedes pedir una cotización para tu propia escena.",
       cta: 'Prueba tu prompt con una cotización en tiempo real',
       mediaPhrase: 'video de ejemplo generado con',
     },
@@ -321,7 +322,13 @@ for (const locale of locales) {
       assert.ok(!doc.querySelector('[data-nosnippet] [data-payg-quote-amount]'));
       assert.ok(film?.querySelector('img'));
       assert.equal(doc.querySelector('header video'), null, 'Watching the film is an explicit action');
-      assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]'));
+      assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]')?.getAttribute('srcset')?.includes(`milo-${locale}-phone.webp`));
+      assert.ok(doc.querySelector('[data-payg-workflow] picture img')?.getAttribute('src')?.includes(`milo-${locale}-wide.webp`));
+      const chapterLinks = [...doc.querySelectorAll<HTMLAnchorElement>('nav[aria-label] a')];
+      assert.ok(chapterLinks.length >= 4 && chapterLinks.every(a => doc.getElementById(a.hash.slice(1))));
+      assert.equal(doc.querySelector('[data-payg-receipt] select')?.querySelectorAll('option').length, data.pricing.rows.length);
+      assert.ok(doc.querySelector('#payg-questions details summary'));
+      assert.equal(doc.querySelector('a[href="#payg-films"]'), null, 'No chapter points to a missing gallery');
     } finally {
       window.close();
     }
@@ -360,7 +367,7 @@ for (const locale of locales) {
     );
     assert.deepEqual(semantic.sectionOpenings, [
       ...emptySectionOpenings.slice(0, 2),
-      '<section class="border-b border-hairline bg-bg">',
+      '<section id="payg-films" class="scroll-mt-20 border-y border-hairline bg-surface text-text-primary">',
       ...emptySectionOpenings.slice(2),
     ]);
     assert.equal(semantic.showcasePresent, true);
@@ -456,3 +463,18 @@ for (const locale of locales) {
     });
   });
 }
+
+test('film contact sheets appear only when the exact film and model are both present', () => {
+  const editions = PAYG_FILM_PROGRAMME.filter(film => film.contactSheet);
+  const videos = editions.map(film => ({ ...showcaseVideo, id: film.id, engineId: film.model }));
+  const complete = new JSDOM(render('fr', [showcaseVideo, ...videos]).markup);
+  const partial = new JSDOM(render('fr', [showcaseVideo, { ...videos[0], engineId: 'kling-3-pro' }, videos[2]]).markup);
+  try {
+    const links = (document: Document) => [...document.querySelectorAll<HTMLImageElement>('#payg-models img[src*="contact.webp"]')].map(image => image.closest('a')?.href);
+    assert.deepEqual(links(complete.window.document), editions.map(film => `/fr/modeles/${film.model}`));
+    assert.deepEqual(links(partial.window.document), ['/fr/modeles/seedance-2-5']);
+  } finally {
+    complete.window.close();
+    partial.window.close();
+  }
+});

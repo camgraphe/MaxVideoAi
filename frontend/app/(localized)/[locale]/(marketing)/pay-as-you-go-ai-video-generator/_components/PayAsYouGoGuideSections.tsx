@@ -1,5 +1,7 @@
-import { getImageProps } from 'next/image';
-import { CheckCircle2, Clapperboard, Sparkles } from 'lucide-react';
+import Image, { getImageProps } from 'next/image';
+import { ArrowUpRight, CheckCircle2, ChevronDown, Clapperboard, Sparkles } from 'lucide-react';
+import { CALIFORNIA_CURSOR_FILM } from '@/config/california-cursor-film';
+import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
 import {
@@ -12,31 +14,36 @@ type PayAsYouGoPageDataProps = {
   data: PayAsYouGoPageData;
 };
 
-export function PayAsYouGoMeaningSection({ data }: PayAsYouGoPageDataProps) {
+export function PayAsYouGoMeaningSection({ data, example }: PayAsYouGoPageDataProps & { example?: PayAsYouGoShowcaseVideo }) {
   return (
-    <section className="border-b border-hairline bg-bg">
-      <div className={`${PAYG_CONTAINER_CLASS_NAME} grid gap-8 py-12 lg:grid-cols-[0.95fr_1.05fr]`}>
-        <div>
+    <section className="border-b border-hairline bg-surface">
+      <div className={`${PAYG_CONTAINER_CLASS_NAME} grid items-center gap-7 py-10 sm:py-14 lg:grid-cols-[1fr_1fr] lg:gap-16`}>
+        {example?.posterUrl ? <figure className="min-w-0">
+          <Link href={example.href} prefetch={false} className="group block rounded-md focus-visible:outline-offset-4" aria-label={`${example.title} · ${example.engineLabel} · ${example.durationLabel}`}>
+            <div className="relative aspect-[16/10] overflow-hidden rounded-md bg-surface-2">
+              <Image src={example.posterUrl} alt={example.title} fill sizes="(min-width: 1024px) 530px, 92vw" className="object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.02]" />
+            </div>
+          </Link>
+          <figcaption className="mt-2 flex flex-wrap justify-between gap-x-3 text-xs leading-5 text-text-secondary">
+              <span className="font-semibold text-text-primary">{example.title} ↗</span>{example.engineLabel} · {example.durationLabel}
+          </figcaption>
+        </figure> : null}
+        <div className={example?.posterUrl ? '' : 'lg:col-span-2'}>
           <PayAsYouGoSectionHeader title={data.meaning.title} intro={data.meaning.body} />
-          <ul className="mt-5 grid gap-2">
-            {data.meaning.bullets.map((bullet) => (
-              <li key={bullet} className="flex gap-2 text-sm leading-6 text-text-secondary">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#14A46C]" strokeWidth={1.9} />
-                <span>{bullet}</span>
-              </li>
-            ))}
+          <ul className="mt-4 grid gap-1">
+            {data.meaning.bullets.map(bullet => <li key={bullet} className="flex gap-2 text-sm leading-6 text-text-secondary">
+              <CheckCircle2 aria-hidden className="mt-1.5 h-3.5 w-3.5 shrink-0 text-brand" />{bullet}
+            </li>)}
           </ul>
-        </div>
-        <div>
-          <PayAsYouGoSectionHeader title={data.noSubscription.title} intro={data.noSubscription.body} />
-          <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            {data.noSubscription.cards.map((card) => (
-              <article key={card.title} className="rounded-[8px] border border-hairline bg-surface p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-text-primary">{card.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">{card.body}</p>
-              </article>
-            ))}
-          </div>
+          <details className="group/meaning mt-5 border-y border-hairline">
+            <summary className="cursor-pointer list-none py-3.5 [&::-webkit-details-marker]:hidden">
+              <h2 className="flex items-center justify-between gap-4 text-base font-semibold text-text-primary">{data.noSubscription.title}<ChevronDown aria-hidden className="h-4 w-4 group-open/meaning:rotate-180" /></h2>
+            </summary>
+            <p className="pb-3 text-sm leading-6 text-text-secondary">{data.noSubscription.body}</p>
+            <dl className="grid gap-3 pb-4">{data.noSubscription.cards.map(card => <div key={card.title}>
+              <dt className="text-sm font-semibold text-text-primary">{card.title}</dt><dd className="text-sm leading-6 text-text-secondary">{card.body}</dd>
+            </div>)}</dl>
+          </details>
         </div>
       </div>
     </section>
@@ -99,53 +106,44 @@ export function PayAsYouGoSubscriptionComparisonSection({ data }: PayAsYouGoPage
 }
 
 export function PayAsYouGoWorkflowSection({ data }: PayAsYouGoPageDataProps) {
-  const { workspace } = data.workflow;
-  const desktop = getImageProps({
-    src: '/assets/marketing/redesign/app-desktop-light-wide.webp',
-    alt: workspace.alt, width: 1344, height: 840, sizes: '(min-width: 1024px) 54vw, 90vw',
-  }).props;
-  const mobile = getImageProps({
-    src: '/assets/marketing/redesign/app-mobile-light-framed.webp',
-    alt: workspace.alt, width: 378, height: 794, sizes: '90vw',
-  }).props;
+  const { workspace, assistance } = data.workflow;
+  const base = `/assets/marketing/payg/${workspace.capture}`;
+  const desktop = getImageProps({ src: `${base}-wide.webp`, alt: workspace.alt, width: 1450, height: 1019, sizes: '(min-width: 1024px) 670px, 92vw' }).props;
+  const mobile = getImageProps({ src: `${base}-phone.webp`, alt: workspace.alt, width: 570, height: 660, sizes: '90vw' }).props;
+  const film = CALIFORNIA_CURSOR_FILM;
   return (
-    <section data-payg-workflow="" className="border-b border-hairline bg-bg">
-      <div className={`${PAYG_CONTAINER_CLASS_NAME} py-10 sm:py-14`}>
-        <PayAsYouGoSectionHeader {...data.workflow.header} />
-        <div className="mt-6 grid items-center gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
-          <ol className="divide-y divide-hairline border-y border-hairline">
-            {data.workflow.items.map((item, index) => (
-              <li key={item.title} className="grid grid-cols-[2rem_1fr] gap-3 py-4">
-                <span aria-hidden className="pt-0.5 font-mono text-sm tabular-nums text-brand">{String(index + 1).padStart(2, '0')}</span>
-                <div>
-                  <h3 className="text-base font-semibold text-text-primary">{item.title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-text-secondary">{item.body}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+    <section id="payg-workspace" data-payg-workflow="" className="scroll-mt-20 bg-surface">
+      <div className={`${PAYG_CONTAINER_CLASS_NAME} py-10 sm:py-16`}>
+        <div className="grid items-center gap-7 lg:grid-cols-[.68fr_1.32fr] lg:gap-12">
+          <div>
+            <PayAsYouGoSectionHeader {...data.workflow.header} />
+            <Link href={`/app?engine=${film.modelSlug}&from=${film.jobId}`} prefetch={false} className="mt-5 inline-flex min-h-11 items-center gap-1.5 border-b border-brand text-sm font-semibold text-brand hover:text-text-primary">
+              {workspace.open}<ArrowUpRight aria-hidden className="h-4 w-4" />
+            </Link>
+          </div>
           <figure className="min-w-0">
-            <div className="rounded-xl border border-hairline bg-surface-2 p-3 sm:p-5">
-              <picture className="block aspect-[1.35] overflow-hidden rounded-md border border-hairline sm:aspect-[8/5]">
-                <source media="(max-width: 639px)" srcSet={mobile.srcSet} sizes={mobile.sizes} width={378} height={794} />
-                {/* Art direction shows the actual mobile composer and price at a readable scale. */}
-                <img {...desktop} alt={workspace.alt} className="h-full w-full object-cover object-bottom sm:object-contain" />
+            <div className="overflow-hidden rounded-[12px] border border-[#cbb9a6] bg-[#dfd7ce] bg-[radial-gradient(ellipse_at_9%_12%,#f4cbb6_0%,transparent_57%),radial-gradient(ellipse_at_95%_95%,#b5c4d9_0%,transparent_66%)] p-3 sm:p-7">
+              <picture className="block overflow-hidden rounded border border-black/15 bg-[#eeeee4] shadow-[0_8px_26px_#42392f28]">
+                <source media="(max-width: 639px)" srcSet={mobile.srcSet} sizes={mobile.sizes} width={570} height={660} />
+                <img {...desktop} alt={workspace.alt} className="h-auto w-full" />
               </picture>
             </div>
-            <figcaption className="mt-3 text-sm leading-5 text-text-secondary">{workspace.caption}</figcaption>
+            <figcaption className="mt-2.5 text-xs leading-5 text-text-secondary">{workspace.caption}</figcaption>
           </figure>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {([
-            [data.workflow.assistance.milo, '/ai-video-prompt-generator', Sparkles],
-            [data.workflow.assistance.studio, '/studio', Clapperboard],
-          ] as const).map(([item, href, Icon]) => (
-            <div key={href} className="flex items-start gap-3 border-t border-hairline pt-5">
-              <Icon aria-hidden className="mt-1 h-5 w-5 shrink-0 text-text-secondary" />
-              <div>
-                <Link href={href} prefetch={false} className="font-semibold text-text-primary underline underline-offset-4">{item.title}</Link>
-                <p className="mt-2 text-sm leading-6 text-text-secondary">{item.body}</p>
-              </div>
+        <ol className="mt-8 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+          {data.workflow.items.map((item, index) => <li key={item.title} className="border-t border-hairline pt-3">
+            <span aria-hidden className="font-mono text-xs text-brand">{String(index + 1).padStart(2, '0')}</span>
+            <h3 className="mt-1 text-base font-semibold text-text-primary">{item.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-text-secondary">{item.body}</p>
+          </li>)}
+        </ol>
+        <div className="mt-7 grid gap-5 border-t border-hairline pt-5 sm:grid-cols-2">
+          {([[assistance.milo, '/ai-video-prompt-generator', Sparkles], [assistance.studio, '/studio', Clapperboard]] as const).map(([item, href, Icon]) => (
+            <div key={href} className="grid grid-cols-[1.5rem_1fr] items-start gap-2">
+              <Icon aria-hidden className="mt-1 h-4 w-4 text-brand" />
+              <div><Link href={href} className="inline-flex min-h-8 items-center text-sm font-semibold text-text-primary hover:underline">{item.title}</Link>
+                <p className="max-w-lg text-xs leading-5 text-text-secondary">{item.body}</p></div>
             </div>
           ))}
         </div>
@@ -176,10 +174,10 @@ export function PayAsYouGoQuoteFactorsSection({ data }: PayAsYouGoPageDataProps)
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.quoteFactors.header} />
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {data.quoteFactors.items.map((item) => (
-            <article key={item.title} className="rounded-[8px] border border-hairline bg-bg p-4 shadow-sm">
-              <PayAsYouGoSemanticIcon id={item.icon} className="h-5 w-5 text-[#14A46C]" />
+            <article key={item.title} className="border-t border-hairline pt-4">
+              <PayAsYouGoSemanticIcon id={item.icon} className="h-5 w-5 text-brand" />
               <h3 className="mt-4 text-sm font-semibold text-text-primary">{item.title}</h3>
               <p className="mt-2 text-sm leading-6 text-text-secondary">{item.body}</p>
             </article>
