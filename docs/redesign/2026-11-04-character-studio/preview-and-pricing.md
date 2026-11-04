@@ -12,17 +12,91 @@ permettent de configurer les paramètres de cette branche séparément
 ([environnements Vercel](https://vercel.com/docs/deployments/environments),
 [variables d'environnement](https://vercel.com/docs/environment-variables)).
 
-Lecture du compte Vercel : projet `maxvideoai` trouvé ; aucun déploiement de cette
-branche dans l'historique interrogé. D'autres projets de staging/pilote et des
-variables réservées à d'autres branches existent. Cela ne prouve ni l'isolation
-ni la disponibilité des clés de ce parcours. La réponse d'inventaire des variables
-était tronquée ; aucune valeur secrète n'a été déchiffrée, copiée ou modifiée.
+Raccordement du 4 novembre : la branche est publiée sur GitHub. Le projet Vercel
+`maxvideoai` possède désormais l'environnement personnalisé `character-studio-test`
+(`env_buN6rStm7yMP1Botls0V1mWYyW2N`, type Preview), limité par correspondance exacte
+à `codex/character-studio-v2`. Aucun domaine de production n'est réaffecté.
 
-Le local 3016 utilise PostgreSQL/MinIO locaux et le mode répétition sans devis
-confirmable. Il reste intact. Aucun déploiement ni rendu payant n'a été lancé
-pendant cette vérification.
+La base Neon `character-studio-v2-test` (`br-square-king-aenyqhsq`, projet
+`shy-flower-71253790`) a été créée avec `--schema-only` : aucun client de production
+n'a été copié. Les migrations 93, 94 et 95 sont appliquées. Le compte test existant,
+12 personnages, 7 looks et leur historique local ont été importés. La grille active
+(17 103 cellules, 2 versions historiques), les règles, les produits et les paramètres
+des moteurs ont été copiés par une connexion PostgreSQL forcée en lecture seule
+sur la source. Le portefeuille comporte des crédits de test explicitement étiquetés,
+sans lien de paiement Stripe ; les clés Stripe et d'envoi d'e-mails sont neutralisées
+dans cet environnement.
 
-## Raccordement à qualifier
+Le bucket S3 `maxvideoai-character-studio-test-20261104` est distinct du bucket
+principal. 39 médias locaux ont été transférés avec un manifeste SHA-256 privé.
+Les origines S3 globale et régionale ont été vérifiées : accès anonyme 403 aux
+passages privés, accès signé/Range 206 ; médias publics/Range 206. Les données
+et les services locaux PostgreSQL/MinIO sur 3016 restent intacts.
+
+Sur demande explicite de réutilisation sécurisée, la variable sensible Alibaba
+existante a été affectée au seul environnement personnalisé via `customEnvironmentIds`.
+Sa valeur n'a été ni déchiffrée, ni exportée ; sa cible Production et son type Secret
+sont conservés. La configuration GCS des images est également affectée sans lecture
+de sa valeur ; les références Nano Banana 2.1 sont limitées à 7 Mo et envoyées inline.
+Les portraits et résultats durables utilisent le nouveau S3. Les identifiants
+fournisseur et Supabase Auth sont partagés ; les bases applicatives, médias S3 et
+soldes sont séparés. Les variables importées qui nécessitaient une valeur propre
+ont été détachées avant création des valeurs de test, pour préserver les autres
+environnements. Les 39 valeurs propres ont été comparées après résolution Vercel.
+
+Le déploiement qualifié est `dpl_8QXukPgX8XbSiz8T9zpYEL2rfrdy`, état READY,
+source GitHub `173da033881576c41d3e89a3e9cc9c6dfecd517c`. Le build précédent
+(`dpl_FoCYXRiHUAm57G287A7TeKX2EBXZ`) a échoué sur un OOM ; la relance du même SHA
+a abouti. L'option de machine passée à la relance n'est pas une preuve de capacité :
+les journaux annoncent toujours Standard, 4 cœurs / 8 Go. Aucun réglage global de
+build du projet n'a été changé.
+
+- [Outil de test, URL stable](https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app/app/tools/character-builder)
+- [Déploiement qualifié](https://maxvideoai-1r0rh36mj-camgraphes-projects.vercel.app/app/tools/character-builder)
+
+La protection Vercel reste active. Le jeton OIDC local Development ne couvre pas
+ce Custom Environment (`TRUSTED_SOURCES_ENVIRONMENT_MISMATCH`) ; les contrôles HTTP
+ont utilisé `vercel curl` avec l'authentification Vercel existante, sur l'origine
+exacte. Aucune règle Trusted Sources n'a été élargie. La connexion applicative a
+été vérifiée sur le propriétaire existant sans envoi d'e-mail.
+Aucune confirmation de devis ni génération fournisseur n'a été effectuée.
+
+Contrôles HTTP authentifiés sur le premier déploiement : bibliothèque 12 personnages /
+7 looks avec URLs S3 de test ; Stripe `disabled` ; estimation v2v 8 s + source
+7,5 s : 137 / 283 / 565 centimes (480p / 720p / 1080p). Les workers déployés ont
+réellement découpé la vidéo de 2 à 9,5 s (7,5 s mesurées) et l'audio de 3 à 8,25 s
+(5,25 s mesurées). Les deux passages sont stockés dans les chemins privés et leur
+lecture signée renvoie HTTP 206. Les identifiants historiques qui contiennent une
+ancienne URL locale restent des identifiants opaques ; les URL de lecture ont été
+remplacées. La base conserve 19 jobs et 14 reçus après préparation, sans charge créée.
+
+La qualification finale de l'environnement dédié a également vérifié :
+
+- disponibilité Recast `i2v`, `ref2v` et `v2v` : HTTP 200 ;
+- nouvelle sauvegarde du personnage et d'un look existants : idempotentes, toujours
+  12 personnages et 7 looks ;
+- 9 devis exacts v2v pour 4 / 8 / 12 s en 480p / 720p / 1080p : tous égaux à
+  l'estimation, avec source vidéo mesurée à 7,5 s ; les trois cas 8 s incluent
+  le passage audio mesuré à 5,25 s ;
+- devis i2v et ref2v sans vidéo : 146 centimes chacun pour 8 s / 720p ; ref2v
+  conserve le passage audio de 5,25 s ;
+- estimation d'un nouveau look Nano Banana 2.1 i2i / 1K : 7 centimes ;
+- Stripe désactivé sur la version qualifiée et sur l'alias stable ;
+- après ces 11 devis non confirmés : toujours 19 jobs, 14 reçus et un solde de
+  test de 9 903 centimes, identique à celui précédant les contrôles.
+
+| Sortie | 480p | 720p | 1080p |
+| --- | ---: | ---: | ---: |
+| 4 s + vidéo 7,5 s | 102 ¢ | 210 ¢ | 419 ¢ |
+| 8 s + vidéo 7,5 s | 137 ¢ | 283 ¢ | 565 ¢ |
+| 12 s + vidéo 7,5 s | 173 ¢ | 355 ¢ | 710 ¢ |
+
+Ces montants USD qualifient la configuration actuelle ; ce ne sont pas des devis
+encore valides à confirmer. Aucun de ces essais ne remplace l'approbation créative
+et le devis frais requis avant le premier rendu. Le débit fournisseur, le résultat
+visuel et la clôture réelle du reçu restent à qualifier lors de ce rendu approuvé.
+
+## Contrôles du raccordement
 
 1. Publier le candidat de cette branche par le chemin Git/preview ; conserver
    une authentification pour les testeurs. Une preview reste accessible aux
@@ -36,9 +110,14 @@ pendant cette vérification.
    locaux. Vérifier l'encodage FFmpeg des deux passages et leurs URLs fournisseur.
 4. Configurer le fournisseur et les accès de ce compte pour les modes utilisés,
    puis qualifier `recastReadiness`. Le nom public demeure MaxVideoAI Recast.
-5. Faire fonctionner le suivi Alibaba sur **cette base** : le propriétaire existant
-   est `/api/cron/alibaba-model-studio-poll`. Vérifier reprise, copie durable,
-   bibliothèque et affichage du reçu. La preview seule ne garantit pas ce suivi.
+5. Le suivi interactif existe déjà : `/api/jobs/[jobId]` autorise le propriétaire,
+   puis `refreshDirectGeneration` appelle le poller Alibaba limité à ce job actif.
+   Les Recasts utilisent la surface `video` et participent à ce suivi depuis le
+   workspace. Les crons Vercel automatiques ne tournent pas en Preview ; si la page
+   est fermée, reprendre le suivi en ouvrant le rendu ou invoquer le poller existant
+   `/api/cron/alibaba-model-studio-poll` sur l'origine de test avec son secret propre.
+   Le poller ne soumet pas de nouvelle génération. La copie et le reçu terminaux
+   seront qualifiés lors du premier rendu expressément approuvé.
 6. Activer le rendu Recast uniquement sur cet environnement qualifié, puis
    présenter une scène concrète et son devis exact avant chaque rendu réel.
    Le solde de test ne rend pas gratuite la facturation fournisseur.
