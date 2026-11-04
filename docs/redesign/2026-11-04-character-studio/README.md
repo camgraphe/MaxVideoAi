@@ -32,10 +32,22 @@ le sujet est asymétrique. Ne pas généraliser le pilote avant revue.
 | Créateur | Client / canal | Preuve attendue | Source |
 | --- | --- | --- | --- |
 | Dixie | Prof de danse / TikTok | Deux pas croisés, clap, quart de tour, boucle | Nouvelle prise verticale à tourner |
-| Cole | Horloger / fiche produit | Manche relevée, rotation de poignet, bracelet et cadran stables avec voix française | Nouvelle prise à tourner ; portrait, référence produit et audio disponibles |
+| Vesper | Horloger / UGC produit | « La montre religieuse » : la styliste présente le mauvais poignet, puis révèle la montre sur le bon. Une seule montre, deux bras actifs, quatre bras visibles. | Prise à tourner ; portrait Character Builder, photo du produit et voix témoin disponibles |
 | Nana | Torréfacteur / recette UGC | Versement de mousse, niveaux de liquide et prise de tasse continus | Nouvelle prise à tourner |
 | Bea | Marque outdoor / publicité sociale | La même gourde entre et ressort de la poche extérieure du sac | Nouvelle prise à tourner |
 | Basil | Label de mode / Explorer | Le pas glissé et les figurants d’origine sont conservés, seul le meneur devient Basil | Extrait local Dandys Paris disponible |
+| Jun Tempo | Lancement musical / défi en duo | Quart de tour en fauteuil, coupure de son, clap à 5,5 s puis reprise du beat à 6 s | Prise originale à tourner en fauteuil manuel ; portrait Character Builder et piste témoin de 8 s disponibles |
+
+[Les six briefs, leurs images exactes et les mouvements à tourner](six-films-recast.json)
+sont documentés avant devis. L’image de chaque interprète vient d’un rendu
+terminé de la surface Character Builder. Les six originaux ont été comparés
+octet pour octet aux sorties des jobs de la préversion ; leurs empreintes
+SHA-256 sont conservées dans la sélection. Les looks historiques de Dixie, Nana,
+Bea et Basil sont repris tels quels ; Vesper et Jun utilisent leurs portraits
+Nano Banana 2.1. Une vidéo externe peut renseigner le mouvement, jamais l’identité.
+La montre a une référence produit distincte. Le dossier de tournage privé inclut
+uniquement le matériel disponible ; une inspiration externe n’est jamais présentée
+comme une prise livrée.
 
 Aucun rendu vidéo réalisé. Les visuels du pilote restent des documents de revue
 et ne sont pas publiés sur les surfaces marketing.
