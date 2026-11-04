@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname } from '@/i18n/navigation';
+import { usePathname } from 'next/navigation';
 
 /** A small enhancement: server content stays visible even without JavaScript. */
 export function MarketingMotion() {

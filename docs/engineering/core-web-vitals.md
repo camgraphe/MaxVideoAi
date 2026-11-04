@@ -103,6 +103,7 @@ Capture LCP element/resource, TTFB, resource discovery delay, transfer duration,
 ### Mobile homepage, gallery and workspace checks
 
 - Exercise the same first tap before JavaScript, **during initial hydration**, and after the page settles. For the middle case, dispatch a trusted touch from outside the renderer as the first document pointer listener is installed. Record input delay, processing and time to the next paint. Measure CTA-to-editor readiness separately.
+- On the homepage, links in sections that already know the locale can pass it to the shared link so the router resolves the destination once for the section’s render. The comparison section and footer keep their full content available inside their hydration boundaries. When changing either one, hold the example and pricing responses, and check the links with JavaScript disabled both before and after those responses settle. Measure opening the menu and using its first submenu separately.
 - For an examples family, compare the first default page with a later page and a different sort. Count catalog SQL executions on a populated fixture and check the first poster, watch links, pagination, canonical, alternates and structured data. The metadata and body may share a public result within one render, never across visitors or requests.
 - On `/app`, use the same playable Starter for both anonymous runs. Record the first poster, engine request, editable prompt and layout shifts on direct and client navigation. For the signed-in journey, click the marketing header’s Generate link after hydration with a populated private history and saved draft. Record the header, preview rectangle, composer and rail across frames on phone and desktop, including layout shifts flagged as recent input; verify that the draft and model survive. An empty Starter or a different transfer encoding is a different experiment.
 
@@ -233,22 +234,21 @@ existing full-height reader is preserved. Real-browser geometry coverage belongs
 in `tests/example-reader-layout-browser.test.ts`; performance evidence must include
 the asynchronous opening journey, not only the initial gallery load.
 
-Active model details use the route-local `loadModelPageInputs` to start four
-independent inputs together: `scores`, `engine-settings`, `key-specs` and
-`model-gallery`. The route retains gallery selection, exact-model filtering,
-public revalidation, managed-empty behavior and legacy alias ordering in its
-callback. The optional pricing callback starts `model-pricing` as soon as the same
-request's `engine-settings` resolves, using the existing canonical price owners
-while the other inputs continue. The route awaits every input and price projection
-before composing its hero, gallery and specs. Archive and prelaunch branches
-never invoke this loader. Its `model` data timing now includes `model-pricing`;
-older aggregate records without that phase are not directly comparable. Layout
-and rendering remain excluded. The public result retains the first original
-rejection promptly, while model-only diagnostic completion waits for every
-started sibling to settle, including later errors. Starting independent readers
-together can increase work on a failed request because siblings are not cancelled.
-These timings do not isolate database connection wait or establish browser LCP
-gains. No new cross-request cache is introduced.
+Active model details call `prepareModelPageInputs` to start scores, engine settings,
+key specs and gallery selection concurrently. Scores, key specs and the selected
+public gallery control when the server can send the first poster. The calculation
+of current prices starts when the engine settings arrive and streams separately.
+Archive and prelaunch pages skip these reads. The complete-input compatibility API
+exposes the first failing read promptly. Its diagnostic record waits for all
+started reads to settle and excludes layout and rendering.
+
+For a model page rendered on a CDN miss, compare the final HTTP headers, the first
+priority poster in the HTML, its network request and its paint on the same visit.
+The `model` timing also includes prices, so the time when all recorded phases finish
+can be later than poster discovery. Pair this trace with a populated playlist and
+a separate empty or legacy case. The direct playlist reader selects and hydrates
+the bounded page in one query. The later public-video check still runs before a
+poster is chosen. Compare the same selected poster and prices in each locale.
 
 The root layout separately emits `root-layout` / `theme-tokens` for the existing
 `getThemeTokensSettingCached()` await, **after** `resolveLocale()`. This bounded

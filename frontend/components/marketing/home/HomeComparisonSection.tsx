@@ -15,8 +15,8 @@ export function HomeComparisonSection({ locale, scores }: { locale: AppLocale; s
   <div>
    <p className="editorial-eyebrow">{copy.eyebrow}</p><h2>{copy.title}</h2><p>{copy.body}</p>
    <div className="comparison-discovery-actions">
-    <Link className="comparison-hub-cta" href="/ai-video-engines" prefetch={false} data-analytics-event="comparison_card_click" data-analytics-cta-name="all_comparisons" data-analytics-cta-location="comparison_intro">{copy.cta}<span aria-hidden>↗</span></Link>
-    <Link className="comparison-generate-link" href={{pathname:'/app',query:{engine:'wan-3'}}} prefetch={false}>{copy.generate}<span aria-hidden>→</span></Link>
+    <Link currentLocale={locale} className="comparison-hub-cta" href="/ai-video-engines" prefetch={false} data-analytics-event="comparison_card_click" data-analytics-cta-name="all_comparisons" data-analytics-cta-location="comparison_intro">{copy.cta}<span aria-hidden>↗</span></Link>
+    <Link currentLocale={locale} className="comparison-generate-link" href={{pathname:'/app',query:{engine:'wan-3'}}} prefetch={false}>{copy.generate}<span aria-hidden>→</span></Link>
    </div>
    <p className="comparison-editorial-label">{copy.method}</p>
   </div>

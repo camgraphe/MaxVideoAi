@@ -122,7 +122,9 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         assert.deepEqual(hero.props.programmedHeroItems, []);
         const discovery = children[2].props.children.props.modelDiscovery;
         assert.equal((await discovery.props.children.type(discovery.props.children.props)).props.examples, fixture.examples);
-        assert.deepEqual(children[3].props.children.props.scores.opponents, []);
+        const comparison = children[3].props.children;
+        assert.deepEqual(comparison.props.children.props.scores.opponents, []);
+        assert.equal(comparison.props.fallback, comparison.props.children, 'the complete comparison remains visible in streamed HTML without JavaScript');
         const schemas = children.filter((child: { type: string }) => child.type === 'script');
         assert.deepEqual(schemas.map((child: { props: { id: string } }) => child.props.id), ['home-webapp-jsonld', 'home-faq-jsonld', 'home-provider-itemlist-jsonld']);
         const software = JSON.parse(schemas[0].props.dangerouslySetInnerHTML.__html);

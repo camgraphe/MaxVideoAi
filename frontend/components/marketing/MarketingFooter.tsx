@@ -1,7 +1,9 @@
 'use client';
 
+import { Suspense } from 'react';
 import Image from 'next/image';
-import { Link, usePathname, type LocalizedLinkHref } from '@/i18n/navigation';
+import { usePathname } from 'next/navigation';
+import { getPathname, Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { MarketingFooterAssistants } from '@/components/marketing/MarketingFooterAssistants';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
@@ -21,14 +23,19 @@ function localizeFooterPath(locale: SupportedLocale, englishPath: string) {
 }
 
 export function MarketingFooter({ navigation }: { navigation: MarketingFooterNavigation }) {
+  const path = (usePathname() ?? '').replace(/\/$/, '');
+  const { locale } = useI18n();
+  if (path === getPathname({ locale, href: '/company' }) || /^\/(?:fr\/|es\/)?company$/.test(path)) return null;
+  const content = <FooterContent navigation={navigation} />;
+  // Keep the complete footer in the first HTML, including when React streams this boundary.
+  if (path === '' || path === `/${locale}`) return <Suspense fallback={content}>{content}</Suspense>;
+  return content;
+}
+
+function FooterContent({ navigation }: { navigation: MarketingFooterNavigation }) {
   const { models: FOOTER_MODELS, comparisons: FOOTER_COMPARISONS, examples: FOOTER_EXAMPLES,
     bestFor: MARKETING_NAV_BEST_FOR_HUB, assistants } = navigation;
-  const pathname = usePathname();
-  const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const { locale, t } = useI18n();
-  if (isCompanyTrustHub) {
-    return null;
-  }
 
   const labelFor = (key: string, fallback: string) => t(key, fallback) ?? fallback;
   const openCookiePreferences = () => {
@@ -134,6 +141,7 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
       <div className="container-page flex flex-col gap-8 py-10">
         <div className="flex items-center justify-between gap-4 text-sm text-text-muted">
           <Link
+            currentLocale={locale}
             href="/"
             prefetch={false}
             className="inline-flex items-center gap-4 font-display text-lg font-semibold tracking-tight text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
@@ -160,7 +168,7 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
             <p className={sectionTitleClass}>{enginesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={enginesTitle}>
               {engineLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
+                <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -170,21 +178,21 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
             <p className={sectionTitleClass}>{comparisonsTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={comparisonsTitle}>
               {comparisonLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
+                <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
             </nav>
             <p className={`${sectionTitleClass} mt-6`}>{useCasesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={useCasesTitle}>
-              {useCaseLinks.map(item => <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>{item.label}</Link>)}
+              {useCaseLinks.map(item => <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>{item.label}</Link>)}
             </nav>
           </div>
           <div>
             <p className={sectionTitleClass}>{examplesTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={examplesTitle}>
               {exampleLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
+                <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -194,7 +202,7 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
             <p className={sectionTitleClass}>{productTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={productTitle}>
               {productLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
+                <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -204,7 +212,7 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
             <p className={sectionTitleClass}>{companyTitle}</p>
             <nav className="mt-3 flex flex-col gap-2" aria-label={companyTitle}>
               {companyLinks.map((item) => (
-                <Link key={item.key} href={item.href} prefetch={false} className={linkClass}>
+                <Link currentLocale={locale} key={item.key} href={item.href} prefetch={false} className={linkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -217,6 +225,7 @@ export function MarketingFooter({ navigation }: { navigation: MarketingFooterNav
           <nav className="mt-3 flex flex-wrap gap-4" aria-label={policiesTitle}>
             {localizedPolicyLinks.map((item) => (
               <Link
+                currentLocale={locale}
                 key={`policy-${item.href}`}
                 href={item.href}
                 prefetch={false}
