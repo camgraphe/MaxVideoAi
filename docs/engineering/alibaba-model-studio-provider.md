@@ -46,6 +46,14 @@ Regression coverage lives in `wan-private-media-transport.test.ts`, the Alibaba 
 
 All routing switches are server-only. Never create `NEXT_PUBLIC_` aliases for them.
 
+The public Singapore base URL is `https://dashscope-intl.aliyuncs.com`, as listed in
+[Alibaba's regional endpoint documentation](https://www.alibabacloud.com/help/en/model-studio/singapore-regional-access-information).
+Workspace-specific hosts under `.ap-southeast-1.maas.aliyuncs.com` remain supported.
+Do not insert the region into the public DashScope hostname: the former
+`dashscope-intl.ap-southeast-1.aliyuncs.com` default did not resolve in the
+2026-11-04 Character Studio preview canary and prevented submission. Explicit
+environment overrides using that hostname must also be updated before redeployment.
+
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `ALIBABA_MODEL_STUDIO_API_KEY` | unset | Singapore-scoped credential; secret |

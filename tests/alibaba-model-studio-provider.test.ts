@@ -380,7 +380,7 @@ test('Alibaba client uses the Singapore DashScope async contract without leaking
   };
   const client = new AlibabaModelStudioClient({
     apiKey: 'super-secret-key',
-    baseUrl: 'https://dashscope-intl.ap-southeast-1.aliyuncs.com',
+    baseUrl: 'https://dashscope-intl.aliyuncs.com',
     fetchFn: fakeFetch,
   });
 
@@ -397,13 +397,13 @@ test('Alibaba client uses the Singapore DashScope async contract without leaking
     },
   });
   assert.equal(result.providerJobId, 'task-123');
-  assert.equal(requests[0]?.url, 'https://dashscope-intl.ap-southeast-1.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis');
+  assert.equal(requests[0]?.url, 'https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis');
   assert.equal(new Headers(requests[0]?.init?.headers).get('Authorization'), 'Bearer super-secret-key');
   assert.equal(new Headers(requests[0]?.init?.headers).get('X-DashScope-Async'), 'enable');
   assert.equal(new Headers(requests[0]?.init?.headers).get('Content-Type'), 'application/json');
 
   await client.getTask('task-123');
-  assert.equal(requests[1]?.url, 'https://dashscope-intl.ap-southeast-1.aliyuncs.com/api/v1/tasks/task-123');
+  assert.equal(requests[1]?.url, 'https://dashscope-intl.aliyuncs.com/api/v1/tasks/task-123');
   assert.equal(new Headers(requests[1]?.init?.headers).get('Authorization'), 'Bearer super-secret-key');
   assert.equal(new Headers(requests[1]?.init?.headers).get('X-DashScope-Async'), null);
   assert.equal(new Headers(requests[1]?.init?.headers).get('Content-Type'), null);
@@ -413,7 +413,30 @@ test('Alibaba client uses the Singapore DashScope async contract without leaking
     /Singapore endpoint/
   );
   assert.throws(
-    () => normalizeAlibabaBaseUrl('http://dashscope-intl.ap-southeast-1.aliyuncs.com'),
+    () => normalizeAlibabaBaseUrl('http://dashscope-intl.aliyuncs.com'),
     /HTTPS/
   );
+});
+
+test('Alibaba endpoint defaults to the documented Singapore host and rejects the nonexistent regional alias', () => {
+  assert.equal(normalizeAlibabaBaseUrl(undefined), 'https://dashscope-intl.aliyuncs.com');
+  assert.equal(normalizeAlibabaBaseUrl(''), 'https://dashscope-intl.aliyuncs.com');
+  assert.equal(normalizeAlibabaBaseUrl('https://dashscope-intl.aliyuncs.com/'), 'https://dashscope-intl.aliyuncs.com');
+  const workspace = 'https://test-workspace.ap-southeast-1.maas.aliyuncs.com';
+  assert.equal(normalizeAlibabaBaseUrl(workspace), workspace);
+  for (const url of [
+    'https://dashscope-intl.ap-southeast-1.aliyuncs.com',
+    'https://dashscope.aliyuncs.com',
+    'https://test-workspace.cn-beijing.maas.aliyuncs.com',
+    'https://dashscope-intl.aliyuncs.com.untrusted.example',
+  ]) {
+    assert.throws(() => normalizeAlibabaBaseUrl(url), /Singapore endpoint/);
+  }
+  for (const url of [
+    'https://dashscope-intl.aliyuncs.com/api/v1',
+    'https://dashscope-intl.aliyuncs.com?key=example',
+    'https://user:password@dashscope-intl.aliyuncs.com',
+  ]) {
+    assert.throws(() => normalizeAlibabaBaseUrl(url), /without a path/);
+  }
 });

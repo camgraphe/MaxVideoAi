@@ -68,7 +68,7 @@ export const ENV = {
   ALIBABA_MODEL_STUDIO_API_KEY: getOptionalEnv('ALIBABA_MODEL_STUDIO_API_KEY'),
   ALIBABA_MODEL_STUDIO_BASE_URL: getOptionalEnv(
     'ALIBABA_MODEL_STUDIO_BASE_URL',
-    'https://dashscope-intl.ap-southeast-1.aliyuncs.com'
+    'https://dashscope-intl.aliyuncs.com'
   ),
   ALIBABA_MODEL_STUDIO_REGION: getOptionalEnv('ALIBABA_MODEL_STUDIO_REGION', 'ap-southeast-1'),
   ALIBABA_MODEL_STUDIO_ENABLED: getOptionalEnv('ALIBABA_MODEL_STUDIO_ENABLED', 'false'),

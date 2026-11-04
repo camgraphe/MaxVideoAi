@@ -5,6 +5,38 @@ qualifier la génération en environnement de test avant production, puis réuti
 les vidéos retenues pour Explorer et le marketing. La marge Recast doit dépasser
 celle de Wan 3 Prime utilisé directement. Son montant reste à choisir.
 
+## Premier essai approuvé : échec réseau, remboursement confirmé
+
+La démo UGC Marcel « Walk. Show. Go. » a été approuvée à 2,92 USD :
+8 secondes générées, source vidéo découpée de 1 à 9 secondes, vertical 720p,
+portrait original Nano Banana 2.1, montre bleue séparée, dialogue anglais natif.
+Une seule confirmation a été envoyée. Le job a échoué avant obtention d'un
+identifiant fournisseur ; `provider_attempts` enregistre
+`ALIBABA_MODEL_STUDIO_NETWORK_ERROR`. Le wallet de test contient une charge
+et un remboursement de 292 centimes. Aucune vidéo finale n'a été créée.
+
+La cause constatée est le hostname public régional configuré, qui ne résout pas
+(`ENOTFOUND` côté DNS local). Le point d'entrée Singapour documenté est
+`https://dashscope-intl.aliyuncs.com` ; il résout et répond HTTP 401 à une lecture
+sans authentification, sans lancer de rendu. Cela vérifie DNS/TLS/HTTP, pas la
+validité du secret ni l'acceptation d'un futur rendu.
+
+Le correctif de branche remplace le défaut dans `env.ts` et le client, accepte
+l'adresse officielle tout en conservant les hôtes workspace Singapour et les
+restrictions HTTPS/région. L'override Vercel a été corrigé uniquement dans
+`character-studio-test` ; aucune variable Production n'a changé. Un nouveau
+build est nécessaire. Validation locale du correctif : 52 tests ciblés passent
+(client, soumission, polling, transport privé, coût et architecture), TypeScript
+et contrôle d’exposition passent ; lint sans erreur, 7 avertissements préexistants.
+Le test d’architecture a été exécuté sur une copie des sources suivies après
+arrêt du premier parcours récursif qui parcourait aussi les artefacts locaux. L'approbation du premier essai est consommée : tout
+nouvel essai nécessite un devis frais et une nouvelle validation.
+
+Le dossier local `output/character-studio-v2/ugc-watch-demo/` contient les
+références, la fiche et le statut réel. Les fichiers privés sous
+`.local/character-preview/ugc-v2-*` conservent la requête, la réponse de
+confirmation et les preuves de remboursement, sans valeur de clé fournisseur.
+
 ## Ce qui est possible et ce qui est vérifié
 
 Une preview Vercel peut appeler les vrais fournisseurs. Les environnements
@@ -59,7 +91,7 @@ ce Custom Environment (`TRUSTED_SOURCES_ENVIRONMENT_MISMATCH`) ; les contrôles 
 ont utilisé `vercel curl` avec l'authentification Vercel existante, sur l'origine
 exacte. Aucune règle Trusted Sources n'a été élargie. La connexion applicative a
 été vérifiée sur le propriétaire existant sans envoi d'e-mail.
-Aucune confirmation de devis ni génération fournisseur n'a été effectuée.
+Lors de cette qualification initiale, aucune confirmation de devis ni génération fournisseur n'avait été effectuée. Le premier essai approuvé ultérieur est documenté ci-dessus.
 
 Contrôles HTTP authentifiés sur le premier déploiement : bibliothèque 12 personnages /
 7 looks avec URLs S3 de test ; Stripe `disabled` ; estimation v2v 8 s + source
