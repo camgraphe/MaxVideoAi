@@ -142,17 +142,14 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       const pending = render(h.PayAsYouGoHeroQuotePending, h.buildPayAsYouGoHeroData(content));
       const settled = render(h.PayAsYouGoHeroQuoteCard, data);
       try {
-        // DOM reservation contract. Actual text wrapping and H1 movement remain
-        // browser checks, including FR/ES at narrow mobile widths.
-        for (const [selector, reservation] of [
-          ['[data-payg-quote-rows]', /min-h-\[338px\] sm:min-h-\[258px\]/],
-          ['[data-payg-quote-context]', /min-h-12 sm:min-h-8/],
-        ] as const) {
-          const first = pending.window.document.querySelector(selector);
-          const final = settled.window.document.querySelector(selector);
-          assert.ok(first && final, `${selector} must persist even when current rows or context are absent`);
-          assert.equal(final.className, first.className);
-          assert.match(final.className, reservation);
+        const pendingContext = pending.window.document.querySelector('[data-payg-quote-context]');
+        const settledContext = settled.window.document.querySelector('[data-payg-quote-context]');
+        assert.ok(pendingContext && settledContext);
+        assert.equal(pendingContext.className, settledContext.className);
+        assert.ok(settledContext.classList.contains('min-h-6'));
+        for (const doc of [pending, settled]) {
+          const details = doc.window.document.querySelector('[data-payg-quote-rows]')?.closest('details');
+          assert.ok(details && !details.open, 'Supplementary rows are in the HTML, behind a closed disclosure');
         }
         for (const doc of [pending, settled]) {
           const label = doc.window.document.querySelector('[data-payg-quote-amount] [aria-hidden="true"]');

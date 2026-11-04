@@ -86,6 +86,9 @@ for (const scenario of [
       await f.visible(0.1);
       assert.equal(f.container.querySelector('video'), null, 'Mostly clipped cards do not play');
       await f.visible(1);
+      assert.equal(f.container.querySelector('video'), null, 'Visibility alone must not start gallery downloads');
+      const frame = f.container.querySelector('[data-payg-preview]')!;
+      await act(async () => frame.dispatchEvent(new f.dom.window.Event('pointerenter')));
       const video = f.container.querySelector('video');
       assert.equal(Boolean(video), scenario.allowed);
       if (video) {
