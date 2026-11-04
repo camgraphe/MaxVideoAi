@@ -38,4 +38,13 @@ test('image perception pairs owned pixels with canonical labels without persisti
   assert.equal(reads,1);assert.equal(result.content[0].text,'Start image (start)');assert.equal(result.content[1].type,'input_image');
   assert.ok(!JSON.stringify(result.context).includes('private.invalid'));assert.ok(!JSON.stringify(result.context).includes('base64'));
   assert.equal(result.context.references[0].perception.image,'provided');
+  // A reference can disappear between the context read and the read for pixels.
+  await assert.rejects(
+    module.preparePromptPerception('owner',request,'gpt-6-luna',context,{
+      enabled:true,
+      resolve:async()=>{throw new Error('MEDIA_NOT_AVAILABLE');},
+      image:async()=>{throw new Error('A denied reference must never reach pixel access');},
+    }),
+    {message:'MEDIA_NOT_AVAILABLE',location:{fieldId:'image_url',slot:0}},
+  );
 });
