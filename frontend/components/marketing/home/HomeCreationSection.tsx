@@ -39,11 +39,11 @@ export function HomeCreationSection({ locale }: { locale: AppLocale }) {
             <p className="editorial-eyebrow">{copy.eyebrow}</p>
             <h2 className="editorial-heading">{copy.title}</h2>
             <p className="editorial-body">{copy.body}</p>
-            <Link href="/app" prefetch={false} className="editorial-action" data-analytics-event="cta_click" data-analytics-cta-name="home_create_video" data-analytics-cta-location="home_creation">{copy.cta}<span aria-hidden>↗</span></Link>
+            <Link currentLocale={locale} href="/app" prefetch={false} className="editorial-action" data-analytics-event="cta_click" data-analytics-cta-name="home_create_video" data-analytics-cta-location="home_creation">{copy.cta}<span aria-hidden>↗</span></Link>
             <div className="editorial-links">
-              <Link href="/app/image" prefetch={false}>{copy.image}</Link>
-              <Link href={{ pathname: '/tools/character-builder' }} prefetch={false}>{copy.character}</Link>
-              <Link href={{ pathname: '/tools/angle' }} prefetch={false}>{copy.angle}</Link>
+              <Link currentLocale={locale} href="/app/image" prefetch={false}>{copy.image}</Link>
+              <Link currentLocale={locale} href={{ pathname: '/tools/character-builder' }} prefetch={false}>{copy.character}</Link>
+              <Link currentLocale={locale} href={{ pathname: '/tools/angle' }} prefetch={false}>{copy.angle}</Link>
             </div>
           </div>
           <figure>
@@ -55,7 +55,7 @@ export function HomeCreationSection({ locale }: { locale: AppLocale }) {
           </figure>
         </div>
         <div className="creation-modes">
-          {copy.modes.map(([title, body], index) => <Link key={title} href={['/app', '/app/image', '/app/audio'][index]} prefetch={false}><strong>{title} <span aria-hidden>↗</span></strong><span>{body}</span></Link>)}
+          {copy.modes.map(([title, body], index) => <Link currentLocale={locale} key={title} href={['/app', '/app/image', '/app/audio'][index]} prefetch={false}><strong>{title} <span aria-hidden>↗</span></strong><span>{body}</span></Link>)}
         </div>
       </div>
     </section>

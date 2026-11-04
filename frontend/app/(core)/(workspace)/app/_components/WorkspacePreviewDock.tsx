@@ -1,23 +1,14 @@
 'use client';
 
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
-import dynamic from 'next/dynamic';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { EngineSettingsBar } from '@/components/EngineSettingsBar';
-import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
+import { CompositePreviewDock, type CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { VideoGroup } from '@/types/video-groups';
 import { getEngineModeLabel } from '../_lib/workspace-engine-helpers';
 import styles from './workspace-model-review.module.css';
-import { CompositePreviewDockSkeleton } from './WorkspaceBootSkeletons';
-
-const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
-  () => import('@/components/groups/CompositePreviewDock').then((mod) => mod.CompositePreviewDock),
-  {
-    loading: () => <CompositePreviewDockSkeleton />,
-  }
-);
 
 export type WorkspaceViewerTarget =
   | { kind: 'pending'; id: string }

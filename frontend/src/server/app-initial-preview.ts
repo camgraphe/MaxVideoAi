@@ -3,6 +3,8 @@ import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { shouldUseStarterFallback } from '@/lib/jobs-feed-policy';
 import { listStarterPlaylistVideos } from '@/server/videos';
+import { applicationJobSql } from '@/server/app-job-origin';
+import { buildRecentGenerationSurfaceFilterClause, type RecentGenerationQueryParam } from './generations/recent-generation-surface-filter';
 import type { ResultProvider, VideoGroup, VideoItem } from '@/types/video-groups';
 
 type InitialPreview = {
@@ -78,24 +80,21 @@ function mapInitialPreviewToGroup(preview: InitialPreview, provider: ResultProvi
 }
 
 async function resolveUserInitialPreview(userId: string): Promise<InitialPreview | null> {
+  const params: RecentGenerationQueryParam[] = [userId];
+  const videoSurface = buildRecentGenerationSurfaceFilterClause('video', params);
   const rows = await query<InitialPreviewRow>(
     `SELECT job_id, engine_id, engine_label, duration_sec, thumb_url, video_url, preview_video_url, aspect_ratio, created_at
        FROM app_jobs
       WHERE user_id = $1
         AND hidden IS NOT TRUE
         AND NOT (LOWER(status) IN ('failed','error','errored','cancelled','canceled') AND updated_at < NOW() - INTERVAL '150 seconds')
-        AND NOT (
-          surface IN ('image', 'character', 'angle', 'audio', 'upscale', 'tool')
-          OR settings_snapshot->>'surface' IN ('image', 'character-builder', 'angle', 'audio', 'upscale', 'tool')
-          OR job_id LIKE 'tool_angle_%'
-          OR job_id LIKE 'tool_upscale_%'
-          OR render_ids IS NOT NULL
-          OR (video_url IS NULL AND hero_render_id IS NOT NULL)
-        )
+        AND ${applicationJobSql()}
+        AND ${videoSurface}
+        AND (video_url IS NOT NULL OR hero_render_id IS NULL)
         AND (video_url IS NOT NULL OR thumb_url IS NOT NULL)
       ORDER BY created_at DESC, id DESC
       LIMIT 1`,
-    [userId]
+    params
   );
   const row = rows[0];
   if (!row) return null;

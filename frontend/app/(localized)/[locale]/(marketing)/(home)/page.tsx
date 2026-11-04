@@ -65,6 +65,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
   const programmedHeroItems = buildProgrammedHeroItems(locale, content, programmedHeroSlots);
   const primaryBestForCards = buildBestForGuideCards(content, BEST_FOR_MAIN_SLUGS);
   const comparisonScores = buildHomeComparisonData(engineScores);
+  const comparison = <HomeModelChoice locale={locale} scores={comparisonScores} startupFameLabel={startupFameLabel} comparisons={buildHomeComparisonLinks()} />;
   const providers = filterProviderItems(content);
   const fallbackExamples = assembleHomepageExampleCards({ locale, content, globalCandidates: [], familyVideos: new Map() });
   const mcpLink = getMcpInternalLink(locale, 'home');
@@ -89,7 +90,7 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         } />
       </DeferredMarketingContent>
       <DeferredMarketingContent>
-        <HomeModelChoice locale={locale} scores={comparisonScores} startupFameLabel={startupFameLabel} comparisons={buildHomeComparisonLinks()}/>
+        <Suspense fallback={comparison}>{comparison}</Suspense>
       </DeferredMarketingContent>
       <DeferredMarketingContent>
         <HomeToolsGallery locale={locale} />

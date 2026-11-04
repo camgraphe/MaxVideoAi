@@ -15,7 +15,7 @@ type Read = (family: string, options: Omit<ListExamplesPageOptions, 'engineGroup
 const requireFrontend = createRequire(resolve('frontend/package.json'));
 const folder = mkdtempSync(join(tmpdir(), 'family-metadata-test-'));
 let route: { generateMetadata: (props: unknown) => Promise<any>; setReader: (read: Read) => void;
-  selectFamilyMetadataVideo: (family: string, read?: Read) => Promise<GalleryVideo | null> };
+  selectFamilyMetadataVideo: (family: string, firstPage?: (family: string) => ReturnType<Read>) => Promise<GalleryVideo | null> };
 
 before(async () => {
   const output = join(folder, 'metadata.cjs');
@@ -25,6 +25,9 @@ before(async () => {
       export { setReader } from '@/server/videos';`, resolveDir: process.cwd() },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'metadata-boundaries', setup(builder) {
+      // Plain Node uses React 18; request-scoped memoization itself is exercised by the Next server probe.
+      builder.onResolve({ filter: /^react$/ }, () => ({ path: 'react', namespace: 'fixture' }));
+      builder.onLoad({ filter: /^react$/, namespace: 'fixture' }, () => ({ contents: 'export const cache = fn => fn;', loader: 'js' }));
       builder.onResolve({ filter: /^@\/server\/videos$/ }, () => ({ path: 'reader', namespace: 'fixture' }));
       builder.onLoad({ filter: /^reader$/, namespace: 'fixture' }, () => ({
         contents: 'let read; export const setReader = value => { read = value; }; export const listExampleFamilyPage = (...args) => read(...args);', loader: 'js',
@@ -61,30 +64,32 @@ const ogImage = (result: any) => result.openGraph.images[0].url;
 test('the metadata selector accepts an isolated reader and preserves the complete selected video', async () => {
   const selected = { ...video('injected'), settingsSnapshot: { fps: 24 }, prompt: 'Complete original prompt' };
   const calls: unknown[] = [];
-  const result = await route.selectFamilyMetadataVideo('seedance', async (family, options) => {
-    calls.push({ family, ...options });
+  const result = await route.selectFamilyMetadataVideo('seedance', async (family) => {
+    calls.push(family);
     return { items: [selected], total: 1, limit: 1, offset: 0, hasMore: false };
   });
   assert.deepEqual(result, selected);
-  assert.deepEqual(calls, [{ family: 'seedance', sort: 'playlist', limit: 1, offset: 0 }]);
+  assert.deepEqual(calls, ['seedance']);
 });
 
-test('family metadata hydrates one playlist item when its original video is playable', async () => {
+test('default family metadata takes its preview from the gallery page; other views only read one item', async () => {
   const calls = fixture(Array.from({ length: 65 }, (_, index) => video(String(index + 1))));
   assert.equal(ogImage(await metadata()), 'https://media.maxvideoai.com/1.webp');
-  assert.deepEqual(calls, [{ family: 'kling', sort: 'playlist', limit: 1, offset: 0 }]);
+  assert.equal(ogImage(await metadata('en', { page: '2' })), 'https://media.maxvideoai.com/1.webp');
+  assert.equal(ogImage(await metadata('en', { sort: 'date-desc' })), 'https://media.maxvideoai.com/1.webp');
+  assert.deepEqual(calls.map(call => call.limit), [24, 1, 1]);
 });
 
 test('empty metadata reads keep the brand image without retrying the catalog', async () => {
   const calls = fixture([]);
   assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
-  assert.deepEqual(calls.map(call => call.limit), [1]);
+  assert.deepEqual(calls.map(call => call.limit), [24]);
 });
 
 test('a playable first video without a thumbnail keeps the brand image ahead of later posters', async () => {
   const calls = fixture([video('first', undefined, ''), video('later')]);
   assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
-  assert.deepEqual(calls.map(call => call.limit), [1]);
+  assert.deepEqual(calls.map(call => call.limit), [24]);
 });
 
 test('normalized empty sources retry the original selection window, including its sixtieth item', async () => {
@@ -94,7 +99,7 @@ test('normalized empty sources retry the original selection window, including it
     const items = Array.from({ length: 61 }, (_, index) => ({ ...video(String(index + 1)), videoUrl: index < 59 ? normalized : video(String(index + 1)).videoUrl }));
     const calls = fixture(items);
     assert.equal(ogImage(await metadata()), 'https://media.maxvideoai.com/60.webp');
-    assert.deepEqual(calls.map(call => call.limit), [1, 60]);
+    assert.deepEqual(calls.map(call => call.limit), [24, 60]);
     assert.equal(pickFirstPlayableVideo(items.slice(0, 60))?.id, '60');
   }
 });
@@ -103,11 +108,11 @@ test('metadata does not search beyond the existing sixty-item window', async () 
   const items = Array.from({ length: 61 }, (_, index) => ({ ...video(String(index + 1)), videoUrl: index < 60 ? undefined : 'https://media.maxvideoai.com/61.mp4' }));
   const calls = fixture(items);
   assert.match(ogImage(await metadata()), /\/og\/brand-2026-09-25\.png$/);
-  assert.deepEqual(calls.map(call => call.limit), [1, 60]);
+  assert.deepEqual(calls.map(call => call.limit), [24, 60]);
 });
 
 test('first-read and compatibility-read failures propagate the original error', async () => {
-  for (const failureLimit of [1, 60]) {
+  for (const failureLimit of [24, 60]) {
     const failure = new Error(`failed limit ${failureLimit}`);
     route.setReader(async (_family, { limit = 150, offset = 0 }) => {
       if (limit === failureLimit) throw failure;
@@ -125,7 +130,7 @@ test('local snapshot selection retains the captured playlist preview, including 
   const limits: number[] = [];
   route.setReader(async (family, { sort, limit = 150, offset = 0 }) => { limits.push(limit); return selectLocalPublicExamples(snapshot, family, sort, limit, offset); });
   assert.match(ogImage(await metadata()), /\/local\.webp$/);
-  assert.deepEqual(limits, [1, 60]);
+  assert.deepEqual(limits, [24]);
 });
 
 test('EN/FR/ES alternate sorts and pages preserve playlist OG identity, canonical and hreflang', async () => {
@@ -141,7 +146,7 @@ test('EN/FR/ES alternate sorts and pages preserve playlist OG identity, canonica
     assert.equal(filtered.description, baseline.description);
     assert.equal(baseline.robots.index, true);
     assert.equal(filtered.robots.index, false);
-    assert.deepEqual(calls, Array.from({ length: 2 }, () => ({ family: 'kling', sort: 'playlist', limit: 1, offset: 0 })));
+    assert.deepEqual(calls, [24, 1].map(limit => ({ family: 'kling', sort: 'playlist', limit, offset: 0 })));
   }
 });
 

@@ -7,6 +7,7 @@ For links, examples and Gallery Rail settings restoration, read
 
 ## Responsibilities
 
+- `WorkspaceEntry.tsx`: starts the auth-scoped bootstrap and renders the first workspace surface. Keep the initial server poster and geometry stable while the editor and private history load.
 - `AppClient.tsx`: top-level orchestration only; it wires route-local hooks into route-local surfaces.
 - `_components`: route-local chrome, boot surfaces, gallery/preview surfaces, runtime modals, panels, skeletons, wallet/auth modals, and presentational UI.
 - `_hooks`: route-local stateful workflow hooks for bounded client concerns such as draft storage/hydration, asset library, upload orchestration, composer mode/settings orchestration, gallery action orchestration, pricing/auth gate orchestration, generation runner orchestration, render state and polling, and video settings application.

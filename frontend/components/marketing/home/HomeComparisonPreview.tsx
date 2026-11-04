@@ -22,7 +22,7 @@ export function HomeComparisonPreview({ locale, data, methodology }: { locale: A
     <p className="comparison-example-label">{{en:'Example comparison',fr:'Exemple de comparatif',es:'Ejemplo de comparación'}[locale]} <span aria-hidden>·</span> {data.left.name} vs {right.name}</p>
     <HomeComparisonScores metrics={metrics} label={`${Math.min(data.left.criteriaCount, right.criteriaCount)} ${copy.excerpt}`} right={right} overallLabel={copy.overall} leftOverall={data.left.overall} leftName={data.left.name} leftLogo={data.left.logo} criterionLabel={copy.criterion}/>
 
-    <Link className="comparison-active-link" href={{pathname:'/ai-video-engines/[slug]',params:{slug:route.slug},query:route.order ? {order:route.order} : undefined}} prefetch={false} data-analytics-event="comparison_card_click" data-analytics-cta-name={route.slug} data-analytics-cta-location="comparison_intro">{{en:'Open this comparison',fr:'Voir ce comparatif',es:'Ver esta comparación'}[locale]} <span aria-hidden>↗</span></Link>
+    <Link currentLocale={locale} className="comparison-active-link" href={{pathname:'/ai-video-engines/[slug]',params:{slug:route.slug},query:route.order ? {order:route.order} : undefined}} prefetch={false} data-analytics-event="comparison_card_click" data-analytics-cta-name={route.slug} data-analytics-cta-location="comparison_intro">{{en:'Open this comparison',fr:'Voir ce comparatif',es:'Ver esta comparación'}[locale]} <span aria-hidden>↗</span></Link>
     <div className="comparison-footnotes"><details className="comparison-global-note"><summary>{ {en:'How is the score calculated?',fr:'Comment la note est-elle calculée ?',es:'¿Cómo se calcula la nota?'}[locale] }</summary><p>{copy.summary}</p></details>{methodology}</div>
   </div>;
 }

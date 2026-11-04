@@ -62,7 +62,7 @@ test('marketing nav delegates desktop, mobile, and account menu rendering', () =
   assert.match(marketingNavSource, /<MarketingMobileMenu/, 'MarketingNav should compose a focused mobile menu');
   assert.doesNotMatch(marketingNavSource, /MARKETING_NAV_DROPDOWNS|NAV_ITEMS\.map|mobileDropdownOpen\[item\.key\]|workspace\.header\.signedIn/, 'MarketingNav should not own dropdown, account, or mobile rendering internals');
   assert.match(accountMenuSource, /NAV_ITEMS\.map|workspace\.header\.signedIn/, 'MarketingAccountMenu should own workspace account menu copy');
-  assert.match(desktopNavSource, /MARKETING_NAV_DROPDOWNS|export function MarketingDesktopNav/, 'MarketingDesktopNav should own desktop dropdown rendering');
+  assert.match(desktopNavSource, /const dropdown = dropdowns\[item\.key\]/, 'MarketingDesktopNav should render the published dropdowns passed by its parent');
   assert.match(mobileMenuSource, /MARKETING_NAV_DROPDOWNS|mobileDropdownOpen\[item\.key\]|export function MarketingMobileMenu/, 'MarketingMobileMenu should own mobile dropdown rendering');
 });
 

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
+const entryPath = 'frontend/app/(core)/(workspace)/app/WorkspaceEntry.tsx';
 const appBootstrapHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAppBootstrap.ts';
 const appLoadStatePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppLoadState.tsx';
 const appReadyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
@@ -17,8 +18,16 @@ test('workspace app client delegates bootstrap data and copy orchestration', () 
   const bootstrapSource = readFileSync(appBootstrapHookPath, 'utf8');
   const appLines = appSource.split('\n').length;
 
-  assert.match(appSource, /import \{ useWorkspaceAppBootstrap \} from '\.\/_hooks\/useWorkspaceAppBootstrap';/);
-  assert.match(appSource, /useWorkspaceAppBootstrap\(\)/);
+  assert.ok(existsSync(entryPath), 'the workspace needs a separately hydratable entry for its account-scoped catalog');
+  const entry = readFileSync(entryPath, 'utf8');
+  const page = readFileSync('frontend/app/(core)/(workspace)/app/page.tsx', 'utf8');
+  assert.match(page, /import WorkspaceEntry from '\.\/WorkspaceEntry'/);
+  assert.match(entry, /const app = useWorkspaceAppBootstrap\(\)/);
+  assert.match(entry, /lazy\(\(\) => import\('\.\/AppClient'\)\)/);
+  assert.match(entry, /<WorkspaceBootSurface initialPreviewGroup=\{props\.initialPreviewGroup\}/);
+  assert.match(entry, /<AppClient[^>]*app=\{app\}/);
+  assert.doesNotMatch(entry, /import AppClient from/);
+  assert.doesNotMatch(appSource, /useWorkspaceAppBootstrap\(\)/);
   assert.doesNotMatch(appSource, /useEngines/);
   assert.doesNotMatch(appSource, /useInfiniteJobs/);
   assert.doesNotMatch(appSource, /useRequireAuth/);

@@ -19,17 +19,17 @@ export function HomeCreativeWorlds({ locale, cards, examples = [], providers = [
 }) {
   const c = COPY[locale];
   return <section id="creations" className="creative-worlds home-use-case-gallery section"><div className="container-page">
-    <header className="chapter-heading"><div><p className="editorial-eyebrow">{c.eyebrow}</p><h2>{c.title}</h2></div><div><p>{c.body}</p><Link href="/examples" className="text-link">{c.all}<span aria-hidden>↗</span></Link></div></header>
+    <header className="chapter-heading"><div><p className="editorial-eyebrow">{c.eyebrow}</p><h2>{c.title}</h2></div><div><p>{c.body}</p><Link currentLocale={locale} href="/examples" className="text-link">{c.all}<span aria-hidden>↗</span></Link></div></header>
     <div id="choose" className="creative-worlds-grid">{HOME_USE_CASE_FILMS.map((film, i) => {
       const card = cards.find(item => item.slug === film.slug);
       return <figure key={film.slug}>
         <CreativeFilm {...film} title={c.titles[i]} playLabel={c.play} loadingLabel={c.loading} errorLabel={c.error}/>
-        <figcaption><span><small>{c.labels[i]}</small><strong>{c.titles[i]}</strong></span><Link href={{ pathname: '/models/[slug]', params: { slug: film.modelSlug } }}>{film.model}<span aria-hidden> ↗</span></Link></figcaption>
+        <figcaption><span><small>{c.labels[i]}</small><strong>{c.titles[i]}</strong></span><Link currentLocale={locale} href={{ pathname: '/models/[slug]', params: { slug: film.modelSlug } }}>{film.model}<span aria-hidden> ↗</span></Link></figcaption>
         <p className="use-case-description">{c.descriptions[i]}</p>
-        {card ? <Link href={card.href} className="use-case-link" data-analytics-event="shot_type_card_click" data-analytics-cta-name={card.slug} data-analytics-cta-location="shot_type_card" data-analytics-target-family="best-for">{c.cta}<span className="sr-only"> — {c.labels[i]}</span><span aria-hidden> ↗</span></Link> : null}
+        {card ? <Link currentLocale={locale} href={card.href} className="use-case-link" data-analytics-event="shot_type_card_click" data-analytics-cta-name={card.slug} data-analytics-cta-location="shot_type_card" data-analytics-target-family="best-for">{c.cta}<span className="sr-only"> — {c.labels[i]}</span><span aria-hidden> ↗</span></Link> : null}
       </figure>;
     })}</div>
-    <div className="use-case-all"><Link href="/ai-video-engines/best-for">{c.guides} <span aria-hidden>↗</span></Link></div>
+    <div className="use-case-all"><Link currentLocale={locale} href="/ai-video-engines/best-for">{c.guides} <span aria-hidden>↗</span></Link></div>
     {modelDiscovery ?? <HomeModelDiscovery locale={locale} examples={examples} providers={providers} copy={examplesCopy}/>}
   </div></section>;
 }

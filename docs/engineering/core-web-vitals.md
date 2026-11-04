@@ -100,6 +100,13 @@ These commands start with a fresh profile, therefore they cover the no-stored-co
 
 Capture LCP element/resource, TTFB, resource discovery delay, transfer duration, render delay, INP interaction/long task, CLS sources, cache state, device, country, deployment and sample count. Keep scripts after consent and late work inside the observation period. Compare the same scenario before/after with at least three lab runs; report the spread. Do not merge lab and field values.
 
+### Mobile homepage, gallery and workspace checks
+
+- Exercise the same first tap before JavaScript, **during initial hydration**, and after the page settles. For the middle case, dispatch a trusted touch from outside the renderer as the first document pointer listener is installed. Record input delay, processing and time to the next paint. Measure CTA-to-editor readiness separately.
+- On the homepage, links in sections that already know the locale pass it to the shared link so it can render the localized destination without a separate locale lookup during hydration. The comparison section and footer keep their full content available inside their hydration boundaries. When changing either one, hold the example and pricing responses, and check the links with JavaScript disabled both before and after those responses settle. Measure opening the menu and using its first submenu separately. At desktop width, check that the six section destinations are visible and keyboard-accessible in the actual document while the enhanced menu is suspended.
+- For an examples family, compare the first default page with a later page and a different sort. Count catalog SQL executions on a populated fixture and check the first poster, watch links, pagination, canonical, alternates and structured data. The metadata and body may share a public result within one render, never across visitors or requests.
+- On `/app`, use the same playable Starter for both anonymous runs. Record the first poster, engine request, editable prompt and layout shifts on direct and client navigation. For the signed-in journey, click the marketing header’s Generate link after hydration with a populated private history and saved draft. Record the header, preview rectangle, composer and rail across frames on phone and desktop, including layout shifts flagged as recent input; verify that the draft and model survive. An empty Starter or a different transfer encoding is a different experiment.
+
 ### Correlating a metric with its journey
 
 For a local diagnostic trace, record the following separately; existing aggregate exports do not supply all these fields:
@@ -227,22 +234,21 @@ existing full-height reader is preserved. Real-browser geometry coverage belongs
 in `tests/example-reader-layout-browser.test.ts`; performance evidence must include
 the asynchronous opening journey, not only the initial gallery load.
 
-Active model details use the route-local `loadModelPageInputs` to start four
-independent inputs together: `scores`, `engine-settings`, `key-specs` and
-`model-gallery`. The route retains gallery selection, exact-model filtering,
-public revalidation, managed-empty behavior and legacy alias ordering in its
-callback. The optional pricing callback starts `model-pricing` as soon as the same
-request's `engine-settings` resolves, using the existing canonical price owners
-while the other inputs continue. The route awaits every input and price projection
-before composing its hero, gallery and specs. Archive and prelaunch branches
-never invoke this loader. Its `model` data timing now includes `model-pricing`;
-older aggregate records without that phase are not directly comparable. Layout
-and rendering remain excluded. The public result retains the first original
-rejection promptly, while model-only diagnostic completion waits for every
-started sibling to settle, including later errors. Starting independent readers
-together can increase work on a failed request because siblings are not cancelled.
-These timings do not isolate database connection wait or establish browser LCP
-gains. No new cross-request cache is introduced.
+Active model details call `prepareModelPageInputs` to start scores, engine settings,
+key specs and gallery selection concurrently. Scores, key specs and the selected
+public gallery control when the server can send the first poster. The calculation
+of current prices starts when the engine settings arrive and streams separately.
+Archive and prelaunch pages skip these reads. The complete-input compatibility API
+exposes the first failing read promptly. Its diagnostic record waits for all
+started reads to settle and excludes layout and rendering.
+
+For a model page rendered on a CDN miss, compare the final HTTP headers, the first
+priority poster in the HTML, its network request and its paint on the same visit.
+The `model` timing also includes prices, so the time when all recorded phases finish
+can be later than poster discovery. Pair this trace with a populated playlist and
+a separate empty or legacy case. The direct playlist reader selects and hydrates
+the bounded page in one query. The later public-video check still runs before a
+poster is chosen. Compare the same selected poster and prices in each locale.
 
 The root layout separately emits `root-layout` / `theme-tokens` for the existing
 `getThemeTokensSettingCached()` await, **after** `resolveLocale()`. This bounded
@@ -333,6 +339,17 @@ first/last-child and nested-list overlaps, typography and native media. Real
 route/load evidence remains separate from those fixtures.
 
 `MarketingDesktopNav` keeps its complete server-rendered link tree, but skips unchanged renders when its parent updates mobile or account state. Keep its open/close callbacks stable; desktop selection, pathname and translation changes must still invalidate it. `tests/marketing-navigation-rendering.test.ts` exercises these boundaries through the real navigation components and translation provider. It does not replace real-browser interaction timing, localized navigation or field INP validation.
+
+Marketing layouts resolve the published header and footer destinations from
+`config/public-marketing-navigation.ts` on the server. Pass those lists to the
+interactive components; importing the publication builders into the header or
+footer makes every arriving browser initialize the model registry. The desktop
+menu has its own hydration boundary so an early native mobile opening can gain
+modal focus without waiting for the hidden desktop links. Keep the home hero
+and chapters visible in the original document: a broad, empty Suspense fallback
+can hide already useful sections from visitors without JavaScript. Check the
+first touch during React startup as well as before it and after it settles;
+event processing and the separate wait for a destination are different measurements.
 
 `MarketingMotion` reads initial section geometry from IntersectionObserver entries, not a synchronous layout loop over deferred content. Initial viewport content and sections above an anchor arrival stay still; eligible sections animate only after crossing the 8% threshold. Keep reduced-motion and route cleanup effective. Browser layout and total CWV still need measurement; avoiding explicit geometry reads alone does not quantify an LCP gain.
 

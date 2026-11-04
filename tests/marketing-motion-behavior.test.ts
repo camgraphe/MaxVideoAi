@@ -47,7 +47,7 @@ test('marketing motion uses observer geometry, protects initial content and canc
       entryPoints: ['frontend/components/marketing/MarketingMotion.client.tsx'], outfile: output,
       bundle: true, platform: 'node', format: 'cjs', jsx: 'automatic', tsconfig: 'frontend/tsconfig.json',
       plugins: [{ name: 'route-context', setup(builder) {
-        builder.onResolve({ filter: /^@\/i18n\/navigation$/ }, () => ({ path: 'route', namespace: 'fixture' }));
+        builder.onResolve({ filter: /^next\/navigation$/ }, () => ({ path: 'route', namespace: 'fixture' }));
         builder.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: 'export const usePathname=()=>window.__motionPath;', loader: 'js' }));
         builder.onResolve({ filter: /^react(?:\/.*)?$/ }, args => ({ path: require.resolve(args.path), external: true }));
       } }],

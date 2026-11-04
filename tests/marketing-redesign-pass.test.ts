@@ -94,7 +94,8 @@ test('workspace follows the hero and the conversation section owns optional assi
   const route = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
   const creation = readFileSync('frontend/components/marketing/home/HomeCreationSection.tsx', 'utf8');
   const conversation = readFileSync('frontend/components/marketing/home/HomeConversationSection.tsx', 'utf8');
-  const sections = ['<HomeHero', '<HomeCreationSection', '<HomeCreativeWorlds', '<HomeModelChoice', '<HomeToolsGallery', '<HomeConversationSection', '<HomePricingSection'];
+  assert.match(route, /const comparison = <HomeModelChoice\b/);
+  const sections = ['<HomeHero', '<HomeCreationSection', '<HomeCreativeWorlds', '>{comparison}</Suspense>', '<HomeToolsGallery', '<HomeConversationSection', '<HomePricingSection'];
   for (const [index, section] of sections.entries()) {
     assert.ok(route.includes(section), `${section} remains in the route`);
     if (index) assert.ok(route.indexOf(sections[index - 1]) < route.indexOf(section), `${section} preserves the approved section order`);

@@ -24,17 +24,17 @@ export function HomeModelDiscovery({ locale, examples, providers, copy }: {
       <header><h3>{text.title}</h3></header>
       <div className="creative-discovery-models">
         {examples.map(example => <div key={example.id}>
-          <Link href={example.examplesCtaVisible !== false ? example.href : example.modelHref ?? example.href} className="discovery-cover" aria-label={familyLabel(example.engine)}>
+          <Link currentLocale={locale} href={example.examplesCtaVisible !== false ? example.href : example.modelHref ?? example.href} className="discovery-cover" aria-label={familyLabel(example.engine)}>
             <Image src={example.imageSrc} alt={example.imageAlt} fill sizes="64px" loading="lazy" />
           </Link>
           <strong>{familyLabel(example.engine)}</strong>
           <div>
-            {example.examplesCtaVisible !== false ? <Link href={example.href}
+            {example.examplesCtaVisible !== false ? <Link currentLocale={locale} href={example.href}
               data-analytics-event="example_category_click" data-analytics-cta-name={example.id}
               data-analytics-cta-location="examples_preview_cta" data-analytics-target-family="examples">
               {labels[0]}<span className="sr-only"> — {familyLabel(example.engine)}</span> <span aria-hidden>↗</span>
             </Link> : null}
-            <Link href={example.engine.includes('Seedance') ? { pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } } : example.modelHref ?? example.href}
+            <Link currentLocale={locale} href={example.engine.includes('Seedance') ? { pathname: '/models/[slug]', params: { slug: 'seedance-2-5' } } : example.modelHref ?? example.href}
               data-analytics-event="model_card_click" data-analytics-cta-name={example.id}
               data-analytics-cta-location="examples_preview_model" data-analytics-target-family="models">
               {labels[1]}<span className="sr-only"> — {familyLabel(example.engine)}</span> <span aria-hidden>↗</span>
@@ -43,12 +43,12 @@ export function HomeModelDiscovery({ locale, examples, providers, copy }: {
         </div>)}
       </div>
       <div className="creative-discovery-more">
-        <Link href="/models">{copy.modelsCta}</Link>
-        <Link href={{pathname:'/models/[slug]',params:{slug:'seedance-2-5'}}}>{copy.featuredModelCta}</Link>
-        <Link href={{pathname:'/examples/[model]',params:{model:'grok'}}}>Grok · {labels[0]}</Link>
-        <Link href={{pathname:'/examples/[model]',params:{model:'flux'}}}>Flux · {labels[0]}</Link>
-        <Link href={{pathname:'/models/[slug]',params:{slug:'flux-3-max'}}}>FLUX 3 Max · {labels[1]}</Link>
-        {extraProviders.map(provider => <Link key={provider.model} href={provider.href!}>{provider.model}</Link>)}
+        <Link currentLocale={locale} href="/models">{copy.modelsCta}</Link>
+        <Link currentLocale={locale} href={{pathname:'/models/[slug]',params:{slug:'seedance-2-5'}}}>{copy.featuredModelCta}</Link>
+        <Link currentLocale={locale} href={{pathname:'/examples/[model]',params:{model:'grok'}}}>Grok · {labels[0]}</Link>
+        <Link currentLocale={locale} href={{pathname:'/examples/[model]',params:{model:'flux'}}}>Flux · {labels[0]}</Link>
+        <Link currentLocale={locale} href={{pathname:'/models/[slug]',params:{slug:'flux-3-max'}}}>FLUX 3 Max · {labels[1]}</Link>
+        {extraProviders.map(provider => <Link currentLocale={locale} key={provider.model} href={provider.href!}>{provider.model}</Link>)}
       </div>
     </div>
   </>;

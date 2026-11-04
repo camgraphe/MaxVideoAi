@@ -33,6 +33,7 @@ This route renders localized SEO pages for individual AI video models.
 - Load Examples from the exact requested locale. The parser, pure view-model builder, and renderers must not own model-specific editorial branches or an English fallback.
 - Keep `examples.showWhenEmpty` explicit and structurally aligned across locales; final real/fallback items override an empty-state `false` value.
 - Treat runtime gallery media, capability-derived presentation, link destinations, and poster selection as runtime policy, not localized editorial content.
+- Read playlist videos and curation ownership together through `listModelExamplePlaylist`. An empty managed playlist ends the alias search and suppresses static gallery additions. The database reader orders eligibility and membership before hydrating the selected page in one statement. Keep the subsequent public-video eligibility check so a newly private video cannot become the hero.
 
 ## Checks
 

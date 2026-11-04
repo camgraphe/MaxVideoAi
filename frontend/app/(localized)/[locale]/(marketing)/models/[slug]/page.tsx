@@ -1,5 +1,4 @@
 import { modelExamplePlaylistKeys, projectModelPageGallery } from '@/server/model-gallery-projection';
-import { hasPlaylistCuration } from '@/server/playlists/curation-service';
 import '@/styles/marketing-models.css';
 import { ModelArchivePage } from './_components/ModelArchivePage';
 import { buildModelArchiveMetadata } from './_lib/model-page-archive-metadata';
@@ -19,7 +18,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalesForEnglishPath } from '@/lib/seo/alternateLocales';
 import { getEngineLocalized, type EngineLocalizedContent } from '@/lib/models/i18n';
 import { resolvePublicMarketingVideoUrl } from '@/lib/media';
-import { listPlaylistVideos, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
+import { listModelExamplePlaylist, getPublicVideosByIds, getPublicVideoIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { createScopedPublicPricingReaders } from '@/server/pricing/quote-public-model-scenario';
 import { prepareModelPageInputs } from './_lib/model-page-inputs';
@@ -199,12 +198,13 @@ async function renderMarketingModelPage({
     locale,
     async () => {
       let examples: GalleryVideo[] = [];
-      let managedCuration=false;
+      let managedCuration = false;
       const examplePlaylistKeys = modelExamplePlaylistKeys(engine.modelSlug);
       try {
         for (const playlistKey of examplePlaylistKeys) {
-          examples = await listPlaylistVideos(playlistKey, 200);
-          managedCuration=await hasPlaylistCuration(playlistKey);
+          const selection = await listModelExamplePlaylist(playlistKey, 200);
+          examples = selection.videos;
+          managedCuration = selection.managed;
           if (examples.length || managedCuration) break;
         }
       } catch (error) {

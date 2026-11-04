@@ -278,7 +278,7 @@ test('homepage keeps the Startup Fame dofollow link in the unified model-choice 
   assert.match(homeSource, /startupFameLabel={startupFameLabel}/);
   assert.ok(hubCtaIndex >= 0, 'Best-for hub CTA should render inside the selector');
   assert.ok(startupFameIndex >= 0);
-  assert.ok(homeSource.indexOf('<HomeModelChoice') > homeSource.indexOf('<HomeCreativeWorlds'), 'Attribution stays after the gallery and its best-for links');
+  assert.ok(homeSource.indexOf('{comparison}</Suspense>') > homeSource.indexOf('<HomeCreativeWorlds'), 'Attribution stays after the gallery and its best-for links');
   assert.match(homeSource, /dictionary\.home\.partners\?\.startupFameLabel/);
   assert.match(startupComponentSource, /https:\/\/startupfa\.me\/s\/maxvideoai\?utm_source=maxvideoai\.com/);
   assert.doesNotMatch(startupComponentSource, /nofollow/);

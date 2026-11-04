@@ -10,17 +10,17 @@ import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
-import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
-import type { MarketingTopNavLink } from '@/config/navigation';
+import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 const MENU_ICONS: Record<string, LucideIcon> = { models: Boxes, examples: Clapperboard, compare: Scale, tools: Wrench, pricing: WalletCards, connect: Plug };
 type MarketingTranslate = <T = unknown>(key: string, fallback?: T) => T | undefined;
 type MarketingMobileMenuProps = {
   cta: string;
+  dropdowns: MarketingHeaderNavigation['dropdowns'];
   generateLabel: string;
   isAuthenticated: boolean;
-  links: readonly MarketingTopNavLink[];
+  links: MarketingHeaderNavigation['links'];
   login: string;
   menuId: string;
   menuRef: RefObject<HTMLDivElement>;
@@ -32,6 +32,7 @@ type MarketingMobileMenuProps = {
 
 export function MarketingMobileMenu({
   cta,
+  dropdowns,
   generateLabel,
   isAuthenticated,
   links,
@@ -105,7 +106,7 @@ export function MarketingMobileMenu({
         <p className="marketing-menu-caption">{t('nav.menuExplore', 'Explore')}</p>
         <nav className="marketing-menu-nav">
           {links.map((item) => {
-            const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
+            const dropdown = dropdowns[item.key];
             const Icon = MENU_ICONS[item.key] ?? Plug;
             const label = t(`nav.linkLabels.${item.key}`, item.key);
             if (!dropdown) {

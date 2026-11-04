@@ -15,7 +15,7 @@ export function WorkflowSeoSummary({ copy, locale }: { copy: WorkflowSeoSummaryC
  return <aside className="home-workflow-summary border-y border-hairline bg-surface py-6 sm:py-8">
   <div className="container-page max-w-[1280px]">
    <div><h2>{c.title}</h2><p>{c.body}</p></div>
-   <dl>{c.cards.map(([title,body],index)=><div key={title}><dt><Link href={LINKS[index]}>{title} <span aria-hidden>↗</span></Link></dt><dd>{body}</dd></div>)}</dl>
+   <dl>{c.cards.map(([title,body],index)=><div key={title}><dt><Link href={LINKS[index]} currentLocale={locale}>{title} <span aria-hidden>↗</span></Link></dt><dd>{body}</dd></div>)}</dl>
   </div>
  </aside>;
 }

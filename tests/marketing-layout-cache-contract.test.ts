@@ -13,7 +13,7 @@ test('marketing layout keeps account lookup out of the cacheable public shell', 
 
   assert.doesNotMatch(source, /getMarketingAuthSnapshot/);
   assert.doesNotMatch(source, /@\/server\/marketing-auth/);
-  assert.match(source, /<MarketingNav\s*\/>/);
+  assert.match(source, /<MarketingNav navigation=\{marketingHeaderNavigation\}\s*\/>/);
 });
 
 test('canonical localized marketing pages do not set locale cookies in middleware', async () => {

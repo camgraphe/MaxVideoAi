@@ -1,25 +1,17 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import type { CompositePreviewDockProps } from '@/components/groups/CompositePreviewDock';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
+import { CompositePreviewDock } from '@/components/groups/CompositePreviewDock';
 import type { VideoGroup } from '@/types/video-groups';
 import { getCompositePreviewPosterSrc } from '../_lib/composite-preview';
 import {
   ComposerBootSkeleton,
-  CompositePreviewDockSkeleton,
   EngineSettingsBootSkeleton,
   GalleryRailSkeleton,
   WorkspaceBootPreview,
 } from './WorkspaceBootSkeletons';
 import { WorkspaceCreationHeading } from './WorkspaceCreationHeading';
 import { WorkspaceChrome } from './WorkspaceChrome';
-
-const CompositePreviewDock = dynamic<CompositePreviewDockProps>(
-  () => import('@/components/groups/CompositePreviewDock').then((mod) => mod.CompositePreviewDock),
-  {
-    loading: () => <CompositePreviewDockSkeleton />,
-  }
-);
 
 function WorkspaceBootContent({
   initialPreviewGroup,
@@ -38,7 +30,7 @@ function WorkspaceBootContent({
           group={initialPreviewGroup}
           isLoading={false}
           showTitle={false}
-          engineSettings={<EngineSettingsBootSkeleton />}
+          engineSettings={PROMPT_ASSISTANCE_PREVIEW ? undefined : <EngineSettingsBootSkeleton />}
         />
       ) : (
         <WorkspaceBootPreview posterSrc={posterSrc} />
@@ -55,11 +47,13 @@ export function WorkspaceBootSurface({
   initialPreviewGroup?: VideoGroup | null;
   initialPreviewPosterSrc?: string | null;
 }) {
+  const railTabs = <div className="app-media-rail-switch" aria-hidden><span className="h-11 w-24 rounded-input bg-skeleton" /></div>;
   return (
     <WorkspaceChrome
-      rail={<GalleryRailSkeleton responsive />}
+      railNavigation={PROMPT_ASSISTANCE_PREVIEW ? railTabs : null}
+      rail={<div className="app-media-rail">{PROMPT_ASSISTANCE_PREVIEW ? null : railTabs}<GalleryRailSkeleton responsive /></div>}
     >
-      <WorkspaceCreationHeading />
+      <WorkspaceCreationHeading action={<span className="h-11 w-32 rounded-input bg-skeleton" aria-hidden />} />
       <WorkspaceBootContent
         initialPreviewGroup={initialPreviewGroup}
         initialPreviewPosterSrc={initialPreviewPosterSrc}

@@ -162,16 +162,3 @@ export async function resolveCuratedPlaylist(
     await listCurationCandidates(slug),
   );
 }
-
-export async function hasPlaylistCuration(slug: string): Promise<boolean> {
-  if (!process.env.DATABASE_URL || process.env.NEXT_PHASE === 'phase-production-build') return false;
-  try {
-    return (
-      (await query('SELECT 1 FROM playlist_curations c JOIN playlists p ON p.id=c.playlist_id WHERE p.slug=$1', [slug]))
-        .length > 0
-    );
-  } catch (error) {
-    if ((error as { code?: string }).code === '42P01') return false;
-    throw error;
-  }
-}
