@@ -250,6 +250,15 @@ a separate empty or legacy case. The direct playlist reader selects and hydrates
 the bounded page in one query. The later public-video check still runs before a
 poster is chosen. Compare the same selected poster and prices in each locale.
 
+Exercise the production publication overlay (`MARKETING_MEDIA_ENABLED=1`) as
+well as the legacy reader. A preview without the overlay missed a production
+regression on FLUX 3 Max: PostgreSQL computed output dimensions for more than
+10,000 rows to return 18 cards. Materializing the projected cards for the selected
+IDs reduced the measured read-only query from 1,155 ms to 5 ms on the same data.
+`tests/model-playlist-selection-performance-postgres.test.ts` checks the actual
+number of dimension lookups with a published copy and a tombstone. After rollout,
+correlate fresh CDN misses with the model-gallery timings and browser LCP.
+
 The root layout separately emits `root-layout` / `theme-tokens` for the existing
 `getThemeTokensSettingCached()` await, **after** `resolveLocale()`. This bounded
 diagnostic uses the same production/build/kill-switch rules and excludes locale
