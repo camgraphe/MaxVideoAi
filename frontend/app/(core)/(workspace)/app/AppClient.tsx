@@ -1,9 +1,9 @@
 'use client';
 
-import type { VideoGroup } from '@/types/video-groups';
+import type { WorkspaceEntryProps } from './WorkspaceEntry';
 import { getWorkspaceAppLoadState } from './_components/WorkspaceAppLoadState';
 import { WorkspaceAppReadyView } from './_components/WorkspaceAppReadyView';
-import { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
+import type { useWorkspaceAppBootstrap } from './_hooks/useWorkspaceAppBootstrap';
 import { useWorkspaceAssetState } from './_hooks/useWorkspaceAssetState';
 import { useWorkspaceAssets } from './_hooks/useWorkspaceAssets';
 import { useWorkspaceComposerState } from './_hooks/useWorkspaceComposerState';
@@ -22,15 +22,11 @@ import { useWorkspaceRouteFormState } from './_hooks/useWorkspaceRouteFormState'
 import { useWorkspaceVideoSettings } from './_hooks/useWorkspaceVideoSettings';
 
 export default function AppClientPage({
+  app,
   initialPreviewGroup = null,
   localSeedanceDraftPreview = false,
   seedanceDraftWorkflowEnabled = false,
-}: {
-  initialPreviewGroup?: VideoGroup | null;
-  localSeedanceDraftPreview?: boolean;
-  seedanceDraftWorkflowEnabled?: boolean;
-}) {
-  const app = useWorkspaceAppBootstrap();
+}: WorkspaceEntryProps & { app: ReturnType<typeof useWorkspaceAppBootstrap> }) {
   const confirmedAccount =
     app.authStatus === 'authed' && app.user?.id && app.session?.access_token ? app.user.id : null;
   const draftOwner = confirmedAccount ?? (app.authStatus === 'loggedOut' ? 'public' : null);
