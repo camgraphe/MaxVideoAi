@@ -5,13 +5,18 @@ import {studioAssistantModelSchema,type StudioAssistanceStatus,type AssistanceNe
 import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from './limits';
 
 const setting = z.union([z.string().max(5000),z.number().finite(),z.boolean(),z.null()]);
+export const promptReferenceLocationSchema = z.object({
+  fieldId: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),
+  slot: z.number().int().min(0).max(99),
+}).strict();
+export type PromptReferenceLocation = z.infer<typeof promptReferenceLocationSchema>;
 export const promptAssistanceDraftSchema = z.object({
   surface:z.enum(['video','image','audio']), engineId:z.string().min(1).max(100), mode:z.string().min(1).max(60),
   workflow:promptWorkflowSchema.optional(),
   target:z.enum(['prompt','script','lyrics']), text:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),
   settings:z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),setting).refine(value=>Object.keys(value).length<=60),
   readOnlyText:z.object({negativePrompt:z.string().max(5000).optional(),lyrics:z.string().max(3500).optional()}).strict().optional(),
-  references:z.array(z.object({fieldId:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]*$/).max(80),slot:z.number().int().min(0).max(99),label:z.string().max(40),ref:toolAssetRefSchema.nullable()}).strict()).max(60),
+  references:z.array(promptReferenceLocationSchema.extend({label:z.string().max(40),ref:toolAssetRefSchema.nullable()})).max(60),
 }).strict().refine(value=>!value.workflow||(promptWorkflows[value.surface] as readonly string[]).includes(value.workflow),'Workflow does not belong to this generator.');
 export const promptAssistanceRequestSchema = z.object({
   sessionId:z.string().uuid(),requestId:z.string().uuid(),draftRevision:z.number().int().nonnegative(),
@@ -26,6 +31,7 @@ export type PromptAssistanceReply = z.infer<typeof promptAssistanceReplySchema>;
 export type PromptAssistanceResult = {
   sessionId:string;requestId:string;draftRevision:number;target:PromptAssistanceRequest['draft']['target'];message:string;
   state:'pending'|'unknown'|'complete'|'failed';phase?:'queued'|'preparing'|'calling'|'recovering';deadlineAt?:string; reply?:PromptAssistanceReply; error?:string;
+  unavailableReference?:PromptReferenceLocation;
   assistance:StudioAssistanceStatus; safeToRetry?:boolean; nextAction?:AssistanceNextAction;
 };
 export const PROMPT_ASSISTANCE_LIVE = process.env.NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE === '1';

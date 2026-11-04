@@ -100,6 +100,7 @@ test('maps a recent output Kling frame to the persisted state shape', () => {
   };
   const expectedFrame: KlingFirstFrameState = {
     ...frame,
+    ref: { type: 'job-output', jobId: 'first-frame-job', outputId: 'first-frame-output', kind: 'image' },
     image: {
       ...frame.image,
       thumbUrl: 'https://cdn/first-frame-preview.png',

@@ -1,8 +1,9 @@
 import type {ResponseInputContent} from 'openai/resources/responses/responses';
 import type {PromptAssistanceRequest} from '@/lib/prompt-assistance/contract';
 import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
-import {resolveStudioMedia,type StudioResolvedMedia} from '@/server/studio/media-resolver';
+import type {resolveStudioMedia,StudioResolvedMedia} from '@/server/studio/media-resolver';
 import type {buildPromptAssistanceContext} from './context';
+import {resolvePromptReference} from './reference-resolution';
 import {loadPromptReferenceImage} from './reference-images';
 import {readPromptReferenceAnalyses} from './reference-analysis';
 
@@ -20,9 +21,9 @@ export async function preparePromptPerception(userId:string,input:PromptAssistan
   const deadline=AbortSignal.timeout(45_000);let size=0;
   for(const reference of enriched.references){
     const selected=input.draft.references.find(item=>item.fieldId===reference.field&&item.slot===reference.slot);
-    if(!selected?.ref)throw new Error('REFERENCE_REATTACH_REQUIRED');
+    if(!selected)throw new Error('REFERENCE_REATTACH_REQUIRED');
     // Re-resolve ownership at use time; an earlier context or paid analysis grants no new access.
-    const media=await(deps.resolve??resolveStudioMedia)(userId,selected.ref);
+    const media=await resolvePromptReference(userId,selected,deps.resolve);
     if(media.kind==='image'){
       const image=await(deps.image??loadPromptReferenceImage)(media,deadline);size+=image.length;
       if(size>16*1024*1024)throw new Error('REFERENCE_IMAGES_TOO_LARGE');

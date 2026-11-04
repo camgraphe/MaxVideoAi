@@ -8,6 +8,7 @@ export type AssetSlotAttachment = {
   id?: string;
   assetId?: string;
   ref?: ToolAssetRef;
+  identityResolving?: boolean;
   url?: string;
   durationSec?: number | null;
   excerptEditing?: boolean;

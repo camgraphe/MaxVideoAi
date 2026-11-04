@@ -3,7 +3,8 @@ import {listPublicAgentCatalogEngines,type AgentModelCatalogDeps} from '@/server
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import {toCanonicalGenerationMode,toEngineGenerationMode} from '@/server/agent-api/generation-mode-aliases';
 import {listAudioCapabilities,projectAudioVariantSettings} from '@/server/agent-api/audio-capabilities';
-import {resolveStudioMedia} from '@/server/studio/media-resolver';
+import type {resolveStudioMedia} from '@/server/studio/media-resolver';
+import {resolvePromptReference} from './reference-resolution';
 import {getPromptAssistanceProfile} from './profiles';
 import type {EngineCaps,EngineInputField,Mode} from '@/types/engines';
 import {buildReferenceMentions,selectedReferenceLabel} from '@/components/composer/workspace-reference-mentions';
@@ -58,9 +59,7 @@ export async function buildPromptAssistanceContext(userId:string,raw:PromptAssis
   if(maxChars===0)throw new Error('TARGET_UNSUPPORTED');
   if(draft.text.length>maxChars)throw new Error('DRAFT_TOO_LONG');
   const resolved=await Promise.all(draft.references.map(async reference=>{
-    if(!reference.ref)throw new Error('REFERENCE_REATTACH_REQUIRED');
-    const media=await (deps.resolveMedia??resolveStudioMedia)(userId,reference.ref);
-    if(media.kind!==reference.ref.kind)throw new Error('REFERENCE_INVALID');
+    const media=await resolvePromptReference(userId,reference,deps.resolveMedia);
     return {reference,media};
   }));
   const assets:Record<string,(ComposerAttachment|null)[]>={};

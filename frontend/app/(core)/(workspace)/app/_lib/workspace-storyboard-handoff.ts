@@ -27,6 +27,8 @@ function buildStoryboardReferenceAsset(handoff: StoryboardGeneratorHandoff): Ref
     width: handoff.width ?? null,
     height: handoff.height ?? null,
     assetId: handoff.jobId ?? undefined,
+    storyboardJobId: handoff.jobId ?? undefined,
+    ref: handoff.imageRef,
     status: 'ready',
   };
 }
@@ -48,6 +50,8 @@ function buildStoryboardStartFrameAsset(handoff: StoryboardGeneratorHandoff): Re
     width: handoff.startFrameWidth ?? null,
     height: handoff.startFrameHeight ?? null,
     assetId: handoff.startFrameJobId ?? undefined,
+    storyboardJobId: handoff.startFrameJobId ?? undefined,
+    ref: handoff.startFrameRef,
     status: 'ready',
   };
 }

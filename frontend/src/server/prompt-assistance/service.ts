@@ -1,7 +1,7 @@
 import {promptWorkersEnabled,promptWorkersReady} from './worker-policy';
 import {assistanceNextActionSchema} from '@/lib/studio/assistance-contract';
 import {withDbTransaction} from '@/lib/db';
-import {promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {promptReferenceLocationSchema,promptAssistanceRequestSchema,type PromptAssistanceRequest,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import {readStudioAssistanceStatus,settleStudioAssistanceCall} from '@/server/studio/assistance-ledger';
 import {claimPromptRequest,readPromptRequest,promptScopeValues,promptRequestPhase,type PromptRequestRow} from './repository';
@@ -11,7 +11,15 @@ import {refundInvalidPromptOutput} from '@/server/studio/assistance-output-refun
 
 export async function projectPromptResult(row:PromptRequestRow,policy:StudioAssistancePolicy):Promise<PromptAssistanceResult>{
   const nextAction=assistanceNextActionSchema.safeParse((row.context_json as {failureAction?:unknown}|null)?.failureAction);
-  return {safeToRetry:row.state==='failed'&&!row.call_id,...(row.state==='failed'&&!row.call_id&&nextAction.success?{nextAction:nextAction.data}:{}),sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
+  const location = promptReferenceLocationSchema.safeParse(
+    (row.context_json as {unavailableReference?: unknown} | null)?.unavailableReference,
+  );
+  const unavailableReference = row.state === 'failed' && !row.call_id
+    && (row.error === 'MEDIA_NOT_AVAILABLE' || row.error === 'REFERENCE_REATTACH_REQUIRED')
+    && location.success && row.input_json.draft.references.some(
+      reference => reference.fieldId === location.data.fieldId && reference.slot === location.data.slot,
+    ) ? location.data : undefined;
+  return {...(unavailableReference ? {unavailableReference} : {}),safeToRetry:row.state==='failed'&&!row.call_id,...(row.state==='failed'&&!row.call_id&&nextAction.success?{nextAction:nextAction.data}:{}),sessionId:row.session_id,requestId:row.request_id,draftRevision:row.input_json.draftRevision,target:row.input_json.draft.target,message:row.input_json.message,
     state:row.state==='complete'?'complete':row.state==='failed'?'failed':row.state==='unknown'||(row.call_id&&new Date(row.lease_expires_at).getTime()<Date.now())?'unknown':'pending',
     ...(promptRequestPhase(row)?{phase:promptRequestPhase(row)}:{}),...(row.execution_deadline_at?{deadlineAt:new Date(row.execution_deadline_at).toISOString()}:{}),
     ...(row.reply_json?{reply:row.reply_json}:{}),...(row.error?{error:row.error}:{}),assistance:await readStudioAssistanceStatus(row.user_id,policy)};
