@@ -66,7 +66,7 @@ export function PromptReferenceAnalysis({scopeKey,legacyScopeKey,recoveryOnly,dr
         <div className={styles.interval}><label>From (seconds)<input type="number" min="0" step="0.1" value={start} onChange={event=>{setStart(event.target.value);analysis.reset();}}/></label><label>To (seconds)<input type="number" min="0.1" step="0.1" value={end} placeholder={`Up to ${limit}s`} onChange={event=>{setEnd(event.target.value);analysis.reset();}}/></label></div>
       </fieldset>
       {showSelection?<p className={styles.note}>{kind==='audio'?'Up to 30 seconds of sound; timing is approximate.':'Up to 60 seconds, sampled across 12 frames; brief actions can be missed.'}</p>:null}
-      {analysis.error?<p role="alert">{analysis.error==='ENGINE_UNAVAILABLE'?'This analysis is not available right now.':analysis.error}</p>:null}
+      {analysis.error?<p role="alert">{analysis.error==='ENGINE_UNAVAILABLE'?'This analysis is not available right now.':analysis.error}{analysis.errorCode==='SPENDING_LIMIT_EXCEEDED'&&!analysis.pending&&model!=='gpt-6-luna'?<> <button type="button" onClick={onSettings}>Milo settings</button></>:null}</p>:null}
       {state==='prepared'&&quote?<section className={styles.quote}>
         <p>{quote.startSec}–{quote.endSec} s · {quote.profile==='audio-window-v1'?'Sound':'Video visuals'}</p>
         <p><strong>{quote.maxCredits} credits maximum</strong>. Uses your existing Milo credits. Actual usage is settled after analysis.</p>
