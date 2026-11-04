@@ -61,3 +61,9 @@ Files: `PromptReferenceAnalysis.client.tsx`, its CSS, `PromptAssistancePanel.cli
 - Ruling: quoted/completed cards collapse excerpt controls to keep the cost and actions readable in the existing transcript height; Change excerpt restores editing before a new estimate.
 - No model/runtime/creative-length change: the observed long reply completed; no separate repeatable latency defect was established. The inline action addresses the avoidable clarification loop.
 - Lint has zero errors and seven pre-existing warnings in unrelated files. No paid provider calls or customer data mutations were used for qualification.
+
+## Final candidate refinements
+
+- Capability negotiation keeps the existing strict public reply/history shapes for clients opened before this release. New clients explicitly advertise inline analysis; stored results and the versioned provider protocol remain unchanged. Route/PostgreSQL and browser header tests cover both generations of clients.
+- Known pre-dispatch funding rejection on analysis confirmation retains the quote and exposes Milo settings without leaving the chat locked. Lost acknowledgement and unknown server outcomes retain the existing recovery lock. Five browser flows and TypeScript passed.
+- Initial full CI identified two obsolete provider-response fixtures in the browser advice and output-length/refund suites. These fixtures must use the new strict provider version while preserving their original apply/Undo and settlement assertions; the latest candidate remains gated on the complete selected Quality CI.
