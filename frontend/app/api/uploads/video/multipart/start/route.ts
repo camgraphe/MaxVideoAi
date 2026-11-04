@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { isRecastAudioFile } from '@/lib/character-studio-recast';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { buildPublicStorageUrl, createStorageFileKey } from '@/server/storage';
 import {
@@ -13,6 +14,7 @@ import { readSize, readUploadFileName, readUploadMime, uploadJsonError } from '.
 export const runtime = 'nodejs';
 
 type StartMultipartVideoUploadPayload = {
+  kind?: unknown;
   fileName?: unknown;
   mime?: unknown;
   size?: unknown;
@@ -29,7 +31,8 @@ export async function POST(req: NextRequest) {
   const mime = readUploadMime(payload?.mime);
   const size = readSize(payload?.size);
 
-  if (!isSupportedVideoMime(mime)) {
+  const audio = payload?.kind === 'audio';
+  if (audio ? !isRecastAudioFile({ name: fileName, type: mime, size: size }) : !isSupportedVideoMime(mime)) {
     return uploadJsonError('UNSUPPORTED_TYPE', 415);
   }
 

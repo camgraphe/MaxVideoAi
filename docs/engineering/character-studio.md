@@ -253,7 +253,7 @@ its video and audio players.
 The shooting brief is a local JSON export of the source name, stable character
 and product roles, dialogue, audio filename and assembled prompt. It contains no
 blob URLs or private grants; keep the actual media beside it. It neither uploads
-nor orders a render. The in-app video submit remains unavailable. The private
+nor orders a render. At this stage the in-app video submit was unavailable. The private
 marketing review used five distinct saved looks and corresponding authentic
 YouTube source clips; offline sources and connected-account quotes do not imply
 approval to publish a demo or change a production tariff.
@@ -300,5 +300,19 @@ leaves the committed range unchanged. The local readers are cued and bounded to
 the selected interval. The JSON brief records each original name and its separate
 `videoPassage` / `audioPassage` (startSec inclusive, endSec exclusive and
 originalDurationSec). This is a non-destructive edit list, not encoded media.
-Before paid generation, prepare and verify the selected owned-media excerpts
-through the existing media preparation pipeline and quote their measured facts.
+The Recast purchase action uploads local originals to the authenticated account
+and sends the independent ranges to the existing video and audio excerpt workers.
+Their distinct, measured assets are the references in the wallet quote. The
+server resolves a saved portrait from its original Character Builder output.
+Resolution (480p, 720p or 1080p) and framing (Auto, 9:16, 16:9, 1:1, 3:4 or
+4:3) participate in the brief, estimate and exact request. The default is 720p Auto.
+The second click confirms the reviewed quote ID, amount and currency. Any edit
+retires that review. Migration 95 binds Recast quotes to their owning account
+and canonical request in the quote transaction. The shared reservation service
+verifies price, references, scope and expiry and claims one job per quote.
+
+The isolated loopback preview can explicitly opt into
+`CHARACTER_STUDIO_RECAST_REHEARSAL=1` with its local test database and MinIO
+bucket. It encodes and probes the selected passages locally, then shows their
+published price. It issues no confirmable wallet quote. Live ordering defaults to off. Enable `CHARACTER_STUDIO_RECAST_LIVE_ENABLED=1`
+only for a qualified environment with a private HTTPS storage backend and an enabled provider for the selected mode.

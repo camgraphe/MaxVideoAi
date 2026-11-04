@@ -5,6 +5,7 @@ import type { VideoExcerptRange } from '@/lib/video-excerpt';
 import { RECAST_MAX_SOURCE_SECONDS } from '@/lib/character-studio-recast-timing';
 
 export type RecastTrack = {
+  file: File;
   name: string;
   url: string;
   originalSeconds?: number;
@@ -75,7 +76,12 @@ export function useRecastTrack(kind: 'audio' | 'video') {
     select(file: File) {
       setInvalid(false);
       setEditing(false);
-      setTrack({ name: file.name, url: URL.createObjectURL(file) });
+      if (!file.type) {
+        const type = kind === 'video' ? (/\.mov$/i.test(file.name) ? 'video/quicktime' : 'video/mp4')
+          : /\.wav$/i.test(file.name) ? 'audio/wav' : 'audio/mpeg';
+        file = new File([file], file.name, { type, lastModified: file.lastModified });
+      }
+      setTrack({ file, name: file.name, url: URL.createObjectURL(file) });
     },
     remove() {
       setInvalid(false);

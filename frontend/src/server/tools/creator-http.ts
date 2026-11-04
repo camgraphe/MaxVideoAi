@@ -61,7 +61,15 @@ export async function runCreatorHttp(
     }
     if (!['GET', 'HEAD'].includes(request.method)) {
       const origin = request.headers.get('origin');
-      if (request.headers.get('sec-fetch-site') === 'cross-site' || (origin && origin !== request.nextUrl.origin)) {
+      // Next's development server can normalize a numeric loopback host to localhost.
+      // Accept only the browser's exact Host and port on a same-origin local request.
+      const localOrigin = process.env.NODE_ENV === 'development' && request.headers.get('sec-fetch-site') === 'same-origin'
+        && ['localhost','127.0.0.1'].includes(request.nextUrl.hostname)
+        && ['localhost','127.0.0.1'].some(host => {
+          const authority = host + (request.nextUrl.port ? ':' + request.nextUrl.port : '');
+          return request.headers.get('host') === authority && origin === request.nextUrl.protocol + '//' + authority;
+        });
+      if (request.headers.get('sec-fetch-site') === 'cross-site' || (origin && origin !== request.nextUrl.origin && !localOrigin)) {
         return NextResponse.json({ ok: false }, { status: 403, headers: CREATOR_PRIVATE_HEADERS });
       }
     }

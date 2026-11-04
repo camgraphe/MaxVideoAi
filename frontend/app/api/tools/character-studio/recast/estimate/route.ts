@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { FEATURES } from '@/content/feature-flags';
-import { quotePublicModelScenario } from '@/server/pricing/quote-public-model-scenario';
-import type { PublicModelQuoteInput, PublicModelQuote } from '@/lib/pricing-public-model-contract';
+import { readRecastPublicPrice } from '@/server/character-studio/recast-public-price';
+import type { PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { validateWan3PricingDuration } from '@/lib/wan3-pricing';
+
+import { RECAST_RESOLUTIONS, RECAST_FRAMINGS } from '@/lib/character-studio-recast-format';
 
 const unavailable = { status: 'unavailable' } as const;
 const reply = (body: object, status = 200) =>
@@ -17,14 +19,17 @@ export async function POST(request: Request) {
     !Number.isInteger(data.seconds) ||
     typeof data.sourceSeconds !== 'number' ||
     typeof data.audio !== 'boolean' ||
-    !['v2v', 'ref2v', 'i2v'].includes(data.mode)
+    !['v2v', 'ref2v', 'i2v'].includes(data.mode) ||
+    !RECAST_RESOLUTIONS.includes(data.resolution ?? '720p') ||
+    !RECAST_FRAMINGS.includes(data.aspectRatio ?? 'auto')
   )
     return reply(unavailable, 400);
   const input: PublicModelQuoteInput = {
     modelId: 'wan-3-prime',
     mode: data.mode,
     durationSec: data.seconds,
-    resolution: '720p',
+    resolution: data.resolution ?? '720p',
+    aspectRatio: data.aspectRatio === 'auto' ? undefined : data.aspectRatio,
     audio: data.audio,
     ...(data.mode !== 'i2v' ? { inputVideoDurationSec: data.sourceSeconds } : {}),
   };
@@ -39,17 +44,7 @@ export async function POST(request: Request) {
     return reply(unavailable, 400);
   }
   try {
-    // An isolated preview can explicitly read the published rate card. Only normalized pricing facts leave it.
-    const quote: PublicModelQuote =
-      process.env.NODE_ENV === 'development' && process.env.CHARACTER_STUDIO_PREVIEW_PUBLIC_PRICING === '1'
-        ? await fetch('https://maxvideoai.com/api/pricing/quote', {
-            method: 'POST',
-            cache: 'no-store',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(input),
-            signal: AbortSignal.timeout(6000),
-          }).then(async (response) => (response.ok ? response.json() : unavailable))
-        : await quotePublicModelScenario(input);
+    const quote = await readRecastPublicPrice(input);
     if (
       quote.status !== 'exact' ||
       !Number.isSafeInteger(quote.amountCents) ||

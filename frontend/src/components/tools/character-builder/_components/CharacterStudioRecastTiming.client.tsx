@@ -10,6 +10,8 @@ type Price = { key: string; amount: string | null };
 export function CharacterStudioRecastTiming({
   copy,
   timing,
+  resolution,
+  aspectRatio,
   sourceSeconds,
   hasVideo,
   pendingHint,
@@ -21,6 +23,8 @@ export function CharacterStudioRecastTiming({
 }: {
   copy: StudioCopy;
   timing: ReturnType<typeof getRecastTiming>;
+  resolution: string;
+  aspectRatio: string;
   sourceSeconds: number | null;
   hasVideo: boolean;
   pendingHint: string | null;
@@ -33,7 +37,14 @@ export function CharacterStudioRecastTiming({
   const [price, setPrice] = useState<Price | null>(null);
   const key =
     ready && timing.valid
-      ? JSON.stringify({ mode, seconds: timing.seconds, sourceSeconds: sourceSeconds ?? 0, audio: hasAudio })
+      ? JSON.stringify({
+          mode,
+          resolution,
+          aspectRatio,
+          seconds: timing.seconds,
+          sourceSeconds: sourceSeconds ?? 0,
+          audio: hasAudio,
+        })
       : '';
   useEffect(() => {
     if (!key) return;
@@ -114,7 +125,7 @@ export function CharacterStudioRecastTiming({
         {timing.speechTooLong && <p role="status">{copy.shortDuration}</p>}
       </div>
       <div className="flex justify-between gap-2 border-t border-border pt-2 text-sm" aria-live="polite">
-        <span>{copy.recastPrice}</span>
+        <span>{copy.recastPrice.replace('{resolution}', resolution)}</span>
         <strong>{!key ? '—' : price?.key === key ? (price.amount ?? copy.noPrice) : '…'}</strong>
       </div>
     </div>

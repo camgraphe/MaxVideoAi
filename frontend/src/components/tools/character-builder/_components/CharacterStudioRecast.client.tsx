@@ -15,8 +15,15 @@ import {
 } from './CharacterStudioRecastPassage.client';
 import { passageSeconds, useRecastTrack } from './useRecastTrack';
 
-type LocalMedia = { url: string; name: string };
-/** Local draft only: no upload, provider request, fabricated output, or billing. */
+import { CharacterStudioRecastSubmit } from './CharacterStudioRecastSubmit.client';
+import type { RecastImage as LocalMedia, UploadCache } from '../_lib/recast-submit';
+import {
+  RECAST_RESOLUTIONS,
+  RECAST_FRAMINGS,
+  type RecastFraming,
+  type RecastResolution,
+} from '@/lib/character-studio-recast-format';
+
 export function CharacterStudioRecast({
   copy,
   navigation,
@@ -42,7 +49,7 @@ export function CharacterStudioRecast({
   }, [active, editing]);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
   useEffect(() => {
-    if (selection) setPortrait({ url: selection.imageUrl, name: selection.name });
+    if (selection) setPortrait({ url: selection.imageUrl, name: selection.name, jobId: selection.jobId });
   }, [selection]);
   const [product, setProduct] = useState<LocalMedia | null>(null);
   const [dialogue, setDialogue] = useState('');
@@ -57,6 +64,10 @@ export function CharacterStudioRecast({
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
   const [manualSeconds, setManualSeconds] = useState<number | null>(null);
+  const [resolution, setResolution] = useState<RecastResolution>('720p');
+  const [aspectRatio, setAspectRatio] = useState<RecastFraming>('auto');
+  const [locked, setLocked] = useState(false);
+  const uploads = useRef<UploadCache>(new WeakMap());
   const timing = getRecastTiming({
     sourceSeconds: passageSeconds(video),
     audioSeconds: passageSeconds(audio),
@@ -96,7 +107,7 @@ export function CharacterStudioRecast({
       videoControl.select(file);
       return;
     }
-    const asset = { url: URL.createObjectURL(file), name: file.name };
+    const asset = { file, url: URL.createObjectURL(file), name: file.name };
     if (kind === 'product') setProduct(asset);
     else setPortrait(asset);
   }
@@ -112,6 +123,8 @@ export function CharacterStudioRecast({
   function downloadBrief() {
     if (!canExport || !portrait) return;
     const brief = buildRecastBrief({
+      resolution,
+      aspectRatio,
       source: video?.name,
       durationSec: timing.seconds,
       sourceDurationSec: passageSeconds(video) ?? undefined,
@@ -134,7 +147,10 @@ export function CharacterStudioRecast({
     <div ref={readerRoot} className="grid h-full min-h-0 gap-3 lg:grid-cols-[340px_minmax(0,1fr)]">
       <aside className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface">
         {navigation}
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 pb-4">
+        <fieldset
+          disabled={locked}
+          className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 pb-4"
+        >
           <div className="pt-1">
             <h2 className="text-sm font-semibold">MaxVideoAI Recast</h2>
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">{copy.recastDraft}</p>
@@ -269,32 +285,88 @@ export function CharacterStudioRecast({
               {error || (videoControl.invalid ? copy.invalidVideo : copy.invalidAudio)}
             </p>
           )}
-          <p className="text-xs leading-relaxed text-text-secondary">{copy.localDraft}</p>
-        </div>
+        </fieldset>
         <div className="shrink-0 space-y-2 border-t border-border p-3">
-          <CharacterStudioRecastTiming
+          <fieldset disabled={locked} className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-xs">
+                {copy.outputResolution}
+                <select
+                  className="block w-full rounded-md border border-border bg-surface p-1"
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value as RecastResolution)}
+                >
+                  {RECAST_RESOLUTIONS.map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs">
+                {copy.outputFraming}
+                <select
+                  className="block w-full rounded-md border border-border bg-surface p-1"
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value as RecastFraming)}
+                >
+                  {RECAST_FRAMINGS.map((r) => (
+                    <option key={r} value={r}>
+                      {r === 'auto' ? 'Auto' : r}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <CharacterStudioRecastTiming
+              resolution={resolution}
+              aspectRatio={aspectRatio}
+              copy={copy}
+              timing={timing}
+              hasVideo={Boolean(video)}
+              pendingHint={
+                unresolved ? (unresolved.originalSeconds ? copy.passageNeeded : copy.readDuration) : null
+              }
+              sourceSeconds={passageSeconds(video)}
+              hasAudio={Boolean(audio || dialogue.trim())}
+              manual={manualSeconds}
+              onManual={setManualSeconds}
+              mode={mode}
+              ready={active && canEstimate}
+            />
+          </fieldset>
+          <CharacterStudioRecastSubmit
+            key={JSON.stringify([
+              portrait?.url,
+              portrait?.jobId,
+              product?.url,
+              video?.url,
+              video?.range,
+              audio?.url,
+              audio?.range,
+              prompt,
+              dialogue,
+              timing.seconds,
+              resolution,
+              aspectRatio,
+            ])}
             copy={copy}
-            timing={timing}
-            hasVideo={Boolean(video)}
-            pendingHint={
-              unresolved ? (unresolved.originalSeconds ? copy.passageNeeded : copy.readDuration) : null
+            cache={uploads.current}
+            onLock={setLocked}
+            setup={
+              active && canExport && portrait
+                ? {
+                    portrait,
+                    product,
+                    video,
+                    audio,
+                    direction: prompt,
+                    dialogue,
+                    seconds: timing.seconds,
+                    resolution,
+                    aspectRatio,
+                  }
+                : null
             }
-            sourceSeconds={passageSeconds(video)}
-            hasAudio={Boolean(audio || dialogue.trim())}
-            manual={manualSeconds}
-            onManual={setManualSeconds}
-            mode={mode}
-            ready={active && canEstimate}
           />
-          <p className="text-center text-xs text-text-secondary">{copy.recastSoon}</p>
-          <button
-            type="button"
-            disabled
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-sm font-medium text-on-brand opacity-50"
-          >
-            <Clapperboard size={16} />
-            {copy.recastGenerate}
-          </button>
         </div>
         <input
           ref={videoInput}

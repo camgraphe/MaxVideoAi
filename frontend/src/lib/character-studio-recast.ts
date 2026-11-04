@@ -4,6 +4,7 @@ type BriefPassage = VideoExcerptRange & { originalDurationSec: number };
 
 /** Portable brief: no browser object URLs, signed media or account identifiers. */
 export function buildRecastBrief(input: {
+  resolution?: string; aspectRatio?: string;
   source?: string;
   durationSec?: number;
   sourceDurationSec?: number;
@@ -21,6 +22,7 @@ export function buildRecastBrief(input: {
     version: 1,
     service: 'MaxVideoAI Recast',
     sourceVideo: input.source || null,
+    ...(input.resolution && input.aspectRatio ? {resolution:input.resolution,aspectRatio:input.aspectRatio} : {}),
     ...(input.durationSec !== undefined
       ? { durationSec: input.durationSec, sourceDurationSec: input.sourceDurationSec ?? 0 }
       : {}),
