@@ -53,11 +53,16 @@ export async function listPlaylistVideoIds(
 
 /** Only hydrate the selected page. An empty or private managed playlist still owns its selection. */
 export async function readModelPlaylistPage(slug: string, limit: number, db: QueryExecutor = { query }) {
+  // Apply the page IDs before projecting posters and dimensions. Without this boundary
+  // PostgreSQL can evaluate those per-video lookups for the entire marketing/legacy union.
   const rows = await readDirectPlaylistPage<VideoRow & { managed: boolean }>(slug, {offset: 0, limit}, db,
-    `SELECT ownership.managed, media.*, CASE WHEN NOT ownership.managed THEN (-page.selection_order)::int END AS order_index
+    `, selected_media AS MATERIALIZED (
+       ${BASE_SELECT} WHERE job_id = ANY(ARRAY(SELECT job_id FROM page))
+     )
+     SELECT ownership.managed, media.*, CASE WHEN NOT ownership.managed THEN (-page.selection_order)::int END AS order_index
      FROM (SELECT mode IS NOT NULL AS managed FROM source) ownership
      LEFT JOIN page ON TRUE
-     LEFT JOIN LATERAL (${BASE_SELECT} WHERE job_id=page.job_id) media ON TRUE
+     LEFT JOIN selected_media media ON media.job_id = page.job_id
      WHERE ownership.managed OR page.job_id IS NOT NULL
      ORDER BY page.selection_group,page.selection_order,page.created_at DESC,CASE WHEN ownership.managed THEN page.job_id END ASC`,
     'CASE WHEN managed THEN job_id END ASC');

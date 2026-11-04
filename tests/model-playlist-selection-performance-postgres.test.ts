@@ -13,6 +13,13 @@ import { startDisposablePostgres } from './helpers/disposable-postgres';
 
 type Statement = { sql: string; values?: unknown[]; rows: number; bytes: number };
 type Selection = Awaited<ReturnType<typeof listModelExamplePlaylist>>;
+type PlanNode = { 'Relation Name'?: string; Filter?: string; 'Actual Loops': number; Plans?: PlanNode[] };
+
+function dimensionLookups(node: PlanNode): number[] {
+  const own = node['Relation Name'] === 'job_outputs' && /width IS NOT NULL/.test(node.Filter ?? '')
+    ? [node['Actual Loops']] : [];
+  return own.concat((node.Plans ?? []).flatMap(dimensionLookups));
+}
 
 test('model opening, eligibility and projection survive selecting and hydrating a bounded playlist together', async () => {
   const db = await startDisposablePostgres('model-playlist-page');
@@ -112,9 +119,14 @@ test('model opening, eligibility and projection survive selecting and hydrating 
     const previousMediaFlag = process.env.MARKETING_MEDIA_ENABLED;
     process.env.MARKETING_MEDIA_ENABLED='1';
     try {
-      const published=await readFast();
+      const {selected:published,statements:[overlayRead]}=await measure(readFast);
       assert.deepEqual(published,await readLegacy(),'the public marketing copy and its tombstone override the underlying legacy rows');
       assert.deepEqual(published.videos.map(v=>[v.id,v.thumbUrl]),[['clip-019','/public-copy.jpg']]);
+      const overlayPlan=await db.pool.query('EXPLAIN (ANALYZE, FORMAT JSON) '+overlayRead.sql,overlayRead.values);
+      const lookups=dimensionLookups(overlayPlan.rows[0]['QUERY PLAN'][0].Plan);
+      assert.ok(lookups.some(n=>n>0),'the selected card uses legacy output dimensions');
+      assert.ok(lookups.every(n=>n<=published.videos.length),
+        'each dimension lookup should only run for the selected public card; actual loops: '+lookups.join(','));
     } finally {
       if (previousMediaFlag==null) delete process.env.MARKETING_MEDIA_ENABLED;
       else process.env.MARKETING_MEDIA_ENABLED=previousMediaFlag;
