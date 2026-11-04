@@ -61,12 +61,14 @@ function asset(value: unknown, fieldId?: string, allowExcerpt = true): unknown {
     'status',
     'url',
     'assetId',
+    'storyboardJobId',
     'type', 'size', 'width', 'height', 'durationSec',
     ...(fieldId ? ['fieldId'] : []),
   ]) {
     if (value[key] !== undefined) result[key] = value[key];
   }
   if (result.assetId !== undefined && !text(result.assetId)) throw new Error('invalid');
+  if (result.storyboardJobId !== undefined && (!text(result.storyboardJobId) || !result.storyboardJobId.trim() || result.storyboardJobId.length > 256)) throw new Error('invalid');
   for (const key of ['width', 'height', 'durationSec'])
     if (
       result[key] !== undefined &&
