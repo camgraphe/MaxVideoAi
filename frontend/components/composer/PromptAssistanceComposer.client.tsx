@@ -5,7 +5,7 @@ import { usePromptAssistancePreview, type PromptAssistanceContext } from './useP
 import { promptAssistanceCopy } from './prompt-assistance-copy';
 import styles from './prompt-assistance.module.css';
 import { isMiloEntry } from '@/lib/prompt-assistance/marketing-entry';
-import { Maximize2, Minimize2, SquarePen, Sparkles, ChevronDown, CircleHelp } from 'lucide-react';
+import { Maximize2, Minimize2, SquarePen, Sparkles, ChevronDown, CircleHelp, ScanSearch } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
 import { MILO_LEVELS, miloLevelForModel } from '@/lib/studio/assistance-contract';
 import { PROMPT_ASSISTANCE_LIVE } from '@/lib/prompt-assistance/contract';
@@ -17,6 +17,7 @@ import {MiloAccessNotice} from './MiloAccessNotice.client';
 import {needsMiloCredits,canUseMiloLite} from '@/lib/studio/milo-funding';
 import {PromptPreviousReply} from './PromptPreviousReply.client';
 import { PromptReferenceAnalysis } from './PromptReferenceAnalysis.client';
+import analysisStyles from './prompt-reference-analysis.module.css';
 
 export type PromptAssistanceGenerationState = { blocked:boolean; hint:string|null };
 
@@ -30,8 +31,13 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
 }) {
   const [perceptionRevision, setPerceptionRevision] = useState(0);
   const [analysisBusy, setAnalysisBusy] = useState(false);
+  const [analysisOpen,setAnalysisOpen]=useState(false);
+  const analysisTrigger=useRef<HTMLButtonElement>(null);
   const controller = usePromptAssistancePreview({ ...context, locale, draftText, onApplyText, target, maxLength, blocked, perceptionRevision });
   const { state, dispatch } = controller;
+  useEffect(()=>setAnalysisOpen(false),[controller.transport.chatKey]);
+  const lastAssistant=state.messages.findLast(item=>item.role==='assistant');
+  const analysisRecommendation=lastAssistant?.analysisRequest?{id:lastAssistant.id,request:lastAssistant.analysisRequest}:undefined;
   const entryDismissed = useRef(false);
   useEffect(() => {
     if (!disabledReason && !entryDismissed.current && isMiloEntry(window.location.search)) dispatch({ type: 'mode', mode: 'milo' });
@@ -124,9 +130,11 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
         helpControl={<a className={styles.helpLink} href={helpHref} target="_blank" rel="noopener noreferrer" aria-label={helpLabel} title={helpLabel}><CircleHelp size={15} aria-hidden/></a>}
         conversationControl={<><button type="button" className={styles.expandConversation} aria-label={copy.newChat} title={copy.newChat} disabled={analysisBusy || controller.transport.analysisPending || blocked} onClick={() => { if(controller.newChat()){setExpandedConversation(false);setPerceptionRevision(0);} }}><SquarePen size={14} aria-hidden/><span>{copy.newChat}</span></button><button className={styles.expandConversation} type="button" aria-label={expandedConversation ? copy.collapse : copy.expand} title={expandedConversation ? copy.collapse : copy.expand} aria-expanded={expandedConversation} onClick={() => setExpandedConversation(value => !value)}>{expandedConversation ? <Minimize2 size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}<span>{expandedConversation ? copy.collapse : copy.expand}</span></button></>}
         message={state.message} pending={PROMPT_ASSISTANCE_LIVE ? controller.transport.waiting : Boolean(state.pending)} blocked={blocked || liveBlocked} maxLength={maxLength} messageRef={controller.input}
+        conversationContentVisible={analysisOpen}
+        conversationContent={PROMPT_REFERENCE_PERCEPTION && context.live && credits.status && !controller.transport.loading && !controller.transport.loadError ? <PromptReferenceAnalysis key={controller.transport.chatKey} scopeKey={controller.transport.chatKey} legacyScopeKey={controller.transport.legacyScopeKey} recoveryOnly={!!controller.transport.exhausted} draft={{...context.live,text:draftText,target}} model={credits.status.selectedModel} session={controller.transport.session} blocked={Boolean(blocked || controller.transport.waiting || controller.transport.recovery || credits.busy || !credits.status.enabled || credits.error || authRequired || fundingBlocked || controller.transport.exhausted)} open={analysisOpen} onOpenChange={open=>{setAnalysisOpen(open);if(!open)analysisTrigger.current?.focus({preventScroll:true});}} recommendation={analysisRecommendation} onSettings={()=>{setCreditsOpen(true);void credits.refresh();}} onContinue={()=>{setAnalysisOpen(false);if(!state.message.trim())dispatch({type:'message',text:locale.startsWith('fr')?'Utilise cette analyse de référence pour poursuivre ma demande.':locale.startsWith('es')?'Usa este análisis de referencia para continuar con mi solicitud.':'Use this reference analysis to continue with my request.'});controller.input.current?.focus({preventScroll:true});}} onBusy={setAnalysisBusy} onCompleted={()=>{setPerceptionRevision(value=>value+1);void credits.refresh();}}/> : null}
         inputNotice={authRequired ? accessNotice : null}
         feedback={PROMPT_ASSISTANCE_LIVE ? <>{controller.transport.persistenceError?<p role="alert" data-assistance-persistence-warning className={styles.warning}>This browser could not save reply recovery. Keep this tab open to check the original reply. Navigation remains available.</p>:null}{controller.transport.previousAvailable?<div className={styles.liveFeedback}><span>{controller.transport.accountPending?copy.previousReplyUnverified:copy.previousReplyAvailable}</span><button type="button" onClick={()=>void controller.transport.checkPreviousReply()}>{copy.checkPreviousReply}</button></div>:null}{controller.transport.previousOpen?<PromptPreviousReply result={controller.transport.previousResult} error={controller.transport.previousError} waiting={controller.transport.previousWaiting} onCheck={controller.transport.recheckPreviousReply} onStop={controller.transport.stopPreviousReply} onClose={controller.transport.closePreviousReply}/>:null}{controller.transport.cacheError?<p role="alert" data-assistance-cache-warning className={styles.warning}>{copy.cacheUnavailable}</p>:null}{authRequired ? null : accessNotice ?? (loadingStatus?null:<PromptAssistanceFeedback phase={controller.transport.phase} error={feedbackError} unavailableReferenceLabel={controller.transport.unavailableReferenceLabel} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} onReload={controller.transport.reload} />)}
-          {PROMPT_REFERENCE_PERCEPTION && context.live && credits.status && !controller.transport.loading && !controller.transport.loadError ? <PromptReferenceAnalysis key={controller.transport.chatKey} scopeKey={controller.transport.chatKey} legacyScopeKey={controller.transport.legacyScopeKey} recoveryOnly={!!controller.transport.exhausted} draft={{...context.live,text:draftText,target}} model={credits.status.selectedModel} session={controller.transport.session} blocked={Boolean(blocked || controller.transport.waiting || controller.transport.recovery || credits.busy || !credits.status.enabled || credits.error || authRequired || fundingBlocked || controller.transport.exhausted)} onBusy={setAnalysisBusy} onCompleted={()=>{setPerceptionRevision(value=>value+1);void credits.refresh();}}/> : null}
+          {PROMPT_REFERENCE_PERCEPTION && context.live && credits.status && !controller.transport.loading && !controller.transport.loadError && (context.live.references.some(item=>item.ref&&item.ref.kind!=='image') || analysisBusy || controller.transport.analysisPending) ? <button ref={analysisTrigger} type="button" className={analysisStyles.trigger} aria-expanded={analysisOpen} onClick={()=>setAnalysisOpen(value=>!value)}><ScanSearch size={14} aria-hidden/>{analysisBusy||controller.transport.analysisPending?'Reference analysis…':'Analyze references'}</button> : null}
         </> : null}
         onMessageChange={text => dispatch({ type: 'message', text })} onSend={() => { if (!liveBlocked) controller.send(credits.status??undefined); }} onProposalTextChange={text => dispatch({ type: 'edit', text })} onApply={controller.apply} settingsReview={controller.canReview?{changes:controller.settingChanges,valid:controller.canApplyReviewed}:undefined} onReview={()=>{if(!blocked&&!liveBlocked)controller.beginReview();}} onApplyReviewed={()=>{if(!blocked&&!liveBlocked)controller.applyReviewed();}}
         onCopy={() => { if (state.proposal) void navigator.clipboard?.writeText(state.proposal.text).then(() => setCopied(true)).catch(() => setCopied(false)); }} references={renderReferences?.(controller.insertMention)} /> : null}
