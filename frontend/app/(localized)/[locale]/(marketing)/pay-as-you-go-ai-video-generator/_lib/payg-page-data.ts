@@ -16,10 +16,7 @@ import {
   type VideoPricePresetId,
   type VideoPricingRow,
 } from '../../pricing/_lib/pricingHubData';
-import {
-  DEFAULT_PAYG_DISCOVERY_CONFIGS,
-  type PaygDiscoveryConfigs,
-} from './payg-discovery-config';
+import { DEFAULT_PAYG_DISCOVERY_CONFIGS, type PaygDiscoveryConfigs } from './payg-discovery-config';
 
 export const PAYG_PAGE_PATH = '/pay-as-you-go-ai-video-generator';
 
@@ -112,7 +109,7 @@ export type PayAsYouGoPageData = {
   common: PayAsYouGoContent['common'];
   hero: Omit<PayAsYouGoContent['hero'], 'quote'> & {
     quote: PayAsYouGoContent['hero']['quote'] & {
-      previewRows: Array<PayAsYouGoModelRow & { quoteLabel: string }>;
+      previewRows: Array<PayAsYouGoModelRow & { quoteLabel: string; quoteContext?: string }>;
       sampleModelName: string;
       sampleCost?: PayAsYouGoExampleCost;
     };
@@ -360,11 +357,14 @@ export function buildPayAsYouGoPageData({
       ...content.hero,
       quote: {
         ...content.hero.quote,
-        previewRows: rows.slice(0, 4).map((row) => ({
-          ...row,
-          quoteLabel: row.priceCells.find((cell) => cell.renderReady)?.value
-            ?? content.common.liveQuote,
-        })),
+        previewRows: rows.slice(0, 4).map((row) => {
+          const cell = row.priceCells.find((candidate) => candidate.renderReady);
+          return {
+            ...row,
+            quoteLabel: cell?.value ?? content.common.liveQuote,
+            quoteContext: cell ? [cell.label, cell.note].filter(Boolean).join(' · ') : undefined,
+          };
+        }),
         sampleModelName: sampleModel?.engineName ?? content.hero.quote.chooseModel,
         sampleCost,
       },

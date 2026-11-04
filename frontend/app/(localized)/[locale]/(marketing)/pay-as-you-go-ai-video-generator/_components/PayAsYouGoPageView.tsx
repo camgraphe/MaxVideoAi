@@ -41,13 +41,13 @@ export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAs
 export function PayAsYouGoPageSections({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
   return (
     <>
+      <PayAsYouGoWorkflowSection data={data} />
       <PayAsYouGoVideoShowcase videos={showcaseVideos} copy={showcaseCopy} />
       <PayAsYouGoNaturalQuestionsSection data={data} />
       <PayAsYouGoModelTestingOrderSection data={data} />
       <PayAsYouGoMeaningSection data={data} />
       <PayAsYouGoAudienceFitSection data={data} />
       <PayAsYouGoSubscriptionComparisonSection data={data} />
-      <PayAsYouGoWorkflowSection data={data} />
       <PayAsYouGoMcpPlanningSection data={data} />
       <PayAsYouGoQuoteFactorsSection data={data} />
       <PayAsYouGoPricePerModelSection data={data} />

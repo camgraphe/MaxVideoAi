@@ -1,3 +1,5 @@
+import { NEON_RACER_FILM } from '@/config/neon-racer-film';
+
 // Curated public examples. Preserve original source identity.
 export const HOME_USE_CASE_FILMS = [
   {
@@ -16,14 +18,7 @@ export const HOME_USE_CASE_FILMS = [
     "poster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/71cb2da6-444c-45b9-9df2-e8e992c07b08.jpg",
     "video": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/7fdd962f-96cb-4d1b-9ca7-4094bfc8aee0.mp4"
   },
-  {
-    "slug": "fast-drafts",
-    "jobId": "job_78cb3e71-cab5-48e2-9965-9f521ba51c0f",
-    "modelSlug": "ltx-2-3-fast",
-    "model": "LTX 2.3 Fast",
-    "poster": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/3cd7c3c2-e0e3-431e-b63f-9d4b76e2bb8a.jpg",
-    "video": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/eaca0653-d407-4841-b87f-b1cff865c6ee.mp4"
-  },
+  { slug: 'fast-drafts', ...NEON_RACER_FILM },
   {
     "slug": "ads",
     "jobId": "job_85e2a105-108b-4328-9360-74a99c9d016c",

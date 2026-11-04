@@ -2,7 +2,7 @@ import { CreditPurchaseNotes } from '@/components/marketing/CreditPurchaseNotes'
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
-import { PAYG_CONTAINER_CLASS_NAME, PayAsYouGoSectionHeader } from './PayAsYouGoSectionPrimitives';
+import { PAYG_CONTAINER_CLASS_NAME, PayAsYouGoCatalog, PayAsYouGoSectionHeader } from './PayAsYouGoSectionPrimitives';
 
 type PayAsYouGoPageDataProps = {
   data: PayAsYouGoPageData;
@@ -82,29 +82,31 @@ export function PayAsYouGoPriceLookupShortcutsSection({ data }: PayAsYouGoPageDa
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.priceLookups.header} />
-        <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {data.priceLookups.items.map((lookup) => (
-            <Link
-              key={lookup.id}
-              href={lookup.href}
-              className="group flex min-h-[220px] flex-col rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <EngineIcon engine={lookup.engineIcon} imageAlt={`${lookup.engineIcon.label} ${data.common.aiVideoModelAlt}`} size={36} rounded="full" />
-                <span className="rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-text-primary">
-                  {lookup.price}
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-text-muted">{lookup.context}</p>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-micro text-text-muted">{lookup.query}</p>
-              <h3 className="mt-2 text-base font-semibold leading-snug text-text-primary">{lookup.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">{lookup.body}</p>
-              {lookup.modelHref ? (
-                <span className="mt-auto pt-4 text-xs font-semibold text-[#1F5EFF] group-hover:underline">{data.priceLookups.openRowLabel}</span>
-              ) : null}
-            </Link>
-          ))}
-        </div>
+        <PayAsYouGoCatalog id="prices" label={data.priceLookups.disclosure} count={data.priceLookups.items.length}>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {data.priceLookups.items.map((lookup) => (
+              <Link
+                key={lookup.id}
+                href={lookup.href}
+                className="group flex flex-col rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <EngineIcon engine={lookup.engineIcon} imageAlt={`${lookup.engineIcon.label} ${data.common.aiVideoModelAlt}`} size={36} rounded="full" />
+                  <span className="rounded-full border border-hairline bg-surface px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-text-primary">
+                    {lookup.price}
+                  </span>
+                </div>
+                <p className="mt-3 text-xs text-text-muted">{lookup.context}</p>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-micro text-text-muted">{lookup.query}</p>
+                <h3 className="mt-2 text-base font-semibold leading-snug text-text-primary">{lookup.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary">{lookup.body}</p>
+                {lookup.modelHref ? (
+                  <span className="mt-auto pt-4 text-xs font-semibold text-[#1F5EFF] group-hover:underline">{data.priceLookups.openRowLabel}</span>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </PayAsYouGoCatalog>
       </div>
     </section>
   );
@@ -115,6 +117,7 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
     <section className="border-b border-hairline bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-12`}>
         <PayAsYouGoSectionHeader {...data.exampleCosts.header} />
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-text-secondary">{data.exampleCosts.quoteReminder}</p>
         <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {data.exampleCosts.items.map((cost) => (
             <Link key={cost.label} href={cost.href} className="rounded-[8px] border border-hairline bg-bg p-4 shadow-sm transition hover:border-text-muted">
@@ -122,7 +125,6 @@ export function PayAsYouGoExampleCostsSection({ data }: PayAsYouGoPageDataProps)
               <p className="mt-3 text-sm font-semibold text-text-primary">{cost.engine}</p>
               <p className="mt-2 font-mono text-lg font-semibold tabular-nums text-text-primary">{cost.price}</p>
               <p className="mt-1 text-xs font-semibold text-text-muted">{cost.context}</p>
-              <p className="mt-3 text-xs text-text-secondary">{data.exampleCosts.quoteReminder}</p>
             </Link>
           ))}
         </div>

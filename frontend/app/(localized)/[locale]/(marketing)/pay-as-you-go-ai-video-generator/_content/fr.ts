@@ -17,12 +17,14 @@ export const frPayAsYouGoContent = {
   hero: {
     eyebrow: 'Crédits vidéo IA, sans engagement mensuel',
     title: 'Générateur de vidéos IA sans abonnement',
-    intro: "Partez de votre idée, choisissez un modèle et voyez le prix avant de créer la vidéo. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 et d’autres avec des crédits à la demande. Besoin d’aide pour le prompt ? Demandez à Milo.",
+    intro: "Partez d’une idée ou d’une image. Rechargez votre compte dès 10 $, choisissez un modèle vidéo et consultez le prix de votre clip avant de le générer.",
     primaryCta: 'Obtenir un devis vidéo',
     secondaryCta: 'Voir les prix par modèle',
     trustItems: ['Aucun abonnement requis', 'Crédits de départ dès 10 USD', 'Prix affiché avant la génération', 'Échecs du fournisseur remboursés'],
+    film: { title: "La pilote du tunnel néon", watch: "Voir le film", posterAlt: "Une pilote et sa moto dans un tunnel éclairé au néon." },
     quote: {
-      consoleLabel: 'Simulateur de devis MaxVideoAI',
+      consoleLabel: "Exemple de prix pour un nouveau clip",
+      detailsLabel: "Voir le prompt de l’exemple et d’autres tarifs",
       title: 'Prix avant la génération',
       promptLabel: 'Prompt',
       prompt: 'Présentation produit cinématographique, lent mouvement avant de caméra et éclairage studio épuré.',
@@ -55,6 +57,7 @@ export const frPayAsYouGoContent = {
     ],
   },
   modelTesting: {
+    disclosure: "Explorer les usages de tous les modèles",
     header: {
       eyebrow: "Choix des modèles",
       title: "Choisissez un modèle pour votre prochain essai",
@@ -129,10 +132,11 @@ export const frPayAsYouGoContent = {
     ],
   },
   workflow: {
+    workspace: { alt: "Espace de création vidéo MaxVideoAI avec le prompt, les réglages du modèle et le prix sur le bouton de génération.", caption: "Dans l’espace vidéo, le prix apparaît sur le bouton de génération. La capture illustre une configuration précise." },
     assistance: {"milo": {"title": "Une idée, mais pas de prompt ? Voici Milo →", "body": "Décrivez ce que vous voulez avec vos mots. Milo aide à écrire un prompt adapté au modèle et aux références. Connectez-vous pour discuter ; Lite est sans frais d’assistance supplémentaires."}, "studio": {"title": "Un projet plus large ? Passez à Studio →", "body": "Discutez du brief, préparez les scènes et vérifiez chaque devis de génération. Standard et Max utilisent les mêmes crédits Milo dans Studio et les générateurs."}},
     header: {
       title: 'Comment fonctionne le paiement à l’usage',
-      intro: 'Le flux affiche le coût avant le lancement et renvoie les comparaisons détaillées vers la page des tarifs.',
+      intro: "Choisissez un modèle et la durée de votre clip. Le devis s’actualise dans l’espace de création avant que vous utilisiez vos crédits.",
     },
     items: [
       { title: 'Choisissez un moteur vidéo', body: 'Sélectionnez le modèle adapté au projet sans rester limité à un seul catalogue par abonnement.', icon: 'engine' },
@@ -182,6 +186,7 @@ export const frPayAsYouGoContent = {
     },
   },
   priceLookups: {
+    disclosure: "Consulter tous les tarifs par modèle",
     header: {
       eyebrow: 'Vérifications rapides des prix',
       title: 'Consultez les prix des modèles de vidéo IA populaires',
@@ -287,7 +292,7 @@ export const frPayAsYouGoContent = {
       { question: 'Puis-je voir le prix d’une vidéo IA avant la génération ?', answer: 'Oui. L’application affiche un devis en temps réel selon le modèle, la durée, la résolution, l’audio et le flux de travail.' },
       { question: 'Quel modèle de vidéo IA devrais-je tester en premier ?', answer: "Partez de votre tâche : texte-vers-vidéo, image-vers-vidéo ou un mode compatible avec une vidéo source. Comparez les modèles adaptés à partir d’exemples et de réglages identiques, puis examinez le devis exact avant de générer." },
       { question: 'Que se passe-t-il si un rendu échoue ?', answer: "Chaque génération terminée consomme des crédits. Un résultat terminé qui ne répond pas à vos attentes créatives se distingue d’un échec technique. Les générations échouées sont automatiquement recréditées." },
-      { question: 'Est-ce la même chose que la page des tarifs ?', answer: 'Non. Cette page répond directement à l’intention de paiement à l’usage et sans abonnement. La page des tarifs conserve la matrice détaillée par modèle et scénario.' },
+      { question: 'Est-ce la même chose que la page des tarifs ?', answer: "Cette page vous aide à préparer un premier essai avec des crédits. La page des tarifs permet de comparer les prix selon le modèle et les réglages." },
     ],
   },
   showcase: {

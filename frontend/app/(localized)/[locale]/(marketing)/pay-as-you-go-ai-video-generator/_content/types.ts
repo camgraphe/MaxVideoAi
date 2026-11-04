@@ -73,15 +73,14 @@ export type PaygCard = { title: string; body: string };
 export type PayAsYouGoContent = {
   metadata: { title: string; description: string; imageAlt: string; keywords: string[] };
   common: { aiVideoModelAlt: string; liveQuote: string; audioOff: string; audioIncluded: string; examplePrefix: string };
-  hero: {
-    eyebrow: string;
-    title: string;
-    intro: string;
+  hero: Required<PaygHeaderCopy> & {
     primaryCta: string;
     secondaryCta: string;
     trustItems: string[];
+    film: { title: string; watch: string; posterAlt: string };
     quote: {
       consoleLabel: string;
+      detailsLabel: string;
       title: string;
       promptLabel: string;
       prompt: string;
@@ -100,6 +99,7 @@ export type PayAsYouGoContent = {
   };
   modelTesting: {
     header: PaygHeaderCopy;
+    disclosure: string;
     footer: string;
     models: Record<PaygSupportedModelId, { family: string; title: string; body: string }>;
   };
@@ -111,7 +111,7 @@ export type PayAsYouGoContent = {
     columns: [string, string, string];
     rows: Array<{ label: string; payg: string; subscription: string }>;
   };
-  workflow: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }>; assistance: { milo: PaygCard; studio: PaygCard } };
+  workflow: { workspace: { alt: string; caption: string }; header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }>; assistance: { milo: PaygCard; studio: PaygCard } };
   mcpPlanning: { title: string; body: string };
   quoteFactors: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }> };
   pricing: {
@@ -127,6 +127,7 @@ export type PayAsYouGoContent = {
   };
   priceLookups: {
     header: PaygHeaderCopy;
+    disclosure: string;
     openRowLabel: string;
     items: Record<PaygPriceLookupId, { query: string; title: string; body: string }>;
   };

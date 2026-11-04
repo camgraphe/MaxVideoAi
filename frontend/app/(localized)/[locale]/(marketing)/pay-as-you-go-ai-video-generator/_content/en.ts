@@ -17,12 +17,14 @@ export const enPayAsYouGoContent = {
   hero: {
     eyebrow: 'AI video credits, no monthly lock-in',
     title: 'Pay-as-you-go AI Video Generator',
-    intro: "Start with your idea, choose a model, and see the price before you make the video. Compare FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 and more with pay-as-you-go credits. Need help writing the prompt? Ask Milo.",
+    intro: "Start with an idea or an image. Add credits from $10, choose a video model and see what your clip will cost before you generate.",
     primaryCta: 'Get a video quote',
     secondaryCta: 'View model pricing',
     trustItems: ['No subscription required', 'Starter credits from $10', 'Price shown before generation', 'Provider failures refunded'],
+    film: { title: "Neon racer reveal", watch: "Watch the film", posterAlt: "A rider and a motorcycle in a neon-lit tunnel." },
     quote: {
-      consoleLabel: 'MaxVideoAI quote console',
+      consoleLabel: "Example price for a new clip",
+      detailsLabel: "See the sample prompt and more prices",
       title: 'Price before generation',
       promptLabel: 'Prompt',
       prompt: 'Cinematic product reveal, slow camera push, clean studio lighting.',
@@ -55,6 +57,7 @@ export const enPayAsYouGoContent = {
     ],
   },
   modelTesting: {
+    disclosure: "Explore all model workflows",
     header: {
       eyebrow: "Model choices",
       title: "Choose a model for your next test",
@@ -129,10 +132,11 @@ export const enPayAsYouGoContent = {
     ],
   },
   workflow: {
+    workspace: { alt: "MaxVideoAI video workspace with a prompt, model settings and a price on the Generate button.", caption: "In the video workspace, your price appears on Generate. The screen shows one example configuration." },
     assistance: {"milo": {"title": "An idea, but no prompt? Meet Milo →", "body": "Describe what you want in your own words. Milo helps write a prompt for your selected model and references. Sign in to chat; Lite has no extra assistance fee."}, "studio": {"title": "A bigger project? Start in Studio →", "body": "Talk through the brief, plan the scenes and review each generation quote. Standard and Max use the same Milo assistance credits across Studio and the generators."}},
     header: {
       title: 'How pay-as-you-go credits work',
-      intro: 'The workflow is designed to make cost visible before launch, then hand detailed price comparisons to the pricing page.',
+      intro: "Pick a model and set the length of your clip. The quote updates in the workspace before you spend any credits.",
     },
     items: [
       { title: 'Choose a video engine', body: 'Select the model that fits the brief instead of being locked into one subscription catalog.', icon: 'engine' },
@@ -182,6 +186,7 @@ export const enPayAsYouGoContent = {
     },
   },
   priceLookups: {
+    disclosure: "Browse all model prices",
     header: {
       eyebrow: 'Quick price checks',
       title: 'Check prices for popular AI video models',
@@ -287,7 +292,7 @@ export const enPayAsYouGoContent = {
       { question: 'Can I see the AI video price before generation?', answer: 'Yes. The app shows a live quote before generation based on model, duration, resolution, audio, and workflow settings.' },
       { question: 'Which AI video model should I test first?', answer: "Start with your task: text-to-video, image-to-video or a supported video-input workflow. Compare suitable models using examples and the same settings, then review the exact quote before generating." },
       { question: 'What happens if a render fails?', answer: "Each completed generation uses credits. A completed result that does not meet your creative expectations is different from a technical failure. Failed generations are automatically recredited." },
-      { question: 'Is this the same as the pricing page?', answer: 'No. This page answers pay-as-you-go and no-subscription intent directly. The pricing page remains the detailed model and scenario matrix.' },
+      { question: 'Is this the same as the pricing page?', answer: "Use this page to plan your first video with credits. Open the pricing page to compare detailed prices by model and settings." },
     ],
   },
   showcase: {

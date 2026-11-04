@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import React from 'react';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { JSDOM } from 'jsdom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import test from 'node:test';
 import type { AppLocale } from '../frontend/i18n/locales.ts';
@@ -22,6 +25,11 @@ import { generateMetadata } from '../frontend/app/(localized)/[locale]/(marketin
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
+const requireFrontend = createRequire(resolve('frontend/package.json'));
+const { ImageConfigContext } = requireFrontend('next/dist/shared/lib/image-config-context.shared-runtime');
+const { imageConfigDefault } = requireFrontend('next/dist/shared/lib/image-config');
+const imageConfig = { ...imageConfigDefault, ...requireFrontend('./next.config.js').images };
+
 const locales = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 const homeByLocale = {
   en: { name: 'Home', url: SITE_BASE_URL },
@@ -30,12 +38,12 @@ const homeByLocale = {
 } as const;
 const emptySectionOpenings = [
   '<header class="border-b border-hairline bg-bg">',
+  '<section data-payg-workflow="" class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-surface">',
-  '<section class="border-b border-hairline bg-bg">',
   '<section class="border-b border-hairline bg-surface">',
   '<section class="border-b border-hairline bg-surface">',
   '<section id="compare-price-per-model" class="border-b border-hairline bg-bg">',
@@ -44,8 +52,8 @@ const emptySectionOpenings = [
   '<section class="border-b border-hairline bg-bg">',
   '<section class="bg-surface">',
 ] as const;
-const emptySectionHeadingCounts = [1, 6, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
-const approvedHeadingsPerSection = [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
+const emptySectionHeadingCounts = [1, 1, 6, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1] as const;
+const approvedHeadingsPerSection = [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1] as const;
 const showcaseVideo: PayAsYouGoShowcaseVideo = {
   id: 'parity-video',
   engineId: 'kling-3-pro',
@@ -61,13 +69,13 @@ const representative = {
   en: {
     headings: [
       'Pay-as-you-go AI Video Generator',
+      'How pay-as-you-go credits work',
       'Quick answers before you spend credits',
       'Choose a model for your next test',
       'What pay-as-you-go means',
       'Why no subscription matters',
       'Who uses pay-as-you-go AI video credits?',
       'Pay-as-you-go vs subscription',
-      'How pay-as-you-go credits work',
       'Plan the model mix before generation',
       'What changes the live quote',
       'Compare price per model',
@@ -76,7 +84,7 @@ const representative = {
       'What happens if a generation fails?',
       'FAQ',
     ],
-    heroIntro: "Start with your idea, choose a model, and see the price before you make the video. Compare FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 and more with pay-as-you-go credits. Need help writing the prompt? Ask Milo.",
+    heroIntro: "Start with an idea or an image. Add credits from $10, choose a video model and see what your clip will cost before you generate.",
     naturalQuestion: 'Where can I test AI video models without subscription?',
     pricingIntro: 'These examples help you estimate cost quickly. Use the pricing page for the full model-by-model matrix, then open the app for the exact live quote before rendering.',
     refundText: 'You review the price before launching a generation.',
@@ -96,13 +104,13 @@ const representative = {
   fr: {
     headings: [
       'Générateur de vidéos IA sans abonnement',
+      'Comment fonctionne le paiement à l’usage',
       'L’essentiel avant d’utiliser vos crédits',
       'Choisissez un modèle pour votre prochain essai',
       'Comment fonctionne le paiement à l’usage',
       'Pourquoi l’absence d’abonnement compte',
       'Qui utilise des crédits vidéo IA prépayés ?',
       'Paiement à l’usage ou abonnement',
-      'Comment fonctionne le paiement à l’usage',
       'Planifiez les modèles avant la génération',
       'Ce qui fait varier le devis en direct',
       'Comparez le prix par modèle',
@@ -111,7 +119,7 @@ const representative = {
       'Que se passe-t-il si une génération échoue ?',
       'FAQ',
     ],
-    heroIntro: "Partez de votre idée, choisissez un modèle et voyez le prix avant de créer la vidéo. Comparez FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 et d’autres avec des crédits à la demande. Besoin d’aide pour le prompt ? Demandez à Milo.",
+    heroIntro: "Partez d’une idée ou d’une image. Rechargez votre compte dès 10 $, choisissez un modèle vidéo et consultez le prix de votre clip avant de le générer.",
     naturalQuestion: 'Où tester des modèles de vidéo IA sans abonnement ?',
     pricingIntro: 'Ces exemples permettent d’estimer rapidement le coût. Utilisez la page des tarifs pour la matrice complète par modèle, puis ouvrez l’application pour obtenir le devis exact avant de générer.',
     refundText: 'Vous examinez le prix avant de lancer une génération.',
@@ -131,13 +139,13 @@ const representative = {
   es: {
     headings: [
       'Generador de video con IA de pago por uso',
+      'Cómo funcionan los créditos de pago por uso',
       'Lo esencial antes de usar tus créditos',
       'Elige un modelo para tu próxima prueba',
       'Qué significa pagar por uso',
       'Por qué importa no tener suscripción',
       '¿Quién usa créditos de video con IA de pago por uso?',
       'Pago por uso vs. suscripción',
-      'Cómo funcionan los créditos de pago por uso',
       'Planifica los modelos antes de generar',
       'Qué cambia la cotización en tiempo real',
       'Compara el precio por modelo',
@@ -146,7 +154,7 @@ const representative = {
       '¿Qué ocurre si falla una generación?',
       'FAQ',
     ],
-    heroIntro: "Parte de tu idea, elige un modelo y consulta el precio antes de crear el video. Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más con créditos de pago por uso. ¿Necesitas ayuda con el prompt? Pregunta a Milo.",
+    heroIntro: "Empieza con una idea o una imagen. Recarga desde 10 USD, elige un modelo de video y consulta el precio de tu clip antes de generarlo.",
     naturalQuestion: '¿Dónde puedo probar modelos de video con IA sin suscripción?',
     pricingIntro: 'Estos ejemplos ayudan a estimar el costo rápidamente. Usa la página de precios para consultar la matriz completa por modelo y abre la app para ver la cotización exacta antes de generar.',
     refundText: 'Revisas el precio antes de iniciar una generación.',
@@ -190,7 +198,7 @@ function extractApprovedTopLevelHeadings(
   const headingGroups = [...html.matchAll(/<(header|section)\b[^>]*>([\s\S]*?)<\/\1>/g)]
     .map((match) => extractHeadingStructure(match[2] ?? ''));
   const expectedCounts = showcasePresent
-    ? [emptySectionHeadingCounts[0], 1, ...emptySectionHeadingCounts.slice(1)]
+    ? [...emptySectionHeadingCounts.slice(0, 2), 1, ...emptySectionHeadingCounts.slice(2)]
     : [...emptySectionHeadingCounts];
   assert.deepEqual(
     headingGroups.map((group) => group.length),
@@ -208,7 +216,7 @@ function extractApprovedTopLevelHeadings(
     'the hero must be the only h1 and every following PAYG heading must be h2',
   );
   const projection = showcasePresent
-    ? [approvedHeadingsPerSection[0], 1, ...approvedHeadingsPerSection.slice(1)]
+    ? [...approvedHeadingsPerSection.slice(0, 2), 1, ...approvedHeadingsPerSection.slice(2)]
     : [...approvedHeadingsPerSection];
   return headingGroups.flatMap((group, index) => group.slice(0, projection[index]));
 }
@@ -233,17 +241,13 @@ function render(locale: AppLocale, videos: PayAsYouGoShowcaseVideo[]) {
   const content = getPayAsYouGoContent(locale);
   const data = buildPayAsYouGoPageData({ locale, content });
   const markup = renderToStaticMarkup(
-    React.createElement(
-      I18nProvider,
-      { locale, dictionary: {}, fallback: {} },
-      React.createElement(PayAsYouGoPageView, {
-        data,
-        showcaseCopy: content.showcase.section,
-        showcaseVideos: videos,
-      }),
+    React.createElement(ImageConfigContext.Provider, { value: imageConfig },
+      React.createElement(I18nProvider, { locale, dictionary: {}, fallback: {} },
+        React.createElement(PayAsYouGoPageView, { data, showcaseCopy: content.showcase.section, showcaseVideos: videos }),
+      ),
     ),
   );
-  return { semantic: extractPaygSemanticHtml(markup) };
+  return { markup, data, semantic: extractPaygSemanticHtml(markup) };
 }
 
 function expectedHeadingStructure(texts: readonly string[]): HeadingStructure[] {
@@ -288,7 +292,29 @@ test('top-level heading contract rejects a changed semantic level', () => {
 
 for (const locale of locales) {
   test(`${locale} renders exact localized section order, strings, and hrefs`, () => {
-    const { semantic } = render(locale, []);
+    const { semantic, markup, data } = render(locale, []);
+    const { window } = new JSDOM(markup);
+    try {
+      const doc = window.document;
+      for (const [id, items] of [
+        ['models', data.modelTesting.items],
+        ['prices', data.priceLookups.items],
+      ] as const) {
+        const catalog = doc.querySelector<HTMLDetailsElement>(`details[data-payg-catalog="${id}"]`);
+        assert.ok(catalog && !catalog.open);
+        const links = [...catalog.querySelectorAll('a')];
+        assert.deepEqual(links.map(link => link.querySelector('h3')?.textContent),
+          items.map(item => item.title), 'Every model variant and priced scenario survives in the closed server-rendered catalog');
+        assert.ok(links.every(link => link.hasAttribute('href')));
+      }
+      const film = doc.querySelector('header figure a');
+      assert.ok(film?.getAttribute('href')?.includes('job_78cb3e71-cab5-48e2-9965-9f521ba51c0f'));
+      assert.ok(film?.querySelector('img'));
+      assert.equal(doc.querySelector('header video'), null, 'Watching the film is an explicit action');
+      assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]'));
+    } finally {
+      window.close();
+    }
     const expected = representative[locale];
     assertExactHeadingStructure(semantic.topLevelHeadings, expected.headings);
     assert.equal(semantic.topLevelHeadings.length, 15);
@@ -314,18 +340,18 @@ for (const locale of locales) {
     const { semantic } = render(locale, [showcaseVideo]);
     const expected = representative[locale];
     assertExactHeadingStructure(semantic.topLevelHeadings, [
-      expected.headings[0],
+      ...expected.headings.slice(0, 2),
       expected.showcase.title,
-      ...expected.headings.slice(1),
+      ...expected.headings.slice(2),
     ]);
     assertExactHeadingStructure(
-      [semantic.topLevelHeadings[0], ...semantic.topLevelHeadings.slice(2)],
+      [...semantic.topLevelHeadings.slice(0, 2), ...semantic.topLevelHeadings.slice(3)],
       expected.headings,
     );
     assert.deepEqual(semantic.sectionOpenings, [
-      emptySectionOpenings[0],
+      ...emptySectionOpenings.slice(0, 2),
       '<section class="border-b border-hairline bg-bg">',
-      ...emptySectionOpenings.slice(1),
+      ...emptySectionOpenings.slice(2),
     ]);
     assert.equal(semantic.showcasePresent, true);
     assert.ok(semantic.headings.includes(showcaseVideo.title));

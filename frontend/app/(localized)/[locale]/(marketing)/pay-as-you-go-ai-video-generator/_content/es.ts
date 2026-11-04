@@ -17,12 +17,14 @@ export const esPayAsYouGoContent = {
   hero: {
     eyebrow: 'Créditos de video con IA, sin compromiso mensual',
     title: 'Generador de video con IA de pago por uso',
-    intro: "Parte de tu idea, elige un modelo y consulta el precio antes de crear el video. Compara FLUX 3 Max, MiniMax H3, Kling 4.0, Seedance 2.5 y más con créditos de pago por uso. ¿Necesitas ayuda con el prompt? Pregunta a Milo.",
+    intro: "Empieza con una idea o una imagen. Recarga desde 10 USD, elige un modelo de video y consulta el precio de tu clip antes de generarlo.",
     primaryCta: 'Ver cotización del video',
     secondaryCta: 'Ver precios por modelo',
     trustItems: ['Sin suscripción obligatoria', 'Créditos iniciales desde 10 USD', 'Precio visible antes de generar', 'Fallos del proveedor reembolsados'],
+    film: { title: "La piloto del túnel de neón", watch: "Ver el video", posterAlt: "Una piloto y su moto en un túnel iluminado con neón." },
     quote: {
-      consoleLabel: 'Cotizador de MaxVideoAI',
+      consoleLabel: "Ejemplo de precio para un nuevo clip",
+      detailsLabel: "Ver el prompt del ejemplo y más precios",
       title: 'Precio antes de generar',
       promptLabel: 'Prompt',
       prompt: 'Presentación cinematográfica de producto, acercamiento lento de cámara e iluminación limpia de estudio.',
@@ -55,6 +57,7 @@ export const esPayAsYouGoContent = {
     ],
   },
   modelTesting: {
+    disclosure: "Explorar los usos de todos los modelos",
     header: {
       eyebrow: "Opciones de modelos",
       title: "Elige un modelo para tu próxima prueba",
@@ -129,10 +132,11 @@ export const esPayAsYouGoContent = {
     ],
   },
   workflow: {
+    workspace: { alt: "Espacio de creación de video de MaxVideoAI con el prompt, los ajustes del modelo y el precio en el botón de generación.", caption: "En el espacio de video, el precio aparece en el botón de generación. La captura muestra una configuración de ejemplo." },
     assistance: {"milo": {"title": "¿Una idea, pero sin prompt? Conoce a Milo →", "body": "Describe lo que quieres con tus palabras. Milo ayuda a escribir un prompt para el modelo y las referencias elegidos. Inicia sesión para chatear; Lite no añade cargos de asistencia."}, "studio": {"title": "¿Un proyecto más grande? Empieza en Studio →", "body": "Habla sobre el brief, prepara las escenas y revisa cada cotización de generación. Standard y Max usan los mismos créditos Milo en Studio y en los generadores."}},
     header: {
       title: 'Cómo funcionan los créditos de pago por uso',
-      intro: 'El flujo está diseñado para mostrar el costo antes de iniciar y dejar las comparaciones detalladas en la página de precios.',
+      intro: "Elige un modelo y la duración del clip. El presupuesto se actualiza en el espacio de creación antes de usar créditos.",
     },
     items: [
       { title: 'Elige un motor de video', body: 'Selecciona el modelo que mejor se adapte al proyecto, sin quedarte limitado a un solo catálogo de suscripción.', icon: 'engine' },
@@ -182,6 +186,7 @@ export const esPayAsYouGoContent = {
     },
   },
   priceLookups: {
+    disclosure: "Consultar todos los precios por modelo",
     header: {
       eyebrow: 'Consultas rápidas de precio',
       title: 'Consulta precios de modelos de video con IA populares',
@@ -287,7 +292,7 @@ export const esPayAsYouGoContent = {
       { question: '¿Puedo ver el precio del video con IA antes de generar?', answer: 'Sí. La app muestra una cotización en tiempo real según el modelo, la duración, la resolución, el audio y el flujo de trabajo.' },
       { question: '¿Qué modelo de video con IA debería probar primero?', answer: "Parte de tu tarea: texto a video, imagen a video o un flujo compatible con video de entrada. Compara modelos adecuados usando ejemplos y los mismos ajustes, y revisa la cotización exacta antes de generar." },
       { question: '¿Qué ocurre si falla un render?', answer: "Cada generación completada consume créditos. Un resultado completado que no cumple tus expectativas creativas es distinto de un fallo técnico. Las generaciones fallidas se abonan automáticamente a tu saldo." },
-      { question: '¿Es lo mismo que la página de precios?', answer: 'No. Esta página responde directamente a la intención de pago por uso y sin suscripción. La página de precios ofrece la matriz detallada por modelo y escenario.' },
+      { question: '¿Es lo mismo que la página de precios?', answer: "Esta página te ayuda a preparar tu primera prueba con créditos. En la página de precios puedes comparar los importes según el modelo y los ajustes." },
     ],
   },
   showcase: {
