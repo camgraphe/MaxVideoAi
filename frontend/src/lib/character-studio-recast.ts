@@ -36,11 +36,12 @@ export function buildRecastBrief(input: {
     referenceAudio: input.audio || null,
     generateAudio: Boolean(dialogue || input.audio),
     prompt: [
+      'Image 1 is the character portrait and defines the performer’s identity and wardrobe.',
       input.source
         ? 'Use the supplied video as the source of motion, staging and camera. Replace the main performer with the person in the character portrait; preserve their identity and wardrobe.'
         : 'Animate the character in the supplied portrait according to the scene direction, preserving their identity and wardrobe.',
       input.product &&
-        'The separate product photograph defines the actual object. Keep its silhouette, details and colors consistent. The performer presents the product naturally in the scene.',
+        'Image 2 is the separate product photograph and defines the actual object. Keep its silhouette, details and colors consistent. The performer presents the product naturally in the scene.',
       direction,
       dialogue &&
         'The performer speaks the following line on camera exactly once, in its written language, with natural lip sync: ' +
