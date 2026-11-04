@@ -423,7 +423,7 @@ test('version prompt links follow the complete gallery and pagination', () => {
 });
 
 test('family metadata delegates preview selection while keeping route SEO ownership', () => {
-  assert.match(modelPageSource, /await selectFamilyMetadataVideo\(canonical\)/);
+  assert.match(modelPageSource, /await selectFamilyMetadataVideo\(canonical,/);
   assert.doesNotMatch(modelPageSource, /listExampleFamilyPage|EXAMPLES_HERO_SELECTION_LIMIT|pickFirstPlayableVideo/);
   assert.match(modelPageSource, /toAbsoluteUrl\(heroVideo\?\.thumbUrl\)/);
   assert.match(modelPageSource, /buildSeoMetadata\(/);

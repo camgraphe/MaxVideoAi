@@ -98,9 +98,9 @@ export async function makeModelPagePricingHarness({
     export const buildModelArchiveMetadata = () => ({});
     export const modelExamplePlaylistKeys = () => [];
     export const projectModelPageGallery = () => undefined;
-    export const hasPlaylistCuration = () => Boolean(state.managed);
-    export const listPlaylistVideos = async (slug, limit) => {
-      playlistReads.push([slug,limit]); return read('model-gallery',state.examples ?? []);
+    export const listModelExamplePlaylist = async (slug, limit) => {
+      playlistReads.push([slug,limit]);
+      return read('model-gallery', {videos:state.examples ?? [], managed:Boolean(state.managed)});
     };
     export const getPublicVideosByIds = async ids => {
       publicReads.push([...ids]);
@@ -118,7 +118,7 @@ export async function makeModelPagePricingHarness({
     };
   `;
   const controlledRouteImports = new Set([
-    '@/server/model-gallery-projection', '@/server/playlists/curation-service', '@/server/videos',
+    '@/server/model-gallery-projection', '@/server/videos',
     '@/server/current-example-price', '@/lib/i18n/server', '@/lib/models/i18n', '@/config/falEngines',
     '@/config/model-runtime', './_lib/model-page-inputs', './_lib/model-page-publication',
     './_lib/model-page-template-registry', './_lib/model-page-prelaunch-route',

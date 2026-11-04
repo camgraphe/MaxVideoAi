@@ -9,6 +9,7 @@ import { getExampleModelLanding } from '@/lib/examples/modelLanding';
 import { getExampleFamilyPageConfig, getMarketingExampleRouteSlugs } from '@/lib/model-families';
 import { selectFamilyMetadataVideo } from './_lib/family-metadata-video';
 import ExamplesPage from '../page';
+import { readFirstFamilyGalleryPage } from '../_lib/first-family-gallery-page';
 import { getExamplesPaginationSeo, withExamplesPaginationMetadata } from '../_lib/examples-pagination-seo';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || SITE_BASE_URL;
@@ -81,10 +82,11 @@ export async function generateMetadata(
   const description =
     modelLanding?.metaDescription ??
     `Explore ${modelLabel} examples with prompts and settings, then open a video detail page to see its current model price on MaxVideoAI.`;
-  const heroVideo = await selectFamilyMetadataVideo(canonical);
+  const paginationSeo = getExamplesPaginationSeo(searchParams ?? {});
+  const usesFirstGalleryPage = canonical === normalized && searchParams?.page === undefined && paginationSeo.index;
+  const heroVideo = await selectFamilyMetadataVideo(canonical, usesFirstGalleryPage ? readFirstFamilyGalleryPage : undefined);
   const ogImage = toAbsoluteUrl(heroVideo?.thumbUrl) ?? `${SITE}/og/brand-2026-09-25.png`;
   const familyPageConfig = getExampleFamilyPageConfig(canonical);
-  const paginationSeo = getExamplesPaginationSeo(searchParams ?? {});
   const noindex = !paginationSeo.index || familyPageConfig?.stage === 'public_noindex';
 
   const metadata = buildSeoMetadata({
