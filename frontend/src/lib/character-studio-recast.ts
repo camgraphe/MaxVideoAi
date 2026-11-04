@@ -1,6 +1,8 @@
 /** Portable brief: no browser object URLs, signed media or account identifiers. */
 export function buildRecastBrief(input: {
-  source: string;
+  source?: string;
+  durationSec?: number;
+  sourceDurationSec?: number;
   character: string;
   product?: string;
   direction?: string;
@@ -12,7 +14,10 @@ export function buildRecastBrief(input: {
   return {
     version: 1,
     service: 'MaxVideoAI Recast',
-    sourceVideo: input.source,
+    sourceVideo: input.source || null,
+    ...(input.durationSec !== undefined
+      ? { durationSec: input.durationSec, sourceDurationSec: input.sourceDurationSec ?? 0 }
+      : {}),
     images: [
       { role: 'character', file: input.character },
       ...(input.product ? [{ role: 'product', file: input.product }] : []),
@@ -21,7 +26,9 @@ export function buildRecastBrief(input: {
     referenceAudio: input.audio || null,
     generateAudio: Boolean(dialogue || input.audio),
     prompt: [
-      'Use the supplied video as the source of motion, staging and camera. Replace the main performer with the person in the character portrait; preserve their identity and wardrobe.',
+      input.source
+        ? 'Use the supplied video as the source of motion, staging and camera. Replace the main performer with the person in the character portrait; preserve their identity and wardrobe.'
+        : 'Animate the character in the supplied portrait according to the scene direction, preserving their identity and wardrobe.',
       input.product &&
         'The separate product photograph defines the actual object. Keep its silhouette, details and colors consistent. The performer presents the product naturally in the scene.',
       direction,

@@ -8,7 +8,10 @@ import type { StudioRecastSelection } from '@/types/character-studio';
 import { buildRecastBrief, isRecastAudioFile } from '@/lib/character-studio-recast';
 import { CharacterStudioRecastDirection } from './CharacterStudioRecastDirection.client';
 
-type LocalMedia = { url: string; name: string };
+import { getRecastTiming, RECAST_MAX_SOURCE_SECONDS } from '@/lib/character-studio-recast-timing';
+import { CharacterStudioRecastTiming } from './CharacterStudioRecastTiming.client';
+
+type LocalMedia = { url: string; name: string; seconds?: number };
 /** Local draft only: no upload, provider request, fabricated output, or billing. */
 export function CharacterStudioRecast({
   copy,
@@ -59,6 +62,17 @@ export function CharacterStudioRecast({
   );
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
+  const [manualSeconds, setManualSeconds] = useState<number | null>(null);
+  const timing = getRecastTiming({
+    sourceSeconds: video?.seconds ?? null,
+    audioSeconds: audio?.seconds ?? null,
+    dialogue,
+    manualSeconds,
+  });
+  const mode = video ? 'v2v' : audio || product ? 'ref2v' : 'i2v';
+  const hasDirection = Boolean(video || prompt.trim() || dialogue.trim() || audio);
+  const canEstimate = hasDirection && (!video || video.seconds !== undefined);
+  const canExport = Boolean(portrait && canEstimate && timing.valid);
   const videoInput = useRef<HTMLInputElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
   useEffect(
@@ -76,8 +90,10 @@ export function CharacterStudioRecast({
   function select(file: File | undefined, kind: 'video' | 'image' | 'product') {
     if (!file) return;
     if (
-      !file.type.startsWith(kind === 'video' ? 'video/' : 'image/') ||
-      file.size > (kind === 'video' ? 200 : 20) * 1024 * 1024
+      (kind === 'video'
+        ? !(/\.(mp4|mov)$/i.test(file.name) && file.type.startsWith('video/'))
+        : !file.type.startsWith('image/')) ||
+      file.size > (kind === 'video' ? 100 : 20) * 1024 * 1024
     ) {
       setError(kind === 'video' ? copy.invalidVideo : copy.invalidImage);
       return;
@@ -116,13 +132,15 @@ export function CharacterStudioRecast({
       if (epoch === audioEpoch.current) setError(copy.invalidAudio);
       return;
     }
-    setAudio({ url, name: file.name });
+    setAudio({ url, name: file.name, seconds: duration });
     setError('');
   }
   function downloadBrief() {
-    if (!video || !portrait) return;
+    if (!canExport || !portrait) return;
     const brief = buildRecastBrief({
-      source: video.name,
+      source: video?.name,
+      durationSec: timing.seconds,
+      sourceDurationSec: video?.seconds,
       character: portrait.name,
       product: product?.name,
       direction: prompt,
@@ -146,14 +164,30 @@ export function CharacterStudioRecast({
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">{copy.recastDraft}</p>
           </div>
           <section>
-            <h3 className="mb-2 text-xs font-medium text-text-secondary">01 · {copy.sourceVideo}</h3>
+            <h3 className="mb-2 text-xs font-medium text-text-secondary">
+              01 · {copy.sourceVideo} · {copy.optional}
+            </h3>
             {video ? (
               <div className="relative overflow-hidden rounded-xl border border-border">
                 <video
+                  key={video.url}
+                  onLoadedMetadata={(event) => {
+                    const seconds = event.currentTarget.duration;
+                    if (Number.isFinite(seconds) && seconds > 0 && seconds <= RECAST_MAX_SOURCE_SECONDS) {
+                      setVideo((current) => (current?.url === video.url ? { ...current, seconds } : current));
+                    } else {
+                      setVideo(null);
+                      setError(copy.invalidVideo);
+                    }
+                  }}
+                  onError={() => {
+                    setVideo(null);
+                    setError(copy.invalidVideo);
+                  }}
                   src={video.url}
                   controls
                   playsInline
-                  preload="none"
+                  preload="metadata"
                   className="max-h-48 w-full bg-black"
                   aria-label={copy.sourceVideo}
                 />
@@ -272,7 +306,7 @@ export function CharacterStudioRecast({
               e.target.value = '';
             }}
           />
-          {video && portrait && (
+          {canExport && (
             <div>
               <button
                 type="button"
@@ -293,6 +327,17 @@ export function CharacterStudioRecast({
           <p className="text-xs leading-relaxed text-text-secondary">{copy.localDraft}</p>
         </div>
         <div className="shrink-0 space-y-2 border-t border-border p-3">
+          <CharacterStudioRecastTiming
+            copy={copy}
+            timing={timing}
+            hasVideo={Boolean(video)}
+            sourceSeconds={video?.seconds ?? null}
+            hasAudio={Boolean(audio || dialogue.trim())}
+            manual={manualSeconds}
+            onManual={setManualSeconds}
+            mode={mode}
+            ready={active && canEstimate}
+          />
           <p className="text-center text-xs text-text-secondary">{copy.recastSoon}</p>
           <button
             type="button"

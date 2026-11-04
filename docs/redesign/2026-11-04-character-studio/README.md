@@ -49,5 +49,5 @@ La montre a une référence produit distincte. Le dossier de tournage privé inc
 uniquement le matériel disponible ; une inspiration externe n’est jamais présentée
 comme une prise livrée.
 
-Aucun rendu vidéo réalisé. Les visuels du pilote restent des documents de revue
+Basil a un premier rendu Recast vertical de 6 s à 2,19 $US. Cet extrait du montage de 25,6 s est conservé pour revue. Les cinq autres films ont leurs médias et leurs briefs préparés, en attente des prises de mouvement. Les visuels du pilote restent des documents de revue
 et ne sont pas publiés sur les surfaces marketing.

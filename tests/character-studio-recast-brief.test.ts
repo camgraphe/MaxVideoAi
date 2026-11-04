@@ -35,3 +35,21 @@ test('audio reference follows the supported file types and byte limit', () => {
   assert.equal(isRecastAudioFile({ ...file, size: 0 }), false);
   assert.equal(isRecastAudioFile({ ...file, size: 15 * 1024 * 1024 + 1 }), false);
 });
+
+test('dialogue suggests whole seconds and a manual duration survives later script edits', async () => {
+  const { getRecastTiming } = await import('../frontend/src/lib/character-studio-recast-timing');
+  const script = 'Je vous montre ma montre. Pas ce poignet-là. Voilà. Avec quatre bras, la démo dure un peu plus longtemps.';
+  const draft = { sourceSeconds: null, audioSeconds: null, dialogue: script, manualSeconds: null };
+  assert.equal(getRecastTiming(draft).seconds, 8);
+  assert.equal(getRecastTiming({ ...draft, dialogue: 'Bonjour', manualSeconds: 12 }).seconds, 12);
+  assert.equal(getRecastTiming({ ...draft, audioSeconds: 3.27 }).seconds, 4);
+  const edit = getRecastTiming({ ...draft, sourceSeconds: 6.4 });
+  assert.equal(edit.seconds, 7);
+  assert.equal(edit.speechTooLong, true);
+  assert.equal(getRecastTiming({ ...draft, dialogue: 'Bonjour '.repeat(100) }).valid, false);
+  assert.equal(getRecastTiming({ ...draft, sourceSeconds: 14.3, manualSeconds: 16 }).valid, false);
+  const exported = buildRecastBrief({ character: 'Vesper', dialogue: script, durationSec: 12 });
+  assert.equal(exported.durationSec, 12);
+  assert.equal(exported.sourceVideo, null);
+  assert.doesNotMatch(exported.prompt, /supplied video/);
+});

@@ -273,3 +273,20 @@ The library's sheet action opens a 1K draft with a neutral background and four
 large aligned views. Generation is still an explicit user action. The eight-view
 sheet remains available from the ordinary composer on a fresh draft. The saved sheet
 viewer keeps the original file intact alongside the identity reference.
+
+### Duration and estimated price in the Recast draft
+
+The draft suggests the measured duration of the source video, then the measured
+audio duration, then the script length at the Audio tool’s 150 words per minute.
+A direction without timing starts at six seconds. Suggestions round up to whole
+output seconds. An explicit selection takes precedence until the user chooses
+the automatic suggestion again. Overlong speech remains visible for editing.
+A reference clip can be up to 15 seconds, with at most 30 seconds of combined
+input and output. The draft preserves fractional source seconds for pricing.
+
+The read-only Recast estimate projects the requested duration and source duration
+into the current 720p model price. Editing local media or the duration invalidates
+the displayed estimate. The isolated development preview can opt into the public
+price reader with CHARACTER_STUDIO_PREVIEW_PUBLIC_PRICING=1. Only the normalized
+mode, audio flag, resolution and durations are sent. Reserving funds would require
+a separate server quote from owned media, including its verified duration.
