@@ -8,9 +8,11 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
   process.env.DATABASE_URL = db.databaseUrl;
   const { getDb } = await import('../frontend/src/lib/db');
   let curationReads = 0;
+  let modelReads = 0;
   getDb().on('connect', (client) => {
     const query = client.query.bind(client);
     client.query = ((sql: string, params?: unknown[]) => {
+      modelReads++;
       if (/\bplaylist_curations\b/.test(sql)) curationReads++;
       return query(sql, params);
     }) as typeof client.query;
@@ -29,10 +31,12 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       CREATE TABLE media_assets(user_id uuid,url text,status text,deleted_at timestamptz);
       CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);`);
     const { listPlaylistVideos, listModelExamplePlaylist, listExampleFamilyPage } = await import('../frontend/server/videos');
-    const assertModelPlaylist = async (limit: number, ids: string[], managed: boolean) => {
+    const assertModelPlaylist = async (limit: number, ids: string[], managed: boolean, expectedReads = 1) => {
       const before = curationReads;
+      const initialReads = modelReads;
       const selection = await listModelExamplePlaylist('examples-wan-3', limit);
       assert.equal(curationReads - before, 1, 'playlist selection and ownership share one curation read');
+      assert.equal(modelReads - initialReads, expectedReads, 'only selected media should be hydrated in the membership statement');
       assert.deepEqual(selection.videos.map((video) => video.id), ids);
       assert.equal(selection.managed, managed);
     };
@@ -45,7 +49,7 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
     const id = '11111111-1111-4111-8111-111111111111';
     assert.equal(await resolveCuratedPlaylist('examples-wan-3'), null);
     assert.equal((await getCurationSnapshot(id)).available, false);
-    await assertModelPlaylist(10, [], false);
+    await assertModelPlaylist(10, [], false, 2);
     await db.pool.query(readFileSync('neon/migrations/52_playlist_curations.sql', 'utf8'));
     const add = async (job: string, values: Record<string, unknown> = {}) => {
       const row = {

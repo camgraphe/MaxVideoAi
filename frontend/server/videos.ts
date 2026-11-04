@@ -1,5 +1,6 @@
 import { marketingVideoReader } from '@/server/marketing-media/public-read';
 import { listCatalogPage } from './videos-catalog-page';
+import { readModelPlaylistPage } from './playlists/direct-membership';
 import { createCurationReadScope, listPlaylistVideosWithOptions, listCuratedGalleryVideos, readPlaylistVideoSelection, type CurationReadScope } from './videos-playlists';
 import { BASE_SELECT, BASE_SELECT_FOR_REUSE, BASE_SELECT_WITH_SETTINGS, PUBLIC_VIDEO_SOURCE_ELIGIBILITY } from './videos-query';
 import { getLocalPublicExample, isLocalPublicExamplesEnabled, listLocalPublicExamples } from './local-public-examples';
@@ -169,7 +170,10 @@ export async function listPlaylistVideos(slug: string, limit: number, curationSc
 /** An explicitly managed empty playlist suppresses model-page marketing fallbacks. */
 export async function listModelExamplePlaylist(slug: string, limit: number) {
   if (shouldSkipBuildTimeMarketingVideoQueries()) return { videos: [], managed: false };
-  return readPlaylistVideoSelection({ slug, limit });
+  if (isLocalPublicExamplesEnabled() || !Number.isSafeInteger(limit) || limit < 0) {
+    return readPlaylistVideoSelection({ slug, limit });
+  }
+  return readModelPlaylistPage(slug, limit);
 }
 
 async function listAllPlaylistVideos(slug: string, curationScope?: CurationReadScope): Promise<GalleryVideo[]> {
