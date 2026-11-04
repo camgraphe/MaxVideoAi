@@ -333,3 +333,45 @@ decodes the prepared late video/audio sections to verify their content, not only
 their duration. The PostgreSQL quote/charge test keeps its simulated provider.
 See `docs/redesign/2026-11-04-character-studio/recast-test-report.md` for the local
 rehearsal results and remaining live-browser/provider verification limits.
+
+### Price and payment validation (2026-11-04)
+
+`tests/helpers/character-recast-harness.ts` creates a disposable PG17 ledger and
+reviewed test tariff cells through the existing append-only owner. It substitutes
+only the provider execution and excerpt storage boundaries; preparation,
+normalization, ownership, quote locking, reservation and receipts remain real.
+The price matrix covers three modes, three resolutions and three durations,
+independent 7.5 s video / 5.25 s audio excerpts, all six framings and input/output
+limits. Nano Banana 2.1 creation/editing checks cover one image at 1K/2K/4K,
+including the displayed tariff revision and immutable receipt. These fixtures
+establish consistency, not approval of a new commercial tariff.
+
+Wan 3 Prime reference mode now preserves authored reference order, just like its
+video-edit mode. The Recast brief explicitly identifies image 1 as the character
+and image 2 as the optional product. Never sort these by asset ID: that can change
+the meaning of a product scene.
+
+The confirmation UI retains an uncertain purchase after network failure, keeps
+the setup locked and offers recovery using the same quote even after expiry.
+Only a definitive rejection allows a new review. The server already recovers
+claimed/accepted quotes before enforcing expiry; it never resubmits them.
+Insufficient funds offers a billing link in a separate tab, and the same reviewed
+quote can be retried after topup. The server remains authoritative for funds.
+This retention lasts for the mounted draft; reload/account persistence remains
+part of the separate journey validation task.
+
+Recast PostgreSQL tests verify expired/tampered quotes, tariff revision changes,
+fund depletion, concurrent confirmation, lost-response recovery, one-time refund,
+unknown provider acceptance and a failed output copy followed by storage recovery.
+The copy test uses the actual Alibaba poll owner against the disposable ledger;
+provider task reads, storage and media projection adapters remain simulated.
+
+### Hosted preview and commercial policy
+
+A hosted preview may run real paid generations. It needs its own migrated test
+database and accounts/wallet, HTTPS media storage reachable by the provider,
+provider credentials/routing, working excerpt workers, and a poller targeting that
+same database until originals are durably copied. Do not assume production cron
+automatically follows a preview. The localhost-only rehearsal is a different mode.
+See `docs/redesign/2026-11-04-character-studio/preview-and-pricing.md` for the
+current setup evidence, proposed tariff comparison and content promotion path.

@@ -13,13 +13,13 @@
 ## Global Constraints
 
 - Même branche `codex/character-studio-v2`. Point de départ `d74abb946`.
-- « on garde le rendu réel pour plus tard ». Aucune génération payante, activation ou publication dans les tâches 1–4.
+- Demande initiale : « on garde le rendu réel pour plus tard ». Précision du 4 novembre : qualifier une preview pour générer avant production et préparer le marketing. Aucun rendu payant ni activation dans les lots 1–2 ; une scène et un devis restent nécessaires avant les essais réels.
 - Nouvelles images, nouveaux looks et planches : Nano Banana 2.1. Une image par demande. Les reçus historiques gardent leur montant et leur modèle.
 - Nom public : MaxVideoAI Recast. Le fournisseur interne reste traçable en interne.
 - Résolutions Recast : 480p, 720p, 1080p. Cadrages : Auto, 9:16, 16:9, 1:1, 3:4, 4:3.
 - Passages vidéo/audio indépendants de 15 s maximum. Sortie de 2 à 30 s entières, avec vidéo d'entrée + sortie ≤30 s.
 - Suggestion de dialogue à 150 mots/minute, priorité vidéo puis audio, durée manuelle conservée.
-- Les tests utilisent le tarif courant. Le prix commercial « deux fois le coût fournisseur » demeure une proposition, pas une règle autorisée.
+- Les tests de cohérence utilisent une grille active déterministe sur PostgreSQL jetable. Recast doit avoir une marge supérieure au modèle direct ; « deux fois le coût fournisseur » reste une proposition. Voir `docs/redesign/2026-11-04-character-studio/preview-and-pricing.md`.
 - Aucun montant calculé par le navigateur n'autorise un débit. Aucun montant historique ne devient le tarif d'un nouveau rendu.
 - Les migrations applicatives restent dans `neon/migrations`. Aucun bootstrap de schéma dans une requête.
 - L'ouverture du navigateur par Codex et son contrôle automatisé sont deux capacités distinctes. Le contrôle était désactivé lors de cette reprise.
@@ -54,13 +54,13 @@ preuve automatique de leur présentation dans ce nouveau parcours.
 
 **Interfaces :** `prepareRecast(actor, value, deps)` consomme les références possédées et renvoie le devis et les durées mesurées. `confirmRecast(actor, value, generation)` consomme l'identifiant du devis, `confirmed: true`, `amountCents` et `currency: 'USD'`. `readRecastPublicPrice(input)` reste un lecteur sans débit.
 
-- [ ] Construire une matrice de 27 scénarios valides : modes `i2v/ref2v/v2v`, trois résolutions, sorties de 2/8/15 s. Pour v2v, utiliser un extrait de 7,5 s dans un original de 25,6 s. Ajouter séparément les limites 15+15, 15+16 refusé et la référence audio 5,25 s sans vidéo.
-- [ ] Tester sur une même révision de tarif : estimation normalisée = devis serveur pour les mêmes médias mesurés. Affirmer que l'original de 25,6 s et la durée audio ne deviennent pas des secondes vidéo facturées. Ne pas coder en dur le tarif commercial de novembre.
-- [ ] Tester les six cadrages, ainsi que portrait + produit en inversant l'ordre lexical des identifiants : les rôles envoyés au fournisseur doivent rester ceux choisis. Vérifier la correspondance prompt/références, pas seulement leur présence.
-- [ ] Vérifier les nouvelles images Nano Banana 2.1 aux résolutions proposées : estimation et réservation portent la même révision et une seule image. Le test des produits historiques continue à réussir.
-- [ ] Exécuter ces tests avant toute correction. Corriger uniquement les écarts démontrés dans le propriétaire existant, puis relancer les cas concernés.
-- [ ] Exécuter `node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/character-studio-recast-price-parity-postgres.test.ts tests/character-studio-recast-generation-postgres.test.ts tests/character-builder-pricing-postgres.test.ts`. Attendu : zéro échec.
-- [ ] Commit local des tests et des éventuelles corrections. Si une politique 2× est ensuite choisie, en faire une livraison tarifaire distincte suivant le guide de tarification, avec effet limité à Recast.
+- [x] Construire une matrice de 27 scénarios valides : modes `i2v/ref2v/v2v`, trois résolutions, sorties de 2/8/15 s. Pour v2v, utiliser un extrait de 7,5 s dans un original de 25,6 s. Ajouter séparément les limites 15+15, 15+16 refusé et la référence audio 5,25 s sans vidéo.
+- [x] Tester sur une même révision de tarif : estimation normalisée = devis serveur pour les mêmes médias mesurés. Affirmer que l'original de 25,6 s et la durée audio ne deviennent pas des secondes vidéo facturées. Ne pas coder en dur le tarif commercial de novembre.
+- [x] Tester les six cadrages, ainsi que portrait + produit en inversant l'ordre lexical des identifiants : les rôles envoyés au fournisseur doivent rester ceux choisis. Vérifier la correspondance prompt/références, pas seulement leur présence.
+- [x] Vérifier les nouvelles images Nano Banana 2.1 aux résolutions proposées : estimation et réservation portent la même révision et une seule image. Le test des produits historiques continue à réussir.
+- [x] Exécuter ces tests avant toute correction. Corriger uniquement les écarts démontrés dans le propriétaire existant, puis relancer les cas concernés.
+- [x] Exécuter `node scripts/run-postgres-tests.mjs pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/character-studio-recast-price-parity-postgres.test.ts tests/character-studio-recast-generation-postgres.test.ts tests/character-builder-pricing-postgres.test.ts`. Attendu : zéro échec.
+- [x] Commit local des tests et des éventuelles corrections. Si une politique 2× est ensuite choisie, en faire une livraison tarifaire distincte suivant le guide de tarification, avec effet limité à Recast.
 
 **Acceptation :** aucune divergence inexpliquée entre demande normalisée, devis et réservation. Si la préparation modifie une durée mesurée, sa conséquence sur le prix est visible avant confirmation.
 
@@ -74,12 +74,12 @@ preuve automatique de leur présentation dans ce nouveau parcours.
 
 **Interfaces :** `prepareRecastQuote(setup, cache, signal): Promise<RecastQuote>` et `confirmRecastQuote(quote): Promise<{jobId,status}>` restent les frontières client. Les tests utilisent un `WalletRecastQuote` et un fournisseur simulé, jamais le mode réel local.
 
-- [ ] Tester devis expiré, montant/devise altérés, solde insuffisant et tarif modifié entre préparation et confirmation. Attendu : aucun nouveau job accepté ni débit sur un devis refusé.
-- [ ] Tester double clic et perte de réponse après acceptation. Attendu : un seul job, un seul appel fournisseur, un seul débit et un lien vers le job récupéré.
-- [ ] Tester rejet terminal fournisseur, échec de copie du résultat puis récupération, et statut fournisseur momentanément inconnu. Réutiliser les règles existantes : pas de resoumission aveugle, pas de remboursement tant qu'une acceptation reste indéterminée. Si le chemin terminal est remboursable, montant du remboursement = débit, une fois seulement.
-- [ ] Vérifier dans l'interface les états de ces cas : action de reprise possible, texte compréhensible et aucun bouton permettant de confirmer un devis périmé.
-- [ ] Exécuter les nouveaux tests et `tests/mcp-paid-generation-postgres.test.ts` avec le lanceur PostgreSQL jetable. Attendu : zéro échec, fournisseurs exclusivement simulés.
-- [ ] Commit local avec preuve des soldes et du nombre de reçus dans les tests.
+- [x] Tester devis expiré, montant/devise altérés, solde insuffisant et tarif modifié entre préparation et confirmation. Attendu : aucun nouveau job accepté ni débit sur un devis refusé.
+- [x] Tester double clic et perte de réponse après acceptation. Attendu : un seul job, un seul appel fournisseur, un seul débit et un lien vers le job récupéré.
+- [x] Tester rejet terminal fournisseur, échec de copie du résultat puis récupération, et statut fournisseur momentanément inconnu. Réutiliser les règles existantes : pas de resoumission aveugle, pas de remboursement tant qu'une acceptation reste indéterminée. Si le chemin terminal est remboursable, montant du remboursement = débit, une fois seulement.
+- [x] Vérifier dans l'interface les états de ces cas : action de reprise possible, texte compréhensible et aucun bouton permettant de confirmer un devis périmé.
+- [x] Exécuter les nouveaux tests et `tests/mcp-paid-generation-postgres.test.ts` avec le lanceur PostgreSQL jetable. Attendu : zéro échec, fournisseurs exclusivement simulés.
+- [x] Commit local avec preuve des soldes et du nombre de reçus dans les tests.
 
 **Acceptation :** montant confirmé = montant débité = montant du reçu historique. Une reprise ne crée jamais un second achat involontaire.
 
@@ -137,3 +137,11 @@ Commencer par 1 puis 2, pendant que le rendu réel reste fermé. Jouer 3 et 4 su
 base de test. L'étape 5 reste différée. Les tâches portent sur les preuves manquantes,
 pas sur un nouveau tour de décoration de l'interface. Ce fichier est un plan,
 aucune de ses cases n'est présentée comme déjà exécutée.
+
+## Exécution des lots 1–2 (4 novembre 2026)
+
+119 tests ciblés réussis ; matrice de 37 tests rejouée après assertion du snapshot immuable.
+TypeScript, lint (0 erreur, 7 avertissements préexistants), exposition et diff passent.
+Tests supplémentaires : `character-studio-nano21-price-postgres`, `character-studio-recast-payment-postgres`,
+et fixture commune `helpers/character-recast-harness`. Compte rendu détaillé dans le rapport Recast.
+Les lots 3–5 restent ouverts ; aucune preview distante ni génération fournisseur activée.

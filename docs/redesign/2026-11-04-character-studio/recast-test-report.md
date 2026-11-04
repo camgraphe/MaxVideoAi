@@ -65,3 +65,49 @@ erreur et les sept avertissements préexistants hors de cette modification.
 Le contrôle local du navigateur est désactivé dans les réglages du compte Codex.
 Aucune nouvelle vérification visuelle dans un navigateur n'est revendiquée.
 Le rendu fournisseur réel et le débit réel restent reportés sur décision utilisateur.
+
+## Complément — lots 1 et 2, prix et paiement
+
+119 tests ciblés passent sur la branche, avec les fournisseurs simulés et une
+base PostgreSQL 17 jetable. Ce total correspond à la sélection de cette
+intervention ; il ne s'ajoute pas aux 196 précédents, qui recouvrent d'autres tests.
+La matrice de 37 tests a ensuite été rejouée après ajout de l'égalité intégrale
+entre snapshot tarifaire du devis et du reçu : zéro échec.
+
+- 27 combinaisons : i2v/ref2v/v2v × 480p/720p/1080p × 2/8/15 s, avec une même
+  grille de test active. Estimation = devis = débit = reçu. Le snapshot et la
+  révision restent liés, sans montant commercial de novembre codé en dur.
+- Six cadrages, frontière 15+15 s, rejet 15+16 s, audio seul de 5,25 s et vidéo
+  de 7,5 s sélectionnée dans un original de 25,6 s. L'audio et l'original complet
+  ne sont pas facturés comme secondes vidéo supplémentaires.
+- Portrait et produit d'identifiants inversés lexicalement : défaut reproduit en
+  ref2v, corrigé par conservation de l'ordre. Le prompt désigne désormais image 1
+  comme personnage, image 2 comme produit. Le payload réellement soumis au
+  fournisseur simulé est vérifié dans les deux modes.
+- Nano Banana 2.1 : six cas création/look × 1K/2K/4K. Une image, même montant et
+  révision entre estimation, réservation et reçu ; seconde réservation idempotente.
+  Les tests des produits Character Builder historiques passent toujours.
+- Propriétaire/montant/devise/consentement altérés, expiration, changement de
+  révision tarifaire et solde vidé après revue : aucun débit/job sur refus.
+- Double clic, réponse perdue et reprise après expiration : un job, un appel
+  fournisseur, un débit. Rejet terminal : un remboursement du montant exact.
+  Acceptation inconnue : pas de remboursement ni de nouvelle soumission aveugle.
+- Échec de copie du résultat puis récupération : même job fournisseur, deux
+  tentatives de stockage, une publication du résultat et un débit conservé.
+- Interface : récupération du même devis après réponse perdue, verrouillage du
+  brouillon incertain, expiration des devis non confirmés, lien de recharge
+  disponible même si le solde a baissé après la préparation, reprise après recharge
+  et lien vers le job échoué plutôt qu'un second achat.
+
+TypeScript et contrôle d'exposition réussis. ESLint : zéro erreur, sept
+avertissements préexistants hors modification. `git diff --check` réussit.
+Pas de nouvelle recette visuelle navigateur ; pas de qualification fournisseur.
+La conservation d'une confirmation après rechargement complet reste au lot 3.
+
+L'utilisateur a depuis précisé qu'une **preview doit permettre des rendus réels
+avant production**, pour créer les futurs contenus Explorer/marketing. Cette
+possibilité et ses raccordements sont documentés dans
+[preview-and-pricing.md](preview-and-pricing.md). La branche n'est pas encore
+déployée et le mode réel n'est pas activé. La marge Recast supérieure au modèle
+direct est demandée, mais son montant exact n'est pas choisi : aucune nouvelle
+politique commerciale ni modification du tarif direct dans cette intervention.
