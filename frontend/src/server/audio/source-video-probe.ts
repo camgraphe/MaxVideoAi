@@ -13,13 +13,13 @@ export const downloadAudioSourceVideo = createBoundedMediaDownloader({
   maxBytes: videoUploadLimitBytes(),
 });
 
-async function probeFile(file: string) {
+async function probeFile(file: string, signal?: AbortSignal) {
   if (!ffprobe.path) throw new Error('Video inspection is unavailable.');
   const { stdout } = await execFileAsync(ffprobe.path, [
     '-v', 'error', '-protocol_whitelist', 'file,pipe', '-format_whitelist', 'mov,matroska,webm',
     '-show_entries', 'stream=codec_type,width,height,duration:stream_disposition=attached_pic:format=duration',
     '-of', 'json', file,
-  ], { timeout: 15_000, maxBuffer: 1024 * 1024 });
+  ], { timeout: 15_000, maxBuffer: 1024 * 1024, signal });
   return JSON.parse(stdout) as {
     streams?: Array<{ codec_type?: string; width?: number; height?: number; duration?: string; disposition?: { attached_pic?: number } }>;
     format?: { duration?: string };
@@ -27,14 +27,17 @@ async function probeFile(file: string) {
 }
 
 /** Resolve public DNS and bound redirects/bytes before inspecting a local file. Original signed URLs remain untouched. */
-export async function inspectSourceVideo(videoUrl: string, overrides: Partial<{ download: typeof downloadAudioSourceVideo; probe: typeof probeFile }> = {}) {
+export async function inspectSourceVideo(videoUrl: string, overrides: Partial<{ download: typeof downloadAudioSourceVideo; probe: typeof probeFile; signal: AbortSignal }> = {}) {
   const dependencies = { download: downloadAudioSourceVideo, probe: probeFile, ...overrides };
-  const file = await dependencies.download({ file_id: 'audio-source-probe', download_url: videoUrl });
+  const file = await dependencies.download({ file_id: 'audio-source-probe', download_url: videoUrl },{signal:overrides.signal});
+  overrides.signal?.throwIfAborted();
   const directory = await mkdtemp(join(tmpdir(), 'audio-source-probe-'));
   try {
     const source = join(directory, 'source');
     await writeFile(source, file.bytes);
-    const metadata = await dependencies.probe(source);
+    overrides.signal?.throwIfAborted();
+    const metadata = await dependencies.probe(source,overrides.signal);
+    overrides.signal?.throwIfAborted();
     const video = metadata.streams?.find(stream => stream.codec_type === 'video' && stream.disposition?.attached_pic !== 1);
     const durationSec = Number(metadata.format?.duration ?? video?.duration);
     if (!video || ![durationSec, video.width, video.height].every(value => typeof value === 'number' && Number.isFinite(value) && value > 0)) {

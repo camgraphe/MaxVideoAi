@@ -4,6 +4,23 @@ import test from 'node:test';
 import { createReferenceFileDownloader } from '../frontend/src/server/agent-api/reference-file-download';
 import { inspectSourceVideo } from '../frontend/src/server/audio/source-video-probe';
 
+test('video inspection forwards cancellation to pinned download and local probe',async()=>{
+  const controller=new AbortController();let probes=0;
+  const download:NonNullable<Parameters<typeof inspectSourceVideo>[1]>['download']=async(_file,options)=>{assert.equal(options?.signal,controller.signal);return {bytes:Buffer.from('synthetic'),mimeType:'video/mp4',fileName:'source'};};
+  await assert.rejects(inspectSourceVideo('https://source.test/video.mp4',{signal:controller.signal,download,probe:async(_file,signal)=>{
+    assert.equal(signal,controller.signal);probes++;controller.abort();return {streams:[{codec_type:'video',width:720,height:1280}],format:{duration:'6'}};
+  }}));
+  assert.equal(probes,1);
+});
+
+test('an aborted DNS lookup cannot open a later download connection',async()=>{
+  const controller=new AbortController();let open=0,release:()=>void=()=>{};
+  const lookup=new Promise<Array<{address:string;family:4}>>(resolve=>{release=()=>resolve([{address:'8.8.8.8',family:4}]);});
+  const download=createReferenceFileDownloader({lookupHost:()=>lookup,openPinnedHttps:async()=>{open++;throw Error('must not open');}},{accepted:['video/mp4'],maxBytes:100});
+  const pending=download({download_url:'https://source.test/video.mp4',file_id:'source'},{signal:controller.signal});
+  controller.abort();await assert.rejects(pending);release();assert.equal(open,0);
+});
+
 test('audio source rejects private hosts, mixed DNS and private redirects before any probe', async () => {
   let probes = 0;
   for (const url of ['http://127.0.0.1/video.mp4', 'https://127.0.0.1/video.mp4', 'https://mixed.example/video.mp4', 'https://redirect.example/video.mp4']) {

@@ -39,6 +39,17 @@ data only; no application action is exposed or executed.
   credits before reservation/dispatch. Images require no separate analysis quote.
 - `reference-analysis.ts` validates the full current generator draft before creating
   an owned composer session and preparing an analysis. No invented Studio project.
+  Explicit cost review qualifies a selected video whose saved duration is missing,
+  including older owned job outputs and sound analysis of video. Existing profile,
+  scope and Milo level admission precedes any download. The shared owned-video
+  inspector reads the exact original with its ownership, DNS pinning and 100 MiB
+  bounds; canonical persisted facts and original identity are rechecked before
+  saving the quote and selection. Requested/client duration is never evidence.
+  One 20-second preparation budget covers context validation through qualification
+  and quote creation, below the browser's 30-second wait; cancellation reaches
+  DNS, HTTP and FFprobe and prevents late measurement/quote writes. Failed
+  verification starts no analysis or credit reservation and leaves no browser
+  recovery lock. GET, history, confirmation and recovery never qualify media.
 - The existing Studio source/provider/worker/credit ledger owners perform bounded
   extraction, reserve existing credits, dispatch once, save evidence and settle.
   No generation, purchase, tier switch or extra synthesis call follows completion.

@@ -64,9 +64,12 @@ async function readBoundedResponse(
 export function createReferenceFileDownloader(
   dependencies: ReferenceFileDownloaderDependencies,
   policy: DownloadMediaPolicy,
-): (file: HostReferenceFile) => Promise<DownloadedReferenceFile> {
+): (file: HostReferenceFile, options?: {signal?: AbortSignal}) => Promise<DownloadedReferenceFile> {
   if (!policy.accepted.length || (typeof policy.maxBytes === 'number' && (!Number.isSafeInteger(policy.maxBytes) || policy.maxBytes < 1))) throw new Error('Invalid download policy.');
-  return async (file) => readBoundedResponse(await openPublicHttpsResponse(file.download_url, dependencies), file, policy);
+  return async (file, options) => {
+    const result=await readBoundedResponse(await openPublicHttpsResponse(file.download_url, dependencies, options), file, policy);
+    options?.signal?.throwIfAborted();return result;
+  };
 }
 
 
