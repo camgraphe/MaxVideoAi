@@ -191,6 +191,7 @@ before deploying the saved-character endpoints. It adds account-owned identities
 and looks, with composite ownership references and unique source-output keys.
 It does not alter jobs, original media, wallets or existing generation history.
 Keep these tables if rolling back the UI; no runtime reader performs DDL.
-The explicit application bootstrap includes the same additive SQL. Validation
+On a new database run the baseline bootstrap first, then apply migrations in
+order: 93 requires the profiles table from migration 00. Validation
 used disposable PostgreSQL 17 only; no hosted migration was applied for this
 implementation. See `docs/engineering/character-studio.md` for endpoint ownership.

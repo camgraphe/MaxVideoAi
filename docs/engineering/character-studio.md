@@ -84,7 +84,8 @@ account media must be validated in an appropriately configured test environment.
 
 `frontend/server/character-studio/` owns authenticated persistence and source
 validation. Apply `neon/migrations/93_character_studio.sql` explicitly before
-enabling the new endpoints; the application baseline bootstrap also includes it.
+enabling the new endpoints. On a new database, bootstrap the baseline and then
+apply the ordered migrations, including 00 (profiles) before 93.
 No request creates tables. Missing schema/configuration returns private, no-store
 503 responses and a retryable library error; no local success is fabricated.
 
@@ -132,10 +133,13 @@ video generation, provider routing, quotes and transactions remain a later slice
 Focused coverage: `character-studio-library-postgres`, `character-studio-routes`,
 `character-studio-look`, `character-studio-library-client`, `character-studio-ui`
 plus the existing account lifecycle and workspace/server architecture suites.
-Database success paths run on disposable PostgreSQL 17. Browser QA covers desktop
-1280×720 and mobile 390×844 navigation and honest unavailable states; this local
-server has no database/provider configuration. No hosted migration or paid
-generation was performed in this delivery.
+Database tests use disposable PostgreSQL 17. The local test preview was also
+verified with a persistent PostgreSQL 17 database, migration 93, loopback S3
+storage and the Google Vertex image provider. An authenticated browser saved a
+starter portrait, generated one look, reopened it after a reload and handed the
+original to Recast. A local wallet credit permits testing the normal reservation
+and charge path. Provider usage is real. For a development preview without GCS,
+`GOOGLE_VERTEX_IMAGE_INLINE_ONLY=1` limits input references to 7 MiB each.
 
 ## Compact editor and Recast draft (2026-11-03)
 

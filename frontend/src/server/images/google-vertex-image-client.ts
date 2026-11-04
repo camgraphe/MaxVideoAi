@@ -40,7 +40,8 @@ export function isGoogleVertexImageConfigured(env: NodeJS.ProcessEnv = process.e
   return Boolean(
     env.GOOGLE_VERTEX_PROJECT_ID?.trim() &&
       env.GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON?.trim() &&
-      (env.GOOGLE_VERTEX_INPUT_GCS_URI?.trim() || env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI?.trim())
+      (env.GOOGLE_VERTEX_INPUT_GCS_URI?.trim() || env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI?.trim() ||
+        (env.NODE_ENV === 'development' && env.GOOGLE_VERTEX_IMAGE_INLINE_ONLY === '1'))
   );
 }
 
