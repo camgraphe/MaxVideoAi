@@ -13,6 +13,21 @@ function Fixture(){const[busy,setBusy]=useState(false),[settings,setSettings]=us
 {settings&&<div role="dialog" aria-label="Milo settings">Existing credits and levels</div>}</>;}
 createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
+test('failed duration verification never locks recovery or implies a paid analysis started',{timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{model:'gpt-6.1-terra'}}),browser=await chromium.launch({headless:true});
+ try{
+  const page=await browser.newPage(),actions:string[]=[];
+  await page.route('**/api/prompt-assistance/analyses**',async route=>{actions.push(route.request().postDataJSON().action);return route.fulfill({status:503,json:{ok:false,error:'REFERENCE_DURATION_UNKNOWN'}});});
+  await page.goto(fixture.url);await page.getByRole('button',{name:'Review analysis cost'}).click();
+  await expect(page.getByRole('alert')).toContainText('No analysis started. Keep the original selected and retry verification');
+  await expect(page.locator('[data-analysis-busy]')).toHaveText('false');
+  await expect(page.getByRole('button',{name:'Composer action'})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Check analysis',exact:true})).toHaveCount(0);
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('milo-analysis:funding-review')),null);
+  assert.deepEqual(actions,['prepare']);
+ }finally{await browser.close();await fixture.close();}
+});
+
 for(const [model,httpStatus] of [['gpt-6.1-terra',402],['gpt-6.1-sol',409]] as const)test(`known ${httpStatus} analysis funding rejection keeps the quote and unlocks ${model} settings`,{timeout:90_000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config:{model}}),browser=await chromium.launch({headless:true});
  try{
