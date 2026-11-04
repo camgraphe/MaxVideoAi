@@ -54,7 +54,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
     const same=previous&&samePreviousReply(previous,pointer);
     remember({...pointer,deadlineAt:same?previous.deadlineAt??pointer.deadlineAt:pointer.deadlineAt,status:same&&previous.status==='unknown'?'unknown':'pending'},previous??undefined);
   }
-  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,references:owner.pending.references}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
+  function snapshot(){return {sessionId:owner.sessionId,pending:owner.pending?{sessionId:owner.pending.sessionId,requestId:owner.pending.requestId,references:owner.pending.references?.length?owner.pending.references:undefined}:null,pendingReview:owner.pendingReview,local:owner.local,legacy:owner.legacy};}
   function save(){return !!owner.sessionId&&writePromptChat(storageKey,snapshot());}
   function persistRevocation(revokePending=true){
     if(owner.local?.proposal?.review)owner.local.proposal.review.compatible=false;
@@ -193,7 +193,7 @@ export function usePromptAssistanceTransport(scopeKey:string,enabled:boolean,onR
   function send(request:Omit<PromptAssistanceRequest,'sessionId'|'requestId'>,uiId:number,review?:()=>Promise<Omit<PromptPendingReview,'requestId'>>){
     if(!enabled||!active()||owner.pending||owner.waiting||owner.loading||view.loadError||owner.exhausted||owner.previousRef&&owner.previousRef.status!=='terminal')return false;
     if(request.message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS){update({error:'MESSAGE_TOO_LONG'});return false;}
-    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId,references:request.draft.references.map(({fieldId,slot,label})=>({fieldId,slot,label}))};owner.pending=pending;owner.pendingReview=undefined;remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:pending.sessionId,requestId:pending.requestId,status:'admitting'});save();update({recovery:false,error:null,unavailableReferenceLabel:null});
+    owner.sessionId ||= crypto.randomUUID();const pending={sessionId:owner.sessionId,requestId:crypto.randomUUID(),uiId,references:request.draft.references.length?request.draft.references.map(({fieldId,slot,label})=>({fieldId,slot,label})):undefined};owner.pending=pending;owner.pendingReview=undefined;remember({version:1,scopeKey,serverScope:callbacks.current.options?.scope??'',sessionId:pending.sessionId,requestId:pending.requestId,status:'admitting'});save();update({recovery:false,error:null,unavailableReferenceLabel:null});
     const epoch=owner.localEpoch,chatEpoch=owner.chatEpoch;
     void (async()=>{
       try{
