@@ -129,11 +129,11 @@ export const frPayAsYouGoContent = {
     ],
   },
   workflow: {
-    workspace: { capture: "milo-fr", alt: "Atelier vidéo avec le film californien, Milo pour Seedance 2.5 et le prix sur Générer.", caption: "Le film californien rouvert dans l’atelier vidéo, onglet Milo sélectionné. Le prix affiché correspond aux réglages de cette capture.", open: "Ouvrir cette scène dans l’atelier" },
+    workspace: { capture: "milo-fr-gameshow", phoneHeight: 1278, alt: "Un plateau de jeu télé rétro dans l’atelier vidéo, une consigne de caméra saisie dans Milo Lite pour Wan 3 Prime et le devis sur Générer.", caption: "Un jeu télé de cinq secondes réalisé avec Wan 3 Prime. Dans cet atelier connecté, une consigne attend dans Milo Lite. Le prix sur Générer correspond à un nouvel essai avec les réglages affichés.", open: "Ouvrir cette scène dans l’atelier" },
     assistance: {"milo": {"title": "Une idée, mais pas de prompt ? Voici Milo →", "body": "Décrivez ce que vous voulez avec vos mots. Milo aide à écrire un prompt adapté au modèle et aux références. Connectez-vous pour discuter ; Lite est sans frais d’assistance supplémentaires."}, "studio": {"title": "Un projet plus large ? Passez à Studio →", "body": "Discutez du brief, préparez les scènes et vérifiez chaque devis de génération. Standard et Max utilisent les mêmes crédits Milo dans Studio et les générateurs."}},
     header: {
       title: 'Comment fonctionne le paiement à l’usage',
-      intro: "Retrouvez le film californien dans l’atelier. Choisissez un modèle, ouvrez Milo pour travailler le prompt et vérifiez le devis sur le bouton Générer.",
+      intro: "Sur ce plateau de jeu télé, tout part d’un mouvement de caméra. Ouvrez la scène, travaillez la consigne avec Milo et vérifiez le devis avant de générer.",
     },
     items: [
       { title: "Choisissez le modèle", body: "Partez du plan à filmer et des références dont vous disposez.", icon: 'engine' },

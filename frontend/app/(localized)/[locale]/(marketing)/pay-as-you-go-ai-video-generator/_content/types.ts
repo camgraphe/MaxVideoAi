@@ -111,7 +111,7 @@ export type PayAsYouGoContent = {
     columns: [string, string, string];
     rows: Array<{ label: string; payg: string; subscription: string }>;
   };
-  workflow: { workspace: { capture: string; alt: string; caption: string; open: string }; header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }>; assistance: { milo: PaygCard; studio: PaygCard } };
+  workflow: { workspace: { capture: string; phoneHeight: number; alt: string; caption: string; open: string }; header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }>; assistance: { milo: PaygCard; studio: PaygCard } };
   mcpPlanning: { title: string; body: string };
   quoteFactors: { header: PaygHeaderCopy; items: Array<PaygCard & { icon: PaygIconId }> };
   pricing: {

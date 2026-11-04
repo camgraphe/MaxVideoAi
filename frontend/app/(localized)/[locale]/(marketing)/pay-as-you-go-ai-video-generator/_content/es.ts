@@ -129,11 +129,11 @@ export const esPayAsYouGoContent = {
     ],
   },
   workflow: {
-    workspace: { capture: "milo-es", alt: "Taller de video con la película de California, Milo para Seedance 2.5 y el precio en Generar.", caption: "La película de California en el taller de video con la pestaña de Milo abierta. El precio corresponde a los ajustes de esta captura.", open: "Abrir esta escena en el taller" },
+    workspace: { capture: "milo-es-gameshow", phoneHeight: 1351, alt: "Un concurso de televisión retro en el taller de video, una indicación de cámara escrita en Milo Lite para Wan 3 Prime y la cotización en Generar.", caption: "Un concurso de cinco segundos creado con Wan 3 Prime. En esta sesión iniciada hay una indicación lista para Milo Lite. El precio en Generar corresponde a un nuevo render con los ajustes que ves.", open: "Abrir esta escena en el taller" },
     assistance: {"milo": {"title": "¿Una idea, pero sin prompt? Conoce a Milo →", "body": "Describe lo que quieres con tus palabras. Milo ayuda a escribir un prompt para el modelo y las referencias elegidos. Inicia sesión para chatear; Lite no añade cargos de asistencia."}, "studio": {"title": "¿Un proyecto más grande? Empieza en Studio →", "body": "Habla sobre el brief, prepara las escenas y revisa cada cotización de generación. Standard y Max usan los mismos créditos Milo en Studio y en los generadores."}},
     header: {
       title: 'Cómo funcionan los créditos de pago por uso',
-      intro: "Abre la película de California en el taller. Elige un modelo, abre Milo para trabajar el prompt y revisa la cotización en el botón Generar.",
+      intro: "En este concurso de televisión, la escena parte de un movimiento de cámara. Abre el plano, trabaja la indicación con Milo y revisa la cotización antes de generar.",
     },
     items: [
       { title: "Elige el modelo", body: "Parte del plano que imaginas y de las referencias que tienes.", icon: 'engine' },

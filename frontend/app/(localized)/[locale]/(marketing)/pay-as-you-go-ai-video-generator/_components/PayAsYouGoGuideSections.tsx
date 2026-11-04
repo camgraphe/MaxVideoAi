@@ -1,6 +1,5 @@
 import Image, { getImageProps } from 'next/image';
 import { ArrowUpRight, CheckCircle2, ChevronDown, Clapperboard, Sparkles } from 'lucide-react';
-import { CALIFORNIA_CURSOR_FILM } from '@/config/california-cursor-film';
 import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
 import { Link } from '@/i18n/navigation';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
@@ -108,23 +107,23 @@ export function PayAsYouGoSubscriptionComparisonSection({ data }: PayAsYouGoPage
 export function PayAsYouGoWorkflowSection({ data }: PayAsYouGoPageDataProps) {
   const { workspace, assistance } = data.workflow;
   const base = `/assets/marketing/payg/${workspace.capture}`;
-  const desktop = getImageProps({ src: `${base}-wide.webp`, alt: workspace.alt, width: 1450, height: 1019, sizes: '(min-width: 1024px) 670px, 92vw' }).props;
-  const mobile = getImageProps({ src: `${base}-phone.webp`, alt: workspace.alt, width: 570, height: 660, sizes: '90vw' }).props;
-  const film = CALIFORNIA_CURSOR_FILM;
+  const desktop = getImageProps({ src: `${base}-wide.webp`, alt: workspace.alt, width: 1410, height: 1418, sizes: '(min-width: 640px) 570px, 92vw' }).props;
+  const mobile = getImageProps({ src: `${base}-phone.webp`, alt: workspace.alt, width: 700, height: workspace.phoneHeight, sizes: '90vw' }).props;
+  const workspaceHref = '/app?engine=wan-3-prime&from=d642825b-7a63-448a-b0dd-e32bf38782d0';
   return (
     <section id="payg-workspace" data-payg-workflow="" className="scroll-mt-20 bg-surface">
       <div className={`${PAYG_CONTAINER_CLASS_NAME} py-10 sm:py-16`}>
-        <div className="grid items-center gap-7 lg:grid-cols-[.68fr_1.32fr] lg:gap-12">
+        <div className="grid items-center gap-7 lg:grid-cols-[.82fr_1.18fr] lg:gap-14">
           <div>
             <PayAsYouGoSectionHeader {...data.workflow.header} />
-            <Link href={`/app?engine=${film.modelSlug}&from=${film.jobId}`} prefetch={false} className="mt-5 inline-flex min-h-11 items-center gap-1.5 border-b border-brand text-sm font-semibold text-brand hover:text-text-primary">
+            <Link href={workspaceHref} prefetch={false} className="mt-5 inline-flex min-h-11 items-center gap-1.5 border-b border-brand text-sm font-semibold text-brand hover:text-text-primary">
               {workspace.open}<ArrowUpRight aria-hidden className="h-4 w-4" />
             </Link>
           </div>
-          <figure className="min-w-0">
+          <figure className="mx-auto w-full min-w-0 max-w-[570px] lg:mr-0">
             <div className="overflow-hidden rounded-[12px] border border-[#cbb9a6] bg-[#dfd7ce] bg-[radial-gradient(ellipse_at_9%_12%,#f4cbb6_0%,transparent_57%),radial-gradient(ellipse_at_95%_95%,#b5c4d9_0%,transparent_66%)] p-3 sm:p-7">
               <picture className="block overflow-hidden rounded border border-black/15 bg-[#eeeee4] shadow-[0_8px_26px_#42392f28]">
-                <source media="(max-width: 639px)" srcSet={mobile.srcSet} sizes={mobile.sizes} width={570} height={660} />
+                <source media="(max-width: 639px)" srcSet={mobile.srcSet} sizes={mobile.sizes} width={700} height={workspace.phoneHeight} />
                 <img {...desktop} alt={workspace.alt} className="h-auto w-full" />
               </picture>
             </div>

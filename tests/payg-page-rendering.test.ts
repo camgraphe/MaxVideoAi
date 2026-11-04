@@ -322,8 +322,11 @@ for (const locale of locales) {
       assert.ok(!doc.querySelector('[data-nosnippet] [data-payg-quote-amount]'));
       assert.ok(film?.querySelector('img'));
       assert.equal(doc.querySelector('header video'), null, 'Watching the film is an explicit action');
-      assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]')?.getAttribute('srcset')?.includes(`milo-${locale}-phone.webp`));
-      assert.ok(doc.querySelector('[data-payg-workflow] picture img')?.getAttribute('src')?.includes(`milo-${locale}-wide.webp`));
+      assert.ok(doc.querySelector('[data-payg-workflow] picture source[media]')?.getAttribute('srcset')?.includes(`milo-${locale}-gameshow-phone.webp`));
+      assert.ok(doc.querySelector('[data-payg-workflow] picture img')?.getAttribute('src')?.includes(`milo-${locale}-gameshow-wide.webp`));
+      const workspaceLink = doc.querySelector('[data-payg-workflow] a[href*="from="]')?.getAttribute('href');
+      assert.equal(workspaceLink, '/app?engine=wan-3-prime&from=d642825b-7a63-448a-b0dd-e32bf38782d0');
+      assert.notEqual(workspaceLink, film?.getAttribute('href'), 'The product screenshot opens its own featured scene');
       const chapterLinks = [...doc.querySelectorAll<HTMLAnchorElement>('nav[aria-label] a')];
       assert.ok(chapterLinks.length >= 4 && chapterLinks.every(a => doc.getElementById(a.hash.slice(1))));
       assert.equal(doc.querySelector('[data-payg-receipt] select')?.querySelectorAll('option').length, data.pricing.rows.length);

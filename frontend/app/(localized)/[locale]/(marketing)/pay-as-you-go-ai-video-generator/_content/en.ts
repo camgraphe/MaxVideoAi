@@ -129,11 +129,11 @@ export const enPayAsYouGoContent = {
     ],
   },
   workflow: {
-    workspace: { capture: "milo-en", alt: "Video workspace with the California film, Milo for Seedance 2.5 and the price on Generate.", caption: "The California film reopened in the video workspace, with Milo selected. The price applies to the settings in this capture.", open: "Open this scene in the workspace" },
+    workspace: { capture: "milo-en-gameshow", phoneHeight: 1278, alt: "A retro game show in the video workspace, with a camera direction drafted in Milo Lite for Wan 3 Prime and a quote on Generate.", caption: "A five-second game show made with Wan 3 Prime. In this signed-in workspace, a camera direction is ready for Milo Lite. The price on Generate is for a new render with the settings shown.", open: "Open this scene in the workspace" },
     assistance: {"milo": {"title": "An idea, but no prompt? Meet Milo →", "body": "Describe what you want in your own words. Milo helps write a prompt for your selected model and references. Sign in to chat; Lite has no extra assistance fee."}, "studio": {"title": "A bigger project? Start in Studio →", "body": "Talk through the brief, plan the scenes and review each generation quote. Standard and Max use the same Milo assistance credits across Studio and the generators."}},
     header: {
       title: 'How pay-as-you-go credits work',
-      intro: "Follow the California film into the workspace. Choose a model, open Milo to work on the prompt and check the quote on Generate.",
+      intro: "A crane shot on a game show set starts with a camera direction. Open the scene, work on the prompt with Milo and check the quote before you generate.",
     },
     items: [
       { title: "Choose a model", body: "Start with the shot you have in mind and the references you can bring.", icon: 'engine' },
