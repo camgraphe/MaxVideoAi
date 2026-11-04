@@ -17,6 +17,10 @@ test('provider receives clarification and current-settings policy alongside real
   const history=[{role:'user' as const,content:'une vidéo pour mon atelier'},{role:'assistant' as const,content:JSON.stringify({reply:'Quel est le sujet ?',text:null})}];
   const params=promptResponseParams({model:'gpt-6-luna',input_json:input} as PromptRequestRow,context,history);
   const instructions=String(params.instructions);
+  assert.match(instructions,/account.*billing.*wallet transfer/i);
+  assert.match(instructions,/\[Contact support\]\(https:\/\/maxvideoai\.com\/contact\)/);
+  assert.match(instructions,/\[support@maxvideoai\.com\]\(mailto:support@maxvideoai\.com\)/);
+  assert.match(instructions,/cannot transfer funds or approve refunds/i);
   assert.match(instructions,/(?:referent|alternative).*unresolved/i);
   assert.match(instructions,/no (?:existing|prior|working).*?(?:draft|proposal|text)/i);
   assert.match(instructions,/contradict.*(?:current|selected).*settings/i);

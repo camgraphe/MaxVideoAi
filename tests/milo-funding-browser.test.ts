@@ -65,7 +65,7 @@ test('confirmed app output refund feedback is truthful and permits a fresh expli
 test('composer keeps a declined message editable, buys nothing, and sends once only after an explicit Lite choice',{timeout:90_000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true}),browser=await chromium.launch({headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:390,height:844}});let status:StudioAssistanceStatus={...initialStatus,selectedModel:'gpt-6.1-terra' as const,mode:'included_sol' as const};const calls:any[]=[];
+  const page=await browser.newPage({viewport:{width:390,height:844}});let status:StudioAssistanceStatus={...initialStatus,selectedModel:'gpt-6.1-terra' as const,mode:'included_sol' as const,credits:{...initialStatus.credits!,included:{...initialStatus.credits!.included,remaining:90},purchased:{total:2000,remaining:120,reserved:0,packs:[{id:'synthetic-pack',amountCents:200,purchasedAt:'2026-10-01T00:00:00Z',total:2000,remaining:120,reserved:0}]}}};const calls:any[]=[];
   await page.route('**/api/prompt-assistance',async route=>{
    if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:status}});
    const body=route.request().postDataJSON();calls.push(body);
@@ -77,6 +77,10 @@ test('composer keeps a declined message editable, buys nothing, and sends once o
   const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
   await message.fill('Keep the coat.');await page.getByRole('button',{name:'Send message to Milo'}).click();
   await expect(message).toHaveValue('Keep the coat.');
+  await expect(page.getByText(/90 Milo credits available/)).toBeVisible();
+  await expect(page.getByText(/larger credit reservation.*Standard/)).toBeVisible();
+  await expect(page.getByText(/\b210 Milo credits available|\b0 Milo credits available|no credits left/i)).toHaveCount(0);
+  assert.equal(calls.length,1,'a positive but insufficient balance never changes the level or spends automatically');
   const lite=page.getByRole('button',{name:'Send with Lite',exact:true});await expect(lite).toBeVisible();
   await page.getByRole('button',{name:'Add credits',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button',{name:'Close assistance'}).click();assert.equal(calls.length,1);
@@ -88,6 +92,18 @@ test('composer keeps a declined message editable, buys nothing, and sends once o
   assert.notEqual(calls[2].request.requestId,calls[0].request.requestId);
   await expect(page.getByRole('button',{name:'Milo settings and credits'})).toContainText('Lite');
   await expect(lite).toHaveCount(0);
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('an unclassified funding rejection explains the reservation and opens credit review without sending',{timeout:90_000},async()=>{
+ const feedbackSource=`import {useState} from 'react';import {createRoot} from 'react-dom/client';import {PromptAssistanceFeedback} from './components/composer/PromptAssistanceFeedback.client';function Fixture(){const[open,setOpen]=useState(false);return <><PromptAssistanceFeedback error="SPENDING_LIMIT_EXCEEDED" waiting={false} recovery={false} onRecover={()=>{throw new Error('No recovery');}} onStop={()=>{}} onCredits={()=>setOpen(true)}/>{open&&<div role="dialog" aria-label="Credit review">Review your existing credits and levels</div>}</>;}createRoot(document.getElementById('root')).render(<Fixture/>);`;
+ const fixture=await startWorkspaceReferenceFixture({source:feedbackSource,config:{}}),browser=await chromium.launch({headless:true});
+ try{const page=await browser.newPage();await page.goto(fixture.url);
+  await expect(page.getByText(/credit reservation/)).toBeVisible();
+  await expect(page.getByText(/Some credits may remain/)).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button',{name:'Credits and levels',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Credit review'})).toBeVisible();
  }finally{await browser.close();await fixture.close();}
 });
 
