@@ -142,10 +142,11 @@ export async function updateSession(req: NextRequest, res: NextResponse) {
     if (!accessToken || sessionError) {
       return { supabase, userId: null, error: sessionError };
     }
-    const { data, error } = await supabase.auth.getClaims(accessToken);
+    // A signed JWT can outlive its revoked session. Validate the active session
+    // with Auth before allowing a protected page to render.
+    const { data, error } = await supabase.auth.getUser(accessToken);
     signal.throwIfAborted();
-    const claims = data?.claims as { sub?: string } | null | undefined;
-    const userId = typeof claims?.sub === 'string' ? claims.sub : null;
+    const userId = error ? null : data.user?.id ?? null;
     return { supabase, userId, error };
   });
 }
@@ -174,7 +175,8 @@ export async function getRouteAuthContext(req?: NextRequest) {
   if (!session?.access_token) {
     return { supabase, session, userId: null };
   }
-  const { data: claimsData } = await supabase.auth.getClaims(session.access_token);
-  const sessionUserId = typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub : null;
+  // Cookie authentication must enforce the same session revocation as Bearer.
+  const { data: userData, error: userError } = await supabase.auth.getUser(session.access_token);
+  const sessionUserId = userError ? null : userData.user?.id ?? null;
   return { supabase, session, userId: sessionUserId };
 }
