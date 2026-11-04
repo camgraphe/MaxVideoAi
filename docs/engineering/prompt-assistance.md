@@ -145,6 +145,16 @@ replies are not reclassified. Target limits, application compatibility proofs,
 provider retry and accounting policy are unchanged. No database migration is
 needed for the additive reply/session JSON field.
 
+HTTP clients advertise `x-milo-inline-analysis: 1` on the composer chat endpoint
+to receive the additive action in results and session turns. Already-open older
+tabs send no capability and keep their strict `{reply,text}` / history shapes:
+the route removes only `analysisRequest` during serialization. This also applies
+to replayed message responses, explicit recovery and read-only previous-reply
+checks. Unknown capability values retain the older shape. Saved v2 responses,
+request hashes, context and history are unchanged, so a capable tab can still
+retrieve the bound action later. This header has no authentication or consent
+meaning. Responses remain private/no-store and vary on Cookie and the capability.
+
 The tag is a model declaration, not a semantic guarantee. Simulated service/JSONB
 and browser tests prove structural gating, restoration and exact apply/Undo;
 authorized real-model qualification must still verify destination choice.

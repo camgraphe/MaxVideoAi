@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
+import {NextRequest} from 'next/server';
 import {readFileSync} from 'node:fs';
 import {getDb} from '../frontend/src/lib/db';
 import {promptAssistanceRequestSchema} from '../frontend/src/lib/prompt-assistance/contract';
@@ -15,6 +16,8 @@ import {getBaseEngines} from '../frontend/src/lib/engines';
 import {chooseStudioAssistance} from '../frontend/src/server/studio/assistance-ledger';
 import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
 import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
+import {handlePromptAssistance} from '../frontend/src/server/prompt-assistance/route-handler';
+import {oldPromptReplySchema,oldPromptSessionSchema} from './helpers/prompt-assistance-legacy-contract';
 
 const plan='External editing plan, 60 seconds.\n00–10: choose rehearsal close-ups.\n10–50: build rhythm from your footage.\n50–60: hold on the performers. Keep the audience out of frame.';
 const catalog={...createAgentModelCatalogDeps(),listEngines:async()=>getBaseEngines(),isModeExecutable:()=>true,isEngineExecutable:()=>true};
@@ -53,6 +56,26 @@ test('provider destination is frozen before dispatch; conversation output never 
   const restored=promptSessionSnapshotSchema.parse(await readPromptSession(userId,input.sessionId,'video:references'));
   assert.deepEqual(restored.turns[0].analysisRequest,analysisRequest);assert.equal(restored.proposal,null);
   for(let index=0;index<2;index++)assert.deepEqual((await recoverPromptAssistance(userId,input.sessionId,input.requestId,policy)).reply,result.reply);
+  const durable=(saved:Awaited<ReturnType<typeof row>>)=>JSON.stringify([saved.input_hash,saved.input_json,saved.context_json,saved.response_json,saved.reply_json,saved.call_id]);
+  const before=durable(await row(input.requestId));
+  for(const capability of [undefined,'1'])for(const route of ['read','session','recover','message']){
+   const params=route==='read'?`?sessionId=${input.sessionId}&requestId=${input.requestId}`:route==='session'?`?sessionId=${input.sessionId}&scope=video:references`:'';
+   const body=route==='recover'?{action:'recover',sessionId:input.sessionId,requestId:input.requestId}:route==='message'?{action:'message',request:input}:undefined;
+   const http=await handlePromptAssistance(new NextRequest('https://example.test/api/prompt-assistance'+params,{method:body?'POST':'GET',headers:{origin:'https://example.test','content-type':'application/json',...(capability?{'x-milo-inline-analysis':capability}:{})},...(body?{body:JSON.stringify(body)}:{})}),{
+    enabled:true,access:async()=>({ok:true,userId}),
+    recover:(owner,s,r)=>recoverPromptAssistance(owner,s,r,policy),
+    send:(owner,current)=>sendPromptAssistance(owner,current,deps),
+    schedule:()=>{throw Error('Completed evidence cannot be scheduled again');},
+   });
+   assert.equal(http.status,200);const data=await http.json();assert.equal(data.ok,true);
+   if(route==='session'){
+    if(capability)assert.deepEqual(promptSessionSnapshotSchema.parse(data.result).turns[0].analysisRequest,analysisRequest);
+    else{const legacy=oldPromptSessionSchema.parse(data.result);assert.equal('analysisRequest' in legacy.turns[0],false);assert.equal(legacy.turns[0].reply,result.reply!.reply);}
+   }else if(capability)assert.deepEqual(data.result.reply,result.reply);
+   else assert.deepEqual(oldPromptReplySchema.parse(data.result.reply),{reply:result.reply!.reply,text:null});
+   assert.equal(data.result.sessionId,input.sessionId);
+   assert.equal(durable(await row(input.requestId)),before,'capability projection cannot alter request hash, provider context, evidence or saved reply');
+  }
   assert.equal(creates,1,'suggestions and recovery never create another provider call');
   assert.equal((await pg.pool.query('SELECT count(*)::int n FROM studio_assistance_calls WHERE user_id=$1',[userId])).rows[0].n,1);
   assert.equal(isCurrentPromptAnalysisRequest(analysisRequest,[{...input.draft.references[0],ref:{...ref,assetId:'replacement'}}]),false);

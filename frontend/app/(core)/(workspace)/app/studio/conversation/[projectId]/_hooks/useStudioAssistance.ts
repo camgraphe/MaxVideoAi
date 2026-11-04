@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type {StudioAssistanceChoice,StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {assistanceStatusSchema} from '../_lib/conversation-assistance';
+import {promptInlineAnalysisHeaders} from '@/lib/prompt-assistance/client-capability';
 export function useStudioAssistance(accountKey:string,conversationBusy:boolean,options:{endpoint?:string;enabled?:boolean;wrapChoice?:boolean;onPendingRequest?:(pointer:unknown)=>void}={}) {
   const endpoint=options.endpoint??'/api/studio/assistance',enabled=options.enabled??true,wrapChoice=options.wrapChoice??false;
   const session=useMemo(()=>({accountKey,active:false,status:null as StudioAssistanceStatus|null,epoch:0,mutation:false,controller:null as AbortController|null}),[accountKey]);
@@ -15,7 +16,7 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
     const version=++session.epoch;session.controller?.abort();const request=new AbortController();session.controller=request;
     const timeout=window.setTimeout(()=>request.abort(),20_000);
     try {
-      const response=await fetch(endpoint,{cache:'no-store',signal:request.signal});const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
+      const response=await fetch(endpoint,{headers:endpoint==='/api/prompt-assistance'?promptInlineAnalysisHeaders():undefined,cache:'no-store',signal:request.signal});const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
       if(!response.ok||!body.ok||!parsed.success)throw new Error(response.status===401?'AUTH_REQUIRED':'UNAVAILABLE');
       if(isCurrent()&&session.epoch===version&&!request.signal.aborted){
         update({status:parsed.data,error:null});
@@ -38,7 +39,7 @@ export function useStudioAssistance(accountKey:string,conversationBusy:boolean,o
     session.mutation=true;update({busy:true,error:null});const version=++session.epoch;session.controller?.abort();const request=new AbortController();session.controller=request;
     const timeout=window.setTimeout(()=>request.abort(),20_000);
     try {
-      const response=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(wrapChoice?{action:'choose',choice}:choice),signal:request.signal});
+      const response=await fetch(endpoint,{method:'POST',headers:endpoint==='/api/prompt-assistance'?promptInlineAnalysisHeaders({'content-type':'application/json'}):{'content-type':'application/json'},body:JSON.stringify(wrapChoice?{action:'choose',choice}:choice),signal:request.signal});
       const body=await response.json(),parsed=assistanceStatusSchema.safeParse(body.result);
       if(!response.ok||!body.ok||!parsed.success)throw new Error(response.status===401?'AUTH_REQUIRED':body.error==='INSUFFICIENT_FUNDS'?'WALLET_INSUFFICIENT':body.error==='CONFIRMATION_REQUIRED'||body.error==='PARAMETER_INVALID'?'STALE':'UNAVAILABLE');
       if(!isCurrent()||version!==session.epoch)return false;
