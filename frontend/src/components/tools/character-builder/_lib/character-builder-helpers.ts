@@ -248,7 +248,7 @@ export function getFlattenedResults(runs: CharacterBuilderRun[]): CharacterBuild
 }
 
 export function getCharacterEngineLabel(qualityMode: CharacterBuilderRun['qualityMode']): string {
-  return getQualityEngineId(qualityMode) === 'nano-banana-pro' ? 'Nano Banana Pro' : 'Nano Banana 2';
+  return getQualityEngineId(qualityMode) === 'nano-banana-2-1' ? 'Nano Banana 2.1' : 'Character Studio';
 }
 
 export function buildRecoveredRunFromJob(

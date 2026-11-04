@@ -10,7 +10,10 @@ import type {
 } from '@/types/character-studio';
 import { resolveStudioOutput, studioId, studioName, StudioLibraryError } from './source';
 
+import { parseStudioPresentation, type StudioPresentation } from '@/lib/character-studio-presentation';
+
 type Row = {
+  presentation?: StudioPresentation;
   id: string;
   name: string;
   source_job_id: string;
@@ -77,6 +80,7 @@ export async function getStudioCharacter(
   return {
     ...summary(row),
     identity: image(row),
+    presentation: row.presentation ?? {},
     looks,
     nextLookCursor: rows.length > 24 ? String(rows[23].id) : null,
   };
@@ -142,6 +146,17 @@ export async function renameStudioCharacter(
   const rows = await db.query(
     `UPDATE character_studio_characters SET name=$3,updated_at=now() WHERE user_id=$1 AND id=$2 RETURNING id`,
     [userId, studioId(id), studioName(name)],
+  );
+  if (!rows.length) throw new StudioLibraryError('character_unavailable', 404);
+  return getStudioCharacter(userId, id);
+}
+
+export async function updateStudioPresentation(userId: string, id: string, input: unknown): Promise<StudioCharacter> {
+  const presentation = parseStudioPresentation(input);
+  if (!presentation) throw new StudioLibraryError('invalid_payload');
+  const rows = await db.query(
+    'UPDATE character_studio_characters SET presentation=$3::jsonb, updated_at=now() WHERE user_id=$1 AND id=$2 RETURNING id',
+    [userId, studioId(id), JSON.stringify(presentation)],
   );
   if (!rows.length) throw new StudioLibraryError('character_unavailable', 404);
   return getStudioCharacter(userId, id);

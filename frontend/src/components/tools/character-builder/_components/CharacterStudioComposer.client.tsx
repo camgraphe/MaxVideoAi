@@ -72,7 +72,6 @@ export function CharacterStudioComposer({
   const [section, setSection] = useState<string | null>(state.characterId ? 'clothing' : 'type');
   const [moreHair, setMoreHair] = useState(false);
   const [sceneFamily, setSceneFamily] = useState('all');
-  const [generateCount, setGenerateCount] = useState<1 | 4>(1);
   const options = useCharacterBuilderOptions(copy, state.qualityMode);
   const traits = state.traits;
   function patchTraits(patch: Partial<CharacterBuilderTraits>) {
@@ -180,7 +179,11 @@ export function CharacterStudioComposer({
                 maxLength={1000}
                 placeholder={labels.typePlaceholder}
                 value={traits.customCharacterDescription ?? ''}
-                onChange={(event) => patchTraits({ customCharacterDescription: event.target.value })}
+                onChange={(event) =>
+                  patchTraits({
+                    customCharacterDescription: event.target.value,
+                  })
+                }
                 aria-describedby="studio-type-hint"
               />
             </label>
@@ -440,14 +443,7 @@ export function CharacterStudioComposer({
             <p className="text-xs text-text-secondary">{labels.backgroundCredit}</p>
           </>,
         )}
-        <CharacterStudioOutputSettings
-          state={state}
-          setState={setState}
-          copy={copy}
-          labels={labels}
-          generateCount={generateCount}
-          setGenerateCount={setGenerateCount}
-        />
+        <CharacterStudioOutputSettings state={state} setState={setState} copy={copy} labels={labels} />
       </div>
       <div
         data-studio-dock
@@ -467,12 +463,17 @@ export function CharacterStudioComposer({
         <button
           type="button"
           disabled={busy || !canGenerate}
-          onClick={() => onGenerate(generateCount)}
+          onClick={() => onGenerate(1)}
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-3 text-sm font-medium text-on-brand transition hover:brightness-95 disabled:opacity-50"
         >
           {busy ? <Loader2 size={17} className="animate-spin" /> : <Sparkles size={17} />}
-          {busy ? labels.generating : state.characterId ? labels.generateLook : labels.generate}
-          {generateCount === 4 ? ' ×4' : ''}
+          {busy
+            ? labels.generating
+            : state.outputMode === 'character-sheet'
+              ? labels.generateSheet
+              : state.characterId
+                ? labels.generateLook
+                : labels.generate}
         </button>
       </div>
     </aside>

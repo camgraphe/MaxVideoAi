@@ -109,6 +109,8 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
     const blocks = [
       'Create a clean multi-angle character sheet with front, three-quarter, side, and back views.',
       'Keep scale, lighting, anatomy, and spacing consistent across the sheet.',
+      'The saved reference defines the exact outfit and identity. Rotate the same subject in place, in the same relaxed neutral pose. Match the crown, eyes, hip and ground heights between views. Preserve limb count, assistive devices, garment construction and left-right asymmetry; in a true profile, far-side limbs may be occluded.',
+      'No lettering, titles, swatches, borders, UI, decorative props or captions inside the generated art.',
     ];
     if (outputOptions.includeCloseUps) {
       blocks.push('Arrange the sheet as a clean two-row grid.');
@@ -124,6 +126,9 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
         `The close-ups must clearly show the ${buildCloseUpIdentityParts(input.traits)} as the full-body views.`
       );
     }
+    if (!outputOptions.includeCloseUps) {
+      blocks.push('Exactly one landscape lineup in four equally wide columns: 01 front (0 degrees), 02 front three-quarter (45 degrees), 03 true side (90 degrees), 04 straight back (180 degrees). One complete figure per column, facing the same turn direction. Use a level orthographic camera; no perspective shifts. Frame everything from the tips of the highest appendages to the soles, with breathing room above and below and a common floor line. Keep all four silhouettes large, distinct and fully inside their columns. No inset portraits.');
+    }
     return blocks;
   }
 
@@ -132,7 +137,9 @@ function buildLayoutBlock(input: CharacterBuilderRequest): string[] {
     'The face must be clearly visible and facing the camera, but avoid an extreme close-up that crops too tightly around the face.',
     flexibleAnatomy
       ? 'Frame the complete head or defining form with space for ears, antennae, leaves or other signature parts. Adapt portrait framing to the character anatomy without inventing human body parts.'
-      : 'Frame from roughly mid-torso or chest-up, showing the full head, neck, shoulders, and upper torso. Do not produce a full-body pose, a standing wide shot, or a fashion/editorial composition.',
+      : 'Use a waist-up portrait by default, leaving space above the head and below the waistline.',
+    'Show the character dressed in a complete, coherent outfit suited to their role. Respect the selected wardrobe or reference outfit; if neither specifies clothing, choose one that fits their world. For a creature, fit the garments to its anatomy and show them clearly.',
+    'Pull back enough to show the outfit, hands or equivalent appendages and any requested signature accessories in the same image as the face. Respect explicit requests for wider framing.',
     'Bias toward a stable, reusable identity anchor rather than a generic beauty shot.',
   ];
   if (outputMode !== 'portrait-reference' && outputOptions.fullBodyRequired) {

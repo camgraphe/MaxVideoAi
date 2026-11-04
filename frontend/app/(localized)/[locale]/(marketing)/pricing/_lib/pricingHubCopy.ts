@@ -323,8 +323,8 @@ const en: PricingHubCopy = {
     voiceClone: 'Seed Audio reference voice',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder Draft',
-    characterBuilderFinal: 'Character Builder Final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
     changeCameraAngle: 'Change Camera Angle',
     generateBestAngles: 'Generate 4 best angles',
     imageUpscale: 'Image Upscale',
@@ -538,8 +538,8 @@ const fr: PricingHubCopy = {
     voiceClone: 'Voix de référence Seed Audio',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder brouillon',
-    characterBuilderFinal: 'Character Builder final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
     changeCameraAngle: 'Changer l’angle caméra',
     generateBestAngles: 'Générer les 4 meilleurs angles',
     imageUpscale: 'Upscale image',
@@ -753,8 +753,8 @@ const es: PricingHubCopy = {
     voiceClone: 'Voz de referencia Seed Audio',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder borrador',
-    characterBuilderFinal: 'Character Builder final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
     changeCameraAngle: 'Cambiar ángulo de cámara',
     generateBestAngles: 'Generar los 4 mejores ángulos',
     imageUpscale: 'Upscale de imagen',

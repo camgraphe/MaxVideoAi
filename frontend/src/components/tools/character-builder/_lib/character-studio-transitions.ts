@@ -39,11 +39,19 @@ export function createStudioDraftTransitions({
     setStatusMessage(null);
   };
   return {
-    async newLook(id: string) {
+    async newLook(id: string, sheet = false) {
       beginDraftIntent();
       const character = await library.openCharacter(id);
       if (!character) return;
-      setState((previous) => buildStudioLookDraft(previous, character));
+      setState((previous) => {
+        const draft = buildStudioLookDraft(previous, character);
+        if (!sheet) return draft;
+        return {
+          ...draft, outputMode: 'character-sheet', qualityMode: 'draft', formatMode: 'standard',
+          traits: { ...draft.traits, sceneId: null, customSceneDescription: '' },
+          outputOptions: { ...draft.outputOptions, includeCloseUps: false, fullBodyRequired: true, neutralStudioBackground: true },
+        };
+      });
       setMode('character');
       setMobileResults(false);
       setEditorKey((key) => key + 1);

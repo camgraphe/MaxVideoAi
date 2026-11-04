@@ -6,20 +6,29 @@ import type { StudioImage } from '@/types/character-studio';
 import type { StudioLibraryCopy } from '../_lib/character-studio-library-copy';
 import type { useCharacterStudioLibrary } from '../_hooks/useCharacterStudioLibrary';
 
+import { CharacterStudioSheet } from './CharacterStudioSheet.client';
+import { CharacterStudioPresentation } from './CharacterStudioPresentation.client';
+import type { CharacterCopy } from '../_lib/character-builder-copy';
+import type { StudioLocale } from '@/lib/character-studio-catalog';
+
 type ImageSource = Pick<StudioImage, 'imageUrl' | 'thumbUrl' | 'jobId'>;
 export function CharacterStudioLibrary({
   library,
+  builderCopy,
+  locale,
   copy,
   userId,
   onSignIn,
   onNewLook,
   onRecast,
 }: {
+  builderCopy: CharacterCopy;
+  locale: StudioLocale;
   library: ReturnType<typeof useCharacterStudioLibrary>;
   copy: StudioLibraryCopy;
   userId: string | null;
   onSignIn: () => void;
-  onNewLook: (id: string) => void;
+  onNewLook: (id: string, sheet?: boolean) => void;
   onRecast: (image: ImageSource, name: string, characterId: string) => void;
 }) {
   const { selected } = library;
@@ -106,6 +115,9 @@ export function CharacterStudioLibrary({
                   <Shirt size={14} />
                   {copy.newLook}
                 </button>
+                <button type="button" className={buttonClass} onClick={() => onNewLook(selected.id, true)}>
+                  {copy.sheet}
+                </button>
                 <button
                   type="button"
                   onClick={() => onRecast(selected.identity, selected.name, selected.id)}
@@ -117,6 +129,13 @@ export function CharacterStudioLibrary({
               </div>
             </div>
           </div>
+          <CharacterStudioPresentation
+            key={selected.id}
+            character={selected}
+            copy={builderCopy}
+            locale={locale}
+            onSave={(profile) => library.savePresentation(selected.id, profile)}
+          />
           <h3 className="text-sm font-medium">
             {copy.looks} <span className="text-text-secondary">{selected.lookCount}</span>
           </h3>
@@ -126,6 +145,9 @@ export function CharacterStudioLibrary({
                 {preview(look, look.name)}
                 <div className="space-y-3 p-3">
                   <h4 className="truncate text-sm font-medium">{look.name}</h4>
+                  {look.settingsSnapshot.builder.outputMode === 'character-sheet' && (
+                    <CharacterStudioSheet character={selected} look={look} locale={locale} />
+                  )}
                   <button
                     type="button"
                     onClick={() => onRecast(look, `${selected.name} · ${look.name}`, selected.id)}

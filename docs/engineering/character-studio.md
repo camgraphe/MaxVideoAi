@@ -9,7 +9,7 @@ pipeline. The approved proposal and phased scope live in
 ## Ownership
 
 - `CharacterBuilderWorkspace.tsx` retains account isolation and wires generation,
-  references, billing-product reads, results, persistence and runtime overlays.
+  references, native image estimates, results, persistence and runtime overlays.
 - `CharacterStudioComposer.client.tsx` owns the collapsible trait groups and output
   settings. Choice cards, reference slots and the exploration surface are separate
   colocated components. There is no composited or live generated preview.
@@ -239,3 +239,37 @@ cover native-picker opening, invalid hex, apply, cancel, removal, preset return,
 persistence after reload and the color summary. No horizontal overflow at 390px;
 Generate remains visible. The existing local cookie-policy warning and unavailable
 tariff remain unchanged; no paid generation was submitted.
+
+### Product and dialogue in the Recast draft (2026-11-04)
+
+A replacement portrait and a product photograph occupy independent slots. A
+handoff changes only the portrait. The Direction / Dialogue switch retains the
+scene instruction, optional spoken line and optional MP3/WAV performance guide.
+Audio input has a 15 MiB file cap and a 15-second decoded duration cap. Unmounting
+the editor, replacing or removing media and navigation must not leak object URLs
+or let a delayed audio probe replace a newer selection. Leaving Recast pauses
+its video and audio players.
+
+The shooting brief is a local JSON export of the source name, stable character
+and product roles, dialogue, audio filename and assembled prompt. It contains no
+blob URLs or private grants; keep the actual media beside it. It neither uploads
+nor orders a render. The in-app video submit remains unavailable. The private
+marketing review used five distinct saved looks and corresponding authentic
+YouTube source clips; offline sources and connected-account quotes do not imply
+approval to publish a demo or change a production tariff.
+
+### Character Studio image policy, casting notes and sheets (2026-11-04)
+
+New portraits, looks and sheets all use Nano Banana 2.1, one image per request.
+The display and wallet use the same resolution-specific image tariff and displayed
+revision. Old jobs keep their original engine, settings and receipt. Do not
+multiply the current image tariff by a historical quality or format quantity.
+
+Migration 94 adds owner-scoped editorial casting notes to the saved character;
+these editable notes are separate from the immutable source and look snapshots.
+Unset notes display the localized generation choices. Only the stored source
+image is the identity reference; no assumed personal attributes are inferred.
+The library's sheet action opens a 1K draft with a neutral background and four
+large aligned views. Generation is still an explicit user action. The eight-view
+sheet remains available from the ordinary composer on a fresh draft. The saved sheet
+viewer keeps the original file intact alongside the identity reference.

@@ -14,8 +14,9 @@ amount. No cell is seeded or activated by this integration. See the
 
 ## Fixed image tool product reservations
 
-Character Builder prices come from its billing products, independently of the
-underlying image model's customer tariff grid. `image-initial-job.ts` skips the
+New Character Studio work uses the native Nano Banana 2.1 image tariff for the
+selected resolution and the same customer tariff revision at estimate and reservation.
+Historical Character Builder Draft/Final receipts retain the original fixed products. `image-initial-job.ts` skips the
 model tariff revision lock only for a fixed `billing-product` snapshot whose
 product key and surface match the internal reservation context. Manual model
 tariff snapshots retain their revision lock, including when they carry product
@@ -900,9 +901,7 @@ previews actual budgets across priced options and 300-frame block boundaries.
 A missing qualified rule keeps the current quote unavailable; a global default
 cannot silently replace it in either billing or the preview.
 
-Character Builder reference rows use the same quality-to-model and standard-format
-resolution mapping as its runner, then read the underlying Nano Banana supplier
-facts independently of fixed retail billing. Angle rows use the authored Fal
+Historical Character Builder fixed-product reference rows retain their original Nano Banana supplier mapping. They do not price current Character Studio runs. Angle rows use the authored Fal
 megapixel estimate at an explicit 1 MP source and the runner's one/four provider
 calls; retail remains fixed per run. These are repository catalogue estimates,
 not newly verified LIST or account prices. Storyboard supplier rows project the

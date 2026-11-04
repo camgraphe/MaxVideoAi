@@ -1,6 +1,6 @@
 'use client';
 import type { Dispatch, SetStateAction } from 'react';
-import { normalizeCharacterFormatMode } from '@/lib/character-builder';
+import { getCharacterFormatResolution, normalizeCharacterFormatMode } from '@/lib/character-builder';
 import type { CharacterBuilderState } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
 import type { StudioCopy } from '../_lib/character-studio-copy';
@@ -12,15 +12,11 @@ export function CharacterStudioOutputSettings({
   setState,
   copy,
   labels,
-  generateCount,
-  setGenerateCount,
 }: {
   state: CharacterBuilderState;
   setState: Dispatch<SetStateAction<CharacterBuilderState>>;
   copy: CharacterCopy;
   labels: StudioCopy;
-  generateCount: 1 | 4;
-  setGenerateCount: (value: 1 | 4) => void;
 }) {
   const options = useCharacterBuilderOptions(copy, state.qualityMode);
   const fieldClass =
@@ -47,42 +43,20 @@ export function CharacterStudioOutputSettings({
             }}
           />
           <StudioChips
-            label={copy.generatePanel.quality}
-            options={options.qualityOptions}
-            value={state.qualityMode}
-            onChange={(id) => {
-              if (id)
-                setState((previous) => ({
-                  ...previous,
-                  qualityMode: id as CharacterBuilderState['qualityMode'],
-                  formatMode: normalizeCharacterFormatMode(
-                    previous.formatMode,
-                    id as CharacterBuilderState['qualityMode'],
-                  ),
-                }));
-            }}
-          />
-          <StudioChips
             label={copy.generatePanel.format}
-            options={options.formatLabelOptions}
-            value={state.formatMode}
+            options={['1k', '2k', '4k'].map((id) => ({
+              id,
+              label: id.toUpperCase(),
+            }))}
+            value={getCharacterFormatResolution(state.formatMode, state.qualityMode)}
             onChange={(id) => {
-              if (id)
+              if (id === '1k' || id === '2k' || id === '4k') {
                 setState((previous) => ({
                   ...previous,
-                  formatMode: id as CharacterBuilderState['formatMode'],
+                  qualityMode: 'draft',
+                  formatMode: normalizeCharacterFormatMode(id === '1k' ? 'standard' : id, 'draft'),
                 }));
-            }}
-          />
-          <StudioChips
-            label={labels.count}
-            options={[
-              { id: '1', label: '1' },
-              { id: '4', label: '4' },
-            ]}
-            value={String(generateCount)}
-            onChange={(id) => {
-              if (id) setGenerateCount(id === '4' ? 4 : 1);
+              }
             }}
           />
           {!state.characterId && (

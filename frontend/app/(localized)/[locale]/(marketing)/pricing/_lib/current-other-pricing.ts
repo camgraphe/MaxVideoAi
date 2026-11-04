@@ -1,5 +1,6 @@
 import { AUDIO_CINEMATIC_MAX_DURATION_SEC, getAudioPackConfig, type AudioPricingInput } from '@/lib/audio-generation';
-import { getCharacterFormatMultiplier } from '@/lib/character-builder';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { estimateWebImageGeneration } from '@/server/images/estimate-image-generation';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { computeCurrentAudioSnapshot } from '@/server/pricing/quote-public';
 import type { AppLocale } from '@/i18n/locales';
@@ -16,7 +17,12 @@ export type CurrentOtherPricingDependencies = {
 type CurrentOtherPricingSchedule = { modelWorkersSettled: Promise<void> };
 const defaults: CurrentOtherPricingDependencies = {
   audio: computeCurrentAudioSnapshot,
-  product: computeBillingProductSnapshot,
+  product: async (input) => {
+    const match = /^character-sheet-(1k|2k|4k)$/.exec(input.productKey);
+    if (!match) return computeBillingProductSnapshot(input);
+    const { pricing } = await estimateWebImageGeneration({ engineId: NANO21_ENGINE_ID, mode: 't2i', numImages: 1, resolution: match[1] });
+    return pricing;
+  },
 };
 const audioPresets: Record<string, Pick<AudioPricingInput, 'pack' | 'voiceMode'>> = {
   'audio-music-only': { pack: 'music_only' },
@@ -26,8 +32,8 @@ const audioPresets: Record<string, Pick<AudioPricingInput, 'pack' | 'voiceMode'>
   'audio-voice-clone': { pack: 'voice_only', voiceMode: 'clone' },
 };
 const toolPresets: Record<string, [string, string, number, number]> = {
-  'character-builder-draft': ['character-draft', 'character-draft', 1, getCharacterFormatMultiplier('4k', 'draft')],
-  'character-builder-final': ['character-final', 'character-final', 1, getCharacterFormatMultiplier('4k', 'final')],
+  'character-builder-draft': ['character-sheet-1k', 'character-sheet-4k', 1, 1],
+  'character-builder-final': ['character-sheet-2k', 'character-sheet-4k', 1, 1],
   'change-camera-angle': ['angle-flux-single', 'angle-qwen-single', 1, 1],
   'generate-best-angles': ['angle-flux-multi', 'angle-qwen-multi', 1, 1],
   'image-upscale': ['upscale-image-seedvr', 'upscale-image-topaz', 1, 1],

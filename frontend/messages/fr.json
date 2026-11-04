@@ -5256,11 +5256,11 @@
         "quality": {
           "draft": {
             "label": "Standard",
-            "description": "Passes exploratoires rapides sur Nano Banana 2."
+            "description": "Passes exploratoires rapides sur Nano Banana 2.1."
           },
           "final": {
             "label": "Pro",
-            "description": "Références plus propres prêtes à l’export sur Nano Banana Pro."
+            "description": "Références plus propres prêtes à l’export sur Nano Banana 2.1."
           }
         },
         "format": {

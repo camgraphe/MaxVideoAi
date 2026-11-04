@@ -180,3 +180,74 @@ test('new look hides identity controls and opens clothing with a dedicated gener
     await f.close();
   }
 });
+
+test('Recast retains the product, spoken line and accepted audio when editor tabs and the character change', async () => {
+  const f = await fixture('recast');
+  const { w } = f;
+  try {
+    const doc = w.document;
+    const clickText = (value: string) =>
+      f.act(() =>
+        [...doc.querySelectorAll('button')].find((n: any) => n.textContent.trim() === value).click(),
+      );
+    const upload = async (selector: string, name: string, type: string) => {
+      const input = doc.querySelector(selector);
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [new w.File(['bytes'], name, { type })],
+      });
+      await f.act(() => input.dispatchEvent(new w.Event('change', { bubbles: true })));
+    };
+    let probe: any;
+    const create = doc.createElement.bind(doc);
+    doc.createElement = (name: string, ...rest: any[]) => {
+      const el = create(name, ...rest);
+      if (name === 'audio') probe = el;
+      return el;
+    };
+    await upload('input[accept^="image/jpeg"]', 'watch.png', 'image/png');
+    await clickText('Dialogue');
+    const line = doc.querySelector('textarea');
+    await f.act(() => {
+      Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype, 'value').set.call(
+        line,
+        'Regardez ce cadran.',
+      );
+      line.dispatchEvent(new w.Event('input', { bubbles: true }));
+    });
+    await upload('input[accept^=".mp3"]', 'too-long.wav', 'audio/wav');
+    Object.defineProperty(probe, 'duration', { value: 16 });
+    await f.act(async () => {
+      probe.dispatchEvent(new w.Event('loadedmetadata'));
+      await Promise.resolve();
+    });
+    assert.ok(doc.querySelector('[role=alert]'));
+    assert.ok(w.revoked.includes('blob:too-long.wav'));
+    await upload('input[accept^=".mp3"]', 'voice.wav', 'audio/wav');
+    Object.defineProperty(probe, 'duration', { value: 3.27 });
+    await f.act(async () => {
+      probe.dispatchEvent(new w.Event('loadedmetadata'));
+      await Promise.resolve();
+    });
+    await clickText('Mise en scène');
+    await f.act(() => {
+      w.selection = {
+        jobId: 'test',
+        transferId: 'look2',
+        imageUrl: 'https://example.invalid/cole',
+        name: 'Cole',
+      };
+      w.fx.render();
+    });
+    await clickText('Dialogue •');
+    assert.equal(doc.querySelector('textarea').value, 'Regardez ce cadran.');
+    assert.equal(doc.querySelector('audio[controls]').getAttribute('src'), 'blob:voice.wav');
+    assert.ok(doc.querySelector('img[alt="Cole"]'));
+    assert.ok(doc.querySelector('img[alt="watch.png"]'));
+    await f.act(() => doc.querySelector('button[aria-label="Retirer · Produit ou objet"]').click());
+    assert.equal(doc.querySelector('img[alt="watch.png"]'), null);
+    assert.ok(doc.querySelector('img[alt="Cole"]'));
+  } finally {
+    await f.close();
+  }
+});

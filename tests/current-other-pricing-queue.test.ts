@@ -10,8 +10,8 @@ const expectedAudio = [
   { pack: 'music_only' }, { pack: 'voice_only' }, { pack: 'voice_only', voiceMode: 'clone' },
 ].flatMap((preset) => [30, 60, 120].map((durationSec) => ({ ...preset, durationSec, script: null, musicEnabled: true })));
 const expectedProducts = [
-  { productKey: 'character-draft', quantity: 1 }, { productKey: 'character-draft', quantity: 3 },
-  { productKey: 'character-final', quantity: 1 }, { productKey: 'character-final', quantity: 2 },
+  { productKey: 'character-sheet-1k', quantity: 1 }, { productKey: 'character-sheet-4k', quantity: 1 },
+  { productKey: 'character-sheet-2k', quantity: 1 }, { productKey: 'character-sheet-4k', quantity: 1 },
   { productKey: 'angle-flux-single', quantity: 1 }, { productKey: 'angle-qwen-single', quantity: 1 },
   { productKey: 'angle-flux-multi', quantity: 1 }, { productKey: 'angle-qwen-multi', quantity: 1 },
   { productKey: 'upscale-image-seedvr', quantity: 1 }, { productKey: 'upscale-image-topaz', quantity: 1 },

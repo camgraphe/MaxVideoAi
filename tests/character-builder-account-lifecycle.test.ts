@@ -42,7 +42,7 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
       window.makeState=(notes)=>({...createDefaultCharacterBuilderState(),advancedNotes:notes});
       window.prepareUpload=async(file)=>file;
       window.fixtureFetch=async(url,init={})=>{
-        if(url.startsWith('/api/billing-products'))return {ok:true,json:async()=>({ok:true,product:{unitPriceCents:10}})};
+        if(url.startsWith('/api/images/estimate'))return {ok:true,json:async()=>({ok:true,pricing:{totalCents:7,currency:'USD',meta:{pricingMode:'manual_tariff',customerTariffRevision:1}}})};
         return new Promise(resolve=>window.requests.push({url,init,resolve}));
       };
       const root=createRoot(document.getElementById('root'));window.fx={act,render:()=>root.render(<Workspace/>),unmount:()=>root.unmount()};

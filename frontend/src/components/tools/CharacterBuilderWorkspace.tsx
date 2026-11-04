@@ -19,9 +19,11 @@ import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { customerTariffRevision } from '@/lib/customer-tariff-revision';
+import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { createDefaultCharacterBuilderState, getCharacterFormatMultiplier } from '@/lib/character-builder';
+import { createDefaultCharacterBuilderState, getCharacterFormatResolution } from '@/lib/character-builder';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
 import type { CharacterBuilderState, CharacterBuilderReferenceImage } from '@/types/character-builder';
@@ -64,13 +66,11 @@ import { useCharacterBuilderResultsInfiniteScroll } from './character-builder/_h
 import { useCharacterBuilderTraitActions } from './character-builder/_hooks/useCharacterBuilderTraitActions';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
-  getCharacterBillingProductKey,
   getFlattenedResults,
   getRefByRole,
   INITIAL_LOADING_REQUEST_COUNTS,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
-  BillingProductResponse,
   LoadingRequestCounts,
   LoadingRequestKey,
   PendingCharacterRun,
@@ -209,7 +209,26 @@ function CharacterBuilderAccountWorkspace({
     styleReference,
     user,
   });
+  const resolution = getCharacterFormatResolution(state.formatMode, state.qualityMode);
+  const referenceCount = new Set(state.referenceImages.map(image => image.url).filter(Boolean)).size;
+  const { data: displayedPrice, mutate: refreshPrice } = useSWR(
+    ['/api/images/estimate', NANO21_ENGINE_ID, resolution, referenceCount] as const,
+    async ([url, engineId, size, refs]) => {
+      const response = await authFetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({engineId, resolution:size, mode: refs ? 'i2i':'t2i', referenceImageCount:refs, numImages:1}) });
+      const payload = await response.json();
+      const cents = payload?.pricing?.totalCents;
+      if (!response.ok || !payload?.ok || payload.pricing.currency !== 'USD' || !Number.isSafeInteger(cents) || cents < 0) throw new Error(copy.pricingError);
+      const revision = customerTariffRevision(payload.pricing);
+      if (!revision) throw new Error(copy.pricingError);
+      return {usd:cents/100, revision};
+    },
+    {keepPreviousData:false},
+  );
+  const estimatedImageCostUsd = displayedPrice?.usd ?? null;
   const handleRun = useCharacterBuilderGenerationRunner({
+    tariffRevision: displayedPrice?.revision,
+    refreshPrice,
     captureAccountRequest,
     copy,
     hasIdentityReference,
@@ -251,7 +270,7 @@ function CharacterBuilderAccountWorkspace({
       setStatusMessage,
     });
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
-  const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
+
   useCharacterBuilderPendingRunsSync({
     captureAccountRequest,
     authLoading,
@@ -271,28 +290,6 @@ function CharacterBuilderAccountWorkspace({
     setState,
     setStatusMessage,
   });
-  const { data: billingProductData } = useSWR(
-    `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
-    async (url: string) => {
-      const response = await authFetch(url);
-      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
-      if (!response.ok || !payload?.ok || !payload.product) {
-        throw new Error(payload?.error ?? copy.pricingError);
-      }
-      return payload.product;
-    },
-    { keepPreviousData: false },
-  );
-  const estimatedImageCostUsd =
-    billingProductData?.unitPriceCents != null
-      ? Number(
-          (
-            (billingProductData.unitPriceCents *
-              getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) /
-            100
-          ).toFixed(2),
-        )
-      : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
 
   function renderResultsGallery(variant: 'grid') {
@@ -467,11 +464,13 @@ function CharacterBuilderAccountWorkspace({
         }
         characters={
           <CharacterStudioLibrary
+            builderCopy={copy}
+            locale={studioLocale}
             library={library}
             copy={libraryCopy}
             userId={user?.id ?? null}
             onSignIn={openAuthGate}
-            onNewLook={(id) => void newLook(id)}
+            onNewLook={(id, sheet) => void newLook(id, sheet)}
             onRecast={handoffRecast}
           />
         }

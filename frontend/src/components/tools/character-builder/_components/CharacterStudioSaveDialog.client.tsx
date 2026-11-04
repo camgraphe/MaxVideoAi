@@ -12,7 +12,12 @@ export function CharacterStudioSaveDialog({
   onRetry,
   onClose,
 }: {
-  target: { jobId: string; imageUrl: string; characterId: string | null; loading: boolean };
+  target: {
+    jobId: string;
+    imageUrl: string;
+    characterId: string | null;
+    loading: boolean;
+  };
   busy: boolean;
   error: boolean;
   copy: StudioLibraryCopy;
@@ -32,7 +37,7 @@ export function CharacterStudioSaveDialog({
   }, []);
   useEffect(() => {
     if (!target.loading) {
-      setName(target.characterId ? copy.defaultLook : copy.defaultCharacter);
+      setName('');
       input.current?.focus();
     }
   }, [target.loading, target.characterId, copy.defaultLook, copy.defaultCharacter]);
@@ -50,7 +55,8 @@ export function CharacterStudioSaveDialog({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (name.trim() && !busy && !target.loading) onSave(name.trim());
+          if (!busy && !target.loading)
+            onSave(name.trim() || (target.characterId ? copy.defaultLook : copy.defaultCharacter));
         }}
       >
         <h2 id="studio-save-title" className="text-lg font-semibold">
@@ -72,10 +78,10 @@ export function CharacterStudioSaveDialog({
           {copy.name}
           <input
             ref={input}
+            placeholder={target.characterId ? copy.defaultLook : copy.defaultCharacter}
             value={name}
             onChange={(event) => setName(event.target.value)}
             maxLength={80}
-            required
             disabled={target.loading || busy}
             className="mt-2 w-full rounded-lg border border-border bg-bg px-3 py-2.5"
           />
@@ -100,7 +106,7 @@ export function CharacterStudioSaveDialog({
           </button>
           <button
             type="submit"
-            disabled={busy || target.loading || !name.trim()}
+            disabled={busy || target.loading}
             className="min-h-10 rounded-lg bg-brand px-4 text-sm font-medium text-on-brand disabled:opacity-50"
           >
             {busy ? copy.saving : copy.save}

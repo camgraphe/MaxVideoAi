@@ -4,7 +4,7 @@ import { loadPricingPolicyOverrides } from '@/lib/pricing-rule-store';
 import { getFalEngineById } from '@/config/falEngines';
 import { ANGLE_TOOL_ENGINES } from '@/config/tools-angle-engines';
 import { ANGLE_MULTI_OUTPUT_COUNT, estimateAngleCostUsd, getAngleBillingProductKeyForEngine } from '@/lib/tools-angle';
-import { getCharacterFormatResolution, getQualityEngineId } from '@/lib/character-builder';
+import { getCharacterFormatResolution } from '@/lib/character-builder';
 import { getBillingProductKey } from '@/server/tools/character-builder/utils';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import type { PricingContext } from '@/lib/pricing-context';
@@ -82,9 +82,9 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
       const characterQuality = (['draft', 'final'] as const).find((quality) => getBillingProductKey(quality) === product.productKey);
       const angle = ANGLE_TOOL_ENGINES.find((item) => [false, true].some((multi) => getAngleBillingProductKeyForEngine(item.id, multi) === product.productKey));
       if (characterQuality) {
-        const character = getFalEngineById(getQualityEngineId(characterQuality));
+        const character = getFalEngineById(characterQuality === 'final' ? 'nano-banana-pro' : 'nano-banana-2');
         const resolution = getCharacterFormatResolution('standard', characterQuality);
-        row.scenario = `1 image · ${resolution.toUpperCase()} · ${character?.marketingName ?? 'Character Builder'} · standard format`;
+        row.scenario = `Legacy fixed product · 1 image · ${resolution.toUpperCase()} · ${character?.marketingName ?? 'Character Builder'}`;
         const reference = character && catalogSupplierReference({ engine: character.engine, durationSec: 1, mode: 't2i', resolution });
         if (reference && product.currency === 'USD') {
           row.supplierCents = reference.amountUsd * 100;

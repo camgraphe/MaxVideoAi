@@ -27,7 +27,7 @@ export function getAspectRatio(
   includeCloseUps: boolean
 ): string {
   if (action === 'full-body-fix') return '2:3';
-  if (outputMode === 'portrait-reference') return '16:9';
+  if (outputMode === 'portrait-reference') return '4:5';
   if (outputMode === 'character-sheet' && includeCloseUps) return '16:9';
   if (outputMode === 'character-sheet') return '3:2';
   return fullBodyRequired ? '2:3' : '4:5';
@@ -64,7 +64,7 @@ export function buildImageUrls(input: {
 }
 
 export function getEngineLabel(engineId: string): string {
-  return engineId === 'nano-banana-pro' ? 'Nano Banana Pro' : 'Nano Banana 2';
+  return engineId === 'nano-banana-2-1' ? 'Nano Banana 2.1' : engineId === 'nano-banana-pro' ? 'Nano Banana Pro' : 'Nano Banana 2';
 }
 
 export function getBillingProductKey(qualityMode: CharacterBuilderQualityMode): string {

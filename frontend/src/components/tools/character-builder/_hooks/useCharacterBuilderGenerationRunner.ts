@@ -22,6 +22,8 @@ import type {
 } from '../_lib/character-builder-types';
 
 interface UseCharacterBuilderGenerationRunnerOptions {
+  tariffRevision?: number;
+  refreshPrice: () => Promise<unknown>;
   captureAccountRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   hasIdentityReference: boolean;
@@ -37,6 +39,7 @@ interface UseCharacterBuilderGenerationRunnerOptions {
 }
 
 export function useCharacterBuilderGenerationRunner({
+  tariffRevision,refreshPrice,
   captureAccountRequest,
   copy,
   hasIdentityReference,
@@ -119,7 +122,7 @@ export function useCharacterBuilderGenerationRunner({
             parentRunId: null,
             pinnedReferenceResultId: null,
           },
-        }, request);
+        }, request, tariffRevision);
         if (!request.isCurrent()) return;
 
         if (!response.run) {
@@ -165,6 +168,7 @@ export function useCharacterBuilderGenerationRunner({
       } catch (runError) {
         if (!request.isCurrent()) return;
         setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
+        if ((runError as {code?:string})?.code === 'PRICING_REFRESH_REQUIRED') void refreshPrice();
         if (isAuthRequiredError(runError)) {
           openAuthGate();
           return;
@@ -175,7 +179,7 @@ export function useCharacterBuilderGenerationRunner({
       }
     },
     [
-      captureAccountRequest,
+      captureAccountRequest,tariffRevision,refreshPrice,
       copy.missingRun,
       copy.runFailed,
       copy.runFullBodyDone,

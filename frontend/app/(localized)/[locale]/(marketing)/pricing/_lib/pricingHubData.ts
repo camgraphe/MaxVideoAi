@@ -1160,8 +1160,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-draft',
       anchorId: 'character-builder-pricing',
       tool: copy.tools.characterBuilderDraft,
-      standardOutput: formatFixedPublicProduct(locale, 'character-draft', 8),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-draft-4k', 24)}`,
+      standardOutput: copy.liveQuote,
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${copy.liveQuote}`,
       bestUsedBefore: copy.tools.imageToVideoReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },
@@ -1172,8 +1172,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-final',
       anchorId: 'character-builder-final-pricing',
       tool: copy.tools.characterBuilderFinal,
-      standardOutput: formatFixedPublicProduct(locale, 'character-final', 15),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-final-4k', 30)}`,
+      standardOutput: copy.liveQuote,
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${copy.liveQuote}`,
       bestUsedBefore: copy.tools.finalCharacterReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },

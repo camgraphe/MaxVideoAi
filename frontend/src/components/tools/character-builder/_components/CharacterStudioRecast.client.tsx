@@ -1,9 +1,12 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Clapperboard, ImagePlus, Upload, X } from 'lucide-react';
+import { Clapperboard, ImagePlus, Plus, Download, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioRecastSelection } from '@/types/character-studio';
+
+import { buildRecastBrief, isRecastAudioFile } from '@/lib/character-studio-recast';
+import { CharacterStudioRecastDirection } from './CharacterStudioRecastDirection.client';
 
 type LocalMedia = { url: string; name: string };
 /** Local draft only: no upload, provider request, fabricated output, or billing. */
@@ -20,13 +23,40 @@ export function CharacterStudioRecast({
 }) {
   const readerRoot = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!active) readerRoot.current?.querySelectorAll('video').forEach((video) => video.pause());
+    if (!active)
+      readerRoot.current
+        ?.querySelectorAll<HTMLMediaElement>('video, audio')
+        .forEach((video) => video.pause());
   }, [active]);
   const [video, setVideo] = useState<LocalMedia | null>(null);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
   useEffect(() => {
     if (selection) setPortrait({ url: selection.imageUrl, name: selection.name });
   }, [selection]);
+  const [product, setProduct] = useState<LocalMedia | null>(null);
+  const [audio, setAudio] = useState<LocalMedia | null>(null);
+  const [dialogue, setDialogue] = useState('');
+  const productInput = useRef<HTMLInputElement>(null);
+  const audioInput = useRef<HTMLInputElement>(null);
+  const audioEpoch = useRef(0);
+  useEffect(
+    () => () => {
+      audioEpoch.current++;
+    },
+    [],
+  );
+  useEffect(
+    () => () => {
+      if (product) URL.revokeObjectURL(product.url);
+    },
+    [product],
+  );
+  useEffect(
+    () => () => {
+      if (audio) URL.revokeObjectURL(audio.url);
+    },
+    [audio],
+  );
   const [prompt, setPrompt] = useState('');
   const [error, setError] = useState('');
   const videoInput = useRef<HTMLInputElement>(null);
@@ -43,16 +73,68 @@ export function CharacterStudioRecast({
     },
     [portrait],
   );
-  function select(file: File | undefined, kind: 'video' | 'image') {
+  function select(file: File | undefined, kind: 'video' | 'image' | 'product') {
     if (!file) return;
-    if (!file.type.startsWith(`${kind}/`) || file.size > (kind === 'video' ? 200 : 20) * 1024 * 1024) {
+    if (
+      !file.type.startsWith(kind === 'video' ? 'video/' : 'image/') ||
+      file.size > (kind === 'video' ? 200 : 20) * 1024 * 1024
+    ) {
       setError(kind === 'video' ? copy.invalidVideo : copy.invalidImage);
       return;
     }
     setError('');
     const asset = { url: URL.createObjectURL(file), name: file.name };
     if (kind === 'video') setVideo(asset);
+    else if (kind === 'product') setProduct(asset);
     else setPortrait(asset);
+  }
+  async function selectAudio(file?: File) {
+    if (!file) return;
+    const epoch = ++audioEpoch.current;
+    if (!isRecastAudioFile(file)) {
+      setError(copy.invalidAudio);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const probe = document.createElement('audio');
+    const duration = await new Promise<number>((resolve) => {
+      const settle = (n: number) => {
+        clearTimeout(timer);
+        probe.onloadedmetadata = null;
+        probe.onerror = null;
+        probe.removeAttribute('src');
+        resolve(n);
+      };
+      const timer = setTimeout(() => settle(NaN), 8000);
+      probe.onloadedmetadata = () => settle(probe.duration);
+      probe.onerror = () => settle(NaN);
+      probe.preload = 'metadata';
+      probe.src = url;
+    });
+    if (epoch !== audioEpoch.current || !Number.isFinite(duration) || duration <= 0 || duration > 15) {
+      URL.revokeObjectURL(url);
+      if (epoch === audioEpoch.current) setError(copy.invalidAudio);
+      return;
+    }
+    setAudio({ url, name: file.name });
+    setError('');
+  }
+  function downloadBrief() {
+    if (!video || !portrait) return;
+    const brief = buildRecastBrief({
+      source: video.name,
+      character: portrait.name,
+      product: product?.name,
+      direction: prompt,
+      dialogue,
+      audio: audio?.name,
+    });
+    const url = URL.createObjectURL(new Blob([JSON.stringify(brief, null, 2)], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'maxvideoai-recast.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   return (
     <div ref={readerRoot} className="grid h-full min-h-0 gap-3 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -126,17 +208,83 @@ export function CharacterStudioRecast({
               </button>
             )}
           </section>
-          <label className="block text-xs font-medium text-text-secondary">
-            {copy.recastPrompt}
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              maxLength={2000}
-              rows={3}
-              placeholder={copy.recastPromptHint}
-              className="mt-2 w-full resize-y rounded-xl border border-border bg-bg p-3 text-sm font-normal"
-            />
-          </label>
+          <section>
+            <h3 className="mb-2 text-xs font-medium text-text-secondary">03 · {copy.product}</h3>
+            {product ? (
+              <div className="flex items-center gap-3 rounded-xl border border-border p-2">
+                <img
+                  src={product.url}
+                  alt={product.name}
+                  className="h-14 w-14 rounded-lg bg-bg object-contain"
+                />
+                <span className="min-w-0 flex-1 truncate text-xs">{product.name}</span>
+                <button
+                  type="button"
+                  aria-label={copy.remove + ' · ' + copy.product}
+                  onClick={() => setProduct(null)}
+                  className="p-2"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => productInput.current?.click()}
+                className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-bg p-3 text-sm"
+              >
+                <Plus size={18} />
+                {copy.addProduct}
+              </button>
+            )}
+            <p className="mt-2 text-xs text-text-secondary">{copy.productHint}</p>
+          </section>
+          <CharacterStudioRecastDirection
+            copy={copy}
+            prompt={prompt}
+            onPrompt={setPrompt}
+            dialogue={dialogue}
+            onDialogue={setDialogue}
+            audio={audio}
+            addAudio={() => audioInput.current?.click()}
+            removeAudio={() => {
+              audioEpoch.current++;
+              setAudio(null);
+            }}
+          />
+          <input
+            ref={productInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/bmp"
+            className="hidden"
+            onChange={(e) => {
+              select(e.target.files?.[0], 'product');
+              e.target.value = '';
+            }}
+          />
+          <input
+            ref={audioInput}
+            type="file"
+            accept=".mp3,.wav,audio/mpeg,audio/wav"
+            className="hidden"
+            onChange={(e) => {
+              void selectAudio(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          {video && portrait && (
+            <div>
+              <button
+                type="button"
+                onClick={downloadBrief}
+                className="flex items-center gap-2 text-xs font-medium underline underline-offset-4"
+              >
+                <Download size={14} />
+                {copy.exportBrief}
+              </button>
+              <p className="mt-1 text-xs text-text-secondary">{copy.exportHint}</p>
+            </div>
+          )}
           {error && (
             <p role="alert" className="text-xs text-text-secondary">
               {error}

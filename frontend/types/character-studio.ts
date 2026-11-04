@@ -19,6 +19,7 @@ export interface StudioCharacterSummary {
   createdAt: string;
 }
 export interface StudioCharacter extends StudioCharacterSummary {
+  presentation?: import('@/lib/character-studio-presentation').StudioPresentation;
   identity: StudioImage;
   looks: StudioLook[];
   nextLookCursor: string | null;

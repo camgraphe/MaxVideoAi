@@ -1,3 +1,4 @@
+import { NANO21_ENGINE_ID } from './nano-banana-2-1';
 import { STUDIO_CLOTHING, STUDIO_HAIR } from './character-studio-catalog';
 import { getStudioColorPrompt } from './character-studio-colors';
 import type {
@@ -94,14 +95,14 @@ export const CHARACTER_QUALITY_OPTIONS: Array<{
   {
     id: 'draft',
     label: 'Standard',
-    description: 'Fast exploratory passes on Nano Banana 2.',
-    engineId: 'nano-banana-2',
+    description: 'Fast exploratory passes on Nano Banana 2.1.',
+    engineId: NANO21_ENGINE_ID,
   },
   {
     id: 'final',
     label: 'Pro',
-    description: 'Cleaner export-ready references on Nano Banana Pro.',
-    engineId: 'nano-banana-pro',
+    description: 'Cleaner export-ready references on Nano Banana 2.1.',
+    engineId: NANO21_ENGINE_ID,
   },
 ];
 
@@ -120,7 +121,7 @@ export const CHARACTER_FORMAT_OPTIONS: Array<{
   {
     id: '2k',
     label: '2K',
-    description: 'Sharper output. 2x price.',
+    description: 'Higher resolution.',
     resolution: '2k',
   },
   {
@@ -268,7 +269,7 @@ export const CHARACTER_TRAIT_OPTION_MAP = {
 } as const;
 
 export function getQualityEngineId(qualityMode: CharacterBuilderQualityMode): string {
-  return CHARACTER_QUALITY_OPTIONS.find((entry) => entry.id === qualityMode)?.engineId ?? 'nano-banana-2';
+  return CHARACTER_QUALITY_OPTIONS.find((entry) => entry.id === qualityMode)?.engineId ?? NANO21_ENGINE_ID;
 }
 
 export function getDefaultAspectRatio(outputMode: CharacterBuilderOutputMode, action: 'generate' | 'full-body-fix' | 'lighting-variant'): string {

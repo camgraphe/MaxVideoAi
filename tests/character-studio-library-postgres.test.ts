@@ -9,6 +9,7 @@ import {
   getStudioCharacter,
   listStudioCharacters,
   renameStudioCharacter,
+  updateStudioPresentation,
 } from '../frontend/server/character-studio/store';
 
 const owner = '00000000-0000-4000-8000-000000000091';
@@ -46,6 +47,7 @@ test(
       .query(`CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id uuid,status text,hidden boolean,settings_snapshot jsonb,render_ids jsonb);
     CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id uuid,kind text,status text,url text,storage_url text,thumb_url text)`);
     await pg.pool.query(readFileSync('neon/migrations/93_character_studio.sql', 'utf8'));
+    await pg.pool.query(readFileSync('neon/migrations/94_character_studio_presentation.sql', 'utf8'));
     const addJob = async (id: string, userId = owner, characterId?: string, status = 'completed') => {
       const url = id === 'identity-A' ? imageUrl : `https://example.invalid/${id}.png`;
       await pg.pool.query('INSERT INTO app_jobs VALUES($1,$2,$3,false,$4,$5)', [
@@ -69,6 +71,15 @@ test(
       assert.equal(character.identity.thumbUrl, 'https://example.invalid/thumb.png');
       assert.equal(character.identity.settingsSnapshot.prompt, 'Server-owned recipe');
       assert.deepEqual(character.looks, []);
+    });
+    await t.test('casting notes persist independently from the generation recipe and only for their owner', async () => {
+      await updateStudioPresentation(owner, id, { age: '35', outfit: '  Canvas apron  ' });
+      await assert.rejects(updateStudioPresentation(other, id, { outfit: 'foreign' }));
+      await assert.rejects(updateStudioPresentation(owner, id, { name: 'wrong field' }));
+      await assert.rejects(updateStudioPresentation(owner, id, { age: 'a'.repeat(601) }));
+      const result = await getStudioCharacter(owner, id);
+      assert.deepEqual(result.presentation, { age: '35', outfit: 'Canvas apron' });
+      assert.equal(result.identity.settingsSnapshot.prompt, 'Server-owned recipe');
     });
     await t.test('retries including concurrent saves return one identity', async () => {
       const results = await Promise.all([

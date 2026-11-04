@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 import { resolveStudioLookRequest } from '@/server/character-studio/look';
 import {
-  getCharacterFormatMultiplier,
   getCharacterFormatResolution,
   getQualityEngineId,
 } from '@/lib/character-builder';
@@ -20,7 +19,6 @@ import {
   buildImageUrls,
   buildInputMode,
   getAspectRatio,
-  getBillingProductKey,
   getEngineLabel,
   trimString,
 } from './utils';
@@ -32,7 +30,9 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
   const inputMode = buildInputMode(request, imageUrls);
   const engineId = getQualityEngineId(request.qualityMode);
   const engineLabel = getEngineLabel(engineId);
-  const billingProductKey = getBillingProductKey(request.qualityMode);
+  if (request.generateCount !== 1) {
+    throw new CharacterBuilderError('Generate one character image at a time.', { status: 400, code: 'single_output_required' });
+  }
   const settingsSnapshot = buildSettingsSnapshot(request, prompt, engineId, engineLabel, inputMode);
   const aspectRatio = getAspectRatio(
     request.outputMode,
@@ -41,20 +41,19 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
     request.outputOptions.includeCloseUps
   );
   const resolution = getCharacterFormatResolution(request.formatMode, request.qualityMode);
-  const billingQuantityMultiplier = getCharacterFormatMultiplier(request.formatMode, request.qualityMode);
 
   try {
     const result = await executeImageGeneration({
       userId: input.userId,
       walletReservation: 'reserve',
+      customerTariffRevision: input.customerTariffRevision,
       jobSurface: 'character',
-      billingProductKey,
       body: {
         jobId: trimString(input.jobId) || undefined,
         engineId,
         mode: inputMode,
         prompt,
-        numImages: request.generateCount === 4 ? 4 : 1,
+        numImages: 1,
         imageUrls: inputMode === 'i2i' ? imageUrls : undefined,
         aspectRatio,
         resolution,
@@ -63,7 +62,6 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
         indexable: false,
       },
       settingsSnapshot,
-      billingQuantityMultiplier,
     });
 
     const createdAt = new Date().toISOString();

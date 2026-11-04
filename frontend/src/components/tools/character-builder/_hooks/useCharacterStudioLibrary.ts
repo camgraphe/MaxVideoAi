@@ -178,7 +178,7 @@ export function useCharacterStudioLibrary({
       if (request.isCurrent() && version === saveVersion.current) setSaving(false);
     }
   };
-  const rename = async (id: string, name: string) => {
+  const updateCharacter = async (id: string, patch: { name: string } | { presentation: import('@/lib/character-studio-presentation').StudioPresentation }) => {
     const request = captureAccountRequest();
     if (!request) return;
     setError(false);
@@ -187,7 +187,7 @@ export function useCharacterStudioLibrary({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${request.accessToken}` },
         signal: request.signal,
-        body: JSON.stringify({ name }),
+        body: JSON.stringify(patch),
       });
       const body = await response.json();
       if (!response.ok || !body.ok) throw new Error();
@@ -196,7 +196,7 @@ export function useCharacterStudioLibrary({
         previous.map((item) => (item.id === id ? { ...item, name: body.character.name } : item)),
       );
       setSelected((previous) =>
-        previous?.id === id ? { ...previous, name: body.character.name } : previous,
+        previous?.id === id ? { ...previous, name: body.character.name, presentation: body.character.presentation } : previous,
       );
       return true;
     } catch {
@@ -214,7 +214,8 @@ export function useCharacterStudioLibrary({
     openCharacter,
     closeCharacter,
     cancelDetails,
-    rename,
+    rename: (id: string, name: string) => updateCharacter(id, { name }),
+    savePresentation: (id: string, presentation: import('@/lib/character-studio-presentation').StudioPresentation) => updateCharacter(id, { presentation }),
     saveTarget,
     saveError,
     saving,

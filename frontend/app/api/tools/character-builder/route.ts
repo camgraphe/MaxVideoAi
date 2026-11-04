@@ -1,3 +1,4 @@
+import { CUSTOMER_TARIFF_REVISION_HEADER } from '@/lib/customer-tariff-revision';
 import { requireCurrentWebPricingPolicy } from '@/server/pricing/web-pricing-policy';
 export const runtime = 'nodejs';
 
@@ -72,7 +73,8 @@ export async function POST(req: NextRequest) {
     const result = await runCharacterBuilder({
       ...(body ?? {}),
       userId,
-    } as CharacterBuilderRequest & { userId: string });
+      customerTariffRevision: req.headers.get(CUSTOMER_TARIFF_REVISION_HEADER),
+    } as CharacterBuilderRequest & { userId: string; customerTariffRevision:string|null });
     return NextResponse.json(result);
   } catch (error) {
     const status = error instanceof CharacterBuilderError ? error.status : 502;
