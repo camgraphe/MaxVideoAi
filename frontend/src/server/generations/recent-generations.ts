@@ -11,9 +11,9 @@ import {
   type AgentGenerationStatus,
   type GenerationStatusRecord,
 } from './generation-status';
-import { mapRecentGenerationRecordToWeb } from './recent-generation-web-mapper';
+export { mapRecentGenerationRecordToWeb } from './recent-generation-web-mapper';
 
-export { mapRecentGenerationRecordToWeb, buildRecentGenerationSurfaceFilterClause, RECENT_IMAGE_ENGINE_ALIASES };
+export { buildRecentGenerationSurfaceFilterClause, RECENT_IMAGE_ENGINE_ALIASES };
 export type { RecentGenerationQueryParam, RecentGenerationSurface };
 
 export type RecentGenerationRecord = Omit<GenerationStatusRecord, 'thumb_url'> & {
