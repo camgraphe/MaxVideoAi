@@ -1,21 +1,21 @@
-# Google Vertex Omni / Gemini Omni Flash 1.1
+# Google Vertex Omni / Gemini Omni Flash 1.2
 
-This guide covers the MaxVideoAI direct integration for Gemini Omni Flash 1.1 through Google Vertex / Agent Platform Interactions.
+This guide covers the MaxVideoAI direct integration for Gemini Omni Flash 1.2 through Google Vertex / Agent Platform Interactions.
 
 ## Scope
 
 - Engine id: `gemini-omni-flash`
 - Provider key: `google_vertex_omni_direct`
-- Google model id: `gemini-omni-1.1-flash-preview`
+- Google model id: `gemini-omni-1.2-flash`
 - API family: Interactions API, not Veo `predictLongRunning`
-- Public status: preview / limited
-- Publication gate: blocked until a separately authorized smoke is accepted
+- Supplier status: generally available (November 5, 2026)
+- Source candidate: 1.2 upgrade; production deployment remains separate from account access
 
-The route supports text-to-video, image-to-video, reference-to-video, first/last-frame generation, short source-video edit and extension, and conversational refine through `previous_interaction_id`. This implementation does not claim GA status or account acceptance: the 2026-09-03 staging probe was rejected before acceptance because background interactions require `store=true`.
+The route supports text-to-video, image-to-video, reference-to-video, first/last-frame generation, short source-video edit and extension, and conversational refine through `previous_interaction_id`. Google announced 1.2 GA on November 5, 2026. A direct account-scoped 3-second 360p text-to-video Interactions request completed that day. This establishes that route only; it does not certify every mode, resolution or the deployed app. See [launch evidence](../model-launch/gemini-omni-flash-1-2-upgrade.md). The older September 3 staging rejection remains historical: background interactions require `store=true`.
 
 ## Rollout Flags
 
-Keep the route disabled while the publication gate is blocked. After a separately authorized accepted smoke and release approval, the existing flags control preview and rollback.
+The upgrade preserves existing environment flags. The values below illustrate the disabled rollback state, not a claim about production configuration. Enablement and a production release follow the normal delivery policy.
 
 ```txt
 GOOGLE_VERTEX_OMNI_ENABLED=false
@@ -51,7 +51,7 @@ Fallbacks:
 - `GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON` falls back to `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON`.
 - `GOOGLE_VERTEX_OMNI_LOCATION` defaults to `global` and never inherits `GOOGLE_VERTEX_LOCATION`, which may use a Veo-only regional value.
 - `GOOGLE_VERTEX_OMNI_INPUT_GCS_URI` and `GOOGLE_VERTEX_OMNI_OUTPUT_GCS_URI` fall back to the shared `GOOGLE_VERTEX_INPUT_GCS_URI`; media inputs and generated output stay on Google Cloud Storage.
-- The current `gemini-omni-1.1-flash-preview` Vertex route is documented for `global`. Any explicit value other than `global` is rejected before provider submission.
+- The current `gemini-omni-1.2-flash` Vertex route is documented for `global`. Any explicit value other than `global` is rejected before provider submission.
 
 Do not commit service account JSON. Configure it only through deployment secrets.
 
@@ -75,7 +75,7 @@ The payload builder maps app modes to documented Interactions tasks:
 
 Media blocks should use the documented Interactions content fields only, such as `type`, `uri`, `data`, and `mime_type`.
 Do not add internal media role fields to the JSON body. Image roles are expressed in the prompt text with Google Omni tags such as `<FIRST_FRAME>` and `<IMAGE_REF_N>`.
-For generation and extension, the video response format is a list containing the selected integer duration from 3 through 10 seconds, `16:9` or `9:16`, one of `360p`, `720p`, `1080p`, or `4k`, and an isolated `gcs_uri` output prefix. Edit/refine requests omit duration and aspect ratio so Google inherits them from the source interaction. The service stages HTTP media inputs, including both ordered frame images, into the configured Google Vertex input bucket before submission and rejects images above the documented 30 MB limit. Polling must still handle inline base64 data because Google can return bytes instead of a URI.
+For generation and extension, the video response format is a list containing the selected integer duration from 3 through 10 seconds in the currently sold MaxVideoAI domain, `16:9` or `9:16`, one of `360p`, `720p`, `1080p`, or `4k`, and an isolated `gcs_uri` output prefix. Edit/refine requests omit duration and aspect ratio so Google inherits them from the source interaction. The service stages HTTP media inputs, including both ordered frame images, into the configured Google Vertex input bucket before submission and rejects images above the documented 30 MB limit. Polling must still handle inline base64 data because Google can return bytes instead of a URI.
 
 Background Interactions requests always send `store: true`; this is provider-required and is not a user control. Negative prompt, seed, and audio-reference inputs remain unsupported.
 
@@ -91,7 +91,7 @@ The cron route accepts Vercel Cron auth and the optional `x-google-vertex-omni-p
 
 Poller responsibilities:
 
-- Fetch the stored `gemini-omni-1.1-flash-preview` interaction with `GET /interactions/{id}`. Do not use the empty-body `POST` shown on some Google video task pages: a production probe on August 28, 2026 returned `200` for `GET` and `404` for `POST` against the same completed `video-*` interaction.
+- Fetch the stored interaction (including accepted 1.1 jobs) with `GET /interactions/{id}`. Do not use the empty-body `POST` shown on some Google video task pages: a production probe on August 28, 2026 returned `200` for `GET` and `404` for `POST` against the same completed `video-*` interaction.
 - Normalize Interactions responses, including `steps[].content` and SDK-style `output_video`.
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.
@@ -132,9 +132,15 @@ reviewed on October 26, 2026. This is explanatory copy, not a change to provider
 
 ## Pricing And Cost Estimate
 
-The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$17.50` per million output tokens. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.
+The factual calculator in `frontend/src/lib/google-omni-pricing.ts` is the single Google Omni cost source. Output uses 1,931/5,792/8,688/17,376 tokens per second at 360p/720p/1080p/4k and `$12.00` per million output video tokens for 1.2. Each input image uses 1,120 tokens; source video uses 5,792 tokens per second; both are charged at `$1.50` per million input tokens. Fractional cents are retained through canonical commercial math and rounded only at the final customer-money boundary.
 
-Billing and public pricing facts consume that calculator before the canonical commercial policy is applied. Source-video modes require verified duration metadata for an exact paid quote. Video edit pricing inherits trusted source duration, and conversational retake pricing resolves the duration only from the user's completed, owned previous interaction; a selected UI duration cannot change either edit charge. Provider-attempt estimates use the same calculator and record `google_omni_1_1_token_pricing`; provider code does not own margin or customer-price policy. A media-free provider-pricing snapshot is stored on the provider attempt so polling can reconstruct mode, resolution, and verified media inputs even when price-only receipt snapshots omit provider metadata.
+Billing and public pricing facts consume that calculator before the canonical commercial policy is applied. Source-video modes require verified duration metadata for an exact paid quote. Video edit pricing inherits trusted source duration, and conversational retake pricing resolves the duration only from the user's completed, owned previous interaction; a selected UI duration cannot change either edit charge. Provider-attempt estimates use the same calculator and record `google_omni_1_2_token_pricing` for new 1.2 jobs; provider code does not own margin or customer-price policy. A media-free provider-pricing snapshot is stored on the provider attempt so polling can reconstruct mode, resolution, and verified media inputs even when price-only receipt snapshots omit provider metadata.
+
+Historical attempts are estimated from their stored `providerModel`, not the current route. 1.1 keeps its $17.50 output-token rate and source label; missing or unknown model provenance returns an unavailable estimate. Paid receipt snapshots and literal customer tariffs are unchanged. Historical $17.50 authored token bands retain their original price expression/domain; new band compilation uses the current $12 supplier reference. In an environment with inactive customer tariffs, the existing legacy margin policy still derives quotes from current supplier facts; those development/audit projections are not evidence of production customer prices.
+
+These are media-token estimates, not observed invoices: prompt text and variable reasoning usage are not included in the deterministic preflight estimate. The successful smoke reported additional text/reasoning tokens.
+
+Google supports up to 15 seconds for 1.2 generation/editing, while first/last-frame and added extension remain 3–10 seconds. This candidate deliberately retains the existing 3–10-second sellable domain and source limits. Open 11–15 seconds only with reviewed tariff coverage and end-to-end validation. Audio references remain allowlisted by Google and are not exposed. No new upscale mode is added.
 
 ## Workspace UI
 
@@ -154,7 +160,7 @@ Public pages should not teach the internal Vertex implementation. Keep intent sp
 - `/ai-video-engines/gemini-omni-flash-vs-veo-3-1`: Omni vs Veo decision page.
 - `/pricing#gemini-omni-flash-pricing`: pricing anchor once live pricing is confirmed.
 
-Do not create an examples page until approved real MaxVideoAI Omni outputs exist.
+Retain the current examples and original 1.1 media/prompt attribution. Existing model/comparison URLs stay canonical; the new 1.2 aliases redirect to that owner. The old score row is retained under `historicalScores` with `modelVersion: "1.1"` in the benchmark data, outside current score loaders. It must not become a 1.2 rating. Comparison galleries carry each stored example label through captions, accessible names and the watch dialog. New 1.2 proof requires separately reviewed real renders; the access-smoke clip is not a marketing example.
 
 ## Rollback
 

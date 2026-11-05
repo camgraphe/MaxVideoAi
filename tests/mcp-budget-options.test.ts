@@ -261,7 +261,7 @@ test('lowest paid is the independently derived minimum across exact eligible rou
   const dependencies = defaultDependencies();
   const expected = collectAuthoritativePaidRoutes(dependencies)[0];
   assert.ok(expected);
-  assert.equal(expected.engineId, 'pika-text-to-video');
+  assert.equal(expected.engineId, 'gemini-omni-flash');
   assertLowestMatchesAuthoritativeMinimum(dependencies);
 });
 
@@ -440,9 +440,9 @@ test('budget options use the current canonical trial and lowest paid route witho
   assert.equal(options[0].priceSource, 'included_trial');
   assert.equal(options[0].audioState, 'enabled');
 
-  assert.equal(options[1].engineId, 'pika-text-to-video');
-  assert.equal(options[1].amountCents, 26);
-  assert.equal(options[1].amountCents, quoteScenario('pika-text-to-video', 5, '720p'));
+  assert.equal(options[1].engineId, 'gemini-omni-flash');
+  assert.equal(options[1].amountCents, 10);
+  assert.equal(options[1].amountCents, quoteScenario('gemini-omni-flash', 3, '360p'));
   assert.equal(options[1].priceSource, 'canonical_public_quote');
   assert.equal(options[1].audioState, 'silent');
 
@@ -603,19 +603,19 @@ test('labels, currency, and model links are stable and localized in English, Fre
       included: 'Included',
       silent: /Silent/,
       trialHref: '/models/dreamina-seedance-2-0-mini',
-      paidHref: '/models/pika-text-to-video',
+      paidHref: '/models/gemini-omni-flash',
     },
     fr: {
       included: 'Inclus',
       silent: /Sans audio/,
       trialHref: '/fr/modeles/dreamina-seedance-2-0-mini',
-      paidHref: '/fr/modeles/pika-text-to-video',
+      paidHref: '/fr/modeles/gemini-omni-flash',
     },
     es: {
       included: 'Incluido',
       silent: /Sin audio/,
       trialHref: '/es/modelos/dreamina-seedance-2-0-mini',
-      paidHref: '/es/modelos/pika-text-to-video',
+      paidHref: '/es/modelos/gemini-omni-flash',
     },
   };
 

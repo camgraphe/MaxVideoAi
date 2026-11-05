@@ -43,15 +43,18 @@ const KEY_SPEC_FIELDS = [
   'releaseDate',
 ] as const;
 
-test('every P1 model has exactly eleven reviewed finite scores', () => {
+test('every original P1 launch retains eleven reviewed finite scores, including historical Omni 1.1', () => {
   const document = JSON.parse(readFileSync('data/benchmarks/engine-scores.v1.json', 'utf8')) as {
     last_updated: string;
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
+    historicalScores: Array<Record<string, unknown> & { modelSlug: string; modelVersion: string }>;
   };
 
   assert.equal(document.last_updated, '2026-10-27');
   for (const modelId of MODEL_IDS) {
-    const rows = document.scores.filter(({ modelSlug }) => modelSlug === modelId);
+    const source = modelId === 'gemini-omni-flash'
+      ? document.historicalScores.filter(row => row.modelVersion === '1.1') : document.scores;
+    const rows = source.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one score row`);
     const row = rows[0]!;
     assert.equal(Object.hasOwn(row, 'overall'), false, `${modelId} overall stays derived`);

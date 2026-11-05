@@ -30,7 +30,7 @@ export function deriveWatchPageSignals(params: {
   const snapshot = parseSnapshot(video);
   const engineEntry = resolveEngineEntry(editorial?.modelSlug ?? entry?.engineSlug ?? snapshot.engineId ?? video.engineId);
   const engineSlug = editorial?.modelSlug ?? engineEntry?.modelSlug ?? entry?.engineSlug ?? normalizeEngineId(video.engineId ?? '') ?? null;
-  const engineLabel = engineEntry?.marketingName ?? entry?.engineLabel ?? video.engineLabel ?? 'AI video engine';
+  const engineLabel = video.engineLabel || entry?.engineLabel || engineEntry?.marketingName || 'AI video engine';
   const exampleFamily =
     resolveExampleCanonicalSlug(engineSlug ?? video.engineId) ??
     resolveExampleCanonicalSlug(editorial?.examplesSlug ?? entry?.exampleFamily);
