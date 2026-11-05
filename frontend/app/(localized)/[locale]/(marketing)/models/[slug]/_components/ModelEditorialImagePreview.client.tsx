@@ -5,11 +5,11 @@ import { X } from 'lucide-react';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { readerCopy } from '@/components/examples/example-reader-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import type { Nano21EditorialImage } from '@/lib/nano21-editorial-images';
+import type { ModelEditorialImage } from '../_lib/model-page-editorial-images';
 import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
 /** Public editorial image viewer; no app job lookup or authenticated library action. */
-export function ModelEditorialImagePreview({image,onClose}:{image:Nano21EditorialImage;onClose:()=>void}){
+export function ModelEditorialImagePreview({image,onClose}:{image:ModelEditorialImage;onClose:()=>void}){
   const {locale}=useI18n();
   const copy=readerCopy(locale);
   const closeLabel=locale==='fr'?'Fermer l’image':locale==='es'?'Cerrar imagen':'Close image viewer';
@@ -18,13 +18,21 @@ export function ModelEditorialImagePreview({image,onClose}:{image:Nano21Editoria
     <section ref={dialogRef} role="dialog" aria-modal="true" aria-label={image.title} tabIndex={-1} onKeyDown={onDialogKeyDown}
       className="max-h-[94vh] w-full max-w-6xl overflow-y-auto rounded-xl bg-surface text-text-primary shadow-2xl">
       <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-hairline bg-surface p-4">
-        <div><h2 className="text-lg font-semibold">{image.title}</h2><p className="text-xs text-text-secondary">Nano Banana 2.1 · 1K · 16:9 · MEDIUM</p></div>
+        <div><h2 className="text-lg font-semibold">{image.title}</h2><p className="text-xs text-text-secondary">{image.metadataLabel}</p></div>
         <button type="button" data-modal-initial-focus="true" aria-label={closeLabel} onClick={onClose} className="rounded-lg border border-hairline p-2"><X size={18}/></button>
       </header>
-      {/* Exact original is deliberately requested only after opening the viewer. */}
+      <div className={image.source?'grid gap-3 p-3 md:grid-cols-2':undefined}>
+      {image.source?<figure><figcaption className="pb-2 text-xs text-text-secondary">{image.source.label}</figcaption>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={image.source.original.url} alt={image.source.label} width={image.source.original.width} height={image.source.original.height} className="max-h-[68vh] w-full bg-black object-contain"/>
+      </figure>:null}
+      <figure>
+      {image.source?<figcaption className="pb-2 text-xs text-text-secondary">{image.title}</figcaption>:null}
+      {/* Exact originals are deliberately requested only after opening the viewer. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image.original.url} alt={image.title} width={image.original.width} height={image.original.height}
         className="max-h-[68vh] w-full bg-black object-contain"/>
+      </figure></div>
       <div className="space-y-4 p-4">
         <div className="flex flex-wrap items-center gap-3">
           <a href={image.original.url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-hairline px-3 py-2 text-sm font-semibold">{copy.original}</a>

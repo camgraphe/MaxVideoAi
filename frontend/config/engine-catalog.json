@@ -25231,8 +25231,12 @@
         "includeInFamilyCopy": false
       },
       "compare": {
-        "suggestOpponents": [],
-        "publishedPairs": [],
+        "suggestOpponents": [
+          "kling-v4"
+        ],
+        "publishedPairs": [
+          "kling-v4"
+        ],
         "includeInHub": false
       },
       "app": {

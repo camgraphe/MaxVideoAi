@@ -15,8 +15,10 @@ texte/image/références. Kling 4 : 720p/1080p, 3–30 secondes, plans structur�
 Modify distinct. Tester le même prompt en 5s/720p ; afficher devis exact, temps
 mesuré et originaux entiers. Comparer ensuite les capacités exclusives séparément.
 Ne pas conclure que Flash est plus rapide ou meilleur sans mesures comparables.
-Destination future : pages modèles exactes et App préconfigurée. La comparaison
-vidéo publique exige un original qualifié de chaque modèle et son vrai replay.
+Le document EN/FR/ES `content/comparisons/kling-v4-vs-kling-v4-flash.json` est prêt,
+avec capacités et cartes de prix texte-à-vidéo. Il reste fermé par le registre.
+Les références vidéo nécessitent leur devis exact dans le workspace. Les scores
+Flash ne sont pas encore qualifiés ; aucun face-à-face synchronisé n’est inventé.
 
 ### Flare 2.6 et Sunburst 2.6
 
@@ -165,3 +167,15 @@ prompts y ajustes en [página de Flash publicada y verificada]. »
 Ces textes sont prêts pour la sélection ; aucun compte social, vidéo YouTube ou
 email n'a été publié. Une version montée devra nommer les coupes, sous-titres et
 habillages ajoutés en postproduction. Le pack actuel conserve les sept originaux.
+
+## Médias choisis pour les pages modèles
+
+- Flash : B1 « Compartiment 9 » en hero ; B2 « Le dernier rempart » et son prompt exact dans la démonstration détaillée ; galerie B1/B2/B3/V1/V2/V3. Les trois scènes de cinq secondes restent secondaires.
+- Flare : I1 en hero et galerie ; I3 en retouche, avec source I1 visible à l’ouverture.
+- Sunburst : I2 en hero et galerie ; I4 en retouche, avec la même source I1 Flare clairement identifiée.
+- Les CTA image ouvrent la bonne variante ; ils ne prétendent pas injecter automatiquement le prompt et les références de l’exemple.
+
+Les copies publiques et leurs aperçus sont vérifiés. L’ouverture des pages et des
+workflows reste conditionnée aux tarifs, aux parcours et à la livraison décrits
+dans `QUALIFICATION-MATRIX.md`. Les contenus sociaux restent des brouillons non
+envoyés ; aucun lancement public n’est annoncé comme déjà effectué.

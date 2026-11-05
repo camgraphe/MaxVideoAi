@@ -99,14 +99,14 @@
       ]
     },
     "media": {
-      "caption": "Examples will be added after generation and review with this exact model.",
-      "description": "Examples will be added after generation and review with this exact model.",
+      "caption": "An original cinematic still generated with GPT Image 2.6 Flare, shown at 1024 × 1024 pixels.",
+      "description": "An original cinematic still generated with GPT Image 2.6 Flare, shown at 1024 × 1024 pixels.",
       "renderLabel": "Examples",
       "badges": [
         "GPT Image 2.6 Flare",
         "PNG · JPEG · WebP"
       ],
-      "altContext": "GPT Image 2.6 Flare — Examples will be added after generation and review with this exact model."
+      "altContext": "GPT Image 2.6 Flare — An original cinematic still generated with GPT Image 2.6 Flare, shown at 1024 × 1024 pixels."
     },
     "features": [
       {
@@ -170,7 +170,7 @@
     "modelSlug": "gpt-image-2-6-flare",
     "section": {
       "title": "Explore prompt ideas — GPT Image 2.6 Flare",
-      "intro": "Production brief — media selection pending",
+      "intro": "Create a cinematic still, then direct a precise wardrobe change while preserving the scene.",
       "tip": "Describe what to preserve and what to change. Give each reference a clear role.",
       "guide": {
         "label": "Read provider documentation",
@@ -191,7 +191,7 @@
     "demo": null,
     "imageExamples": {
       "title": "Explore prompt ideas",
-      "intro": "Production brief — media selection pending",
+      "intro": "Both wardrobe edits start from the same original generated with GPT Image 2.6 Flare. The edit viewer shows that source beside the result.",
       "workspaceLabel": "Open the workspace",
       "items": [
         {
@@ -216,9 +216,10 @@
     "showWhenEmpty": false,
     "section": {
       "title": "GPT Image 2.6 Flare — Examples",
-      "intro": "Examples will be added after generation and review with this exact model.",
+      "intro": "Two real outputs: a cinematic scene and a wardrobe continuity edit. Open an image to inspect the original, settings and exact prompt.",
       "defaultCtaLabel": null,
-      "recreateLabel": "Recreate with these settings"
+      "recreateLabel": "Open the image workspace",
+      "afterGallery": "Both wardrobe edits start from the same original generated with GPT Image 2.6 Flare. The edit viewer shows that source beside the result."
     },
     "filters": [
       {
@@ -254,10 +255,20 @@
       {
         "id": "proof-4",
         "icon": "sparkles",
-        "title": "Examples",
-        "body": "Examples will be added after generation and review with this exact model."
+        "title": "Generation and edit originals",
+        "body": "Both wardrobe edits start from the same original generated with GPT Image 2.6 Flare. The edit viewer shows that source beside the result."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "editorialImages": [
+      {
+        "id": "gpt26-flare-generation",
+        "title": "The last reel — generation · GPT Image 2.6 Flare"
+      },
+      {
+        "id": "gpt26-flare-edit",
+        "title": "The last reel — jacket edit · GPT Image 2.6 Flare"
+      }
+    ]
   }
 }

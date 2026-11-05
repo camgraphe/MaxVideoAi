@@ -1,0 +1,1810 @@
+{
+  "checkedAt": "2026-11-05T21:57:46.831Z",
+  "status": "committed",
+  "approved": true,
+  "applied": true,
+  "operationId": "ddda411b-bffb-4bf7-83c8-8e8500863bba",
+  "fingerprint": "4fd4bfc8df7f8eb72a60bedba626022d64494b6924f2a3bba3010dd451064620",
+  "committedAt": "2026-11-05T21:05:47.040Z",
+  "sourceId": "b5f4bdddaa27e8620293dc9a59811559decc0cf5",
+  "revisionBefore": 2115,
+  "revisionAfter": 2187,
+  "lockDurationMs": 797,
+  "plan": {
+    "modelId": "kling-v4-flash",
+    "counts": {
+      "create": 72,
+      "update": 0,
+      "conflict": 0,
+      "unchanged": 0
+    },
+    "fullScopeCount": 72
+  },
+  "changes": [
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"10\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:92cf1ee2199f29e741179b9faf82968c",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 123
+        },
+        "source": "database",
+        "version": 2116,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.356Z"
+      },
+      "before": null,
+      "eventId": "b28b07d5-f43a-45f8-82ae-7df6c68c9df2"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"10\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8caf8dc99a3eb52c3656e293a14c476a",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 123
+        },
+        "source": "database",
+        "version": 2117,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.443Z"
+      },
+      "before": null,
+      "eventId": "71ed43a1-fc42-4303-afbb-7b39092d0a94"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"10\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:3f7dec24c4e3552459aa98bd02498b11",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 123
+        },
+        "source": "database",
+        "version": 2118,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.472Z"
+      },
+      "before": null,
+      "eventId": "ec6eb1e6-8fc4-4245-b7bc-fb42bd627a55"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"11\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:81014f666baede89d6895b508fb495f9",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 135
+        },
+        "source": "database",
+        "version": 2119,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.499Z"
+      },
+      "before": null,
+      "eventId": "c2a6a03b-a706-4a08-ac41-8ae00a27b435"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"11\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:0f5a1c015d74809285bbbfa81a54138a",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 135
+        },
+        "source": "database",
+        "version": 2120,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.513Z"
+      },
+      "before": null,
+      "eventId": "bdd3ab94-ef82-4c2f-89aa-d0a568a81538"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"11\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:642ff9738f21a7a3067d9fbceb238fa8",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 135
+        },
+        "source": "database",
+        "version": 2121,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.529Z"
+      },
+      "before": null,
+      "eventId": "e0cd4321-081d-497a-afb1-25b7db1f81f0"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"12\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:c952d44b650a8f7053e57f26c0892957",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 147
+        },
+        "source": "database",
+        "version": 2122,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.546Z"
+      },
+      "before": null,
+      "eventId": "ff124232-49ce-43ad-a076-c1c99691fbe9"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"12\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:7a8cd793508ba4e6c9335d7955508d6b",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 147
+        },
+        "source": "database",
+        "version": 2123,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.558Z"
+      },
+      "before": null,
+      "eventId": "c68a542f-de21-461d-8620-2197873efc91"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"12\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:db16d17f6055b34dc3b1c9d343f7ebf0",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 147
+        },
+        "source": "database",
+        "version": 2124,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.577Z"
+      },
+      "before": null,
+      "eventId": "34b0a042-0ce3-4dd4-b40a-cb259b0fd071"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"13\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:30218e01a197fa47041422c41d251153",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 159
+        },
+        "source": "database",
+        "version": 2125,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.586Z"
+      },
+      "before": null,
+      "eventId": "61c4fb8a-8542-43fa-8a37-151255fc8355"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"13\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:b97a7863c2ab522855f5815093f86625",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 159
+        },
+        "source": "database",
+        "version": 2126,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.594Z"
+      },
+      "before": null,
+      "eventId": "b1dac863-3d1a-4f75-9705-04d2bd3665c2"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"13\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:9959cc87134ff21890ad45e093130311",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 159
+        },
+        "source": "database",
+        "version": 2127,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.601Z"
+      },
+      "before": null,
+      "eventId": "f1ceb886-5c04-45a1-9ba1-f5b64b936c76"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"14\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:f84a8df1c0205a28210377d166da4d6f",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 172
+        },
+        "source": "database",
+        "version": 2128,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.608Z"
+      },
+      "before": null,
+      "eventId": "ccb1e768-5847-4094-9ab2-fb171d1a7a2d"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"14\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:2e90e0be08f08579462362d89493bf44",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 172
+        },
+        "source": "database",
+        "version": 2129,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.616Z"
+      },
+      "before": null,
+      "eventId": "ef7bd73a-eb6e-4ba5-9f07-8698144cd716"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"14\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:27044e4ca0a79fadbe226cc12cfb0d2e",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 172
+        },
+        "source": "database",
+        "version": 2130,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.623Z"
+      },
+      "before": null,
+      "eventId": "34ff7077-4f13-4dc9-a434-4a27ae28ee9a"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"15\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:d064ea780cfab1535d5a9ce61f899dd4",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 184
+        },
+        "source": "database",
+        "version": 2131,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.630Z"
+      },
+      "before": null,
+      "eventId": "af86d28a-45c0-4dc8-b94b-005e6c3db94a"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"15\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:725c5c0cdb883a0c701b1cfcce9a5aec",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 184
+        },
+        "source": "database",
+        "version": 2132,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.637Z"
+      },
+      "before": null,
+      "eventId": "c1e56684-3d54-442d-874f-9673084f9084"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"15\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:0adc7e7b52364c257da6eeb21fe0de39",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 184
+        },
+        "source": "database",
+        "version": 2133,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.645Z"
+      },
+      "before": null,
+      "eventId": "b4daaa54-e0cf-4087-b4f4-e02e8ca4f400"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"16\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:13539a675dce156717f702e80d448222",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 196
+        },
+        "source": "database",
+        "version": 2134,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.664Z"
+      },
+      "before": null,
+      "eventId": "6d161356-d705-4629-bcd3-a5a0586edb6b"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"16\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:9a5f0719f783123041460cbe73665f43",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 196
+        },
+        "source": "database",
+        "version": 2135,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.674Z"
+      },
+      "before": null,
+      "eventId": "edd44b0f-6fba-46d3-998c-2014d5cff803"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"16\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:66b6dc40e38373c8a2383fa9d0e4b1c4",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 196
+        },
+        "source": "database",
+        "version": 2136,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.680Z"
+      },
+      "before": null,
+      "eventId": "af202b1f-81fc-4761-8308-87d099cb3eab"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"17\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:43731e2c62d64973d1c9b6d01f59e396",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 208
+        },
+        "source": "database",
+        "version": 2137,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.687Z"
+      },
+      "before": null,
+      "eventId": "9e762477-b3e1-46bb-82fc-8f922f8347bb"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"17\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:c0a5f43a88f175118975be8332aa43f8",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 208
+        },
+        "source": "database",
+        "version": 2138,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.694Z"
+      },
+      "before": null,
+      "eventId": "89fdf3c8-eec0-467a-8be1-023c431174a8"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"17\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:c09fcfb1bbb32ec92eb9b41c249cbd7b",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 208
+        },
+        "source": "database",
+        "version": 2139,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.701Z"
+      },
+      "before": null,
+      "eventId": "ef462535-fa2d-42bd-b1e8-b343e25c2629"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"18\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:7b6392a7f1b477d9c4c8cf32d72109ea",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 220
+        },
+        "source": "database",
+        "version": 2140,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.708Z"
+      },
+      "before": null,
+      "eventId": "6c030530-c870-4fd0-a906-8c20c70d0c40"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"18\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:1bbc11eff4c935b21bf6b26ac242c503",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 220
+        },
+        "source": "database",
+        "version": 2141,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.715Z"
+      },
+      "before": null,
+      "eventId": "ded3062f-ed64-41e2-948b-96d73f369fbd"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"18\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:d11b22a2cb0aad0fee895106b49dd2ca",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 220
+        },
+        "source": "database",
+        "version": 2142,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.721Z"
+      },
+      "before": null,
+      "eventId": "a64921e0-679a-46fb-8a51-3d1aa3ef03f2"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"19\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:91922ef2b9d84994d563f701e6629123",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 233
+        },
+        "source": "database",
+        "version": 2143,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.728Z"
+      },
+      "before": null,
+      "eventId": "14ee8e59-4fae-4a48-8627-c37b5f1e57c5"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"19\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:f60470827b641f343327c6c22e27668d",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 233
+        },
+        "source": "database",
+        "version": 2144,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.735Z"
+      },
+      "before": null,
+      "eventId": "81c40b7e-a476-423a-a784-f2d11212f8b3"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"19\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:e102a70af0d865bced91930cacf86902",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 233
+        },
+        "source": "database",
+        "version": 2145,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.743Z"
+      },
+      "before": null,
+      "eventId": "d3509014-5a3e-4b34-ae13-a99375cf6686"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"20\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:5bad0cc759a96af81e8f83645450690e",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 245
+        },
+        "source": "database",
+        "version": 2146,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.750Z"
+      },
+      "before": null,
+      "eventId": "fdbb5c53-a231-4641-9d8e-0c4cbcce534a"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"20\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8ed80610fdb1a201c4820ca0970313dc",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 245
+        },
+        "source": "database",
+        "version": 2147,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.756Z"
+      },
+      "before": null,
+      "eventId": "0f97a58c-e11c-4c3e-b315-9471b21bc2ea"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"20\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:dc90f3068cc936fd8dd8c5c9bec0127e",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 245
+        },
+        "source": "database",
+        "version": 2148,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.763Z"
+      },
+      "before": null,
+      "eventId": "df4a8e8d-0338-448e-9dee-93a4879ae595"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"3\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:eb09bdb8a2097dbe11f1ef8c3e203070",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 37
+        },
+        "source": "database",
+        "version": 2149,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.770Z"
+      },
+      "before": null,
+      "eventId": "01650391-b3bd-41d5-8550-6399ce1a84f1"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"3\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:f7efeb7e9827713de38f1548da26ad9e",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 37
+        },
+        "source": "database",
+        "version": 2150,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.777Z"
+      },
+      "before": null,
+      "eventId": "02e8cb3e-3017-435c-821f-e92e84319e70"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"3\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:bb5df02f3ed0d84f30034df2ca7ebd66",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 37
+        },
+        "source": "database",
+        "version": 2151,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.783Z"
+      },
+      "before": null,
+      "eventId": "c68e3352-3d18-4017-a30e-d1c1133043f0"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"4\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:b9eb6ed9b478172463187b774d8d3806",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 49
+        },
+        "source": "database",
+        "version": 2152,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.790Z"
+      },
+      "before": null,
+      "eventId": "a787a8f3-599a-4351-a4b3-4e904a3bbf8d"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"4\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:219e08375a04a0b9536905e8cb5f381a",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 49
+        },
+        "source": "database",
+        "version": 2153,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.796Z"
+      },
+      "before": null,
+      "eventId": "aa857603-b4e8-4aa8-9183-bf85d4b4e4ed"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"4\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:369e5afb1cc6eacb45e32f0d9a6e5289",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 49
+        },
+        "source": "database",
+        "version": 2154,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.802Z"
+      },
+      "before": null,
+      "eventId": "f63bb366-7b0e-42df-8d92-e47712f4dfd5"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"5\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:7b8f833a607bdd9cc1bfa528fdac3677",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 62
+        },
+        "source": "database",
+        "version": 2155,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.808Z"
+      },
+      "before": null,
+      "eventId": "e75037f8-ca27-4560-8be7-3e90f18c5fb9"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"5\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:68722ad8f998c7529a8b07de2c6011ae",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 62
+        },
+        "source": "database",
+        "version": 2156,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.815Z"
+      },
+      "before": null,
+      "eventId": "df218650-15b4-4705-9ead-6b73c36db431"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"5\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:71e60d50477aec6403fe0bed81fadf3c",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 62
+        },
+        "source": "database",
+        "version": 2157,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.821Z"
+      },
+      "before": null,
+      "eventId": "83d17c6c-ea42-4003-9d6f-006fcc61d38f"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"6\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:5b135fc2cda1b53aac15564e34ecd812",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 74
+        },
+        "source": "database",
+        "version": 2158,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.828Z"
+      },
+      "before": null,
+      "eventId": "52d747ce-9588-4d65-ba1a-6bcc6dc01784"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"6\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:d3054add9ff7e57b6cb71d6055b16568",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 74
+        },
+        "source": "database",
+        "version": 2159,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.837Z"
+      },
+      "before": null,
+      "eventId": "cf5428fd-2d8c-4681-ae51-0fc683779f2d"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"6\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:e45109dfdfe60c5278bb8d9ef6c4113d",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 74
+        },
+        "source": "database",
+        "version": 2160,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.843Z"
+      },
+      "before": null,
+      "eventId": "373edeb7-3878-4bb9-bf12-b9e1b7ce4b07"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"7\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:cf0a931aa491ceceaa3886ef1ec7babd",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 86
+        },
+        "source": "database",
+        "version": 2161,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.850Z"
+      },
+      "before": null,
+      "eventId": "06caeff4-6a27-4fcb-a55a-e978e7b682ad"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"7\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:f533c84e64267d93c0e263787b00557e",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 86
+        },
+        "source": "database",
+        "version": 2162,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.856Z"
+      },
+      "before": null,
+      "eventId": "39a67275-a37c-48c6-8cae-6fe05a6362b1"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"7\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:09f4f3cad06fa7be3c8b11ddaaf29b77",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 86
+        },
+        "source": "database",
+        "version": 2163,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.862Z"
+      },
+      "before": null,
+      "eventId": "7a5fcbbd-02e2-4461-a757-637b9e5e3ac4"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"8\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:ca17fa59c00e23ca0204b02f2a6d3158",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 98
+        },
+        "source": "database",
+        "version": 2164,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.870Z"
+      },
+      "before": null,
+      "eventId": "2e270db1-138d-4577-9b51-fa786229c26e"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"8\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8a5539e88f1bf702fdc20b5405f2acf4",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 98
+        },
+        "source": "database",
+        "version": 2165,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.876Z"
+      },
+      "before": null,
+      "eventId": "26538619-f33a-46bb-a6e3-b78e2b878a19"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"8\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8ba51cfde96371c3795728e331b7bdec",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 98
+        },
+        "source": "database",
+        "version": 2166,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.883Z"
+      },
+      "before": null,
+      "eventId": "15ed706f-f136-416c-9400-6119dc84dce6"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"9\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"i2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:0b0f3a58174455e3a1451ba1d9941251",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 110
+        },
+        "source": "database",
+        "version": 2167,
+        "currency": "USD",
+        "selector": {
+          "mode": "i2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.890Z"
+      },
+      "before": null,
+      "eventId": "b67dbf0e-4563-47dd-b856-ad3d18040a06"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"9\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:49975303eb92e4b4dd46516154aafed2",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 110
+        },
+        "source": "database",
+        "version": 2168,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.897Z"
+      },
+      "before": null,
+      "eventId": "193daf7e-aabf-43af-af67-6e1858645b31"
+    },
+    {
+      "key": "[[\"billingInputType\",\"no_video_input\"],[\"durationSec\",\"9\"],[\"engineId\",\"kling-v4-flash\"],[\"mode\",\"t2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8247dfa2ba7b9f2dd7ea50664ba67c05",
+        "price": {
+          "kind": "fixed",
+          "customerCents": 110
+        },
+        "source": "database",
+        "version": 2169,
+        "currency": "USD",
+        "selector": {
+          "mode": "t2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.904Z"
+      },
+      "before": null,
+      "eventId": "333eb4ec-73ce-4619-8f8c-86bf8dec284d"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"10\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:9da56032f50b2a0024b6deb4eae05909",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2170,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.913Z"
+      },
+      "before": null,
+      "eventId": "5dee03bc-a0e2-4d58-9c28-97d6ed04663b"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"11\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:b718859721b51fa685d54c4e93845542",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2171,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.919Z"
+      },
+      "before": null,
+      "eventId": "8286ab8b-9e06-4f23-a0f5-b769e325833b"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"12\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:98b296aa10d4ce17c075c283bb3fb39b",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2172,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.926Z"
+      },
+      "before": null,
+      "eventId": "74ddd26b-1fb4-46e1-98ea-2b9fc153d6d3"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"13\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:5a5a875e7a9ccff19421e02dd3a28640",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2173,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.933Z"
+      },
+      "before": null,
+      "eventId": "05843c06-6cc6-4d14-9a1e-b6f1bca64b9d"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"14\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:8a2eaf6eda10474f96af976fbe050a44",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2174,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.942Z"
+      },
+      "before": null,
+      "eventId": "9823db81-3d52-45a5-ad84-e4e337065580"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"15\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:33f94c7f001587fe9dcf3b4fe049ac60",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2175,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.948Z"
+      },
+      "before": null,
+      "eventId": "042bb94e-a58d-46cd-b2bd-e498b5069fef"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"16\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:1530ceed6ac38494648042d17d6ebca5",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2176,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.957Z"
+      },
+      "before": null,
+      "eventId": "40de5632-c132-4726-ba2c-5a22cd04fac9"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"17\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:446bae54bc8427b765d3986e34c44a09",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2177,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.966Z"
+      },
+      "before": null,
+      "eventId": "be13ee71-fed4-414b-9f14-72d5ed581704"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"18\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:b1f3d1a09fbfa03d33257059d8e4e5cc",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2178,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.974Z"
+      },
+      "before": null,
+      "eventId": "33863c7c-f9e1-4a6a-9c32-436d26e5a755"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"19\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:4382dd3a69a4df05cf6c622f4833f91c",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2179,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.982Z"
+      },
+      "before": null,
+      "eventId": "f052a9f2-12c5-4fd5-b14f-72b341988800"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"20\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:fc4b2de3a274228f43731b71ffa01c9e",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2180,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.988Z"
+      },
+      "before": null,
+      "eventId": "cf2eca40-3d04-4d5d-bddc-35d890c0efbd"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"3\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:d99cca6e0a984364971fda3492c0d4f4",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2181,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:46.996Z"
+      },
+      "before": null,
+      "eventId": "79105b6c-9b54-49a1-aa0a-be852c65e089"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"4\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:4418c76ca9fbce93a003147a7870c60c",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2182,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.003Z"
+      },
+      "before": null,
+      "eventId": "f5b7fd2f-7f45-4517-b192-6d2ab94b140e"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"5\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:241fd0a3face9c5448c4fb8a3f8ade1a",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2183,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.009Z"
+      },
+      "before": null,
+      "eventId": "bd47979b-024c-442f-b25a-d1bddf2c4c3a"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"6\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:7c96d100c7e561af0c54cfd72d8371af",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2184,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.016Z"
+      },
+      "before": null,
+      "eventId": "0e2b2f4d-0246-440a-840a-d349dd7e595c"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"7\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:e4de54b871fb184bb8a66be5899f39d0",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2185,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.022Z"
+      },
+      "before": null,
+      "eventId": "0f748312-7700-4f70-befb-31032f0ea049"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"8\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:5d03167bc8ff8dbcaeec3b82a97c676e",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2186,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.029Z"
+      },
+      "before": null,
+      "eventId": "ee37464e-45b7-456e-963c-277feb817a6b"
+    },
+    {
+      "key": "[[\"billingInputType\",\"video_input\"],[\"durationSec\",\"9\"],[\"engineId\",\"kling-v4-flash\"],[\"inputVideoDurationSec\",\"continuous\"],[\"mode\",\"ref2v\"],[\"resolution\",\"720p\"]]",
+      "after": {
+        "id": "customer:b46a7856931ac11f53b303365dbc7061",
+        "price": {
+          "kind": "unit_terms",
+          "terms": [
+            {
+              "unit": "billable_seconds",
+              "centsPerUnit": 8.19
+            }
+          ],
+          "rounding": "up"
+        },
+        "source": "database",
+        "version": 2187,
+        "currency": "USD",
+        "selector": {
+          "mode": "ref2v",
+          "engineId": "kling-v4-flash",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "video_input",
+          "inputVideoDurationSec": "continuous"
+        },
+        "effectiveFrom": "2026-11-05T21:05:47.036Z"
+      },
+      "before": null,
+      "eventId": "7ceaa88f-a31a-4389-96b3-1f9eee371f84"
+    }
+  ],
+  "flashCellCount": 72,
+  "currentTariffRevision": "2187",
+  "publication": "Model, app, pricing discovery, comparisons and sitemap remain closed in the registry."
+}

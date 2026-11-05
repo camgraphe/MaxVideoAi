@@ -5,7 +5,8 @@ import { validateCurrentContinuousTariffDomain } from '@/server/pricing/compile-
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { PricingAdminError } from '../errors';
 import { batchSelectorKey, parseTariffBatchProposal } from './input';
-import { compileKlingBatchPrice, klingBatchClasses, klingBatchUsage, type KlingBatchClass } from './kling';
+import { compileKlingBatchPrice, type KlingBatchClass } from './kling';
+import { tariffBatchClasses, tariffBatchSupplierCost } from './models';
 import type { TariffBatchPlan, TariffBatchProposal, TariffBatchReceipt, TariffBatchRow } from './contract';
 
 export function stableBatchJson(value: unknown): string {
@@ -33,7 +34,7 @@ export async function buildTariffBatchPlan(input: {
   if (state.status !== 'loaded' || policy.status !== 'loaded') throw new PricingAdminError('database_unavailable', 'Current pricing snapshot unavailable.');
   if (!state.active) throw new PricingAdminError('unsupported_scenario', 'An active tariff registry is required.');
   const at = input.at ?? new Date().toISOString();
-  const classes = klingBatchClasses(proposal.modelId), byKey = new Map(classes.map(row => [row.key, row]));
+  const classes = tariffBatchClasses(proposal.modelId), byKey = new Map(classes.map(row => [row.key, row]));
   const index = (cells: ManualTariffCell[]) => {
     const grouped = new Map<string, ManualTariffCell[]>();
     for (const cell of cells) {
@@ -53,7 +54,7 @@ export async function buildTariffBatchPlan(input: {
     if (!definition) throw new PricingAdminError('unsupported_scenario', 'Unsupported canonical tariff class.');
     const row: TariffBatchRow = { key, scenarioId: definition.scenario.id, selector: definition.selector,
       action: 'conflict', previousCell: null, proposedCell: null, currentCents: null, proposedCents: null,
-      supplierListCents: klingBatchUsage(definition).supplierExactCents };
+      ...tariffBatchSupplierCost(definition) };
     rows.push(row);
     try {
       const selectedState = { ...state, databaseCells: databaseByKey.get(key) ?? [], versionedCells: versionedByKey.get(key) ?? [] };

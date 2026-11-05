@@ -1,4 +1,4 @@
-import { listNano21EditorialImages } from '@/lib/nano21-editorial-images';
+import { listModelEditorialImages } from '../_lib/model-page-editorial-images';
 import { buildHeroMetaLines } from '../_lib/model-page-hero-specs';
 import { Suspense } from 'react';
 import type { LocalizedLinkHref } from '@/i18n/navigation';
@@ -341,7 +341,7 @@ export async function MarketingModelPageLayout({
   const keyframeDemo = examplesContent.keyframeDemo ? buildModelKeyframeDemoViewModel(
     await loadModelKeyframeDemo(engine.modelSlug), examplesContent.keyframeDemo, locale, engine.surfaces.app.enabled,
   ) : null;
-  const editorialImages = listNano21EditorialImages(engine.id);
+  const editorialImages = listModelEditorialImages(engine.id, locale, examplesContent.editorialImages);
   const hasExamples = examplesViewModel.visible || Boolean(keyframeDemo) || editorialImages.length > 0;
   const hasTextSection = true;
   const hasTipsSection =

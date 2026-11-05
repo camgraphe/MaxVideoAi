@@ -9,6 +9,13 @@ export const ES_KLING_V4_ADDITION = {
   faq: [{ question: '¿Cómo comparo Kling 4.0 con ejemplos anteriores de Kling?', answer: 'Conserva el nombre del modelo, el prompt y los ajustes de cada clip original. Kling 4.0 ofrece generación de 3 a 30 segundos, prompts con duración por plano, referencias visuales y edición de video fuente en 720p o 1080p. Los modelos anteriores tienen sus propios límites. Compara los clips completos con ajustes equivalentes y revisa un nuevo presupuesto antes de generar.' }],
 } satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
 
+export const ES_KLING_V4_FLASH_ADDITION = {
+  summary: "Kling 4.0 Flash añade escenas de 3 a 20 segundos a 720p desde texto, una imagen inicial o referencias visuales. Su galería presenta secuencias nativas de varios planos con diálogos.",
+  promptPatterns: "Con Flash, describe cada plano y cada corte en un único prompt, con una acción clara y un desenlace. Dirige el diálogo y el ambiente en ese mismo prompt; no hay campos estructurados de duración por plano.",
+  strengthsLimits: "Flash genera a 720p con audio nativo. No ofrece Modify, Extend, imagen final ni interruptor de audio. Las referencias de vídeo guían la creación; no constituyen un modo de edición de vídeo.",
+  faq: [{ question: "¿En qué se diferencian Kling 4.0 y Flash?", answer: "Flash genera clips de 3 a 20 segundos a 720p desde texto, una imagen inicial o referencias, con cortes descritos en el prompt. Kling 4.0 también ofrece 1080p, hasta 30 segundos, imagen final opcional, prompts estructurados con duración por plano y un modo independiente de edición de vídeo. Conserva el modelo y los ajustes originales de cada ejemplo y comprueba una nueva cotización antes de generar." }],
+} satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
+
 export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
     "metaTitle": "Ejemplos históricos de Sora | MaxVideoAI",

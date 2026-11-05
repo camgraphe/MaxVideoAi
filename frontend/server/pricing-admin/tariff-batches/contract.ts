@@ -3,7 +3,13 @@ import type { ManualTariffCell, ManualTariffSelector } from '@maxvideoai/pricing
 export const TARIFF_BATCH_PROTOCOL = 'literal-tariff-batch-v1';
 // Each batch belongs to one qualified model; never mix their canonical classes.
 export const TARIFF_BATCH_MAX_CLASSES = 226;
-export type TariffBatchModelId = 'kling-v4' | 'kling-v4-flash';
+export type KlingTariffBatchModelId = 'kling-v4' | 'kling-v4-flash';
+export type GptImageTariffBatchModelId = 'gpt-image-2-6-flare' | 'gpt-image-2-6-sunburst';
+export type TariffBatchModelId = KlingTariffBatchModelId | GptImageTariffBatchModelId;
+/** Keep HTTP admission independent of image schemas, provider adapters and their dependencies. */
+export function isGptImageTariffBatchModelId(value: unknown): value is GptImageTariffBatchModelId {
+  return value === 'gpt-image-2-6-flare' || value === 'gpt-image-2-6-sunburst';
+}
 export const TARIFF_BATCH_MAX_BYTES = 2 * 1024 * 1024;
 export const TARIFF_BATCH_TTL_MS = 10 * 60 * 1000;
 export type TariffBatchPrice = Extract<ManualTariffCell['price'], { kind: 'fixed' | 'unit_terms' }>;
@@ -32,6 +38,8 @@ export type TariffBatchRow = {
   currentCents: number | null;
   proposedCents: number | null;
   supplierListCents: number;
+  /** True when the displayed supplier estimate excludes unqualified input costs. */
+  supplierCostIncomplete?: true;
   domain?: { maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number };
   issue?: string;
   rollbackEventId?: string;

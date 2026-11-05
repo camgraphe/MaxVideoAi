@@ -8,7 +8,7 @@ import {parseModelDecisionContent} from '../frontend/app/(localized)/[locale]/(m
 import {parseModelPromptingContent} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content';
 import {parseModelExamplesContent} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
 
-for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst']) test(`${id} has three reviewed localized candidates with no borrowed media or premature discovery`,()=>{
+for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst']) test(`${id} has three reviewed localized candidates with exact-model media and no premature discovery`,()=>{
   const model=getRuntimeModelById(id)!;
   assert.equal(model.publication.model.published,false);
   assert.equal(model.publication.sitemap.published,false);
@@ -30,6 +30,6 @@ for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst
     assert.ok(prompts.section.guide?.href.startsWith('https://'));
     assert.doesNotMatch(JSON.stringify(content),/media\.maxvideoai\.com|job_external_|\.mp4|\$\d/);
     if(id.startsWith('gpt'))assert.equal(prompts.imageExamples?.items.length,2);
-    else {assert.equal(prompts.tabs.length,3);assert.ok(prompts.tabs.every(tab=>tab.matchPublicExample===false));}
+    else {assert.equal(prompts.tabs.length,3);assert.ok(prompts.tabs.every(tab=>tab.matchPublicExample===true));}
   }
 });
