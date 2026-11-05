@@ -84,7 +84,7 @@ export function CharacterStudioRecastSubmit({
           INSUFFICIENT_FUNDS: copy.topupQuote,
           REFERENCE_INVALID: copy.invalidPassage,
           REFERENCE_NOT_FOUND: copy.invalidPassage,
-          PARAMETER_INVALID: copy.invalidPassage,
+          PARAMETER_INVALID: getRecastReadinessCopy(copy.recastLocale).invalidSettings,
           PREPARATION_LIMIT: copy.invalidPassage,
           RECAST_STORAGE_UNAVAILABLE: copy.storageUnavailable,
           ENGINE_UNAVAILABLE: copy.engineUnavailable,

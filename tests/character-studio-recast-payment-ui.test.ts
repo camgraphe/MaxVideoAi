@@ -72,6 +72,21 @@ async function mount() {
   };
 }
 
+test('a rejected output setting names the duration, resolution and format and allows a new quote', async () => {
+  const f = await mount();
+  try {
+    await f.click();
+    await f.act(async () => f.requests.at(-1)!.reply({ ok: false, error: { code: 'PARAMETER_INVALID' } }, 422));
+    const alert = f.w.document.querySelector('[role="alert"]');
+    assert.match(alert.textContent, /durée, la résolution et le format/);
+    assert.notEqual(alert.textContent.trim(), f.w.labels.invalidPassage);
+    assert.equal(f.button().disabled, false);
+    await f.click();
+    assert.ok(f.requests.at(-1)!.url.endsWith('/prepare'));
+    assert.ok(!f.requests.some(r => r.url.endsWith('/confirm')));
+  } finally { await f.dispose(); }
+});
+
 test('reviewed price is the only approved amount; double clicks send one confirmation', async () => {
   const f = await mount();
   try {

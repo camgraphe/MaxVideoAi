@@ -14,6 +14,7 @@ const en = {
   estimating: 'Estimating…',
   estimateFailed: 'The price estimate is unavailable. Retry; your inputs are kept.',
   retryEstimate: 'Retry estimate',
+  invalidSettings: 'Check the duration, resolution and format, then request a new quote.',
   preparing: 'Preparing your references and selected passages for the exact quote. Nothing is charged before confirmation.',
 };
 
@@ -33,6 +34,7 @@ const fr: typeof en = {
   estimating: 'Estimation en cours…',
   estimateFailed: 'L’estimation du prix est indisponible. Réessaie ; tes choix sont conservés.',
   retryEstimate: 'Relancer l’estimation',
+  invalidSettings: 'Vérifie la durée, la résolution et le format, puis demande un nouveau devis.',
   preparing: 'Préparation de tes références et des passages sélectionnés pour le devis exact. Rien n’est débité avant confirmation.',
 };
 
@@ -52,6 +54,7 @@ const es: typeof en = {
   estimating: 'Estimando…',
   estimateFailed: 'La estimación del precio no está disponible. Reinténtalo; tus opciones se conservan.',
   retryEstimate: 'Reintentar estimación',
+  invalidSettings: 'Comprueba la duración, la resolución y el formato, y solicita un nuevo presupuesto.',
   preparing: 'Preparando tus referencias y los fragmentos seleccionados para el presupuesto exacto. No se cobra nada antes de confirmar.',
 };
 

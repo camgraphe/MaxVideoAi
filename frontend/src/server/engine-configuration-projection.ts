@@ -1,4 +1,5 @@
 import { cloneEngine } from '@/lib/engines';
+import { projectVideoProviderFieldValue } from '@/lib/video-input-schema';
 import type {
   EngineCaps,
   EngineInputField,
@@ -74,7 +75,12 @@ function syncInputSchemaWithOptions(engine: EngineCaps, options: Record<string, 
   const syncField = (field: EngineInputField): EngineInputField => {
     let nextField = field;
     if (field.id === 'resolution') nextField = filterFieldValues(nextField, allowedResolutions);
-    else if (field.id === 'aspect_ratio') nextField = filterFieldValues(nextField, allowedAspectRatios);
+    else if (field.id === 'aspect_ratio') {
+      // Settings use canonical UI values (auto); schemas retain provider values (adaptive).
+      const providerValues = allowedAspectRatios.map(value =>
+        String(projectVideoProviderFieldValue(field, value, engine.inputSchema)));
+      nextField = filterFieldValues(nextField, providerValues);
+    }
     else if (field.id === 'fps') nextField = filterFieldValues(nextField, allowedFps);
     return filterDurationField(nextField, maxDurationSec);
   };
