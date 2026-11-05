@@ -1,5 +1,6 @@
 import {canonicalKlingV4PricingFacts} from './generation-kling-v4-pricing-facts';
 import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { canonicalOperationSourceDuration } from './generation-operation-facts';
 import { assertCanonicalLumaSourceTiming } from './generation-luma-source';
 import { bytePlusInputVideoDurationSec, isBytePlusInputVideoPricingModel } from '@/server/byteplus-accounting';
@@ -508,7 +509,7 @@ export async function priceCanonicalGenerationWithBilling(
       ? request.mode === 'i2i'
         ? Math.max(0, imageReferences.length - 1)
         : imageReferences.length
-      : engine.id === NANO21_ENGINE_ID || isGptImage25EngineId(engine.id) && request.mode === 'i2i'
+      : engine.id === NANO21_ENGINE_ID || (isGptImage25EngineId(engine.id) || isGptImage26EngineId(engine.id)) && request.mode === 'i2i'
         ? imageReferences.length
         : undefined;
     snapshot = await computeBillingSnapshot({

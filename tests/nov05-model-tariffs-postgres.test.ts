@@ -14,7 +14,12 @@ test('new model tariff previews are concrete, revisioned and inactive until appr
   const db = await startDisposablePostgres('nov05-model-tariffs');
   const previous = { DATABASE_URL: process.env.DATABASE_URL, NODE_ENV: process.env.NODE_ENV, PRICING_SANDBOX: process.env.PRICING_SANDBOX };
   Object.assign(process.env, { DATABASE_URL: db.databaseUrl, NODE_ENV: 'development', PRICING_SANDBOX: '1' });
+  const publicationFixtures = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'].map(id => {
+    const app = getRuntimeModelById(id)!.publication.app;
+    return { app, published: app.published };
+  });
   try {
+    for (const { app } of publicationFixtures) app.published = false;
     await db.pool.query(`CREATE TABLE app_pricing_rules(id TEXT PRIMARY KEY,engine_id TEXT,resolution TEXT,mode TEXT,margin_percent NUMERIC,margin_flat_cents INTEGER,surcharge_audio_percent NUMERIC,surcharge_upscale_percent NUMERIC,currency TEXT,compatibility_profile TEXT,vendor_account_id TEXT,effective_from TIMESTAMPTZ,updated_at TIMESTAMPTZ,updated_by UUID);
       CREATE TABLE app_pricing_change_events(id UUID PRIMARY KEY DEFAULT gen_random_uuid(),domain TEXT NOT NULL CHECK(domain IN('policy_rule','membership','billing_product')),operation TEXT NOT NULL CHECK(operation IN('create','update','delete','rollback')),target_id TEXT NOT NULL,actor_id UUID NOT NULL,previous_state JSONB,next_state JSONB,preview_summary JSONB NOT NULL,affected_scenario_ids JSONB NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());`);
     for (const file of ['54_customer_tariff_cells.sql', '55_customer_tariff_versions.sql']) await db.pool.query(readFileSync(`neon/migrations/${file}`, 'utf8'));
@@ -48,6 +53,7 @@ test('new model tariff previews are concrete, revisioned and inactive until appr
     }
     assert.equal(isKlingV4ReleaseBlocked('kling-v4-flash'), true);
   } finally {
+    for (const { app, published } of publicationFixtures) app.published = published;
     await getDb().end().catch(() => undefined); await db.cleanup();
     for (const [key, value] of Object.entries(previous)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
   }

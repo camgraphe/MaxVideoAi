@@ -35,7 +35,7 @@ export default async function ImageGeneratePage({ searchParams }: ImageGenerateP
     redirect('/app/tools/storyboard');
   }
 
-  const imageEntries = listFalEngines().filter((engine) => (engine.category ?? 'video') === 'image');
+  const imageEntries = listFalEngines().filter((engine) => (engine.category ?? 'video') === 'image' && engine.surfaces.app.enabled);
   if (!imageEntries.length) {
     notFound();
   }

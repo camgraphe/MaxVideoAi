@@ -3387,7 +3387,7 @@
           ]
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
           "published": false
@@ -3426,7 +3426,7 @@
           "publishedPairIds": []
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
           "published": false
@@ -3465,7 +3465,7 @@
           "publishedPairIds": []
         },
         "app": {
-          "published": false
+          "published": true
         },
         "pricing": {
           "published": false
