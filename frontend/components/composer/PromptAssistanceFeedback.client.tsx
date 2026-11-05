@@ -5,9 +5,17 @@ import styles from './prompt-assistance.module.css';
 
 export const promptAssistanceLoadingMessage=(error:string|null)=>error==='RESTORING'?'Restoring this conversation…':error==='LOADING'?'Checking Milo availability…':null;
 
-export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recovery,waiting,onRecover,onStop,onReload,onCredits,phase}: {
+export function PromptAssistanceFeedback({error,unavailableReferenceLabel,recovery,waiting,onRecover,onStop,onReload,onCredits,phase,localReference,onManageReference,locale='en'}: {
   phase?:PromptAssistanceResult['phase'];error:string|null;unavailableReferenceLabel?:string|null;recovery:boolean;waiting:boolean;onRecover:()=>void;onStop:()=>void;onReload?:()=>void;onCredits?:()=>void;
+  localReference?:{label:string}|null;onManageReference?:()=>void;locale?:string;
 }) {
+  if(localReference&&!waiting&&!recovery){
+    const label=localReference.label;
+    const message=locale.startsWith('fr')?`La référence ${label} n’est pas prête pour Milo. Attends la fin d’un éventuel import, ou remplace ou retire cette référence. Ton message n’a pas été envoyé.`
+      :locale.startsWith('es')?`La referencia ${label} aún no está disponible para Milo. Espera a que termine la carga, o sustituye o elimina esta referencia. Tu mensaje no se ha enviado.`
+      :`${label} isn’t ready for Milo. Wait for any upload to finish, or replace or remove this reference. Your message has not been sent.`;
+    return <div className={styles.liveFeedback} role="status"><span>{message}</span>{onManageReference?<button type="button" onClick={onManageReference}>{locale.startsWith('fr')?'Gérer':locale.startsWith('es')?'Gestionar':'Manage'} {label}</button>:null}</div>;
+  }
   if(!error&&!waiting&&!recovery)return null;
   const message=waiting?(phase==='queued'?'Your request is saved and waiting to start.':phase==='preparing'?'Milo is preparing your saved request.':phase==='recovering'?'Checking the saved reply and recorded usage.':'Waiting for Milo’s saved reply. You can stop waiting or start a new chat.'):error==='RESTORING'?promptAssistanceLoadingMessage(error):error==='RESTORE_FAILED'?'Could not restore this chat. Try again before continuing.':recovery
     ? 'Check this reply before sending another message. Stopping the wait does not cancel a call already started.'

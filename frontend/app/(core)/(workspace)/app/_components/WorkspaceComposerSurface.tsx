@@ -299,6 +299,12 @@ export function WorkspaceComposerSurface({
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
   const showFlux3MaxKeyframeEditor = selectedEngine.id.startsWith('flux-3') && submissionMode === 'ref2v';
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
+  const keyframeOwner=JSON.stringify([sourceAccount?.userId??null,selectedEngine.id,videoPromptWorkflow(activeManualMode,selectedEngine.id),submissionMode]);
+  const [keyframeReferenceTarget,setKeyframeReferenceTarget]=useState<{owner:string;fieldId:string;slot:number;revision:number}|null>(null);
+  useEffect(()=>setKeyframeReferenceTarget(null),[keyframeOwner]);
+  const keyframeField=showFlux3MaxKeyframeEditor?'reference_image_urls':showLumaRay32KeyframeEditor?'edit_keyframe_urls':null;
+  const canManageKeyframes=Boolean(keyframeField&&inputSchemaSummary.assetFields.some(({field})=>field.id===keyframeField)
+    &&(showFlux3MaxKeyframeEditor||inputSchemaSummary.assetFields.some(({field})=>field.id==='video_url')));
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
   const isKlingV4 = selectedEngine.id === 'kling-v4';
   const klingV4Error = useMemo(() => {
@@ -488,6 +494,7 @@ export function WorkspaceComposerSurface({
   return (
     <>
       <Composer
+        referenceManagement={canManageKeyframes&&keyframeField?{fields:[keyframeField],manage:reference=>setKeyframeReferenceTarget(current=>({...reference,owner:keyframeOwner,revision:(current?.revision??0)+1}))}:undefined}
         assistance={{ accountKey: sourceAccount?.userId ?? 'anonymous', scopeKey: JSON.stringify([sourceAccount?.userId ?? null, 'video', videoPromptWorkflow(activeManualMode, selectedEngine.id)]), live: {surface: 'video', workflow: videoPromptWorkflow(activeManualMode, selectedEngine.id), engineId: selectedEngine.id, mode: submissionMode, settings: composerAssistanceSettings(selectedEngine, submissionMode, {...form, cfgScale, shotType, voiceControlEnabled, seed: seedValue, cameraFixed: cameraFixedValue, safetyChecker: safetyCheckerValue, draft: localDraftPreview?.selected,
           ...(klingElements.some(element=>element.frontal||element.video||element.references.some(Boolean))?{subjectIdentities:'unavailable; describe subjects in your message'}:{}),
           ...(ownedGenerationRequired?{sourceGenerationContext:'unavailable; describe the source generation in your message'}:{})}),
@@ -576,6 +583,7 @@ export function WorkspaceComposerSurface({
             {klingV4Error ? <p role="alert" className="text-xs text-error">{klingV4Error}</p> : null}
             {showLumaRay32KeyframeEditor || showFlux3MaxKeyframeEditor ? (
               <LumaRay32KeyframeEditor
+                referenceTarget={keyframeReferenceTarget?.owner===keyframeOwner?keyframeReferenceTarget:undefined}
                 uiLocale={uiLocale}
                 engine={selectedEngine}
                 form={form}

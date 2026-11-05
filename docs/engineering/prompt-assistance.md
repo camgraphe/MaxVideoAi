@@ -68,6 +68,29 @@ not establish model-output quality. No provider calls are part of these tests.
 
 The approved compact reference/footer, visible generator settings, player and galleries retain their existing owners. Review opens the complete suggestion inside the bounded conversation area; Use prompt/Use script stays outside its scroll region. Send never invokes Generate. Multi-prompt scene editing remains manual. Audio voice updates only `script`; music/song style, ambience and effects update only `prompt`. Lyrics and Soundtrack a video are outside this increment.
 
+## New-message references and image advice
+
+Before admitting a new browser message, the shared transport rejects an attached
+reference with no canonical `ref`. This local notice names the current reference,
+keeps the unsent message/draft/settings and offers its existing reference manager;
+it creates no request, recovery identity or server-failure state. Uploads may
+finish, or the user may replace/remove that reference explicitly. Current owned
+references and an empty optional reference list remain valid; recovery of an
+already sent request retains its original identity and bypasses this new-send
+check. Server ownership and source validation remain authoritative.
+Only fields with an existing owner expose Manage. Flux/Luma keyframes, which are
+intentionally outside the compact picker, target their existing timeline control
+by asset slot; this selects/focuses the control without opening Media, uploading,
+removing or changing timing. Account/workflow/model changes discard the target.
+Fields without a mounted owner retain the notice without an inoperative action.
+
+The image app guide recommends `/app/tools/upscale` for appropriate sharpness or
+degradation requests, with explicit tool quote review and SeedVR2 fidelity limits:
+generative restoration can change details and is not pixel-identical enlargement.
+Recommended resolution, output format and aspect ratio require explicit control
+changes; Use prompt applies text only. Offline tests verify instruction delivery
+and request parameters, not real-model semantic compliance.
+
 ## Local review after generation settings change
 
 The video adapter supplies a conservative compatibility projection. If only its known scalar generation controls changed, a stale proposal offers **Review & use** in the existing 53 px bar. The existing expanded prompt view shows customer-readable settings before → current, the editable proposal and **Use with current settings**. Numeric duration aliases appear once; automatic duration choices remain explicit. Nothing is applied or generated when review opens. Confirmation writes only the inspected text; Apply and Undo keep the current generator settings. Another context change while reviewing disables that confirmation until the current changes are explicitly reviewed again.

@@ -44,6 +44,8 @@ test('composer delegates copy, contracts, modes, multi-prompt, promoted action i
   assert.match(composerTypesSource, /export interface ComposerProps/, 'composer types should own the public props contract');
   assert.match(composerTypesSource, /export type MultiPromptScene/, 'composer types should own multi-prompt scene contracts');
   assert.match(composerCopySource, /export const DEFAULT_COMPOSER_COPY/, 'composer copy should own default copy');
+  assert.match(composerSource, /resolveComposerCopy\(/, 'localized copy merging belongs in the copy owner');
+  assert.match(composerCopySource, /export function resolveComposerCopy\b/, 'the copy owner resolves nested localized fallbacks');
   assert.match(multiPromptEditorSource, /export function ComposerMultiPromptEditor/, 'multi-prompt editor should own scene rendering');
   assert.match(promotedActionIconSource, /export function ComposerPromotedActionIcon/, 'promoted action icon should own icon drawing');
 

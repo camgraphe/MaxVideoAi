@@ -59,7 +59,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
       else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId,analysisRequest:result.reply.analysisRequest});
     }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
     else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
-  },live?.workflow?{scope:promptSessionScope(live),accountKey,onRestore:async(snapshot,local,pendingReview)=>{
+  },live?.workflow?{scope:promptSessionScope(live),accountKey,references:live.references,onRestore:async(snapshot,local,pendingReview)=>{
     const expected=currentDraftRef.current;
     const draftFingerprint=await hash(expected.currentDraft);
     const latestRequestId=lastCompletedPromptRequestId(snapshot);

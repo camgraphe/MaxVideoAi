@@ -6,6 +6,7 @@ import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react'
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import type {PromptReferenceManager} from '@/components/composer/PromptAssistanceComposer.client';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
 import { ComposerCommandBar, useComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
@@ -22,7 +23,7 @@ import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
-import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
+import { DEFAULT_COMPOSER_COPY, resolveComposerCopy, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
@@ -30,7 +31,7 @@ import { useComposerGenerationGate } from '@/components/composer/useComposerGene
 import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
-import { composerAssistanceReferences, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
+import { composerAssistanceReferences, composerAssistanceReferenceField, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
 import type { ComposerProps } from '@/components/composer/composer-types';
@@ -45,7 +46,7 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
-  density = 'default', compactPrompt = false, assistance,
+  density = 'default', compactPrompt = false, assistance, referenceManagement,
   engine, caps,
   prompt,
   onPromptChange,
@@ -104,44 +105,9 @@ export function Composer({
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const hasVideoSourceControl = Boolean(videoSourceWorkflow || (sourceControl && extensionWorkflow));
   const leadingExtensionNotice = assistanceEnabled ? null : extensionNotice;
-  const composerCopy = useMemo<ComposerCopy>(() => {
-    const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
-    if (!localized) {
-      return DEFAULT_COMPOSER_COPY;
-    }
-    return {
-      ...DEFAULT_COMPOSER_COPY,
-      ...localized,
-      badges: {
-        ...DEFAULT_COMPOSER_COPY.badges,
-        ...(localized.badges ?? {}),
-      },
-      prompt: {
-        ...DEFAULT_COMPOSER_COPY.prompt,
-        ...(localized.prompt ?? {}),
-      },
-      negativePrompt: {
-        ...DEFAULT_COMPOSER_COPY.negativePrompt,
-        ...(localized.negativePrompt ?? {}),
-      },
-      shortcuts: {
-        ...DEFAULT_COMPOSER_COPY.shortcuts,
-        ...(localized.shortcuts ?? {}),
-      },
-      labels: {
-        ...DEFAULT_COMPOSER_COPY.labels,
-        ...(localized.labels ?? {}),
-      },
-      button: {
-        ...DEFAULT_COMPOSER_COPY.button,
-        ...(localized.button ?? {}),
-      },
-      assetSlots: {
-        ...DEFAULT_COMPOSER_COPY.assetSlots,
-        ...(localized.assetSlots ?? {}),
-      },
-    };
-  }, [t]);
+  const composerCopy = useMemo(() => resolveComposerCopy(
+    t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined
+  ), [t]);
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
@@ -327,9 +293,9 @@ export function Composer({
               </div>
             ) : null;
 
-  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
+  const renderReferences = (insert?: (token: string) => void, manager?:PromptReferenceManager) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
           {sourceControl}
-          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection managementRef={manager} managementMode={assistance?.live?.mode as import('@/types/engines').Mode|undefined} compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}
@@ -445,6 +411,7 @@ export function Composer({
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
           onGenerationStateChange={generationGate.update}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading || hasResolvingAssistanceReferences(assetFields, assets, assistance.live?.mode as import('@/types/engines').Mode | undefined ?? activeManualMode ?? undefined)}
+          manageableReferenceFields={assetFields.map(({field})=>composerAssistanceReferenceField(engine,field,assistance.live?.mode as import('@/types/engines').Mode|undefined).id)} referenceManagement={referenceManagement}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
         {assistanceEnabled ? <ComposerNotices extensionNotice={extensionNotice} /> : null}

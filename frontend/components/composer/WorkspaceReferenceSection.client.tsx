@@ -4,7 +4,7 @@ import { VideoExcerptControl } from '@/components/media/VideoExcerptControl.clie
 import {videoWorkflowNotices} from '@/lib/video-workflow-capabilities';
 /* eslint-disable @next/next/no-img-element */
 
-import { useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { flushSync } from 'react-dom';
 import { AssetDropzone } from '@/components/AssetDropzone';
@@ -20,12 +20,15 @@ import { WorkspaceReferencePopup } from './WorkspaceReferencePopup.client';
 import { resolveWorkspaceReferenceFieldTitle, workspaceReferenceCopy } from './workspace-reference-copy';
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { getVideoWorkflowSourceField, isVideoSourceWorkflow, videoModifyCopy, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
+import type {PromptReferenceManager} from './PromptAssistanceComposer.client';
+import {composerAssistanceReferenceField} from '@/lib/prompt-assistance/client-context';
+import type {Mode} from '@/types/engines';
 import { ReferenceThumbnail } from './ReferenceThumbnail.client';
 import { buildReferenceMentions, selectedReferenceLabel, referenceMentionCopy, type ReferenceMention } from './workspace-reference-mentions';
 
-type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction' | 'subjectReferences'> & { referenceWarning: string; compact?: boolean; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
+type Props = Pick<ComposerProps, 'engine' | 'caps' | 'assetFields' | 'assets' | 'onPrepareVideoExcerpt' | 'onVideoExcerptEditorChange' | 'onAssetAdd' | 'onAssetRemove' | 'onNotice' | 'onOpenLibrary' | 'onAssetUrlSelect' | 'referenceAuthAction' | 'subjectReferences'> & { managementRef?:PromptReferenceManager; managementMode?:Mode; referenceWarning: string; compact?: boolean; extensionWorkflow?: boolean; videoSourceWorkflow?: VideoSourceWorkflow; mentions?: ReferenceMention[]; onInsertMention?: (token: string) => void };
 
-export function WorkspaceReferenceSection({ compact = false, assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, subjectReferences, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
+export function WorkspaceReferenceSection({ managementRef, managementMode, compact = false, assetFields, assets, engine, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, onAssetAdd, onAssetRemove, onNotice, onOpenLibrary, onAssetUrlSelect, referenceWarning, referenceAuthAction, subjectReferences, extensionWorkflow = false, videoSourceWorkflow, mentions, onInsertMention }: Props) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const mentionCopy = referenceMentionCopy(locale);
@@ -80,12 +83,23 @@ export function WorkspaceReferenceSection({ compact = false, assetFields, assets
       || !field.modes?.length || !field.modes.every(isVideoSourceWorkflow));
   const popupTitle = activeSource ? sourceLabel : activeFrame ? copy[getWorkspaceFrameCommand(activeFrame, engine)!] : sourceMode && !collectionRequired.length ? extensionCopy.references : copy.title;
   const close = () => setActiveCommand(null);
-  const open = (command: string, trigger: HTMLButtonElement, target?: { fieldId: string; slotIndex: number }) => {
+  const open = useCallback((command: string, trigger: HTMLButtonElement, target?: { fieldId: string; slotIndex: number }) => {
     triggerRef.current = trigger;
     trigger.focus();
     setPopupTarget(target);
     setActiveCommand(command);
-  };
+  },[]);
+  useEffect(()=>{
+    if(!managementRef)return;
+    const manage:NonNullable<PromptReferenceManager['current']>=reference=>{
+      const entry=assetFields.find(({field})=>composerAssistanceReferenceField(engine,field,managementMode??excerptMode).id===reference.fieldId);
+      if(!entry||!assets[entry.field.id]?.[reference.slot])return;
+      const command=compact?'all':entry===sourceEntry||frames.includes(entry)?entry.field.id:'collections';
+      const trigger=compact?triggerRef.current:commandRefs.current.get(command);
+      if(trigger)open(command,trigger,{fieldId:entry.field.id,slotIndex:reference.slot});
+    };
+    managementRef.current=manage;return()=>{if(managementRef.current===manage)managementRef.current=null;};
+  },[managementRef,managementMode,assetFields,assets,engine,excerptMode,compact,sourceEntry,frames,open]);
   const removeAsset: NonNullable<Props['onAssetRemove']> = (field, slotIndex) => {
     // Move focus before the owned state update unmounts its Remove control.
     const popup = document.activeElement?.closest('.app-reference-popup');

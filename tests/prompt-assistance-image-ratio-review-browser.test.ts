@@ -11,6 +11,7 @@ import {imageRatioReviewBrowserSource as source,imageReviewHostModules as hostMo
 
 const config={engine:listFalEngines().find(x=>x.id==='nano-banana-2-1')!.engine,otherEngine:listFalEngines().find(x=>x.id==='gpt-image-2')!.engine};
 const proposed='A carefully composed square image of a synthetic weather station.';
+const selectedReference={id:'synthetic-selected',name:'Selected reference',url:'/synthetic-reference.svg',kind:'image',status:'ready',assetId:'ma_'+'a'.repeat(32)};
 const cacheKey='milo-composer:v2:["owner","image","create"]';
 async function selectRatio(page:Page,value:string){await page.getByRole('button',{name:/^Format:/}).click();await page.getByRole('option',{name:`Format: ${value}`,exact:true}).click();}
 async function ask(page:Page){await page.getByRole('tab',{name:'AI assistant',exact:true}).click();await page.getByRole('textbox',{name:'Message Milo',exact:true}).fill('Compose a new image.');await page.getByRole('button',{name:'Send message to Milo',exact:true}).click();await expect(page.locator('[data-assistance-apply]')).toBeEnabled();}
@@ -60,14 +61,27 @@ for(const browserType of [chromium,webkit])test(`real Image ratio-only review su
 
 test('initial Image edit, mask or selected references never gain a ratio-review proof',{timeout:60_000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config,hostModules,assistanceLive:true}),browser=await chromium.launch();
- try{for(const initial of [{mode:'i2i'},{maskUrl:'/synthetic-mask.svg'},{assets:{image_urls:[{id:'synthetic-selected',name:'Selected reference',url:'/synthetic-reference.svg',kind:'image',status:'ready',assetId:'synthetic-selected'}]}},{assets:{image_urls:[{id:'synthetic-pending',name:'Pending reference',url:'/synthetic-reference.svg',kind:'image',status:'uploading'}]}}]){
+ try{for(const initial of [{mode:'i2i'},{maskUrl:'/synthetic-mask.svg'},{assets:{image_urls:[selectedReference]}}]){
   const page=await browser.newPage();const requests=await mockServices(page);await page.goto(fixture.url);await change(page,initial);await ask(page);
   await change(page,{ratio:'16:9'});await expect(page.locator('[data-assistance-apply]')).toBeDisabled();await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);
   await expect.poll(()=>page.evaluate(()=>Object.entries(sessionStorage).some(([key,value])=>key.startsWith('milo-composer:v2:')&&JSON.parse(value).local?.proposal?.text))).toBe(true);
   // Edit has a separate cache; all mounted variants must remain without a proof.
   assert.equal(await page.evaluate(()=>Object.entries(sessionStorage).some(([key,value])=>key.startsWith('milo-composer:v2:')&&!!JSON.parse(value).local?.proposal?.review)),false);
-  assert.equal(requests.length,1);assert.deepEqual(await page.evaluate(()=>(globalThis as any).formRuns),[]);await page.close();
+  assert.equal(requests.length,1);if(initial.assets)assert.deepEqual(requests[0].draft.references[0].ref,{type:'asset',assetId:selectedReference.assetId,kind:'image'});assert.deepEqual(await page.evaluate(()=>(globalThis as any).formRuns),[]);await page.close();
  }}finally{await browser.close();await fixture.close();}
+});
+
+test('an initial uploading Image reference stays local and cannot acquire a ratio-review proof',{timeout:60_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config,hostModules,assistanceLive:true}),browser=await chromium.launch();
+ try{
+  const page=await browser.newPage();const requests=await mockServices(page);await page.goto(fixture.url);
+  await change(page,{assets:{image_urls:[{...selectedReference,id:'synthetic-pending',name:'Pending reference',status:'uploading',assetId:undefined}]}});
+  await page.getByRole('tab',{name:'AI assistant',exact:true}).click();const message=page.getByRole('textbox',{name:'Message Milo',exact:true});await message.fill('Compose a new image.');await message.press('Enter');
+  await expect(page.getByText(/Image 1.*isn’t ready for Milo/)).toBeVisible();await change(page,{ratio:'16:9'});
+  await expect(page.getByRole('button',{name:'Review & use',exact:true})).toHaveCount(0);await expect(page.locator('[data-assistance-apply]')).toHaveCount(0);await expect(message).toHaveValue('Compose a new image.');
+  assert.equal(requests.length,0);assert.equal(await page.evaluate(()=>Object.entries(sessionStorage).some(([key,value])=>key.startsWith('milo-composer:v2:')&&(JSON.parse(value).local?.proposal||JSON.parse(value).pending))),false);
+  assert.deepEqual(await page.evaluate(()=>(globalThis as any).formRuns),[]);
+ }finally{await browser.close();await fixture.close();}
 });
 
 test('a late Image reply keeps its original ratio baseline and cannot cross a reverted hard change',{timeout:60_000},async()=>{
