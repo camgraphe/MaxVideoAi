@@ -6,6 +6,9 @@ import { withDbTransaction } from '../frontend/src/lib/db';
 import { estimateImageGeneration } from '../frontend/src/server/images/estimate-image-generation';
 import { resolveImageGenerationPricingSnapshot } from '../frontend/src/server/images/image-generation-pricing';
 import { createInitialImageJobInExecutor } from '../frontend/src/server/images/image-initial-job';
+import { buildCurrentOtherPricing } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/current-other-pricing';
+import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
+import { formatCurrencyForLocale } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingPageContent';
 
 test('new Character Studio images and looks use one Nano Banana 2.1 image with the same estimate, tariff revision and receipt', async (t) => {
   const f = await recastHarness(t);
@@ -84,5 +87,18 @@ test('new Character Studio images and looks use one Nano Banana 2.1 image with t
         assert.equal(receipts[0].amount_cents, pricing.totalCents);
         assert.deepEqual(receipts[0].pricing_snapshot, pricing);
         assert.equal(estimate.normalized.numImages, 1);
+        // Marketing reads the same native tariff as the estimate and reserved receipt.
+        for (const locale of ['en', 'fr', 'es'] as const) {
+          const publicRows = await buildCurrentOtherPricing(buildPricingHubData(locale).otherSurfaces, locale);
+          const amount = formatCurrencyForLocale(locale, pricing.currency, pricing.totalCents / 100);
+          const draft = publicRows.toolRows.find((row) => row.id === 'character-builder-draft')!;
+          const final = publicRows.toolRows.find((row) => row.id === 'character-builder-final')!;
+          if (resolution === '1k') assert.equal(draft.standardOutput, amount);
+          if (resolution === '2k') assert.equal(final.standardOutput, amount);
+          if (resolution === '4k') {
+            assert.equal(draft.proOutput, `4K: ${amount}`);
+            assert.equal(final.proOutput, `4K: ${amount}`);
+          }
+        }
       });
 });

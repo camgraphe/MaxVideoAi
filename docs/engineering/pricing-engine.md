@@ -23,6 +23,13 @@ tariff snapshots retain their revision lock, including when they carry product
 labels. Wallet funding, atomic reservation and existing-job recovery still apply.
 `tests/character-builder-pricing-postgres.test.ts` covers Draft/Final quantities,
 receipt preservation, replay, insufficient funds and mismatched pricing contexts.
+Static Character Studio marketing rows contain no historical fixed amounts.
+`character-studio-public-pricing-transition-2026-11-05.json` records precisely
+the four retired static projections while the original baseline remains frozen.
+Current rows use the native image estimator; EN/FR/ES public prices, estimates
+and reserved receipts are checked together in
+`tests/character-studio-nano21-price-postgres.test.ts`. Missing native pricing
+cannot fall back to an admin-edited legacy Character product.
 
 ## Seedance 2.5 LAS Edit
 

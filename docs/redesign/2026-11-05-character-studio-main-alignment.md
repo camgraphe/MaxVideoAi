@@ -53,9 +53,32 @@ environment before qualifying long-running preview work.
   without exposing secrets. The private QA records live under
   `.local/character-preview/main-sync-*`.
 
-Remote build, authenticated read-path checks and GitHub Quality CI results must
-be recorded after deployment. Local browser automation is unavailable in this
-session; DOM/integration tests and HTTP evidence are not a visual browser review.
+The Git deployment of merge candidate `33c259e75` is READY. Authenticated video,
+image, audio, Character Studio and Studio reads returned HTTP 200. The first three
+include the current top bar; Milo reports enabled with a valid policy. Fresh,
+unconfirmed Recast quotes preserved the chosen excerpts: Marcel 8s/720p $2.92,
+Vesper 14s/720p $5.10, Dixie 15s/720p $5.46 and 15s/1080p $10.92. No generation
+or assistant request was submitted. Both production domains still serve
+`0f9b45c6d`; all 194 production environment record fingerprints are unchanged.
+
+Full CI on that candidate passed both browser partitions and exhaustive financial
+cutovers. Four pricing failures exposed outdated Character Builder expectations:
+the old display name, fixed-product public prices, the streaming test's native
+image dependency and the admin integration fixture. The follow-up preserves the
+frozen historical baseline, records exactly four unavailable static price rows,
+and checks live EN/FR/ES Studio prices against native estimates and reservations
+for every resolution. All 40 focused pricing tests and 13 delivery tests pass;
+the follow-up candidate still requires a fresh complete CI run and Git deployment.
+
+The custom environment rejects OIDC with `TRUSTED_SOURCES_ENVIRONMENT_MISMATCH`.
+One automation credential already exists in the project. The delivery check now
+accepts that credential explicitly in memory, retaining exact candidate, origin,
+no-redirect and model-admission guards. No credential is created and no protection
+rule changes. The real catalogue passes the unchanged five-mode parity assertion;
+run the complete check again on the follow-up committed candidate's READY Preview.
+
+Local browser automation is unavailable in this session; remote CI browser tests
+and HTTP evidence do not replace a visual review of this authenticated preview.
 
 ## Production gate
 
