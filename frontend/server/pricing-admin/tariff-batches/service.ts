@@ -8,7 +8,8 @@ import { PricingAdminError } from '../errors';
 import { revalidateCustomerTariffChangeSurfaces } from '../revalidation';
 import { TARIFF_BATCH_PROTOCOL, TARIFF_BATCH_TTL_MS, type TariffBatchOperation, type TariffBatchPlan, type TariffBatchReceipt } from './contract';
 import { parseTariffBatchProposal, batchUuid } from './input';
-import { klingBatchSourceFacts, klingBatchClasses } from './kling';
+import { klingBatchClasses } from './kling';
+import { tariffBatchSourceFacts } from './models';
 import { buildTariffBatchPlan, stableBatchJson } from './planner';
 import { requireTariffBatchAdmission, tariffBatchIdentity } from './environment';
 import { getStoredTariffBatch, insertTariffBatch, listStoredTariffBatches, publicTariffBatch, type StoredTariffBatch } from './store';
@@ -25,7 +26,7 @@ function fingerprint(operation: Omit<StoredTariffBatch, 'fingerprint'> | StoredT
   return createHash('sha256').update(stableBatchJson({ protocol: TARIFF_BATCH_PROTOCOL,
     id: operation.id, actorId: operation.actorId, sourceId: operation.sourceId, targetId: operation.targetId,
     createdAt: operation.createdAt, expiresAt: operation.expiresAt, proposal: operation.proposal,
-    plan, policy, facts: klingBatchSourceFacts(operation.proposal.modelId) })).digest('hex');
+    plan, policy, facts: tariffBatchSourceFacts(operation.proposal.modelId) })).digest('hex');
 }
 async function currentPlan(executor: TransactionQueryExecutor, proposal: StoredTariffBatch['proposal'], actorId: string) {
   const policy = await loadPricingPolicyOverridesWithExecutor(executor, { lock: true });
@@ -57,6 +58,7 @@ export async function tariffBatchOptions() {
   if (!tariffBatchIdentity()) return { enabled: false as const, classes: [] };
   return withDbTransaction(async executor => {
     await deadlines(executor); await requireTariffBatchAdmission(executor);
+    // Only complete LIST models offer a multiplier recipe. Image prices use exact JSON imports.
     return { enabled: true as const, classes: [...klingBatchClasses(), ...klingBatchClasses('kling-v4-flash')]
       .map(row => ({ key: row.key, selector: row.selector })) };
   });

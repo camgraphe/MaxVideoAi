@@ -2,7 +2,8 @@
 
 The optional **Tariff batches** section in `/admin/pricing` authors literal prices
 for either the complete 226-class Kling 4 domain, the 72-class Kling 4.0 Flash
-domain, or an explicitly selected subset of one model. It
+domain, or an explicitly selected subset of one model. GPT Image 2.6 Flare and
+Sunburst each have 1,020 exact image classes, imported in groups of at most 226. It
 neither publishes the model nor enables generation. The existing unit editor and
 canonical billing owners remain authoritative. No runtime coefficient is added.
 
@@ -36,12 +37,19 @@ already committed prices.
   Flash has 54 fixed classes and 18 continuous reference-video classes, with its
   own supplier rates, source date and 20-second aggregate input bound. Supplier
   provenance is bound to the selected model in the operation fingerprint.
+- `models.ts` adds the canonical GPT Image 2.6 inventory and binds its own output
+  calculator, source date and incomplete supplier-cost metadata to the fingerprint.
+  It does not estimate undocumented input costs or compile image LIST multipliers.
 - `input.ts` accepts strict bounded USD proposals: at most 226 distinct classes,
   a 1–10 multiplier with at most six fractional digits, or explicit fixed/unit
   prices. HTTP bodies are limited to 2 MiB. Client actor, timestamps, currency,
   target IDs, expiry and routing properties are rejected. A batch cannot mix model
   selectors or restore prices from another model's receipt. Flash has no Modify,
   1080p or 21–30-second classes; those selections fail canonical validation.
+  GPT Image 2.6 accepts only explicit fixed prices, with exact quality, output
+  count and edit-reference count. Mixed variants, video dimensions, LIST recipes
+  and continuous prices are rejected. Its review labels output count as images
+  and the supplier estimate as output-only; incomplete cost cannot imply a margin.
 - `planner.ts` resolves actual effective cells from a complete model-scoped snapshot (including every exact exception and historical/future interval), preserves their stable IDs, quotes
   through `computeCanonicalBillingSnapshot`, and validates continuous domains
   through `validateCurrentContinuousTariffDomain`. Unavailable state never means
@@ -104,8 +112,9 @@ subset of eligible cells from a receipt owned by the same administrator.
 
 ## Exact import
 
-Import the complete proposal below, using canonical selectors returned by the
-options endpoint. This example selects the 5-second 720p text-to-video class:
+Import the complete proposal below, using canonical selectors. The options
+endpoint exposes only complete-LIST video classes for the recipe picker; image
+imports use `gptImage26TariffScenarios()`. This example selects the 5-second 720p text-to-video class:
 
 ```json
 {
@@ -139,6 +148,18 @@ That file records an approved proposal, not an applied operation or deployment
 admission. Apply only through the reviewed deployed native route, keep its UUID,
 and read its durable receipt. Source binding, regional placement, deadlines and
 reconciliation rules are unchanged.
+
+The approved GPT Image 2.6 imports live under
+`docs/launch/2026-11-05-model-refresh/gpt26-tariffs/`. Their 2,040 fixed amounts use
+estimated output LIST plus commercial reserves of USD 0.01 per output and USD
+0.02 per reference per output, then multiply by **1.50** and round the final total
+up to cents. Those reserves are not supplier cost bounds. Ten `create_missing`
+operations preserve existing conforming cells; a different price blocks its
+operation. Preview and confirm each operation sequentially because each commit
+changes the global revision. Keep each durable receipt and reconcile the exact
+2,040 selectors, previous model prices and paid snapshots. Approval of the
+commercial amounts does not establish application, provider qualification or
+model publication. Transaction limits and all admission guards stay unchanged.
 
 ## Local verification and operational limits
 

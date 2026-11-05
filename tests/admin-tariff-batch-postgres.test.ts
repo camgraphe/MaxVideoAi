@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { withDbTransaction } from '../frontend/src/lib/db';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { klingBatchClasses } from '../frontend/server/pricing-admin/tariff-batches/kling';
@@ -26,6 +27,38 @@ async function counts(db: Awaited<ReturnType<typeof startDisposablePostgres>>) {
     (SELECT count(*) FROM app_pricing_change_events) AS events,
     (SELECT count(*) FROM app_tariff_batch_receipts) AS receipts`)).rows[0];
 }
+
+test('all 2040 approved GPT tariffs commit in ten bounded operations without changing video prices or paid snapshots', async () => fixture(async ({ db }) => {
+  const directory = new URL('../docs/launch/2026-11-05-model-refresh/gpt26-tariffs/', import.meta.url);
+  const approval = JSON.parse(readFileSync(new URL('approval.json', directory), 'utf8'));
+  await confirm(await previewTariffBatch(proposal(), actor));
+  const videoBefore = (await db.pool.query('SELECT * FROM app_customer_tariff_cells ORDER BY id')).rows;
+  await db.pool.query("INSERT INTO app_jobs (job_id, user_id, pricing_snapshot, payment_status) VALUES ('gpt-prior-paid', 'synthetic-user', $1::jsonb, 'paid')", [JSON.stringify({ totalCents: 17, frozen: 'previous paid price' })]);
+  const paidBefore = (await db.pool.query("SELECT * FROM app_jobs WHERE job_id = 'gpt-prior-paid'")).rows;
+  let changed = 0;
+  for (const entry of approval.batches as { file: string; rows: number }[]) {
+    const batch = JSON.parse(readFileSync(new URL(entry.file, directory), 'utf8'));
+    const preview = await previewTariffBatch(batch, actor);
+    assert.equal(preview.plan.counts.create, entry.rows);
+    assert.ok(preview.plan.rows.every(row => row.supplierCostIncomplete));
+    const committed = await confirm(preview);
+    assert.equal(committed.status, 'committed');
+    assert.equal(committed.receipt?.changes.length, entry.rows);
+    assert.ok(committed.receipt!.lockDurationMs < 5000);
+    changed += entry.rows;
+    assert.equal(committed.receipt!.revisionAfter, changed + 2);
+    assert.deepEqual((await confirm(preview)).receipt, committed.receipt);
+  }
+  assert.equal(changed, 2040);
+  assert.deepEqual(await counts(db), { revision: '2042', cells: '2042', versions: '0', events: '2042', receipts: '11' });
+  assert.deepEqual((await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4' ORDER BY id")).rows, videoBefore);
+  assert.deepEqual((await db.pool.query("SELECT * FROM app_jobs WHERE job_id = 'gpt-prior-paid'")).rows, paidBefore);
+  const first = JSON.parse(readFileSync(new URL(approval.batches[0].file, directory), 'utf8'));
+  const resume = await previewTariffBatch(first, actor);
+  assert.equal(resume.plan.counts.unchanged, first.selections.length);
+  assert.equal((await confirm(resume)).receipt!.changes.length, 0);
+  assert.equal((await counts(db)).events, '2042');
+}));
 
 test('batch preview, atomic commit, immutable receipt, idempotent repeats and conforming resume', async () => fixture(async ({ db }) => {
   const p = await previewTariffBatch(proposal(), actor);

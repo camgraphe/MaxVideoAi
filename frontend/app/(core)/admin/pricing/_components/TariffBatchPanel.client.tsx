@@ -5,13 +5,13 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import { useTariffBatch } from '../_hooks/useTariffBatch';
 import { TariffBatchReview } from './TariffBatchReview.client';
-import type { TariffBatchModelId } from '@/server/pricing-admin/tariff-batches/contract';
+import type { KlingTariffBatchModelId } from '@/server/pricing-admin/tariff-batches/contract';
 
 const field = 'rounded-lg border border-border bg-surface p-2 text-sm text-text-primary';
 export function TariffBatchPanel() {
   const controller = useTariffBatch();
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<string[]>([]);
-  const [modelId, setModelId] = useState<TariffBatchModelId>('kling-v4');
+  const [modelId, setModelId] = useState<KlingTariffBatchModelId>('kling-v4');
   const [mode, setMode] = useState('all'), [resolution, setResolution] = useState('all');
   const [intent, setIntent] = useState<'create_missing' | 'replace_selected'>('create_missing');
   const [input, setInput] = useState('recipe'), [multiplier, setMultiplier] = useState('1.50');
@@ -52,12 +52,13 @@ export function TariffBatchPanel() {
           <div className="flex flex-wrap gap-3">
             <label className="flex flex-col gap-1 text-sm">Price input<select aria-label="Price input" className={field} value={input} onChange={e => edit(() => setInput(e.target.value))}><option value="recipe">Freeze LIST multiplier</option><option value="explicit">Import exact JSON</option></select></label>
             {input === 'recipe' && <><label className="flex flex-col gap-1 text-sm">Batch model<select aria-label="Batch model" className={field} value={modelId} onChange={e => edit(() => {
-              const next = e.target.value as TariffBatchModelId;
+              const next = e.target.value as KlingTariffBatchModelId;
               setModelId(next); setSelected([]); setMode('all'); setResolution('all'); setMultiplier(next === 'kling-v4-flash' ? '1.30' : '1.50');
             })}><option value="kling-v4">Kling 4</option><option value="kling-v4-flash">Kling 4.0 Flash</option></select></label>
               <label className="flex flex-col gap-1 text-sm">Intent<select aria-label="Intent" className={field} value={intent} onChange={e => edit(() => setIntent(e.target.value as typeof intent))}><option value="create_missing">Create missing; preserve conforming</option><option value="replace_selected">Replace selected existing prices</option></select></label>
               <label className="flex flex-col gap-1 text-sm">LIST multiplier<input className={`${field} w-28`} value={multiplier} inputMode="decimal" onChange={e => edit(() => setMultiplier(e.target.value))} /></label></>}
           </div>
+          {input === 'explicit' && <p className="text-sm text-text-secondary">Import up to 226 exact classes for one model. GPT Image 2.6 Flare and Sunburst require reviewed fixed prices because supplier input cost is incomplete.</p>}
           {input === 'explicit' ? <label className="block text-sm">Exact batch JSON<textarea className={`${field} mt-1 min-h-40 w-full font-mono`} value={importText} onChange={e => edit(() => setImportText(e.target.value))} placeholder={'{"schemaVersion":1,"modelId":"kling-v4","intent":"replace_selected","reason":"Reviewed prices","pricing":{"kind":"explicit"},"selections":[{"selector":{...},"price":{"kind":"fixed","customerCents":118}}]}'} /></label> : <>
             <p className="text-sm text-text-secondary">The multiplier compiles into literal fixed or continuous prices. Final customer totals round up to the cent. Supplier reference is LIST, not an observed invoice.</p>
             <label className="block text-sm">Reason for change<input className={`${field} mt-1 w-full`} value={reason} maxLength={500} onChange={e => edit(() => setReason(e.target.value))} /></label>
