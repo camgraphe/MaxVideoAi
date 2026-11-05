@@ -1,3 +1,4 @@
+import { isKlingExternalFalImport } from './kling-v4';
 import { externalFalImportPlan, parseExternalFalImport } from './contract';
 
 /** Offline candidate inventory only. No database, provider, curation or publication authority. */
@@ -8,12 +9,12 @@ export function externalFalImportInventory(value: unknown) {
     engineId: input.engineId, mode: input.mode, endpoint: input.endpoint,
     promptAndSettings: input.providerInput,
     media: [{ role: 'original', assetId: input.videoAssetId, sha256: input.videoSha256 },
-      ...(input.engineId === 'kling-v4' ? [
+      ...(isKlingExternalFalImport(input) ? [
         { role: 'poster', ...input.media.poster }, { role: 'short-preview', ...input.media.preview },
       ] : [])],
     references: input.references,
-    placements: input.engineId === 'kling-v4' ? [
-      { destination: 'examples-kling-v4', path: '/models/kling-v4', admin: '/admin/playlists', status: 'pending-review' },
+    placements: isKlingExternalFalImport(input) ? [
+      { destination: `examples-${input.engineId}`, path: `/models/${input.engineId}`, admin: '/admin/playlists', status: 'pending-review' },
       { destination: 'family-kling', path: '/examples/kling', admin: '/admin/playlists', status: 'pending-review' },
       { destination: 'selected-video-seo', path: null, admin: '/admin/video-seo', status: 'pending-review' },
     ] : [],

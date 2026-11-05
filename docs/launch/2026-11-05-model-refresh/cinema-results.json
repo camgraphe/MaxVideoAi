@@ -47,7 +47,16 @@
       "supplierListEstimateUsd": 0.054135,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "image",
+        "width": 1024,
+        "height": 1024,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -88,7 +97,16 @@
       "supplierListEstimateUsd": 0.054075,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "image",
+        "width": 1024,
+        "height": 1024,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -131,7 +149,16 @@
       "supplierListEstimateUsd": 0.061547,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "image",
+        "width": 1024,
+        "height": 1024,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -174,7 +201,16 @@
       "supplierListEstimateUsd": 0.061487,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "image",
+        "width": 1024,
+        "height": 1024,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -203,7 +239,16 @@
       "supplierListEstimateUsd": 0.47,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "video",
+        "width": 1280,
+        "height": 720,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -233,7 +278,16 @@
       "supplierListEstimateUsd": 0.47,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "video",
+        "width": 960,
+        "height": 960,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     },
     {
       "status": "completed",
@@ -265,7 +319,23 @@
       "supplierListEstimateUsd": 0.632625021,
       "invoiceCostUsd": null,
       "callerSurface": "provider-only qualification",
-      "publicPublication": false
+      "publicPublication": false,
+      "privateLibrary": {
+        "status": "ready",
+        "kind": "video",
+        "width": 1280,
+        "height": 720,
+        "hasThumbnail": true,
+        "hasShortVideoPreview": false,
+        "externalJobAdopted": false
+      }
     }
-  ]
+  ],
+  "privateLibraryImport": {
+    "completed": true,
+    "files": 7,
+    "source": "official MaxVideoAI local reference import helper",
+    "checkedAt": "2026-11-05T19:52:40.716Z",
+    "externalGenerationJobsAdopted": false
+  }
 }

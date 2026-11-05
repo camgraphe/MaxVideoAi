@@ -34,6 +34,7 @@
 - [ ] C02 Établir les coûts image 2.6 propres au modèle, taille, qualité, nombre et sources ; ne pas recopier les estimations fal 2.5.
 - [ ] C03 Couvrir les contextes admin/public/MCP/Studio, y compris dimensions personnalisées et quantités autorisées.
 - [ ] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
+  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; proposition +30 % soumise, pas encore approuvée. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
 - [ ] C05 Tester devis expiré, changement de réglages/références, révision de tarif, budget insuffisant et confirmations simultanées.
 - [x] C06 Vérifier débit unique, récupération, remboursement d'échec terminal et historique immuable avec PostgreSQL jetable.
 - [ ] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.
@@ -79,6 +80,7 @@
 - [x] G02 Fixer un lot et budget de rendus, puis obtenir les résultats approuvés et les évaluer ; aucun exemple d'une autre version réétiqueté. Revue des images et transcription effectuées ; écoute éditoriale encore requise.
 - [x] G03 Conserver modèle, prompt, paramètres, entrées, identifiants fournisseur, originaux, durée/dimensions et usage pour chaque asset. Coût liste estimé consigné ; facture fournisseur non vérifiée.
 - [ ] G04 Importer/persister originaux, thumbnails/posters, short previews/renditions applicables ; vérifier HTTP et lecture réelle.
+  Les sept originaux ont été importés via le helper officiel dans la bibliothèque privée connectée ; tous sont `ready`, avec thumbnail. Trois aperçus silencieux de 2,5 s sont préparés localement. L'adoption externe Flash, l'attachement des aperçus et la préparation des copies publiques restent à faire.
 - [ ] G05 Créer les collections exactes dans l'admin et prévisualiser leur galerie effective ; préserver ordre et choix existants des familles.
 - [x] G06 Écrire les trois pages modèle EN/FR/ES, blocs `decision.modelSlug`, limites, prompts, FAQ, sources et CTA réels.
 - [ ] G07 Mettre à jour menus, catalogue, familles/intro/FAQ, variantes et badges New sans déplacer les liens existants hors des limites.
@@ -95,6 +97,8 @@
 - [ ] H02 Exécuter tests ciblés, types, lint/exposure, diff-check et parcours locaux ; corriger les problèmes reproduits.
 - [x] H03 Ouvrir les PR cohérentes avec description du périmètre final ; conserver les gates de publication jusqu'à qualification. PR #620 en brouillon.
 - [ ] H04 Valider Quality CI sur le dernier candidat et toutes ses lanes sélectionnées, puis le Git Preview exact et le contrôle d'alignement.
+  Quality CI `42092543108` passe entièrement sur `0367ce6fa` : contrôles rapides, base/médias, deux shards navigateur et financier exhaustif. L'extension d'import marketing doit également passer sur son propre dernier commit.
+  Les Previews Git `c88db0060`/`0367ce6fa` et un redéploiement exact `0367ce6fa` ont échoué avant le build avec `Resource provisioning timed out`, sans logs de build. Aucun contournement de livraison en production.
 - [ ] H05 Rafraîchir main et vérifier `pnpm deployment:check` avant merge ; coordonner les livraisons concurrentes.
 - [ ] H06 Livrer par merge main → Vercel Git ; vérifier READY et SHA des deux domaines.
 - [ ] H07 Faire les smoke tests live App/Studio/MCP, prix et pages localisées ; différencier lectures et générations payantes approuvées.

@@ -1,8 +1,9 @@
 # Adopt a real external Fal result
 
 The operator CLI is `frontend/scripts/import-external-fal-results.ts`. Its strict
-manifest supports FLUX 3 Max through its canonical request builder and an explicit
-Kling V4 adapter through the four-mode Kling validator. The engine discriminant
+manifest supports FLUX 3 Max through its canonical request builder, Kling V4
+through its four-mode validator and Kling V4 Flash through its separate three-mode
+validator. The engine discriminant
 selects these separate contracts; renaming a Kling request as FLUX is rejected. It recovers an already accepted Fal
 request and adopts an already owned durable Camgraph upload; it never submits a
 provider generation, uploads media, creates a receipt or debits a wallet.
@@ -143,6 +144,34 @@ boundary as FLUX and stores the short preview in `app_jobs.preview_video_url` an
 also rechecks output original, poster and preview identities. Original and display
 hashes remain immutable provenance. Imports stay private/non-indexable and do not
 change curation. See the dated [qualification and placement handoff](../launch/kling-v4/media-qualification.md).
+
+### Kling V4 Flash and separately recorded evidence
+
+Flash uses `engineId: kling-v4-flash` and only the exact `kling/v4/flash`
+text/image/reference endpoints. Replay defaults to 5 seconds and 720p. The strict
+Flash generation validator rejects V4-only controls, structured shots, Edit,
+final frames, voice bindings and 1080p. Plain prompts may describe several cuts.
+Reference order, subject views and repeated occurrences remain explicit; each
+measured flat video is 3–20.05 seconds, a subject video is 3–8.05 seconds, and
+their combined duration must be at most 20 seconds with no aggregate tolerance.
+The shared Flash contract limits this launch to 15 actual originals.
+
+Flash supports an additional evidence envelope for runs that originally saved
+separate JSON files rather than JSONL events. `maxvideoai-recorded-fal-files-v1`
+contains `assembledAt` and five `files`: `request`, `receipt`, `submission`,
+`status`, `result`. Each contains the untouched original `utf8` and its SHA256.
+The enclosing manifest's `evidenceSha256` hashes the complete envelope. Assembly
+is explicitly later than generation; do not manufacture a contemporaneous event
+journal or alter the source files to fit this format.
+
+The recorded-file reader binds exact endpoint, prompt/settings, one attempt,
+mode, completed receipt, original video hash, chronology, accepted request ID and
+the exact queue status/result URLs across all records. It returns the recorded
+model-output digest; the existing evidence owner must still verify a fresh bound
+GET completion/result, unchanged output data and the owned media bytes. This
+format does not authorize generation, upload, billing, publication or a different
+account's assets. Flash imports retain their own model label and pending
+`examples-kling-v4-flash` placement, never a Kling 4 identity or curation slot.
 
 ## Transactional adoption
 

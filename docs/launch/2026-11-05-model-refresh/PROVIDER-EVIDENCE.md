@@ -29,7 +29,7 @@ Sources officielles lues :
 
 Faits structurants : 720p, durée entière 3–20s (défaut 5), prompt jusqu'à 26 000 caractères ; aucun `multi_prompt` dans ces trois schémas. I2V nécessite `start_image_url`, sans `end_image_url`. T2V expose quatre ratios ; REF2V ajoute auto. Références : 10 images, 5 vidéos, 7 éléments dont au plus 3 vidéo ; 20s cumulées pour vidéos et éléments vidéo. Pas de voix Flash. Les contraintes détaillées de media doivent rester dans les validations canoniques.
 
-Prix fournisseur affichés : 0,094 USD/s en sortie seule, y compris I2V et REF2V sans vidéo. REF2V avec vidéo : 0,063 USD/s sur `output + max(input, output)`. Il ne s'agit pas de prix client MaxVideoAI. Pas d'essai Flash ni de facture réelle dans cette session.
+Prix fournisseur affichés : 0,094 USD/s en sortie seule, y compris I2V et REF2V sans vidéo. REF2V avec vidéo : 0,063 USD/s sur `output + max(input, output)`. Il ne s'agit pas de prix client MaxVideoAI. Les trois modes ont ensuite été exécutés dans le lot cinéma ci-dessous ; la facture réelle reste non vérifiée.
 
 ## GPT Image 2.6
 
@@ -44,7 +44,7 @@ Sources officielles lues :
 
 Identités : `gpt-image-2.6-flare` et `gpt-image-2.6-sunburst`. Les endpoints propres aux modèles sont génération et édition d'image. `complexity` vaut low/medium/high, défaut high, indépendamment de `quality`. Les taux par token sont inchangés par rapport à 2.5, mais le guide précise que les nombres de tokens peuvent différer pour une même qualité : les prix par image doivent être recalculés.
 
-Lecture du compte : la clé déjà présente dans le fichier local du projet a servi uniquement à un GET `https://api.openai.com/v1/models`. Résultat HTTP 200 avec les deux IDs 2.6. Aucune clé affichée, écrite, copiée vers le worktree ou créée. Aucun appel à `/images/generations` ou `/images/edits`. Pas de preuve de génération, de quota effectif ni de présence équivalente de cette clé dans Preview/Production.
+Lecture initiale du compte : GET `https://api.openai.com/v1/models`, HTTP 200 avec les deux IDs 2.6. Les quatre appels création/retouche du lot approuvé ont ensuite utilisé la clé existante. Aucune clé affichée, écrite, copiée vers le worktree ou créée. L'inventaire Vercel établit sa présence en Preview/Production, sans établir l'égalité des valeurs ni l'exécution déployée.
 
 ## Leçons des précédents
 
@@ -121,3 +121,38 @@ budget, with no automatic retry. I1 Flare and I2 Sunburst both returned one vali
 was 1758 and 1756 respectively, with 279 text-input tokens each. The official
 calculator remains an estimator: its 1756-token output prediction is not an exact
 invoice promise. No public admission or customer tariff was changed.
+
+## Completed approved batch and recovery — 2026-11-05
+
+All seven approved requests completed exactly once. `cinema-results.json` records
+four PNG originals (both variants in creation and editing) and three Flash videos
+with audio. The calculated supplier LIST total is 1.803869021 USD; no account
+invoice or MaxVideoAI wallet charge is claimed. Flare edits reported 123 text,
+1024 input-image and 1758 output tokens; Sunburst edits reported 123/1024/1756.
+One square input is not evidence of a universal 2.6 input-token formula.
+
+The private OpenAI receipt now persists accepted output bytes before object
+uploads. A leased storage-only recovery cron resumes incomplete storage without
+repeating the provider request. Completed output publication checks current paid
+ownership and receipt lease atomically; partial responses enter manual review.
+The new migration remains unapplied in production. A metadata-only Vercel CLI
+inventory also confirms CRON_SECRET in general Preview and Production scopes.
+
+Flash import preparation now retains the exact Flash identity, measured reference
+limits and three-mode contract. Its separate original request/receipt/result
+files are preserved in a later, explicitly identified evidence envelope; no
+historical JSONL log is fabricated. Real record bindings verified offline for
+V1/V2/V3. Private adoption still requires owned uploaded assets, fresh bound
+provider GETs and the native verified transaction. No production import occurred.
+
+Local silent 2.5-second previews and immutable poster copies are recorded in
+`cinema-prepared-media.json`; original files, prepared media and private provenance
+are preserved under `Documents/MaxVideoAI/2026-11-05-cinema`. Upload, HTTP/Range
+readiness, public curation and final audio review remain separate gates.
+
+The official MaxVideoAI local reference-import helper subsequently stored all
+seven files in the connected private library. Its returned exact asset IDs were
+used directly. A read-only lookup of those seven IDs confirmed one common owner,
+ready status, dimensions and thumbnails, with no external job linkage. Short video
+previews remain local. This is library-import evidence, not a paid App/Studio/MCP
+generation or a public marketing adoption.

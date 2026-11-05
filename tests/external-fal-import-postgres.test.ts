@@ -210,6 +210,31 @@ test('a real external result imports atomically once, privately, with no financi
   await db.pool.query('UPDATE job_outputs SET preview_url=$2 WHERE id=$1', [klingResults[0].outputId,klingInput.media.preview.url]);
   await db.pool.query("UPDATE media_assets SET preview_url='https://media.maxvideoai.com/changed.mp4' WHERE public_id=$1", [klingInput.videoAssetId]);
   await assert.rejects(applyKling(), /DISPLAY|CHANGED/);
+  // A Flash result keeps its identity and 720p replay rather than becoming an ordinary V4 job.
+  const flashInput = { ...klingInput, engineId: 'kling-v4-flash', providerRequestId: '55555555-5555-4555-8555-555555555555',
+    endpoint: 'kling/v4/flash/reference-to-video', videoAssetId: 'ma_' + '9'.repeat(32),
+    providerInput: { prompt: 'She delivers the canister. Cut to the projectionist speaking.',
+      video_urls: klingInput.providerInput.video_urls,
+      elements: klingInput.providerInput.elements } };
+  await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,thumb_url,preview_url,mime_type,width,height,size_bytes,source,status)
+    VALUES ('flash-video',$1,$2,'video',$3,$4,$5,'video/mp4',1280,704,100,'upload','ready')`,
+    [flashInput.videoAssetId, owner, videoUrl, flashInput.media.poster.url, flashInput.media.preview.url]);
+  const flashVerified = await verifyExternalFalImport(flashInput, { ...deps, verifyEvidence: async () => structuredClone(klingEvidence) });
+  const applyFlash = () => withDbTransaction(executor => applyExternalFalImport(flashVerified, {
+    executor, actorUserId: owner, approvedPlanSha256: flashVerified.planSha256 }), { pool: db.pool });
+  const flashResults = await Promise.all([applyFlash(), applyFlash()]);
+  assert.equal(flashResults.filter(value => value.created).length, 1);
+  const flashRow = (await db.pool.query('SELECT * FROM app_jobs WHERE job_id=$1', [flashResults[0].jobId])).rows[0];
+  assert.equal(flashRow.engine_id, 'kling-v4-flash'); assert.equal(flashRow.engine_label, 'Kling 4.0 Flash');
+  assert.equal(flashRow.visibility, 'private'); assert.equal(flashRow.indexable, false);
+  assert.equal(flashRow.payment_status, 'external_not_billed'); assert.equal(flashRow.final_price_cents, null);
+  assert.equal(flashRow.duration_sec, 5); assert.equal(flashRow.aspect_ratio, '16:9');
+  assert.equal(flashRow.settings_snapshot.core.resolution, '720p');
+  assert.equal(flashRow.settings_snapshot.advanced.multiPrompt, null);
+  assert.deepEqual(flashRow.settings_snapshot.externalImport.providerInput, flashInput.providerInput);
+  const flashOutput = (await db.pool.query('SELECT * FROM job_outputs WHERE id=$1', [flashResults[0].outputId])).rows[0];
+  assert.equal(flashOutput.preview_url, flashInput.media.preview.url);
+  assert.equal(flashOutput.thumb_url, flashInput.media.poster.url);
   for (const table of ['app_receipts','fal_queue_log','provider_attempts','app_generate_metrics','generation_timing_samples'])
     assert.equal((await db.pool.query(`SELECT count(*)::int n FROM ${table}`)).rows[0].n, 0, table);
   // A native job continues contributing normally.

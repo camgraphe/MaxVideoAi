@@ -100,3 +100,68 @@ changent qu'après preuve justifiant une nouvelle recommandation.
 Suivi éditorial : à l'ouverture, enregistrer le SHA, la date et les URLs ; revoir
 le badge New à J+30 et le retirer selon la politique existante. Mesurer découvertes,
 devis, générations réussies, erreurs et coûts sans inventer de volumes SEO.
+
+## Pack cinéma préparé : La dernière bobine
+
+Direction retenue : petite salle de cinéma des années 1970, une bobine retrouvée,
+une coursière en veste ocre et un projectionniste. Matières opaques, rideau bordeaux,
+lumière tungstène et murs bleu pétrole. Action, dialogue et coupes dans chaque
+séquence. Aucun plan supplémentaire n'est à générer dans le lot approuvé.
+
+### Cartes vidéo proposées
+
+| Asset | Titre FR / EN / ES | Description et place prévue |
+| --- | --- | --- |
+| V1 | Où est ma fin ? / Where's my ending? / ¿Dónde está mi final? | Le couvercle claque, un personnage se retourne, coupe vers le projectionniste. Texte→vidéo, deux plans, 5 s demandées, 16:9. Première preuve sur la page Flash. |
+| V2 | J'ai retrouvé ta fin / Found your ending / Encontré tu final | Elle traverse le rideau, puis répond en gros plan. Image→vidéo depuis I1, deux plans, format carré conservé. Deuxième carte Flash, avec l'image de départ visible dans la recette. |
+| V3 | On projette / Roll it / Proyéctala | La bobine glisse sur le comptoir, le projectionniste répond, les deux personnages réagissent autour du projecteur. Références I1 + V1, trois plans, 16:9. Carte dédiée à la continuation par références. |
+
+Chaque original contient sa piste audio native. Les aperçus courts sont silencieux
+et distincts de l'original. Les phrases transcrites doivent être confirmées à
+l'écoute avant d'en faire des sous-titres définitifs. Montrer les modes et leurs
+références évite de présenter trois générations indépendantes comme un unique
+rendu natif de quinze secondes.
+
+### Cartes image et comparaison
+
+- I1 / Flare : « La bobine retrouvée » — création carrée à partir du texte.
+- I2 / Sunburst : « Une autre interprétation de la scène » — même prompt et mêmes
+  réglages. Personnage et cadrage différents : ne pas promettre leur identité.
+- I3 / Flare : « Du costume ocre au rouge sombre » — retouche de I1.
+- I4 / Sunburst : « Le même changement, la même source » — retouche de I1 également.
+  La source est donc l'image Flare, pas I2 ; la légende et le replay doivent le dire.
+
+Présentation proposée : création I1/I2 côte à côte ; retouches I3/I4 sous leur
+source commune I1. Images entières à dimensions d'affichage égales, original
+téléchargeable, prompt exact et réglages consultables. Ne pas ajouter de notes
+chiffrées ou de conclusion universelle à partir de ces quatre images.
+
+### Texte vidéo prêt pour sélection éditoriale
+
+Titre FR : « Une bobine. Trois scènes. Kling 4.0 Flash en action. »
+
+Description FR : « La dernière bobine raconte une course discrète dans les
+coulisses d'un cinéma. Trois séquences avec action, dialogue et plusieurs plans :
+texte→vidéo, image→vidéo, puis références image + vidéo. Les images de départ et
+leurs retouches ont été créées avec GPT Image 2.6 Flare et Sunburst. Retrouvez les
+originaux, les prompts et les réglages de chaque scène sur [page Flash publiée]. »
+
+Title EN: “One reel. Three scenes. Kling 4.0 Flash in action.”
+
+Description EN: “The Last Reel follows a hurried delivery behind the scenes of a
+small cinema. Three sequences with action, dialogue and cuts: text to video,
+image to video, then image and video references. The source images and edits use
+GPT Image 2.6 Flare and Sunburst. Explore each original, prompt and setting at
+[verified Flash model page].”
+
+Título ES: « Una bobina. Tres escenas. Kling 4.0 Flash en acción. »
+
+Descripción ES: « La última bobina sigue una entrega apresurada entre bastidores
+de un pequeño cine. Tres secuencias con acción, diálogo y varios planos: texto a
+video, imagen a video y referencias de imagen y video. Las imágenes de partida y
+sus retoques se crearon con GPT Image 2.6 Flare y Sunburst. Consulta los originales,
+prompts y ajustes en [página de Flash publicada y verificada]. »
+
+Ces textes sont prêts pour la sélection ; aucun compte social, vidéo YouTube ou
+email n'a été publié. Une version montée devra nommer les coupes, sous-titres et
+habillages ajoutés en postproduction. Le pack actuel conserve les sept originaux.

@@ -116,3 +116,39 @@ test('Documented nullable optionals and default shot durations preserve journal 
     assert.throws(() => parseKlingV4ExternalFalImport({ ...klingImportFixture(), providerInput: invalid }));
   }
 });
+
+test('Flash import keeps its exact three-mode contract and 720p defaults without inheriting V4 controls', async () => {
+  const { externalFalImportInventory } = await import('../frontend/server/external-fal-import/inventory');
+  const base = { ...klingImportFixture(), engineId: 'kling-v4-flash', endpoint: 'kling/v4/flash/text-to-video',
+    providerInput: { prompt: 'A character speaks. Hard cut to a second character answering.' } };
+  const parsed = parseExternalFalImport(base);
+  assert.equal(parsed.engineId, 'kling-v4-flash');
+  assert.deepEqual(parsed.providerInput, base.providerInput);
+  const inventory = externalFalImportInventory(base);
+  assert.equal(inventory.placements[0].destination, 'examples-kling-v4-flash');
+  assert.equal(inventory.placements[0].path, '/models/kling-v4-flash');
+  assert.equal(inventory.financialWrites, 0);
+  if (parsed.engineId === 'flux-3-max') throw new Error('Unexpected FLUX contract');
+  const settings = klingV4ImportSettings(parsed, []);
+  assert.equal(settings.core.resolution, '720p');
+  assert.equal(settings.core.durationSec, 5);
+  assert.equal(settings.advanced.multiPrompt, null);
+  for (const change of [
+    { engineId: 'kling-v4' }, { mode: 'v2v' }, { endpoint: 'kling/v4/text-to-video' },
+    ...[{ resolution: '1080p' }, { duration: 21 }, { duration: 2 }, { generate_audio: true },
+      { multi_prompt: [{ prompt: 'Shot', duration: 5 }] }, { end_image_url: 'https://fal.media/end.png' }]
+      .map(extra => ({ providerInput: { ...base.providerInput, ...extra } })),
+  ]) assert.throws(() => parseExternalFalImport({ ...base, ...change }));
+
+  const start = reference('start_image_url');
+  const i2v = parseExternalFalImport({ ...base, mode: 'i2v', endpoint: 'kling/v4/flash/image-to-video',
+    providerInput: { start_image_url: start.providerUrl }, references: [start] });
+  assert.equal(i2v.mode, 'i2v');
+  assert.throws(() => parseExternalFalImport({ ...i2v, providerInput: { ...i2v.providerInput, aspect_ratio: '1:1' } }));
+  const video = reference('video_urls.0', 'video', 2);
+  const refs = [start, video];
+  const ref2v = { ...base, mode: 'ref2v', endpoint: 'kling/v4/flash/reference-to-video',
+    providerInput: { prompt: 'Continue the scene.', start_image_url: start.providerUrl, video_urls: [video.providerUrl] }, references: refs };
+  assert.equal(parseExternalFalImport(ref2v).references.length, 2);
+  assert.throws(() => parseExternalFalImport({ ...ref2v, references: [...refs].reverse() }), /REFERENCE/);
+});

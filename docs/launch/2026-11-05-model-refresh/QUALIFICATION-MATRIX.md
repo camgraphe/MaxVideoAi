@@ -40,8 +40,7 @@ ont été examinées. V1/V2/V3 ont respectivement deux, deux et trois plans visi
 dans les planches de revue. Les trois pistes audio existent ; transcription
 locale sans texte attendu : « Where's my ending? », « Found your ending. »,
 « Roll it. ». Une écoute éditoriale reste nécessaire, notamment pour le fond
-sonore de V3 que l'ASR décrit comme musical. Cette indication n'est pas une
-vérification de droits musicaux.
+sonore de V3 que l'ASR décrit comme musical.
 
 Les vidéos durent 5,041667 s pour une demande de 5 s. V1/V3 sont 1280×720 ;
 V2, guidé par l'image carrée I1, est 960×960 avec le paramètre fournisseur 720p.
@@ -50,5 +49,9 @@ V3 réemploie les 5,041667 s réelles de V1, soit une estimation liste de
 
 Originaux, galerie autonome et éléments de revue sont conservés hors du dossier
 temporaire SDD dans `Documents/MaxVideoAI/2026-11-05-cinema` sur le poste de
-production. Ils sont candidats à la sélection ; aucune publication de galerie
-ni import dans un compte client n'est prétendu réalisé.
+production. Les sept originaux ont ensuite été importés dans la bibliothèque
+privée du compte connecté par le helper officiel MaxVideoAI. Lecture bornée aux
+sept IDs retournés : tous sont `ready`, avec dimensions et thumbnails ; les
+vidéos n'ont pas encore de `preview_url` ni de job externe lié. Les trois aperçus
+silencieux sont préparés localement. Aucune adoption de job externe, copie
+marketing publique ou publication de galerie n'est prétendue réalisée.
