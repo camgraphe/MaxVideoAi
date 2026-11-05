@@ -452,32 +452,29 @@ export function CharacterStudioComposer({
         className="z-10 shrink-0 space-y-2 border-t border-border bg-surface p-3 shadow-[0_-8px_18px_-12px_rgb(0_0_0_/_0.4)]"
       >
         <CharacterStudioOutputSettings state={state} setState={setState} copy={copy} labels={labels} />
-        <div className="flex items-baseline justify-between gap-2 text-[11px] text-text-secondary">
-          <span>{labels.imagePrice}</span>
-          <span role="status" aria-live="polite" aria-atomic="true" className="font-medium tabular-nums text-text-primary">
-            {getCharacterFormatResolution(state.formatMode, state.qualityMode).toUpperCase()} ·{' '}
-            {price == null
-              ? labels.priceUnavailable
-              : new Intl.NumberFormat(locale, {
-                  style: 'currency',
-                  currency: 'USD',
-                }).format(price)}
-          </span>
-        </div>
         <button
           type="button"
           disabled={busy || !canGenerate}
+          aria-busy={busy || undefined}
           onClick={() => onGenerate(1)}
-          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand px-3 py-3 text-sm font-medium text-on-brand transition hover:brightness-95 disabled:opacity-50"
+          className="app-generation-action flex min-h-14 w-full items-center justify-between gap-3 rounded-xl bg-brand px-3 py-3 text-left text-sm font-semibold text-on-brand transition hover:brightness-95 disabled:opacity-60"
         >
-          {busy ? <Loader2 size={17} className="animate-spin" /> : <Sparkles size={17} />}
-          {busy
-            ? labels.generating
-            : state.outputMode === 'character-sheet'
-              ? labels.generateSheet
-              : state.characterId
-                ? labels.generateLook
-                : labels.generate}
+          <span className="flex min-w-0 items-center gap-2">
+            {busy ? <Loader2 aria-hidden="true" size={17} className="shrink-0 animate-spin" /> : <Sparkles aria-hidden="true" size={17} className="shrink-0" />}
+            <span>{busy
+              ? labels.generating
+              : state.outputMode === 'character-sheet'
+                ? labels.generateSheet
+                : state.characterId
+                  ? labels.generateLook
+                  : labels.generate}</span>
+          </span>
+          <span role="status" aria-live="polite" aria-atomic="true" className="app-generation-price shrink-0 border-l border-current/30 pl-3 text-base font-semibold tabular-nums">
+            <span className="sr-only">{labels.imagePrice} · {getCharacterFormatResolution(state.formatMode, state.qualityMode).toUpperCase()} : </span>
+            {price == null ? (
+              <span className="block max-w-24 whitespace-normal text-xs font-medium">{labels.priceUnavailable}</span>
+            ) : new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(price)}
+          </span>
         </button>
       </div>
     </aside>

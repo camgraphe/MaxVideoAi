@@ -1,6 +1,7 @@
 'use client';
 import { useId, type Dispatch, type SetStateAction } from 'react';
-import { Check, PersonStanding, UserRound } from 'lucide-react';
+import Image from 'next/image';
+import { Check } from 'lucide-react';
 import { getCharacterFormatResolution, normalizeCharacterFormatMode } from '@/lib/character-builder';
 import type { CharacterBuilderState } from '@/types/character-builder';
 import type { CharacterCopy } from '../_lib/character-builder-copy';
@@ -8,19 +9,29 @@ import type { StudioCopy } from '../_lib/character-studio-copy';
 
 function OutputIllustration({ sheet, closeUps }: { sheet: boolean; closeUps: boolean }) {
   return (
-    <span aria-hidden="true" className="flex h-12 items-center justify-center text-text-secondary">
+    <span aria-hidden="true" className="flex h-[72px] items-center justify-center">
       {sheet ? (
-        <span className="grid w-20 grid-cols-4 gap-x-1 rounded border border-border bg-surface p-1.5 shadow-sm">
-          {[0, 1, 2, 3].map((view) => (
-            <span key={view} className="flex flex-col items-center gap-1">
-              <PersonStanding size={18} strokeWidth={1.5} />
-              {closeUps ? <UserRound size={9} strokeWidth={1.5} /> : null}
-            </span>
-          ))}
+        <span className={`relative block w-[96px] overflow-hidden rounded-md border border-black/10 bg-surface shadow-[0_3px_8px_rgb(0_0_0_/_0.12)] ${closeUps ? 'h-16' : 'h-10'}`}>
+          <Image
+            src="/assets/tools/redesign/character-sheet-v1.webp"
+            alt=""
+            width={1536}
+            height={1024}
+            sizes="96px"
+            loading="lazy"
+            className="absolute inset-x-0 top-0 h-auto w-full"
+          />
         </span>
       ) : (
-        <span className="flex h-11 w-9 items-end justify-center overflow-hidden rounded border border-border bg-surface pt-2 shadow-sm">
-          <UserRound size={32} strokeWidth={1.25} />
+        <span className="relative block h-[60px] w-12 overflow-hidden rounded-md border border-black/10 bg-surface shadow-[0_3px_8px_rgb(0_0_0_/_0.12)]">
+          <Image
+            src="/assets/tools/redesign/character-portrait-v1.webp"
+            alt=""
+            fill
+            sizes="48px"
+            loading="lazy"
+            className="object-cover"
+          />
         </span>
       )}
     </span>

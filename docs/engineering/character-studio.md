@@ -153,8 +153,10 @@ button is a compact plus next to Character / Recast.
 `CharacterStudioNavigation.client.tsx` owns mode/navigation presentation.
 `CharacterStudioOutputSettings.client.tsx` owns the always-visible Portrait / Character
 sheet cards and 1K / 2K / 4K selector in the generation dock (updated 2026-11-05).
-Native radio groups preserve selection and keyboard navigation. The current resolution
-is repeated beside the live per-image price; the workspace remains the sole pricing
+Native radio groups preserve selection and keyboard navigation. Existing public portrait
+and sheet examples illustrate these cards through small, lazy Next Image requests.
+The live per-image price sits inside Generate with the shared app action/price styling;
+the accessible price label repeats the selected resolution. The workspace remains the sole pricing
 reader, with generation disabled when that price is unavailable. Resolution selection
 normalizes legacy quality/format state. `CharacterStudioAdvancedSettings.client.tsx`
 owns the collapsed consistency, reference-strength and additional-direction controls
