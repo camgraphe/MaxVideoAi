@@ -17,7 +17,7 @@ Google documents generation/editing up to 15 seconds, but first/last frames and 
 
 ## Pricing boundary
 
-New provider media estimates use $12/million output video tokens (formerly $17.50), with unchanged input media rates. Current authored customer-tariff cells and historical paid receipts are untouched. Legacy inactive-policy audit/development quotes continue to derive from current costs and therefore change; do not present those projections as a production retail discount. Historical in-flight 1.1 attempts retain their stored model/rate; missing model provenance cannot be guessed from the current catalog.
+New provider media estimates use $12/million output video tokens (formerly $17.50), with unchanged input media rates. Production customer-tariff cells and historical paid receipts have not been mutated. The user-approved retail policy is prepared separately: [saved 1.1 customer price × 1.5, rounded up](gemini-omni-flash-1-2-tariffs.md). Legacy inactive-policy audit/development quotes continue to derive from current costs and therefore change; do not present those projections as a production retail discount. Historical in-flight 1.1 attempts retain their stored model/rate; missing model provenance cannot be guessed from the current catalog.
 
 ## Search decision
 

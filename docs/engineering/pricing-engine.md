@@ -1010,6 +1010,14 @@ projection deltas are explicit in `approved-changes.ts` and
 These development/audit amounts are not a production retail-price promise. The
 sellable duration remains 3–10 seconds pending reviewed 11–15-second coverage.
 
+The later approved retail decision is independent of that supplier refresh:
+`omni-12-tariff-release.ts` prepares all 456 saved Omni classes at 150% of their
+1.1 customer amounts, rounding up once per fixed amount or token band. Token
+coordinates and thresholds stay exact. An explicit maintenance release appends
+versions and one immutable event atomically, refuses stale review and a second
+application, and never rewrites paid snapshots. No quote-time multiplier or
+build-time write is added. See the [release procedure](../model-launch/gemini-omni-flash-1-2-tariffs.md).
+
 ### Dynamic video tool coefficients (2026-09-30)
 
 `tools-dynamic-pricing.ts` owns the reviewed defaults and validated billing-product `dynamicPriceMultiplier` projection. The optional persisted coefficient applies to three video upscalers and background removal; existing missing overrides retain ×4/×2 respectively. `computeBillingProductSnapshot` binds its effective coefficient in quote metadata. Actual Tool/Studio quotes, charging and admin comparisons use that projection; pure preview helpers receive the same coefficient and preserve existing source/unit rounding. The public Pricing entries continue to label the fixed minimum and request a source-specific live quote.

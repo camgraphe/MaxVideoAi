@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { gptImage26ReferenceFailure, isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
@@ -282,6 +283,7 @@ function validateVideoModeCaps(
   }
   const audio = request.settings.audio;
   if (audio !== undefined && (typeof audio !== 'boolean' || !caps.audioToggle)) fail('audio');
+  if (audio === false && hasPromptDirectedNativeAudio(candidate.engine, request.mode)) fail('audio');
 
   for (const [setting, fieldIds] of [
     ['resolution', ['resolution']],

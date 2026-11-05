@@ -444,7 +444,7 @@ test('budget options use the current canonical trial and lowest paid route witho
   assert.equal(options[1].amountCents, 10);
   assert.equal(options[1].amountCents, quoteScenario('gemini-omni-flash', 3, '360p'));
   assert.equal(options[1].priceSource, 'canonical_public_quote');
-  assert.equal(options[1].audioState, 'silent');
+  assert.equal(options[1].audioState, 'enabled', 'prompt-directed native Omni audio must not be advertised as silent');
 
   assert.equal(options.some((candidate) => candidate.engineId === 'wan-2-6'), false);
 });
@@ -601,19 +601,19 @@ test('labels, currency, and model links are stable and localized in English, Fre
   > = {
     en: {
       included: 'Included',
-      silent: /Silent/,
+      nativeAudio: /Audio enabled/,
       trialHref: '/models/dreamina-seedance-2-0-mini',
       paidHref: '/models/gemini-omni-flash',
     },
     fr: {
       included: 'Inclus',
-      silent: /Sans audio/,
+      nativeAudio: /Audio activé/,
       trialHref: '/fr/modeles/dreamina-seedance-2-0-mini',
       paidHref: '/fr/modeles/gemini-omni-flash',
     },
     es: {
       included: 'Incluido',
-      silent: /Sin audio/,
+      nativeAudio: /Audio activado/,
       trialHref: '/es/modelos/dreamina-seedance-2-0-mini',
       paidHref: '/es/modelos/gemini-omni-flash',
     },
@@ -640,8 +640,8 @@ test('labels, currency, and model links are stable and localized in English, Fre
         maximumFractionDigits: 2,
       }).format(paid.amountCents! / 100),
     );
-    assert.match(paid.scenarioLabel, expected.silent);
-    assert.equal(paid.audioState, 'silent');
+    assert.match(paid.scenarioLabel, expected.nativeAudio);
+    assert.equal(paid.audioState, 'enabled');
     assert.doesNotMatch(paid.scenarioLabel, /provider|fal-ai|margin|token/i);
   }
 });
@@ -655,7 +655,7 @@ test('unmatched localized route segments fall back without crashing MCP budget l
   const paid = option(options, 'lowest_paid');
 
   assert.equal(trial.priceLabel, 'Included');
-  assert.match(paid.scenarioLabel, /Silent/);
+  assert.match(paid.scenarioLabel, /Audio enabled/);
   assert.equal(trial.modelHref.startsWith('/models/'), true);
   assert.equal(paid.modelHref.startsWith('/models/'), true);
 });

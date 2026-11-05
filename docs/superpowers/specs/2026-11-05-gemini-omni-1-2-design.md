@@ -1,13 +1,13 @@
 # Gemini Omni Flash 1.2 upgrade
 
-Approved direction: upgrade the existing Omni engine and its existing marketing/comparison owners on an isolated branch while another model launch proceeds independently. Keep the established URLs and historical evidence. This is a source candidate, not a production deployment or commercial-price change.
+Approved direction: upgrade the existing Omni engine and its existing marketing/comparison owners on an isolated branch while another model launch proceeds independently. Keep the established URLs and historical evidence. This is a source candidate, not a production deployment. A later explicit user instruction adds a separate retail release: 1.2 customer prices equal 150% of saved 1.1 customer cents, rounded up once. This supersedes the initial unchanged-retail scope for new requests only.
 
 ## Runtime and commercial contract
 
 - Keep engine identity `gemini-omni-flash`; new submissions use the GA Vertex global Interactions model `gemini-omni-1.2-flash`.
 - Preserve the seven existing modes, 360p/720p/1080p/4K, aspect ratios and currently sold 3–10-second domain. Google documents up to 15 seconds for generation/editing, but opening 11–15 seconds requires reviewed customer-tariff coverage and separate capability validation. First/last-frame and extension remain capped at 10 seconds at Google too.
 - New provider-cost estimates use $12/million output video tokens and $1.50/million input tokens. These are media estimates; reported reasoning/text usage is not an observed invoice. Do not silently change authored customer prices or paid snapshots.
-- Polling jobs submitted with 1.1 must retain their submitted model and $17.50 output-token estimate. Historical authored token-band customer tariffs remain valid and unchanged.
+- Polling jobs submitted with 1.1 must retain their submitted model and $17.50 output-token estimate. Historical authored token-band versions remain valid and unchanged; the explicit 1.2 release scales their saved customer amounts while retaining the token coordinates and thresholds.
 - No audio-reference input, new upscale mode, fallback provider, production flag change, or database mutation.
 
 ## Search and evidence contract
