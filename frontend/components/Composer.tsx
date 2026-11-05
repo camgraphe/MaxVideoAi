@@ -23,7 +23,7 @@ import { hasMissingRequiredComposerAsset } from '@/components/composer/composer-
 import { videoExtensionCopy } from '@/lib/video-extension';
 import { videoModifyCopy } from '@/lib/video-source-workflow';
 import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
-import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
+import { DEFAULT_COMPOSER_COPY, resolveComposerCopy, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
@@ -105,44 +105,9 @@ export function Composer({
   const { excerptNeedsRange, excerptEditorOpen, handleExcerptEditorChange, extensionWorkflow, sourceMode, videoSourceWorkflow, extensionCopy, extensionSourceState, extensionNotice, extensionQuoteStatus } = useComposerVideoSourceWorkflow({ engine, assets, activeManualMode, caps, onPrepareVideoExcerpt, onVideoExcerptEditorChange, workspaceDensity, locale });
   const hasVideoSourceControl = Boolean(videoSourceWorkflow || (sourceControl && extensionWorkflow));
   const leadingExtensionNotice = assistanceEnabled ? null : extensionNotice;
-  const composerCopy = useMemo<ComposerCopy>(() => {
-    const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
-    if (!localized) {
-      return DEFAULT_COMPOSER_COPY;
-    }
-    return {
-      ...DEFAULT_COMPOSER_COPY,
-      ...localized,
-      badges: {
-        ...DEFAULT_COMPOSER_COPY.badges,
-        ...(localized.badges ?? {}),
-      },
-      prompt: {
-        ...DEFAULT_COMPOSER_COPY.prompt,
-        ...(localized.prompt ?? {}),
-      },
-      negativePrompt: {
-        ...DEFAULT_COMPOSER_COPY.negativePrompt,
-        ...(localized.negativePrompt ?? {}),
-      },
-      shortcuts: {
-        ...DEFAULT_COMPOSER_COPY.shortcuts,
-        ...(localized.shortcuts ?? {}),
-      },
-      labels: {
-        ...DEFAULT_COMPOSER_COPY.labels,
-        ...(localized.labels ?? {}),
-      },
-      button: {
-        ...DEFAULT_COMPOSER_COPY.button,
-        ...(localized.button ?? {}),
-      },
-      assetSlots: {
-        ...DEFAULT_COMPOSER_COPY.assetSlots,
-        ...(localized.assetSlots ?? {}),
-      },
-    };
-  }, [t]);
+  const composerCopy = useMemo(() => resolveComposerCopy(
+    t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined
+  ), [t]);
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
