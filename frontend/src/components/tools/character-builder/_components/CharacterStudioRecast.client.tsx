@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Clapperboard, ImagePlus, Plus, Download, Upload, X } from 'lucide-react';
+import { Clapperboard, Plus, Download, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioRecastSelection } from '@/types/character-studio';
 import { buildRecastBrief, isRecastAudioFile } from '@/lib/character-studio-recast';
@@ -16,6 +16,8 @@ import {
 import { passageSeconds, useRecastTrack } from './useRecastTrack';
 
 import { CharacterStudioRecastSubmit } from './CharacterStudioRecastSubmit.client';
+import { CharacterStudioRecastPortrait } from './CharacterStudioRecastPortrait.client';
+import type { RecastCharacterLibraryAccess } from './CharacterStudioRecastCharacterPicker.client';
 import type { RecastImage as LocalMedia, UploadCache } from '../_lib/recast-submit';
 import {
   RECAST_RESOLUTIONS,
@@ -29,11 +31,13 @@ export function CharacterStudioRecast({
   navigation,
   active,
   selection,
+  characterLibrary,
 }: {
   copy: StudioCopy;
   navigation: ReactNode;
   active: boolean;
   selection?: StudioRecastSelection | null;
+  characterLibrary?: RecastCharacterLibraryAccess;
 }) {
   const readerRoot = useRef<HTMLDivElement>(null);
   const videoControl = useRecastTrack('video');
@@ -177,36 +181,11 @@ export function CharacterStudioRecast({
               </button>
             )}
           </section>
-          <section>
-            <h3 className="mb-2 text-xs font-medium text-text-secondary">02 · {copy.replacement}</h3>
-            {portrait ? (
-              <div className="relative">
-                <img
-                  src={portrait.url}
-                  alt={portrait.name}
-                  className="h-40 w-full rounded-xl bg-bg object-contain"
-                />
-                <p className="mt-2 truncate text-xs text-text-secondary">{portrait.name}</p>
-                <button
-                  type="button"
-                  aria-label={`${copy.remove} · ${copy.replacement}`}
-                  onClick={() => setPortrait(null)}
-                  className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => imageInput.current?.click()}
-                className="flex min-h-28 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-bg px-3 text-sm hover:border-brand"
-              >
-                <ImagePlus size={24} />
-                {copy.addReplacement}
-              </button>
-            )}
-          </section>
+          <CharacterStudioRecastPortrait
+            portrait={portrait} copy={copy} active={active} access={characterLibrary}
+            onUpload={() => imageInput.current?.click()}
+            onSelect={value => { setPortrait(value); setError(''); }}
+          />
           <section>
             <h3 className="mb-2 text-xs font-medium text-text-secondary">03 · {copy.product}</h3>
             {product ? (

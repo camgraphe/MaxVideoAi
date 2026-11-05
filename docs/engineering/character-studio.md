@@ -36,6 +36,34 @@ by the current save/download/continuation actions.
 
 ## Media
 
+### Recast character selection and video history (2026-11-05)
+
+`CharacterStudioRecastPortrait` owns the character entry point and uploaded image
+alternative. Opening it mounts `CharacterStudioRecastCharacterPicker`, which uses
+an independent instance of `useCharacterStudioLibrary` with the workspace's
+account capture. It loads saved characters and their paginated looks on demand;
+it never changes the image editor's selected character or draft. Closing or
+switching accounts retires pending responses. Failed list pagination retries its
+original cursor and preserves earlier pages.
+
+Picker cards use `LibraryImageThumbnail` for stored previews. Selecting an
+identity or look sends its exact original image URL and source job ID through the
+existing Recast preparation/ownership checks, with no upload or paid generation
+on selection. It replaces only the portrait; source video, selected passages,
+product, audio, dialogue, duration and format remain intact. The existing quote
+key invalidates an unconfirmed price when that portrait changes. Native-dialog
+cancel and selection restore focus, including when selection replaces the empty
+opener with the Change character/look button. The account-keyed workspace remains
+the owner of complete runtime isolation.
+
+Recast navigation also exposes **My videos**, linking to the existing `/app`
+owned-video history. Image history remains scoped to `surface=character`; Recast
+jobs belong to `surface=video`. Neither entry point transfers preview media into
+production. DOM coverage is in `character-studio-recast-character-picker.test.ts`;
+account, payment and architecture suites retain their existing owners.
+
+### Catalogue visuals
+
 `frontend/public/assets/tools/character-studio/` contains compact image atlases.
 The original generated images are illustrative catalogue choices, never uploaded
 as the user's reference or inserted into result history. `provenance.json`

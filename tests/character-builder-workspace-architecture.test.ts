@@ -391,3 +391,16 @@ test('saved library presentation and overlays stay outside the workspace orchest
   const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
   assert.match(runner, /sanitizeRequest\(await resolveStudioLookRequest\(input\)\)/);
 });
+
+test('Recast portrait selection delegates its account library and dialog outside the composer', () => {
+  const area = join(root, 'frontend/src/components/tools/character-builder/_components');
+  const recast = readFileSync(join(area, 'CharacterStudioRecast.client.tsx'), 'utf8');
+  const portrait = readFileSync(join(area, 'CharacterStudioRecastPortrait.client.tsx'), 'utf8');
+  const picker = readFileSync(join(area, 'CharacterStudioRecastCharacterPicker.client.tsx'), 'utf8');
+  assert.match(recast, /<CharacterStudioRecastPortrait/);
+  assert.doesNotMatch(recast, /useCharacterStudioLibrary|<dialog\b/);
+  assert.match(portrait, /active && open/);
+  assert.match(picker, /useCharacterStudioLibrary/);
+  assert.match(picker, /LibraryImageThumbnail/);
+  assert.doesNotMatch(workspaceSource, /<CharacterStudioRecastCharacterPicker|<dialog\b/);
+});

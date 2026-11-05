@@ -481,6 +481,7 @@ function CharacterBuilderAccountWorkspace({
             copy={studioCopy}
             navigation={studioNavigation}
             selection={recastSelection}
+            characterLibrary={{ userId: user?.id ?? null, captureAccountRequest, onSignIn: openAuthGate }}
           />
         }
       />
