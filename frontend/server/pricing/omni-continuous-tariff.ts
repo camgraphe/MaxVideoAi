@@ -4,8 +4,13 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { compileBoundedUnitBands } from './compile-bounded-unit-bands';
 import { adjacentNonnegativeDouble } from './pricing-number-boundaries';
+import {
+  calculateGoogleOmniProviderCost, GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS,
+  GOOGLE_OMNI_1_1_OUTPUT_USD_PER_MILLION_TOKENS, GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS,
+  type GoogleOmniPricingInput,
+} from '@/lib/google-omni-pricing';
 
-export function omniContinuousTariffBounds(context: PricingContext) {
+export function omniContinuousTariffBounds(context: PricingContext, pricingVersion: GoogleOmniPricingInput['pricingVersion'] = '1.2') {
   const facts = buildBillingPricingFacts(context, context.engine.pricingDetails, 'USD').facts;
   if (context.engine.id !== 'gemini-omni-flash' || !continuousInputTariffSelector(buildManualTariffScenario(context, facts).selector)) {
     throw new Error('Unsupported continuous Omni scenario.');
@@ -16,8 +21,14 @@ export function omniContinuousTariffBounds(context: PricingContext) {
   const maximumSource = context.mode === 'retake' ? 0 : 10;
   const factsAt = (output: number, source: number) => buildBillingPricingFacts({ ...context, inputVideoDurationSec: source,
     ...(outputVaries ? { inheritedDurationSec: output } : { durationSec: output }) }, context.engine.pricingDetails, 'USD').facts;
-  return { minimumOutput, maximumOutput, maximumSource, factsAt, minimum: factsAt(minimumOutput, 0).vendorSubtotalExactCents,
-    maximum: factsAt(maximumOutput, maximumSource).vendorSubtotalExactCents };
+  // Bands are evaluated in their authored token expression. A supplier price
+  // decrease must not shrink the reachable domain of historical retail bands.
+  const basisAt = (output: number, source: number) => calculateGoogleOmniProviderCost({
+    pricingVersion, outputResolution: context.resolution as GoogleOmniPricingInput['outputResolution'],
+    outputDurationSec: output, inputImageCount: context.inputImageCount ?? 0, inputVideoDurationSec: source,
+  }).providerCostExactCents;
+  return { minimumOutput, maximumOutput, maximumSource, factsAt, minimum: basisAt(minimumOutput, 0),
+    maximum: basisAt(maximumOutput, maximumSource) };
 }
 
 /** Freeze all customer-cent bands over this bounded raw-token domain; no live percentage or supplier lookup. */
@@ -34,7 +45,8 @@ export function compileOmniContinuousTariffPrice(input: {
     throw new Error('Unsupported Omni continuous price profile; explicit review is required.');
   }
   const { maximum } = omniContinuousTariffBounds(context);
-  return compileBoundedUnitBands({ terms: [{ unit: 'output_tokens', centsPerUnit: 17.5 }, { unit: 'input_tokens', centsPerUnit: 1.5 }],
+  return compileBoundedUnitBands({ terms: [{ unit: 'output_tokens', centsPerUnit: GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS },
+    { unit: 'input_tokens', centsPerUnit: GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS }],
     divisor: 10000, maxUnits: maximum,
     currentCents: units => quoteCanonicalPricing({ facts: { engineId: context.engine.id, currency: 'USD',
       vendorSubtotalExactCents: units, quantity: 1, unit: 'token_budget' },
@@ -46,13 +58,15 @@ export function compileOmniContinuousTariffPrice(input: {
 /** Covers the full output/source rectangle, rather than a few sampled media durations. */
 export function validateOmniContinuousTariffDomain(input: { context: PricingContext; price: ManualTariffPrice }) {
   const { context, price } = input;
-  const bounds = omniContinuousTariffBounds(context);
   if (!isValidManualTariffPrice(price)) throw new Error('Invalid continuous Omni tariff.');
+  const legacyBands = price.kind === 'unit_bands' && price.terms[0]?.centsPerUnit === GOOGLE_OMNI_1_1_OUTPUT_USD_PER_MILLION_TOKENS;
+  const bounds = omniContinuousTariffBounds(context, legacyBands ? '1.1' : '1.2');
   let minimumGrossCents = Infinity;
   let checkedBoundaries = 0;
   if (price.kind === 'unit_bands') {
     if (price.divisor !== 10000 || price.terms.length !== 2 || price.terms[0].unit !== 'output_tokens'
-      || price.terms[0].centsPerUnit !== 17.5 || price.terms[1].unit !== 'input_tokens' || price.terms[1].centsPerUnit !== 1.5
+      || ![GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS, GOOGLE_OMNI_1_1_OUTPUT_USD_PER_MILLION_TOKENS].includes(price.terms[0].centsPerUnit)
+      || price.terms[1].unit !== 'input_tokens' || price.terms[1].centsPerUnit !== GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS
       || price.maxUnits < bounds.maximum) throw new Error('Unsupported authored Omni token bands.');
     for (let index = 0; index < price.bands.length; index++) {
       const band = price.bands[index];
