@@ -25,6 +25,7 @@ const EDITORIAL_COMPARISONS = [
 ] as const;
 
 const CURRENT_EDITORIAL_COMPARISONS = [
+  { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
   { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
   ...EDITORIAL_COMPARISONS,
@@ -199,7 +200,7 @@ test('live runtime comparison menu retains every link, label, brand and badge fr
 
   const brandsBySlug: Record<string, string> = {
     'minimax-h3': 'minimax', 'minimax-h3-max': 'minimax', 'seedance-2-5': 'bytedance',
-    'kling-3-pro': 'kling', 'kling-v4': 'kling', 'wan-3': 'wan', 'wan-3-prime': 'wan',
+    'kling-3-pro': 'kling', 'kling-v4': 'kling', 'kling-v4-flash': 'kling', 'wan-3': 'wan', 'wan-3-prime': 'wan',
     'ltx-2-5-fast': 'lightricks', 'ltx-2-5-pro': 'lightricks',
     'gemini-omni-flash': 'google-veo', 'veo-3-1': 'google-veo',
     'seedance-2-0': 'bytedance', 'seedance-2-0-fast': 'bytedance',
@@ -211,7 +212,7 @@ test('live runtime comparison menu retains every link, label, brand and badge fr
     comparisonBrands: slug.split('-vs-').map(id => ({ id, brandId: brandsBySlug[id] })),
     badge: undefined,
   })));
-  assert.ok(MARKETING_NAV_COMPARE.length <= 10);
+  assert.ok(MARKETING_NAV_COMPARE.length <= 11);
 });
 
 test('comparison menu bounds canonical comparison work to editorial candidates even in a dense graph', (t) => {
@@ -225,8 +226,8 @@ test('comparison menu bounds canonical comparison work to editorial candidates e
     const menu = countLocaleComparisons(() => buildMarketingCompareMenu(models));
     t.diagnostic(`${name}: full graph ${expanded.result.length} canonical pairs / ${expanded.calls} localeCompare calls; menu ${menu.result.length} entries / ${menu.calls} localeCompare calls.`);
     assert.deepEqual(menu.result, CURRENT_EDITORIAL_COMPARISONS);
-    // The prepared V4/Omni and V4/Flash pairs remain outside the live publication graph.
-    const candidateCount = CURRENT_EDITORIAL_COMPARISONS.length + 2;
+    // The prepared V4/Omni pair remains outside the live publication graph.
+    const candidateCount = CURRENT_EDITORIAL_COMPARISONS.length + 1;
     assert.ok(menu.calls <= candidateCount,
       `${name}: menu should canonicalize at most its ${candidateCount} candidates; observed ${menu.calls} localeCompare calls`);
     assert.ok(expanded.calls > menu.calls, `${name}: the bounded menu avoids full graph canonicalization and sorting`);

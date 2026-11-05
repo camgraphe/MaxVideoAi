@@ -12,17 +12,17 @@ const comparisonPaths = getHubComparisonSlugsForSitemap().map(
 const modelPaths = modelRoster.map(({ modelSlug }) => `/models/${modelSlug}`);
 const dynamicPaths = new Set([...modelPaths, ...comparisonPaths]);
 
-test('P1 and subsequent candidates add seventeen English routes, retaining Nano21 and the two Kling V4 comparisons', () => {
-  assert.equal(modelPaths.length - fixture.publishedModelCount, 8);
-  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 9);
-  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 17);
+test('P1 and subsequent candidates add twenty-one English routes, retaining the historical inventory and three November models', () => {
+  assert.equal(modelPaths.length - fixture.publishedModelCount, 11);
+  assert.equal(comparisonPaths.length - fixture.publishedComparisonCount, 10);
+  assert.equal(dynamicPaths.size - fixture.dynamicEnglishCanonicalCount, 21);
 
   const localizedLocCount = modelRoster.length * 3 + getHubComparisonSlugsForSitemap().reduce(
     (total, slug) => total + getIndexableComparisonLocales(slug).length,
     0,
   );
-  // Preserve the candidate Nano21/model inventory; the two new comparisons contribute six locale URLs.
-  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6);
+  // Preserve prior route deltas; November adds nine model URLs and three Flash comparison URLs.
+  assert.equal(localizedLocCount - fixture.localizedLocCount, 38 - 82 + 3 + 6 + 9 + 3);
   const v4 = modelRoster.find(model => model.modelSlug === 'kling-v4');
   assert.ok(v4);
   assert.deepEqual(v4.surfaces.modelPage, { indexable: true, includeInSitemap: true });
@@ -34,6 +34,10 @@ test('P1 and subsequent candidates add seventeen English routes, retaining Nano2
   for (const path of fixture.expectedNewEnglishPaths) assert.equal(dynamicPaths.has(path), true, path);
   for (const path of [
     '/models/flux-3-max',
+    '/models/kling-v4-flash',
+    '/models/gpt-image-2-6-flare',
+    '/models/gpt-image-2-6-sunburst',
+    '/ai-video-engines/kling-v4-vs-kling-v4-flash',
     '/ai-video-engines/flux-3-vs-flux-3-max',
     '/ai-video-engines/seedance-2-5-vs-wan-3',
     '/ai-video-engines/minimax-h3-max-vs-seedance-2-5',

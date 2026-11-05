@@ -1,4 +1,5 @@
 import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
@@ -53,6 +54,10 @@ function buildEffectiveDatabaseRule(
 }
 
 export function quotePublicPricing(input: QuotePublicPricingInput): CanonicalPricingQuote {
+  // Partial output-only supplier facts cannot define the approved customer grid.
+  if (isGptImage26EngineId(input.scenario.engineId)) {
+    throw new Error('An active reviewed GPT Image 2.6 customer tariff is required.');
+  }
   const policyDocument = getVersionedPricingPolicy();
   const policyScenario = {
     engineId: input.scenario.engineId,

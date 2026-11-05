@@ -100,8 +100,9 @@ test('score order keeps H3 just below Kling O3 Pro and below Seedance 2.5', () =
 
 test('bounded discovery surfaces retain both H3 variants and Seedance 2.5 after the Max launch', () => {
   assert.deepEqual(
-    MARKETING_NAV_MODELS.slice(0, 5).map(({ key, badge }) => ({ key, badge })),
+    MARKETING_NAV_MODELS.slice(0, 6).map(({ key, badge }) => ({ key, badge })),
     [
+      { key: 'kling-v4-flash', badge: 'new' },
       { key: 'kling-v4', badge: 'new' },
       { key: 'flux-3-max', badge: 'new' },
       { key: 'minimax-h3', badge: 'new' },
@@ -109,9 +110,9 @@ test('bounded discovery surfaces retain both H3 variants and Seedance 2.5 after 
       { key: 'seedance-2-5', badge: 'new' },
     ],
   );
-  assert.equal(MARKETING_NAV_COMPARE.length, 10);
-  assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'kling-v4-vs-seedance-2-5');
-  assert.equal(MARKETING_NAV_COMPARE[2]?.key, 'minimax-h3-vs-seedance-2-5');
+  assert.equal(MARKETING_NAV_COMPARE.length, 11);
+  assert.equal(MARKETING_NAV_COMPARE[0]?.key, 'kling-v4-vs-kling-v4-flash');
+  assert.equal(MARKETING_NAV_COMPARE[3]?.key, 'minimax-h3-vs-seedance-2-5');
   assert.ok(MARKETING_NAV_COMPARE.some(({ key }) => key === 'minimax-h3-vs-seedance-2-5'));
 
   const popular = getPopularComparisons();

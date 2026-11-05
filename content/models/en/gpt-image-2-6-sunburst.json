@@ -7,7 +7,7 @@
   },
   "overview": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
   "pricingNotes": [
-    "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+    "Create and edit images in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
     "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
   ],
   "hero": {
@@ -78,7 +78,7 @@
       "subtitleHighlights": [
         "1024"
       ],
-      "paragraph": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "paragraph": "Create and edit images in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
       "primaryCta": {
         "label": "Open the workspace",
         "href": "/app/image?engine=gpt-image-2-6-sunburst"
@@ -156,7 +156,7 @@
     "pricingCopy": {
       "title": "GPT Image 2.6 Sunburst — Pricing",
       "subtitle": "Review the current quote before confirming a generation. Changing settings or references requires a new quote.",
-      "footnote": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "footnote": "Create and edit images in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
       "ctaLabel": "View current pricing",
       "ctaHref": "/pricing#gpt-image-2-6-sunburst-pricing",
       "maxDurationNote": "Up to four images in App and MCP; one in Studio."

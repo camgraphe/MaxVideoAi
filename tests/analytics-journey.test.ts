@@ -200,7 +200,10 @@ test('Studio and MCP primary action attributes survive the bounded click project
 });
 
 test('new public model identities survive generation projection without admitting private strings', () => {
-  for (const [engine, mode] of [['kling-v4', 'ref2v'], ['nano-banana-2-1', 'i2i']]) {
+  for (const [engine, mode] of [
+    ['kling-v4', 'ref2v'], ['nano-banana-2-1', 'i2i'], ['kling-v4-flash', 'ref2v'],
+    ['gpt-image-2-6-flare', 't2i'], ['gpt-image-2-6-sunburst', 'i2i'],
+  ]) {
     assert.deepEqual(projectAllowedAnalyticsPayload('generation_started', {
       engine, mode, prompt: 'private user prompt', email: 'private@example.test',
     }), { engine, mode });

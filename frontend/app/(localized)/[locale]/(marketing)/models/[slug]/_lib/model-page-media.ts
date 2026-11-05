@@ -47,6 +47,7 @@ function formatPromptExcerpt(prompt: string, maxWords = 22): string {
 }
 
 function formatFeaturedPrompt(prompt: string, preferFullPrompt = false): string {
+  if (preferFullPrompt) return prompt.trim();
   const condensed = prompt
     .replace(/\*\*/g, '')
     .replace(/\r\n/g, '\n')
@@ -54,12 +55,7 @@ function formatFeaturedPrompt(prompt: string, preferFullPrompt = false): string 
     .replace(/\s{2,}/g, ' ')
     .trim();
   if (!condensed) return '';
-  const hasStructuredSections =
-    /^prompt\b/i.test(condensed) || /\b(brief|subject|camera|style|audio|look|ending):/i.test(condensed);
-  if (preferFullPrompt && !hasStructuredSections) {
-    return condensed;
-  }
-  return formatPromptExcerpt(condensed, preferFullPrompt ? 48 : 22);
+  return formatPromptExcerpt(condensed);
 }
 
 export function normalizeMediaUrl(src?: string | null): string | null {

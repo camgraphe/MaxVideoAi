@@ -3368,17 +3368,17 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
-          "published": false,
-          "includeInFamilyCopy": false,
-          "current": false
+          "published": true,
+          "includeInFamilyCopy": true,
+          "current": true
         },
         "compare": {
-          "published": false,
-          "indexed": false,
+          "published": true,
+          "indexed": true,
           "suggestedOpponentIds": [
             "kling-v4"
           ],
@@ -3390,10 +3390,10 @@
           "published": true
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,
@@ -3411,8 +3411,8 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
           "published": false,
@@ -3426,13 +3426,15 @@
           "publishedPairIds": []
         },
         "app": {
-          "published": true
+          "published": true,
+          "variantGroup": "gpt-image-2.6",
+          "variantLabel": "Flare"
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,
@@ -3450,8 +3452,8 @@
       },
       "publication": {
         "model": {
-          "published": false,
-          "indexable": false
+          "published": true,
+          "indexable": true
         },
         "examples": {
           "published": false,
@@ -3465,13 +3467,15 @@
           "publishedPairIds": []
         },
         "app": {
-          "published": true
+          "published": true,
+          "variantGroup": "gpt-image-2.6",
+          "variantLabel": "Sunburst"
         },
         "pricing": {
-          "published": false
+          "published": true
         },
         "sitemap": {
-          "published": false
+          "published": true
         }
       },
       "replacement": null,

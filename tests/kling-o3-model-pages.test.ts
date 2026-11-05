@@ -256,6 +256,7 @@ test('Kling marketing family includes ready V4 while keeping current Turbo and t
 
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('kling'), [
     'kling-v4',
+    'kling-v4-flash',
     'kling-3-turbo-pro',
     'kling-3-turbo-standard',
     'kling-o3-pro',
@@ -265,8 +266,9 @@ test('Kling marketing family includes ready V4 while keeping current Turbo and t
     'kling-3-standard',
     'kling-3-4k',
   ]);
-  assert.deepEqual(getExampleFamilyModelSlugs('kling').slice(0, 9), [
+  assert.deepEqual(getExampleFamilyModelSlugs('kling').slice(0, 10), [
     'kling-v4',
+    'kling-v4-flash',
     'kling-3-turbo-pro',
     'kling-3-turbo-standard',
     'kling-o3-pro',

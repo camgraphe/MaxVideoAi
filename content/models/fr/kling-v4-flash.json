@@ -7,7 +7,7 @@
   },
   "overview": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
   "pricingNotes": [
-    "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+    "Créez vos séquences vidéo dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
     "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis."
   ],
   "hero": {
@@ -78,7 +78,7 @@
       "subtitleHighlights": [
         "720p"
       ],
-      "paragraph": "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+      "paragraph": "Créez vos séquences vidéo dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
       "primaryCta": {
         "label": "Ouvrir l’espace de création",
         "href": "/app?engine=kling-v4-flash"
@@ -156,7 +156,7 @@
     "pricingCopy": {
       "title": "Kling 4.0 Flash — Tarification",
       "subtitle": "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis.",
-      "footnote": "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+      "footnote": "Créez vos séquences vidéo dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
       "ctaLabel": "Voir le tarif actuel",
       "ctaHref": "/fr/tarifs#kling-v4-flash-pricing",
       "maxDurationNote": "3 à 20 secondes entières"

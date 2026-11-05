@@ -91,13 +91,14 @@ test('marketing top navigation stays clean while Best-For links live inside drop
   assert.match(marketingDesktopNavSource, /font-semibold text-text-primary/);
 });
 
-test('public dropdowns limit launch badges to the seven promoted current models with none on comparisons', () => {
+test('public dropdowns limit launch badges to the eight promoted current models with none on comparisons', () => {
   const badgedEntries = Object.values(MARKETING_NAV_DROPDOWNS)
     .flatMap((dropdown) => dropdown?.items ?? [])
     .filter(({ badge }) => badge === 'new')
     .map(({ key }) => key);
 
   assert.deepEqual(badgedEntries, [
+    'kling-v4-flash',
     'kling-v4',
     'flux-3-max',
     'minimax-h3',

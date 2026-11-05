@@ -50,6 +50,7 @@ test('PAYG selects Kling V4 copy only when the pricing owner supplies a row and 
 
 test('family discovery and additive copy require both publication and accepted Kling V4 media', () => {
   const models = listRuntimeModels().map((model) => structuredClone(model));
+  models.find(model => model.id === 'kling-v4-flash')!.publication.examples = { published: false, current: false, includeInFamilyCopy: false };
   const closedModels = structuredClone(models);
   const closed = closedModels.find(model => model.id === 'kling-v4')!;
   closed.publication.examples.current = false;
@@ -73,7 +74,7 @@ test('family discovery and additive copy require both publication and accepted K
   assert.deepEqual(completeKling.examplesPage?.publishedModelSlugs, ['kling-v4', ...originalKling.examplesPage!.publishedModelSlugs!]);
 
   for (const locale of locales) {
-    const baseline = getLocalizedModelData(locale, originalFamilies);
+    const baseline = getLocalizedModelData(locale, originalFamilies, closedModels);
     const baselineSnapshot = structuredClone(baseline);
     assert.doesNotMatch(JSON.stringify(baseline.kling), /Kling 4\.0/);
     assert.deepEqual(getLocalizedModelData(locale, mediaOnlyFamilies, closedModels), baseline, 'media alone cannot activate family copy');
