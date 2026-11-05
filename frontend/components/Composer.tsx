@@ -6,6 +6,7 @@ import { useMemo, useCallback, useRef, useEffect, useState, useId } from 'react'
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CURRENCY_LOCALE } from '@/lib/intl';
+import type {PromptReferenceManager} from '@/components/composer/PromptAssistanceComposer.client';
 import { WorkspaceReferenceSection } from '@/components/composer/WorkspaceReferenceSection.client';
 import { ComposerCommandBar, useComposerWorkspaceControls } from '@/components/composer/ComposerWorkspaceControls.client';
 import { workspaceReferenceCopy } from '@/components/composer/workspace-reference-copy';
@@ -327,9 +328,9 @@ export function Composer({
               </div>
             ) : null;
 
-  const renderReferences = (insert?: (token: string) => void) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
+  const renderReferences = (insert?: (token: string) => void, manager?:PromptReferenceManager) => workspaceDensity && (sourceControl || assetFields.length > 0 || subjectReferences) ? <>
           {sourceControl}
-          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
+          {assetFields.length > 0 || subjectReferences ? <WorkspaceReferenceSection managementRef={manager} managementMode={assistance?.live?.mode as import('@/types/engines').Mode|undefined} compact={assistanceEnabled} engine={engine} caps={caps} assetFields={orderedAssetFields} assets={assets}
             mentions={referenceMentions.mentions} onInsertMention={!multiPromptEnabled && (!engine.activeVideoOperation || promptField) ? insert ?? referenceMentions.insert : undefined}
             extensionWorkflow={extensionWorkflow} videoSourceWorkflow={videoSourceWorkflow}
             referenceAuthAction={referenceAuthAction} subjectReferences={subjectReferences}

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type MutableRefObject } from 'react';
 import { PromptAssistancePanel } from './PromptAssistancePanel.client';
 import { usePromptAssistancePreview, type PromptAssistanceContext } from './usePromptAssistancePreview';
 import { promptAssistanceCopy } from './prompt-assistance-copy';
@@ -8,6 +8,7 @@ import { isMiloEntry } from '@/lib/prompt-assistance/marketing-entry';
 import { Maximize2, Minimize2, SquarePen, Sparkles, ChevronDown, CircleHelp, ScanSearch } from 'lucide-react';
 import { useComposerWorkspaceControls } from './ComposerWorkspaceControls.client';
 import { MILO_LEVELS, miloLevelForModel } from '@/lib/studio/assistance-contract';
+import type { PromptReferenceLocation } from '@/lib/prompt-assistance/contract';
 import { PROMPT_ASSISTANCE_LIVE } from '@/lib/prompt-assistance/contract';
 import { useStudioAssistance } from '@/app/(core)/(workspace)/app/studio/conversation/[projectId]/_hooks/useStudioAssistance';
 import { StudioAssistanceCreditsDialog } from '@/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/StudioAssistanceCredits.client';
@@ -19,16 +20,19 @@ import {PromptPreviousReply} from './PromptPreviousReply.client';
 import { PromptReferenceAnalysis } from './PromptReferenceAnalysis.client';
 import analysisStyles from './prompt-reference-analysis.module.css';
 
+export type PromptReferenceManager = MutableRefObject<((reference:PromptReferenceLocation)=>void)|null>;
+
 export type PromptAssistanceGenerationState = { blocked:boolean; hint:string|null };
 
 export function PromptAssistanceComposer({ context, locale, modelLabel, draftText, onApplyText, children, renderReferences, modeControl, target = 'prompt', maxLength, blocked, disabledReason, onGenerationStateChange }: {
   context: PromptAssistanceContext; locale: string; modelLabel: string; draftText: string;
   onApplyText: (text: string) => void; children: ReactNode;
-  renderReferences?: (insert?: (token: string) => void) => ReactNode;
+  renderReferences?: (insert?: (token: string) => void, manager?:PromptReferenceManager) => ReactNode;
   modeControl?: ReactNode;
   target?: 'prompt' | 'script' | 'lyrics'; maxLength?: number; blocked?: boolean; disabledReason?: string;
   onGenerationStateChange?: (state:PromptAssistanceGenerationState) => void;
 }) {
+  const referenceManager=useRef<((reference:PromptReferenceLocation)=>void)|null>(null);
   const [perceptionRevision, setPerceptionRevision] = useState(0);
   const [analysisBusy, setAnalysisBusy] = useState(false);
   const [analysisOpen,setAnalysisOpen]=useState(false);
@@ -133,11 +137,11 @@ export function PromptAssistanceComposer({ context, locale, modelLabel, draftTex
         conversationContentVisible={analysisOpen}
         conversationContent={PROMPT_REFERENCE_PERCEPTION && context.live && credits.status && !controller.transport.loading && !controller.transport.loadError ? <PromptReferenceAnalysis key={controller.transport.chatKey} scopeKey={controller.transport.chatKey} legacyScopeKey={controller.transport.legacyScopeKey} recoveryOnly={!!controller.transport.exhausted} draft={{...context.live,text:draftText,target}} model={credits.status.selectedModel} session={controller.transport.session} blocked={Boolean(blocked || controller.transport.waiting || controller.transport.recovery || credits.busy || !credits.status.enabled || credits.error || authRequired || fundingBlocked || controller.transport.exhausted)} open={analysisOpen} onOpenChange={open=>{setAnalysisOpen(open);if(!open)analysisTrigger.current?.focus({preventScroll:true});}} recommendation={analysisRecommendation} onSettings={()=>{setCreditsOpen(true);void credits.refresh();}} onContinue={()=>{setAnalysisOpen(false);if(!state.message.trim())dispatch({type:'message',text:locale.startsWith('fr')?'Utilise cette analyse de référence pour poursuivre ma demande.':locale.startsWith('es')?'Usa este análisis de referencia para continuar con mi solicitud.':'Use this reference analysis to continue with my request.'});controller.input.current?.focus({preventScroll:true});}} onBusy={setAnalysisBusy} onCompleted={()=>{setPerceptionRevision(value=>value+1);void credits.refresh();}}/> : null}
         inputNotice={authRequired ? accessNotice : null}
-        feedback={PROMPT_ASSISTANCE_LIVE ? <>{controller.transport.persistenceError?<p role="alert" data-assistance-persistence-warning className={styles.warning}>This browser could not save reply recovery. Keep this tab open to check the original reply. Navigation remains available.</p>:null}{controller.transport.previousAvailable?<div className={styles.liveFeedback}><span>{controller.transport.accountPending?copy.previousReplyUnverified:copy.previousReplyAvailable}</span><button type="button" onClick={()=>void controller.transport.checkPreviousReply()}>{copy.checkPreviousReply}</button></div>:null}{controller.transport.previousOpen?<PromptPreviousReply result={controller.transport.previousResult} error={controller.transport.previousError} waiting={controller.transport.previousWaiting} onCheck={controller.transport.recheckPreviousReply} onStop={controller.transport.stopPreviousReply} onClose={controller.transport.closePreviousReply}/>:null}{controller.transport.cacheError?<p role="alert" data-assistance-cache-warning className={styles.warning}>{copy.cacheUnavailable}</p>:null}{authRequired ? null : accessNotice ?? (loadingStatus?null:<PromptAssistanceFeedback phase={controller.transport.phase} error={feedbackError} unavailableReferenceLabel={controller.transport.unavailableReferenceLabel} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} onReload={controller.transport.reload} onCredits={() => { setCreditsOpen(true); void credits.refresh(); }} />)}
+        feedback={PROMPT_ASSISTANCE_LIVE ? <>{controller.transport.persistenceError?<p role="alert" data-assistance-persistence-warning className={styles.warning}>This browser could not save reply recovery. Keep this tab open to check the original reply. Navigation remains available.</p>:null}{controller.transport.previousAvailable?<div className={styles.liveFeedback}><span>{controller.transport.accountPending?copy.previousReplyUnverified:copy.previousReplyAvailable}</span><button type="button" onClick={()=>void controller.transport.checkPreviousReply()}>{copy.checkPreviousReply}</button></div>:null}{controller.transport.previousOpen?<PromptPreviousReply result={controller.transport.previousResult} error={controller.transport.previousError} waiting={controller.transport.previousWaiting} onCheck={controller.transport.recheckPreviousReply} onStop={controller.transport.stopPreviousReply} onClose={controller.transport.closePreviousReply}/>:null}{controller.transport.cacheError?<p role="alert" data-assistance-cache-warning className={styles.warning}>{copy.cacheUnavailable}</p>:null}{authRequired ? null : accessNotice ?? (loadingStatus?null:<PromptAssistanceFeedback locale={locale} localReference={controller.transport.referencePreflight} onManageReference={controller.transport.referencePreflight&&renderReferences?()=>referenceManager.current?.(controller.transport.referencePreflight!):undefined} phase={controller.transport.phase} error={feedbackError} unavailableReferenceLabel={controller.transport.unavailableReferenceLabel} recovery={controller.transport.recovery} waiting={controller.transport.waiting} onRecover={controller.transport.recover} onStop={controller.transport.stop} onReload={controller.transport.reload} onCredits={() => { setCreditsOpen(true); void credits.refresh(); }} />)}
           {PROMPT_REFERENCE_PERCEPTION && context.live && credits.status && !controller.transport.loading && !controller.transport.loadError && (context.live.references.some(item=>item.ref&&item.ref.kind!=='image') || analysisBusy || controller.transport.analysisPending) ? <button ref={analysisTrigger} type="button" className={analysisStyles.trigger} aria-expanded={analysisOpen} onClick={()=>setAnalysisOpen(value=>!value)}><ScanSearch size={14} aria-hidden/>{analysisBusy||controller.transport.analysisPending?'Reference analysis…':'Analyze references'}</button> : null}
         </> : null}
         onMessageChange={text => dispatch({ type: 'message', text })} onSend={() => { if (!liveBlocked) controller.send(credits.status??undefined); }} onProposalTextChange={text => dispatch({ type: 'edit', text })} onApply={controller.apply} settingsReview={controller.canReview?{changes:controller.settingChanges,valid:controller.canApplyReviewed}:undefined} onReview={()=>{if(!blocked&&!liveBlocked)controller.beginReview();}} onApplyReviewed={()=>{if(!blocked&&!liveBlocked)controller.applyReviewed();}}
-        onCopy={() => { if (state.proposal) void navigator.clipboard?.writeText(state.proposal.text).then(() => setCopied(true)).catch(() => setCopied(false)); }} references={renderReferences?.(controller.insertMention)} /> : null}
+        onCopy={() => { if (state.proposal) void navigator.clipboard?.writeText(state.proposal.text).then(() => setCopied(true)).catch(() => setCopied(false)); }} references={renderReferences?.(controller.insertMention,referenceManager)} /> : null}
     </div>
     {state.undo ? <div className={styles.undo}><span>{copy.applied}</span><button type="button" disabled={!controller.canUndo || blocked} onClick={controller.undo}>{copy.undo}</button></div> : null}
     {copied ? <span role="status" className="sr-only">{copy.copied}</span> : null}

@@ -39,6 +39,42 @@ const noop=()=>{};`)
  .replace('handleAssetRemove={noop}','handleAssetRemove={referenceActions.handleAssetRemove}')
  .replace('handleAssetAdd={noop}','handleAssetAdd={referenceActions.handleAssetAdd}');
 
+for(const width of [1440,390])test(`an attached reference without identity is stopped locally and can be ${width===1440?'removed':'replaced'} through existing controls (${width}px)`,{timeout:90000},async()=>{
+ const missing={...config,inputAssets:{...config.inputAssets,image_urls:[{...image('legacy-reference',DELETED),assetId:undefined},image('kept-reference',KEPT)]}};
+ const fixture=await startWorkspaceReferenceFixture({source,config:missing,assistanceLive:true,hostModules});const browser=await chromium.launch();
+ try{
+  const page=await browser.newPage({viewport:{width,height:1000}}),requests:any[]=[],uploads:any[]=[];
+  await page.route('**/api/uploads/image',async route=>{uploads.push(route.request());return route.fulfill({json:{ok:true,asset:{id:'legacy-upload',assetId:REPLACEMENT,ref:replacementRef,url:'/replacement.svg',thumbUrl:'/replacement.svg',width:900,height:620,size:1024,mime:'image/webp',name:'replacement.webp'}}});});
+  await page.route('**/api/prompt-assistance*',async route=>{
+   if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:initialStatus}});
+   const body=route.request().postDataJSON();requests.push(body);
+   const req=body.request;return route.fulfill({json:{ok:true,result:{sessionId:req.sessionId,requestId:req.requestId,draftRevision:req.draftRevision,target:'prompt',message:req.message,assistance:initialStatus,state:'complete',reply:{reply:'The selected references are ready.',text:null}}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const input=page.getByRole('textbox',{name:'Message Milo',exact:true});await input.fill(MESSAGE);await input.press('Enter');
+  await expect(input).toHaveValue(MESSAGE);assert.equal(requests.length,0,'Null identity must stop before admission, request IDs and paid recovery.');
+  await expect(page.getByText(/Image 1.*isn’t ready for Milo/)).toBeVisible();
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toHaveCount(0);
+  assert.equal(await page.evaluate(()=>Object.entries(sessionStorage).some(([key,value])=>key.startsWith('milo-previous:')||key.startsWith('milo-composer:')&&JSON.parse(value).pending)),false);
+  const manage=page.getByRole('button',{name:'Manage Image 1',exact:true});await manage.focus();await manage.press('Enter');
+  const picker=page.getByRole('dialog',{name:'Optional references',exact:true});await expect(picker).toBeVisible();
+  const selected=picker.locator('[data-reference-selected="true"]');await expect(selected).toHaveAttribute('data-asset-index','0');
+  if(width===390){
+   const chooser=page.waitForEvent('filechooser');await selected.getByRole('button',{name:'Replace · Image 1',exact:true}).click();
+   await(await chooser).setFiles(join(process.cwd(),'frontend/public/assets/marketing/reference-workflow-source-image.webp'));
+   await expect.poll(()=>uploads.length).toBe(1);await expect(selected.locator('[role="status"]')).toHaveCount(0);
+  }else await selected.getByRole('button',{name:'Remove · Image 1',exact:true}).click();
+  await picker.getByRole('button',{name:'Close',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Manage Image 1',exact:true})).toHaveCount(0);
+  await expect(input).toHaveValue(MESSAGE);assert.equal(requests.length,0);
+  await page.getByRole('button',{name:'Send message to Milo'}).click();await expect(page.getByText('The selected references are ready.')).toBeVisible();
+  assert.equal(requests.length,1);assert.equal(requests[0].request.message,MESSAGE);
+  assert.deepEqual(requests[0].request.draft.references.find((r:any)=>r.ref?.assetId===KEPT)?.ref,{type:'asset',assetId:KEPT,kind:'image'});
+  assert.equal(requests[0].request.draft.settings.durationSec,8);assert.equal(requests[0].request.draft.settings.resolution,'720p');
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();await expect(page.locator('[data-workspace-prompt]')).toHaveValue(DRAFT);
+ }finally{await browser.close();await fixture.close();}
+});
+
 for(const width of [1440,390])test(`Modify can identify and ${width===1440?'remove':'replace'} Milo's unavailable reference without losing the message or video draft (${width}px)`,{timeout:90000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config,assistanceLive:true,hostModules});const browser=await chromium.launch();
  try{
