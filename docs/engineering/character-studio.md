@@ -151,8 +151,15 @@ The former title/back/new-character banner is removed; the accessible new-charac
 button is a compact plus next to Character / Recast.
 
 `CharacterStudioNavigation.client.tsx` owns mode/navigation presentation.
-`CharacterStudioOutputSettings.client.tsx` owns output/quality/format controls;
-quality still normalizes the allowed format. The composer owns nine disclosures,
+`CharacterStudioOutputSettings.client.tsx` owns the always-visible Portrait / Character
+sheet cards and 1K / 2K / 4K selector in the generation dock (updated 2026-11-05).
+Native radio groups preserve selection and keyboard navigation. The current resolution
+is repeated beside the live per-image price; the workspace remains the sole pricing
+reader, with generation disabled when that price is unavailable. Resolution selection
+normalizes legacy quality/format state. `CharacterStudioAdvancedSettings.client.tsx`
+owns the collapsed consistency, reference-strength and additional-direction controls
+inside the settings scroller, preserving the saved-character identity restrictions.
+The composer owns nine trait disclosures,
 including new photographic type/presentation/adult-age choices. The optional
 `traits.characterType` is whitelisted in sanitation, compiled by the server prompt
 owner and retained through snapshots, without invalidating older requests.

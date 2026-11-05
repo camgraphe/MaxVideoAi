@@ -362,6 +362,10 @@ test('visual studio keeps catalogue, composition and generation ownership separa
   assert.match(composer, /CharacterStudioOutputSettings/);
   const outputSettings = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioOutputSettings.client.tsx'), 'utf8');
   assert.match(outputSettings, /normalizeCharacterFormatMode/);
+  const advancedSettings = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioAdvancedSettings.client.tsx'), 'utf8');
+  assert.match(composer, /<CharacterStudioAdvancedSettings[\s\S]*data-studio-dock[\s\S]*<CharacterStudioOutputSettings/, 'advanced settings scroll with traits; output and format stay in the generation dock');
+  assert.doesNotMatch(outputSettings, /<details|consistencyMode|advancedNotes|authFetch|fetch\(/, 'output settings stay visible and do not own advanced controls or pricing requests');
+  assert.match(advancedSettings, /<details[\s\S]*consistencyMode[\s\S]*advancedNotes/, 'optional controls belong to the advanced disclosure');
   assert.doesNotMatch(composer, /runCharacterBuilderTool|authFetch|fetch\(|localStorage/);
   assert.doesNotMatch(catalogue, /server-only|node:|process\.env|fetch\(/);
   assert.ok(composer.split('\n').length < 500, 'visual composer should remain a bounded feature surface');

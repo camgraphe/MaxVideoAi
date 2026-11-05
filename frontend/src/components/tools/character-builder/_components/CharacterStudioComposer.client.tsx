@@ -12,6 +12,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import { CharacterStudioOutputSettings } from './CharacterStudioOutputSettings.client';
+import { CharacterStudioAdvancedSettings } from './CharacterStudioAdvancedSettings.client';
+import { getCharacterFormatResolution } from '@/lib/character-builder';
 import {
   STUDIO_EYES,
   STUDIO_CHARACTER_TYPES,
@@ -443,15 +445,17 @@ export function CharacterStudioComposer({
             <p className="text-xs text-text-secondary">{labels.backgroundCredit}</p>
           </>,
         )}
-        <CharacterStudioOutputSettings state={state} setState={setState} copy={copy} labels={labels} />
+        <CharacterStudioAdvancedSettings state={state} setState={setState} copy={copy} labels={labels} />
       </div>
       <div
         data-studio-dock
         className="z-10 shrink-0 space-y-2 border-t border-border bg-surface p-3 shadow-[0_-8px_18px_-12px_rgb(0_0_0_/_0.4)]"
       >
+        <CharacterStudioOutputSettings state={state} setState={setState} copy={copy} labels={labels} />
         <div className="flex items-baseline justify-between gap-2 text-[11px] text-text-secondary">
           <span>{labels.imagePrice}</span>
-          <span>
+          <span role="status" aria-live="polite" aria-atomic="true" className="font-medium tabular-nums text-text-primary">
+            {getCharacterFormatResolution(state.formatMode, state.qualityMode).toUpperCase()} ·{' '}
             {price == null
               ? labels.priceUnavailable
               : new Intl.NumberFormat(locale, {
