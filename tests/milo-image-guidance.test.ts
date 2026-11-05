@@ -16,6 +16,9 @@ test('the actual image provider request receives app upscale and text-only setti
   const params=promptResponseParams({model:'gpt-6-luna',input_json:input} as PromptRequestRow,context,[]);
   const instructions=String(params.instructions);
   assert.match(instructions,/https:\/\/maxvideoai\.com\/app\/tools\/upscale/);
+  assert.match(instructions,/Tools → Upscale/);
+  assert.doesNotMatch(instructions,/\[Upscale\]\(/);
+  assert.match(instructions,/plain text[^\n]*Markdown[^\n]*clickable/i);
   assert.ok(existsSync('frontend/app/(core)/(workspace)/app/tools/upscale/page.tsx'));
   assert.match(instructions,/SeedVR2[\s\S]*generative[\s\S]*pixel-identical/i);
   assert.match(instructions,/resolution, output format and aspect ratio[\s\S]*explicitly[\s\S]*Use prompt.*only.*text/i);
