@@ -419,3 +419,25 @@ same database until originals are durably copied. Do not assume production cron
 automatically follows a preview. The localhost-only rehearsal is a different mode.
 See `docs/redesign/2026-11-04-character-studio/preview-and-pricing.md` for the
 current setup evidence, proposed tariff comparison and content promotion path.
+
+## Public marketing (2026-11-05)
+
+Character Studio keeps the existing `/tools/character-builder` intent owner and
+its FR/ES localized paths. Landing orchestration remains in
+`src/components/tools/character-builder/landing/CharacterBuilderLandingView.tsx`;
+section JSX and scoped responsive styles are colocated. `toolMarketing.characterBuilder`
+copy supplies visible FAQ/steps and their existing structured-data owners. Retain
+metadata titles/descriptions until a separately measured snippet change is approved.
+The Outreach baseline and media provenance live in
+`docs/redesign/2026-11-05-character-studio-marketing/`.
+
+Optional Recast demonstrations use `server/character-studio/marketing-demos.ts`.
+The public direct-membership playlist `character-studio-recast` owns placement;
+only the two reviewed independent marketing copies are projected to the client.
+No private job or personal media URL fallback. Failure or a 1.5-second catalog
+budget yields explicitly labeled frame images, not a disabled or fake player.
+Publishing those examples still uses the existing admin marketing-copy workflow;
+do not seed public production rows from the preview database. Manual playback
+uses `PublicVideoPlayer` and retains original fidelity, no preload and a deferred
+poster. The shared Tools catalogue and public hub show major workshops first,
+with Character Studio as their first workshop; quick tools remain below.

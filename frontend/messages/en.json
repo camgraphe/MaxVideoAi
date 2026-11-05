@@ -195,7 +195,7 @@
       "tools": {
         "items": {
           "ai-video-assistant": "Claude, ChatGPT & Codex video assistant",
-          "character-builder": "Consistent Character AI",
+          "character-builder": "Character Studio",
           "angle": "Change Camera Angle",
           "image": "Generate image",
           "audio": "Generate audio",
@@ -393,7 +393,7 @@
         "title": "Product",
         "items": {
           "angle": "Change the camera angle",
-          "characterBuilder": "Character Builder",
+          "characterBuilder": "Character Studio",
           "pricing": "Pricing",
           "paygVideo": "Pay-as-you-go AI video",
           "models": "All models"
@@ -964,7 +964,7 @@
           {
             "title": "Lock character consistency",
             "body": "Build a repeatable character reference for scenes, variants and storyboards.",
-            "toolLabel": "Character Builder",
+            "toolLabel": "Character Studio",
             "href": {
               "pathname": "/tools/character-builder"
             }
@@ -1025,7 +1025,7 @@
           },
           {
             "id": "character-builder",
-            "title": "Character Builder",
+            "title": "Character Studio",
             "body": "Create consistent characters.",
             "shortBody": "Keep characters consistent.",
             "href": {
@@ -1363,10 +1363,10 @@
           "cta": "Open Image"
         },
         "character": {
-          "eyebrow": "Character Builder",
+          "eyebrow": "Character Studio",
           "title": "Lock character continuity",
           "body": "Build a portrait anchor or 8-panel sheet before the character has to survive more than one scene.",
-          "cta": "Open Character Builder"
+          "cta": "Open Character Studio"
         },
         "angle": {
           "eyebrow": "Angle",
@@ -7257,10 +7257,10 @@
             "cta": "Open Image"
           },
           "character": {
-            "eyebrow": "Character Builder",
+            "eyebrow": "Character Studio",
             "title": "Build a reusable character reference",
             "body": "Lock the face, outfit, and silhouette before you branch into scenes or video prep.",
-            "cta": "Open Character Builder"
+            "cta": "Open Character Studio"
           },
           "angle": {
             "eyebrow": "Angle",
@@ -7938,34 +7938,32 @@
           "same face same outfit ai",
           "image to video character consistency"
         ],
-        "imageAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder.",
-        "schemaName": "Consistent Character AI",
-        "schemaDescription": "Create reusable portrait anchors and 8-panel AI character sheets from one image, optional outfit reference, or scratch, then reuse them across images, edits, and still-reference video workflows.",
+        "imageAlt": "Dixie Trouble, a reusable character portrait generated in Character Studio.",
+        "schemaName": "Character Studio",
+        "schemaDescription": "Create a character from a photo or an idea. Save its identity, generate new looks and bring it into video with MaxVideoAI Recast.",
         "schemaFeatures": [
-          "Start from one identity photo, an optional outfit reference, or a scratch-built concept",
-          "Generate a reusable portrait anchor",
-          "Generate an 8-panel character sheet with four full-body angles and four matching close-ups",
-          "Reuse the same character reference across image prompts and image edits",
-          "Use the reference in Nano Banana and video engines that support still references"
+          "Saved characters",
+          "New looks",
+          "Video Recast"
         ],
-        "howToTitle": "How Character Builder Works",
-        "howToDescription": "Create one reusable character reference asset for consistent AI images and still-reference video workflows."
+        "howToTitle": "Explore the workflow",
+        "howToDescription": "Create a character from a photo or an idea. Save its identity, generate new looks and bring it into video with MaxVideoAI Recast."
       },
       "breadcrumb": {
         "home": "Home",
         "tools": "Tools",
-        "current": "Character Builder"
+        "current": "Character Studio"
       },
       "hero": {
-        "badge": "Consistent Character AI Tool",
+        "badge": "Character Studio",
         "secondaryBadge": "Portrait anchor + 8-panel character sheet",
-        "title": "AI characters. A consistent reference.",
-        "body": "Start with a portrait or an idea. Create a portrait reference or an eight-panel character sheet, then reuse it in your images and videos.",
-        "primaryCta": "Open Character Builder",
+        "title": "Consistent AI characters. Ready for their next scene.",
+        "body": "Create a character from a photo or an idea. Save its identity, generate new looks and bring it into video with MaxVideoAI Recast.",
+        "primaryCta": "Create your character",
         "proofs": [
-          "Start with one identity photo, optional outfit inspiration, or a scratch-built concept",
-          "Generate a reusable portrait anchor or an 8-panel character sheet",
-          "Reuse the same character across scenes, prompts, edits, and still-reference video workflows"
+          "Saved characters",
+          "New looks",
+          "Video Recast"
         ],
         "showcase": {
           "topLabel": "Character Builder workspace",
@@ -8014,8 +8012,8 @@
         "steps": [
           {
             "stepLabel": "Start with",
-            "title": "Start with a face, outfit cue, or scratch concept",
-            "body": "Use one identity photo, add optional style direction, or start without a source image.",
+            "title": "Create your character",
+            "body": "Upload an identity photo or describe a character. Choose its appearance, outfit and setting.",
             "pills": [
               "One identity photo",
               "Optional outfit reference"
@@ -8023,8 +8021,8 @@
           },
           {
             "stepLabel": "Generate",
-            "title": "Generate a portrait anchor or 8-panel sheet",
-            "body": "Create a tighter face reference or one coherent sheet with four body angles and four close-ups.",
+            "title": "Save a portrait or character sheet",
+            "body": "Choose the output and resolution, review the price, generate and save the character.",
             "pills": [
               "Portrait anchor",
               "8-panel character sheet"
@@ -8032,8 +8030,8 @@
           },
           {
             "stepLabel": "Reuse in",
-            "title": "Reuse it in stills, edits, and video prep",
-            "body": "Bring the same reference into prompts, Nano Banana, and still-reference video tools.",
+            "title": "Create a look or a Recast",
+            "body": "Reuse the saved identity for another outfit, or choose it in Recast with your video and audio passages.",
             "pills": [
               "Image prompts",
               "Video prep"
@@ -8200,9 +8198,13 @@
       },
       "faq": {
         "eyebrow": "FAQ",
-        "title": "Consistent Character AI FAQ",
+        "title": "Before you create your AI character",
         "body": "Short answers before you build the reference.",
         "items": [
+          {
+            "question": "What is Character Studio?",
+            "answer": "Character Studio, previously Character Builder, creates reusable AI character references: portraits and eight-panel character sheets. You can save characters, generate new looks and use them in MaxVideoAI Recast. It is separate from Studio, the video editing workspace."
+          },
           {
             "question": "What is consistent character AI?",
             "answer": "It means building one stable character reference so the same face, outfit, and silhouette hold up better later on."
@@ -8222,6 +8224,22 @@
           {
             "question": "Can I reuse this in image-to-video workflows?",
             "answer": "Yes. You can reuse it in prompts, Nano Banana start-frame prep, and video engines that support still references."
+          },
+          {
+            "question": "Can I save a character and make another look?",
+            "answer": "Yes. Save the character, open it from your character library and create a new look from its identity. Saved looks can be selected in Recast."
+          },
+          {
+            "question": "How does MaxVideoAI Recast work?",
+            "answer": "Select a character image or saved look, add a reference video and choose the passage. You can also supply a product image, dialogue or an audio passage. Review the duration, resolution and exact quote before starting the video generation."
+          },
+          {
+            "question": "Will every image and video be identical?",
+            "answer": "No. References guide identity and appearance, but AI generation can change faces, clothing, movement or products. Review each result, especially character-sheet angles and product details."
+          },
+          {
+            "question": "How much does Character Studio cost?",
+            "answer": "The app shows the current quote before generation. Image outputs and Recast are priced separately. Image resolution, video duration, input passages and video resolution can affect the amount; a changed setup needs an updated quote."
           }
         ]
       },
@@ -8272,6 +8290,62 @@
         "panelLeft": "Locked character",
         "panelRight": "Ready to reuse",
         "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
+      },
+      "studio": {
+        "nav": [
+          "Create",
+          "New looks",
+          "Character sheets",
+          "Recast"
+        ],
+        "castingTitle": "A face. A personality. A world of possibilities.",
+        "castingBody": "Human, animal or imagined creature: describe the face, age, skin tone, hair, outfit and setting. Add your own direction whenever a preset is not enough.",
+        "castingCaption": "Actual characters generated in Character Studio",
+        "looksTitle": "One character. A whole new look.",
+        "looksBody": "Start from a saved character, then change the wardrobe or setting. Use a style preset, describe your own outfit or add a clothing reference.",
+        "identity": "Saved identity",
+        "newLook": "New look",
+        "looksNote": "Dixie Trouble · two actual generations. Check the face and details before saving a look.",
+        "outputsTitle": "The right reference for the next shot.",
+        "outputsBody": "Choose Portrait or Character sheet, then the format and resolution. The generation price updates before you confirm.",
+        "portrait": "Portrait",
+        "portraitBody": "One image to anchor the face and appearance.",
+        "sheet": "Character sheet",
+        "sheetBody": "One eight-panel image: four full-body angles and four matching close-ups. Review every view before reuse.",
+        "sheetAlt": "AI character reference sheet with front, profile, three-quarter and back views, with matching close-ups.",
+        "recastEyebrow": "MaxVideoAI Recast",
+        "recastTitle": "Your character. The movement you choose.",
+        "recastBody": "Choose a saved character or upload an image. Add a video and select the passage to use as a motion reference. Product images, dialogue and audio references can guide the scene.",
+        "recastSteps": [
+          "Choose a character or saved look",
+          "Select the video and audio passages",
+          "Set duration, format and 720p or 1080p",
+          "Review the exact price, then generate"
+        ],
+        "recastNote": "Recast generates a new video. Movement, identity and product details can vary; review the result before using it in a campaign.",
+        "filmLabels": [
+          "Dixie · dance",
+          "Vesper · character comedy"
+        ],
+        "filmDescriptions": [
+          "A pink-and-white look, carried into a dance sequence.",
+          "An insect fashion designer in a sports-car scene."
+        ],
+        "frameLabel": "Frame from an actual Recast",
+        "videoLabel": "Watch a generated video",
+        "recastCta": "Open Character Studio",
+        "priceTitle": "Choose the result. See the price. Then generate.",
+        "priceBody": "Portraits, new looks and character sheets are image generations. Recast is a separate video generation: the selected duration and resolution affect its quote. Always use the current price shown in the app.",
+        "priceLink": "How pay-as-you-go works",
+        "faqTitle": "Before you create your AI character",
+        "finalTitle": "Meet your next recurring character.",
+        "finalBody": "Build the identity once, save the looks you like, then take the character into a new scene.",
+        "secondaryCta": "Explore the workflow",
+        "roles": [
+          "Recurring characters",
+          "Creators & UGC",
+          "Brand mascots"
+        ]
       }
     },
     "backgroundRemoval": {
@@ -8480,7 +8554,7 @@
       "all": "All tools",
       "open": "Open tool",
       "nav": "Explore creative tools",
-      "character": "Character",
+      "character": "Character Studio",
       "angle": "Camera angle",
       "upscale": "Upscale",
       "background": "Video cutout",

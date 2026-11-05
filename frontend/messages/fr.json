@@ -215,7 +215,7 @@
       "tools": {
         "items": {
           "ai-video-assistant": "Assistant vidéo Claude, ChatGPT et Codex",
-          "character-builder": "Personnages IA cohérents",
+          "character-builder": "Character Studio",
           "angle": "Changer l’angle caméra",
           "upscale": "Agrandir une image ou vidéo",
           "image": "Générer une image",
@@ -493,7 +493,7 @@
         "title": "Produit",
         "items": {
           "angle": "Changer l’angle de vue",
-          "characterBuilder": "Character Builder",
+          "characterBuilder": "Character Studio",
           "pricing": "Tarifs",
           "paygVideo": "Vidéo IA à l’usage",
           "models": "Tous les modèles"
@@ -1064,7 +1064,7 @@
           {
             "title": "Verrouiller la continuité du personnage",
             "body": "Créez une référence réutilisable pour scènes, variantes et storyboards.",
-            "toolLabel": "Character Builder",
+            "toolLabel": "Character Studio",
             "href": {
               "pathname": "/tools/character-builder"
             }
@@ -1125,7 +1125,7 @@
           },
           {
             "id": "character-builder",
-            "title": "Character Builder",
+            "title": "Character Studio",
             "body": "Créez des personnages cohérents.",
             "shortBody": "Gardez les personnages cohérents.",
             "href": {
@@ -1463,10 +1463,10 @@
           "cta": "Ouvrir Image"
         },
         "character": {
-          "eyebrow": "Character Builder",
+          "eyebrow": "Character Studio",
           "title": "Verrouillez la continuité du personnage",
           "body": "Créez une ancre portrait ou une fiche 8 panneaux avant de l’utiliser dans plusieurs scènes.",
-          "cta": "Ouvrir Character Builder"
+          "cta": "Ouvrir Character Studio"
         },
         "angle": {
           "eyebrow": "Angle",
@@ -7285,10 +7285,10 @@
             "cta": "Ouvrir Image"
           },
           "character": {
-            "eyebrow": "Character Builder",
+            "eyebrow": "Character Studio",
             "title": "Créez une référence personnage réutilisable",
             "body": "Verrouillez le visage, la tenue et la silhouette avant de passer aux scènes ou à la préparation vidéo.",
-            "cta": "Ouvrir Character Builder"
+            "cta": "Ouvrir Character Studio"
           },
           "angle": {
             "eyebrow": "Angle",
@@ -7966,34 +7966,32 @@
           "référence personnage pour vidéo",
           "personnage cohérent pour vidéo"
         ],
-        "imageAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder.",
-        "schemaName": "Personnages IA cohérents",
-        "schemaDescription": "Créez une ancre portrait ou une planche personnage IA à 8 panneaux à partir d'un portrait, d'une référence tenue optionnelle ou de zéro, puis réutilisez-la dans vos scènes, vos retouches et vos workflows vidéo basés sur image fixe.",
+        "imageAlt": "Dixie Trouble, portrait de personnage réutilisable généré dans Character Studio.",
+        "schemaName": "Character Studio",
+        "schemaDescription": "Créez un personnage à partir d’une photo ou d’une idée. Sauvegardez son identité, générez de nouveaux looks et passez à la vidéo avec MaxVideoAI Recast.",
         "schemaFeatures": [
-          "Partir d'un portrait de référence, d'une tenue optionnelle ou d'un concept créé de zéro",
-          "Générer une ancre portrait réutilisable",
-          "Générer une planche personnage à 8 panneaux avec quatre vues en pied et quatre gros plans assortis",
-          "Réutiliser la même référence personnage dans les prompts et les retouches image",
-          "Utiliser la référence dans Nano Banana et dans les modèles vidéo qui acceptent les images fixes de référence"
+          "Personnages sauvegardés",
+          "Nouveaux looks",
+          "Vidéo Recast"
         ],
-        "howToTitle": "Comment fonctionne Character Builder",
-        "howToDescription": "Créez une référence personnage réutilisable pour garder des images IA cohérentes et préparer vos vidéos à partir d'une image fixe."
+        "howToTitle": "Découvrir le parcours",
+        "howToDescription": "Créez un personnage à partir d’une photo ou d’une idée. Sauvegardez son identité, générez de nouveaux looks et passez à la vidéo avec MaxVideoAI Recast."
       },
       "breadcrumb": {
         "home": "Accueil",
         "tools": "Outils",
-        "current": "Character Builder"
+        "current": "Character Studio"
       },
       "hero": {
-        "badge": "Outil IA de personnages cohérents",
+        "badge": "Character Studio",
         "secondaryBadge": "Portrait de référence + planche personnage à 8 panneaux",
-        "title": "Créez des personnages IA cohérents.",
-        "body": "Partez d’un portrait ou d’une idée. Créez un portrait de référence ou une planche à huit vues, puis réutilisez-la dans vos images et vidéos.",
-        "primaryCta": "Ouvrir Character Builder",
+        "title": "Des personnages IA cohérents. Prêts pour la prochaine scène.",
+        "body": "Créez un personnage à partir d’une photo ou d’une idée. Sauvegardez son identité, générez de nouveaux looks et passez à la vidéo avec MaxVideoAI Recast.",
+        "primaryCta": "Créer mon personnage",
         "proofs": [
-          "Partez d'un portrait de référence, d'une inspiration tenue optionnelle ou d'un concept créé de zéro",
-          "Générez un portrait de référence réutilisable ou une planche personnage à 8 panneaux",
-          "Réutilisez le même personnage dans les scènes, les prompts, les retouches et les parcours de création vidéo basés sur image fixe"
+          "Personnages sauvegardés",
+          "Nouveaux looks",
+          "Vidéo Recast"
         ],
         "showcase": {
           "topLabel": "Interface Character Builder",
@@ -8042,8 +8040,8 @@
         "steps": [
           {
             "stepLabel": "Commencer avec",
-            "title": "Partir d'un visage, d'une tenue ou d'un concept",
-            "body": "Utilisez un portrait de référence, ajoutez une direction de style optionnelle, ou démarrez sans image source.",
+            "title": "Créer votre personnage",
+            "body": "Importez une photo d’identité ou décrivez un personnage. Choisissez son apparence, sa tenue et son décor.",
             "pills": [
               "Portrait de référence",
               "Référence tenue optionnelle"
@@ -8051,8 +8049,8 @@
           },
           {
             "stepLabel": "Générer",
-            "title": "Générer un portrait de référence ou une planche à 8 panneaux",
-            "body": "Créez une référence visage plus resserrée ou une planche cohérente avec quatre vues en pied et quatre gros plans.",
+            "title": "Sauvegarder un portrait ou une planche",
+            "body": "Choisissez le rendu et la résolution, vérifiez le prix, générez puis sauvegardez le personnage.",
             "pills": [
               "Portrait de référence",
               "Planche personnage à 8 panneaux"
@@ -8060,8 +8058,8 @@
           },
           {
             "stepLabel": "Réutiliser dans",
-            "title": "Réutiliser dans Image, les retouches et la prépa vidéo",
-            "body": "Réinjectez la même référence dans les prompts, Nano Banana et les outils vidéo basés sur image fixe.",
+            "title": "Créer un look ou un Recast",
+            "body": "Réutilisez l’identité pour une autre tenue, ou sélectionnez-la dans Recast avec vos passages vidéo et audio.",
             "pills": [
               "Prompts image",
               "Prépa vidéo"
@@ -8228,9 +8226,13 @@
       },
       "faq": {
         "eyebrow": "FAQ",
-        "title": "FAQ personnages IA cohérents",
+        "title": "Avant de créer votre personnage IA",
         "body": "Des réponses courtes avant de construire la référence.",
         "items": [
+          {
+            "question": "Qu’est-ce que Character Studio ?",
+            "answer": "Character Studio, anciennement Character Builder, crée des références de personnage IA réutilisables : portraits et planches en huit vues. Vous pouvez sauvegarder des personnages, générer de nouveaux looks et les utiliser dans MaxVideoAI Recast. Il est distinct de Studio, l’espace de montage vidéo."
+          },
           {
             "question": "Qu'est-ce qu'un personnage IA cohérent ?",
             "answer": "C'est le fait de construire une référence stable pour que le même visage, la même tenue et la même silhouette restent cohérents ensuite."
@@ -8250,6 +8252,22 @@
           {
             "question": "Puis-je réutiliser cela dans des parcours de création image-to-video ?",
             "answer": "Oui. Vous pouvez le réutiliser dans les prompts, dans la préparation du premier plan avec Nano Banana et dans les modèles vidéo qui acceptent les images fixes de référence."
+          },
+          {
+            "question": "Puis-je sauvegarder un personnage et créer un autre look ?",
+            "answer": "Oui. Sauvegardez le personnage, ouvrez-le dans votre bibliothèque et créez un nouveau look à partir de son identité. Les looks sauvegardés sont sélectionnables dans Recast."
+          },
+          {
+            "question": "Comment fonctionne MaxVideoAI Recast ?",
+            "answer": "Choisissez une image de personnage ou un look sauvegardé, ajoutez une vidéo de référence et sélectionnez le passage. Vous pouvez aussi fournir une image produit, un dialogue ou un passage audio. Vérifiez la durée, la résolution et le devis exact avant la génération vidéo."
+          },
+          {
+            "question": "Chaque image et chaque vidéo seront-elles identiques ?",
+            "answer": "Non. Les références guident l’identité et l’apparence, mais la génération IA peut modifier le visage, les vêtements, les mouvements ou les produits. Vérifiez chaque résultat, notamment les angles d’une planche et les détails d’un produit."
+          },
+          {
+            "question": "Combien coûte Character Studio ?",
+            "answer": "L’application affiche le devis actuel avant chaque génération. Les images et Recast sont facturés séparément. La résolution d’image, la durée vidéo, les passages d’entrée et la résolution vidéo peuvent influer sur le montant ; tout changement nécessite un devis actualisé."
           }
         ]
       },
@@ -8300,6 +8318,62 @@
         "panelLeft": "Personnage verrouillé",
         "panelRight": "Prêt à réutiliser",
         "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
+      },
+      "studio": {
+        "nav": [
+          "Créer",
+          "Nouveaux looks",
+          "Planches personnage",
+          "Recast"
+        ],
+        "castingTitle": "Un visage. Une personnalité. Tout un univers.",
+        "castingBody": "Humain, animal ou créature imaginaire : décrivez le visage, l’âge, la carnation, les cheveux, la tenue et le décor. Ajoutez vos indications quand les choix proposés ne suffisent pas.",
+        "castingCaption": "De vrais personnages générés dans Character Studio",
+        "looksTitle": "Un personnage. Un tout nouveau look.",
+        "looksBody": "Partez d’un personnage sauvegardé pour changer sa tenue ou son décor. Choisissez un style, décrivez vos vêtements ou ajoutez une référence de tenue.",
+        "identity": "Identité sauvegardée",
+        "newLook": "Nouveau look",
+        "looksNote": "Dixie Trouble · deux vraies générations. Vérifiez le visage et les détails avant de sauvegarder un look.",
+        "outputsTitle": "La bonne référence pour le prochain plan.",
+        "outputsBody": "Choisissez Portrait ou Planche personnage, puis le format et la résolution. Le prix de génération s’actualise avant votre confirmation.",
+        "portrait": "Portrait",
+        "portraitBody": "Une image pour fixer le visage et l’apparence.",
+        "sheet": "Planche personnage",
+        "sheetBody": "Une image en huit vues : quatre angles en pied et quatre portraits rapprochés correspondants. Vérifiez chaque vue avant de la réutiliser.",
+        "sheetAlt": "Planche de référence d’un personnage IA avec vues de face, de profil, de trois quarts et de dos, et portraits rapprochés.",
+        "recastEyebrow": "MaxVideoAI Recast",
+        "recastTitle": "Votre personnage. Le mouvement que vous choisissez.",
+        "recastBody": "Choisissez un personnage sauvegardé ou importez une image. Ajoutez une vidéo et sélectionnez le passage qui guidera le mouvement. Images de produit, dialogue et références audio peuvent guider la scène.",
+        "recastSteps": [
+          "Choisir un personnage ou un look sauvegardé",
+          "Sélectionner les passages vidéo et audio",
+          "Régler durée, format et 720p ou 1080p",
+          "Vérifier le prix exact, puis générer"
+        ],
+        "recastNote": "Recast génère une nouvelle vidéo. Le mouvement, l’identité et les détails du produit peuvent varier : vérifiez le résultat avant de l’utiliser dans une campagne.",
+        "filmLabels": [
+          "Dixie · danse",
+          "Vesper · comédie de personnage"
+        ],
+        "filmDescriptions": [
+          "Un look rose et blanc repris dans une chorégraphie.",
+          "Une styliste insecte dans une scène en voiture de sport."
+        ],
+        "frameLabel": "Image extraite d’un vrai Recast",
+        "videoLabel": "Voir une vidéo générée",
+        "recastCta": "Ouvrir Character Studio",
+        "priceTitle": "Choisir le rendu. Voir le prix. Puis générer.",
+        "priceBody": "Portraits, nouveaux looks et planches personnage sont des générations d’image. Recast est une génération vidéo distincte : la durée et la résolution choisies influent sur son devis. Le prix affiché dans l’application fait foi.",
+        "priceLink": "Comprendre le paiement à l’usage",
+        "faqTitle": "Avant de créer votre personnage IA",
+        "finalTitle": "Rencontrez votre prochain personnage récurrent.",
+        "finalBody": "Créez son identité, sauvegardez les looks qui vous plaisent et emmenez-le dans une nouvelle scène.",
+        "secondaryCta": "Découvrir le parcours",
+        "roles": [
+          "Personnages récurrents",
+          "Créateurs et UGC",
+          "Mascottes de marque"
+        ]
       }
     },
     "backgroundRemoval": {
@@ -8508,7 +8582,7 @@
       "all": "Tous les outils",
       "open": "Ouvrir l’outil",
       "nav": "Explorer les outils créatifs",
-      "character": "Personnage",
+      "character": "Character Studio",
       "angle": "Angle de vue",
       "upscale": "Agrandissement",
       "background": "Détourage vidéo",
