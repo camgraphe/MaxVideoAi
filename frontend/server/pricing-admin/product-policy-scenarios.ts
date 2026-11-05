@@ -5,8 +5,6 @@ import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { FINISHING_TOOL_IDS, FINISHING_QUALITY_CHOICES, defaultFinishingSettings, finishingSettingsSchemas, isFinishingToolId } from '@/lib/toolbox/finishing';
 import { estimateFinishingVendorBudget } from '@/server/tools/finishing-providers';
 import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
-import { resolveRecastPricingContext } from '@/server/character-studio/recast-public-price';
-import { buildRecastPricingFacts } from '@/server/pricing/quote-recast';
 
 export function buildRecastPolicyScenarios(outputDurations: readonly number[] = [2, 5, 10, 15, 30]): PricingAuditScenario[] {
   return ['480p', '720p', '1080p'].flatMap(outputResolution => outputDurations.flatMap(durationSec =>
@@ -74,11 +72,13 @@ export function buildLiveProductPolicyScenarios(): PricingAuditScenario[] {
 
 export function buildLiveProductPolicyFacts(scenario: PricingAuditScenario) {
   if (scenario.input.adminProduct === 'recast') {
-    const context = resolveRecastPricingContext({ modelId: 'wan-3-prime', mode: 'ref2v', durationSec: scenario.durationSec!,
+    const engine = getFalEngineById('wan-3-prime')?.engine;
+    if (!engine) return null;
+    // Authored scenarios need supplier facts, not a live public quote or policy reader.
+    const facts = buildPublicPricingFacts({ engine, mode: 'ref2v', durationSec: scenario.durationSec!,
       resolution: String(scenario.input.outputResolution), hasVideoInput: scenario.input.hasVideoInput === true,
-      ...(scenario.input.hasVideoInput ? { inputVideoDurationSec: Number(scenario.input.inputVideoDurationSec) } : {}),
-      aspectRatio: '16:9' });
-    return context ? { ...buildRecastPricingFacts(context).facts, engineId: scenario.engineId } : null;
+      inputVideoDurationSec: Number(scenario.input.inputVideoDurationSec), aspectRatio: '16:9', useStandardDefinitionFacts: true });
+    return { ...facts.facts, engineId: scenario.engineId };
   }
   if (scenario.input.adminProduct === 'finishing') {
     const toolId = String(scenario.input.toolId);

@@ -27,7 +27,14 @@ async function bundle() {
       export async function quote(input) {calls.push(input);await prices;if(state.failure)throw failure;return state.unavailable?{status:'unavailable'}:{status:'exact',amountCents:1937,currency:'USD',revision:'current-test',scenarioLabel:'Current exact scenario'};}
       export async function loadShowcase(input) {reads.push(input);await showcase;if(state.showcaseFailure)throw failure;return state.empty?[]:videos;}
     `,
-    '@/server/pricing/quote-public-model-scenario': `import {quote} from 'probe';export const createScopedPublicModelQuoter=()=>quote;`,
+    '@/server/pricing/quote-public-model-scenario': `
+      import {quote} from 'probe';
+      export const createScopedPublicModelQuoter=()=>quote;
+      // The shared pricing module also imports the Recast reader. Video-only
+      // PAYG must never invoke its separate scoped pricing path.
+      export function quotePublicModelScenario(){throw new Error('Unexpected Recast quote in video-only PAYG');}
+      export function resolvePublicModelScenario(){throw new Error('Unexpected Recast scenario in video-only PAYG');}
+    `,
     showcase: `export {loadShowcase as loadPayAsYouGoVideoShowcase} from 'probe';`,
   };
   try {

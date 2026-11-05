@@ -43,6 +43,8 @@ for it. Supplier routing stays with Wan 3 Prime. The cost facts remain the nativ
 Wan input-plus-output owner: exact trimmed video seconds plus generated seconds,
 with audio excluded from video duration. Standard cent rounding is unchanged.
 
+Authored admin scenarios use the pure standard-definition projection in `buildPublicPricingFacts`, sharing the native Wan duration facts without importing live quote/policy readers; every scenario is checked against the public Recast reader for exact supplier cost, currency, unit and quantity parity.
+
 Only the trusted Recast service selects `billingProduct: 'character-recast'`.
 The initial wallet reservation validates that choice against the locked scoped
 rule and matching snapshot provenance, instead of requiring the ordinary model
