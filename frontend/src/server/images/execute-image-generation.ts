@@ -253,6 +253,7 @@ export async function executeImageGeneration({
   try {
     pricingResult = await resolveImageGenerationPricingSnapshot({
       engine, mode, durationSec, resolution, customImageSize, quality,
+      complexity: gpt26?.complexity,
       combinedImageCount: combinedImageUrls.length,
       enableWebSearch, thinkingLevel, ...(nano21 ?? {}), numImages, billingProductKey, billingQuantityMultiplier,
       jobSurface, source: body.source, metadata: requestMetadata,

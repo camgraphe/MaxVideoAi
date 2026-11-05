@@ -1,10 +1,11 @@
 import {CustomerTariffUnavailableError} from '@/server/pricing/resolve-customer-tariff';
-import {klingV4TariffScenarios,withKlingV4TariffInput,resolveKlingV4TariffScenarioId} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import {klingV4FamilyTariffScenarios,withKlingV4TariffInput,resolveKlingV4TariffScenarioId} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { createHash } from 'node:crypto';
 
 import { ManualTariffError, resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 
-import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
+import { collectSellableManualTariffCoverage, gptImage26TariffScenarios, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration, resolveWan3TariffScenarioId } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { supportsSeedanceInputTariff, seedanceInputTariffMaximum } from '@/lib/seedance-input-tariff';
 import { withSeedanceTariffInputDuration, resolveSeedanceTariffScenarioId } from '@/lib/pricing-audit/seedance-input-tariff-scenario';
@@ -36,7 +37,8 @@ import type { CustomerTariffChangeConfirmation, CustomerTariffChangePreview,
 
 function adminTariffCoverage() {
   const coverage = collectSellableManualTariffCoverage();
-  const preparedKling = coverage.scenarios.some(scenario => scenario.modelId === 'kling-v4') ? [] : klingV4TariffScenarios();
+  const publishedIds = new Set(coverage.scenarios.map(scenario => scenario.modelId));
+  const preparedKling = [...klingV4FamilyTariffScenarios(), ...gptImage26TariffScenarios()].filter(scenario => !publishedIds.has(scenario.modelId));
   return { ...coverage, scenarios: [...coverage.scenarios, ...preparedKling, ...seedanceWorkflowScenarios(coverage.scenarios)] };
 }
 
@@ -100,11 +102,11 @@ export function chooseCustomerTariffScenario(
       candidates = candidates.filter(candidate => candidate.selector[key] === options[0]);
       continue;
     }
-    if (key === 'inputVideoDurationSec' && candidates[0].modelId === 'kling-v4') {
+    if (key === 'inputVideoDurationSec' && ['kling-v4', 'kling-v4-flash'].includes(candidates[0].modelId)) {
       klingV4Input = Number(requested[key] ?? options[0]);
       try { withKlingV4TariffInput(candidates[0],klingV4Input); }
       catch { throw new PricingAdminError('unsupported_scenario','Enter verified Kling V4 source seconds.'); }
-      choices.push({key,value:String(klingV4Input),options:[],range:{minInclusive:3,max:candidates[0].selector.mode==='v2v'?30.05:30}});
+      choices.push({key,value:String(klingV4Input),options:[],range:{minInclusive:3,max:candidates[0].modelId==='kling-v4-flash'?20:candidates[0].selector.mode==='v2v'?30.05:30}});
       candidates=candidates.filter(row=>row.selector[key]===options[0]);
       continue;
     }
@@ -172,7 +174,7 @@ export async function loadCustomerTariffScenarioDetail(
   } catch { /* No numeric fallback for an unavailable live quote. */ }
   const staged = currentDatabaseCell(state, cellId(scenario));
   const [supplierComparison] = buildProviderCostComparisonRows([{ ...providerComparisonForTariffScenario(scenario), customerQuote }], new Date().toISOString());
-  const continuousInputTariff = ((scenario.modelId === 'kling-v4' && scenario.selector.billingInputType === 'video_input') || supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
+  const continuousInputTariff = ((['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) && scenario.selector.billingInputType === 'video_input') || supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
     || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType)
     || isOpenQuantityTariff(scenario.modelId, scenario.selector.mode)
     || ltx25AudioTariffBounds(scenario.modelId, scenario.selector.mode) || supportsOmniTariffMedia(scenario.modelId, scenario.selector.mode))
@@ -316,7 +318,7 @@ async function buildPreview(
   let currentCents:number|null;
   try { currentCents=await quoteCurrent(scenario,policy,state); }
   catch(error) {
-    if(scenario.modelId==='kling-v4'&&((!state.active&&error instanceof CustomerTariffUnavailableError)
+    if((['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId))&&((!state.active&&error instanceof CustomerTariffUnavailableError)
       ||(error instanceof ManualTariffError&&error.code==='missing_cell')))currentCents=null;
     else throw error;
   }
@@ -381,7 +383,7 @@ async function buildPreview(
     currency: 'USD', effectiveFrom: previousCell?.effectiveFrom ?? '2026-09-29T00:00:00.000Z',
     price: { kind: 'fixed', customerCents: proposedCents },
   };
-  if ((state.active || scenario.modelId === 'kling-v4') && proposedCell) {
+  if ((state.active || ['kling-v4', 'kling-v4-flash'].includes(scenario.modelId) || isGptImage26EngineId(scenario.modelId)) && proposedCell) {
     await quoteCurrent(scenario, policy, { ...state, active:true,
       databaseCells: [...state.databaseCells.filter((cell) => cell.id !== id), proposedCell] });
   }
@@ -391,7 +393,10 @@ async function buildPreview(
     currency: 'USD', revision: state.revision, active: state.active,
     previousCell, proposedCell,
     ...(proposal.operation === 'rollback' ? { rollbackEventId: proposal.eventId } : {}),
-    warnings: state.active ? [] : ['Tariffs are staged; live customer prices stay unchanged until the global parity gate passes.'],
+    warnings: [
+      ...(state.active ? [] : ['Tariffs are staged; live customer prices stay unchanged until the global parity gate passes.']),
+      ...(isGptImage26EngineId(scenario.modelId) ? ['Only image output list cost is known. Text/image input cost and effective account billing remain unqualified; this preview does not open generation.'] : []),
+    ],
   };
   return { ...previewBase, fingerprint: fingerprint(previewBase, policy) };
 }

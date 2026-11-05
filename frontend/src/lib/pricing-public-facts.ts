@@ -1,3 +1,5 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { calculateGptImage26ListOutputComponents } from '@/lib/image/gptImage26Pricing';
 import {
   computePricingDefinitionFacts,
   type PricingFacts,
@@ -162,6 +164,11 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? (engine.modes.includes('t2i') ? 't2i' : 't2v');
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+  if (isGptImage26EngineId(engine.id)) {
+    const { partialListUsd, meta } = calculateGptImage26ListOutputComponents({ ...context, mode }, currency);
+    return resultFromExactFacts({ engineId: engine.id, currency, exactCents: partialListUsd * 100,
+      presentedBaseCents: partialListUsd * 100, quantity: durationSec, unit: 'image', rate: partialListUsd / durationSec, meta });
+  }
   if (engine.id === NANO21_ENGINE_ID) {
     const { partialListUsd, meta } = calculateNano21ListImageComponents({ ...context, mode }, currency);
     return resultFromExactFacts({ engineId: engine.id, currency, exactCents: partialListUsd * 100,

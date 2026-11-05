@@ -24685,6 +24685,1050 @@
     }
   },
   {
+    "engineId": "gpt-image-2-6-flare",
+    "modelSlug": "gpt-image-2-6-flare",
+    "marketingName": "GPT Image 2.6 Flare",
+    "provider": "OpenAI",
+    "brandId": "openai",
+    "family": "gpt-image",
+    "familyExamplesPage": null,
+    "versionLabel": "2.6",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "gpt-image-2-6-flare",
+      "label": "GPT Image 2.6 Flare",
+      "provider": "OpenAI",
+      "version": "2.6",
+      "variant": "Flare",
+      "status": "live",
+      "availability": "available",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 4,
+      "resolutions": [
+        "1024x1024",
+        "1536x1024",
+        "1024x1536"
+      ],
+      "aspectRatios": [],
+      "fps": [],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 32000,
+        "promptMaxCharsSource": "official",
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "t2i",
+              "i2i"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Number of images",
+            "min": 1,
+            "max": 4,
+            "step": 1,
+            "default": 1
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 16,
+            "maxSizeMB": 25,
+            "source": "either"
+          },
+          {
+            "id": "resolution",
+            "engineParam": "size",
+            "type": "enum",
+            "label": "Image size",
+            "values": [
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "default": "1024x1024"
+          },
+          {
+            "id": "quality",
+            "type": "enum",
+            "label": "Quality",
+            "values": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "default": "high"
+          },
+          {
+            "id": "complexity",
+            "type": "enum",
+            "label": "Complexity",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "high",
+            "description": "Planning effort before rendering, independent of quality."
+          },
+          {
+            "id": "background",
+            "type": "enum",
+            "label": "Background",
+            "values": [
+              "auto",
+              "opaque",
+              "transparent"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "default": "png"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "updatedAt": "2026-11-05T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "openai_images",
+        "modelSlug": "gpt-image-2.6-flare"
+      },
+      "brandId": "openai"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "gpt-image-2.6-flare",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "1024x1024",
+            "1536x1024",
+            "1024x1536"
+          ],
+          "aspectRatio": [],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ]
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "gpt-image-2.6-flare",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "1024x1024",
+            "1536x1024",
+            "1024x1536"
+          ],
+          "aspectRatio": [],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ]
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "gpt-image-2-6-sunburst",
+    "modelSlug": "gpt-image-2-6-sunburst",
+    "marketingName": "GPT Image 2.6 Sunburst",
+    "provider": "OpenAI",
+    "brandId": "openai",
+    "family": "gpt-image",
+    "familyExamplesPage": null,
+    "versionLabel": "2.6",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "gpt-image-2-6-sunburst",
+      "label": "GPT Image 2.6 Sunburst",
+      "provider": "OpenAI",
+      "version": "2.6",
+      "variant": "Sunburst",
+      "status": "live",
+      "availability": "available",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "maxDurationSec": 4,
+      "resolutions": [
+        "1024x1024",
+        "1536x1024",
+        "1024x1536"
+      ],
+      "aspectRatios": [],
+      "fps": [],
+      "audio": false,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 32000,
+        "promptMaxCharsSource": "official",
+        "imageMaxMB": 25
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2i",
+              "i2i"
+            ],
+            "requiredInModes": [
+              "t2i",
+              "i2i"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "id": "num_images",
+            "type": "number",
+            "label": "Number of images",
+            "min": 1,
+            "max": 4,
+            "step": 1,
+            "default": 1
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "i2i"
+            ],
+            "requiredInModes": [
+              "i2i"
+            ],
+            "minCount": 1,
+            "maxCount": 16,
+            "maxSizeMB": 25,
+            "source": "either"
+          },
+          {
+            "id": "resolution",
+            "engineParam": "size",
+            "type": "enum",
+            "label": "Image size",
+            "values": [
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "default": "1024x1024"
+          },
+          {
+            "id": "quality",
+            "type": "enum",
+            "label": "Quality",
+            "values": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "default": "high"
+          },
+          {
+            "id": "complexity",
+            "type": "enum",
+            "label": "Complexity",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "high",
+            "description": "Planning effort before rendering, independent of quality."
+          },
+          {
+            "id": "background",
+            "type": "enum",
+            "label": "Background",
+            "values": [
+              "auto",
+              "opaque",
+              "transparent"
+            ],
+            "default": "auto"
+          },
+          {
+            "id": "output_format",
+            "type": "enum",
+            "label": "Output format",
+            "values": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "default": "png"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ],
+          "maxImageSizeMB": 25
+        }
+      },
+      "updatedAt": "2026-11-05T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "openai_images",
+        "modelSlug": "gpt-image-2.6-sunburst"
+      },
+      "brandId": "openai"
+    },
+    "modes": [
+      {
+        "mode": "t2i",
+        "falModelId": "gpt-image-2.6-sunburst",
+        "ui": {
+          "modes": [
+            "t2i"
+          ],
+          "resolution": [
+            "1024x1024",
+            "1536x1024",
+            "1024x1536"
+          ],
+          "aspectRatio": [],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ]
+        }
+      },
+      {
+        "mode": "i2i",
+        "falModelId": "gpt-image-2.6-sunburst",
+        "ui": {
+          "modes": [
+            "i2i"
+          ],
+          "resolution": [
+            "1024x1024",
+            "1536x1024",
+            "1024x1536"
+          ],
+          "aspectRatio": [],
+          "acceptsImageFormats": [
+            "png",
+            "jpg",
+            "jpeg",
+            "webp"
+          ]
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
+    "engineId": "kling-v4-flash",
+    "modelSlug": "kling-v4-flash",
+    "marketingName": "Kling 4.0 Flash",
+    "provider": "Kling by Kuaishou",
+    "brandId": "kling",
+    "family": "kling",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "kling-v4",
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k",
+        "kling-2-6-pro",
+        "kling-2-5-turbo"
+      ],
+      "currentModelSlugs": [
+        "kling-v4",
+        "kling-3-turbo-pro",
+        "kling-3-turbo-standard",
+        "kling-o3-pro",
+        "kling-o3-standard",
+        "kling-o3-4k",
+        "kling-3-pro",
+        "kling-3-standard",
+        "kling-3-4k"
+      ]
+    },
+    "versionLabel": "4.0 Flash",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "lifecycle": "current",
+    "successorId": null,
+    "successorSlug": null,
+    "surfaces": {
+      "modelPage": {
+        "indexable": false,
+        "includeInSitemap": false
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [],
+        "publishedPairs": [],
+        "includeInHub": false
+      },
+      "app": {
+        "enabled": false
+      },
+      "pricing": {
+        "includeInEstimator": false
+      }
+    },
+    "surfacesSource": "registry",
+    "engine": {
+      "id": "kling-v4-flash",
+      "label": "Kling 4.0 Flash",
+      "provider": "Kling by Kuaishou",
+      "version": "4.0 Flash",
+      "status": "live",
+      "availability": "available",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 20,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "21:9"
+      ],
+      "fps": [],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "promptMaxChars": 26000,
+        "promptMaxCharsSource": "official",
+        "imageMaxMB": 30,
+        "videoMaxMB": 300,
+        "videoMaxDurationSec": 20.05
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "ref2v"
+            ],
+            "description": "Optional when animating an opening image."
+          },
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 1,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "id": "image_url",
+            "engineParam": "start_image_url",
+            "type": "image",
+            "label": "Opening image",
+            "modes": [
+              "i2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ]
+          }
+        ],
+        "optional": [
+          {
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 10,
+            "maxSizeMB": 30,
+            "imageAspectRatio": {
+              "min": 0.4,
+              "max": 2.5
+            },
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images",
+            "modes": [
+              "ref2v"
+            ],
+            "description": "The opening image also counts toward the ten-image limit."
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference videos",
+            "modes": [
+              "ref2v"
+            ],
+            "source": "either",
+            "minCount": 0,
+            "maxCount": 5,
+            "maxSizeMB": 300,
+            "minDurationSec": 3,
+            "maxDurationSec": 20.05,
+            "description": "Reference videos and subject videos share a 20-second total limit. Subject videos are 3–8 seconds each."
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 20
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "720p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v"
+            ],
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "21:9"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "ref2v"
+            ],
+            "values": [
+              "auto",
+              "16:9",
+              "9:16",
+              "1:1",
+              "21:9"
+            ],
+            "default": "16:9"
+          }
+        ],
+        "referenceBudget": {
+          "fieldIds": [
+            "image_url",
+            "image_urls",
+            "video_urls"
+          ],
+          "modes": [
+            "ref2v"
+          ],
+          "maxTotal": 15,
+          "countUniqueUrls": false,
+          "maxByType": {
+            "image": 10,
+            "video": 5
+          }
+        },
+        "constraints": {
+          "ownedAssetModes": [
+            "i2v",
+            "ref2v"
+          ],
+          "minImageSidePx": 300,
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 300,
+          "maxCombinedVideoDurationSec": 20,
+          "combinedDurationModes": [
+            "ref2v"
+          ]
+        }
+      },
+      "updatedAt": "2026-11-05T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "kling",
+        "modelSlug": "kling/v4/flash/text-to-video"
+      },
+      "brandId": "kling",
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "kling/v4/flash/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "kling/v4/flash/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "kling/v4/flash/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20"
+            ],
+            "default": "5"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "audioToggle": false,
+          "notes": "3–20 whole seconds at 720p. Describe native audio in the prompt. No FPS or audio switch."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "seedream",
     "modelSlug": "seedream",
     "marketingName": "Seedream",

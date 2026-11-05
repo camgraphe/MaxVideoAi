@@ -23,6 +23,8 @@ export type GptImage26Settings = z.infer<typeof schema>;
 
 export function normalizeGptImage26Settings(input: Partial<ImageGenerationRequest>): GptImage26Settings {
   const raw = input as Record<string, unknown>;
+  if (input.prompt !== undefined && (typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 32000)) throw new Error('GPT Image 2.6 requires a prompt of 1–32000 characters.');
+  if (input.mode === 't2i' && ((input.imageUrls?.length ?? 0) + (input.characterReferences?.length ?? 0))) throw new Error('GPT Image 2.6 references require edit mode.');
   for (const field of ['maskUrl', 'mask', 'markup', 'svg', 'frameCount', 'frameDurationMs', 'frame_count', 'frame_duration_ms', 'seed', 'style', 'thinkingLevel', 'maxOutputTokens', 'systemInstruction', 'enableWebSearch', 'enableImageSearch', 'limitGenerations', 'watermark', 'customImageSize', 'outputCompression', 'inputFidelity', 'stream', 'partialImages']) {
     if (raw[field] !== undefined && raw[field] !== null && raw[field] !== false && raw[field] !== '') throw new Error(`GPT Image 2.6 does not support ${field} in this release.`);
   }

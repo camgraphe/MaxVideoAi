@@ -1,4 +1,5 @@
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario } from '@/lib/nano-banana-2-1';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { LIVE_MEMBERSHIP_POLICY } from '@/lib/membership-policy';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
@@ -23,6 +24,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
   resolution: string;
   customImageSize: GptImage2ImageSize | null;
   quality: string | null;
+  complexity?: string;
   combinedImageCount: number;
   enableWebSearch: boolean;
   thinkingLevel?: string | null;
@@ -45,11 +47,12 @@ export async function resolveImageGenerationPricingSnapshot(params: {
     ? params.mode === 'i2i'
       ? Math.max(0, params.combinedImageCount - 1)
       : params.combinedImageCount
-    : params.engine.id === NANO21_ENGINE_ID || isGptImage25EngineId(params.engine.id) && params.mode === 'i2i'
+    : params.engine.id === NANO21_ENGINE_ID || (isGptImage25EngineId(params.engine.id) || isGptImage26EngineId(params.engine.id)) && params.mode === 'i2i'
       ? params.combinedImageCount
       : undefined;
   const nano21 = params.engine.id === NANO21_ENGINE_ID ? normalizeNano21Settings(params) : null;
   if (nano21 && params.billingProductKey) throw new Error('Nano Banana 2.1 requires its own exact customer tariff.');
+  if (isGptImage26EngineId(params.engine.id) && params.billingProductKey) throw new Error('GPT Image 2.6 requires its own exact customer tariff.');
   if (nano21) assertNano21Scenario({ ...nano21, mode: params.mode, referenceImageCount: params.combinedImageCount, outputCount: params.numImages, aspectRatio: params.resolvedAspectRatio });
   let pricing = params.trustedQuotedBilling
     ? JSON.parse(JSON.stringify(params.trustedQuotedBilling.pricing)) as PricingSnapshot
@@ -69,6 +72,7 @@ export async function resolveImageGenerationPricingSnapshot(params: {
         aspectRatio: params.resolvedAspectRatio,
         customImageSize: params.customImageSize,
         quality: params.quality,
+        complexity: params.complexity,
         referenceImageCount,
         ...(isSeedreamEngineId(params.engine.id) ? { inputImageCount: params.mode === 'i2i' ? params.combinedImageCount : 0 } : {}),
         membershipTier,

@@ -66,6 +66,7 @@ export async function prepareImageGenerationReferences({
   let normalizedImageUrls = imageUrls.filter((url) => !characterReferenceUrls.includes(url));
   let combinedImageUrls = [...characterReferenceUrls, ...normalizedImageUrls];
   const effectivePrompt = buildCharacterReferencePrompt(prompt, characterReferences);
+  if (isGptImage26EngineId(engine.id) && effectivePrompt.length > 32000) fail(mode, 'invalid_prompt', 'The combined image prompt exceeds 32000 characters.', 400);
 
   const invalidImageUrl = combinedImageUrls.find((entry) => !/^https?:\/\//i.test(entry));
   if (invalidImageUrl) {

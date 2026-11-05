@@ -1,4 +1,5 @@
-import {klingV4TariffScenarios} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
+import { gptImage26TariffScenarios } from '@/lib/pricing-audit/manual-tariff-coverage';
+import {klingV4FamilyTariffScenarios} from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import {
   resolvePricingPolicy,
   type PricingPolicyRule,
@@ -45,7 +46,7 @@ import {
 export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
   const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
   return listFalEngines().flatMap((entry) => {
-    if (!appPublished.has(entry.id) && entry.id !== 'kling-v4') return [];
+    if (!appPublished.has(entry.id) && !['kling-v4', 'kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'].includes(entry.id)) return [];
     const baseline = auditScenarios.find((scenario) => scenario.engineId === entry.id
       && scenario.surface === 'billing' && scenario.membershipTier === 'member'
       && scenario.id.startsWith(`billing:${entry.id}:`));
@@ -262,7 +263,7 @@ export async function loadPricingPolicyInventory(
 
   const allModelScenarios = buildAllModelComparisonScenarios(buildPricingAuditScenarios());
   const coverageByModel = new Map<string, ReturnType<typeof collectSellableManualTariffCoverage>['scenarios']>();
-  for (const candidate of [...collectSellableManualTariffCoverage().scenarios,...klingV4TariffScenarios()]) {
+  for (const candidate of [...collectSellableManualTariffCoverage().scenarios,...klingV4FamilyTariffScenarios(), ...gptImage26TariffScenarios()]) {
     const bucket = coverageByModel.get(candidate.modelId) ?? [];
     bucket.push(candidate);
     coverageByModel.set(candidate.modelId, bucket);

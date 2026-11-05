@@ -1,3 +1,4 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import type { PricingContext } from '@/lib/pricing-context';
 import type { EnginePricingDetails, Resolution } from '@/types/engines';
 import { isGptImage25EngineId } from '@/lib/image/gptImage2';
@@ -17,7 +18,7 @@ export function projectManualTariffMedia(context: PricingContext, details: Engin
   meta: Record<string, unknown>): ManualTariffMedia {
   const media: ManualTariffMedia = {};
   const id = context.engine.id;
-  if (id === 'kling-v4') {
+  if (['kling-v4', 'kling-v4-flash'].includes(id)) {
     media.billingInputType = meta.has_video_input === true ? 'video_input' : 'no_video_input';
     if (meta.has_video_input === true) media.inputVideoDurationSec = Number(meta.input_video_duration_sec);
   }
@@ -34,7 +35,7 @@ export function projectManualTariffMedia(context: PricingContext, details: Engin
     media.referenceTokenBudget = context.referenceTokenBudget ?? context.verifiedReferenceTokenCount;
   }
   if (isMinimaxH3EngineId(id)) media.referenceImageCount = Number(meta.reference_image_count);
-  else if (isGptImage25EngineId(id) && context.mode === 'i2i') media.referenceImageCount = Number(meta.provider_reference_image_count);
+  else if ((isGptImage25EngineId(id) || isGptImage26EngineId(id)) && context.mode === 'i2i') media.referenceImageCount = Number(meta.provider_reference_image_count ?? meta.reference_image_count);
   else if (isLumaAgentsImageEngineId(id)) media.referenceImageCount = Number(meta.source_or_reference_image_count)
     - (context.mode === 'i2i' ? 1 : 0);
   else if (id === 'seedream-5-0-pro' && context.mode === 'i2i') {
