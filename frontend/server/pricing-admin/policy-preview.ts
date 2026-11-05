@@ -5,7 +5,6 @@ import type { PricingPolicyDocument, PricingPolicyRule } from '@maxvideoai/prici
 import { listFalEngines } from '@/config/falEngines';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { PricingRule } from '@/lib/pricing-rule-store';
-
 import {
   compareCanonicalAdminScenarios,
   quoteCanonicalAdminScenarios,
@@ -24,6 +23,7 @@ import type {
   PricingPolicyServiceDependencies,
 } from './policy-contract';
 import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
+import { assertRecastPolicyRetained, compareInitialRecastScenarios, isRecastPolicySelector } from './recast-policy';
 import {
   asRecord,
   canonicalRule,
@@ -34,7 +34,6 @@ import {
   sortRules,
   validateOverrides,
 } from './policy-rules';
-
 async function loadDatabaseRules(
   dependencies: PricingPolicyServiceDependencies
 ): Promise<{
@@ -207,6 +206,7 @@ export function deriveRequestedPricingSurcharges(input: {
   currentRules: PricingPolicyRule[];
   proposedRules: PricingPolicyRule[];
 }): RequestedPricingSurcharge[] {
+  if (isRecastPolicySelector(input.selector)) return [];
   const scenarios = selectAffectedPricingScenarios(input.selector);
   if (!scenarios.length) return [];
   const changed = (field: 'surchargeAudioPercent' | 'surchargeUpscalePercent') =>
@@ -248,6 +248,7 @@ export async function previewPricingPolicyChange(
 ): Promise<PricingChangePreview> {
   const policy = getVersionedPricingPolicy();
   const context = await buildPreviewContext(proposal, dependencies, policy);
+  assertRecastPolicyRetained(context.currentRule, context.proposedRule);
   if (await dependencies.loadManualTariffsActive?.()) {
     const modelOrGlobal = (rule: PricingPolicyRule | null) => rule && (!rule.engineId || Boolean(listFalEngines().find(e => e.id === rule.engineId)));
     if (modelOrGlobal(context.currentRule) || modelOrGlobal(context.proposedRule)) throw new PricingAdminError('model_policy_retired',
@@ -306,7 +307,8 @@ export async function previewPricingPolicyChange(
     (outcome): outcome is AdminCanonicalScenarioQuote =>
       outcome.status === 'quoted'
   );
-  const rows = unsupportedScenarioIds.length
+  const rows = isRecastPolicySelector(selectorRule) && !context.currentRule
+    ? compareInitialRecastScenarios(currentOutcomes, proposedOutcomes) : unsupportedScenarioIds.length
     ? []
     : compareCanonicalAdminScenarios(comparableCurrent, comparableProposed);
   const previewFingerprint = buildPricingPreviewFingerprint({

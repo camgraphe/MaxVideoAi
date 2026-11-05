@@ -31,6 +31,38 @@ and reserved receipts are checked together in
 `tests/character-studio-nano21-price-postgres.test.ts`. Missing native pricing
 cannot fall back to an admin-edited legacy Character product.
 
+## Character Studio Recast product policy (2026-11-05)
+
+Recast uses `server/pricing/quote-recast.ts` for its public estimate, prepared
+quote and transaction-locked confirmation. The exact database selector is
+`character-recast / recast / video`. It requires USD, standard rounding, zero
+flat/audio/upscale extras, and a supplier coefficient between ×1 and ×10
+(`marginPercent = coefficient - 1`). Missing or unavailable scoped policy closes
+quoting; neither a generic Wan tariff nor a global/versioned policy substitutes
+for it. Supplier routing stays with Wan 3 Prime. The cost facts remain the native
+Wan input-plus-output owner: exact trimmed video seconds plus generated seconds,
+with audio excluded from video duration. Standard cent rounding is unchanged.
+
+Only the trusted Recast service selects `billingProduct: 'character-recast'`.
+The initial wallet reservation validates that choice against the locked scoped
+rule and matching snapshot provenance, instead of requiring the ordinary model
+customer-tariff revision. Raw request settings cannot select this owner. Full
+quote repricing, reference ownership, wallet locking, single reservation and
+provider recovery remain in the existing generation service. Unaccepted legacy
+quotes must be refreshed; accepted jobs and refunds retain their stored amounts.
+
+Admin Pricing → Tools exposes the supplier coefficient with canonical examples,
+supplier cost, customer price and gross margin. It uses the existing preview,
+fingerprint confirmation, immutable history and rollback protocol. First
+configuration has an unavailable baseline, never a fabricated zero price.
+Deletion or rollback to a missing rule is refused. Public EN/FR/ES pricing
+examples use the same owner and fail to a live-quote label if unavailable.
+No product rule is installed by code or schema bootstrap; activation is an
+explicit environment-specific admin action. Image tariffs and the five creator
+tools' ×2.2 policy are separate. Financial and admin regression coverage lives in
+`character-studio-recast-*.test.ts`, `admin-recast-pricing*.test.ts` and
+`recast-pricing-page.test.ts`.
+
 ## Seedance 2.5 LAS Edit
 
 Current new-work classification follows `SEEDANCE_2_5_EDIT_TRANSPORT`. The

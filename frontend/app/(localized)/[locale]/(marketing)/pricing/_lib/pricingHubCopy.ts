@@ -115,6 +115,7 @@ type PricingHubCopy = {
     toolTitle: string;
     characterImageNote: string;
     recastPricingNote: string;
+    recastExample: (outputSeconds: number, sourceSeconds: number) => string;
     imageColumns: {
       engine: string;
       standard: string;
@@ -297,6 +298,7 @@ const en: PricingHubCopy = {
     toolTitle: 'Prep tools and upscale pricing',
     characterImageNote: 'Character Studio prices are per generated image: a character, a new look or a sheet. One sheet counts as one image, regardless of the number of views. Select 1K, 2K or 4K output.',
     recastPricingNote: 'The price depends on resolution, selected source-video seconds and generated seconds. Without a source video, only generated seconds count. Review the exact quote before launch.',
+    recastExample: (output, source) => source ? `${output} s generated + ${source} s source` : `${output} s generated · no source video`,
     imageColumns: {
       engine: 'Image engine',
       standard: '1 standard image',
@@ -516,6 +518,7 @@ const fr: PricingHubCopy = {
     toolTitle: 'Prix outils de préparation et upscale',
     characterImageNote: 'Les prix Character Studio sont par image générée : personnage, nouveau look ou fiche. Une fiche compte comme une image, quel que soit le nombre de vues. Choisissez une sortie 1K, 2K ou 4K.',
     recastPricingNote: 'Le prix dépend de la résolution, des secondes du passage vidéo source et des secondes générées. Sans vidéo source, seules les secondes générées comptent. Vérifiez le devis exact avant de lancer.',
+    recastExample: (output, source) => source ? `${output} s générées + ${source} s source` : `${output} s générées · sans vidéo source`,
     imageColumns: {
       engine: 'Moteur image',
       standard: '1 image standard',
@@ -735,6 +738,7 @@ const es: PricingHubCopy = {
     toolTitle: 'Precios de herramientas de prep y upscale',
     characterImageNote: 'Los precios de Character Studio son por imagen generada: personaje, nuevo look o ficha. Una ficha cuenta como una imagen, independientemente del número de vistas. Elige una salida 1K, 2K o 4K.',
     recastPricingNote: 'El precio depende de la resolución, los segundos del fragmento de vídeo de origen y los segundos generados. Sin vídeo de origen, solo cuentan los segundos generados. Revisa el presupuesto exacto antes de generar.',
+    recastExample: (output, source) => source ? `${output} s generados + ${source} s de origen` : `${output} s generados · sin vídeo de origen`,
     imageColumns: {
       engine: 'Motor de imagen',
       standard: '1 imagen estándar',

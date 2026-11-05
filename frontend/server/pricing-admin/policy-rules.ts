@@ -13,6 +13,7 @@ import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingScenarioSelector } from './canonical-scenarios';
 import { PricingAdminError } from './errors';
 import { buildLiveProductPolicyScenarios } from './product-policy-scenarios';
+import { validateRecastPolicyRule } from './recast-policy';
 
 export function asRecord(
   value: unknown,
@@ -143,6 +144,7 @@ export function validateOverrides(
   policy: PricingPolicyDocument
 ): PricingPolicyRule[] {
   try {
+    rules.forEach(rule => validateRecastPolicyRule(asRecord(rule, 'rule')));
     return validatePricingPolicyOverrides(
       rules,
       policy,

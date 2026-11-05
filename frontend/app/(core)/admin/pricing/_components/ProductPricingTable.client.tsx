@@ -11,6 +11,7 @@ import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLi
 import { AdminDynamicToolPriceField } from '@/components/admin-system/pricing/AdminDynamicToolPriceField.client';
 import { useAdminBillingProductsController } from '../../billing-products/_hooks/useAdminBillingProductsController';
 import { pricingPolicySelectorKey } from '../_lib/pricing-cockpit-view-model';
+import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
 
 type Selector = { engineId: string; mode?: string; resolution?: string };
 type Props = { category: ProductPricingCategory; onInspectPolicy: (selector: Selector) => void; onLock: (locked: boolean) => void;
@@ -84,7 +85,7 @@ export function ProductPricingTable({ category, onInspectPolicy, onLock, policyE
           <ul className="min-w-0 flex-1 space-y-1 text-xs text-text-secondary">{row.notes.map((note) => <li key={note}>{note}</li>)}</ul>
           {row.billingProductKey ? <AdminActionButton type="button" disabled={billing.interactionLocked || policyLocked || !billing.inventory?.products.some((product) => product.productKey === row.billingProductKey)}
             onClick={() => { billing.selectProduct(row.billingProductKey!); setEditorOpen(true); }}>Edit pricing</AdminActionButton>
-            : row.policySelector ? <AdminActionButton type="button" disabled={locked || row.totalCents == null} onClick={() => { setPolicyEditorRow(row.id); onInspectPolicy(row.policySelector!); }}>Edit pricing policy</AdminActionButton> : null}
+            : row.policySelector ? <AdminActionButton type="button" disabled={locked || (row.totalCents == null && row.policySelector.engineId !== RECAST_PRICING_SELECTOR.engineId)} onClick={() => { setPolicyEditorRow(row.id); onInspectPolicy(row.policySelector!); }}>Edit pricing policy</AdminActionButton> : null}
         </div>
         {row.billingProductKey === billing.selectedProductKey ? productEditor : null}
         {row.id === policyEditorRow && row.policySelector && pricingPolicySelectorKey(row.policySelector) === policyEditorKey ? policyEditor : null}

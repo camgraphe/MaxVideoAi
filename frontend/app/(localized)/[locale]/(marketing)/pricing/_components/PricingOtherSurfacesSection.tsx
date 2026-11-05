@@ -143,11 +143,16 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
                 </tr>
               ))}
               <tr id="character-recast-pricing" className="scroll-mt-24 border-b border-hairline last:border-0">
-                <th scope="row" className="py-3 pr-4 font-semibold text-text-primary">{copy.tools.characterRecast}</th>
-                <td colSpan={2} className="px-4 py-3 text-text-secondary">
-                  <span className="font-semibold">{copy.liveQuote}</span>
-                  <p className="mt-1 max-w-[420px] text-xs leading-5">{copy.otherSurfaces.recastPricingNote}</p>
-                </td>
+                <th scope="row" className="py-3 pr-4 font-semibold text-text-primary">{copy.tools.characterRecast}
+                  <p className="mt-1 max-w-[240px] text-xs font-normal leading-5 text-text-secondary">{copy.otherSurfaces.recastPricingNote}</p>
+                </th>
+                {(['price720', 'price1080'] as const).map((key) => <td key={key} className="px-4 py-3 text-text-secondary">
+                  <span className="text-xs font-semibold text-text-primary">{key === 'price720' ? '720p' : '1080p'}</span>
+                  {data.recastExamples?.length ? data.recastExamples.map(example => <p key={example.outputSeconds} className="mt-2">
+                    <strong className="block text-base tabular-nums text-text-primary">{example[key]}</strong>
+                    <span className="text-xs">{copy.otherSurfaces.recastExample(example.outputSeconds, example.sourceSeconds)}</span>
+                  </p>) : <p>{copy.liveQuote}</p>}
+                </td>)}
                 <td className="px-4 py-3 text-text-secondary">{copy.tools.recastUse}</td>
                 <td className="py-3 pl-4">
                   <InlineLinks links={[

@@ -121,6 +121,7 @@ export type PaidGenerationSubmissionDependencies = {
 };
 
 export type ReservePaidGenerationInput = {
+  billingProduct?: 'character-recast';
   customerProductLabel?: 'MaxVideoAI Recast';
   quote: McpGenerationQuote;
   candidate: AgentPublicGenerationEngine;
@@ -302,6 +303,7 @@ export async function reservePaidGenerationInitialJob(
   const pricing = canonicalPricing(input);
   if (input.quote.request.surface === 'video') {
     const params = videoInitialParams(input, pricing);
+    params.billingProduct = input.billingProduct;
     const timing = await resolveReservedVideoTiming(
       input.candidate.engine, input.quote.request, params.jobInsert.durationSec, dependencies.executor,
     );

@@ -7,6 +7,7 @@ import { getDb } from '../frontend/src/lib/db';
 import { getFalEngineById } from '../frontend/src/config/falEngines';
 import { prepareRecast, confirmRecast } from '../frontend/server/character-studio/recast';
 import { createCreatorGenerationService } from '../frontend/src/server/tools/creator-generation-service';
+import { seedRecastPricingPolicy } from './helpers/character-recast-harness';
 
 test('Recast binds both independently trimmed asset IDs and output format to one exact confirmed wallet charge', async (t) => {
   const pg = await startDisposablePostgres('character-recast');
@@ -19,6 +20,7 @@ test('Recast binds both independently trimmed asset IDs and output format to one
     await pg.cleanup();
   });
   await createPaidGenerationTestSchema(pg.pool);
+  await seedRecastPricingPolicy(pg.pool);
   for (const file of [
     '53_studio_media_generation_scope.sql',
     '69_toolbox_generation_scope.sql',
@@ -103,7 +105,7 @@ test('Recast binds both independently trimmed asset IDs and output format to one
     prepareVideo: worker('video', 4, 7.5),
     prepareAudio: worker('audio', 5, 5.25),
   });
-  assert.ok(quote.amountCents > 0);
+  assert.equal(quote.amountCents, 868); // 28 cents per supplier second × (7.5 input + 8 output) × 2.
   assert.equal(quote.sourceSeconds, 7.5);
   assert.equal(quote.audioSeconds, 5.25);
   assert.equal(

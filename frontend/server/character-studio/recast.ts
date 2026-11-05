@@ -110,6 +110,7 @@ export async function prepareRecast(actor: ToolboxGenerationActor, value: unknow
   const quote = await deps
     .generation(actor, {
       enabled: true,
+      billingProduct: 'character-recast',
       onQuotePrepared: async (quote, tx) => {
         await tx.query(
           'INSERT INTO character_studio_recast_quotes(quote_id,user_id,request_hash,passages) VALUES ($1,$2,$3,$4::jsonb)',
@@ -158,6 +159,7 @@ export async function confirmRecast(
     .parse(value);
   const job = await generation(actor, {
     enabled: true,
+    billingProduct: 'character-recast',
     onQuoteLocked: async (quote, tx) => {
       const [row] = await tx.query(
         'SELECT quote_id FROM character_studio_recast_quotes WHERE quote_id=$1 AND user_id=$2 AND request_hash=$3 FOR SHARE',
@@ -174,7 +176,7 @@ export async function confirmRecast(
     },
     confirmDependencies: {
       reserveInitialJob: (input, deps) =>
-        reservePaidGenerationInitialJob({ ...input, customerProductLabel: 'MaxVideoAI Recast' }, deps),
+        reservePaidGenerationInitialJob({ ...input, billingProduct: 'character-recast', customerProductLabel: 'MaxVideoAI Recast' }, deps),
     },
   }).confirm({ quoteId: input.quoteId, confirmed: true });
   return { jobId: job.jobId, status: job.status };

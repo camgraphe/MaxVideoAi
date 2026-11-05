@@ -29,19 +29,32 @@ test('Recast price, measured passages, reservation and receipt agree across all 
           });
           assert.equal(estimate.status, 'exact');
           if (estimate.status !== 'exact') throw new Error('Missing current price');
+          const providerCentsPerSecond = { '480p': 6.8, '720p': 14, '1080p': 28 }[resolution]!;
+          const providerCents = Math.round(providerCentsPerSecond * (seconds + (mode === 'v2v' ? 7.5 : 0)) * 1000) / 1000;
+          // Standard policy preserves supplier cents, rounds margin upward, then total to nearest cent.
+          assert.equal(quote.amountCents, Math.round(providerCents + Math.ceil(providerCents)));
           assert.equal(quote.amountCents, estimate.amountCents);
           assert.equal(quote.sourceSeconds, mode === 'v2v' ? 7.5 : 0);
           assert.equal(quote.audioSeconds, mode === 'i2v' ? 0 : 5.25);
           const stored = (await f.pg.pool.query(
             'SELECT pricing_snapshot FROM mcp_generation_quotes WHERE quote_id=$1', [quote.quoteId],
           )).rows[0].pricing_snapshot.canonicalPricing;
-          const revision = (await f.pg.pool.query('SELECT revision FROM app_customer_tariff_state')).rows[0].revision;
-          assert.equal(stored.meta.customerTariffRevision, Number(revision));
+          assert.equal(stored.meta.customerProduct, 'character-recast');
+          assert.equal(stored.meta.providerCostMultiplier, 2);
+          assert.equal(stored.meta.providerCostExactCents, providerCents);
+          assert.equal(stored.meta.customerTariffRevision, undefined);
+          assert.equal(stored.meta.ruleId, 'recast-test-policy');
+          assert.equal(stored.meta.billable_duration_sec, seconds + (mode === 'v2v' ? 7.5 : 0));
           await f.confirm(quote);
           const [receipt] = await f.receipts(quote.quoteId);
           assert.equal(receipt.amount_cents, estimate.amountCents);
           assert.equal(receipt.pricing_snapshot.totalCents, estimate.amountCents);
           assert.deepEqual(receipt.pricing_snapshot, stored);
+          const job = (await f.pg.pool.query(
+            'SELECT final_price_cents, pricing_snapshot FROM app_jobs WHERE job_id=$1', [quote.quoteId],
+          )).rows[0];
+          assert.equal(job.final_price_cents, estimate.amountCents);
+          assert.deepEqual(job.pricing_snapshot, stored);
           assert.equal(f.provider.calls(quote.quoteId), 1);
         });
       }

@@ -242,6 +242,7 @@ export type OtherSurfacePricingData = {
   imageRows: ImagePricingRow[];
   audioRows: AudioPricingRow[];
   toolRows: ToolPricingRow[];
+  recastExamples?: Array<{ outputSeconds: number; sourceSeconds: number; price720: string; price1080: string }>;
 };
 
 export type PricingHubData = {

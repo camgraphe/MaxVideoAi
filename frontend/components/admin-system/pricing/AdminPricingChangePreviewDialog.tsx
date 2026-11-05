@@ -14,11 +14,13 @@ type AdminPricingChangePreviewDialogProps = {
   error?: string | null;
 };
 
-function formatCents(cents: number) {
+function formatCents(cents: number | null) {
+  if (cents == null) return 'Unavailable';
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 }
 
 function formatProvenance(value: PricingChangePreview['rows'][number]['currentProvenance']) {
+  if (!value) return 'Unavailable: no qualified pricing rule';
   return `${value.source}:${value.sourceRuleId} · ${value.matchedBy} · ${value.compatibilityProfile}`;
 }
 
@@ -77,8 +79,8 @@ export function AdminPricingChangePreviewDialog({
                   </td>
                   <td className="px-3 py-2 tabular-nums text-text-secondary">{formatCents(row.currentTotalCents)}</td>
                   <td className="px-3 py-2 tabular-nums font-medium text-text-primary">{formatCents(row.proposedTotalCents)}</td>
-                  <td className={`px-3 py-2 tabular-nums font-medium ${row.deltaCents === 0 ? 'text-text-muted' : row.deltaCents > 0 ? 'text-warning' : 'text-success'}`}>
-                    {row.deltaCents > 0 ? '+' : ''}{formatCents(row.deltaCents)}
+                  <td className={`px-3 py-2 tabular-nums font-medium ${row.deltaCents == null || row.deltaCents === 0 ? 'text-text-muted' : row.deltaCents > 0 ? 'text-warning' : 'text-success'}`}>
+                    {row.deltaCents != null && row.deltaCents > 0 ? '+' : ''}{row.deltaCents == null ? 'No current price' : formatCents(row.deltaCents)}
                     <span className="mt-1 block text-xs text-text-muted">
                       {row.deltaPercent == null ? 'No percent baseline' : `${(row.deltaPercent * 100).toFixed(2)}%`}
                     </span>

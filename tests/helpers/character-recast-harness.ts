@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { TestContext } from 'node:test';
+import type { Pool } from 'pg';
 import { startDisposablePostgres, createPaidGenerationTestSchema } from './disposable-postgres';
 import { addTopup, ProviderHarness } from './mcp-paid-e2e-harness';
 import { resolvePublicModelScenario } from '../../frontend/server/pricing/quote-public-model-scenario';
@@ -10,6 +11,15 @@ import { getDb, withDbTransaction } from '../../frontend/src/lib/db';
 import { getFalEngineById } from '../../frontend/src/config/falEngines';
 import { prepareRecast, confirmRecast } from '../../frontend/server/character-studio/recast';
 import { createCreatorGenerationService } from '../../frontend/src/server/tools/creator-generation-service';
+import { reservePaidGenerationInitialJob } from '../../frontend/src/server/agent-api/paid-generation-execution';
+
+export async function seedRecastPricingPolicy(pool: Pool, marginPercent = 1) {
+  await pool.query(`INSERT INTO app_pricing_rules
+    (id, engine_id, mode, resolution, margin_percent, margin_flat_cents,
+      surcharge_audio_percent, surcharge_upscale_percent, currency, compatibility_profile, effective_from)
+    VALUES ('recast-test-policy', 'character-recast', 'recast', 'video', $1, 0, 0, 0, 'USD', 'standard', '2026-01-01')
+    ON CONFLICT (id) DO UPDATE SET margin_percent=EXCLUDED.margin_percent, updated_at=clock_timestamp()`, [marginPercent]);
+}
 
 export async function recastHarness(t: TestContext) {
   const pg = await startDisposablePostgres('character-recast');
@@ -29,6 +39,7 @@ export async function recastHarness(t: TestContext) {
     await pg.cleanup();
   });
   await createPaidGenerationTestSchema(pg.pool);
+  await seedRecastPricingPolicy(pg.pool);
   for (const file of [
     '53_studio_media_generation_scope.sql',
     '69_toolbox_generation_scope.sql',
@@ -79,7 +90,7 @@ export async function recastHarness(t: TestContext) {
     authMethod: 'toolbox-session' as const,
     clientId: null,
   };
-  await addTopup(pg.pool, actor.userId, 10000);
+  await addTopup(pg.pool, actor.userId, 100000);
   await pg.pool.query(
     'CREATE TABLE job_outputs (id text PRIMARY KEY,job_id text,user_id text,status text,kind text,url text)',
   );
@@ -128,9 +139,12 @@ export async function recastHarness(t: TestContext) {
     }),
   };
   let prepareNow: (() => Date) | undefined;
+  let legacyModelPricing = false;
   const generation: typeof createCreatorGenerationService = (actor, options) =>
     createCreatorGenerationService(actor, {
       ...options,
+      // Reproduce the pre-product adapter with the real model tariff owner for historical quotes.
+      ...(legacyModelPricing ? { billingProduct: undefined } : {}),
       prepareDependencies: {
         ...options.prepareDependencies,
         ...runtime,
@@ -140,6 +154,8 @@ export async function recastHarness(t: TestContext) {
         ...options.confirmDependencies,
         ...runtime,
         submitPaidGeneration: provider.submit,
+        ...(legacyModelPricing ? { reserveInitialJob: (input, dependencies) =>
+          reservePaidGenerationInitialJob({ ...input, customerProductLabel: 'MaxVideoAI Recast' }, dependencies) } : {}),
       },
     });
 
@@ -190,6 +206,9 @@ export async function recastHarness(t: TestContext) {
     setPrepareNow: (now?: () => Date) => {
       prepareNow = now;
     },
+    setLegacyModelPricing: (legacy: boolean) => { legacyModelPricing = legacy; },
+    setRecastMargin: (marginPercent: number) => seedRecastPricingPolicy(pg.pool, marginPercent),
+    runtime,
     pg,
     actor,
     provider,
