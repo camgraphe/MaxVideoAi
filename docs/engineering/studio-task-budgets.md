@@ -58,7 +58,9 @@ purchase.
 Sol reasoning is low, medium, and adaptive medium/high respectively. New Luna
 requests retain the current high-reasoning policy and 6,000 output tokens; frozen
 historical task/fallback allowances are unchanged. Visible replies
-remain bounded to 2,400 characters; long generation directions belong in tools.
+use the separate 50,000-character conversational envelope; generation directions
+retain their selected-model/tool limits. Apply migration 94 before the long-reply
+runtime; see [reply storage and recovery](studio-conversation-reply-envelope.md).
 Caching follows recorded provider facts; no hit or saving is assumed.
 
 The table describes Sol and the historical v1 profiles. New v2 Luna Quick and

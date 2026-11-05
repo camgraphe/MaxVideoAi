@@ -4,7 +4,7 @@ import test from 'node:test';
 
 const source = readFileSync('frontend/src/lib/supabase-ssr.ts', 'utf8');
 
-test('server auth resolves cookie session before verifying claims', () => {
+test('server auth resolves cookie session before verifying its active user', () => {
   const updateSessionBlock = source.slice(
     source.indexOf('export async function updateSession'),
     source.indexOf('export async function getRouteAuthContext')
@@ -12,7 +12,7 @@ test('server auth resolves cookie session before verifying claims', () => {
 
   assert.match(updateSessionBlock, /supabase\.auth\.getSession\(\)/);
   assert.match(updateSessionBlock, /const accessToken = sessionData\.session\?\.access_token \?\? null;/);
-  assert.match(updateSessionBlock, /supabase\.auth\.getClaims\(accessToken\)/);
+  assert.match(updateSessionBlock, /supabase\.auth\.getUser\(accessToken\)/);
 });
 
 test('route auth avoids parallel session refreshes', () => {
@@ -20,7 +20,7 @@ test('route auth avoids parallel session refreshes', () => {
 
   assert.doesNotMatch(routeAuthBlock, /Promise\.all\(\s*\[/);
   assert.match(routeAuthBlock, /const \{ data: sessionData, error: sessionError \} = await supabase\.auth\.getSession\(\);/);
-  assert.match(routeAuthBlock, /supabase\.auth\.getClaims\(session\.access_token\)/);
+  assert.match(routeAuthBlock, /supabase\.auth\.getUser\(session\.access_token\)/);
 });
 
 test('server auth clears invalid Supabase refresh cookies', () => {

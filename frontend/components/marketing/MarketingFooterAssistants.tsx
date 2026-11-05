@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { MARKETING_NAV_ASSISTANTS } from '@/config/navigation';
+import type { MarketingNavItem } from '@/config/navigation';
 
 type Copy = { title: string; body: string; cta: string; docs: string; anchors: Record<string, string> };
-export function MarketingFooterAssistants({ copy }: { copy: Copy }) {
+export function MarketingFooterAssistants({ copy, assistants: MARKETING_NAV_ASSISTANTS }: { copy: Copy; assistants: readonly MarketingNavItem[] }) {
   if (!MARKETING_NAV_ASSISTANTS.length) return null;
   return <div className="marketing-footer-assistants">
     <div><p className="marketing-menu-caption">MaxVideoAI MCP</p><h2>{copy.title}</h2><p>{copy.body}</p></div>

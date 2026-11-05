@@ -29,16 +29,22 @@ function createAnalysisService(actor:AnalysisScope,dependencies:AnalysisDependen
   const policy=dependencies.policy===undefined?studioAnalysisPolicy():dependencies.policy;
   const assistance=dependencies.assistancePolicy??studioAssistancePolicy();
   function enabled(){if(!policy||!assistance.enabled||!assistance.credits)throw new AgentApiError('ENGINE_UNAVAILABLE','This analysis profile is not available.');return policy;}
+  async function preparationAvailability(kind:'video'|'audio') {
+    const current=enabled();
+    if(!current[kind])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
+    await assertAnalysisScope({query},actor);
+    const selected=(await query<{selected_model:string}>('SELECT selected_model FROM studio_assistance_accounts WHERE user_id=$1',[actor.userId]))[0]?.selected_model??(parts.sessionId?'gpt-6-luna':'gpt-6.1-sol');
+    if(parts.sessionId&&selected==='gpt-6-luna')throw new AgentApiError('ENGINE_UNAVAILABLE','Choose Standard or Max to analyse video or audio.');
+    const model=selected==='gpt-6.1-terra'?'gpt-6.1-terra' as const:'gpt-6.1-sol' as const;
+    return {current,model};
+  }
   return {
     read:async(id:string)=>projectAnalysis(await readAnalysis(actor,id)),
+    checkPreparationAvailable:async(kind:'video'|'audio')=>{await preparationAvailability(kind);},
     async prepare(raw:unknown,key:string,onPrepared?:(quote:StudioPreparedAnalysis,tx:TransactionQueryExecutor)=>Promise<void>) {
-      const current=enabled(),request=studioAnalysisPrepareSchema.parse(raw);
-      if(!current[studioAnalysisKind(request)])throw new AgentApiError('ENGINE_UNAVAILABLE','The requested analysis profile has not been qualified.');
+      enabled();const request=studioAnalysisPrepareSchema.parse(raw);
       if(!key||key.length>180||key!==key.trim())throw new AgentApiError('PARAMETER_INVALID','Invalid analysis request identity.');
-      await assertAnalysisScope({query},actor);
-      const selected=(await query<{selected_model:string}>('SELECT selected_model FROM studio_assistance_accounts WHERE user_id=$1',[actor.userId]))[0]?.selected_model??(parts.sessionId?'gpt-6-luna':'gpt-6.1-sol');
-      if(parts.sessionId&&selected==='gpt-6-luna')throw new AgentApiError('ENGINE_UNAVAILABLE','Choose Standard or Max to analyse video or audio.');
-      const model=selected==='gpt-6.1-terra'?'gpt-6.1-terra':'gpt-6.1-sol';
+      const {current,model}=await preparationAvailability(studioAnalysisKind(request));
       const source=await resolveAnalysisSource(actor,request);
       if(!source.durationSec||request.endSec>source.durationSec||(source.sizeBytes??0)>STUDIO_ANALYSIS_LIMITS.sourceBytes)throw new AgentApiError('PARAMETER_INVALID','Select a shorter measured source interval for analysis.');
       const fingerprint=analysisSourceFingerprint(source),requestHash=createHash('sha256').update(stableJson({request,fingerprint,policy:current,...(model==='gpt-6.1-terra'?{model}:{})})).digest('hex');

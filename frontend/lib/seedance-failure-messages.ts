@@ -3,6 +3,7 @@ import {
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
   SEEDANCE_REFERENCE_IMAGE_BLOCKED,
   SEEDANCE_REFERENCE_MEDIA_BLOCKED,
+  SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE,
   SEEDANCE_REFERENCE_VIDEO_BLOCKED,
   SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED,
   SEEDANCE_TASK_TYPE_CONSTRAINT,
@@ -16,6 +17,7 @@ const copy = {
     image: 'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.',
     video: 'Seedance blocked a reference video because it may contain a recognizable person. Replace that video with a reference without identifiable people before trying again.',
     media: 'Seedance blocked reference media during its safety checks. Review the prompt and reference images, videos, or audio before trying again.',
+    unavailable: 'Seedance could not read the reference media for this render. Select the reference again or upload a new file before trying again.',
     duration: 'The combined duration of the reference videos exceeds the Seedance limit of 30 seconds. Trim or remove a reference clip before trying again.',
     task: 'Seedance could not apply the selected edit or extension to the source video. Clarify what should change or continue in the source video, then try again.',
     unsupported: 'Seedance could not accept the selected references or settings. Check the reference files, duration, resolution, and aspect ratio before trying again.',
@@ -32,6 +34,7 @@ const copy = {
     image: 'Seedance a bloqué une image de référence, car elle pourrait contenir une personne reconnaissable ou du contenu privé. Utilisez une autre référence sans personne identifiable avant de réessayer.',
     video: 'Seedance a bloqué une vidéo de référence, car elle pourrait contenir une personne reconnaissable. Remplacez cette vidéo par une référence sans personne identifiable avant de réessayer.',
     media: 'Seedance a bloqué un média de référence lors de ses contrôles de sécurité. Vérifiez le prompt et les images, vidéos ou fichiers audio avant de réessayer.',
+    unavailable: 'Seedance n’a pas pu lire un média de référence pour ce rendu. Sélectionnez à nouveau la référence ou importez un nouveau fichier avant de réessayer.',
     duration: 'La durée cumulée des vidéos de référence dépasse la limite Seedance de 30 secondes. Raccourcissez ou retirez un clip avant de réessayer.',
     task: 'Seedance n’a pas pu appliquer le montage ou la prolongation à la vidéo source. Précisez ce qui doit changer ou se poursuivre dans cette vidéo, puis réessayez.',
     unsupported: 'Seedance n’a pas accepté les références ou les réglages sélectionnés. Vérifiez les fichiers, la durée, la résolution et le format avant de réessayer.',
@@ -48,6 +51,7 @@ const copy = {
     image: 'Seedance ha bloqueado una imagen de referencia porque podría contener una persona reconocible o contenido privado. Utiliza otra referencia sin personas identificables antes de intentarlo de nuevo.',
     video: 'Seedance ha bloqueado un vídeo de referencia porque podría contener una persona reconocible. Sustituye ese vídeo por una referencia sin personas identificables antes de intentarlo de nuevo.',
     media: 'Seedance ha bloqueado un archivo de referencia durante sus controles de seguridad. Revisa el prompt y las imágenes, los vídeos o el audio antes de intentarlo de nuevo.',
+    unavailable: 'Seedance no ha podido leer un archivo de referencia para este renderizado. Selecciona de nuevo la referencia o sube un archivo nuevo antes de intentarlo de nuevo.',
     duration: 'La duración total de los vídeos de referencia supera el límite de Seedance de 30 segundos. Recorta o elimina un clip antes de intentarlo de nuevo.',
     task: 'Seedance no ha podido aplicar la edición o ampliación al vídeo original. Especifica qué debe cambiar o continuar en ese vídeo e inténtalo de nuevo.',
     unsupported: 'Seedance no ha aceptado las referencias o los ajustes seleccionados. Revisa los archivos, la duración, la resolución y la relación de aspecto antes de intentarlo de nuevo.',
@@ -67,6 +71,7 @@ function localeKey(locale: string): Locale {
 // Match only known customer copy for historical jobs without structured codes.
 export function seedanceFailureCodeFromMessage(message: string | null | undefined): string | null {
   if (!message || !/seedance/i.test(message)) return null;
+  if (/could not read (?:the )?reference media|reference media could not be read/i.test(message)) return SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE;
   if (/generated audio.*blocked|blocked the generated audio/i.test(message)) return SEEDANCE_OUTPUT_AUDIO_BLOCKED;
   if (/copyright-restricted content|output.*copyright restrictions/i.test(message)) return SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED;
   if (/reference videos? (?:was|were) blocked|blocked a reference video/i.test(message)) return SEEDANCE_REFERENCE_VIDEO_BLOCKED;
@@ -91,6 +96,7 @@ export function getSeedanceFailureMessage(params: {
     case SEEDANCE_REFERENCE_IMAGE_BLOCKED: return text.image;
     case SEEDANCE_REFERENCE_VIDEO_BLOCKED: return text.video;
     case SEEDANCE_REFERENCE_MEDIA_BLOCKED: return text.media;
+    case SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE: return text.unavailable;
     case SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED: return text.duration;
     case SEEDANCE_TASK_TYPE_CONSTRAINT: return text.task;
     case 'seedance_inputs_rejected': return text.unsupported;

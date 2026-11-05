@@ -1,5 +1,6 @@
 import {assistanceNextActionSchema} from '@/lib/studio/assistance-contract';
 import {promptAssistanceReplySchema,type PromptAssistanceResult} from '@/lib/prompt-assistance/contract';
+import {promptInlineAnalysisHeaders} from '@/lib/prompt-assistance/client-capability';
 
 export type PromptReplyIdentity={sessionId:string;requestId:string;deadlineAt?:string};
 export class PromptReplyHttpError extends Error {
@@ -12,7 +13,7 @@ export async function promptReplyHttp(url:string,init:RequestInit,signal:AbortSi
   signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
   const timeout=window.setTimeout(abort,15_000);
   try{
-    const response=await fetch(url,{...init,credentials:'same-origin',cache:'no-store',signal:controller.signal});
+    const response=await fetch(url,{...init,headers:promptInlineAnalysisHeaders(init.headers),credentials:'same-origin',cache:'no-store',signal:controller.signal});
     const payload=await response.json();
     if(controller.signal.aborted)throw new DOMException('Wait stopped','AbortError');
     if(!response.ok||!payload.ok)throw new PromptReplyHttpError(payload.error??'ASSISTANCE_UNAVAILABLE',payload.pendingRequest);

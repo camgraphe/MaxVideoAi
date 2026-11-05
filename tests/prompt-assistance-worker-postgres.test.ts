@@ -14,14 +14,14 @@ const context={model:{id:'seedance-2-5'},maxChars:20000,references:[],referenceP
 const request=()=>promptAssistanceRequestSchema.parse({sessionId:randomUUID(),requestId:randomUUID(),draftRevision:0,locale:'en',
  message:'Prepare a welcoming astronomy-club film with reference photographs.',draft:{surface:'video',workflow:'create',engineId:'seedance-2-5',mode:'t2v',target:'prompt',text:'An unrelated sample.',settings:{durationSec:5},references:[]}});
 const evidence=()=>({id:'resp_'+randomUUID(),model:'gpt-6.1-sol',status:'completed',service_tier:'default',
- output_text:JSON.stringify({kind:'replacement',reply:'A direction is ready.',text:'A telescope turns slowly under a twilight sky.'}),
+ output_text:JSON.stringify({analysisRequest:null,kind:'replacement',reply:'A direction is ready.',text:'A telescope turns slowly under a twilight sky.'}),
  usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:100}} as never);
 function gate<T>(){let resolve!:(value:T)=>void;const promise=new Promise<T>(done=>resolve=done);return {promise,resolve};}
 async function fixture(t:{after:(callback:()=>Promise<void>)=>void},migration=true){
  const pg=await startDisposablePostgres('milo-reply-worker'),old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const f of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql',...(migration?['92_milo_reply_workers.sql']:[])]){
+ for(const f of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql',...(migration?['92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql']:[])]){
   if(f.startsWith('92_')&&!existsSync('neon/migrations/'+f))continue;
   await pg.pool.query(readFileSync('neon/migrations/'+f,'utf8'));
  }
@@ -70,6 +70,41 @@ test('saved workers fence dispatch, leases, expiry and financial recovery',async
    await c.query('SELECT user_id FROM studio_assistance_accounts WHERE user_id=$1 FOR UPDATE NOWAIT',[owner]);
   }finally{await c.query('ROLLBACK');c.release();}
  }
+ await t.test('unavailable reference identifies only its submitted slot on poll and recovery, before charging',async()=>{
+  const owner='stale-reference-owner';
+  const input=request();
+  input.draft={...input.draft,engineId:'seedance-2-0',workflow:'modify',mode:'v2v',references:[
+    {fieldId:'image_urls',slot:0,label:'Image 1',ref:{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'image'}},
+    {fieldId:'image_urls',slot:1,label:'Image 2',ref:{type:'asset',assetId:'ma_'+'b'.repeat(32),kind:'image'}},
+  ]};
+  const {buildPromptAssistanceContext}=await import('../frontend/src/server/prompt-assistance/context');
+  const {createAgentModelCatalogDeps}=await import('../frontend/src/server/agent-api/model-catalog');
+  const {getBaseEngines}=await import('../frontend/src/lib/engines');
+  const {recoverPromptAssistance}=await import('../frontend/src/server/prompt-assistance/service');
+  const catalog={...createAgentModelCatalogDeps(),listEngines:async()=>getBaseEngines(),isModeExecutable:()=>true,isEngineExecutable:()=>true};
+  let counts=0,creates=0;
+  await admit(owner,input);
+  await run(owner,input,{
+    buildContext:()=>buildPromptAssistanceContext(owner,input,{catalog,resolveMedia:async(_owner,ref:any)=>{
+      if(ref.assetId==='ma_'+'b'.repeat(32))throw new Error('MEDIA_NOT_AVAILABLE');
+      return {kind:'image',url:'https://fixture.invalid/image.png'} as never;
+    }}),
+    count:async()=>{counts++;return 1;},create:async()=>{creates++;return evidence();},
+  });
+  for(const result of [await readPromptAssistance(owner,input.sessionId,input.requestId,policy),
+    await recoverPromptAssistance(owner,input.sessionId,input.requestId,policy),await admit(owner,input)]){
+    assert.equal(result.state,'failed');
+    assert.equal(result.error,'MEDIA_NOT_AVAILABLE');
+    assert.deepEqual(result.unavailableReference,{fieldId:'image_urls',slot:1});
+    assert.equal(result.safeToRetry,true);
+  }
+  assert.equal((await row(input.requestId)).call_id,null);
+  const calls=await pg.pool.query('SELECT count(*)::int AS n FROM studio_assistance_calls WHERE user_id=$1',[owner]);
+  assert.equal(calls.rows[0].n,0);
+  assert.equal(await run(owner,input),false);
+  assert.equal(counts,0);
+  assert.equal(creates,0);
+ });
  await t.test('one paid create survives the old90s boundary and racing wakeups',async inner=>{
   const owner='race-owner',input=request(),started=gate<void>(),response=gate<ReturnType<typeof evidence>>();let creates=0,timeout=0,countParams:unknown;
   input.message=('Prepare a welcoming astronomy-club film with a carefully paced night-sky sequence. ').repeat(85).trim();

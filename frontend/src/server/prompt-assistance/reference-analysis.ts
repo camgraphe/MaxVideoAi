@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import {query,withDbTransaction} from '@/lib/db';
+import {query,withDbTransaction,type TransactionQueryExecutor} from '@/lib/db';
 import type {z} from 'zod';
 import {promptAnalysisPrepareSchema} from '@/lib/prompt-assistance/analysis-contract';
 import {studioAnalysisResultSchema,STUDIO_ANALYSIS_LIMITS,studioAnalysisKind,type StudioAnalysisRequest} from '@/lib/studio/media-analysis-contract';
@@ -7,38 +7,53 @@ import {projectAnalysis,type AnalysisRun} from '@/server/studio/media-analysis/r
 import {createComposerAnalysisService} from '@/server/studio/media-analysis/service';
 import {analysisSourceFingerprint} from '@/server/studio/media-analysis/source';
 import {studioAnalysisPolicy} from '@/server/studio/media-analysis/policy';
-import {resolveStudioMedia,type StudioResolvedMedia} from '@/server/studio/media-resolver';
-import {ensurePromptSession} from './repository';
+import type {StudioResolvedMedia} from '@/server/studio/media-resolver';
+import {ensurePromptSession,composerScope} from './repository';
 import {buildPromptAssistanceContext} from './context';
+import {resolvePromptAnalysisSource,promptAnalysisSourceIdentity,withinPromptAnalysisPreparation} from './analysis-source';
+import {resolveAnalysisSource} from '@/server/studio/media-analysis/repository';
 
 export async function preparePromptReferenceAnalysis(userId:string,input:z.infer<typeof promptAnalysisPrepareSchema>) {
+  return withinPromptAnalysisPreparation(signal=>prepareWithDeadline(userId,input,signal));
+}
+async function prepareWithDeadline(userId:string,input:z.infer<typeof promptAnalysisPrepareSchema>,signal:AbortSignal) {
   if(process.env.PROMPT_ASSISTANCE_PERCEPTION_ENABLED!=='true')throw new Error('ANALYSIS_UNAVAILABLE');
   // Validate the current generator and reference field before granting any analysis scope.
   await buildPromptAssistanceContext(userId,{sessionId:input.sessionId,requestId:randomUUID(),draftRevision:0,locale:'en',message:'Analyse reference',draft:input.draft});
+  signal.throwIfAborted();
   const ref=input.draft.references.find(item=>item.fieldId===input.fieldId&&item.slot===input.slot)?.ref;
   if(!ref||ref.kind==='image')throw new Error('REFERENCE_INVALID');
   await withDbTransaction(tx=>ensurePromptSession(userId,input.sessionId,input.draft,tx));
-  const source=await resolveStudioMedia(userId,ref);
-  if(!source.durationSec)throw new Error('REFERENCE_DURATION_UNKNOWN');
   const kind=studioAnalysisKind({ref,modality:input.modality});
+  if(ref.kind==='audio'&&input.modality==='visual')throw new Error('REFERENCE_INVALID');
+  const service=createComposerAnalysisService(userId,input.sessionId);
+  await service.checkPreparationAvailable(kind);
+  signal.throwIfAborted();
+  const source=await resolvePromptAnalysisSource(userId,ref,signal);
   const limit=kind==='audio'?STUDIO_ANALYSIS_LIMITS.audioSeconds:STUDIO_ANALYSIS_LIMITS.videoSeconds;
   const request:StudioAnalysisRequest={ref,modality:input.modality,reason:'requested',startSec:input.startSec,
-    endSec:input.endSec??Math.min(source.durationSec,input.startSec+limit),
+    endSec:input.endSec??Math.min(source.durationSec!,input.startSec+limit),
     goal:kind==='audio'?'Describe the audible voice, words, music, rhythm, sound effects and ambience useful for writing a generation prompt. Distinguish observations from uncertainty. Do not infer identities.':'Describe the visible subjects, actions, camera movement, composition, lighting and style useful for writing a generation prompt. Do not infer identities or unseen events.'};
-  const service=createComposerAnalysisService(userId,input.sessionId);
   const policy=studioAnalysisPolicy();
   // Owned composer observations can survive a page reload without restoring hidden chat history.
   // Exact prepared excerpt + profile + assessment: no paid reinspection on repeated messages.
   const cached=policy?(await query<AnalysisRun>(`SELECT * FROM studio_media_analysis_runs WHERE user_id=$1 AND composer_session_id IS NOT NULL
     AND source_fingerprint=$2 AND request_json=$3::jsonb AND policy_json=$4::jsonb AND state='completed' ORDER BY created_at DESC LIMIT 1`,
     [userId,analysisSourceFingerprint(source),JSON.stringify(request),JSON.stringify(policy)]))[0]:null;
-  const select=async(analysisId:string)=>query(`INSERT INTO prompt_assistance_analysis_selections(user_id,session_id,source_fingerprint,modality,analysis_id)
+  const select=async(analysisId:string,tx:TransactionQueryExecutor)=>{
+    signal.throwIfAborted();
+    const current=await resolveAnalysisSource(composerScope(userId,input.sessionId),request,tx,true);
+    if(promptAnalysisSourceIdentity(current)!==promptAnalysisSourceIdentity(source)||analysisSourceFingerprint(current)!==analysisSourceFingerprint(source))throw new Error('REFERENCE_INVALID');
+    signal.throwIfAborted();
+    await tx.query(`INSERT INTO prompt_assistance_analysis_selections(user_id,session_id,source_fingerprint,modality,analysis_id)
     VALUES($1,$2,$3,$4,$5) ON CONFLICT(user_id,session_id,source_fingerprint,modality) DO UPDATE SET analysis_id=EXCLUDED.analysis_id`,
     [userId,input.sessionId,analysisSourceFingerprint(source),input.modality,analysisId]);
-  if(cached){await select(cached.id);return {status:projectAnalysis(cached),sessionId:cached.composer_session_id!,reused:true};}
-  const quote=await service.prepare(request,input.requestId);
-  await select(quote.analysisId);
-  return {status:await service.read(quote.analysisId),sessionId:input.sessionId,reused:false};
+    signal.throwIfAborted();
+  };
+  if(cached){await withDbTransaction(tx=>select(cached.id,tx));signal.throwIfAborted();return {status:projectAnalysis(cached),sessionId:cached.composer_session_id!,reused:true};}
+  const quote=await service.prepare(request,input.requestId,(prepared,tx)=>select(prepared.analysisId,tx));
+  const status=await service.read(quote.analysisId);signal.throwIfAborted();
+  return {status,sessionId:input.sessionId,reused:false};
 }
 export async function readPromptReferenceAnalyses(userId:string,sessionId:string,source:StudioResolvedMedia) {
   const policy=studioAnalysisPolicy();

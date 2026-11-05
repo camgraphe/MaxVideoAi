@@ -1,13 +1,17 @@
 import {z} from 'zod';
 import {REVIEWABLE_GENERATION_SETTINGS} from '@/lib/prompt-assistance/application-review';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
+import {promptReferenceLocationSchema} from '@/lib/prompt-assistance/contract';
 const reviewProofSchema=z.object({version:z.literal(1),requestId:z.string().uuid(),compatibilityFingerprint:z.string().regex(/^[a-f0-9]{64}$/),compatible:z.boolean(),settings:z.record(z.string(),z.union([z.string().max(5000),z.number().finite(),z.boolean(),z.null()])).refine(value=>Object.keys(value).every(key=>(REVIEWABLE_GENERATION_SETTINGS as readonly string[]).includes(key)))}).strict();
 const pendingReviewSchema=reviewProofSchema.extend({draftFingerprint:z.string().regex(/^[a-f0-9]{64}$/)});
 const localSchema=z.object({
-  message:z.string().max(8000),
-  proposal:z.object({text:z.string().max(50000),draftFingerprint:z.string().max(64),valid:z.boolean(),review:reviewProofSchema.optional().catch(undefined)}).nullable(),
+  message:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),
+  proposal:z.object({text:z.string().max(PROMPT_ASSISTANCE_TEXT_MAX_CHARS),draftFingerprint:z.string().max(64),valid:z.boolean(),review:reviewProofSchema.optional().catch(undefined)}).nullable(),
   latestRequestId:z.string(),
 });
-const storedSchema=z.object({sessionId:z.string().uuid(),pending:z.object({sessionId:z.string().uuid(),requestId:z.string().uuid()}).nullable(),pendingReview:pendingReviewSchema.optional().catch(undefined),local:localSchema.optional(),legacy:z.boolean().optional()});
+// Invalid optional edits cannot discard the owned session or its pending recovery identity.
+const pendingReferencesSchema=z.array(promptReferenceLocationSchema.extend({label:z.string().max(40)})).max(60);
+const storedSchema=z.object({sessionId:z.string().uuid(),pending:z.object({sessionId:z.string().uuid(),requestId:z.string().uuid(),references:pendingReferencesSchema.optional().catch(undefined)}).nullable(),pendingReview:pendingReviewSchema.optional().catch(undefined),local:localSchema.optional().catch(undefined),legacy:z.boolean().optional()});
 export const analysisIdentitySchema=z.object({sessionId:z.string().uuid(),analysisId:z.string().uuid()});
 export type PromptChatRecord=z.infer<typeof storedSchema>;
 export type PromptChatLocal=z.infer<typeof localSchema>;
@@ -26,7 +30,7 @@ export function revokePromptChatReview(key:string,value:PromptChatRecord,preserv
   const proposal=value.local?.proposal;
   const revoked:PromptChatRecord={...value,pendingReview:value.pendingReview&&revokePending?{...value.pendingReview,compatible:false}:value.pendingReview,local:value.local?{...value.local,proposal:proposal?{...proposal,review:proposal.review?{...proposal.review,compatible:false}:undefined}:null}:undefined};
   const withoutProof:PromptChatRecord={...revoked,pendingReview:undefined,local:revoked.local?{...revoked.local,proposal:revoked.local.proposal?{...revoked.local.proposal,review:undefined}:null}:undefined};
-  const identity:PromptChatRecord={sessionId:value.sessionId,pending:value.pending,legacy:value.legacy};
+  const identity:PromptChatRecord={sessionId:value.sessionId,pending:value.pending?{sessionId:value.pending.sessionId,requestId:value.pending.requestId}:null,legacy:value.legacy};
   for(const candidate of [revoked,withoutProof,identity])if(writePromptChat(key,candidate))return {kind:'saved',record:candidate};
   if(!preserveRecoveryIdentity&&!value.pending){
     try{sessionStorage.removeItem(key);if(sessionStorage.getItem(key)===null)return {kind:'discarded'};}catch{/* Report the unresolved durable state to the mounted UI. */}

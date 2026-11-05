@@ -26,6 +26,10 @@ async function fixture(initial?:Partial<PreviousReplyRef>,previewMode=false,cred
  dom.window.clearTimeout=(id:number)=>{timers.delete(id);};
  const fetcher=(input:string,init:RequestInit={})=>{
   const url=new URL(input,'http://localhost');
+  if(url.pathname==='/api/prompt-assistance'){
+   assert.equal(new Headers(init.headers).get('x-milo-inline-analysis'),'1','every new-client message, session, status, recovery and previous-reply read advertises the additive response capability');
+   if(init.method==='POST')assert.equal(new Headers(init.headers).get('content-type'),'application/json','capability preserves existing request headers');
+  }
   if(url.searchParams.has('scope'))return Promise.resolve(new Response(JSON.stringify({ok:true,result:{sessionId:url.searchParams.get('sessionId'),scope:url.searchParams.get('scope'),status:'active',turns:[],pending:null,proposal:null}})));
   if(!url.searchParams.has('requestId')&&!init.method){availabilityReads++;return Promise.resolve(new Response(JSON.stringify({ok:true,result:availability})));}
   return new Promise<Response>((resolve,reject)=>{
@@ -220,6 +224,17 @@ test('a restored terminal pointer opens with GET only and retains its terminal c
   assert.equal(reads(f).length,0);const pointer=f.storage.readPreviousReply(f.account)!;await f.run(()=>void f.state.checkPreviousReply());
   assert.equal(reads(f).length,1);assert.equal(f.calls.some(call=>call.init.method==='POST'),false);await f.respond(reads(f)[0],{ok:true,result:status(pointer,'complete')});
   await f.run(()=>f.state.closePreviousReply());await f.run(()=>void f.state.checkPreviousReply());assert.equal(reads(f).length,1);assert.equal(f.state.previousResult?.state,'complete');
+ }finally{await f.dispose();}
+});
+
+test('explicit composer credit choice advertises response capability without changing the request body',async()=>{
+ const f=await fixture(undefined,false,true);
+ try{
+  const choice={action:'select_luna' as const,expectedRevision:initialStatus.revision};
+  await f.run(()=>void f.credits!.choose(choice));
+  const selected=f.calls.at(-1)!;assert.equal(selected.init.method,'POST');
+  assert.deepEqual(JSON.parse(selected.init.body as string),choice);
+  await f.respond(selected,{ok:true,result:initialStatus});
  }finally{await f.dispose();}
 });
 

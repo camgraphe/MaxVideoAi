@@ -195,3 +195,55 @@ On a new database run the baseline bootstrap first, then apply migrations in
 order: 93 requires the profiles table from migration 00. Validation
 used disposable PostgreSQL 17 only; no hosted migration was applied for this
 implementation. See `docs/engineering/character-studio.md` for endpoint ownership.
+
+## Composer application-output credit refunds (migration 93)
+
+Apply `93_milo_output_credit_refunds.sql` explicitly after 54, 62, 63 and 85 before
+deploying its matching composer settlement runtime. It adds immutable per-call and
+per-original-lot refund evidence, without backfills, grants, wallet changes or
+changes to settled supplier/charge history. Re-applying the DDL is safe; retain
+these tables/guards and compatible financial readers on rollback. Normal previews
+need the same migration on their own database branch. See
+`docs/operations/studio-assistance-support.md` for exact-owned-call preview and
+fingerprinted apply, supported failure policy and expiry semantics. This source
+change is qualified on disposable PostgreSQL; a hosted apply is a separate reviewed
+operation on a verified target.
+
+## Studio conversation reply envelope (migration 94)
+
+Apply `94_studio_conversation_reply_envelope.sql` after the existing Studio task
+migrations and before deploying the long-reply runtime. It widens only task
+`partial_reply` storage from 2,400 to 50,000 characters, replacing the known old
+constraint with validated `studio_tasks_reply_envelope_v1`. Unknown constraint
+definitions stop for inspection. Admission and worker dispatch require that exact
+validated bound and absence of the old restrictive check before spending; task
+ownership and historical reads remain available. No token/resource policy,
+credit, tariff, approval or existing response changes. Keep the widened constraint
+because long replies may already be stored. Prefer a forward fix: old-runtime
+history context and saved-response recovery need separate qualification, even if
+ordinary history reads still work. Never truncate or rewrite long data for a
+rollback. See
+`docs/engineering/studio-conversation-reply-envelope.md` for exact prerequisites,
+timeouts and local verification. Migration 93 was delivered by PR 607 at main
+`3239a5a1ec487724616d9c9b30612637322d0f53`; migration 94 has no collision
+in that base. Recheck main before publication if another migration lands.
+
+## Parallel Character Studio and Milo migrations (2026-11-05)
+
+The Character Studio branch and main independently used prefixes 93 and 94.
+Keep the complete filenames: these migrations have already been applied to
+different environments and operate on separate tables. Do not rename or mark
+a migration applied using only its numeric prefix. The repository runner selects
+complete `*.sql` filenames; on an existing database apply only verified pending
+files explicitly.
+
+- `93_character_studio.sql` creates characters/looks.
+- `93_milo_output_credit_refunds.sql` creates assistant refund evidence.
+- `94_character_studio_presentation.sql` adds character presentation.
+- `94_studio_conversation_reply_envelope.sql` widens Studio reply storage.
+- `95_character_studio_recast_quotes.sql` binds Recast approvals.
+
+Updating a Character Studio preview requires checking both Milo migrations even
+when the Character Studio 93–95 migrations are already present. Production keeps
+its independently verified migration state; preview qualification does not apply
+DDL to production.

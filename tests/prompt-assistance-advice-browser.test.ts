@@ -39,7 +39,7 @@ test('advice remains conversation across restore; real video and Voiceover repla
  const pg=await startDisposablePostgres('milo-advice-ui'),previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});await chooseStudioAssistance('owner',{action:'select_luna',expectedRevision:0},policy);
  const evidence=process.env.MILO_ADVICE_EVIDENCE_DIR,results:unknown[]=[];if(evidence)await mkdir(evidence,{recursive:true});
  for(const surface of ['video','voice'] as const){
@@ -62,7 +62,7 @@ test('advice remains conversation across restore; real video and Voiceover repla
      const body=route.request().postDataJSON();assert.equal(body.action,'message');requests.push(body.request);
      const proposed=surface==='video'?visual:script;
      const result=await sendPromptAssistance('owner',body.request,{policy,buildContext:(userId,input)=>buildPromptAssistanceContext(userId,input,{catalog,audio}),count:async()=>100,create:async()=>{
-      providerCalls++;const output=providerCalls===1?{kind:'conversation',reply:plan,text:null}:{kind:'replacement',reply:'Here is the text for this editor.',text:proposed};
+      providerCalls++;const output=providerCalls===1?{kind:'conversation',reply:plan,text:null,analysisRequest:null}:{kind:'replacement',reply:'Here is the text for this editor.',text:proposed,analysisRequest:null};
       return {id:'resp_local_'+body.request.requestId,model:'gpt-6-luna',status:'completed',service_tier:'default',output_text:JSON.stringify(output),usage:{input_tokens:100,input_tokens_details:{cached_tokens:0},output_tokens:100}} as never;
      }});
      assert.equal(result.state,'complete',JSON.stringify(result));return route.fulfill({json:{ok:true,result}});

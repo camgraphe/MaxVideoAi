@@ -4,23 +4,44 @@ import clsx from 'clsx';
 import { memo, useEffect, useRef } from 'react';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/locales';
+import { localizeMarketingPathname } from '@/lib/i18n/marketing-locale-switch';
 import { MarketingNavEntryContent } from '@/components/marketing/MarketingNavEntryContent';
-import { MARKETING_NAV_DROPDOWNS, type MarketingTopNavLink } from '@/config/navigation';
+import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 
 type MarketingTranslate = <T = unknown>(key: string, fallback?: T) => T | undefined;
 type Props = {
+  dropdowns: MarketingHeaderNavigation['dropdowns'];
   desktopDropdownOpen: string | null;
-  links: readonly MarketingTopNavLink[];
+  links: MarketingHeaderNavigation['links'];
   pathname: string | null;
   t: MarketingTranslate;
   onCloseDesktopDropdown: (delay?: number) => void;
   onOpenDesktopDropdown: (key: string) => void;
 };
 
+// A streamed menu needs JavaScript to reveal its full subtree. Keep the six
+// section destinations usable in the original desktop document while it waits.
+export function MarketingDesktopSectionLinks({ links, dropdowns, pathname, locale, t }:
+  Pick<Props, 'links' | 'dropdowns' | 'pathname' | 't'> & { locale: AppLocale }) {
+  return (
+    <nav aria-label={t('nav.primaryNavigation', 'Main navigation')} className="marketing-desktop-nav marketing-section-links hidden lg:flex">
+      {links.map(item => (
+        <a key={item.key} href={localizeMarketingPathname(item.href, locale)} className="marketing-nav-trigger"
+          aria-current={pathname === item.href ? 'page' : undefined}>
+          {t<string>(`nav.linkLabels.${item.key}`, item.key)}
+          {item.key === 'connect' ? <span className="marketing-mcp-tag">MCP</span> : null}
+          {dropdowns[item.key] ? <span aria-hidden="true" className="inline-block size-3" /> : null}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 // Mobile/account state must not rebuild the unchanged, CSS-hidden desktop menus.
 // Keep all links server-rendered; actual desktop, route and locale changes still render.
 // Decorative DOM waits until the panel becomes visible.
-export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDropdownOpen, links, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
+export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDropdownOpen, dropdowns, links, pathname, t, onCloseDesktopDropdown, onOpenDesktopDropdown }: Props) {
   const navRef = useRef<HTMLElement>(null);
   const closeRef = useRef(onCloseDesktopDropdown);
   closeRef.current = onCloseDesktopDropdown;
@@ -35,7 +56,7 @@ export const MarketingDesktopNav = memo(function MarketingDesktopNav({ desktopDr
 
   return <nav ref={navRef} aria-label={t('nav.primaryNavigation', 'Main navigation')} className="marketing-desktop-nav hidden lg:flex">
     {links.map(item => {
-      const dropdown = MARKETING_NAV_DROPDOWNS[item.key];
+      const dropdown = dropdowns[item.key];
       const label = t<string>(`nav.linkLabels.${item.key}`, item.key) ?? item.key;
       const active = pathname === item.href || pathname?.startsWith(`${item.href}/`) || dropdown?.items.some(entry => typeof entry.href === 'string' && (pathname === entry.href || pathname?.startsWith(`${entry.href}/`)));
       if (!dropdown) return <Link key={item.key} href={item.href} prefetch={false} className="marketing-nav-trigger" aria-current={active ? 'page' : undefined}>{label}</Link>;

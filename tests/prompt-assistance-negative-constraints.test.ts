@@ -57,7 +57,7 @@ test('negative-scope cases preserve exact requests, settings, history and valid 
     assert.deepEqual(current.currentDraft.settings,context.settings);
     if(fixture.surface==='image')assert.equal(current.currentDraft.settings.watermark,false);
     else assert.equal(current.currentDraft.settings.audio,false);
-    const decoded=parsePromptProviderReply(JSON.stringify({kind:'replacement',reply:'Prepared for review.',text:fixture.replacement}),{replyFormat:PROMPT_REPLY_FORMAT});
+    const decoded=parsePromptProviderReply(JSON.stringify({kind:'replacement',reply:'Prepared for review.',text:fixture.replacement,analysisRequest:null}),{replyFormat:PROMPT_REPLY_FORMAT});
     assert.deepEqual(decoded,{reply:'Prepared for review.',text:fixture.replacement},'Valid explicit exclusions and literal text must survive without a keyword filter.');
   });
 });

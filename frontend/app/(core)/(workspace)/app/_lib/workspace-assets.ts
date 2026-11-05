@@ -7,8 +7,11 @@ import {
   type ResolvedEngineReferenceBudget,
 } from '@/lib/reference-budget';
 import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
+import { storyboardImageRef, storyboardReferenceJobId } from './workspace-storyboard-reference-identity';
 
 export type ReferenceAsset = {
+  storyboardJobId?: string;
+  identityResolutionFailed?: boolean;
   ref?: ComposerAttachment['ref'];
   excerptEditing?: boolean;
   excerptSource?: ComposerAttachment['excerptSource'];
@@ -627,8 +630,10 @@ export function buildComposerAttachments(
       asset
         ? {
             id: asset.id,
-            assetId: asset.assetId,
-            ref: asset.ref,
+            // Generation preflight retains its legacy marker; Milo receives only owned identity.
+            assetId: storyboardReferenceJobId(asset) ? undefined : asset.assetId,
+            ref: storyboardReferenceJobId(asset) ? storyboardImageRef(asset.ref, storyboardReferenceJobId(asset)) : asset.ref,
+            identityResolving: Boolean(asset.status === 'ready' && storyboardReferenceJobId(asset) && !storyboardImageRef(asset.ref, storyboardReferenceJobId(asset)) && !asset.identityResolutionFailed),
             url: asset.url,
             durationSec: asset.durationSec,
             excerptEditing: asset.excerptEditing,

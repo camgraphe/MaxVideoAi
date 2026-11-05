@@ -17,7 +17,7 @@ const stubs: Record<string, string> = {
   '@/server/videos': 'export const listStarterPlaylistVideos = async limit => { fixture.playlistLimits.push(limit); return fixture.videos.slice(0, limit); };',
   '@/server/seedance-workflow-request': 'export const seedanceWorkflowEnabled = () => false;',
   'next/headers': 'export const headers = async () => ({ get: () => "localhost" });',
-  './AppClient': 'export default function AppClient() { return null; }',
+  './WorkspaceEntry': 'export default function WorkspaceEntry() { return null; }',
 };
 const bundled = build({
   absWorkingDir: frontend,

@@ -1,39 +1,36 @@
 import Image from 'next/image';
+import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import { WorkspaceEmptyPreview } from '@/components/composer/WorkspaceEmptyPreview.client';
 import { WorkspacePreviewColumn } from '@/components/groups/WorkspacePreviewColumn';
 
 const COMPOSITE_PREVIEW_POSTER_SIZES = '(max-width: 1024px) 100vw, calc(100vw - 420px)';
 
-export function CompositePreviewDockSkeleton() {
-  return (
-    <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>
-      <WorkspacePreviewHeaderSkeleton />
-      <div className="px-0 py-0">
-        <WorkspacePreviewColumn>
-          <div className="aspect-video w-full rounded-card border border-surface-on-media-25 bg-placeholder p-[8px]">
-            <div className="skeleton h-full w-full rounded-card" />
-          </div>
-          <WorkspacePreviewToolbarSkeleton />
-        </WorkspacePreviewColumn>
-      </div>
-    </section>
-  );
-}
-
 export function GalleryRailSkeleton({ responsive = false }: { responsive?: boolean }) {
+  if (!responsive) {
+    return (
+      <div className="w-full rounded-card border border-border bg-surface-glass-60 p-3" aria-hidden>
+        <div className="mb-3 h-4 w-24 rounded-full bg-skeleton" />
+        <div className="space-y-3">
+          <div className="aspect-video rounded-card bg-skeleton" />
+          <div className="aspect-video rounded-card bg-skeleton" />
+        </div>
+      </div>
+    );
+  }
   return (
     <div
-      className={
-        responsive
-          ? 'flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3'
-          : 'w-full rounded-card border border-border bg-surface-glass-60 p-3'
-      }
+      data-gallery-header-in-navigation={PROMPT_ASSISTANCE_PREVIEW || undefined}
+      className="flex w-full flex-col gap-4 min-[768px]:h-[calc(125vh-var(--header-height))] min-[768px]:max-w-[232px] min-[768px]:shrink-0 min-[768px]:gap-0 min-[768px]:bg-bg/80 min-[768px]:px-2 min-[768px]:pb-6 min-[768px]:pt-4 min-[900px]:max-w-[264px] min-[1088px]:max-w-[312px] min-[1088px]:px-3"
       aria-hidden
     >
-      <div className="mb-3 h-4 w-24 rounded-full bg-skeleton" />
-      <div className="space-y-3">
-        <div className="aspect-video rounded-card bg-skeleton" />
-        <div className="aspect-video rounded-card bg-skeleton" />
+      <div className={PROMPT_ASSISTANCE_PREVIEW ? 'h-11 min-[768px]:hidden' : 'h-11'} />
+      <div className="app-gallery-rail-grid mt-1 space-y-4 min-[768px]:pr-6 min-[768px]:pt-3">
+        {[0, 1, 2, 3].map((index) => (
+          <div key={index} className="app-rail-media-card">
+            <div className="aspect-video rounded-card bg-skeleton" />
+            <div className="app-rail-caption"><span className="h-3 w-20 rounded-full bg-skeleton" /></div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -41,7 +38,7 @@ export function GalleryRailSkeleton({ responsive = false }: { responsive?: boole
 
 export function WorkspaceBootPreview({ posterSrc }: { posterSrc?: string | null }) {
   if (!posterSrc) {
-    return <><section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section><WorkspaceEmptyPreview media="video" /></>;
+    return <>{!PROMPT_ASSISTANCE_PREVIEW ? <section className="app-model-strip rounded-card border border-border bg-surface shadow-card" aria-hidden><WorkspacePreviewHeaderSkeleton /></section> : null}<WorkspaceEmptyPreview media="video" /></>;
   }
   return (
     <section className="rounded-card border border-border bg-surface-glass-90 shadow-card" aria-hidden>

@@ -39,6 +39,7 @@ export interface ComposerProps {
   density?: 'default' | 'workspace';
   compactPrompt?: boolean;
   assistance?: import('./usePromptAssistancePreview').PromptAssistanceContext;
+  referenceManagement?:import('./PromptAssistanceComposer.client').PromptReferenceManagement;
   engine: EngineCaps;
   caps?: CapabilityCaps;
   prompt: string;

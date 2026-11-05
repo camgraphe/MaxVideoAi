@@ -1,5 +1,6 @@
 import {applicationSettingChanges,type ProposalApplicationContext} from './application-review';
-export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string; deliveryFailed?:boolean };
+import type {PromptAnalysisRequest} from './analysis-request';
+export type PreviewMessage = { id: string; role: 'user' | 'assistant'; text: string; deliveryFailed?:boolean; analysisRequest?:PromptAnalysisRequest };
 export type PreviewState = {
   scope: string; fingerprint: string; revision: number; mode: 'prompt' | 'milo'; message: string;
   messages: PreviewMessage[];
@@ -16,10 +17,10 @@ type Action =
   | { type: 'mode'; mode: PreviewState['mode'] }
   | { type: 'message' | 'edit'; text: string }
   | { type: 'send'; id: number; message: string }
-  | { type: 'reply'; id: number; text: string | null; reply: string; requestId?:string }
+  | { type: 'reply'; id: number; text: string | null; reply: string; requestId?:string; analysisRequest?:PromptAnalysisRequest }
   | { type: 'failed'; id: number; restore?:boolean }
   | { type: 'rejected'; message:string }
-  | { type: 'restored'; message: string; text: string | null; reply: string; requestId?:string }
+  | { type: 'restored'; message: string; text: string | null; reply: string; requestId?:string; analysisRequest?:PromptAnalysisRequest }
   | { type: 'review' }
   | { type: 'appliedReviewed'; previous: string; fingerprint: string; applicationContext?:ProposalApplicationContext|null }
   | { type: 'applied'; previous: string; fingerprint: string; applicationContext?:ProposalApplicationContext|null }
@@ -63,14 +64,14 @@ export function previewReducer(state: PreviewState, action: Action): PreviewStat
     case 'edit': return state.proposal ? { ...state, proposal: { ...state.proposal, text: action.text },review:state.review?{...state.review,text:action.text}:null } : state;
     case 'send': return state.pending || !action.message.trim() ? state : { ...state, message: '', review:null,pending: { id: action.id, revision: state.revision,applicationContext:state.applicationContext,compatibilityRevision:state.compatibilityRevision }, messages: [...state.messages, { id: `${action.id}-user`, role: 'user', text: action.message }] };
     case 'reply':
-      return state.pending?.id !== action.id ? state : { ...state, pending: null, review:null,proposal: action.text ? { text: action.text, id:action.id,requestId:action.requestId,revision: state.pending.revision,applicationContext:state.pending.applicationContext,compatibilityRevision:state.pending.compatibilityRevision } : state.proposal, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply }] };
+      return state.pending?.id !== action.id ? state : { ...state, pending: null, review:null,proposal: action.text ? { text: action.text, id:action.id,requestId:action.requestId,revision: state.pending.revision,applicationContext:state.pending.applicationContext,compatibilityRevision:state.pending.compatibilityRevision } : state.proposal, messages: [...state.messages, { id: `${action.id}-assistant`, role: 'assistant', text: action.reply, ...(action.analysisRequest?{analysisRequest:action.analysisRequest}:{}) }] };
     case 'failed': {
       if(state.pending?.id!==action.id)return state;
       const failedId=`${action.id}-user`;
       return {...state,pending:null,...(action.restore?{message:state.message||state.messages.find(item=>item.id===failedId)?.text||'',messages:state.messages.filter(item=>item.id!==failedId)}:{messages:state.messages.map(item=>item.id===failedId?{...item,deliveryFailed:true}:item)})};
     }
     case 'rejected': return {...state,message:state.message||action.message};
-    case 'restored': return {...state,pending:null,review:null,proposal:action.text?{text:action.text,revision:-1}:null,messages:[...state.messages,{id:'recovered-user',role:'user',text:action.message},{id:'recovered-assistant',role:'assistant',text:action.reply}]};
+    case 'restored': return {...state,pending:null,review:null,proposal:action.text?{text:action.text,revision:-1}:null,messages:[...state.messages,{id:'recovered-user',role:'user',text:action.message},{id:'recovered-assistant',role:'assistant',text:action.reply,...(action.analysisRequest?{analysisRequest:action.analysisRequest}:{})}]};
     case 'review': return !canReviewProposal(state)?state:{...state,review:{proposalId:state.proposal!.id!,revision:state.revision,fingerprint:state.fingerprint,text:state.proposal!.text,requestId:state.proposal!.requestId}};
     case 'appliedReviewed':
     case 'applied': {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {writePromptChat,revokePromptChatReview,type PromptChatRecord} from '../frontend/components/composer/prompt-chat-storage';
+import {readPromptChat,writePromptChat,revokePromptChatReview,type PromptChatRecord} from '../frontend/components/composer/prompt-chat-storage';
 
 const key='milo-composer:v2:["owner","video","create"]';
 const sessionId='00000000-0000-4000-8000-000000000001',requestId='00000000-0000-4000-8000-000000000002';
@@ -14,6 +14,16 @@ async function withStorage<T>(value:ReturnType<typeof storage>,run:()=>T|Promise
 test('cache writes report their actual acknowledgement',async()=>{
  const value=record();await withStorage(storage(value,()=>true),()=>assert.equal(writePromptChat(key,value),false));
  await withStorage(storage(value,()=>false),()=>assert.equal(writePromptChat(key,value),true));
+});
+
+test('invalid overlimit local prose cannot discard valid chat and pending recovery identities',async()=>{
+ const value=record(true);value.local!.message='B'+'x'.repeat(50000);
+ await withStorage(storage(value,()=>false),()=>{
+  const restored=readPromptChat(key);assert.ok(restored);
+  assert.equal(restored.sessionId,sessionId);assert.deepEqual(restored.pending,{sessionId,requestId});
+  assert.equal(restored.local,undefined,'unrestorable prose is omitted, never silently shortened');
+ });
+ await withStorage(storage({...value,sessionId:'invalid'},()=>false),()=>assert.equal(readPromptChat(key),null,'invalid chat identity remains rejected'));
 });
 
 test('a refused false proof falls back to proof-free cache while preserving pending identities',async()=>{
@@ -54,4 +64,21 @@ test('a pending message intrinsically prevents discard even if the caller flag i
 test('a storage adapter that silently drops a write is not treated as an acknowledgement',async()=>{
  const value=record(),mock=storage(value,()=>false);mock.setItem=()=>{};
  await withStorage(mock,()=>assert.equal(writePromptChat(key,{...value,local:undefined}),false));
+});
+
+test('pending reference labels are bounded optional metadata and never invalidate recovery identity',async()=>{
+ const labels=[{fieldId:'image_urls',slot:0,label:'Image 1'}];
+ const value={...record(true),pending:{sessionId,requestId,references:labels}};
+ await withStorage(storage(value,()=>false),()=>assert.deepEqual(readPromptChat(key)?.pending,value.pending));
+ for(const references of [Array.from({length:61},()=>labels[0]),[{...labels[0],label:'x'.repeat(41)}],[{...labels[0],slot:100}],[{...labels[0],ref:{assetId:'private'}}]]){
+  await withStorage(storage({...value,pending:{sessionId,requestId,references}} as any,()=>false),()=>{const pending=readPromptChat(key)?.pending;assert.equal(pending?.sessionId,sessionId);assert.equal(pending?.requestId,requestId);assert.equal(pending?.references,undefined);});
+ }
+});
+
+test('quota fallback can discard reference labels while preserving minimal pending identity',async()=>{
+ const value={...record(true),pending:{sessionId,requestId,references:[{fieldId:'image_urls',slot:0,label:'Image 1'}]}};
+ const mock=storage(value,text=>text.includes('"references"')||text.includes('"local"'));
+ await withStorage(mock,()=>{
+  assert.equal(revokePromptChatReview(key,value,true).kind,'saved');assert.deepEqual(readPromptChat(key)?.pending,{sessionId,requestId});assert.equal(mock.removals,0);
+ });
 });

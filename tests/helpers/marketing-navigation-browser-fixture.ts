@@ -38,6 +38,7 @@ const boundaries: Record<string, string> = {
 const fixture = `
   import {useEffect,useState} from 'react';
   import {MarketingNav} from './components/marketing/MarketingNav';
+  import {marketingHeaderNavigation} from './config/public-marketing-navigation';
   import {I18nProvider} from './lib/i18n/I18nProvider';
   import en from './messages/en.json';
   import fr from './messages/fr.json';
@@ -45,6 +46,7 @@ const fixture = `
   for (const dictionary of [en,fr,es]) {
     const labels=dictionary.nav.dropdown.models.items;
     Object.defineProperty(dictionary.nav.dropdown.models,'items',{enumerable:true,get(){
+      if(globalThis.__fixtureDesktopLabelGate)throw globalThis.__fixtureDesktopLabelGate;
       globalThis.__fixtureModelLabelReads=(globalThis.__fixtureModelLabelReads??0)+1;return labels;
     }});
   }
@@ -53,13 +55,13 @@ const fixture = `
     useEffect(()=>{window.__fixtureSetLocale=setLocale},[]);
     useEffect(()=>{window.__fixtureHydrated=true;window.__fixtureHydrationDuration=performance.now()-window.__fixtureHydrationStarted},[]);
     return <I18nProvider locale={locale} dictionary={{en,fr,es}[locale]} fallback={en}>
-      <div className={globalThis.__fixtureConfiguration.marketingSite ? "marketing-site" : undefined}><MarketingNav/><main style={{minHeight:'1800px'}}><h1>Navigation fixture</h1><a href="#after">After navigation</a></main></div>
+      <div className={globalThis.__fixtureConfiguration.marketingSite ? "marketing-site" : undefined}><MarketingNav navigation={marketingHeaderNavigation}/><main style={{minHeight:'1800px'}}><h1>Navigation fixture</h1><a href="#after">After navigation</a></main></div>
       <aside className="cookie-consent-overlay"><button type="button">Consent fixture</button></aside>
     </I18nProvider>;
   }
 `;
 
-export async function createMarketingNavigationBrowserFixture({forcePopoverFallback=false,marketingSite=true}: {forcePopoverFallback?:boolean;marketingSite?:boolean}={}) {
+export async function createMarketingNavigationBrowserFixture({forcePopoverFallback=false,marketingSite=true,deferDesktopServer=false}: {forcePopoverFallback?:boolean;marketingSite?:boolean;deferDesktopServer?:boolean}={}) {
   const directory = await mkdtemp(join(tmpdir(), 'marketing-navigation-browser-'));
   const nodeOutput = join(directory, 'fixture.cjs');
   const plugin = (external: boolean) => ({ name: 'navigation-next-boundaries', setup(builder: import('esbuild').PluginBuild) {
@@ -102,7 +104,13 @@ export async function createMarketingNavigationBrowserFixture({forcePopoverFallb
     const locale = pathname.startsWith('/fr') ? 'fr' : pathname.startsWith('/es') ? 'es' : 'en';
     const configuration = {locale,pathname,marketingSite};
     Object.assign(globalThis,{__fixtureConfiguration:configuration});
-    const markup = renderFixture();
+    let markup: string;
+    try {
+      if (deferDesktopServer) Object.assign(globalThis, { __fixtureDesktopLabelGate: new Promise(() => {}) });
+      markup = renderFixture();
+    } finally {
+      if (deferDesktopServer) Reflect.deleteProperty(globalThis, '__fixtureDesktopLabelGate');
+    }
     response.writeHead(200,{'content-type':'text/html; charset=utf-8'});
     response.end(`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${css}</style></head><body><div id="root">${markup}</div><script>
       window.process={env:{NODE_ENV:"production"}};

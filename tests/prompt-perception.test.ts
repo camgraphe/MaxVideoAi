@@ -38,4 +38,26 @@ test('image perception pairs owned pixels with canonical labels without persisti
   assert.equal(reads,1);assert.equal(result.content[0].text,'Start image (start)');assert.equal(result.content[1].type,'input_image');
   assert.ok(!JSON.stringify(result.context).includes('private.invalid'));assert.ok(!JSON.stringify(result.context).includes('base64'));
   assert.equal(result.context.references[0].perception.image,'provided');
+  // A reference can disappear between the context read and the read for pixels.
+  await assert.rejects(
+    module.preparePromptPerception('owner',request,'gpt-6-luna',context,{
+      enabled:true,
+      resolve:async()=>{throw new Error('MEDIA_NOT_AVAILABLE');},
+      image:async()=>{throw new Error('A denied reference must never reach pixel access');},
+    }),
+    {message:'MEDIA_NOT_AVAILABLE',location:{fieldId:'image_url',slot:0}},
+  );
+});
+test('analysis recommendations expose qualified profiles and Lite upgrade without granting perception',async()=>{
+  const {preparePromptPerception}=await import('../frontend/src/server/prompt-assistance/perception');
+  const input={draft:{references:[]}} as never,context={references:[],referencePerception:'metadata_only'} as never;
+  for(const model of ['gpt-6-luna','gpt-6.1-terra','gpt-6.1-sol'] as const){
+    const enabled=await preparePromptPerception('owner',input,model,context,{enabled:true,analysisPolicy:()=>({video:{},audio:null} as never)});
+    assert.deepEqual(enabled.context.analysisAvailability,{visual:true,audio:false,requiresUpgrade:model==='gpt-6-luna'});
+    assert.equal(enabled.context.referencePerception,'metadata_only');assert.deepEqual(enabled.content,[]);
+    const disabled=await preparePromptPerception('owner',input,model,context,{enabled:false,analysisPolicy:()=>({video:{},audio:{}} as never)});
+    assert.equal(disabled.context.analysisAvailability?.visual,false);assert.equal(disabled.context.analysisAvailability?.audio,false);
+    const unqualified=await preparePromptPerception('owner',input,model,context,{enabled:true,analysisPolicy:()=>null});
+    assert.equal(unqualified.context.analysisAvailability?.visual,false);assert.equal(unqualified.context.analysisAvailability?.audio,false);
+  }
 });

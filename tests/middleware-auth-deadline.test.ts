@@ -54,7 +54,7 @@ test('auth unavailability gives a translated private response while preserving s
   }
 });
 
-test('middleware auth bounds session and claims stalls, retains a completed refresh and ignores late cookies', { timeout: 22_000 }, async () => {
+test('middleware auth bounds session and user verification stalls, retains a completed refresh and ignores late cookies', { timeout: 22_000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'middleware-auth-deadline-'));
   const fixture: { options?: any; refresh?: boolean } = {};
   const state = globalThis as typeof globalThis & { __middlewareAuthDeadline?: typeof fixture };
@@ -69,7 +69,7 @@ test('middleware auth bounds session and claims stalls, retains a completed refr
       plugins: [{ name: 'stalled-auth-boundary', setup(builder) {
         builder.onResolve({ filter: /^@supabase\/ssr$/ }, () => ({ path: 'ssr', namespace: 'fixture' }));
         builder.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents:
-          "export function createServerClient(url,key,options){const state=globalThis.__middlewareAuthDeadline;state.options=options;return {auth:{getSession:()=>{if(!state.refresh)return new Promise(()=>{});options.cookies.setAll([{name:'sb-test-auth-token',value:'rotated',options:{httpOnly:true,path:'/'}}]);return Promise.resolve({data:{session:{access_token:'verified-by-auth-next'}},error:null});},getClaims:()=>{if(!state.refresh)throw new Error('unverified claims must not be used');return new Promise(()=>{});}}};}" }));
+          "export function createServerClient(url,key,options){const state=globalThis.__middlewareAuthDeadline;state.options=options;return {auth:{getSession:()=>{if(!state.refresh)return new Promise(()=>{});options.cookies.setAll([{name:'sb-test-auth-token',value:'rotated',options:{httpOnly:true,path:'/'}}]);return Promise.resolve({data:{session:{access_token:'verified-by-auth-next'}},error:null});},getUser:()=>{if(!state.refresh)throw new Error('unverified session must not be used');return new Promise(()=>{});}}};}" }));
         builder.onResolve({ filter: /^next\/headers$/ }, () => ({ path: 'next-headers', namespace: 'headers' }));
         builder.onLoad({ filter: /.*/, namespace: 'headers' }, () => ({ contents: 'export async function cookies(){throw new Error("middleware must use request cookies");}' }));
       } }],

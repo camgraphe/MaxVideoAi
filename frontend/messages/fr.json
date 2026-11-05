@@ -2839,12 +2839,12 @@
       ],
       "library": [
         {
-          "href": "/fr/comparatif/seedance-2-0-vs-sora-2",
-          "label": "Seedance 2.0 vs Sora 2"
+          "href": "/studio",
+          "label": "Créer avec Studio"
         },
         {
-          "href": "/fr/modeles",
-          "label": "Modèles"
+          "href": "/examples",
+          "label": "Exemples publics"
         }
       ]
     },
@@ -2852,8 +2852,14 @@
       "heading": "Bibliothèque",
       "liveLabel": "En ligne",
       "comingSoonLabel": "À venir",
-      "summaryLive": "Parcourez les médias enregistrés dans votre compte et réutilisez-les comme références dans les modes de génération compatibles.",
-      "summarySoon": "Documentation à venir."
+      "summaryLive": "Ouvrez Médias dans votre compte connecté pour retrouver les images, vidéos et sons de vos créations et vos fichiers importés enregistrés. Votre bibliothèque personnelle est distincte de la galerie publique Exemples.",
+      "summarySoon": "Documentation à venir.",
+      "steps": [
+        "Retrouvez un résultat : utilisez les filtres par type de média ou la recherche ; passez à l’historique des créations pour vérifier l’état d’un job.",
+        "Consultez les informations disponibles : ouvrez le résultat pour le voir ou l’écouter, lire ses dimensions ou sa durée, et retrouver le prompt ou les réglages lorsqu’ils sont enregistrés.",
+        "Gardez l’original : utilisez Télécharger l’original sur une sortie disponible. Téléchargez les fichiers importants plutôt que de compter sur un lien de média copié, qui peut expirer.",
+        "Repartez de ce média : choisissez une référence ou un outil compatible. Reprenez les réglages d’un résultat lorsque cette action est proposée, puis vérifiez les entrées et le nouveau prix."
+      ]
     },
     "feedback": {
       "srTitle": "Retour",

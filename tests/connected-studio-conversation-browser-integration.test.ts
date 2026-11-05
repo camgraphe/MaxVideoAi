@@ -58,10 +58,26 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     }
     let diagnosticPage = page;
     const mediaFailures: string[] = [];
+    const errors: string[] = [];
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
     page.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
+    page.on('pageerror',error => {errors.push(error.message);pageErrors.push(error.message.slice(0,1000));});
+    page.on('console',message => {
+      if(message.type()!=='error')return;
+      consoleErrors.push(message.text().slice(0,1000));
+      if(consoleErrors.length>10)consoleErrors.shift();
+      if(/hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text()))errors.push(message.text());
+    });
     diagnose = async () => {
       await proof('failure',diagnosticPage);
       return {
+        path: new URL(diagnosticPage.url()).pathname,
+        pageErrors: pageErrors.slice(-10),
+        consoleErrors,
+        headings: (await diagnosticPage.getByRole('heading').allTextContents()).slice(0,10).map(text=>text.slice(0,200)),
+        statuses: (await diagnosticPage.getByRole('status').allTextContents()).slice(0,10).map(text=>text.slice(0,500)),
+        bodyTail: (await diagnosticPage.locator('body').innerText({timeout:1000})).slice(-2000),
         mediaFailures,
         monitor: await diagnosticPage.getByLabel('Film monitor',{exact: true}).count(),
         alerts: await diagnosticPage.getByRole('alert').allTextContents(),
@@ -71,9 +87,6 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
         })),
       };
     };
-    const errors: string[] = [];
-    page.on('pageerror',error => errors.push(error.message));
-    page.on('console',message => {if (message.type() === 'error' && /hydration|Hydration|Each child|cannot be a descendant|Cannot update/i.test(message.text())) errors.push(message.text());});
     const auxiliary = new Map([['/api/member-status',{tier: 'Member'}],['/api/wallet',{balance: 0,balanceCents: 0,currency: 'USD'}],['/api/admin/access',{ok: false}],['/api/legal/reconsent',{ok: true,needsReconsent: false,documents: []}],['/api/legal/cookies/version',{ok: true,version: 'native-timeline',publishedAt: null}],['/api/legal/cookies',{ok: true,version: 'native-timeline'}]]);
     for (const [path,json] of auxiliary) await page.route(runtime.browserOrigin+path,route => route.fulfill({json}));
     const url = runtime.browserOrigin+'/app/studio/conversation/'+project.projectId;
@@ -386,13 +399,26 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await expect(page.getByRole('dialog',{name:'Your projects',exact:true})).toBeVisible();
     await proof('projects-entry');
     const previousProjectId=new URL(page.url()).pathname.split('/').at(-1);
-    const creation=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/studio/conversation-projects' && response.request().method()==='POST');
-    await page.getByRole('button',{name:'New conversation',exact:true}).click();
-    const response=await creation;
-    assert.equal(response.status(),200);
-    const newConversation=await response.json();
-    assert.equal(newConversation.ok,true);assert.ok(newConversation.result.projectId);assert.notEqual(newConversation.result.projectId,previousProjectId);
+    const creation=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/studio/conversation-projects' && response.request().method()==='POST').then(async response=>{
+      assert.equal(response.status(),200);
+      const body=await response.json();
+      assert.equal(body.ok,true);assert.ok(body.result.projectId);assert.notEqual(body.result.projectId,previousProjectId);
+      return body;
+    });
+    // Navigation can finish before the new workspace's history request. Register
+    // before clicking, including when creation and history both return quickly.
+    const historyLoaded=page.waitForResponse(async response=>{
+      if(response.request().method()!=='GET'||!new URL(response.url()).pathname.endsWith('/image-conversation'))return false;
+      const created=await creation;
+      return response.url()===`${runtime.browserOrigin}/api/studio/projects/${created.result.projectId}/image-conversation`;
+    },{timeout:30_000});
+    const [,newConversation,history]=await Promise.all([
+      page.getByRole('button',{name:'New conversation',exact:true}).click(),creation,historyLoaded,
+    ]);
     await expect(page).toHaveURL(`${runtime.browserOrigin}/app/studio/conversation/${newConversation.result.projectId}`,{timeout:30000});
+    assert.equal(history.status(),200);
+    const historyBody=await history.json();
+    assert.equal(historyBody.ok,true);assert.equal(historyBody.result.projectId,newConversation.result.projectId);
     await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible();
     await expect(page.getByRole('button',{name:'Open timeline',exact:true})).toBeVisible();
     await proof('empty-workspace');

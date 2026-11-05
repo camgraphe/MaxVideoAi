@@ -48,13 +48,13 @@ test('Pay-as-you-go view is a short pure section orchestrator', () => {
   );
   const ordered = [
     'PayAsYouGoHeroSection',
+    'PayAsYouGoWorkflowSection',
     'PayAsYouGoVideoShowcase',
     'PayAsYouGoNaturalQuestionsSection',
     'PayAsYouGoModelTestingOrderSection',
     'PayAsYouGoMeaningSection',
     'PayAsYouGoAudienceFitSection',
     'PayAsYouGoSubscriptionComparisonSection',
-    'PayAsYouGoWorkflowSection',
     'PayAsYouGoQuoteFactorsSection',
     'PayAsYouGoPricePerModelSection',
     'PayAsYouGoPriceLookupShortcutsSection',

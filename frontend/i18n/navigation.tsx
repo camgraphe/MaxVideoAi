@@ -9,7 +9,7 @@ import type {
 } from 'react';
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from '@/i18n/routing';
-import { defaultLocale, localePathnames } from '@/i18n/locales';
+import { defaultLocale, localePathnames, type AppLocale } from '@/i18n/locales';
 import { applyNofollowRel } from '@/lib/seo/nofollow';
 
 const BYPASS_PREFIXES = [
@@ -50,6 +50,7 @@ type LocalizedLinkProps = PropsWithChildren<
   Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'hrefLang'> &
     Omit<NextLinkProps, 'href' | 'hrefLang'> & {
     href: LocalizedLinkHref;
+    currentLocale?: AppLocale;
     className?: string;
     rel?: string;
     hrefLang?: string | null | false;
@@ -101,18 +102,33 @@ function normalizeHref(href: LocalizedLinkHref): LocalizedLinkHref {
   return href;
 }
 
-export function Link({ children, className, rel, hrefLang, ...rest }: LocalizedLinkProps): ReactElement {
+// A page that already knows its locale can publish the final href directly to NextLink.
+// Use the router's own path compiler and keep query/hash handling with NextLink.
+function resolveCurrentLocaleHref(href: LocalizedLinkHref, locale: AppLocale): NextLinkProps['href'] {
+  const path = extractHref(href);
+  if (!path || !path.startsWith('/')) return href;
+  if (typeof href === 'object' && (('host' in href && href.host) || ('hostname' in href && href.hostname))) return href;
+  const params = typeof href === 'object' && 'params' in href ? href.params : undefined;
+  const pathname = getPathname({ locale, href: { pathname: path, params } as Parameters<typeof getPathname>[0]['href'] });
+  if (typeof href === 'string') return pathname;
+  const { params: _params, ...url } = href as Exclude<LocalizedLinkHref, string> & { params?: unknown };
+  return { ...url, pathname };
+}
+
+export function Link({ children, className, rel, hrefLang, currentLocale, ...rest }: LocalizedLinkProps): ReactElement {
   const normalizedHrefLang =
     typeof hrefLang === 'string' && hrefLang.trim().length ? hrefLang : undefined;
   const normalizedHref = normalizeHref(rest.href);
   const resolvedRel = applyNofollowRel(rel, normalizedHref);
   const normalizedRest = { ...rest, href: normalizedHref };
 
-  if (shouldBypassLocalization(normalizedRest.href)) {
+  const bypass = shouldBypassLocalization(normalizedHref);
+  if (bypass || (currentLocale && normalizedRest.locale == null)) {
     const { locale: _locale, ...nextLinkRest } = normalizedRest;
     return (
       <NextLink
         {...(nextLinkRest as unknown as NextLinkProps)}
+        href={currentLocale && !bypass ? resolveCurrentLocaleHref(normalizedHref, currentLocale) : normalizedHref}
         className={className}
         rel={resolvedRel}
         hrefLang={normalizedHrefLang}

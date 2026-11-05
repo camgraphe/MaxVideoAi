@@ -9,10 +9,63 @@ const source=`import {useState} from 'react';import {createRoot} from 'react-dom
 import {PromptAssistanceComposer} from './components/composer/PromptAssistanceComposer.client';
 function Fixture(){const [owner,setOwner]=useState('owner');globalThis.changeOwner=()=>setOwner('another');return <PromptAssistanceComposer context={{scopeKey:owner,contextKey:'video',live:{surface:'video',engineId:'seedance-2-5',mode:'t2v',settings:{durationSec:5},references:[]}}} locale="en" modelLabel="Seedance 2.5" draftText="Original prompt" onApplyText={()=>{}}><textarea aria-label="Manual prompt" defaultValue="Original prompt"/></PromptAssistanceComposer>;}createRoot(document.getElementById('root')).render(<Fixture/>);`;
 
+for(const event of ['focus','visibilitychange'] as const)test(`returning to the chat refreshes a support refund and releases stale funding rejection (${event})`,{timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true}),browser=await chromium.launch();
+ try{
+  const page=await browser.newPage();let reads=0;const sent:any[]=[];
+  let status:StudioAssistanceStatus={...initialStatus,selectedModel:'gpt-6.1-terra',mode:'included_sol'};
+  await page.route('**/api/prompt-assistance',async route=>{
+   if(route.request().method()==='GET'){reads++;return route.fulfill({json:{ok:true,result:status}});}
+   const body=route.request().postDataJSON();assert.equal(body.action,'message');const req=body.request;sent.push(req);
+   return route.fulfill({json:{ok:true,result:{sessionId:req.sessionId,requestId:req.requestId,draftRevision:req.draftRevision,target:'prompt',message:req.message,assistance:status,
+    ...(sent.length===1?{state:'failed',error:'SPENDING_LIMIT_EXCEEDED',safeToRetry:true,nextAction:{type:'studio_assistance',reason:'included_exhausted',safeToStartNewRequest:true,completedModelCalls:0,canStartFollowup:false}}:{state:'complete',reply:{reply:'A new explicit reply after the refund.',text:null}})}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const input=page.locator('[data-assistance-message]'),send=page.getByRole('button',{name:'Send message to Milo',exact:true});
+  await input.fill('Keep this creative brief.');await send.click();
+  await expect(input).toHaveValue('Keep this creative brief.');await expect(page.getByRole('button',{name:'Send with Lite',exact:true})).toBeVisible();
+  await expect(send).toBeDisabled();await expect.poll(()=>reads).toBeGreaterThan(1);
+  const before=reads;
+  status={...status,revision:status.revision+1,credits:{...status.credits!,included:{...status.credits!.included,remaining:180}}};
+  await page.evaluate(event=>{
+   if(event==='focus')window.dispatchEvent(new Event('focus'));
+   else{Object.defineProperty(document,'visibilityState',{value:'visible',configurable:true});document.dispatchEvent(new Event('visibilitychange'));}
+  },event);
+  await expect.poll(()=>reads).toBeGreaterThan(before);await expect(send).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Send with Lite',exact:true})).toHaveCount(0);assert.equal(sent.length,1,'a refund status refresh never replays a declined call');
+  await send.click();await expect(page.getByText('A new explicit reply after the refund.',{exact:true})).toBeVisible();
+  assert.equal(sent.length,2);assert.notEqual(sent[0].requestId,sent[1].requestId);assert.equal(sent[0].sessionId,sent[1].sessionId);
+  assert.equal(sent[1].message,'Keep this creative brief.');assert.equal(sent[1].assistanceRevision,status.revision);
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('confirmed app output refund feedback is truthful and permits a fresh explicit message',{timeout:90_000},async()=>{
+ const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true}),browser=await chromium.launch();
+ try{
+  const page=await browser.newPage();const sent:any[]=[];
+  const status={...initialStatus,revision:initialStatus.revision+1};
+  await page.route('**/api/prompt-assistance',async route=>{
+   if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:status}});
+   const req=route.request().postDataJSON().request;sent.push(req);
+   return route.fulfill({json:{ok:true,result:{sessionId:req.sessionId,requestId:req.requestId,draftRevision:req.draftRevision,target:'prompt',message:req.message,assistance:status,
+    ...(sent.length===1?{state:'failed',error:'OUTPUT_INVALID_CREDITS_RESTORED',safeToRetry:false}:{state:'complete',reply:{reply:'The fresh reply.',text:null}})}}});
+  });
+  await page.goto(fixture.url);await page.getByRole('tab',{name:'AI assistant',exact:true}).click();
+  const input=page.locator('[data-assistance-message]'),send=page.getByRole('button',{name:'Send message to Milo',exact:true});
+  await input.fill('First brief.');await send.click();
+  await expect(page.getByText('The credits charged for this request were restored.',{exact:false})).toBeVisible();
+  await expect(page.getByText('Recorded usage still applies',{exact:false})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Check reply',exact:true})).toHaveCount(0);assert.equal(sent.length,1);
+  await input.fill('A fresh brief.');await expect(send).toBeEnabled();await send.click();await expect(page.getByText('The fresh reply.',{exact:true})).toBeVisible();
+  assert.equal(sent.length,2);assert.notEqual(sent[0].requestId,sent[1].requestId);
+  await page.getByRole('tab',{name:'Prompt',exact:true}).click();await expect(page.getByRole('textbox',{name:'Manual prompt'})).toHaveValue('Original prompt');
+ }finally{await browser.close();await fixture.close();}
+});
+
 test('composer keeps a declined message editable, buys nothing, and sends once only after an explicit Lite choice',{timeout:90_000},async()=>{
  const fixture=await startWorkspaceReferenceFixture({source,config:{},assistanceLive:true}),browser=await chromium.launch({headless:true});
  try{
-  const page=await browser.newPage({viewport:{width:390,height:844}});let status:StudioAssistanceStatus={...initialStatus,selectedModel:'gpt-6.1-terra' as const,mode:'included_sol' as const};const calls:any[]=[];
+  const page=await browser.newPage({viewport:{width:390,height:844}});let status:StudioAssistanceStatus={...initialStatus,selectedModel:'gpt-6.1-terra' as const,mode:'included_sol' as const,credits:{...initialStatus.credits!,included:{...initialStatus.credits!.included,remaining:90},purchased:{total:2000,remaining:120,reserved:0,packs:[{id:'synthetic-pack',amountCents:200,purchasedAt:'2026-10-01T00:00:00Z',total:2000,remaining:120,reserved:0}]}}};const calls:any[]=[];
   await page.route('**/api/prompt-assistance',async route=>{
    if(route.request().method()==='GET')return route.fulfill({json:{ok:true,result:status}});
    const body=route.request().postDataJSON();calls.push(body);
@@ -24,6 +77,10 @@ test('composer keeps a declined message editable, buys nothing, and sends once o
   const message=page.getByRole('textbox',{name:'Message Milo',exact:true});
   await message.fill('Keep the coat.');await page.getByRole('button',{name:'Send message to Milo'}).click();
   await expect(message).toHaveValue('Keep the coat.');
+  await expect(page.getByText(/90 Milo credits available/)).toBeVisible();
+  await expect(page.getByText(/larger credit reservation.*Standard/)).toBeVisible();
+  await expect(page.getByText(/\b210 Milo credits available|\b0 Milo credits available|no credits left/i)).toHaveCount(0);
+  assert.equal(calls.length,1,'a positive but insufficient balance never changes the level or spends automatically');
   const lite=page.getByRole('button',{name:'Send with Lite',exact:true});await expect(lite).toBeVisible();
   await page.getByRole('button',{name:'Add credits',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button',{name:'Close assistance'}).click();assert.equal(calls.length,1);
@@ -35,6 +92,18 @@ test('composer keeps a declined message editable, buys nothing, and sends once o
   assert.notEqual(calls[2].request.requestId,calls[0].request.requestId);
   await expect(page.getByRole('button',{name:'Milo settings and credits'})).toContainText('Lite');
   await expect(lite).toHaveCount(0);
+ }finally{await browser.close();await fixture.close();}
+});
+
+test('an unclassified funding rejection explains the reservation and opens credit review without sending',{timeout:90_000},async()=>{
+ const feedbackSource=`import {useState} from 'react';import {createRoot} from 'react-dom/client';import {PromptAssistanceFeedback} from './components/composer/PromptAssistanceFeedback.client';function Fixture(){const[open,setOpen]=useState(false);return <><PromptAssistanceFeedback error="SPENDING_LIMIT_EXCEEDED" waiting={false} recovery={false} onRecover={()=>{throw new Error('No recovery');}} onStop={()=>{}} onCredits={()=>setOpen(true)}/>{open&&<div role="dialog" aria-label="Credit review">Review your existing credits and levels</div>}</>;}createRoot(document.getElementById('root')).render(<Fixture/>);`;
+ const fixture=await startWorkspaceReferenceFixture({source:feedbackSource,config:{}}),browser=await chromium.launch({headless:true});
+ try{const page=await browser.newPage();await page.goto(fixture.url);
+  await expect(page.getByText(/credit reservation/)).toBeVisible();
+  await expect(page.getByText(/Some credits may remain/)).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button',{name:'Credits and levels',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Credit review'})).toBeVisible();
  }finally{await browser.close();await fixture.close();}
 });
 

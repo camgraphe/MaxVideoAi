@@ -29,7 +29,7 @@ test('contradictions, malformed bodies and public limits fail before a replaceme
   {kind:'conversation',reply:' ',text:null},
   {kind:'conversation',reply:'Advice',text:null,extra:true},
   {kind:'replacement',reply:'Done',text:'x'.repeat(50001)},
-  {kind:'conversation',reply:'x'.repeat(6001),text:null},
+  {kind:'conversation',reply:'x'.repeat(50001),text:null},
  ])assert.throws(()=>parsePromptProviderReply(JSON.stringify(body),version));
  assert.throws(()=>parsePromptProviderReply('not JSON',version));
 });

@@ -24,8 +24,7 @@ async function makeRouteHarness() {
     loadBenchmarkScoreSlugs: `()=>read('scores',new Set(['veo-3-1']))`,
     listEnginePricingOverrides: `()=>read('engine-settings',{'veo-3-1':{fixture:'override'}})`,
     loadEngineKeySpecs: `()=>read('key-specs',new Map([['veo-3-1',{keySpecs:{fixture:'specs'}}]]))`,
-    listPlaylistVideos: `async(key,limit)=>{const rows=await read('gallery',playlistRows);details.push(['playlist',key,limit]);if(failAt==='playlist')throw failure;return rows;}`,
-    hasPlaylistCuration: `async(key)=>{details.push(['curation',key]);return managed;}`,
+    listModelExamplePlaylist: `async(key,limit)=>{const videos=await read('gallery',playlistRows);details.push(['playlist',key,limit]);if(failAt==='playlist')throw failure;return {videos,managed};}`,
     getPublicVideosByIds: `async(ids)=>{details.push(['public-validation',...ids]);if(failAt==='validation')throw failure;return new Map(videos.filter(v=>ids.includes(v.id)).map(v=>[v.id,v]));}`,
     getPublicVideoIds: `async(ids)=>{details.push(['public-validation',...ids]);if(failAt==='validation')throw failure;return new Set(videos.filter(v=>ids.includes(v.id)).map(v=>v.id));}`,
     quoteCurrentExamplePrices: `async(rows)=>new Map(rows.map(v=>[v.id,{kind:'unavailable',reason:'fixture'}]))`,
@@ -130,6 +129,8 @@ test('model route starts independent inputs together and preserves localized out
       assert.equal(props.galleryVideos.length,1);
       assert.deepEqual(h.details.filter((row: unknown[])=>row[0]==='public-validation'),[['public-validation','public-one']]);
       assert.equal(h.calls.length,4,'concurrency must not add reads');
+      assert.deepEqual(h.details.filter((row: unknown[]) => row[0] === 'playlist'), [['playlist','examples-veo-3-1',200]],
+        'the model reads cards and curation ownership together');
     }
     if(process.env.CWV_MODEL_EVIDENCE_PATH) await writeFile(process.env.CWV_MODEL_EVIDENCE_PATH,JSON.stringify(evidence,null,2)+'\n');
     for(const row of evidence) assert.deepEqual(row.started,['engine-settings','gallery','key-specs','scores'],row.locale);

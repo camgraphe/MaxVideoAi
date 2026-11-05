@@ -1,5 +1,6 @@
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import type { StoryboardRecentOutput } from '../_hooks/useStoryboardRecentOutputs';
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 
 export type StoryboardGeneratedImage = ImageGenerationResponse['images'][number];
 
@@ -8,6 +9,7 @@ export type KlingFirstFrameState = {
   storyboardUrl: string;
   image: StoryboardGeneratedImage;
   jobId: string | null;
+  ref?: ToolAssetRef;
 };
 
 export const KLING_FIRST_FRAME_STORAGE_KEY = 'maxvideoai.storyboard.klingFirstFrames.v1';
@@ -75,5 +77,6 @@ export function buildKlingFirstFrameFromRecentOutput(
       mimeType: firstFrame.mime,
     },
     jobId: firstFrame.jobId,
+    ref: firstFrame.jobId ? { type: 'job-output', jobId: firstFrame.jobId, outputId: firstFrame.id, kind: 'image' } : undefined,
   };
 }

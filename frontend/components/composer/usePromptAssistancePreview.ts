@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect,useReducer, useRef, useState } from 'react';
 import { canApplyProposal, proposalReviewContext, canUndoProposal, canReviewProposal,canApplyReviewedProposal, createPreviewState, previewReducer,type PreviewMessage } from '@/lib/prompt-assistance/preview-state';
 import {PROMPT_ASSISTANCE_LIVE,type PromptAssistanceDraftContext} from '@/lib/prompt-assistance/contract';
+import {PROMPT_ASSISTANCE_TEXT_MAX_CHARS} from '@/lib/prompt-assistance/limits';
 import type {StudioAssistanceStatus} from '@/lib/studio/assistance-contract';
 import {usePromptAssistanceTransport} from './usePromptAssistanceTransport';
 import {proposalApplicationContext,applicationSettingChanges,draftWithReviewSettings,applicationReviewKey} from '@/lib/prompt-assistance/application-review';
@@ -54,11 +55,11 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
   const currentDraftRef=useRef({draft,currentDraft,fingerprint,applicationContext,compatibilityRevision:state.compatibilityRevision});currentDraftRef.current={draft,currentDraft,fingerprint,applicationContext,compatibilityRevision:state.compatibilityRevision};
   const transport=usePromptAssistanceTransport(scopeKey,PROMPT_ASSISTANCE_LIVE,(result,uiId)=>{
     if(result.state==='complete'&&result.reply){
-      if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
-      else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId});
+      if(uiId!==null)dispatch({type:'reply',id:uiId,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId,analysisRequest:result.reply.analysisRequest});
+      else dispatch({type:'restored',message:result.message,text:result.reply.text,reply:result.reply.reply,requestId:result.requestId,analysisRequest:result.reply.analysisRequest});
     }else if(uiId!==null)dispatch({type:'failed',id:uiId,restore:result.safeToRetry===true});
     else if(result.safeToRetry===true)dispatch({type:'rejected',message:result.message});
-  },live?.workflow?{scope:promptSessionScope(live),accountKey,onRestore:async(snapshot,local,pendingReview)=>{
+  },live?.workflow?{scope:promptSessionScope(live),accountKey,references:live.references,onRestore:async(snapshot,local,pendingReview)=>{
     const expected=currentDraftRef.current;
     const draftFingerprint=await hash(expected.currentDraft);
     const latestRequestId=lastCompletedPromptRequestId(snapshot);
@@ -75,7 +76,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     return ()=>dispatch({type:'hydrate',scope:scopeKey,fingerprint:expected.fingerprint,compatibilityRevision:expected.compatibilityRevision,message:local?.message??'',
       messages:snapshot?.turns.flatMap<PreviewMessage>(turn=>turn.reply===null
         ?[{id:`${turn.requestId}-user`,role:'user',text:turn.message,deliveryFailed:true}]
-        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply}])??[],
+        :[{id:`${turn.requestId}-user`,role:'user',text:turn.message},{id:`${turn.requestId}-assistant`,role:'assistant',text:turn.reply,...(turn.analysisRequest?{analysisRequest:turn.analysisRequest}:{})}])??[],
       proposal:proposal?{text:proposal.text,valid,applicationContext:reviewContext,requestId:latestRequestId}:null});
   }}:undefined);
   const appliedPromptCurrent = Boolean(appliedPrompt && appliedPrompt.text === draftText
@@ -122,7 +123,7 @@ export function usePromptAssistancePreview({ accountKey, scopeKey, reviewKey, co
     return () => window.clearTimeout(timeout);
   }, [state.pending, scopeKey, target]);
   const send = (selection?:Pick<StudioAssistanceStatus,'selectedModel'|'revision'>) => {
-    if (!state.message.trim() || state.pending || blocked) return;
+    if (!state.message.trim() || state.message.length>PROMPT_ASSISTANCE_TEXT_MAX_CHARS || state.pending || blocked) return;
     const id=++sequence.current;
     const activeSuggestion=state.proposal?.revision===state.revision&&state.proposal.text.trim()?state.proposal.text:undefined;
     const review=applicationContext?async()=>{const [draftFingerprint,compatibilityFingerprint]=await Promise.all([hash(currentDraft),hash(applicationContext.compatibilityKey)]);return {version:1 as const,draftFingerprint,compatibilityFingerprint,compatible:true,settings:applicationContext.settings};}:undefined;

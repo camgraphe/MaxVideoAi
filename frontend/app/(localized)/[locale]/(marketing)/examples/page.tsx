@@ -3,6 +3,7 @@ import { permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { listExampleFamilyPage, listExamples, listExamplesPage } from '@/server/videos';
+import { readFirstFamilyGalleryPage } from './_lib/first-family-gallery-page';
 import { localePathnames, type AppLocale } from '@/i18n/locales';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
@@ -217,12 +218,9 @@ export default async function ExamplesPage(props: ExamplesPageProps) {
   const offset = (currentPage - 1) * EXAMPLES_PAGE_SIZE;
   const pageResult =
     engineFromPath && collapsedEngineParam
-      ? await listExampleFamilyPage(collapsedEngineParam, {
-          sort,
-          limit: EXAMPLES_PAGE_SIZE,
-          offset,
-          includeVersionSamples: currentPage === 1 && sort === DEFAULT_SORT,
-        })
+      ? currentPage === 1 && sort === DEFAULT_SORT
+        ? await readFirstFamilyGalleryPage(collapsedEngineParam)
+        : await listExampleFamilyPage(collapsedEngineParam, { sort, limit: EXAMPLES_PAGE_SIZE, offset })
       : await listExamplesPage({
           sort,
           limit: EXAMPLES_PAGE_SIZE,

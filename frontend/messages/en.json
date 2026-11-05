@@ -2811,12 +2811,12 @@
       ],
       "library": [
         {
-          "href": "/ai-video-engines/seedance-2-0-vs-sora-2",
-          "label": "Seedance 2.0 vs Sora 2"
+          "href": "/studio",
+          "label": "Create with Studio"
         },
         {
-          "href": "/models",
-          "label": "Models"
+          "href": "/examples",
+          "label": "Public examples"
         }
       ]
     },
@@ -2824,8 +2824,14 @@
       "heading": "Library",
       "liveLabel": "Live",
       "comingSoonLabel": "Coming soon",
-      "summaryLive": "Browse media saved to your account and reuse it as references in compatible generation modes.",
-      "summarySoon": "Documentation coming soon."
+      "summaryLive": "Open Media in your signed-in account to find images, videos and audio from your creations and saved uploads. Your personal library is separate from the public Examples gallery.",
+      "summarySoon": "Documentation coming soon.",
+      "steps": [
+        "Find a result: use the media-type filters or search; switch to creation history to check a job’s status.",
+        "Inspect what is available: open the result to preview or listen, see its dimensions or duration, and read the prompt or settings when recorded.",
+        "Keep the original: use Download original on an available output. Download important files rather than relying on a copied media link, which may expire.",
+        "Create from it: choose a compatible reference or tool action. Reuse settings from a result when that action is offered, then check the inputs and the new price."
+      ]
     },
     "feedback": {
       "srTitle": "Feedback",

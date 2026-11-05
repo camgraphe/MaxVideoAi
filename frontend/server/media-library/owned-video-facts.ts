@@ -21,7 +21,7 @@ type VideoRow = {
   source_job_id?: string | null; source_output_id?: string | null; source_output_user_id?: string | null;
   source_output_status?: string | null; source_output_job_id?: string | null;
 };
-export type OwnedVideoFactsInput = { userId: string; ref: ToolAssetRef; expectedUrl?: string };
+export type OwnedVideoFactsInput = { userId: string; ref: ToolAssetRef; expectedUrl?: string; signal?: AbortSignal };
 export type OwnedVideoFactsDependencies = { query?: QueryExecutor['query']; inspectVideo?: typeof inspectSourceVideo; createReadUrl?: typeof createOwnedMediaReadUrl };
 
 function completeFacts(value: unknown): MediaFacts | undefined {
@@ -31,6 +31,7 @@ function completeFacts(value: unknown): MediaFacts | undefined {
 
 /** Actual original bytes only. Call outside editor transactions; persist no temporary read grants. */
 export async function hydrateOwnedVideoMediaFacts(input: OwnedVideoFactsInput, dependencies: OwnedVideoFactsDependencies = {}): Promise<MediaFacts> {
+  input.signal?.throwIfAborted();
   if (!input.userId || input.userId !== input.userId.trim()) throw new Error('UNAUTHORIZED');
   const ref = toolAssetRefSchema.parse(input.ref);
   if (ref.kind !== 'video') throw new Error('MEDIA_NOT_AVAILABLE');
@@ -51,6 +52,7 @@ export async function hydrateOwnedVideoMediaFacts(input: OwnedVideoFactsInput, d
           AND (a.source_output_id IS NULL OR (source_output.user_id = $1 AND source_output.status = 'ready'
             AND j.user_id = $1 AND (a.source_job_id IS NULL OR a.source_job_id = source_output.job_id)))`, [input.userId, ref.assetId]);
   const row = rows[0];
+  input.signal?.throwIfAborted();
   if (!row || row.user_id !== input.userId || row.kind !== 'video' || row.status !== 'ready' || row.deleted_at || row.hidden
     || (row.job_user_id && row.job_user_id !== input.userId)
     || (ref.type === 'job-output' ? row.id !== ref.outputId || row.job_id !== ref.jobId || row.job_status !== 'completed'
@@ -64,12 +66,14 @@ export async function hydrateOwnedVideoMediaFacts(input: OwnedVideoFactsInput, d
     || (input.expectedUrl !== undefined && input.expectedUrl !== url)) throw new Error('MEDIA_NOT_AVAILABLE');
   // Storage ownership is enforced even if a row already has facts.
   const readUrl = await (dependencies.createReadUrl ?? createOwnedMediaReadUrl)({ userId: input.userId, url });
+  input.signal?.throwIfAborted();
   const existing = completeFacts(row.metadata?.mediaFacts);
   if (existing) return existing;
   let facts: MediaFacts | undefined;
   try {
-    const inspectVideo = dependencies.inspectVideo ?? (url => inspectSourceVideo(url, { download: downloadOwnedVideoFactsSource }));
-    facts = completeFacts({ source: 'probe', ...await inspectVideo(readUrl) });
+    const inspectVideo = dependencies.inspectVideo ?? inspectSourceVideo;
+    facts = completeFacts({ source: 'probe', ...await inspectVideo(readUrl,{download:downloadOwnedVideoFactsSource,signal:input.signal}) });
+    input.signal?.throwIfAborted();
   } catch {
     // Downloader/ffprobe failures may include the signed input; expose no cause or command.
     throw new Error('MEDIA_METADATA_REQUIRED');

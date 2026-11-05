@@ -34,24 +34,37 @@ data only; no application action is exposed or executed.
   JPEG quality 80, 2 MiB normalized each, 16 MiB aggregate, 30 MiB source each,
   with download/decode deadlines. Unsupported/unavailable images fail before the
   paid chat dispatch. No silent omission. Token preflight includes the pixels.
-- `PromptReferenceAnalysis.client.tsx` adds a compact **Analyze references** action
-  when video/audio references exist. The dialog chooses one reference, visuals or
-  sound (including video sound), and source seconds. **Review analysis cost** is
+- `PromptReferenceAnalysis.client.tsx` keeps a compact **Analyze references** entry when video/audio references exist and renders its card inside the chat transcript. A validated assistant recommendation opens the same card with the suggested owned reference and interval, without making a request. The card chooses one reference, visuals or sound (including video sound), and source seconds. **Review analysis cost** is
   free preparation. A distinct confirmation shows the exact interval and maximum
   credits before reservation/dispatch. Images require no separate analysis quote.
 - `reference-analysis.ts` validates the full current generator draft before creating
   an owned composer session and preparing an analysis. No invented Studio project.
+  Explicit cost review qualifies a selected video whose saved duration is missing,
+  including older owned job outputs and sound analysis of video. Existing profile,
+  scope and Milo level admission precedes any download. The shared owned-video
+  inspector reads the exact original with its ownership, DNS pinning and 100 MiB
+  bounds; canonical persisted facts and original identity are rechecked before
+  saving the quote and selection. Requested/client duration is never evidence.
+  One 20-second preparation budget covers context validation through qualification
+  and quote creation, below the browser's 30-second wait; cancellation reaches
+  DNS, HTTP and FFprobe and prevents late measurement/quote writes. Failed
+  verification starts no analysis or credit reservation and leaves no browser
+  recovery lock. GET, history, confirmation and recovery never qualify media.
 - The existing Studio source/provider/worker/credit ledger owners perform bounded
   extraction, reserve existing credits, dispatch once, save evidence and settle.
   No generation, purchase, tier switch or extra synthesis call follows completion.
-- The next explicitly sent Milo message gets the safe observations and coverage.
+- The next explicitly sent Milo message gets the safe observations and coverage. **Continue with this analysis** returns focus to the message field and fills a continuation only when it is empty; it preserves existing unsent text and never sends a paid writing call automatically. **Analyze another reference** permits sequential inspections.
   Completing/reusing an analysis invalidates an earlier prompt suggestion.
 
 Video coverage is at most 60 seconds and 12 sampled frames. Audio coverage is at
 most 30 seconds; timing and speech interpretation remain approximate. The original
 must have a known duration and be at most 100 MiB. These are selected intervals,
-not complete viewing/listening or beat-accurate timing. The dialog's interval is
+not complete viewing/listening or beat-accurate timing. The card's interval is
 for analysis only; it does not trim the generator reference or change settings.
+
+## Inline recommendation safeguards (November 4)
+
+The recommendation is bound to the admitted canonical asset or job-output identity, not only a field and slot. Replacing it at the same position requires explicit review of the current reference before preparation. Preparing remains free; confirming remains the only paid-analysis action. Changes to the draft, reference, interval or Milo level invalidate the estimate. Expiry updates the confirmation surface even without another user interaction. Closing the card returns keyboard focus to its entry control. No standalone dialog or second analysis owner is created.
 
 ## Cache, ownership and interruptions
 
@@ -108,7 +121,7 @@ requires final CI, release review and its own migration/flag procedure.
   dispatch and saved-usage recovery; historical Studio schema/flows still pass.
 - Browser coverage exercises explicit cost confirmation, a changed reference before
   confirmation, account/session handling, pending reload by GET, stale suggestions
-  and a 390px dialog. HTTP is intercepted; this is not a physical-device test.
+  and a 390px analysis surface. HTTP is intercepted; this is not a physical-device test.
 - Real API calls on the isolated database verified image description with no content
   hint on Lite/Standard/Max. Lite correctly reported video/audio as metadata only.
   Terra and Sol inspected different video intervals. Native audio inspected voice

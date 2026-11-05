@@ -12,7 +12,7 @@ export function HomeModelChoice({ locale, scores, startupFameLabel, comparisons 
 }) {
   return <div className="home-choice home-choice-compact section"><div className="container-page">
     <HomeComparisonSection locale={locale} scores={scores}/>
-    <details className="home-comparison-directory"><summary>{locale === 'fr' ? 'D’autres comparatifs pour choisir' : locale === 'es' ? 'Más comparaciones para elegir' : 'More comparisons to help you choose'}</summary><div>{comparisons.filter(item => isPublishedComparisonSlug(item.slug)).map(item => <Link key={item.slug} href={{pathname:'/ai-video-engines/[slug]',params:{slug:item.slug}}}>{item.title} <span aria-hidden>↗</span></Link>)}</div></details>
+    <details className="home-comparison-directory"><summary>{locale === 'fr' ? 'D’autres comparatifs pour choisir' : locale === 'es' ? 'Más comparaciones para elegir' : 'More comparisons to help you choose'}</summary><div>{comparisons.filter(item => isPublishedComparisonSlug(item.slug)).map(item => <Link currentLocale={locale} key={item.slug} href={{pathname:'/ai-video-engines/[slug]',params:{slug:item.slug}}}>{item.title} <span aria-hidden>↗</span></Link>)}</div></details>
     <div className="choice-attribution"><StartupFameLink label={startupFameLabel}/></div>
   </div></div>;
 }

@@ -142,6 +142,14 @@ test('probe failures expose no private grants and write no facts', async () => {
   assert.equal(error.message, 'MEDIA_METADATA_REQUIRED'); assert.doesNotMatch(inspect(error), /X-Amz-|facts-fixture/); assert.equal(state.writes.length, 0);
 });
 
+test('an aborted owned-video qualification cannot persist a late probe result', async () => {
+  const {hydrateOwnedVideoMediaFacts}=await import('../frontend/server/media-library/owned-video-facts');
+  const {state,dependencies}=await fixture();const controller=new AbortController();
+  dependencies.inspectVideo=async()=>{controller.abort();return {durationSec:6,width:320,height:180,hasAudio:true};};
+  await assert.rejects(hydrateOwnedVideoMediaFacts({userId:'owner',ref,expectedUrl:original,signal:controller.signal},dependencies));
+  assert.equal(state.writes.length,0);
+});
+
 test('complete browser and requested declarations still require actual source measurement', async () => {
   const { hydrateOwnedVideoMediaFacts } = await import('../frontend/server/media-library/owned-video-facts');
   for (const source of ['browser', 'requested']) {

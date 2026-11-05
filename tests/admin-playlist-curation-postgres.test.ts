@@ -7,6 +7,16 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
   const db = await startDisposablePostgres('curation');
   process.env.DATABASE_URL = db.databaseUrl;
   const { getDb } = await import('../frontend/src/lib/db');
+  let curationReads = 0;
+  let modelReads = 0;
+  getDb().on('connect', (client) => {
+    const query = client.query.bind(client);
+    client.query = ((sql: string, params?: unknown[]) => {
+      modelReads++;
+      if (/\bplaylist_curations\b/.test(sql)) curationReads++;
+      return query(sql, params);
+    }) as typeof client.query;
+  });
   try {
     await db.pool
       .query(`CREATE TABLE playlists(id uuid PRIMARY KEY, slug text, is_public boolean, updated_at timestamptz DEFAULT now());
@@ -20,7 +30,16 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       ADD COLUMN currency text, ADD COLUMN pricing_snapshot jsonb;
       CREATE TABLE media_assets(user_id uuid,url text,status text,deleted_at timestamptz);
       CREATE TABLE job_outputs(job_id text,kind text,status text,width int,height int,position int,created_at timestamptz,thumb_url text,url text,storage_url text);`);
-    const { listPlaylistVideos, listExampleFamilyPage } = await import('../frontend/server/videos');
+    const { listPlaylistVideos, listModelExamplePlaylist, listExampleFamilyPage } = await import('../frontend/server/videos');
+    const assertModelPlaylist = async (limit: number, ids: string[], managed: boolean, expectedReads = 1) => {
+      const before = curationReads;
+      const initialReads = modelReads;
+      const selection = await listModelExamplePlaylist('examples-wan-3', limit);
+      assert.equal(curationReads - before, 1, 'playlist selection and ownership share one curation read');
+      assert.equal(modelReads - initialReads, expectedReads, 'only selected media should be hydrated in the membership statement');
+      assert.deepEqual(selection.videos.map((video) => video.id), ids);
+      assert.equal(selection.managed, managed);
+    };
     const { appendPlaylistItem, reorderPlaylistItems, removePlaylistItem } = await import(
       '../frontend/server/playlists/mutations'
     );
@@ -30,6 +49,7 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
     const id = '11111111-1111-4111-8111-111111111111';
     assert.equal(await resolveCuratedPlaylist('examples-wan-3'), null);
     assert.equal((await getCurationSnapshot(id)).available, false);
+    await assertModelPlaylist(10, [], false, 2);
     await db.pool.query(readFileSync('neon/migrations/52_playlist_curations.sql', 'utf8'));
     const add = async (job: string, values: Record<string, unknown> = {}) => {
       const row = {
@@ -61,6 +81,7 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       (await listPlaylistVideos('examples-wan-3', 10)).map((v) => v.id),
       ['a'],
     );
+    await assertModelPlaylist(10, ['a'], false);
     await add('deleted-output');
     await db.pool.query(
       "INSERT INTO job_outputs(job_id,kind,status,url) VALUES ('deleted-output','video','deleted','/video.mp4')",
@@ -89,6 +110,10 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       (await listPlaylistVideos('examples-wan-3', 1)).map((v) => v.id),
       ['a'],
     );
+    await assertModelPlaylist(1, ['a'], true);
+    await db.pool.query('UPDATE playlists SET is_public=false WHERE id=$1', [id]);
+    await assertModelPlaylist(10, [], true);
+    await db.pool.query('UPDATE playlists SET is_public=true WHERE id=$1', [id]);
     const familyId = '33333333-3333-4333-8333-333333333333';
     await db.pool.query("INSERT INTO playlists(id,slug,is_public) VALUES ($1,'family-wan',true)", [familyId]);
     const staleFamily = await getCurationSnapshot(familyId);
@@ -164,6 +189,7 @@ test('curation is opt-in, eligible, stable, local and protected against stale sa
       'explicitly empty never becomes legacy fallback',
     );
     assert.deepEqual(await listPlaylistVideos('examples-wan-3', 10), []);
+    await assertModelPlaylist(10, [], true);
     await db.pool.query('UPDATE playlists SET is_public=false WHERE id=$1', [id]);
     assert.deepEqual(await resolveCuratedPlaylist('examples-wan-3'), []);
     await db.pool.query(readFileSync('neon/migrations/53_playlist_opening.sql', 'utf8'));

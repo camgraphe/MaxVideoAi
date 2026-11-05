@@ -2,6 +2,7 @@ import {assistanceNextActionSchema} from '@/lib/studio/assistance-contract';
 import {query,withDbTransaction} from '@/lib/db';
 import {studioAssistancePolicy,type StudioAssistancePolicy} from '@/server/studio/assistance-policy';
 import {reserveStudioAssistanceCall,markStudioAssistanceUnknown} from '@/server/studio/assistance-ledger';
+import {UnavailablePromptReference} from './reference-resolution';
 import {buildPromptAssistanceContext} from './context';
 import {buildAssistantReviewContext} from '../assistant-review/context';
 import {composerScope,readPromptHistory,readPromptRequest,promptScopeValues,type PromptRequestRow} from './repository';
@@ -52,7 +53,8 @@ export async function executePromptAssistance(row:PromptRequestRow,deps:PromptEx
     const providerFailure=dispatched&&!responseReceived?promptProviderFailure(error,Date.now()-startedAt):undefined;
     if(providerFailure)console.warn('[prompt-assistance] provider_failed',{requestId:input.requestId,callId:row.call_id,model:row.model,...providerFailure});
     const nextAction=assistanceNextActionSchema.safeParse(error instanceof AgentApiError?error.nextAction:null);
-    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,context_json=COALESCE(context_json,'{}'::jsonb)||$6::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed') AND (($7::uuid IS NULL AND call_id IS NULL AND lease_id=$8) OR ($7::uuid IS NOT NULL AND call_id=$7))",[...promptScopeValues(row),dispatched?'unknown':'failed',known,JSON.stringify({...(providerFailure?{providerFailure}:{}),...(!dispatched&&reviewContext?{...reviewContext,reviewInput:{...(reviewContext.reviewInput as object),capturePoint:'prepared_not_dispatched'}}:{}),...(!dispatched&&nextAction.success?{failureAction:nextAction.data}:{})}),dispatched?row.call_id:null,row.lease_id]);
+    const unavailableReference = !dispatched && error instanceof UnavailablePromptReference ? error.location : undefined;
+    await query("UPDATE prompt_assistance_requests SET state=$4,error=$5,context_json=COALESCE(context_json,'{}'::jsonb)||$6::jsonb,updated_at=clock_timestamp() WHERE user_id=$1 AND session_id=$2 AND request_id=$3 AND state NOT IN ('complete','failed') AND (($7::uuid IS NULL AND call_id IS NULL AND lease_id=$8) OR ($7::uuid IS NOT NULL AND call_id=$7))",[...promptScopeValues(row),dispatched?'unknown':'failed',known,JSON.stringify({...(unavailableReference ? {unavailableReference} : {}),...(providerFailure?{providerFailure}:{}),...(!dispatched&&reviewContext?{...reviewContext,reviewInput:{...(reviewContext.reviewInput as object),capturePoint:'prepared_not_dispatched'}}:{}),...(!dispatched&&nextAction.success?{failureAction:nextAction.data}:{})}),dispatched?row.call_id:null,row.lease_id]);
     if(dispatched&&!responseReceived){
       // This invocation has stopped awaiting the provider. Shorten only its own
       // unanswered lease; saved evidence and another lease always win.

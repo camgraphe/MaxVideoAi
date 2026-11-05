@@ -39,8 +39,10 @@ test('director sends creative purpose, current help and live quote rules with it
       assert.match(instructions,/cannot read current credits.*wallet.*tariff/);
       assert.match(instructions,/assistance.*separate.*generation/i);
       assert.match(instructions,/Studio help/);
+      assert.match(instructions,/account.*billing.*wallet transfer/i);
+      assert.match(instructions,/\[Support\]\(https:\/\/maxvideoai\.com\/contact\)/);
       assert.match(instructions,/Open library/);
-      assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,'Keep creative guidance within its existing budget; exact model facts belong in tools.');
+      assert.ok(instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length<8500,`Keep creative guidance within its existing budget; received ${instructions.replace(MILO_SCOPE_INSTRUCTIONS,'').length} characters, exact model facts belong in tools.`);
       assert.ok(MILO_SCOPE_INSTRUCTIONS.length<800,'The shared product boundary has its own bounded budget.');
       assert.ok(instructions.length<9300,'Keep the combined permanent guidance bounded.');
       assert.doesNotMatch(instructions,/seedance|kling|wan-3|pika|\$\d|€\d/i);

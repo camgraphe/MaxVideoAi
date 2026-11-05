@@ -68,6 +68,29 @@ not establish model-output quality. No provider calls are part of these tests.
 
 The approved compact reference/footer, visible generator settings, player and galleries retain their existing owners. Review opens the complete suggestion inside the bounded conversation area; Use prompt/Use script stays outside its scroll region. Send never invokes Generate. Multi-prompt scene editing remains manual. Audio voice updates only `script`; music/song style, ambience and effects update only `prompt`. Lyrics and Soundtrack a video are outside this increment.
 
+## New-message references and image advice
+
+Before admitting a new browser message, the shared transport rejects an attached
+reference with no canonical `ref`. This local notice names the current reference,
+keeps the unsent message/draft/settings and offers its existing reference manager;
+it creates no request, recovery identity or server-failure state. Uploads may
+finish, or the user may replace/remove that reference explicitly. Current owned
+references and an empty optional reference list remain valid; recovery of an
+already sent request retains its original identity and bypasses this new-send
+check. Server ownership and source validation remain authoritative.
+Only fields with an existing owner expose Manage. Flux/Luma keyframes, which are
+intentionally outside the compact picker, target their existing timeline control
+by asset slot; this selects/focuses the control without opening Media, uploading,
+removing or changing timing. Account/workflow/model changes discard the target.
+Fields without a mounted owner retain the notice without an inoperative action.
+
+The image app guide recommends `/app/tools/upscale` for appropriate sharpness or
+degradation requests, with explicit tool quote review and SeedVR2 fidelity limits:
+generative restoration can change details and is not pixel-identical enlargement.
+Recommended resolution, output format and aspect ratio require explicit control
+changes; Use prompt applies text only. Offline tests verify instruction delivery
+and request parameters, not real-model semantic compliance.
+
 ## Local review after generation settings change
 
 The video adapter supplies a conservative compatibility projection. If only its known scalar generation controls changed, a stale proposal offers **Review & use** in the existing 53 px bar. The existing expanded prompt view shows customer-readable settings before → current, the editable proposal and **Use with current settings**. Numeric duration aliases appear once; automatic duration choices remain explicit. Nothing is applied or generated when review opens. Confirmation writes only the inspected text; Apply and Undo keep the current generator settings. Another context change while reviewing disables that confirmation until the current changes are explicitly reviewed again.
@@ -103,28 +126,57 @@ The boundary is shared across all tiers; reference perception retains its own ga
 
 ## Conversation versus editor replacement
 
-The private provider protocol `destination-v1` declares `kind: conversation` or
+The private provider protocol `destination-analysis-v2` declares `kind: conversation` or
 `kind: replacement`. Advice, explanations, questions and external editing plans
-belong entirely in `reply` (the existing 6,000-character public limit), with null
+belong entirely in `reply` (the shared 50,000-character text envelope), with null
 `text`. Only complete text intended for the selected `draft.target` belongs in a
 replacement. This includes valid creative sequences, multi-action prompts and
 Voiceover scripts; destination is not inferred from keywords, duration or action
 count. A mixed answer may explain in `reply` and provide the requested editor text
 in `text`.
 
-`reply-format.ts` strictly validates this private shape and converts it to the
-unchanged public `{reply,text}`. Contradictions or malformed tags fail with
+`reply-format.ts` strictly validates this private shape and converts it to public
+`{reply,text,analysisRequest?}`. Contradictions or malformed tags fail with
 `OUTPUT_INVALID`; no partial replacement escapes. The flat required-field JSON
 Schema uses the [supported Structured Outputs subset](https://developers.openai.com/api/docs/guides/structured-outputs#supported-schemas),
 with conditional consistency enforced by the server decoder.
 
+The required private `analysisRequest` is null or a suggestion containing the
+current reference's `fieldId`, `slot`, `modality` (`visual` or `audio`), `startSec`
+and nullable `endSec`. It grants no execution or consent. The decoder accepts a
+suggestion only for an owned reference admitted with this request, an available
+qualified modality and a verified duration. Visuals require video; sound accepts
+video or audio. Positive intervals stay within the source and the existing
+60-second visual / 30-second audio bounds. A null end becomes a concrete bounded
+end. Invalid optional suggestions are omitted while the useful answer survives.
+Public actions include only the server-bound canonical asset/job-output `ref`,
+never a provider-invented identity or URL. The browser compares that identity with
+the current attached reference, so replacing an item in the same slot cannot
+redirect an old recommendation. Reply state, recovery and session snapshots keep
+the binding. Lite may offer the recommendation with an explicit Standard/Max
+choice; it cannot prepare or confirm analysis at Lite. The existing quote and
+separate confirmation remain the only path to paid analysis, and no writing
+follow-up runs automatically.
+
 The format is fixed before token counting and persisted as `context_json.replyFormat`
 in the existing calling transaction before provider dispatch. Recovery selects
 its decoder only from that durable marker. A truly absent marker retains the
-legacy parser; a present unknown, null or corrupt marker fails closed. Retention
+legacy parser; `destination-v1` retains its exact historical decoder, including
+refusal of the new action field. A present unknown, null or corrupt marker fails closed. Retention
 of `reviewInput` does not remove this operational marker. Completed historical
-replies are not reclassified. No client contract, compatibility proof, provider
-retry or accounting policy changes.
+replies are not reclassified. Target limits, application compatibility proofs,
+provider retry and accounting policy are unchanged. No database migration is
+needed for the additive reply/session JSON field.
+
+HTTP clients advertise `x-milo-inline-analysis: 1` on the composer chat endpoint
+to receive the additive action in results and session turns. Already-open older
+tabs send no capability and keep their strict `{reply,text}` / history shapes:
+the route removes only `analysisRequest` during serialization. This also applies
+to replayed message responses, explicit recovery and read-only previous-reply
+checks. Unknown capability values retain the older shape. Saved v2 responses,
+request hashes, context and history are unchanged, so a capable tab can still
+retrieve the bound action later. This header has no authentication or consent
+meaning. Responses remain private/no-store and vary on Cookie and the capability.
 
 The tag is a model declaration, not a semantic guarantee. Simulated service/JSONB
 and browser tests prove structural gating, restoration and exact apply/Undo;
@@ -156,11 +208,11 @@ The agreed next perception scope is **images on Lite; images, video and audio on
 
 ## Calls and existing credits
 
-`/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a 64 KiB request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
+`/api/prompt-assistance` uses the existing cookie authentication, a same-origin POST check, strict schemas and a streamed 1 MiB aggregate request limit. It authorizes an owned composer session, not a fabricated Studio project. Its persisted `composer:<session UUID>` scope is used only by the shared assistance ledger and recovery adapter.
 
-The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 6,000 output tokens (including reasoning) for newly frozen runtimes; historical requests retain their 2,200-token limit. The current draft is never silently truncated. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled and charged. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
+The server counts input tokens, reserves through the existing ledger, issues one Responses call with SDK retries disabled, saves provider evidence, settles usage, then returns a validated suggestion. The limits are 32,000 counted input tokens and 6,000 output tokens (including reasoning) for newly frozen runtimes; historical requests retain their 2,200-token limit. Human messages, conversation replies, draft/suggestion text, session snapshots and browser draft storage share a bounded 50,000-character envelope. The selected model’s replacement limit stays authoritative (for example, Wan 3 Prime remains 20,000 characters). A longer conversation answer stays in `reply` with `text: null`; it cannot become a replacement to escape a limit. Text is never silently truncated. JSON escaping, UTF-8 and metadata count toward the independent body bound. Oversized human messages remain editable with a limit notice and cannot be sent. The composer measures the full editable input, including outer whitespace, against its cache envelope. If optional local edits are invalid, restoration omits them without shortening text while retaining the valid chat and pending request identities; the overlimit notice explains that the unsent text cannot be restored after reload. Output that is incomplete, refused, malformed or above the model limit is not applicable; known provider usage is still settled. Completed output rejected by the app’s structural decoder receives the dedicated recorded credit restoration under migration 93; selected-target `OUTPUT_TOO_LONG`, incomplete and refused outputs keep their existing charging policy. These bounded calls do not guarantee enough output for every very long prompt; paid evaluation must include long-draft cases.
 
-Lite/Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Generator media quotes remain separate.
+Lite/Standard/Max selection and credit purchases use the existing account preference, included credits, purchased lots, tariff and purchase confirmation. The credits dialog explains that the choice and balance are shared with Studio. Selecting a mode does not buy credits. Returning to a visible/focused tab refreshes account-owned availability. A newer account revision clears a cached funding rejection after support restores credits, without replaying the old request. Generator media quotes remain separate.
 
 ## Interruption and support
 

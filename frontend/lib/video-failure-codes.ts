@@ -7,6 +7,7 @@ export const SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED = 'seedance_reference_vi
 export const SEEDANCE_REFERENCE_IMAGE_BLOCKED = 'seedance_reference_image_blocked';
 export const SEEDANCE_REFERENCE_VIDEO_BLOCKED = 'seedance_reference_video_blocked';
 export const SEEDANCE_REFERENCE_MEDIA_BLOCKED = 'seedance_reference_media_blocked';
+export const SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE = 'seedance_reference_media_unavailable';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

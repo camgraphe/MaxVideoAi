@@ -1,5 +1,5 @@
 import { seedanceWorkflowEnabled } from '@/server/seedance-workflow-request';
-import AppClientPage from './AppClient';
+import WorkspaceEntry from './WorkspaceEntry';
 import { headers } from 'next/headers';
 import { resolveInitialAppPreviewGroup } from '@/server/app-initial-preview';
 import { allowLocalSeedanceDraftPreview } from './_lib/seedance-draft-local-preview-gate';
@@ -24,5 +24,5 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Se
 
   const seedanceDraftWorkflowEnabled = seedanceWorkflowEnabled(`http://${(await headers()).get('host') ?? 'invalid'}`);
 
-  return <AppClientPage seedanceDraftWorkflowEnabled={seedanceDraftWorkflowEnabled} initialPreviewGroup={initialPreviewGroup} localSeedanceDraftPreview={localSeedanceDraftPreview} />;
+  return <WorkspaceEntry seedanceDraftWorkflowEnabled={seedanceDraftWorkflowEnabled} initialPreviewGroup={initialPreviewGroup} localSeedanceDraftPreview={localSeedanceDraftPreview} />;
 }

@@ -1,4 +1,5 @@
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
+import { useWorkspaceStoryboardReferences } from './useWorkspaceStoryboardReferences';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
@@ -85,6 +86,7 @@ export function useWorkspaceReferenceAssets({
   setAssetPickerTarget,
   setAssetLibrary,
 }: UseWorkspaceReferenceAssetsOptions) {
+  useWorkspaceStoryboardReferences(accountScope, inputAssets, setInputAssets);
   const valid = useWorkspaceAssetLifetime(accountScope);
   const beginUpload = useWorkspaceUploadOperation(accountScope, valid);
   const assetsRef = useRef<Record<string, (ReferenceAsset | null)[]>>({});

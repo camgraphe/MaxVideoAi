@@ -2,27 +2,28 @@
 
 import Image from 'next/image';
 import clsx from 'clsx';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Link, usePathname } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { LanguageToggle } from '@/components/marketing/LanguageToggle';
 import { Button } from '@/components/ui/Button';
 import { MarketingAccountMenu } from '@/components/marketing/MarketingAccountMenu';
-import { MarketingDesktopNav } from '@/components/marketing/MarketingDesktopNav';
+import { MarketingDesktopNav, MarketingDesktopSectionLinks } from '@/components/marketing/MarketingDesktopNav';
 import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu';
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
 import { hasSupabaseAuthCookie, installSupabaseAuthClientGate } from '@/lib/supabase-session-hint';
-import { MARKETING_SITE_NAV_LINKS } from '@/config/navigation';
+import type { MarketingHeaderNavigation } from '@/config/public-marketing-navigation';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 
 type MarketingNavProps = {
+  navigation: MarketingHeaderNavigation;
   initialEmail?: string | null;
   initialIsAdmin?: boolean;
 };
 
-export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: MarketingNavProps) {
+export function MarketingNav({ navigation: { links, dropdowns }, initialEmail = null, initialIsAdmin = false }: MarketingNavProps) {
   const pathname = usePathname();
   const isCompanyTrustHub = /^\/(?:fr\/|es\/)?company\/?$/.test(pathname ?? '');
   const isHomePage = /^\/(?:fr|es)?\/?$/.test(pathname ?? '');
@@ -40,7 +41,6 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const desktopDropdownCloseTimeout = useRef<number | null>(null);
   const brand = t('nav.brand', 'MaxVideoAI') ?? 'MaxVideoAI';
   const compactBrand = brand.replace(/\s+/g, '');
-  const links = MARKETING_SITE_NAV_LINKS;
   const login = t('nav.login', 'Log in');
   const cta = t('nav.startCreating', 'Start creating');
   const generateLabel = t('nav.cta', 'Generate');
@@ -295,14 +295,18 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
             />
             <span className="text-sm font-semibold tracking-tight max-[420px]:sr-only sm:text-lg">{compactBrand}</span>
           </Link>
-          <MarketingDesktopNav
-            desktopDropdownOpen={desktopDropdownOpen}
-            links={links}
-            pathname={pathname}
-            t={t}
-            onCloseDesktopDropdown={closeDesktopDropdown}
-            onOpenDesktopDropdown={openDesktopDropdown}
-          />
+          {/* Keep the SSR desktop links independent of a first touch on the mobile menu. */}
+          <Suspense fallback={<MarketingDesktopSectionLinks links={links} dropdowns={dropdowns} pathname={pathname} locale={locale} t={t} />}>
+            <MarketingDesktopNav
+              desktopDropdownOpen={desktopDropdownOpen}
+              dropdowns={dropdowns}
+              links={links}
+              pathname={pathname}
+              t={t}
+              onCloseDesktopDropdown={closeDesktopDropdown}
+              onOpenDesktopDropdown={openDesktopDropdown}
+            />
+          </Suspense>
         </div>
         <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3 lg:gap-4">
           <div className="hidden items-center gap-1 md:flex">
@@ -365,6 +369,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
     </header>
       <MarketingMobileMenu
           cta={cta ?? 'Start creating'}
+          dropdowns={dropdowns}
           generateLabel={generateLabel ?? 'Generate'}
           isAuthenticated={isAuthenticated}
           links={links}
