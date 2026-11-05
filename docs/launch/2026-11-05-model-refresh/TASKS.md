@@ -34,7 +34,7 @@
 - [ ] C02 Établir les coûts image 2.6 propres au modèle, taille, qualité, nombre et sources ; ne pas recopier les estimations fal 2.5.
 - [ ] C03 Couvrir les contextes admin/public/MCP/Studio, sur les trois tailles raster initiales et les quantités autorisées ; dimensions personnalisées hors du premier lot.
 - [ ] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
-  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée puis appliquée dans l’admin. Reçu relu : 72 cellules, révision 2187, opération `ddda411b-bffb-4bf7-83c8-8e8500863bba`. La partie image reste en attente. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
+  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée puis appliquée dans l’admin. Reçu relu : 72 cellules, révision 2187, opération `ddda411b-bffb-4bf7-83c8-8e8500863bba`. Images : 2 040 montants approuvés avec les réserves explicites et ×1,50 ; dix imports exacts validés localement, application native en attente. Voir `TARIFF-PROPOSAL.md`, `gpt26-tariffs/approval.json` et `flash-tariff-preview.json`.
 - [ ] C05 Tester devis expiré, changement de réglages/références, révision de tarif, budget insuffisant et confirmations simultanées.
 - [x] C06 Vérifier débit unique, récupération, remboursement d'échec terminal et historique immuable avec PostgreSQL jetable.
 - [ ] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.
@@ -138,4 +138,15 @@ GPT 1 ou 2.5. Les prix fournisseur et les prix client restent distincts.
 - Médias : sélection utilisateur B1 en hero, B2 en démonstration du prompt, B3/V1/V2/V3 ensuite. Les six copies publiques restent des preuves de galerie sans page watch éditoriale inventée.
 - Images : deux originaux de création et deux retouches, les deux retouches depuis I1 Flare. Titres dans le contrat localisé Examples, aperçu responsive et original à l’ouverture. Douze cas navigateur desktop/mobile/EN/FR/ES passent ; ce n’est pas une mesure CWV de page publique complète.
 - Comparatif Flash : contenu et capacités sourcés, activation soumise au registre. Aucune note numérique propre à Flash n’est encore qualifiée. Dossier à onze critères dans `data/benchmarks/kling-v4-flash-evidence.v1.json`.
-- Restent avant ouverture : prix commerciaux GPT 2.6 et hypothèse de coût d’entrée, parcours réels App/Studio/MCP, authentification cron OpenAI vérifiée avec la configuration déployée, publication/SEO/galeries live. Aucun appel payant supplémentaire lancé.
+- Restent avant ouverture : application des prix GPT 2.6 désormais approuvés à ×1,50 avec réserves commerciales explicites, parcours réels App/Studio/MCP, authentification cron OpenAI vérifiée avec la configuration déployée, publication/SEO/galeries live. Aucun appel payant supplémentaire lancé.
+
+## Candidat conjoint de médias et tarifs
+
+La PR #622 réunit les médias/pages préparés et le support natif des dix lots GPT.
+La CI a révélé une fuite de la comparaison Flash vers l'inventaire du sitemap ;
+le propriétaire de découverte vérifie désormais la publication des deux extrémités
+du registre. La régression et 94 contrôles de comparaison/indexation/readiness
+passent, avec 315 comparaisons publiques inchangées. Les nouvelles capacités ne
+publient aucune note numérique. La revue indépendante a recalculé les 2 040 prix
+à ×1,50 et les empreintes des dix imports. Les protections admin, limites de
+transaction et tarifs Flash à ×1,30 sont conservés.
