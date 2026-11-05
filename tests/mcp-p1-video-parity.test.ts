@@ -129,7 +129,7 @@ test('P1 identities are publicly discoverable after the atomic publication gate'
 test('P1 details expose only the actually executable canary modes and shared capability facts', async () => {
   const catalogDeps = deps();
   const gemini = await getAgentModelDetails('gemini-omni-flash', catalogDeps);
-  assert.equal(gemini.label, 'Gemini Omni Flash 1.1');
+  assert.equal(gemini.label, 'Gemini Omni Flash 1.2');
   assert.deepEqual(gemini.modes.map(({ mode }) => mode), [
     't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend',
   ]);

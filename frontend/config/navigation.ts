@@ -179,7 +179,7 @@ const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-5-vs-wan-3', label: 'Seedance 2.5 vs Wan 3' },
   { slug: 'ltx-2-5-fast-vs-ltx-2-5-pro', label: 'LTX 2.5 Fast vs Pro' },
   { slug: 'wan-3-vs-wan-3-prime', label: 'Wan 3 vs Wan 3 Prime' },
-  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.2 vs Veo 3.1' },
   // Established search demand: retain this route even as newer models are promoted.
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
 ];
@@ -323,7 +323,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
       items: ['gpt-image-2-5-flare', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
         const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired' && item.lifecycle !== 'deep_legacy');
         if (!model) return [];
-        return [{key: slug, label: slug === 'gpt-image-2-5-flare' ? 'GPT Image 2.5 Flare' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2-5-flare' ? 'image' as const : 'cinema' as const}];
+        return [{key: slug, label: slug === 'gpt-image-2-5-flare' ? 'GPT Image 2.5 Flare' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.2', href: modelLink(slug), icon: slug === 'gpt-image-2-5-flare' ? 'image' as const : 'cinema' as const}];
       }),
     }],
     allHref: { pathname: '/models' },

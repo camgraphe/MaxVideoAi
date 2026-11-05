@@ -203,7 +203,7 @@ export function buildExamplesNextStepLinks({
       ['seedance-2-5-vs-veo-3-1', 'Seedance 2.5 vs Veo 3.1'],
     ],
     veo: [
-      ['gemini-omni-flash-vs-veo-3-1', 'Gemini Omni Flash 1.1 vs Veo 3.1'],
+      ['gemini-omni-flash-vs-veo-3-1', 'Gemini Omni Flash 1.2 vs Veo 3.1'],
       ['veo-3-1-vs-seedance-2-5', 'Veo 3.1 vs Seedance 2.5'],
       ['veo-3-1-vs-minimax-h3', 'Veo 3.1 vs MiniMax H3'],
       ['veo-3-1-vs-veo-3-1-fast', 'Veo 3.1 vs Fast'],
