@@ -104,6 +104,30 @@ test('native batch UI applies one real transaction and recovers a lost response 
     await page.getByText('Committed', { exact: true }).first().waitFor();
     assert.equal((await db.pool.query("SELECT count(*) FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4-flash'")).rows[0].count, '72');
     assert.deepEqual((await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4' ORDER BY id")).rows, v4Before);
+    for (const variant of ['flare', 'sunburst']) {
+      await page.getByRole('button', { name: 'New batch', exact: true }).click();
+      await page.getByLabel('Price input').selectOption('explicit');
+      const approved = JSON.parse(await readFile(join(process.cwd(), `docs/launch/2026-11-05-model-refresh/gpt26-tariffs/gpt-image-2-6-${variant}-01.json`), 'utf8'));
+      // The complete first operation exercises the maximum request, review and transaction size.
+      await page.getByLabel('Exact batch JSON').fill(JSON.stringify(approved));
+      await page.getByRole('button', { name: 'Preview batch', exact: true }).click();
+      await page.getByText('226 create · 0 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
+      await page.getByText(new RegExp(`GPT Image 2.6 ${variant === 'flare' ? 'Flare' : 'Sunburst'} · 226 of 1020 canonical classes`)).waitFor();
+      await page.getByRole('note').filter({ hasText: 'Supplier estimate covers image output only.' }).waitFor();
+      const firstRow = page.locator('[data-batch-review-row]').first();
+      assert.match(await firstRow.innerText(), /1 image\(s\) · high/);
+      assert.match(await firstRow.innerText(), /1 reference\(s\)/);
+      assert.match(await firstRow.innerText(), /After: \$0\.13/);
+      assert.match(await firstRow.innerText(), /Output-only LIST estimate/);
+      assert.doesNotMatch(await firstRow.innerText(), /Without video input/);
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+      }
+      await page.getByRole('button', { name: 'Confirm batch', exact: true }).click();
+      await page.getByText('Committed', { exact: true }).first().waitFor();
+      assert.equal((await db.pool.query("SELECT count(*) FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = $1", [`gpt-image-2-6-${variant}`])).rows[0].count, '226');
+    }
     const firstActorSaved = await page.evaluate(actor => localStorage.getItem(`admin.tariff-batch.operation.v1.${actor}`), actor);
     assert.ok(firstActorSaved);
     currentActor = '22222222-2222-4222-8222-222222222222';

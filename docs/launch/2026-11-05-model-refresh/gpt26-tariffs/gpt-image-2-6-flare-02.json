@@ -1,0 +1,3175 @@
+{
+  "schemaVersion": 1,
+  "modelId": "gpt-image-2-6-flare",
+  "intent": "create_missing",
+  "reason": "Approved GPT Image 2.6 output estimate plus commercial input reserves, multiplied by 1.50; fixed retail launch prices.",
+  "pricing": {
+    "kind": "explicit"
+  },
+  "selections": [
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 92
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 101
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 119
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 128
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 137
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 146
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 155
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 164
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "high",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 173
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 50
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 122
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 134
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 146
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 158
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 170
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 182
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 194
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 206
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 218
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "high",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 230
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 19
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 22
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 25
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 28
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 31
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 34
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 37
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 40
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 43
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 46
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 49
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 52
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 55
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 58
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 61
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 64
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 38
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 44
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 50
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 56
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 68
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 80
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 92
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 104
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 116
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 122
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 128
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 56
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 65
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 83
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 92
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 101
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 119
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 128
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 137
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 146
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 155
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 164
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 173
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 182
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 191
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 75
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 87
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 99
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 111
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 123
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 135
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 147
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 159
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 171
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 183
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 195
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 207
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 219
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 231
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 243
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 255
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 37
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 40
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 43
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 46
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 49
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 52
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 55
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 58
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 61
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 64
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 67
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 70
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 73
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 76
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 79
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 82
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 73
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 79
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 85
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 91
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 97
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 103
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 109
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 115
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 121
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 127
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 133
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 139
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 145
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 151
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 157
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 163
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 109
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 118
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 127
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 136
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 145
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 154
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 163
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 172
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 181
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 190
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 199
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 208
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 217
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 226
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 235
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 244
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 145
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 157
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 169
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 181
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 193
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 205
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 217
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 229
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 241
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 253
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 265
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 277
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 289
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 301
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 313
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1024x1024",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 325
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 8
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 11
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 14
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 17
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 20
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 23
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 26
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 29
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 32
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 35
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 38
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 41
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 44
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 47
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 50
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "low",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 53
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 15
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 21
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 27
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 33
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 39
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 45
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 51
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 57
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 63
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 69
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 75
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 81
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 87
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 93
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 99
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "2",
+        "quality": "low",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 105
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 23
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 32
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 41
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 50
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 59
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 68
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 77
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 95
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 104
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 113
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 122
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 131
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 140
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 149
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "3",
+        "quality": "low",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 158
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 30
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 42
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 54
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 66
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 78
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 90
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 102
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 114
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 126
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 138
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 150
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 162
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 174
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 186
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 198
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "4",
+        "quality": "low",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 210
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 10
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 13
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 16
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 19
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 22
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 25
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 28
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-flare",
+        "mode": "i2i",
+        "resolution": "1536x1024",
+        "durationSec": "1",
+        "quality": "medium",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 31
+      }
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 'use client';
 import type { TariffBatchOperation, TariffBatchPrice } from '@/server/pricing-admin/tariff-batches/contract';
+const modelNames = { 'kling-v4': 'Kling 4', 'kling-v4-flash': 'Kling 4.0 Flash',
+  'gpt-image-2-6-flare': 'GPT Image 2.6 Flare', 'gpt-image-2-6-sunburst': 'GPT Image 2.6 Sunburst' };
 const money = (cents: number | null) => cents === null ? 'Unavailable' : `$${(cents / 100).toFixed(2)}`;
 function literal(price: TariffBatchPrice | undefined) {
   if (!price) return '—';
@@ -9,14 +11,15 @@ export function TariffBatchReview({ operation }: { operation: TariffBatchOperati
   const { plan, receipt } = operation;
   return <div className="min-w-0 space-y-3">
     <p className="font-semibold">{plan.counts.create} create · {plan.counts.update} update · {plan.counts.unchanged} unchanged · {plan.counts.conflict} conflict</p>
-    <p className="text-sm text-text-secondary">{plan.modelId === 'kling-v4-flash' ? 'Kling 4.0 Flash' : 'Kling 4'} · {plan.rows.length} of {plan.fullScopeCount} canonical classes · USD · revision {plan.revision}. {plan.reason}</p>
+    <p className="text-sm text-text-secondary">{modelNames[plan.modelId]} · {plan.rows.length} of {plan.fullScopeCount} canonical classes · USD · revision {plan.revision}. {plan.reason}</p>
+    {plan.rows.some(row => row.supplierCostIncomplete) && <p role="note" className="text-sm text-text-secondary">Supplier estimate covers image output only. Text and reference input costs remain unqualified. Commercial reserves do not guarantee a margin. These fixed customer prices do not enable generation.</p>}
     <p className="text-sm text-text-secondary">Each changed price receives its own server timestamp. The complete batch becomes visible together. Unchanged rows keep their IDs, dates and history.</p>
     <div className="max-h-[32rem] overflow-auto rounded-lg border border-border">
       <table className="w-full min-w-[850px] text-left text-sm"><caption className="sr-only">Complete tariff batch review</caption>
         <thead className="sticky top-0 bg-surface"><tr>{['Class', 'Current example', 'Proposed example', 'Literal price', 'Decision'].map(label => <th key={label} className="p-3">{label}</th>)}</tr></thead>
         <tbody>{plan.rows.map(row => <tr key={row.key} data-batch-review-row className="border-t border-border">
-          <td className="p-3">{row.selector.mode} · {row.selector.resolution} · {row.selector.durationSec === 'continuous' ? 'source duration' : `${row.selector.durationSec}s`}<br />{row.selector.billingInputType === 'video_input' ? 'With video input' : 'Without video input'}</td>
-          <td className="p-3">{row.currentCents === null && row.action === 'create' ? 'Missing' : money(row.currentCents)}</td><td className="p-3">{money(row.proposedCents)}<br /><span className="text-xs text-text-secondary">Supplier LIST: {money(row.supplierListCents)}</span></td>
+          <td className="p-3">{row.selector.mode} · {row.selector.resolution} · {row.selector.quality ? `${row.selector.durationSec} image(s) · ${row.selector.quality}` : row.selector.durationSec === 'continuous' ? 'source duration' : `${row.selector.durationSec}s`}<br />{row.selector.quality ? `${row.selector.referenceImageCount ?? '0'} reference(s)` : row.selector.billingInputType === 'video_input' ? 'With video input' : 'Without video input'}</td>
+          <td className="p-3">{row.currentCents === null && row.action === 'create' ? 'Missing' : money(row.currentCents)}</td><td className="p-3">{money(row.proposedCents)}<br /><span className="text-xs text-text-secondary">{row.supplierCostIncomplete ? 'Output-only LIST estimate' : 'Supplier LIST'}: {money(row.supplierListCents)}</span></td>
           <td className="p-3"><p>Before: {row.previousCell ? JSON.stringify(row.previousCell.price) : row.action === 'create' ? 'Missing' : 'Unavailable'}</p><p>After: {literal(row.proposedCell?.price as TariffBatchPrice | undefined)}</p>{row.domain && <p className="text-xs text-text-secondary">All valid source durations through {row.domain.maxInputSeconds}s checked.</p>}</td>
           <td className="p-3">{row.action}{row.issue && <p className="max-w-64 text-xs text-red-600">{row.issue}</p>}</td>
         </tr>)}</tbody>

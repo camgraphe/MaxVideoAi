@@ -1,0 +1,85 @@
+{
+  "createdAt": "2026-11-05T22:13:39.760Z",
+  "approval": "User requested multiplier 1.50 in response to the concrete 2040-price proposal; same commercial reserves, no repeated approval required.",
+  "approved": true,
+  "applied": false,
+  "currency": "USD",
+  "scope": "Two exact 2.6 variants; 3 sizes; 5 qualities; 1\u20134 outputs; T2I or I2I with 1\u201316 references.",
+  "commercialAssumption": "Estimated output LIST cost + USD 0.01 per output image for text + USD 0.02 per reference per output image; multiply the sum by 1.50, round the final total upward to cents.",
+  "inputCostBoundEstablished": false,
+  "marginGuaranteed": false,
+  "note": "These are proposed fixed retail prices. The input reserves are commercial assumptions, not measured supplier maxima. Long prompts or large/many references can reduce or erase the margin. No production/database/environment change or paid provider call.",
+  "validation": {
+    "cases": 2040,
+    "canonicalBillingAndPublicParity": true,
+    "tariffSource": "In-memory simulation only; no database preview fingerprint or live activation claimed"
+  },
+  "approvedSimulationSha256": "4d24dc97ff6a1ba4b6afe58ec30e822eada7da737fe86d6b91a79a2a09edcc6b",
+  "batches": [
+    {
+      "file": "gpt-image-2-6-flare-01.json",
+      "modelId": "gpt-image-2-6-flare",
+      "rows": 226,
+      "sha256": "164656b57365216eac7a60e16f6c6b01379e93b8aaa132f2f1eb48318465ad77"
+    },
+    {
+      "file": "gpt-image-2-6-flare-02.json",
+      "modelId": "gpt-image-2-6-flare",
+      "rows": 226,
+      "sha256": "be2b6d54a0bdc1d0eddbaa7e41182cae24a4fa3206b5a093e88a9370a0decc7b"
+    },
+    {
+      "file": "gpt-image-2-6-flare-03.json",
+      "modelId": "gpt-image-2-6-flare",
+      "rows": 226,
+      "sha256": "e68c6844420c24d6063f1e47074e8edd8dbb6e1f45360bea46f00d5da27c0558"
+    },
+    {
+      "file": "gpt-image-2-6-flare-04.json",
+      "modelId": "gpt-image-2-6-flare",
+      "rows": 226,
+      "sha256": "97248f6714578e7107768a86d83552d6e270dd4f4d0984c1396bbb906cd1a435"
+    },
+    {
+      "file": "gpt-image-2-6-flare-05.json",
+      "modelId": "gpt-image-2-6-flare",
+      "rows": 116,
+      "sha256": "49d7b6e673d6ac49959c192646a44f011092c605794ddaaac7a0260d1ae74c57"
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-01.json",
+      "modelId": "gpt-image-2-6-sunburst",
+      "rows": 226,
+      "sha256": "3e93521b60e322f8f777f0e0889f54f826f0575752e967ce1712f2f2e5900a86"
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-02.json",
+      "modelId": "gpt-image-2-6-sunburst",
+      "rows": 226,
+      "sha256": "96f902b08759f5d3ecf4692123190881c5a9f18fd57c56efa6805042195b3251"
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-03.json",
+      "modelId": "gpt-image-2-6-sunburst",
+      "rows": 226,
+      "sha256": "e0a680ca61691d98f3a53587adf1eb5077b9c03847877010235de2e74d61f5ef"
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-04.json",
+      "modelId": "gpt-image-2-6-sunburst",
+      "rows": 226,
+      "sha256": "5b5df2509d7cfd2edeaa11514efd9a4967162c21ce9d7150efffb2bcbc17c2ba"
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-05.json",
+      "modelId": "gpt-image-2-6-sunburst",
+      "rows": 116,
+      "sha256": "4d47dc457e1ce27b512e426be56eb63a9427ff3ed93d4268df533d30c3ace9f4"
+    }
+  ],
+  "nativeApplication": {
+    "status": "not_applied",
+    "maxClassesPerOperation": 226,
+    "procedure": "Authenticated admin preview and confirmation per batch, then read-only reconciliation; existing prices must remain unchanged."
+  }
+}

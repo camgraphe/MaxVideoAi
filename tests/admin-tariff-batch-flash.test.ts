@@ -53,5 +53,5 @@ test('Flash batches reject cross-model selectors and unsupported V4 classes', as
     await assert.rejects(buildTariffBatchPlan({ proposal: { ...flashProposal(), intent: 'create_missing',
       pricing: { kind: 'list_multiplier', multiplier: '1.30' }, selections: [{ selector: { ...first, ...unsupported } }] }, state, policy }), /unsupported/i);
   }
-  assert.throws(() => parseTariffBatchProposal({ ...flashProposal(), modelId: 'gpt-image-2-6-flare' }), /scope/i);
+  assert.throws(() => parseTariffBatchProposal({ ...flashProposal(), modelId: 'gpt-image-2-6-flare' }), /selector|field/i);
 });
