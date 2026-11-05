@@ -34,7 +34,7 @@ export function CharacterBuilderOutputsWorkflowSection({ content, films = [], lo
         </figure>; })}</div>
         <div className={styles.recastGuide}>
           <ol>{c.recastSteps.map((step, i) => <li key={step}><span>0{i + 1}</span>{step}</li>)}</ol>
-          <Link className={styles.primary} href="/app/tools/character-builder" prefetch={false} data-analytics-event="tool_cta_click" data-analytics-cta-location="tool_character_builder_recast" data-analytics-tool-name="character_builder" data-analytics-tool-surface="public">{c.recastCta}<ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <Link className={styles.primary} href="/app/tools/character-builder?mode=recast" prefetch={false} data-analytics-event="tool_cta_click" data-analytics-cta-location="tool_character_builder_recast" data-analytics-tool-name="character_builder" data-analytics-tool-surface="public">{c.recastCta}<ArrowUpRight size={18} aria-hidden="true" /></Link>
           <p className={styles.note}>{c.recastNote}</p>
         </div>
       </div>

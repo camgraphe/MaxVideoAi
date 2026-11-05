@@ -103,7 +103,10 @@ function CharacterBuilderAccountWorkspace({
   const { t, locale } = useI18n();
   const studioCopy = getCharacterStudioCopy(locale);
   const studioLocale: StudioLocale = locale === 'fr' || locale === 'es' ? locale : 'en';
-  const [studioMode, setStudioMode] = useState<CharacterStudioMode>('character');
+  const searchParams = useSearchParams();
+  const [studioMode, setStudioMode] = useState<CharacterStudioMode>(() =>
+    searchParams?.get('mode') === 'recast' ? 'recast' : 'character',
+  );
   const [showMobileResults, setShowMobileResults] = useState(false);
   const [studioTab, setStudioTab] = useState<StudioTab>('explore');
   const [editorKey, setEditorKey] = useState(0);
@@ -120,7 +123,6 @@ function CharacterBuilderAccountWorkspace({
     return deepmerge(DEFAULT_CHARACTER_COPY, (rawCopy ?? {}) as Partial<CharacterCopy>);
   }, [rawCopy]);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
   const [, setAdvancedOpen] = useState(false);
   const [, setHairOpen] = useState(false);

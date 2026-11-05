@@ -62,6 +62,12 @@ jobs belong to `surface=video`. Neither entry point transfers preview media into
 production. DOM coverage is in `character-studio-recast-character-picker.test.ts`;
 account, payment and architecture suites retain their existing owners.
 
+The marketing Recast CTA enters `/app/tools/character-builder?mode=recast`.
+The account workspace consumes this mode only at mount, after auth resolves;
+unknown values retain the character editor. It does not reset a saved draft,
+select a reference or start a render. Subsequent tab choices stay under user
+control, and the existing auth return target preserves the query string.
+
 ### Catalogue visuals
 
 `frontend/public/assets/tools/character-studio/` contains compact image atlases.

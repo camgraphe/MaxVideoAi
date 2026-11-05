@@ -44,6 +44,8 @@ Le 05/11, la lecture `/api/admin/marketing-media` de la preview retourne **403**
 
 Avant publication de Vesper, vérifier que la copie sélectionnée est bien la livraison avec musique et sans voix off ajoutée. Pour Dixie, vérifier la piste sonore et la provenance du passage chorégraphique. La sélection visuelle n’est pas une certification de droits sur les sources externes.
 
+**Décision d’Adrien le 05/11 : garder les vidéos en attente.** La reprise porte sur la preview et ses contrôles ; aucune publication de Dixie ou Vesper ni modification des droits du compte n’est à effectuer. Le CTA Recast rejoint directement l’onglet correspondant dans l’application, avec le brouillon personnage conservé et sans génération automatique.
+
 ## Vérification et limites
 
 Tests de comportement EN/FR/ES : un H1, mêmes intentions/canoniques/alternates, étapes liées au HowTo, FAQ affichée conforme, guides et CTA présents, une seule image prioritaire, planche non recadrée, images explicitement désignées tant que les films ne sont pas publics. Test du catalogue : Character Studio avant les outils rapides, filtres conservés. Test du lecteur de données : pas de DB → aucune requête ; privé, non relu ou URL personnelle → aucune vidéo ; erreur ou délai catalogue → images de secours. Le délai facultatif est borné à 1,5 seconde sans neutraliser le timeout DB existant.

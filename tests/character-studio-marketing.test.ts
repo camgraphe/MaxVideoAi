@@ -44,6 +44,7 @@ for (const [index, locale] of files.entries()) {
       assert.equal(howTo.step.length, 3);
       for (const link of c.related.guideLinks) assert.ok(doc.querySelector(`a[href="${link.href}"]`));
       assert.ok(doc.querySelector('a[href="/app/tools/character-builder"][data-analytics-event="tool_cta_click"]'));
+      assert.equal(doc.querySelector('#recast a[data-analytics-event="tool_cta_click"]').getAttribute('href'), '/app/tools/character-builder?mode=recast');
       assert.equal(f.w.requests.length, 0);
     } finally { await f.close(); }
   });

@@ -79,6 +79,35 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
 
 const legacyState = JSON.stringify({ version: 1, state: { advancedNotes: 'A private draft', referenceImages: [{ id: 'A-ref', role: 'identity', url: 'https://example.invalid/A.png' }], runs: [{ id: 'A-run', jobId: 'A-job', results: [{ id: 'A-result', url: 'https://example.invalid/result.png' }] }] } });
 
+test('a Recast entry survives auth resolution without resetting the character draft or starting a render', async () => {
+  const key = `${stateKey}:account-A`;
+  const f = await mountWorkspace({ userId: null, loading: true, query: 'mode=recast', storage: { [key]: JSON.stringify({ version: 1, state: { advancedNotes: 'Saved identity direction' } }) } });
+  try {
+    assert.equal(f.draft(), null);
+    await f.auth('account-A');
+    const modes = () => [...f.w.document.querySelectorAll('[role="group"][aria-label="Character Studio"] button')];
+    const recastButtons = modes().filter((button: any) => button.textContent === 'Recast');
+    assert.ok(recastButtons.length > 0);
+    assert.ok(recastButtons.every((button: any) => button.getAttribute('aria-pressed') === 'true'));
+    assert.equal(f.draft().advancedNotes, 'Saved identity direction');
+    const character = modes().find((button: any) => button.textContent.includes('Character')) as any;
+    assert.ok(character);
+    await f.w.fx.act(async () => character.click());
+    await f.edit('Continue the character draft');
+    assert.equal(character.getAttribute('aria-pressed'), 'true', 'the URL sets the entry mode once and does not lock subsequent navigation');
+    assert.equal(f.draft().advancedNotes, 'Continue the character draft');
+    assert.equal(f.w.requests.filter((entry: any) => entry.init.method === 'POST').length, 0, 'opening or switching tabs must never submit a generation');
+  } finally { await f.close(); }
+});
+
+test('an unknown Character Studio entry mode retains the default character editor', async () => {
+  const f = await mountWorkspace({ query: 'mode=unknown' });
+  try {
+    const character = [...f.w.document.querySelectorAll('[role="group"][aria-label="Character Studio"] button')].find((button: any) => button.textContent.includes('Character')) as any;
+    assert.equal(character?.getAttribute('aria-pressed'), 'true');
+  } finally { await f.close(); }
+});
+
 test('an authenticated account never adopts ownerless Character Builder drafts or pending jobs', async () => {
   const f = await mountWorkspace({ userId: 'account-B', storage: { [stateKey]: legacyState, [pendingKey]: JSON.stringify({ version: 1, runs: [{ id: 'pending-A', jobId: 'job-A', createdAt: '2026-10-17T10:00:00Z' }] }) } });
   try {
