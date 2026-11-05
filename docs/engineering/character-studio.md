@@ -355,10 +355,17 @@ limits. Nano Banana 2.1 creation/editing checks cover one image at 1K/2K/4K,
 including the displayed tariff revision and immutable receipt. These fixtures
 establish consistency, not approval of a new commercial tariff.
 
-Wan 3 Prime reference mode now preserves authored reference order, just like its
+Wan 3 Prime reference mode preserves explicitly numbered reference order, just like its
 video-edit mode. The Recast brief explicitly identifies image 1 as the character
 and image 2 as the optional product. Never sort these by asset ID: that can change
 the meaning of a product scene.
+`prepareRecast` authors contiguous slots for character, product and audio.
+Historical Wan `ref2v` requests without slots retain their original canonical
+ordering and hash; already stored slot-bearing preview requests also remain
+unchanged. Normalization must never add slots to historical requests while
+reading a quote, because that would reject an already paid job before recovery.
+`tests/wan-prime-reference-compatibility.test.ts` locks both request hashes and
+prepared/claimed/accepted reads, retaining rejection of tampered hashes.
 
 The confirmation UI retains an uncertain purchase after network failure, keeps
 the setup locked and offers recovery using the same quote even after expiry.

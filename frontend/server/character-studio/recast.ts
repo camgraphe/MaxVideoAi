@@ -101,6 +101,12 @@ export async function prepareRecast(actor: ToolboxGenerationActor, value: unknow
     dialogue: s.dialogue,
     direction: s.direction,
   });
+  // Opt in to ordered identity/product/audio references without reinterpreting
+  // older Wan quotes whose unnumbered references remain canonical as stored.
+  let referenceSlot = 0;
+  for (const reference of references) {
+    if (reference.role === 'reference') reference.slot = referenceSlot++;
+  }
   const quote = await deps
     .generation(actor, {
       enabled: true,
