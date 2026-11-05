@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import {validateKlingV4OwnedMedia,type KlingV4OwnedMediaDependencies} from '@/app/api/generate/_lib/kling-v4-owned-media';
 import { qualifyFluxLtxSourceReference } from './flux-ltx-source-reference';
 import { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
@@ -64,10 +65,11 @@ export async function verifyResolvedGenerationReferencesForActor(
   request: CanonicalGenerationRequest, principal: GenerationActor, resolved: ResolvedReference[],
   klingV4MediaDependencies?: KlingV4OwnedMediaDependencies,
 ): Promise<ResolvedReference[]> {
-  if (request.engineId === 'kling-v4' && resolved.length) {
+  if (isKlingV4FalQueueEngineId(request.engineId) && resolved.length) {
     if (request.references.some(reference=>reference.kind!=='asset')) throw new AgentApiError('REFERENCE_INVALID','Kling 4 requires owned original references.');
-    const media = resolved.map((reference,index)=>({fieldId:`canonical_reference.${index}`,kind:reference.mediaKind,url:reference.storageUrl}));
-    const verified = await validateKlingV4OwnedMedia({mode:request.mode as 't2v'|'i2v'|'ref2v'|'v2v',userId:principal.userId,
+    const subjectSlots = new Set(request.subjects?.flatMap(subject => subject.kind === 'video' ? [subject.referenceSlot] : []) ?? []);
+    const media = resolved.map((reference,index)=>({fieldId:`${reference.role === 'reference' && reference.slot !== undefined && subjectSlots.has(reference.slot) ? 'canonical_subject_video' : 'canonical_reference'}.${index}`,kind:reference.mediaKind,url:reference.storageUrl}));
+    const verified = await validateKlingV4OwnedMedia({engineId:request.engineId,mode:request.mode as 't2v'|'i2v'|'ref2v'|'v2v',userId:principal.userId,
       attachments:resolved.map((reference,index)=>({assetId:reference.assetId,kind:reference.mediaKind,url:reference.storageUrl,slotId:media[index].fieldId,name:reference.originalName??'reference',type:reference.mimeType,size:reference.sizeBytes??0})),
       referenceMediaItems:media,trustedResolvedReferences:resolved,deps:klingV4MediaDependencies});
     if (!verified.ok) throw new AgentApiError('REFERENCE_INVALID',verified.body.message as string);

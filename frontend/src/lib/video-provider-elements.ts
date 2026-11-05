@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 export type MaxVideoProviderElement = {
   /** Per-element voice binding supported by Kling V4; never a global voice list. */
   voiceId?: string;
@@ -49,7 +50,7 @@ export function normalizeMaxVideoProviderElements(
   options: { engineId?: string } = {},
 ): MaxVideoProviderElement[] {
   if (!Array.isArray(elements)) return [];
-  const isV4 = options.engineId === 'kling-v4';
+  const isV4 = isKlingV4FalQueueEngineId(options.engineId);
   // V4 must reject overflows, never silently submit a truncated subject set.
   if (isV4 && elements.length > 7) throw new Error('Kling V4 accepts at most seven elements.');
   return elements
@@ -62,6 +63,7 @@ export function normalizeMaxVideoProviderElements(
         && (!Array.isArray(values) || values.length > 3 || values.some(value => !cleanString(value))))) {
         throw new Error('Kling V4 accepts at most three non-empty additional image references per element.');
       }
+      if (options.engineId === 'kling-v4-flash' && (element.voiceId !== undefined || element.providerElementId !== undefined)) throw new Error('Flash requires owned visual subjects without voice bindings.');
       const frontalImageUrl = cleanString(element.frontalImageUrl);
       const referenceImageUrls = cleanStringArray(element.referenceImageUrls);
       const videoUrl = cleanString(element.videoUrl);

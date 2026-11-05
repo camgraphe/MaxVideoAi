@@ -20,6 +20,20 @@ const schemas = {
 };
 const integer = (value: unknown) => typeof value === 'string' && /^\d+$/u.test(value.trim()) ? Number(value.trim()) : value;
 
+/** Inspect the authored App request before common normalizers drop unsupported fields. */
+export function getKlingV4FlashControlViolation(mode: string, body: Record<string, unknown>): string | null {
+  if (!Object.hasOwn(KLING_V4_FLASH_ENDPOINTS, mode)) return 'Unsupported Flash mode.';
+  for (const field of ['fps', 'seed', 'cfgScale', 'audio', 'generate_audio', 'voiceIds', 'voiceControl', 'shotType', 'cameraFixed', 'loop', 'numFrames', 'audioUrl', 'audio_url', 'safetyChecker', 'endImageUrl', 'videoUrl', 'multiPrompt', 'multi_prompt', 'negativePrompt']) {
+    if (body[field] !== undefined && body[field] !== null && body[field] !== '') return `Flash does not support ${field}.`;
+  }
+  if (body.extraInputValues && Object.values(body.extraInputValues as object).some(value => value !== undefined && value !== null)) return 'Flash has no additional provider controls.';
+  if (body.resolution !== undefined && body.resolution !== '720p') return 'Flash requires 720p.';
+  const duration = integer(body.durationSec ?? body.duration ?? body.durationOption ?? 5);
+  if (typeof duration !== 'number' || !Number.isInteger(duration) || duration < 3 || duration > 20) return 'Flash requires 3–20 whole seconds.';
+  if (body.durationOption != null && integer(body.durationOption) !== duration) return 'Flash duration selectors disagree.';
+  return null;
+}
+
 export function getKlingV4FlashConstraintViolation(mode: string, input: Record<string, unknown>): { field: string; message: string } | null {
   const invalid = (field: string, message: string) => ({ field, message: `Kling 4.0 Flash ${field}: ${message}` });
   if (!Object.hasOwn(schemas, mode)) return invalid('mode', 'Unsupported mode.');

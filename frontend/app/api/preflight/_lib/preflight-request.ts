@@ -105,7 +105,7 @@ const preflightRequestSchema = z.object({
   // The transport ceiling does not widen Seedance's separate admission contract.
   if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
     context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
-  if (request.elements !== undefined && !(request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
+  if (request.elements !== undefined && !(((request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode)) || (request.engine === 'kling-v4-flash' && request.mode === 'ref2v')) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
     context.addIssue({code:z.ZodIssueCode.custom,path:['elements'],message:'Unsupported Kling subject composition.'});
 });
 

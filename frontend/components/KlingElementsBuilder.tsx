@@ -43,7 +43,7 @@ export type KlingElementState = {
 
 export interface KlingElementsBuilderProps {
   elements: KlingElementState[];
-  variant?: 'legacy' | 'kling-v4-reference' | 'kling-v4-edit';
+  variant?: 'kling-v4-flash-reference' | 'legacy' | 'kling-v4-reference' | 'kling-v4-edit';
   onAddElement: () => void;
   onRemoveElement: (id: string) => void;
   onAddAsset: (elementId: string, slot: 'frontal' | 'reference' | 'video', file: File, index?: number) => void;
@@ -262,6 +262,7 @@ export function KlingElementsBuilder({
   const { locale } = useI18n();
   const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
   const isV4 = variant !== 'legacy';
+  const isFlash = variant === 'kling-v4-flash-reference';
   const isV4Edit = variant === 'kling-v4-edit';
   const v4SubjectGuidance = locale === 'fr'
     ? `Jusqu’à sept sujets${isV4Edit ? ' image pour Modify.' : ', dont trois sujets vidéo au maximum.'} Chaque sujet image comprend une vue principale et une à trois vues complémentaires. Les voix restent indisponibles sans liaison propriétaire vérifiée.`
@@ -269,10 +270,10 @@ export function KlingElementsBuilder({
       ? `Hasta siete sujetos${isV4Edit ? ' de imagen para Modify.' : ', con un máximo de tres sujetos de vídeo.'} Cada sujeto de imagen incluye una vista frontal y de una a tres vistas adicionales. Las voces no están disponibles sin una vinculación de propiedad verificada.`
       : `Up to seven subjects${isV4Edit ? '; image subjects only for Modify.' : ', including at most three video subjects.'} Each image subject needs a frontal image and one to three additional views. Voices remain unavailable without a verified owned binding.`;
   const v4ReferenceGuidance = isV4Edit ? '' : locale === 'fr'
-    ? ' Les dix images (image initiale comprise) et cinq vidéos de référence sont distinctes des vues des sujets. Les vidéos partagent une limite de 30 secondes.'
+    ? ` Les dix images (image initiale comprise) et cinq vidéos de référence sont distinctes des vues des sujets. Les vidéos partagent une limite de ${isFlash ? 20 : 30} secondes.`
     : locale === 'es'
-      ? ' Las diez imágenes (incluida la inicial) y cinco vídeos de referencia tienen límites distintos de las vistas de sujetos. Los vídeos comparten un límite de 30 segundos.'
-      : ' Up to ten flat images (including the opening image) and five reference videos, separately from subject views. Videos share a 30-second total limit.';
+      ? ` Las diez imágenes (incluida la inicial) y cinco vídeos de referencia tienen límites distintos de las vistas de sujetos. Los vídeos comparten un límite de ${isFlash ? 20 : 30} segundos.`
+      : ` Up to ten flat images (including the opening image) and five reference videos, separately from subject views. Videos share a ${isFlash ? 20 : 30}-second total limit.`;
   const videoCount = elements.filter((element) => element.video).length;
   const referenceSlots = useMemo(() => Math.max(1, maxReferenceImages), [maxReferenceImages]);
 

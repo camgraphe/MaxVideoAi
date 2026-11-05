@@ -88,3 +88,21 @@ The official image-generation page's calculator bundle `GptImageTokenCalculator.
 All three registry records remain unpublished. Flash supplier facts use exact aggregate video timing and independent no-video/video classes. GPT Image 2.6 output tokens follow the official calculator (provenance and sample facts in `tests/fixtures/gpt-image-26-output-calculator.json`). Text/image input token bounds are not established by current documentation; estimates explicitly identify partial output components, unknown invoice/input cost and unqualified supplier budget. No GPT 2.5 fal pricing fallback is used.
 
 The native admin previews and stages inactive exact customer cells. Tests against disposable PostgreSQL verify stale preview rejection, inactive-price rejection, continuous Flash input and public/billing parity after test-only activation. No production tariffs or paid jobs were created. GPT 2.6 normalized tariff identity ignores price-neutral complexity and redundant parsed dimensions while immutable requests retain those settings.
+
+## Surface integration candidate — 2026-11-05
+
+Canonical generation preserves both exact 2.6 variants, quality, complexity,
+background and output format. Studio is wired for one image with at most eight
+references; its three first-lot sizes have explicit 1:1, 3:2 and 2:3 framing.
+Unsupported framing cannot silently select a square fallback. The App persists
+complexity and restores it from the job snapshot; changing models discloses any
+reset. Storyboard, Character Builder and Angle retain their fixed tool models.
+
+Flash App references/subjects share the current V4 owners, with separate 20-second
+and 15-original limits and no structured shots, final frame, Modify or Extend.
+The canonical subject-video duration check survives owned-original probing.
+App raw control validation rejects inherited unsupported options before pricing.
+Milo gets exact-ID documented facts, without inherited measured quality rankings.
+The seven mode contracts, existing V4 subjects/workspace regressions and MCP client
+gate pass offline. Browser, database, tariff and account qualification remain
+separate evidence gates in the release ledger.

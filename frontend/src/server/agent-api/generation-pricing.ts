@@ -414,6 +414,7 @@ export async function priceCanonicalGeneration(
     numImages: request.outputCount,
     resolution: requiredString(settings, 'resolution'),
     quality: optionalString(settings, 'quality') as ImageGenerationRequest['quality'],
+    complexity: optionalString(settings, 'complexity') as ImageGenerationRequest['complexity'],
     aspectRatio: optionalString(settings, 'aspectRatio'),
     referenceImageCount: canonicalImageReferences(request).length,
     referenceImageSizes: canonicalImageReferenceSizes(request, referenceContext),
@@ -521,6 +522,7 @@ export async function priceCanonicalGenerationWithBilling(
       mode: request.mode as ImageGenerationMode,
       ...(customImageSize ? { customImageSize } : {}),
       quality: optionalString(request.settings, 'quality'),
+      complexity: optionalString(request.settings, 'complexity'),
       addons: request.settings.enableWebSearch === true
         ? { enable_web_search: true }
         : undefined,

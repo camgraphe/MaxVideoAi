@@ -1,3 +1,5 @@
+import { getKlingV4FlashControlViolation } from '@/lib/kling-v4-flash';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { resolveVideoOperationRequestEngine } from '@/lib/video-operation';
 import { getEngineCaps } from '@/fixtures/engineCaps';
@@ -113,6 +115,10 @@ export function buildGenerateRequestOptions(params: {
   const { body, mode, isBytePlusV1a } = params; let engine = params.engine;
   try { engine = resolveVideoOperationRequestEngine(engine, mode, body); }
   catch { return { ok: false, status: 400, body: { ok: false, error: 'Invalid operation' } }; }
+  if (engine.id === 'kling-v4-flash') {
+    const violation = getKlingV4FlashControlViolation(mode, body);
+    if (violation) return {ok:false,status:400,body:{ok:false,error:'ENGINE_CONSTRAINT',message:violation}};
+  }
   const prompt = String(body.prompt || '');
   const controls = normalizeGenerationControls(body, engine.id);
   if (!controls.ok) return {ok:false, status:400, body:{ok:false, error:controls.error}};
@@ -197,7 +203,7 @@ export function buildGenerateRequestOptions(params: {
     : null;
   let aspectRatio =
     rawAspectRatio && fallbackAspectRatio
-      ? rawAspectRatio === 'auto' && !isBytePlusV1a && !(engine.id === 'kling-v4' && mode === 'ref2v')
+      ? rawAspectRatio === 'auto' && !isBytePlusV1a && !(isKlingV4FalQueueEngineId(engine.id) && mode === 'ref2v')
         ? fallbackAspectRatio
         : rawAspectRatio
       : rawAspectRatio ?? fallbackAspectRatio ?? null;

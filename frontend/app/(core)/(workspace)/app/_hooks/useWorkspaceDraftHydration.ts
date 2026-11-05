@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { useWorkspaceActiveDraft } from './useWorkspaceActiveDraft';
 import type { WorkspaceModelSetup } from '../_lib/workspace-model-candidate';
 import { useEffect, useMemo } from 'react';
@@ -236,7 +237,7 @@ export function useWorkspaceDraftHydration({
           readStorage(STORAGE_KEYS.multiPromptScenes),
           createLocalId,
           createMultiPromptScene,
-          initialForm.form?.engineId === 'kling-v4',
+          isKlingV4FalQueueEngineId(initialForm.form?.engineId),
         ),
       );
       preserveStoredDraftRef.current = initialForm.preserveStoredDraft;

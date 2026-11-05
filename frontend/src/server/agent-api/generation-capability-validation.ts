@@ -1,3 +1,5 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { validateLumaCanonicalShape } from './generation-luma-shape';
@@ -111,6 +113,7 @@ const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   limitGenerations: 'limit_generations',
   outputFormat: 'output_format',
   quality: 'quality',
+  complexity: 'complexity',
   seed: 'seed',
   style: 'style',
   thinkingLevel: 'thinking_level',
@@ -470,8 +473,13 @@ function buildProviderConstraintPayload(
       ? value.map((scene) => ({ prompt: scene.prompt, duration: scene.durationSec }))
       : value;
   }
+  const subjectSlots = new Set((request.subjects ?? []).flatMap(subject => subject.kind === 'video' ? [subject.referenceSlot] : [subject.frontalReferenceSlot, ...subject.referenceSlots]));
+  if (request.subjects?.length) payload.elements = request.subjects.map(subject => subject.kind === 'video'
+    ? {videoUrl:`mcp-subject-${subject.referenceSlot}`}
+    : {frontalImageUrl:`mcp-subject-${subject.frontalReferenceSlot}`,referenceImageUrls:subject.referenceSlots.map(slot=>`mcp-subject-${slot}`)});
   const valuesByField = new Map<string, string[]>();
   for (const [index, reference] of request.references.entries()) {
+    if (reference.role === 'reference' && reference.slot !== undefined && subjectSlots.has(reference.slot)) continue;
     const fields = fieldsForReference(
       request,
       candidate,
@@ -823,7 +831,7 @@ function validateCombinedReferenceDurations(
       durations.set(resolved.storageUrl, resolved.durationSec);
     }
     // V4 billing/limits count every submitted occurrence; never deduplicate repeated video inputs.
-    const total = request.engineId === 'kling-v4'
+    const total = isKlingV4FalQueueEngineId(request.engineId)
       ? options.resolvedReferences.filter(reference=>reference.mediaKind===kind).reduce((sum,reference)=>sum+(reference.durationSec ?? 0),0)
       : [...durations.values()].reduce((sum, durationSec) => sum + durationSec, 0);
     if (total > limit) fail('references', 'reference_invalid', 'combined_duration_exceeded');
@@ -871,7 +879,7 @@ function validateReferences(
   candidate: AgentPublicGenerationEngine,
   options: GenerationCapabilityValidationOptions,
 ): void {
-  if (request.engineId==='kling-v4' && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
+  if ((isKlingV4FalQueueEngineId(request.engineId) || isGptImage26EngineId(request.engineId)) && request.references.some(reference=>reference.kind!=='asset')) fail('references','reference_invalid');
   if (candidate.surface === 'image') {
     const constraints = getReferenceConstraints(candidate.engine, request.mode as ImageGenerationMode);
     const generationReferences = request.references.filter((reference) => reference.role !== 'mask');
@@ -899,7 +907,7 @@ function validateReferences(
   }
   const subjectKinds = new Map<number, 'image' | 'video'>();
   for (const subject of request.subjects ?? []) {
-    if (request.engineId !== 'kling-v4' || !['ref2v','v2v'].includes(request.mode)) fail('subjects');
+    if (!(request.engineId === 'kling-v4' && ['ref2v','v2v'].includes(request.mode)) && !(request.engineId === 'kling-v4-flash' && request.mode === 'ref2v')) fail('subjects');
     for (const slot of subject.kind === 'video' ? [subject.referenceSlot] : [subject.frontalReferenceSlot, ...subject.referenceSlots]) {
       subjectKinds.set(slot, subject.kind);
     }
@@ -921,7 +929,7 @@ function validateReferences(
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
     validateTrustedAudioFormat(reference, fields, candidate, options);
     // H3's executable references already require owned, measured originals.
-    const minimumImageSide = ['minimax-h3', 'kling-v4'].includes(candidate.engine.id)
+    const minimumImageSide = ['minimax-h3', 'kling-v4', 'kling-v4-flash'].includes(candidate.engine.id)
       ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;
     if (fields.length === 1 && fields[0]!.type === 'image'
       && typeof minimumImageSide === 'number' && minimumImageSide > 0 && options.resolvedReferences) {
@@ -1007,11 +1015,20 @@ function validateReferences(
       reference.role === 'first_frame'
       && selectedFields[index]?.some((field) => field.type === 'image'))
   ) fail('prompt');
-  if (request.engineId === 'kling-v4' && request.mode === 'ref2v') {
+  if (isKlingV4FalQueueEngineId(request.engineId) && request.mode === 'ref2v') {
     const flatImages = request.references.filter((reference,index)=>
       !(reference.role==='reference' && reference.slot!==undefined && subjectKinds.has(reference.slot))
       && selectedFields[index]?.length===1 && selectedFields[index][0].type==='image');
     if (flatImages.length>10) fail('references','reference_invalid');
+  }
+  if (request.engineId === 'kling-v4-flash') {
+    if (request.references.length > 15) fail('references', 'reference_invalid');
+    for (const reference of request.references) {
+      if (reference.role === 'reference' && reference.slot !== undefined && subjectKinds.get(reference.slot) === 'video' && options.resolvedReferences) {
+        const seconds = resolvedReference(reference, options)?.durationSec;
+        if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 3 || seconds > 8.05) fail('subjects', 'reference_invalid');
+      }
+    }
   }
   validateReferenceBudget(request, candidate, selectedFields, subjectKinds);
   validateCombinedReferenceDurations(request, candidate, options);

@@ -121,6 +121,7 @@ export const canonicalSettingsSchema = z.object({
   sourcePositionY: z.number().nullable().default(null),
   startTimeSec: z.number().min(0).nullable().default(null),
   style: z.string().trim().min(1).max(64).nullable().default(null),
+  complexity: z.enum(['low', 'medium', 'high']).nullable().default(null),
   thinkingLevel: z.string().trim().min(1).max(64).nullable().default(null),
   enableImageSearch: z.boolean().nullable().default(null),
   maxOutputTokens: z.number().int().min(1).max(32768).nullable().default(null),

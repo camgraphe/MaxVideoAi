@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import {STUDIO_CONVERSATION_MAX_ATTACHMENTS} from '@/lib/studio/conversation-creation-contract';
 import {getRuntimeModelById} from '@/config/model-runtime';
 import type {StudioCapabilityDetails,StudioImageCapability} from '@/lib/studio/conversation-action-contract';
@@ -21,7 +22,7 @@ export function studioVisualCapabilityDetails(candidate: AgentPublicGenerationEn
         references: canonical.references.filter(reference => candidate.surface==='video'||reference.type === 'image').map(reference=>({...reference,
           max: candidate.surface==='video' && (mode==='v2v'||mode==='extend') ? reference.max : Math.min(reference.max ?? maxReferences,maxReferences)}))};
     }),
-    ...(candidate.engine.id==='kling-v4'?{subjectReferenceAllowance:{attachedPoolLimit:STUDIO_CONVERSATION_MAX_ATTACHMENTS,maxSelectedReferences:43 as const,additionalSource:'ready_project_outputs' as const}}:{}),
+    ...(isKlingV4FalQueueEngineId(candidate.engine.id)?{subjectReferenceAllowance:{attachedPoolLimit:STUDIO_CONVERSATION_MAX_ATTACHMENTS,maxSelectedReferences:candidate.engine.id === 'kling-v4-flash' ? 15 as const : 43 as const,additionalSource:'ready_project_outputs' as const}}:{}),
     referenceIdentity: candidate.surface === 'image' ? 'attached_image_asset' : 'attached_owned_media_or_ready_project_output',
     outputCount: 1,maxReferences: Math.max(...candidate.publicModes.map(mode=>studioGenerationReferenceLimit(candidate.engine.id,candidate.surface,mode))),guidance: getAgentModelGuidance(candidate.engine.id),
     editorialGuidance: getAgentModelEditorialGuidance(candidate.engine.id),

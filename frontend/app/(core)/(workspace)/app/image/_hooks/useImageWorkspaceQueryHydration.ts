@@ -61,6 +61,7 @@ interface UseImageWorkspaceQueryHydrationParams {
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
+  setComplexity: Dispatch<SetStateAction<string | null>>;
   setWatermark: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -90,6 +91,7 @@ export function useImageWorkspaceQueryHydration({
   setSelectedPreviewImageIndex,
   setStatusMessage,
   setThinkingLevel,
+  setComplexity,
   setWatermark,
 }: UseImageWorkspaceQueryHydrationParams) {
   const hydratedJobRef = useRef<string | null>(null);
@@ -211,6 +213,7 @@ export function useImageWorkspaceQueryHydration({
       const styleRaw = typeof core.style === 'string' ? core.style : null;
       const maskUrlRaw = typeof core.maskUrl === 'string' ? core.maskUrl : null;
       const enableWebSearchRaw = core.enableWebSearch === true;
+      const complexityRaw = typeof core.complexity === 'string' ? core.complexity : null;
       const thinkingLevelRaw = typeof core.thinkingLevel === 'string' ? core.thinkingLevel : null;
       const limitGenerationsRaw = core.limitGenerations === true;
       const watermarkRaw = core.watermark === true;
@@ -280,6 +283,14 @@ export function useImageWorkspaceQueryHydration({
         setThinkingLevel(
           thinkingLevelRaw && thinkingLevels.includes(thinkingLevelRaw) ? thinkingLevelRaw : defaultThinkingLevel
         );
+        const complexities = getImageFieldValues(engineMatch.engineCaps, 'complexity', resolvedMode);
+        const defaultComplexity =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'complexity', resolvedMode) ??
+          complexities[0] ??
+          null;
+        setComplexity(
+          complexityRaw && complexities.includes(complexityRaw) ? complexityRaw : defaultComplexity
+        );
         setLimitGenerations(
           getImageInputField(engineMatch.engineCaps, 'limit_generations', resolvedMode)
             ? limitGenerationsRaw
@@ -300,6 +311,7 @@ export function useImageWorkspaceQueryHydration({
         setMaskUrl(maskUrlRaw ?? '');
         setEnableWebSearch(enableWebSearchRaw);
         setThinkingLevel(thinkingLevelRaw);
+        setComplexity(complexityRaw);
         setLimitGenerations(limitGenerationsRaw);
         setWatermark(watermarkRaw);
       }
@@ -357,6 +369,7 @@ export function useImageWorkspaceQueryHydration({
       setSelectedPreviewImageIndex,
       setStyle,
       setThinkingLevel,
+      setComplexity,
       setWatermark,
     ]
   );

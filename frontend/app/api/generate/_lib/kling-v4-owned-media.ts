@@ -55,7 +55,7 @@ export async function validateKlingV4OwnedMedia(params: {
     delete fields.v2v;
   }
   if (!fields[params.mode] || params.referenceMediaItems.some(item =>
-    !(params.trustedResolvedReferences !== undefined && /^canonical_reference\.\d+$/u.test(item.fieldId))
+    !(params.trustedResolvedReferences !== undefined && /^canonical_(?:reference|subject_video)\.\d+$/u.test(item.fieldId))
       && fields[params.mode][item.fieldId] !== item.kind)) {
     return rejected('references', 'This media role is not supported in the selected Kling 4 mode.');
   }
@@ -152,7 +152,7 @@ export async function validateKlingV4OwnedMedia(params: {
         }
         facts = probes.get(candidate.url) ?? undefined;
       }
-      const isSubject = candidate.fieldId.startsWith('elements.');
+      const isSubject = (candidate.fieldId.startsWith('elements.') || candidate.fieldId.startsWith('canonical_subject_video.'));
       const maxSeconds = flash && isSubject ? 8 : maxVideoSeconds;
       if (!facts || !Number.isFinite(facts.fps) || facts.fps < 23.9 || facts.fps > 60.05
         || !Number.isFinite(facts.durationSec) || facts.durationSec < 3 || facts.durationSec > maxSeconds + 0.05) {

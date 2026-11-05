@@ -1,3 +1,4 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
@@ -103,6 +104,7 @@ export function imageRequestFromDraft(
   if (selected.aspectRatio !== undefined && selected.aspectRatio !== ratio)
     throw new AgentApiError('PARAMETER_INVALID','Choose one consistent image aspect ratio.');
   const choices: Record<string,string[]>={
+    '3:2': ['1536x1024'], '2:3': ['1024x1536'],
     '1:1': ['1024x1024','square_hd'], '16:9': ['landscape_16_9','1920x1080'],
     '9:16': ['portrait_16_9'], '4:3': ['landscape_4_3','1024x768'], '3:4': ['portrait_4_3'],
     auto: [getDefaultResolution(candidate.engine,mode)],
@@ -121,6 +123,12 @@ export function imageRequestFromDraft(
       "PARAMETER_INVALID",
       "This image format is unavailable.",
     );
+  const image26 = isGptImage26EngineId(candidate.engine.id);
+  if (image26) {
+    const ratioBySize: Record<string,string> = {'1024x1024':'1:1','1536x1024':'3:2','1024x1536':'2:3'};
+    if (ratio !== 'auto' && ratioBySize[String(resolution)] !== ratio) throw new AgentApiError('PARAMETER_INVALID','Choose 1:1, 3:2 or 2:3 and a matching GPT Image 2.6 size.');
+    delete selected.aspectRatio;
+  }
   try {
   const request = normalizeGenerationRequest({
     schemaVersion: 1,
@@ -129,7 +137,7 @@ export function imageRequestFromDraft(
     mode,
     prompt: draft.image.prompt,
     settings: {
-      aspectRatio: ratio,
+      ...(!image26 ? {aspectRatio: ratio} : {}),
       resolution,
       ...(details.settings.some(setting => setting.key === 'quality') ? {quality: 'high'} : {}),
       ...(details.settings.some(setting => setting.key === 'outputFormat') ? {outputFormat: 'png'} : {}),

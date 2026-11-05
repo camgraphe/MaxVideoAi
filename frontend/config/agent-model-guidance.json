@@ -276,5 +276,61 @@
     "considerations": ["Use Draft for iteration while preserving the exact first, last, or source reference role."],
     "evidenceUrls": ["https://maxvideoai.com/models/flux-3-draft"],
     "reviewedAt": "2026-09-01"
+  },
+  {
+    "engineId": "gpt-image-2-6-flare",
+    "strengths": [
+      "Raster image creation and prompt-guided editing with owned image references."
+    ],
+    "bestFor": [
+      "reference_guided",
+      "conversational_refine"
+    ],
+    "considerations": [
+      "Select size, quality and planning complexity independently. This release supports PNG, JPEG and WebP; transparent output requires PNG or WebP.",
+      "Studio uses one output and up to eight references per action. GIF, SVG and annotation editing are outside this release.",
+      "Availability follows the exact model and mode returned by live details; no inherited quality ranking."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/gpt-image-2-6-flare"
+    ],
+    "reviewedAt": "2026-11-05"
+  },
+  {
+    "engineId": "gpt-image-2-6-sunburst",
+    "strengths": [
+      "Raster image creation and prompt-guided editing with owned image references."
+    ],
+    "bestFor": [
+      "reference_guided",
+      "conversational_refine"
+    ],
+    "considerations": [
+      "Select size, quality and planning complexity independently. This release supports PNG, JPEG and WebP; transparent output requires PNG or WebP.",
+      "Studio uses one output and up to eight references per action. GIF, SVG and annotation editing are outside this release.",
+      "Availability follows the exact model and mode returned by live details; no inherited quality ranking."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/gpt-image-2-6-sunburst"
+    ],
+    "reviewedAt": "2026-11-05"
+  },
+  {
+    "engineId": "kling-v4-flash",
+    "strengths": [
+      "Text, opening-image and visual-reference video generation at 720p."
+    ],
+    "bestFor": [
+      "reference_guided"
+    ],
+    "considerations": [
+      "Output duration is 3–20 whole seconds; no final frame, Modify, Extend, structured shot plan, voice binding or FPS control.",
+      "Reference videos and subject videos share 20 seconds total. Video subjects are 3–8 seconds. MaxVideoAI initially limits the request to 15 originals including subject views.",
+      "Describe sound in the prompt. Availability and exact prices come from live details and a current quote."
+    ],
+    "evidenceUrls": [
+      "https://maxvideoai.com/models/kling-v4-flash"
+    ],
+    "reviewedAt": "2026-11-05"
   }
 ]

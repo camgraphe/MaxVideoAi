@@ -1,3 +1,5 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { KLING_V4_PROMPT_MAX_CHARS } from '@/config/fal-engines/kling-v4';
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21Scenario, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
@@ -159,6 +161,8 @@ const IMAGE_SETTING_KEYS = new Set([
   'imageWidth',
   'outputFormat',
   'quality',
+  'complexity',
+  'background',
   'resolution',
   'seed',
   'style',
@@ -497,7 +501,7 @@ export function orderedGenerationReferenceRole(
 ): CanonicalGenerationReference['role'] | null {
   return (engineId === NANO21_ENGINE_ID || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
+    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4','kling-v4-flash'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
 }
@@ -544,7 +548,7 @@ function assertSurfaceMode(surface: CanonicalGenerationSurface, mode: CanonicalG
 function normalizeSubjects(value: unknown, engineId: string, mode: CanonicalGenerationMode,
   references: CanonicalGenerationReference[]): CanonicalGenerationSubject[] | undefined {
   if (value === undefined) return undefined;
-  if (engineId !== 'kling-v4' || !['ref2v', 'v2v'].includes(mode)) fail('subjects', 'Subjects are unsupported for this model and mode.');
+  if (!(engineId === 'kling-v4' && ['ref2v', 'v2v'].includes(mode)) && !(engineId === 'kling-v4-flash' && mode === 'ref2v')) fail('subjects', 'Subjects are unsupported for this model and mode.');
   assertDenseDataArray(value, 'subjects', 7);
   if (!value.length) fail('subjects', 'Provide at least one subject, or omit subjects.');
   const usedSlots = new Set<number>();
@@ -638,10 +642,11 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
   if ((sourceJobId || sourceOutputId) && (!((input.engineId === 'luma-ray-3-2' && mode === 'extend') || operation === 'flux-draft-enhance') || !sourceJobId || !SAFE_ID_PATTERN.test(sourceJobId))) fail('sourceJobId', 'Invalid source generation.');
   const engineId = normalizeEngineId(input.engineId);
   const settings = normalizeSettings(input.settings, mode, engineId);
+  const optionalPrompt = engineId === 'kling-v4-flash' && mode === 'i2v';
   const noPrompt = operation === 'ltx23-reframe' || operation === 'flux-draft-enhance';
-  const prompt = normalizeText((final || noPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', engineId === 'kling-v4' ? KLING_V4_PROMPT_MAX_CHARS : MAX_CANONICAL_PROMPT_CHARS, true);
+  const prompt = normalizeText((final || noPrompt || optionalPrompt || isH3SourceOperation(operation)) && input.prompt === undefined ? '' : input.prompt, 'prompt', isKlingV4FalQueueEngineId(engineId) ? KLING_V4_PROMPT_MAX_CHARS : isGptImage26EngineId(engineId) ? 32000 : MAX_CANONICAL_PROMPT_CHARS, true);
   if (engineId === 'kling-v4' && prompt && Array.isArray(settings.multiPrompt)) fail('prompt', 'Choose a prompt or shot plan, exclusively.');
-  if (!prompt && !final && !noPrompt && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
+  if (!prompt && !optionalPrompt && !final && !noPrompt && !isH3SourceOperation(operation) && !Array.isArray(settings.multiPrompt)) {
     fail('prompt', 'prompt has an invalid length.');
   }
   if ((operation === 'h3-relight' || noPrompt) && prompt) fail('prompt','This operation does not accept a prompt.');
@@ -672,6 +677,15 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
     references,
     outputCount: normalizeOutputCount(input.outputCount, surface),
   };
+  if (isGptImage26EngineId(result.engineId)) {
+    try {
+      const native = normalizeGptImage26Settings({ ...result.settings, numImages: result.outputCount } as Parameters<typeof normalizeGptImage26Settings>[0]);
+      if (result.references.some(reference => reference.kind !== 'asset' || reference.role !== 'reference')
+        || result.references.length > 16 || (result.mode === 't2i' && result.references.length)
+        || (result.mode === 'i2i' && !result.references.length)) throw new Error('Owned edit references required.');
+      result.settings = { ...result.settings, resolution: native.resolution, quality: native.quality, complexity: native.complexity, background: native.background, outputFormat: native.outputFormat };
+    } catch { fail('settings', 'Unsupported GPT Image 2.6 raster scenario.'); }
+  }
   if (result.engineId === NANO21_ENGINE_ID) {
     try {
       assertNano21UnsupportedFields(result.settings);

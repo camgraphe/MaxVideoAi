@@ -3754,6 +3754,7 @@
         "enableWebSearchLabel": "Web search",
         "enableWebSearchHint": "Ground the request with current web context when supported.",
         "thinkingLevelLabel": "Thinking level",
+        "complexityLabel": "Planning complexity",
         "thinkingLevelHint": "Increase reasoning depth when the engine supports it.",
         "limitGenerationsLabel": "Limit generations",
         "limitGenerationsHint": "Reduce extra exploratory generations when supported.",

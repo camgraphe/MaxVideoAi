@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isKlingO3EngineId } from '../_lib/kling-o3-unified-workflow';
 import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
 import { isArchivedGenerationModel, archivedGenerationMessage } from '@/lib/model-generation-policy';
@@ -360,7 +361,7 @@ export function useWorkspaceEngineModeState({
   const handleModeChange = useCallback(
     (mode: Mode) => {
       if (!selectedEngine) return;
-      if (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
+      if (!capabilityEngine || (isKlingV4FalQueueEngineId(selectedEngine.id) ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode))) return;
       const nextMode = getPreferredEngineMode(capabilityEngine, mode);
       const prepared = prepareModeAssets(nextMode);
       if (!prepared) return;
@@ -410,7 +411,7 @@ export function useWorkspaceEngineModeState({
         showNotice(workflowCopy.removeAudioToUseEdit);
         return;
       }
-      if (mode && (!capabilityEngine || (selectedEngine.id === 'kling-v4' ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
+      if (mode && (!capabilityEngine || (isKlingV4FalQueueEngineId(selectedEngine.id) ? !selectedEngine.modes.includes(mode) : !workspaceExecutableModes.includes(mode) || !isWorkspaceModeAvailable(capabilityEngine, mode)))) return;
       const base = engines.find(engine => engine.id === selectedEngine.id) ?? selectedEngine;
       const prepared = prepareModeAssets(mode);
       if (!prepared) return;

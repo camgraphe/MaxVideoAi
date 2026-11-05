@@ -7,7 +7,7 @@ import { buildCustomImageSize, formatImageSizeLabel, formatQualityLabel, resolve
 
 export type ImagePickerSettings = {
   mode: ImageGenerationMode; numImages: number; resolution: string | null; aspectRatio: string | null; quality: string | null;
-  referenceIndices?: number[]; outputFormat?: string | null; background?: string | null; style?: string | null; thinkingLevel?: string | null;
+  referenceIndices?: number[]; outputFormat?: string | null; background?: string | null; style?: string | null; thinkingLevel?: string | null; complexity?: string | null;
   seed?: string; limitGenerations?: boolean; watermark?: boolean; maskUrl?: string; enableWebSearch: boolean; customImageWidth: string; customImageHeight: string;
   referenceImageCount: number; selectedReferenceCount: number; readyReferenceSizes: Array<{ width?: number | null; height?: number | null }>;
 };
@@ -22,7 +22,7 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
   const qualityOptions = getImageFieldValues(engine, 'quality', mode);
   const settings = {
     outputFormat: optional('output_format', current.outputFormat), background: optional('background', current.background),
-    style: optional('style', current.style), thinkingLevel: optional('thinking_level', current.thinkingLevel),
+    style: optional('style', current.style), thinkingLevel: optional('thinking_level', current.thinkingLevel), complexity: optional('complexity', current.complexity),
     seed: !getImageInputField(engine, 'seed', mode) ? '' : current.seed?.trim() && Number.isFinite(Number(current.seed)) ? String(Math.round(Number(current.seed))) : String(getImageFieldDefaultNumber(engine, 'seed', mode) ?? ''),
     limitGenerations: Boolean(getImageInputField(engine, 'limit_generations', mode)) && Boolean(current.limitGenerations),
     watermark: Boolean(getImageInputField(engine, 'watermark', mode)) && Boolean(current.watermark),
@@ -42,9 +42,9 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
     : current.selectedReferenceCount > current.referenceImageCount ? (fr ? 'Attendez la préparation des références' : es ? 'Espera a que se preparen las referencias' : 'Wait for references to finish preparing')
     : (current.referenceIndices?.some(index => index >= references.max) ?? false) || current.referenceImageCount > references.max || (current.referenceImageCount > 0 && !getImageInputField(engine, 'image_urls', mode))
       ? (fr ? 'Incompatible avec vos références' : es ? 'Incompatible con tus referencias' : 'Incompatible with your references') : undefined;
-  const names = fr ? { outputFormat: 'Format du fichier', background: 'Arrière-plan', style: 'Style', thinkingLevel: 'Réflexion', seed: 'Graine', limitGenerations: 'Limiter les générations', watermark: 'Filigrane', customImageWidth: 'Largeur', customImageHeight: 'Hauteur', resolution: 'Résolution', aspectRatio: 'Format', quality: 'Qualité', enableWebSearch: 'Recherche web', numImages: 'Images' }
-    : es ? { outputFormat: 'Formato del archivo', background: 'Fondo', style: 'Estilo', thinkingLevel: 'Razonamiento', seed: 'Semilla', limitGenerations: 'Limitar generaciones', watermark: 'Marca de agua', customImageWidth: 'Anchura', customImageHeight: 'Altura', resolution: 'Resolución', aspectRatio: 'Formato', quality: 'Calidad', enableWebSearch: 'Búsqueda web', numImages: 'Imágenes' }
-    : { outputFormat: 'File format', background: 'Background', style: 'Style', thinkingLevel: 'Thinking', seed: 'Seed', limitGenerations: 'Limit generations', watermark: 'Watermark', customImageWidth: 'Width', customImageHeight: 'Height', resolution: 'Resolution', aspectRatio: 'Aspect ratio', quality: 'Quality', enableWebSearch: 'Web search', numImages: 'Images' };
+  const names = fr ? { outputFormat: 'Format du fichier', background: 'Arrière-plan', style: 'Style', thinkingLevel: 'Réflexion', complexity: 'Complexité', seed: 'Graine', limitGenerations: 'Limiter les générations', watermark: 'Filigrane', customImageWidth: 'Largeur', customImageHeight: 'Hauteur', resolution: 'Résolution', aspectRatio: 'Format', quality: 'Qualité', enableWebSearch: 'Recherche web', numImages: 'Images' }
+    : es ? { outputFormat: 'Formato del archivo', background: 'Fondo', style: 'Estilo', thinkingLevel: 'Razonamiento', complexity: 'Complejidad', seed: 'Semilla', limitGenerations: 'Limitar generaciones', watermark: 'Marca de agua', customImageWidth: 'Anchura', customImageHeight: 'Altura', resolution: 'Resolución', aspectRatio: 'Formato', quality: 'Calidad', enableWebSearch: 'Búsqueda web', numImages: 'Imágenes' }
+    : { outputFormat: 'File format', background: 'Background', style: 'Style', thinkingLevel: 'Thinking', complexity: 'Complexity', seed: 'Seed', limitGenerations: 'Limit generations', watermark: 'Watermark', customImageWidth: 'Width', customImageHeight: 'Height', resolution: 'Resolution', aspectRatio: 'Aspect ratio', quality: 'Quality', enableWebSearch: 'Web search', numImages: 'Images' };
   const display = (value: unknown, key: keyof typeof settings) => value == null ? '—' : typeof value === 'boolean' ? (value ? (fr ? 'Activée' : es ? 'Activada' : 'On') : (fr ? 'Désactivée' : es ? 'Desactivada' : 'Off'))
     : key === 'resolution' ? formatImageSizeLabel(String(value)) : key === 'quality' ? formatQualityLabel(String(value)) : value === 'auto' ? 'Auto' : String(value);
   const changes: PickerChange[] = (Object.keys(settings) as Array<keyof typeof settings>).flatMap(key => !Object.hasOwn(current, key) || settings[key] === current[key] || (['customImageWidth', 'customImageHeight'].includes(key) && current.resolution !== 'custom' && settings.resolution !== 'custom') ? [] : [{ label: names[key], before: display(current[key], key), after: display(settings[key], key) }]);
@@ -54,6 +54,7 @@ export function prepareImagePickerOption(engine: EngineCaps, current: ImagePicke
     summary: [settings.resolution && formatImageSizeLabel(settings.resolution), settings.aspectRatio === 'auto' ? 'Auto' : settings.aspectRatio, `${settings.numImages} image${settings.numImages > 1 ? 's' : ''}`].filter(Boolean).join(' · '),
     request: { engineId: engine.id, mode, numImages: settings.numImages, resolution: settings.resolution ?? undefined, aspectRatio: settings.aspectRatio ?? undefined,
       thinkingLevel: settings.thinkingLevel ?? undefined,
+      complexity: settings.complexity ?? undefined,
       quality: settings.quality ?? undefined, enableWebSearch: settings.enableWebSearch || undefined, referenceImageCount: current.referenceImageCount,
       referenceImageSizes: current.readyReferenceSizes.length ? current.readyReferenceSizes : undefined,
       customImageSize: settings.resolution === 'custom' ? buildCustomImageSize(settings.customImageWidth, settings.customImageHeight) : null },

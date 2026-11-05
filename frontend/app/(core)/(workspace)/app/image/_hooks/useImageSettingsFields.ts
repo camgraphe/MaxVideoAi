@@ -45,6 +45,7 @@ type UseImageSettingsFieldsParams = {
   setSeed: Dispatch<SetStateAction<string>>;
   setStyle: Dispatch<SetStateAction<string | null>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
+  setComplexity: Dispatch<SetStateAction<string | null>>;
   setWatermark: Dispatch<SetStateAction<boolean>>;
 };
 
@@ -67,6 +68,7 @@ export function useImageSettingsFields({
   setSeed,
   setStyle,
   setThinkingLevel,
+  setComplexity,
   setWatermark,
 }: UseImageSettingsFieldsParams) {
   const imageCountField = useMemo(
@@ -157,6 +159,14 @@ export function useImageSettingsFields({
   );
   const thinkingLevelOptions = useMemo(
     () => getImageFieldValues(selectedEngineCaps ?? null, 'thinking_level', mode),
+    [selectedEngineCaps, mode]
+  );
+  const complexityField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'complexity', mode),
+    [selectedEngineCaps, mode]
+  );
+  const complexityOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'complexity', mode),
     [selectedEngineCaps, mode]
   );
   const limitGenerationsField = useMemo(
@@ -336,6 +346,21 @@ export function useImageSettingsFields({
   }, [thinkingLevelField, thinkingLevelOptions, selectedEngineCaps, mode, setThinkingLevel]);
 
   useEffect(() => {
+    if (!complexityField || !complexityOptions.length) {
+      setComplexity(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'complexity', mode) ?? complexityOptions[0] ?? null;
+    setComplexity((previous) => {
+      if (previous && complexityOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [complexityField, complexityOptions, selectedEngineCaps, mode, setComplexity]);
+
+  useEffect(() => {
     if (!limitGenerationsField) {
       setLimitGenerations(false);
       return;
@@ -428,6 +453,14 @@ export function useImageSettingsFields({
       })),
     [thinkingLevelOptions]
   );
+  const complexitySelectOptions = useMemo(
+    () =>
+      complexityOptions.map((option) => ({
+        value: option,
+        label: option === 'high' ? 'High' : option === 'minimal' ? 'Minimal' : option,
+      })),
+    [complexityOptions]
+  );
   const booleanSelectOptions = useMemo(
     () => [
       { value: false, label: resolvedCopy.composer.toggleDisabled },
@@ -448,6 +481,7 @@ export function useImageSettingsFields({
     Boolean(customImageWidthField && customImageHeightField) && resolution === 'custom';
   const showEnableWebSearchControl = Boolean(enableWebSearchField);
   const showThinkingLevelControl = Boolean(thinkingLevelField) && thinkingLevelSelectOptions.length > 0;
+  const showComplexityControl = Boolean(complexityField) && complexitySelectOptions.length > 0;
   const showLimitGenerationsControl = Boolean(limitGenerationsField);
   const showWatermarkControl = Boolean(watermarkField);
 
@@ -495,6 +529,7 @@ export function useImageSettingsFields({
     styleSelectOptions,
     supportedReferenceFormats,
     supportedReferenceFormatsLabel,
+    complexityField, complexityOptions, complexitySelectOptions, showComplexityControl,
     thinkingLevelField,
     thinkingLevelOptions,
     thinkingLevelSelectOptions,

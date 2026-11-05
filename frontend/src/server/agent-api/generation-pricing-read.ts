@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
@@ -37,7 +38,7 @@ const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
   'shotType','webpageUrl','sourcePositionHeight','sourcePositionWidth','sourcePositionX','sourcePositionY',
   'startTimeSec','extendPosition','modifyStrength','multiPrompt','exrExport','editDepthBlur','editFace',
   'reasoningLevel','keyframeIndexes','editKeyframeIndexes','editNormalsAugmentation','editPoseStrength','editStrength','editTrajectorySparsity',
-  'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','quality','style','thinkingLevel','watermark',
+  'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','quality','complexity','background','style','thinkingLevel','watermark',
 ]);
 
 function invalidParameter(field?: string): never {
@@ -165,7 +166,7 @@ export function buildGenerationPricingSnapshot(
     // Bind owned originals and their ordered execution facts, not only mutable asset IDs.
     ...(request.references.some(reference => reference.kind === 'asset')
       ? { ownedReferenceFingerprint: studioReferenceFingerprint(resolvedReferences) } : {}),
-    ...(request.engineId==='kling-v4'?{klingV4ReferenceFingerprint:studioReferenceFingerprint(resolvedReferences)}:{}),
+    ...(isKlingV4FalQueueEngineId(request.engineId)?{klingV4ReferenceFingerprint:studioReferenceFingerprint(resolvedReferences)}:{}),
   };
 }
 

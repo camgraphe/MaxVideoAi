@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { qualifyFluxLtxSourceReference } from '@/server/agent-api/flux-ltx-source-reference';
 import type { inspectOwnedFluxLtxSource } from '@/server/video-excerpts/flux-ltx-source';
@@ -217,7 +218,7 @@ export async function validateStudioMediaRequest(actor: StudioGenerationActor, a
       throw new StudioPreparationInputError('PARAMETER_INVALID','Preserve the exact model, mode, duration and ordered shots from the client revision.');
     if (mode==='ref2v' && !selections.length)
       throw new AgentApiError('REFERENCE_REQUIRED','Reference-to-video requires attached or ready project reference media.');
-    if (selections.length > (action.modelId==='kling-v4'?50:STUDIO_CONVERSATION_MAX_ATTACHMENTS))
+    if (selections.length > (isKlingV4FalQueueEngineId(action.modelId)?50:STUDIO_CONVERSATION_MAX_ATTACHMENTS))
       throw new StudioPreparationInputError('REFERENCE_INVALID','Too many selected references for this Studio model.');
     const catalog = await factories.video(actor, {enabled}).catalog();
     let candidate = catalog.find(entry => entry.surface === 'video' && entry.engine.id === (action.modelId ?? 'wan-3'));
