@@ -292,7 +292,10 @@ test('existing image job response module exposes the expected contract', () => {
 
 test('Luma image style stays wired from workspace request to direct payload', () => {
   assert.match(imageGenerationTypesSource, /style\?: string/);
-  assert.match(imageWorkspaceSource, /const \[style, setStyle\] = useState<string \| null>\(null\)/);
+  const valuesSource = readFileSync(join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageComposerValues.ts'), 'utf8');
+  assert.match(valuesSource, /const \[style, setStyle\] = useState<string \| null>\(null\)/);
+  assert.match(imageWorkspaceSource, /style, setStyle/);
+  assert.match(imageWorkspaceSource, /useImageComposerValues\(engines\[0\]\?\.id/);
   assert.match(imageWorkspaceSource, /styleField/);
   assert.match(imageWorkspaceSource, /hasStyleField: Boolean\(styleField\)/);
   assert.match(imageGenerationRunnerSource, /hasStyleField: boolean/);

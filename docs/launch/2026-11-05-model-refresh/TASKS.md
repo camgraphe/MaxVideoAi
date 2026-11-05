@@ -11,11 +11,11 @@
 - [x] A03 Vérifier les deux domaines, le déploiement Git et le SHA de production ; base isolée créée au même commit.
 - [x] A04 Distinguer le routage fal de Kling 4 du direct/fallback Kling 3/O3.
 - [x] A05 Lire les trois schémas Flash, leurs limites et les prix fournisseur publiés.
-- [x] A06 Vérifier en lecture seule la clé OpenAI existante : `/v1/models` 200, deux IDs 2.6 présents. Génération non testée.
+- [x] A06 Vérifier en lecture seule la clé OpenAI existante : `/v1/models` 200, deux IDs 2.6 présents ; génération/retouche ensuite qualifiées dans A10.
 - [x] A07 Consigner le choix utilisateur : raster création/retouche d'abord ; GIF/SVG/annotations dans le second lot.
 - [x] A08 Finaliser les bornes de l'API Images 2.6 (dimensions, nombre de sorties, références, fond, compression, masque) et capturer des fixtures sans secret.
 - [x] A09 Vérifier la configuration effective Production/Preview des providers sans exporter de secrets ; déterminer les admissions exactes nouvelles.
-- [ ] A10 Qualifier l'accès réel à chacun des sept couples modèle/mode par un lot payant approuvé ; conserver les reçus.
+- [x] A10 Qualifier l'accès réel à chacun des sept couples modèle/mode par un lot payant approuvé ; conserver les reçus.
 
 ## B — Identité, providers et reprise
 
@@ -69,15 +69,15 @@
 - [ ] F04 Tester références privées/importées, ordre/répétitions/sujets et mêmes faits physiques que dans App/Studio.
 - [ ] F05 Vérifier prepare/confirm, devis périmé, une tentative, status/recover et restitution des originaux.
 - [x] F06 Conserver budgets d'instructions et de descriptions ; faits live dans résultats et contraintes dans schémas.
-- [ ] F07 Exécuter `pnpm mcp:client:check`, garde de parité des modes et matrices financières/integration concernées.
+- [x] F07 Exécuter `pnpm mcp:client:check`, garde de parité des modes et matrices financières/integration concernées. 194 tests client et 70 cas de sélection passent (un contrôle host volontairement distinct) ; lane financière locale complète réussie.
 - [ ] F08 Après déploiement, vérifier chaque mode dans le MCP connecté et le client/host effectivement testé ; renouveler la découverte après reconnexion si nécessaire.
 - [ ] F09 Actualiser la documentation MCP/plugin/llms concernée sans promettre de capacité non ouverte ; ne pas assimiler code serveur livré et package de plugin installé.
 
 ## G — Médias et marketing
 
 - [x] G01 Préparer briefs/prompts originaux par cas : texte, produit/personnage de départ, références vidéo/sujets ; création/retouche de la même image pour les deux variantes.
-- [ ] G02 Fixer un lot et budget de rendus, puis obtenir les résultats approuvés et les évaluer ; aucun exemple d'une autre version réétiqueté.
-- [ ] G03 Conserver modèle, prompt, paramètres, entrées, identifiants fournisseur, originaux, durée/dimensions et coût réel pour chaque asset.
+- [x] G02 Fixer un lot et budget de rendus, puis obtenir les résultats approuvés et les évaluer ; aucun exemple d'une autre version réétiqueté. Revue des images et transcription effectuées ; écoute éditoriale encore requise.
+- [x] G03 Conserver modèle, prompt, paramètres, entrées, identifiants fournisseur, originaux, durée/dimensions et usage pour chaque asset. Coût liste estimé consigné ; facture fournisseur non vérifiée.
 - [ ] G04 Importer/persister originaux, thumbnails/posters, short previews/renditions applicables ; vérifier HTTP et lecture réelle.
 - [ ] G05 Créer les collections exactes dans l'admin et prévisualiser leur galerie effective ; préserver ordre et choix existants des familles.
 - [x] G06 Écrire les trois pages modèle EN/FR/ES, blocs `decision.modelSlug`, limites, prompts, FAQ, sources et CTA réels.
@@ -93,7 +93,7 @@
 
 - [x] H01 Tenir un ledger par modèle/mode/surface : code, tests locaux, accès fournisseur, tarif, média, preview, production.
 - [ ] H02 Exécuter tests ciblés, types, lint/exposure, diff-check et parcours locaux ; corriger les problèmes reproduits.
-- [ ] H03 Ouvrir les PR cohérentes avec description du périmètre final ; conserver les gates de publication jusqu'à qualification.
+- [x] H03 Ouvrir les PR cohérentes avec description du périmètre final ; conserver les gates de publication jusqu'à qualification. PR #620 en brouillon.
 - [ ] H04 Valider Quality CI sur le dernier candidat et toutes ses lanes sélectionnées, puis le Git Preview exact et le contrôle d'alignement.
 - [ ] H05 Rafraîchir main et vérifier `pnpm deployment:check` avant merge ; coordonner les livraisons concurrentes.
 - [ ] H06 Livrer par merge main → Vercel Git ; vérifier READY et SHA des deux domaines.

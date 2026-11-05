@@ -68,6 +68,8 @@ test('decoded outputs are raster bytes and partial or malformed responses never 
   assert.equal(partial.complete, false); assert.equal(partial.images.length, 1);
   assert.equal(extractOpenAIImages({ ...response, output_format: 'svg' }, 'png', 1).complete, false);
   assert.equal(extractOpenAIImages({ data: [{ url: 'https://untrusted.test/image' }] }, 'png', 1).images.length, 0);
+  const excess = extractOpenAIImages({ data: Array.from({ length: 10 }, () => ({ b64_json: png })) }, 'png', 1);
+  assert.equal(excess.complete, false); assert.equal(excess.images.length, 1);
 });
 
 test('usage stores validated token facts and a supplier estimate, never invents an invoice or reuses fal prices', () => {

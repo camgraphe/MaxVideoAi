@@ -1,22 +1,19 @@
-import { query } from '@/lib/db';
 import { getRuntimeModelById } from '@/config/model-runtime';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
-import { buildStoredImageRenderEntries } from '@/lib/image-renders';
-import { normalizeMediaUrl } from '@/lib/media';
-import { isStorageConfigured, uploadImageToStorage } from '@/server/storage';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { isStorageConfigured } from '@/server/storage';
 import type { EngineCaps } from '@/types/engines';
-import type { GeneratedImage, ImageGenerationResponse } from '@/types/image-generation';
+import type { ImageGenerationResponse } from '@/types/image-generation';
 import type { executeGoogleVertexImageGeneration } from './google-vertex-image-execution';
 import { OpenAIImageClient, isOpenAIImageConfigured } from './openai-image-client';
 import { OpenAIImageError } from './openai-image-error';
 import { buildOpenAIImagePayload } from './openai-image-payload';
 import { prepareOpenAIImageReferences } from './openai-image-references';
 import { extractOpenAIImages, parseOpenAIImageUsage } from './openai-image-response';
-import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
 import { markImageProviderOutcomeAmbiguous } from './image-provider-failure-policy';
 import { ImageGenerationExecutionError } from './image-generation-error';
+import { openAIImageCompletionContext, reserveOpenAIImageResult, persistOpenAIImageResult } from './openai-image-result-store';
+import { recoverOpenAIImageResult, type OpenAIImageRecoveryDependencies } from './openai-image-output-recovery';
 
 const PROVIDER_MODE = 'openai_images_direct';
 export type OpenAIImageExecutionParams = Parameters<typeof executeGoogleVertexImageGeneration>[0] & {
@@ -32,14 +29,10 @@ export function assertOpenAIImageAvailable(engine: EngineCaps): void {
   }
 }
 
-type ExecutionDependencies = {
+type ExecutionDependencies = OpenAIImageRecoveryDependencies & {
   assertAvailableFn?: typeof assertOpenAIImageAvailable;
   prepareReferencesFn?: typeof prepareOpenAIImageReferences;
   generateFn?: OpenAIImageClient['generate'];
-  queryFn?: typeof query;
-  uploadFn?: (params: Parameters<typeof uploadImageToStorage>[0]) => Promise<{ url: string; width?: number | null; height?: number | null; mime: string }>;
-  thumbnailsFn?: typeof createImageThumbnailBatch;
-  completeFn?: (params: Parameters<typeof persistCompletedImageGeneration>[0]) => Promise<{ heroThumb: string | null }>;
   failFn?: (params: Parameters<typeof persistFailedImageGeneration>[0]) => Promise<{ message: string; providerBody: unknown; providerStatus: number | null }>;
   ambiguousFn?: typeof markImageProviderOutcomeAmbiguous;
 };
@@ -57,28 +50,17 @@ export async function executeOpenAIImageGeneration(params: OpenAIImageExecutionP
       background: params.background ?? undefined, numImages: params.numImages } as Parameters<typeof normalizeGptImage26Settings>[0]);
     const referenceUrls = params.preparedReferenceUrls ?? await (deps.prepareReferencesFn ?? prepareOpenAIImageReferences)({ userId: params.userId, urls: params.combinedImageUrls });
     const payload = buildOpenAIImagePayload({ modelId: params.engine.providerMeta?.modelSlug ?? '', mode: params.mode, prompt: params.effectivePrompt, settings, referenceUrls });
+    await reserveOpenAIImageResult(openAIImageCompletionContext(params), deps.queryFn);
     const client = new OpenAIImageClient();
     const result = await (deps.generateFn ?? client.generate.bind(client))(params.mode, payload);
     acceptedResponse = true;
     providerJobId = result.requestId;
     providerUsage = parseOpenAIImageUsage(result.body);
     const extracted = extractOpenAIImages(result.body, settings.outputFormat, settings.numImages);
-    const stored: GeneratedImage[] = [];
-    // Checkpoint each durable original, including valid members of a partial
-    // response. A later thumbnail/storage failure never authorizes another POST.
-    for (const image of extracted.images.slice(0, settings.numImages)) {
-      const upload = await (deps.uploadFn ?? uploadImageToStorage)({ data: image.data, mime: image.mimeType,
-        userId: params.userId, prefix: 'renders/images', fileName: `${params.jobId}-${image.index + 1}.${settings.outputFormat === 'jpeg' ? 'jpg' : settings.outputFormat}` });
-      stored.push({ url: normalizeMediaUrl(upload.url) ?? upload.url, width: upload.width, height: upload.height, mimeType: upload.mime });
-      await (deps.queryFn ?? query)(`UPDATE app_jobs SET render_ids = $3::jsonb, provider_job_id = COALESCE($4, provider_job_id),
-        provider = $5, updated_at = NOW() WHERE job_id = $1 AND user_id = $2 AND status NOT IN ('completed','failed')`,
-      [params.jobId, params.userId, JSON.stringify(buildStoredImageRenderEntries(stored)), providerJobId, PROVIDER_MODE]);
-    }
-    if (!extracted.complete) throw new OpenAIImageError('OpenAI did not return a complete validated image result.', { code: 'OPENAI_IMAGE_PARTIAL_RESULT', submissionState: 'uncertain', requestId: providerJobId });
-    const thumbs = await (deps.thumbnailsFn ?? createImageThumbnailBatch)({ jobId: params.jobId, userId: params.userId, imageUrls: stored.map(image => image.url) });
-    const images = stored.map((image, index) => ({ ...image, thumbUrl: thumbs[index] ?? null }));
-    const { heroThumb } = await (deps.completeFn ?? persistCompletedImageGeneration)({ ...params,
-      engineId: params.engine.id, engineLabel: params.engine.label, images, description: null, providerJobId, providerMode: PROVIDER_MODE, providerUsage });
+    await persistOpenAIImageResult({ jobId: params.jobId, userId: params.userId, requestId: providerJobId, extracted, usage: providerUsage }, deps.queryFn);
+    const recovered = await recoverOpenAIImageResult(params.jobId, params.userId, deps);
+    if (!recovered) throw new OpenAIImageError('OpenAI image outputs are awaiting recovery or review.', { code: 'OPENAI_IMAGE_RESULT_PENDING', submissionState: 'uncertain', requestId: providerJobId });
+    const { images, heroThumb } = recovered;
     return { ok: true, jobId: params.jobId, mode: params.mode, images, description: null,
       requestId: providerJobId ?? undefined, providerJobId: providerJobId ?? undefined,
       engineId: params.engineEntry.id, engineLabel: params.engineEntry.marketingName, pricing: params.pricing,

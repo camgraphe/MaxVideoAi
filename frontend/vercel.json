@@ -13,6 +13,7 @@
     { "path": "/api/cron/studio-tasks", "schedule": "* * * * *" },
     { "path": "/api/cron/studio-analyses", "schedule": "* * * * *" },
     { "path": "/api/cron/fal-poll", "schedule": "* * * * *" },
+    { "path": "/api/cron/openai-image-recovery", "schedule": "* * * * *" },
     { "path": "/api/cron/byteplus-poll", "schedule": "* * * * *" },
     { "path": "/api/cron/kling-direct-poll", "schedule": "* * * * *" },
     { "path": "/api/cron/google-vertex-veo-poll", "schedule": "* * * * *" },
