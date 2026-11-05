@@ -7,6 +7,7 @@ import { MODEL_LAUNCH_READY_MODELS } from '../frontend/config/model-launch-readi
 import { getLocalizedModelData } from '../frontend/lib/examples/modelLandingData';
 import { buildMarketingCompareMenu, buildMarketingModelMenu } from '../frontend/config/navigation';
 import { buildPublishedComparisonSlugsFromModels } from '../frontend/lib/compare-hub/pairs';
+import { getPublishedComparisonSlugs, getHubComparisonSlugsForSitemap, isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data';
 import { parseComparePageContentDocument } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides';
 import { loadBenchmarkLabStaticData } from '../frontend/server/benchmark-lab-data';
 import compareConfig from '../frontend/config/compare-config.json';
@@ -24,6 +25,9 @@ test('Flash comparison is ready in three locales but remains absent from public 
     assert.equal(content[locale].primaryLinks?.length, 2);
   }
   assert.ok(compareConfig.scoreboardOnlyComparisons.includes(pair));
+  assert.equal(isPublishedComparisonSlug(pair), false);
+  assert.ok(!getPublishedComparisonSlugs().includes(pair));
+  assert.ok(!getHubComparisonSlugsForSitemap().includes(pair));
   const models = listRuntimeModels().map(model => structuredClone(model));
   assert.ok(!buildPublishedComparisonSlugsFromModels(models, () => true).includes(pair));
   const originalMenu = buildMarketingModelMenu(models);
