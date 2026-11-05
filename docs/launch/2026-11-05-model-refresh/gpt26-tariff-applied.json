@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "status": "committed-and-reconciled",
+  "checkedAt": "2026-11-05T23:56:34.629Z",
+  "sourceId": "f868a026bd56fc2bd75d355512e3f03417ec0853",
+  "approvedMultiplier": 1.5,
+  "revisionBefore": 2187,
+  "revisionAfter": 4227,
+  "targetModels": [
+    "gpt-image-2-6-flare",
+    "gpt-image-2-6-sunburst"
+  ],
+  "targetCount": 2040,
+  "verifiedCanonicalQuotes": 2040,
+  "otherTariffCellsUnchanged": 17175,
+  "priorPaidSnapshotsUnchanged": 8279,
+  "paidSnapshotsAtVerification": 8292,
+  "commercialInputReservesAreProviderCeiling": false,
+  "batches": [
+    {
+      "batchIndex": 0,
+      "file": "gpt-image-2-6-flare-01.json",
+      "sha256": "164656b57365216eac7a60e16f6c6b01379e93b8aaa132f2f1eb48318465ad77",
+      "operationId": "5bf79aa6-6743-471a-b5d4-bf26e2504f25",
+      "fingerprint": "96c6130a36a01060037c52dc4e1230203b687e96176a31e20447835c35a6f4d4",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 2187,
+      "revisionAfter": 2413,
+      "committedAt": "2026-11-05T23:46:06.981Z"
+    },
+    {
+      "batchIndex": 2,
+      "file": "gpt-image-2-6-flare-02.json",
+      "sha256": "be2b6d54a0bdc1d0eddbaa7e41182cae24a4fa3206b5a093e88a9370a0decc7b",
+      "operationId": "41abb02f-571f-4823-9f2e-53c483241d47",
+      "fingerprint": "738e78236277124b228a7c5464542c3c63c292ca8a32c76f65db8f79db44ce06",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 2413,
+      "revisionAfter": 2639,
+      "committedAt": "2026-11-05T23:52:14.325Z"
+    },
+    {
+      "batchIndex": 3,
+      "file": "gpt-image-2-6-flare-03.json",
+      "sha256": "e68c6844420c24d6063f1e47074e8edd8dbb6e1f45360bea46f00d5da27c0558",
+      "operationId": "a8c83dd5-5ac4-4661-a7d6-f82b357e8c8b",
+      "fingerprint": "6ff3e507ef74725fcaaf8659e9d0a42c5b2fcbaa48af8f64e17c337cd7c4f1b7",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 2639,
+      "revisionAfter": 2865,
+      "committedAt": "2026-11-05T23:53:36.937Z"
+    },
+    {
+      "batchIndex": 4,
+      "file": "gpt-image-2-6-flare-04.json",
+      "sha256": "97248f6714578e7107768a86d83552d6e270dd4f4d0984c1396bbb906cd1a435",
+      "operationId": "2e34c54b-a219-4ab6-b55f-e160a0eccb0e",
+      "fingerprint": "f355d7500ebc3e4f611e48f21b650cfb810ba21431e5f66953e89788a18fb3bd",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 2865,
+      "revisionAfter": 3091,
+      "committedAt": "2026-11-05T23:53:54.744Z"
+    },
+    {
+      "batchIndex": 5,
+      "file": "gpt-image-2-6-flare-05.json",
+      "sha256": "49d7b6e673d6ac49959c192646a44f011092c605794ddaaac7a0260d1ae74c57",
+      "operationId": "9ad8fb7a-2f2e-4233-89cf-99861c27ec4f",
+      "fingerprint": "fe3edcc4ef75fd0fbdc9cbe35a17bd09ea79ac1631eacaadce75e3960ddd2794",
+      "status": "committed",
+      "count": 116,
+      "revisionBefore": 3091,
+      "revisionAfter": 3207,
+      "committedAt": "2026-11-05T23:54:10.971Z"
+    },
+    {
+      "batchIndex": 6,
+      "file": "gpt-image-2-6-sunburst-01.json",
+      "sha256": "3e93521b60e322f8f777f0e0889f54f826f0575752e967ce1712f2f2e5900a86",
+      "operationId": "1a690a3f-6d8c-4c1f-b8e0-b7422b94ba71",
+      "fingerprint": "0335cbf55ec0e96e8ddaa148868ba40bc164531c316b3f40806276c0e7397b74",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 3207,
+      "revisionAfter": 3433,
+      "committedAt": "2026-11-05T23:54:25.361Z"
+    },
+    {
+      "batchIndex": 7,
+      "file": "gpt-image-2-6-sunburst-02.json",
+      "sha256": "96f902b08759f5d3ecf4692123190881c5a9f18fd57c56efa6805042195b3251",
+      "operationId": "7e13d8a8-ec91-4e46-87ae-a5ca384b31b5",
+      "fingerprint": "14457e7b715d332ef88ba79b9918d9fe8bf21d7c3451fa78cea1487f97973303",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 3433,
+      "revisionAfter": 3659,
+      "committedAt": "2026-11-05T23:54:48.602Z"
+    },
+    {
+      "batchIndex": 8,
+      "file": "gpt-image-2-6-sunburst-03.json",
+      "sha256": "e0a680ca61691d98f3a53587adf1eb5077b9c03847877010235de2e74d61f5ef",
+      "operationId": "5507ccdd-397e-4bd4-bf25-9c531d6c09dc",
+      "fingerprint": "19df53c918ab19301c3547bf43458169c23dee43d7270a6bc40b450e6176f678",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 3659,
+      "revisionAfter": 3885,
+      "committedAt": "2026-11-05T23:55:12.156Z"
+    },
+    {
+      "batchIndex": 9,
+      "file": "gpt-image-2-6-sunburst-04.json",
+      "sha256": "5b5df2509d7cfd2edeaa11514efd9a4967162c21ce9d7150efffb2bcbc17c2ba",
+      "operationId": "9bb86268-496f-42fd-b8a0-5d35c122519f",
+      "fingerprint": "582faa03f3dc7e9b40380bb7297b2f8cb62e0ae78ab57cc1f6d264f84c62042d",
+      "status": "committed",
+      "count": 226,
+      "revisionBefore": 3885,
+      "revisionAfter": 4111,
+      "committedAt": "2026-11-05T23:55:30.931Z"
+    },
+    {
+      "batchIndex": 10,
+      "file": "gpt-image-2-6-sunburst-05.json",
+      "sha256": "4d47dc457e1ce27b512e426be56eb63a9427ff3ed93d4268df533d30c3ace9f4",
+      "operationId": "bd15bff6-e6a4-420d-a49e-27e154433021",
+      "fingerprint": "ea829e4b4c8b03fdbfda396be775b83bc455867821118f8f61abdba643d7ac0b",
+      "status": "committed",
+      "count": 116,
+      "revisionBefore": 4111,
+      "revisionAfter": 4227,
+      "committedAt": "2026-11-05T23:55:43.448Z"
+    }
+  ],
+  "evidenceHashes": {
+    "gpt26-before-readonly.json": "3d1b0dc8512e6cfc3cc6f161a5324c59ca79c33239df3951e1bfdc66ace9c17d",
+    "gpt26-after-readonly.json": "22748365a45b54dd1133c5456bdb1c8855256dcb607ac6578a001ac6e0300261"
+  },
+  "publication": "Tariff application is separate from App/Studio/MCP admission and public marketing publication."
+}
