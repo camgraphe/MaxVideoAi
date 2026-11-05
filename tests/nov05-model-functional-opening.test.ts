@@ -6,10 +6,23 @@ import { listAgentModels } from '../frontend/src/server/agent-api/model-catalog'
 import { getAgentModelDetails } from '../frontend/src/server/agent-api/model-details';
 import { resolveAgentGenerationModeExecutability } from '../frontend/src/server/agent-runtime/model-executability';
 import { isKlingV4ReleaseBlocked } from '../frontend/src/server/video-generation/kling-v4-release-policy';
+import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 
 const environment = { bytePlusEnabled: false, bytePlusApiKey: undefined, falApiKey: 'offline-fixture',
   openaiApiKey: 'offline-fixture', providerEnv: { OPENAI_API_KEY: 'offline-fixture', S3_BUCKET: 'fixture',
     S3_REGION: 'fixture', S3_ACCESS_KEY_ID: 'fixture', S3_SECRET_ACCESS_KEY: 'fixture' } };
+
+test('public image pricing respects its own publication even while the model and App are open', () => {
+  const model = getFalEngineById('gpt-image-2-5-flare')!;
+  const original = model.surfaces.pricing.includeInEstimator;
+  assert.equal(model.surfaces.app.enabled, true);
+  assert.equal(model.surfaces.modelPage.indexable, true);
+  try {
+    model.surfaces.pricing.includeInEstimator = false;
+    for (const locale of ['en', 'fr', 'es'] as const)
+      assert.ok(!buildPricingHubData(locale).otherSurfaces.imageRows.some(row => row.id === model.id));
+  } finally { model.surfaces.pricing.includeInEstimator = original; }
+});
 
 for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
   test(`${id} exposes only its qualified modes and closes discovery on rollback`, async () => {

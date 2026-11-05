@@ -36,7 +36,9 @@ pour trois secondes, l'égalité des devis Studio/MCP, l'isolement des comptes/p
 et clients, la confirmation unique et la lecture de statut. Le fournisseur est
 simulé ; les preuves d'accès fournisseur restent celles du lot cinéma.
 
-Le sélecteur de l'App image respecte maintenant la publication App. Les tests de
+Le sélecteur de l'App image respecte maintenant la publication App. La table des
+prix image publics respecte la publication Pricing, même si App ou la page modèle
+est déjà ouverte ; elle n'anticipe plus le lot marketing. Les tests de
 rollback ferment explicitement les trois identités et restaurent leur état, sans
 neutraliser le contrôle de credentials. Les répétitions financières historiques
 conservent leur catalogue d'origine ; la couverture actuelle vérifie séparément
