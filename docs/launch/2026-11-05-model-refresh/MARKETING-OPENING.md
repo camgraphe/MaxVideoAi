@@ -37,6 +37,16 @@ indisponibles sans base de données. Le hub ajoute exactement six requêtes dist
 (deux Flash et deux par variante image) à ses 143 requêtes modèles précédentes,
 sans augmenter sa limite de concurrence.
 
+Les dix lots ont été appliqués et réconciliés le 6 novembre 2026 (Europe/Madrid),
+révision 2187 → 4227. Les 2 040 devis natifs/publics concordent ; les 17 175 autres
+cellules tarifaires et les 8 279 snapshots de paiement antérieurs sont inchangés.
+Voir `gpt26-tariff-applied.json`. La publication des modèles reste une étape distincte.
+
+Le Preview commun dispose désormais du même drapeau non secret
+`MARKETING_MEDIA_ENABLED=1` que la production. Les anciens Previews conservent
+leur environnement initial ; seul un nouveau Git Preview qualifie ce réglage.
+Aucun secret ou réglage de production n’a été changé.
+
 ## Livraison et vérifications
 
 Avant fusion : tarifs image appliqués et relus, ouverture fonctionnelle livrée et
