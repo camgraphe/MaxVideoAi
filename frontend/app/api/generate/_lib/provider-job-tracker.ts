@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import { query } from '@/lib/db';
@@ -25,7 +26,7 @@ export function createProviderJobTracker(params: {
   const pendingWrites = new Map<string, Promise<void>>();
   const receiptRequestIds = new Set<string>();
   const receiptRequirementRequestIds = new Set<string>();
-  const requiresReceipt = params.providerKey === 'fal' && params.engineId === 'kling-v4';
+  const requiresReceipt = params.providerKey === 'fal' && isKlingV4FalQueueEngineId(params.engineId);
   const nativeDraftProofRequestIds = new Set<string>();
   const queryFn = params.queryFn ?? query;
   const now = params.now ?? (() => new Date());
@@ -57,7 +58,7 @@ export function createProviderJobTracker(params: {
                settings_snapshot = jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb),
                  '{falQueueReceiptRequired}', jsonb_build_object('requestId', $2::text), true),
                updated_at = NOW()
-           WHERE job_id = $1 AND engine_id = 'kling-v4'
+           WHERE job_id = $1 AND engine_id IN ('kling-v4', 'kling-v4-flash')
              AND (provider_job_id IS NULL OR provider_job_id = $2)
            RETURNING job_id`,
           [params.jobId, requestId, params.providerKey]

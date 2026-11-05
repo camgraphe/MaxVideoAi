@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import {nativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import type { QueueStatus } from '@fal-ai/client';
@@ -83,12 +84,12 @@ async function generateViaFal(
   let queueReceipt: FalQueueReceipt | undefined;
   let result: Awaited<ReturnType<typeof falClient.subscribe>>;
   try {
-    if (payload.submissionMode === 'enqueue' || payload.engineId === 'kling-v4') {
+    if (payload.submissionMode === 'enqueue' || isKlingV4FalQueueEngineId(payload.engineId)) {
       enqueuedRequestId = await submitFalQueueOnce(model, requestBody, payload.jobId, fetch,
         async (requestId, receipt) => {
           // Preserve the accepted identity before persistence can fail. Never resubmit it.
           enqueuedRequestId = requestId;
-          queueReceipt = payload.engineId === 'kling-v4' ? receipt : undefined;
+          queueReceipt = isKlingV4FalQueueEngineId(payload.engineId) ? receipt : undefined;
           await hooks?.onRequestId?.(requestId, submissionProof, queueReceipt);
         });
       if (!enqueuedRequestId) throw new Error('FAL queue response did not contain a request ID');
@@ -133,7 +134,7 @@ async function generateViaFal(
     const falError = createFalTransportError(error, {
       acceptedRequestId: enqueuedRequestId,
       resultReadQualified,
-      singlePost: payload.submissionMode === 'enqueue' || payload.engineId === 'kling-v4',
+      singlePost: payload.submissionMode === 'enqueue' || isKlingV4FalQueueEngineId(payload.engineId),
     });
     if (enqueuedRequestId && hooks?.onRequestId) {
       Promise.resolve().then(() => hooks.onRequestId?.(enqueuedRequestId!, submissionProof, queueReceipt)).catch((hookError) => {

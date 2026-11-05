@@ -1,0 +1,56 @@
+{
+  "verifiedAt": "2026-11-05",
+  "source": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/flash/text-to-video",
+  "schemas": {
+    "V4FlashTextToVideoInput": {
+      "properties": {
+        "prompt": {
+          "maxLength": 26000,
+          "title": "Prompt",
+          "description": "Text prompt for video generation.",
+          "type": "string"
+        },
+        "duration": {
+          "maximum": 20,
+          "description": "Video duration in seconds (3-20).",
+          "default": 5,
+          "minimum": 3,
+          "title": "Duration",
+          "type": "integer"
+        },
+        "aspect_ratio": {
+          "title": "Aspect Ratio",
+          "description": "Aspect ratio of the generated video.",
+          "default": "16:9",
+          "type": "string",
+          "enum": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ]
+        },
+        "resolution": {
+          "enum": [
+            "720p"
+          ],
+          "title": "Resolution",
+          "description": "Output resolution. Flash is 720p only.",
+          "default": "720p",
+          "type": "string"
+        }
+      },
+      "title": "FlashTextToVideoInput",
+      "x-fal-order-properties": [
+        "prompt",
+        "duration",
+        "resolution",
+        "aspect_ratio"
+      ],
+      "required": [
+        "prompt"
+      ],
+      "type": "object"
+    }
+  }
+}

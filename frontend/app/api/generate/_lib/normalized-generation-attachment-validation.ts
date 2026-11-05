@@ -43,7 +43,7 @@ export async function validateNormalizedGenerationAttachments(
     ...referenceParams,
     attachments,
   });
-  if (params.engineId === 'kling-v4') {
+  if (['kling-v4', 'kling-v4-flash'].includes(params.engineId)) {
     const directImages: Array<[string, unknown]> = [
       ['image_url', params.imageUrl], ['image_url', params.image_url],
       ['end_image_url', params.endImageUrl],
@@ -58,8 +58,8 @@ export async function validateNormalizedGenerationAttachments(
         metric: { errorCode: 'MEDIA_METADATA_UNVERIFIED', meta: { field: 'references' } } };
     }
   }
-  const mediaConstraints = params.engineId === 'kling-v4'
-    ? await validateKlingV4OwnedMedia({ mode: params.mode, userId, attachments, elements,
+  const mediaConstraints = ['kling-v4', 'kling-v4-flash'].includes(params.engineId)
+    ? await validateKlingV4OwnedMedia({ engineId: params.engineId, mode: params.mode, userId, attachments, elements,
       referenceMediaItems: references.referenceMediaItems, trustedResolvedReferences, deps: mediaConstraintDeps })
     : await validateGenerationMediaConstraints({
     engineId: params.engineId,

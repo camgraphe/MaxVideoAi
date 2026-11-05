@@ -34,6 +34,7 @@ function positive(value: unknown): number | null {
  * Keep repeated occurrences: each submitted video consumes the shared time budget.
  */
 export async function validateKlingV4OwnedMedia(params: {
+  engineId?: string;
   mode: Mode;
   userId: string;
   attachments: readonly NormalizedAttachment[];
@@ -42,11 +43,17 @@ export async function validateKlingV4OwnedMedia(params: {
   trustedResolvedReferences?: readonly ResolvedReference[];
   deps?: KlingV4OwnedMediaDependencies;
 }): Promise<KlingV4OwnedMediaResult> {
+  const flash = params.engineId === 'kling-v4-flash';
+  const maxVideoSeconds = flash ? 20 : 30;
   const fields: Record<string, Record<string, string>> = {
     t2v: {}, i2v: { image_url: 'image', end_image_url: 'image' },
     ref2v: { image_url: 'image', image_urls: 'image', video_urls: 'video' },
     v2v: { video_url: 'video', image_urls: 'image' },
   };
+  if (flash) {
+    fields.i2v = { image_url: 'image' };
+    delete fields.v2v;
+  }
   if (!fields[params.mode] || params.referenceMediaItems.some(item =>
     !(params.trustedResolvedReferences !== undefined && /^canonical_reference\.\d+$/u.test(item.fieldId))
       && fields[params.mode][item.fieldId] !== item.kind)) {
@@ -91,6 +98,9 @@ export async function validateKlingV4OwnedMedia(params: {
       candidates.push({ fieldId, kind: 'image', url: element.frontalImageUrl.trim(), assetId: element.frontalAssetId?.trim() });
       element.referenceImageUrls.forEach((url, view) => candidates.push({ fieldId, kind: 'image', url: url.trim(), assetId: element.referenceAssetIds![view]?.trim() }));
     }
+  }
+  if (flash && candidates.length > 15) {
+    return rejected('references', 'Kling 4.0 Flash currently supports at most 15 originals, including subject views.');
   }
   if (!candidates.length) return { ok: true, trustedDurationSecByField: {}, trustedMediaReferences: [] };
   if (candidates.some(c => !c.assetId || !validReferenceMediaUrl(c.url) || !['image', 'video'].includes(c.kind))) {
@@ -142,9 +152,11 @@ export async function validateKlingV4OwnedMedia(params: {
         }
         facts = probes.get(candidate.url) ?? undefined;
       }
+      const isSubject = candidate.fieldId.startsWith('elements.');
+      const maxSeconds = flash && isSubject ? 8 : maxVideoSeconds;
       if (!facts || !Number.isFinite(facts.fps) || facts.fps < 23.9 || facts.fps > 60.05
-        || !Number.isFinite(facts.durationSec) || facts.durationSec < 3 || facts.durationSec > 30.05) {
-        return rejected(candidate.fieldId, 'Kling 4 requires a verified 3–30-second video at 23.9–60.05 FPS.');
+        || !Number.isFinite(facts.durationSec) || facts.durationSec < 3 || facts.durationSec > maxSeconds + 0.05) {
+        return rejected(candidate.fieldId, `Kling 4${flash ? ' Flash' : ''} requires a verified 3–${maxSeconds}-second video at 23.9–60.05 FPS.`);
       }
       ({ width, height, durationSec, fps } = facts);
       videoTotal += durationSec;
@@ -157,8 +169,8 @@ export async function validateKlingV4OwnedMedia(params: {
     }
     trustedMediaReferences.push({ ...candidate, assetId: candidate.assetId!, width, height, durationSec, ...(fps === undefined ? {} : { fps }) });
   }
-  if (params.mode === 'ref2v' && videoTotal > 30 + 1e-8) {
-    return rejected('references', 'Reference videos and video subjects must total no more than 30 seconds.');
+  if (params.mode === 'ref2v' && videoTotal > maxVideoSeconds + 1e-8) {
+    return rejected('references', `Reference videos and video subjects must total no more than ${maxVideoSeconds} seconds.`);
   }
   return { ok: true, trustedDurationSecByField, trustedMediaReferences };
 }

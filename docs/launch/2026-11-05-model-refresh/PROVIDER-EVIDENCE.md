@@ -66,3 +66,9 @@ Le MCP MaxVideoAI connecté a retourné le 5 novembre :
 Il s'agit de découverte live, sans devis ni exécution. Dans la source de production, `frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification.ts` inclut Flare 2.5 dans `IMAGE_MODELS` mais pas Sunburst 2.5. Le précédent est également documenté dans `docs/operations/studio-model-coverage-audit-2026-10-04.md`. L'ajout 2.6 doit donc qualifier ses deux variantes dans Studio, sans prétendre hériter d'une parité 2.5 qui n'existe pas.
 
 Les conditions d'accès, prix et schémas sont datés ; revalider les sources avant activation. Aucun test de génération ni état public nouveau n'est déduit de la présence d'une documentation ou d'un ID dans le catalogue.
+
+### Flash contract implementation — 2026-11-05
+
+Sanitized input schemas are pinned under `tests/fixtures/kling-v4-flash/`. The element subtype sets video subjects to 3–8 seconds (8.05s transport tolerance); flat references permit 3–20 seconds (20.05s tolerance). All submitted video occurrences share an exact 20-second total, including duplicates and subject videos. No aggregate image/subject count is documented beyond the individual arrays; the initial application envelope is conservatively 15 actual originals, including all subject views. It is not advertised as a provider maximum.
+
+The strict adapter, owned media boundary and fal receipt transport are implemented while publication remains closed. Eight Flash tests (including disposable PostgreSQL receipt recovery) and 24 existing Kling 4 contract/ownership/queue/recovery tests pass. No paid request was made.
