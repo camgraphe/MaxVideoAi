@@ -1,4 +1,4 @@
-import { isKlingV4EngineId } from '@/lib/kling-v4';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getRuntimeModelById } from '@/config/model-runtime';
 
 /**
@@ -7,8 +7,8 @@ import { getRuntimeModelById } from '@/config/model-runtime';
  * The authored App flag stays closed until tariffs and product QA are signed off.
  */
 export function isKlingV4ReleaseBlocked(engineId: string | null | undefined): boolean {
-  return isKlingV4EngineId(engineId)
-    && getRuntimeModelById('kling-v4')?.publication.app.published !== true;
+  return isKlingV4FalQueueEngineId(engineId)
+    && getRuntimeModelById(engineId!.trim().toLowerCase())?.publication.app.published !== true;
 }
 
 export function assertKlingV4ReleaseReady(engineId: string): void {

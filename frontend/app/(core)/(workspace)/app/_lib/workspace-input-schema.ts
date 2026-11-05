@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import type {
   AssetFieldConfig,
   AssetFieldRole,
@@ -155,7 +156,7 @@ export function summarizeWorkspaceInputSchema({
     // Source-video workflows keep their own inputs, including supported optional references.
     // Cross-mode creation fields must not leak into Modify, Extend or Reframe.
     if (isVideoSourceWorkflow(activeMode)) return !field.modes?.length || field.modes.includes(activeMode);
-    if (selectedEngine?.id === 'kling-v4' && (field.type === 'image' || field.type === 'video')) {
+    if (isKlingV4FalQueueEngineId(selectedEngine?.id) && (field.type === 'image' || field.type === 'video')) {
       return Boolean(field.modes?.some(mode => mode === 'i2v' || mode === 'ref2v'));
     }
     if ((selectedEngine?.id === 'wan-3' || selectedEngine?.id === 'wan-3-prime')

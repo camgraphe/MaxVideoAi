@@ -1,0 +1,263 @@
+{
+  "marketingName": "GPT Image 2.6 Sunburst",
+  "versionLabel": "2.6",
+  "seo": {
+    "title": "GPT Image 2.6 Sunburst — Create and edit raster images | MaxVideoAI",
+    "description": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+  },
+  "overview": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+  "pricingNotes": [
+    "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+    "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
+  ],
+  "hero": {
+    "title": "GPT Image 2.6 Sunburst — Create and edit raster images",
+    "intro": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+    "badge": "PNG · JPEG · WebP",
+    "ctaPrimary": {
+      "label": "Open the workspace",
+      "href": "/app/image?engine=gpt-image-2-6-sunburst"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Read specifications",
+        "href": "#specs"
+      }
+    ]
+  },
+  "bestUseCases": [
+    "Cinematic scene",
+    "Controlled edit"
+  ],
+  "faqs": [
+    {
+      "q": "Read specifications",
+      "a": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity. PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release."
+    },
+    {
+      "q": "Owned visual references",
+      "a": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action."
+    },
+    {
+      "q": "Pricing",
+      "a": "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
+    },
+    {
+      "q": "Quality and complexity",
+      "a": "Flare and Sunburst are separate model choices. No comparative quality or latency result is claimed before matched tests."
+    }
+  ],
+  "custom": {
+    "whyTitle": "GPT Image 2.6 Sunburst",
+    "heroHighlights": [
+      "Quality and complexity||Quality controls rendering. Complexity controls planning. Keep the subject and constraints explicit at every level.",
+      "Owned visual references||Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+      "Raster image||PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release."
+    ],
+    "specTitle": "Read specifications",
+    "specNote": "PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release.",
+    "specSections": [
+      {
+        "title": "Cinematic scene",
+        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+        "items": []
+      },
+      {
+        "title": "Controlled edit",
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+        "items": []
+      }
+    ]
+  },
+  "decision": {
+    "modelSlug": "gpt-image-2-6-sunburst",
+    "hero": {
+      "eyebrow": "GPT IMAGE 2.6 SUNBURST",
+      "title": "GPT Image 2.6 Sunburst — Create and edit raster images",
+      "subtitle": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+      "subtitleHighlights": [
+        "1024"
+      ],
+      "paragraph": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "primaryCta": {
+        "label": "Open the workspace",
+        "href": "/app/image?engine=gpt-image-2-6-sunburst"
+      },
+      "secondaryCta": {
+        "label": "Read specifications",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Explore prompt ideas",
+          "href": "#prompting"
+        },
+        {
+          "label": "View current pricing",
+          "href": "/pricing#gpt-image-2-6-sunburst-pricing"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Examples will be added after generation and review with this exact model.",
+      "description": "Examples will be added after generation and review with this exact model.",
+      "renderLabel": "Examples",
+      "badges": [
+        "GPT Image 2.6 Sunburst",
+        "PNG · JPEG · WebP"
+      ],
+      "altContext": "GPT Image 2.6 Sunburst — Examples will be added after generation and review with this exact model."
+    },
+    "features": [
+      {
+        "title": "Quality and complexity",
+        "body": "Quality controls rendering. Complexity controls planning. Keep the subject and constraints explicit at every level.",
+        "tone": "quality"
+      },
+      {
+        "title": "Owned visual references",
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+        "tone": "reference"
+      },
+      {
+        "title": "Raster image",
+        "body": "PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Cinematic scene",
+        "body": "Describe what to preserve and what to change. Give each reference a clear role.",
+        "cta": {
+          "label": "Explore prompt ideas",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Quality and complexity",
+        "body": "Flare and Sunburst are separate model choices. No comparative quality or latency result is claimed before matched tests.",
+        "cta": {
+          "label": "GPT Image 2.6 Flare",
+          "href": "/models/gpt-image-2-6-flare"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Cinematic scene",
+        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+      },
+      {
+        "title": "Controlled edit",
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action."
+      }
+    ],
+    "pricingCopy": {
+      "title": "GPT Image 2.6 Sunburst — Pricing",
+      "subtitle": "Review the current quote before confirming a generation. Changing settings or references requires a new quote.",
+      "footnote": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "ctaLabel": "View current pricing",
+      "ctaHref": "/pricing#gpt-image-2-6-sunburst-pricing",
+      "maxDurationNote": "Up to four images in App and MCP; one in Studio."
+    },
+    "meta": {
+      "title": "GPT Image 2.6 Sunburst — Create and edit raster images | MaxVideoAI",
+      "description": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+    }
+  },
+  "prompting": {
+    "modelSlug": "gpt-image-2-6-sunburst",
+    "section": {
+      "title": "Explore prompt ideas — GPT Image 2.6 Sunburst",
+      "intro": "Production brief — media selection pending",
+      "tip": "Describe what to preserve and what to change. Give each reference a clear role.",
+      "guide": {
+        "label": "Read provider documentation",
+        "href": "https://developers.openai.com/api/docs/guides/image-generation"
+      },
+      "referencesTitle": "Owned visual references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe what to preserve and what to change. Give each reference a clear role.",
+      "Use your own original images and videos.",
+      "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
+    ],
+    "engineWhy": [
+      "Quality controls rendering. Complexity controls planning. Keep the subject and constraints explicit at every level."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Explore prompt ideas",
+      "intro": "Production brief — media selection pending",
+      "workspaceLabel": "Open the workspace",
+      "items": [
+        {
+          "id": "cinema",
+          "title": "The Last Reel — film still",
+          "badge": "1024 × 1024",
+          "kind": "image",
+          "prompt": "Create one photorealistic cinematic film still, a square 1024x1024 image, not a poster or a collage. An original fictional adult woman, about 32, short dark curly hair, expressive brown eyes, a worn ochre cotton chore jacket over a charcoal T-shirt and dark trousers, is caught mid-stride in the backstage corridor of a small 1970s cinema. She grips a round opaque dark blue matte film canister against her ribs with her left arm, her right hand reaching toward a heavy burgundy velvet curtain at the right edge. She has just found something important: breathless, determined, almost smiling, looking off-frame right toward a colleague. Strong diagonal composition with a readable face, natural skin texture, visible fingers and convincing weight. Eye-level medium shot, 35mm cinema lens, subtle analog grain, warm tungsten practical bulbs against teal painted plaster, low-key yet legible lighting. Rich burgundy, ochre and petrol-blue palette. Solid painted doors, opaque props and matte surfaces only; no mirrors, glass, transparent objects, glossy reflections, water, screens, text, logos or subtitles. The moment must feel like an actual frame from a character-driven caper film, with tension and life, not a fashion pose. Keep the face and canister within the central 70 percent for flexible gallery crops."
+        },
+        {
+          "id": "edit",
+          "title": "Wardrobe continuity edit",
+          "badge": "1024 × 1024",
+          "kind": "edit",
+          "prompt": "Edit this exact cinematic still. Preserve the woman's identity, facial expression, short dark curls, visible fingers, body pose, film canister, camera position, background corridor and velvet curtain. Change only her ochre cotton jacket to a rich oxblood red fabric with the same cut, seams, wear and folds. Keep all skin tones, lighting direction, shadows, analog grain and the dark blue opaque matte canister unchanged. A seamless wardrobe continuity edit for a feature film. No mirrors, transparent objects, text, logos or extra people."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "gpt-image-2-6-sunburst",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "GPT Image 2.6 Sunburst — Examples",
+      "intro": "Examples will be added after generation and review with this exact model.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recreate with these settings"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-0",
+        "icon": "image",
+        "title": "Cinematic scene",
+        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+      },
+      {
+        "id": "proof-1",
+        "icon": "users",
+        "title": "Owned visual references",
+        "body": "Use your own original images."
+      },
+      {
+        "id": "proof-2",
+        "icon": "pen",
+        "title": "Explore prompt ideas",
+        "body": "Describe what to preserve and what to change. Give each reference a clear role."
+      },
+      {
+        "id": "proof-3",
+        "icon": "shield",
+        "title": "Pricing",
+        "body": "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
+      },
+      {
+        "id": "proof-4",
+        "icon": "sparkles",
+        "title": "Examples",
+        "body": "Examples will be added after generation and review with this exact model."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

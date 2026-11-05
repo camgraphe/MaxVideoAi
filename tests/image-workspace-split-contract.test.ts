@@ -87,6 +87,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(source, /from '\.\/_components\/ImageWorkspaceShell'/);
   assert.match(source, /from '\.\/_components\/ImageWorkspaceEmptyState'/);
   assert.match(source, /from '\.\/_hooks\/useImageComposerPersistence'/);
+  assert.match(source, /from '\.\/_hooks\/useImageComposerValues'/);
+  assert.doesNotMatch(source, /const \[complexity, setComplexity\] = useState/, 'composer values have their own state owner');
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceDisplayState'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceReferenceAssets'/);
   assert.match(source, /from '\.\/_hooks\/useImageWorkspaceViewer'/);

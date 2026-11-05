@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getKlingV4ConstraintViolation, KLING_V4_ENDPOINTS } from '@/lib/kling-v4';
+import { getKlingV4FlashConstraintViolation, KLING_V4_FLASH_ENDPOINTS } from '@/lib/kling-v4-flash';
 
 const sha = z.string().regex(/^[a-f0-9]{64}$/);
 const assetId = z.string().regex(/^ma_[a-f0-9]{32}$/);
@@ -24,9 +25,21 @@ const schema = z.object({ schemaVersion: z.literal(1), ownerUserId: z.string().u
   }).strict()).max(50),
 }).strict();
 export type KlingV4ExternalFalImport = z.infer<typeof schema>;
+const flashSchema = schema.extend({ engineId: z.literal('kling-v4-flash'), mode: z.enum(['t2v', 'i2v', 'ref2v']),
+  providerInput: z.object({ prompt: z.string().optional(), duration: z.number().int().min(3).max(20).optional(),
+    resolution: z.literal('720p').optional(), aspect_ratio: z.string().optional(), start_image_url: url.optional(),
+    image_urls: z.array(url).optional(), video_urls: z.array(url).optional(),
+    elements: z.array(z.object({ frontal_image_url: url.optional(), reference_image_urls: z.array(url).optional(), video_url: url.optional() }).strict()).optional(),
+  }).strict(),
+});
+export type KlingV4FlashExternalFalImport = z.infer<typeof flashSchema>;
+export type KlingExternalFalImport = KlingV4ExternalFalImport | KlingV4FlashExternalFalImport;
+export function isKlingExternalFalImport(input: { engineId: string }): input is KlingExternalFalImport {
+  return input.engineId === 'kling-v4' || input.engineId === 'kling-v4-flash';
+}
 
 /** Normalize documented defaults for validation/reuse only; never rewrite the accepted journal. */
-function effectiveProviderInput(input: KlingV4ExternalFalImport): KlingV4ExternalFalImport['providerInput'] {
+function effectiveProviderInput(input: KlingExternalFalImport): KlingV4ExternalFalImport['providerInput'] {
   const nullable = new Set({
     t2v: ['prompt', 'multi_prompt'], i2v: ['prompt', 'multi_prompt', 'end_image_url'],
     ref2v: ['prompt', 'multi_prompt', 'start_image_url', 'image_urls', 'video_urls', 'elements'],
@@ -64,17 +77,30 @@ export function parseKlingV4ExternalFalImport(value: unknown): KlingV4ExternalFa
   if (violation) throw new Error('IMPORT_KLING_INPUT_INVALID:' + violation.message);
   // This importer has no authority to certify a raw provider voice ID as account-owned.
   if (parsed.providerInput.elements?.some(item => item.voice_id)) throw new Error('IMPORT_KLING_OWNED_VOICE_EVIDENCE_REQUIRED');
+  validateReferenceMappings(parsed);
+  return parsed;
+}
+
+export function parseKlingV4FlashExternalFalImport(value: unknown): KlingV4FlashExternalFalImport {
+  const parsed = flashSchema.parse(value);
+  if (parsed.endpoint !== KLING_V4_FLASH_ENDPOINTS[parsed.mode]) throw new Error('IMPORT_ENDPOINT_MODE_MISMATCH');
+  const violation = getKlingV4FlashConstraintViolation(parsed.mode, effectiveProviderInput(parsed));
+  if (violation) throw new Error('IMPORT_KLING_INPUT_INVALID:' + violation.message);
+  validateReferenceMappings(parsed);
+  return parsed;
+}
+
+function validateReferenceMappings(parsed: KlingExternalFalImport) {
   const slots = klingV4ReferenceSlots(parsed.providerInput);
   if (JSON.stringify(slots) !== JSON.stringify(parsed.references.map(({ slotId, kind, providerUrl }) => ({ slotId, kind, providerUrl })))) {
     throw new Error('IMPORT_REFERENCE_MAPPING_MISMATCH');
   }
   if (parsed.references.some(ref => ref.kind !== 'image' && ref.storedRepresentation)) throw new Error('IMPORT_REFERENCE_TRANSFORM_KIND');
   if (parsed.media.poster.url === parsed.media.preview.url) throw new Error('IMPORT_MEDIA_ROLES_MUST_DIFFER');
-  return parsed;
 }
 
 /** Reuse uses owned originals; the immutable externalImport keeps the historical provider URLs. */
-export function klingV4ImportSettings(input: KlingV4ExternalFalImport, assets: { public_id: string; url: string; mime_type: string | null; size_bytes: number | string | null }[]) {
+export function klingV4ImportSettings(input: KlingExternalFalImport, assets: { public_id: string; url: string; mime_type: string | null; size_bytes: number | string | null }[]) {
   const provider = effectiveProviderInput(input);
   const ref = (slotId: string) => {
     const mapping = input.references.find(item => item.slotId === slotId);
@@ -86,7 +112,7 @@ export function klingV4ImportSettings(input: KlingV4ExternalFalImport, assets: {
   return {
     prompt: provider.prompt ?? '', negativePrompt: null,
     core: { durationSec, durationOption: durationSec === null ? null : String(durationSec),
-      resolution: provider.resolution ?? '1080p', aspectRatio: provider.aspect_ratio ?? (['t2v', 'ref2v'].includes(input.mode) ? '16:9' : null), audio: null, fps: null, iterationCount: 1, numFrames: null },
+      resolution: provider.resolution ?? (input.engineId === 'kling-v4-flash' ? '720p' : '1080p'), aspectRatio: provider.aspect_ratio ?? (['t2v', 'ref2v'].includes(input.mode) ? '16:9' : null), audio: null, fps: null, iterationCount: 1, numFrames: null },
     advanced: { seed: null, multiPrompt: provider.multi_prompt ?? null, extraInputValues: null },
     refs: { imageUrl: ref('start_image_url')?.url ?? null, endImageUrl: ref('end_image_url')?.url ?? null,
       referenceImages: images ?? null, videoUrls: videos ?? (ref('video_url') ? [ref('video_url')!.url] : null),

@@ -3,14 +3,14 @@ import test from 'node:test';
 import {mountToolFixture} from './helpers/tool-selection-fixture';
 
 const key=(owner:string)=>`maxvideoai.image.composer.v1:${owner}`;
-const stored=(owner:string,aspectRatio:string)=>({version:5,engineId:'nano-banana-2-1',mode:'t2i',prompt:`Synthetic ${owner} draft`,numImages:1,aspectRatio,resolution:'1k',customImageSize:null,seed:null,outputFormat:null,quality:null,background:null,style:null,maskUrl:null,enableWebSearch:false,thinkingLevel:'medium',limitGenerations:false,watermark:false,referenceSlots:[]});
+const stored=(owner:string,aspectRatio:string)=>({version:5,engineId:'nano-banana-2-1',mode:'t2i',prompt:`Synthetic ${owner} draft`,numImages:1,aspectRatio,resolution:'1k',customImageSize:null,seed:null,outputFormat:null,quality:null,background:null,style:null,maskUrl:null,enableWebSearch:false,thinkingLevel:'medium',complexity:null,limitGenerations:false,watermark:false,referenceSlots:[]});
 const source=`
 import {useImageComposerPersistence} from './app/(core)/(workspace)/app/image/_hooks/useImageComposerPersistence';
 import {listFalEngines} from './src/config/falEngines';
 const entry=listFalEngines().find(x=>x.id==='nano-banana-2-1'),engines=window.emptyEngines?[]:[{id:entry.id,engineCaps:entry.engine,modes:['t2i','i2i'],aliases:[entry.id]}],references=[];
-const setters=Object.fromEntries(['EngineId','Mode','NumImages','Resolution','Seed','OutputFormat','Quality','Background','Style','MaskUrl','EnableWebSearch','ThinkingLevel','LimitGenerations','Watermark','ReferenceSlots','CustomImageWidth','CustomImageHeight'].map(name=>['set'+name,noop]));
+const setters=Object.fromEntries(['EngineId','Mode','NumImages','Resolution','Seed','OutputFormat','Quality','Background','Style','MaskUrl','EnableWebSearch','ThinkingLevel','Complexity','LimitGenerations','Watermark','ReferenceSlots','CustomImageWidth','CustomImageHeight'].map(name=>['set'+name,noop]));
 function Editor({owner}){const [aspectRatio,setAspectRatio]=useState(null),[prompt,setPrompt]=useState('');window.changeRatio=setAspectRatio;
- useImageComposerPersistence({...setters,accountId:owner,engines,engineId:entry.id,mode:'t2i',prompt,setPrompt,aspectRatio,setAspectRatio,numImages:1,resolution:'1k',customImageWidth:'',customImageHeight:'',seed:'',outputFormat:null,quality:null,background:null,style:null,maskUrl:'',enableWebSearch:false,thinkingLevel:'medium',limitGenerations:false,watermark:false,persistableReferenceSlots:references});
+ useImageComposerPersistence({...setters,accountId:owner,engines,engineId:entry.id,mode:'t2i',prompt,setPrompt,aspectRatio,setAspectRatio,numImages:1,resolution:'1k',customImageWidth:'',customImageHeight:'',seed:'',outputFormat:null,quality:null,background:null,style:null,maskUrl:'',enableWebSearch:false,thinkingLevel:'medium',complexity:null,limitGenerations:false,watermark:false,persistableReferenceSlots:references});
  return <output>{owner}:{aspectRatio}</output>;
 }
 function App(){const [owner,setOwner]=useState('owner-a'),[visible,setVisible]=useState(true);window.changeOwner=setOwner;window.hideEditor=()=>setVisible(false);return visible?<Editor key={owner} owner={owner}/>:null;}

@@ -3,6 +3,7 @@ import {STUDIO_CONVERSATION_MAX_ATTACHMENTS,STUDIO_CONVERSATION_MAX_REFERENCES,s
 
 /** Transport capacity follows authored media fields; canonical role/combined validation still applies. */
 export function studioGenerationReferenceLimit(modelId:string,surface:string,mode:string):number {
+  if(surface==='video'&&modelId==='kling-v4-flash')return mode==='ref2v'?15:mode==='i2v'?1:0;
   if(surface==='image')return studioImageReferenceLimit(modelId);
   if(surface==='video'&&modelId==='kling-v4')return mode==='ref2v'?43:mode==='v2v'?39:mode==='i2v'?2:0;
   if(surface==='video' && modelId==='luma-ray-3-2' && mode==='t2v') return 64;

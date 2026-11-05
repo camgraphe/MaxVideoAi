@@ -50,6 +50,7 @@ export function validateStudioVideoPrompt(value: {action: string; modelId?: stri
     if(value.modelId==='kling-v4'&&['t2v','i2v','ref2v'].includes(value.mode??'t2v')&&!prompt.trim())return;
     context.addIssue({code:z.ZodIssueCode.custom,path:['shotPlan'],message:'Use one V4 shot plan or a single prompt.'});return;
   }
+  if (value.modelId === 'kling-v4-flash' && value.mode === 'i2v') return;
   const promptUnsupported = ['h3-relight','ltx23-reframe','flux-draft-enhance'].includes(operation??'');
   if (promptUnsupported ? Boolean(prompt.trim()) : operation === 'h3-recast' ? prompt.length > 2000 : !prompt.trim()
     || (operation === 'flux-fast-edit' && prompt.length > FLUX_FAST_PROMPT_MAX_CHARS))

@@ -154,8 +154,8 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     },
   } = attachmentProcessing;
   const isBytePlus = isBytePlusInputVideoPricingModel(engine.id);
-  const isKlingV4 = engine.id === 'kling-v4';
-  const klingV4InheritsDuration=isKlingV4&&mode==='v2v'&&body.durationSec===undefined&&body.durationOption==null;
+  const isKlingV4 = ['kling-v4', 'kling-v4-flash'].includes(engine.id);
+  const klingV4InheritsDuration=engine.id==='kling-v4'&&mode==='v2v'&&body.durationSec===undefined&&body.durationOption==null;
   const isWan3 = engine.id === 'wan-3' || engine.id === 'wan-3-prime';
   let inputVideoDurationSec: number | undefined;
   if (isWan3 || isBytePlus || isKlingV4) {

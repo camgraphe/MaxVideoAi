@@ -1,3 +1,4 @@
+import { isKlingExternalFalImport } from '../server/external-fal-import/kling-v4';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -72,7 +73,7 @@ async function main() {
     if (mode === 'dry-run') return report({ ...plan, verified: true, planSha256: verified.planSha256, databaseSha256, providerRecovery,
       migrationReady: verified.migrationReady, applyBlockers: verified.migrationReady ? [] : ['IMPORT_MIGRATION_76_REQUIRED'],
       durableMedia: { videoUrl: verified.assets[0].url, posterUrl: verified.assets[0].thumb_url,
-        ...(input.engineId === 'kling-v4' ? { previewUrl: input.media.preview.url, display: verified.evidence.display } : {}),
+        ...(isKlingExternalFalImport(input) ? { previewUrl: input.media.preview.url, display: verified.evidence.display } : {}),
         references: input.references.map(ref => ({ assetId: ref.assetId, providerSha256: ref.sha256,
           durableSha256: ref.storedRepresentation?.sha256 ?? ref.sha256,
           proof: verified.evidence.referenceProofs?.find(proof => proof.assetId === ref.assetId),

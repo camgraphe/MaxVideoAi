@@ -6,12 +6,13 @@ import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-aud
 import { quoteCanonicalAdminScenarios } from '../frontend/server/pricing-admin/canonical-scenarios.ts';
 import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts';
 
-test('admin comparison inventory contains published models once while V4 keeps its separate native tariff', () => {
+test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
   assert.equal(expected.length, 51);
-  assert.equal(rows.length, expected.length);
-  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set(expected.map((model) => model.id)));
+  const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
+  assert.equal(rows.length, expected.length + closedLaunchIds.length);
+  assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id), ...closedLaunchIds]));
   assert.equal(rows.filter(({entry})=>entry.id==='kling-v4').length,1);
   assert.equal(rows.filter(({entry})=>entry.id==='nano-banana-2-1').length,1);
   assert.ok(rows.some(({ entry }) => entry.id === 'lumaRay2'));

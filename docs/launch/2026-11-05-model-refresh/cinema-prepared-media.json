@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-05T19:45:16.994764+00:00",
+  "generatedProviderRequests": 0,
+  "assets": [
+    {
+      "id": "V1",
+      "engineId": "kling-v4-flash",
+      "originalSha256": "9969d4e68830295d3031ebd8a01f11584917e277d674424dbf3f9e107e51dced",
+      "poster": {
+        "file": "derivatives/V1-poster-55c78b9338e7.jpg",
+        "sha256": "55c78b9338e7e78f704f1a13404b3c483c6fc7b3e35c0d68b4ee613dd2d7fe08",
+        "bytes": 34577
+      },
+      "preview": {
+        "file": "derivatives/V1-preview-05ed52534dcb.mp4",
+        "sha256": "05ed52534dcb8f8aff38bc73ef559b856d4f48659fe0c76df89b5043311e42c2",
+        "bytes": 88133,
+        "width": 640,
+        "height": 360,
+        "durationSec": 2.5,
+        "hasAudio": false
+      },
+      "uploaded": false,
+      "publicHttpVerified": false,
+      "published": false
+    },
+    {
+      "id": "V2",
+      "engineId": "kling-v4-flash",
+      "originalSha256": "a48c70868cabfbb2d14e205bd1d806f913e7fa43dc7a5e132c3faa3d76020f84",
+      "poster": {
+        "file": "derivatives/V2-poster-0d859b6c62ed.jpg",
+        "sha256": "0d859b6c62ed9437c87ffede6a0eb0db88c78c66de41c3cfdd75778b646d72d6",
+        "bytes": 35301
+      },
+      "preview": {
+        "file": "derivatives/V2-preview-913e8580acad.mp4",
+        "sha256": "913e8580acad6da2ba0d347c2b91367227fb59d45b69e4cfc5bf6a032bbc6abd",
+        "bytes": 230715,
+        "width": 640,
+        "height": 640,
+        "durationSec": 2.5,
+        "hasAudio": false
+      },
+      "uploaded": false,
+      "publicHttpVerified": false,
+      "published": false
+    },
+    {
+      "id": "V3",
+      "engineId": "kling-v4-flash",
+      "originalSha256": "d185f2f6365a2848a21b75f5446d6fff37ea7a696f9f61bdc050480ad680126a",
+      "poster": {
+        "file": "derivatives/V3-poster-fdb9454cded8.jpg",
+        "sha256": "fdb9454cded81495b37cf68c7d3aa1f75e34019c6822ebd65040c77949d1835c",
+        "bytes": 30225
+      },
+      "preview": {
+        "file": "derivatives/V3-preview-50fec66cfaf5.mp4",
+        "sha256": "50fec66cfaf5679dfb921128dab6d47bc653aa1c8e18dd79d0f30baf86fea58f",
+        "bytes": 85260,
+        "width": 640,
+        "height": 360,
+        "durationSec": 2.5,
+        "hasAudio": false
+      },
+      "uploaded": false,
+      "publicHttpVerified": false,
+      "published": false
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { videoOperationTariffIdentity } from '@/lib/video-operation';
 import {
@@ -88,7 +90,7 @@ export async function computeCanonicalBillingSnapshot(
       { ...context, aspectRatio: highest.meta?.billed_aspect_ratio as string }, 'highest_current_tariff') } };
   }
   assertSeedanceWorkflowPricing(context);
-  const pricingDetails = context.engine.pricingDetails ?? (context.engine.id === 'kling-v4' ? undefined : await getPricingDetails(context.engine.id));
+  const pricingDetails = context.engine.pricingDetails ?? (isKlingV4FalQueueEngineId(context.engine.id) || isGptImage26EngineId(context.engine.id) ? undefined : await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
       engineId: context.engine.id,
@@ -108,9 +110,10 @@ export async function computeCanonicalBillingSnapshot(
     && context.mode === 'i2v' && [4,6].includes(context.durationSec));
   const requiresLasTariff = !context.workflowStep && isSeedance25LasInputPricing(context.engine.id, context.mode);
   const requiresEditTariff = !context.workflowStep && isSeedance25EditInputPricing(context.engine.id, context.mode);
-  const requiresKlingV4Tariff = context.engine.id === 'kling-v4';
+  const requiresKlingV4Tariff = isKlingV4FalQueueEngineId(context.engine.id);
   const requiresNano21Tariff = context.engine.id === NANO21_ENGINE_ID;
-  if (requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
+  const requiresGpt26Tariff = isGptImage26EngineId(context.engine.id);
+  if (requiresGpt26Tariff || requiresKlingV4Tariff || requiresNano21Tariff || requiresOperationTariff || requiresEditTariff || context.workflowStep || dependencies.loadCustomerTariffState || dependencies.loadCustomerTariffQuoteState || customerTariffsEnabledByCode()) {
     const selector = buildManualTariffScenario(context, billingFacts.facts).selector;
     const tariffState = await (dependencies.loadCustomerTariffState
       ? dependencies.loadCustomerTariffState()
@@ -149,6 +152,7 @@ export async function computeCanonicalBillingSnapshot(
     }
   }
   if (requiresKlingV4Tariff) throw new CustomerTariffUnavailableError('A separate active reviewed Kling V4 customer tariff is required.');
+  if (requiresGpt26Tariff) throw new CustomerTariffUnavailableError('An active reviewed GPT Image 2.6 customer tariff is required.');
   if (requiresNano21Tariff) throw new CustomerTariffUnavailableError('An active reviewed Nano Banana 2.1 customer tariff is required.');
   if (requiresOperationTariff) throw new CustomerTariffUnavailableError('A separate active reviewed video operation tariff is required.');
   if (requiresEditTariff) throw new CustomerTariffUnavailableError(`An active reviewed ${requiresLasTariff ? 'LAS' : 'ModelArk'} Edit customer tariff is required.`);

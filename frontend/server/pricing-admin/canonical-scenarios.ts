@@ -1,3 +1,5 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import {
   quoteCanonicalPricing,
   resolvePricingPolicy,
@@ -203,10 +205,10 @@ function quoteCanonicalScenarios(
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
-      if (scenario.engineId === NANO21_ENGINE_ID || scenario.engineId === 'kling-v4') {
+      if (scenario.engineId === NANO21_ENGINE_ID || isKlingV4FalQueueEngineId(scenario.engineId) || isGptImage26EngineId(scenario.engineId)) {
         return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
           reason: 'product_policy_not_authoritative',
-          warning: scenario.engineId === 'kling-v4'
+          warning: isGptImage26EngineId(scenario.engineId) ? 'GPT Image 2.6 requires reviewed customer tariffs; supplier input costs remain unqualified.' : isKlingV4FalQueueEngineId(scenario.engineId)
             ? 'Kling 4 uses approved customer tariffs; legacy percentage-policy previews cannot reprice it.'
             : 'Nano Banana 2.1 uses its fixed per-image customer tariff; percentage-policy previews cannot reprice it.',
           policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };

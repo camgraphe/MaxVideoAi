@@ -1,3 +1,5 @@
+import { KLING_V4_FLASH_FAL_ENGINE_REGISTRY } from './kling-v4-flash';
+import { GPT_IMAGE_2_6_ENGINE_REGISTRY } from './gpt-image-2-6';
 import type { RawFalEngineEntry } from './types';
 import { PIKA_FAL_ENGINE_REGISTRY } from './pika';
 import { VEO_3_1_FAL_ENGINE_REGISTRY } from './veo-3-1';
@@ -99,6 +101,8 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...NANO_BANANA_2_1_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_5_FAL_ENGINE_REGISTRY,
+  ...GPT_IMAGE_2_6_ENGINE_REGISTRY,
+  ...KLING_V4_FLASH_FAL_ENGINE_REGISTRY,
   ...SEEDREAM_FAL_ENGINE_REGISTRY,
   ...WAN_3_FAL_ENGINE_REGISTRY,
   ...WAN_3_PRIME_FAL_ENGINE_REGISTRY,

@@ -2,13 +2,14 @@ import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { klingV4TariffScenarios } from '@/lib/pricing-audit/kling-v4-tariff-scenario';
 import { continuousInputTariffSelector } from '@/lib/pricing-manual-scenario';
 import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from '@/lib/kling-v4-pricing';
+import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from '@/lib/kling-v4-flash-pricing';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { continuousInputTariffIdentity } from '../continuous-input-tariff';
-import type { TariffBatchPrice } from './contract';
+import type { TariffBatchModelId, TariffBatchPrice } from './contract';
 import { batchSelectorKey, decimalRatio } from './input';
 
-export function klingBatchClasses() {
-  const rows = klingV4TariffScenarios().map(scenario => {
+export function klingBatchClasses(modelId: TariffBatchModelId = 'kling-v4') {
+  const rows = klingV4TariffScenarios(modelId).map(scenario => {
     const continuous = continuousInputTariffSelector(scenario.selector);
     const selector: ManualTariffSelector = continuous ?? scenario.selector;
     return { selector, key: batchSelectorKey(selector), scenario,
@@ -21,9 +22,14 @@ export function klingBatchClasses() {
 }
 export type KlingBatchClass = ReturnType<typeof klingBatchClasses>[number];
 
+export function klingBatchUsage(row: KlingBatchClass) {
+  return row.scenario.modelId === 'kling-v4-flash'
+    ? klingV4FlashPricingUsage(row.scenario.context) : klingV4PricingUsage(row.scenario.context);
+}
+
 /** Authoring only: compile a frozen LIST recipe into literal fixed/unit prices. */
 export function compileKlingBatchPrice(row: KlingBatchClass, multiplier: string): TariffBatchPrice {
-  const usage = klingV4PricingUsage(row.scenario.context);
+  const usage = klingBatchUsage(row);
   const rate = decimalRatio(String(usage.centsPerSecond));
   const factor = decimalRatio(multiplier);
   const numerator = rate.numerator * factor.numerator;
@@ -33,7 +39,9 @@ export function compileKlingBatchPrice(row: KlingBatchClass, multiplier: string)
   const total = numerator * BigInt(row.selector.durationSec);
   return { kind: 'fixed', customerCents: Number((total + denominator - BigInt(1)) / denominator) };
 }
-export function klingBatchSourceFacts() {
-  return { source: KLING_V4_PRICING_SOURCE, sourceDate: '2026-10-25', costKind: 'supplier_list',
-    classes: klingBatchClasses().map(row => ({ selector: row.selector, usage: klingV4PricingUsage(row.scenario.context) })) };
+export function klingBatchSourceFacts(modelId: TariffBatchModelId = 'kling-v4') {
+  const flash = modelId === 'kling-v4-flash';
+  return { source: flash ? KLING_V4_FLASH_PRICING_SOURCE : KLING_V4_PRICING_SOURCE,
+    sourceDate: flash ? '2026-11-05' : '2026-10-25', costKind: 'supplier_list',
+    classes: klingBatchClasses(modelId).map(row => ({ selector: row.selector, usage: klingBatchUsage(row) })) };
 }

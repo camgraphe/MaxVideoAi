@@ -1,7 +1,6 @@
-import type {
-  PricingPolicyDocument,
-  PricingPolicyRule,
-} from '@maxvideoai/pricing';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import type { PricingPolicyDocument, PricingPolicyRule } from '@maxvideoai/pricing';
 
 import { listFalEngines } from '@/config/falEngines';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
@@ -230,7 +229,7 @@ export function deriveRequestedPricingSurcharges(input: {
 
   const entries = listFalEngines();
   const supports = (engineId: string, kind: RequestedPricingSurcharge['kind']) => {
-    if (engineId === 'kling-v4') return false; // Approved customer tariffs, no legacy percentage price.
+    if ((isKlingV4FalQueueEngineId(engineId) || isGptImage26EngineId(engineId))) return false; // Approved customer tariffs, no legacy percentage price.
     const entry = entries.find((candidate) => candidate.id === engineId || candidate.engine.id === engineId);
     return kind === 'audio' ? entry?.engine.audio === true : entry?.engine.upscale4k === true;
   };

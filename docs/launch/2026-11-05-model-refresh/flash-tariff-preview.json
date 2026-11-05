@@ -1,0 +1,3598 @@
+{
+  "createdAt": "2026-11-05T19:42:16.332Z",
+  "source": "native previewCustomerTariffChange; NODE_ENV=production; database connection forced read-only",
+  "approved": true,
+  "approval": {
+    "date": "2026-11-05",
+    "source": "explicit user reply in launch conversation",
+    "decision": "Valider cette grille Flash à +30 % (recommandé)",
+    "scope": "all 72 Flash classes; no GPT Image 2.6 prices",
+    "condition": "native current-state confirmation and launch controls before activation"
+  },
+  "applied": false,
+  "recipe": "supplier list × 1.30; final customer cents rounded up",
+  "rows": [
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "customerCents": 37
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 37,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:bb5df02f3ed0d84f30034df2ca7ebd66",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "3",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 37
+          }
+        },
+        "warnings": [],
+        "fingerprint": "60f2f9916d15f7f1f6c1d932117a81712252c1c2bacc65cc255f0620d296c758"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "customerCents": 49
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 49,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:369e5afb1cc6eacb45e32f0d9a6e5289",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "4",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 49
+          }
+        },
+        "warnings": [],
+        "fingerprint": "4588db528d052fed98bd39ee1352d5f0139266a89549bb06ca698140c702d774"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "customerCents": 62
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 62,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:71e60d50477aec6403fe0bed81fadf3c",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "5",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 62
+          }
+        },
+        "warnings": [],
+        "fingerprint": "3ef8fb13e20be13fed348260d7d3fc32a729d8dd5ca28ae629e33f234daf2d1d"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "customerCents": 74
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 74,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:e45109dfdfe60c5278bb8d9ef6c4113d",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "6",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 74
+          }
+        },
+        "warnings": [],
+        "fingerprint": "98f36917dd64952c1e0f40e72f22b4882a330e9c7f7381d28163c8d7afa13552"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "customerCents": 86
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 86,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:09f4f3cad06fa7be3c8b11ddaaf29b77",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "7",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 86
+          }
+        },
+        "warnings": [],
+        "fingerprint": "94450f700ce9c002e451fe7b58d8cd6aa35c57a2ba7fab5b1985a1ed685051be"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "customerCents": 98
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 98,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8ba51cfde96371c3795728e331b7bdec",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "8",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 98
+          }
+        },
+        "warnings": [],
+        "fingerprint": "7d58b68a491ec921909a4b60db3fc90e02606ce2c413768d9a1bf6e107abda65"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "customerCents": 110
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 110,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8247dfa2ba7b9f2dd7ea50664ba67c05",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "9",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 110
+          }
+        },
+        "warnings": [],
+        "fingerprint": "8fa9203a8ca78f87f547291a1995dee97cb1f2edbc55f5f3ee6f21f7769b458f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "customerCents": 123
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 123,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:3f7dec24c4e3552459aa98bd02498b11",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "10",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 123
+          }
+        },
+        "warnings": [],
+        "fingerprint": "07c4f6ccc3c7aa17ea4523ea13857ff94935a6c3981f9aa800139c9b9a846e0f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "customerCents": 135
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 135,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:642ff9738f21a7a3067d9fbceb238fa8",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "11",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 135
+          }
+        },
+        "warnings": [],
+        "fingerprint": "72d7e4cfd4a3deac3992bf22208f3c9bd451a1f329953ec003c347c3038e3723"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "customerCents": 147
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 147,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:db16d17f6055b34dc3b1c9d343f7ebf0",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "12",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 147
+          }
+        },
+        "warnings": [],
+        "fingerprint": "fa99dce60a041b3d7afb8e7580eccbd5d39f0415820c7ea04c08b75ea31ff2e6"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "customerCents": 159
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 159,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:9959cc87134ff21890ad45e093130311",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "13",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 159
+          }
+        },
+        "warnings": [],
+        "fingerprint": "548d39bb0f4ddaa62ff91927d1b89084275cb671ffafc754a31945105b81b74e"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "customerCents": 172
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 172,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:27044e4ca0a79fadbe226cc12cfb0d2e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "14",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 172
+          }
+        },
+        "warnings": [],
+        "fingerprint": "6491eb73c77406dc6da80299caa9f1e608bc7108b886823e2a4b7226e84f361d"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "customerCents": 184
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 184,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:0adc7e7b52364c257da6eeb21fe0de39",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "15",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 184
+          }
+        },
+        "warnings": [],
+        "fingerprint": "306004b6f45d88f61156f7f9a86692a999e5d774e076a81364e9aa597549188b"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "customerCents": 196
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 196,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:66b6dc40e38373c8a2383fa9d0e4b1c4",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "16",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 196
+          }
+        },
+        "warnings": [],
+        "fingerprint": "16db9e9359014029b5e1cee22b13ad00cc59db571eb688d9a15f064f07d0a8b0"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "customerCents": 208
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 208,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:c09fcfb1bbb32ec92eb9b41c249cbd7b",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "17",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 208
+          }
+        },
+        "warnings": [],
+        "fingerprint": "ea22356519c276bc7472fc6bdb72246df409ad420bdba129c1d0c123112a8d0e"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "customerCents": 220
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 220,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:d11b22a2cb0aad0fee895106b49dd2ca",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "18",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 220
+          }
+        },
+        "warnings": [],
+        "fingerprint": "4e5a65a0fc77b06a0db0d12b3a131d17112d20713c1a37e9343a69a42001fee8"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "customerCents": 233
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 233,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:e102a70af0d865bced91930cacf86902",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "19",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 233
+          }
+        },
+        "warnings": [],
+        "fingerprint": "b8480e5c5daf100fc4e465afc5baf75fb08432192b428d973ff9ff0e58b54ad2"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "customerCents": 245
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=t2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "t2v",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 245,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:dc90f3068cc936fd8dd8c5c9bec0127e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "t2v",
+            "resolution": "720p",
+            "durationSec": "20",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 245
+          }
+        },
+        "warnings": [],
+        "fingerprint": "a3d43f38a4b616c35e0aa4058e482070ed439ac36c72f087f0ac9808a1170246"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "customerCents": 37
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 37,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:eb09bdb8a2097dbe11f1ef8c3e203070",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "3",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 37
+          }
+        },
+        "warnings": [],
+        "fingerprint": "5f34f32455ee3924bc16363aae8c0236aa8b76e46013f2bf07443617476df385"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "customerCents": 49
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 49,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:b9eb6ed9b478172463187b774d8d3806",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "4",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 49
+          }
+        },
+        "warnings": [],
+        "fingerprint": "63123377458a19d1f7d5b95dc0240592b71e0147395107fb4b1e0755253a47e3"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "customerCents": 62
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 62,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:7b8f833a607bdd9cc1bfa528fdac3677",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "5",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 62
+          }
+        },
+        "warnings": [],
+        "fingerprint": "2f966bce5e0a51210437ccf85bfb07d993ca7372e4121b6c4a2c50040011ea39"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "customerCents": 74
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 74,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:5b135fc2cda1b53aac15564e34ecd812",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "6",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 74
+          }
+        },
+        "warnings": [],
+        "fingerprint": "7aeef97d9c31b11f5b38fe638f97f9598e4ea5b13349157f69e1b5200126abff"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "customerCents": 86
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 86,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:cf0a931aa491ceceaa3886ef1ec7babd",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "7",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 86
+          }
+        },
+        "warnings": [],
+        "fingerprint": "0a70ec19d2252cf813e7ee4352613864924fc05f76e3319bcb2b4e370238d529"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "customerCents": 98
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 98,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:ca17fa59c00e23ca0204b02f2a6d3158",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "8",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 98
+          }
+        },
+        "warnings": [],
+        "fingerprint": "f67f564f1d76ef3d72d7c6c6a1b3d53a10ce5085791992c718477a7b68008b55"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "customerCents": 110
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 110,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:0b0f3a58174455e3a1451ba1d9941251",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "9",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 110
+          }
+        },
+        "warnings": [],
+        "fingerprint": "0036a262ef9a45bbf48c3794afbd3d15270abc2b788a0ecadaeadd2826a61d04"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "customerCents": 123
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 123,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:92cf1ee2199f29e741179b9faf82968c",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "10",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 123
+          }
+        },
+        "warnings": [],
+        "fingerprint": "077e6463b9288d85126bae6bad1df1855d919c2e0841c67eee1bf1b658545341"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "customerCents": 135
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 135,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:81014f666baede89d6895b508fb495f9",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "11",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 135
+          }
+        },
+        "warnings": [],
+        "fingerprint": "5a2fc6c18765d1e8aa143ce3e84998728dee3806496c41d9bac9d2c9c07f36c3"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "customerCents": 147
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 147,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:c952d44b650a8f7053e57f26c0892957",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "12",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 147
+          }
+        },
+        "warnings": [],
+        "fingerprint": "84a39cb6e6190b62dd0aa24e6c4c8e5b0756386ca98fb22af140960d7d5b695f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "customerCents": 159
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 159,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:30218e01a197fa47041422c41d251153",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "13",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 159
+          }
+        },
+        "warnings": [],
+        "fingerprint": "444b5e9c534e64961e05d1cac81467307a35a0fa1bdb8c30cd72ada525f68d84"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "customerCents": 172
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 172,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:f84a8df1c0205a28210377d166da4d6f",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "14",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 172
+          }
+        },
+        "warnings": [],
+        "fingerprint": "7ed8ead9c058c8b92b32d51db047a3cccdddb49ba1c56ef86466dcfb01498f1d"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "customerCents": 184
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 184,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:d064ea780cfab1535d5a9ce61f899dd4",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "15",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 184
+          }
+        },
+        "warnings": [],
+        "fingerprint": "16868fa9ab056acd8c5b0e4af12ce96c63add298022abb2d41c04d9a77daa664"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "customerCents": 196
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 196,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:13539a675dce156717f702e80d448222",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "16",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 196
+          }
+        },
+        "warnings": [],
+        "fingerprint": "625543e01cef65517f94e056be9e75c0a5f177fe15af6c3224345e356dc5b31f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "customerCents": 208
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 208,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:43731e2c62d64973d1c9b6d01f59e396",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "17",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 208
+          }
+        },
+        "warnings": [],
+        "fingerprint": "30d76c7a76700a918a33169f116c45f6305a6ac65a10a8f69c7b17462d2f9559"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "customerCents": 220
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 220,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:7b6392a7f1b477d9c4c8cf32d72109ea",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "18",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 220
+          }
+        },
+        "warnings": [],
+        "fingerprint": "3e70cde93d79e67310c2a90152b34f96ce3f120a2e272936e05f1988f0558e25"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "customerCents": 233
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 233,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:91922ef2b9d84994d563f701e6629123",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "19",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 233
+          }
+        },
+        "warnings": [],
+        "fingerprint": "8f73909f851971e1cf04f46312a8c0333fef3e992f9c1a5be8436a421bce0824"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "customerCents": 245
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=i2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "i2v",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 245,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:5bad0cc759a96af81e8f83645450690e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "i2v",
+            "resolution": "720p",
+            "durationSec": "20",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 245
+          }
+        },
+        "warnings": [],
+        "fingerprint": "155c96c99a48fd801dfa8d0a14e2c01d6a4efdc44c6ac3b577200bd291f0f989"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "customerCents": 37
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=3|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "3",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 37,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:f7efeb7e9827713de38f1548da26ad9e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "3",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 37
+          }
+        },
+        "warnings": [],
+        "fingerprint": "f716f1b55153d2dabf4ba19788ff5c798a9f8e5efe1b296f9825477ae62197bd"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=3|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:d99cca6e0a984364971fda3492c0d4f4",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "3",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 50,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "3",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=3|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "14e85188c82732e27c7dc8daa9ddb97ce96fa146882f284a68cd8cf2934d9f8c"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "customerCents": 49
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=4|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "4",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 49,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:219e08375a04a0b9536905e8cb5f381a",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "4",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 49
+          }
+        },
+        "warnings": [],
+        "fingerprint": "9aeacd02866efbd46b135935831fb3124c62d7a30d3c0c4d7d1c8b659767bdbd"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=4|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:4418c76ca9fbce93a003147a7870c60c",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "4",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 66,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "4",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=4|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "5a18a49c526612dccd01f2ca1199f33674e2e6b257b8e5491b6ee4e24ba2b6f9"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "customerCents": 62
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=5|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "5",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 62,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:68722ad8f998c7529a8b07de2c6011ae",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "5",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 62
+          }
+        },
+        "warnings": [],
+        "fingerprint": "17a3f6cf988bec97bb44bdd7d1a0273cc4018c0b64450f4beb1e5fdd7e7ce9e8"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=5|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:241fd0a3face9c5448c4fb8a3f8ade1a",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "5",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 82,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "5",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=5|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "6d77afc691b9dfead5c8269a8527bdab30282519a94fb5c44df8dcc78f1cc1f7"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "customerCents": 74
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=6|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "6",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 74,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:d3054add9ff7e57b6cb71d6055b16568",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "6",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 74
+          }
+        },
+        "warnings": [],
+        "fingerprint": "204caea68566bb4661da823e139ad32da43e389e85527ea2784410eaf550c0ef"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=6|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:7c96d100c7e561af0c54cfd72d8371af",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "6",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 99,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "6",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=6|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "83aed9020247847f1d7546deeb50f0f4110f9ad750a531e38081f13dcc5ddd54"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "customerCents": 86
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=7|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "7",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 86,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:f533c84e64267d93c0e263787b00557e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "7",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 86
+          }
+        },
+        "warnings": [],
+        "fingerprint": "10afd6c9011e91765fb382d188f7ea897e922107e0c2c5d53ad8d79e0db1efc6"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=7|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:e4de54b871fb184bb8a66be5899f39d0",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "7",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 115,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "7",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=7|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "01edb4ba747b46722617025a7f0b086a3a18de2a1ca5c192d3df11e814d06926"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "customerCents": 98
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=8|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "8",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 98,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8a5539e88f1bf702fdc20b5405f2acf4",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "8",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 98
+          }
+        },
+        "warnings": [],
+        "fingerprint": "eb6374ef8b4ec202c61248afe173abb89716397bc0470f41d74823e5be3a4e87"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=8|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:5d03167bc8ff8dbcaeec3b82a97c676e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "8",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 132,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "8",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=8|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "da953285a3a7003be9d27ac2563eb063ef63649b997c9e699e8f3b1b6b04149c"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "customerCents": 110
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=9|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "9",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 110,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:49975303eb92e4b4dd46516154aafed2",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "9",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 110
+          }
+        },
+        "warnings": [],
+        "fingerprint": "5fe74375b74a4b90e0ab66604934a9e8e3a18af7fd44081dfef216f27583cea2"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=9|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:b46a7856931ac11f53b303365dbc7061",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "9",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 148,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "9",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=9|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "6ceaffac824d748244cdcc4fe33aba15ae24791739e69232b121f26aeb249459"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "customerCents": 123
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=10|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "10",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 123,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8caf8dc99a3eb52c3656e293a14c476a",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "10",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 123
+          }
+        },
+        "warnings": [],
+        "fingerprint": "9c31a4306a2cb3cef17dd6843ebd2bacffff1c18deb8d38127f8ba97517ad0ad"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=10|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:9da56032f50b2a0024b6deb4eae05909",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "10",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 164,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "10",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=10|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "365d5cb23f8965da40df72664ec4f38a0c5772635634508d08adb99a7c8ed0eb"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "customerCents": 135
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=11|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "11",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 135,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:0f5a1c015d74809285bbbfa81a54138a",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "11",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 135
+          }
+        },
+        "warnings": [],
+        "fingerprint": "bd76e1e4aa6f461754c3b19e233969c554d560ae3deca59788ae1dc99434fea1"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=11|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:b718859721b51fa685d54c4e93845542",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "11",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 181,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "11",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=11|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "1ee1dab551e1a1cb54bba343809e8e6608c0072d3fe801948885980353f7503e"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "customerCents": 147
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=12|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "12",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 147,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:7a8cd793508ba4e6c9335d7955508d6b",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "12",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 147
+          }
+        },
+        "warnings": [],
+        "fingerprint": "dc9d38f321716c0d6c9065d7ca94a07a2dbaea71f6f900400a5bf45683d1918e"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=12|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:98b296aa10d4ce17c075c283bb3fb39b",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "12",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 197,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "12",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=12|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "832757218cff430310bd3480d84abcfc4ca8e46b0cd28f73192bd9056b95bd4c"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "customerCents": 159
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=13|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "13",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 159,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:b97a7863c2ab522855f5815093f86625",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "13",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 159
+          }
+        },
+        "warnings": [],
+        "fingerprint": "c0fa1a63127dffe37edd3a840fb2afbf9392faa068bc066466ab8307d4a62b70"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=13|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:5a5a875e7a9ccff19421e02dd3a28640",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "13",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 213,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "13",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=13|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "d25cc44729ab04fa41d234f7d9e40d945efe0f5b1ac5c34daca91cd16ba80a39"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "customerCents": 172
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=14|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "14",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 172,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:2e90e0be08f08579462362d89493bf44",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "14",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 172
+          }
+        },
+        "warnings": [],
+        "fingerprint": "79618b018b491664160d48960888cd8d109a6ae9d9f8b6ed218a1201fc3b7795"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=14|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8a2eaf6eda10474f96af976fbe050a44",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "14",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 230,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "14",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=14|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "ad6e8c2e37c7b26006cee46439eff9e7987a100eaec8fc4bbb6e14174dc28436"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "customerCents": 184
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=15|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "15",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 184,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:725c5c0cdb883a0c701b1cfcce9a5aec",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "15",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 184
+          }
+        },
+        "warnings": [],
+        "fingerprint": "bb5c4a546529cb9e5e6f23d8502398e23d238c9fa5d78140d865bf6fd723e176"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=15|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:33f94c7f001587fe9dcf3b4fe049ac60",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "15",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 246,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "15",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=15|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "cb1cb9bdc526d3f8a24830889a38ef97a4a1a249f92dd27b52353b9f76435670"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "customerCents": 196
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=16|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "16",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 196,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:9a5f0719f783123041460cbe73665f43",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "16",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 196
+          }
+        },
+        "warnings": [],
+        "fingerprint": "c19d99c60ffab45e2f8ce04cec8fc92e913acb4ce318f0dcfc397aeb2540bd08"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=16|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:1530ceed6ac38494648042d17d6ebca5",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "16",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 263,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "16",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=16|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "687fd6f5008502796d6f5d4a53d1b3978764e72247b955c08d2239e5437a058e"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "customerCents": 208
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=17|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "17",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 208,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:c0a5f43a88f175118975be8332aa43f8",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "17",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 208
+          }
+        },
+        "warnings": [],
+        "fingerprint": "8071beb17a64e327e0622fcc9a0475c34952e6af9c7eb6c575aa6e97855aeb02"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=17|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:446bae54bc8427b765d3986e34c44a09",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "17",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 279,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "17",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=17|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "0ed75cf3a1b9fe7800ce27f7dbb6de08447806fc0808fb70a0fd591f5f57da5c"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "customerCents": 220
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=18|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "18",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 220,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:1bbc11eff4c935b21bf6b26ac242c503",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "18",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 220
+          }
+        },
+        "warnings": [],
+        "fingerprint": "8e4b1daf0a2972a9451262c4cf86b553fd8701b95e675d02e2766c7e508ee618"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=18|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:b1f3d1a09fbfa03d33257059d8e4e5cc",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "18",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 295,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "18",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=18|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "abdaabf8aebac47a2e780d857f447e8295bf16caf97177e83327879b02b0ec8f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "customerCents": 233
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=19|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "19",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 233,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:f60470827b641f343327c6c22e27668d",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "19",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 233
+          }
+        },
+        "warnings": [],
+        "fingerprint": "adf3413794edbf80c9d956208f36aa91956adb3f0033625780787af6dc14acd0"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=19|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:4382dd3a69a4df05cf6c622f4833f91c",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "19",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 312,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "19",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=19|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "ca2dad4241c8af5fad043b81b332202fbbb9d856fef4e180373afcca64a87c6f"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "customerCents": 245
+      },
+      "preview": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=20|billingInputType=no_video_input",
+        "modelId": "kling-v4-flash",
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "20",
+          "billingInputType": "no_video_input"
+        },
+        "currentCents": null,
+        "proposedCents": 245,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:8ed80610fdb1a201c4820ca0970313dc",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "20",
+            "billingInputType": "no_video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "fixed",
+            "customerCents": 245
+          }
+        },
+        "warnings": [],
+        "fingerprint": "d3f0490fb0eaa39b8c4c2b53a64ef2d9ec643eda2fcbe397e603949e91fba25c"
+      }
+    },
+    {
+      "proposal": {
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=20|inputVideoDurationSec=3|billingInputType=video_input",
+        "scope": "continuous_input",
+        "price": {
+          "kind": "kling_v4_billable",
+          "customerCentsPerBillableSecond": 8.19
+        }
+      },
+      "preview": {
+        "previousCell": null,
+        "proposedCell": {
+          "id": "customer:fc4b2de3a274228f43731b71ffa01c9e",
+          "selector": {
+            "engineId": "kling-v4-flash",
+            "mode": "ref2v",
+            "resolution": "720p",
+            "durationSec": "20",
+            "inputVideoDurationSec": "continuous",
+            "billingInputType": "video_input"
+          },
+          "source": "database",
+          "version": 2116,
+          "currency": "USD",
+          "effectiveFrom": "2026-09-29T00:00:00.000Z",
+          "price": {
+            "kind": "unit_terms",
+            "rounding": "up",
+            "terms": [
+              {
+                "unit": "billable_seconds",
+                "centsPerUnit": 8.19
+              }
+            ]
+          }
+        },
+        "proposedCents": 328,
+        "selector": {
+          "engineId": "kling-v4-flash",
+          "mode": "ref2v",
+          "resolution": "720p",
+          "durationSec": "20",
+          "inputVideoDurationSec": "continuous",
+          "billingInputType": "video_input"
+        },
+        "continuousInputRange": {
+          "maxInputSeconds": 20,
+          "checkedBoundaries": 2,
+          "minimumGrossCents": 11
+        },
+        "operation": "create",
+        "scenarioId": "engineId=kling-v4-flash|mode=ref2v|resolution=720p|durationSec=20|inputVideoDurationSec=3|billingInputType=video_input",
+        "modelId": "kling-v4-flash",
+        "currentCents": null,
+        "currency": "USD",
+        "revision": 2115,
+        "active": true,
+        "warnings": [
+          "Applies to all supported quantities for these options. Preview compares this example; exact exceptions retain precedence."
+        ],
+        "fingerprint": "c9c0cd318c74543e8bcc68b557fdf9e8c5b35b46a1b2c4abd6924466622fad80"
+      }
+    }
+  ]
+}

@@ -107,6 +107,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   setSelectedPreviewImageIndex: (value: number) => void;
   setStyle: (value: string | null) => void;
   setThinkingLevel: (value: string | null) => void;
+  setComplexity: (value: string | null) => void;
   setWatermark: (value: boolean) => void;
   showAspectRatioControl: boolean;
   showBackgroundControl: boolean;
@@ -121,10 +122,13 @@ interface ImageWorkspaceComposerSurfaceProps {
   showSeedControl: boolean;
   showStyleControl: boolean;
   showThinkingLevelControl: boolean;
+  showComplexityControl: boolean;
   showWatermarkControl: boolean;
   statusMessage: string | null;
   thinkingLevel: string | null;
+  complexity: string | null;
   thinkingLevelSelectOptions: ControlOption[];
+  complexitySelectOptions: ControlOption[];
   watermark: boolean;
 }
 
@@ -204,6 +208,7 @@ export function ImageWorkspaceComposerSurface({
   setSelectedPreviewImageIndex,
   setStyle,
   setThinkingLevel,
+  setComplexity,
   setWatermark,
   showAspectRatioControl,
   showBackgroundControl,
@@ -218,13 +223,16 @@ export function ImageWorkspaceComposerSurface({
   showSeedControl,
   showStyleControl,
   showThinkingLevelControl,
+  showComplexityControl,
   showWatermarkControl,
   statusMessage,
   thinkingLevel,
+  complexity,
   thinkingLevelSelectOptions,
+  complexitySelectOptions,
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
-  const assistanceContext={selectedEngineId,mode,aspectRatio,resolution,quality,numImages,background,customImageHeight,customImageWidth,enableWebSearch,limitGenerations,maskUrl,outputFormat,seed,style,thinkingLevel,watermark,
+  const assistanceContext={selectedEngineId,mode,aspectRatio,resolution,quality,numImages,background,customImageHeight,customImageWidth,enableWebSearch,limitGenerations,maskUrl,outputFormat,seed,style,thinkingLevel,complexity,watermark,
     referenceFields:referenceAssetFields.map(({field,required,disabled})=>({field,required,disabled}))};
   const canReviewImageRatio=mode==='t2i'&&!maskUrl&&!Object.values(composerReferenceAssets).some(slots=>slots.some(Boolean));
   const engineSettings = (
@@ -304,7 +312,7 @@ export function ImageWorkspaceComposerSurface({
 
         <Composer
           onGenerationPermissionChange={updateGenerationPermission}
-          assistance={{ accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'image', mode === 'i2i' ? 'edit' : 'create']), live: {surface: 'image', workflow: mode === 'i2i' ? 'edit' : 'create', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify(assistanceContext), reviewKey:canReviewImageRatio?imagePromptReviewKey(assistanceContext):undefined }}
+          assistance={{ accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'image', mode === 'i2i' ? 'edit' : 'create']), live: {surface: 'image', workflow: mode === 'i2i' ? 'edit' : 'create', engineId: selectedEngineId, mode, settings: assistanceSettings({aspectRatio, resolution, quality, numImages, background, customImageHeight, customImageWidth, enableWebSearch, limitGenerations, outputFormat, seed, style, thinkingLevel, complexity, watermark,...(maskUrl?{maskContent:'unavailable; describe the masked area in your message'}:{})}), references: []}, contextKey: JSON.stringify(assistanceContext), reviewKey:canReviewImageRatio?imagePromptReviewKey(assistanceContext):undefined }}
           density="workspace"
           compactPrompt
           engine={selectedEngineCaps}
@@ -435,6 +443,16 @@ export function ImageWorkspaceComposerSurface({
                         value: thinkingLevel ?? String(thinkingLevelSelectOptions[0]?.value ?? ''),
                         options: thinkingLevelSelectOptions,
                         onChange: setThinkingLevel,
+                      }
+                    : undefined
+                }
+                complexity={
+                  showComplexityControl
+                    ? {
+                        label: resolvedCopy.composer.complexityLabel,
+                        value: complexity ?? String(complexitySelectOptions[0]?.value ?? ''),
+                        options: complexitySelectOptions,
+                        onChange: setComplexity,
                       }
                     : undefined
                 }

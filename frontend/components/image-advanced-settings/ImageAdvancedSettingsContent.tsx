@@ -49,6 +49,12 @@ export type ImageAdvancedSettingsContentProps = {
     options: ControlOption[];
     onChange: (value: string) => void;
   };
+  complexity?: {
+    label: string;
+    value: string;
+    options: ControlOption[];
+    onChange: (value: string) => void;
+  };
   limitGenerations?: {
     label: string;
     value: boolean;
@@ -95,6 +101,7 @@ export function ImageAdvancedSettingsContent({
   customImageSize,
   enableWebSearch,
   thinkingLevel,
+  complexity,
   limitGenerations,
   watermark,
 }: ImageAdvancedSettingsContentProps) {
@@ -120,6 +127,14 @@ export function ImageAdvancedSettingsContent({
           value={thinkingLevel.value}
           options={thinkingLevel.options}
           onChange={(value) => thinkingLevel.onChange(String(value))}
+        />
+      ) : null}
+      {complexity ? (
+        <AdvancedSelect
+          label={complexity.label}
+          value={complexity.value}
+          options={complexity.options}
+          onChange={(value) => complexity.onChange(String(value))}
         />
       ) : null}
       {background ? (

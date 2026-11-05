@@ -5,17 +5,20 @@ import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import { useTariffBatch } from '../_hooks/useTariffBatch';
 import { TariffBatchReview } from './TariffBatchReview.client';
+import type { TariffBatchModelId } from '@/server/pricing-admin/tariff-batches/contract';
 
 const field = 'rounded-lg border border-border bg-surface p-2 text-sm text-text-primary';
 export function TariffBatchPanel() {
   const controller = useTariffBatch();
   const [open, setOpen] = useState(false), [selected, setSelected] = useState<string[]>([]);
+  const [modelId, setModelId] = useState<TariffBatchModelId>('kling-v4');
   const [mode, setMode] = useState('all'), [resolution, setResolution] = useState('all');
   const [intent, setIntent] = useState<'create_missing' | 'replace_selected'>('create_missing');
   const [input, setInput] = useState('recipe'), [multiplier, setMultiplier] = useState('1.50');
   const [reason, setReason] = useState(''), [importText, setImportText] = useState(''), [parseError, setParseError] = useState<string | null>(null);
   const { operation, options, busy, pending } = controller;
-  const visible = options.classes.filter(row => (mode === 'all' || row.selector.mode === mode) && (resolution === 'all' || row.selector.resolution === resolution));
+  const modelClasses = options.classes.filter(row => row.selector.engineId === modelId);
+  const visible = modelClasses.filter(row => (mode === 'all' || row.selector.mode === mode) && (resolution === 'all' || row.selector.resolution === resolution));
   const locked = busy || pending;
   const edit = (action: () => void) => { if (locked) return; controller.reset(); setParseError(null); action(); };
   if (!options.enabled && !controller.recoveryId && !controller.error) return null;
@@ -23,8 +26,8 @@ export function TariffBatchPanel() {
     setParseError(null);
     if (input === 'explicit') {
       try { void controller.preview(JSON.parse(importText)); } catch { setParseError('Enter a valid exact batch JSON document.'); }
-    } else void controller.preview({ schemaVersion: 1, modelId: 'kling-v4', intent, reason,
-      pricing: { kind: 'list_multiplier', multiplier }, selections: options.classes.filter(row => selected.includes(row.key)).map(row => ({ selector: row.selector })) });
+    } else void controller.preview({ schemaVersion: 1, modelId, intent, reason,
+      pricing: { kind: 'list_multiplier', multiplier }, selections: modelClasses.filter(row => selected.includes(row.key)).map(row => ({ selector: row.selector })) });
   };
   return <AdminSection title="Batch price changes" description="Prepare one reviewed group of exact customer prices.">
     <details open={open || Boolean(controller.recoveryId)} onToggle={event => setOpen(event.currentTarget.open)}>
@@ -45,18 +48,22 @@ export function TariffBatchPanel() {
           {!pending && <AdminActionButton disabled={busy} onClick={() => { controller.reset(); setSelected([]); }}>New batch</AdminActionButton>}
         </div>}
         {options.enabled && !pending && (!operation || (operation.status === 'previewed' && operation.plan.intent !== 'rollback')) && <fieldset disabled={locked} className="min-w-0 space-y-4">
-          <legend className="font-semibold">Kling 4 · USD</legend>
+          <legend className="font-semibold">Customer tariffs · USD</legend>
           <div className="flex flex-wrap gap-3">
             <label className="flex flex-col gap-1 text-sm">Price input<select aria-label="Price input" className={field} value={input} onChange={e => edit(() => setInput(e.target.value))}><option value="recipe">Freeze LIST multiplier</option><option value="explicit">Import exact JSON</option></select></label>
-            {input === 'recipe' && <><label className="flex flex-col gap-1 text-sm">Intent<select aria-label="Intent" className={field} value={intent} onChange={e => edit(() => setIntent(e.target.value as typeof intent))}><option value="create_missing">Create missing; preserve conforming</option><option value="replace_selected">Replace selected existing prices</option></select></label>
+            {input === 'recipe' && <><label className="flex flex-col gap-1 text-sm">Batch model<select aria-label="Batch model" className={field} value={modelId} onChange={e => edit(() => {
+              const next = e.target.value as TariffBatchModelId;
+              setModelId(next); setSelected([]); setMode('all'); setResolution('all'); setMultiplier(next === 'kling-v4-flash' ? '1.30' : '1.50');
+            })}><option value="kling-v4">Kling 4</option><option value="kling-v4-flash">Kling 4.0 Flash</option></select></label>
+              <label className="flex flex-col gap-1 text-sm">Intent<select aria-label="Intent" className={field} value={intent} onChange={e => edit(() => setIntent(e.target.value as typeof intent))}><option value="create_missing">Create missing; preserve conforming</option><option value="replace_selected">Replace selected existing prices</option></select></label>
               <label className="flex flex-col gap-1 text-sm">LIST multiplier<input className={`${field} w-28`} value={multiplier} inputMode="decimal" onChange={e => edit(() => setMultiplier(e.target.value))} /></label></>}
           </div>
           {input === 'explicit' ? <label className="block text-sm">Exact batch JSON<textarea className={`${field} mt-1 min-h-40 w-full font-mono`} value={importText} onChange={e => edit(() => setImportText(e.target.value))} placeholder={'{"schemaVersion":1,"modelId":"kling-v4","intent":"replace_selected","reason":"Reviewed prices","pricing":{"kind":"explicit"},"selections":[{"selector":{...},"price":{"kind":"fixed","customerCents":118}}]}'} /></label> : <>
             <p className="text-sm text-text-secondary">The multiplier compiles into literal fixed or continuous prices. Final customer totals round up to the cent. Supplier reference is LIST, not an observed invoice.</p>
             <label className="block text-sm">Reason for change<input className={`${field} mt-1 w-full`} value={reason} maxLength={500} onChange={e => edit(() => setReason(e.target.value))} /></label>
-            <div className="flex flex-wrap gap-2"><label className="text-sm">Mode<select aria-label="Mode" className={`${field} ml-2`} value={mode} onChange={e => edit(() => setMode(e.target.value))}>{['all', 't2v', 'i2v', 'ref2v', 'v2v'].map(value => <option key={value}>{value}</option>)}</select></label>
-              <label className="text-sm">Resolution<select aria-label="Resolution" className={`${field} ml-2`} value={resolution} onChange={e => edit(() => setResolution(e.target.value))}>{['all', '720p', '1080p'].map(value => <option key={value}>{value}</option>)}</select></label></div>
-            <div className="flex flex-wrap gap-2"><AdminActionButton onClick={() => edit(() => setSelected(options.classes.map(c => c.key)))}>Select all 226 classes</AdminActionButton>
+            <div className="flex flex-wrap gap-2"><label className="text-sm">Mode<select aria-label="Mode" className={`${field} ml-2`} value={mode} onChange={e => edit(() => setMode(e.target.value))}>{['all', ...new Set(modelClasses.map(row => row.selector.mode))].map(value => <option key={value}>{value}</option>)}</select></label>
+              <label className="text-sm">Resolution<select aria-label="Resolution" className={`${field} ml-2`} value={resolution} onChange={e => edit(() => setResolution(e.target.value))}>{['all', ...new Set(modelClasses.map(row => row.selector.resolution))].map(value => <option key={value}>{value}</option>)}</select></label></div>
+            <div className="flex flex-wrap gap-2"><AdminActionButton onClick={() => edit(() => setSelected(modelClasses.map(c => c.key)))}>Select all {modelClasses.length} classes</AdminActionButton>
               <AdminActionButton onClick={() => edit(() => setSelected([...new Set([...selected, ...visible.map(c => c.key)])]))}>Select visible classes</AdminActionButton>
               <AdminActionButton onClick={() => edit(() => setSelected([]))}>Clear selection</AdminActionButton><span className="self-center text-sm">{selected.length} selected</span></div>
             <div className="grid max-h-56 gap-1 overflow-y-auto rounded-lg border border-border p-2 sm:grid-cols-2 xl:grid-cols-3">{visible.map(row => <label key={row.key} className="flex items-start gap-2 rounded p-1 text-xs"><input type="checkbox" checked={selected.includes(row.key)} onChange={e => edit(() => setSelected(e.target.checked ? [...selected, row.key] : selected.filter(key => key !== row.key)))} />
@@ -71,7 +78,7 @@ export function TariffBatchPanel() {
           <p className="text-xs text-text-secondary">Confirmation applies the complete reviewed batch atomically. Any conflict or changed revision requires a new preview.</p>
         </div>}
         {operation?.status === 'committed' && operation.receipt?.changes.some(c => c.before) && <AdminActionButton disabled={locked || !options.enabled} onClick={() => void controller.preview({
-          schemaVersion: 1, modelId: 'kling-v4', intent: 'rollback', reason: `Restore prices before batch ${operation.id}`,
+          schemaVersion: 1, modelId: operation.plan.modelId, intent: 'rollback', reason: `Restore prices before batch ${operation.id}`,
           sourceOperationId: operation.id, selectors: operation.receipt!.changes.filter(c => c.before).map(c => c.after.selector),
         })}>Preview rollback</AdminActionButton>}
         <details><summary className="cursor-pointer text-sm">Recent operations</summary><p className="my-2 text-xs text-text-secondary">Your latest 50 operations. Open a committed operation to inspect its receipt and prepare a rollback. Active creations cannot be removed.</p>

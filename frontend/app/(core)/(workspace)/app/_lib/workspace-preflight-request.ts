@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import { filterVideoOperationValues } from '@/lib/video-operation';
@@ -23,14 +24,14 @@ export function buildWorkspacePreflightRequest({
   form, selectedEngine, submissionMode, effectiveDurationSec, supportsAudioToggle,
   voiceControlEnabled, inputAssets, klingElements = [], memberTier,
 }: WorkspacePreflightRequestOptions): PreflightRequest {
-  const isKlingV4 = selectedEngine.id === 'kling-v4';
+  const isKlingV4 = isKlingV4FalQueueEngineId(selectedEngine.id);
   const elements = isKlingV4 ? buildKlingElementsPayload({
     selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
   }) : undefined;
   if (elements && !elements.ok) throw new Error(elements.message);
-  const mediaError = isKlingV4 ? getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements }) : null;
+  const mediaError = isKlingV4 ? getWorkspaceKlingV4MediaError({ engineId: selectedEngine.id, mode: submissionMode, inputAssets, klingElements }) : null;
   if (mediaError) throw new Error(mediaError);
-  const activeAssets = isKlingV4 ? getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets) : inputAssets;
+  const activeAssets = isKlingV4 ? getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets, selectedEngine.id) : inputAssets;
   const extraInputValues = filterVideoOperationValues(selectedEngine, submissionMode, form.extraInputValues);
   const allowedMedia = new Set([...(selectedEngine.inputSchema?.required ?? []), ...(selectedEngine.inputSchema?.optional ?? [])]
     .filter(field => !field.modes?.length || field.modes.includes(submissionMode)).map(field => field.id));

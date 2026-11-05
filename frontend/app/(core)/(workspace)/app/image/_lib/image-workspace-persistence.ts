@@ -43,6 +43,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
     const style = typeof raw.style === 'string' ? raw.style : null;
     const maskUrl = typeof raw.maskUrl === 'string' ? raw.maskUrl : null;
     const enableWebSearch = raw.enableWebSearch === true;
+    const complexity = typeof raw.complexity === 'string' ? raw.complexity : null;
     const thinkingLevel = typeof raw.thinkingLevel === 'string' ? raw.thinkingLevel : null;
     const limitGenerations = raw.limitGenerations === true;
     const watermark = raw.watermark === true;
@@ -98,6 +99,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       maskUrl,
       enableWebSearch,
       thinkingLevel,
+      complexity,
       limitGenerations,
       watermark,
       referenceSlots,

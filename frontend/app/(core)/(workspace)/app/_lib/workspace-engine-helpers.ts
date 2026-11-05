@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getArchivedWorkspaceEngine } from './workspace-archived-engine';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
@@ -175,7 +176,7 @@ export function getEngineModeOptions(engine: EngineCaps | null): Mode[] | undefi
   if (UNIFIED_SEEDANCE_ENGINE_IDS.has(engine.id)) {
     return undefined;
   }
-  if (isKlingO3EngineId(engine.id) || engine.id === 'kling-v4') {
+  if (isKlingO3EngineId(engine.id) || isKlingV4FalQueueEngineId(engine.id)) {
     return undefined;
   }
   if (engine.id === 'veo-3-1') {
@@ -356,7 +357,7 @@ export function resolveNumberFieldDefault(engine: EngineCaps, mode: Mode, fieldI
 
 export function getPreferredEngineMode(engine: EngineCaps, candidate?: Mode | null): Mode {
   // A closed V4 mode still owns its saved draft; generation availability is checked separately.
-  if (engine.id === 'kling-v4' && candidate && engine.modes.includes(candidate)) return candidate;
+  if (isKlingV4FalQueueEngineId(engine.id) && candidate && engine.modes.includes(candidate)) return candidate;
   if (candidate && isWorkspaceModeAvailable(engine, candidate)) return candidate;
   return getDefaultEngineMode(engine);
 }
@@ -429,7 +430,7 @@ export function coerceFormState(engine: EngineCaps, mode: Mode, previous: FormSt
   const durationResult = (() => {
     // A restored V4 request is authoritative, including invalid values that the editor must report.
     // A stale single-shot option must never override a saved shot-plan total.
-    if (engine.id === 'kling-v4' && previous?.engineId === engine.id) {
+    if (isKlingV4FalQueueEngineId(engine.id) && previous?.engineId === engine.id) {
       const durationOption = previous.durationOption != null && Number(previous.durationOption) === previous.durationSec
         ? previous.durationOption : previous.durationSec;
       return { durationSec: previous.durationSec, durationOption, numFrames: null };

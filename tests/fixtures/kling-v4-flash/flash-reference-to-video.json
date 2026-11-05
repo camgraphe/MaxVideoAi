@@ -1,0 +1,260 @@
+{
+  "verifiedAt": "2026-11-05",
+  "source": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/flash/reference-to-video",
+  "schemas": {
+    "V4FlashReferenceToVideoInput": {
+      "properties": {
+        "image_urls": {
+          "title": "Image Urls",
+          "anyOf": [
+            {
+              "maxItems": 10,
+              "items": {
+                "x-fal": {
+                  "max_aspect_ratio": 2.5,
+                  "timeout": 20,
+                  "max_file_size": 31457280,
+                  "min_height": 300,
+                  "min_width": 300,
+                  "min_aspect_ratio": 0.4
+                },
+                "_fal_ui_field": "image",
+                "limit_description": "Max file size: 30.0MB, Min width: 300px, Min height: 300px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Timeout: 20.0s",
+                "ui": {
+                  "field": "image"
+                },
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Reference images, referenced as @Image1, @Image2, ... (max 10)."
+        },
+        "prompt": {
+          "maxLength": 26000,
+          "title": "Prompt",
+          "description": "Text prompt. Reference inputs as @Image1, @Video1, @Element1, etc.",
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "720p"
+          ],
+          "title": "Resolution",
+          "description": "Output resolution. Flash is 720p only.",
+          "default": "720p",
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "21:9"
+          ],
+          "title": "Aspect Ratio",
+          "description": "Aspect ratio of the generated video. 'auto' adapts it to the references.",
+          "default": "16:9",
+          "type": "string"
+        },
+        "video_urls": {
+          "title": "Video Urls",
+          "anyOf": [
+            {
+              "maxItems": 5,
+              "items": {
+                "x-fal": {
+                  "max_height": 4553,
+                  "max_width": 4553,
+                  "min_width": 700,
+                  "min_aspect_ratio": 0.4,
+                  "max_duration": 20.05,
+                  "max_aspect_ratio": 2.5,
+                  "timeout": 30,
+                  "max_file_size": 314572800,
+                  "min_height": 700,
+                  "min_fps": 23.9,
+                  "min_duration": 3,
+                  "max_fps": 60.05
+                },
+                "_fal_ui_field": "video",
+                "limit_description": "Max file size: 300.0MB, Min width: 700px, Min height: 700px, Max width: 4553px, Max height: 4553px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Min duration: 3.0s, Max duration: 20.05s, Min FPS: 23.9, Max FPS: 60.05, Timeout: 30.0s",
+                "ui": {
+                  "field": "video"
+                },
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Reference videos (3-20s each, 20s combined with element videos), referenced as @Video1, @Video2, ... (max 5)."
+        },
+        "elements": {
+          "title": "Elements",
+          "anyOf": [
+            {
+              "maxItems": 7,
+              "items": {
+                "$ref": "#/components/schemas/KlingV4FlashElement"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Characters/objects, referenced as @Element1, @Element2, ... (max 7). Up to 3 may be video elements. Flash does not accept voices."
+        },
+        "duration": {
+          "maximum": 20,
+          "description": "Video duration in seconds (3-20).",
+          "default": 5,
+          "minimum": 3,
+          "title": "Duration",
+          "type": "integer"
+        },
+        "start_image_url": {
+          "title": "Start Image Url",
+          "anyOf": [
+            {
+              "x-fal": {
+                "max_aspect_ratio": 2.5,
+                "timeout": 20,
+                "max_file_size": 31457280,
+                "min_height": 300,
+                "min_width": 300,
+                "min_aspect_ratio": 0.4
+              },
+              "limit_description": "Max file size: 30.0MB, Min width: 300px, Min height: 300px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Timeout: 20.0s",
+              "ui": {
+                "field": "image"
+              },
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional image to use as the first frame. Counts toward the image reference limit."
+        }
+      },
+      "title": "FlashReferenceToVideoInput",
+      "x-fal-order-properties": [
+        "prompt",
+        "duration",
+        "start_image_url",
+        "image_urls",
+        "video_urls",
+        "elements",
+        "resolution",
+        "aspect_ratio"
+      ],
+      "required": [
+        "prompt"
+      ],
+      "type": "object"
+    },
+    "KlingV4FlashElement": {
+      "properties": {
+        "reference_image_urls": {
+          "title": "Reference Image Urls",
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "items": {
+                "x-fal": {
+                  "max_aspect_ratio": 2.5,
+                  "timeout": 20,
+                  "max_file_size": 31457280,
+                  "min_height": 300,
+                  "min_width": 300,
+                  "min_aspect_ratio": 0.4
+                },
+                "_fal_ui_field": "image",
+                "limit_description": "Max file size: 30.0MB, Min width: 300px, Min height: 300px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Timeout: 20.0s",
+                "ui": {
+                  "field": "image"
+                },
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Additional views of the element from different angles (1-3)."
+        },
+        "frontal_image_url": {
+          "title": "Frontal Image Url",
+          "anyOf": [
+            {
+              "x-fal": {
+                "max_aspect_ratio": 2.5,
+                "timeout": 20,
+                "max_file_size": 31457280,
+                "min_height": 300,
+                "min_width": 300,
+                "min_aspect_ratio": 0.4
+              },
+              "limit_description": "Max file size: 30.0MB, Min width: 300px, Min height: 300px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Timeout: 20.0s",
+              "ui": {
+                "field": "image"
+              },
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The frontal image of the element (main view)."
+        },
+        "video_url": {
+          "title": "Video Url",
+          "anyOf": [
+            {
+              "x-fal": {
+                "max_height": 4553,
+                "max_width": 4553,
+                "min_width": 700,
+                "min_aspect_ratio": 0.4,
+                "max_duration": 8.05,
+                "max_aspect_ratio": 2.5,
+                "timeout": 30,
+                "max_file_size": 314572800,
+                "min_height": 700,
+                "min_fps": 23.9,
+                "min_duration": 3,
+                "max_fps": 60.05
+              },
+              "limit_description": "Max file size: 300.0MB, Min width: 700px, Min height: 700px, Max width: 4553px, Max height: 4553px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Min duration: 3.0s, Max duration: 8.05s, Min FPS: 23.9, Max FPS: 60.05, Timeout: 30.0s",
+              "ui": {
+                "field": "video"
+              },
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A video of the element, used instead of images (3-8s)."
+        }
+      },
+      "title": "KlingV4FlashElement",
+      "description": "A Kling 4.0 element without a bound voice; Flash takes no voices.",
+      "x-fal-order-properties": [
+        "frontal_image_url",
+        "reference_image_urls",
+        "video_url"
+      ],
+      "type": "object"
+    }
+  }
+}

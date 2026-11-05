@@ -208,7 +208,7 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
     }
   }
 
-  for (const entry of entries.filter((candidate) => supportsImageGeneration(candidate))) {
+  for (const entry of entries.filter((candidate) => supportsImageGeneration(candidate) && candidate.surfaces.pricing.includeInEstimator)) {
     const resolutions = entry.engine.resolutions.map(String).filter(Boolean);
     const standardResolution =
       isGptImageFamilyEngineId(entry.engine.id)
@@ -476,7 +476,7 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
     });
   }
 
-  for (const entry of entries.filter((candidate) => candidate.category === 'image')) {
+  for (const entry of entries.filter((candidate) => candidate.category === 'image' && candidate.surfaces.app.enabled)) {
     await collectSnapshot({
       id: `image-estimate:${entry.id}:default`,
       surface: 'image-estimate',

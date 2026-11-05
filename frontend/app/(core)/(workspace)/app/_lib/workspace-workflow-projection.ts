@@ -120,7 +120,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
 
   const implicitMode = (() => {
     if (!selectedEngine) return form?.mode ?? 't2v';
-    if (supportsKlingV4Controls) return resolveKlingV4CreateMode(inputAssets, klingElements);
+    if (supportsKlingV4Controls || selectedEngine.id === 'kling-v4-flash') return resolveKlingV4CreateMode(inputAssets, klingElements);
     if (isUnifiedSeedance) {
       return getUnifiedSeedanceMode(inputAssets);
     }
@@ -169,7 +169,7 @@ export function resolveWorkspaceWorkflow({ engine: selectedEngine, capabilityEng
   const activeManualMode = (() => {
     if (!selectedEngine) return null;
     const currentMode = form?.mode ?? null;
-    if (supportsKlingV4Controls) return currentMode === 'v2v' && selectedEngine.modes.includes(currentMode) ? currentMode : null;
+    if (supportsKlingV4Controls || selectedEngine.id === 'kling-v4-flash') return currentMode === 'v2v' && selectedEngine.modes.includes(currentMode) ? currentMode : null;
     if (isUnifiedKlingO3 && form?.operation === 'kling-reference') return null;
     if (isUnifiedSeedance || isUnifiedKlingO3 || isUnifiedGeminiOmni) {
       return (currentMode === 'v2v' || currentMode === 'extend') && isWorkspaceModeAvailable(selectedEngine, currentMode)

@@ -1,0 +1,1073 @@
+{
+  "schemaVersion": 1,
+  "modelId": "kling-v4-flash",
+  "intent": "create_missing",
+  "reason": "User-approved 2026-11-05: Flash supplier LIST × 1.30, final customer cents rounded up.",
+  "pricing": {
+    "kind": "explicit"
+  },
+  "selections": [
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "3",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 37
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "4",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 49
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "5",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "6",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "7",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "8",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "9",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "10",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 123
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "11",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 135
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "12",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 147
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "13",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 159
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "14",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 172
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "15",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 184
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "16",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 196
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "17",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 208
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "18",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 220
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "19",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 233
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "t2v",
+        "resolution": "720p",
+        "durationSec": "20",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 245
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "3",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 37
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "4",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 49
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "5",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "6",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "7",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "8",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "9",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "10",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 123
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "11",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 135
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "12",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 147
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "13",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 159
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "14",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 172
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "15",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 184
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "16",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 196
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "17",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 208
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "18",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 220
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "19",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 233
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "i2v",
+        "resolution": "720p",
+        "durationSec": "20",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 245
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "3",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 37
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "3",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "4",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 49
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "4",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "5",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "5",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "6",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "6",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "7",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "7",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "8",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "8",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "9",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "9",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "10",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 123
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "10",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "11",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 135
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "11",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "12",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 147
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "12",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "13",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 159
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "13",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "14",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 172
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "14",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "15",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 184
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "15",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "16",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 196
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "16",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "17",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 208
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "17",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "18",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 220
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "18",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "19",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 233
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "19",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "20",
+        "billingInputType": "no_video_input"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 245
+      }
+    },
+    {
+      "selector": {
+        "engineId": "kling-v4-flash",
+        "mode": "ref2v",
+        "resolution": "720p",
+        "durationSec": "20",
+        "inputVideoDurationSec": "continuous",
+        "billingInputType": "video_input"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "billable_seconds",
+            "centsPerUnit": 8.19
+          }
+        ]
+      }
+    }
+  ]
+}

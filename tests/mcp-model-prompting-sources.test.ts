@@ -36,7 +36,7 @@ test('official prompting sources are reviewed, model-scoped, immutable, and free
   for (const record of records) {
     assert.match(record.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.match(record.url, /^https:\/\//);
-    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15|10-22)$/);
+    assert.match(record.reviewedAt, /^2026-(08-28|09-01|09-15|10-22|11-05)$/);
     assert.ok(record.modelIds.length >= 1);
     assert.ok(record.modes.length >= 1);
     assert.ok(Object.isFrozen(record));

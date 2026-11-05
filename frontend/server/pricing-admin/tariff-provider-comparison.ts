@@ -17,7 +17,7 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
   let executionProvider = 'fal';
   let routeConfigured: boolean | null = null;
   if (entry.category === 'image') {
-    if (declared === 'google_vertex_image' || declared === 'byteplus_modelark') executionProvider = declared;
+    if (declared === 'google_vertex_image' || declared === 'byteplus_modelark' || declared === 'openai_images') executionProvider = declared;
     else if (declared === 'luma_agents_direct' && lumaAgentsImageDirectEnabled({ isAdmin: true })) {
       executionProvider = 'luma_agents_direct';
     }
@@ -42,6 +42,7 @@ export function providerComparisonForTariffScenario(scenario: ManualTariffCovera
     }
   }
   if(entry.id==='kling-v4')routeConfigured=false; // Separate product release approval remains closed.
+  if (entry.id === 'kling-v4-flash' || declared === 'openai_images') routeConfigured = entry.surfaces.app.enabled ? null : false;
   const sandbox = process.env.PRICING_SANDBOX === '1';
   if (sandbox) routeConfigured = false;
   return { ...providerComparisonInputFromScenario({

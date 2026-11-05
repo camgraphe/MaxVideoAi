@@ -90,12 +90,12 @@ const VIDEO_EXTEND_MODELS = new Set(['seedance-2-5', 'wan-3', 'wan-3-prime']);
 // These proofs only intersect the canonical published catalog; they do not define model capabilities.
 const CONVERSATION_VIDEO_MODELS = new Set<string>([
   ...VIDEO_TEXT_IMAGE_MODELS,
-  'kling-v4',
+  'kling-v4', 'kling-v4-flash',
   'kling-3-turbo-pro', 'kling-3-turbo-standard', 'minimax-h3-max',
   'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3', 'flux-3-draft', 'flux-3-max',
 ]);
 const CONVERSATION_REFERENCE_VIDEO_MODELS = new Set<string>([
-  'kling-v4',
+  'kling-v4', 'kling-v4-flash',
   ...REFERENCE_VIDEO_MODELS, 'minimax-h3-max', 'grok-imagine-video-1-5', 'flux-3-max','flux-3','flux-3-draft',
 ]);
 const CONVERSATION_VIDEO_EDIT_MODELS = new Set([
@@ -148,6 +148,7 @@ const IMAGE_MODELS = [
   'nano-banana-2-1',
   'gpt-image-2',
   'gpt-image-2-5-flare',
+  'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst',
   'seedream',
   'seedream-5-0-pro',
 ] as const;

@@ -4,6 +4,7 @@ import { ensureBillingProductsSchema } from './billing-products-schema';
 import { ensureBillingProviderSchema } from './billing-provider-schema';
 import { ensureBillingReceiptsSchema } from './billing-receipts-schema';
 import { ensureBillingUserAdminSchema } from './billing-user-admin-schema';
+import { ensureOpenAIImageResultsSchema } from './openai-image-results-schema';
 
 let ensurePromise: Promise<void> | null = null;
 
@@ -17,6 +18,7 @@ export async function ensureBillingSchema(): Promise<void> {
     await ensureBillingUserAdminSchema();
     await ensureBillingContentSchema();
     await ensureBillingProviderSchema();
+    await ensureOpenAIImageResultsSchema();
   };
 
   ensurePromise = ensure().catch((error) => {

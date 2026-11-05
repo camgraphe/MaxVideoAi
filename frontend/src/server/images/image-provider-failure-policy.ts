@@ -42,7 +42,7 @@ export async function markImageProviderOutcomeAmbiguous(
             provider = COALESCE($4, provider),
             provisional = FALSE,
             updated_at = NOW()
-      WHERE job_id = $1 AND ($5::text IS NULL OR user_id = $5)`,
+      WHERE job_id = $1 AND ($5::text IS NULL OR user_id = $5) AND status NOT IN ('completed','failed','provider_polling_stalled')`,
     [jobId, providerJobId ?? null, options.message ?? 'Provider acceptance is still being verified.', options.providerMode ?? null, options.userId ?? null],
   ).catch((updateError) => {
     if (options.strict) throw updateError;

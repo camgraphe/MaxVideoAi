@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { ApiError } from '@fal-ai/client';
 import { query } from '@/lib/db';
 import { ENV } from '@/lib/env';
@@ -13,7 +14,7 @@ export async function resolveFalJobQueue(
   const queryFn = dependencies.queryFn ?? query;
   // Legacy requires a matching server-owned ID-only enqueue, not an absent log.
   // The job marker commits with every new V4 accepted association, before logging.
-  const rows = job.engineId === 'kling-v4'
+  const rows = isKlingV4FalQueueEngineId(job.engineId)
     ? await queryFn<{ receipt: unknown; receipt_present: boolean; receipt_required: boolean; legacy_enqueued: boolean }>(
       `SELECT proof.receipt, proof.id IS NOT NULL AS receipt_present,
            COALESCE(j.settings_snapshot ? 'falQueueReceiptRequired', FALSE) AS receipt_required,
@@ -35,7 +36,7 @@ export async function resolveFalJobQueue(
   const evidence = rows[0];
   // Missing/failed ownership or receipt reads refuse inside status/result so the
   // recovery callers retain their existing pending/retry behavior.
-  if (job.engineId !== 'kling-v4' || (evidence?.receipt_present === false
+  if (!isKlingV4FalQueueEngineId(job.engineId) || (evidence?.receipt_present === false
     && evidence.receipt_required === false && evidence.legacy_enqueued === true)) {
     return {
       status: () => client.queue.status(job.legacyModel, { requestId: job.requestId }),

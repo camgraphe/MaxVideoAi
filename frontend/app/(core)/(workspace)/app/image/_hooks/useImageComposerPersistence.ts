@@ -54,6 +54,7 @@ type UseImageComposerPersistenceParams = {
   maskUrl: string;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
+  complexity: string | null;
   limitGenerations: boolean;
   watermark: boolean;
   persistableReferenceSlots: PersistedReferenceSlot[];
@@ -73,6 +74,7 @@ type UseImageComposerPersistenceParams = {
   setMaskUrl: Dispatch<SetStateAction<string>>;
   setEnableWebSearch: Dispatch<SetStateAction<boolean>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
+  setComplexity: Dispatch<SetStateAction<string | null>>;
   setLimitGenerations: Dispatch<SetStateAction<boolean>>;
   setWatermark: Dispatch<SetStateAction<boolean>>;
   setReferenceSlots: Dispatch<SetStateAction<Array<ReferenceSlotValue | null>>>;
@@ -97,6 +99,7 @@ export function useImageComposerPersistence({
   maskUrl,
   enableWebSearch,
   thinkingLevel,
+  complexity,
   limitGenerations,
   watermark,
   persistableReferenceSlots,
@@ -116,6 +119,7 @@ export function useImageComposerPersistence({
   setMaskUrl,
   setEnableWebSearch,
   setThinkingLevel,
+  setComplexity,
   setLimitGenerations,
   setWatermark,
   setReferenceSlots,
@@ -259,6 +263,14 @@ export function useImageComposerPersistence({
             ? parsed.thinkingLevel
             : defaultThinkingLevel
         );
+        const complexities = getImageFieldValues(engineMatch.engineCaps, 'complexity', nextMode);
+        const defaultComplexity =
+          getImageFieldDefaultString(engineMatch.engineCaps, 'complexity', nextMode) ?? complexities[0] ?? null;
+        setComplexity(
+          parsed.complexity && complexities.includes(parsed.complexity)
+            ? parsed.complexity
+            : defaultComplexity
+        );
         setLimitGenerations(
           getImageInputField(engineMatch.engineCaps, 'limit_generations', nextMode)
             ? parsed.limitGenerations
@@ -321,6 +333,7 @@ export function useImageComposerPersistence({
     setSeed,
     setStyle,
     setThinkingLevel,
+    setComplexity,
     setWatermark,
   ]);
 
@@ -344,6 +357,7 @@ export function useImageComposerPersistence({
       maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
       thinkingLevel,
+      complexity,
       limitGenerations,
       watermark,
       referenceSlots: persistableReferenceSlots,
@@ -393,6 +407,7 @@ export function useImageComposerPersistence({
     storageHydrated,
     style,
     thinkingLevel,
+    complexity,
     watermark,
   ]);
   return { storageHydrated };

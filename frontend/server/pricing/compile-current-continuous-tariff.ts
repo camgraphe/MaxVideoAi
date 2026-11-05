@@ -1,3 +1,4 @@
+import { klingV4FlashPricingUsage } from '@/lib/kling-v4-flash-pricing';
 import { klingV4PricingUsage } from '@/lib/kling-v4-pricing';
 import type { ManualTariffPrice } from '@maxvideoai/pricing';
 import type { ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
@@ -19,7 +20,7 @@ import { buildManualTariffScenario, continuousInputTariffSelector } from '@/lib/
 import { isOperationContinuousTariff, compileOperationContinuousTariffPrice, validateOperationContinuousTariffDomain } from './video-operation-continuous-tariff';
 
 export async function compileCurrentContinuousTariffPrice(scenario: ManualTariffCoverageScenario, rules: PricingPolicyOverrideLoadResult) {
-  if (scenario.modelId === 'kling-v4') throw new Error('A separately reviewed Kling V4 price is required; no legacy price can be preserved.');
+  if (['kling-v4', 'kling-v4-flash'].includes(scenario.modelId)) throw new Error('A separately reviewed Kling V4 price is required; no legacy price can be preserved.');
   if (rules.status !== 'loaded') throw new Error('Effective pricing rules are unavailable');
   const { policy } = await resolveServerBillingPolicy({ engineId: scenario.modelId, mode: scenario.context.mode, resolution: scenario.context.resolution },
     null, { loadOverrides: async () => rules });
@@ -36,8 +37,9 @@ export async function compileCurrentContinuousTariffPrice(scenario: ManualTariff
 
 /** Migration and admin authoring share the same reviewed whole-domain guard. */
 export function validateCurrentContinuousTariffDomain(input: { context: PricingContext; price: ManualTariffPrice }) {
-  if (input.context.engine.id === 'kling-v4') {
-    const usage = klingV4PricingUsage(input.context);
+  if (['kling-v4', 'kling-v4-flash'].includes(input.context.engine.id)) {
+    const flash = input.context.engine.id === 'kling-v4-flash';
+    const usage = flash ? klingV4FlashPricingUsage(input.context) : klingV4PricingUsage(input.context);
     const price = input.price;
     const invalidRateMessage = 'Kling V4 requires a reviewed billable-second rate at or above its public supplier reference.';
     if (price.kind !== 'unit_terms' || price.rounding !== 'up' || price.terms.length !== 1) {
@@ -51,7 +53,7 @@ export function validateCurrentContinuousTariffDomain(input: { context: PricingC
     if (!validTerm) throw new Error(invalidRateMessage);
     const grossCentsPerSecond = term.centsPerUnit - usage.centsPerSecond;
     return {
-      maxInputSeconds: input.context.mode === 'v2v' ? 30.05 : 30,
+      maxInputSeconds: flash ? 20 : input.context.mode === 'v2v' ? 30.05 : 30,
       checkedBoundaries: 2,
       minimumGrossCents: Math.floor(6 * grossCentsPerSecond),
     };

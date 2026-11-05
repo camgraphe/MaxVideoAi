@@ -25,7 +25,7 @@ function fingerprint(operation: Omit<StoredTariffBatch, 'fingerprint'> | StoredT
   return createHash('sha256').update(stableBatchJson({ protocol: TARIFF_BATCH_PROTOCOL,
     id: operation.id, actorId: operation.actorId, sourceId: operation.sourceId, targetId: operation.targetId,
     createdAt: operation.createdAt, expiresAt: operation.expiresAt, proposal: operation.proposal,
-    plan, policy, facts: klingBatchSourceFacts() })).digest('hex');
+    plan, policy, facts: klingBatchSourceFacts(operation.proposal.modelId) })).digest('hex');
 }
 async function currentPlan(executor: TransactionQueryExecutor, proposal: StoredTariffBatch['proposal'], actorId: string) {
   const policy = await loadPricingPolicyOverridesWithExecutor(executor, { lock: true });
@@ -57,7 +57,8 @@ export async function tariffBatchOptions() {
   if (!tariffBatchIdentity()) return { enabled: false as const, classes: [] };
   return withDbTransaction(async executor => {
     await deadlines(executor); await requireTariffBatchAdmission(executor);
-    return { enabled: true as const, classes: klingBatchClasses().map(row => ({ key: row.key, selector: row.selector })) };
+    return { enabled: true as const, classes: [...klingBatchClasses(), ...klingBatchClasses('kling-v4-flash')]
+      .map(row => ({ key: row.key, selector: row.selector })) };
   });
 }
 /** Only the handler which transitions previewed -> accepted may execute this epoch. */

@@ -1,3 +1,5 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { klingV4FlashPricingUsage } from '@/lib/kling-v4-flash-pricing';
 import { klingV4PricingUsage } from '@/lib/kling-v4-pricing';
 import type { PricingContext } from '@/lib/pricing-context';
 import type { CanonicalGenerationRequest } from './generation-types';
@@ -8,7 +10,7 @@ export function canonicalKlingV4PricingFacts(
   request: CanonicalGenerationRequest,
   references: readonly ResolvedReference[] | undefined,
 ): Pick<PricingContext, 'hasVideoInput' | 'inputVideoDurationSec' | 'inheritedDurationSec'> {
-  if (request.engineId !== 'kling-v4') return {};
+  if (!isKlingV4FalQueueEngineId(request.engineId)) return {};
   let inputVideoDurationSec = 0;
   const sources: ResolvedReference[] = [];
   for (const input of request.references) {
@@ -34,7 +36,7 @@ export function canonicalKlingV4PricingFacts(
     inputVideoDurationSec,
     ...(inheritedDurationSec === undefined ? {} : { inheritedDurationSec }),
   };
-  klingV4PricingUsage({
+  (request.engineId === 'kling-v4-flash' ? klingV4FlashPricingUsage : klingV4PricingUsage)({
     mode: request.mode as PricingContext['mode'],
     resolution: String(request.settings.resolution),
     durationSec: Number(request.settings.durationSec),

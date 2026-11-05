@@ -16,6 +16,6 @@ export const imageWorkspaceReloadHostModules={
  '@/lib/authFetch':`export const authFetch=(url,init)=>fetch(url,init);`,
  // Observe the real surface's input without changing its props, state or rendered content.
  './_components/ImageWorkspaceComposerSurface':`import React from 'react';import {ImageWorkspaceComposerSurface as Surface} from './app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface';
- const keys=['selectedEngineId','mode','aspectRatio','resolution','quality','numImages','background','customImageHeight','customImageWidth','enableWebSearch','limitGenerations','maskUrl','outputFormat','seed','style','thinkingLevel','watermark','prompt'];
+ const keys=['selectedEngineId','mode','aspectRatio','resolution','quality','numImages','background','customImageHeight','customImageWidth','enableWebSearch','limitGenerations','maskUrl','outputFormat','seed','style','thinkingLevel','complexity','watermark','prompt'];
  export function ImageWorkspaceComposerSurface(props){const frame={...Object.fromEntries(keys.map(key=>[key,props[key]])),referenceFields:props.referenceAssetFields.map(({field,required,disabled})=>({field,required,disabled})),assets:props.composerReferenceAssets};globalThis.imageOwnerFrames??=[];globalThis.imageOwnerFrames.push(JSON.parse(JSON.stringify(frame)));return <Surface {...props}/>;}`,
 };

@@ -151,5 +151,20 @@
     "modelIds": ["flux-3", "flux-3-draft"],
     "modes": ["t2v", "i2v", "fl2v", "extend"],
     "reviewedAt": "2026-09-01"
+  },
+  {
+    "id": "openai-gpt-image-26-generation",
+    "provider": "OpenAI",
+    "title": "GPT Image 2.6 generation and raster editing",
+    "url": "https://developers.openai.com/api/docs/guides/image-generation",
+    "modelIds": [
+      "gpt-image-2-6-flare",
+      "gpt-image-2-6-sunburst"
+    ],
+    "modes": [
+      "t2i",
+      "i2i"
+    ],
+    "reviewedAt": "2026-11-05"
   }
 ]

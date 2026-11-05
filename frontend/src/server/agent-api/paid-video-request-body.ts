@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { validateOwnedKlingElements, isElementReference } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -267,7 +268,7 @@ export function buildPaidVideoRequestBody(
     return reference;
   };
   const v4Elements = execution.request.subjects?.map(subject => {
-    if (execution.request.engineId !== 'kling-v4' || !['ref2v', 'v2v'].includes(execution.request.mode)) throw new Error('Unsupported subjects.');
+    if (!isKlingV4FalQueueEngineId(execution.request.engineId) || !['ref2v', 'v2v'].includes(execution.request.mode)) throw new Error('Unsupported subjects.');
     if (subject.kind === 'video') {
       const video = subjectReference(subject.referenceSlot, 'video');
       return {videoUrl: video.url, videoAssetId: video.assetId};
@@ -410,7 +411,7 @@ export function buildPaidVideoRequestBody(
       ...(middle[0] && middleFieldId ? [input(middle[0],middleFieldId)] : []),
       ...(start[0] && startFieldId ? [input(start[0], startFieldId)] : []),
       ...(end[0] && endFieldId ? [input(end[0], endFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || execution.engine.id === 'kling-v4')
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || isKlingV4FalQueueEngineId(execution.engine.id))
         ? referenceMedia.filter((reference) => reference.kind === 'image')
           .map((reference) => input(reference, imageFieldId))
         : []),
@@ -468,7 +469,7 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4'].includes(execution.engine.id))
+      ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4','kling-v4-flash'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(videoFieldId ? videoReferences.map((reference) => input(reference, videoFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),

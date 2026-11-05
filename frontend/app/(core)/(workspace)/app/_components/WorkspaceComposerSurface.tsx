@@ -1,4 +1,7 @@
 'use client';
+
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+
 import {videoPromptReviewKey} from '@/lib/prompt-assistance/application-review';
 import {videoPromptWorkflow} from '@/lib/prompt-assistance/session';
 import { composerAssistanceReferences, composerAssistanceSettings } from '@/lib/prompt-assistance/client-context';
@@ -306,19 +309,20 @@ export function WorkspaceComposerSurface({
   const canManageKeyframes=Boolean(keyframeField&&inputSchemaSummary.assetFields.some(({field})=>field.id===keyframeField)
     &&(showFlux3MaxKeyframeEditor||inputSchemaSummary.assetFields.some(({field})=>field.id==='video_url')));
   const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
-  const isKlingV4 = selectedEngine.id === 'kling-v4';
+  const isKlingV4 = isKlingV4FalQueueEngineId(selectedEngine.id);
+  const isFlash = selectedEngine.id === 'kling-v4-flash';
   const klingV4Error = useMemo(() => {
     if (!isKlingV4) return null;
     const elements = buildKlingElementsPayload({
       selectedEngineId: selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements,
     });
     if (!elements.ok) return elements.message;
-    if (!multiPromptActive && (!Number.isInteger(form.durationSec) || form.durationSec < 3 || form.durationSec > 30)) {
-      return 'Kling 4.0 output duration must be 3–30 whole seconds.';
+    if (!multiPromptActive && (!Number.isInteger(form.durationSec) || form.durationSec < 3 || form.durationSec > (isFlash ? 20 : 30))) {
+      return `Output duration must be 3–${isFlash ? 20 : 30} whole seconds.`;
     }
-    return getWorkspaceKlingV4MediaError({ mode: submissionMode, inputAssets, klingElements });
-  }, [isKlingV4, selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements, multiPromptActive, form.durationSec, inputAssets]);
-  const activeKlingV4Fields = isKlingV4 ? Object.keys(getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets)) : [];
+    return getWorkspaceKlingV4MediaError({ engineId: selectedEngine.id, mode: submissionMode, inputAssets, klingElements });
+  }, [isKlingV4, isFlash, selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements, multiPromptActive, form.durationSec, inputAssets]);
+  const activeKlingV4Fields = isKlingV4 ? Object.keys(getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets, selectedEngine.id)) : [];
   const hasInactiveKlingV4Media = isKlingV4 && (
     Object.entries(inputAssets).some(([field, assets]) => !activeKlingV4Fields.includes(field) && assets.some(Boolean)) ||
     ((submissionMode === 't2v' || submissionMode === 'i2v') && klingElements.some((element) => element.frontal || element.video || element.references.some(Boolean)))
@@ -569,7 +573,7 @@ export function WorkspaceComposerSurface({
           hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
           content: <KlingElementsBuilder
             elements={klingElements}
-            variant={isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
+            variant={isFlash ? 'kling-v4-flash-reference' : isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
             onAddElement={handleKlingElementAdd}
             onRemoveElement={handleKlingElementRemove}
             onAddAsset={handleKlingElementAssetAdd}

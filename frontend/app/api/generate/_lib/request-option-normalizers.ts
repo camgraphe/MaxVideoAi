@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import {
   normalizeMaxVideoProviderElements,
   type MaxVideoProviderElement,
@@ -100,7 +101,7 @@ function pickStringArray(record: Record<string, unknown>, ...keys: string[]): st
 }
 
 export function normalizeGenerationElements(value: unknown, engineId?: string): GenerationElement[] | null {
-  if (engineId === 'kling-v4' && value != null && (!Array.isArray(value) || value.length > 7
+  if (isKlingV4FalQueueEngineId(engineId) && value != null && (!Array.isArray(value) || value.length > 7
     || Array.from(value).some(entry => !entry || typeof entry !== 'object' || Array.isArray(entry)))) {
     throw new Error('Kling V4 elements must be an array of at most seven subjects.');
   }
@@ -109,9 +110,10 @@ export function normalizeGenerationElements(value: unknown, engineId?: string): 
     .map((entry: unknown) => {
       if (!entry || typeof entry !== 'object') return null;
       const record = entry as Record<string, unknown>;
-      if (engineId === 'kling-v4') assertKlingV4ElementFields(record);
+      if (isKlingV4FalQueueEngineId(engineId)) assertKlingV4ElementFields(record);
+      if (engineId === 'kling-v4-flash' && ['voiceId','voice_id','providerElementId','element_id'].some(key => record[key] !== undefined)) throw new Error('Flash does not accept voice or external subject bindings.');
       const element: GenerationElement = {
-        ...(engineId === 'kling-v4' ? {voiceId: pickString(record, 'voiceId', 'voice_id')} : {}),
+        ...(isKlingV4FalQueueEngineId(engineId) ? {voiceId: pickString(record, 'voiceId', 'voice_id')} : {}),
         id: pickString(record, 'id'),
         frontalImageUrl: pickString(record, 'frontalImageUrl', 'frontal_image_url'),
         frontalAssetId: pickString(record, 'frontalAssetId', 'frontal_asset_id'),
