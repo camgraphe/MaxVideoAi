@@ -1,0 +1,170 @@
+[
+  {
+    "id": "gpt26-flare-generation",
+    "status": "accepted",
+    "engineId": "gpt-image-2-6-flare",
+    "providerModelId": "gpt-image-2.6-flare",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "Create one photorealistic cinematic film still, a square 1024x1024 image, not a poster or a collage. An original fictional adult woman, about 32, short dark curly hair, expressive brown eyes, a worn ochre cotton chore jacket over a charcoal T-shirt and dark trousers, is caught mid-stride in the backstage corridor of a small 1970s cinema. She grips a round opaque dark blue matte film canister against her ribs with her left arm, her right hand reaching toward a heavy burgundy velvet curtain at the right edge. She has just found something important: breathless, determined, almost smiling, looking off-frame right toward a colleague. Strong diagonal composition with a readable face, natural skin texture, visible fingers and convincing weight. Eye-level medium shot, 35mm cinema lens, subtle analog grain, warm tungsten practical bulbs against teal painted plaster, low-key yet legible lighting. Rich burgundy, ochre and petrol-blue palette. Solid painted doors, opaque props and matte surfaces only; no mirrors, glass, transparent objects, glossy reflections, water, screens, text, logos or subtitles. The moment must feel like an actual frame from a character-driven caper film, with tension and life, not a fashion pose. Keep the face and canister within the central 70 percent for flexible gallery crops.",
+    "settings": {
+      "resolution": "1024x1024",
+      "quality": "high",
+      "complexity": "high",
+      "background": "opaque",
+      "outputFormat": "png",
+      "numImages": 1,
+      "mode": "t2i"
+    },
+    "provenance": {
+      "kind": "external_openai_images",
+      "generatedAt": "2026-11-05T18:35:41.596Z",
+      "responseSha256": "69107c113d0e7ad1d43fb79085f3dc8694738df02fbc838c6f85db4b3dc3186d",
+      "promptSha256": "e1a7a86f0e2193959c597b1ba1697ef7e8a4ddb242b9e307e3ebaf8be9d733d9"
+    },
+    "sourceImageId": null,
+    "original": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/5c1807810678c1a1436ee1655bf694358709f37013b8d192d9b90f0f9b6d946a.png",
+      "sha256": "5c1807810678c1a1436ee1655bf694358709f37013b8d192d9b90f0f9b6d946a",
+      "bytes": 1502993,
+      "width": 1024,
+      "height": 1024,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/4a1dafffff1253ba30085eaaee5e7b66b08d819791140313ee543a96557b3d68.webp",
+      "sha256": "4a1dafffff1253ba30085eaaee5e7b66b08d819791140313ee543a96557b3d68",
+      "bytes": 50040,
+      "width": 800,
+      "height": 800,
+      "mimeType": "image/webp",
+      "sourceSha256": "5c1807810678c1a1436ee1655bf694358709f37013b8d192d9b90f0f9b6d946a"
+    }
+  },
+  {
+    "id": "gpt26-sunburst-generation",
+    "status": "accepted",
+    "engineId": "gpt-image-2-6-sunburst",
+    "providerModelId": "gpt-image-2.6-sunburst",
+    "role": "hero",
+    "promptLanguage": "en",
+    "prompt": "Create one photorealistic cinematic film still, a square 1024x1024 image, not a poster or a collage. An original fictional adult woman, about 32, short dark curly hair, expressive brown eyes, a worn ochre cotton chore jacket over a charcoal T-shirt and dark trousers, is caught mid-stride in the backstage corridor of a small 1970s cinema. She grips a round opaque dark blue matte film canister against her ribs with her left arm, her right hand reaching toward a heavy burgundy velvet curtain at the right edge. She has just found something important: breathless, determined, almost smiling, looking off-frame right toward a colleague. Strong diagonal composition with a readable face, natural skin texture, visible fingers and convincing weight. Eye-level medium shot, 35mm cinema lens, subtle analog grain, warm tungsten practical bulbs against teal painted plaster, low-key yet legible lighting. Rich burgundy, ochre and petrol-blue palette. Solid painted doors, opaque props and matte surfaces only; no mirrors, glass, transparent objects, glossy reflections, water, screens, text, logos or subtitles. The moment must feel like an actual frame from a character-driven caper film, with tension and life, not a fashion pose. Keep the face and canister within the central 70 percent for flexible gallery crops.",
+    "settings": {
+      "resolution": "1024x1024",
+      "quality": "high",
+      "complexity": "high",
+      "background": "opaque",
+      "outputFormat": "png",
+      "numImages": 1,
+      "mode": "t2i"
+    },
+    "provenance": {
+      "kind": "external_openai_images",
+      "generatedAt": "2026-11-05T18:37:16.146Z",
+      "responseSha256": "a81af9a1b90c7dd83510e52222b3942b007e430f9970147605acba0b13bfbb30",
+      "promptSha256": "e1a7a86f0e2193959c597b1ba1697ef7e8a4ddb242b9e307e3ebaf8be9d733d9"
+    },
+    "sourceImageId": null,
+    "original": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/dd2a1bb8824ff1f64033db2c7ef459954b0001cba581f6764ceecad6be9d1d7b.png",
+      "sha256": "dd2a1bb8824ff1f64033db2c7ef459954b0001cba581f6764ceecad6be9d1d7b",
+      "bytes": 1517846,
+      "width": 1024,
+      "height": 1024,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/9903e7086f54fc9c888840d2416a98bd52bc4fb269790858c4f655c55e0340e4.webp",
+      "sha256": "9903e7086f54fc9c888840d2416a98bd52bc4fb269790858c4f655c55e0340e4",
+      "bytes": 59542,
+      "width": 800,
+      "height": 800,
+      "mimeType": "image/webp",
+      "sourceSha256": "dd2a1bb8824ff1f64033db2c7ef459954b0001cba581f6764ceecad6be9d1d7b"
+    }
+  },
+  {
+    "id": "gpt26-flare-edit",
+    "status": "accepted",
+    "engineId": "gpt-image-2-6-flare",
+    "providerModelId": "gpt-image-2.6-flare",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "Edit this exact cinematic still. Preserve the woman's identity, facial expression, short dark curls, visible fingers, body pose, film canister, camera position, background corridor and velvet curtain. Change only her ochre cotton jacket to a rich oxblood red fabric with the same cut, seams, wear and folds. Keep all skin tones, lighting direction, shadows, analog grain and the dark blue opaque matte canister unchanged. A seamless wardrobe continuity edit for a feature film. No mirrors, transparent objects, text, logos or extra people.",
+    "settings": {
+      "resolution": "1024x1024",
+      "quality": "high",
+      "complexity": "high",
+      "background": "opaque",
+      "outputFormat": "png",
+      "numImages": 1,
+      "mode": "i2i"
+    },
+    "provenance": {
+      "kind": "external_openai_images",
+      "generatedAt": "2026-11-05T18:39:10.148Z",
+      "responseSha256": "483abad78281ef92c12b43b04374f5cccf01260046ca1bf3994db19954a3e113",
+      "promptSha256": "cee57fb6ce9efacbcdf25650eb383e8118772b951ecf6a72e00ddf9bf492bcd0"
+    },
+    "sourceImageId": "gpt26-flare-generation",
+    "original": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/7262fb83e45d95abc474d1f7d9c161c119129e09aa690e9633635c7868cce9af.png",
+      "sha256": "7262fb83e45d95abc474d1f7d9c161c119129e09aa690e9633635c7868cce9af",
+      "bytes": 1426209,
+      "width": 1024,
+      "height": 1024,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/a26a128be0b4ce01e65bfcef919ef5a4409da93452d80870b313ef27ed3fddcb.webp",
+      "sha256": "a26a128be0b4ce01e65bfcef919ef5a4409da93452d80870b313ef27ed3fddcb",
+      "bytes": 49464,
+      "width": 800,
+      "height": 800,
+      "mimeType": "image/webp",
+      "sourceSha256": "7262fb83e45d95abc474d1f7d9c161c119129e09aa690e9633635c7868cce9af"
+    }
+  },
+  {
+    "id": "gpt26-sunburst-edit",
+    "status": "accepted",
+    "engineId": "gpt-image-2-6-sunburst",
+    "providerModelId": "gpt-image-2.6-sunburst",
+    "role": "example",
+    "promptLanguage": "en",
+    "prompt": "Edit this exact cinematic still. Preserve the woman's identity, facial expression, short dark curls, visible fingers, body pose, film canister, camera position, background corridor and velvet curtain. Change only her ochre cotton jacket to a rich oxblood red fabric with the same cut, seams, wear and folds. Keep all skin tones, lighting direction, shadows, analog grain and the dark blue opaque matte canister unchanged. A seamless wardrobe continuity edit for a feature film. No mirrors, transparent objects, text, logos or extra people.",
+    "settings": {
+      "resolution": "1024x1024",
+      "quality": "high",
+      "complexity": "high",
+      "background": "opaque",
+      "outputFormat": "png",
+      "numImages": 1,
+      "mode": "i2i"
+    },
+    "provenance": {
+      "kind": "external_openai_images",
+      "generatedAt": "2026-11-05T18:40:24.509Z",
+      "responseSha256": "834afce5257141babc16b6ec33cdddba12273e3c6e5e5b0151fe9c3ad436e350",
+      "promptSha256": "cee57fb6ce9efacbcdf25650eb383e8118772b951ecf6a72e00ddf9bf492bcd0"
+    },
+    "sourceImageId": "gpt26-flare-generation",
+    "original": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/30fc5d0b0da3670745c399c57b3e7094eb8682a19cdd1ebec444f2d63179020e.png",
+      "sha256": "30fc5d0b0da3670745c399c57b3e7094eb8682a19cdd1ebec444f2d63179020e",
+      "bytes": 1354621,
+      "width": 1024,
+      "height": 1024,
+      "mimeType": "image/png"
+    },
+    "display": {
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/9af08a0b474a5076e6db405dffffd045934373162e1fb5b547c74752a8d29724.webp",
+      "sha256": "9af08a0b474a5076e6db405dffffd045934373162e1fb5b547c74752a8d29724",
+      "bytes": 42022,
+      "width": 800,
+      "height": 800,
+      "mimeType": "image/webp",
+      "sourceSha256": "30fc5d0b0da3670745c399c57b3e7094eb8682a19cdd1ebec444f2d63179020e"
+    }
+  }
+]

@@ -229,6 +229,16 @@ function parseAcceptedDurableModelAssetForWave(
       value.sourceAssetIds.length < sourceRule.minCount || value.sourceAssetIds.length > sourceRule.maxCount ||
       !isDurableMediaUrl(value.previewVideoUrl)) return null;
   }
+  if (waveId === 'kling-v4-flash') {
+    const rules: Record<string, LaunchSourceRule> = {
+      t2v: { sourceKind: 'text', minCount: 0, maxCount: 0 },
+      i2v: { sourceKind: 'image', minCount: 1, maxCount: 1 },
+      ref2v: { sourceKind: 'references', minCount: 1, maxCount: 15 },
+    };
+    const rule = rules[value.mode];
+    if (!rule || value.sourceKind !== rule.sourceKind || value.sourceAssetIds.length < rule.minCount ||
+      value.sourceAssetIds.length > rule.maxCount || !isDurableMediaUrl(value.previewVideoUrl)) return null;
+  }
 
   return {
     waveId,

@@ -8,6 +8,9 @@ const COMPARISON_PATH_BY_LOCALE = {
 const comparisonIndexation = JSON.parse(
   readFileSync(new URL('../frontend/config/comparison-indexation.json', import.meta.url), 'utf8'),
 );
+const runtimeModels = JSON.parse(
+  readFileSync(new URL('../frontend/config/model-runtime.json', import.meta.url), 'utf8'),
+).models;
 const COMPARISON_NOINDEX_BY_LOCALE = {
   en: new Set(),
   fr: new Set(comparisonIndexation.noindexByLocale.fr),
@@ -44,19 +47,22 @@ function toAbsoluteUrl(site, pathname) {
   return `${normalizedSite}${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
 }
 
-export function getPublishedComparisonSlugs(catalog) {
+export function getPublishedComparisonSlugs(catalog, publicationModels = runtimeModels) {
   const entries = Array.isArray(catalog) ? catalog : [];
+  const indexableSlugs = new Set(publicationModels
+    .filter((model) => model.publication.compare.published && model.publication.compare.indexed)
+    .map((model) => model.slug));
   const validSlugs = new Set(entries.map((entry) => entry?.modelSlug).filter(Boolean));
   const published = new Set();
 
   entries.forEach((entry) => {
     const left = entry?.modelSlug;
-    if (!left || EXCLUDED_ENGINE_SLUGS.has(left)) return;
+    if (!left || !indexableSlugs.has(left) || EXCLUDED_ENGINE_SLUGS.has(left)) return;
     const opponents = entry?.surfaces?.compare?.publishedPairs;
     if (!Array.isArray(opponents)) return;
 
     opponents.forEach((right) => {
-      if (!validSlugs.has(right) || right === left || EXCLUDED_ENGINE_SLUGS.has(right)) return;
+      if (!validSlugs.has(right) || !indexableSlugs.has(right) || right === left || EXCLUDED_ENGINE_SLUGS.has(right)) return;
       const slug = canonicalCompareSlug(left, right);
       if (slug) published.add(slug);
     });
@@ -65,9 +71,9 @@ export function getPublishedComparisonSlugs(catalog) {
   return Array.from(published).sort((a, b) => a.localeCompare(b, 'en'));
 }
 
-export function getPublishedComparisonSlugsForModels(catalog, changedModelSlugs) {
+export function getPublishedComparisonSlugsForModels(catalog, changedModelSlugs, publicationModels = runtimeModels) {
   const changed = changedModelSlugs instanceof Set ? changedModelSlugs : new Set(changedModelSlugs ?? []);
-  return getPublishedComparisonSlugs(catalog).filter((slug) => {
+  return getPublishedComparisonSlugs(catalog, publicationModels).filter((slug) => {
     const [left, right] = slug.split('-vs-');
     return changed.has(left) || changed.has(right);
   });

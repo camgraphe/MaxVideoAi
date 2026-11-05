@@ -35,12 +35,23 @@ test('changed models only select published comparisons involving that model', ()
       surfaces: { compare: { publishedPairs: [] } },
     },
   ];
+  const publicationModels = ['alpha', 'beta', 'gamma'].map(slug => ({
+    slug, publication: { compare: { published: true, indexed: true } },
+  }));
 
   assert.deepEqual(
-    getPublishedComparisonSlugsForModels(fixtureCatalog, new Set(['alpha'])),
+    getPublishedComparisonSlugsForModels(fixtureCatalog, new Set(['alpha']), publicationModels),
     ['alpha-vs-beta'],
   );
-  assert.deepEqual(getPublishedComparisonSlugsForModels(fixtureCatalog, new Set(['gamma'])), []);
+  assert.deepEqual(getPublishedComparisonSlugsForModels(fixtureCatalog, new Set(['gamma']), publicationModels), []);
+  for (const model of publicationModels.slice(0, 2)) {
+    for (const flag of ['published', 'indexed'] as const) {
+      model.publication.compare[flag] = false;
+      assert.deepEqual(getPublishedComparisonSlugs(fixtureCatalog, publicationModels), [],
+        `${model.slug} must not enter IndexNow when compare.${flag} is false`);
+      model.publication.compare[flag] = true;
+    }
+  }
 });
 
 test('localized comparison URLs omit selected locales while hub URLs remain unchanged', () => {

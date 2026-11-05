@@ -8,7 +8,7 @@ export const klingV4FlashTemplateConfig: ModelPageTemplateConfig = {
   pricing: { anchorHref: '/pricing#kling-v4-flash-pricing', presets: [
     {id:'5s-720p',seconds:5,resolution:'720p',labelKey:'commonProductionCheck',noteKey:'checkLiveQuote'},
   ] },
-  sections: {examples:true,prompting:true,tips:true,compare:false,specs:true,safety:true,faq:true},
+  sections: {examples:true,prompting:true,tips:true,compare:true,specs:true,safety:true,faq:true},
 };
 function imageTemplate(variant: 'flare' | 'sunburst'): ModelPageTemplateConfig {
   const slug = `gpt-image-2-6-${variant}`;

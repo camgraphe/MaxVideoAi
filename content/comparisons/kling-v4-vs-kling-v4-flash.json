@@ -1,0 +1,69 @@
+{
+  "slug": "kling-v4-vs-kling-v4-flash",
+  "en": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 4.0 Flash: Controls & Pricing",
+      "description": "Compare Kling 4.0 and Flash: duration, resolution, references, multi-shot prompts, video editing and current MaxVideoAI prices.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Which Kling 4.0 should you choose?",
+      "body": "Choose Flash for 3–20 second scenes at 720p, generated from text, an opening image or visual references. Direct cuts, action and native dialogue in one prompt. Choose Kling 4.0 for 1080p output, up to 30 seconds, an optional end image, structured prompts with a duration per shot, or its separate video-editing mode. Flash does not expose Modify or Extend, an end image or structured shot fields. Both models generate native audio without an audio switch. The live price cards compare text-to-video at matching durations. For image or video references, open the workspace to get a quote for the exact inputs; video references change the Flash calculation. The Flash gallery is a cinematic showcase, not a matched benchmark; a missing score means that criterion has not been reviewed, not a zero."
+    },
+    "primaryLinksTitle": "Explore the models",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-v4-flash",
+        "label": "Kling 4.0 Flash"
+      }
+    ]
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 4.0 Flash : contrôles et prix",
+      "description": "Comparez Kling 4.0 et Flash : durée, résolution, références, prompts multi-plans, édition vidéo et tarifs MaxVideoAI.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Quel Kling 4.0 choisir ?",
+      "body": "Choisissez Flash pour des scènes de 3 à 20 secondes en 720p, créées depuis du texte, une image de départ ou des références visuelles. Dirigez les coupes, l’action et les dialogues natifs dans un seul prompt. Choisissez Kling 4.0 pour le 1080p, une durée allant jusqu’à 30 secondes, une image de fin facultative, des prompts structurés avec une durée par plan ou son mode distinct d’édition vidéo. Flash ne propose ni Modify ni Extend, ni image de fin, ni champs de découpage par plan. Les deux modèles génèrent un audio natif sans interrupteur audio. Les cartes tarifaires comparent la création texte à durées identiques. Pour des références image ou vidéo, consultez le devis du workspace avec vos entrées exactes ; les références vidéo changent le calcul Flash. La galerie Flash présente des scènes de cinéma, pas un benchmark à conditions identiques ; un score absent indique un critère encore non évalué, pas un zéro."
+    },
+    "primaryLinksTitle": "Explorer les modèles",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-v4-flash",
+        "label": "Kling 4.0 Flash"
+      }
+    ]
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 4.0 vs Kling 4.0 Flash: controles y precios",
+      "description": "Compara Kling 4.0 y Flash: duración, resolución, referencias, prompts con varios planos, edición de vídeo y precios de MaxVideoAI.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "¿Qué Kling 4.0 elegir?",
+      "body": "Elige Flash para escenas de 3 a 20 segundos a 720p, creadas desde texto, una imagen inicial o referencias visuales. Dirige cortes, acción y diálogos nativos en un único prompt. Elige Kling 4.0 para 1080p, hasta 30 segundos, una imagen final opcional, prompts estructurados con duración por plano o su modo independiente de edición de vídeo. Flash no ofrece Modify ni Extend, imagen final ni campos de planificación por plano. Ambos modelos generan audio nativo sin interruptor de audio. Las tarjetas de precios comparan la creación desde texto con la misma duración. Para referencias de imagen o vídeo, consulta la cotización del espacio de trabajo con tus entradas exactas; las referencias de vídeo cambian el cálculo de Flash. La galería Flash muestra escenas de cine, no un benchmark en condiciones idénticas; una puntuación ausente indica un criterio aún no evaluado, no un cero."
+    },
+    "primaryLinksTitle": "Explorar los modelos",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-v4",
+        "label": "Kling 4.0"
+      },
+      {
+        "href": "/models/kling-v4-flash",
+        "label": "Kling 4.0 Flash"
+      }
+    ]
+  }
+}

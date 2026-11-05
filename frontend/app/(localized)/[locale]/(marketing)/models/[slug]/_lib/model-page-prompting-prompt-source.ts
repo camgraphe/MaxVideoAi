@@ -27,7 +27,7 @@ const VERIFIED_MEDIA_PROMPT_MODEL_IDS = new Set<string>([
 
 /** This authored recipe must wait for its explicitly reviewed public scene. */
 export function requiresPinnedModelPromptingDemo(modelSlug: string): boolean {
-  return modelSlug === 'flux-3-max';
+  return modelSlug === 'flux-3-max' || modelSlug === 'kling-v4-flash';
 }
 
 export function resolveDefaultModelPromptingDemoPromptSource(

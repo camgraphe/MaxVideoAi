@@ -1,4 +1,8 @@
 export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string | null }> = {
+  'kling-v4-flash': {
+    hero: 'job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac',
+    demo: 'job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989',
+  },
   'flux-3-max': {
     hero: 'job_external_fal_38061bc977ff126b5248f9f835436a9370a2f7bb',
     demo: 'job_external_fal_348334c2377e9d31bda23c030095861ad2e9d55c',

@@ -9,6 +9,13 @@ export const FR_KLING_V4_ADDITION = {
   faq: [{ question: 'Comment comparer Kling 4.0 aux exemples Kling précédents ?', answer: 'Conservez le nom du modèle, le prompt et les réglages associés à chaque clip d’origine. Kling 4.0 propose des générations de 3 à 30 secondes, des prompts avec durée par plan, des références visuelles et l’édition d’une vidéo source en 720p ou 1080p. Les versions précédentes ont leurs propres limites. Comparez les clips complets à réglages équivalents et vérifiez un nouveau devis avant de générer.' }],
 } satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
 
+export const FR_KLING_V4_FLASH_ADDITION = {
+  summary: "Kling 4.0 Flash ajoute des scènes de 3 à 20 secondes en 720p, depuis du texte, une image de départ ou des références visuelles. Sa galerie présente des séquences multi-plans natives avec dialogues.",
+  promptPatterns: "Avec Flash, décrivez chaque plan et chaque coupe dans un seul prompt, avec une action claire et une conclusion à la séquence. Dirigez les dialogues et les ambiances dans le même prompt ; il n’existe pas de champs structurés pour la durée de chaque plan.",
+  strengthsLimits: "Flash génère en 720p avec audio natif. Il ne propose ni Modify, ni Extend, ni image de fin, ni interrupteur audio. Les références vidéo guident la création ; elles ne constituent pas un mode d’édition vidéo.",
+  faq: [{ question: "Quelles différences entre Kling 4.0 et Flash ?", answer: "Flash produit des clips de 3 à 20 secondes en 720p depuis du texte, une image de départ ou des références, avec des coupes décrites dans le prompt. Kling 4.0 propose aussi le 1080p, jusqu’à 30 secondes, une image de fin facultative, des prompts structurés avec une durée par plan et un mode distinct d’édition vidéo. Conservez le modèle et les réglages d’origine de chaque exemple, puis vérifiez un nouveau devis avant de générer." }],
+} satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
+
 export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedModelDescriptor>> = {
   sora: {
     "metaTitle": "Exemples historiques Sora | MaxVideoAI",

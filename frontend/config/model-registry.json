@@ -3381,8 +3381,12 @@
         "compare": {
           "published": false,
           "indexed": false,
-          "suggestedOpponentIds": [],
-          "publishedPairIds": []
+          "suggestedOpponentIds": [
+            "kling-v4"
+          ],
+          "publishedPairIds": [
+            "kling-v4"
+          ]
         },
         "app": {
           "published": false

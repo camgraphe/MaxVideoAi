@@ -1,0 +1,1635 @@
+{
+  "schemaVersion": 1,
+  "modelId": "gpt-image-2-6-sunburst",
+  "intent": "create_missing",
+  "reason": "Approved GPT Image 2.6 output estimate plus commercial input reserves, multiplied by 1.50; fixed retail launch prices.",
+  "pricing": {
+    "kind": "explicit"
+  },
+  "selections": [
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 52
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 55
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 58
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 61
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 32
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 38
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 44
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 50
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 56
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 62
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 68
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 80
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 86
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 92
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 98
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 104
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 116
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 122
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 47
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 56
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 65
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 74
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 83
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 92
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 101
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 110
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 119
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 128
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 137
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 146
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 155
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 164
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 173
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 182
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 63
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 75
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 87
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 99
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 111
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 123
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 135
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 147
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 159
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 171
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 183
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 195
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 207
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 219
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 231
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "xhigh",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 243
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 30
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 33
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 36
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 39
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 42
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 45
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 48
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 51
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 54
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 57
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 60
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 63
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 66
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 69
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 72
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "1",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 75
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 59
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 65
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 71
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 77
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 83
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 89
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 95
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 101
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 107
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 113
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 119
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 125
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 131
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 137
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 143
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "2",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 149
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 88
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 97
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 106
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 115
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 124
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 133
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 142
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 151
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 160
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 169
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 178
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 187
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 196
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 205
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 214
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "3",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 223
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "1"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 117
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "2"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 129
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "3"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 141
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "4"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 153
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "5"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 165
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "6"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 177
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "7"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 189
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "8"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 201
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "9"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 213
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "10"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 225
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "11"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 237
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "12"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 249
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "13"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 261
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "14"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 273
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "15"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 285
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "1024x1536",
+        "durationSec": "4",
+        "quality": "max",
+        "referenceImageCount": "16"
+      },
+      "price": {
+        "kind": "fixed",
+        "customerCents": 297
+      }
+    }
+  ]
+}

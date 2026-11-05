@@ -1,7 +1,8 @@
 import { isArchivedGenerationModel } from '@/lib/model-generation-policy';
 import compareHubConfig from '@/config/compare-hub.json';
 import engineCatalog from '@/config/engine-catalog.json';
-import { buildCanonicalCompareSlug, canonicalizeComparePair, canonicalizePublishedCompareSlug } from './pairs';
+import { listRuntimeModels } from '@/config/model-runtime';
+import { buildCanonicalCompareSlug, canonicalizeComparePair, canonicalizePublishedCompareSlug, createPublishedComparisonSlugLookup } from './pairs';
 
 export {
   buildCanonicalCompareSlug,
@@ -118,6 +119,7 @@ function getPublishedOpponentSlugs(entry: CatalogEngine | undefined): string[] {
 function buildPublishedComparisonSlugSet(entries: CatalogEngine[]): Set<string> {
   const validSlugs = new Set(entries.map((entry) => entry.modelSlug).filter(Boolean));
   const published = new Set<string>();
+  const isPublished = createPublishedComparisonSlugLookup(listRuntimeModels());
 
   entries.forEach((entry) => {
     if (!entry?.modelSlug) return;
@@ -125,7 +127,9 @@ function buildPublishedComparisonSlugSet(entries: CatalogEngine[]): Set<string> 
     getPublishedOpponentSlugs(entry).forEach((opponentSlug) => {
       if (EXCLUDED_ENGINE_SLUGS.has(opponentSlug)) return;
       if (!validSlugs.has(opponentSlug) || opponentSlug === entry.modelSlug) return;
-      published.add(buildCanonicalCompareSlug(entry.modelSlug, opponentSlug));
+      const slug = buildCanonicalCompareSlug(entry.modelSlug, opponentSlug);
+      // Prepared relationships remain private until both registry endpoints are published.
+      if (isPublished(slug)) published.add(slug);
     });
   });
 

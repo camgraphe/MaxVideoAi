@@ -137,6 +137,22 @@
           "modelPlaylistSlug": "examples-kling-v4"
         }
       ]
+    },
+    {
+      "waveId": "kling-v4-flash",
+      "sourceManifest": "docs/model-launch/kling-v4-flash-video-example-pack.json",
+      "sourceStatus": "validated",
+      "sourceDigest": "c821f8008174bb6ea62b34d719a0a00cc9c48777437eee30139b7db507ecfe64",
+      "models": [
+        {
+          "waveId": "kling-v4-flash",
+          "modelId": "kling-v4-flash",
+          "familyId": "kling",
+          "acceptedAssetCount": 2,
+          "familyPlaylistSlug": "family-kling",
+          "modelPlaylistSlug": "examples-kling-v4-flash"
+        }
+      ]
     }
   ],
   "models": [
@@ -243,6 +259,14 @@
       "acceptedAssetCount": 2,
       "familyPlaylistSlug": "family-kling",
       "modelPlaylistSlug": "examples-kling-v4"
+    },
+    {
+      "waveId": "kling-v4-flash",
+      "modelId": "kling-v4-flash",
+      "familyId": "kling",
+      "acceptedAssetCount": 2,
+      "familyPlaylistSlug": "family-kling",
+      "modelPlaylistSlug": "examples-kling-v4-flash"
     }
   ]
 }

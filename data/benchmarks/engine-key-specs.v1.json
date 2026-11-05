@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-10-27",
+  "last_updated": "2026-11-05",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -1934,6 +1934,46 @@
         "cameraMotionControls": "Prompt-based camera and multi-shot control",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
         "releaseDate": "Oct 2026"
+      }
+    },
+    {
+      "modelSlug": "kling-v4-flash",
+      "sources": [
+        "https://fal.ai/models/kling/v4/flash/text-to-video/api",
+        "https://fal.ai/models/kling/v4/flash/image-to-video/api",
+        "https://fal.ai/models/kling/v4/flash/reference-to-video/api"
+      ],
+      "provenance": {
+        "basis": "maxvideoai-production-route-contract",
+        "note": "Exact Flash contracts from the 2026-11-05 provider fixtures and merged integration b5f4bdddaa27e8620293dc9a59811559decc0cf5. Six external outputs retain this exact model identity; capabilities do not establish quality or latency scores."
+      },
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported",
+        "firstLastFrame": "Opening image only; no end frame",
+        "referenceImageStyle": "Up to 10 images total, including the opening image",
+        "referenceVideo": "Up to 5 reference videos; 20s combined with video subjects",
+        "maxResolution": "720p",
+        "maxDuration": "3–20s",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "21:9"
+        ],
+        "fpsOptions": [
+          "Provider-set; no FPS selector"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Native audio directed by prompt; no audio switch",
+        "lipSync": "Prompt-directed native dialogue",
+        "cameraMotionControls": "Prompt-based camera and cuts; no structured shot fields",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Nov 2026"
       }
     }
   ]

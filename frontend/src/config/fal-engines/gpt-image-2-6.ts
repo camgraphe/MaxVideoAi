@@ -1,11 +1,13 @@
 import type { EngineCaps } from '../../../types/engines';
 import type { RawFalEngineEntry } from './types';
+import { listGpt26EditorialImages } from '../../../lib/gpt26-editorial-images';
 import { GPT_IMAGE_26_SIZES, GPT_IMAGE_26_QUALITIES, GPT_IMAGE_26_COMPLEXITIES } from '../../../lib/image/gptImage26';
 
 function entry(variant: 'flare' | 'sunburst'): RawFalEngineEntry {
   const id = `gpt-image-2-6-${variant}`, modelId = `gpt-image-2.6-${variant}`;
   const variantLabel = variant === 'flare' ? 'Flare' : 'Sunburst';
   const label = `GPT Image 2.6 ${variantLabel}`;
+  const hero = listGpt26EditorialImages(id).find(image => image.role === 'hero');
   const modes = ['t2i', 'i2i'] as const;
   const engine: EngineCaps = {
     id, label, provider: 'OpenAI', version: '2.6', variant: variantLabel,
@@ -36,6 +38,7 @@ function entry(variant: 'flare' | 'sunburst'): RawFalEngineEntry {
     defaultFalModelId: modelId,
     modes: modes.map(mode => ({ mode, falModelId: modelId, ui: { modes: [mode], resolution: [...GPT_IMAGE_26_SIZES], aspectRatio: [], acceptsImageFormats: ['png', 'jpg', 'jpeg', 'webp'] } })),
     seo: { title: `${label} — image generation and editing | MaxVideoAI`, description: `Generate and edit raster images with ${label}, five quality levels and explicit planning complexity.`, canonicalPath: `/models/${id}` },
+    ...(hero ? { media: { imagePath: hero.display.url, videoUrl: hero.original.url, altText: label } } : {}),
     prompts: [],
   };
 }

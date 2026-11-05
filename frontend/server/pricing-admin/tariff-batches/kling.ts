@@ -5,10 +5,10 @@ import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from '@/lib/kling-v4-pri
 import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from '@/lib/kling-v4-flash-pricing';
 import { customerTariffCellId } from '@/server/pricing/customer-tariff-seed';
 import { continuousInputTariffIdentity } from '../continuous-input-tariff';
-import type { TariffBatchModelId, TariffBatchPrice } from './contract';
+import type { KlingTariffBatchModelId, TariffBatchPrice } from './contract';
 import { batchSelectorKey, decimalRatio } from './input';
 
-export function klingBatchClasses(modelId: TariffBatchModelId = 'kling-v4') {
+export function klingBatchClasses(modelId: KlingTariffBatchModelId = 'kling-v4') {
   const rows = klingV4TariffScenarios(modelId).map(scenario => {
     const continuous = continuousInputTariffSelector(scenario.selector);
     const selector: ManualTariffSelector = continuous ?? scenario.selector;
@@ -39,7 +39,7 @@ export function compileKlingBatchPrice(row: KlingBatchClass, multiplier: string)
   const total = numerator * BigInt(row.selector.durationSec);
   return { kind: 'fixed', customerCents: Number((total + denominator - BigInt(1)) / denominator) };
 }
-export function klingBatchSourceFacts(modelId: TariffBatchModelId = 'kling-v4') {
+export function klingBatchSourceFacts(modelId: KlingTariffBatchModelId = 'kling-v4') {
   const flash = modelId === 'kling-v4-flash';
   return { source: flash ? KLING_V4_FLASH_PRICING_SOURCE : KLING_V4_PRICING_SOURCE,
     sourceDate: flash ? '2026-11-05' : '2026-10-25', costKind: 'supplier_list',
