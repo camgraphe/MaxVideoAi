@@ -1,0 +1,68 @@
+# Faits vérifiés — 5 novembre 2026
+
+## Production MaxVideoAI
+
+Lectures authentifiées Vercel `get_deployment` sur les deux domaines : `maxvideoai.com` et `api.maxvideoai.com`.
+
+- Projet : `maxvideoai`, `prj_CA8KpDAwYzihVJZyDNnEUrDszaMu`.
+- Déploiement : `dpl_7fdiAB89wbJCq6rzDMzhhhtf3vQC`, READY, source Git, branche main.
+- Commit : `cd6cc4c77c7c17c352e62e62d2609b52b199f2ee`.
+- Les deux domaines figurent sur ce même déploiement. Vérification à refaire avant livraison ; ce document n'est pas un verrou de release.
+
+Les fichiers de ce commit établissent le routage :
+
+- `frontend/src/config/fal-engines/kling-v4.ts` : quatre endpoints `kling/v4/*`.
+- `frontend/src/server/video-providers/kling-direct/model-map.ts` : huit identités Kling 3/O3, aucune identité V4.
+- `frontend/src/server/video-providers/router.ts` : branche `kling_direct_primary` conditionnée par cette table ; V4 ne peut pas y entrer par un simple flag d'environnement.
+- `frontend/src/lib/fal.ts` : soumission V4 en queue, conservation du reçu/ID accepté.
+- `docs/launch/kling-v4/PLAN.md` et `HANDOFF.md` : décision historique fal-first du 22 octobre, remplaçant le projet direct-first. Leurs états privés/noindex sont historiques, pas un constat du 5 novembre.
+
+## Kling 4.0 Flash
+
+Sources officielles lues :
+
+- [T2V et prix](https://fal.ai/models/kling/v4/flash/text-to-video).
+- [I2V et prix](https://fal.ai/models/kling/v4/flash/image-to-video).
+- [Références et prix](https://fal.ai/models/kling/v4/flash/reference-to-video).
+- Schémas OpenAPI : `https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=` suivi de chacun des trois IDs ci-dessus sans le préfixe `/models/`.
+- [Guide Kling 4](https://fal.ai/kling-4) : contient encore la mention générale « API coming soon » et mentionne Flash en early access. Cette différence avec l'existence des schémas impose un essai du compte avant d'affirmer l'exécutabilité.
+
+Faits structurants : 720p, durée entière 3–20s (défaut 5), prompt jusqu'à 26 000 caractères ; aucun `multi_prompt` dans ces trois schémas. I2V nécessite `start_image_url`, sans `end_image_url`. T2V expose quatre ratios ; REF2V ajoute auto. Références : 10 images, 5 vidéos, 7 éléments dont au plus 3 vidéo ; 20s cumulées pour vidéos et éléments vidéo. Pas de voix Flash. Les contraintes détaillées de media doivent rester dans les validations canoniques.
+
+Prix fournisseur affichés : 0,094 USD/s en sortie seule, y compris I2V et REF2V sans vidéo. REF2V avec vidéo : 0,063 USD/s sur `output + max(input, output)`. Il ne s'agit pas de prix client MaxVideoAI. Pas d'essai Flash ni de facture réelle dans cette session.
+
+## GPT Image 2.6
+
+Sources officielles lues :
+
+- [Modèle Flare](https://developers.openai.com/api/docs/models/gpt-image-2.6-flare).
+- [Modèle Sunburst](https://developers.openai.com/api/docs/models/gpt-image-2.6-sunburst).
+- [Guide Images](https://developers.openai.com/api/docs/guides/image-generation).
+- [Création d'images — référence API](https://developers.openai.com/api/reference/resources/images/methods/generate).
+- [Conseils de prompting](https://developers.openai.com/api/docs/guides/image-prompting).
+- [Prix](https://developers.openai.com/api/docs/pricing).
+
+Identités : `gpt-image-2.6-flare` et `gpt-image-2.6-sunburst`. Les endpoints propres aux modèles sont génération et édition d'image. `complexity` vaut low/medium/high, défaut high, indépendamment de `quality`. Les taux par token sont inchangés par rapport à 2.5, mais le guide précise que les nombres de tokens peuvent différer pour une même qualité : les prix par image doivent être recalculés.
+
+Lecture du compte : la clé déjà présente dans le fichier local du projet a servi uniquement à un GET `https://api.openai.com/v1/models`. Résultat HTTP 200 avec les deux IDs 2.6. Aucune clé affichée, écrite, copiée vers le worktree ou créée. Aucun appel à `/images/generations` ou `/images/edits`. Pas de preuve de génération, de quota effectif ni de présence équivalente de cette clé dans Preview/Production.
+
+## Leçons des précédents
+
+1. `docs/operations/nano21-mcp-public-routing-2026-10-27.md` : publication App/prix réussie mais modes MCP non exécutables faute d'admission provider ; configuration et nouveau déploiement ont été nécessaires. Tester les trois surfaces séparément.
+2. `docs/launch/kling-v4/PUBLIC-OPENING-PREPARATION.md` : ouverture fonctionnelle, prix natifs et marketing étaient des gates distincts ; la certification de la conversation était séparée de l'ancien Canvas.
+3. `docs/launch/kling-v4/seo-linking-plan.md` : menus bornés, famille historique, médias/ordre choisis par le propriétaire, comparaison ciblée, scores et hero conditionnés par des preuves réelles.
+4. `tests/gpt-image-2-5-integration.test.ts` et `frontend/lib/image/gptImage2.ts` : qualité, références et tarifs 2.5 sont spécifiques au contrat fal. Ce sont des précédents de couverture, pas des tarifs ou payloads réutilisables tels quels pour OpenAI direct 2.6.
+
+## Lecture MCP et certification Studio actuelles
+
+Le MCP MaxVideoAI connecté a retourné le 5 novembre :
+
+| ID | Modes | generationEnabled |
+| --- | --- | --- |
+| `kling-v4` | t2v, i2v, ref2v, v2v | true |
+| `gpt-image-2-5-flare` | t2i, i2i | true |
+| `gpt-image-2-5-sunburst` | t2i, i2i | true |
+
+Il s'agit de découverte live, sans devis ni exécution. Dans la source de production, `frontend/app/(core)/(workspace)/app/studio/_shared/_lib/models/workspace-model-certification.ts` inclut Flare 2.5 dans `IMAGE_MODELS` mais pas Sunburst 2.5. Le précédent est également documenté dans `docs/operations/studio-model-coverage-audit-2026-10-04.md`. L'ajout 2.6 doit donc qualifier ses deux variantes dans Studio, sans prétendre hériter d'une parité 2.5 qui n'existe pas.
+
+Les conditions d'accès, prix et schémas sont datés ; revalider les sources avant activation. Aucun test de génération ni état public nouveau n'est déduit de la présence d'une documentation ou d'un ID dans le catalogue.
