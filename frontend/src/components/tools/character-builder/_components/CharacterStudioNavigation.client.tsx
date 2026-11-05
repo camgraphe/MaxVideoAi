@@ -1,5 +1,6 @@
 'use client';
-import { Images, Plus, ScanFace, Clapperboard } from 'lucide-react';
+import Link from 'next/link';
+import { Images, Plus, ScanFace, Clapperboard, Film } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 export type CharacterStudioMode = 'character' | 'recast';
 export function CharacterStudioNavigation({
@@ -44,6 +45,16 @@ export function CharacterStudioNavigation({
           );
         })}
       </div>
+      {mode === 'recast' && (
+        <Link
+          href="/app"
+          prefetch={false}
+          className="flex min-h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border px-2 text-xs font-medium text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+        >
+          <Film size={14} aria-hidden="true" />
+          {copy.myVideos}
+        </Link>
+      )}
       {mode === 'character' && (
         <button
           type="button"
