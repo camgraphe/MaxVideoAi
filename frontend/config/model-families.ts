@@ -41,6 +41,7 @@ const ASSET_GATED_LAUNCH_MODEL_IDS = new Set([
   'kling-3-turbo-pro',
   'minimax-h3-max',
   'kling-v4',
+  'kling-v4-flash',
 ]);
 
 const MODEL_FAMILY_SOURCES = [
@@ -64,7 +65,7 @@ const MODEL_FAMILY_SOURCES = [
     navLabel: 'Kling 3.0 Omni',
     brandId: 'kling',
     defaultModelId: 'kling-o3-pro',
-    modelOrderIds: ['kling-v4', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'kling-o3-pro', 'kling-o3-standard', 'kling-o3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k', 'kling-2-6-pro', 'kling-2-5-turbo'],
+    modelOrderIds: ['kling-v4', 'kling-v4-flash', 'kling-3-turbo-pro', 'kling-3-turbo-standard', 'kling-o3-pro', 'kling-o3-standard', 'kling-o3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k', 'kling-2-6-pro', 'kling-2-5-turbo'],
     routeAliases: [
       'kling-3-turbo-pro',
       'kling-3-turbo-standard',

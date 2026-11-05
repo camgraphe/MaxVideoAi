@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "placementNote": "Exact model collection contains all six Flash clips. Family destination is reserved; existing family curation is unchanged while model publication remains closed.",
+  "assets": [
+    {
+      "waveId": "kling-v4-flash",
+      "assetId": "output:job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac_video_0",
+      "videoId": "job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac",
+      "libraryAssetId": "ma_3726d4aa6eca42c7bf6fb0a718b2ded8",
+      "jobId": "job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac",
+      "modelId": "kling-v4-flash",
+      "engineId": "kling-v4-flash",
+      "familyId": "kling",
+      "mode": "t2v",
+      "prompt": "Create a complete 15-second live-action theatrical science-fiction horror scene with four clearly different shots joined by hard cuts. A dangerous incident begins, a human makes a brave decision, and the survivors escape before the scene ends. Enormous practical industrial spaceship sets, thirty adult technicians, a terrifying original creature, physical stunts, heavy machinery, smoke and sparks: the scale and production design of a major feature film. Realistic 35mm texture, anamorphic lens character without black bars, cold blue work lights and hard red emergency light, deep but readable shadows. One consistent lead in every shot: an adult female chief engineer aged 40, close-cropped black hair, dark green utility coveralls, an orange shoulder harness, soot on her left cheek, no helmet. The creature is a massive six-limbed pale armored insectoid with an angular skull, a unique original design. Keep this one location and these identities continuous.\n\nSHOT 1, 0-3.5s: a fast descending crane wide shot reveals an immense spaceship cargo bay, three levels of gantries, dangling chains and thirty technicians running toward a raised steel blast door on frame right. A section of ceiling grating bursts downward and the enormous creature drops heavily onto a cargo container behind them. Its impact buckles the container and throws sparks. Establish the door on the right and the creature pursuing from the left.\n\nHARD CUT. SHOT 2, 3.5-6.5s: chest-height tracking medium close-up moving backward in front of the chief engineer as she turns to face the threat and shoulders a bulky industrial flame projector. Behind her, the last technicians hurry through the open door. She looks at them and shouts one clear English line, \"Get behind me!\" Her lips match only her own voice. Fear becoming determination is visible in her face.\n\nHARD CUT. SHOT 3, 6.5-11.5s: a wide side-on action shot preserves the same geography. The chief sends one powerful horizontal burst of orange flame toward the creature, driving it back. She immediately retreats through the doorway after her crew. The huge solid steel blast door drops between them and the recoiling creature, landing with a deep crash. Both the escape and the door closing must be fully visible.\n\nHARD CUT. SHOT 4, 11.5-15s: on the SAFE side of the closed door, a tight medium shot of the engineer and several breathless crew members. One final heavy impact dents the solid door behind them without opening it. She lowers the flame projector, exhales and says quietly, \"We're clear.\" The crew's shoulders relax. Hold that resolved human reaction to the end; no new threat, no cliffhanger.\n\nSound: screaming metal at the opening, running boots and urgent crowd movement, creature roar, a single forceful flame burst, the massive door slam, then breathing and the two assigned dialogue lines. A restrained low cinematic tension pulse may support the action but never cover the dialogue. Physical weight, stable anatomy, natural faces, coherent spatial continuity, decisive editorial cuts. Opaque steel and painted surfaces; no mirrors, reflective glass, transparent visors, holograms or water. No on-screen text, captions, logos, famous actors, gore, comic-book styling or slow motion. This must feel like an actual completed action scene, not a trailer montage or a still image with a camera move.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/52203aa15eb35d6f45c0d43085ef18a52f4eb5749caf2017bafef6772340aa65.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/86350f20b734f64cfad5b1f187b8159977d0bd1de8260434599e98be8975b296.jpg",
+      "previewVideoUrl": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/96ca7ea7f7ecaa897852a050ad96544c879d2507d7201b40f0b5f731b0907f91.mp4",
+      "width": 1280,
+      "height": 720,
+      "durationSec": 15.041667,
+      "acceptedAt": "2026-11-05T21:28:50.664Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "243ecbb8-221e-4592-93c1-0a12d85f5c30",
+      "modelPlaylistId": "3b5225a5-ba30-43c0-a293-906dd81563e5",
+      "playlistSlugs": [
+        "family-kling",
+        "examples-kling-v4-flash"
+      ]
+    },
+    {
+      "waveId": "kling-v4-flash",
+      "assetId": "output:job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989_video_0",
+      "videoId": "job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989",
+      "libraryAssetId": "ma_fbb9ee821fbb42e4b7a8ed4915b38bea",
+      "jobId": "job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989",
+      "modelId": "kling-v4-flash",
+      "engineId": "kling-v4-flash",
+      "familyId": "kling",
+      "mode": "t2v",
+      "prompt": "Create one complete 15-second live-action historical epic scene in four hard-cut shots. A towering siege machine threatens an ancient city, a defender takes one decisive shot, and the machine falls before it can reach the wall. Monumental stone fortifications, an army of two hundred moving adult soldiers, ranks of shields, banners, smoke, dust and a giant practical wooden siege tower. This is large-scale theatrical cinema with tangible extras, detailed costumes and physical destruction. Original characters in a fictional ancient Mediterranean city, no named franchise or recognizable actors. Warm late-afternoon sun, ochre dust, weathered bronze, dark crimson cloth, rich cinematic contrast, 35mm grain, realistic dramatic scale. No black bars.\n\nOne consistent hero: an adult woman commander around 35, dark hair tightly braided back, battered matte bronze cuirass, a short dark crimson cloak, a small white cloth band tied around her left upper arm. She has a powerful recurve bow. Her supporting defenders have weathered rectangular shields and practical linen armor. Keep her costume, face, bow and the city geography identical across shots.\n\nSHOT 1, 0-3.5s: an imposing wide crane shot moves along the crowded city battlements. Below, two hundred attackers advance across a dry battlefield while an enormous timber siege tower rolls toward the wall. The tower fills the background and its assault bridge begins to lower. Defenders recoil; the commander's crimson cloak provides a clear foreground silhouette. Establish exposed black pitch-soaked bundles around the tower's wooden base and an empty defensive ditch between tower and wall. The threat must be immediately readable.\n\nHARD CUT. SHOT 2, 3.5-7s: a dynamic medium close-up beside the commander on the battlement. With soldiers moving urgently behind her, she pulls back a flaming arrow, eyes fixed on the tower base. She shouts in English, \"For the city!\" and releases. Show one clean believable bow release, one arrow only, then her intent reaction. Her visible mouth speaks the line; no voice-over.\n\nHARD CUT. SHOT 3, 7-11.5s: a low wide shot near the massive tower base. The single flaming arrow strikes the exposed pitch bundles. Fire runs rapidly up the oil-dark timber braces, sparks shower outward, and the burning base gives way. The enormous tower visibly leans AWAY from the city wall toward the empty ditch. Background attackers retreat sideways from its path. Convincing heavy timber breakage, dust and cascading debris; readable cause and effect rather than a random explosion.\n\nHARD CUT. SHOT 4, 11.5-15s: a triumphant wide shot from behind the commander and the crowded defenders on the intact battlement. The burning tower finishes collapsing into the ditch below, short of the wall. The threat has been stopped. Dozens of defenders lift their shields and erupt in a spontaneous cheer; the commander lowers her bow and breathes out in relief. Hold the victorious image and complete collapse before the clip ends.\n\nAudio: marching feet, distant battle shouts and wooden wheels, the commander's single assigned line, the taut bow snap, fire roaring, massive timber cracking, then an overwhelming human cheer. Original low orchestral percussion may swell after the collapse; dialogue stays intelligible. No gore, no close-up injuries. Four legible shots at real speed, coordinated background action, coherent direction of movement, strong facial acting. Opaque stone, wood and worn metal; no mirrors, transparent objects, shiny reflections or water. No captions, titles, logos or subtitles. A complete dramatic event with a beginning and a victorious end, not disconnected shots from a trailer.",
+      "sourceKind": "text",
+      "sourceAssetIds": [],
+      "videoUrl": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/e1e7275a7067915a81010d827e4af080e9c0fa4b135cd7f7176f61d1bdaaf105.mp4",
+      "thumbnailUrl": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/bab34a39cf318c7daa8e1c016449314fb72d8363174ab10f1ebd470016872002.jpg",
+      "previewVideoUrl": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/f7bcf046c59eac941593631b3b1ca7801719a59f5eeaa2a240fed2e06c1f5e3a.mp4",
+      "width": 1280,
+      "height": 720,
+      "durationSec": 15.041667,
+      "acceptedAt": "2026-11-05T21:29:12.153Z",
+      "reviewStatus": "accepted",
+      "publicationState": "gallery_only",
+      "watchPageCandidate": false,
+      "familyPlaylistId": "243ecbb8-221e-4592-93c1-0a12d85f5c30",
+      "modelPlaylistId": "3b5225a5-ba30-43c0-a293-906dd81563e5",
+      "playlistSlugs": [
+        "family-kling",
+        "examples-kling-v4-flash"
+      ]
+    }
+  ]
+}

@@ -33,7 +33,9 @@ export async function readMarketingRow(
   lock = false,
 ): Promise<MarketingRow | null> {
   const rows = await db.query<MarketingRow>(
-    `SELECT * FROM marketing_media WHERE video_id=$1${lock ? ' FOR UPDATE' : ''}`,
+    // PostgreSQL keeps microseconds; a JavaScript Date truncates them and makes
+    // the thumbnail owner's unchanged-row guard fail after a successful copy.
+    `SELECT *,updated_at::text AS updated_at FROM marketing_media WHERE video_id=$1${lock ? ' FOR UPDATE' : ''}`,
     [videoId],
   );
   return rows[0] ?? null;

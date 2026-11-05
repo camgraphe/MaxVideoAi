@@ -679,6 +679,30 @@ Native comparison posters use `buildPublicVideoPosterUrl` and the shared hero pr
 
 Sharp encoding quality and Next's admitted request quality are separate contracts. A source thumbnail encoded at one quality does not authorize that number as a Next request parameter. For public immutable images, source/version and cache lifetime must agree; replacing bytes beneath a long-lived immutable URL is not an update mechanism.
 
+### Editorial image galleries on model pages
+
+The route-local `model-page-editorial-images.ts` adapts approved public image
+records to one gallery/viewer shape. Model-specific titles belong in localized
+`content/models/{locale}/{slug}.json#examples.editorialImages`, validated by the
+Examples parser; the adapter owns runtime model identity, source lineage,
+metadata and workspace destinations. Never add a model-specific CTA or story
+copy inside the shared gallery/viewer.
+
+GPT Image 2.6 records live in `frontend/config/gpt26-editorial-images.json`, with
+strict validation in `frontend/lib/gpt26-editorial-images.ts`. Each variant keeps
+its own generation hero and edit, the exact PNG original, immutable WebP display,
+provider identity and hashes. Both launch edits use the same Flare original;
+Sunburst's generation is not their source. Cards load responsive display images;
+only an opened viewer loads the exact original and, for an edit, its source.
+External examples have editorial IDs, not fabricated application jobs. Registry
+publication gates the page/gallery selection. Nano21 retains its existing
+records and destinations through the same adapter.
+
+`tests/model-editorial-gallery-browser.test.ts` checks original deferral, source
+identity, narrow layouts and modal focus with the real components. Its standalone
+route context and image optimizer redirect are fixtures, not evidence of complete
+production-page performance.
+
 ## Adding a public model example or replacing a media file
 
 1. Resolve the canonical model identity through the registry/runtime. Do not edit generated runtime/catalog/roster projections directly.

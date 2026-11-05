@@ -32,9 +32,9 @@
 
 - [x] C01 Calculer les faits Flash en précision décimale : sortie seule, images/sujets image, entrée vidéo/sujet vidéo et plancher fournisseur.
 - [ ] C02 Établir les coûts image 2.6 propres au modèle, taille, qualité, nombre et sources ; ne pas recopier les estimations fal 2.5.
-- [ ] C03 Couvrir les contextes admin/public/MCP/Studio, y compris dimensions personnalisées et quantités autorisées.
+- [ ] C03 Couvrir les contextes admin/public/MCP/Studio, sur les trois tailles raster initiales et les quantités autorisées ; dimensions personnalisées hors du premier lot.
 - [ ] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
-  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée par l'utilisateur le 5 novembre 2026, pas encore appliquée. La partie image reste en attente. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
+  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée puis appliquée dans l’admin. Reçu relu : 72 cellules, révision 2187, opération `ddda411b-bffb-4bf7-83c8-8e8500863bba`. La partie image reste en attente. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
 - [ ] C05 Tester devis expiré, changement de réglages/références, révision de tarif, budget insuffisant et confirmations simultanées.
 - [x] C06 Vérifier débit unique, récupération, remboursement d'échec terminal et historique immuable avec PostgreSQL jetable.
 - [ ] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.
@@ -54,7 +54,7 @@
 
 ## E — Studio conversationnel
 
-- [ ] E01 Ajouter seulement les couples modèle/mode qualifiés à la certification conversationnelle partagée.
+- [x] E01 Ajouter les sept couples modèle/mode à la certification technique conversationnelle partagée. Les parcours réels restent à qualifier séparément.
 - [ ] E02 Vérifier découverte, détails, capacité de sélection explicite et disponibilité runtime de chaque nouveau modèle.
 - [x] E03 Respecter une sortie image/action et les plafonds de références Studio ; étendre seulement les chemins explicitement nécessaires aux sujets Flash.
 - [ ] E04 Préparer/présenter/confirmer le devis exact et conserver réglages/references/identité du modèle jusqu'à l'exécution.
@@ -80,14 +80,14 @@
 - [x] G02 Fixer un lot et budget de rendus, puis obtenir les résultats approuvés et les évaluer ; aucun exemple d'une autre version réétiqueté. Revue des images et transcription effectuées ; écoute éditoriale encore requise.
 - [x] G03 Conserver modèle, prompt, paramètres, entrées, identifiants fournisseur, originaux, durée/dimensions et usage pour chaque asset. Coût liste estimé consigné ; facture fournisseur non vérifiée.
 - [ ] G04 Importer/persister originaux, thumbnails/posters, short previews/renditions applicables ; vérifier HTTP et lecture réelle.
-  Les sept originaux ont été importés via le helper officiel dans la bibliothèque privée connectée ; tous sont `ready`, avec thumbnail. Trois aperçus silencieux de 2,5 s sont préparés localement. L'adoption externe Flash, l'attachement des aperçus et la préparation des copies publiques restent à faire.
-- [ ] G05 Créer les collections exactes dans l'admin et prévisualiser leur galerie effective ; préserver ordre et choix existants des familles.
+  Les dix originaux sont conservés dans la bibliothèque privée. Les six vidéos ont leurs aperçus privés et leurs jobs externes adoptés sans débit. Six copies marketing publiques avec posters représentatifs et aperçus sont prêtes ; les quatre images ont original PNG et affichage WebP publics. Les 26 fichiers répondent HTTP 200 et Range 206. La lecture complète du lecteur vidéo public reste à qualifier lors de l’ouverture.
+- [x] G05 Créer la collection exacte Flash avec six membres dans l’ordre B1/B2/B3/V1/V2/V3. Curation gérée et insertion dans la famille à finaliser après ouverture ; la famille existante reste intacte.
 - [x] G06 Écrire les trois pages modèle EN/FR/ES, blocs `decision.modelSlug`, limites, prompts, FAQ, sources et CTA réels.
-- [ ] G07 Mettre à jour menus, catalogue, familles/intro/FAQ, variantes et badges New sans déplacer les liens existants hors des limites.
+- [x] G07 Préparer menus, catalogue et copie de famille conditionnés par la publication et les médias ; tests de préservation des liens historiques.
 - [ ] G08 Préparer comparaisons ciblées (Kling 4/Flash, Flare/Sunburst 2.6, 2.6/2.5 si pertinent) avec prix exacts et preuves ; aucune note inventée.
 - [ ] G09 Mettre à jour Pricing, cas PAYG/Best-for pertinents, maillage interne, docs machine/LLM et aides à la sélection.
 - [ ] G10 Vérifier canonical, hreflang, JSON-LD/Offers, slugs localisés, sitemap, redirections historiques et absence de liens vers modes fermés.
-- [ ] G11 Exécuter `pnpm model:launch-assets:check` ; préparation/publication des renditions si un hero homepage est sélectionné, avec preuves CWV avant/après.
+- [x] G11 Exécuter `pnpm model:launch-assets:check`. B1 est le hero de page modèle, B2 le prompt détaillé ; aucun hero homepage ajouté. Les destinations de famille du pack ne prouvent pas une insertion déjà réalisée.
 - [x] G12 Préparer article/annonce du site et brouillons sociaux/email/descriptions vidéo ; publier sur les canaux externes seulement sur instruction explicite.
 - [ ] G13 Enregistrer date réelle de lancement et échéance éditoriale de révision du badge New ; suivi usage/erreurs/coûts/SEO sans inventer de volumes de recherche.
 
@@ -95,7 +95,7 @@
 
 - [x] H01 Tenir un ledger par modèle/mode/surface : code, tests locaux, accès fournisseur, tarif, média, preview, production.
 - [ ] H02 Exécuter tests ciblés, types, lint/exposure, diff-check et parcours locaux ; corriger les problèmes reproduits.
-- [x] H03 Ouvrir les PR cohérentes avec description du périmètre final ; conserver les gates de publication jusqu'à qualification. PR #620 en brouillon.
+- [x] H03 Ouvrir les PR cohérentes avec description du périmètre final ; conserver les gates de publication jusqu'à qualification. PR #620 fusionnée en `b5f4bdd`, fondation livrée. Le raccordement des médias/comparatifs est isolé dans `codex/nov05-launch-media` depuis ce main actualisé.
 - [ ] H04 Valider Quality CI sur le dernier candidat et toutes ses lanes sélectionnées, puis le Git Preview exact et le contrôle d'alignement.
   Quality CI `42092543108` passe entièrement sur `0367ce6fa` : contrôles rapides, base/médias, deux shards navigateur et financier exhaustif. L'extension d'import marketing doit également passer sur son propre dernier commit.
   Les Previews Git `c88db0060`/`0367ce6fa` et un redéploiement exact `0367ce6fa` ont échoué avant le build avec `Resource provisioning timed out`, sans logs de build. Aucun contournement de livraison en production.
@@ -130,3 +130,12 @@ inactives. Les trois tailles raster initiales sont bornées ; les dimensions
 personnalisées ne sont pas ouvertes dans ce lot. Les tokens de sortie 2.6 ont un
 estimateur documenté, mais aucune borne fiable d'entrée image n'est déduite de
 GPT 1 ou 2.5. Les prix fournisseur et les prix client restent distincts.
+
+## Point de reprise — 5 novembre, 22:58 Madrid
+
+- Fondation PR #620 : Quality CI `42103400013` réussi, merge `b5f4bdddaa27e8620293dc9a59811559decc0cf5`, déploiement Git `dpl_EcrT5NtBfUKgbiYYjZr2c91t7PPK` READY, deux domaines alignés. Les échecs de provisionnement Preview ci-dessus sont historiques et résolus sur ce candidat.
+- Tarifs Flash : confirmation native appliquée, relue à 72 cellules et révision 2187 ; aucune ouverture du registre.
+- Médias : sélection utilisateur B1 en hero, B2 en démonstration du prompt, B3/V1/V2/V3 ensuite. Les six copies publiques restent des preuves de galerie sans page watch éditoriale inventée.
+- Images : deux originaux de création et deux retouches, les deux retouches depuis I1 Flare. Titres dans le contrat localisé Examples, aperçu responsive et original à l’ouverture. Douze cas navigateur desktop/mobile/EN/FR/ES passent ; ce n’est pas une mesure CWV de page publique complète.
+- Comparatif Flash : contenu et capacités sourcés, activation soumise au registre. Aucune note numérique propre à Flash n’est encore qualifiée. Dossier à onze critères dans `data/benchmarks/kling-v4-flash-evidence.v1.json`.
+- Restent avant ouverture : prix commerciaux GPT 2.6 et hypothèse de coût d’entrée, parcours réels App/Studio/MCP, authentification cron OpenAI vérifiée avec la configuration déployée, publication/SEO/galeries live. Aucun appel payant supplémentaire lancé.

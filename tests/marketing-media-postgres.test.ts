@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { promoteMarketingVideo } from '../frontend/server/marketing-media/copy';
+import { readMarketingRow } from '../frontend/server/marketing-media/store';
 import type { QueryExecutor } from '../frontend/src/lib/db';
 
 test('marketing promotion survives source deletion and rejects incomplete, stale and concurrent preparations', async (t) => {
@@ -94,6 +95,16 @@ test('marketing promotion survives source deletion and rejects incomplete, stale
       assert.match(stored.recreation_snapshot.refs.videoUrls[0], /marketing-media/);
       assert.equal(stored.source_user_id, 'owner');
       assert.equal(stored.publication.user_id, null);
+    });
+    await t.test('thumbnail concurrency guards retain the exact PostgreSQL microsecond revision', async () => {
+      await query("UPDATE marketing_media SET updated_at='2026-11-05T21:25:03.307329Z' WHERE video_id='stable-id'");
+      const captured = await transaction(db => readMarketingRow('stable-id', db, true));
+      assert.ok(captured);
+      const [roundtrip] = await query<{ matches: boolean }>(
+        'SELECT updated_at=$2::timestamptz AS matches FROM marketing_media WHERE video_id=$1',
+        ['stable-id', captured.updated_at],
+      );
+      assert.equal(roundtrip.matches, true, 'the thumbnail owner must not reject an unchanged locked row');
     });
     await t.test('failed reference copy never exposes a partial publication and can be retried', async () => {
       await insert('failure');
