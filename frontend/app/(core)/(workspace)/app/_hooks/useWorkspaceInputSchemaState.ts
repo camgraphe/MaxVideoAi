@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
@@ -97,7 +98,7 @@ export function useWorkspaceInputSchemaState({
   }, [hydrationReady, selectedEngine, extraInputFields, setForm]);
 
   useEffect(() => {
-    if (!hydrationReady || !selectedEngine || (selectedEngine.operationCaps || selectedEngine.id === 'kling-v4')) return;
+    if (!hydrationReady || !selectedEngine || (selectedEngine.operationCaps || isKlingV4FalQueueEngineId(selectedEngine.id))) return;
     const activeFields = inputSchemaSummary.assetFields.map((entry) => entry.field);
     const referenceBudget = resolveEngineReferenceBudget(
       selectedEngine?.inputSchema,

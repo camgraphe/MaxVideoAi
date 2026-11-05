@@ -17,6 +17,7 @@ export type PricingContext = {
   resolution: string;
   aspectRatio?: string | null;
   quality?: string | null;
+  complexity?: string | null;
   customImageSize?: GptImage2ImageSize | null;
   mode?: Mode;
   membershipTier?: string | null;

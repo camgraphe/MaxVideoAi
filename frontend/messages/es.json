@@ -4149,6 +4149,7 @@
         "enableWebSearchLabel": "Búsqueda web",
         "enableWebSearchHint": "Usa contexto web actual cuando el modelo lo permita.",
         "thinkingLevelLabel": "Nivel de razonamiento",
+        "complexityLabel": "Complejidad de planificación",
         "thinkingLevelHint": "Aumenta la profundidad de razonamiento cuando el modelo lo permita.",
         "limitGenerationsLabel": "Limitar generaciones",
         "limitGenerationsHint": "Reduce las generaciones exploratorias adicionales cuando esté disponible.",

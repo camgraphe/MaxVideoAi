@@ -23,7 +23,7 @@ const modes = [
 
 const resolutions = [
   '0.5k', '360p', '540p', '480p', '720p', '1080p', '1080P', '1440p', '4k', '1k', '2k', '2K', '3K', '4K',
-  '2048x2048', '1920x1080', '1080x1920', '2304x1728', '1728x2304', '2848x1600',
+  '1024x1024', '1536x1024', '1024x1536', '2048x2048', '1920x1080', '1080x1920', '2304x1728', '1728x2304', '2848x1600',
   '1600x2848', '2496x1664', '1664x2496', '3136x1344', '3072x3072', '3456x2592',
   '2592x3456', '4096x2304', '2304x4096', '2496x3744', '3744x2496', '4704x2016',
   '4096x4096', '3520x4704', '4704x3520', '5504x3040', '3040x5504', '3328x4992',
@@ -105,7 +105,7 @@ const preflightRequestSchema = z.object({
   // The transport ceiling does not widen Seedance's separate admission contract.
   if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
     context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
-  if (request.elements !== undefined && !(request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
+  if (request.elements !== undefined && !(((request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode)) || (request.engine === 'kling-v4-flash' && request.mode === 'ref2v')) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
     context.addIssue({code:z.ZodIssueCode.custom,path:['elements'],message:'Unsupported Kling subject composition.'});
 });
 

@@ -1,3 +1,4 @@
+import { getKlingV4FlashConstraintViolation } from '@/lib/kling-v4-flash';
 import { validateH3MiddleFrame, orderedH3References } from '@/lib/h3-reference-controls';
 import {
   isKlingMultiPromptEngine,
@@ -246,6 +247,19 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): VideoExecutionValidationResult {
+  if (params.engineId === 'kling-v4-flash') {
+    const { image_url, elements, loop, prompt, ...input } = params.payload;
+    delete input._uploadedFileMB;
+    const violation = getKlingV4FlashConstraintViolation(params.normalizedMode, { ...input,
+      ...(prompt ? {prompt} : {}),
+      ...(image_url ? {start_image_url:image_url} : {}),
+      ...(loop === true ? {loop} : {}),
+      ...(Array.isArray(elements) ? {elements:elements.map(element => {
+        const value=element as Record<string,unknown>;
+        return {...(value.videoUrl?{video_url:value.videoUrl}:{}),...(value.frontalImageUrl?{frontal_image_url:value.frontalImageUrl}:{}),...(value.referenceImageUrls?{reference_image_urls:value.referenceImageUrls}:{})};
+      })} : {}) });
+    return violation ? {ok:false,error:{code:'ENGINE_CONSTRAINT',...violation}} : {ok:true};
+  }
   if (params.engineId==='minimax-h3-max' && params.normalizedMode==='ref2v') {
     const p=params.payload;
     try {

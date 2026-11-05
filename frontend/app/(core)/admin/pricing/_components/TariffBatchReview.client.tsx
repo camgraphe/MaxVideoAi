@@ -9,7 +9,7 @@ export function TariffBatchReview({ operation }: { operation: TariffBatchOperati
   const { plan, receipt } = operation;
   return <div className="min-w-0 space-y-3">
     <p className="font-semibold">{plan.counts.create} create · {plan.counts.update} update · {plan.counts.unchanged} unchanged · {plan.counts.conflict} conflict</p>
-    <p className="text-sm text-text-secondary">Kling 4 · {plan.rows.length} of {plan.fullScopeCount} canonical classes · USD · revision {plan.revision}. {plan.reason}</p>
+    <p className="text-sm text-text-secondary">{plan.modelId === 'kling-v4-flash' ? 'Kling 4.0 Flash' : 'Kling 4'} · {plan.rows.length} of {plan.fullScopeCount} canonical classes · USD · revision {plan.revision}. {plan.reason}</p>
     <p className="text-sm text-text-secondary">Each changed price receives its own server timestamp. The complete batch becomes visible together. Unchanged rows keep their IDs, dates and history.</p>
     <div className="max-h-[32rem] overflow-auto rounded-lg border border-border">
       <table className="w-full min-w-[850px] text-left text-sm"><caption className="sr-only">Complete tariff batch review</caption>

@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { normalizeVideoOperation, resolveVideoOperationEngine } from '@/lib/video-operation';
 import { snapshotReferenceInputs } from './workspace-snapshot-reference-inputs';
 import { resolveExampleResolution } from './workspace-example-resolution';
@@ -276,7 +277,7 @@ export function resolveVideoSettingsSnapshot(
     },
     inputAssets: readSnapshotInputAssets(snapshotReferenceInputs(refs, engine, mode) ?? null) ?? {},
     klingElements: Object.prototype.hasOwnProperty.call(refs, 'elements')
-      ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement, engine.id === 'kling-v4')
+      ? readSnapshotKlingElements(refs.elements, options.createLocalId, options.createFallbackKlingElement, isKlingV4FalQueueEngineId(engine.id))
       : [options.createFallbackKlingElement()],
   };
 }

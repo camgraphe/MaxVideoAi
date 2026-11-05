@@ -796,3 +796,20 @@ that exact signing endpoint after source-object ownership checks. Do not broaden
 the shared input-host policy: other consumers may recognize only the configured
 CDN as owned storage. The disposable database preview-ownership test covers this
 configuration, rejects foreign objects and preserves the input-host boundary.
+
+### 2026-11-05 — Closed Flash and GPT Image 2.6 candidate
+
+Preparation adds the nullable `complexity` enum (`low`, `medium`, `high`).
+Canonical normalization keeps this control in immutable requests and quotes.
+OpenAI 2.6 uses its own provider, credential/storage readiness and publication gate.
+Flash shares V4 queue recovery while exposing only its three creation modes.
+Subjects use owned ordered slots; Flash verifies 3–8-second video subjects and
+20-second aggregate references. The raster first lot excludes masks, GIF, SVG
+and annotations. Public discovery remains closed for the three new IDs.
+
+The reviewed additive schema produces policy fingerprint
+`03346ded564cbd256ead13e997912fc8cfd3c6ee242068b47cdb202faf5a196b`.
+The 70 curated decisions and fixture-contract fingerprint are unchanged.
+`pnpm mcp:client:check` passes 194 tests with one intentional host skip, plus
+the curated evaluator. This is offline evidence; existing hosts require a
+catalog refresh after delivery. No paid qualification or publication is inferred.

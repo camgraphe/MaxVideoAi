@@ -1,0 +1,65 @@
+{
+  "verifiedAt": "2026-11-05",
+  "source": "https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=kling/v4/flash/image-to-video",
+  "schemas": {
+    "V4FlashImageToVideoInput": {
+      "properties": {
+        "prompt": {
+          "title": "Prompt",
+          "anyOf": [
+            {
+              "maxLength": 26000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional text prompt describing the shot."
+        },
+        "duration": {
+          "maximum": 20,
+          "description": "Video duration in seconds (3-20).",
+          "default": 5,
+          "minimum": 3,
+          "title": "Duration",
+          "type": "integer"
+        },
+        "start_image_url": {
+          "x-fal": {
+            "max_aspect_ratio": 2.5,
+            "timeout": 20,
+            "max_file_size": 31457280,
+            "min_height": 300,
+            "min_width": 300,
+            "min_aspect_ratio": 0.4
+          },
+          "title": "Start Image Url",
+          "description": "Image to use as the first frame of the video. Flash does not take an end frame.\n\nMax file size: 30.0MB, Min width: 300px, Min height: 300px, Min aspect ratio: 0.40, Max aspect ratio: 2.50, Timeout: 20.0s",
+          "type": "string"
+        },
+        "resolution": {
+          "enum": [
+            "720p"
+          ],
+          "title": "Resolution",
+          "description": "Output resolution. Flash is 720p only.",
+          "default": "720p",
+          "type": "string"
+        }
+      },
+      "title": "FlashImageToVideoInput",
+      "description": "The output aspect ratio follows the start frame.",
+      "required": [
+        "start_image_url"
+      ],
+      "type": "object",
+      "x-fal-order-properties": [
+        "prompt",
+        "start_image_url",
+        "duration",
+        "resolution"
+      ]
+    }
+  }
+}

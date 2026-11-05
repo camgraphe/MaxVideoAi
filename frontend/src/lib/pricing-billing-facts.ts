@@ -1,3 +1,6 @@
+import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from './kling-v4-flash-pricing';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { calculateGptImage26ListOutputComponents } from '@/lib/image/gptImage26Pricing';
 import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from './kling-v4-pricing';
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 import { calculateNano21ListImageComponents } from '@/lib/nano-banana-2-1-pricing';
@@ -107,6 +110,21 @@ function buildBillingPricingFactsInternal(
   currency: string
 ): BillingPricingFacts {
   const { engine, durationSec, resolution } = context;
+  if (engine.id === 'kling-v4-flash') {
+    if (currency !== 'USD') throw new Error('Kling Flash supplier rates require USD.');
+    const usage = klingV4FlashPricingUsage(context);
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: usage.supplierExactCents,
+      base: { seconds: usage.outputDurationSec, rate: usage.supplierExactCents / 100 / usage.outputDurationSec, unit: 'sec', amountCents: Math.ceil(usage.supplierExactCents) },
+      meta: { pricing_model: 'kling_v4_flash_fal_public_list', provider_cost_source: KLING_V4_FLASH_PRICING_SOURCE,
+        provider_cost_checked_at: '2026-11-05', effective_supplier_charge_verified: false,
+        input_video_duration_sec: usage.inputVideoDurationSec, output_duration_sec: usage.outputDurationSec,
+        billable_seconds: usage.billableSeconds, has_video_input: usage.hasVideoInput } });
+  }
+  if (isGptImage26EngineId(engine.id)) {
+    const { partialListUsd, meta } = calculateGptImage26ListOutputComponents(context, currency);
+    return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: partialListUsd * 100,
+      base: { seconds: durationSec, rate: partialListUsd / durationSec, unit: 'image', amountCents: partialListUsd * 100 }, meta });
+  }
   if (engine.id === 'kling-v4') {
     if (currency !== 'USD') throw new Error('Kling V4 supplier rates are documented in USD only.');
     const usage = klingV4PricingUsage(context);

@@ -47,6 +47,7 @@ interface UseImageGenerationRunnerParams {
   hasSeedField: boolean;
   hasStyleField: boolean;
   hasThinkingLevelField: boolean;
+  hasComplexityField: boolean;
   hasWatermarkField: boolean;
   limitGenerations: boolean;
   maskUrl: string;
@@ -74,6 +75,7 @@ interface UseImageGenerationRunnerParams {
   setSelectedPreviewImageIndex: Dispatch<SetStateAction<number>>;
   setStatusMessage: Dispatch<SetStateAction<string | null>>;
   thinkingLevel: string | null;
+  complexity: string | null;
   watermark: boolean;
 }
 
@@ -95,6 +97,7 @@ export function useImageGenerationRunner({
   hasSeedField,
   hasStyleField,
   hasThinkingLevelField,
+  hasComplexityField,
   hasWatermarkField,
   limitGenerations,
   maskUrl,
@@ -121,6 +124,7 @@ export function useImageGenerationRunner({
   setSelectedPreviewImageIndex,
   setStatusMessage,
   thinkingLevel,
+  complexity,
   watermark,
 }: UseImageGenerationRunnerParams) {
   return useCallback(
@@ -212,6 +216,7 @@ export function useImageGenerationRunner({
           style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
+          complexity: hasComplexityField ? ((complexity ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
           thinkingLevel: hasThinkingLevelField
             ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
             : undefined,
@@ -281,6 +286,7 @@ export function useImageGenerationRunner({
       hasSeedField,
       hasStyleField,
       hasThinkingLevelField,
+      hasComplexityField,
       hasWatermarkField,
       limitGenerations,
       maskUrl,
@@ -311,6 +317,7 @@ export function useImageGenerationRunner({
       setSelectedPreviewImageIndex,
       setStatusMessage,
       thinkingLevel,
+      complexity,
       watermark,
     ]
   );

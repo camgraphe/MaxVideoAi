@@ -1,4 +1,5 @@
 import rates from '@/config/published-supplier-rates.json';
+import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from '@/lib/kling-v4-flash-pricing';
 import type { PricingContext } from '@/lib/pricing-context';
 import type { CatalogSupplierReference } from './catalog-supplier-reference';
 
@@ -12,6 +13,14 @@ export type PublishedSupplierEstimate = CatalogSupplierReference & { checkedAt: 
 
 /** Only source-verified mode/provider/options are projected as published LIST. No customer math. */
 export function publishedSupplierEstimate(context: PricingContext, provider: string): PublishedSupplierEstimate | null {
+  if (context.engine.id === 'kling-v4-flash' && provider === 'fal') {
+    try {
+      const usage = klingV4FlashPricingUsage(context);
+      return { amountUsd: usage.supplierExactCents / 100, referenceProvider: provider, sourceLabel: 'Fal published LIST',
+        sourceUrl: KLING_V4_FLASH_PRICING_SOURCE, checkedAt: '2026-11-05', versionedAt: null,
+        rateBreakdown: [{ label: 'Kling 4.0 Flash billable seconds', quantity: usage.billableSeconds, unit: 'second', unitPriceUsd: usage.centsPerSecond / 100, amountUsd: usage.supplierExactCents / 100 }] };
+    } catch { return null; }
+  }
   const rate = (rates.rates as PublishedRate[]).find((item) => item.engineId === context.engine.id
     && item.mode === context.mode && item.provider === provider);
   if (!rate || !Number.isFinite(context.durationSec) || context.durationSec <= 0) return null;

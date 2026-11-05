@@ -8,6 +8,7 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
 import type { ManualTariffMedia } from '@/lib/pricing-manual-media';
 import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
@@ -25,8 +26,10 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
-  if (selector.engineId === 'kling-v4' && selector.billingInputType === 'video_input') {
+  if (['kling-v4', 'kling-v4-flash'].includes(selector.engineId) && selector.billingInputType === 'video_input') {
     const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
+    const flash = selector.engineId === 'kling-v4-flash';
+    if (flash && (selector.mode !== 'ref2v' || output > 20 || !Number.isInteger(output) || input > 20)) throw new Error('Invalid Kling Flash timing.');
     if (!['ref2v','v2v'].includes(selector.mode) || !Number.isFinite(input) || input < 3 || input > (selector.mode === 'v2v' ? 30.05 : 30)
       || !Number.isFinite(output) || output < 3 || output > 30.05) throw new Error('Invalid Kling V4 source/output timing.');
     return {...selector,inputVideoDurationSec:'continuous',...(selector.mode === 'v2v' ? {durationSec:'continuous'} : {})};
@@ -95,6 +98,17 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
 } {
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
+  if (isGptImage26EngineId(facts.engineId)) {
+    const settings = normalizeGptImage26Settings({ resolution: context.resolution,
+      quality: context.quality ?? undefined, complexity: context.complexity ?? undefined,
+      numImages: context.durationSec } as Parameters<typeof normalizeGptImage26Settings>[0]);
+    // Requested pixels and price-neutral controls remain in the immutable quote.
+    // The reviewed cells use the same normalized identity on every surface.
+    return { selector: { engineId: facts.engineId, mode: context.mode!, resolution: settings.resolution,
+      durationSec: String(settings.numImages), quality: settings.quality,
+      ...(context.mode === 'i2i' ? { referenceImageCount: String(context.referenceImageCount) } : {}) },
+      quantities: { output_units: settings.numImages, reference_images: context.referenceImageCount ?? 0 } };
+  }
   if (facts.engineId === NANO21_ENGINE_ID) {
     const settings = normalizeNano21Settings(context);
     assertNano21Scenario({ ...settings, mode: context.mode, referenceImageCount: context.referenceImageCount,
@@ -155,7 +169,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   };
   const quantities: Record<string, number> = {
     output_seconds: billedDuration,
-    ...(facts.engineId === 'kling-v4' ? {billable_seconds:Number(facts.metadata?.billable_seconds ?? (context.hasVideoInput ? Math.max((context.inputVideoDurationSec ?? 0)+billedDuration,2*billedDuration) : billedDuration))} : {}),
+    ...(['kling-v4', 'kling-v4-flash'].includes(facts.engineId) ? {billable_seconds:Number(facts.metadata?.billable_seconds ?? (context.hasVideoInput ? Math.max((context.inputVideoDurationSec ?? 0)+billedDuration,2*billedDuration) : billedDuration))} : {}),
     ...(operationIdentity?.operation === 'kling-edit' || isH3SourceOperation(operationIdentity?.operation) || isFluxLtxSourceOperation(operationIdentity?.operation)
       ? {input_video_seconds:billedDuration} : {}),
     output_units: facts.quantity,

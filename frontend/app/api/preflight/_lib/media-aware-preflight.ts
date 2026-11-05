@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isFluxLtxSourceOperation, validateFluxLtxSource } from '@/lib/flux-ltx-operations';
 import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
@@ -373,7 +374,7 @@ export async function resolveAdmittedMediaAwarePreflight(
     }
   }
   let inheritedDurationSec: number | undefined;
-  if (engine.id === 'kling-v4') {
+  if (isKlingV4FalQueueEngineId(engine.id)) {
     inputVideoDurationSec = (processed.trustedMediaReferences ?? []).filter(ref => ref.kind === 'video')
       .reduce((sum,ref) => sum + (ref.durationSec ?? NaN), 0);
     if (sourceDurationRequested) {
@@ -426,7 +427,7 @@ export async function resolveAdmittedMediaAwarePreflight(
   const priced = normalizeSeedancePricingContext({ ...request, engine, resolution: request.resolution ?? '480p', seedanceEditSource, seedanceSourceAspectRatio });
   return computeConfiguredPreflightFn({ ...request, durationSec: inheritedDurationSec ?? operationSeconds ?? (needsLumaSourceTiming && request.mode === 'v2v'
     ? lumaModifyTariffDurationSec(processed.trustedDurationSecByField.video_url![0]!) : priced.durationSec),
-    ...(engine.id==='kling-v4'?{hasVideoInput:Number(inputVideoDurationSec)>0}:needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
+    ...(isKlingV4FalQueueEngineId(engine.id)?{hasVideoInput:Number(inputVideoDurationSec)>0}:needsSeedanceReferenceDuration ? { hasVideoInput: true } : {}),
     ...(seedanceEditSource ? { durationSec: seedanceEditSource.billedDurationSec, aspectRatio: seedanceEditSource.pricingAspectRatio } : {}),
   }, {
     seedanceWorkflowStep: input.trustedSeedanceWorkflow?.workflow.step,

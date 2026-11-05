@@ -1,3 +1,5 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {videoWorkflowPreference} from '@/lib/video-workflow-review';
@@ -88,7 +90,7 @@ function requiresOwnedReferenceAsset(
   engineId: string,
   engine: EngineCaps,
 ): boolean {
-  if(engineId==='kling-v4')return true;
+  if(isKlingV4FalQueueEngineId(engineId) || isGptImage26EngineId(engineId))return true;
   const ownedAssetModes = engine.inputSchema?.constraints?.ownedAssetModes;
   if (Array.isArray(ownedAssetModes) && ownedAssetModes.includes(toEngineGenerationMode(engineId, mode))) {
     return true;
@@ -298,6 +300,8 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   middle_frame_time: 'middleFrameTime',
   reference_order: 'referenceOrder',
   quality: 'quality',
+  complexity: 'complexity',
+  background: 'background',
   retake_mode: 'retakeMode',
   seed: 'seed',
   shot_type: 'shotType',
@@ -461,7 +465,7 @@ export function projectAgentModelModeDetails(
     ]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
-    ...(candidate.engine.id === 'kling-v4' && ['ref2v','v2v'].includes(mode) ? {subjects:{max:7 as const,maxVideo:mode==='ref2v'?3 as const:0 as const,maxVoiced:mode==='ref2v'?3 as const:0 as const,voiceBinding:'unavailable' as const,identity:'owned_reference_slots' as const,imageViews:{min:1 as const,max:3 as const}}} : {}),
+    ...((candidate.engine.id === 'kling-v4' && ['ref2v','v2v'].includes(mode)) || (candidate.engine.id === 'kling-v4-flash' && mode === 'ref2v') ? {subjects:{max:7 as const,maxVideo:mode==='ref2v'?3 as const:0 as const,maxVoiced:candidate.engine.id === 'kling-v4' && mode==='ref2v'?3 as const:0 as const,voiceBinding:'unavailable' as const,identity:'owned_reference_slots' as const,imageViews:{min:1 as const,max:3 as const}}} : {}),
     ...(referenceRequirement ? { referenceRequirement } : {}),
   });
 }

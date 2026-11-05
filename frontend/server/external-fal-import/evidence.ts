@@ -1,3 +1,4 @@
+import { isKlingExternalFalImport } from './kling-v4';
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
 import { canonicalImportJson, importDigest, type ExternalFalImport } from './contract';
@@ -5,10 +6,13 @@ import type { ImportAsset, ImportEvidence } from '../external-fal-import';
 import { probeExternalImportVideo } from './probe';
 import { verifyExternalReferenceCopies } from './reference-copies';
 import { createOwnedMediaReadUrl } from '../owned-media-read-access';
+import { readExternalFalRecordedFiles } from './recorded-files';
 
 const MAX_MEDIA_BYTES = 80 * 1024 * 1024;
 export function verifyImportJournal(input: ExternalFalImport, journal: Buffer) {
   if (createHash('sha256').update(journal).digest('hex') !== input.evidenceSha256) throw new Error('IMPORT_JOURNAL_HASH_MISMATCH');
+  const recordedFiles = readExternalFalRecordedFiles(input, journal.toString('utf8'));
+  if (recordedFiles) return recordedFiles;
   const entries = journal.toString('utf8').trim().split('\n').map(line => JSON.parse(line));
   const submissions = entries.filter(entry => entry.event === 'submission_started');
   const acknowledgements = entries.filter(entry => entry.event === 'accepted');
@@ -110,14 +114,14 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
   const fetcher = options.fetcher ?? fetch;
   const readUrl = options.readUrl ?? createOwnedMediaReadUrl;
   const video = assets.find(asset => asset.public_id === input.videoAssetId)!;
-  const maximum = input.engineId === 'kling-v4' ? 300 * 1024 * 1024 : MAX_MEDIA_BYTES;
+  const maximum = isKlingExternalFalImport(input) ? 300 * 1024 * 1024 : MAX_MEDIA_BYTES;
   const providerBytes = await readBytes(providerVideoUrl, fetcher, maximum);
   assertDigest(providerBytes, input.videoSha256, 'provider-video');
   const durableBytes = await readBytes(await readUrl({ url: video.url, userId: input.ownerUserId }), fetcher, maximum);
   assertDigest(durableBytes, input.videoSha256, 'durable-video');
   const posterBytes = await readBytes(await readUrl({ url: video.thumb_url!, userId: input.ownerUserId }), fetcher, 8 * 1024 * 1024);
   let display: ImportEvidence['display'];
-  if (input.engineId === 'kling-v4') {
+  if (isKlingExternalFalImport(input)) {
     if (video.thumb_url !== input.media.poster.url || video.preview_url !== input.media.preview.url
       || [input.media.poster.url, input.media.preview.url].includes(video.url)) throw new Error('IMPORT_KLING_PREVIEW_OR_POSTER_MISMATCH');
     assertDigest(posterBytes, input.media.poster.sha256, 'poster');
@@ -137,18 +141,19 @@ export async function verifyExternalFalEvidence(input: ExternalFalImport, assets
   let referenceVideoDuration = 0;
   for (const reference of input.references) {
     const asset = assets.find(candidate => candidate.public_id === reference.assetId)!;
-    const isVideo = input.engineId === 'kling-v4' && 'kind' in reference && reference.kind === 'video';
-    const referenceMaximum = isVideo ? 300 * 1024 * 1024 : input.engineId === 'kling-v4' ? 30 * 1024 * 1024 : 20 * 1024 * 1024;
+    const isVideo = isKlingExternalFalImport(input) && 'kind' in reference && reference.kind === 'video';
+    const referenceMaximum = isVideo ? 300 * 1024 * 1024 : isKlingExternalFalImport(input) ? 30 * 1024 * 1024 : 20 * 1024 * 1024;
     const original = await readBytes(providerMediaUrl(reference.providerUrl), fetcher, referenceMaximum);
     const stored = await readBytes(await readUrl({ url: asset.url, userId: input.ownerUserId }), fetcher, referenceMaximum);
     if (isVideo) {
       const measured = await probeExternalImportVideo(stored, { url: asset.url, sha256: reference.sha256, sizeBytes: stored.length });
-      if (measured.mediaFacts.durationSec < 3 || measured.mediaFacts.durationSec > 30.05) throw new Error('IMPORT_KLING_SOURCE_VIDEO_DURATION_LIMIT');
+      const maximumSeconds = input.engineId === 'kling-v4-flash' ? (reference.slotId.startsWith('elements.') ? 8.05 : 20.05) : 30.05;
+      if (measured.mediaFacts.durationSec < 3 || measured.mediaFacts.durationSec > maximumSeconds) throw new Error('IMPORT_KLING_SOURCE_VIDEO_DURATION_LIMIT');
       referenceVideoDuration += measured.mediaFacts.durationSec;
     }
     referenceProofs.push(await verifyExternalReferenceCopies(reference, original, stored));
   }
-  if (input.engineId === 'kling-v4' && input.mode === 'ref2v' && referenceVideoDuration > 30) throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
+  if (isKlingExternalFalImport(input) && input.mode === 'ref2v' && referenceVideoDuration > (input.engineId === 'kling-v4-flash' ? 20 : 30)) throw new Error('IMPORT_KLING_REFERENCE_VIDEO_DURATION_LIMIT');
   const measured = await probeExternalImportVideo(durableBytes, { url: video.url, sha256: input.videoSha256, sizeBytes: durableBytes.length });
   if (display && display.preview.durationSec > measured.mediaFacts.durationSec + 0.1) throw new Error('IMPORT_KLING_PREVIEW_LONGER_THAN_ORIGINAL');
   return { ...(display ? { display } : {}), referenceProofs, providerResultSha256, providerVideoUrl, verifiedAt: new Date().toISOString(),

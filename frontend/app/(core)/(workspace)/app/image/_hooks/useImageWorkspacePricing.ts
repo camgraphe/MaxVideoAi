@@ -22,6 +22,7 @@ type ImagePricingKey = [
   string,
   string,
   number,
+  string,
 ];
 
 export function useImageWorkspacePricing({
@@ -31,6 +32,7 @@ export function useImageWorkspacePricing({
   mode,
   numImages,
   quality,
+  complexity,
   readyReferenceSizes,
   referenceSizeSignature,
   resolution,
@@ -44,6 +46,7 @@ export function useImageWorkspacePricing({
   mode: ImageGenerationMode;
   numImages: number;
   quality: string | null;
+  complexity?: string | null;
   readyReferenceSizes: Array<{ width?: number | null; height?: number | null }>;
   referenceSizeSignature: string;
   resolution: string | null;
@@ -66,6 +69,7 @@ export function useImageWorkspacePricing({
       referenceSizeSignature,
       aspectRatio ?? '',
       referenceImageCount,
+      complexity ?? '',
     ];
   }, [
     customImageHeight,
@@ -74,6 +78,7 @@ export function useImageWorkspacePricing({
     mode,
     numImages,
     quality,
+  complexity,
     referenceSizeSignature,
     resolution,
     selectedEngineId,
@@ -100,6 +105,7 @@ export function useImageWorkspacePricing({
       ,
       requestAspectRatio,
       requestReferenceImageCount,
+      requestComplexity,
     ]) => {
       const requestCustomImageSize =
         requestResolution === 'custom'
@@ -118,6 +124,7 @@ export function useImageWorkspacePricing({
           aspectRatio: requestAspectRatio || undefined,
           referenceImageCount: requestReferenceImageCount,
           quality: requestQuality || undefined,
+          complexity: requestComplexity || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
         }),
       });

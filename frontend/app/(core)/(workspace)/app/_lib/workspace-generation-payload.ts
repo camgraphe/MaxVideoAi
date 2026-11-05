@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { withoutRetiredOutputControls } from '@/lib/generation-output-policy';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
@@ -140,7 +141,7 @@ export function buildWorkspaceGeneratePayload(
     ...((options.form.operation === 'flux-draft-enhance' || (options.form.engineId === 'luma-ray-3-2' && requestMode === 'extend')) && options.form.extraInputValues.source_job_id ? {sourceJobId:String(options.form.extraInputValues.source_job_id),...(options.form.extraInputValues.source_output_id ? {sourceOutputId:String(options.form.extraInputValues.source_output_id)} : {})} : {}),
     membershipTier: 'Member',
     payment: { mode: options.paymentMode },
-    cfgScale: options.selectedEngineId !== 'kling-v4' && typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
+    cfgScale: !isKlingV4FalQueueEngineId(options.selectedEngineId) && typeof options.cfgScale === 'number' ? options.cfgScale : undefined,
     ...(options.selectedEngineId.startsWith('sora-2')
       ? { variant: options.selectedEngineId === 'sora-2-pro' ? 'sora2pro' : 'sora2' }
       : {}),
@@ -160,7 +161,7 @@ export function buildWorkspaceGeneratePayload(
     ...(options.endImageUrl ? { endImageUrl: options.endImageUrl } : {}),
     ...(Object.keys(options.extraInputValues).length ? { extraInputValues: options.extraInputValues } : {}),
     ...(options.multiPromptPayload && options.multiPromptPayload.length ? { multiPrompt: options.multiPromptPayload } : {}),
-    ...(options.selectedEngineId === 'kling-v4' && options.klingElementsPayload ? { elements: options.klingElementsPayload } : {}),
+    ...(isKlingV4FalQueueEngineId(options.selectedEngineId) && options.klingElementsPayload ? { elements: options.klingElementsPayload } : {}),
     ...(options.supportsKlingV3Controls
       ? {
           shotType: options.activeMode === 'i2v' ? 'customize' : options.shotType,
@@ -183,7 +184,7 @@ export function buildWorkspaceGeneratePayload(
     etaLabel: options.etaLabel,
     visibility: 'private',
     indexable: false,
-    ...(options.selectedEngineId !== 'kling-v4' && typeof options.form.loop === 'boolean' ? { loop: options.form.loop } : {}),
+    ...(!isKlingV4FalQueueEngineId(options.selectedEngineId) && typeof options.form.loop === 'boolean' ? { loop: options.form.loop } : {}),
   };
 
   return {

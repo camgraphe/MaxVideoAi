@@ -77,7 +77,7 @@ export async function persistFinalVideoJobUpdate(params: {
            indexable = $20,
            message = $21,
            settings_snapshot = CASE
-             WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($10, provider_job_id) IS NOT NULL
+             WHEN provider = 'fal' AND engine_id IN ('kling-v4', 'kling-v4-flash') AND COALESCE($10, provider_job_id) IS NOT NULL
                THEN jsonb_set(COALESCE($22::jsonb, '{}'::jsonb), '{falQueueReceiptRequired}',
                  jsonb_build_object('requestId', COALESCE($10, provider_job_id)), true)
              ELSE $22::jsonb

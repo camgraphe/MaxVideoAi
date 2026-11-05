@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { getUserMembershipStatus, type UserMembershipStatus } from '@/server/membership/user-membership-status';
 
 import { computeGenerationCatalogRevision } from './catalog-revision';
@@ -572,7 +573,7 @@ export async function calculateAgentProjectBudget(
       } catch (error) {
         mapCapabilityError(error, proposalIndex, lineIndex);
       }
-      if (engineId === 'kling-v4' && ['i2v', 'ref2v', 'v2v'].includes(mode) && referenceRoles.length > 0) {
+      if (isKlingV4FalQueueEngineId(engineId) && ['i2v', 'ref2v', 'v2v'].includes(mode) && referenceRoles.length > 0) {
         editProjectLine(
           'REFERENCE_REQUIRED',
           'Kling reference pricing requires actual owned media to verify reference types and video timing. Use prepare_generation with asset references for a fixed customer quote.',

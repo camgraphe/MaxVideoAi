@@ -136,6 +136,29 @@ test('expired previews and disabled admission fail closed without tariff writes'
   assert.equal((await counts(db)).cells, '0');
 }));
 
+test('all 72 Flash prices commit with an immutable receipt while existing Kling 4 prices remain identical', async () => fixture(async ({ db }) => {
+  await confirm(await previewTariffBatch(proposal(226), actor));
+  const previous = (await db.pool.query('SELECT * FROM app_customer_tariff_cells ORDER BY id')).rows;
+  const flash: TariffBatchProposal = { schemaVersion: 1, modelId: 'kling-v4-flash', intent: 'create_missing',
+    reason: 'Approved Flash plus thirty percent', pricing: { kind: 'list_multiplier', multiplier: '1.30' },
+    selections: klingBatchClasses('kling-v4-flash').map(row => ({ selector: row.selector })) };
+  const preview = await previewTariffBatch(flash, actor);
+  assert.deepEqual(preview.plan.counts, { create: 72, update: 0, unchanged: 0, conflict: 0 });
+  const done = await confirm(preview);
+  assert.equal(done.status, 'committed');
+  assert.equal(done.receipt?.plan.modelId, 'kling-v4-flash');
+  assert.equal(done.receipt?.changes.length, 72);
+  assert.equal(done.receipt?.revisionBefore, 226);
+  assert.equal(done.receipt?.revisionAfter, 298);
+  assert.ok(done.receipt!.changes.every(change => change.after.selector.engineId === 'kling-v4-flash'));
+  assert.deepEqual((await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4' ORDER BY id")).rows, previous);
+  assert.deepEqual((await confirm(preview)).receipt, done.receipt);
+  assert.deepEqual(await counts(db), { revision: '298', cells: '298', versions: '0', events: '298', receipts: '2' });
+  const resumed = await previewTariffBatch(flash, actor);
+  assert.equal(resumed.plan.counts.unchanged, 72);
+  assert.equal((await confirm(resumed)).receipt?.changes.length, 0);
+}));
+
 test('unit edits serialize with a batch and a quote waiting on it rejects the stale revision', async () => fixture(async f => {
   const { lockQuotedCustomerTariffRevision } = await import('../frontend/server/pricing/customer-tariff-revision');
   const created = await confirm(await previewTariffBatch(proposal(), actor));

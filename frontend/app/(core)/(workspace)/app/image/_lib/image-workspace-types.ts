@@ -99,6 +99,7 @@ export type PersistedImageComposerState = {
   maskUrl: string | null;
   enableWebSearch: boolean;
   thinkingLevel: string | null;
+  complexity?: string | null;
   limitGenerations: boolean;
   watermark: boolean;
   referenceSlots: PersistedReferenceSlot[];

@@ -2,15 +2,15 @@ import { buildManualTariffCoverageScenario, type ManualTariffCoverageScenario } 
 import { klingV4TariffContexts } from './kling-v4-tariff-contexts';
 
 /** Qualified admin timing classes; this inventory neither publishes V4 nor supplies a customer amount. */
-export function klingV4TariffScenarios(): ManualTariffCoverageScenario[] {
-  return klingV4TariffContexts().map(({ context, capabilityKey }) => buildManualTariffCoverageScenario(context, capabilityKey));
+export function klingV4TariffScenarios(engineId: 'kling-v4' | 'kling-v4-flash' = 'kling-v4'): ManualTariffCoverageScenario[] {
+  return klingV4TariffContexts(engineId).map(({ context, capabilityKey }) => buildManualTariffCoverageScenario(context, capabilityKey));
 }
 
 export function withKlingV4TariffInput(
   scenario: ManualTariffCoverageScenario,
   seconds: number,
 ): ManualTariffCoverageScenario {
-  const supportedInputClass = scenario.modelId === 'kling-v4'
+  const supportedInputClass = ['kling-v4', 'kling-v4-flash'].includes(scenario.modelId)
     && scenario.selector.billingInputType === 'video_input'
     && ['ref2v', 'v2v'].includes(scenario.selector.mode);
   if (!supportedInputClass) throw new Error('Unsupported Kling V4 input class.');
@@ -21,8 +21,8 @@ export function withKlingV4TariffInput(
 
 export function resolveKlingV4TariffScenarioId(scenarios: readonly ManualTariffCoverageScenario[], id: string) {
   const requested = Object.fromEntries(new URLSearchParams(id.replaceAll('|', '&')));
-  if (requested.engineId !== 'kling-v4') return null;
-  const base = scenarios.find(scenario => scenario.modelId === 'kling-v4'
+  if (!['kling-v4', 'kling-v4-flash'].includes(requested.engineId)) return null;
+  const base = scenarios.find(scenario => scenario.modelId === requested.engineId
     && Object.entries(scenario.selector).every(([key, value]) =>
       key === 'inputVideoDurationSec' || requested[key] === value));
   if (!base) return null;
@@ -31,4 +31,8 @@ export function resolveKlingV4TariffScenarioId(scenarios: readonly ManualTariffC
       ? withKlingV4TariffInput(base, Number(requested.inputVideoDurationSec)) : base;
     return resolved.id === id ? resolved : null;
   } catch { return null; }
+}
+
+export function klingV4FamilyTariffScenarios(): ManualTariffCoverageScenario[] {
+  return [...klingV4TariffScenarios(), ...klingV4TariffScenarios('kling-v4-flash')];
 }

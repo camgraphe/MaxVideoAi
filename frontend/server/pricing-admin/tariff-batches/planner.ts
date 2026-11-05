@@ -1,12 +1,11 @@
 import { ManualTariffError, resolveManualTariffCell, type ManualTariffCell } from '@maxvideoai/pricing';
 import type { PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
-import { klingV4PricingUsage } from '@/lib/kling-v4-pricing';
 import { validateCustomerTariffCell, type EffectiveCustomerTariffState } from '@/server/pricing/customer-tariff-store';
 import { validateCurrentContinuousTariffDomain } from '@/server/pricing/compile-current-continuous-tariff';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { PricingAdminError } from '../errors';
 import { batchSelectorKey, parseTariffBatchProposal } from './input';
-import { compileKlingBatchPrice, klingBatchClasses, type KlingBatchClass } from './kling';
+import { compileKlingBatchPrice, klingBatchClasses, klingBatchUsage, type KlingBatchClass } from './kling';
 import type { TariffBatchPlan, TariffBatchProposal, TariffBatchReceipt, TariffBatchRow } from './contract';
 
 export function stableBatchJson(value: unknown): string {
@@ -34,7 +33,7 @@ export async function buildTariffBatchPlan(input: {
   if (state.status !== 'loaded' || policy.status !== 'loaded') throw new PricingAdminError('database_unavailable', 'Current pricing snapshot unavailable.');
   if (!state.active) throw new PricingAdminError('unsupported_scenario', 'An active tariff registry is required.');
   const at = input.at ?? new Date().toISOString();
-  const classes = klingBatchClasses(), byKey = new Map(classes.map(row => [row.key, row]));
+  const classes = klingBatchClasses(proposal.modelId), byKey = new Map(classes.map(row => [row.key, row]));
   const index = (cells: ManualTariffCell[]) => {
     const grouped = new Map<string, ManualTariffCell[]>();
     for (const cell of cells) {
@@ -54,7 +53,7 @@ export async function buildTariffBatchPlan(input: {
     if (!definition) throw new PricingAdminError('unsupported_scenario', 'Unsupported canonical tariff class.');
     const row: TariffBatchRow = { key, scenarioId: definition.scenario.id, selector: definition.selector,
       action: 'conflict', previousCell: null, proposedCell: null, currentCents: null, proposedCents: null,
-      supplierListCents: klingV4PricingUsage(definition.scenario.context).supplierExactCents };
+      supplierListCents: klingBatchUsage(definition).supplierExactCents };
     rows.push(row);
     try {
       const selectedState = { ...state, databaseCells: databaseByKey.get(key) ?? [], versionedCells: versionedByKey.get(key) ?? [] };
@@ -77,7 +76,8 @@ export async function buildTariffBatchPlan(input: {
       let desired;
       if (proposal.intent === 'rollback') {
         const receipt = input.rollbackReceipt;
-        const change = receipt?.operationId === proposal.sourceOperationId ? receipt.changes.find(c => c.key === key) : null;
+        const change = receipt?.operationId === proposal.sourceOperationId && receipt.plan.modelId === proposal.modelId
+          ? receipt.changes.find(c => c.key === key) : null;
         if (!change?.before) throw new Error('Active creations cannot be rolled back to absence.');
         if (!previous || stableBatchJson(previous) !== stableBatchJson(change.after)) throw new Error('This tariff changed since the selected operation.');
         desired = change.before.price;
@@ -105,6 +105,6 @@ export async function buildTariffBatchPlan(input: {
   }
   const counts = { create: 0, update: 0, unchanged: 0, conflict: 0 };
   for (const row of rows) counts[row.action]++;
-  return { modelId: 'kling-v4', intent: proposal.intent, reason: proposal.reason, revision: state.revision,
+  return { modelId: proposal.modelId, intent: proposal.intent, reason: proposal.reason, revision: state.revision,
     currency: 'USD', datePolicy: 'server_now_per_cell', fullScopeCount: classes.length, rows, counts };
 }

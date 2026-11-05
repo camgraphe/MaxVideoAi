@@ -39,6 +39,7 @@ export async function persistCompletedImageGeneration(params: {
   style?: string | null;
   thinkingLevel: string | null;
   providerUsage?: unknown;
+  openAIRecoveryLease?: string;
   userId: string;
   vendorAccountId: string | null;
   visibility: 'public' | 'private';
@@ -79,7 +80,7 @@ export async function persistCompletedImageGeneration(params: {
   const heroThumb = resolveHeroThumbFromRenders(images) ?? hero;
   const renderIdsJson = JSON.stringify(storedRenderEntries);
 
-  await query(
+  const completedRows = await query(
     `UPDATE app_jobs
      SET thumb_url = $2,
          preview_frame = $2,
@@ -101,7 +102,11 @@ export async function persistCompletedImageGeneration(params: {
          provider = $16,
          provisional = FALSE,
          updated_at = NOW()
-     WHERE job_id = $1`,
+     WHERE job_id = $1${params.openAIRecoveryLease ? `
+       AND user_id = $17 AND payment_status = 'paid_wallet' AND status NOT IN ('completed','failed')
+       AND EXISTS (SELECT 1 FROM app_openai_image_results r WHERE r.job_id = app_jobs.job_id
+         AND r.user_id = $17 AND r.state = 'received' AND r.lease_token = $18 AND r.lease_expires_at > NOW())` : ''}
+     RETURNING job_id`,
     [
       jobId,
       heroThumb ?? PLACEHOLDER_THUMB,
@@ -119,8 +124,12 @@ export async function persistCompletedImageGeneration(params: {
       hero,
       paymentStatus ?? 'paid_wallet',
       providerMode,
+      ...(params.openAIRecoveryLease ? [userId, params.openAIRecoveryLease] : []),
     ]
   );
+  if (params.openAIRecoveryLease && !completedRows.length) {
+    throw new Error('This image job is no longer eligible for output completion.');
+  }
 
   await upsertLegacyJobOutputs({
     job_id: jobId,

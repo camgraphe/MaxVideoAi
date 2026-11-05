@@ -1,0 +1,27 @@
+{
+  "source": "https://developers.openai.com/api/docs/guides/image-generation#calculating-costs",
+  "calculatorAsset": "https://developers.openai.com/_astro/GptImageTokenCalculator.react.D6vlJVKl.js?dpl=dpl_9RFzRdfxNjneAc7CDLct9VzrGqG3",
+  "checkedAt": "2026-11-05",
+  "sha256": "c48a3c9ab7fdc873e9ff9972123971ce3ae27030e30374cbda2d0d08ba58add1",
+  "scope": "GPT Image 2.6 output-token estimates only. No input-token bound or invoice cost established.",
+  "samples": [
+    {
+      "width": 1024,
+      "height": 1024,
+      "quality": "low",
+      "outputTokens": 823
+    },
+    {
+      "width": 1024,
+      "height": 1024,
+      "quality": "medium",
+      "outputTokens": 1449
+    },
+    {
+      "width": 1024,
+      "height": 1024,
+      "quality": "high",
+      "outputTokens": 1756
+    }
+  ]
+}

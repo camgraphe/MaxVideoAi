@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
@@ -125,7 +126,7 @@ function normalizedSetup(setup: WorkspaceModelSetup, engine: EngineCaps, workflo
   const cfgParam = engine.params?.cfg_scale;
   return {
     ...setup, form: { ...form, extraInputValues }, inputAssets,
-    klingElements: (workflow.supportsKlingV3Controls || engine.id === 'kling-v4') ? setup.klingElements : [],
+    klingElements: (workflow.supportsKlingV3Controls || isKlingV4FalQueueEngineId(engine.id)) ? setup.klingElements : [],
     multiPromptEnabled: (workflow.supportsKlingV3Controls || engine.id === 'kling-v4') && setup.multiPromptEnabled,
     shotType: !workflow.supportsKlingV3Controls || workflow.activeMode === 'i2v' ? 'customize' as const : setup.shotType,
     cfgScale: cfgParam ? setup.cfgScale ?? cfgParam.default : null,
@@ -201,7 +202,7 @@ export function prepareWorkspaceModelCandidate({ engine: targetEngine, current, 
   }
   const seed = restoreSetup ?? current;
   if (restoreSetup && restoreSetup.form.engineId !== engine.id) blockingReasons.push({code: 'invalid-reference', scope: 'apply', message: 'Saved configuration belongs to another model.'});
-  const preserveV4Draft = engine.id === 'kling-v4' && seed.form.engineId === engine.id;
+  const preserveV4Draft = isKlingV4FalQueueEngineId(engine.id) && seed.form.engineId === engine.id;
   const requestedMode = getPreferredEngineModeForEngineRequest({ engine, requestedMode: null, carryoverMode: current.form.mode });
   let setup: WorkspaceModelSetup = structuredClone(seed);
   if (!restoreSetup) {

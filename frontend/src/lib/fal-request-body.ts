@@ -1,3 +1,4 @@
+import { buildKlingV4FlashFalRequest, isKlingV4FlashEngineId } from '@/lib/kling-v4-flash';
 import { buildFluxLtxRequest } from './flux-ltx-request';
 import { resolveVideoOperationEngine, videoOperationEndpoint } from '@/lib/video-operation';
 import { applyFalLegacyVideoContracts } from '@/lib/fal-legacy-video-contracts';
@@ -37,6 +38,7 @@ export function buildFalGenerationRequest(
   payload: GeneratePayload,
   defaultModel: string
 ): { model: string; requestBody: Record<string, unknown> } {
+  if (isKlingV4FlashEngineId(payload.engineId)) return buildKlingV4FlashFalRequest(payload);
   if (isKlingV4EngineId(payload.engineId)) return buildKlingV4FalRequest(payload);
   const operationEndpoint = videoOperationEndpoint(payload.engineId, payload.mode ?? 't2v', payload.operation);
   const fluxLtx = buildFluxLtxRequest(payload);

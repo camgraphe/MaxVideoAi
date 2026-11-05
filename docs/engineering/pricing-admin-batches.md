@@ -1,7 +1,8 @@
 # Admin tariff batches
 
 The optional **Tariff batches** section in `/admin/pricing` authors literal prices
-for the complete 226-class Kling 4 domain or an explicitly selected subset. It
+for either the complete 226-class Kling 4 domain, the 72-class Kling 4.0 Flash
+domain, or an explicitly selected subset of one model. It
 neither publishes the model nor enables generation. The existing unit editor and
 canonical billing owners remain authoritative. No runtime coefficient is added.
 
@@ -31,11 +32,16 @@ already committed prices.
 `server/pricing-admin/tariff-batches/` owns the workflow:
 
 - `kling.ts` adapts canonical scenarios, deduplicates continuous Modify into two
-  classes, and compiles LIST recipes using decimal integer arithmetic.
+  Kling 4 classes, and compiles LIST recipes using decimal integer arithmetic.
+  Flash has 54 fixed classes and 18 continuous reference-video classes, with its
+  own supplier rates, source date and 20-second aggregate input bound. Supplier
+  provenance is bound to the selected model in the operation fingerprint.
 - `input.ts` accepts strict bounded USD proposals: at most 226 distinct classes,
   a 1–10 multiplier with at most six fractional digits, or explicit fixed/unit
   prices. HTTP bodies are limited to 2 MiB. Client actor, timestamps, currency,
-  target IDs, expiry and routing properties are rejected.
+  target IDs, expiry and routing properties are rejected. A batch cannot mix model
+  selectors or restore prices from another model's receipt. Flash has no Modify,
+  1080p or 21–30-second classes; those selections fail canonical validation.
 - `planner.ts` resolves actual effective cells from a complete model-scoped snapshot (including every exact exception and historical/future interval), preserves their stable IDs, quotes
   through `computeCanonicalBillingSnapshot`, and validates continuous domains
   through `validateCurrentContinuousTariffDomain`. Unavailable state never means
@@ -121,6 +127,18 @@ options endpoint. This example selects the 5-second 720p text-to-video class:
 Continuous prices use `kind=unit_terms`, `rounding=up`, and one term with
 `unit=billable_seconds` and a literal `centsPerUnit`. Supply continuous selectors
 from the canonical options; do not enumerate sampled input durations.
+
+The model selector resets selections, mode/resolution filters and the draft
+preview. The initial LIST recipe is 1.50 for Kling 4 and the user-approved 1.30
+for Flash; it still requires a fresh complete preview and confirmation. Exact
+imports and restored operations display the model saved in their plan. The
+approved Flash launch import is
+`docs/launch/2026-11-05-model-refresh/flash-tariff-batch.json`; it contains 72 literal
+prices with `create_missing`, so an existing different price blocks the batch.
+That file records an approved proposal, not an applied operation or deployment
+admission. Apply only through the reviewed deployed native route, keep its UUID,
+and read its durable receipt. Source binding, regional placement, deadlines and
+reconciliation rules are unchanged.
 
 ## Local verification and operational limits
 

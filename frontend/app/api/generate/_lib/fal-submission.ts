@@ -1,3 +1,4 @@
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import type { FalQueueReceipt } from '@/lib/fal-queue-receipt';
 import type {NativeFluxDraftSubmission} from '@/server/flux-draft-provenance';
 import { resolveOwnedFluxDraftSource } from '@/server/flux-draft-cache-store';
@@ -92,7 +93,7 @@ export async function markJobAwaitingFal(params: {
            message = COALESCE($3::text, message),
            provider_job_id = COALESCE($4, provider_job_id),
            settings_snapshot = CASE
-             WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($4, provider_job_id) IS NOT NULL
+             WHEN provider = 'fal' AND engine_id IN ('kling-v4', 'kling-v4-flash') AND COALESCE($4, provider_job_id) IS NOT NULL
                THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{falQueueReceiptRequired}',
                  jsonb_build_object('requestId', COALESCE($4, provider_job_id)), true)
              ELSE settings_snapshot
@@ -283,7 +284,7 @@ export async function submitFalGenerateTask(params: {
 
     // A request id cannot turn a definitive enqueue rejection into a pending job.
     const uncertainSubmission = phase === 'submission_unknown' || (phase === undefined && providerSubmissionStarted
-      && (params.falPayload.submissionMode === 'enqueue' || params.engineId === 'kling-v4')
+      && (params.falPayload.submissionMode === 'enqueue' || isKlingV4FalQueueEngineId(params.engineId))
       && (!status || status >= 500 || status === 408));
     if (isTimeoutError || uncertainSubmission) {
       const progressFloor = Math.min(95, FAL_PROGRESS_FLOOR + FAL_RETRY_DELAYS_MS.length * 5);
@@ -359,7 +360,7 @@ export async function submitFalGenerateTask(params: {
              provisional = FALSE,
              provider_job_id = COALESCE($3, provider_job_id),
              settings_snapshot = CASE
-               WHEN provider = 'fal' AND engine_id = 'kling-v4' AND COALESCE($3, provider_job_id) IS NOT NULL
+               WHEN provider = 'fal' AND engine_id IN ('kling-v4', 'kling-v4-flash') AND COALESCE($3, provider_job_id) IS NOT NULL
                  THEN jsonb_set(COALESCE(settings_snapshot, '{}'::jsonb), '{falQueueReceiptRequired}',
                    jsonb_build_object('requestId', COALESCE($3, provider_job_id)), true)
                ELSE settings_snapshot

@@ -1,3 +1,5 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { getRuntimeModelById } from '../../../config/model-runtime';
 import { videoOperationEndpoint } from '@/lib/video-operation';
 import {
   isBytePlusModelArkEnabled,
@@ -48,6 +50,7 @@ export type AgentGenerationExecutabilityEnvironment = Readonly<{
   bytePlusLasEnabled?: boolean;
   bytePlusModelArkEditEnabled?: boolean;
   falApiKey?: string | undefined;
+  openaiApiKey?: string | undefined;
   providerEnv?: Readonly<Record<string, string | undefined>>;
 }>;
 
@@ -61,6 +64,7 @@ export function createAgentGenerationExecutabilityEnvironment(
     bytePlusLasEnabled: isBytePlusLasExecutionEnabled(),
     bytePlusModelArkEditEnabled: isBytePlusModelArkEditExecutionEnabled(),
     falApiKey: ENV.FAL_API_KEY,
+    openaiApiKey: providerEnv.OPENAI_API_KEY,
     providerEnv,
   };
 }
@@ -192,6 +196,14 @@ function resolveAgentGenerationModeOperationExecutability(
   }
 
   const providerEnv = environment.providerEnv ?? process.env;
+
+  if (engine.providerMeta?.provider === 'openai_images') {
+    if (!isGptImage26EngineId(engine.id) || !['t2i', 'i2i'].includes(mode)
+      || engine.providerMeta.modelSlug !== engine.id.replace('2-6', '2.6')) return { executable: false, reason: 'profile_invalid' };
+    if (getRuntimeModelById(engine.id)?.publication.app.published !== true) return { executable: false, reason: 'provider_disabled' };
+    return credentialDecision(configured(environment.openaiApiKey ?? providerEnv.OPENAI_API_KEY)
+      && ['S3_BUCKET','S3_REGION','S3_ACCESS_KEY_ID','S3_SECRET_ACCESS_KEY'].every(key => configured(providerEnv[key])));
+  }
 
   if (engine.providerMeta?.provider === 'google_vertex_image') {
     if (!configured(engine.providerMeta.modelSlug)) {

@@ -1,3 +1,5 @@
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { gptImage26TariffContexts } from './gpt-image-26-tariff-contexts';
 import { NANO21_ENGINE_ID, NANO21_DEFAULT_MAX_OUTPUT_TOKENS } from '@/lib/nano-banana-2-1';
 import { getFalEngineById } from '@/config/falEngines';
 import { listRuntimeModels } from '@/config/model-runtime';
@@ -105,14 +107,20 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
       gaps.push({ modelId: model.id, reason: 'No executable engine catalog entry' });
       continue;
     }
-    if (model.id === 'kling-v4') {
-      for (const { context, capabilityKey } of klingV4TariffContexts()) {
+    if (model.id === 'kling-v4' || model.id === 'kling-v4-flash') {
+      for (const { context, capabilityKey } of klingV4TariffContexts(model.id)) {
         if (scope.mode !== undefined && context.mode !== scope.mode) continue;
         scenarios.push(buildManualTariffCoverageScenario(context, capabilityKey));
       }
-      for (const mode of ['ref2v', 'v2v']) {
+      for (const mode of (model.id === 'kling-v4-flash' ? ['ref2v'] : ['ref2v', 'v2v'])) {
         if (scope.mode !== undefined && mode !== scope.mode) continue;
         gaps.push({ modelId: model.id, reason: `${mode}: fractional input video duration needs a continuous unit tariff` });
+      }
+      continue;
+    }
+    if (isGptImage26EngineId(model.id)) {
+      for (const { context, capabilityKey } of gptImage26TariffContexts()) {
+        if (context.engine.id === model.id && (scope.mode === undefined || scope.mode === context.mode)) scenarios.push(buildManualTariffCoverageScenario(context, capabilityKey));
       }
       continue;
     }
@@ -248,4 +256,8 @@ export async function collectEffectiveCustomerTariffBaseline(input: {
     }
   }
   return { at: input.at, registryHash: input.registryHash, databaseIdentity: input.databaseIdentity, rows, gaps };
+}
+
+export function gptImage26TariffScenarios(): ManualTariffCoverageScenario[] {
+  return gptImage26TariffContexts().map(({ context, capabilityKey }) => buildManualTariffCoverageScenario(context, capabilityKey));
 }
