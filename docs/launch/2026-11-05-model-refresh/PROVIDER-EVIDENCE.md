@@ -106,3 +106,18 @@ Milo gets exact-ID documented facts, without inherited measured quality rankings
 The seven mode contracts, existing V4 subjects/workspace regressions and MCP client
 gate pass offline. Browser, database, tariff and account qualification remain
 separate evidence gates in the release ledger.
+
+## Environment inventory and first account evidence — 2026-11-05
+
+Vercel env inventory was read without decrypted values. The connector response
+was truncated at 100 of 395 entries, so the CLI read-only JSON inventory completed
+the check: OPENAI_API_KEY, FAL_KEY, S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID and
+S3_SECRET_ACCESS_KEY are all present for the general Preview and Production scopes.
+This proves presence, not key equality or successful deployed execution.
+
+The user approved seven original cinema renders within a 10 USD operational
+budget, with no automatic retry. I1 Flare and I2 Sunburst both returned one valid
+1024² PNG via the new direct client/payload/response owners. Output token usage
+was 1758 and 1756 respectively, with 279 text-input tokens each. The official
+calculator remains an estimator: its 1756-token output prediction is not an exact
+invoice promise. No public admission or customer tariff was changed.

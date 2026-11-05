@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useMemo, useState } from 'react';
-import type { ImageGenerationMode } from '@/types/image-generation';
+import { useImageComposerValues } from './_hooks/useImageComposerValues';
 import { ImageMediaHandoff } from './_components/ImageMediaHandoff.client';
 import { ImageWorkspaceComposerSurface } from './_components/ImageWorkspaceComposerSurface';
 import { ImageWorkspaceEmptyState, ImageWorkspaceLoadingState } from './_components/ImageWorkspaceEmptyState';
@@ -33,25 +33,15 @@ type ImageWorkspaceProps = { accountId: string | null; engines: ImageEngineOptio
 
 export default function ImageWorkspace({ engines, accountId }: ImageWorkspaceProps) {
   const { advancedSettingsTitle, loginRedirectTarget, resolvedCopy, searchParams, toolsEnabled } = useImageWorkspaceRouteContext();
-  const [engineId, setEngineId] = useState(() => engines[0]?.id ?? '');
-  const [mode, setMode] = useState<ImageGenerationMode>('t2i');
-  const [prompt, setPrompt] = useState('');
-  const [numImages, setNumImages] = useState(1);
-  const [aspectRatio, setAspectRatio] = useState<string | null>(null);
-  const [resolution, setResolution] = useState<string | null>(null);
-  const [customImageWidth, setCustomImageWidth] = useState<string>('');
-  const [customImageHeight, setCustomImageHeight] = useState<string>('');
-  const [seed, setSeed] = useState<string>('');
-  const [outputFormat, setOutputFormat] = useState<string | null>(null);
-  const [quality, setQuality] = useState<string | null>(null);
-  const [background, setBackground] = useState<string | null>(null);
-  const [style, setStyle] = useState<string | null>(null);
-  const [maskUrl, setMaskUrl] = useState<string>('');
-  const [enableWebSearch, setEnableWebSearch] = useState(false);
-  const [thinkingLevel, setThinkingLevel] = useState<string | null>(null);
-  const [complexity, setComplexity] = useState<string | null>(null);
-  const [limitGenerations, setLimitGenerations] = useState(false);
-  const [watermark, setWatermark] = useState(false);
+  const {
+    engineId, setEngineId, mode, setMode, prompt, setPrompt,
+    numImages, setNumImages, aspectRatio, setAspectRatio, resolution, setResolution,
+    customImageWidth, setCustomImageWidth, customImageHeight, setCustomImageHeight, seed, setSeed,
+    outputFormat, setOutputFormat, quality, setQuality, background, setBackground,
+    style, setStyle, maskUrl, setMaskUrl, enableWebSearch, setEnableWebSearch,
+    thinkingLevel, setThinkingLevel, complexity, setComplexity, limitGenerations, setLimitGenerations,
+    watermark, setWatermark,
+  } = useImageComposerValues(engines[0]?.id ?? '');
   const [localHistory, setLocalHistory] = useState<HistoryEntry[]>([]);
   const [selectedPreviewEntryId, setSelectedPreviewEntryId] = useState<string | null>(null);
   const [selectedPreviewImageIndex, setSelectedPreviewImageIndex] = useState(0);

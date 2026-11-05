@@ -6,12 +6,12 @@ const source=`
 import {useImageComposerPersistence} from './app/(core)/(workspace)/app/image/_hooks/useImageComposerPersistence';
 import {listFalEngines} from './src/config/falEngines';
 const config=window.imageCase,entry=listFalEngines().find(x=>x.id===config.engineId),engines=[{id:entry.id,engineCaps:entry.engine,modes:['t2i','i2i'],aliases:[entry.id]}],references=[];
-const setters=Object.fromEntries(['EngineId','Mode','Prompt','NumImages','AspectRatio','Resolution','Seed','OutputFormat','Quality','Background','Style','MaskUrl','EnableWebSearch','ThinkingLevel','LimitGenerations','Watermark','ReferenceSlots'].map(name=>['set'+name,noop]));
+const setters=Object.fromEntries(['EngineId','Mode','Prompt','NumImages','AspectRatio','Resolution','Seed','OutputFormat','Quality','Background','Style','MaskUrl','EnableWebSearch','ThinkingLevel','Complexity','LimitGenerations','Watermark','ReferenceSlots'].map(name=>['set'+name,noop]));
 function App(){const [width,setWidth]=useState(''),[height,setHeight]=useState(''),[ratio,setRatio]=useState(null);
  const storage=useImageComposerPersistence({...setters,...config,aspectRatio:ratio,accountId:'owner',engines,prompt:'Synthetic manual prompt',customImageWidth:width,customImageHeight:height,persistableReferenceSlots:references,setCustomImageWidth:setWidth,setCustomImageHeight:setHeight,setAspectRatio:setRatio});
  return <output data-ready={storage.storageHydrated} data-aspect={ratio===null?'absent':ratio}>{width}×{height}</output>;
 }`;
-const base={mode:'t2i',numImages:1,aspectRatio:'1:1',resolution:'1k',seed:'',outputFormat:null,quality:null,background:null,style:null,maskUrl:'',enableWebSearch:false,thinkingLevel:null,limitGenerations:false,watermark:false};
+const base={mode:'t2i',numImages:1,aspectRatio:'1:1',resolution:'1k',seed:'',outputFormat:null,quality:null,background:null,style:null,maskUrl:'',enableWebSearch:false,thinkingLevel:null,complexity:null,limitGenerations:false,watermark:false};
 
 for(const scenario of [
  {name:'a model without dimension fields keeps them empty',engineId:'nano-banana-2-1',customImageSize:null,want:'×'},

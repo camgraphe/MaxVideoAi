@@ -11,7 +11,7 @@ import {initialStatus} from './helpers/milo-status-fixture';
 import {imageWorkspaceReloadBrowserSource as source,imageWorkspaceReloadHostModules as hostModules} from './helpers/image-workspace-reload-browser-source';
 
 const manual='An empty synthetic sports hall in soft indoor light.';
-const settings={seed:'',style:null,quality:null,numImages:1,watermark:false,background:null,resolution:'1k',aspectRatio:'1:1',outputFormat:null,thinkingLevel:'medium',enableWebSearch:false,customImageWidth:'',limitGenerations:false,customImageHeight:''};
+const settings={seed:'',style:null,quality:null,numImages:1,watermark:false,background:null,resolution:'1k',aspectRatio:'1:1',outputFormat:null,thinkingLevel:'medium',complexity:null,enableWebSearch:false,customImageWidth:'',limitGenerations:false,customImageHeight:''};
 const publicCase={draft:{mode:'t2i',text:manual,target:'prompt',surface:'image',engineId:'nano-banana-2-1',settings,workflow:'create',references:[],readOnlyText:{}},message:'A new photographic portrait of a synthetic sports referee.',reply:{text:'A natural square photographic portrait in an empty sports hall.',reply:'Review this square composition.'}};
 const owner='image-reload-owner',chatKey=`milo-composer:v2:${JSON.stringify([owner,'image','create'])}`,formKey=`maxvideoai.image.composer.v1:${owner}`;
 

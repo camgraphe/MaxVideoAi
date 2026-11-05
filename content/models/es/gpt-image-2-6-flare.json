@@ -1,0 +1,263 @@
+{
+  "marketingName": "GPT Image 2.6 Flare",
+  "versionLabel": "2.6",
+  "seo": {
+    "title": "GPT Image 2.6 Flare — Crear y editar imágenes ráster | MaxVideoAI",
+    "description": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta."
+  },
+  "overview": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta.",
+  "pricingNotes": [
+    "Este lanzamiento está en fase de validación para App, Studio y MCP. La disponibilidad depende del modelo y modo indicados en tu espacio.",
+    "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
+  ],
+  "hero": {
+    "title": "GPT Image 2.6 Flare — Crear y editar imágenes ráster",
+    "intro": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta.",
+    "badge": "PNG · JPEG · WebP",
+    "ctaPrimary": {
+      "label": "Abrir el espacio de creación",
+      "href": "/app/image?engine=gpt-image-2-6-flare"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Leer especificaciones",
+        "href": "#specs"
+      }
+    ]
+  },
+  "bestUseCases": [
+    "Escena cinematográfica",
+    "Edición controlada"
+  ],
+  "faqs": [
+    {
+      "q": "Leer especificaciones",
+      "a": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta. Se admiten PNG, JPEG y WebP. La transparencia requiere PNG o WebP. GIF, SVG, máscaras y edición por anotaciones quedan fuera de esta primera entrega."
+    },
+    {
+      "q": "Referencias visuales originales",
+      "a": "Edita con entre 1 y 16 imágenes originales PNG, JPEG o WebP de tu biblioteca, de hasta 25 MB cada una. Studio acepta ocho referencias y una salida por acción."
+    },
+    {
+      "q": "Precios",
+      "a": "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
+    },
+    {
+      "q": "Calidad y complejidad",
+      "a": "Flare y Sunburst son opciones distintas. No se anuncian resultados comparativos de calidad o latencia antes de realizar pruebas equivalentes."
+    }
+  ],
+  "custom": {
+    "whyTitle": "GPT Image 2.6 Flare",
+    "heroHighlights": [
+      "Calidad y complejidad||La calidad controla el renderizado. La complejidad controla la planificación. Define el sujeto y las restricciones en cada nivel.",
+      "Referencias visuales originales||Edita con entre 1 y 16 imágenes originales PNG, JPEG o WebP de tu biblioteca, de hasta 25 MB cada una. Studio acepta ocho referencias y una salida por acción.",
+      "Imagen ráster||Se admiten PNG, JPEG y WebP. La transparencia requiere PNG o WebP. GIF, SVG, máscaras y edición por anotaciones quedan fuera de esta primera entrega."
+    ],
+    "specTitle": "Leer especificaciones",
+    "specNote": "Se admiten PNG, JPEG y WebP. La transparencia requiere PNG o WebP. GIF, SVG, máscaras y edición por anotaciones quedan fuera de esta primera entrega.",
+    "specSections": [
+      {
+        "title": "Escena cinematográfica",
+        "body": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta.",
+        "items": []
+      },
+      {
+        "title": "Edición controlada",
+        "body": "Edita con entre 1 y 16 imágenes originales PNG, JPEG o WebP de tu biblioteca, de hasta 25 MB cada una. Studio acepta ocho referencias y una salida por acción.",
+        "items": []
+      }
+    ]
+  },
+  "decision": {
+    "modelSlug": "gpt-image-2-6-flare",
+    "hero": {
+      "eyebrow": "GPT IMAGE 2.6 FLARE",
+      "title": "GPT Image 2.6 Flare — Crear y editar imágenes ráster",
+      "subtitle": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta.",
+      "subtitleHighlights": [
+        "1024"
+      ],
+      "paragraph": "Este lanzamiento está en fase de validación para App, Studio y MCP. La disponibilidad depende del modelo y modo indicados en tu espacio.",
+      "primaryCta": {
+        "label": "Abrir el espacio de creación",
+        "href": "/app/image?engine=gpt-image-2-6-flare"
+      },
+      "secondaryCta": {
+        "label": "Leer especificaciones",
+        "href": "#specs"
+      },
+      "quickLinks": [
+        {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Ver el precio actual",
+          "href": "/es/precios#gpt-image-2-6-flare-pricing"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
+      "description": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
+      "renderLabel": "Ejemplos",
+      "badges": [
+        "GPT Image 2.6 Flare",
+        "PNG · JPEG · WebP"
+      ],
+      "altContext": "GPT Image 2.6 Flare — Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto."
+    },
+    "features": [
+      {
+        "title": "Calidad y complejidad",
+        "body": "La calidad controla el renderizado. La complejidad controla la planificación. Define el sujeto y las restricciones en cada nivel.",
+        "tone": "quality"
+      },
+      {
+        "title": "Referencias visuales originales",
+        "body": "Edita con entre 1 y 16 imágenes originales PNG, JPEG o WebP de tu biblioteca, de hasta 25 MB cada una. Studio acepta ocho referencias y una salida por acción.",
+        "tone": "reference"
+      },
+      {
+        "title": "Imagen ráster",
+        "body": "Se admiten PNG, JPEG y WebP. La transparencia requiere PNG o WebP. GIF, SVG, máscaras y edición por anotaciones quedan fuera de esta primera entrega.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Escena cinematográfica",
+        "body": "Describe qué conservar y qué cambiar. Asigna un papel concreto a cada referencia.",
+        "cta": {
+          "label": "Explorar ideas de prompts",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Calidad y complejidad",
+        "body": "Flare y Sunburst son opciones distintas. No se anuncian resultados comparativos de calidad o latencia antes de realizar pruebas equivalentes.",
+        "cta": {
+          "label": "GPT Image 2.6 Sunburst",
+          "href": "/es/modelos/gpt-image-2-6-sunburst"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Escena cinematográfica",
+        "body": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta."
+      },
+      {
+        "title": "Edición controlada",
+        "body": "Edita con entre 1 y 16 imágenes originales PNG, JPEG o WebP de tu biblioteca, de hasta 25 MB cada una. Studio acepta ocho referencias y una salida por acción."
+      }
+    ],
+    "pricingCopy": {
+      "title": "GPT Image 2.6 Flare — Precios",
+      "subtitle": "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo.",
+      "footnote": "Este lanzamiento está en fase de validación para App, Studio y MCP. La disponibilidad depende del modelo y modo indicados en tu espacio.",
+      "ctaLabel": "Ver el precio actual",
+      "ctaHref": "/es/precios#gpt-image-2-6-flare-pricing",
+      "maxDurationNote": "Hasta cuatro imágenes en App y MCP; una en Studio."
+    },
+    "meta": {
+      "title": "GPT Image 2.6 Flare — Crear y editar imágenes ráster | MaxVideoAI",
+      "description": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta."
+    }
+  },
+  "prompting": {
+    "modelSlug": "gpt-image-2-6-flare",
+    "section": {
+      "title": "Explorar ideas de prompts — GPT Image 2.6 Flare",
+      "intro": "Brief de producción — selección de medios pendiente",
+      "tip": "Describe qué conservar y qué cambiar. Asigna un papel concreto a cada referencia.",
+      "guide": {
+        "label": "Leer la documentación del proveedor",
+        "href": "https://developers.openai.com/api/docs/guides/image-generation"
+      },
+      "referencesTitle": "Referencias visuales originales"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe qué conservar y qué cambiar. Asigna un papel concreto a cada referencia.",
+      "Utiliza tus propias imágenes y vídeos originales.",
+      "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
+    ],
+    "engineWhy": [
+      "La calidad controla el renderizado. La complejidad controla la planificación. Define el sujeto y las restricciones en cada nivel."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Explorar ideas de prompts",
+      "intro": "Brief de producción — selección de medios pendiente",
+      "workspaceLabel": "Abrir el espacio de creación",
+      "items": [
+        {
+          "id": "cinema",
+          "title": "La última bobina — fotograma",
+          "badge": "1024 × 1024",
+          "kind": "image",
+          "prompt": "Create one photorealistic cinematic film still, a square 1024x1024 image, not a poster or a collage. An original fictional adult woman, about 32, short dark curly hair, expressive brown eyes, a worn ochre cotton chore jacket over a charcoal T-shirt and dark trousers, is caught mid-stride in the backstage corridor of a small 1970s cinema. She grips a round opaque dark blue matte film canister against her ribs with her left arm, her right hand reaching toward a heavy burgundy velvet curtain at the right edge. She has just found something important: breathless, determined, almost smiling, looking off-frame right toward a colleague. Strong diagonal composition with a readable face, natural skin texture, visible fingers and convincing weight. Eye-level medium shot, 35mm cinema lens, subtle analog grain, warm tungsten practical bulbs against teal painted plaster, low-key yet legible lighting. Rich burgundy, ochre and petrol-blue palette. Solid painted doors, opaque props and matte surfaces only; no mirrors, glass, transparent objects, glossy reflections, water, screens, text, logos or subtitles. The moment must feel like an actual frame from a character-driven caper film, with tension and life, not a fashion pose. Keep the face and canister within the central 70 percent for flexible gallery crops."
+        },
+        {
+          "id": "edit",
+          "title": "Retoque de continuidad del vestuario",
+          "badge": "1024 × 1024",
+          "kind": "edit",
+          "prompt": "Edit this exact cinematic still. Preserve the woman's identity, facial expression, short dark curls, visible fingers, body pose, film canister, camera position, background corridor and velvet curtain. Change only her ochre cotton jacket to a rich oxblood red fabric with the same cut, seams, wear and folds. Keep all skin tones, lighting direction, shadows, analog grain and the dark blue opaque matte canister unchanged. A seamless wardrobe continuity edit for a feature film. No mirrors, transparent objects, text, logos or extra people."
+        }
+      ]
+    }
+  },
+  "examples": {
+    "modelSlug": "gpt-image-2-6-flare",
+    "showWhenEmpty": false,
+    "section": {
+      "title": "GPT Image 2.6 Flare — Ejemplos",
+      "intro": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recrear con estos ajustes"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todos"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-0",
+        "icon": "image",
+        "title": "Escena cinematográfica",
+        "body": "Elige 1024 × 1024, 1536 × 1024 o 1024 × 1536 píxeles, cinco niveles de calidad y complejidad de planificación baja, media o alta."
+      },
+      {
+        "id": "proof-1",
+        "icon": "users",
+        "title": "Referencias visuales originales",
+        "body": "Usa tus propias imágenes originales."
+      },
+      {
+        "id": "proof-2",
+        "icon": "pen",
+        "title": "Explorar ideas de prompts",
+        "body": "Describe qué conservar y qué cambiar. Asigna un papel concreto a cada referencia."
+      },
+      {
+        "id": "proof-3",
+        "icon": "shield",
+        "title": "Precios",
+        "body": "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
+      },
+      {
+        "id": "proof-4",
+        "icon": "sparkles",
+        "title": "Ejemplos",
+        "body": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto."
+      }
+    ],
+    "fallbackItems": null
+  }
+}

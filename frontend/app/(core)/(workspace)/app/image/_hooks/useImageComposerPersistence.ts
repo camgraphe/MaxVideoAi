@@ -357,6 +357,7 @@ export function useImageComposerPersistence({
       maskUrl: maskUrl.trim().length ? maskUrl.trim() : null,
       enableWebSearch,
       thinkingLevel,
+      complexity,
       limitGenerations,
       watermark,
       referenceSlots: persistableReferenceSlots,

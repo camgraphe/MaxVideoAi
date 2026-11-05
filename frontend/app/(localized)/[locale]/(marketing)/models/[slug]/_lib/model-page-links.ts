@@ -17,6 +17,7 @@ export const COMPARE_EXCLUDED_SLUGS = new Set([
   'gpt-image-2',
   'gpt-image-2-5-flare',
   'gpt-image-2-5-sunburst',
+  'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst',
   'seedream',
   'seedream-5-0-pro',
   'luma-uni-1',

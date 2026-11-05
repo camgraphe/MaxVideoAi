@@ -1,3 +1,4 @@
+import { klingV4FlashTemplateConfig, gptImage26FlareTemplateConfig, gptImage26SunburstTemplateConfig } from './model-page-templates/nov05-models';
 import type { ModelPageTemplateConfig } from './model-page-template-types';
 import { geminiOmniFlashTemplateConfig } from './model-page-templates/gemini-omni-flash';
 import { gptImage2TemplateConfig } from './model-page-templates/gpt-image-2';
@@ -59,6 +60,9 @@ import { wan3TemplateConfig } from './model-page-templates/wan-3';
 import { wan3PrimeTemplateConfig } from './model-page-templates/wan-3-prime';
 
 const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
+  [klingV4FlashTemplateConfig.slug]: klingV4FlashTemplateConfig,
+  [gptImage26FlareTemplateConfig.slug]: gptImage26FlareTemplateConfig,
+  [gptImage26SunburstTemplateConfig.slug]: gptImage26SunburstTemplateConfig,
   [geminiOmniFlashTemplateConfig.slug]: geminiOmniFlashTemplateConfig,
   [gptImage2TemplateConfig.slug]: gptImage2TemplateConfig,
   [gptImage25FlareTemplateConfig.slug]: gptImage25FlareTemplateConfig,

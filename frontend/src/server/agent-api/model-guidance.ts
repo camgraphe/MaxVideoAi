@@ -1,5 +1,5 @@
 import guidanceDocument from '@/config/agent-model-guidance.json' with { type: 'json' };
-import { getModelRegistryEntries } from '@/config/model-registry';
+import { getModelRegistryEntries, getModelRegistryEntryById } from '@/config/model-registry';
 export {getAgentModelEditorialGuidance,getAgentModelEditorialSummary,type AgentModelEditorialGuidance,type AgentModelEditorialSummary} from './model-editorial-policy';
 
 export type AgentModelUseCase =
@@ -176,9 +176,9 @@ const guidance = parseAgentModelGuidance(guidanceDocument, knownEngineIds);
 const guidanceByEngineId = new Map(guidance.map((entry) => [entry.engineId, entry]));
 
 export function listAgentModelGuidance(): readonly AgentModelGuidance[] {
-  return Object.freeze([...guidance]);
+  return Object.freeze(guidance.filter(entry => getModelRegistryEntryById(entry.engineId)?.publication.model.published));
 }
 
 export function getAgentModelGuidance(engineId: string): AgentModelGuidance | null {
-  return guidanceByEngineId.get(engineId) ?? null;
+  return getModelRegistryEntryById(engineId)?.publication.model.published ? guidanceByEngineId.get(engineId) ?? null : null;
 }

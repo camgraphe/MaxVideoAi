@@ -414,7 +414,7 @@ export async function priceCanonicalGeneration(
     numImages: request.outputCount,
     resolution: requiredString(settings, 'resolution'),
     quality: optionalString(settings, 'quality') as ImageGenerationRequest['quality'],
-    complexity: optionalString(settings, 'complexity') as ImageGenerationRequest['complexity'],
+    ...(settings.complexity === undefined ? {} : { complexity: optionalString(settings, 'complexity') as ImageGenerationRequest['complexity'] }),
     aspectRatio: optionalString(settings, 'aspectRatio'),
     referenceImageCount: canonicalImageReferences(request).length,
     referenceImageSizes: canonicalImageReferenceSizes(request, referenceContext),

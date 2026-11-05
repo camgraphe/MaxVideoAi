@@ -16,6 +16,7 @@ test('a saved image model restores its settings after the initial model normaliz
   const baseCaps = listFalEngines().find(entry => entry.category === 'image')!.engine;
   const fields = [
     { id: 'quality', type: 'select', values: ['low', 'high'], default: 'low' },
+    { id: 'complexity', type: 'select', values: ['low', 'medium', 'high'], default: 'high' },
     { id: 'seed', type: 'number' }, { id: 'enable_web_search', type: 'boolean', default: false },
     { id: 'watermark', type: 'boolean', default: false }, { id: 'resolution', type: 'select', values: ['custom'], default: 'custom' },
     { id: 'image_width', type: 'number', default: 1024 }, { id: 'image_height', type: 'number', default: 1024 },
@@ -23,11 +24,11 @@ test('a saved image model restores its settings after the initial model normaliz
   const engines = ['first', 'saved'].map((id, index) => ({ id, name: id, modes: ['t2i'], aliases: [], prompts: [], pricePerImage: 0.1, currency: 'USD',
     engineCaps: { ...baseCaps, id, modes: ['t2i'], inputSchema: { required: [], optional: index ? fields : [] } } }));
   dom.window.localStorage.setItem('maxvideoai.image.composer.v1:guest', JSON.stringify({ version: 5, engineId: 'saved', mode: 't2i',
-    prompt: 'My saved prompt', numImages: 1, quality: 'high', seed: 42, enableWebSearch: true, watermark: true,
+    prompt: 'My saved prompt', numImages: 1, quality: 'high', complexity: 'low', seed: 42, enableWebSearch: true, watermark: true,
     resolution: 'custom', customImageSize: { width: 1536, height: 512 }, referenceSlots: [] }));
   const initial = { engineId: 'first', mode: 't2i', prompt: '', numImages: 1, aspectRatio: null, background: null, resolution: null,
     customImageWidth: '', customImageHeight: '', seed: '', outputFormat: null, quality: null, style: null, maskUrl: '',
-    enableWebSearch: false, thinkingLevel: null, limitGenerations: false, watermark: false, referenceSlots: [] };
+    enableWebSearch: false, thinkingLevel: null, complexity: null, limitGenerations: false, watermark: false, referenceSlots: [] };
   let observed: typeof initial;
   function Fixture() {
     const [state, setState] = React.useState(initial);
@@ -45,6 +46,9 @@ test('a saved image model restores its settings after the initial model normaliz
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
     await React.act(async () => root.render(React.createElement(Fixture)));
+    assert.equal(observed!.complexity, 'low');
+    dom.window.dispatchEvent(new dom.window.Event('pagehide'));
+    assert.equal(JSON.parse(dom.window.localStorage.getItem('maxvideoai.image.composer.v1:guest')!).complexity, 'low');
     assert.deepEqual({ engineId: observed!.engineId, prompt: observed!.prompt, quality: observed!.quality, seed: observed!.seed,
       webSearch: observed!.enableWebSearch, watermark: observed!.watermark, width: observed!.customImageWidth, height: observed!.customImageHeight },
     { engineId: 'saved', prompt: 'My saved prompt', quality: 'high', seed: '42', webSearch: true, watermark: true, width: '1536', height: '512' });

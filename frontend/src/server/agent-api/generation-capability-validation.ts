@@ -1,5 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
-import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { gptImage26ReferenceFailure, isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { validateLumaCanonicalShape } from './generation-luma-shape';
@@ -894,6 +894,10 @@ function validateReferences(
   if (options.resolvedReferences) {
     const resolvedKeys = new Set<string>();
     for (const resolved of options.resolvedReferences) {
+      if (isGptImage26EngineId(request.engineId)) {
+        const failure = gptImage26ReferenceFailure(resolved);
+        if (resolved.mediaKind !== 'image' || failure) fail('references', 'reference_invalid', failure ?? 'format_unsupported');
+      }
       const key = `${resolved.assetId}\u0000${resolved.role}\u0000${resolved.slot ?? ''}`;
       if (resolvedKeys.has(key)) fail('references', 'reference_invalid');
       resolvedKeys.add(key);

@@ -15,6 +15,16 @@ const asset = (assetId='reference',role='reference') => ({kind:'asset',assetId,r
 const flash = (mode='ref2v', patch:Record<string,unknown>={}) => normalizeGenerationRequest({surface:'video',engineId:'kling-v4-flash',mode,prompt:'A cinematic scene',settings:{durationSec:5,resolution:'720p',...(mode!=='i2v'?{aspectRatio:'16:9'}:{})},references:mode==='t2v'?[]:[asset('reference',mode==='i2v'?'first_frame':'reference')],...patch});
 const facts = (request:ReturnType<typeof flash>,seconds=5):ResolvedReference[] => request.references.map(ref=>({assetId:ref.kind==='asset'?ref.assetId:'',role:ref.role,slot:ref.slot,mediaKind:'video',storageUrl:'https://media.maxvideoai.com/user-assets/ref.mp4',width:1280,height:720,durationSec:seconds,mimeType:'video/mp4',sizeBytes:1024,fps:30}));
 
+test('GPT Image 2.6 rejects invalid owned reference metadata before a canonical quote', () => {
+  const request = normalizeGenerationRequest({ surface: 'image', engineId: 'gpt-image-2-6-flare', mode: 'i2i', prompt: 'Change the background', references: [asset()], settings: {} });
+  const original: ResolvedReference = { assetId: 'reference', role: 'reference', mediaKind: 'image', storageUrl: 'https://media.maxvideoai.com/user-assets/original.png', mimeType: 'image/png', sizeBytes: 1024, width: 1024, height: 1024, durationSec: null };
+  const validate = (reference: ResolvedReference) => validateCanonicalGenerationCapabilities(request, candidate(request.engineId), { resolvedReferences: [reference] });
+  validate(original);
+  for (const patch of [{ mimeType: 'image/heic' }, { sizeBytes: 25 * 1024 * 1024 + 1 }, { sizeBytes: null }, { width: null }, { height: 0 }]) {
+    assert.throws(() => validate({ ...original, ...patch }), /not executable/);
+  }
+});
+
 for (const id of ['gpt-image-2-6-flare','gpt-image-2-6-sunburst']) for (const mode of ['t2i','i2i']) test(`${id}/${mode} preserves canonical raster controls and is Studio certified but release closed`,()=>{
   const raw={surface:'image',engineId:id,mode,prompt:'A product study',settings:{resolution:'1024x1024',quality:'max',complexity:'low',background:'transparent',outputFormat:'webp'},references:mode==='i2i'?[asset()]:[],outputCount:1};
   const request=normalizeGenerationRequest(raw);

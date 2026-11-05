@@ -9,6 +9,18 @@ export const GPT_IMAGE_26_COMPLEXITIES = ['low', 'medium', 'high'] as const;
 // models. Custom/auto dimensions need separate 2.6 pricing and access qualification.
 export const GPT_IMAGE_26_SIZES = ['1024x1024', '1536x1024', '1024x1536'] as const;
 export const isGptImage26EngineId = (id: string | null | undefined): boolean => GPT_IMAGE_26_IDS.some(value => value === id);
+
+/** Owned original metadata must be admissible before either a quote or submission. */
+export function gptImage26ReferenceFailure(reference: {
+  mimeType?: string | null; sizeBytes?: number | null; width?: number | null; height?: number | null;
+}): 'metadata_unverified' | 'format_unsupported' | 'size_exceeded' | 'dimensions_unverified' | null {
+  if (!reference.mimeType || !Number.isSafeInteger(reference.sizeBytes) || !(reference.sizeBytes! > 0)) return 'metadata_unverified';
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(reference.mimeType)) return 'format_unsupported';
+  if (reference.sizeBytes! > 25 * 1024 * 1024) return 'size_exceeded';
+  if (!Number.isSafeInteger(reference.width) || !Number.isSafeInteger(reference.height)
+    || !(reference.width! > 0 && reference.height! > 0)) return 'dimensions_unverified';
+  return null;
+}
 const schema = z.object({
   resolution: z.enum(GPT_IMAGE_26_SIZES).default('1024x1024'),
   quality: z.enum(GPT_IMAGE_26_QUALITIES).default('high'),

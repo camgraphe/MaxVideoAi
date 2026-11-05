@@ -1,9 +1,6 @@
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
-import type {
-  PricingPolicyDocument,
-  PricingPolicyRule,
-} from '@maxvideoai/pricing';
+import type { PricingPolicyDocument, PricingPolicyRule } from '@maxvideoai/pricing';
 
 import { listFalEngines } from '@/config/falEngines';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';

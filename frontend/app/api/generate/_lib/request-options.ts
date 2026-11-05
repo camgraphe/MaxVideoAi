@@ -92,19 +92,8 @@ export type GenerateRequestOptionsResult =
       metric?: GenerateRequestOptionsMetric;
     };
 export function isVideoMode(value: unknown): value is VideoMode {
-  return (
-    value === 't2v' ||
-    value === 'i2v' ||
-    value === 'ref2v' ||
-    value === 'fl2v' ||
-    value === 'i2i' ||
-    value === 'v2v' ||
-    value === 'r2v' ||
-    value === 'a2v' ||
-    value === 'extend' ||
-    value === 'retake' ||
-    value === 'reframe'
-  );
+  return typeof value === 'string' && ['t2v', 'i2v', 'ref2v', 'fl2v', 'i2i', 'v2v',
+    'r2v', 'a2v', 'extend', 'retake', 'reframe'].includes(value);
 }
 export function buildGenerateRequestOptions(params: {
   body: Record<string, unknown>;

@@ -239,7 +239,7 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     if (options.multiPromptActive && options.submissionMode === 'v2v') return { ok: false, message: 'Kling 4.0 Edit does not support a shot plan.' };
     const shots = getWorkspaceMultiPromptState({ active: options.multiPromptActive, scenes: options.multiPromptScenes, minDurationSec: 3, maxDurationSec: 30, strictIntegerDurations: true });
     if (shots.invalid) return { ok: false, message: shots.error! };
-    if (!options.multiPromptActive && (!Number.isInteger(options.form.durationSec) || options.form.durationSec < 3 || options.form.durationSec > (options.selectedEngineId === 'kling-v4-flash' ? 20 : 30))) return { ok: false, message: 'Kling 4.0 output duration must be 3–30 whole seconds.' };
+    if (!options.multiPromptActive && (!Number.isInteger(options.form.durationSec) || options.form.durationSec < 3 || options.form.durationSec > (options.selectedEngineId === 'kling-v4-flash' ? 20 : 30))) return { ok: false, message: options.selectedEngineId === 'kling-v4-flash' ? 'Kling 4.0 Flash output duration must be 3–20 whole seconds.' : 'Kling 4.0 output duration must be 3–30 whole seconds.' };
   }
   const schemaFields = [...(options.inputSchema?.required ?? []), ...(options.inputSchema?.optional ?? [])];
   if (((!isUnifiedSeedanceEngineId(options.selectedEngineId) && hasMultimodalReferenceFields(schemaFields))

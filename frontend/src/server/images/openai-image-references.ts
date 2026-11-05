@@ -1,6 +1,7 @@
 import { query } from '@/lib/db';
 import { ownedMediaStorageKeyForUrl, createSignedDownloadUrl } from '@/server/storage';
 import { OpenAIImageError } from './openai-image-error';
+import { gptImage26ReferenceFailure } from '@/lib/image/gptImage26';
 
 /** JSON edits let OpenAI fetch short-lived URLs; no unowned URL is ever signed. */
 export async function prepareOpenAIImageReferences(params: { userId: string; urls: string[] }, deps: {
@@ -17,8 +18,7 @@ export async function prepareOpenAIImageReferences(params: { userId: string; url
        WHERE user_id = $1 AND url = ANY($2::text[]) AND kind = 'image' AND status = 'ready' AND deleted_at IS NULL`, [params.userId, params.urls]);
   for (const url of params.urls) {
     const row = rows.find(item => item.url === url);
-    if (!row || !['image/png', 'image/jpeg', 'image/webp'].includes(row.mime_type) || !(Number(row.size_bytes) > 0 && Number(row.size_bytes) <= 25 * 1024 * 1024)
-      || !Number.isSafeInteger(row.width) || !Number.isSafeInteger(row.height) || row.width <= 0 || row.height <= 0) throw reject();
+    if (!row || gptImage26ReferenceFailure({ mimeType: row.mime_type, sizeBytes: Number(row.size_bytes), width: row.width, height: row.height })) throw reject();
   }
   return Promise.all(keys.map(key => (deps.signFn ?? createSignedDownloadUrl)(key!, { expiresInSeconds: 3600 })));
 }
