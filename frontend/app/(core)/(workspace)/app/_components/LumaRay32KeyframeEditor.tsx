@@ -32,6 +32,7 @@ const COMPACT_TIMELINE_SLOT_WIDTH = 122;
 const MIN_TIMELINE_WIDTH = 680;
 
 export type LumaRay32KeyframeEditorProps = {
+  referenceTarget?:{fieldId:string;slot:number;revision:number};
   engine: EngineCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
@@ -50,6 +51,7 @@ function getFieldEntry(assetFields: AssetFieldConfig[], fieldId: string): AssetF
 }
 
 export function LumaRay32KeyframeEditor({
+  referenceTarget,
   engine,
   form,
   setForm,
@@ -351,6 +353,20 @@ export function LumaRay32KeyframeEditor({
     },
     [keyframeEntry, keyframesUploadDisabledReason, onNotice, onOpenLibrary]
   );
+
+  const handledReferenceTarget=useRef<typeof referenceTarget>();
+  useEffect(()=>{
+    if(!referenceTarget||handledReferenceTarget.current===referenceTarget)return;
+    handledReferenceTarget.current=referenceTarget;
+    if(referenceTarget.fieldId!==imageFieldId||!keyframeAssets[referenceTarget.slot])return;
+    const index=keyframeSlots.findIndex(slot=>slot.assetSlot===referenceTarget.slot);
+    if(index<0)return;
+    // Presentation only: existing keyframe controls retain upload, removal and timing ownership.
+    setSelectedSlotIndex(index);
+    const control=keyframeSlotRefs.current[referenceTarget.slot];
+    control?.scrollIntoView({block:'center',inline:'nearest'});
+    control?.querySelector<HTMLButtonElement>('button')?.focus({preventScroll:true});
+  },[referenceTarget,imageFieldId,keyframeAssets,keyframeSlots]);
 
   if ((!isFluxMax && !sourceVideoEntry) || !keyframeEntry) return null;
 

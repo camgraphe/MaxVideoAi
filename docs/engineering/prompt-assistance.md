@@ -78,6 +78,11 @@ finish, or the user may replace/remove that reference explicitly. Current owned
 references and an empty optional reference list remain valid; recovery of an
 already sent request retains its original identity and bypasses this new-send
 check. Server ownership and source validation remain authoritative.
+Only fields with an existing owner expose Manage. Flux/Luma keyframes, which are
+intentionally outside the compact picker, target their existing timeline control
+by asset slot; this selects/focuses the control without opening Media, uploading,
+removing or changing timing. Account/workflow/model changes discard the target.
+Fields without a mounted owner retain the notice without an inoperative action.
 
 The image app guide recommends `/app/tools/upscale` for appropriate sharpness or
 degradation requests, with explicit tool quote review and SeedVR2 fidelity limits:

@@ -31,7 +31,7 @@ import { useComposerGenerationGate } from '@/components/composer/useComposerGene
 import { GenerationActionHelp } from '@/components/composer/GenerationActionHelp.client';
 import { PromptAssistanceComposer } from '@/components/composer/PromptAssistanceComposer.client';
 import { applicationReviewKey } from '@/lib/prompt-assistance/application-review';
-import { composerAssistanceReferences, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
+import { composerAssistanceReferences, composerAssistanceReferenceField, hasResolvingAssistanceReferences } from '@/lib/prompt-assistance/client-context';
 import { PROMPT_ASSISTANCE_PREVIEW } from '@/lib/prompt-assistance/preview-state';
 import assistanceStyles from '@/components/composer/prompt-assistance.module.css';
 import type { ComposerProps } from '@/components/composer/composer-types';
@@ -46,7 +46,7 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
-  density = 'default', compactPrompt = false, assistance,
+  density = 'default', compactPrompt = false, assistance, referenceManagement,
   engine, caps,
   prompt,
   onPromptChange,
@@ -446,6 +446,7 @@ export function Composer({
           modeControl={<ComposerCommandBar modes={visibleModeToggles} workspaceDensity={workspaceDensity} activeManualMode={activeManualMode} onModeToggle={onModeToggle} compact />}
           onGenerationStateChange={generationGate.update}
           locale={locale} modelLabel={engine.label} draftText={prompt} onApplyText={onPromptChange} maxLength={promptMaxChars} blocked={referenceMentions.needsReview || isLoading || hasResolvingAssistanceReferences(assetFields, assets, assistance.live?.mode as import('@/types/engines').Mode | undefined ?? activeManualMode ?? undefined)}
+          manageableReferenceFields={assetFields.map(({field})=>composerAssistanceReferenceField(engine,field,assistance.live?.mode as import('@/types/engines').Mode|undefined).id)} referenceManagement={referenceManagement}
           disabledReason={multiPromptEnabled ? 'Help with multiple scenes will be available in a later step.' : undefined} renderReferences={renderReferences}>{promptEditor}</PromptAssistanceComposer> : promptEditor}
         {workspaceDensity ? composerToolbar : null}
         {assistanceEnabled ? <ComposerNotices extensionNotice={extensionNotice} /> : null}

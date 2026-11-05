@@ -56,6 +56,7 @@ export function AudioCreationEditor({ locale='en', assistanceAccountId, intent, 
       </div> : <div className={styles.modelIdentity}><span>{copy.model}</span><strong>{modelName}</strong></div>}
     </div>
     {assistanceEnabled ? <PromptAssistanceComposer context={{accountKey: assistanceAccountId ?? 'anonymous', scopeKey: JSON.stringify([assistanceAccountId, 'audio', intent]), contextKey: JSON.stringify({...draft, [key]: undefined}), live: audioAssistanceContext(intent, draft)}}
+      manageableReferenceFields={spoken&&draft.reference?['voice_sample']:[]}
       onGenerationStateChange={onGenerationStateChange}
       locale={locale} modelLabel={modelName} target={spoken ? 'script' : 'prompt'} draftText={draft[key]} maxLength={max} blocked={uploading} onApplyText={text => onChange({[key]: text})}
       renderReferences={spoken && (draft.reference || draft.voiceModel === 'seed') ? (insert,manager) => <div className={styles.assistanceReferences}>
