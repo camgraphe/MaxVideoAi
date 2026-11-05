@@ -34,7 +34,7 @@
 - [ ] C02 Établir les coûts image 2.6 propres au modèle, taille, qualité, nombre et sources ; ne pas recopier les estimations fal 2.5.
 - [ ] C03 Couvrir les contextes admin/public/MCP/Studio, y compris dimensions personnalisées et quantités autorisées.
 - [ ] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
-  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; proposition +30 % soumise, pas encore approuvée. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
+  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée par l'utilisateur le 5 novembre 2026, pas encore appliquée. La partie image reste en attente. Voir `TARIFF-PROPOSAL.md` et `flash-tariff-preview.json`.
 - [ ] C05 Tester devis expiré, changement de réglages/références, révision de tarif, budget insuffisant et confirmations simultanées.
 - [x] C06 Vérifier débit unique, récupération, remboursement d'échec terminal et historique immuable avec PostgreSQL jetable.
 - [ ] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.

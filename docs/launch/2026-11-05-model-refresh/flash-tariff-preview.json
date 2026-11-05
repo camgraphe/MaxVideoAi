@@ -1,7 +1,14 @@
 {
   "createdAt": "2026-11-05T19:42:16.332Z",
   "source": "native previewCustomerTariffChange; NODE_ENV=production; database connection forced read-only",
-  "approved": false,
+  "approved": true,
+  "approval": {
+    "date": "2026-11-05",
+    "source": "explicit user reply in launch conversation",
+    "decision": "Valider cette grille Flash à +30 % (recommandé)",
+    "scope": "all 72 Flash classes; no GPT Image 2.6 prices",
+    "condition": "native current-state confirmation and launch controls before activation"
+  },
   "applied": false,
   "recipe": "supplier list × 1.30; final customer cents rounded up",
   "rows": [

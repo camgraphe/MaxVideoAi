@@ -1,8 +1,10 @@
 # Proposition tarifaire — non appliquée
 
-La confirmation commerciale Flash est en attente. Les sept rendus déjà approuvés
-relèvent du budget de qualification fournisseur ; ils n'autorisent pas ces tarifs
-clients. Aucun tarif historique ni prix de job n'a été modifié.
+La grille Flash a été **approuvée par l'utilisateur le 5 novembre 2026** : coût
+fournisseur LIST × 1,30, arrondi final au cent supérieur. Cette décision couvre
+les 72 classes ci-dessous. L'application reste conditionnée aux contrôles natifs
+de confirmation et de lancement. GPT Image 2.6 sera traité séparément.
+Aucun tarif historique ni prix de job n'a été modifié.
 
 ## Kling 4.0 Flash
 
@@ -33,9 +35,17 @@ y compris les répétitions, dans la limite totale de 20 secondes.
 18 classes continues, obtenus en lecture seule avec `NODE_ENV=production`,
 révision 2115. Aucun tarif Flash existant n'a été trouvé. Le champ `preview.active`
 décrit le système tarifaire global déjà actif, pas une application de la proposition.
-Les champs racine `approved:false` et `applied:false` font foi pour ce dossier.
+Les champs racine `approved:true` et `applied:false` font foi pour ce dossier.
 Une future confirmation doit recréer les previews sur la révision courante ; ces
 empreintes ne permettent pas d'ignorer le contrôle de péremption.
+
+`flash-tariff-batch.json` est l'import natif exact des mêmes 72 prix, avec
+`create_missing`. L'adaptateur de lots conserve les limites, l'historique,
+l'empreinte de révision et la confirmation atomique existants. Les tests comparent
+chaque prix aux previews approuvées, puis vérifient transaction, reçu, reprise et
+absence de modification de Kling 4 sur PostgreSQL jetable et dans le navigateur.
+Cette qualification locale ne constitue ni application en production ni mesure
+de latence du déploiement distant.
 
 ## GPT Image 2.6
 

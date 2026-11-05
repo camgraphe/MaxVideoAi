@@ -38,7 +38,7 @@ test('native batch UI applies one real transaction and recovers a lost response 
           if (dropConfirm) { dropConfirm = false; res.statusCode = 503; res.end(''); return; }
         } else if (path.endsWith('/status')) payload = { operation: await readTariffBatch(new URL(req.url, 'http://localhost').searchParams.get('operationId')!, currentActor) };
         else if (path.endsWith('/reconcile')) payload = { operation: await reconcileTariffBatch(body.operationId, currentActor) };
-        else payload = { actorId: currentActor, enabled: true, classes: klingBatchClasses().map(({ key, selector }) => ({ key, selector })), operations: await listTariffBatches(currentActor) };
+        else payload = { actorId: currentActor, enabled: true, classes: [...klingBatchClasses(), ...klingBatchClasses('kling-v4-flash')].map(({ key, selector }) => ({ key, selector })), operations: await listTariffBatches(currentActor) };
         res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ ok: true, ...payload })); return;
       }
       res.setHeader('Content-Type', req.url === '/fixture.js' ? 'text/javascript' : req.url === '/fixture.css' ? 'text/css' : 'text/html');
@@ -90,6 +90,20 @@ test('native batch UI applies one real transaction and recovers a lost response 
       if (process.env.TARIFF_BATCH_EVIDENCE_DIR) { await mkdir(process.env.TARIFF_BATCH_EVIDENCE_DIR, { recursive: true });
         await page.screenshot({ path: join(process.env.TARIFF_BATCH_EVIDENCE_DIR, `batch-${width}.png`), fullPage: true }); }
     }
+    await page.getByRole('button', { name: 'New batch', exact: true }).click();
+    await page.getByLabel('Price input').selectOption('recipe');
+    await page.getByLabel('Batch model', { exact: true }).selectOption('kling-v4-flash', { timeout: 5000 });
+    assert.equal(await page.getByLabel('LIST multiplier').inputValue(), '1.30');
+    await page.getByRole('button', { name: 'Select all 72 classes', exact: true }).click();
+    await page.getByLabel('Reason for change').fill('Approved Flash launch prices');
+    await page.getByRole('button', { name: 'Preview batch', exact: true }).click();
+    await page.getByText('72 create · 0 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
+    await page.getByText(/Kling 4.0 Flash · 72 of 72 canonical classes/).waitFor();
+    const v4Before = (await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4' ORDER BY id")).rows;
+    await page.getByRole('button', { name: 'Confirm batch', exact: true }).click();
+    await page.getByText('Committed', { exact: true }).first().waitFor();
+    assert.equal((await db.pool.query("SELECT count(*) FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4-flash'")).rows[0].count, '72');
+    assert.deepEqual((await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = 'kling-v4' ORDER BY id")).rows, v4Before);
     const firstActorSaved = await page.evaluate(actor => localStorage.getItem(`admin.tariff-batch.operation.v1.${actor}`), actor);
     assert.ok(firstActorSaved);
     currentActor = '22222222-2222-4222-8222-222222222222';

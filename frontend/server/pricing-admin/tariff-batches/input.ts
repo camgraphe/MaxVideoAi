@@ -1,7 +1,7 @@
 import type { ManualTariffSelector } from '@maxvideoai/pricing';
 import { isValidManualTariffPrice } from '@maxvideoai/pricing';
 import { PricingAdminError } from '../errors';
-import { TARIFF_BATCH_MAX_CLASSES, type TariffBatchPrice, type TariffBatchProposal } from './contract';
+import { TARIFF_BATCH_MAX_CLASSES, type TariffBatchModelId, type TariffBatchPrice, type TariffBatchProposal } from './contract';
 
 export function batchInvalid(message: string): never { throw new PricingAdminError('invalid_payload', message); }
 export function batchRecord(value: unknown): Record<string, unknown> {
@@ -14,10 +14,10 @@ export function exactFields(record: Record<string, unknown>, allowed: readonly s
 export function batchSelectorKey(selector: ManualTariffSelector): string {
   return JSON.stringify(Object.entries(selector).sort(([a], [b]) => a.localeCompare(b)));
 }
-function selector(value: unknown): ManualTariffSelector {
+function selector(value: unknown, modelId: TariffBatchModelId): ManualTariffSelector {
   const record = batchRecord(value);
   exactFields(record, ['engineId', 'mode', 'resolution', 'durationSec', 'billingInputType', 'inputVideoDurationSec']);
-  if (record.engineId !== 'kling-v4' || Object.values(record).some(v => typeof v !== 'string' || !v || v.length > 80)) {
+  if (record.engineId !== modelId || Object.values(record).some(v => typeof v !== 'string' || !v || v.length > 80)) {
     batchInvalid('Unsupported exact batch selector.');
   }
   return { ...record } as ManualTariffSelector;
@@ -54,13 +54,14 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
   const rollback = p.intent === 'rollback';
   exactFields(p, rollback ? ['schemaVersion', 'modelId', 'intent', 'reason', 'sourceOperationId', 'selectors']
     : ['schemaVersion', 'modelId', 'intent', 'reason', 'pricing', 'selections']);
-  if (p.schemaVersion !== 1 || p.modelId !== 'kling-v4' || !['create_missing', 'replace_selected', 'rollback'].includes(String(p.intent))
+  if (p.schemaVersion !== 1 || (p.modelId !== 'kling-v4' && p.modelId !== 'kling-v4-flash') || !['create_missing', 'replace_selected', 'rollback'].includes(String(p.intent))
     || typeof p.reason !== 'string' || p.reason.trim().length < 3 || p.reason.length > 500) batchInvalid('Invalid batch scope or reason.');
   const items = rollback ? p.selectors : p.selections;
   if (!Array.isArray(items) || !items.length || items.length > TARIFF_BATCH_MAX_CLASSES) batchInvalid(`Select 1–${TARIFF_BATCH_MAX_CLASSES} classes.`);
-  const selectors = items.map(item => selector(rollback ? item : batchRecord(item).selector));
+  const modelId = p.modelId as TariffBatchModelId;
+  const selectors = items.map(item => selector(rollback ? item : batchRecord(item).selector, modelId));
   if (new Set(selectors.map(batchSelectorKey)).size !== selectors.length) batchInvalid('Duplicate batch selector.');
-  if (rollback) return { schemaVersion: 1, modelId: 'kling-v4', intent: 'rollback', reason: p.reason.trim(),
+  if (rollback) return { schemaVersion: 1, modelId, intent: 'rollback', reason: p.reason.trim(),
     sourceOperationId: batchUuid(p.sourceOperationId), selectors };
   const pricing = batchRecord(p.pricing);
   exactFields(pricing, pricing.kind === 'list_multiplier' ? ['kind', 'multiplier'] : ['kind']);
@@ -73,6 +74,6 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
     exactFields(entry, pricing.kind === 'explicit' ? ['selector', 'price'] : ['selector']);
     return { selector: selectors[i], ...(pricing.kind === 'explicit' ? { price: price(entry.price) } : {}) };
   });
-  return { schemaVersion: 1, modelId: 'kling-v4', intent: p.intent as 'create_missing' | 'replace_selected', reason: p.reason.trim(),
+  return { schemaVersion: 1, modelId, intent: p.intent as 'create_missing' | 'replace_selected', reason: p.reason.trim(),
     pricing: pricing.kind === 'explicit' ? { kind: 'explicit' } : { kind: 'list_multiplier', multiplier: pricing.multiplier as string }, selections };
 }

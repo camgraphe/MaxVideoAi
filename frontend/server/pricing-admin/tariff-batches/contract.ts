@@ -1,21 +1,22 @@
 import type { ManualTariffCell, ManualTariffSelector } from '@maxvideoai/pricing';
 
 export const TARIFF_BATCH_PROTOCOL = 'literal-tariff-batch-v1';
-// V1 admits the complete Kling domain. A wider adapter needs its own qualification.
+// Each batch belongs to one qualified model; never mix their canonical classes.
 export const TARIFF_BATCH_MAX_CLASSES = 226;
+export type TariffBatchModelId = 'kling-v4' | 'kling-v4-flash';
 export const TARIFF_BATCH_MAX_BYTES = 2 * 1024 * 1024;
 export const TARIFF_BATCH_TTL_MS = 10 * 60 * 1000;
 export type TariffBatchPrice = Extract<ManualTariffCell['price'], { kind: 'fixed' | 'unit_terms' }>;
 export type TariffBatchProposal = {
   schemaVersion: 1;
-  modelId: 'kling-v4';
+  modelId: TariffBatchModelId;
   intent: 'create_missing' | 'replace_selected';
   reason: string;
   pricing: { kind: 'explicit' } | { kind: 'list_multiplier'; multiplier: string };
   selections: { selector: ManualTariffSelector; price?: TariffBatchPrice }[];
 } | {
   schemaVersion: 1;
-  modelId: 'kling-v4';
+  modelId: TariffBatchModelId;
   intent: 'rollback';
   reason: string;
   sourceOperationId: string;
@@ -36,7 +37,7 @@ export type TariffBatchRow = {
   rollbackEventId?: string;
 };
 export type TariffBatchPlan = {
-  modelId: 'kling-v4';
+  modelId: TariffBatchModelId;
   intent: TariffBatchProposal['intent'];
   reason: string;
   revision: number;
