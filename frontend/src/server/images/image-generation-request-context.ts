@@ -1,4 +1,5 @@
 import { NANO21_ENGINE_ID, assertNano21UnsupportedFields } from '@/lib/nano-banana-2-1';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import type {
   ImageGenerationMode,
@@ -39,6 +40,11 @@ export function resolveImageGenerationRequestContext(
   const engine = engineEntry.engine;
   const fallbackMode = (engineEntry.modes[0]?.mode as ImageGenerationMode | undefined) ?? 't2i';
   const mode = normalizeMode(body.mode, fallbackMode);
+  if (isGptImage26EngineId(engineEntry.id)) {
+    if (!engineEntry.surfaces.app.enabled) fail(mode, 'engine_unavailable', 'Image engine unavailable.', 503);
+    try { normalizeGptImage26Settings(body); }
+    catch { fail(mode, 'invalid_parameter', 'Unsupported GPT Image 2.6 setting.', 400); }
+  }
   if (engineEntry.id === NANO21_ENGINE_ID) {
     if (!engineEntry.surfaces.app.enabled) fail(mode,'engine_unavailable','Image engine unavailable.',503);
     try { assertNano21UnsupportedFields(body as unknown as Record<string, unknown>); }

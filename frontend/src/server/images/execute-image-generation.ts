@@ -1,4 +1,6 @@
 import { NANO21_ENGINE_ID, normalizeNano21Settings, assertNano21UnsupportedFields, assertNano21Scenario } from '@/lib/nano-banana-2-1';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
+import { assertOpenAIImageAvailable } from './openai-image-execution';
 import { randomUUID } from 'crypto';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
@@ -57,7 +59,7 @@ const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 
 export async function executeImageGeneration({
   userId,
-  body,
+  body: requestedBody,
   walletReservation,
   preReservedInitialState,
   trustedQuotedBilling,
@@ -68,12 +70,14 @@ export async function executeImageGeneration({
   isAdminForDirectProvider = false,
   customerTariffRevision,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
-  const recovered = await prepareImageGenerationAccounting({ userId, body, walletReservation,
+  const recovered = await prepareImageGenerationAccounting({ userId, body: requestedBody, walletReservation,
     preReservedInitialState, trustedQuotedBilling });
   if (recovered) return recovered;
 
   const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
-    resolveImageGenerationRequestContext(body);
+    resolveImageGenerationRequestContext(requestedBody);
+  const gpt26 = isGptImage26EngineId(engine.id) ? normalizeGptImage26Settings(requestedBody) : null;
+  const body = gpt26 ? { ...requestedBody, ...gpt26 } : requestedBody;
 
   let nano21: ReturnType<typeof normalizeNano21Settings> | null = null;
   if (engine.id === NANO21_ENGINE_ID) {
@@ -85,8 +89,9 @@ export async function executeImageGeneration({
     } catch { fail(mode, 'nano21_settings_invalid', 'Unsupported Nano Banana 2.1 scenario.', 400); }
   }
   assertGoogleVertexImageAvailable(engine);
+  assertOpenAIImageAvailable(engine);
 
-  const { characterReferences, normalizedImageUrls, combinedImageUrls, effectivePrompt, storedAssetInfoByUrl } =
+  const { characterReferences, normalizedImageUrls, combinedImageUrls, effectivePrompt, storedAssetInfoByUrl, preparedOpenAIReferenceUrls } =
     await prepareImageGenerationReferences({ userId, body, engineEntry, mode, prompt });
 
   const requestId = typeof body.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
@@ -292,6 +297,7 @@ export async function executeImageGeneration({
         ...(outputFormat ? { outputFormat } : {}),
         ...(quality ? { quality } : {}),
         ...(background ? { background } : {}),
+        ...(gpt26 ? { complexity: gpt26.complexity } : {}),
         ...(style ? { style } : {}),
         ...(maskUrl ? { maskUrl } : {}),
         ...(enableWebSearch ? { enableWebSearch } : {}),
@@ -335,6 +341,7 @@ export async function executeImageGeneration({
         outputFormat,
         quality,
         background,
+        complexity: gpt26?.complexity,
         style,
         maskUrl,
         enableWebSearch,
@@ -439,6 +446,7 @@ export async function executeImageGeneration({
 
       const directProviderResponse = await executeDirectImageProviderIfAvailable({
         ...(nano21 ?? {}),
+        ...(gpt26 ? { complexity: gpt26.complexity, background: gpt26.background, preparedReferenceUrls: preparedOpenAIReferenceUrls } : {}),
         billingProductKey,
         characterReferenceCount: characterReferences.length,
         combinedImageUrls,

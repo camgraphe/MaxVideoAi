@@ -1,4 +1,6 @@
 import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { prepareOpenAIImageReferences } from './openai-image-references';
 import { extractStorageKeyFromUrl, ownedMediaStorageKeyForUrl } from '@/server/storage';
 import { canReadMarketingFile } from '@/server/marketing-media/access';
 import { query } from '@/lib/db';
@@ -30,6 +32,7 @@ export type ImageGenerationReferenceContext = {
   combinedImageUrls: string[];
   effectivePrompt: string;
   storedAssetInfoByUrl: Map<string, StoredAssetInfo>;
+  preparedOpenAIReferenceUrls?: string[];
 };
 
 export async function prepareImageGenerationReferences({
@@ -102,6 +105,9 @@ export async function prepareImageGenerationReferences({
     }
   }
   const supportedReferenceFormats = getSupportedImageFormats(engine);
+  // Validate original ownership, MIME and size before any optional format conversion.
+  const preparedOpenAIReferenceUrls = isGptImage26EngineId(engine.id)
+    ? await prepareOpenAIImageReferences({ userId, urls: combinedImageUrls }) : undefined;
   let storedAssetInfoByUrl = new Map<string, StoredAssetInfo>();
   if (supportedReferenceFormats.length && combinedImageUrls.length) {
     storedAssetInfoByUrl = await getStoredAssetInfoByUrl(userId, combinedImageUrls);
@@ -209,6 +215,7 @@ export async function prepareImageGenerationReferences({
     combinedImageUrls,
     effectivePrompt,
     storedAssetInfoByUrl,
+    ...(preparedOpenAIReferenceUrls ? { preparedOpenAIReferenceUrls } : {}),
   };
 }
 

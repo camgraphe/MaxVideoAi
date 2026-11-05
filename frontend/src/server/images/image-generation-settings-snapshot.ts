@@ -21,6 +21,7 @@ export function buildDefaultSettingsSnapshot(args: {
   outputFormat: string | null;
   quality: string | null;
   background: string | null;
+  complexity?: string;
   style: string | null;
   maskUrl: string | null;
   enableWebSearch: boolean;
@@ -50,6 +51,7 @@ export function buildDefaultSettingsSnapshot(args: {
       outputFormat: args.outputFormat,
       quality: args.quality,
       background: args.background,
+      ...(args.complexity ? { complexity: args.complexity } : {}),
       style: args.style,
       maskUrl: args.maskUrl,
       enableWebSearch: args.enableWebSearch,
