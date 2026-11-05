@@ -30,6 +30,7 @@ import type { StudioCopy } from '../_lib/character-studio-copy';
 import { useCharacterBuilderOptions } from '../_hooks/useCharacterBuilderOptions';
 import { StudioChips, StudioVisualChoices } from './CharacterStudioChoices.client';
 import { isStudioColorTrait, normalizeStudioColor } from '@/lib/character-studio-colors';
+import type { CharacterPriceStatus } from '../_hooks/useCharacterBuilderPrice';
 
 type TraitKey =
   | 'characterType'
@@ -53,6 +54,8 @@ export function CharacterStudioComposer({
   identitySlot,
   styleSlot,
   price,
+  priceStatus = price === null ? 'error' : 'ready',
+  onRetryPrice,
   busy,
   canGenerate,
   onGenerate,
@@ -67,6 +70,8 @@ export function CharacterStudioComposer({
   identitySlot: ReactNode;
   styleSlot: ReactNode;
   price: number | null;
+  priceStatus?: CharacterPriceStatus;
+  onRetryPrice?: () => void;
   busy: boolean;
   canGenerate: boolean;
   onGenerate: (count: 1 | 4) => void;
@@ -452,10 +457,17 @@ export function CharacterStudioComposer({
         className="z-10 shrink-0 space-y-2 border-t border-border bg-surface p-3 shadow-[0_-8px_18px_-12px_rgb(0_0_0_/_0.4)]"
       >
         <CharacterStudioOutputSettings state={state} setState={setState} copy={copy} labels={labels} />
+        {priceStatus === 'error' && (
+          <div id="character-price-help" role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed">
+            <p>{labels.priceIssue}</p>
+            {onRetryPrice && <button type="button" onClick={onRetryPrice} className="mt-1 min-h-8 font-semibold underline underline-offset-4">{labels.retryPrice}</button>}
+          </div>
+        )}
         <button
           type="button"
           disabled={busy || !canGenerate}
           aria-busy={busy || undefined}
+          aria-describedby={priceStatus === 'error' ? 'character-price-help' : undefined}
           onClick={() => onGenerate(1)}
           className="app-generation-action flex min-h-14 w-full items-center justify-between gap-3 rounded-xl bg-brand px-3 py-3 text-left text-sm font-semibold text-on-brand transition hover:brightness-95 disabled:opacity-60"
         >
@@ -472,7 +484,7 @@ export function CharacterStudioComposer({
           <span role="status" aria-live="polite" aria-atomic="true" className="app-generation-price shrink-0 border-l border-current/30 pl-3 text-base font-semibold tabular-nums">
             <span className="sr-only">{labels.imagePrice} · {getCharacterFormatResolution(state.formatMode, state.qualityMode).toUpperCase()} : </span>
             {price == null ? (
-              <span className="block max-w-24 whitespace-normal text-xs font-medium">{labels.priceUnavailable}</span>
+              <span className="block max-w-24 whitespace-normal text-xs font-medium">{priceStatus === 'loading' ? labels.priceLoading : labels.priceUnavailable}</span>
             ) : new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(price)}
           </span>
         </button>

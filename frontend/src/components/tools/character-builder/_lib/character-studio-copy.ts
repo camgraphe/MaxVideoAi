@@ -151,6 +151,9 @@ const en = {
   noLive: 'Visual choices guide the next generation.',
   imagePrice: 'Estimated price per image',
   priceUnavailable: 'Price unavailable',
+  priceLoading: 'Calculating price…',
+  priceIssue: 'We couldn’t retrieve the price. Your choices are saved; retry before generating.',
+  retryPrice: 'Retry price',
 };
 type StudioCopy = { [K in keyof typeof en]: string };
 const fr: StudioCopy = {
@@ -306,6 +309,9 @@ const fr: StudioCopy = {
   noLive: 'Les choix visuels guident la prochaine génération.',
   imagePrice: 'Prix estimé par image',
   priceUnavailable: 'Tarif indisponible',
+  priceLoading: 'Calcul du prix…',
+  priceIssue: 'Impossible de récupérer le prix. Tes choix sont conservés ; réessaie avant de générer.',
+  retryPrice: 'Réessayer le prix',
 };
 const es: StudioCopy = {
   type: 'Tipo de personaje',
@@ -459,6 +465,9 @@ const es: StudioCopy = {
   noLive: 'Las opciones visuales guían la próxima generación.',
   imagePrice: 'Precio estimado por imagen',
   priceUnavailable: 'Tarifa no disponible',
+  priceLoading: 'Calculando precio…',
+  priceIssue: 'No se pudo obtener el precio. Tus opciones se conservan; vuelve a intentarlo antes de generar.',
+  retryPrice: 'Reintentar precio',
 };
 export function getCharacterStudioCopy(locale: string): StudioCopy {
   return ({ en, fr, es } as Record<StudioLocale, StudioCopy>)[locale as StudioLocale] ?? en;

@@ -15,13 +15,10 @@ import { CharacterStudioOverlays } from './character-builder/_components/Charact
 import { CharacterStudioIdentity } from './character-builder/_components/CharacterStudioIdentity.client';
 import deepmerge from 'deepmerge';
 import { usePathname, useSearchParams } from 'next/navigation';
-import useSWR from 'swr';
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { customerTariffRevision } from '@/lib/customer-tariff-revision';
-import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
-import { authFetch } from '@/lib/authFetch';
+import { useCharacterBuilderPrice } from './character-builder/_hooks/useCharacterBuilderPrice';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { createDefaultCharacterBuilderState, getCharacterFormatResolution } from '@/lib/character-builder';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -216,20 +213,7 @@ function CharacterBuilderAccountWorkspace({
   });
   const resolution = getCharacterFormatResolution(state.formatMode, state.qualityMode);
   const referenceCount = new Set(state.referenceImages.map(image => image.url).filter(Boolean)).size;
-  const { data: displayedPrice, mutate: refreshPrice } = useSWR(
-    ['/api/images/estimate', NANO21_ENGINE_ID, resolution, referenceCount] as const,
-    async ([url, engineId, size, refs]) => {
-      const response = await authFetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({engineId, resolution:size, mode: refs ? 'i2i':'t2i', referenceImageCount:refs, numImages:1}) });
-      const payload = await response.json();
-      const cents = payload?.pricing?.totalCents;
-      if (!response.ok || !payload?.ok || payload.pricing.currency !== 'USD' || !Number.isSafeInteger(cents) || cents < 0) throw new Error(copy.pricingError);
-      const revision = customerTariffRevision(payload.pricing);
-      if (!revision) throw new Error(copy.pricingError);
-      return {usd:cents/100, revision};
-    },
-    {keepPreviousData:false},
-  );
+  const { displayedPrice, status: priceStatus, refreshPrice } = useCharacterBuilderPrice(resolution, referenceCount);
   const estimatedImageCostUsd = displayedPrice?.usd ?? null;
   const handleRun = useCharacterBuilderGenerationRunner({
     tariffRevision: displayedPrice?.revision,
@@ -426,6 +410,8 @@ function CharacterBuilderAccountWorkspace({
             copy={copy}
             labels={studioCopy}
             price={estimatedImageCostUsd}
+            priceStatus={priceStatus}
+            onRetryPrice={() => { void refreshPrice(); }}
             canGenerate={!user || estimatedImageCostUsd !== null}
             busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
             onGenerate={(count = 1) => {

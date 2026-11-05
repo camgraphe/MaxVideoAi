@@ -4,17 +4,20 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { RecastSetup, RecastQuote, UploadCache } from '../_lib/recast-submit';
+import { getRecastReadinessCopy } from '../_lib/recast-readiness-copy';
 
 export function CharacterStudioRecastSubmit({
   copy,
   setup,
   cache,
   onLock,
+  blockedReasonId,
 }: {
   copy: StudioCopy;
   setup: RecastSetup | null;
   cache: UploadCache;
   onLock: (v: boolean) => void;
+  blockedReasonId?: string;
 }) {
   const [quote, setQuote] = useState<RecastQuote | null>(null);
   const [job, setJob] = useState<{ jobId: string; status: string } | null>(null);
@@ -140,11 +143,15 @@ export function CharacterStudioRecastSubmit({
           {error}
         </p>
       )}
+      {busy && !quote && <p role="status" data-recast-preparation-status className="text-xs leading-relaxed text-text-secondary">
+        {getRecastReadinessCopy(copy.recastLocale).preparing}
+      </p>}
       {quote?.kind !== 'rehearsal' && (
         <button
           type="button"
           onClick={run}
           disabled={!setup || busy}
+          aria-describedby={!setup ? blockedReasonId : undefined}
           className="flex min-h-11 w-full items-center justify-center rounded-xl bg-brand px-2 text-sm font-medium text-on-brand disabled:opacity-50"
         >
           {busy

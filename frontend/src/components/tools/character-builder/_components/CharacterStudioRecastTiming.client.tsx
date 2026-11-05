@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import type { getRecastTiming } from '@/lib/character-studio-recast-timing';
 import { RECAST_MIN_SECONDS } from '@/lib/character-studio-recast-timing';
 import type { StudioCopy } from '../_lib/character-studio-copy';
+import { getRecastReadinessCopy } from '../_lib/recast-readiness-copy';
 
-type Price = { key: string; amount: string | null };
+type Price = { key: string; attempt: number; amount: string | null };
 
 export function CharacterStudioRecastTiming({
   copy,
@@ -35,6 +36,8 @@ export function CharacterStudioRecastTiming({
   ready: boolean;
 }) {
   const [price, setPrice] = useState<Price | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const readiness = getRecastReadinessCopy(copy.recastLocale);
   const key =
     ready && timing.valid
       ? JSON.stringify({
@@ -49,7 +52,13 @@ export function CharacterStudioRecastTiming({
   useEffect(() => {
     if (!key) return;
     const request = new AbortController();
+    let deadline: ReturnType<typeof setTimeout> | undefined;
     const timer = setTimeout(async () => {
+      deadline = setTimeout(() => {
+        if (request.signal.aborted) return;
+        setPrice({ key, attempt, amount: null });
+        request.abort();
+      }, 15000);
       try {
         const response = await fetch('/api/tools/character-studio/recast/estimate', {
           method: 'POST',
@@ -62,6 +71,7 @@ export function CharacterStudioRecastTiming({
           !response.ok ||
           quote.status !== 'estimated' ||
           !Number.isSafeInteger(quote.amountCents) ||
+          quote.amountCents <= 0 ||
           quote.currency !== 'USD'
         )
           throw new Error();
@@ -69,16 +79,22 @@ export function CharacterStudioRecastTiming({
           style: 'currency',
           currency: quote.currency,
         }).format(quote.amountCents / 100);
-        if (!request.signal.aborted) setPrice({ key, amount });
+        if (!request.signal.aborted) setPrice({ key, attempt, amount });
       } catch {
-        if (!request.signal.aborted) setPrice({ key, amount: null });
+        if (!request.signal.aborted) setPrice({ key, attempt, amount: null });
+      } finally {
+        clearTimeout(deadline);
       }
     }, 200);
     return () => {
       clearTimeout(timer);
+      clearTimeout(deadline);
       request.abort();
     };
-  }, [key, copy.recastLocale]);
+  }, [key, attempt, copy.recastLocale]);
+  const current = key && price?.key === key && price.attempt === attempt ? price : null;
+  const loading = Boolean(key && !current);
+  const failed = Boolean(current && current.amount === null);
   const suggestion = hasVideo ? copy.sourceTiming : copy.autoTiming;
   return (
     <div className="space-y-2 rounded-xl border border-border bg-bg p-3">
@@ -124,10 +140,17 @@ export function CharacterStudioRecastTiming({
         {!timing.valid && <p role="status">{copy.durationLimit.replace('{max}', String(timing.maximum))}</p>}
         {timing.speechTooLong && <p role="status">{copy.shortDuration}</p>}
       </div>
-      <div className="flex justify-between gap-2 border-t border-border pt-2 text-sm" aria-live="polite">
+      <div className="flex justify-between gap-2 border-t border-border pt-2 text-sm" aria-live="polite" aria-busy={loading}>
         <span>{copy.recastPrice.replace('{resolution}', resolution)}</span>
-        <strong>{!key ? '—' : price?.key === key ? (price.amount ?? copy.noPrice) : '…'}</strong>
+        <strong className="text-right">{!key ? '—' : loading ? readiness.estimating : current?.amount ?? copy.noPrice}</strong>
       </div>
+      {!key && <p className="text-xs text-text-secondary">{pendingHint ?? (!timing.valid ? readiness.duration : readiness.completeInputs)}</p>}
+      {failed && <div data-recast-estimate-error className="space-y-1 text-xs">
+        <p role="alert" className="text-text-secondary">{readiness.estimateFailed}</p>
+        <button type="button" data-recast-retry-estimate onClick={() => setAttempt(value => value + 1)} className="min-h-9 font-medium underline underline-offset-4">
+          {readiness.retryEstimate}
+        </button>
+      </div>}
     </div>
   );
 }

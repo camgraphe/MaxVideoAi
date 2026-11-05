@@ -13,7 +13,7 @@ const bundle = bundleClientFlow(`
 `, { '@/lib/authFetch': 'export const authFetch=(...args)=>fetch(...args);' });
 const id = (n: number) => 'ma_' + String(n).padStart(32, '0');
 
-async function mount() {
+async function mount(withCharacter = true) {
   const dom = createClientFlowDom('/app/tools/character-builder');
   const w = dom.window as any;
   const doc = w.document;
@@ -22,6 +22,12 @@ async function mount() {
   const probes: any[] = [];
   const paused: any[] = [];
   const revoked: string[] = [];
+  const deadlines: Array<() => void> = [];
+  const setTimeout = w.setTimeout.bind(w);
+  w.setTimeout = (callback: () => void, delay?: number) => {
+    if (delay === 15000) deadlines.push(callback);
+    return setTimeout(callback, delay);
+  };
   let serial = 0;
   w.URL.createObjectURL = (file: File) => `blob:${++serial}-${file.name}`;
   w.URL.revokeObjectURL = (url: string) => revoked.push(url);
@@ -45,7 +51,8 @@ async function mount() {
       resolve: body => resolve(Response.json(body)) }));
   };
   w.active = true;
-  w.selection = { jobId: 'saved-look', transferId: '1', imageUrl: 'https://example.invalid/portrait.png', name: 'Basil' };
+  const savedCharacter = { jobId: 'saved-look', transferId: '1', imageUrl: 'https://example.invalid/portrait.png', name: 'Basil' };
+  w.selection = withCharacter ? savedCharacter : null;
   w.eval(await bundle);
   await w.fx.act(async () => w.fx.render());
   const act = (fn: () => unknown) => w.fx.act(fn);
@@ -55,7 +62,7 @@ async function mount() {
     Object.getOwnPropertyDescriptor(prototype, 'value')!.set!.call(node, value);
     node.dispatchEvent(new w.Event('input', { bubbles: true }));
   });
-  return { w, doc, requests, uploads, paused, revoked, button, act, input,
+  return { w, doc, requests, uploads, paused, revoked, probes, deadlines, savedCharacter, button, act, input,
     click: (text: string) => act(async () => { assert.ok(button(text), text); button(text).click(); }),
     select: (node: any, value: string) => act(async () => {
       node.value = value; node.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -85,6 +92,104 @@ async function mount() {
     async dispose() { await act(async () => w.fx.unmount()); dom.window.close(); },
   };
 }
+
+test('empty Recast estimates its default settings while explaining both generation requirements and focusing their sections', async () => {
+  const f = await mount(false);
+  try {
+    const readiness = () => f.doc.querySelector('[data-recast-readiness]');
+    assert.match(readiness()?.textContent ?? '', /personnage/i);
+    assert.match(readiness()?.textContent ?? '', /consigne/i);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true);
+    assert.equal(f.button(f.w.labels.reviewPrice).getAttribute('aria-describedby'), readiness().id);
+    const initial = await f.estimate();
+    assert.deepEqual(initial.body, { mode: 'i2v', resolution: '720p', aspectRatio: 'auto', seconds: 6, sourceSeconds: 0, audio: false });
+    await f.act(async () => initial.resolve({ status: 'estimated', amountCents: 168, currency: 'USD' }));
+    assert.match(f.doc.body.textContent, /1,68/);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true);
+    await f.act(async () => f.doc.querySelector('[data-recast-action="character"]').click());
+    assert.equal(f.doc.activeElement, f.button(f.w.labels.addReplacement));
+    assert.ok(f.doc.activeElement.closest('[data-required-missing="true"]'));
+    await f.act(async () => f.doc.querySelector('[data-recast-action="direction"]').click());
+    assert.equal(f.doc.activeElement, f.doc.querySelector('textarea'));
+    assert.doesNotMatch(f.doc.querySelector('textarea').closest('label').textContent, /facultatif/i);
+    await f.input(f.doc.querySelector('textarea'), 'Dance');
+    assert.equal(f.doc.querySelector('[data-recast-action="direction"]'), null);
+    assert.match(f.doc.body.textContent, /1,68/, 'direction text does not invalidate unchanged pricing inputs');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true, 'generation still needs a character');
+    await f.act(async () => { f.w.selection = f.savedCharacter; f.w.fx.render(); });
+    assert.equal(readiness(), null);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    assert.ok(await f.estimate());
+    assert.equal(f.uploads.length, 0, 'optional source video, product and audio are not required');
+  } finally { await f.dispose(); }
+});
+
+test('a stalled estimate times out to retry and a late aborted response cannot replace the new price', async () => {
+  const f = await mount();
+  try {
+    const stalled = await f.estimate();
+    await f.act(async () => f.deadlines.at(-1)!());
+    assert.equal(stalled.signal!.aborted, true);
+    assert.ok(f.doc.querySelector('[data-recast-retry-estimate]'));
+    await f.act(async () => f.doc.querySelector('[data-recast-retry-estimate]').click());
+    const retry = await f.estimate();
+    await f.act(async () => retry.resolve({ status: 'estimated', amountCents: 168, currency: 'USD' }));
+    await f.act(async () => stalled.resolve({ status: 'estimated', amountCents: 999, currency: 'USD' }));
+    assert.match(f.doc.body.textContent, /1,68/);
+    assert.doesNotMatch(f.doc.body.textContent, /9,99/);
+    assert.equal(f.doc.querySelector('[data-recast-estimate-error]'), null);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true, 'the missing direction still blocks generation');
+  } finally { await f.dispose(); }
+});
+
+test('a failed estimate has a retry action with visible loading and keeps the ready setup', async () => {
+  const f = await mount();
+  try {
+    await f.input(f.doc.querySelector('textarea'), 'Dance');
+    const first = await f.estimate();
+    assert.match(f.doc.body.textContent, /Estimation en cours/);
+    await f.act(async () => first.resolve({ status: 'unavailable' }));
+    assert.match(f.doc.querySelector('[data-recast-estimate-error]').textContent, /estimation/i);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false, 'the exact quote remains a separate no-charge step');
+    await f.act(async () => f.doc.querySelector('[data-recast-retry-estimate]').click());
+    assert.match(f.doc.body.textContent, /Estimation en cours/);
+    assert.equal(f.doc.querySelector('[data-recast-estimate-error]'), null);
+    const retry = await f.estimate();
+    assert.notEqual(retry, first);
+    assert.deepEqual(retry.body, first.body);
+    await f.act(async () => retry.resolve({ status: 'estimated', amountCents: 219, currency: 'USD' }));
+    assert.match(f.doc.body.textContent, /2,19/);
+    assert.equal(f.doc.querySelector('[data-recast-retry-estimate]'), null);
+    assert.equal(f.doc.querySelector('textarea').value, 'Dance');
+    assert.ok(!f.requests.some(r => r.url.endsWith('/confirm')));
+  } finally { await f.dispose(); }
+});
+
+test('media reading and an unselected passage explain the block and offer the passage editor', async () => {
+  const f = await mount();
+  try {
+    const field = f.doc.querySelector('input[accept="video/*"]');
+    await f.act(async () => {
+      Object.defineProperty(field, 'files', { configurable: true, value: [new f.w.File(['bytes'], 'long.mp4', { type: 'video/mp4' })] });
+      field.dispatchEvent(new f.w.Event('change', { bubbles: true }));
+    });
+    assert.match(f.doc.querySelector('[data-recast-readiness]').textContent, /Lecture de la durée/);
+    assert.equal(f.doc.querySelector('[data-recast-estimate-error]'), null);
+    const probe = f.probes.findLast(el => typeof el.onloadedmetadata === 'function');
+    await f.act(async () => { Object.defineProperty(probe, 'duration', { value: 25 }); probe.dispatchEvent(new f.w.Event('loadedmetadata')); });
+    await f.click('Annuler');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true);
+    assert.match(f.doc.querySelector('[data-recast-readiness]').textContent, /passage/);
+    await f.act(async () => f.doc.querySelector('[data-recast-action="passage"]').click());
+    assert.ok(f.doc.querySelector('[role="dialog"]'));
+    await f.passage('2', '10');
+    assert.equal(f.doc.querySelector('[data-recast-readiness]'), null);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false, 'selected video provides direction without a text prompt');
+    await f.click(f.w.labels.reviewPrice);
+    assert.match(f.doc.querySelector('[data-recast-preparation-status]').textContent, /références/i);
+    assert.equal(f.doc.querySelector('[data-recast-estimate-error]'), null);
+  } finally { await f.dispose(); }
+});
 
 test('duration/resolution edits hide old estimates immediately and discard late responses', async () => {
   const f = await mount();

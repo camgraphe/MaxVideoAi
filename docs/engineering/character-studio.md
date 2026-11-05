@@ -34,6 +34,27 @@ and observes the page viewport in grid mode. Old scroll-rail consumers retain
 their existing hook behavior. Job IDs and exact original image URLs remain owned
 by the current save/download/continuation actions.
 
+## Generation readiness and price recovery (2026-11-05)
+
+`useCharacterBuilderPrice` owns the current Nano Banana 2.1 estimate, selected
+format/reference key, bounded request timeout, and explicit retry. The composer
+keeps the price inside Generate and distinguishes loading from unavailable pricing.
+A pending or failed replacement estimate cannot reuse an old amount or enable a
+paid generation. Retry only reads a price; it never submits a generation. Image
+traits and an uploaded photo remain optional; a pricing failure is not presented
+as a missing character description.
+
+Recast shows actionable missing-character/direction guidance near Generate and
+highlights the corresponding controls. Motion video, written direction, dialogue
+or reference audio are alternatives; a product is optional. Reading a file,
+choosing its passage and retrieving a price have separate visible states. Exact
+quote review and explicit paid confirmation retain their existing owner.
+
+The local development server intentionally cannot read production-mode tariffs
+from a remote database. Use the isolated deployed preview to exercise real prices
+and generation; do not relax `customerTariffsEnabledByCode` or substitute a
+production quote to make a local development button available.
+
 ## Media
 
 ### Recast character selection and video history (2026-11-05)

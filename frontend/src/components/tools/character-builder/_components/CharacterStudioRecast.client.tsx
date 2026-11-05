@@ -1,6 +1,6 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Clapperboard, Plus, Download, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioRecastSelection } from '@/types/character-studio';
@@ -17,6 +17,7 @@ import { passageSeconds, useRecastTrack } from './useRecastTrack';
 
 import { CharacterStudioRecastSubmit } from './CharacterStudioRecastSubmit.client';
 import { CharacterStudioRecastPortrait } from './CharacterStudioRecastPortrait.client';
+import { CharacterStudioRecastReadiness } from './CharacterStudioRecastReadiness.client';
 import type { RecastCharacterLibraryAccess } from './CharacterStudioRecastCharacterPicker.client';
 import type { RecastImage as LocalMedia, UploadCache } from '../_lib/recast-submit';
 import {
@@ -40,6 +41,9 @@ export function CharacterStudioRecast({
   characterLibrary?: RecastCharacterLibraryAccess;
 }) {
   const readerRoot = useRef<HTMLDivElement>(null);
+  const readinessId = useId();
+  const portraitSection = useRef<HTMLDivElement>(null);
+  const directionSection = useRef<HTMLDivElement>(null);
   const videoControl = useRecastTrack('video');
   const audioControl = useRecastTrack('audio');
   const video = videoControl.track;
@@ -81,10 +85,14 @@ export function CharacterStudioRecast({
   const mode = video ? 'v2v' : audio || product ? 'ref2v' : 'i2v';
   const hasDirection = Boolean(video || prompt.trim() || dialogue.trim() || audio);
   const unresolved = [video, audio].find((track) => track && !track.range);
-  const canEstimate = hasDirection && !unresolved && !editing;
-  const canExport = Boolean(portrait && canEstimate && timing.valid);
+  const canEstimate = !unresolved && !editing;
+  const canExport = Boolean(portrait && hasDirection && canEstimate && timing.valid);
   const videoInput = useRef<HTMLInputElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
+  function focusRequired(target: HTMLElement | null | undefined) {
+    target?.scrollIntoView?.({ block: 'nearest' });
+    target?.focus({ preventScroll: true });
+  }
   useEffect(
     () => () => {
       if (portrait?.url.startsWith('blob:')) URL.revokeObjectURL(portrait.url);
@@ -181,11 +189,13 @@ export function CharacterStudioRecast({
               </button>
             )}
           </section>
-          <CharacterStudioRecastPortrait
-            portrait={portrait} copy={copy} active={active} access={characterLibrary}
-            onUpload={() => imageInput.current?.click()}
-            onSelect={value => { setPortrait(value); setError(''); }}
-          />
+          <div ref={portraitSection}>
+            <CharacterStudioRecastPortrait
+              portrait={portrait} copy={copy} active={active} access={characterLibrary}
+              onUpload={() => imageInput.current?.click()}
+              onSelect={value => { setPortrait(value); setError(''); }}
+            />
+          </div>
           <section>
             <h3 className="mb-2 text-xs font-medium text-text-secondary">03 · {copy.product}</h3>
             {product ? (
@@ -217,15 +227,18 @@ export function CharacterStudioRecast({
             )}
             <p className="mt-2 text-xs text-text-secondary">{copy.productHint}</p>
           </section>
-          <CharacterStudioRecastDirection
-            copy={copy}
-            prompt={prompt}
-            onPrompt={setPrompt}
-            dialogue={dialogue}
-            onDialogue={setDialogue}
-            audioControl={audioControl}
-            addAudio={() => audioInput.current?.click()}
-          />
+          <div ref={directionSection}>
+            <CharacterStudioRecastDirection
+              copy={copy}
+              prompt={prompt}
+              onPrompt={setPrompt}
+              dialogue={dialogue}
+              onDialogue={setDialogue}
+              audioControl={audioControl}
+              hasVideo={Boolean(video)}
+              addAudio={() => audioInput.current?.click()}
+            />
+          </div>
           <input
             ref={productInput}
             type="file"
@@ -302,7 +315,7 @@ export function CharacterStudioRecast({
               timing={timing}
               hasVideo={Boolean(video)}
               pendingHint={
-                unresolved ? (unresolved.originalSeconds ? copy.passageNeeded : copy.readDuration) : null
+                unresolved ? (unresolved.originalSeconds ? copy.passageNeeded : copy.readDuration) : editing ? copy.passageNeeded : null
               }
               sourceSeconds={passageSeconds(video)}
               hasAudio={Boolean(audio || dialogue.trim())}
@@ -312,6 +325,18 @@ export function CharacterStudioRecast({
               ready={active && canEstimate}
             />
           </fieldset>
+          <CharacterStudioRecastReadiness
+            id={readinessId}
+            locale={copy.recastLocale}
+            missingCharacter={!portrait}
+            missingDirection={!hasDirection}
+            pending={unresolved && !unresolved.originalSeconds ? 'reading' : unresolved || editing ? 'passage' : null}
+            invalidDuration={!timing.valid}
+            onCharacter={() => focusRequired(portraitSection.current?.querySelector('button'))}
+            onDirection={() => focusRequired(directionSection.current?.querySelector('textarea'))}
+            onPassage={() => (videoControl.editing || video && !video.range ? videoControl : audioControl).setEditing(true)}
+            onDuration={() => focusRequired(readerRoot.current?.querySelector('#recast-duration'))}
+          />
           <CharacterStudioRecastSubmit
             key={JSON.stringify([
               portrait?.url,
@@ -328,6 +353,7 @@ export function CharacterStudioRecast({
               aspectRatio,
             ])}
             copy={copy}
+            blockedReasonId={active && !canExport ? readinessId : undefined}
             cache={uploads.current}
             onLock={setLocked}
             setup={

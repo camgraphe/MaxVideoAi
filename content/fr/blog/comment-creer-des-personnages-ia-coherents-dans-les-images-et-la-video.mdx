@@ -1,11 +1,8 @@
 ---
-title: 'Comment créer des personnages IA cohérents dans les images et la vidéo'
-description: >-
-  Un guide pratique pour construire une référence de personnage réutilisable
-  avant de passer aux prompts, variations de scènes, retouches et flux vidéo
-  à partir d’une image fixe.
+title: "Comment créer des personnages IA cohérents dans les images et la vidéo"
+description: "Gardez un personnage IA reconnaissable entre les images et la vidéo : identité enregistrée, nouveaux looks et Recast dans Character Studio, avec des exemples visuels."
 date: '2026-03-22'
-updatedAt: '2026-10-18'
+updatedAt: '2026-11-05'
 image: 'https://media.maxvideoai.com/marketing/marketing/1f327900-618e-41aa-b792-47b41a4c0cbb.jpg'
 imagePosition: 'center top'
 keywords:
@@ -19,30 +16,29 @@ lang: fr
 canonical: 'https://maxvideoai.com/fr/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video'
 canonicalSlug: how-to-create-consistent-ai-characters
 topic: "Cohérence des personnages"
-lead: "Vous avez un personnage qui vous plaît. Voici comment le garder reconnaissable dans l’image suivante, puis vérifier le résultat avant de passer à la vidéo."
+lead: "Retrouvez le personnage qui vous plaît. Enregistrez son identité, changez son look, puis utilisez l’image retenue dans une scène ou un clip Recast."
 walkthrough:
-  title: "Une référence, reprise dans une image puis un clip"
-  description: "Cet exemple existant de Character Builder suit une femme aux cheveux roux bouclés, avec un foulard à motifs et un grand t-shirt sombre. Comparez ces détails à chaque étape."
+  title: "Dixie : une identité, un nouveau look et un Recast"
+  description: "Comparez ces résultats existants : le portrait du personnage, sa nouvelle tenue et une image du Recast. Observez le visage et la coiffure autant que les vêtements."
   steps:
-    - title: "La référence"
-      caption: "Une planche de huit vues permet de comparer le visage, la tenue et la silhouette sous plusieurs angles."
-      image: "https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png"
-      alt: "Planche d’une femme rousse avec un foulard, un t-shirt sombre et un pantalon vert."
-    - title: "La scène"
-      caption: "Placez le personnage dans un autre décor avec Nano Banana. Comparez le visage et les vêtements à la planche avant de passer à la vidéo."
-      image: "https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg"
-      alt: "Image de scène issue de la planche dans le parcours Nano Banana publié."
-    - title: "Le mouvement"
-      caption: "Lancez cet exemple existant réalisé avec LTX 2.3 Pro. Observez le visage, le foulard et le t-shirt pendant tout le mouvement."
-      image: "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg"
-      alt: "Exemple LTX 2.3 Pro faisant passer le personnage d’une image de référence au mouvement."
-      video: "https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4"
-  note: "Cet exemple montre la référence, l’image de scène et la vidéo. Le résultat dépend de vos images et du mouvement demandé : regardez le clip entier avant de le réutiliser."
+    - title: "L’identité enregistrée"
+      caption: "Partez du portrait que vous souhaitez retrouver : le chignon blond, les traits et le style sportif de Dixie sont bien visibles."
+      image: "/assets/tools/character-studio/marketing/dixie.webp"
+      alt: "Dixie souriante avec un chignon blond et un gilet de sport satiné corail et bleu marine."
+    - title: "Le look sélectionné"
+      caption: "Cette variation existante adopte un haut rose, une jupe blanche et des bottines. Vérifiez l’identité avant de passer à la vidéo."
+      image: "/assets/tools/character-studio/marketing/dixie-pop.webp"
+      alt: "Dixie avec un haut rose, une jupe plissée blanche et des bottines blanches."
+    - title: "Une image du Recast"
+      caption: "Image extraite du Recast existant de Dixie. Regardez le clip entier ci-dessous pour juger la continuité pendant le mouvement."
+      image: "/assets/tools/character-studio/marketing/dixie-recast.webp"
+      alt: "Image extraite de l’exemple Recast publié de Dixie."
+  note: "Comparez l’identité dans ces résultats réels, puis lancez les clips disponibles ci-dessous pour l’observer pendant le mouvement."
 ---
 
 Choisissez une référence que vous aurez envie de réutiliser. Changez ensuite la scène autour du personnage, vérifiez l’image obtenue, puis passez à la vidéo quand ce cadre vous convient. Répéter une description seule laisse au modèle la possibilité de réinterpréter le visage et la tenue.
 
-**Il vous manque encore la référence ?** [Character Builder](/fr/outils/character-builder) crée un portrait de référence ou une planche de huit vues. Ce guide explique comment réutiliser ce résultat et repérer ce qui change.
+**Il vous manque encore la référence ?** [Character Studio](/fr/outils/character-builder) permet de créer un portrait ou une fiche, d’enregistrer l’identité et de composer de nouveaux looks. Ce guide montre comment réutiliser cette référence et faire passer l’image retenue dans Recast.
 
 ## Choisir la référence adaptée au plan
 
@@ -68,7 +64,7 @@ Joignez la référence dans un mode qui accepte une image. Décrivez l’action,
 
 **Prompt à adapter, et non prompt d’origine de l’exemple ci-dessus :**
 
-> Utilise l’image jointe comme référence du personnage. Conserve ses cheveux roux bouclés, son foulard à motifs, son grand t-shirt sombre et son pantalon cargo vert. Dans un skatepark, elle se tourne vers une amie hors champ et soulève une oreillette de son casque. Cadrage à la taille, caméra à hauteur des yeux, lumière douce de fin d’après-midi. Garde le visage bien visible.
+> Utilise l’image jointe comme référence du personnage. Conserve son visage, son chignon blond, son haut rose, sa jupe plissée blanche et ses bottines blanches. Dans un skatepark, elle se tourne vers une amie hors champ et soulève une oreillette de son casque. Cadrage à la taille, caméra à hauteur des yeux, lumière douce de fin d’après-midi. Garde le visage bien visible.
 
 Adaptez le décor et l’action à votre histoire. Si le premier résultat change le visage, simplifiez l’angle ou la composition avant d’ajouter des instructions.
 
@@ -81,6 +77,22 @@ Regardez les deux images côte à côte. Comparez la mâchoire, le nez, les chev
 En image-vers-vidéo, utilisez l’image de scène retenue comme première image. Commencez par un plan court avec une action simple. Vérifiez le début, le milieu et la fin, surtout quand la tête tourne, qu’une main passe devant le visage ou que le personnage devient petit dans le cadre.
 
 Un mode vidéo à images de référence n’est pas identique à un mode image-vers-vidéo. Vérifiez les [modes et limites du modèle choisi](/fr/modeles) avant d’envoyer une planche ou plusieurs images. Une référence guide le résultat ; elle ne verrouille pas chaque image du clip.
+
+## Garder l’identité dans Character Studio et choisir la prochaine création
+
+Un personnage enregistré donne un point de départ concret. Ouvrez **[Character Studio](/app/tools/character-builder)**, choisissez le personnage et utilisez **Nouveau look** pour changer sa tenue, sa coiffure, ses accessoires, le décor ou la lumière. L’identité choisie reste la référence. Examinez la nouvelle image et enregistrez le look que vous souhaitez réutiliser.
+
+Pour une rotation ou une continuité en pied, créez une fiche à partir du personnage. Cette action demande quatre vues du corps ; l’option de gros plans ajoute quatre portraits correspondants. Le [guide de la fiche personnage](/fr/blog/generateur-de-fiche-personnage-ia) aide à comparer les formats et à vérifier le résultat. Ces images de personnage utilisent Nano Banana 2.1.
+
+### Utiliser Recast lorsque la scène suivante doit bouger
+
+Choisissez l’image du personnage retenue dans **Recast**. Ajoutez une direction de scène, sélectionnez un passage vidéo si vous voulez guider le mouvement et la mise en scène, et ajoutez éventuellement une photo produit séparée. Vous pouvez écrire un dialogue ou choisir un extrait audio pour guider le rythme et l’interprétation.
+
+Choisissez une source où le sujet et l’action sont lisibles. Vérifiez le visage, les mains, la tenue et le produit dans le résultat complet. La vidéo source guide la génération sans garantir un remplacement identique image par image ; l’audio de référence ne garantit pas une bande-son identique.
+
+Recast propose le 480p, le 720p et le 1080p. Les passages sources sont limités à 15 secondes ; la sortie dure de 2 à 30 secondes, avec un maximum cumulé de 30 secondes entre source et sortie si une vidéo source est utilisée. Consultez la durée et le devis actuel dans l’application avant confirmation.
+
+**[Choisir mon personnage et préparer un Recast →](/app/tools/character-builder?mode=recast)**
 
 ## Corriger le problème que vous voyez
 
@@ -102,7 +114,7 @@ Commencez par une image nette pour un mode qui accepte une seule image. Ajoutez 
 
 ### Faut-il envoyer la planche entière ?
 
-Gardez la planche complète comme référence de conception. Pour générer, choisissez le portrait, la vue en pied ou la case qui correspond au plan et aux entrées acceptées. La planche aide à préparer ; elle ne garantit pas que le modèle interprétera correctement les huit vues.
+Gardez la planche complète comme référence de conception. Pour générer, choisissez le portrait, la vue en pied ou la case qui correspond au plan et aux entrées acceptées. La planche aide à préparer ; elle ne garantit pas que le modèle interprétera correctement chaque vue.
 
 ### Pourquoi le visage change-t-il au passage à la vidéo ?
 
@@ -114,4 +126,4 @@ Pas forcément. Si le personnage ne réapparaît jamais, un prompt direct peut s
 
 ## Préparer le prochain élément utile
 
-Si le personnage reste à créer, [ouvrez Character Builder](/app/tools/character-builder). Si vous avez déjà la référence, [créez la scène suivante dans Image](/app/image). Quand cette image convient, [choisissez un modèle vidéo](/fr/modeles) avec le mode d’entrée adapté au plan.
+**[Ouvrez Character Studio](/app/tools/character-builder)** pour créer et enregistrer l’identité, composer le prochain look ou préparer un Recast. Pour une scène image séparée, [ouvrez Image](/app/image) ; pour d’autres parcours vidéo, [comparez les modes des modèles](/fr/modeles).

@@ -36,6 +36,16 @@ const traitActionsHookPath = join(root, 'frontend/src/components/tools/character
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
+test('character builder delegates current-price lifecycle and exposes recovery in its composer', () => {
+  const pricing = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPrice.ts'), 'utf8');
+  assert.match(workspaceSource, /useCharacterBuilderPrice\(resolution, referenceCount\)/);
+  assert.doesNotMatch(workspaceSource, /await authFetch\(url/);
+  assert.match(workspaceSource, /priceStatus=\{priceStatus\}/);
+  assert.match(workspaceSource, /onRetryPrice=/);
+  assert.match(pricing, /customerTariffRevision/);
+  assert.match(pricing, /keepPreviousData: false/);
+});
+
 test('character builder workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(copyPath), 'character builder copy should live in a colocated copy module');
   assert.ok(existsSync(typesPath), 'character builder local contracts should live in a colocated type module');

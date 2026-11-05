@@ -50,9 +50,9 @@ had no matching completed usage log; they are not assigned zero cost. There is n
 observed 2K/4K sample in this audit. Fees, storage, processing and support are not
 deducted from any gross-margin figure above.
 
-## Recast: current and selected target
+## Recast: baseline before the preview activation
 
-Current Recast preparation and confirmation still use ordinary Wan 3 Prime
+At the initial audit, Recast preparation and confirmation used ordinary Wan 3 Prime
 customer pricing. They do **not** use the separate five-creator-tools ×2.2 policy.
 At the configured Singapore supplier rates, 720p costs USD 0.14 per billable
 second and 1080p USD 0.28. Billable video seconds are source excerpt duration plus
@@ -72,11 +72,37 @@ is approximately a 30% markup, giving about 23% margin on revenue after rounding
 
 Adrien selected **supplier cost ×2** on 2026-11-05 for the independent Recast
 product. That is 100% markup and 50% gross margin before other fees, subject to
-final wallet-cent rounding. This selection prepares the target; **the target has
-not been activated**. It does not approve a new render or change past receipts.
+final wallet-cent rounding. This was initially an unactivated target; the isolated
+preview activation is recorded below. It does not approve a new render or change past receipts.
 No new image price has been selected.
 
-## Admin integration to implement
+## Preview Recast activation — 2026-11-05 22:35 UTC
+
+The dedicated branch commit `e555923b65f53ab72719f0aacb100a9243a9989c` was
+deployed through Git to Vercel's `character-studio-test` custom environment
+(`dpl_2wyCrZix2Yp3hSqmGa3Vwx5qEsPc`). After the exact Git/production-isolation
+check passed, the normal admin preview/confirmation flow created only
+`admin-character-recast-recast-video`, scope `character-recast / recast / video`,
+coefficient ×2. Immutable event: `ce011683-f366-48c1-8d13-c065c7ebce29`.
+The affected Neon branch is `br-square-king-aenyqhsq` (`character-studio-v2-test`).
+Production was neither configured nor deployed.
+
+The 51-scenario server preview showed no invented previous product price.
+Twelve live estimates covered fractional source seconds, 480p/720p/1080p,
+output-only jobs and audio on/off. Two real unconfirmed six-second portrait
+quotes returned USD 1.68 at 720p and USD 3.36 at 1080p. The 15-second source plus
+15-second output examples returned USD 8.40 / 16.80. Ledger rows and amounts
+remained unchanged; no provider render was submitted. Other policy rows and
+ordinary Wan/Nano21 public quotes were identical before and after activation.
+
+Disposable PostgreSQL 17 tests cover real quote/reservation/receipt/refund
+transactions with mocked supplier submission, including insufficient funds,
+duplicates, stale coefficients, unavailable rules and old accepted quotes.
+The admin has an editable coefficient in Pricing → Tools, using preview,
+confirmation, immutable history and coefficient rollback. Public pricing
+examples use the same Recast pricing owner.
+
+## Character image admin integration still to implement
 
 Add a distinct Character Studio section to the existing pricing admin, reusing
 its server preview, explicit confirmation, immutable change history and rollback.
@@ -90,7 +116,7 @@ The scoped controls must cover:
    1K/2K/4K, initially preserving 0.07/0.11/0.23. Display known image components
    separately from observed usage cost; unavailable complete cost means unknown
    margin, not a falsely precise positive margin.
-2. **MaxVideoAI Recast:** editable supplier-cost coefficient, proposed ×2,
+2. **MaxVideoAI Recast (implemented in preview):** editable supplier-cost coefficient, active ×2,
    with 720p/1080p examples, separate source/output seconds, total customer price,
    absolute difference and estimated gross margin. The base must be the supplier
    estimate, never the already marked-up Wan customer quote.
