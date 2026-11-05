@@ -1,10 +1,10 @@
 import type { AppLocale } from '@/i18n/locales';
-import { Link } from '@/i18n/navigation';
-import type { ImagePricingRow, OtherSurfacePricingData, PricingHubLink } from '../_lib/pricingHubData';
+import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import type { ImagePricingRow, OtherSurfacePricingData } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
-function InlineLinks({ links }: { links: PricingHubLink[] }) {
+function InlineLinks({ links }: { links: { label: string; href: LocalizedLinkHref }[] }) {
   return (
     <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold">
       {links.map((link, index) => (
@@ -151,7 +151,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
                 <td className="px-4 py-3 text-text-secondary">{copy.tools.recastUse}</td>
                 <td className="py-3 pl-4">
                   <InlineLinks links={[
-                    { label: copy.links.tool, href: '/tools/character-builder#recast' },
+                    { label: copy.links.tool, href: { pathname: '/tools/character-builder', hash: 'recast' } },
                     { label: copy.links.livePrice, href: '/app/tools/character-builder?mode=recast' },
                   ]} />
                 </td>

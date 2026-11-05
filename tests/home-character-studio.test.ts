@@ -7,7 +7,7 @@ for (const locale of ['en', 'fr', 'es']) {
   test(`home Character Studio ${locale}: published films are manual; unavailable films stay honest stills`, async () => {
     const f = await mountToolFixture(`import {HomeCharacterStudio} from './components/marketing/home/HomeCharacterStudio';function App(){return <HomeCharacterStudio locale="${locale}" films={[{key:'dixie',video:'https://media.maxvideoai.com/marketing-media/dixie.mp4',poster:'https://media.maxvideoai.com/marketing-media/dixie.webp'}]}/>}`, {
       'next/image': `import React from 'react';export default ({fill,priority,...p})=>React.createElement('img',p)`,
-      '@/i18n/navigation': `import React from 'react';export const Link=({currentLocale,prefetch,...p})=>React.createElement('a',p)`,
+      '@/i18n/navigation': `import React from 'react';export const Link=({currentLocale,prefetch,href,...p})=>React.createElement('a',{...p,href:typeof href==='string'?href:href.pathname+'#'+href.hash})`,
       './HomeCharacterStudio.module.css': `export default new Proxy({},{get:(_,key)=>key})`,
     });
     try {

@@ -24,7 +24,7 @@ export function HomeCharacterStudio({ locale, films = [] }: { locale: AppLocale;
           <Link currentLocale={locale} href="/tools/character-builder" className={styles.primary} data-analytics-event="tool_cta_click" data-analytics-tool-name="character_builder" data-analytics-tool-surface="public" data-analytics-cta-location="home_character_studio">{c.create}<ArrowUpRight size={18} aria-hidden="true" /></Link>
           <Link href="/app/tools/character-builder?mode=recast" prefetch={false} className={styles.secondary}>{c.recast}<ArrowUpRight size={17} aria-hidden="true" /></Link>
         </div>
-        <Link currentLocale={locale} href="/examples#character-studio" className={styles.explore}>{c.explore}<ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <Link currentLocale={locale} href={{ pathname: '/examples', hash: 'character-studio' }} className={styles.explore}>{c.explore}<ArrowUpRight size={16} aria-hidden="true" /></Link>
       </div>
       <div>
         <div className={styles.films}>{(['dixie','vesper'] as const).map((key,i) => {
