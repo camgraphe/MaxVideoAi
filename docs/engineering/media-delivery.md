@@ -390,6 +390,19 @@ copies do not alter the automated public rendition catalogue.
 
 ### Demonstration media inside the app
 
+Character Studio's Explore tab and the unfiltered first public examples page use
+`CharacterStudioPublicFilms` to stream optional Recast proof from the reviewed
+`getCharacterStudioMarketingVideos` playlist reader. Only independent public
+marketing copies qualify; private jobs, provider metadata and recreation settings
+never enter this presentation. The public placement follows the complete 24-card
+gallery and pagination, excludes originals already displayed on that page, and
+does not change gallery ordering, counts, JSON-LD or the single prioritized poster.
+`CharacterStudioRecastExamples.client` reuses `PublicVideoPlayer` with manual
+controls, `preload="none"`, deferred posters and fixed stages. The app's Recast
+button changes mode through the existing draft transition, without selecting a
+demo as an owned character or motion source. `tests/character-studio-explore.test.ts`
+covers locale copy, loading ownership, duplicate suppression and that handoff.
+
 Image and Audio newcomer samples use separate editorial starter collections and a
 bundled public fallback; see `app-starter-media.md` for ownership, preparation,
 playlist migration, original artwork provenance and validation limits.

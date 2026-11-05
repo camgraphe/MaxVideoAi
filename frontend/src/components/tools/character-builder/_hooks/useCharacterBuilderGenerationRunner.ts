@@ -25,6 +25,7 @@ interface UseCharacterBuilderGenerationRunnerOptions {
   tariffRevision?: number;
   refreshPrice: () => Promise<unknown>;
   captureAccountRequest: CaptureCharacterBuilderAccountRequest;
+  captureDraftRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   hasIdentityReference: boolean;
   mutateHistoricalJobs: SWRInfiniteKeyedMutator<JobsPage[]>;
@@ -41,6 +42,7 @@ interface UseCharacterBuilderGenerationRunnerOptions {
 export function useCharacterBuilderGenerationRunner({
   tariffRevision,refreshPrice,
   captureAccountRequest,
+  captureDraftRequest,
   copy,
   hasIdentityReference,
   mutateHistoricalJobs,
@@ -61,6 +63,7 @@ export function useCharacterBuilderGenerationRunner({
       }
       const request = captureAccountRequest();
       if (!request) return;
+      const draftRequest = captureDraftRequest();
       setError(null);
       setStatusMessage(null);
       const loadingKey = getLoadingRequestKey(action, generateCount);
@@ -137,13 +140,13 @@ export function useCharacterBuilderGenerationRunner({
           return {
             ...previous,
             runs: nextRuns,
-            selectedResultId: firstResultId,
-            pinnedReferenceResultId: null,
+            selectedResultId: draftRequest?.isCurrent() ? firstResultId : previous.selectedResultId,
+            pinnedReferenceResultId: draftRequest?.isCurrent() ? null : previous.pinnedReferenceResultId,
             refinementHistory: previous.refinementHistory,
           };
         });
 
-        setStatusMessage(
+        if (draftRequest?.isCurrent()) setStatusMessage(
           action === 'generate'
             ? generateCount === 4
               ? copy.runGenerateFourDone
@@ -173,13 +176,13 @@ export function useCharacterBuilderGenerationRunner({
           openAuthGate();
           return;
         }
-        setError(runError instanceof Error ? runError.message : copy.runFailed);
+        if (draftRequest?.isCurrent()) setError(runError instanceof Error ? runError.message : copy.runFailed);
       } finally {
         if (request.isCurrent()) setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
       }
     },
     [
-      captureAccountRequest,tariffRevision,refreshPrice,
+      captureAccountRequest,captureDraftRequest,tariffRevision,refreshPrice,
       copy.missingRun,
       copy.runFailed,
       copy.runFullBodyDone,

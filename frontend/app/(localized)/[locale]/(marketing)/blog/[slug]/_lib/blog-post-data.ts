@@ -45,7 +45,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Use the character workflow',
       body: 'Build the reference first, then move into the tighter sheet guide or the still and video workflow.',
       links: [
-        { href: '/tools/character-builder', label: 'Open Character Builder' },
+        { href: '/tools/character-builder', label: 'Open Character Studio' },
         { href: '/blog/ai-character-sheet-generator', label: 'Read the 8-panel sheet guide' },
         { href: '/app/image', label: 'Generate the source still in Image' },
       ],
@@ -55,7 +55,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Passez au workflow personnage',
       body: 'Créez d’abord la référence, puis passez au guide de la fiche 8 panneaux ou au workflow image et vidéo.',
       links: [
-        { href: '/outils/character-builder', label: 'Ouvrir Character Builder' },
+        { href: '/outils/character-builder', label: 'Ouvrir Character Studio' },
         { href: '/blog/generateur-de-fiche-personnage-ia', label: 'Lire le guide de la fiche 8 panneaux' },
         { href: '/app/image', label: 'Générer l’image source dans Image' },
       ],
@@ -65,7 +65,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Pasa al flujo del personaje',
       body: 'Primero crea la referencia y luego pasa a la guía de la hoja de 8 paneles o al flujo de imagen y video.',
       links: [
-        { href: '/herramientas/character-builder', label: 'Abrir Character Builder' },
+        { href: '/herramientas/character-builder', label: 'Abrir Character Studio' },
         { href: '/blog/generador-de-fichas-de-personaje-con-ia', label: 'Leer la guía de la hoja de 8 paneles' },
         { href: '/app/image', label: 'Generar la imagen base en Image' },
       ],
@@ -77,7 +77,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Turn the sheet into a reusable workflow',
       body: 'Open the tool, go back to the broader consistency guide, or move the sheet into Nano Banana.',
       links: [
-        { href: '/tools/character-builder', label: 'Open Character Builder' },
+        { href: '/tools/character-builder', label: 'Open Character Studio' },
         { href: '/blog/how-to-create-consistent-ai-characters', label: 'Read the broader consistency guide' },
         { href: '/models/nano-banana', label: 'Use the sheet in Nano Banana' },
       ],
@@ -87,7 +87,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Transformez la fiche en vrai workflow',
       body: 'Ouvrez l’outil, revenez au guide global de cohérence, ou passez la fiche dans Nano Banana.',
       links: [
-        { href: '/outils/character-builder', label: 'Ouvrir Character Builder' },
+        { href: '/outils/character-builder', label: 'Ouvrir Character Studio' },
         {
           href: '/blog/comment-creer-des-personnages-ia-coherents-dans-les-images-et-la-video',
           label: 'Lire le guide global de cohérence',
@@ -100,7 +100,7 @@ const BLOG_NEXT_STEPS: Partial<Record<string, Record<AppLocale, ArticleNextStep>
       title: 'Convierte la hoja en un flujo reutilizable',
       body: 'Abre la herramienta, vuelve a la guía general de consistencia o lleva la hoja a Nano Banana.',
       links: [
-        { href: '/herramientas/character-builder', label: 'Abrir Character Builder' },
+        { href: '/herramientas/character-builder', label: 'Abrir Character Studio' },
         {
           href: '/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video',
           label: 'Leer la guía general de consistencia',

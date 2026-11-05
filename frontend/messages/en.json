@@ -2910,7 +2910,7 @@
         },
         {
           "title": "Tool guides",
-          "body": "Practical breakdowns for Character Builder, Angle, and the workflows that turn one approved image into more usable outputs."
+          "body": "Practical breakdowns for Character Studio, Angle, and the workflows that turn one approved image into more usable outputs."
         },
         {
           "title": "Model notes",
@@ -3842,18 +3842,18 @@
           "emptyUploads": "No uploaded images yet. Upload images from the composer or the Media page.",
           "emptyGenerated": "No generated images saved yet. Save a generated image to see it here.",
           "emptyStoryboard": "No storyboard assets saved yet. Save a storyboard image to see it here.",
-          "emptyCharacter": "No character assets saved yet. Generate one in Character Builder first.",
+          "emptyCharacter": "No character assets saved yet. Generate one in Character Studio first.",
           "emptyAngle": "No angle assets saved yet. Generate one in the Angle tool first.",
           "emptyUpscale": "No upscale assets saved yet. Save an upscale result first."
         }
       },
       "characterPicker": {
         "title": "Select characters",
-        "description": "Choose from your Character Builder outputs. Selected characters are added as identity references.",
+        "description": "Choose from your Character Studio outputs. Selected characters are added as identity references.",
         "selected": "Selected",
         "select": "Select",
         "done": "Done",
-        "empty": "No character references yet. Generate one in the Character Builder first.",
+        "empty": "No character references yet. Generate one in the Character Studio first.",
         "limitLabel": "Up to {count} character reference{suffix}"
       },
       "authGate": {
@@ -4303,7 +4303,7 @@
         "emptyUploads": "No uploaded media yet. Import media from your device to see it here.",
         "emptyGenerated": "No saved renders yet. Review recent renders and save the outputs you want to reuse.",
         "emptyStoryboard": "No storyboard assets saved yet. Save a storyboard image to see it here.",
-        "emptyCharacter": "No character assets saved yet. Generate one in Character Builder to see it here.",
+        "emptyCharacter": "No character assets saved yet. Generate one in Character Studio to see it here.",
         "emptyAngle": "No angle assets saved yet. Generate one in the Angle tool to see it here.",
         "emptyUpscale": "No upscale assets saved yet. Save an upscale result to see it here.",
         "deleteError": "Unable to delete this asset.",
@@ -4430,7 +4430,7 @@
       "title": "Tools",
       "subtitle": "Prepare references. Refine your images and videos.",
       "characterEyebrow": "Character consistency",
-      "characterTitle": "Character Builder",
+      "characterTitle": "Character Studio",
       "characterBody": "Create a consistent character across eight views.",
       "characterBadge": "Image",
       "storyboardEyebrow": "Reference boards",
@@ -4931,7 +4931,7 @@
       "uploadTooLarge": "Image exceeds {maxMB} MB. Compress it or choose a smaller file.",
       "loadFromJobDone": "Loaded character builder settings from the selected job.",
       "duplicateDone": "Builder settings copied from that result.",
-      "missingRun": "Character builder run is missing.",
+      "missingRun": "Character Studio run is missing.",
       "runGenerateOneDone": "Generated a new character reference.",
       "runGenerateFourDone": "Generated 4 character reference options.",
       "runFullBodyDone": "Generated a full-body correction from the selected result.",
@@ -5857,7 +5857,7 @@
           },
           "specialized": {
             "sections": {
-              "characterBuilder": "Character Builder",
+              "characterBuilder": "Character Studio",
               "angleControls": "Angle controls",
               "upscale": "Upscale",
               "storyboard": "Storyboard",
@@ -6312,9 +6312,9 @@
           "storyboardDescription": "Generate storyboard panels, timing notes, and continuity references.",
           "storyboardGenerationTitle": "Storyboard generation",
           "storyboardGenerationSubtitle": "Storyboard boards and continuity frames.",
-          "character": "Character Builder",
+          "character": "Character Studio",
           "characterDescription": "Create a reusable character reference from identity notes or images.",
-          "characterGenerationTitle": "Character Builder",
+          "characterGenerationTitle": "Character Studio",
           "characterGenerationSubtitle": "Consistent character reference tool.",
           "angle": "Angle",
           "angleDescription": "Generate a stronger camera angle from an image reference.",
@@ -7220,7 +7220,7 @@
           "title": "Create reusable character references",
           "body": "Turn one image into an 8-panel character sheet with 4 full-body angles and 4 close-ups, or create a portrait anchor before you branch into scenes, prompts, and motion.",
           "cta": "Explore Tool",
-          "imageAlt": "Character Builder workspace screenshot from MaxVideoAI."
+          "imageAlt": "Character Studio workspace screenshot from MaxVideoAI."
         },
         "angle": {
           "eyebrow": "Perspective control",
@@ -7253,7 +7253,7 @@
           "image": {
             "eyebrow": "Image",
             "title": "Generate the source still",
-            "body": "Create the base frame first, then carry it into Character Builder, Angle, or motion.",
+            "body": "Create the base frame first, then carry it into Character Studio, Angle, or motion.",
             "cta": "Open Image"
           },
           "character": {
@@ -7966,9 +7966,9 @@
           "Video Recast"
         ],
         "showcase": {
-          "topLabel": "Character Builder workspace",
+          "topLabel": "Character Studio workspace",
           "windowLabel": "choose input, generate asset, reuse",
-          "imageAlt": "Full screenshot of the MaxVideoAI Character Builder workspace.",
+          "imageAlt": "Full screenshot of the MaxVideoAI Character Studio workspace.",
           "callouts": [
             {
               "label": "01",
@@ -7998,12 +7998,12 @@
           "Silhouette continuity becomes harder to hold"
         ],
         "solutionLabel": "What this tool creates",
-        "solutionTitle": "Character Builder creates the reference first",
+        "solutionTitle": "Character Studio creates the reference first",
         "solutionBody": "Generate either a portrait anchor or an 8-panel character sheet, then bring that same reference back into prompts, edits, and still-reference video workflows.",
         "portraitInputLabel": "Portrait input",
-        "portraitInputAlt": "Portrait reference used as the base input for Character Builder.",
+        "portraitInputAlt": "Portrait reference used as the base input for Character Studio.",
         "sheetLabel": "Reusable 8-panel sheet",
-        "sheetAlt": "Reusable 8-panel character sheet output generated from Character Builder."
+        "sheetAlt": "Reusable 8-panel character sheet output generated from Character Studio."
       },
       "howItWorks": {
         "eyebrow": "How it works",
@@ -8042,7 +8042,7 @@
         "comparisonBody": "The reference does the continuity work before you start changing scenes.",
         "comparisons": [
           {
-            "eyebrow": "Without Character Builder",
+            "eyebrow": "Without Character Studio",
             "title": "Every new scene has to rebuild the character",
             "items": [
               "Face, hair, and outfit drift between prompts",
@@ -8050,7 +8050,7 @@
             ]
           },
           {
-            "eyebrow": "With Character Builder",
+            "eyebrow": "With Character Studio",
             "title": "One reference keeps the character grounded",
             "items": [
               "Face, outfit, and silhouette stay aligned",
@@ -8083,7 +8083,7 @@
             ],
             "badge": "Most reusable",
             "stats": "4 full-body + 4 close-ups",
-            "imageAlt": "8-panel character sheet output generated from Character Builder."
+            "imageAlt": "8-panel character sheet output generated from Character Studio."
           },
           {
             "eyebrow": "Video prep still",
@@ -8098,13 +8098,13 @@
         ],
         "workflow": {
           "label": "Reference workflow",
-          "title": "Character Builder -> Nano Banana -> Video",
+          "title": "Character Studio -> Nano Banana -> Video",
           "chainLabel": "Sheet -> Still -> Video",
           "steps": [
             {
               "label": "01 · Character sheet",
               "body": "Lock the character before motion starts.",
-              "imageAlt": "Character Builder sheet used as the reusable reference asset across images and video workflows."
+              "imageAlt": "Character Studio sheet used as the reusable reference asset across images and video workflows."
             },
             {
               "label": "02 · Nano Banana still",
@@ -8286,10 +8286,10 @@
         "eyebrow": "Create the reference first",
         "title": "Keep the Same Character Across Scenes, Stills, and Video",
         "body": "Generate a portrait anchor or 8-panel sheet, then reuse that same reference in prompts, edits, and still-reference video workflows.",
-        "primaryCta": "Open Character Builder",
+        "primaryCta": "Open Character Studio",
         "panelLeft": "Locked character",
         "panelRight": "Ready to reuse",
-        "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
+        "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Studio."
       },
       "studio": {
         "nav": [

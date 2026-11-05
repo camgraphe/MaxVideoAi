@@ -2938,7 +2938,7 @@
         },
         {
           "title": "Prendre les outils en main",
-          "body": "Découvrez comment Character Builder et Angle vous aident à construire un personnage ou à explorer plusieurs points de vue."
+          "body": "Découvrez comment Character Studio et Angle vous aident à construire un personnage ou à explorer plusieurs points de vue."
         },
         {
           "title": "Choisir un modèle",
@@ -4331,7 +4331,7 @@
         "emptyUploads": "Aucun média importé pour le moment. Importez un fichier depuis votre appareil pour le voir ici.",
         "emptyGenerated": "Aucun rendu enregistré pour le moment. Parcourez les rendus récents et enregistrez les outputs utiles.",
         "emptyStoryboard": "Aucun storyboard enregistré pour le moment. Enregistrez une image storyboard pour la voir ici.",
-        "emptyCharacter": "Aucun asset personnage enregistré. Générez-en un dans Character Builder pour le voir ici.",
+        "emptyCharacter": "Aucun asset personnage enregistré. Générez-en un dans Character Studio pour le voir ici.",
         "emptyAngle": "Aucun asset angle enregistré. Générez-en un dans l’outil Angle pour le voir ici.",
         "emptyUpscale": "Aucun asset upscale enregistré. Enregistrez un résultat upscale pour le voir ici.",
         "deleteError": "Suppression impossible pour cet asset.",
@@ -7248,7 +7248,7 @@
           "title": "Créez des références personnage réutilisables",
           "body": "Transformez une image en planche personnage à 8 panneaux avec 4 vues en pied et 4 gros plans, ou créez une ancre portrait avant de passer aux scènes, aux prompts et au mouvement.",
           "cta": "Explorer l'outil",
-          "imageAlt": "Capture de l'interface Character Builder de MaxVideoAI."
+          "imageAlt": "Capture de l'interface Character Studio de MaxVideoAI."
         },
         "angle": {
           "eyebrow": "Contrôle de perspective",
@@ -7281,7 +7281,7 @@
           "image": {
             "eyebrow": "Image",
             "title": "Générez le visuel source",
-            "body": "Créez d'abord le visuel source, puis envoyez-le dans Character Builder, Angle ou la préparation vidéo.",
+            "body": "Créez d'abord le visuel source, puis envoyez-le dans Character Studio, Angle ou la préparation vidéo.",
             "cta": "Ouvrir Image"
           },
           "character": {
@@ -7994,9 +7994,9 @@
           "Vidéo Recast"
         ],
         "showcase": {
-          "topLabel": "Interface Character Builder",
+          "topLabel": "Interface Character Studio",
           "windowLabel": "choisir l'entrée, générer la référence, la réutiliser",
-          "imageAlt": "Capture complète de l'interface Character Builder de MaxVideoAI.",
+          "imageAlt": "Capture complète de l'interface Character Studio de MaxVideoAI.",
           "callouts": [
             {
               "label": "01",
@@ -8026,12 +8026,12 @@
           "La continuité de la silhouette devient plus difficile à tenir"
         ],
         "solutionLabel": "Ce que l'outil crée",
-        "solutionTitle": "Character Builder crée la référence en premier",
+        "solutionTitle": "Character Studio crée la référence en premier",
         "solutionBody": "Générez un portrait de référence ou une planche personnage à 8 panneaux, puis réutilisez cette même base dans vos prompts, vos retouches et vos parcours de création vidéo basés sur image fixe.",
         "portraitInputLabel": "Portrait de référence",
-        "portraitInputAlt": "Portrait de référence utilisé comme base dans Character Builder.",
+        "portraitInputAlt": "Portrait de référence utilisé comme base dans Character Studio.",
         "sheetLabel": "Planche 8 panneaux réutilisable",
-        "sheetAlt": "Planche personnage à 8 panneaux générée par Character Builder."
+        "sheetAlt": "Planche personnage à 8 panneaux générée par Character Studio."
       },
       "howItWorks": {
         "eyebrow": "Comment ça marche",
@@ -8070,7 +8070,7 @@
         "comparisonBody": "La référence fait le travail de continuité avant même de changer de scène.",
         "comparisons": [
           {
-            "eyebrow": "Sans Character Builder",
+            "eyebrow": "Sans Character Studio",
             "title": "Chaque nouvelle scène doit reconstruire le personnage",
             "items": [
               "Le visage, les cheveux et la tenue dérivent entre les prompts",
@@ -8078,7 +8078,7 @@
             ]
           },
           {
-            "eyebrow": "Avec Character Builder",
+            "eyebrow": "Avec Character Studio",
             "title": "Une référence unique garde le personnage ancré",
             "items": [
               "Le visage, la tenue et la silhouette restent alignés",
@@ -8111,7 +8111,7 @@
             ],
             "badge": "La plus réutilisable",
             "stats": "4 vues en pied + 4 gros plans",
-            "imageAlt": "Planche personnage à 8 panneaux générée par Character Builder."
+            "imageAlt": "Planche personnage à 8 panneaux générée par Character Studio."
           },
           {
             "eyebrow": "Image fixe de prépa vidéo",
@@ -8126,13 +8126,13 @@
         ],
         "workflow": {
           "label": "Parcours de référence",
-          "title": "Character Builder -> Nano Banana -> Video",
+          "title": "Character Studio -> Nano Banana -> Video",
           "chainLabel": "Planche -> image fixe -> vidéo",
           "steps": [
             {
               "label": "01 · Planche personnage",
               "body": "Verrouillez le personnage avant de lancer le mouvement.",
-              "imageAlt": "Planche Character Builder utilisée comme référence réutilisable dans Image et Video."
+              "imageAlt": "Planche Character Studio utilisée comme référence réutilisable dans Image et Video."
             },
             {
               "label": "02 · Image fixe Nano Banana",
@@ -8314,10 +8314,10 @@
         "eyebrow": "Commencez par la référence",
         "title": "Gardez le même personnage d'une scène à l'autre",
         "body": "Générez un portrait de référence ou une planche à 8 panneaux, puis réutilisez cette même référence dans les prompts, les retouches et les parcours de création vidéo basés sur image fixe.",
-        "primaryCta": "Ouvrir Character Builder",
+        "primaryCta": "Ouvrir Character Studio",
         "panelLeft": "Personnage verrouillé",
         "panelRight": "Prêt à réutiliser",
-        "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
+        "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Studio."
       },
       "studio": {
         "nav": [

@@ -1,6 +1,6 @@
 'use client';
 import type { ReactNode } from 'react';
-import { Compass, Images, SlidersHorizontal, Users } from 'lucide-react';
+import { Compass, Images, SlidersHorizontal, Users, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioLibraryCopy } from '../_lib/character-studio-library-copy';
 import type { CharacterStudioMode } from './CharacterStudioNavigation.client';
@@ -17,6 +17,9 @@ export function CharacterStudioWorkspaceView({
   pendingCount,
   error,
   status,
+  restoredDraft,
+  onNew,
+  onDismissRestoredDraft,
   composer,
   explore,
   characters,
@@ -33,6 +36,9 @@ export function CharacterStudioWorkspaceView({
   pendingCount: number;
   error: string | null;
   status: string | null;
+  restoredDraft: boolean;
+  onNew: () => void;
+  onDismissRestoredDraft: () => void;
   composer: ReactNode;
   explore: ReactNode;
   characters: ReactNode;
@@ -41,6 +47,17 @@ export function CharacterStudioWorkspaceView({
 }) {
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-[1700px] flex-col gap-2">
+      {mode === 'character' && restoredDraft ? (
+        <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-text-secondary">
+          <p role="status" className="min-w-0 flex-1">{copy.restoredDraft}</p>
+          <button type="button" onClick={onNew} className="min-h-9 rounded-lg px-2 font-medium text-text-primary underline underline-offset-4 hover:bg-surface-hover">
+            {copy.fresh}
+          </button>
+          <button type="button" onClick={onDismissRestoredDraft} aria-label={copy.dismissDraftNotice} className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-surface-hover">
+            <X size={15} aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
       {error ? (
         <p role="alert" className="rounded-xl border border-border p-3 text-sm">
           {error}

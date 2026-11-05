@@ -3,6 +3,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
+import { sanitizeRequest } from '../frontend/src/server/tools/character-builder/sanitize';
+import { buildPrompt } from '../frontend/src/server/tools/character-builder/prompt';
 
 const frontend = path.join(process.cwd(), 'frontend');
 const stateKey = 'maxvideoai.character-builder.v1';
@@ -10,7 +12,7 @@ const pendingKey = 'maxvideoai.character-builder.pending-runs.v1';
 
 async function mountWorkspace(options: { userId?: string | null; loading?: boolean; storage?: Record<string, string>; query?: string } = {}) {
   const stubs: Record<string, string> = {
-    'next/navigation': `export const usePathname=()=>'/app/tools/character-builder'; export const useSearchParams=()=>new URLSearchParams(window.fixtureQuery);`,
+    'next/navigation': `export const usePathname=()=>'/app/tools/character-builder'; export const useSearchParams=()=>new URLSearchParams(window.location.search);`,
     'next/link': `export default function Link({children}){return children;}`,
     '@/hooks/useRequireAuth': `export const useRequireAuth=()=>window.fixtureAuth;`,
     '@/lib/authFetch': `export const authFetch=(url,init)=>window.fixtureFetch(url,init);`,
@@ -53,6 +55,10 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
   w.MessageChannel = class { port1 = { onmessage: () => {} }; port2 = { postMessage: () => setTimeout(() => this.port1.onmessage(), 0) }; };
   w.process = { env: {} };
   w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+  Object.defineProperty(w, 'fixtureQuery', {
+    get: () => w.location.search.slice(1),
+    set: (query: string) => w.history.replaceState(w.history.state, '', `/app/tools/character-builder${query ? `?${query}` : ''}`),
+  });
   w.fixtureQuery = options.query ?? '';
   w.fixtureIntervals = new Map();
   let nextInterval = 0;
@@ -249,6 +255,7 @@ test('same-account generation completion and token refresh retain the draft and 
     await f.respond(request, { ok: true, run: { id: 'A-run', jobId: 'A-job', results: [{ id: 'A-output', url: 'https://example.invalid/A.png' }] } });
     assert.equal(f.draft().advancedNotes, 'A current draft');
     assert.equal(f.draft().runs[0].id, 'A-run');
+    assert.equal(f.draft().selectedResultId, 'A-output');
     assert.equal(JSON.parse(f.w.localStorage.getItem(`${stateKey}:account-A`)).state.runs[0].id, 'A-run');
     assert.equal(f.w.localStorage.getItem(`${pendingKey}:account-A`), null);
   } finally { await f.close(); }
@@ -342,6 +349,218 @@ test('new-character navigation clears only the draft while keeping finished outp
     assert.equal(f.draft().traits.hairstyle.value, 'curly');
     assert.equal(f.draft().traits.outfitStyle.value, 'bohemian');
     assert.equal(f.draft().runs[0].id, 'A-run');
+  } finally { await f.close(); }
+});
+
+function assertFreshCharacter(draft: any) {
+  assert.equal(draft.characterId ?? null, null);
+  assert.equal(draft.sourceMode, 'scratch');
+  assert.deepEqual(draft.referenceImages, []);
+  assert.equal(draft.referenceStrength, null);
+  assert.equal(draft.consistencyMode, 'balanced');
+  assert.equal(draft.outputMode, 'portrait-reference');
+  assert.equal(draft.qualityMode, 'draft');
+  assert.equal(draft.formatMode, 'standard');
+  assert.equal(draft.advancedNotes, '');
+  assert.deepEqual(draft.mustRemainVisible, []);
+  assert.equal(draft.selectedResultId, null);
+  assert.equal(draft.pinnedReferenceResultId, null);
+  assert.deepEqual(draft.outputOptions, { fullBodyRequired: false, includeCloseUps: true, neutralStudioBackground: true, preserveFacialDetails: true, avoid3dRenderLook: true });
+  for (const key of ['characterType', 'genderPresentation', 'ageRange', 'skinTone', 'faceCues', 'eyeColor', 'eyeShape', 'hairColor', 'hairLength', 'hairstyle', 'bodyBuild', 'outfitStyle']) {
+    assert.deepEqual(draft.traits[key], { value: null, source: 'manual' }, key);
+  }
+  for (const key of ['customCharacterDescription', 'customGenderDescription', 'customHairDescription', 'customOutfitDescription', 'customSceneDescription', 'customDetailsDescription']) assert.equal(draft.traits[key], '', key);
+  assert.equal(draft.traits.sceneId, null);
+  assert.equal(draft.traits.realismStyle, 'photoreal');
+  assert.equal(draft.traits.hairEnabled, false);
+  assert.equal(draft.traits.outfitEnabled, false);
+  assert.deepEqual(draft.traits.accessories, []);
+  assert.deepEqual(draft.traits.distinctiveFeatures, []);
+}
+
+async function clickNewCharacter(f: Awaited<ReturnType<typeof mountWorkspace>>) {
+  await f.w.fx.act(async () => {
+    const button = f.w.document.querySelector('button[aria-label="New character"]');
+    assert.ok(button);
+    button.click();
+  });
+}
+
+const restoredDraftNotice = (f: Awaited<ReturnType<typeof mountWorkspace>>) =>
+  [...f.w.document.querySelectorAll('[role="status"]')].find((node: any) => node.textContent === 'Your previous character draft was restored.');
+
+test('a restored draft is explained once and the notice can start a genuinely fresh persisted draft', async () => {
+  const key = `${stateKey}:account-A`;
+  const f = await mountWorkspace({ storage: { [key]: legacyState } });
+  try {
+    assert.ok(restoredDraftNotice(f));
+    const notice = restoredDraftNotice(f) as any;
+    await f.w.fx.act(async () => [...notice.parentElement.querySelectorAll('button')].find((button: any) => button.textContent === 'Start from scratch').click());
+    assert.equal(restoredDraftNotice(f), undefined);
+    assertFreshCharacter(f.draft());
+    assertFreshCharacter(JSON.parse(f.w.localStorage.getItem(key)).state);
+  } finally { await f.close(); }
+});
+
+test('dismissing the restored draft notice keeps choices and does not reappear on tab or mode switches', async () => {
+  const f = await mountWorkspace({ storage: { [`${stateKey}:account-A`]: legacyState } });
+  try {
+    assert.ok(restoredDraftNotice(f));
+    await f.w.fx.act(async () => f.w.document.querySelector('button[aria-label="Dismiss draft notice"]').click());
+    for (const label of ['Recast', 'CharacterAI', 'My characters', 'My images']) {
+      await f.w.fx.act(async () => {
+        const button = [...f.w.document.querySelectorAll('button')].find((candidate: any) => candidate.textContent === label) as any;
+        assert.ok(button, label); button.click();
+      });
+      assert.equal(restoredDraftNotice(f), undefined);
+      assert.equal(f.draft().advancedNotes, 'A private draft');
+    }
+    await f.auth('account-B');
+    assert.equal(restoredDraftNotice(f), undefined);
+    await f.auth('account-A');
+    assert.ok(restoredDraftNotice(f), 'a fresh account mount explains its restored draft');
+  } finally { await f.close(); }
+});
+
+test('an empty persisted draft with completed history does not claim to restore previous choices', async () => {
+  const f = await mountWorkspace({ storage: { [`${stateKey}:account-A`]: JSON.stringify({ version: 1, state: { runs: [{ id: 'finished', results: [] }], selectedResultId: 'finished-result' } }) } });
+  try { assert.equal(restoredDraftNotice(f), undefined); } finally { await f.close(); }
+});
+
+for (const state of [{ traits: { customOutfitDescription: 'A red coat' } }, { formatMode: '4k' }]) {
+  test(`restoration notice covers ${'traits' in state ? 'custom clothing alone' : 'output settings alone'}`, async () => {
+    const f = await mountWorkspace({ storage: { [`${stateKey}:account-A`]: JSON.stringify({ version: 1, state }) } });
+    try {
+      assert.ok(restoredDraftNotice(f));
+      await clickNewCharacter(f);
+      assert.equal(restoredDraftNotice(f), undefined);
+      assertFreshCharacter(f.draft());
+    } finally { await f.close(); }
+  });
+}
+
+for (const role of ['identity', 'style']) test(`New rejects a late ${role} upload without restoring its source or clothing reference`, async () => {
+  const f = await mountWorkspace();
+  try {
+    const file = new f.w.File(['image'], `${role}.png`, { type: 'image/png' });
+    const input = f.w.document.querySelector(`input[data-character-reference=${role}]`);
+    Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+    await f.w.fx.act(async () => input.dispatchEvent(new f.w.Event('change', { bubbles: true })));
+    const upload = f.w.requests.find((entry: any) => entry.url === '/api/uploads/image');
+    assert.ok(upload);
+    await clickNewCharacter(f);
+    await f.respond(upload, { ok: true, asset: { url: `https://example.invalid/${role}.png`, name: `${role}.png` } });
+    assertFreshCharacter(f.draft());
+    assertFreshCharacter(JSON.parse(f.w.localStorage.getItem(`${stateKey}:account-A`)).state);
+  } finally { await f.close(); }
+});
+
+test('New clears all custom and hidden overrides from persisted state and the next generation payload after reopening', async () => {
+  const key = `${stateKey}:account-A`;
+  const f = await mountWorkspace();
+  let saved = '';
+  try {
+    await f.w.fx.act(async () => f.w.controls.setState((state: any) => ({
+      ...state, characterId: '17', sourceMode: 'reference-image', referenceStrength: 'strong', consistencyMode: 'strict',
+      referenceImages: [{ id: 'old-identity', role: 'identity', url: 'https://example.invalid/old-identity.png' }, { id: 'old-style', role: 'style', url: 'https://example.invalid/old-style.png' }],
+      outputMode: 'character-sheet', qualityMode: 'final', formatMode: '4k', advancedNotes: 'OLD extra direction', mustRemainVisible: ['OLD badge'],
+      selectedResultId: 'old-result', pinnedReferenceResultId: 'old-pin',
+      outputOptions: { fullBodyRequired: true, includeCloseUps: false, neutralStudioBackground: false, preserveFacialDetails: false, avoid3dRenderLook: false },
+      traits: {
+        characterType: { value: 'alien', source: 'manual' }, customCharacterDescription: 'OLD glass creature', genderPresentation: { value: 'custom', source: 'manual' }, customGenderDescription: 'OLD personal description',
+        ageRange: { value: 'senior', source: 'manual' }, skinTone: { value: '#a1b2c3', source: 'manual' }, faceCues: { value: 'angular', source: 'manual' },
+        eyeColor: { value: '#c3b2a1', source: 'manual' }, eyeShape: { value: 'almond', source: 'manual' }, bodyBuild: { value: 'athletic', source: 'manual' },
+        hairEnabled: true, customHairDescription: 'OLD silver braids', hairstyle: { value: 'curly', source: 'manual' }, hairLength: { value: 'long', source: 'manual' }, hairColor: { value: '#123abc', source: 'manual' },
+        outfitEnabled: true, outfitStyle: { value: 'fantasy', source: 'manual' }, customOutfitDescription: 'OLD red cloak', accessories: ['glasses'], distinctiveFeatures: ['freckles'], customDetailsDescription: 'OLD tattoo',
+        sceneId: 'comfy_cafe', customSceneDescription: 'OLD lunar castle', realismStyle: 'animated',
+      },
+    })));
+    const dirty = f.draft();
+    for (const text of ['Recast', 'CharacterAI', 'My characters', 'My images']) {
+      await f.w.fx.act(async () => [...f.w.document.querySelectorAll('button')].find((button: any) => button.textContent === text)?.click());
+      assert.deepEqual(f.draft(), dirty, `switching ${text} preserves the intentional draft`);
+    }
+    await clickNewCharacter(f);
+    assertFreshCharacter(f.draft());
+    saved = f.w.localStorage.getItem(key);
+    assertFreshCharacter(JSON.parse(saved).state);
+  } finally { await f.close(); }
+  const reopened = await mountWorkspace({ storage: { [key]: saved } });
+  try {
+    assertFreshCharacter(reopened.draft());
+    await reopened.w.fx.act(async () => reopened.w.controls.onGenerateOne());
+    const generation = reopened.w.requests.find((entry: any) => entry.url === '/api/tools/character-builder');
+    assert.ok(generation);
+    const payload = JSON.parse(generation.init.body);
+    assertFreshCharacter(payload);
+    assert.equal(payload.selectedResultUrl, null);
+    assert.equal(payload.pinnedReferenceResultUrl, null);
+    const prompt = buildPrompt(sanitizeRequest({ ...payload, userId: 'account-A' }));
+    assert.doesNotMatch(prompt, /OLD|#a1b2c3|#c3b2a1|#123abc|cozy cafe|red cloak|silver braids|glass creature/);
+    assert.match(prompt, /clean neutral studio background/);
+  } finally { await reopened.close(); }
+});
+
+test('New removes the old job entry so reopening cannot restore its previous custom instructions', async () => {
+  const key = `${stateKey}:account-A`;
+  const f = await mountWorkspace({ query: 'job=old-job&mode=character&campaign=kept' });
+  let saved = '', query = '';
+  try {
+    const old = f.w.requests.find((entry: any) => entry.url === '/api/jobs/old-job');
+    assert.ok(old);
+    await f.respond(old, { ok: true, settingsSnapshot: { schemaVersion: 1, surface: 'character-builder', builder: { advancedNotes: 'OLD restored instruction', traits: { customOutfitDescription: 'OLD red cloak' } } } });
+    await clickNewCharacter(f);
+    saved = f.w.localStorage.getItem(key);
+    query = f.w.location.search.slice(1);
+    assert.equal(new URLSearchParams(query).get('job'), null);
+    assert.equal(new URLSearchParams(query).get('campaign'), 'kept');
+  } finally { await f.close(); }
+  const reopened = await mountWorkspace({ query, storage: { [key]: saved } });
+  try {
+    assertFreshCharacter(reopened.draft());
+    assert.equal(reopened.w.requests.filter((entry: any) => entry.url === '/api/jobs/old-job').length, 0);
+  } finally { await reopened.close(); }
+});
+
+test('New makes a fresh Character entry after arriving through a Recast link', async () => {
+  const f = await mountWorkspace({ query: 'mode=recast&campaign=kept' });
+  try {
+    await f.w.fx.act(async () => [...f.w.document.querySelectorAll('button')].find((button: any) => button.textContent === 'CharacterAI')?.click());
+    await clickNewCharacter(f);
+    assert.equal(new URLSearchParams(f.w.location.search).get('mode'), null);
+    assert.equal(new URLSearchParams(f.w.location.search).get('campaign'), 'kept');
+    assertFreshCharacter(f.draft());
+  } finally { await f.close(); }
+});
+
+test('a generation completed after New remains in history without selecting its abandoned result', async () => {
+  const f = await mountWorkspace();
+  try {
+    await f.edit('OLD generation direction');
+    await f.w.fx.act(async () => f.w.controls.onGenerateOne());
+    const generation = f.w.requests.find((entry: any) => entry.url === '/api/tools/character-builder');
+    assert.ok(generation);
+    await clickNewCharacter(f);
+    await f.respond(generation, { ok: true, run: { id: 'old-run', jobId: 'old-job', results: [{ id: 'old-result', url: 'https://example.invalid/old.png' }] } });
+    assert.equal(f.draft().runs[0].id, 'old-run');
+    assertFreshCharacter(f.draft());
+    assertFreshCharacter(JSON.parse(f.w.localStorage.getItem(`${stateKey}:account-A`)).state);
+  } finally { await f.close(); }
+});
+
+test('an old pending job recovered after New remains in history without selecting its result', async () => {
+  const pending = { id: 'old-pending', jobId: 'old-job', createdAt: '2026-11-03T10:00:00Z', action: 'generate', generateCount: 1, outputMode: 'portrait-reference', qualityMode: 'draft', formatMode: 'standard' };
+  const f = await mountWorkspace({ storage: { [`${pendingKey}:account-A`]: JSON.stringify({ version: 1, runs: [pending] }) } });
+  try {
+    const first = f.w.requests.find((entry: any) => entry.url === '/api/jobs/old-job');
+    await f.respond(first, { ok: true, status: 'pending', renderIds: [] });
+    await clickNewCharacter(f);
+    const poll = [...f.w.fixtureIntervals.values()].find((entry: any) => entry.delay === 8000) as any;
+    await f.w.fx.act(async () => poll.callback());
+    const request = f.w.requests.filter((entry: any) => entry.url === '/api/jobs/old-job').at(-1);
+    await f.respond(request, { ok: true, status: 'completed', renderIds: ['https://example.invalid/old.png'] });
+    assert.equal(f.draft().runs[0].jobId, 'old-job');
+    assertFreshCharacter(f.draft());
   } finally { await f.close(); }
 });
 

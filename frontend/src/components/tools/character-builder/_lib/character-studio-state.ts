@@ -79,6 +79,23 @@ export function startNewCharacter(previous: CharacterBuilderState): CharacterBui
   };
 }
 
+/** Completed history alone is not an editable draft. */
+export function hasCharacterDraftChoices(state: CharacterBuilderState): boolean {
+  const defaults = createDefaultCharacterBuilderState();
+  const settings = ['sourceMode', 'outputMode', 'consistencyMode', 'referenceStrength', 'qualityMode', 'formatMode'] as const;
+  return Boolean(
+    state.characterId || state.referenceImages.length || state.advancedNotes.trim() || state.mustRemainVisible.length ||
+    settings.some((key) => state[key] !== defaults[key]) ||
+    Object.entries(defaults.outputOptions).some(([key, value]) => state.outputOptions[key as keyof typeof defaults.outputOptions] !== value) ||
+    Object.entries(defaults.traits).some(([key, defaultValue]) => {
+      const value = state.traits[key as keyof typeof defaults.traits] ?? defaultValue;
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'object' && value && 'value' in value) return value.value != null;
+      return typeof value === 'string' ? value.trim() !== defaultValue : value !== defaultValue;
+    })
+  );
+}
+
 export function applyCharacterInspiration(previous: CharacterBuilderState, name: string): CharacterBuilderState {
   const preset = CHARACTER_INSPIRATIONS.find((entry) => entry.name === name);
   if (!preset) return previous;

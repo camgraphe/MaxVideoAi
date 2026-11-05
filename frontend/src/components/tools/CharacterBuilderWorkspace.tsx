@@ -16,7 +16,7 @@ import { CharacterStudioIdentity } from './character-builder/_components/Charact
 import deepmerge from 'deepmerge';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { customerTariffRevision } from '@/lib/customer-tariff-revision';
@@ -76,7 +76,7 @@ import type {
   PendingCharacterRun,
 } from './character-builder/_lib/character-builder-types';
 
-export default function CharacterBuilderPage() {
+export default function CharacterBuilderPage({ recastExamples }: { recastExamples?: ReactNode }) {
   const { loading, user, session } = useRequireAuth({
     redirectIfLoggedOut: false,
   });
@@ -86,6 +86,7 @@ export default function CharacterBuilderPage() {
       key={user?.id ?? 'guest'}
       user={user}
       accessToken={session?.access_token ?? null}
+      recastExamples={recastExamples}
     />
   );
 }
@@ -93,9 +94,11 @@ export default function CharacterBuilderPage() {
 function CharacterBuilderAccountWorkspace({
   user,
   accessToken,
+  recastExamples,
 }: {
   user: User | null;
   accessToken: string | null;
+  recastExamples?: ReactNode;
 }) {
   const authLoading = false;
   const captureAccountRequest = useCharacterBuilderAccountScope(accessToken);
@@ -191,7 +194,7 @@ function CharacterBuilderAccountWorkspace({
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
-  useCharacterBuilderPersistence({
+  const { restoredDraft, dismissRestoredDraft } = useCharacterBuilderPersistence({
     authLoading,
     hydrated,
     pendingRuns,
@@ -232,6 +235,7 @@ function CharacterBuilderAccountWorkspace({
     tariffRevision: displayedPrice?.revision,
     refreshPrice,
     captureAccountRequest,
+    captureDraftRequest,
     copy,
     hasIdentityReference,
     mutateHistoricalJobs,
@@ -347,6 +351,7 @@ function CharacterBuilderAccountWorkspace({
       setError,
       setStatusMessage,
       onReset: () => {
+        dismissRestoredDraft();
         setShowStyleReferenceSlot(false);
         setMustRemainDraft('');
       },
@@ -408,6 +413,9 @@ function CharacterBuilderAccountWorkspace({
         pendingCount={pendingRuns.length}
         error={error}
         status={statusMessage}
+        restoredDraft={restoredDraft}
+        onNew={newCharacter}
+        onDismissRestoredDraft={dismissRestoredDraft}
         composer={
           <CharacterStudioComposer
             key={`${editorKey}:${state.characterId ?? 'create'}`}
@@ -462,7 +470,7 @@ function CharacterBuilderAccountWorkspace({
           />
         }
         explore={
-          <CharacterStudioExplore copy={studioCopy} onNew={newCharacter} onChoose={chooseInspiration} />
+          <CharacterStudioExplore copy={studioCopy} onNew={newCharacter} onChoose={chooseInspiration} recastExamples={recastExamples} onRecast={() => changeMode('recast')} />
         }
         characters={
           <CharacterStudioLibrary

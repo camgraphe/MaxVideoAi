@@ -1,0 +1,23 @@
+.section { padding: clamp(3.5rem, 7vw, 7rem) 0; background: #eeece6; border-block: 1px solid #d9d6ce; }
+.layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(2rem, 5vw, 5rem); align-items: center; }
+.intro h2 { font-size: clamp(2.4rem, 4.1vw, 4.5rem); line-height: 1.03; letter-spacing: -.055em; white-space: pre-line; margin: 1rem 0 1.5rem; font-weight: 600; }
+.intro > p:not(:first-child) { max-width: 30rem; color: #66645d; font-size: 1.05rem; line-height: 1.7; }
+.actions { display: flex; flex-wrap: wrap; gap: .8rem; margin: 1.8rem 0 1.4rem; }
+.primary, .secondary { display: inline-flex; align-items: center; justify-content: center; gap: .8rem; min-height: 48px; padding: .8rem 1rem; border-radius: 7px; font-size: .9rem; font-weight: 600; }
+.primary { background: #24241f; color: white; }
+.secondary { border: 1px solid #c7c4bb; color: #24241f; }
+.explore { display: inline-flex; align-items: center; gap: .6rem; padding-block: .65rem; font-size: .9rem; text-decoration: underline; text-underline-offset: 4px; }
+.primary:focus-visible, .secondary:focus-visible, .explore:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.films { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.card { margin: 0; min-width: 0; }
+.frame { position: relative; aspect-ratio: 9 / 16; border-radius: 10px; overflow: hidden; background: #20201d; }
+.video { width: 100%; height: 100%; object-fit: contain; }
+.still { position: absolute; inset: auto 0 0; padding: .7rem; background: #000b; color: white; font-size: .7rem; }
+.caption { display: flex; align-items: flex-start; gap: .8rem; margin-top: 1rem; }
+.portrait { width: 42px; height: 56px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.caption p { font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: #787269; }
+.caption h3 { font-size: 1.3rem; line-height: 1.5; font-weight: 600; }
+.caption span { display: block; font-size: .8rem; color: #66645d; line-height: 1.5; }
+.note { color: #787269; font-size: .75rem; line-height: 1.5; margin-top: 1.5rem; }
+@media (max-width: 850px) { .layout { grid-template-columns: 1fr; } .intro { max-width: 36rem; } .films { max-width: 650px; } }
+@media (max-width: 500px) { .films { gap: .65rem; } .caption { gap: .5rem; } .portrait { width: 30px; height: 40px; } .caption span { font-size: .75rem; } .caption h3 { font-size: 1.15rem; } }

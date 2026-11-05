@@ -30,7 +30,7 @@ test('marketing heroes remain outside deferred rendering while long content is c
   const modelContentSource = readSource(modelContentPath);
 
   assert.match(homeSource, /<HomeHero[\s\S]*?<\/HomeHero>|<HomeHero[\s\S]*?\/>[\s\S]*?<DeferredMarketingContent/);
-  assert.equal((homeSource.match(/<DeferredMarketingContent>/g) ?? []).length, 7, 'home should contain each long section, including the Studio/assistant chapter, independently');
+  assert.equal((homeSource.match(/<DeferredMarketingContent>/g) ?? []).length, 8, 'home should contain each long section, including Character Studio proof and the Studio/assistant chapter, independently');
   assert.match(homeSource, /<DeferredMarketingContent>\s*<HomeConversationSection[^>]*assistantHref=\{mcpLink\?\.href\}[^>]*\/>\s*<\/DeferredMarketingContent>/, 'Studio and assistant discovery must remain below-fold with rendering containment');
   assert.match(pricingSource, /<PricingHeroSection[\s\S]*?<\/PricingHeroSection>[\s\S]*?<PricingCurrentSections/, 'the static pricing hero stays outside the contained current sections');
   assert.doesNotMatch(pricingContentSource, /<PricingHeroSection/, 'current pricing content must not own the opening hero');

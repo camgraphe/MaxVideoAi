@@ -116,6 +116,9 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
         <h3 id="tool-pricing-title" className="text-xl font-semibold tracking-normal text-text-primary">
           {copy.otherSurfaces.toolTitle}
         </h3>
+        <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">
+          {copy.otherSurfaces.characterImageNote}
+        </p>
         <PricingTableScrollRegion labelledBy="tool-pricing-title" className="mt-4">
           <table className="min-w-[820px] text-left text-sm">
             <thead>
@@ -139,6 +142,20 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
                   </td>
                 </tr>
               ))}
+              <tr id="character-recast-pricing" className="scroll-mt-24 border-b border-hairline last:border-0">
+                <th scope="row" className="py-3 pr-4 font-semibold text-text-primary">{copy.tools.characterRecast}</th>
+                <td colSpan={2} className="px-4 py-3 text-text-secondary">
+                  <span className="font-semibold">{copy.liveQuote}</span>
+                  <p className="mt-1 max-w-[420px] text-xs leading-5">{copy.otherSurfaces.recastPricingNote}</p>
+                </td>
+                <td className="px-4 py-3 text-text-secondary">{copy.tools.recastUse}</td>
+                <td className="py-3 pl-4">
+                  <InlineLinks links={[
+                    { label: copy.links.tool, href: '/tools/character-builder#recast' },
+                    { label: copy.links.livePrice, href: '/app/tools/character-builder?mode=recast' },
+                  ]} />
+                </td>
+              </tr>
             </tbody>
           </table>
         </PricingTableScrollRegion>
