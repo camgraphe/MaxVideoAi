@@ -197,7 +197,7 @@ test('Character Studio tools are private and paid/ref shutdown keeps reads and r
   assert.deepEqual(names.filter(name => studioTools.includes(name)), []);
   assert.doesNotMatch(disabled.client.getInstructions() ?? '', /list_saved_characters/);
 
-  for (const [paidGeneration, referenceUploads] of [[false, true], [true, false], [true, true]]) {
+  for (const [paidGeneration, referenceUploads] of [[false, false], [false, true], [true, false], [true, true]]) {
     const { client, calls } = await connected(t, { characterStudio: true, paidGeneration, referenceUploads });
     const tools = (await client.listTools()).tools.filter(tool => studioTools.includes(tool.name));
     assert.deepEqual(tools.map(tool => tool.name).sort(), [
@@ -211,7 +211,11 @@ test('Character Studio tools are private and paid/ref shutdown keeps reads and r
       const descriptor = tools.find(tool => tool.name === 'prepare_recast')?.description ?? '';
       assert.match(descriptor, /at least one of direction, dialogue, video or audio/i);
     } else {
-      assert.doesNotMatch(client.getInstructions() ?? '', /prepare_recast/);
+      const instructions = client.getInstructions() ?? '';
+      assert.match(instructions, /Recast purchases are unavailable/);
+      assert.match(instructions, /Recover existing Recast with get_recast_status/);
+      assert.doesNotMatch(instructions, /prepare_recast|confirm_recast|For a complete request use prepare_generation/);
+      if (paidGeneration) assert.match(instructions, /For other generation, use prepare_generation/);
     }
     for (const tool of tools) {
       assert.equal(tool.inputSchema.additionalProperties, false, tool.name);
@@ -221,13 +225,28 @@ test('Character Studio tools are private and paid/ref shutdown keeps reads and r
   }
 });
 
-test('the fully enabled Character Studio instruction remains within the host byte budget', () => {
-  const instructions = buildMaxVideoAiMcpInstructions({
-    paidGeneration: true, referenceUploads: true, montagePreparation: true, audioGeneration: true,
-    studioMontageCreation: true, studioTimelineEditing: true, studioExports: true, creatorTools: true, characterStudio: true,
-  });
-  assert.ok(Buffer.byteLength(instructions, 'utf8') <= 2000);
-  assert.match(instructions, /list_saved_characters/);
+test('all capability combinations fit the instruction budget and route Recast only through its dedicated tools', () => {
+  for (let mask = 0; mask < 512; mask += 1) {
+    const capabilities = {
+      paidGeneration: Boolean(mask & 1),
+      referenceUploads: Boolean(mask & 2),
+      montagePreparation: Boolean(mask & 4),
+      audioGeneration: Boolean(mask & 8),
+      studioMontageCreation: Boolean(mask & 16),
+      studioTimelineEditing: Boolean(mask & 32),
+      studioExports: Boolean(mask & 64),
+      creatorTools: Boolean(mask & 128),
+      characterStudio: Boolean(mask & 256),
+    };
+    const instructions = buildMaxVideoAiMcpInstructions(capabilities);
+    const bytes = Buffer.byteLength(instructions, 'utf8');
+    assert.ok(bytes <= 2000, `capabilities ${mask} used ${bytes} bytes`);
+    assert.equal(instructions.includes('get_recast_status'), capabilities.characterStudio);
+    assert.equal(
+      instructions.includes('prepare_recast'),
+      capabilities.characterStudio && capabilities.paidGeneration && capabilities.referenceUploads,
+    );
+  }
 });
 
 test('Character Studio transport preserves exact look IDs, ordered source roles and fractional passages', async t => {

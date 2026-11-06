@@ -8,6 +8,10 @@ preview without ordering provider media or changing production.
 
 The branch incorporates main `f868a026bd56fc2bd75d355512e3f03417ec0853` through
 merge `de9acc3b66f32a2299374925887eacb1a717cb31`, with no merge conflicts.
+Main advanced during validation to `d573890f0` (Omni 1.2). Merge `37f8b53b2`
+incorporates it as well. Its single conflict in the public-pricing baseline was
+resolved by retaining both the Character transition and all 13 Omni scenarios;
+the complete public baseline passes with 610 rows.
 Implementation commits: `9be058c86` (common owner and direct continuation),
 `b19059002` (MCP), `9ba51617e` (Studio), `2baeb348c` (conversation continuity and
 host-independent SEO fixture), `c11544a95` (preview approval destinations).
