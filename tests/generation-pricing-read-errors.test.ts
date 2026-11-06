@@ -125,3 +125,30 @@ test('reference-required and unsupported mode codes remain distinct from paramet
   assert.equal((await failure({...valid,mode:'i2v'})).error.code,'REFERENCE_REQUIRED');
   assert.equal((await failure({...valid,mode:'reframe'})).error.code,'MODE_UNSUPPORTED');
 });
+
+for (const mode of ['v2v', 'extend'] as const) {
+  test(`Wan ${mode} quotes explain a rejected owned image without disclosing source details`, async () => {
+    const request = normalizeGenerationRequest({ ...videoInput, mode,
+      settings: { ...videoInput.settings, aspectRatio: '16:9' },
+      references: [{ kind: 'asset', assetId: 'video', role: 'source' }, { kind: 'asset', assetId: 'image', role: 'reference' }] });
+    const deps = dependencies(async () => { throw new Error('Rejected references must not reach pricing.'); });
+    const source = { assetId: 'video', role: 'source' as const, ...(mode === 'extend' ? { slot: 0 } : {}), mediaKind: 'video' as const,
+      storageUrl: 'https://private.invalid/SECRET_SOURCE.mp4', mimeType: 'video/mp4',
+      width: 1280, height: 720, durationSec: 4, sizeBytes: 50_000, fps: 30 };
+    const guide = { assetId: 'image', role: 'reference' as const, ...(mode === 'v2v' ? { slot: 0 } : {}), mediaKind: 'image' as const,
+      storageUrl: 'https://private.invalid/SECRET_GUIDE.png', mimeType: 'image/png',
+      width: 363, height: 119, durationSec: null, sizeBytes: 27_692 };
+    for (const facts of [guide, { ...guide, height: null }, { ...guide, sizeBytes: null }]) {
+      const result = await failure(request, { ...deps, resolveGenerationReferences: async () => [source, facts] });
+      assert.equal(result.error.code, 'REFERENCE_INVALID');
+      assert.match(result.error.message, facts === guide ? /363.*119/ : /could not verify/i);
+      assert.match(result.error.message, /240.*No credits were charged/);
+      assert.doesNotMatch(JSON.stringify(result), /https:|SECRET_/);
+    }
+    const denied = await failure(request, { ...deps, resolveGenerationReferences: async () => {
+      throw new AgentApiError('REFERENCE_INVALID', 'Could not read https://private.invalid/SECRET_SOURCE.mp4');
+    } });
+    assert.equal(denied.error.code, 'REFERENCE_INVALID');
+    assert.doesNotMatch(JSON.stringify(denied), /https:|SECRET_/);
+  });
+}

@@ -1,5 +1,6 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { isWan3EngineId } from '@/lib/wan3-pricing';
+import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { gptImage26ReferenceFailure, isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
@@ -152,6 +153,31 @@ function fail(
   referenceFailure?: ReferenceConstraintFailure,
 ): never {
   throw new GenerationCapabilityError(field, kind, referenceFailure);
+}
+
+// Only the known image constraint and bounded, verified dimensions can cross
+// the generic reference-error boundary into a quote or Studio response.
+export class WanImageCapabilityError extends GenerationCapabilityError {
+  constructor(referenceFailure: ReferenceConstraintFailure, readonly userMessage: string) {
+    super('references', 'reference_invalid', referenceFailure);
+  }
+}
+
+function failWanImageReference(
+  engineId: string,
+  failure: 'metadata_unverified' | 'dimensions_unverified' | 'image_dimensions_too_small',
+  dimensions?: Pick<ResolvedReference, 'width' | 'height'>,
+  minimumSidePx?: number,
+): never {
+  const userMessage = getWanReferenceValidationMessage({
+    engineId,
+    error: failure === 'image_dimensions_too_small' ? 'IMAGE_DIMENSIONS_TOO_SMALL' : 'IMAGE_DIMENSIONS_UNVERIFIED',
+    actualWidth: dimensions?.width,
+    actualHeight: dimensions?.height,
+    minimumSidePx,
+  });
+  if (userMessage) throw new WanImageCapabilityError(failure, userMessage);
+  fail('references', 'reference_invalid', failure);
 }
 
 function applicableField(
@@ -937,12 +963,12 @@ function validateReferences(
     validateTrustedAudioFormat(reference, fields, candidate, options);
     const wanImage = isWan3EngineId(candidate.engine.id) && fields.length === 1 && fields[0]!.type === 'image';
     if (wanImage && reference.kind !== 'asset' && !options.allowUnverifiedReferenceDuration) {
-      fail('references', 'reference_invalid', 'dimensions_unverified');
+      failWanImageReference(candidate.engine.id, 'dimensions_unverified');
     }
     if (wanImage && options.resolvedReferences) {
       const resolved = resolvedReference(reference, options);
       if (typeof resolved?.sizeBytes !== 'number' || !Number.isFinite(resolved.sizeBytes) || resolved.sizeBytes <= 0) {
-        fail('references', 'reference_invalid', 'metadata_unverified');
+        failWanImageReference(candidate.engine.id, 'metadata_unverified');
       }
     }
     // Executable references use owned, measured originals, never caller dimensions.
@@ -954,9 +980,11 @@ function validateReferences(
       if (typeof resolved?.width !== 'number' || typeof resolved.height !== 'number'
         || !Number.isFinite(resolved.width) || !Number.isFinite(resolved.height)
         || resolved.width <= 0 || resolved.height <= 0) {
+        if (wanImage) failWanImageReference(candidate.engine.id, 'dimensions_unverified');
         fail('references', 'reference_invalid', 'dimensions_unverified');
       }
       if (resolved.width < minimumImageSide || resolved.height < minimumImageSide) {
+        if (wanImage) failWanImageReference(candidate.engine.id, 'image_dimensions_too_small', resolved, minimumImageSide);
         fail('references', 'reference_invalid', 'image_dimensions_too_small');
       }
     }

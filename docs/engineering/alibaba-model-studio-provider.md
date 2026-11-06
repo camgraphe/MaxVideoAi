@@ -38,6 +38,9 @@ still describe an unverified image. Upload and library rejections use the same
 localized cause, corrective action and no-debit message as Web preflight.
 Live MCP/Studio image-field discovery publishes `assetRequired: true` alongside
 `minImageSidePx: 240`, so clients import and measure references before quoting.
+Studio preparation and executable MCP quotes preserve this specific image
+rejection, including when a valid source video accompanies the image. Other
+source-access failures keep their existing neutral message.
 
 `frontend/lib/wan-image-failure-messages.ts` owns the precise resolution-rejection
 projection. Only validated integer measurements from the known diagnostic enter

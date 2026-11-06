@@ -350,3 +350,23 @@ test('saved Kling Element intent uses attached assets and ready project outputs 
   await assert.rejects(studioMediaRequest(actor,saved,{...inputWithClip(),references:[]},factories([candidate]),true,deps),{code:'REFERENCE_INVALID'});
   function inputWithClip(){return {...input,attachments:[clip]};}
 });
+
+test('Studio explains the Wan image minimum before promoting a project output', async () => {
+  const {dependencies, events} = mediaDependencies();
+  const privateUrl = 'https://private.invalid/SECRET_GUIDE.png';
+  const undersized = { ...dependencies, resolveMedia: async (userId: string, ref: ToolAssetRef) => ({
+    ...await dependencies.resolveMedia(userId, ref), url: privateUrl,
+    mediaFacts: {source: 'probe' as const, width: 363, height: 119},
+  }) };
+  await assert.rejects(studioMediaRequest(actor, {...video, modelId: 'wan-3', mode: 'ref2v',
+    references: [{ref: output, role: 'reference', slot: null}]} as never, input, factories(), true, undersized),
+  (error: unknown) => {
+    assert.ok(error instanceof Error && 'code' in error);
+    assert.equal(error.code, 'REFERENCE_INVALID');
+    assert.match(error.message, /363.*119.*240/);
+    assert.match(error.message, /No credits were charged/);
+    assert.doesNotMatch(error.message, /https:|SECRET_/);
+    return true;
+  });
+  assert.ok(!events.some(event => event.startsWith('save:')));
+});
