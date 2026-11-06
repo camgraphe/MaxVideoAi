@@ -23,13 +23,14 @@ export function canConfirmImageQuote(
 ): boolean {
   return (
     !busy &&
+    quote.recast?.confirmationEnabled !== false &&
     quote.state === "prepared" &&
     Date.parse(quote.expiresAt) > now &&
     imageQuoteWalletState(quote) === "ready"
   );
 }
-export function imageConfirmationPayload(requestId: string, quoteId: string) {
-  return { requestId, quoteId, confirmed: true as const };
+export function imageConfirmationPayload(requestId: string, quoteId: string, recastPrice?: {amountCents:number;currency:string}) {
+  return { requestId, quoteId, confirmed: true as const, ...(recastPrice ? {amountCents:recastPrice.amountCents,currency:recastPrice.currency} : {}) };
 }
 export function acceptsImageConversationResponse(
   requestScope: string,

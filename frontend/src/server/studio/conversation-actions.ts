@@ -1,3 +1,5 @@
+import type { CharacterStudioIntegration } from '@/server/character-studio/integration';
+import type { StudioRecastIntent } from '@/lib/studio/conversation-character-contract';
 import { normalizeVideoOperation } from '@/lib/video-operation';
 import type {StudioPreparedExport,StudioConversationRender} from '@/lib/studio/conversation-export-contract';
 import {studioActionRequestSchema, type StudioActionRequest, type StudioActionResult} from '@/lib/studio/conversation-action-contract';
@@ -25,6 +27,8 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
   generation?: ReturnType<typeof createStudioImageGenerationService>;
   prepareImage(request: Extract<StudioActionRequest, {action: 'image.prepare'}>): Promise<PreparedGeneration>;
   mediaEnabled?: boolean;
+  character?: Pick<CharacterStudioIntegration,'list'|'get'>;
+  prepareRecast?(request:StudioRecastIntent):Promise<PreparedGeneration>;
   factories?: StudioMediaFactories;
   prepareMedia?(request: StudioMediaIntent): Promise<PreparedGeneration | PreparedAudioGeneration>;
   recover?(quoteId: string): Promise<AgentGenerationStatus | null>;
@@ -116,6 +120,19 @@ export function createStudioActionExecutor(actor: StudioGenerationActor, depende
           }
           throw new AgentApiError('ENGINE_UNAVAILABLE','This model is not available in the current Studio catalog. Read catalog_read to choose an executable model.');
         }
+        case 'character.list': {
+          if (!dependencies.character) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio character tools are unavailable.');
+          const {characters,nextCursor} = await dependencies.character.list({name:request.name??undefined,cursor:request.cursor});
+          return {ok:true,action:request.action,data:{characters:characters.map(({id,name,lookCount})=>({id,name,lookCount})),nextCursor}};
+        }
+        case 'character.get': {
+          if (!dependencies.character) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio character tools are unavailable.');
+          const {id,name,looks,nextLookCursor} = await dependencies.character.get({characterId:request.characterId,lookName:request.lookName??undefined,lookCursor:request.lookCursor});
+          return {ok:true,action:request.action,data:{id,name,looks:looks.map(({id,name})=>({id,name})),nextLookCursor}};
+        }
+        case 'recast.prepare':
+          if (!dependencies.mediaEnabled || !dependencies.prepareRecast) throw new AgentApiError('ENGINE_UNAVAILABLE','Studio Recast preparation is unavailable.');
+          return {ok:true,action:request.action,data:await dependencies.prepareRecast(request)};
         case 'image.prepare': return {ok: true, action: request.action, data: await dependencies.prepareImage(request)};
         case 'generation.read': return {ok: true, action: request.action, data: await (dependencies.recover ?? generation.recover)(request.quoteId)};
         case 'quote.discard':

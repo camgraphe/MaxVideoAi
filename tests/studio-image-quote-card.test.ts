@@ -536,3 +536,27 @@ for (const mode of ['v2v', 'extend'] as const) for (const locale of ['fr', 'en']
     } finally { await view.close(); }
   });
 }
+
+test('Character Recast shows both reviewed passages and an explicit exact-price confirmation', async () => {
+  const turn=makeTurn({
+    modelLabel:'Character Recast',
+    summary:{schemaVersion:1,surface:'video',engineId:'wan-3-prime',mode:'v2v',prompt:'Product demo',settings:{aspectRatio:'9:16',resolution:'720p',durationSec:8},references:[],outputCount:1},
+    price:{amountCents:434,currency:'USD'},
+    recast:{confirmationEnabled:true,videoRange:{startSec:18,endSec:25.5},audioRange:{startSec:8.25,endSec:13.5}},
+  });
+  const f=await mountCard({turn,locale:'en'});
+  try {
+    assert.match(f.dom.window.document.body.textContent??'',/Video passage · 18–25\.5 s/);
+    assert.match(f.dom.window.document.body.textContent??'',/Audio passage · 8\.25–13\.5 s/);
+    const confirm=buttonMatching(f.dom.window.document,/Confirm Recast · \$4\.34/);
+    assert.ok(confirm);
+    assert.equal(f.confirms,0);
+    await act(async()=>confirm.click());
+    assert.equal(f.confirms,1);
+  } finally {await f.close();}
+  const disabled=await mountCard({turn:{...turn,quote:{...turn.quote!,recast:{confirmationEnabled:false}}},locale:'en'});
+  try {
+    assert.equal(buttonMatching(disabled.dom.window.document,/Confirm Recast/),null);
+    assert.match(disabled.dom.window.document.body.textContent??'',/Recast confirmation is currently unavailable/);
+  } finally {await disabled.close();}
+});

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HeaderBar } from "@/components/HeaderBar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { isStudioCharacterEnabled } from '@/server/studio/feature-access';
 import { resolveStudioPageAccess } from "@/server/studio/access";
 import { readImageConversationProject } from "@/server/studio/image-conversation-repository";
 import StudioPreviewAccess from "../../_components/StudioPreviewAccess.client";
@@ -57,6 +58,7 @@ export default async function StudioConversationPage({
               projectName={project.name}
               localQa={localQa}
               mediaEnabled={process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true' && process.env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true'}
+              characterEnabled={isStudioCharacterEnabled()}
               editingEnabled={process.env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true' && process.env.STUDIO_CONVERSATION_EDITING_ENABLED === 'true'}
               exportsEnabled={exportsEnabled}
               exportAvailable={exportAvailable}

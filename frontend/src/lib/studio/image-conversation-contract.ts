@@ -5,6 +5,7 @@ import {studioPreparedAnalysisSchema,type StudioPreparedAnalysis} from '@/lib/st
 import {studioPreparedExportSchema,type StudioPreparedExport} from "@/lib/studio/conversation-export-contract";
 import type { PreparedGeneration } from "@/server/agent-api/prepare-generation";
 import type { AgentGenerationStatus } from "@/server/generations/generation-status";
+import {studioRecastActionSchema,validateStudioRecast,type StudioRecastIntent} from '@/lib/studio/conversation-character-contract';
 import {studioMediaIntentSchema} from '@/lib/studio/conversation-media-contract';
 import {toolAssetRefSchema} from '@/lib/toolbox/contract';
 import type {PreparedAudioGeneration} from '@/server/agent-api/prepare-audio-generation';
@@ -61,12 +62,13 @@ export const imageDraftSchema = z
     reply: z.string().min(1).max(STUDIO_CONVERSATION_REPLY_MAX_CHARS).transform(projectStudioReply),
     image: imageSelectionSchema.nullable(),
     media: studioMediaIntentSchema.transform(media=>({...media,reply:projectStudioReply(media.reply)})).optional(),
+    recast: studioRecastActionSchema.superRefine(validateStudioRecast).transform(recast=>({...recast,reply:projectStudioReply(recast.reply)})).optional(),
     continuation: studioContinuationSchema.optional(),
     extensionAssembly:studioExtensionAssemblyPlanSchema.optional(),
     exportQuote: studioPreparedExportSchema.optional(),
     analysisQuote:studioPreparedAnalysisSchema.optional(),
   })
-  .strict().refine(draft => [draft.image,draft.media,draft.exportQuote,draft.analysisQuote].filter(Boolean).length <= 1, 'One quote per turn.');
+  .strict().refine(draft => [draft.image,draft.media,draft.recast,draft.exportQuote,draft.analysisQuote].filter(Boolean).length <= 1, 'One quote per turn.');
 export type ImageDraft = z.infer<typeof imageDraftSchema>;
 export type ImageConversationTurn = {
   requestId: string;
@@ -94,6 +96,11 @@ export type ImageConversationTurn = {
         /** Recorded canonical output timing; distinct from a model's ignored request default. */
         outputDurationSec?: number;
         sourceVideoOutput?: SeedanceEditSourceFacts;
+        recast?: {
+          confirmationEnabled:boolean;
+          videoRange?: NonNullable<StudioRecastIntent['video']>['range'];
+          audioRange?: NonNullable<StudioRecastIntent['audio']>['range'];
+        };
       })
     | null;
   generation: AgentGenerationStatus | null;
@@ -110,8 +117,8 @@ export type StudioConversationHistoryFacts = {
   quoteDirections:{requestId:string;quoteId:string;text:string;truncated:boolean}[];
   estimates:(StudioPricingEstimate & {requestId:string;historical:true})[];
 };
-export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media);}
-export function draftSurface(draft: ImageDraft | null) {return draft?.media?.action === 'video.prepare' ? 'video' : draft?.media ? 'audio' : 'image';}
+export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media || draft?.recast);}
+export function draftSurface(draft: ImageDraft | null) {return draft?.recast || draft?.media?.action === 'video.prepare' ? 'video' : draft?.media ? 'audio' : 'image';}
 /** Reproduce the saved immutable request, including renewal identity, in a fresh tab. */
 export function imageTurnRetryInput(turn: ImageConversationTurn): ImageTurnInput {
   return {requestId: turn.requestId,message: turn.message,references: turn.references,

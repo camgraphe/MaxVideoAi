@@ -55,19 +55,23 @@ export function ImageQuoteCard({
   const formatMoney = (amountCents: number, currency: string) =>
     formatCustomerAmount(amountCents,currency,locale==='fr'?'fr':'en') ?? t('unavailable','indisponible', "no disponible");
   const price = formatMoney(quote.price.amountCents, quote.price.currency);
+  const seconds = new Intl.NumberFormat(locale,{maximumFractionDigits:3});
+  const range = (value:{startSec:number;endSec:number}) => seconds.format(value.startSec)+'–'+seconds.format(value.endSec)+' s';
   return (
     <div className={styles.quote} aria-label={t('Creation quote', 'Devis de création', "Presupuesto de creación")}>
       <div className={styles.quoteTop}>
-        <span>{presentation.title}</span>
+        <span>{quote.recast ? 'Character Recast' : presentation.title}</span>
         <strong>{price}</strong>
       </div>
       <p className={styles.muted}>
-        {quote.modelLabel} · {presentation.settings} ·{" "}
+        {!quote.recast && quote.modelLabel+' · '}{presentation.settings} ·{" "}
         {referenceCount
           ? presentation.referenceSummary || `${referenceCount} ${t('reference', 'référence', "referencia")}${referenceCount > 1 ? "s" : ""}`
           : t('Original creation', 'Création originale', "Creación original")}
       </p>
-      {videoWorkflowNotices(quote.summary.engineId,quote.summary.mode,locale).map(note=><p key={note.code} role="note" className={styles.muted}>{note.message}</p>)}
+      {quote.recast?.videoRange && <p className={styles.muted}>{t('Video passage','Passage vidéo','Fragmento de vídeo')} · {range(quote.recast.videoRange)}</p>}
+      {quote.recast?.audioRange && <p className={styles.muted}>{t('Audio passage','Passage audio','Fragmento de audio')} · {range(quote.recast.audioRange)}</p>}
+      {!quote.recast && videoWorkflowNotices(quote.summary.engineId,quote.summary.mode,locale).map(note=><p key={note.code} role="note" className={styles.muted}>{note.message}</p>)}
       {presentation.operation && <p className={styles.muted}>{presentation.operation}</p>}
       {turn.extensionAssembly && turn.generation?.status!=='failed' && <p className={styles.muted} role="status">
         {turn.extensionAssembly.state==='saved'
@@ -86,7 +90,7 @@ export function ImageQuoteCard({
       {!failed&&quote.summary.surface==='video'&&quote.summary.engineId==='kling-v4'&&Array.isArray(quote.summary.settings.multiPrompt)&&onEditShotPlan&&quote.state==='prepared'&&<StudioShotPlanEditor
         key={quote.quoteId} engineId={quote.summary.engineId} shots={quote.summary.settings.multiPrompt} locale={locale==='fr'?'fr':'en'} busy={busy}
         onEditing={()=>setEditingShots(true)} onDraft={onEditShotPlan}/>}
-      {!failed && (quote.state === 'prepared' || expired) && (
+      {!failed && (quote.state === 'prepared' || expired) && !quote.recast && (
         <p className={styles.muted}>
           {t('Want a different model, resolution, duration or budget? Ask for a new quote to compare prices and possible savings.',
             'Envie d’un autre modèle, d’une autre résolution ou durée, ou d’un autre budget ? Demandez un nouveau devis pour comparer les tarifs et les économies possibles.', "¿Quieres otro modelo, resolución, duración o presupuesto? Pide un nuevo presupuesto para comparar precios y posibles ahorros.")}
@@ -109,10 +113,12 @@ export function ImageQuoteCard({
           <p>{safetyHelp.next}</p>
           <a href={safetyHelp.policyUrl} target="_blank" rel="noopener noreferrer">{safetyHelp.policy}</a>
         </details>}
-      </> : editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.', "Envía la solicitud revisada para preparar un nuevo presupuesto antes de confirmar.")}</p> : ready ? (
+      </> : quote.recast?.confirmationEnabled === false && (quote.state==='prepared'||expired)
+        ? <p className={styles.muted}>{t('Recast confirmation is currently unavailable.','La confirmation Recast est actuellement indisponible.','La confirmación de Recast no está disponible en este momento.')}</p>
+        : editingShots ? <p className={styles.muted}>{t('Send the revised request to prepare a new quote before confirming.','Envoyez la demande révisée pour préparer un nouveau devis avant de confirmer.', "Envía la solicitud revisada para preparar un nuevo presupuesto antes de confirmar.")}</p> : ready ? (
         <>
           <button className={styles.primary} onClick={onConfirm}>
-            {presentation.create} · {price}
+            {quote.recast ? t('Confirm Recast','Confirmer Recast','Confirmar Recast') : presentation.create} · {price}
           </button>
           <small>{t('Charged only when you confirm.', 'Ce montant est débité uniquement à la confirmation.', "Solo se cobra cuando confirmas.")}</small>
         </>

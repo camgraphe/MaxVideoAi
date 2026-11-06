@@ -83,6 +83,7 @@ test('Studio is discoverable while conversations and APIs retain shared account 
     'frontend/app/api/studio/projects/[projectId]/conversation-timeline/route.ts',
     'frontend/app/api/studio/projects/[projectId]/conversation-timeline/extension/route.ts',
     'frontend/app/api/studio/projects/[projectId]/reference-previews/route.ts',
+    'frontend/app/api/studio/projects/[projectId]/characters/route.ts',
     'frontend/app/api/studio/projects/[projectId]/analyses/route.ts',
     'frontend/app/api/studio/projects/[projectId]/analyses/[analysisId]/route.ts',
   ]);
@@ -94,6 +95,11 @@ test('Studio is discoverable while conversations and APIs retain shared account 
   const assistanceHandler = read('frontend/app/api/studio/_lib/studio-assistance-handler.ts');
   const taskHandler=read('frontend/app/api/studio/_lib/studio-task-handler.ts');
   assert.match(taskHandler,/resolveStudioApiAccess/);assert.match(taskHandler,/if\(!access.ok\)/);assert.match(read('frontend/app/api/studio/projects/[projectId]/conversation-tasks/[requestId]/route.ts'),/handleStudioTask/);
+  const characterHandler=read('frontend/app/api/studio/_lib/studio-character-handler.ts');
+  assert.match(characterHandler,/resolveStudioApiAccess/);
+  assert.match(characterHandler,/if \(!access.ok\)/);
+  assert.match(characterHandler,/await readImageConversationProject\(access.userId,projectId\)/);
+  assert.match(read('frontend/app/api/studio/projects/[projectId]/characters/route.ts'),/handleStudioCharacters/);
   const analysisHandler=read('frontend/app/api/studio/_lib/studio-analysis-handler.ts');
   assert.match(analysisHandler,/resolveStudioApiAccess/);
   assert.match(analysisHandler,/if\(!access.ok\)/);

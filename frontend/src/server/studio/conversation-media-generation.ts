@@ -126,6 +126,14 @@ async function promoteStudioMediaSource(actor: StudioGenerationActor, source: To
   return {assetId:asset.publicId,promoted:{storageUrl:promoted.url,originalName:promoted.originalName}};
 }
 
+/** Promote an exact ready project output or reuse an attached original already reviewed by this turn. */
+export async function studioConversationSourceAsset(actor: StudioGenerationActor, source: ToolAssetRef, input: ImageTurnInput, reviewed: readonly ResolvedReference[]): Promise<string> {
+  const original = await requireStudioMediaSource(actor,source,input,{});
+  if (source.type === 'asset' && !reviewed.some(ref => ref.assetId === source.assetId && ref.mediaKind === source.kind && ref.storageUrl === original.url))
+    throw new AgentApiError('REFERENCE_INVALID','The selected media changed after Studio reviewed it.');
+  return (await promoteStudioMediaSource(actor,source,{},source.type==='job-output'?mediaReference(original,{assetId:source.outputId,role:'reference'}):undefined,true)).assetId;
+}
+
 export async function studioMotionSource(actor: StudioGenerationActor, source: ToolAssetRef, input: ImageTurnInput, dependencies: StudioMotionSourceDependencies = {}): Promise<string> {
   if(source.kind!=='image')throw new AgentApiError('REFERENCE_INVALID','Choose an image reference.');
   await requireStudioMediaSource(actor, source, input, dependencies);

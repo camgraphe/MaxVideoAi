@@ -113,7 +113,7 @@ export async function handleStudioImageConversation(
         : action === "submit"
           ? await ((overrides.tasksEnabled??studioTasksEnabled())?adapter:service).submit(await readStudioConversationBody(req))
           : await service.confirm(await readStudioConversationBody(req));
-    if(action==='submit'&&'task' in result&&result.task?.state==='queued')
+    if(action==='submit'&&result&&'task' in result&&result.task?.state==='queued')
       (overrides.scheduleWorker??scheduleStudioWorker)('task',{userId:actor.userId,projectId,requestId:result.task.requestId});
     return studioJson({ ok: true, result });
   } catch (error) {
