@@ -2,50 +2,59 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { createStudioDraftTransitions } from './character-builder/_lib/character-studio-transitions';
+import type { StudioRecastSelection } from '@/types/character-studio';
+import { useCharacterStudioLibrary } from './character-builder/_hooks/useCharacterStudioLibrary';
+import { getStudioLibraryCopy } from './character-builder/_lib/character-studio-library-copy';
+import {
+  CharacterStudioWorkspaceView,
+  type StudioTab,
+} from './character-builder/_components/CharacterStudioWorkspaceView.client';
+import { CharacterStudioLibrary } from './character-builder/_components/CharacterStudioLibrary.client';
+import { CharacterStudioOverlays } from './character-builder/_components/CharacterStudioOverlays.client';
+import { CharacterStudioIdentity } from './character-builder/_components/CharacterStudioIdentity.client';
 import deepmerge from 'deepmerge';
-import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import useSWR from 'swr';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
-import {
-  ArrowLeft,
-} from 'lucide-react';
-import { MediaLightbox, type MediaLightboxEntry } from '@/components/MediaLightbox';
-import { ButtonLink } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { authFetch } from '@/lib/authFetch';
+import { type MediaLightboxEntry } from '@/components/MediaLightbox';
+import { useCharacterBuilderPrice } from './character-builder/_hooks/useCharacterBuilderPrice';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import {
-  createDefaultCharacterBuilderState,
-  getCharacterFormatMultiplier,
-} from '@/lib/character-builder';
+import { createDefaultCharacterBuilderState, getCharacterFormatResolution } from '@/lib/character-builder';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { FEATURES } from '@/content/feature-flags';
-import type {
-  CharacterBuilderState,
-  CharacterBuilderReferenceImage,
-} from '@/types/character-builder';
+import type { CharacterBuilderState, CharacterBuilderReferenceImage } from '@/types/character-builder';
 import {
   CharacterBuilderResultsGallery,
-  CharacterReferenceLibraryModal,
-  SectionTitle,
   type BuildLookSectionKey,
 } from './character-builder/_components/character-builder-workspace-components';
-import { CharacterBuilderBuildLookSection } from './character-builder/_components/character-builder-build-look-section';
-import { CharacterBuilderStartSection } from './character-builder/_components/character-builder-start-section';
 import {
-  CharacterBuilderAuthGateModal,
+  CharacterStudioNavigation,
+  type CharacterStudioMode,
+} from './character-builder/_components/CharacterStudioNavigation.client';
+import { CharacterStudioRecast } from './character-builder/_components/CharacterStudioRecast.client';
+import { CharacterStudioComposer } from './character-builder/_components/CharacterStudioComposer.client';
+import { CharacterStudioExplore } from './character-builder/_components/CharacterStudioExplore.client';
+import {
+  CharacterStudioReference,
+  CharacterStudioReferenceInputs,
+} from './character-builder/_components/CharacterStudioReference.client';
+import { getCharacterStudioCopy } from './character-builder/_lib/character-studio-copy';
+import { startNewCharacter } from './character-builder/_lib/character-studio-state';
+import type { StudioLocale } from '@/lib/character-studio-catalog';
+import {
   CharacterBuilderDisabledState,
   CharacterBuilderLoadingSkeleton,
   CharacterBuilderPageFrame,
 } from './character-builder/_components/character-builder-page-shell';
 import { useCharacterBuilderHistoricalResults } from './character-builder/_hooks/useCharacterBuilderHistoricalResults';
 import { useCharacterBuilderJobSnapshotLoader } from './character-builder/_hooks/useCharacterBuilderJobSnapshotLoader';
-import { useCharacterBuilderLookSummaries } from './character-builder/_hooks/useCharacterBuilderLookSummaries';
 import { useCharacterBuilderGenerationRunner } from './character-builder/_hooks/useCharacterBuilderGenerationRunner';
 import { useCharacterBuilderOptions } from './character-builder/_hooks/useCharacterBuilderOptions';
-import { useCharacterBuilderAccountScope } from './character-builder/_hooks/useCharacterBuilderAccountScope';
+import {
+  useCharacterBuilderAccountScope,
+  useCharacterBuilderDraftScope,
+} from './character-builder/_hooks/useCharacterBuilderAccountScope';
 import { useCharacterBuilderPersistence } from './character-builder/_hooks/useCharacterBuilderPersistence';
 import { useCharacterBuilderPendingRunsSync } from './character-builder/_hooks/useCharacterBuilderPendingRunsSync';
 import { useCharacterBuilderReferenceAssets } from './character-builder/_hooks/useCharacterBuilderReferenceAssets';
@@ -54,40 +63,80 @@ import { useCharacterBuilderResultsInfiniteScroll } from './character-builder/_h
 import { useCharacterBuilderTraitActions } from './character-builder/_hooks/useCharacterBuilderTraitActions';
 import { DEFAULT_CHARACTER_COPY, type CharacterCopy } from './character-builder/_lib/character-builder-copy';
 import {
-  getCharacterBillingProductKey,
   getFlattenedResults,
   getRefByRole,
   INITIAL_LOADING_REQUEST_COUNTS,
 } from './character-builder/_lib/character-builder-helpers';
 import type {
-  BillingProductResponse,
   LoadingRequestCounts,
   LoadingRequestKey,
   PendingCharacterRun,
 } from './character-builder/_lib/character-builder-types';
 
-export default function CharacterBuilderPage() {
-  const { loading, user, session } = useRequireAuth({ redirectIfLoggedOut: false });
+export default function CharacterBuilderPage({ recastExamples }: { recastExamples?: ReactNode }) {
+  const { loading, user, session } = useRequireAuth({
+    redirectIfLoggedOut: false,
+  });
   if (loading) return <CharacterBuilderLoadingSkeleton />;
-  return <CharacterBuilderAccountWorkspace key={user?.id ?? 'guest'} user={user} accessToken={session?.access_token ?? null} />;
+  return (
+    <CharacterBuilderAccountWorkspace
+      key={user?.id ?? 'guest'}
+      user={user}
+      accessToken={session?.access_token ?? null}
+      recastExamples={recastExamples}
+    />
+  );
 }
 
-function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | null; accessToken: string | null }) {
+function CharacterBuilderAccountWorkspace({
+  user,
+  accessToken,
+  recastExamples,
+}: {
+  user: User | null;
+  accessToken: string | null;
+  recastExamples?: ReactNode;
+}) {
   const authLoading = false;
   const captureAccountRequest = useCharacterBuilderAccountScope(accessToken);
-  const { t } = useI18n();
+  const { beginDraftIntent, captureDraftRequest } = useCharacterBuilderDraftScope(captureAccountRequest);
+  const { t, locale } = useI18n();
+  const studioCopy = getCharacterStudioCopy(locale);
+  const studioLocale: StudioLocale = locale === 'fr' || locale === 'es' ? locale : 'en';
+  const searchParams = useSearchParams();
+  const [studioMode, setStudioMode] = useState<CharacterStudioMode>(() =>
+    searchParams?.get('mode') === 'recast' ? 'recast' : 'character',
+  );
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('mode') === studioMode) return;
+    url.searchParams.set('mode', studioMode);
+    window.history.replaceState(window.history.state, '', url);
+  }, [studioMode]);
+  const [showMobileResults, setShowMobileResults] = useState(false);
+  const [studioTab, setStudioTab] = useState<StudioTab>('explore');
+  const [editorKey, setEditorKey] = useState(0);
+  const [recastSelection, setRecastSelection] = useState<StudioRecastSelection | null>(null);
+  const libraryCopy = getStudioLibraryCopy(locale);
+  const library = useCharacterStudioLibrary({
+    userId: user?.id ?? null,
+    enabled: studioTab === 'characters',
+    captureAccountRequest,
+    captureDraftRequest,
+  });
   const rawCopy = t('workspace.characterBuilder', DEFAULT_CHARACTER_COPY);
   const copy = useMemo<CharacterCopy>(() => {
     return deepmerge(DEFAULT_CHARACTER_COPY, (rawCopy ?? {}) as Partial<CharacterCopy>);
   }, [rawCopy]);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [state, setState] = useState<CharacterBuilderState>(() => createDefaultCharacterBuilderState());
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [hairOpen, setHairOpen] = useState(false);
-  const [activeBuildSection, setActiveBuildSection] = useState<BuildLookSectionKey>('identity');
-  const [libraryModalRole, setLibraryModalRole] = useState<CharacterBuilderReferenceImage['role'] | null>(null);
-  const [showStyleReferenceSlot, setShowStyleReferenceSlot] = useState(false);
+  const [, setAdvancedOpen] = useState(false);
+  const [, setHairOpen] = useState(false);
+  const [, setActiveBuildSection] = useState<BuildLookSectionKey>('identity');
+  const [libraryModalRole, setLibraryModalRole] = useState<CharacterBuilderReferenceImage['role'] | null>(
+    null,
+  );
+  const [, setShowStyleReferenceSlot] = useState(false);
   const [mustRemainDraft, setMustRemainDraft] = useState('');
   const [loadingActions, setLoadingActions] = useState<LoadingRequestCounts>(INITIAL_LOADING_REQUEST_COUNTS);
   const [pendingRuns, setPendingRuns] = useState<PendingCharacterRun[]>([]);
@@ -115,6 +164,8 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     setSavingResultId,
   } = useCharacterBuilderResultActions({
     captureAccountRequest,
+    captureDraftRequest,
+    beginDraftIntent,
     copy,
     openAuthGate,
     setAdvancedOpen,
@@ -125,49 +176,28 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     user,
   });
 
-  const {
-    genderOptions,
-    ageOptions,
-    skinToneOptions,
-    faceCueOptions,
-    hairColorOptions,
-    hairLengthOptions,
-    hairstyleOptions,
-    eyeColorOptions,
-    bodyBuildOptions,
-    outfitOptions,
-    realismOptions,
-    accessoryOptions,
-    distinctiveOptions,
-    outputModeOptions,
-    consistencyOptions,
-    referenceStrengthOptions,
-    qualityOptions,
-    outputModeLabelOptions,
-    qualityLabelOptions,
-    formatLabelOptions,
-  } = useCharacterBuilderOptions(copy, state.qualityMode);
+  const { outputModeLabelOptions, qualityLabelOptions } = useCharacterBuilderOptions(copy, state.qualityMode);
   const flattenedResults = getFlattenedResults(state.runs);
   const {
     historicalResults,
     historicalHasMore,
     historicalIsFetchingMore,
     historicalJobsLoading,
+    historicalJobsError,
     loadMoreHistoricalResults,
     mutateHistoricalJobs,
   } = useCharacterBuilderHistoricalResults(flattenedResults);
-  const {
-    resultsScrollContainerRef,
-    resultsSentinelRef,
-  } = useCharacterBuilderResultsInfiniteScroll({
+  const { resultsScrollContainerRef, resultsSentinelRef } = useCharacterBuilderResultsInfiniteScroll({
     hasMore: historicalHasMore,
+    enabled: studioMode === 'character' && studioTab === 'history',
+    pageScroll: true,
     loadMoreResults: loadMoreHistoricalResults,
     resultsLength: historicalResults.length,
   });
   const identityReference = getRefByRole(state.referenceImages, 'identity');
   const styleReference = getRefByRole(state.referenceImages, 'style');
   const hasIdentityReference = Boolean(identityReference);
-  useCharacterBuilderPersistence({
+  const { restoredDraft, dismissRestoredDraft } = useCharacterBuilderPersistence({
     authLoading,
     hydrated,
     pendingRuns,
@@ -187,8 +217,15 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     styleReference,
     user,
   });
+  const resolution = getCharacterFormatResolution(state.formatMode, state.qualityMode);
+  const referenceCount = new Set(state.referenceImages.map(image => image.url).filter(Boolean)).size;
+  const { displayedPrice, status: priceStatus, refreshPrice } = useCharacterBuilderPrice(resolution, referenceCount);
+  const estimatedImageCostUsd = displayedPrice?.usd ?? null;
   const handleRun = useCharacterBuilderGenerationRunner({
+    tariffRevision: displayedPrice?.revision,
+    refreshPrice,
     captureAccountRequest,
+    captureDraftRequest,
     copy,
     hasIdentityReference,
     mutateHistoricalJobs,
@@ -201,11 +238,8 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     state,
     user,
   });
-  const {
-    handleLibrarySelect,
-    triggerUpload,
-  } = useCharacterBuilderReferenceAssets({
-    captureAccountRequest,
+  const { handleLibrarySelect, invalidateReferenceUpload, triggerUpload } = useCharacterBuilderReferenceAssets({
+    captureAccountRequest: captureDraftRequest,
     copy,
     libraryModalRole,
     openAuthGate,
@@ -216,55 +250,24 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     setStatusMessage,
     user,
   });
-  const hasCompletedResults = flattenedResults.length > 0;
-  const hasResults = hasCompletedResults || pendingRuns.length > 0 || historicalResults.length > 0;
-  const {
-    accessoriesFeaturesSummary,
-    canResetBuilder,
-    hairSummary,
-    identitySummary,
-    outfitSummary,
-    realismSummary,
-    resetState,
-    secondaryControlsCount,
-  } = useCharacterBuilderLookSummaries({
-    accessoryOptions,
-    ageOptions,
-    copy,
-    distinctiveOptions,
-    genderOptions,
-    hairColorOptions,
-    hairLengthOptions,
-    hairstyleOptions,
-    hasIdentityReference,
-    outfitOptions,
-    realismOptions,
-    state,
-  });
-  const {
-    addMustRemainTag,
-    handleResetBuilder,
-    handleSelectResult,
-    removeIdentityReference,
-    removeMustRemainTag,
-    removeStyleReference,
-    toggleListValue,
-    updateTrait,
-  } = useCharacterBuilderTraitActions({
-    copy,
-    mustRemainDraft,
-    resetState,
-    setActiveBuildSection,
-    setAdvancedOpen,
-    setError,
-    setHairOpen,
-    setMustRemainDraft,
-    setShowStyleReferenceSlot,
-    setState,
-    setStatusMessage,
-  });
+  const resetState = useMemo(() => startNewCharacter(state), [state]);
+  const { handleSelectResult, removeIdentityReference, removeStyleReference } =
+    useCharacterBuilderTraitActions({
+      copy,
+      invalidateReferenceUpload,
+      mustRemainDraft,
+      resetState,
+      setActiveBuildSection,
+      setAdvancedOpen,
+      setError,
+      setHairOpen,
+      setMustRemainDraft,
+      setShowStyleReferenceSlot,
+      setState,
+      setStatusMessage,
+    });
   const jobIdFromQuery = searchParams?.get('job')?.trim() ?? null;
-  const billingProductKey = getCharacterBillingProductKey(state.qualityMode);
+
   useCharacterBuilderPendingRunsSync({
     captureAccountRequest,
     authLoading,
@@ -276,7 +279,7 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     user,
   });
   useCharacterBuilderJobSnapshotLoader({
-    captureAccountRequest,
+    captureAccountRequest: captureDraftRequest,
     hydrated,
     jobIdFromQuery,
     loadFromJobDoneMessage: copy.loadFromJobDone,
@@ -284,32 +287,23 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
     setState,
     setStatusMessage,
   });
-  const { data: billingProductData } = useSWR(
-    `/api/billing-products?productKey=${encodeURIComponent(billingProductKey)}`,
-    async (url: string) => {
-      const response = await authFetch(url);
-      const payload = (await response.json().catch(() => null)) as BillingProductResponse | null;
-      if (!response.ok || !payload?.ok || !payload.product) {
-        throw new Error(payload?.error ?? copy.pricingError);
-      }
-      return payload.product;
-    },
-    { keepPreviousData: true }
-  );
-  const estimatedImageCostUsd =
-    billingProductData?.unitPriceCents != null
-      ? Number(((billingProductData.unitPriceCents * getCharacterFormatMultiplier(state.formatMode, state.qualityMode)) / 100).toFixed(2))
-      : null;
   const isActionLoading = (key: LoadingRequestKey): boolean => (loadingActions[key] ?? 0) > 0;
 
-  function renderResultsGallery(variant: 'desktop' | 'mobile') {
+  function renderResultsGallery(variant: 'grid') {
     return (
       <CharacterBuilderResultsGallery
         copy={copy}
+        onKeepCharacter={(source) => {
+          if (user) void library.openSave(source);
+          else openAuthGate();
+        }}
+        onRecastResult={handoffRecast}
         flattenedResults={flattenedResults}
         historicalHasMore={historicalHasMore}
         historicalIsFetchingMore={historicalIsFetchingMore}
         historicalJobsLoading={historicalJobsLoading}
+        historicalJobsError={historicalJobsError}
+        onRetryHistory={() => void mutateHistoricalJobs(undefined, { throwOnError: false })}
         historicalResults={historicalResults}
         outputModeLabelOptions={outputModeLabelOptions}
         pendingRuns={pendingRuns}
@@ -322,7 +316,11 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
         selectedResultId={state.selectedResultId}
         variant={variant}
         onDuplicateHistoricalSettings={(item) => void handleDuplicateHistoricalSettings(item)}
-        onDuplicateSettings={applySettingsSnapshot}
+        onDuplicateSettings={(snapshot, selectedId) => {
+          applySettingsSnapshot(snapshot, selectedId);
+          setShowMobileResults(false);
+          setEditorKey((key) => key + 1);
+        }}
         onOpenLightbox={setLightboxEntry}
         onSaveHistoricalResult={(item) => void handleSaveHistoricalResult(item)}
         onSaveResult={(result) => void handleSaveResult(result)}
@@ -330,6 +328,41 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
       />
     );
   }
+
+  const { newLook, handoffRecast, newCharacter, chooseInspiration, changeMode, changeTab } =
+    createStudioDraftTransitions({
+      library,
+      currentMode: studioMode,
+      inspirationApplied: (name) => studioCopy.inspirationApplied.replace('{name}', () => name),
+      beginDraftIntent,
+      setState,
+      setMode: setStudioMode,
+      setMobileResults: setShowMobileResults,
+      setTab: setStudioTab,
+      setEditorKey,
+      setRecastSelection,
+      setError,
+      setStatusMessage,
+      onReset: () => {
+        dismissRestoredDraft();
+        setShowStyleReferenceSlot(false);
+        setMustRemainDraft('');
+      },
+    });
+
+  const showExplore = () => {
+    setStudioTab('explore');
+    setShowMobileResults(true);
+  };
+  const studioNavigation = (
+    <CharacterStudioNavigation
+      mode={studioMode}
+      onMode={changeMode}
+      onNew={newCharacter}
+      onExplore={showExplore}
+      copy={studioCopy}
+    />
+  );
 
   if (authLoading || !hydrated) {
     return <CharacterBuilderLoadingSkeleton />;
@@ -342,167 +375,131 @@ function CharacterBuilderAccountWorkspace({ user, accessToken }: { user: User | 
   return (
     <CharacterBuilderPageFrame
       overlays={
-        <>
-          {lightboxEntry ? (
-            <MediaLightbox
-              title={copy.top.resultsTitle}
-              subtitle={lightboxEntry.engineLabel ?? undefined}
-              prompt={lightboxEntry.prompt ?? null}
-              entries={[lightboxEntry]}
-              onClose={() => setLightboxEntry(null)}
-            />
-          ) : null}
-          <CharacterReferenceLibraryModal
-            open={libraryModalRole !== null}
-            userId={user?.id ?? null}
-            onClose={() => setLibraryModalRole(null)}
-            onSelect={handleLibrarySelect}
-            copy={copy}
-          />
-          <CharacterBuilderAuthGateModal
-            open={authModalOpen}
-            copy={copy}
-            loginRedirectTarget={loginRedirectTarget}
-            onClose={() => setAuthModalOpen(false)}
-          />
-        </>
+        <CharacterStudioOverlays
+          library={library}
+          libraryCopy={libraryCopy}
+          copy={copy}
+          lightboxEntry={lightboxEntry}
+          onCloseLightbox={() => setLightboxEntry(null)}
+          referenceOpen={libraryModalRole !== null}
+          userId={user?.id ?? null}
+          onCloseReference={() => setLibraryModalRole(null)}
+          onSelectReference={handleLibrarySelect}
+          authOpen={authModalOpen}
+          onCloseAuth={() => setAuthModalOpen(false)}
+          loginRedirectTarget={loginRedirectTarget}
+          onSaved={() => {
+            setStudioTab('characters');
+            setShowMobileResults(true);
+            setStatusMessage(libraryCopy.saved);
+          }}
+        />
       }
     >
-          <div className="mx-auto w-full max-w-[1500px] space-y-6">
-            <div>
-              <ButtonLink
-                href="/app/tools"
-                variant="ghost"
-                size="sm"
-                linkComponent={Link}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                {copy.back}
-              </ButtonLink>
-            </div>
-
-            {error ? (
-              <Card role="alert" className="border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-                {error}
-              </Card>
-            ) : null}
-            {statusMessage ? (
-              <Card role="status" aria-live="polite" className="border border-border bg-surface p-4 text-sm text-text-secondary">
-                {statusMessage}
-              </Card>
-            ) : null}
-
-            <div className="flex flex-col gap-6 xl:flex-row">
-              <div className="min-w-0 flex-1 space-y-6">
-                <Card className="overflow-visible border border-border p-6 lg:p-7">
-                  <div className="space-y-6">
-                    <CharacterBuilderStartSection
-                      canUseReferences={Boolean(user)}
-                      copy={copy}
-                      identityFileRef={identityFileRef}
-                      identityReference={identityReference}
-                      onAuthRequired={openAuthGate}
-                      onRemoveIdentityReference={removeIdentityReference}
-                      onRemoveStyleReference={removeStyleReference}
-                      outputMode={state.outputMode}
-                      setLibraryModalRole={setLibraryModalRole}
-                      setShowStyleReferenceSlot={setShowStyleReferenceSlot}
-                      setState={setState}
-                      showStyleReferenceSlot={showStyleReferenceSlot}
-                      styleFileRef={styleFileRef}
-                      styleReference={styleReference}
-                    />
-
-                    <CharacterBuilderBuildLookSection
-                      accessoryOptions={accessoryOptions}
-                      accessoriesFeaturesSummary={accessoriesFeaturesSummary}
-                      activeBuildSection={activeBuildSection}
-                      addMustRemainTag={addMustRemainTag}
-                      advancedOpen={advancedOpen}
-                      ageOptions={ageOptions}
-                      bodyBuildOptions={bodyBuildOptions}
-                      canResetBuilder={canResetBuilder}
-                      consistencyOptions={consistencyOptions}
-                      copy={copy}
-                      distinctiveOptions={distinctiveOptions}
-                      estimatedImageCostUsd={estimatedImageCostUsd}
-                      eyeColorOptions={eyeColorOptions}
-                      faceCueOptions={faceCueOptions}
-                      formatLabelOptions={formatLabelOptions}
-                      genderOptions={genderOptions}
-                      hairColorOptions={hairColorOptions}
-                      hairLengthOptions={hairLengthOptions}
-                      hairOpen={hairOpen}
-                      hairSummary={hairSummary}
-                      hairstyleOptions={hairstyleOptions}
-                      hasIdentityReference={hasIdentityReference}
-                      identityReference={identityReference}
-                      identitySummary={identitySummary}
-                      loadingGenerateFour={isActionLoading('generate-4')}
-                      loadingGenerateOne={isActionLoading('generate-1')}
-                      mustRemainDraft={mustRemainDraft}
-                      onGenerateFour={() => void handleRun('generate', 4)}
-                      onGenerateOne={() => void handleRun('generate', 1)}
-                      onResetBuilder={handleResetBuilder}
-                      outfitOptions={outfitOptions}
-                      outfitSummary={outfitSummary}
-                      outputModeOptions={outputModeOptions}
-                      qualityOptions={qualityOptions}
-                      realismOptions={realismOptions}
-                      realismSummary={realismSummary}
-                      referenceStrengthOptions={referenceStrengthOptions}
-                      removeMustRemainTag={removeMustRemainTag}
-                      secondaryControlsCount={secondaryControlsCount}
-                      setActiveBuildSection={setActiveBuildSection}
-                      setAdvancedOpen={setAdvancedOpen}
-                      setHairOpen={setHairOpen}
-                      setMustRemainDraft={setMustRemainDraft}
-                      setState={setState}
-                      skinToneOptions={skinToneOptions}
-                      state={state}
-                      toggleListValue={toggleListValue}
-                      updateTrait={updateTrait}
-                    />
-
-                  </div>
-
-                  <input
-                    ref={identityFileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => void triggerUpload('identity', event.target.files)}
-                  />
-                  <input
-                    ref={styleFileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => void triggerUpload('style', event.target.files)}
-                  />
-                </Card>
-
-                {hasResults ? (
-                  <Card className="border border-border p-5 xl:hidden">
-                    <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
-                    <div className="mt-4">{renderResultsGallery('mobile')}</div>
-                  </Card>
-                ) : null}
-              </div>
-
-              <div className="hidden xl:flex xl:w-[340px] xl:min-h-0 xl:flex-col">
-                <div className="sticky top-6 flex h-[calc(100vh-3rem)] min-h-0 w-full flex-col gap-4">
-                  <Card className="flex h-full min-h-0 flex-1 flex-col overflow-hidden border border-border p-5">
-                    <SectionTitle eyebrow={copy.top.resultsEyebrow} title={copy.top.resultsTitle} />
-                    <div className="mt-4 flex min-h-0 flex-1 flex-col">
-                      {renderResultsGallery('desktop')}
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </div>
+      <CharacterStudioWorkspaceView
+        mode={studioMode}
+        tab={studioTab}
+        onTab={changeTab}
+        mobileResults={showMobileResults}
+        onEditor={() => setShowMobileResults(false)}
+        copy={studioCopy}
+        libraryCopy={libraryCopy}
+        pendingCount={pendingRuns.length}
+        error={error}
+        status={statusMessage}
+        restoredDraft={restoredDraft}
+        onNew={newCharacter}
+        onDismissRestoredDraft={dismissRestoredDraft}
+        composer={
+          <CharacterStudioComposer
+            key={`${editorKey}:${state.characterId ?? 'create'}`}
+            navigation={studioNavigation}
+            onExplore={showExplore}
+            state={state}
+            setState={setState}
+            locale={studioLocale}
+            copy={copy}
+            labels={studioCopy}
+            price={estimatedImageCostUsd}
+            priceStatus={priceStatus}
+            onRetryPrice={() => { void refreshPrice(); }}
+            canGenerate={!user || estimatedImageCostUsd !== null}
+            busy={isActionLoading('generate-1') || isActionLoading('generate-4')}
+            onGenerate={(count = 1) => {
+              if (user) {
+                setStudioTab('history');
+                setShowMobileResults(true);
+              }
+              void handleRun('generate', count);
+            }}
+            identitySlot={
+              state.characterId ? (
+                <CharacterStudioIdentity
+                  image={identityReference}
+                  copy={libraryCopy}
+                  onLibrary={() => {
+                    setStudioTab('characters');
+                    setShowMobileResults(true);
+                  }}
+                />
+              ) : (
+                <CharacterStudioReference
+                  prominent
+                  image={identityReference}
+                  label={studioCopy.reference}
+                  copy={studioCopy}
+                  onUpload={() => (user ? identityFileRef.current?.click() : openAuthGate())}
+                  onLibrary={() => (user ? setLibraryModalRole('identity') : openAuthGate())}
+                  onRemove={removeIdentityReference}
+                />
+              )
+            }
+            styleSlot={
+              <CharacterStudioReference
+                image={styleReference}
+                label={studioCopy.styleReference}
+                copy={studioCopy}
+                onUpload={() => (user ? styleFileRef.current?.click() : openAuthGate())}
+                onLibrary={() => (user ? setLibraryModalRole('style') : openAuthGate())}
+                onRemove={removeStyleReference}
+              />
+            }
+          />
+        }
+        explore={
+          <CharacterStudioExplore copy={studioCopy} onNew={newCharacter} onChoose={chooseInspiration} recastExamples={recastExamples} onRecast={() => changeMode('recast')} />
+        }
+        characters={
+          <CharacterStudioLibrary
+            builderCopy={copy}
+            locale={studioLocale}
+            library={library}
+            copy={libraryCopy}
+            userId={user?.id ?? null}
+            onSignIn={openAuthGate}
+            onNewLook={(id, sheet) => void newLook(id, sheet)}
+            onRecast={handoffRecast}
+          />
+        }
+        results={renderResultsGallery('grid')}
+        recast={
+          <CharacterStudioRecast
+            accountId={user?.id ?? null}
+            active={studioMode === 'recast'}
+            copy={studioCopy}
+            navigation={studioNavigation}
+            selection={recastSelection}
+            characterLibrary={{ userId: user?.id ?? null, captureAccountRequest, onSignIn: openAuthGate }}
+          />
+        }
+      />
+      <CharacterStudioReferenceInputs
+        identityRef={identityFileRef}
+        styleRef={styleFileRef}
+        onUpload={(role, files) => {
+          void triggerUpload(role, files);
+        }}
+      />
     </CharacterBuilderPageFrame>
   );
 }

@@ -1,3 +1,6 @@
+import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
+import {isStudioCharacterEnabled} from './feature-access';
+import type {StudioCharacterFactory} from './conversation-character';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { gptImage26PixelSize, gptImage26SizeMatchesRatio } from '@/lib/image/gptImage26Dimensions';
 import type {StudioTaskExecution} from "./tasks/execution";
@@ -56,8 +59,11 @@ export const imageConfirmationSchema = z
     requestId: z.string().uuid(),
     quoteId: z.string().uuid(),
     confirmed: z.literal(true),
+    amountCents:z.number().int().nonnegative().optional(),
+    currency:z.literal('USD').optional(),
   })
-  .strict();
+  .strict()
+  .refine(value => (value.amountCents === undefined) === (value.currency === undefined));
 export type ImageGenerationFactory = typeof createStudioImageGenerationService;
 /** Rebind selected canonical roles to the original reviewed facts, never to a fresh asset read. */
 export function imageReferenceFingerprintFromReview(request: Pick<CanonicalGenerationRequest,'references'>, reviewed: readonly ResolvedReference[]): string {
@@ -176,6 +182,8 @@ export function createImageConversationService(
     countInputTokens?: (params: import('openai/resources/responses/responses').ResponseCreateParamsNonStreaming) => Promise<number>;
     createActionResponse?: StudioResponseCreator;
     mediaEnabled?: boolean;
+    characterEnabled?: boolean;
+    characterFactory?: StudioCharacterFactory;
     videoGenerationFactory?: StudioMediaFactories['video'];
     audioGenerationFactory?: StudioMediaFactories['audio'];
     editingEnabled?: boolean;
@@ -191,6 +199,9 @@ export function createImageConversationService(
   const factories: StudioMediaFactories = {...defaultStudioMediaFactories, image: factory,
     video: dependencies.videoGenerationFactory ?? defaultStudioMediaFactories.video,
     audio: dependencies.audioGenerationFactory ?? defaultStudioMediaFactories.audio};
+  const characterEnabled = dependencies.enabled && dependencies.actionsEnabled === true && dependencies.mediaEnabled === true &&
+    (dependencies.characterEnabled ?? isStudioCharacterEnabled());
+  const character = () => (dependencies.characterFactory ?? createCharacterStudioIntegration)(actor,{executionEnabled:characterEnabled});
   const serviceForDraft = (draft: ImageDraft | null) => {
     const surface = draftSurface(draft);
     return factories[surface](actor, {enabled: dependencies.enabled && (surface === 'image' || dependencies.mediaEnabled === true)});
@@ -222,9 +233,11 @@ export function createImageConversationService(
     const expiredLease =
       turn.state === "thinking" &&
       new Date(turn.lease_expires_at).getTime() <= Date.now();
-    const quote = turn.quote_id
-      ? await serviceForDraft(turn.draft_json).getQuote(turn.quote_id)
-      : null;
+    const recast = turn.draft_json?.recast;
+    const recastQuote = recast && turn.quote_id ? await character().getRecastQuote({quoteId:turn.quote_id}) : null;
+    const quote = recast ? recastQuote : turn.quote_id ? await serviceForDraft(turn.draft_json).getQuote(turn.quote_id) : null;
+    const videoPassage = recastQuote?.passages.video;
+    const audioPassage = recastQuote?.passages.audio;
     if (turn.quote_id && !quote)
       throw new AgentApiError(
         "INTERNAL_ERROR",
@@ -267,12 +280,16 @@ export function createImageConversationService(
               quote.expiresAt.getTime() <= Date.now()
                 ? "expired"
                 : quote.state,
-            modelLabel:
-              getBaseEngineIncludingHidden(quote.request.engineId)?.label ??
-              quote.request.engineId,
+            modelLabel: recast ? 'Character Recast' : getBaseEngineIncludingHidden(quote.request.engineId)?.label ?? quote.request.engineId,
+            ...(recast ? {recast:{
+              ...(videoPassage ? {videoRange:{startSec:videoPassage.startSec,endSec:videoPassage.endSec}} : {}),
+              ...(audioPassage ? {audioRange:{startSec:audioPassage.startSec,endSec:audioPassage.endSec}} : {}),
+              confirmationEnabled:characterEnabled,
+            }} : {}),
           }
         : null,
-      generation: quote?.jobId ? await buildStudioGenerationMediaAccess(actor.userId, await serviceForDraft(turn.draft_json).recover(quote.quoteId)) : null,
+      generation: quote?.jobId ? await buildStudioGenerationMediaAccess(actor.userId, recast
+        ? await character().recoverRecast({quoteId:quote.quoteId}) : await serviceForDraft(turn.draft_json).recover(quote.quoteId)) : null,
       createdAt: new Date(turn.created_at).toISOString(),
     };
   }
@@ -343,7 +360,7 @@ export function createImageConversationService(
             history: history.map(saved => ({message: saved.input_json.message, reply: saved.draft_json ? projectStudioReply(saved.draft_json.reply) : null,
               ...(saved.input_json.referenceMentions ? {referenceMentions: saved.input_json.referenceMentions} : {})})),
             taskExecution:dependencies.taskExecution, enabled: dependencies.enabled, factory, createResponse: dependencies.createActionResponse,assistancePolicy: dependencies.assistancePolicy,countInputTokens: dependencies.countInputTokens,
-            factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
+            factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,editingEnabled: dependencies.editingEnabled,exportsEnabled: dependencies.exportsEnabled,requestOrigin: dependencies.requestOrigin,exportDependencies: dependencies.exportDependencies,
           }) : await runMeteredImageDirector(
             actor,
             turn,
@@ -360,7 +377,7 @@ export function createImageConversationService(
           await persistImageDraft(actor, turn, draft, referenceFingerprint);
         if (hasDraftCreation(draft) && !useActions) {
           if (dependencies.actionsEnabled) {
-            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,editingEnabled:dependencies.editingEnabled});
+            await resumeStudioImageAction({actor, turn, input, references: refs, referenceFingerprint, enabled: dependencies.enabled, factory, factories, mediaEnabled: dependencies.mediaEnabled,characterEnabled,characterFactory:dependencies.characterFactory,editingEnabled:dependencies.editingEnabled});
           } else {
           const request = imageRequestFromDraft(
             draft,
@@ -400,6 +417,14 @@ export function createImageConversationService(
           "QUOTE_EXPIRED",
           "Review the image quote in this project before confirming.",
         );
+      if (turn.draft_json?.recast) {
+        if (input.amountCents === undefined || input.currency !== 'USD')
+          throw new AgentApiError('PARAMETER_INVALID','Review the exact Recast amount before confirming.');
+        return buildStudioGenerationMediaAccess(actor.userId,await character().confirmRecast({
+          quoteId:input.quoteId,confirmed:true,amountCents:input.amountCents,currency:input.currency,
+        }));
+      }
+      if (input.amountCents !== undefined) throw new AgentApiError('PARAMETER_INVALID','This quote is not a Recast quote.');
       return serviceForDraft(turn.draft_json).confirm({ quoteId: input.quoteId, confirmed: true });
     },
   };

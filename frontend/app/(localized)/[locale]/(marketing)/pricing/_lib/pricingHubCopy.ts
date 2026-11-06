@@ -113,6 +113,9 @@ type PricingHubCopy = {
     imageTitle: string;
     audioTitle: string;
     toolTitle: string;
+    characterImageNote: string;
+    recastPricingNote: string;
+    recastExample: (outputSeconds: number, sourceSeconds: number) => string;
     imageColumns: {
       engine: string;
       standard: string;
@@ -147,6 +150,8 @@ type PricingHubCopy = {
   tools: {
     characterBuilderDraft: string;
     characterBuilderFinal: string;
+    characterRecast: string;
+    recastUse: string;
     changeCameraAngle: string;
     generateBestAngles: string;
     imageUpscale: string;
@@ -291,6 +296,9 @@ const en: PricingHubCopy = {
     imageTitle: 'Image generation pricing',
     audioTitle: 'Audio pricing',
     toolTitle: 'Prep tools and upscale pricing',
+    characterImageNote: 'Character Studio prices are per generated image: a character, a new look or a sheet. One sheet counts as one image, regardless of the number of views. Select 1K, 2K or 4K output.',
+    recastPricingNote: 'The price depends on resolution, selected source-video seconds and generated seconds. Without a source video, only generated seconds count. Review the exact quote before launch.',
+    recastExample: (output, source) => source ? `${output} s generated + ${source} s source` : `${output} s generated · no source video`,
     imageColumns: {
       engine: 'Image engine',
       standard: '1 standard image',
@@ -323,14 +331,16 @@ const en: PricingHubCopy = {
     voiceClone: 'Seed Audio reference voice',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder Draft',
-    characterBuilderFinal: 'Character Builder Final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
+    characterRecast: 'MaxVideoAI Recast',
+    recastUse: 'Scenes with saved characters',
     changeCameraAngle: 'Change Camera Angle',
     generateBestAngles: 'Generate 4 best angles',
     imageUpscale: 'Image Upscale',
     videoUpscale: 'Video Upscale',
     imageToVideoReferences: 'Image-to-video references',
-    finalCharacterReferences: 'Final character references',
+    finalCharacterReferences: 'Saved characters and new looks',
     imageToVideoSetup: 'Image-to-video setup',
     storyboardCoverage: 'Storyboard coverage',
     imageToVideoSourceCleanup: 'Image-to-video source cleanup',
@@ -506,6 +516,9 @@ const fr: PricingHubCopy = {
     imageTitle: 'Prix génération d’images',
     audioTitle: 'Prix audio',
     toolTitle: 'Prix outils de préparation et upscale',
+    characterImageNote: 'Les prix Character Studio sont par image générée : personnage, nouveau look ou fiche. Une fiche compte comme une image, quel que soit le nombre de vues. Choisissez une sortie 1K, 2K ou 4K.',
+    recastPricingNote: 'Le prix dépend de la résolution, des secondes du passage vidéo source et des secondes générées. Sans vidéo source, seules les secondes générées comptent. Vérifiez le devis exact avant de lancer.',
+    recastExample: (output, source) => source ? `${output} s générées + ${source} s source` : `${output} s générées · sans vidéo source`,
     imageColumns: {
       engine: 'Moteur image',
       standard: '1 image standard',
@@ -538,14 +551,16 @@ const fr: PricingHubCopy = {
     voiceClone: 'Voix de référence Seed Audio',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder brouillon',
-    characterBuilderFinal: 'Character Builder final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
+    characterRecast: 'MaxVideoAI Recast',
+    recastUse: 'Scènes avec des personnages enregistrés',
     changeCameraAngle: 'Changer l’angle caméra',
     generateBestAngles: 'Générer les 4 meilleurs angles',
     imageUpscale: 'Upscale image',
     videoUpscale: 'Upscale vidéo',
     imageToVideoReferences: 'Références image-vers-vidéo',
-    finalCharacterReferences: 'Références personnage finales',
+    finalCharacterReferences: 'Personnages enregistrés et nouveaux looks',
     imageToVideoSetup: 'Préparation image-vers-vidéo',
     storyboardCoverage: 'Couverture storyboard',
     imageToVideoSourceCleanup: 'Nettoyage source image-vers-vidéo',
@@ -721,6 +736,9 @@ const es: PricingHubCopy = {
     imageTitle: 'Precios de generación de imágenes',
     audioTitle: 'Precios de audio',
     toolTitle: 'Precios de herramientas de prep y upscale',
+    characterImageNote: 'Los precios de Character Studio son por imagen generada: personaje, nuevo look o ficha. Una ficha cuenta como una imagen, independientemente del número de vistas. Elige una salida 1K, 2K o 4K.',
+    recastPricingNote: 'El precio depende de la resolución, los segundos del fragmento de vídeo de origen y los segundos generados. Sin vídeo de origen, solo cuentan los segundos generados. Revisa el presupuesto exacto antes de generar.',
+    recastExample: (output, source) => source ? `${output} s generados + ${source} s de origen` : `${output} s generados · sin vídeo de origen`,
     imageColumns: {
       engine: 'Motor de imagen',
       standard: '1 imagen estándar',
@@ -753,14 +771,16 @@ const es: PricingHubCopy = {
     voiceClone: 'Voz de referencia Seed Audio',
   },
   tools: {
-    characterBuilderDraft: 'Character Builder borrador',
-    characterBuilderFinal: 'Character Builder final',
+    characterBuilderDraft: 'Character Studio · 1K',
+    characterBuilderFinal: 'Character Studio · 2K',
+    characterRecast: 'MaxVideoAI Recast',
+    recastUse: 'Escenas con personajes guardados',
     changeCameraAngle: 'Cambiar ángulo de cámara',
     generateBestAngles: 'Generar los 4 mejores ángulos',
     imageUpscale: 'Upscale de imagen',
     videoUpscale: 'Upscale de video',
     imageToVideoReferences: 'Referencias imagen a video',
-    finalCharacterReferences: 'Referencias finales de personaje',
+    finalCharacterReferences: 'Personajes guardados y nuevos looks',
     imageToVideoSetup: 'Preparación imagen a video',
     storyboardCoverage: 'Cobertura storyboard',
     imageToVideoSourceCleanup: 'Limpieza de fuente imagen a video',

@@ -4,7 +4,7 @@ import {resolveStudioApiAccess} from '@/server/studio/access';
 import {AgentApiError} from '@/server/agent-api/errors';
 import {studioAnalysisPrepareSchema,studioAnalysisConfirmSchema} from '@/lib/studio/media-analysis-contract';
 import {createStudioAnalysisService} from '@/server/studio/media-analysis/service';
-import {studioJson} from './studio-route-utils';
+import {isStudioSameOriginRequest, studioJson} from './studio-route-utils';
 import {scheduleStudioWorker} from '@/server/studio/worker-host';
 
 type AnalysisService={read(id:string):Promise<unknown>;prepare(request:unknown,key:string):Promise<unknown>;confirm(request:unknown):Promise<unknown>};
@@ -18,7 +18,7 @@ export async function handleStudioAnalysis(req:NextRequest,projectId:string,oper
   const access=await (dependencies.resolveAccess??resolveStudioApiAccess)(req);
   if(!access.ok)return studioJson({ok:false,error:access.error},{status:access.status});
   if(!projectId||projectId!==projectId.trim()||projectId.length>128)return studioJson({ok:false,error:'INVALID_PROJECT'},{status:400});
-  if(operation!=='read'&&(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site'))return studioJson({ok:false,error:'SAME_ORIGIN_REQUIRED'},{status:403});
+  if(operation!=='read'&&!isStudioSameOriginRequest(req))return studioJson({ok:false,error:'SAME_ORIGIN_REQUIRED'},{status:403});
   if(operation!=='prepare'&&!z.string().uuid().safeParse(analysisId).success)return studioJson({ok:false,error:'INVALID_ANALYSIS'},{status:400});
   try{
     const actor={authMethod:'studio-session' as const,userId:access.userId,projectId,clientId:null};

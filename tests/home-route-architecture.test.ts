@@ -71,12 +71,20 @@ test('home page delegates independent timed reads to its route-local data owner'
   assert.ok(source.split('\n').length <= 60, 'the homepage load owner should only coordinate independent reads');
 });
 
-test('home streams discovery alone and keeps critical hero and authored films stable', () => {
+test('home streams discovery and optional character proof independently while critical hero and authored films stay stable', () => {
   const creativeSource = readFileSync(join(root, 'frontend/components/marketing/home/HomeCreativeWorlds.tsx'), 'utf8');
   const discoverySource = readFileSync(join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/_components/HomeDiscovery.tsx'), 'utf8');
-  const boundary = pageSource.slice(pageSource.indexOf('<Suspense'), pageSource.indexOf('</Suspense>'));
-  assert.match(boundary, /<HomeDiscovery/);
-  assert.doesNotMatch(boundary, /<HomeHero|<HomeCreativeWorlds|<CreativeFilm/);
+  const boundaries = [...pageSource.matchAll(/<Suspense\b[\s\S]*?<\/Suspense>/g)].map(match => match[0]);
+  const discoveryBoundaries = boundaries.filter(boundary => /<HomeDiscovery\b/.test(boundary));
+  assert.equal(discoveryBoundaries.length, 1, 'discovery owns exactly one streaming boundary');
+  assert.match(discoveryBoundaries[0], /fallback=\{<HomeModelDiscovery\b/);
+  assert.doesNotMatch(discoveryBoundaries[0], /<HomeCharacterStudioProof\b/);
+  const characterBoundaries = boundaries.filter(boundary => /<HomeCharacterStudioProof\b/.test(boundary));
+  assert.equal(characterBoundaries.length, 1, 'optional character proof has an independent boundary');
+  assert.match(characterBoundaries[0], /fallback=\{<HomeCharacterStudio\b/);
+  for (const boundary of boundaries) {
+    assert.doesNotMatch(boundary, /<HomeHero\b|<HomeCreativeWorlds\b|<CreativeFilm\b/);
+  }
   assert.match(creativeSource, /modelDiscovery \?\? <HomeModelDiscovery/);
   assert.match(discoverySource, /examples=\{await examples\}/);
   assert.doesNotMatch(discoverySource, /catch\s*\(/, 'unexpected gallery errors must stay observable to the route boundary');

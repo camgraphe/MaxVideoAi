@@ -1,5 +1,11 @@
 import type { CharacterBuilderTraits } from '@/types/character-builder';
+import { STUDIO_CHARACTER_TYPES } from '@/lib/character-studio-catalog';
 import { trimString, uniqueStrings } from './utils';
+
+export function hasFlexibleCharacterAnatomy(traits: CharacterBuilderTraits): boolean {
+  return Boolean(trimString(traits.customCharacterDescription) ||
+    STUDIO_CHARACTER_TYPES.find((entry) => entry.id === traits.characterType?.value)?.nonHuman);
+}
 
 export function isHairEnabled(traits: CharacterBuilderTraits): boolean {
   return (
@@ -108,7 +114,7 @@ export function buildPreservationParts(traits: CharacterBuilderTraits): string {
 }
 
 export function buildLightingPreservationParts(traits: CharacterBuilderTraits): string {
-  const parts = ['same person', 'facial identity'];
+  const parts = ['same character', 'facial identity'];
   if (isHairEnabled(traits)) parts.push('hairstyle');
   parts.push('proportions');
   if (isOutfitEnabled(traits)) parts.push('outfit');

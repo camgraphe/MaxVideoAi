@@ -72,6 +72,13 @@ test('account destinations preserve the official staging and loopback origins', 
   );
 });
 
+test('account and recovery destinations preserve the exact isolated Character Studio preview', () => {
+  const origin = 'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app';
+  const accountUrl = `${origin}/account/connections`;
+  assert.equal(buildAgentAccountDestinations(accountUrl).library.url, `${origin}/app/library`);
+  assert.equal(buildAgentGenerationDestination(accountUrl, 'video', 'job/1').url, `${origin}/app?job=job%2F1`);
+});
+
 test('account destinations reject URLs that can redirect a customer outside the trusted account origin', () => {
   const rejected = [
     'https://user:password@maxvideoai.com/account/connections',
@@ -82,6 +89,9 @@ test('account destinations reject URLs that can redirect a customer outside the 
     'https://maxvideoai.com:444/account/connections',
     'https://example.com/account/connections',
     'https://maxvideoai-mcp-staging.vercel.app.evil.example/account/connections',
+    'https://maxvideoai-env-character-studio-test-other-projects.vercel.app/account/connections',
+    'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app:444/account/connections',
+    'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app.evil.example/account/connections',
     'https://maxvideoai.com/account/connections/elsewhere',
     ' https://maxvideoai.com/account/connections ',
   ];

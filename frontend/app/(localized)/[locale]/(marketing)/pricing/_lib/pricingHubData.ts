@@ -242,6 +242,7 @@ export type OtherSurfacePricingData = {
   imageRows: ImagePricingRow[];
   audioRows: AudioPricingRow[];
   toolRows: ToolPricingRow[];
+  recastExamples?: Array<{ outputSeconds: number; sourceSeconds: number; price720: string; price1080: string }>;
 };
 
 export type PricingHubData = {
@@ -1149,8 +1150,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-draft',
       anchorId: 'character-builder-pricing',
       tool: copy.tools.characterBuilderDraft,
-      standardOutput: formatFixedPublicProduct(locale, 'character-draft', 8),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-draft-4k', 24)}`,
+      standardOutput: copy.liveQuote,
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${copy.liveQuote}`,
       bestUsedBefore: copy.tools.imageToVideoReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },
@@ -1161,8 +1162,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-final',
       anchorId: 'character-builder-final-pricing',
       tool: copy.tools.characterBuilderFinal,
-      standardOutput: formatFixedPublicProduct(locale, 'character-final', 15),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-final-4k', 30)}`,
+      standardOutput: copy.liveQuote,
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${copy.liveQuote}`,
       bestUsedBefore: copy.tools.finalCharacterReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },

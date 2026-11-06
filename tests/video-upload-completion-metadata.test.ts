@@ -35,6 +35,7 @@ async function fixture(kind: 'multipart' | 'direct', corrupt = false, portrait =
     bytes, key: 'user-assets/owner/source.mov', url: 'https://media.example.com/user-assets/owner/source.mov',
   };
   const stubs: Record<string, string> = {
+    '@/server/uploads/store-media-upload': 'export const storeAudioUpload=async()=>{throw new Error("Video must never use the audio decoder.")};',
     '@/lib/supabase-ssr': 'export const getRouteAuthContext=async()=>({userId:fixture.owner});',
     '@/server/storage': `
       export const isStorageKeyWithinUserPrefix=({key,prefix,userId})=>key.startsWith(prefix+'/'+userId+'/');

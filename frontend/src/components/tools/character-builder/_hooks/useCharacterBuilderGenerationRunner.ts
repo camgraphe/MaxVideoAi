@@ -22,7 +22,10 @@ import type {
 } from '../_lib/character-builder-types';
 
 interface UseCharacterBuilderGenerationRunnerOptions {
+  tariffRevision?: number;
+  refreshPrice: () => Promise<unknown>;
   captureAccountRequest: CaptureCharacterBuilderAccountRequest;
+  captureDraftRequest: CaptureCharacterBuilderAccountRequest;
   copy: CharacterCopy;
   hasIdentityReference: boolean;
   mutateHistoricalJobs: SWRInfiniteKeyedMutator<JobsPage[]>;
@@ -37,7 +40,9 @@ interface UseCharacterBuilderGenerationRunnerOptions {
 }
 
 export function useCharacterBuilderGenerationRunner({
+  tariffRevision,refreshPrice,
   captureAccountRequest,
+  captureDraftRequest,
   copy,
   hasIdentityReference,
   mutateHistoricalJobs,
@@ -58,6 +63,7 @@ export function useCharacterBuilderGenerationRunner({
       }
       const request = captureAccountRequest();
       if (!request) return;
+      const draftRequest = captureDraftRequest();
       setError(null);
       setStatusMessage(null);
       const loadingKey = getLoadingRequestKey(action, generateCount);
@@ -96,6 +102,7 @@ export function useCharacterBuilderGenerationRunner({
       try {
         const response = await runCharacterBuilderTool({
           jobId: clientJobId,
+          characterId: state.characterId ?? null,
           action,
           sourceMode: state.sourceMode,
           outputMode: state.outputMode,
@@ -118,7 +125,7 @@ export function useCharacterBuilderGenerationRunner({
             parentRunId: null,
             pinnedReferenceResultId: null,
           },
-        }, request);
+        }, request, tariffRevision);
         if (!request.isCurrent()) return;
 
         if (!response.run) {
@@ -133,13 +140,13 @@ export function useCharacterBuilderGenerationRunner({
           return {
             ...previous,
             runs: nextRuns,
-            selectedResultId: firstResultId,
-            pinnedReferenceResultId: null,
+            selectedResultId: draftRequest?.isCurrent() ? firstResultId : previous.selectedResultId,
+            pinnedReferenceResultId: draftRequest?.isCurrent() ? null : previous.pinnedReferenceResultId,
             refinementHistory: previous.refinementHistory,
           };
         });
 
-        setStatusMessage(
+        if (draftRequest?.isCurrent()) setStatusMessage(
           action === 'generate'
             ? generateCount === 4
               ? copy.runGenerateFourDone
@@ -164,17 +171,18 @@ export function useCharacterBuilderGenerationRunner({
       } catch (runError) {
         if (!request.isCurrent()) return;
         setPendingRuns((previous) => previous.filter((entry) => entry.id !== clientJobId));
+        if ((runError as {code?:string})?.code === 'PRICING_REFRESH_REQUIRED') void refreshPrice();
         if (isAuthRequiredError(runError)) {
           openAuthGate();
           return;
         }
-        setError(runError instanceof Error ? runError.message : copy.runFailed);
+        if (draftRequest?.isCurrent()) setError(runError instanceof Error ? runError.message : copy.runFailed);
       } finally {
         if (request.isCurrent()) setLoadingActions((previous) => decrementLoadingRequestCount(previous, loadingKey));
       }
     },
     [
-      captureAccountRequest,
+      captureAccountRequest,captureDraftRequest,tariffRevision,refreshPrice,
       copy.missingRun,
       copy.runFailed,
       copy.runFullBodyDone,

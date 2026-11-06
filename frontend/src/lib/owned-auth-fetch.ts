@@ -17,8 +17,10 @@ export async function ownedAuthFetch(
   const session = data.session;
   if (error || !session?.access_token || session.user.id !== expectedUserId) throw unauthorized();
 
-  // The server still validates this bearer. Cookies must not select another account.
+  // Keep same-origin deployment protection cookies, but never let application
+  // cookies select another account if this explicit bearer expires or is revoked.
   const headers = new Headers(init?.headers);
   headers.set('Authorization', `Bearer ${session.access_token}`);
-  return authFetch(input, { ...init, headers, credentials: 'omit' });
+  headers.set('x-maxvideoai-auth-mode', 'bearer');
+  return authFetch(input, { ...init, headers, credentials: 'same-origin' });
 }

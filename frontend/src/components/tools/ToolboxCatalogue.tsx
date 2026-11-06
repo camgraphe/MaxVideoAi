@@ -22,6 +22,18 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
     <header className={styles.heading}>
       <h1>{copy.workspace}</h1>
     </header>
+    {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
+      <div className={styles.sectionBar}><h2 id={`${id}-workshops`}>{copy.workshops}</h2></div>
+      <ul className={styles.workshopGrid}>{workshops.map(tool => {
+        const text = copy.tools[tool.id as ToolboxVisualId];
+        return <li key={tool.id}><Link prefetch={false} href={tool.href} className={styles.workshop}>
+          <div className={styles.workshopArt}>
+            <Image src={WORKSHOP_ART[tool.id as keyof typeof WORKSHOP_ART]} alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" />
+          </div>
+          <div className={styles.workshopCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p></div>
+        </Link></li>;
+      })}</ul>
+    </section> : null}
     <div className={styles.sectionBar}>
       <div><h2>{copy.quick}</h2><p aria-live="polite">{visibleCount} {visibleCount === 1 ? copy.resultCountSingular : copy.results}</p></div>
       <div className={styles.filters} aria-label={copy.filtersLabel}>
@@ -41,18 +53,6 @@ export function ToolboxCatalogue({ locale, mediaKind, onSelect }: { locale: stri
       </>;
       return <li key={tool.visual}>{onSelect ? <button type="button" className={styles.quickTool} onClick={() => onSelect(tool.id, tool.mediaKind)}>{content}</button> : <Link prefetch={false} className={styles.quickTool} href={`${tool.href}${tool.id === 'upscale' ? `?kind=${tool.mediaKind}` : ''}`} aria-label={`${text.title} — ${copy.open}`}>{content}</Link>}</li>;
     })}</ul> : <div className={styles.empty}><span aria-hidden="true" className={styles.sound}>▂ ▅ ▃ ▇ ▄ ▆ ▂</span><h3>{copy.noAudio}</h3><p>{copy.audioHint}</p><Link href="/app/audio" prefetch={false}>{copy.audioOpen}</Link></div>}
-    {workshops.length > 0 ? <section className={styles.workshopSection} aria-labelledby={`${id}-workshops`}>
-      <div className={styles.sectionBar}><h2 id={`${id}-workshops`}>{copy.workshops}</h2></div>
-      <ul className={styles.workshopGrid}>{workshops.map(tool => {
-        const text = copy.tools[tool.id as ToolboxVisualId];
-        return <li key={tool.id}><Link prefetch={false} href={tool.href} className={styles.workshop}>
-          <div className={styles.workshopArt}>
-            <Image src={WORKSHOP_ART[tool.id as keyof typeof WORKSHOP_ART]} alt="" fill sizes="(max-width: 700px) 90vw, 30vw" loading="lazy" />
-          </div>
-          <div className={styles.workshopCaption}><span className={styles.kind}>{text.tag}</span><h3>{text.title}</h3><p>{text.body}</p></div>
-        </Link></li>;
-      })}</ul>
-    </section> : null}
     {getReleasedCreatorToolIds().length > 0 ? <CreatorCatalogueSection locale={locale} filter={filter} onSelect={onSelect} /> : null}
   </div>;
 }

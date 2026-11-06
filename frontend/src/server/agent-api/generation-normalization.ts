@@ -502,7 +502,7 @@ export function orderedGenerationReferenceRole(
 ): CanonicalGenerationReference['role'] | null {
   return (engineId === NANO21_ENGINE_ID || explicitReferenceOrder) && mode === 'i2i' ? 'reference' : mode === 'extend'
     ? 'source'
-    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4','kling-v4-flash'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
+    : mode === 'r2v' || mode === 'v2v' || ((['flux-3-max','flux-3','flux-3-draft','kling-v4','kling-v4-flash','wan-3-prime'].includes(engineId) || explicitReferenceOrder) && mode === 'ref2v') || (engineId === 'luma-ray-3-2' && mode === 't2v')
       ? 'reference'
       : null;
 }
@@ -515,7 +515,13 @@ function normalizeReferences(
 ): CanonicalGenerationReference[] {
   if (value === undefined) return [];
   assertDenseDataArray(value, 'references', MAX_CANONICAL_REFERENCES);
-  const orderedRole = orderedGenerationReferenceRole(mode,engineId,explicitReferenceOrder);
+  // Historical Wan ref2v quotes have no slots. Adding them on read changes the
+  // persisted request hash and prevents recovery of an already accepted job.
+  // New ordered callers author slots explicitly; retain both canonical shapes.
+  const legacyWanReferences = engineId === 'wan-3-prime' && mode === 'ref2v'
+    && !explicitReferenceOrder && !value.some(reference => reference !== null
+      && typeof reference === 'object' && Object.hasOwn(reference, 'slot'));
+  const orderedRole = legacyWanReferences ? null : orderedGenerationReferenceRole(mode,engineId,explicitReferenceOrder);
   let nextOrderedSlot = 0;
   const references = value.map((reference, index) => {
     const normalized = normalizeReference(reference, index, orderedRole);

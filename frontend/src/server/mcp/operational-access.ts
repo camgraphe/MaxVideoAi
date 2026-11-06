@@ -8,6 +8,7 @@ export type McpRuntimeCapabilities = Readonly<{
   paidGeneration: boolean;
   referenceUploads: boolean;
   audioGeneration: boolean;
+  characterStudio?: boolean;
 }>;
 
 export type McpOperationalPublication = Readonly<{
@@ -36,5 +37,6 @@ export function resolveMcpRuntimeCapabilities(
     paidGeneration: publication.paidGeneration || operationalStaging,
     referenceUploads: publication.referenceUploads || stagingReferenceCleanup,
     audioGeneration: publication.audioGeneration === true,
+    characterStudio: env.MCP_CHARACTER_STUDIO_ENABLED === '1',
   });
 }

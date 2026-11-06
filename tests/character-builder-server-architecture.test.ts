@@ -9,6 +9,7 @@ const builderDir = join(root, 'frontend/src/server/tools/character-builder');
 const modules = [
   'error.ts',
   'prompt.ts',
+  'trait-prompt.ts',
   'runner.ts',
   'sanitize.ts',
   'snapshot.ts',
@@ -59,6 +60,10 @@ test('character builder facade does not regain prompt, sanitation, or execution 
 test('character builder focused modules expose the expected contracts', () => {
   assert.match(readModule('error.ts'), /export class CharacterBuilderError/);
   assert.match(readModule('prompt.ts'), /export function buildPrompt/);
+  assert.match(readModule('prompt.ts'), /from '\.\/trait-prompt'/);
+  assert.doesNotMatch(readModule('prompt.ts'), /function buildTraitPrompt/);
+  assert.match(readModule('trait-prompt.ts'), /export function buildTraitPrompt/);
+  assert.doesNotMatch(readModule('trait-prompt.ts'), /executeImageGeneration|authFetch|fetch\(/);
   assert.match(readModule('sanitize.ts'), /export function sanitizeRequest/);
   assert.match(readModule('snapshot.ts'), /export function buildSettingsSnapshot/);
   assert.match(readModule('runner.ts'), /export async function runCharacterBuilder/);

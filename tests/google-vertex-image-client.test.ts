@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { GoogleVertexImageClient } from '../frontend/src/server/images/google-vertex-image-client.ts';
+import { GoogleVertexImageClient, isGoogleVertexImageConfigured } from '../frontend/src/server/images/google-vertex-image-client.ts';
+
+test('local inline image generation requires credentials and never makes production ready without GCS', () => {
+  const credentials = { GOOGLE_VERTEX_PROJECT_ID: 'test', GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: 'test' };
+  assert.equal(isGoogleVertexImageConfigured({ NODE_ENV: 'development', ...credentials }), false);
+  assert.equal(isGoogleVertexImageConfigured({ NODE_ENV: 'development', GOOGLE_VERTEX_IMAGE_INLINE_ONLY: '1' }), false);
+  for (const mode of ['development', 'production'] as const) {
+    assert.equal(isGoogleVertexImageConfigured({ NODE_ENV: mode, ...credentials, GOOGLE_VERTEX_IMAGE_INLINE_ONLY: '1' }), mode === 'development');
+  }
+});
 
 test('calls Vertex generateContent with bearer authentication', async () => {
   const requests: Array<{ url: string; authorization: string | null }> = [];

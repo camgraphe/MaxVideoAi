@@ -23,7 +23,8 @@ workflow for normal production releases.
    read-only premerge gate verifies that Preview's Git SHA is HEAD and compares
    Seedance 2.5's actual mode admissions with production's `/api/engines`, including
    intentionally closed modes. Missing/degraded readiness fails closed. The command
-   uses a short-lived Development OIDC token for the verified Preview origin only,
+   uses a short-lived Development OIDC token (or an explicitly supplied existing
+   automation credential) for the verified Preview origin only,
    refuses redirects and fails closed if existing access is unavailable. It does
    not create a protection bypass, generate media or change configuration. The
    ordinary production-only check below does not require an OIDC token.
@@ -61,6 +62,17 @@ check in the candidate checkout and leaves its local environment files untouched
     pnpm --dir "$PWD" deployment:check --preview https://exact-deployment.vercel.app
 )
 ```
+
+Custom environments may reject the default OIDC environment pair with
+`TRUSTED_SOURCES_ENVIRONMENT_MISMATCH`. If this project already has an authorized
+automation credential, supply it to the check process through
+`VERCEL_AUTOMATION_BYPASS_SECRET`, in memory through the approved secret manager
+or authenticated read-only project API. Do not print it, put it in command arguments,
+commit it or create a new bypass to run the check. This explicit mode sends the
+existing credential only to the verified exact Preview origin; it does not send
+it to production or follow redirects. There is no automatic fallback after a
+refused request, and all provenance/admission assertions remain mandatory. If
+neither existing access method works, stop and review the precise access rule.
 
 Seedance Preview configuration is common to Preview, rather than scoped to a past
 feature branch. Keep its existing Preview Ark credentials. Its nonsecret routing,

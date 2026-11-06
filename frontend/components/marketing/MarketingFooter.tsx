@@ -98,7 +98,7 @@ function FooterContent({ navigation }: { navigation: MarketingFooterNavigation }
     },
     {
       key: 'characterBuilder',
-      label: labelFor('footer.sections.product.items.characterBuilder', 'Character Builder'),
+      label: labelFor('footer.sections.product.items.characterBuilder', 'Character Studio'),
       href: { pathname: '/tools/character-builder' },
     },
     { key: 'milo', label: locale === 'fr' ? 'Milo · Assistant de prompts IA' : locale === 'es' ? 'Milo · Asistente de prompts IA' : 'Milo · AI prompt assistant', href: '/ai-video-prompt-generator' },

@@ -1,3 +1,6 @@
+import { NANO21_ENGINE_ID } from './nano-banana-2-1';
+import { STUDIO_CLOTHING, STUDIO_HAIR } from './character-studio-catalog';
+import { getStudioColorPrompt } from './character-studio-colors';
 import type {
   CharacterBuilderConsistencyMode,
   CharacterBuilderFormatMode,
@@ -92,14 +95,14 @@ export const CHARACTER_QUALITY_OPTIONS: Array<{
   {
     id: 'draft',
     label: 'Standard',
-    description: 'Fast exploratory passes on Nano Banana 2.',
-    engineId: 'nano-banana-2',
+    description: 'Fast exploratory passes on Nano Banana 2.1.',
+    engineId: NANO21_ENGINE_ID,
   },
   {
     id: 'final',
     label: 'Pro',
-    description: 'Cleaner export-ready references on Nano Banana Pro.',
-    engineId: 'nano-banana-pro',
+    description: 'Cleaner export-ready references on Nano Banana 2.1.',
+    engineId: NANO21_ENGINE_ID,
   },
 ];
 
@@ -118,7 +121,7 @@ export const CHARACTER_FORMAT_OPTIONS: Array<{
   {
     id: '2k',
     label: '2K',
-    description: 'Sharper output. 2x price.',
+    description: 'Higher resolution.',
     resolution: '2k',
   },
   {
@@ -179,14 +182,8 @@ export const HAIR_LENGTH_OPTIONS: TraitOption[] = [
 ];
 
 export const HAIRSTYLE_OPTIONS: TraitOption[] = [
-  { id: 'straight', label: 'Straight', prompt: 'straight hairstyle' },
-  { id: 'wavy-bob', label: 'Wavy bob', prompt: 'wavy bob hairstyle' },
-  { id: 'curly', label: 'Curly', prompt: 'curly hairstyle' },
+  ...STUDIO_HAIR.map(({ id, label, prompt }) => ({ id, label: label.en, prompt })),
   { id: 'ponytail', label: 'Ponytail', prompt: 'ponytail hairstyle' },
-  { id: 'braids', label: 'Braids', prompt: 'braided hairstyle' },
-  { id: 'buzz-cut', label: 'Buzz cut', prompt: 'buzz cut hairstyle' },
-  { id: 'afro', label: 'Afro', prompt: 'afro hairstyle' },
-  { id: 'tied-back', label: 'Tied back', prompt: 'tied-back hairstyle' },
 ];
 
 export const EYE_COLOR_OPTIONS: TraitOption[] = [
@@ -207,10 +204,8 @@ export const BODY_BUILD_OPTIONS: TraitOption[] = [
 ];
 
 export const OUTFIT_STYLE_OPTIONS: TraitOption[] = [
-  { id: 'casual', label: 'Casual', prompt: 'casual wardrobe styling' },
-  { id: 'business', label: 'Business', prompt: 'business wardrobe styling' },
-  { id: 'streetwear', label: 'Streetwear', prompt: 'streetwear styling' },
-  { id: 'formal', label: 'Formal', prompt: 'formal wardrobe styling' },
+  ...STUDIO_CLOTHING.map(({ id, label, prompt }) => ({ id, label: label.en, prompt })),
+  // Historical choices remain resolvable when an old job is reused.
   { id: 'luxury', label: 'Luxury', prompt: 'luxury wardrobe styling' },
   { id: 'sci-fi', label: 'Sci-fi', prompt: 'sci-fi wardrobe styling' },
   { id: 'fantasy', label: 'Fantasy', prompt: 'fantasy wardrobe styling' },
@@ -255,6 +250,8 @@ export const AUTO_TRAIT_KEYS = new Set<keyof CharacterBuilderTraits>([
   'hairLength',
   'hairstyle',
   'eyeColor',
+  'eyeShape',
+  'characterType',
   'bodyBuild',
 ]);
 
@@ -272,7 +269,7 @@ export const CHARACTER_TRAIT_OPTION_MAP = {
 } as const;
 
 export function getQualityEngineId(qualityMode: CharacterBuilderQualityMode): string {
-  return CHARACTER_QUALITY_OPTIONS.find((entry) => entry.id === qualityMode)?.engineId ?? 'nano-banana-2';
+  return CHARACTER_QUALITY_OPTIONS.find((entry) => entry.id === qualityMode)?.engineId ?? NANO21_ENGINE_ID;
 }
 
 export function getDefaultAspectRatio(outputMode: CharacterBuilderOutputMode, action: 'generate' | 'full-body-fix' | 'lighting-variant'): string {
@@ -346,6 +343,11 @@ export function createDefaultTraits(sourceMode: CharacterBuilderSourceMode = 'sc
     hairLength: traitValue(autoValue, autoSource),
     hairstyle: traitValue(autoValue, autoSource),
     eyeColor: traitValue(autoValue, autoSource),
+    eyeShape: traitValue(autoValue, autoSource),
+    characterType: traitValue(autoValue, autoSource),
+    customCharacterDescription: '',
+    sceneId: null,
+    customSceneDescription: '',
     bodyBuild: traitValue(autoValue, autoSource),
     outfitEnabled: false,
     customOutfitDescription: '',
@@ -418,7 +420,7 @@ export function getTraitOptionPrompt(
   value: string | null | undefined
 ): string | null {
   const option = findTraitOption(CHARACTER_TRAIT_OPTION_MAP[traitKey], value);
-  return option?.prompt ?? null;
+  return getStudioColorPrompt(traitKey, value) ?? option?.prompt ?? null;
 }
 
 export function getAccessoryPrompt(value: string): string | null {

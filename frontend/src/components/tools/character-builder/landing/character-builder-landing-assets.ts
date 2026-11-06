@@ -6,7 +6,7 @@ export const REFERENCE_ASSET_PORTRAIT_URL =
 export const LATEST_CHARACTER_SHEET_ASSETS = [
   {
     url: 'https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png',
-    alt: 'Recent Character Builder character sheet render showing four full-body angles and four matching close-ups.',
+    alt: 'Recent Character Studio character sheet render showing four full-body angles and four matching close-ups.',
   },
   {
     url: 'https://media.maxvideoai.com/marketing/marketing/b508fe8d-a858-41a4-8b27-c9706ea3a50c.png',
@@ -26,7 +26,7 @@ export const [LATEST_SHEET_1, , , LATEST_SHEET_4] = LATEST_CHARACTER_SHEET_ASSET
 
 export const WORKFLOW_CHARACTER_SHEET_ASSET = {
   url: 'https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png',
-  alt: 'Character Builder sheet used as the reusable reference asset across images and video workflows.',
+  alt: 'Character Studio sheet used as the reusable reference asset across images and video workflows.',
 } as const;
 export const WORKFLOW_NANO_BANANA_ASSET = {
   url: 'https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg',

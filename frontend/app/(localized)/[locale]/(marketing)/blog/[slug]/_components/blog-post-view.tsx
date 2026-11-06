@@ -17,6 +17,7 @@ import type { BlogEditorialCopy } from '../_lib/blog-editorial-copy';
 import { BlogAuthorByline, BlogAuthorCard } from './blog-author-byline';
 import { BlogPostJsonLdScripts } from './blog-post-jsonld-scripts';
 import { BlogWalkthrough } from './blog-walkthrough';
+import { BlogCharacterStudioActions, BlogCharacterStudioPortraits, BlogCharacterStudioProof, isCharacterStudioArticle } from './blog-character-studio-proof';
 
 type BlogPostViewProps = {
   articleCopy: BlogArticleCopy;
@@ -47,8 +48,9 @@ export function BlogPostView({
   publishedLabel,
   relatedPosts,
 }: BlogPostViewProps) {
+  const characterArticle = isCharacterStudioArticle(getCanonicalBlogSlug(post));
   return (
-    <div className={post.editorial ? 'editorial-blog-page section' : 'container-page max-w-5xl section'}>
+    <div className={post.editorial ? 'editorial-blog-page section' : `container-page max-w-5xl section${characterArticle ? ' !pt-6 sm:!pt-10' : ''}`}>
       <div className="stack-gap-lg">
         <TextLink href="/blog" className="text-sm" linkComponent={Link}>
           {articleCopy.backLink}
@@ -83,9 +85,11 @@ export function BlogPostView({
                   ))}
                 </div>
               </div>
+              <div className={characterArticle ? 'grid items-center gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,1fr)]' : ''}>
               <div className="max-w-3xl stack-gap-sm">
                 <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
                 <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.lead ?? post.description}</p>
+                <BlogCharacterStudioActions canonicalSlug={getCanonicalBlogSlug(post)} locale={locale} />
                 <BlogAuthorByline
                   copy={editorialCopy}
                   locale={locale}
@@ -94,10 +98,13 @@ export function BlogPostView({
                   publishedLabel={publishedLabel}
                 />
               </div>
+              {characterArticle ? <BlogCharacterStudioPortraits locale={locale} /> : null}
+              </div>
             </div>
           </header>
 
           {post.walkthrough ? <BlogWalkthrough content={post.walkthrough} locale={locale} /> : null}
+          <BlogCharacterStudioProof canonicalSlug={getCanonicalBlogSlug(post)} locale={locale} />
 
           <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
         </article>}

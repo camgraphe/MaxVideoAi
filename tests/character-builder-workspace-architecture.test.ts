@@ -36,6 +36,16 @@ const traitActionsHookPath = join(root, 'frontend/src/components/tools/character
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 
+test('character builder delegates current-price lifecycle and exposes recovery in its composer', () => {
+  const pricing = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_hooks/useCharacterBuilderPrice.ts'), 'utf8');
+  assert.match(workspaceSource, /useCharacterBuilderPrice\(resolution, referenceCount\)/);
+  assert.doesNotMatch(workspaceSource, /await authFetch\(url/);
+  assert.match(workspaceSource, /priceStatus=\{priceStatus\}/);
+  assert.match(workspaceSource, /onRetryPrice=/);
+  assert.match(pricing, /customerTariffRevision/);
+  assert.match(pricing, /keepPreviousData: false/);
+});
+
 test('character builder workspace delegates copy, local types, and helper logic', () => {
   assert.ok(existsSync(copyPath), 'character builder copy should live in a colocated copy module');
   assert.ok(existsSync(typesPath), 'character builder local contracts should live in a colocated type module');
@@ -67,9 +77,9 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.ok(existsSync(traitActionsHookPath), 'trait actions should live in a focused hook');
 
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-workspace-components'/, 'workspace should import UI components');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-build-look-section'/, 'workspace should import build look section component');
+  assert.match(workspaceSource, /CharacterStudioComposer/, 'workspace delegates visual controls to the studio composer');
   assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-page-shell'/, 'workspace should import page shell components');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_components\/character-builder-start-section'/, 'workspace should import start section component');
+  assert.match(workspaceSource, /CharacterStudioExplore/, 'workspace delegates inspiration cards to the explore surface');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderOptions'/, 'workspace should import localized options hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderHistoricalResults'/, 'workspace should import historical results hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPendingRunsSync'/, 'workspace should import pending run sync hook');
@@ -79,7 +89,7 @@ test('character builder workspace delegates copy, local types, and helper logic'
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultActions'/, 'workspace should import result actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderResultsInfiniteScroll'/, 'workspace should import result infinite scroll hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderPersistence'/, 'workspace should import persistence hook');
-  assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderLookSummaries'/, 'workspace should import look summaries hook');
+  assert.match(workspaceSource, /character-studio-state/, 'workspace delegates new draft and preset transitions');
   assert.match(workspaceSource, /from '\.\/character-builder\/_hooks\/useCharacterBuilderTraitActions'/, 'workspace should import trait actions hook');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-copy'/, 'workspace should import character copy');
   assert.match(workspaceSource, /from '\.\/character-builder\/_lib\/character-builder-types'/, 'workspace should import local types');
@@ -353,4 +363,54 @@ test('character builder helper modules expose the expected workspace contract', 
   assert.ok(buildLookAdvancedControlsSource.split('\n').length <= 260, 'build look advanced controls should stay below 260 lines');
   assert.ok(helpersSource.split('\n').length <= 500, 'generic character builder helpers should stay below 500 lines after summary helper extraction');
   assert.ok(summaryHelpersSource.split('\n').length <= 180, 'summary helpers should stay focused and below 180 lines');
+});
+
+test('visual studio keeps catalogue, composition and generation ownership separate', () => {
+  const composer = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioComposer.client.tsx'), 'utf8');
+  const catalogue = readFileSync(join(root, 'frontend/src/lib/character-studio-catalog.ts'), 'utf8');
+  assert.match(composer, /StudioVisualChoices/);
+  assert.match(composer, /CharacterStudioOutputSettings/);
+  const outputSettings = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioOutputSettings.client.tsx'), 'utf8');
+  assert.match(outputSettings, /normalizeCharacterFormatMode/);
+  const advancedSettings = readFileSync(join(root, 'frontend/src/components/tools/character-builder/_components/CharacterStudioAdvancedSettings.client.tsx'), 'utf8');
+  assert.match(composer, /<CharacterStudioAdvancedSettings[\s\S]*data-studio-dock[\s\S]*<CharacterStudioOutputSettings/, 'advanced settings scroll with traits; output and format stay in the generation dock');
+  assert.doesNotMatch(outputSettings, /<details|consistencyMode|advancedNotes|authFetch|fetch\(/, 'output settings stay visible and do not own advanced controls or pricing requests');
+  assert.match(advancedSettings, /<details[\s\S]*consistencyMode[\s\S]*advancedNotes/, 'optional controls belong to the advanced disclosure');
+  assert.doesNotMatch(composer, /runCharacterBuilderTool|authFetch|fetch\(|localStorage/);
+  assert.doesNotMatch(catalogue, /server-only|node:|process\.env|fetch\(/);
+  assert.ok(composer.split('\n').length < 500, 'visual composer should remain a bounded feature surface');
+  assert.match(workspaceSource, /enabled: studioMode === 'character' && studioTab === 'history'/, 'pagination must attach when the image tab mounts');
+  assert.match(workspaceSource, /startNewCharacter/, 'new draft transitions must preserve historical results');
+});
+
+test('saved library presentation and overlays stay outside the workspace orchestrator', () => {
+  const area = join(root, 'frontend/src/components/tools/character-builder');
+  const view = readFileSync(join(area, '_components/CharacterStudioWorkspaceView.client.tsx'), 'utf8');
+  const overlays = readFileSync(join(area, '_components/CharacterStudioOverlays.client.tsx'), 'utf8');
+  assert.match(workspaceSource, /<CharacterStudioWorkspaceView/);
+  assert.match(workspaceSource, /<CharacterStudioOverlays/);
+  assert.match(workspaceSource, /useCharacterStudioLibrary/);
+  assert.doesNotMatch(workspaceSource, /<dialog\b|<MediaLightbox\b|data-studio-scroll/);
+  assert.match(view, /data-studio-scroll="results"/);
+  assert.match(overlays, /CharacterStudioSaveDialog/);
+  assert.match(workspaceSource, /createStudioDraftTransitions/);
+  assert.match(workspaceSource, /useCharacterBuilderDraftScope/);
+  const transitions = readFileSync(join(area, '_lib/character-studio-transitions.ts'), 'utf8');
+  assert.match(transitions, /beginDraftIntent/);
+  assert.match(transitions, /buildStudioLookDraft/);
+  const runner = readFileSync(join(root, 'frontend/src/server/tools/character-builder/runner.ts'), 'utf8');
+  assert.match(runner, /sanitizeRequest\(await resolveStudioLookRequest\(input\)\)/);
+});
+
+test('Recast portrait selection delegates its account library and dialog outside the composer', () => {
+  const area = join(root, 'frontend/src/components/tools/character-builder/_components');
+  const recast = readFileSync(join(area, 'CharacterStudioRecast.client.tsx'), 'utf8');
+  const portrait = readFileSync(join(area, 'CharacterStudioRecastPortrait.client.tsx'), 'utf8');
+  const picker = readFileSync(join(area, 'CharacterStudioRecastCharacterPicker.client.tsx'), 'utf8');
+  assert.match(recast, /<CharacterStudioRecastPortrait/);
+  assert.doesNotMatch(recast, /useCharacterStudioLibrary|<dialog\b/);
+  assert.match(portrait, /active && open/);
+  assert.match(picker, /useCharacterStudioLibrary/);
+  assert.match(picker, /LibraryImageThumbnail/);
+  assert.doesNotMatch(workspaceSource, /<CharacterStudioRecastCharacterPicker|<dialog\b/);
 });

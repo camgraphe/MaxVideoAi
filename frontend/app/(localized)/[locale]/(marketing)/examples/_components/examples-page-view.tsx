@@ -1,5 +1,6 @@
 import { ExamplesPromptStarters } from './examples-prompt-starters';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
+import { CharacterStudioPublicFilms } from '@/components/tools/character-builder/landing/CharacterStudioPublicFilms';
 import type { ExamplesVersionLink } from '../_lib/examples-version-links';
 import clsx from 'clsx';
 import styles from './examples-editorial.module.css';
@@ -236,6 +237,14 @@ export function ExamplesPageView({
           />
 
           <div className={styles.editorial}>
+            {!isModelLanding && !selectedEngine && currentPage === 1 && sort === 'playlist' ? (
+              <div id="character-studio" className="scroll-mt-24">
+                <Suspense fallback={null}>
+                  <CharacterStudioPublicFilms locale={locale} showLink excludedVideoUrls={initialExamples.flatMap(video => video.videoUrl ? [video.videoUrl] : [])} />
+                </Suspense>
+              </div>
+            ) : null}
+
             {isModelLanding && heroBody && modelLandingLabel ? (
               <ExamplesFamilyIntro body={heroBody} label={modelLandingLabel} locale={locale} title={modelLandingGuideTitle} />
             ) : null}

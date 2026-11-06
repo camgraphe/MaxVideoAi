@@ -84,6 +84,7 @@ test('central admin and public rows read changed product/audio prices without an
     assert.equal(scopedTools.rows.find(row => row.id === 'fix-blur:standard')?.totalCents, 34);
     // Fixture changes are confined to this disposable socket-only database.
     await database.pool.query(`UPDATE app_billing_products SET unit_price_cents=48 WHERE product_key='character-draft';
+      UPDATE app_billing_products SET unit_price_cents=17 WHERE product_key='angle-flux-single';
       INSERT INTO app_pricing_rules (id,engine_id,mode,margin_percent,margin_flat_cents,currency)
       VALUES ('voice-price','audio-generation','voice_only',0,300,'USD');`);
     invalidateBillingProductsCache();
@@ -94,8 +95,13 @@ test('central admin and public rows read changed product/audio prices without an
     assert.equal(after.rows.find((row) => row.id === 'audio:voice_only:0')?.totalCents, audio.totalCents);
     assert.equal(audio.totalCents, 305);
     const publicRows = await buildCurrentOtherPricing(buildPricingHubData('en').otherSurfaces, 'en');
-    assert.match(publicRows.toolRows.find((row) => row.id === 'character-builder-draft')!.standardOutput, /\$0\.48/);
-    assert.match(publicRows.toolRows.find((row) => row.id === 'character-builder-draft')!.proOutput, /\$1\.44/);
+    assert.match(publicRows.toolRows.find((row) => row.id === 'change-camera-angle')!.standardOutput, /\$0\.17/);
+    // Legacy Character product settings remain in admin, but cannot price new Nano21 work.
+    // This fixture has no native tariff schema: Studio must refuse a numeric fallback.
+    for (const row of publicRows.toolRows.filter((row) => row.id.startsWith('character-builder-'))) {
+      assert.equal(row.standardOutput, 'Live quote');
+      assert.equal(row.proOutput, '4K: Live quote');
+    }
     assert.equal(publicRows.audioRows.find((row) => row.id === 'audio-voice-only')!.thirtySeconds, '$3.10');
     const tables = (await database.pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows.map((row) => row.tablename);
     assert.deepEqual(tables, ['app_billing_products', 'app_pricing_rules']);

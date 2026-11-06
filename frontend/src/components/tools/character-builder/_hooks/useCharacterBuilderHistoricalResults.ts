@@ -11,6 +11,7 @@ export function useCharacterBuilderHistoricalResults(flattenedResults: Character
     setSize: setHistoricalSize,
     isLoading: historicalJobsLoading,
     isValidating: historicalJobsValidating,
+    error: historicalJobsError,
   } = useInfiniteJobs(18, { surface: 'character' });
 
   const localResultUrls = useMemo(
@@ -55,6 +56,7 @@ export function useCharacterBuilderHistoricalResults(flattenedResults: Character
     historicalHasMore,
     historicalIsFetchingMore,
     historicalJobsLoading,
+    historicalJobsError: Boolean(historicalJobsError),
     loadMoreHistoricalResults,
     mutateHistoricalJobs,
   };

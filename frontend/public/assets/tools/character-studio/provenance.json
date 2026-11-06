@@ -1,0 +1,171 @@
+{
+  "generatedAtlases": [
+    "gallery.webp",
+    "eyes.webp",
+    "fashion.webp",
+    "hairCatalog.webp",
+    "identity.webp",
+    "creatures.webp"
+  ],
+  "origin": "Original generated images from the approved Character Studio proposal, 2026-11-03. Fictional people.",
+  "scenes": [
+    {
+      "id": "blue_photo_studio",
+      "label": "Studio bleu",
+      "sourceUrl": "https://polyhaven.com/a/blue_photo_studio",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "brown_photostudio_01",
+      "label": "Studio chaleureux",
+      "sourceUrl": "https://polyhaven.com/a/brown_photostudio_01",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "blocky_photo_studio",
+      "label": "Studio architectural",
+      "sourceUrl": "https://polyhaven.com/a/blocky_photo_studio",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "ferndale_studio_01",
+      "label": "Studio softbox",
+      "sourceUrl": "https://polyhaven.com/a/ferndale_studio_01",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "ferndale_studio_02",
+      "label": "Studio lumière colorée",
+      "sourceUrl": "https://polyhaven.com/a/ferndale_studio_02",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "monochrome_studio_01",
+      "label": "Studio monochrome",
+      "sourceUrl": "https://polyhaven.com/a/monochrome_studio_01",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "comfy_cafe",
+      "label": "Café cosy",
+      "sourceUrl": "https://polyhaven.com/a/comfy_cafe",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "cayley_interior",
+      "label": "Salon",
+      "sourceUrl": "https://polyhaven.com/a/cayley_interior",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "blinds",
+      "label": "Cuisine et salle à manger",
+      "sourceUrl": "https://polyhaven.com/a/blinds",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "blender_institute",
+      "label": "Bureau partagé",
+      "sourceUrl": "https://polyhaven.com/a/blender_institute",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "art_studio",
+      "label": "Atelier d'artiste",
+      "sourceUrl": "https://polyhaven.com/a/art_studio",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "crossfit_gym",
+      "label": "Salle de sport",
+      "sourceUrl": "https://polyhaven.com/a/crossfit_gym",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "homecoming_center_rooftop",
+      "label": "Toit-terrasse urbain",
+      "sourceUrl": "https://polyhaven.com/a/homecoming_center_rooftop",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "hotel_rooftop_balcony",
+      "label": "Balcon d'hôtel",
+      "sourceUrl": "https://polyhaven.com/a/hotel_rooftop_balcony",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "cobblestone_street_night",
+      "label": "Rue pavée de nuit",
+      "sourceUrl": "https://polyhaven.com/a/cobblestone_street_night",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "german_town_street",
+      "label": "Route contemporaine",
+      "sourceUrl": "https://polyhaven.com/a/german_town_street",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "birbeck_street_underpass",
+      "label": "Passage urbain",
+      "sourceUrl": "https://polyhaven.com/a/birbeck_street_underpass",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "braustuble_alley",
+      "label": "Ruelle historique",
+      "sourceUrl": "https://polyhaven.com/a/braustuble_alley",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "fish_hoek_beach",
+      "label": "Plage de sable",
+      "sourceUrl": "https://polyhaven.com/a/fish_hoek_beach",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "autumn_forest_01",
+      "label": "Forêt d'automne",
+      "sourceUrl": "https://polyhaven.com/a/autumn_forest_01",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "epping_forest_02",
+      "label": "Clairière",
+      "sourceUrl": "https://polyhaven.com/a/epping_forest_02",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "borghese_gardens",
+      "label": "Parc arboré",
+      "sourceUrl": "https://polyhaven.com/a/borghese_gardens",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "lake_pier",
+      "label": "Ponton sur un lac",
+      "sourceUrl": "https://polyhaven.com/a/lake_pier",
+      "license": "CC0-1.0"
+    },
+    {
+      "id": "gamrig",
+      "label": "Panorama montagneux",
+      "sourceUrl": "https://polyhaven.com/a/gamrig",
+      "license": "CC0-1.0"
+    }
+  ],
+  "identityAtlas": {
+    "origin": "Original image generated for Character Studio on 2026-11-03; fictional adults, no competitor assets.",
+    "layout": "4 columns × 3 rows; type cells 0–2, upload samples 3/7, presentation 4–6, adult ages 8–11",
+    "source": "exec-c7f563d1-5524-4499-973c-2a86c592f78c.png",
+    "use": "Visual selection only; never an identity reference sent to the generation provider."
+  },
+  "creatureAtlas": {
+    "origin": "Original fictional characters generated with the built-in image_gen tool on 2026-11-03; no competitor assets.",
+    "layout": "2 columns × 2 rows; animal 0, insect 1, fruit 2, alien 3; square cells",
+    "source": "exec-e7be9434-cdb5-4a76-8272-7d203028b0d9.png",
+    "display": "640 × 640 WebP, 44,164 bytes; fixed square cards",
+    "use": "Visual selection only; never sent as a reference or presented as a generated user result.",
+    "prompt": "A single 2 by 2 square contact-sheet atlas of four character-type selector portraits. Equal square cells, no gutters, borders or text. Cinematic photographic creature design, complete heads and shoulders, soft studio light, muted charcoal/olive backgrounds. Top left: anthropomorphic red fox in dark jacket. Top right: green praying mantis humanoid with compound eyes and antennae in dark shirt. Bottom left: orange-fruit head with integrated expressive face, green leaf and stem, oatmeal sweatshirt. Bottom right: teal extraterrestrial with elongated skull, dark almond eyes and charcoal collarless shirt. Detailed tactile materials, consistent framing, no logos or watermark."
+  }
+}

@@ -269,7 +269,7 @@ export function useImageConversation(
       if (isCurrent()) setBusy(false);
     }
   }
-  async function confirm(requestId: string, quoteId: string) {
+  async function confirm(requestId: string, quoteId: string, recastPrice?: {amountCents:number;currency:string}) {
     if (!isCurrent() || requests.mutationInFlight) return;
     requests.mutationInFlight = true;
     setBusy(true);
@@ -284,7 +284,7 @@ export function useImageConversation(
           "content-type": "application/json",
           [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
         },
-        body: JSON.stringify(imageConfirmationPayload(requestId, quoteId)),
+        body: JSON.stringify(imageConfirmationPayload(requestId,quoteId,recastPrice)),
       });
       const payload = await response.json();
       if (!response.ok || !payload.ok)

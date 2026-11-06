@@ -20,17 +20,14 @@ import { jsonRule, requiredText } from './policy-rules';
 function previewSummary(
   preview: PricingChangePreview
 ): PricingChangeJsonObject {
-  const deltas = preview.rows.map((row) => row.deltaCents);
+  const deltas = preview.rows.flatMap((row) => row.deltaCents == null ? [] : [row.deltaCents]);
   return {
     previewFingerprint: preview.previewFingerprint,
     affectedSurfaces: preview.affectedSurfaces,
     rowCount: preview.rows.length,
-    deltaCents: preview.rows.reduce(
-      (sum, row) => sum + row.deltaCents,
-      0
-    ),
-    minimumDeltaCents: deltas.length ? Math.min(...deltas) : 0,
-    maximumDeltaCents: deltas.length ? Math.max(...deltas) : 0,
+    deltaCents: deltas.length === preview.rows.length ? deltas.reduce((sum, delta) => sum + delta, 0) : null,
+    minimumDeltaCents: deltas.length ? Math.min(...deltas) : null,
+    maximumDeltaCents: deltas.length ? Math.max(...deltas) : null,
     ...(preview.rollbackEventId
       ? { rollbackEventId: preview.rollbackEventId }
       : {}),

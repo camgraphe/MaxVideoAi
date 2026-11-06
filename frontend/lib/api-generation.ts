@@ -15,7 +15,7 @@ import type { AngleToolRequest, AngleToolResponse } from '@/types/tools-angle';
 import type { BackgroundRemovalToolRequest, BackgroundRemovalToolResponse } from '@/types/tools-background-removal';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import { upscaleClientAttempt, waitForAcceptedUpscale } from '@/lib/upscale-client-lifecycle';
-import { customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/lib/customer-tariff-revision';
+import { CUSTOMER_TARIFF_REVISION_HEADER, customerTariffRequestHeaders, notifyCustomerPricingRefresh } from '@/lib/customer-tariff-revision';
 
 type PrimitiveValue = string | number | boolean | null | undefined;
 
@@ -268,11 +268,13 @@ export async function runAudioGenerate(payload: AudioGenerateRequestBody, option
 
 export async function runCharacterBuilderTool(
   payload: CharacterBuilderRequest,
-  request?: { accessToken: string; signal: AbortSignal }
+  request?: { accessToken: string; signal: AbortSignal },
+  displayedRevision?: number,
 ): Promise<CharacterBuilderResponse> {
   const response = await authFetch('/api/tools/character-builder', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', [PRICING_POLICY_HEADER]: LIVE_PRICING_POLICY_REVISION,
+      ...(displayedRevision !== undefined ? { [CUSTOMER_TARIFF_REVISION_HEADER]: String(displayedRevision) } : {}),
       ...(request ? { Authorization: `Bearer ${request.accessToken}` } : {}) },
     signal: request?.signal,
     body: JSON.stringify(payload),

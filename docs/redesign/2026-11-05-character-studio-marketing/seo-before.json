@@ -1,0 +1,174 @@
+{
+  "observedAt": "2026-11-05T18:28:00.787Z",
+  "source": "Outreach / sources/2026-11-05/character-studio-marketing-seo/public-html.json",
+  "pages": [
+    {
+      "path": "/tools/character-builder",
+      "status": 200,
+      "title": "Consistent Character AI Tool | Reusable Character References for Image & Video",
+      "description": "Create reusable portrait anchors and 8-panel AI character sheets from one photo, optional outfit reference, or scratch. Reuse the same character across scenes,…",
+      "canonical": [
+        "https://maxvideoai.com/tools/character-builder"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "robots": null
+    },
+    {
+      "path": "/fr/outils/character-builder",
+      "status": 200,
+      "title": "Personnage IA cohérent | Références réutilisables pour l'image et la vidéo",
+      "description": "Créez une ancre portrait ou une planche personnage IA à 8 panneaux à partir d'un portrait, d'une référence tenue optionnelle ou de zéro. Réutilisez le même…",
+      "canonical": [
+        "https://maxvideoai.com/fr/outils/character-builder"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "robots": null
+    },
+    {
+      "path": "/es/herramientas/character-builder",
+      "status": 200,
+      "title": "Personajes IA consistentes | Referencias reutilizables para imagen y video",
+      "description": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero. Reutiliza el mismo…",
+      "canonical": [
+        "https://maxvideoai.com/es/herramientas/character-builder"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils/character-builder"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas/character-builder"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools/character-builder"
+        }
+      ],
+      "robots": null
+    },
+    {
+      "path": "/tools",
+      "status": 200,
+      "title": "AI Pre-Production Tools for Image & Video Workflows",
+      "description": "Build reusable character references and stronger first frames before you generate. Explore MaxVideoAI tools for consistent character creation and AI camera…",
+      "canonical": [
+        "https://maxvideoai.com/tools"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "robots": null
+    },
+    {
+      "path": "/fr/outils",
+      "status": 200,
+      "title": "Outils IA de préproduction pour l'image et la vidéo",
+      "description": "Créez des références personnage réutilisables et de meilleurs premiers plans avant de générer. Découvrez les outils MaxVideoAI pour garder un personnage…",
+      "canonical": [
+        "https://maxvideoai.com/fr/outils"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "robots": null
+    },
+    {
+      "path": "/es/herramientas",
+      "status": 200,
+      "title": "Herramientas de preproducción con IA para imagen y video",
+      "description": "Crea referencias de personaje reutilizables y mejores fotogramas iniciales antes de generar. Descubre las herramientas de MaxVideoAI para mantener personajes…",
+      "canonical": [
+        "https://maxvideoai.com/es/herramientas"
+      ],
+      "hreflang": [
+        {
+          "lang": "en",
+          "href": "https://maxvideoai.com/tools"
+        },
+        {
+          "lang": "fr",
+          "href": "https://maxvideoai.com/fr/outils"
+        },
+        {
+          "lang": "es",
+          "href": "https://maxvideoai.com/es/herramientas"
+        },
+        {
+          "lang": "x-default",
+          "href": "https://maxvideoai.com/tools"
+        }
+      ],
+      "robots": null
+    }
+  ]
+}

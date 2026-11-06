@@ -184,6 +184,18 @@ The cron needs a configured `CRON_SECRET`; monitor failures and `hasMore` backlo
 Keep retention guards/job when rolling back assistance features. See
 `docs/engineering/assistant-review.md` for dry-run and lifecycle boundaries.
 
+## Character Studio library (93)
+
+Apply `93_character_studio.sql` on a verified initialized application database
+before deploying the saved-character endpoints. It adds account-owned identities
+and looks, with composite ownership references and unique source-output keys.
+It does not alter jobs, original media, wallets or existing generation history.
+Keep these tables if rolling back the UI; no runtime reader performs DDL.
+On a new database run the baseline bootstrap first, then apply migrations in
+order: 93 requires the profiles table from migration 00. Validation
+used disposable PostgreSQL 17 only; no hosted migration was applied for this
+implementation. See `docs/engineering/character-studio.md` for endpoint ownership.
+
 ## Composer application-output credit refunds (migration 93)
 
 Apply `93_milo_output_credit_refunds.sql` explicitly after 54, 62, 63 and 85 before
@@ -215,3 +227,23 @@ rollback. See
 timeouts and local verification. Migration 93 was delivered by PR 607 at main
 `3239a5a1ec487724616d9c9b30612637322d0f53`; migration 94 has no collision
 in that base. Recheck main before publication if another migration lands.
+
+## Parallel Character Studio and Milo migrations (2026-11-05)
+
+The Character Studio branch and main independently used prefixes 93 and 94.
+Keep the complete filenames: these migrations have already been applied to
+different environments and operate on separate tables. Do not rename or mark
+a migration applied using only its numeric prefix. The repository runner selects
+complete `*.sql` filenames; on an existing database apply only verified pending
+files explicitly.
+
+- `93_character_studio.sql` creates characters/looks.
+- `93_milo_output_credit_refunds.sql` creates assistant refund evidence.
+- `94_character_studio_presentation.sql` adds character presentation.
+- `94_studio_conversation_reply_envelope.sql` widens Studio reply storage.
+- `95_character_studio_recast_quotes.sql` binds Recast approvals.
+
+Updating a Character Studio preview requires checking both Milo migrations even
+when the Character Studio 93–95 migrations are already present. Production keeps
+its independently verified migration state; preview qualification does not apply
+DDL to production.

@@ -5,6 +5,7 @@ import { lockInitialJobReservation, runInitialJobTransaction, type WalletReserva
 import { validateInitialVideoFunding } from './initial-video-job-funding';
 import { reserveInitialSeedanceFinal, type SeedanceFinalReservation } from './initial-seedance-final';
 import { lockQuotedCustomerTariffRevision, CustomerTariffRevisionError } from '@/server/pricing/customer-tariff-revision';
+import { lockQuotedRecastPolicy } from '@/server/pricing/recast-reservation-policy';
 
 import { validateCapturedDirectJobQuote, DirectPaymentQuoteError } from '@/server/pricing/direct-payment-quotes';
 
@@ -121,6 +122,8 @@ export type ProvisionalVideoJobInsert = {
 };
 
 type CreateVideoInitialJobBaseParams = {
+  /** Trusted route selection, never read from request settings or snapshot metadata. */
+  billingProduct?: 'character-recast';
   seedanceFinal?: SeedanceFinalReservation;
   auditPricingSnapshot?: unknown;
   jobId: string;
@@ -280,7 +283,8 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
 
 async function validateInitialVideoTariffRevision(executor: TransactionQueryExecutor, params: CreateVideoInitialJobParams) {
   try {
-    await lockQuotedCustomerTariffRevision(executor, params.jobInsert.engineId,
+    const validate = params.billingProduct === 'character-recast' ? lockQuotedRecastPolicy : lockQuotedCustomerTariffRevision;
+    await validate(executor, params.jobInsert.engineId,
       params.auditPricingSnapshot ?? params.pendingReceipt?.auditPricingSnapshot ?? JSON.parse(params.jobInsert.pricingSnapshotJson));
   } catch (error) {
     if (!(error instanceof CustomerTariffRevisionError)) throw error;

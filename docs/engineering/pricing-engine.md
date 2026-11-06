@@ -49,14 +49,56 @@ amount. No cell is seeded or activated by this integration. See the
 
 ## Fixed image tool product reservations
 
-Character Builder prices come from its billing products, independently of the
-underlying image model's customer tariff grid. `image-initial-job.ts` skips the
+New Character Studio work uses the native Nano Banana 2.1 image tariff for the
+selected resolution and the same customer tariff revision at estimate and reservation.
+Historical Character Builder Draft/Final receipts retain the original fixed products. `image-initial-job.ts` skips the
 model tariff revision lock only for a fixed `billing-product` snapshot whose
 product key and surface match the internal reservation context. Manual model
 tariff snapshots retain their revision lock, including when they carry product
 labels. Wallet funding, atomic reservation and existing-job recovery still apply.
 `tests/character-builder-pricing-postgres.test.ts` covers Draft/Final quantities,
 receipt preservation, replay, insufficient funds and mismatched pricing contexts.
+Static Character Studio marketing rows contain no historical fixed amounts.
+`character-studio-public-pricing-transition-2026-11-05.json` records precisely
+the four retired static projections while the original baseline remains frozen.
+Current rows use the native image estimator; EN/FR/ES public prices, estimates
+and reserved receipts are checked together in
+`tests/character-studio-nano21-price-postgres.test.ts`. Missing native pricing
+cannot fall back to an admin-edited legacy Character product.
+
+## Character Studio Recast product policy (2026-11-05)
+
+Recast uses `server/pricing/quote-recast.ts` for its public estimate, prepared
+quote and transaction-locked confirmation. The exact database selector is
+`character-recast / recast / video`. It requires USD, standard rounding, zero
+flat/audio/upscale extras, and a supplier coefficient between ×1 and ×10
+(`marginPercent = coefficient - 1`). Missing or unavailable scoped policy closes
+quoting; neither a generic Wan tariff nor a global/versioned policy substitutes
+for it. Supplier routing stays with Wan 3 Prime. The cost facts remain the native
+Wan input-plus-output owner: exact trimmed video seconds plus generated seconds,
+with audio excluded from video duration. Standard cent rounding is unchanged.
+
+Authored admin scenarios use the pure standard-definition projection in `buildPublicPricingFacts`, sharing the native Wan duration facts without importing live quote/policy readers; every scenario is checked against the public Recast reader for exact supplier cost, currency, unit and quantity parity.
+
+Only the trusted Recast service selects `billingProduct: 'character-recast'`.
+The initial wallet reservation validates that choice against the locked scoped
+rule and matching snapshot provenance, instead of requiring the ordinary model
+customer-tariff revision. Raw request settings cannot select this owner. Full
+quote repricing, reference ownership, wallet locking, single reservation and
+provider recovery remain in the existing generation service. Unaccepted legacy
+quotes must be refreshed; accepted jobs and refunds retain their stored amounts.
+
+Admin Pricing → Tools exposes the supplier coefficient with canonical examples,
+supplier cost, customer price and gross margin. It uses the existing preview,
+fingerprint confirmation, immutable history and rollback protocol. First
+configuration has an unavailable baseline, never a fabricated zero price.
+Deletion or rollback to a missing rule is refused. Public EN/FR/ES pricing
+examples use the same owner and fail to a live-quote label if unavailable.
+No product rule is installed by code or schema bootstrap; activation is an
+explicit environment-specific admin action. Image tariffs and the five creator
+tools' ×2.2 policy are separate. Financial and admin regression coverage lives in
+`character-studio-recast-*.test.ts`, `admin-recast-pricing*.test.ts` and
+`recast-pricing-page.test.ts`.
 
 ## Seedance 2.5 LAS Edit
 
@@ -935,9 +977,7 @@ previews actual budgets across priced options and 300-frame block boundaries.
 A missing qualified rule keeps the current quote unavailable; a global default
 cannot silently replace it in either billing or the preview.
 
-Character Builder reference rows use the same quality-to-model and standard-format
-resolution mapping as its runner, then read the underlying Nano Banana supplier
-facts independently of fixed retail billing. Angle rows use the authored Fal
+Historical Character Builder fixed-product reference rows retain their original Nano Banana supplier mapping. They do not price current Character Studio runs. Angle rows use the authored Fal
 megapixel estimate at an explicit 1 MP source and the runner's one/four provider
 calls; retail remains fixed per run. These are repository catalogue estimates,
 not newly verified LIST or account prices. Storyboard supplier rows project the

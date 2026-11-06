@@ -37,8 +37,8 @@ test('server authorization rejects revoked signed sessions and preserves active 
       } }],
     });
     const { getRouteAuthContext, updateSession } = requireFrontend(output);
-    const request = (authorization?: string) => new NextRequest('http://localhost/billing', {
-      headers: { cookie: jar.map(({ name, value }) => `${name}=${value}`).join('; '), ...(authorization ? { authorization } : {}) },
+    const request = (authorization?: string, owned = false) => new NextRequest('http://localhost/billing', {
+      headers: { cookie: jar.map(({ name, value }) => `${name}=${value}`).join('; '), ...(authorization ? { authorization } : {}), ...(owned ? {'x-maxvideoai-auth-mode':'bearer'} : {}) },
     });
     const setSession = (session: ReturnType<typeof fixture.createSession>) => { jar = fixture.cookiesFor(session); };
     const active = fixture.createSession(STUDIO_FIXTURE_OWNERS[0]);
@@ -88,6 +88,18 @@ test('server authorization rejects revoked signed sessions and preserves active 
       assert.equal((await getRouteAuthContext(request(`Bearer ${active.access_token}`))).userId, STUDIO_FIXTURE_OWNERS[0]);
       setSession(active);
       assert.equal((await getRouteAuthContext(request('Bearer invalid'))).userId, STUDIO_FIXTURE_OWNERS[0]);
+    });
+
+    await t.test('owned transport never falls back to a different valid cookie after bearer revocation', async () => {
+      const other = fixture.createSession(STUDIO_FIXTURE_OWNERS[1]);
+      for (const authorization of [undefined, 'Basic invalid', 'Bearer invalid', `Bearer ${revoked.access_token}`]) {
+        setSession(active);
+        assert.equal((await getRouteAuthContext(request(authorization, true))).userId, null);
+      }
+      setSession(other);
+      const result = await getRouteAuthContext(request(`Bearer ${active.access_token}`, true));
+      assert.equal(result.userId, STUDIO_FIXTURE_OWNERS[0]);
+      assert.equal(result.session, null, 'the ambient cookie session must not be exposed as the bearer session');
     });
 
     await t.test('expired active cookies rotate before verification and remain usable', async () => {

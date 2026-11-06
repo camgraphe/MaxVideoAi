@@ -136,6 +136,41 @@ test('preview parity fails before HTTP without existing access or with an unsafe
   assert.equal(calls, 0);
 });
 
+test('explicit existing automation access retains origin, redirect and readiness guards without acquisition or fallback', async () => {
+  const access = { automationBypassSecret: 'existing-automation-secret' };
+  const calls: { url: string; options: RequestInit }[] = [];
+  const request = async (url: string, options: RequestInit) => {
+    calls.push({ url, options });
+    return new Response(JSON.stringify(admissionCatalog()), { status: 200 });
+  };
+  const catalogs = await readPreviewAdmissionCatalogues('https://exact.vercel.app', access, request);
+  assert.doesNotThrow(() => assertPreviewModelAdmissionParity(catalogs.production, catalogs.preview));
+  assert.deepEqual(calls.map(call => call.url), ['https://maxvideoai.com/api/engines', 'https://exact.vercel.app/api/engines']);
+  assert.equal(new Headers(calls[0].options.headers).get('x-vercel-protection-bypass'), null);
+  assert.equal(new Headers(calls[1].options.headers).get('x-vercel-protection-bypass'), access.automationBypassSecret);
+  assert.equal(new Headers(calls[1].options.headers).get('x-vercel-trusted-oidc-idp-token'), null);
+  assert.ok(calls.every(call => call.options.redirect === 'error' && call.options.cache === 'no-store' && !call.options.method));
+  calls.length = 0;
+  for (const url of ['https://foreign.example', 'https://exact.vercel.app/private', 'https://secret@exact.vercel.app']) {
+    await assert.rejects(readPreviewAdmissionCatalogues(url, access, request), /Preview must be/);
+  }
+  await assert.rejects(readPreviewAdmissionCatalogues('https://exact.vercel.app', { automationBypassSecret: '' }, request), /existing OIDC token/);
+  assert.equal(calls.length, 0);
+  let refusedCalls = 0;
+  await assert.rejects(readPreviewAdmissionCatalogues('https://exact.vercel.app', access, async (url: string) => {
+    refusedCalls++;
+    return new Response('{}', { status: url.includes('vercel.app') ? 403 : 200 });
+  }), /Preview catalogue HTTP 403/);
+  assert.equal(refusedCalls, 2, 'Refused access cannot trigger credential creation or another authentication attempt');
+  await assert.rejects(readPreviewAdmissionCatalogues('https://exact.vercel.app', access, async () => {
+    throw new Error(access.automationBypassSecret);
+  }), error => {
+    assert.ok(error instanceof Error);
+    assert.doesNotMatch(error.message, /existing-automation-secret/);
+    return true;
+  });
+});
+
 test('failed Preview access never creates a bypass or exposes credential-bearing errors', async () => {
   const request = async (url: string) => new Response(JSON.stringify(admissionCatalog()), { status: url.includes('vercel.app') ? 403 : 200 });
   await assert.rejects(readPreviewAdmissionCatalogues('https://exact.vercel.app', 'short-lived-oidc', request), /Preview catalogue HTTP 403/);

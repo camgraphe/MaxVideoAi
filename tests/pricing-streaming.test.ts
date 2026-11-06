@@ -29,6 +29,8 @@ async function bundle() {
     '@/server/pricing/quote-public-model-scenario': `export const createScopedPublicModelQuoter=()=>{throw new Error('Use controlled quote I/O');};`,
     '@/server/pricing/quote-public': `export const computeCurrentAudioSnapshot=()=>{throw new Error('Use controlled audio I/O');};`,
     '@/lib/billing-products': `export const computeBillingProductSnapshot=()=>{throw new Error('Use controlled tool I/O');};`,
+    '@/server/images/estimate-image-generation': `export const estimateWebImageGeneration=()=>{throw new Error('Use controlled Character Studio I/O');};`,
+    '@/server/character-studio/recast-public-price': `export const readRecastPublicPrice=()=>{throw new Error('Use controlled Recast I/O');};`,
     hub: `import {buildCurrentPricingHubData as actual} from ${JSON.stringify(resolve(`${pricing}/_lib/currentPricingHubData.ts`))};import {quote,record,save} from 'probe';export function buildCurrentPricingHubData(locale){record();return actual(locale,quote,{audio:async()=>({totalCents:432,currency:'USD'}),product:async()=>({totalCents:543,currency:'USD'})}).then(save);}`,
   };
   await build({

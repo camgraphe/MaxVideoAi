@@ -8,7 +8,7 @@ const en = {
     'upscale-image': { title: 'Upscale image', body: 'Give the details more room.', tag: 'Image → image' },
     'upscale-video': { title: 'Upscale video', body: 'A bigger picture, frame by frame.', tag: 'Video → video' },
     'background-removal': { title: 'Remove background', body: 'Keep the subject. Set the scene.', tag: 'Video → video' },
-    'character-builder': { title: 'Character Builder', body: 'One character. Every side of the story.', tag: '01 / Identity' },
+    'character-builder': { title: 'Character Studio', body: 'Create a character, save new looks and bring it to video with Recast.', tag: '01 / Identity' },
     storyboard: { title: 'Storyboard', body: 'Find the rhythm before the first take.', tag: '02 / Sequence' },
     angle: { title: 'Angle', body: 'See your idea from another perspective.', tag: '03 / Perspective' },
   },
@@ -22,7 +22,7 @@ const fr: Copy = { ...en, workspace: 'Boîte à outils créative', title: 'Outil
   'smooth-motion': { title: 'Fluidifier une vidéo', body: 'Des mouvements plus fluides.', tag: 'Vidéo → vidéo' },
   'upscale-video': { title: 'Agrandir une vidéo', body: 'Voyez plus grand, image par image.', tag: 'Vidéo → vidéo' },
   'background-removal': { title: 'Détourer une vidéo', body: 'Gardez le sujet. Changez le décor.', tag: 'Vidéo → vidéo' },
-  'character-builder': { title: 'Character Builder', body: 'Un personnage. Tous les côtés de l’histoire.', tag: '01 / Identité' },
+  'character-builder': { title: 'Character Studio', body: 'Créez un personnage, sauvegardez ses looks et animez-le avec Recast.', tag: '01 / Identité' },
   storyboard: { title: 'Storyboard', body: 'Trouvez le rythme avant la première prise.', tag: '02 / Séquence' },
   angle: { title: 'Angle', body: 'Voyez votre idée sous un autre angle.', tag: '03 / Perspective' },
 } };
@@ -34,7 +34,7 @@ const es: Copy = { ...en, workspace: 'Caja de herramientas creativa', title: 'He
   'smooth-motion': { title: 'Suavizar movimiento', body: 'Movimientos más fluidos.', tag: 'Vídeo → vídeo' },
   'upscale-video': { title: 'Ampliar vídeo', body: 'Una imagen mayor, fotograma a fotograma.', tag: 'Vídeo → vídeo' },
   'background-removal': { title: 'Quitar fondo', body: 'Conserva el sujeto. Cambia la escena.', tag: 'Vídeo → vídeo' },
-  'character-builder': { title: 'Character Builder', body: 'Un personaje. Todos los lados de la historia.', tag: '01 / Identidad' },
+  'character-builder': { title: 'Character Studio', body: 'Crea un personaje, guarda nuevos looks y llévalo al vídeo con Recast.', tag: '01 / Identidad' },
   storyboard: { title: 'Storyboard', body: 'Encuentra el ritmo antes de la primera toma.', tag: '02 / Secuencia' },
   angle: { title: 'Angle', body: 'Mira tu idea desde otra perspectiva.', tag: '03 / Perspectiva' },
 } };

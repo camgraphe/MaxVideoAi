@@ -259,7 +259,7 @@ test('explicit apply reserves once and inserts measured canonical derivative wit
       range: { startSec: 20, endSec: 38 },
     });
     assert.equal(new Headers(f.requests[0].init.headers).get('Authorization'), 'Bearer token-A');
-    assert.equal(f.requests[0].init.credentials, 'omit');
+    assert.equal(f.requests[0].init.credentials, 'same-origin');assert.equal(new Headers(f.requests[0].init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
     await f.respond();
     await result;
     const asset = f.w.probe.inputAssets.video_url[0];
@@ -457,7 +457,7 @@ test('library excerpt preview reads owned full original and preserves short gall
   assert.equal(f.w.sourceReads.length,1);
   const request=f.w.sourceReads[0];
   assert.deepEqual(JSON.parse(request.init.body),{source:source.ref});
-  assert.equal(request.init.credentials,'omit');
+  assert.equal(request.init.credentials, 'same-origin');assert.equal(new Headers(request.init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
   assert.equal(new Headers(request.init.headers).get('authorization'),'Bearer token-A');
   assert.equal(f.w.probe.inputAssets.video_url[0].previewUrl,source.previewUrl);
   assert.equal(f.w.probe.inputAssets.video_url[0].url,source.url);

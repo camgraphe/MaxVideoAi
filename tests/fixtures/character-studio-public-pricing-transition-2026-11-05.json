@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "reason": "Character Studio replaces new Draft/Final fixed-product work with Nano Banana 2.1 native tariffs. Static marketing data must show Live quote until a current server quote exists. Historical prices and receipts remain unchanged; live parity is tested against native estimates and reservations.",
+  "rows": [
+    {
+      "previous": {
+        "id": "pricing-hub-tool:character-builder-draft:pro",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-draft",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 24,
+        "unit": "display",
+        "quantity": 1,
+        "displayedAmount": "4K: $0.24",
+        "compatibilityProfile": "fixed-product-current"
+      },
+      "current": {
+        "id": "pricing-hub-tool:character-builder-draft:pro",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-draft",
+        "status": "unavailable"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-tool:character-builder-draft:standard",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-draft",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 8,
+        "unit": "display",
+        "quantity": 1,
+        "displayedAmount": "$0.08",
+        "compatibilityProfile": "fixed-product-current"
+      },
+      "current": {
+        "id": "pricing-hub-tool:character-builder-draft:standard",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-draft",
+        "status": "unavailable"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-tool:character-builder-final:pro",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-final",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 30,
+        "unit": "display",
+        "quantity": 1,
+        "displayedAmount": "4K: $0.30",
+        "compatibilityProfile": "fixed-product-current"
+      },
+      "current": {
+        "id": "pricing-hub-tool:character-builder-final:pro",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-final",
+        "status": "unavailable"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-tool:character-builder-final:standard",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-final",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 15,
+        "unit": "display",
+        "quantity": 1,
+        "displayedAmount": "$0.15",
+        "compatibilityProfile": "fixed-product-current"
+      },
+      "current": {
+        "id": "pricing-hub-tool:character-builder-final:standard",
+        "surface": "pricing-hub-tool",
+        "engineId": "character-builder-final",
+        "status": "unavailable"
+      }
+    }
+  ]
+}

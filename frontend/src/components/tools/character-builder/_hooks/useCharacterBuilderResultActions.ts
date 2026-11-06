@@ -17,6 +17,8 @@ import type { HistoricalCharacterGalleryItem } from '../_lib/character-builder-t
 
 interface UseCharacterBuilderResultActionsOptions {
   captureAccountRequest: CaptureCharacterBuilderAccountRequest;
+  captureDraftRequest: CaptureCharacterBuilderAccountRequest;
+  beginDraftIntent: () => void;
   copy: CharacterCopy;
   openAuthGate: () => void;
   setAdvancedOpen: Dispatch<SetStateAction<boolean>>;
@@ -29,6 +31,8 @@ interface UseCharacterBuilderResultActionsOptions {
 
 export function useCharacterBuilderResultActions({
   captureAccountRequest,
+  captureDraftRequest,
+  beginDraftIntent,
   copy,
   openAuthGate,
   setAdvancedOpen,
@@ -42,8 +46,10 @@ export function useCharacterBuilderResultActions({
 
   const applySettingsSnapshot = useCallback(
     (snapshot: CharacterBuilderSettingsSnapshot, selectedId?: string) => {
+      beginDraftIntent();
       setState((previous) => ({
         ...previous,
+        characterId: snapshot.builder.characterId ?? null,
         sourceMode: snapshot.builder.sourceMode,
         referenceImages: snapshot.builder.referenceImages,
         traits: snapshot.builder.traits,
@@ -60,7 +66,7 @@ export function useCharacterBuilderResultActions({
       setAdvancedOpen(Boolean(snapshot.builder.advancedNotes));
       setStatusMessage(copy.duplicateDone);
     },
-    [copy.duplicateDone, setAdvancedOpen, setState, setStatusMessage]
+    [beginDraftIntent, copy.duplicateDone, setAdvancedOpen, setState, setStatusMessage]
   );
 
   const handleSaveResult = useCallback(
@@ -155,7 +161,8 @@ export function useCharacterBuilderResultActions({
         openAuthGate();
         return;
       }
-      const request = captureAccountRequest();
+      beginDraftIntent();
+      const request = captureDraftRequest();
       if (!request) return;
       setError(null);
       setStatusMessage(null);
@@ -190,7 +197,8 @@ export function useCharacterBuilderResultActions({
       }
     },
     [
-      captureAccountRequest,
+      beginDraftIntent,
+      captureDraftRequest,
       copy.duplicateDone,
       copy.missingRun,
       copy.runFailed,

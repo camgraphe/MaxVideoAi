@@ -1,5 +1,5 @@
 import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-builder-types';
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useRef, type Dispatch, type SetStateAction } from 'react';
 import { normalizeTraitsForSourceMode } from '@/lib/character-builder';
 import type {
   CharacterBuilderReferenceImage,
@@ -39,6 +39,24 @@ export function useCharacterBuilderReferenceAssets({
   setStatusMessage,
   user,
 }: UseCharacterBuilderReferenceAssetsOptions) {
+  const uploadRevisions = useRef({ identity: 0, style: 0 });
+  const activeUploads = useRef<Record<CharacterBuilderReferenceImage['role'], (() => boolean) | null>>({
+    identity: null,
+    style: null,
+  });
+  const invalidateReferenceUpload = useCallback((role: CharacterBuilderReferenceImage['role']) => {
+    uploadRevisions.current[role]++;
+    activeUploads.current[role] = null;
+    setStatusMessage((current) => {
+      const removedStatus = role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart;
+      if (current !== removedStatus) return current;
+      const otherRole = role === 'identity' ? 'style' : 'identity';
+      return activeUploads.current[otherRole]?.()
+        ? otherRole === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart
+        : null;
+    });
+  }, [copy.uploadIdentityStart, copy.uploadStyleStart, setStatusMessage]);
+
   const applyReferenceImage = useCallback(
     (role: CharacterBuilderReferenceImage['role'], nextImage: CharacterBuilderReferenceImage) => {
       if (role === 'style') {
@@ -64,8 +82,15 @@ export function useCharacterBuilderReferenceAssets({
         openAuthGate();
         return;
       }
-      const request = captureAccountRequest();
-      if (!request) return;
+      const owner = captureAccountRequest();
+      if (!owner) return;
+      invalidateReferenceUpload(role);
+      const revision = uploadRevisions.current[role];
+      const request = {
+        ...owner,
+        isCurrent: () => owner.isCurrent() && uploadRevisions.current[role] === revision,
+      };
+      activeUploads.current[role] = request.isCurrent;
       setError(null);
       setStatusMessage(role === 'identity' ? copy.uploadIdentityStart : copy.uploadStyleStart);
 
@@ -82,12 +107,15 @@ export function useCharacterBuilderReferenceAssets({
         }
         setError(uploadError instanceof Error ? uploadError.message : copy.uploadFailed);
         setStatusMessage(null);
+      } finally {
+        if (activeUploads.current[role] === request.isCurrent) activeUploads.current[role] = null;
       }
     },
     [
       applyReferenceImage,
       captureAccountRequest,
       copy,
+      invalidateReferenceUpload,
       openAuthGate,
       setError,
       setStatusMessage,
@@ -113,6 +141,7 @@ export function useCharacterBuilderReferenceAssets({
       const role = libraryModalRole;
       if (!role) return;
 
+      invalidateReferenceUpload(role);
       applyReferenceImage(role, {
         id: asset.id,
         url: asset.url,
@@ -129,6 +158,7 @@ export function useCharacterBuilderReferenceAssets({
       applyReferenceImage,
       copy.uploadIdentityDone,
       copy.uploadStyleDone,
+      invalidateReferenceUpload,
       libraryModalRole,
       openAuthGate,
       setError,
@@ -140,6 +170,7 @@ export function useCharacterBuilderReferenceAssets({
 
   return {
     handleLibrarySelect,
+    invalidateReferenceUpload,
     triggerUpload,
   };
 }

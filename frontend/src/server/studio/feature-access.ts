@@ -3,6 +3,13 @@ import { resolveMcpConfig } from '@/server/mcp/config';
 
 export type StudioFeatureEnv = Readonly<Record<string, string | undefined>>;
 
+export function isStudioCharacterEnabled(env: StudioFeatureEnv = process.env): boolean {
+  return env.STUDIO_CHARACTER_STUDIO_ENABLED === '1' &&
+    env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true' &&
+    env.STUDIO_CONVERSATION_ACTIONS_ENABLED === 'true' &&
+    env.STUDIO_CONVERSATION_MEDIA_ENABLED === 'true';
+}
+
 export function isStudioMontageCreationEnabled(
   env: StudioFeatureEnv = process.env,
   requestHost?: string | null,

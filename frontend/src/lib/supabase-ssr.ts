@@ -155,6 +155,14 @@ export async function getRouteAuthContext(req?: NextRequest) {
   const supabase = await createSupabaseRouteClient();
   const accessToken = readBearerAccessToken(req?.headers);
 
+  // Owned browser operations carry deployment cookies only to pass the hosting
+  // boundary. An invalid explicit bearer must never fall back to those cookies.
+  if (req?.headers.get('x-maxvideoai-auth-mode') === 'bearer') {
+    if (!accessToken) return { supabase, session: null, userId: null };
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    return { supabase, session: null, userId: error ? null : data.user?.id ?? null };
+  }
+
   if (accessToken) {
     const { data: userData } = await supabase.auth.getUser(accessToken);
     const tokenUserId = userData.user?.id ?? null;

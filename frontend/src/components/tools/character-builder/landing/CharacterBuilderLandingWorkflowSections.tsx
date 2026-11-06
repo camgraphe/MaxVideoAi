@@ -1,183 +1,44 @@
+import { PublicVideoPlayer } from '@/components/media/PublicVideoPlayer.client';
+import type { CharacterStudioMarketingFilm } from './character-studio-marketing-assets';
 import Image from 'next/image';
-import { Card } from '@/components/ui/Card';
-import {
-  SHEET_IMAGE_CLASSNAME,
-  WORKFLOW_CHARACTER_SHEET_ASSET,
-  WORKFLOW_NANO_BANANA_ASSET,
-  WORKFLOW_VIDEO_START_FRAME_ASSET,
-  type CharacterBuilderLandingContent,
-} from './character-builder-landing-assets';
-import { HowItWorksPill, LinkChip, SectionHeader } from './CharacterBuilderLandingPrimitives';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
+import type { CharacterBuilderLandingContent } from './character-builder-landing-assets';
+import { CHARACTER_STUDIO_ART as art } from './character-studio-marketing-assets';
+import styles from './CharacterStudioLanding.module.css';
 
-export function CharacterBuilderOutputsWorkflowSection({ content }: { content: CharacterBuilderLandingContent }) {
-  const portraitOutputCard = content.outputsWorkflow.cards[0]!;
-  const sheetOutputCard = content.outputsWorkflow.cards[1]!;
-  const videoPrepOutputCard = content.outputsWorkflow.cards[2]!;
-  const portraitOutputPill = portraitOutputCard.pills[0]!;
-  const videoPrepOutputPill = videoPrepOutputCard.pills[0]!;
-  const workflowSheetStep = content.outputsWorkflow.workflow.steps[0]!;
-  const workflowStillStep = content.outputsWorkflow.workflow.steps[1]!;
-  const workflowVideoStep = content.outputsWorkflow.workflow.steps[2]!;
-
-  return (
-    <section className="border-t border-hairline bg-bg section">
-      <div className="container-page max-w-6xl stack-gap-lg">
-        <SectionHeader
-          eyebrow={content.outputsWorkflow.eyebrow}
-          title={content.outputsWorkflow.title}
-          body={<p>{content.outputsWorkflow.body}</p>}
-        />
-        <div className="character-builder-panel-soft rounded-[34px] border border-hairline bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,249,252,0.96))] p-4 shadow-[0_28px_80px_rgba(15,23,42,0.05)] sm:p-5 lg:p-6">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)_minmax(0,0.96fr)] lg:items-stretch">
-            <Card className="tool-surface-card overflow-hidden border-hairline bg-white p-0 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
-              <div className="p-4">
-                <div className="relative aspect-[4/4.8] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,#fff4ec,#ffffff)]">
-                  <Image
-                    src="/assets/blog/character-builder/ai-character-sheet-portrait-anchor.webp"
-                    alt={portraitOutputCard.imageAlt}
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 320px"
-                    className="object-cover object-center"
-                  />
-                </div>
-              </div>
-              <div className="stack-gap-sm px-5 pb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{portraitOutputCard.eyebrow}</p>
-                <h3 className="text-xl font-semibold text-text-primary">{portraitOutputCard.title}</h3>
-                <p className="text-sm leading-6 text-text-secondary">{portraitOutputCard.body}</p>
-                <div className="pt-1">
-                  <HowItWorksPill>{portraitOutputPill}</HowItWorksPill>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="tool-surface-card tool-surface-card--warm overflow-hidden border-[1.5px] border-[#f1d1bb] bg-[linear-gradient(180deg,#fff8f3,#fffefc)] p-0 shadow-[0_24px_60px_rgba(196,91,45,0.12)]">
-              <div className="flex items-center justify-between px-5 pt-5">
-                <div className="inline-flex rounded-full border border-[#f4d8c6] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#b96135]">
-                  {sheetOutputCard.badge}
-                </div>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b96135]">{sheetOutputCard.stats}</span>
-              </div>
-              <div className="px-5 pb-5 pt-4">
-                <div className="relative aspect-[16/11] overflow-hidden rounded-[24px] bg-[#f7f1ea]">
-                  <Image
-                    src="https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/5daf21e0-e99a-42e5-891a-eca3ba162344.webp"
-                    alt={sheetOutputCard.imageAlt}
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 480px"
-                    className={SHEET_IMAGE_CLASSNAME}
-                  />
-                </div>
-              </div>
-              <div className="stack-gap-sm px-5 pb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-muted">{sheetOutputCard.eyebrow}</p>
-                <h3 className="text-2xl font-semibold tracking-tight text-text-primary">{sheetOutputCard.title}</h3>
-                <p className="text-sm leading-6 text-text-secondary">{sheetOutputCard.body}</p>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {sheetOutputCard.pills.map((item) => (
-                    <HowItWorksPill key={item}>{item}</HowItWorksPill>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
-            <Card className="overflow-hidden border-slate-800 bg-[linear-gradient(180deg,#0b1320,#101b2b)] p-0 text-white shadow-[0_26px_64px_rgba(15,23,42,0.16)]">
-              <div className="p-4">
-                <div className="relative aspect-[16/11] overflow-hidden rounded-[22px] border border-white/10 bg-black">
-                  <Image
-                    src="https://media.maxvideoai.com/marketing/marketing/534f6c60-b23e-4a9b-9064-01d80350d1ec.jpg"
-                    alt={videoPrepOutputCard.imageAlt}
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 360px"
-                    className="object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#08111c]/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 right-3 rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100">
-                    {videoPrepOutputCard.badge}
-                  </div>
-                </div>
-              </div>
-              <div className="stack-gap-sm px-5 pb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{videoPrepOutputCard.eyebrow}</p>
-                <h3 className="text-xl font-semibold text-white">{videoPrepOutputCard.title}</h3>
-                <p className="text-sm leading-6 text-slate-300">{videoPrepOutputCard.body}</p>
-                <div className="pt-1">
-                  <HowItWorksPill>{videoPrepOutputPill}</HowItWorksPill>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <div className="mt-6 rounded-[34px] border border-slate-800 bg-[linear-gradient(180deg,#0a1320,#101d2d)] p-5 text-white shadow-[0_32px_90px_rgba(15,23,42,0.16)] lg:p-6">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">{content.outputsWorkflow.workflow.label}</p>
-                <p className="mt-2 text-lg font-semibold tracking-[0.1em] text-white">{content.outputsWorkflow.workflow.title}</p>
-              </div>
-              <p className="text-sm font-semibold tracking-[0.12em] text-slate-200">{content.outputsWorkflow.workflow.chainLabel}</p>
-            </div>
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.36fr)] lg:items-stretch">
-              <div className="rounded-[22px] border border-white/10 bg-[#111a28] p-3">
-                <div className="relative aspect-[16/12] overflow-hidden rounded-[18px] bg-[#dfe8f4]">
-                  <Image
-                    src={WORKFLOW_CHARACTER_SHEET_ASSET.url}
-                    alt={workflowSheetStep.imageAlt}
-                    fill
-                    sizes="(min-width: 1024px) 280px, 100vw"
-                    className={SHEET_IMAGE_CLASSNAME}
-                  />
-                </div>
-                <div className="mt-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{workflowSheetStep.label}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{workflowSheetStep.body}</p>
-                </div>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-[#111a28] p-3">
-                <div className="relative aspect-[16/12] overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_55%),linear-gradient(135deg,rgba(244,127,94,0.26),rgba(76,132,255,0.16))]">
-                  <Image
-                    src={WORKFLOW_NANO_BANANA_ASSET.url}
-                    alt={workflowStillStep.imageAlt}
-                    fill
-                    sizes="(min-width: 1024px) 280px, 100vw"
-                    className="object-cover object-center"
-                  />
-                </div>
-                <div className="mt-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{workflowStillStep.label}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">{workflowStillStep.body}</p>
-                </div>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-[#0f1826] p-3">
-                <div className="overflow-hidden rounded-[18px] border border-white/10 bg-black">
-                  <video
-                    className="aspect-[16/12] w-full object-cover"
-                    controls
-                    playsInline
-                    preload="none"
-                    poster={WORKFLOW_VIDEO_START_FRAME_ASSET.url}
-                  >
-                    <source src={WORKFLOW_VIDEO_START_FRAME_ASSET.videoUrl} type="video/mp4" />
-                  </video>
-                </div>
-                <div className="mt-4 flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">{workflowVideoStep.label}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">{workflowVideoStep.body}</p>
-                  </div>
-                  <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-200">
-                    {content.outputsWorkflow.workflow.videoBadge}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap gap-3">
-              {content.outputsWorkflow.workflow.links.map((link) => (
-                <LinkChip key={link.href} href={link.href} label={link.label} dark />
-              ))}
-            </div>
-          </div>
+export function CharacterBuilderOutputsWorkflowSection({ content, films = [], locale = 'en' }: { content: CharacterBuilderLandingContent; films?: CharacterStudioMarketingFilm[]; locale?: string }) {
+  const c = content.studio;
+  return <>
+    <section className={styles.looksSection} id="looks"><div className={`${styles.container} ${styles.split}`}>
+      <div className={styles.sectionHeading}><p className={styles.eyebrow}>02 / {c.nav[1]}</p><h2>{c.looksTitle}</h2><p>{c.looksBody}</p><Link className={styles.textLink} prefetch={false} href="/app/tools/character-builder">{content.hero.primaryCta}<ArrowUpRight size={17} aria-hidden="true" /></Link></div>
+      <figure><div className={styles.looksPair}>
+        <div><div className={styles.lookImage}><Image src={art.dixie} alt={`Dixie Trouble — ${c.identity}`} fill sizes="(max-width: 700px) 44vw, 26vw" className={styles.cover} loading="lazy" /></div><p>{c.identity}</p></div>
+        <ArrowRight className={styles.lookArrow} size={22} aria-hidden="true" />
+        <div><div className={styles.lookImage}><Image src={art.dixiePop} alt={`Dixie Trouble — ${c.newLook}`} fill sizes="(max-width: 700px) 44vw, 26vw" className={styles.cover} loading="lazy" /></div><p>{c.newLook}</p></div>
+      </div><figcaption className={styles.note}>{c.looksNote}</figcaption></figure>
+    </div></section>
+    <section className={styles.section} id="outputs"><div className={styles.container}>
+      <header className={styles.sectionHeading}><p className={styles.eyebrow}>03 / {c.nav[2]}</p><h2>{c.outputsTitle}</h2><p>{c.outputsBody}</p></header>
+      <div className={styles.outputs}>
+        <figure><div className={styles.portraitOutput}><Image src={art.portrait} alt={c.portrait} fill sizes="(max-width: 700px) 90vw, 25vw" className={styles.contain} loading="lazy" /></div><figcaption><h3>{c.portrait}</h3><p>{c.portraitBody}</p></figcaption></figure>
+        <figure><div className={styles.sheetOutput}><Image src={art.sheet} alt={c.sheetAlt} fill sizes="(max-width: 700px) 90vw, 62vw" className={styles.contain} loading="lazy" /></div><figcaption><h3>{c.sheet}</h3><p>{c.sheetBody}</p></figcaption></figure>
+      </div>
+    </div></section>
+    <section className={styles.recastSection} id="recast"><div className={styles.container}>
+      <header className={styles.sectionHeading}><p className={styles.eyebrow}>{c.recastEyebrow}</p><h2>{c.recastTitle}</h2><p>{c.recastBody}</p></header>
+      <div className={styles.recastLayout}>
+        <div className={styles.recastFrames}>{[art.dixieRecast, art.vesperRecast].map((src, i) => { const film = films.find(item => item.key === (i === 0 ? 'dixie' : 'vesper')); return <figure key={src}>
+          <div className={styles.recastFrame}>{film ? <PublicVideoPlayer src={film.video} poster={film.poster} title={c.filmLabels[i]} locale={locale} deferPoster className={styles.film} /> : <><Image src={src} alt={c.filmDescriptions[i]} fill loading="lazy" sizes="(max-width: 700px) 44vw, 25vw" className={styles.contain} /><span>{c.frameLabel}</span></>}</div>
+          <figcaption><h3>{c.filmLabels[i]}</h3><p>{c.filmDescriptions[i]}</p></figcaption>
+        </figure>; })}</div>
+        <div className={styles.recastGuide}>
+          <ol>{c.recastSteps.map((step, i) => <li key={step}><span>0{i + 1}</span>{step}</li>)}</ol>
+          <Link className={styles.primary} href="/app/tools/character-builder?mode=recast" prefetch={false} data-analytics-event="tool_cta_click" data-analytics-cta-location="tool_character_builder_recast" data-analytics-tool-name="character_builder" data-analytics-tool-surface="public">{c.recastCta}<ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <p className={styles.note}>{c.recastNote}</p>
         </div>
       </div>
-    </section>
-  );
+    </div></section>
+    <section className={styles.priceSection}><div className={`${styles.container} ${styles.priceLayout}`}><div><p className={styles.eyebrow}>Character Studio / Recast</p><h2>{c.priceTitle}</h2></div><div><p>{c.priceBody}</p><Link href="/pay-as-you-go-ai-video-generator" className={styles.textLink}>{c.priceLink}<ArrowUpRight size={17} aria-hidden="true" /></Link></div></div></section>
+  </>;
 }

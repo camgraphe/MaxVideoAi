@@ -76,6 +76,11 @@ async function fetchReferenceImage(url: string, client: GoogleVertexImageClient,
       throw new GoogleVertexImageError('Nano Banana 2.1 reference format or size is unsupported.', { code: 'NANO21_REFERENCE_INVALID', status: 400 });
     }
     if (data.length <= MAX_INLINE_REFERENCE_BYTES) return { data: data.toString('base64'), mimeType };
+    if (process.env.NODE_ENV === 'development' && process.env.GOOGLE_VERTEX_IMAGE_INLINE_ONLY === '1') {
+      throw new GoogleVertexImageError('This local preview accepts reference images up to 7 MiB.', {
+        code: 'REFERENCE_TOO_LARGE', status: 400,
+      });
+    }
     const prefix = process.env.GOOGLE_VERTEX_INPUT_GCS_URI ?? process.env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI;
     const fileUri = await uploadGoogleVertexGcsObject({
       prefix: prefix ?? '',

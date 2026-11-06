@@ -7,6 +7,7 @@ import {uploadVideoFile} from '@/lib/client-video-upload';
 import {ownedAuthFetch} from '@/lib/owned-auth-fetch';
 import {saveRecentMediaReference, type RecentImage, type ImageLibraryAsset} from '@/lib/studio/image-library';
 import type {ConversationLocale} from '@/lib/studio/conversation-quote-presentation';
+import {StudioCharacterLibrary} from './StudioCharacterLibrary.client';
 import styles from './image-reference-library.module.css';
 export type {ImageLibraryAsset} from '@/lib/studio/image-library';
 
@@ -27,11 +28,12 @@ function MediaPreview({item, kind, name}: {item: ImageLibraryAsset | RecentImage
   return kind === 'video' ? <Film className={styles.mediaIcon} size={34} aria-hidden="true" /> : <AudioWaveform className={styles.mediaIcon} size={42} aria-hidden="true" />;
 }
 
-export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabled = false, locale = 'en', purpose = 'reference', returnFocusTo}: {
+export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabled = false, characterProjectId, locale = 'en', purpose = 'reference', returnFocusTo}: {
   accountKey: string;
   onClose: () => void;
   onSelect: (asset: ImageLibraryAsset) => void;
   mediaEnabled?: boolean;
+  characterProjectId?:string;
   locale?: ConversationLocale | 'es';
   purpose?: 'reference' | 'timeline';
   returnFocusTo?: HTMLElement | null;
@@ -42,6 +44,7 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
   const titleId = useId();
   const [query, setQuery] = useState('');
   const [source, setSource] = useState<'assets' | 'recent'>('assets');
+  const [showCharacters,setShowCharacters] = useState(false);
   const [kind, setKind] = useState<MediaKind>('image');
   const [assets, setAssets] = useState<ImageLibraryAsset[]>([]);
   const [recent, setRecent] = useState<RecentImage[]>([]);
@@ -53,7 +56,7 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
   const alive = useRef(true);
   const operation = useRef<AbortController | null>(null);
   const pagination = useRef<AbortController | null>(null);
-  const scopeKey = JSON.stringify([source, kind, query]);
+  const scopeKey = JSON.stringify([source, kind, query, showCharacters]);
   const scope = useRef({key: scopeKey});
   // A new identity also rejects a request if the user returns to an earlier filter.
   if (scope.current.key !== scopeKey) scope.current = {key: scopeKey};
@@ -88,6 +91,7 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
     setCursor(data.nextCursor ?? null);
   }
   useEffect(() => {
+    if (showCharacters) return;
     const controller = new AbortController();
     const intent = scope.current;
     operation.current?.abort();
@@ -112,7 +116,7 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
     return () => {controller.abort(); clearTimeout(timer); operation.current?.abort(); pagination.current?.abort();};
     // Listing scope changes, rather than translated copy or state, own request lifetime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, source, kind]);
+  }, [query, source, kind, showCharacters]);
 
   async function more() {
     if (!cursor || loading || working) return;
@@ -185,6 +189,13 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
         <div><h2 id={titleId}>{t('MaxVideoAI library', 'Bibliothèque MaxVideoAI', 'Biblioteca MaxVideoAI')}</h2><p>{purpose === 'timeline' ? t('Choose media for your film.', 'Choisissez un média pour votre film.', 'Elige un archivo para tu película.') : t('Choose a reference for your next idea.', 'Choisissez une référence pour votre prochaine idée.', 'Elige una referencia para tu próxima idea.')}</p></div>
         <button type="button" className={styles.close} onClick={onClose} aria-label={t('Close library', 'Fermer la bibliothèque', 'Cerrar biblioteca')}><X size={20} aria-hidden="true" /></button>
       </header>
+      {characterProjectId && purpose==='reference' && <div className={styles.controls}>
+        <div className={styles.sourceGroup} role="group" aria-label={t('Reference library','Bibliothèque de références','Biblioteca de referencias')}>
+          <button type="button" aria-pressed={!showCharacters} onClick={()=>setShowCharacters(false)}>{t('Media','Médias','Archivos')}</button>
+          <button type="button" aria-pressed={showCharacters} onClick={()=>setShowCharacters(true)}>{t('Saved characters','Personnages sauvegardés','Personajes guardados')}</button>
+        </div>
+      </div>}
+      {showCharacters && characterProjectId ? <StudioCharacterLibrary accountKey={accountKey} projectId={characterProjectId} locale={locale} onSelect={onSelect} /> : <>
       <div className={styles.controls}>
         <div className={styles.toolbar}>
           <div className={styles.sourceGroup} role="group" aria-label={t('Media source', 'Source des médias', 'Origen de los archivos')}>
@@ -228,6 +239,7 @@ export function ImageReferenceLibrary({accountKey, onClose, onSelect, mediaEnabl
         <div className={styles.selection} aria-live="polite">{selected ? <><strong title={selected.name}>{selected.name}</strong><span>{kindLabel} · {provenance}</span></> : <span>{t('Select media to add', 'Sélectionnez un média à ajouter', 'Selecciona un archivo para añadir')}</span>}</div>
         <button type="button" className={styles.add} disabled={!selected || !!working} onClick={() => void add()}>{working === 'select' ? t('Adding…', 'Ajout…', 'Añadiendo…') : addLabel}</button>
       </footer>
+      </>}
     </dialog>
   );
 }

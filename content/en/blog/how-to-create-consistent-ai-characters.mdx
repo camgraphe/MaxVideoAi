@@ -1,10 +1,8 @@
 ---
-title: 'How to Create Consistent AI Characters Across Images and Video'
-description: >-
-  A practical workflow for building one reusable character reference before you
-  move into prompts, scene variations, edits, and still-reference video.
+title: "How to Create Consistent AI Characters Across Images and Video"
+description: "Keep an AI character recognizable across images and video. Save the identity in Character Studio, create new looks and prepare Recast with real visual examples."
 date: '2026-03-22'
-updatedAt: '2026-10-18'
+updatedAt: '2026-11-05'
 image: 'https://media.maxvideoai.com/marketing/marketing/1f327900-618e-41aa-b792-47b41a4c0cbb.jpg'
 imagePosition: 'center top'
 keywords:
@@ -18,30 +16,29 @@ lang: en
 canonical: 'https://maxvideoai.com/blog/how-to-create-consistent-ai-characters'
 canonicalSlug: how-to-create-consistent-ai-characters
 topic: "Character consistency"
-lead: "You have a character you like. Here’s how to keep that person recognizable in the next image—and check the result before moving into video."
+lead: "Keep the character you like. Save the identity, change the look, then carry the selected image into a scene or a Recast clip."
 walkthrough:
-  title: "One reference, carried into an image and a clip"
-  description: "This existing Character Builder example follows a woman with curly red hair, a patterned headscarf and an oversized dark T-shirt. Compare those details at each step."
+  title: "Dixie: one character, a new look and a Recast"
+  description: "Compare these existing results: the original character portrait, a new outfit and a frame from the Recast example. Look at the face and hairstyle as well as the clothing."
   steps:
-    - title: "The reference"
-      caption: "An eight-panel sheet gives you several views of the face, outfit and silhouette."
-      image: "https://media.maxvideoai.com/marketing/marketing/bfe7f0d7-ed39-4953-863c-ec2be73f3065.png"
-      alt: "Character sheet showing a red-haired woman in a headscarf, dark T-shirt and green trousers."
-    - title: "The scene"
-      caption: "Place the character in a new setting with Nano Banana. Compare the face and clothing with the sheet before moving into video."
-      image: "https://media.maxvideoai.com/marketing/marketing/ca5357cf-ec09-4327-bc18-03eeff7e7a66.jpg"
-      alt: "Scene image derived from the character sheet in the published Nano Banana workflow."
-    - title: "The motion"
-      caption: "Play the existing LTX 2.3 Pro example. Watch the face, headscarf and shirt throughout the movement."
-      image: "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/355c847c-7866-43b9-af28-85d6a64dfec8.jpg"
-      alt: "LTX 2.3 Pro character example carried from a reference image into motion."
-      video: "https://media.maxvideoai.com/renders/marketing/5816f421-1b4f-456b-aa53-229fa6742cbd.mp4"
-  note: "This example shows the reference, the scene image and the video. Results depend on your inputs and the movement you request; inspect the full clip before reusing it."
+    - title: "The saved identity"
+      caption: "Start with the portrait you want to return to: Dixie’s blonde updo, facial features and sports styling are clearly visible."
+      image: "/assets/tools/character-studio/marketing/dixie.webp"
+      alt: "Dixie smiling with a blonde updo and a coral and navy satin sports vest."
+    - title: "The selected look"
+      caption: "This existing variation changes Dixie’s wardrobe to a pink top, white skirt and boots. Review the identity before moving into video."
+      image: "/assets/tools/character-studio/marketing/dixie-pop.webp"
+      alt: "Dixie in a pink top, white pleated skirt and white boots."
+    - title: "The Recast frame"
+      caption: "A still from the existing Dixie Recast. Watch the full clip below to judge continuity through the movement."
+      image: "/assets/tools/character-studio/marketing/dixie-recast.webp"
+      alt: "Still frame from the published Dixie Recast example."
+  note: "Compare the identity in these actual results, then play the available clips below to inspect it through movement."
 ---
 
 Start with a reference you would be happy to use again. Then change the scene around the character, review the still, and only move into video when that frame works. Repeating a description alone gives the model room to reinterpret the face and outfit.
 
-**Need to create the reference first?** [Character Builder](/tools/character-builder) makes a portrait reference or an eight-panel sheet. This guide explains how to use that result and spot what changes.
+**Need to create the reference first?** [Character Studio](/tools/character-builder) lets you create a portrait or character sheet, save the identity and make new looks. This guide shows how to use that reference and carry the selected image into Recast.
 
 ## Choose the reference for the shot
 
@@ -53,7 +50,7 @@ Start with a reference you would be happy to use again. Then change the scene ar
 
 An eight-panel sheet is useful for seeing the whole character. It is not automatically the best file to upload to every model. A model may treat it as a collage or mix details between panels. Use the portrait or full-body view that fits your shot, and check which inputs the selected model accepts.
 
-For the sheet-building step, see [how to make an eight-panel character reference](/blog/ai-character-sheet-generator).
+For the sheet-building step, see [how to make a reusable character sheet](/blog/ai-character-sheet-generator).
 
 ## Build the next scene in four steps
 
@@ -67,7 +64,7 @@ Attach the reference in a workflow that supports image input. Describe the actio
 
 **Prompt to adapt, not the recorded prompt of the example above:**
 
-> Use the attached image as the character reference. Keep her curly red hair, patterned headscarf, oversized dark T-shirt and green cargo trousers. At a skatepark, she turns toward a friend just outside the frame and lifts one headphone from her ear. Waist-up, eye-level framing, soft late-afternoon light. Keep the face clearly visible.
+> Use the attached image as the character reference. Keep her face, blonde updo, pink crop top, white pleated skirt and white boots. At a skatepark, she turns toward a friend just outside the frame and lifts one headphone from her ear. Waist-up, eye-level framing, soft late-afternoon light. Keep the face clearly visible.
 
 Change the setting or action to fit your story. If the first result changes the face, simplify the angle or composition before adding more instructions.
 
@@ -80,6 +77,22 @@ Look at the two images together. Check the jaw and nose, hairline, clothing shap
 For image-to-video, use the approved scene image as the starting frame. Begin with a short shot and a simple action. Review the beginning, middle and end, especially when the head turns, a hand crosses the face or the subject becomes small in frame.
 
 Reference-image video modes and image-to-video are different inputs. Check the [selected model’s modes and limits](/models) before uploading a sheet or several images. A reference helps guide the result; it does not lock every frame.
+
+## Keep the identity in Character Studio, then choose the next asset
+
+A saved character makes the next step concrete. Open **[Character Studio](/app/tools/character-builder)**, select the character and use **New Look** to change wardrobe, hairstyle, accessories, setting or lighting. The selected identity remains the reference. Review the new image and save the look you actually want to reuse.
+
+For a turnaround or full-body continuity, create a sheet from that character. The sheet action requests four body views; the close-up option adds four matching portraits. Use the [character sheet guide](/blog/ai-character-sheet-generator) to compare the formats and check the result. Character images in this workflow use Nano Banana 2.1.
+
+### Use Recast when the next scene needs movement
+
+Choose the approved character image in **Recast**. Add a scene direction, select a passage from a source video when you want motion and staging guidance, and optionally add a separate product photograph. You can write dialogue or select an audio passage to guide timing and delivery.
+
+Choose a source where the performer and action are readable. Review the face, hands, clothing and product in the full result. A source video guides the generation rather than guaranteeing an exact frame-for-frame replacement; reference audio does not guarantee an identical soundtrack.
+
+Recast supports 480p, 720p and 1080p. Source passages are limited to 15 seconds; output is 2–30 seconds, with source plus output capped at 30 seconds when a source video is used. Review the duration and current quote in the app before confirmation.
+
+**[Choose your character and prepare a Recast →](/app/tools/character-builder?mode=recast)**
 
 ## When the character changes, fix the specific problem
 
@@ -101,7 +114,7 @@ Start with one clear reference for a workflow that accepts a single image. Add a
 
 ### Should I upload the whole character sheet?
 
-Keep the full sheet as your design reference. For generation, choose the portrait, full-body view or other panel that fits the shot and the supported inputs. A sheet helps you plan; it does not guarantee that a model will interpret all eight panels correctly.
+Keep the full sheet as your design reference. For generation, choose the portrait, full-body view or other panel that fits the shot and the supported inputs. A sheet helps you plan; it does not guarantee that a model will interpret every panel correctly.
 
 ### Why does the face change when I turn an image into video?
 
@@ -113,4 +126,4 @@ Not necessarily. If the character will never return, direct prompting may be eno
 
 ## Make the next useful asset
 
-If you still need the character, [open Character Builder](/app/tools/character-builder). If you already have a reference, [create the next scene in Image](/app/image). When that still is ready, [choose a video model](/models) with the input mode your shot needs.
+**[Open Character Studio](/app/tools/character-builder)** to create and save the identity, make the next look or prepare a Recast. If you need a separate image scene first, [open Image](/app/image); for other video workflows, [compare the supported model modes](/models).
