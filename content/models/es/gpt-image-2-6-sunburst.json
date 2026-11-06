@@ -99,14 +99,14 @@
       ]
     },
     "media": {
-      "caption": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
-      "description": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
+      "caption": "Un fotograma cinematográfico original generado con GPT Image 2.6 Sunburst, presentado a 1024 × 1024 píxeles.",
+      "description": "Un fotograma cinematográfico original generado con GPT Image 2.6 Sunburst, presentado a 1024 × 1024 píxeles.",
       "renderLabel": "Ejemplos",
       "badges": [
         "GPT Image 2.6 Sunburst",
         "PNG · JPEG · WebP"
       ],
-      "altContext": "GPT Image 2.6 Sunburst — Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto."
+      "altContext": "GPT Image 2.6 Sunburst — Un fotograma cinematográfico original generado con GPT Image 2.6 Sunburst, presentado a 1024 × 1024 píxeles."
     },
     "features": [
       {
@@ -170,7 +170,7 @@
     "modelSlug": "gpt-image-2-6-sunburst",
     "section": {
       "title": "Explorar ideas de prompts — GPT Image 2.6 Sunburst",
-      "intro": "Brief de producción — selección de medios pendiente",
+      "intro": "Crea un fotograma cinematográfico y después dirige un cambio preciso de vestuario conservando la escena.",
       "tip": "Describe qué conservar y qué cambiar. Asigna un papel concreto a cada referencia.",
       "guide": {
         "label": "Leer la documentación del proveedor",
@@ -191,7 +191,7 @@
     "demo": null,
     "imageExamples": {
       "title": "Explorar ideas de prompts",
-      "intro": "Brief de producción — selección de medios pendiente",
+      "intro": "Ambos retoques de vestuario parten del mismo original generado con GPT Image 2.6 Flare. El visor muestra esa fuente junto al resultado.",
       "workspaceLabel": "Abrir el espacio de creación",
       "items": [
         {
@@ -216,9 +216,10 @@
     "showWhenEmpty": false,
     "section": {
       "title": "GPT Image 2.6 Sunburst — Ejemplos",
-      "intro": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto.",
+      "intro": "Dos resultados reales: una escena de cine y un retoque de vestuario. Abre una imagen para consultar el original, los ajustes y el prompt exacto.",
       "defaultCtaLabel": null,
-      "recreateLabel": "Recrear con estos ajustes"
+      "recreateLabel": "Abrir el espacio de imágenes",
+      "afterGallery": "Ambos retoques de vestuario parten del mismo original generado con GPT Image 2.6 Flare. El visor muestra esa fuente junto al resultado."
     },
     "filters": [
       {
@@ -254,10 +255,20 @@
       {
         "id": "proof-4",
         "icon": "sparkles",
-        "title": "Ejemplos",
-        "body": "Los ejemplos se añadirán después de generarlos y revisarlos con este modelo exacto."
+        "title": "Originales de generación y edición",
+        "body": "Ambos retoques de vestuario parten del mismo original generado con GPT Image 2.6 Flare. El visor muestra esa fuente junto al resultado."
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "editorialImages": [
+      {
+        "id": "gpt26-sunburst-generation",
+        "title": "La última bobina — generación · GPT Image 2.6 Sunburst"
+      },
+      {
+        "id": "gpt26-sunburst-edit",
+        "title": "La última bobina — edición del vestuario · GPT Image 2.6 Sunburst"
+      }
+    ]
   }
 }

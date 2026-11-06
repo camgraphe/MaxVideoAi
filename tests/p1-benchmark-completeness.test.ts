@@ -70,7 +70,7 @@ test('every P1 model has a complete sourced key-spec row', () => {
     specs: Array<{ modelSlug: string; sources: string[]; keySpecs: Record<string, unknown> }>;
   };
 
-  assert.equal(document.last_updated, '2026-10-27'); // Dataset date includes the separate Nano21 image row.
+  assert.equal(document.last_updated, '2026-11-05'); // Includes Flash capability facts; historical scores are unchanged.
   for (const modelId of MODEL_IDS) {
     const rows = document.specs.filter(({ modelSlug }) => modelSlug === modelId);
     assert.equal(rows.length, 1, `${modelId} should have one key-spec row`);

@@ -1,0 +1,560 @@
+{
+  "checkedAt": "2026-11-05T21:51:23.946324+00:00",
+  "scope": "Read-only HEAD and 32-byte prefix/suffix range requests; no complete playback claim.",
+  "files": [
+    {
+      "id": "job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/52203aa15eb35d6f45c0d43085ef18a52f4eb5749caf2017bafef6772340aa65.mp4",
+      "headStatus": 200,
+      "bytes": 13534612,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/13534612",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 13534580-13534611/13534612",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/86350f20b734f64cfad5b1f187b8159977d0bd1de8260434599e98be8975b296.jpg",
+      "headStatus": 200,
+      "bytes": 87964,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/87964",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 87932-87963/87964",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_6712f839e8fdd81095934387795fdac464ae58ac",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/96ca7ea7f7ecaa897852a050ad96544c879d2507d7201b40f0b5f731b0907f91.mp4",
+      "headStatus": 200,
+      "bytes": 104606,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/104606",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 104574-104605/104606",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/e1e7275a7067915a81010d827e4af080e9c0fa4b135cd7f7176f61d1bdaaf105.mp4",
+      "headStatus": 200,
+      "bytes": 14821437,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/14821437",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 14821405-14821436/14821437",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/bab34a39cf318c7daa8e1c016449314fb72d8363174ab10f1ebd470016872002.jpg",
+      "headStatus": 200,
+      "bytes": 60062,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/60062",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 60030-60061/60062",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_d7520a41bbe895c4a4647a559218c446429d5989",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/f7bcf046c59eac941593631b3b1ca7801719a59f5eeaa2a240fed2e06c1f5e3a.mp4",
+      "headStatus": 200,
+      "bytes": 100106,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/100106",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 100074-100105/100106",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_9ae40955b7a3b9350152ca2d46f23074699e0f35",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/1f51f247-79e9-42b4-8b39-3d5d73abc3ed/44332c13c4eab61e67bd37bd163d40fb823c8a418bfee3e437b207ac7f269130.mp4",
+      "headStatus": 200,
+      "bytes": 15007623,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/15007623",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 15007591-15007622/15007623",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_9ae40955b7a3b9350152ca2d46f23074699e0f35",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/1f51f247-79e9-42b4-8b39-3d5d73abc3ed/5404d6125c38c7aa4fda07305f3c774cc4098ba1716c6735b73134f8e8ad742a.jpg",
+      "headStatus": 200,
+      "bytes": 81303,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/81303",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 81271-81302/81303",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_9ae40955b7a3b9350152ca2d46f23074699e0f35",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/1f51f247-79e9-42b4-8b39-3d5d73abc3ed/7e1a9b370dafe044b83f85e921cce0a605d12d9776103992e2d1f72aa22f8725.mp4",
+      "headStatus": 200,
+      "bytes": 155366,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/155366",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 155334-155365/155366",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_e4505068916ddfc6a39a340c76babbe492e07826",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/ecdf51c7-dfc0-4428-985d-1bcf10b57241/9969d4e68830295d3031ebd8a01f11584917e277d674424dbf3f9e107e51dced.mp4",
+      "headStatus": 200,
+      "bytes": 2965238,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/2965238",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 2965206-2965237/2965238",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_e4505068916ddfc6a39a340c76babbe492e07826",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/ecdf51c7-dfc0-4428-985d-1bcf10b57241/adf6f87e373400f94a3956644b5ed9ce1be647d1b7b8743c04b77bd5760b3ad4.jpg",
+      "headStatus": 200,
+      "bytes": 43741,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/43741",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 43709-43740/43741",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_e4505068916ddfc6a39a340c76babbe492e07826",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/ecdf51c7-dfc0-4428-985d-1bcf10b57241/05ed52534dcb8f8aff38bc73ef559b856d4f48659fe0c76df89b5043311e42c2.mp4",
+      "headStatus": 200,
+      "bytes": 88133,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/88133",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 88101-88132/88133",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_bd1ee18e0957799885b866be09e181fd6d9a327e",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/bf625452-aa77-4648-83a1-1550db821a6a/a48c70868cabfbb2d14e205bd1d806f913e7fa43dc7a5e132c3faa3d76020f84.mp4",
+      "headStatus": 200,
+      "bytes": 4901929,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/4901929",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 4901897-4901928/4901929",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_bd1ee18e0957799885b866be09e181fd6d9a327e",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/bf625452-aa77-4648-83a1-1550db821a6a/d86606f30a30e3c0be19e2f500b53fcbe1601039649ca6fe588e1345a8505d19.jpg",
+      "headStatus": 200,
+      "bytes": 78737,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/78737",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 78705-78736/78737",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_bd1ee18e0957799885b866be09e181fd6d9a327e",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/bf625452-aa77-4648-83a1-1550db821a6a/913e8580acad6da2ba0d347c2b91367227fb59d45b69e4cfc5bf6a032bbc6abd.mp4",
+      "headStatus": 200,
+      "bytes": 230715,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/230715",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 230683-230714/230715",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_7c1a941daa43ddd68700a03572259f635e3e2e59",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/marketing-media/e14a3ac8-fef7-4dc1-a282-bd2188ee4bb0/d185f2f6365a2848a21b75f5446d6fff37ea7a696f9f61bdc050480ad680126a.mp4",
+      "headStatus": 200,
+      "bytes": 2756922,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/2756922",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 2756890-2756921/2756922",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_7c1a941daa43ddd68700a03572259f635e3e2e59",
+      "role": "poster",
+      "url": "https://media.maxvideoai.com/marketing-media/e14a3ac8-fef7-4dc1-a282-bd2188ee4bb0/c4bdce26f9a72d0fe6cea28decfa7f9e699de8b02c6289ef3ddc3ea0dbb31963.jpg",
+      "headStatus": 200,
+      "bytes": 56698,
+      "contentType": "image/jpeg",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/56698",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 56666-56697/56698",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "job_external_fal_7c1a941daa43ddd68700a03572259f635e3e2e59",
+      "role": "preview",
+      "url": "https://media.maxvideoai.com/marketing-media/e14a3ac8-fef7-4dc1-a282-bd2188ee4bb0/50fec66cfaf5679dfb921128dab6d47bc653aa1c8e18dd79d0f30baf86fea58f.mp4",
+      "headStatus": 200,
+      "bytes": 85260,
+      "contentType": "video/mp4",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/85260",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 85228-85259/85260",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-flare-generation",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/5c1807810678c1a1436ee1655bf694358709f37013b8d192d9b90f0f9b6d946a.png",
+      "expectedBytes": 1502993,
+      "headStatus": 200,
+      "bytes": 1502993,
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/1502993",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 1502961-1502992/1502993",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-flare-generation",
+      "role": "display",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/4a1dafffff1253ba30085eaaee5e7b66b08d819791140313ee543a96557b3d68.webp",
+      "expectedBytes": 50040,
+      "headStatus": 200,
+      "bytes": 50040,
+      "contentType": "image/webp",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/50040",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 50008-50039/50040",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-sunburst-generation",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/dd2a1bb8824ff1f64033db2c7ef459954b0001cba581f6764ceecad6be9d1d7b.png",
+      "expectedBytes": 1517846,
+      "headStatus": 200,
+      "bytes": 1517846,
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/1517846",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 1517814-1517845/1517846",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-sunburst-generation",
+      "role": "display",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/9903e7086f54fc9c888840d2416a98bd52bc4fb269790858c4f655c55e0340e4.webp",
+      "expectedBytes": 59542,
+      "headStatus": 200,
+      "bytes": 59542,
+      "contentType": "image/webp",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/59542",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 59510-59541/59542",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-flare-edit",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/7262fb83e45d95abc474d1f7d9c161c119129e09aa690e9633635c7868cce9af.png",
+      "expectedBytes": 1426209,
+      "headStatus": 200,
+      "bytes": 1426209,
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/1426209",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 1426177-1426208/1426209",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-flare-edit",
+      "role": "display",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/a26a128be0b4ce01e65bfcef919ef5a4409da93452d80870b313ef27ed3fddcb.webp",
+      "expectedBytes": 49464,
+      "headStatus": 200,
+      "bytes": 49464,
+      "contentType": "image/webp",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/49464",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 49432-49463/49464",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-sunburst-edit",
+      "role": "original",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/30fc5d0b0da3670745c399c57b3e7094eb8682a19cdd1ebec444f2d63179020e.png",
+      "expectedBytes": 1354621,
+      "headStatus": 200,
+      "bytes": 1354621,
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/1354621",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 1354589-1354620/1354621",
+          "bytes": 32
+        }
+      ]
+    },
+    {
+      "id": "gpt26-sunburst-edit",
+      "role": "display",
+      "url": "https://media.maxvideoai.com/model-launch/gpt-image-2-6/2026-11-05/9af08a0b474a5076e6db405dffffd045934373162e1fb5b547c74752a8d29724.webp",
+      "expectedBytes": 42022,
+      "headStatus": 200,
+      "bytes": 42022,
+      "contentType": "image/webp",
+      "cacheControl": "public, max-age=31536000, immutable",
+      "ranges": [
+        {
+          "status": 206,
+          "contentRange": "bytes 0-31/42022",
+          "bytes": 32
+        },
+        {
+          "status": 206,
+          "contentRange": "bytes 41990-42021/42022",
+          "bytes": 32
+        }
+      ]
+    }
+  ]
+}

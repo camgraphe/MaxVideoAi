@@ -1,0 +1,139 @@
+{
+  "version": "v1",
+  "modelSlug": "kling-v4-flash",
+  "checkedAt": "2026-11-05",
+  "editorialReview": {
+    "status": "withheld-pending-criterion-review",
+    "methodologyFile": "benchmark-methodology.v1.json",
+    "methodologyVersion": "1.1.0",
+    "modelVersion": "Kling 4.0 Flash via fal kling/v4/flash routes",
+    "criterionScoresPublished": false,
+    "controlledOutputsReviewed": 0,
+    "marketingOutputs": 6,
+    "promptPackExecuted": false,
+    "retryCount": 0,
+    "note": "Six selected marketing outputs were reviewed through extracted frames and local ASR. This does not constitute full audiovisual criterion scoring or a matched benchmark. User selection approves placements, not numeric benchmark scores."
+  },
+  "publication": {
+    "scoreOwner": "data/benchmarks/engine-scores.v1.json",
+    "specOwner": "data/benchmarks/engine-key-specs.v1.json",
+    "runtimeConsumesThisFile": false,
+    "scoreRowPresent": false,
+    "publicPlaceholderAllowed": false,
+    "overallRequiredCriteria": [
+      "fidelity",
+      "motion",
+      "consistency"
+    ]
+  },
+  "evidence": {
+    "assetManifest": "docs/launch/2026-11-05-model-refresh/flash-marketing-assets.json",
+    "initialRuns": "docs/launch/2026-11-05-model-refresh/cinema-results.json",
+    "sourceContractFixtures": [
+      "tests/fixtures/kling-v4-flash/flash-text-to-video.json",
+      "tests/fixtures/kling-v4-flash/flash-image-to-video.json",
+      "tests/fixtures/kling-v4-flash/flash-reference-to-video.json"
+    ],
+    "selection": {
+      "hero": "B1",
+      "detailedPrompt": "B2",
+      "galleryOrder": [
+        "B1",
+        "B2",
+        "B3",
+        "V1",
+        "V2",
+        "V3"
+      ]
+    },
+    "observations": [
+      {
+        "asset": "B1",
+        "observation": "Four-shot space-hangar escape resolves with a blast-door closure. Local ASR detects Get behind me / We are clear. Final crew is back-facing; lip-sync quality is not established by transcription."
+      },
+      {
+        "asset": "B2",
+        "observation": "Four-shot siege sequence resolves with tower fire/collapse and defenders cheering. Bow release is not fully readable in extracted frames. Local ASR detects For the city."
+      },
+      {
+        "asset": "B3",
+        "observation": "Four-shot bus escape resolves after a bridge-gap jump. Local ASR detects Everybody hold on. Continuous-motion physics still requires full playback review."
+      }
+    ]
+  },
+  "criterionAssessments": [
+    {
+      "criterion": "fidelity",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Compare every requested action and conclusion against each complete original, retaining missing or invented beats."
+    },
+    {
+      "criterion": "visualQuality",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Inspect original resolution, lighting, faces, background and material artifacts over complete clips."
+    },
+    {
+      "criterion": "motion",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Watch complete motion at native speed and inspect contact, camera trajectories and bridge/collapse physics."
+    },
+    {
+      "criterion": "consistency",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Track identities, wardrobe, props and environment within and across the requested cuts."
+    },
+    {
+      "criterion": "anatomy",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Review visible hands, faces, limbs and interactions at full resolution."
+    },
+    {
+      "criterion": "textRendering",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Requires a readable requested-text sample; these prompts intentionally excluded text."
+    },
+    {
+      "criterion": "lipsyncQuality",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Listen to original audio while reviewing visible mouth movement; ASR alone is insufficient."
+    },
+    {
+      "criterion": "sequencingQuality",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Timecode actual cuts against requested four-shot briefs and record identity/action continuity."
+    },
+    {
+      "criterion": "controllability",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Review each paired I2V/REF source and output; API acceptance alone does not prove adherence."
+    },
+    {
+      "criterion": "speedStability",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Requires a complete native application attempt ledger; external imported clips do not qualify."
+    },
+    {
+      "criterion": "pricing",
+      "score": null,
+      "status": "withheld",
+      "requiredEvidence": "Relate active exact customer quotes to usable footage and the full attempt ledger before assessing relative value."
+    }
+  ],
+  "reviewProtocol": {
+    "generationAuthorizedByThisFile": false,
+    "selectionPolicy": "Keep all six attempts, exact prompts, mode, reference lineage, original hashes and measured duration. Do not pool image- or reference-guided runs with text-only scenes as matched observations.",
+    "reviewPolicy": "Watch original full clips with sound; record timecoded observations for each relevant criterion against the existing 0–10 anchors, obtain a second review and retain disagreements. Unobservable criteria remain absent.",
+    "publicationPolicy": "Publish reviewed numbers only in the existing score owner. Use editorial-estimated disclosure for non-controlled observations; do not label them controlled measurements. Never copy full Kling 4 scores or extrapolate from Flash capabilities.",
+    "latencyPolicy": "External imports are not application delivery latency. Keep existing 30 completed jobs / 5 distinct users threshold for the rolling operational statistics."
+  }
+}

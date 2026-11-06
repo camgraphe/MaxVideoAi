@@ -1,19 +1,21 @@
 # Qualification par modèle, mode et surface
 
-État du 5 novembre 2026. Code testé n'implique pas disponibilité publique.
-Tous les modèles ci-dessous sont fermés dans le registre ; aucun tarif client
-nouveau n'a été confirmé en production. Les cases de parcours réel attendent
-leur reçu, leur devis et l'original dans la bibliothèque du bon compte.
+État du 5 novembre 2026. La fondation de la PR #620 est déployée sur les deux
+domaines au commit `b5f4bdd`. Les trois modèles restent fermés dans le registre.
+Les 72 tarifs Flash ont été confirmés dans l’admin ; les 2 040 tarifs GPT 2.6 sont
+approuvés avec un coefficient de 1,50, et leur application native reste à effectuer.
+L’accès fournisseur n’est pas une preuve d’exécution
+payante à travers App, Studio ou MCP.
 
-| Modèle / mode | Contrat local | API fournisseur | App réel | Studio réel | MCP réel | Tarif public | Média public |
+| Modèle / mode | Contrat local | API fournisseur | App réel | Studio réel | MCP réel | Tarif | Médias |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Flash / t2v | testé | V1 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Flash / i2v | testé | V2 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Flash / ref2v | testé | V3 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Flare 2.6 / t2i | testé | I1 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Flare 2.6 / i2i | testé | I3 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Sunburst 2.6 / t2i | testé | I2 obtenu | en attente | en attente | en attente | fermé | fermé |
-| Sunburst 2.6 / i2i | testé | I4 obtenu | en attente | en attente | en attente | fermé | fermé |
+| Flash / t2v | testé | V1 + B1/B2/B3 obtenus | en attente | en attente | en attente | appliqué, découverte fermée | 4 copies publiques, page fermée |
+| Flash / i2v | testé | V2 obtenu | en attente | en attente | en attente | appliqué, découverte fermée | copie publique, page fermée |
+| Flash / ref2v | testé | V3 obtenu | en attente | en attente | en attente | appliqué, découverte fermée | copie publique, page fermée |
+| Flare 2.6 / t2i | testé | I1 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
+| Flare 2.6 / i2i | testé | I3 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
+| Sunburst 2.6 / t2i | testé | I2 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
+| Sunburst 2.6 / i2i | testé | I4 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
 
 Les tests locaux couvrent limites, paramètres, refus avant devis, réservations et
 reprise via doubles de provider et PostgreSQL jetable. Les fixtures Studio
@@ -47,11 +49,44 @@ V2, guidé par l'image carrée I1, est 960×960 avec le paramètre fournisseur 7
 V3 réemploie les 5,041667 s réelles de V1, soit une estimation liste de
 0,632625021 USD ; l'arrondi de la facture fournisseur n'est pas vérifié.
 
-Originaux, galerie autonome et éléments de revue sont conservés hors du dossier
-temporaire SDD dans `Documents/MaxVideoAI/2026-11-05-cinema` sur le poste de
-production. Les sept originaux ont ensuite été importés dans la bibliothèque
-privée du compte connecté par le helper officiel MaxVideoAI. Lecture bornée aux
-sept IDs retournés : tous sont `ready`, avec dimensions et thumbnails ; les
-vidéos n'ont pas encore de `preview_url` ni de job externe lié. Les trois aperçus
-silencieux sont préparés localement. Aucune adoption de job externe, copie
-marketing publique ou publication de galerie n'est prétendue réalisée.
+Les dix originaux (V1–V3, B1–B3, I1–I4), leurs reçus et éléments de revue sont
+conservés dans `Documents/MaxVideoAI/2026-11-05-cinema` et
+`Documents/MaxVideoAI/2026-11-05-blockbusters`. Ils ont été importés dans la
+bibliothèque privée via le helper officiel. Les six vidéos ont reçu leurs aperçus
+privés et ont été adoptées par le propriétaire natif d’import externe, sans débit
+MaxVideoAI ni échantillon de latence d’une génération App.
+
+Le second lot, demandé par l’utilisateur, ajoute trois films autonomes de quinze
+secondes : B1 « Compartiment 9 », B2 « Le dernier rempart », B3 « Le dernier
+passage ». Chaque requête a été soumise une fois. Estimation fournisseur LIST :
+4,23 USD, soit 6,033869021 USD cumulés avec le premier lot ; facture inconnue.
+Les originaux mesurent 15,041667 s, 1280×720, avec piste audio. Les planches montrent
+quatre plans par séquence ; l’ASR local retrouve les dialogues demandés. Cela
+n’établit pas à lui seul la qualité de synchronisation labiale ou du mixage.
+L’utilisateur a choisi B1 pour le hero et B2 pour le prompt détaillé.
+
+Les six copies marketing utilisent les propriétaires natifs de promotion,
+thumbnail et visibilité. Les originaux privés restent inchangés. La collection
+`examples-kling-v4-flash` contient B1/B2/B3/V1/V2/V3 dans cet ordre. Elle n’est pas
+encore gérée par la curation ; la collection familiale existante n’a pas été
+modifiée. Les IDs de famille du pack désignent la destination prévue, pas une
+preuve d’insertion déjà réalisée. Aucune page watch éditoriale n’a été inventée.
+
+Les quatre images possèdent une copie originale PNG et un affichage WebP immuable.
+Les deux retouches I3/I4 partent de I1 Flare ; la visionneuse montre cette source
+à côté de chaque résultat. `public-media-http-evidence.json` vérifie les 26 fichiers
+par HEAD 200 et deux petites requêtes Range 206 chacun. Le test navigateur du
+composant réel vérifie 12 combinaisons locale/largeur/variante : aucun PNG original
+avant ouverture, bonne source partagée, modal et retour du focus. Il ne prétend
+pas qualifier toute la page de production ou ses Core Web Vitals.
+
+Le comparatif Flash possède sa copie et ses capacités propres. Aucune note
+numérique n’a été copiée de Kling 4 : le dossier à onze critères garde les notes
+non évaluées absentes. Les séquences marketing ne constituent pas un benchmark
+comparatif contrôlé.
+
+Le cron OpenAI déployé refuse correctement les appels non authentifiés. Le secret
+local ne l’a pas authentifié ; une lecture ciblée Vercel ne fournit pas la valeur
+sensible. Aucune configuration ni protection n’a été modifiée. Une authentification
+réussie avec la configuration effective et une preuve de reprise en situation
+réelle restent à obtenir avant ouverture.

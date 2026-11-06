@@ -39,7 +39,8 @@ test('Max has a separate wave and absent evidence preserves historical readiness
   assert.deepEqual(result.readiness.waves.find(wave => wave.waveId === 'flux-3-max')?.models, []);
   assert.equal(result.readiness.waves.find(wave => wave.waveId === 'flux-3-max')?.sourceStatus, 'missing');
   assert.deepEqual(parseModelLaunchReadinessProjection(result.readiness), result.readiness);
-  assert.equal(buildP0LaunchProjectionsFromSource(priorSources.p0).readiness.waves.length, 4);
+  assert.equal(buildP0LaunchProjectionsFromSource(priorSources.p0).readiness.waves.length, 5);
+  assert.equal(result.readiness.waves.find(wave => wave.waveId === 'kling-v4-flash')?.sourceStatus, 'missing');
 });
 
 test('a complete separate Max pair validates without changing the P0/P1 source evidence', () => {

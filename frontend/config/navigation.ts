@@ -112,6 +112,7 @@ const docLink = (slug: string): LocalizedLinkHref => ({
 
 // D85 editorial promotion. Publication and canonical identity remain registry-owned.
 const MODEL_MENU_CANDIDATES: readonly LabeledSlug[] = [
+  { slug: 'kling-v4-flash', label: 'Kling 4.0 Flash', badge: 'new' },
   { slug: 'kling-v4', label: 'Kling 4.0', badge: 'new' },
   { slug: 'flux-3-max', label: 'FLUX 3 Max', badge: 'new' },
   { slug: 'minimax-h3', label: 'MiniMax H3', badge: 'new' },
@@ -138,8 +139,8 @@ export function buildMarketingModelMenu(models: readonly RuntimeModelEntry[]): L
       const successor = byId.get(model.successorId);
       return !successor?.publication.model.published || !successor.publication.model.indexable;
     });
-  // The new Kling card adds one slot instead of evicting an existing model.
-  const capacity = 11 + Number(visibleCandidates.some(({ slug }) => slug === 'kling-v4'));
+  // Each new Kling card adds a slot while preserving existing model discovery.
+  const capacity = 11 + visibleCandidates.filter(({ slug }) => slug === 'kling-v4' || slug === 'kling-v4-flash').length;
   return visibleCandidates
     .slice(0, capacity)
     .map((item) => {
@@ -170,6 +171,7 @@ const OTHER_EXAMPLES = EXAMPLES_MENU.filter(item => !PRIORITY_EXAMPLE_FAMILIES.i
 const FOOTER_EXAMPLES_MENU: LabeledSlug[] = [...PRIORITY_EXAMPLES, ...OTHER_EXAMPLES];
 
 const COMPARE_MENU: LabeledSlug[] = [
+  { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   { slug: 'kling-v4-vs-seedance-2-5', label: 'Kling 4.0 vs Seedance 2.5' },
   { slug: 'kling-v4-vs-wan-3-prime', label: 'Kling 4.0 vs Wan 3 Prime' },
   { slug: 'kling-o3-pro-vs-kling-v4', label: 'Kling 4.0 vs Kling 3.0 Omni Pro' },
@@ -219,9 +221,9 @@ export const MARKETING_FOOTER_EXAMPLES: MarketingNavItem[] = FOOTER_EXAMPLES_MEN
 
 export function buildMarketingCompareMenu(models: readonly RuntimeModelEntry[]): LabeledSlug[] {
   const isPublishedComparisonSlug = createPublishedComparisonSlugLookup(models);
-  return COMPARE_MENU
-    .filter(({ slug }) => isPublishedComparisonSlug(slug))
-    .slice(0, 10);
+  const published = COMPARE_MENU.filter(({ slug }) => isPublishedComparisonSlug(slug));
+  const capacity = 10 + Number(published.some(({ slug }) => slug === 'kling-v4-vs-kling-v4-flash'));
+  return published.slice(0, capacity);
 }
 
 export const MARKETING_NAV_COMPARE: MarketingNavItem[] = buildMarketingCompareMenu(listRuntimeModels()).map((item) => ({
@@ -320,10 +322,16 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
     intro: 'Capabilities, examples and prices. Choose what your project needs.',
     sections: [MARKETING_MODELS_USE_CASE_SECTION, {
       key: 'moreModels', titleKey: 'nav.dropdown.moreModels', titleFallback: 'More creative possibilities',
-      items: ['gpt-image-2-5-flare', 'flux-3', 'gemini-omni-flash'].flatMap(slug => {
-        const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.lifecycle !== 'retired' && item.lifecycle !== 'deep_legacy');
+      items: [
+        {slug:'gpt-image-2-6-flare',label:'GPT Image 2.6 Flare',icon:'image' as const},
+        {slug:'gpt-image-2-6-sunburst',label:'GPT Image 2.6 Sunburst',icon:'image' as const},
+        {slug:'gpt-image-2-5-flare',label:'GPT Image 2.5 Flare',icon:'image' as const},
+        {slug:'flux-3',label:'FLUX 3',icon:'cinema' as const},
+        {slug:'gemini-omni-flash',label:'Gemini Omni Flash 1.1',icon:'cinema' as const},
+      ].flatMap(({slug,label,icon}) => {
+        const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.publication.model.indexable && item.lifecycle !== 'retired' && item.lifecycle !== 'deep_legacy');
         if (!model) return [];
-        return [{key: slug, label: slug === 'gpt-image-2-5-flare' ? 'GPT Image 2.5 Flare' : slug === 'flux-3' ? 'FLUX 3' : 'Gemini Omni Flash 1.1', href: modelLink(slug), icon: slug === 'gpt-image-2-5-flare' ? 'image' as const : 'cinema' as const}];
+        return [{key:slug,label,href:modelLink(slug),icon}];
       }),
     }],
     allHref: { pathname: '/models' },
