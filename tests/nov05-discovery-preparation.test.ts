@@ -71,14 +71,16 @@ test('Flash family copy requires publication and accepted exact-model media with
   }
 });
 
-test('Flash capability facts do not manufacture numeric scores from marketing selections', async () => {
+test('Flash keeps exact capability facts alongside its separately reviewed editorial score', async () => {
   const data = await loadBenchmarkLabStaticData();
   const spec = data.specs.find(row => row.modelSlug === flashId);
   assert.ok(spec);
   assert.equal(spec.keySpecs?.maxResolution, '720p');
   assert.equal(spec.keySpecs?.videoToVideo, 'Not supported');
-  assert.ok(!data.scores.some(row => row.modelSlug === flashId));
+  const score = data.scores.find(row => row.modelSlug === flashId);
+  assert.ok(score);
+  assert.equal(score.reviewStatus, 'editorial-estimated');
   assert.deepEqual(evidence.criterionAssessments.map(row => row.criterion), data.methodology.criteria.map(row => row.id));
-  assert.ok(evidence.criterionAssessments.every(row => row.score === null && row.requiredEvidence));
+  assert.ok(evidence.criterionAssessments.every(row => Number.isFinite(row.score)));
   assert.equal(evidence.editorialReview.promptPackExecuted, false);
 });

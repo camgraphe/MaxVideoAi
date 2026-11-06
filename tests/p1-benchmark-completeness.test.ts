@@ -50,7 +50,7 @@ test('every original P1 launch retains eleven reviewed finite scores, including 
     historicalScores: Array<Record<string, unknown> & { modelSlug: string; modelVersion: string }>;
   };
 
-  assert.equal(document.last_updated, '2026-10-27');
+  assert.equal(document.last_updated, '2026-11-06');
   for (const modelId of MODEL_IDS) {
     const source = modelId === 'gemini-omni-flash'
       ? document.historicalScores.filter(row => row.modelVersion === '1.1') : document.scores;

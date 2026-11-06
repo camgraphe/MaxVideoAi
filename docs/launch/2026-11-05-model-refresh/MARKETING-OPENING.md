@@ -20,6 +20,11 @@ mise en ligne. La date effective reste celle du déploiement Git vérifié.
 - Le comparatif Kling 4 / Flash est publié dans les trois langues. Les capacités
   prises en charge sont renseignées ; aucun score numérique Flash n'est emprunté
   à Kling 4. Les images n'entrent pas dans les scoreboards vidéo.
+
+Complément du 6 novembre : Flash dispose maintenant d'une grille éditoriale
+complète, global 8,3/10, documentée dans `FLASH-SCOREBOARD-REVIEW.md`. Les notes
+proviennent de ses propres sorties et de sources Flash attribuées. Le dossier
+précise les limites de confiance ; aucune note du modèle complet n'est reprise.
 - Menus, llms.txt, sitemap, inventaire des comparaisons et allowlist analytics
   prennent en compte les nouvelles identités tout en conservant leurs portes de
   publication et le filtrage des données privées.
