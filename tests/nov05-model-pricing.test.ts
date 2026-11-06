@@ -9,10 +9,10 @@ import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-sc
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { klingV4TariffScenarios } from '../frontend/lib/pricing-audit/kling-v4-tariff-scenario';
 
-test('three distinct registry identities remain closed, with OpenAI direct image mode IDs', () => {
+test('three functional identities retain separate marketing gates and OpenAI direct image mode IDs', () => {
   for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
-    const model = getRuntimeModelById(id)!; assert.ok(model); assert.equal(model.publication.app.published, false); assert.equal(model.publication.pricing.published, false);
-    const entry = getFalEngineById(id)!; assert.ok(entry); assert.equal(entry.surfaces.app.enabled, false);
+    const model = getRuntimeModelById(id)!; assert.ok(model); assert.equal(model.publication.app.published, true); assert.equal(model.publication.pricing.published, false);
+    const entry = getFalEngineById(id)!; assert.ok(entry); assert.equal(entry.surfaces.app.enabled, true);
     if (id !== 'kling-v4-flash') {
       assert.equal(entry.engine.providerMeta?.provider, 'openai_images');
       assert.deepEqual(entry.modes.map(mode => mode.mode), ['t2i', 'i2i']);

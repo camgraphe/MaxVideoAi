@@ -24713,7 +24713,7 @@
         "includeInHub": false
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
         "includeInEstimator": false
@@ -24961,7 +24961,7 @@
         "includeInHub": false
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
         "includeInEstimator": false
@@ -25240,7 +25240,7 @@
         "includeInHub": false
       },
       "app": {
-        "enabled": false
+        "enabled": true
       },
       "pricing": {
         "includeInEstimator": false

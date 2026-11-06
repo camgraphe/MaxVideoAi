@@ -7,6 +7,14 @@ approuvés avec un coefficient de 1,50, et leur application native reste à effe
 L’accès fournisseur n’est pas une preuve d’exécution
 payante à travers App, Studio ou MCP.
 
+Le candidat d'ouverture fonctionnelle du 6 novembre ajoute les confirmations
+natives simulées : 19 tests image (dont les quatre couples 2.6 × Studio/MCP) et
+179 tests vidéo/contrats/tarifs/recovery passent sur PostgreSQL jetable. Les devis
+utilisent les montants approuvés ; aucune génération fournisseur supplémentaire.
+Voir `FUNCTIONAL-OPENING.md` pour les limites de preuve et les contrôles live
+encore nécessaires. Les colonnes « réel » ci-dessous désignent une génération
+payante traversant la surface, pas la découverte ou un devis en lecture seule.
+
 | Modèle / mode | Contrat local | API fournisseur | App réel | Studio réel | MCP réel | Tarif | Médias |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Flash / t2v | testé | V1 + B1/B2/B3 obtenus | en attente | en attente | en attente | appliqué, découverte fermée | 4 copies publiques, page fermée |
@@ -85,8 +93,10 @@ numérique n’a été copiée de Kling 4 : le dossier à onze critères garde l
 non évaluées absentes. Les séquences marketing ne constituent pas un benchmark
 comparatif contrôlé.
 
-Le cron OpenAI déployé refuse correctement les appels non authentifiés. Le secret
-local ne l’a pas authentifié ; une lecture ciblée Vercel ne fournit pas la valeur
-sensible. Aucune configuration ni protection n’a été modifiée. Une authentification
-réussie avec la configuration effective et une preuve de reprise en situation
-réelle restent à obtenir avant ouverture.
+Le cron OpenAI déployé refuse correctement les appels non authentifiés. Les
+Request Logs Vercel vérifiés le 5 novembre à 23:38 Madrid montrent les appels
+planifiés chaque minute avec HTTP 200, User-Agent `vercel-cron/1.0`, sans cache,
+sur le déploiement de production `dpl_EcrT5NtBfUKgbiYYjZr2c91t7PPK` (`b5f4bdd`).
+La configuration effective authentifie donc le cron ; aucun secret n'a été lu
+ni modifié. La preuve bornée figure dans `openai-cron-auth-evidence.json`.
+Cela ne prouve pas qu'un job image réellement interrompu a été récupéré.

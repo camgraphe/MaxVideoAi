@@ -6,6 +6,7 @@ import { createProviderJobTracker } from '../frontend/app/api/generate/_lib/prov
 import { isKlingV4ReleaseBlocked } from '../frontend/src/server/video-generation/kling-v4-release-policy';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { resolveFalJobQueue } from '../frontend/server/fal-job-queue';
+import { getRuntimeModelById } from '../frontend/config/model-runtime';
 
 const endpoint = 'kling/v4/flash/text-to-video';
 const requestId = 'flash-offline-request';
@@ -37,7 +38,11 @@ test('Flash receipt is validated and acceptance survives a persistence failure w
   assert.equal(JSON.parse(stored[0][5] as string).falQueueReceipt.endpoint, endpoint);
 });
 
-test('Flash is closed before qualification and transport never retries timeout or rejection', async () => {
+test('Flash rollback closes admission and transport never retries timeout or rejection', async (t) => {
+  const app = getRuntimeModelById('kling-v4-flash')!.publication.app;
+  const published = app.published;
+  t.after(() => { app.published = published; });
+  app.published = false;
   assert.equal(isKlingV4ReleaseBlocked('kling-v4-flash'), true);
   for (const failure of ['timeout', 'rejection']) {
     let posts = 0;

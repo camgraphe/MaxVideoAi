@@ -163,7 +163,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(610 rows\)/);
+  assert.match(result.stdout, /current \(612 rows\)/);
 });
 
 test('Max launch adds only normal-list-plus-30-percent public projections and reproduces offline', () => {

@@ -24,6 +24,7 @@ const sourceDeps:AgentModelCatalogDeps={
   isEngineExecutable:()=>true,isModeExecutable:()=>true,
 };
 const currentCertified=[
+  'gpt-image-2-6-flare','gpt-image-2-6-sunburst','kling-v4-flash',
   'gemini-omni-flash','gpt-image-2-5-flare','happy-horse-1-1',
   'kling-3-4k','kling-3-pro','kling-3-standard','kling-o3-4k','kling-o3-pro','kling-o3-standard','kling-v4',
   'luma-ray-3-2','luma-uni-1','luma-uni-1-max','minimax-h3','minimax-hailuo-02-text',
@@ -114,7 +115,7 @@ test('original image and text/first-frame video creation preserve request and qu
     // Source-media modes have their complete owned-media matrix in
     // studio-video-catalog-workflows and studio-video-workflows-postgres.
     for(const mode of details.modes.filter(mode=>candidate.surface==='image'||['t2v','i2v'].includes(mode.mode)))await t.test(candidate.engine.id+' '+mode.mode,async()=>{
-      const aspectRatio=mode.aspectRatios.includes(candidate.surface==='image'?'1:1':'16:9')?(candidate.surface==='image'?'1:1':'16:9'):mode.aspectRatios[0]??'16:9';
+      const aspectRatio=mode.aspectRatios.includes(candidate.surface==='image'?'1:1':'16:9')?(candidate.surface==='image'?'1:1':'16:9'):mode.aspectRatios[0]??(candidate.surface==='image'?'auto':'16:9');
       const settings=mode.settings.filter(setting=>setting.default!==null&&setting.type!=='multi_prompt'&&!['imageWidth','imageHeight'].includes(setting.key)).map(setting=>({name:setting.key,value:setting.default}));
       settings.push({name:'resolution',value:mode.resolutions[0]});
       if(mode.duration)settings.push({name:'durationSec',value:mode.duration.options?.[0]??mode.duration.range?.min??5});

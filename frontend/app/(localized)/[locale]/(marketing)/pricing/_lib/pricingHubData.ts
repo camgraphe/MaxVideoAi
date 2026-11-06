@@ -281,17 +281,6 @@ export function isPricingDiscoveryEntry(entry: FalEngineEntry) {
   return entry.surfaces.pricing.includeInEstimator === true;
 }
 
-function isPublicMarketingEntry(entry: FalEngineEntry) {
-  if (entry.availability !== 'available' && entry.availability !== 'limited') return false;
-  const surfaces = entry.surfaces;
-  return Boolean(
-    surfaces.pricing.includeInEstimator ||
-      surfaces.modelPage.indexable ||
-      surfaces.compare.includeInHub ||
-      surfaces.app.enabled
-  );
-}
-
 function collectFields(engine: EngineCaps) {
   return [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
 }
@@ -1016,7 +1005,7 @@ export function getImagePricePresetInput(entry: FalEngineEntry, highQuality: boo
 
 function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
   return listFalEngines()
-    .filter((entry) => supportsImageGeneration(entry) && isPublicMarketingEntry(entry))
+    .filter((entry) => supportsImageGeneration(entry) && isPricingDiscoveryEntry(entry))
     .map((entry): ImagePricingRow => {
       const engine = entry.engine;
       const resolutions = engine.resolutions.map(String);
