@@ -13,7 +13,15 @@ import {
 import { parseComparePageContentDocument } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides';
 
 const PAIR = 'kling-o3-pro-vs-kling-v4';
-const currentModels = () => structuredClone(listRuntimeModels());
+const currentModels = () => {
+  const models = structuredClone(listRuntimeModels());
+  // Preserve the historical V4 launch fixture; November has its own additive coverage.
+  const flash = models.find(model => model.id === 'kling-v4-flash')!;
+  flash.publication.model = { published: false, indexable: false };
+  flash.publication.compare.published = false;
+  flash.publication.compare.indexed = false;
+  return models;
+};
 const privatePreviewModels = () => {
   const models = currentModels();
   models.find(model => model.id === 'kling-v4')!.publication.model.indexable = false;

@@ -8,10 +8,11 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { buildManualTariffScenario } from '../frontend/src/lib/pricing-manual-scenario';
 import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
 import { klingV4TariffScenarios } from '../frontend/lib/pricing-audit/kling-v4-tariff-scenario';
+import { getImagePresetQuote } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 
-test('three functional identities retain separate marketing gates and OpenAI direct image mode IDs', () => {
+test('three published identities retain exact OpenAI direct image mode IDs', () => {
   for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
-    const model = getRuntimeModelById(id)!; assert.ok(model); assert.equal(model.publication.app.published, true); assert.equal(model.publication.pricing.published, false);
+    const model = getRuntimeModelById(id)!; assert.ok(model); assert.equal(model.publication.app.published, true); assert.equal(model.publication.pricing.published, true);
     const entry = getFalEngineById(id)!; assert.ok(entry); assert.equal(entry.surfaces.app.enabled, true);
     if (id !== 'kling-v4-flash') {
       assert.equal(entry.engine.providerMeta?.provider, 'openai_images');
@@ -21,6 +22,15 @@ test('three functional identities retain separate marketing gates and OpenAI dir
   }
   assert.equal(getRuntimeModelById('kling-v4')?.publication.app.published, true);
   assert.equal(getRuntimeModelById('gpt-image-2-5-flare')?.publication.app.published, true);
+});
+
+test('offline image presentation cannot turn partial GPT 2.6 supplier facts into a customer price', () => {
+  for (const id of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
+    const entry = getFalEngineById(id)!;
+    const quote = getImagePresetQuote(entry, { id: 'launch', resolution: '1024x1024', quality: 'high', quantity: 1 }, 'en');
+    assert.equal(quote.status, 'live_quote');
+    assert.equal(quote.amountCents, undefined);
+  }
 });
 
 test('Flash supplier cost uses exact aggregate input timing, with independent no-video and video classes', () => {

@@ -147,6 +147,16 @@ test('existing route returns the exact unsupported-mode adapter error', async ()
   }
 });
 
+for (const engineId of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
+  test(`${engineId} rejects a stale resolution as a client error before pricing`, async () => {
+    const { response, payload } = await postEstimate({ engineId, mode: 't2i', resolution: '1k', quality: 'high' });
+    assert.equal(response.status, 400);
+    assert.deepEqual(payload, {
+      ok: false, error: 'resolution_invalid', allowed: ['1024x1024', '1536x1024', '1024x1536'],
+    });
+  });
+}
+
 test('transport-neutral estimate returns canonical GPT Image 2 pricing and normalized dimensions', async () => {
   const result = await estimateImageGeneration({
     engineId: 'gpt-image-2',

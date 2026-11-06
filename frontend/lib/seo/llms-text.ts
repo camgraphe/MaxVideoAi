@@ -51,6 +51,8 @@ const FEATURED_MODEL_IDS = [
   'seedance-2-0',
   'seedance-2-0-fast',
   'seedance-2-0-mini',
+  'gpt-image-2-6-flare',
+  'gpt-image-2-6-sunburst',
 ] as const;
 
 export const P0_PRIMARY_COMPARISONS = [
@@ -76,6 +78,7 @@ export const TREND_PRIMARY_COMPARISONS = [
 ] as const;
 
 const ESTABLISHED_PRIMARY_COMPARISONS = [
+  { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   // Retain useful discovery paths identified in GSC, including established versions.
   { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.2 vs Veo 3.1' },
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Seedance 2.0 Fast' },

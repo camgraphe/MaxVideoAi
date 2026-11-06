@@ -3,7 +3,7 @@
 Ce candidat ouvre uniquement la publication App des trois modèles dans le registre.
 Les admissions App, Studio et MCP suivent leurs propriétaires existants. Les pages
 modèles, exemples, comparatifs, Pricing public et sitemaps restent fermés jusqu'au
-lot marketing. Il ne constitue pas une preuve de déploiement en production.
+lot marketing. La qualification live obtenue après livraison est consignée ci-dessous.
 
 ## Périmètre et conditions de livraison
 
@@ -63,3 +63,39 @@ Rollback : fermer les trois publications App par livraison Git normale et
 régénérer les projections. Conserver tarifs, reçus, jobs acceptés, originaux et
 historique. Le polling et la reprise des travaux acceptés restent actifs ; aucune
 répétition d'une soumission incertaine.
+
+## Qualification live — 6 novembre 2026
+
+La PR #623 est livrée au commit `ea2dbd30c697dc59e7dcbcf5f9afcb250b7b95ae`,
+déploiement Git `dpl_J4VEZPBaWmNL7wi4TDJJ8hk1obbQ`. Les deux domaines publics
+servent ce même commit READY. Quality CI `42138365568` est entièrement réussie.
+
+Le MCP connecté découvre les trois modèles disponibles et les sept modes prévus.
+Sept devis réels non confirmés passent : Flash T2V/I2V 5 s à 0,62 $, REF2V à
+0,83 $ avec la vidéo source réelle de 5,042 s ; Flare/Sunburst high 1024² à 0,10 $
+en création et 0,13 $ en retouche avec une référence. Le devis Flare conserve
+explicitement `complexity: low`. L'estimation de trois séquences Flash de 15 s
+avec une tentative chacune donne 5,52 $. Aucune de ces opérations n'a généré de média.
+
+Dans l'App authentifiée, les trois sélecteurs et tarifs sont visibles ; les
+références image/vidéo Flash et les références de retouche image sont accessibles.
+La bibliothèque du Studio affiche les quatre images I1–I4 et les six films
+B1–B3/V1–V3. Aucun prompt utilisateur n'a été remplacé et aucune assistance
+payante ou génération Studio n'a été lancée. La qualification native PostgreSQL
+décrite plus haut reste la preuve du parcours de confirmation Studio.
+
+Cette inspection a identifié un raccordement manquant des contrôles avancés dans
+l'App image. Le candidat marketing ajoute le bouton Options lorsque seuls fond ou
+complexité sont présents, et transmet la complexité au panneau chargé à la demande.
+Deux tests DOM reproduisent l'absence du bouton avant correction et vérifient
+ensuite l'ouverture, le choix, le changement d'état et la réouverture des contrôles.
+La vérification de cette correction déployée reste une étape du lot marketing.
+
+Le journal de 01:29:30 UTC montre aussi un devis image prématuré avec la résolution
+historique `1k` pendant l'hydratation du nouveau modèle. L'App obtenait ensuite le
+bon tarif, mais le premier appel renvoyait 500. Le candidat attend désormais une
+résolution admise par le schéma du modèle avant toute demande de prix. L'API
+valide cette résolution avant la normalisation 2.6 et renvoie le 400
+`resolution_invalid` prévu. Quatre cas reproduits avant correction couvrent les
+deux variantes, l'absence de requête prématurée, le devis valide et l'effacement
+du prix précédent lors d'un réglage incompatible. Les 27 tests ciblés passent.

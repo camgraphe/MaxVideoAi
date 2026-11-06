@@ -42,6 +42,21 @@ async function main(): Promise<void> {
     id: `image-estimate:gpt-image-2-6-${variant}:default`, surface: 'image-estimate',
     engineId: `gpt-image-2-6-${variant}`, status: 'unavailable',
   })))) throw new Error('GPT Image 2.6 admission cannot introduce an offline fallback price.');
+  const novemberMarketing = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/nov06-model-marketing-public-projections-2026-11-06.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  const novemberModelIds = ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst', 'kling-v4-flash'];
+  const novemberMarketingIds = [
+    ...novemberModelIds.flatMap(modelId => ['member', 'plus', 'pro'].map(tier => `estimator:${modelId}:${tier}:default`)),
+    ...novemberModelIds.map(modelId => `json-ld:${modelId}:offer`),
+    ...novemberModelIds.map(modelId => `model-page:${modelId}:default`),
+    ...novemberModelIds.slice(0, 2).flatMap(modelId => ['high', 'quantity-4', 'standard'].map(preset => `pricing-hub-image:${modelId}:${preset}`)),
+    ...['10s-1080p', '10s-1080p-audio', '10s-720p', '4k-route', '5s-720p', '8s-1080p', 'entry-route']
+      .map(preset => `pricing-hub-video:kling-v4-flash:${preset}`),
+  ];
+  if (!isDeepStrictEqual(novemberMarketing.rows, novemberMarketingIds.map(id => ({
+    id, surface: id.split(':')[0], engineId: id.split(':')[1], status: 'unavailable',
+  })))) throw new Error('November model discovery cannot introduce an offline fallback price.');
   const klingPublicDiscovery = JSON.parse(await readFile(
     new URL('../../tests/fixtures/kling-v4-public-discovery-projections-2026-10-27.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
@@ -169,7 +184,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...novemberMarketing.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

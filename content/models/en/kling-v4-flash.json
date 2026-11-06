@@ -7,7 +7,7 @@
   },
   "overview": "Create from a prompt, animate an opening image or guide a new scene with visual references. Output is 720p.",
   "pricingNotes": [
-    "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+    "Create video scenes in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
     "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
   ],
   "hero": {
@@ -78,7 +78,7 @@
       "subtitleHighlights": [
         "720p"
       ],
-      "paragraph": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "paragraph": "Create video scenes in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
       "primaryCta": {
         "label": "Open the workspace",
         "href": "/app?engine=kling-v4-flash"
@@ -156,7 +156,7 @@
     "pricingCopy": {
       "title": "Kling 4.0 Flash — Pricing",
       "subtitle": "Review the current quote before confirming a generation. Changing settings or references requires a new quote.",
-      "footnote": "This launch candidate is being qualified for App, Studio and MCP. Availability follows the model and mode shown in your workspace.",
+      "footnote": "Create video scenes in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
       "ctaLabel": "View current pricing",
       "ctaHref": "/pricing#kling-v4-flash-pricing",
       "maxDurationNote": "3–20 whole seconds"

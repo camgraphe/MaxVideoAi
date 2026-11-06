@@ -344,7 +344,7 @@ export function ImageWorkspaceComposerSurface({
           onAssetUrlSelect={(_, url, slotIndex) => handleReferenceUrl(slotIndex, url, 'paste')}
           onOpenLibrary={(_, index) => openLibraryForSlot(index)}
           onNotice={setError}
-          optionsControl={(showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
+          optionsControl={(showBackgroundControl || showComplexityControl || showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
           settingsBar={
             <ImageSettingsBar
               density="workspace"

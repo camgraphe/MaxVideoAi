@@ -595,7 +595,8 @@ function analyticsPrimitive(value: unknown): string | number | boolean | undefin
 type AnalyticsPrimitive = string | number | boolean;
 
 const ENGINE_IDS = new Set([
-  'luma-ray-2', 'luma-ray-2-flash', 'kling-3-turbo-standard', 'kling-3-turbo-pro', 'kling-v4',
+  'luma-ray-2', 'luma-ray-2-flash', 'kling-3-turbo-standard', 'kling-3-turbo-pro', 'kling-v4', 'kling-v4-flash',
+  'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst',
   'dreamina-seedance-2-0-mini', 'ltx-2-3-pro', 'minimax-h3-max', 'wan-3', 'wan-3-prime',
   'ltx-2-5-fast', 'ltx-2-5-pro', 'grok-imagine-video-1-5', 'flux-3-max', 'flux-3', 'flux-3-draft',
   'happy-horse-1-0', 'happy-horse-1-1', 'seedance-2-0-mini', 'seedance-1-5-pro',

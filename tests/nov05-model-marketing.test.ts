@@ -7,15 +7,31 @@ import {getModelPageTemplateConfig} from '../frontend/app/(localized)/[locale]/(
 import {parseModelDecisionContent} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-content';
 import {parseModelPromptingContent} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content';
 import {parseModelExamplesContent} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content';
+import {listGpt26EditorialImages} from '../frontend/lib/gpt26-editorial-images';
+import {buildLlmsModelDiscoveryProjection} from '../frontend/lib/seo/llms-text';
+import {listRuntimeModels} from '../frontend/config/model-runtime';
+import {getImagePricePresetInput} from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 
-for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst']) test(`${id} has three reviewed localized candidates with exact-model media and no premature discovery`,()=>{
+for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst']) test(`${id} publishes three localized model pages with exact-model media and supported discovery`,()=>{
   const model=getRuntimeModelById(id)!;
-  assert.equal(model.publication.model.published,false);
-  assert.equal(model.publication.sitemap.published,false);
-  assert.equal(model.publication.examples.published,false);
+  assert.equal(model.publication.model.published,true);
+  assert.equal(model.publication.model.indexable,true);
+  assert.equal(model.publication.sitemap.published,true);
+  assert.equal(model.publication.pricing.published,true);
+  assert.equal(model.publication.examples.published,id==='kling-v4-flash');
+  assert.equal(model.publication.compare.published,id==='kling-v4-flash');
   assert.equal(model.replacement ?? null,null);
   const entry=getFalEngineById(id)!;
-  assert.equal(entry.media,undefined);
+  if(id.startsWith('gpt')){
+    const hero=listGpt26EditorialImages(id).find(image=>image.role==='hero')!;
+    assert.equal(entry.media?.imagePath,hero.display.url);
+    assert.equal(entry.media?.videoUrl,hero.original.url);
+    for(const high of [false,true]){
+      const preset=getImagePricePresetInput(entry,high);
+      assert.ok(entry.engine.resolutions.includes(preset.resolution));
+      assert.equal(preset.quality,high?'high':'medium');
+    }
+  }else assert.equal(entry.media,undefined);
   assert.equal(entry.demoUrl,undefined);
   const template=getModelPageTemplateConfig(id)!;
   assert.ok(template);
@@ -32,4 +48,19 @@ for (const id of ['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst
     if(id.startsWith('gpt'))assert.equal(prompts.imageExamples?.items.length,2);
     else {assert.equal(prompts.tabs.length,3);assert.ok(prompts.tabs.every(tab=>tab.matchPublicExample===true));}
   }
+});
+
+test('machine discovery publishes the three model identities and Flash comparison, and respects rollback',()=>{
+  const ids=['kling-v4-flash','gpt-image-2-6-flare','gpt-image-2-6-sunburst'];
+  const projection=buildLlmsModelDiscoveryProjection();
+  for(const id of ids)assert.equal(projection.currentModels.filter(model=>model.id===id).length,1);
+  assert.ok(projection.primaryComparisons.some(pair=>pair.slug==='kling-v4-vs-kling-v4-flash'));
+  const models=listRuntimeModels().map(model=>structuredClone(model));
+  for(const model of models.filter(model=>ids.includes(model.id))){
+    model.publication.model={published:false,indexable:false};
+    model.publication.compare.published=false;
+  }
+  const closed=buildLlmsModelDiscoveryProjection({models});
+  assert.ok(closed.currentModels.every(model=>!ids.includes(model.id)));
+  assert.ok(closed.primaryComparisons.every(pair=>pair.slug!=='kling-v4-vs-kling-v4-flash'));
 });

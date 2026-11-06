@@ -7,7 +7,7 @@
   },
   "overview": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée.",
   "pricingNotes": [
-    "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+    "Créez et retouchez vos images dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
     "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis."
   ],
   "hero": {
@@ -78,7 +78,7 @@
       "subtitleHighlights": [
         "1024"
       ],
-      "paragraph": "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+      "paragraph": "Créez et retouchez vos images dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
       "primaryCta": {
         "label": "Ouvrir l’espace de création",
         "href": "/app/image?engine=gpt-image-2-6-flare"
@@ -156,7 +156,7 @@
     "pricingCopy": {
       "title": "GPT Image 2.6 Flare — Tarification",
       "subtitle": "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis.",
-      "footnote": "Ce lancement est en cours de qualification pour App, Studio et MCP. La disponibilité suit le modèle et le mode affichés dans votre espace.",
+      "footnote": "Créez et retouchez vos images dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
       "ctaLabel": "Voir le tarif actuel",
       "ctaHref": "/fr/tarifs#gpt-image-2-6-flare-pricing",
       "maxDurationNote": "Jusqu’à quatre images dans App et MCP ; une dans Studio."

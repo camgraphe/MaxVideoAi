@@ -164,6 +164,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     referenceSizeSignature,
     resolution,
     selectedEngineId: selectedEngine?.id,
+    selectedEngineCaps,
   });
   const { historyEntries, isImageJob, mutateJobs, pendingGroups, setPendingGroups } = useImageWorkspaceHistory({
     engines,
