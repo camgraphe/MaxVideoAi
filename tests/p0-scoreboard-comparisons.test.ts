@@ -50,7 +50,7 @@ test('all P0 models have eleven reviewed numeric scores and a derived three-axis
     last_updated: string;
     scores: Array<Record<string, unknown> & { modelSlug: string }>;
   };
-  assert.equal(document.last_updated, '2026-10-27');
+  assert.equal(document.last_updated, '2026-11-06');
 
   for (const modelId of P0_IDS) {
     const score = document.scores.find(({ modelSlug }) => modelSlug === modelId);
