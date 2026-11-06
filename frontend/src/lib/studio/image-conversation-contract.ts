@@ -114,7 +114,9 @@ export type ImageConversation = {
 };
 export type ImageConversationHistoryTurn = Pick<ImageConversationTurn, 'message' | 'reply' | 'referenceMentions'>;
 export type StudioConversationHistoryFacts = {
-  quoteDirections:{requestId:string;quoteId:string;text:string;truncated:boolean}[];
+  quoteDirections:({requestId:string;quoteId:string;truncated:boolean} & (
+    {text:string} | {recast:Omit<StudioRecastIntent,'action'|'reply'>}
+  ))[];
   estimates:(StudioPricingEstimate & {requestId:string;historical:true})[];
 };
 export function hasDraftCreation(draft: ImageDraft | null) {return !!(draft?.image || draft?.media || draft?.recast);}

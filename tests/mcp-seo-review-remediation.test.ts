@@ -235,20 +235,26 @@ if (rejected.length !== 2) throw new Error('unexpected external source accepted:
   }
 });
 
-test('host-aware robots blocks the API protocol host and preserves explicit public crawler roles', async () => {
+test('host-aware robots blocks the configured protocol host and preserves explicit public crawler roles', async (t) => {
   const builderPath = 'frontend/lib/seo/robots-text.ts';
   const routePath = 'frontend/app/robots.txt/route.ts';
   assert.equal(existsSync(builderPath), true, 'the pure robots text builder should exist');
   assert.equal(existsSync(routePath), true, 'the host-aware robots route should exist');
   assert.equal(existsSync('frontend/public/robots.txt'), false, 'a static file must not shadow host-aware robots');
 
+  const priorHost = process.env.MCP_API_HOST;
+  t.after(() => {
+    if (priorHost === undefined) delete process.env.MCP_API_HOST;
+    else process.env.MCP_API_HOST = priorHost;
+  });
   const { GET } = await import('../frontend/app/robots.txt/route.ts');
-  const apiResponse = GET(
-    new Request('https://api.maxvideoai.com/robots.txt', {
-      headers: { host: 'api.maxvideoai.com', 'x-forwarded-host': 'maxvideoai.com' },
-    }),
-  );
-  assert.equal(await apiResponse.text(), '# MaxVideoAI protocol host\n\nUser-agent: *\nDisallow: /\n');
+  for (const protocolHost of ['api.maxvideoai.com', 'maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app']) {
+    process.env.MCP_API_HOST = protocolHost;
+    const apiResponse = GET(new Request(`https://${protocolHost}/robots.txt`, {
+      headers: { host: protocolHost, 'x-forwarded-host': 'maxvideoai.com' },
+    }));
+    assert.equal(await apiResponse.text(), '# MaxVideoAI protocol host\n\nUser-agent: *\nDisallow: /\n');
+  }
 
   const publicResponse = GET(
     new Request('https://maxvideoai.com/robots.txt', {

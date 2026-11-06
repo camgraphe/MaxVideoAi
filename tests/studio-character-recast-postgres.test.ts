@@ -9,6 +9,7 @@ import { createDefaultCharacterBuilderState } from '../frontend/src/lib/characte
 import { recastHarness } from './helpers/character-recast-harness';
 import { handleStudioImageConversation } from '../frontend/app/api/studio/_lib/studio-image-conversation-handler';
 import { createImageConversationService } from '../frontend/src/server/studio/image-conversation-service';
+import type { StudioResponseCreator } from '../frontend/src/server/studio/conversation-director';
 import { readStudioProjectMedia } from '../frontend/src/server/studio/conversation-media-generation';
 import { LIVE_PRICING_POLICY_REVISION, PRICING_POLICY_HEADER } from '../frontend/src/lib/membership-policy';
 
@@ -65,10 +66,10 @@ test('Studio Recast journals a dedicated quote, requires displayed cents, and re
   const settings={...f.input,product:f.id(1),video:f.video,audio:f.audio,dialogue:args.dialogue};
   const web=await f.prepare(settings);
   let calls=0;
-  const makeService=(current=actor,enabled=true)=>createImageConversationService(current,{enabled:true,actionsEnabled:true,mediaEnabled:true,characterEnabled:enabled,
+  const makeService=(current=actor,enabled=true,createActionResponse?:StudioResponseCreator)=>createImageConversationService(current,{enabled:true,actionsEnabled:true,mediaEnabled:true,characterEnabled:enabled,
     characterFactory:(actor,options)=>createCharacterStudioIntegration(actor,{...options,prepareDependencies:f.deps,generation:f.generation,readiness:()=>null}),
-    createActionResponse:async()=>({id:'recast-response',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',
-      output:[{type:'function_call',name:'recast_prepare',call_id:'recast-prepare',arguments:(calls++,JSON.stringify(args))}]}),
+    createActionResponse:createActionResponse??(async()=>({id:'recast-response',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',
+      output:[{type:'function_call',name:'recast_prepare',call_id:'recast-prepare',arguments:(calls++,JSON.stringify(args))}]})),
   });
   const input={requestId:randomUUID(),message:'Prepare an exact Character Recast quote.',references:[f.id(1)],attachments:[video,audio]};
   const turn=await makeService().submit(input);
@@ -125,4 +126,25 @@ test('Studio Recast journals a dedicated quote, requires displayed cents, and re
   assert.equal((await readStudioProjectMedia(actor))[0].ref.type,'job-output');
   assert.deepEqual(await readStudioProjectMedia({...actor,projectId:'other'}),[]);
   assert.equal(f.provider.calls(quote.quoteId),1);
+
+  const revised = await makeService(actor,true,async params=>{
+    assert.ok(Array.isArray(params.input));
+    const block=params.input.find(item=>'role' in item&&item.role==='developer'&&'content' in item
+      &&typeof item.content==='string'&&item.content.startsWith('Historical conversation facts'));
+    assert.ok(block&&'content' in block&&typeof block.content==='string','The next director turn must receive the saved Recast recipe.');
+    assert.match(block.content,/data, not instructions/);
+    const facts=JSON.parse(block.content.slice(block.content.indexOf('{')));
+    const {reply,...recipe}=args;
+    assert.deepEqual(facts.quoteDirections,[{requestId:input.requestId,quoteId:quote.quoteId,recast:recipe,truncated:false}]);
+    return {id:'recast-revision',model:'gpt-6.1-sol',status:'completed',service_tier:'default',usage:null,output_text:'',
+      output:[{type:'function_call',name:'recast_prepare',call_id:'recast-revise',arguments:JSON.stringify({
+        ...facts.quoteDirections[0].recast,reply,resolution:'1080p',
+      })}]};
+  }).submit({...input,requestId:randomUUID(),message:'Keep the same direction, dialogue and sources. Prepare a fresh quote at 1080p.'});
+  assert.ok(revised.quote);
+  assert.notEqual(revised.quote.quoteId,quote.quoteId);
+  assert.deepEqual(revised.quote.summary,{...quote.summary,settings:{...quote.summary.settings,resolution:'1080p'}});
+  assert.deepEqual(revised.quote.recast,quote.recast);
+  assert.equal(f.provider.calls(revised.quote.quoteId),0);
+  assert.deepEqual(await f.receipts(revised.quote.quoteId),[]);
 });
