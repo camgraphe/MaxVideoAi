@@ -43,7 +43,7 @@ export function createAgentCharacterStudioService(
 ) {
   requireOAuthGenerationActor(principal);
   if (!principal.clientId) throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI in your MCP host to use Character Studio.');
-  const service = createIntegration(principal, { executionEnabled: options.executionEnabled });
+  const service = createIntegration(principal, options);
   return {
     async list(input: z.input<typeof characterListInput>) {
       const page = await service.list(input);

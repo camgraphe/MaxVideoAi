@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { query } from '@/lib/db';
 import { buildRecastBrief } from '@/lib/character-studio-recast';
 import { resolveStudioOutput } from './source';
@@ -14,6 +14,7 @@ import { requireGenerationActor, type GenerationActor } from '@/server/agent-api
 import type { CreatorGenerationOptions } from '@/server/tools/creator-generation-service';
 
 import { recastSettings as settings } from './recast-request';
+import { recastConfirmationInput } from './integration-request';
 
 const engineId = 'wan-3-prime';
 export async function resolveCharacterPortraitAsset(userId: string, portrait: z.infer<typeof settings>['portrait']) {
@@ -53,7 +54,7 @@ const dependencies = {
 };
 
 export type RecastPreparationDependencies = typeof dependencies;
-export type RecastLifecycleOptions = Pick<CreatorGenerationOptions, 'onQuotePrepared'>;
+export type RecastLifecycleOptions = Pick<CreatorGenerationOptions, 'accountUrl' | 'onQuotePrepared'>;
 
 export async function prepareRecast(actor: GenerationActor, value: unknown, deps = dependencies, options: RecastLifecycleOptions = {}) {
   requireGenerationActor(actor);
@@ -115,6 +116,7 @@ export async function prepareRecast(actor: GenerationActor, value: unknown, deps
   const quote = await deps
     .generation(actor, {
       enabled: true,
+      accountUrl: options.accountUrl,
       billingProduct: 'character-recast',
       onQuotePrepared: async (quote, tx) => {
         await tx.query(
@@ -155,19 +157,13 @@ export async function confirmRecast(
   actor: GenerationActor,
   value: unknown,
   generation = createCreatorGenerationService,
+  options: Pick<RecastLifecycleOptions, 'accountUrl'> = {},
 ) {
   requireGenerationActor(actor);
-  const input = z
-    .object({
-      quoteId: z.string().uuid(),
-      confirmed: z.literal(true),
-      amountCents: z.number().int().nonnegative(),
-      currency: z.literal('USD'),
-    })
-    .strict()
-    .parse(value);
+  const input = recastConfirmationInput.parse(value);
   const job = await generation(actor, {
     enabled: true,
+    accountUrl: options.accountUrl,
     billingProduct: 'character-recast',
     onQuoteLocked: async (quote, tx) => {
       const [row] = await tx.query(

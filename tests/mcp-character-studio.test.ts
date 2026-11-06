@@ -205,6 +205,14 @@ test('Character Studio tools are private and paid/ref shutdown keeps reads and r
       ...(paidGeneration && referenceUploads ? ['prepare_recast', 'confirm_recast'] : []),
     ].sort());
     assert.match(client.getInstructions() ?? '', /list_saved_characters/);
+    if (paidGeneration && referenceUploads) {
+      assert.match(client.getInstructions() ?? '', /prepare_recast for Recast/);
+      assert.match(client.getInstructions() ?? '', /Recover Recast with get_recast_status/);
+      const descriptor = tools.find(tool => tool.name === 'prepare_recast')?.description ?? '';
+      assert.match(descriptor, /at least one of direction, dialogue, video or audio/i);
+    } else {
+      assert.doesNotMatch(client.getInstructions() ?? '', /prepare_recast/);
+    }
     for (const tool of tools) {
       assert.equal(tool.inputSchema.additionalProperties, false, tool.name);
       assert.ok(tool.description && Buffer.byteLength(tool.description, 'utf8') <= 2000, tool.name);
@@ -322,4 +330,16 @@ test('an existing unclaimed Recast quote does not start a job during recovery', 
   const status = await client.callTool({ name: 'get_recast_status', arguments: { quoteId } });
   assert.deepEqual(status.structuredContent, { quoteId, jobId: null, status: 'no_job', retry: null });
   assert.deepEqual(calls, [['recoverRecast', principal, { quoteId }]]);
+});
+
+test('the SDK rejects non-v4 Recast quote IDs and confirmation amounts above PostgreSQL integer range', async t => {
+  const { client, calls } = await connected(t, { characterStudio: true });
+  const results = await Promise.all([
+    client.callTool({ name: 'get_recast_quote', arguments: { quoteId: '00000000-0000-1000-8000-000000000001' } }),
+    client.callTool({ name: 'get_recast_status', arguments: { quoteId: '00000000-0000-0000-0000-000000000000' } }),
+    client.callTool({ name: 'confirm_recast', arguments: { ...approval, quoteId: '00000000-0000-1000-8000-000000000001' } }),
+    client.callTool({ name: 'confirm_recast', arguments: { ...approval, amountCents: 2_147_483_648 } }),
+  ]);
+  assert.deepEqual(results.map(result => result.isError), [true, true, true, true]);
+  assert.deepEqual(calls, []);
 });

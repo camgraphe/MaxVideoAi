@@ -94,7 +94,7 @@ export function createCharacterStudioIntegration(actor: GenerationActor, options
       const mode = input.video ? 'v2v' : input.audio || input.product ? 'ref2v' : 'i2v';
       if (readiness(mode)) throw new AgentApiError('ENGINE_UNAVAILABLE', 'Recast preparation is currently unavailable.');
       const portrait = 'characterId' in input.portrait ? {assetId:(await select(input.portrait)).assetId} : input.portrait;
-      return prepareRecast(actor, {...input, portrait}, options.prepareDependencies, {onQuotePrepared:options.onQuotePrepared});
+      return prepareRecast(actor, {...input, portrait}, options.prepareDependencies, options);
     }),
     getRecastQuote,
     confirmRecast: (value: unknown) => publicErrors(async () => {
@@ -108,7 +108,7 @@ export function createCharacterStudioIntegration(actor: GenerationActor, options
       });
       if (quote.state === 'prepared' && actor.authMethod === 'oauth' && !actor.emailVerified)
         throw new AgentApiError('EMAIL_VERIFICATION_REQUIRED', 'Verify your email before confirming Recast.');
-      const job = await confirmRecast(actor,input,adapter);
+      const job = await confirmRecast(actor,input,adapter,options);
       return readAcceptedJob(input.quoteId,job.jobId);
     }),
     recoverRecast: (value: unknown) => publicErrors(async () => {

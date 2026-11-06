@@ -5,6 +5,7 @@ import { computeCanonicalRecastBillingSnapshot } from '@/server/pricing/quote-re
 import type { RECAST_PRODUCT_ID } from '@/lib/character-recast-pricing';
 import { priceCanonicalGenerationInExecutor, priceCanonicalGenerationWithBilling } from '@/server/agent-api/generation-pricing';
 import { AgentApiError } from '@/server/agent-api/errors';
+import { parseTrustedAccountUrl } from '@/server/agent-api/account-destinations';
 import { requireGenerationActor, requireStudioGenerationRequest, studioReferenceFingerprint, type GenerationActor } from '@/server/agent-api/generation-actor';
 import { normalizeGenerationRequest } from '@/server/agent-api/generation-normalization';
 import { createPrepareGenerationForActorService, type PrepareGenerationDependencies, type PrepareGenerationInput } from '@/server/agent-api/prepare-generation';
@@ -18,6 +19,8 @@ import { resolveStudioMedia } from '@/server/studio/media-resolver';
 
 export type CreatorGenerationOptions = {
   enabled: boolean;
+  /** Trusted account destination supplied by the calling transport. */
+  accountUrl?: string;
   /** Chosen from the validated operation snapshot, never from generation settings. */
   toolId?: CreatorToolId;
   /** Trusted route choice, never accepted from client settings. */
@@ -40,7 +43,7 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
     ? { origin: 'studio-session', projectId: actor.projectId }
     : { origin: actor.authMethod };
   const quotes = createQuoteRepository(generationQuoteCodec, scope);
-  const accountUrl = 'https://maxvideoai.com/account/connections';
+  const accountUrl = parseTrustedAccountUrl(options.accountUrl ?? 'https://maxvideoai.com/account/connections').toString();
   const context = { clientIp: null, userAgent: null };
 
   async function resolveReferences(request: CanonicalGenerationRequest, executor?: TransactionQueryExecutor): Promise<ResolvedReference[]> {

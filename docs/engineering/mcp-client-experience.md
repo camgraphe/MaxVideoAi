@@ -21,7 +21,8 @@ distinguish a base identity from a look. Author new recipes in Character Builder
 The dedicated Recast preparation and confirmation tools require both the
 reference and paid-generation gates. Preparation preserves the selected
 character or original, product reference and independent fractional video and
-audio passages in the Recast quote. Confirmation carries its exact USD amount
+audio passages in the Recast quote. Supply direction, dialogue or at least one
+selected passage. Confirmation carries its exact USD amount
 and requires explicit approval for one attempt. `get_recast_quote` and
 `get_recast_status` keep the original quote and any accepted job recoverable
 under the same account and OAuth client when either execution gate is closed.
@@ -29,11 +30,11 @@ Polling follows the returned quote-scoped retry, and completed media links are
 available in structured output and the compact JSON text fallback.
 
 The isolated preview accepts its exact HTTPS account origin for Builder,
-reference and recovery destinations. The existing OAuth host and grant
+reference, spending approvals and recovery destinations. The existing OAuth host and grant
 requirements apply. The published production catalog excludes these eight
 descriptors, so the curated production policy and fixture fingerprints stay
-the same. With all capabilities enabled, instructions measure 1,999 UTF-8 bytes
-and the longest added descriptor measures 671 bytes. In-memory SDK checks
+the same. With all capabilities enabled, instructions measure 1,998 UTF-8 bytes
+and the longest added descriptor measures 766 bytes. In-memory SDK checks
 exercise discovery, schema rejection, exact consent and recovery. Host
 selection and provider execution require separate evidence.
 

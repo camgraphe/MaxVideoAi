@@ -15,7 +15,7 @@ function isLoopbackHostname(hostname: string): boolean {
     || normalized === '::1';
 }
 
-function parseTrustedAccountUrl(value: string): URL {
+export function parseTrustedAccountUrl(value: string): URL {
   if (typeof value !== 'string' || value !== value.trim()) {
     throw new Error('Expected a trusted MaxVideoAI account URL.');
   }

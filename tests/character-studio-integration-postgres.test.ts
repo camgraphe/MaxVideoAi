@@ -5,7 +5,62 @@ import { recastHarness } from './helpers/character-recast-harness';
 import { prepareRecast } from '../frontend/server/character-studio/recast';
 import { createCharacterStudioIntegration } from '../frontend/server/character-studio/integration';
 import { createDefaultCharacterBuilderState } from '../frontend/src/lib/character-builder';
+import { createAgentCharacterStudioService } from '../frontend/src/server/agent-api/character-studio';
+import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import type { GenerationActor } from '../frontend/src/server/agent-api/generation-actor';
+
+test('Recast spending denials use the MCP preview destination in preparation and confirmation', async t => {
+  const f = await recastHarness(t);
+  const principal = { userId: f.actor.userId, authMethod: 'oauth', clientId: 'preview-client', emailVerified: true } as const;
+  const accountUrl = 'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app/account/connections';
+  const preview = createAgentCharacterStudioService(principal, { accountUrl, executionEnabled: true }, (actor, options) =>
+    createCharacterStudioIntegration(actor, {
+      ...options, readiness: () => null, prepareDependencies: f.deps, generation: f.generation,
+    }));
+  const input = { ...f.input, resolution: '720p', aspectRatio: '9:16' } as const;
+  const quote = await preview.prepareRecast(input);
+  await f.pg.pool.query('UPDATE mcp_spending_limits SET per_generation_cents=1 WHERE user_id=$1', [principal.userId]);
+
+  const denials = await Promise.allSettled([
+    preview.prepareRecast(input),
+    preview.confirmRecast({ ...f.approval(quote), confirmed: true, currency: 'USD' }),
+    f.prepare(),
+  ]);
+  const actions = denials.map(denial => {
+    assert.equal(denial.status, 'rejected');
+    assert.ok(denial.reason instanceof AgentApiError);
+    assert.equal(denial.reason.code, 'SPENDING_LIMIT_EXCEEDED');
+    return denial.reason.nextAction;
+  });
+  assert.deepEqual(actions, [
+    { type: 'open_url', url: `${accountUrl}?focus=mcp-spending` },
+    { type: 'open_url', url: `${accountUrl}?focus=mcp-spending` },
+    { type: 'open_url', url: 'https://maxvideoai.com/account/connections?focus=mcp-spending' },
+  ]);
+  assert.equal(f.provider.captures.length, 0);
+  assert.deepEqual(await f.receipts(quote.quoteId), []);
+  assert.throws(
+    () => f.generation(principal, { enabled: true, accountUrl: 'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app.evil.example/account/connections' }),
+    /trusted MaxVideoAI account URL/,
+  );
+});
+
+test('shared Recast admission reports invalid quote versions and out-of-range cents as input errors', async t => {
+  const f = await recastHarness(t);
+  const service = createCharacterStudioIntegration(f.actor, {
+    executionEnabled: true, readiness: () => null, prepareDependencies: f.deps, generation: f.generation,
+  });
+  const quote = await service.prepareRecast(f.input);
+  const invalid = await Promise.allSettled([
+    service.getRecastQuote({ quoteId: '00000000-0000-1000-8000-000000000001' }),
+    service.recoverRecast({ quoteId: '00000000-0000-0000-0000-000000000000' }),
+    service.confirmRecast({ ...f.approval(quote), amountCents: 2_147_483_648 }),
+  ]);
+  assert.deepEqual(invalid.map(result => result.status === 'rejected' && result.reason.code), [
+    'PARAMETER_INVALID', 'PARAMETER_INVALID', 'PARAMETER_INVALID',
+  ]);
+  assert.equal(f.provider.captures.length, 0);
+});
 
 test('Character Recast shares passages and ×2 pricing while preserving transport scopes and recovery', async t => {
   const f = await recastHarness(t);

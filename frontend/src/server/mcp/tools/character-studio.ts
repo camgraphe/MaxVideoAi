@@ -4,6 +4,7 @@ import { z } from 'zod/v4';
 import { RECAST_FRAMINGS, RECAST_RESOLUTIONS } from '@/lib/character-studio-recast-format';
 import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
 import { buildRecastResourceLinks, type AgentCharacterStudioService } from '@/server/agent-api/character-studio';
+import { RECAST_MAX_AMOUNT_CENTS } from '@/server/character-studio/integration-request';
 import { validRecastDirection, validRecastDuration } from '@/server/character-studio/recast-request';
 import { runAgentTool, runAgentToolWithResourceLinks } from '@/server/mcp/tool-result';
 
@@ -15,7 +16,7 @@ const original = {
   imageUrl: z.string().min(1).max(4096),
 };
 const assetId = z.string().regex(/^ma_[a-f0-9]{32}$/);
-const quote = { quoteId: z.uuid() };
+const quote = { quoteId: z.uuidv4() };
 const passage = z.object({
   assetId,
   range: z.object({
@@ -79,7 +80,7 @@ export function registerCharacterStudioTools(
   if (options.executionEnabled) {
     server.registerTool('prepare_recast', {
       title: 'Prepare an exact Character Studio Recast quote',
-      description: 'Prepare a non-spending Recast product quote using the chosen characterId and exact lookId, an owned image asset or the exact original of a completed Character Builder job. Use list_media or reference import for owned assets. Optional product is an image asset ID. Supply independent startSec and endSec for each chosen video and audio passage. Preserve fractional seconds. Each passage is at most 15 seconds and selected video plus requested output is at most 30 seconds. Send direction and dialogue as empty strings when unspecified. Present the exact USD total and expiry, then wait for explicit approval before confirm_recast. Any changed input requires a fresh quote.',
+      description: 'Prepare a non-spending Recast product quote using the chosen characterId and exact lookId, an owned image asset or the exact original of a completed Character Builder job. Use list_media or reference import for owned assets. Optional product is an image asset ID. Supply independent startSec and endSec for each chosen video and audio passage. Preserve fractional seconds. Each passage is at most 15 seconds and selected video plus requested output is at most 30 seconds. Provide at least one of direction, dialogue, video or audio. Send empty strings for unstated direction and dialogue when another of these inputs is provided. Present the exact USD total and expiry, then wait for explicit approval before confirm_recast. Any changed input requires a fresh quote.',
       inputSchema: prepareRecastInputSchema,
       annotations: { ...saveAnnotations, idempotentHint: false },
     }, input => runAgentTool(() => service().prepareRecast(input)));
@@ -87,7 +88,7 @@ export function registerCharacterStudioTools(
     server.registerTool('confirm_recast', {
       title: 'Confirm one exactly priced Character Studio Recast',
       description: 'Submit only after the user explicitly approves the exact fresh Recast quote for one paid attempt. Send its quoteId, exact amountCents and USD currency with confirmed=true. Ambiguous assent does not authorize spending. Recover an ambiguous response using get_recast_status with the same quoteId. A failure or refund requires a fresh quote and new approval before another attempt. Never automatically prepare or submit a replacement.',
-      inputSchema: z.object({ ...quote, confirmed: z.literal(true), amountCents: z.number().int().nonnegative(), currency: z.literal('USD') }).strict(),
+      inputSchema: z.object({ ...quote, confirmed: z.literal(true), amountCents: z.number().int().nonnegative().max(RECAST_MAX_AMOUNT_CENTS), currency: z.literal('USD') }).strict(),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     }, input => runAgentToolWithResourceLinks(() => service().confirmRecast(input), buildRecastResourceLinks));
   }
