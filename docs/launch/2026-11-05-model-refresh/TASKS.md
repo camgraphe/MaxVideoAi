@@ -33,11 +33,11 @@
 - [x] C01 Calculer les faits Flash en précision décimale : sortie seule, images/sujets image, entrée vidéo/sujet vidéo et plancher fournisseur.
 - [ ] C02 Établir les coûts image 2.6 propres au modèle, taille, qualité, nombre et sources ; ne pas recopier les estimations fal 2.5.
 - [ ] C03 Couvrir les contextes admin/public/MCP/Studio, sur les trois tailles raster initiales et les quantités autorisées ; dimensions personnalisées hors du premier lot.
-- [ ] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
-  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée puis appliquée dans l’admin. Reçu relu : 72 cellules, révision 2187, opération `ddda411b-bffb-4bf7-83c8-8e8500863bba`. Images : 2 040 montants approuvés avec les réserves explicites et ×1,50 ; dix imports exacts validés localement, application native en attente. Voir `TARIFF-PROPOSAL.md`, `gpt26-tariffs/approval.json` et `flash-tariff-preview.json`.
+- [x] C04 Préparer une matrice commerciale inactive, les arrondis et exemples de prix ; faire valider les montants concrets dans l'admin.
+  Flash : 72 previews natives à la révision 2115, avec les lecteurs de production et connexion forcée en lecture seule ; grille +30 % approuvée puis appliquée dans l’admin. Reçu relu : 72 cellules, révision 2187, opération `ddda411b-bffb-4bf7-83c8-8e8500863bba`. Images : 2 040 montants approuvés avec les réserves explicites et ×1,50 ; dix imports exacts appliqués dans l’admin natif puis réconciliés : 2 040 cellules, révision 4227, 2 040 devis public/billing concordants ; 17 175 autres tarifs et 8 279 snapshots de paiement antérieurs préservés. Voir aussi `gpt26-tariff-applied.json`. Voir `TARIFF-PROPOSAL.md`, `gpt26-tariffs/approval.json` et `flash-tariff-preview.json`.
 - [ ] C05 Tester devis expiré, changement de réglages/références, révision de tarif, budget insuffisant et confirmations simultanées.
 - [x] C06 Vérifier débit unique, récupération, remboursement d'échec terminal et historique immuable avec PostgreSQL jetable.
-- [ ] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.
+- [x] C07 Activer seulement les cellules revues via preview/confirmation native, puis relire tous les scénarios ouverts.
 - [ ] C08 Vérifier inventaires admin, labels de modèle/provider, coût estimé versus réel et reçus de génération.
 
 ## D — App, bibliothèque, Milo et outils
@@ -112,7 +112,7 @@
 - [ ] L2-03 Annotation `markup` : calque PNG transparent lié à la première image, dimensions et ownership, incompatibilités masque/prompt_rewriter, interactions App/Studio/MCP.
 - [ ] L2-04 Prix, tests, qualification, marketing et activation propres à ces nouvelles sorties ; aucune annonce prématurée dans le lot 1.
 
-## État du candidat après implémentation
+## État historique du candidat après implémentation (5 novembre)
 
 Les coches de code ci-dessus ne constituent pas une ouverture publique. Les trois
 modèles restent fermés sur toutes les publications du registre. Les deux providers
@@ -150,3 +150,13 @@ passent, avec 315 comparaisons publiques inchangées. Les nouvelles capacités n
 publient aucune note numérique. La revue indépendante a recalculé les 2 040 prix
 à ×1,50 et les empreintes des dix imports. Les protections admin, limites de
 transaction et tarifs Flash à ×1,30 sont conservés.
+
+## Point de livraison — 6 novembre, avant ouverture fonctionnelle
+
+- PR #622 livrée au commit `f868a026bd56fc2bd75d355512e3f03417ec0853` ; les deux domaines ont été vérifiés au même Git déploiement READY.
+- Tarifs GPT appliqués par dix confirmations natives : 2 040 prix exacts, révision 2187 → 4227. Réconciliation exhaustive et reçus dans `gpt26-tariff-applied.json`. Les réserves commerciales ne bornent pas le coût fournisseur.
+- PR #623 ouvre les trois modèles dans App/Studio/MCP. PR #624 publie leurs neuf pages localisées, le comparatif Kling 4/Flash, les prix et les sitemaps. Leur livraison attend les contrôles de leurs derniers commits et la coordination avec Omni Flash 1.2.
+- Le Preview marketing `9f93c31b5ff81a953276a1b99efe5f3963df99c2` passe le contrôle de provenance et les douze routes SEO : canonical, quatre hreflang, JSON-LD, offres natives 0,62 USD Flash 5 s et 0,10 USD GPT high 1024², sitemaps et sept modes du catalogue disponibles.
+- Lecture publique de B1 terminée, son activé, sans erreur. B2 conserve exactement les 3 676 caractères du prompt, ses quatre plans et son paragraphe audio ; sa lecture rejoint normalement le poster à la fin. Les visionneuses des deux retouches chargent les vrais originaux 1024² et la même source Flare I1. Ce sont des vérifications Preview, pas des preuves de production.
+- Curation préparée et revue : Flash B1/B2/B3/V1/V2/V3 ; famille Kling, 68 membres conservés puis six ajouts, quatre openingIds conservés. Le preview suit l’ordre natif ouverture puis sélection dédupliquée ; aucune écriture de curation effectuée à ce stade.
+- Aucun nouvel appel payant, envoi social ou newsletter. Les colonnes « réel » de la matrice désignent les générations payantes par surface ; les tests natifs simulés et contrôles live en lecture seule sont consignés séparément.
