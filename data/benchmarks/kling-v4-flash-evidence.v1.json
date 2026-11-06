@@ -1,30 +1,41 @@
 {
-  "version": "v1",
+  "version": "v2",
   "modelSlug": "kling-v4-flash",
-  "checkedAt": "2026-11-05",
+  "checkedAt": "2026-11-06",
   "editorialReview": {
-    "status": "withheld-pending-criterion-review",
+    "status": "editorial-estimated",
     "methodologyFile": "benchmark-methodology.v1.json",
     "methodologyVersion": "1.1.0",
+    "evaluationDate": "2026-11-06",
     "modelVersion": "Kling 4.0 Flash via fal kling/v4/flash routes",
-    "criterionScoresPublished": false,
+    "evaluator": "MaxVideoAI AI-assisted editorial review",
+    "reviewer": "Independent AI-assisted consistency review, 2026-11-06",
+    "assessmentProtocol": "owned-samples-and-public-evidence-editorial-estimate-v1",
+    "criterionScoresPublished": true,
     "controlledOutputsReviewed": 0,
     "marketingOutputs": 6,
+    "targetedOutputsReviewed": 1,
+    "sampleSize": 7,
     "promptPackExecuted": false,
     "retryCount": 0,
-    "note": "Six selected marketing outputs were reviewed through extracted frames and local ASR. This does not constitute full audiovisual criterion scoring or a matched benchmark. User selection approves placements, not numeric benchmark scores."
+    "failureCount": 0,
+    "inspectionMethod": "Six launch contact sheets, original prompts, I1 reference lineage and existing ASR; T1 sampled at 3 fps with original metadata and cut detection. Previous full playback verified delivery, not continuous-motion or synchronized-audio quality. No controlled standard prompt-pack run.",
+    "sampleSelection": "All six recorded launch attempts and the one newly authorized lettering/dialogue attempt retained, including deviations. Heterogeneous scenes/modes are not a matched model comparison.",
+    "note": "All eleven numbers are editorial estimates on the existing 0–10 anchors, not experimental measurements, copied Kling 4 ratings or conversions of external indexes."
   },
   "publication": {
     "scoreOwner": "data/benchmarks/engine-scores.v1.json",
     "specOwner": "data/benchmarks/engine-key-specs.v1.json",
-    "runtimeConsumesThisFile": false,
-    "scoreRowPresent": false,
+    "runtimeConsumesThisFile": true,
+    "scoreRowPresent": true,
     "publicPlaceholderAllowed": false,
     "overallRequiredCriteria": [
       "fidelity",
       "motion",
       "consistency"
-    ]
+    ],
+    "overall": 8.3,
+    "publicDisclosureOwner": "publicCopy; scores remain authored only in engine-scores.v1.json"
   },
   "evidence": {
     "assetManifest": "docs/launch/2026-11-05-model-refresh/flash-marketing-assets.json",
@@ -49,91 +60,430 @@
     "observations": [
       {
         "asset": "B1",
-        "observation": "Four-shot space-hangar escape resolves with a blast-door closure. Local ASR detects Get behind me / We are clear. Final crew is back-facing; lip-sync quality is not established by transcription."
+        "observation": "Four broad cuts preserve the cargo bay, engineer and crowd; creature/flame/door action resolves. Final shot is back-facing, rather than the requested frontal reaction.",
+        "asrText": "Get behind me! We're clear.",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
       },
       {
         "asset": "B2",
-        "observation": "Four-shot siege sequence resolves with tower fire/collapse and defenders cheering. Bow release is not fully readable in extracted frames. Local ASR detects For the city."
+        "observation": "City, commander and tower remain recognizable across setup/attack/fire/cheering shots. Bow release is not fully readable; final frames do not clearly establish completed ditch collapse.",
+        "asrText": "For the city!",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
       },
       {
         "asset": "B3",
-        "observation": "Four-shot bus escape resolves after a bridge-gap jump. Local ASR detects Everybody hold on. Continuous-motion physics still requires full playback review."
+        "observation": "Bus, driver and passengers remain recognizable; gap and safe-bus reaction are readable. The trajectory needs continuous-motion scrutiny and is not proven realistic physics.",
+        "asrText": "Everybody hold on!",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
+      },
+      {
+        "asset": "V1",
+        "observation": "Lid-hand contact followed by the same projectionist in a matching room; two-shot structure and facial reaction are recognizable.",
+        "asrText": "Where's my ending?",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
+      },
+      {
+        "asset": "V2",
+        "observation": "I1 woman/curls/ochre jacket/canister retained through curtain approach and face close-up; framing/direction broadly follow the source.",
+        "asrText": "Found your ending.",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
+      },
+      {
+        "asset": "V3",
+        "observation": "Canister handoff, projectionist close-up and two-shot preserve the I1/V1 identity pairing.",
+        "asrText": "Roll it.",
+        "asrLimit": "Machine wording evidence only, not exact timing or perceived audio/lip synchronization."
       }
-    ]
+    ],
+    "targetedSample": "docs/launch/2026-11-05-model-refresh/flash-text-score-sample.json"
   },
   "criterionAssessments": [
     {
       "criterion": "fidelity",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Compare every requested action and conclusion against each complete original, retaining missing or invented beats."
+      "score": 8.3,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text",
+        "external-flash-review"
+      ],
+      "rationale": "The six clips deliver recognizable subjects, action and endings. B1 ends back-facing instead of the requested frontal relief; B2 does not clearly establish its bow release or completed ditch collapse; B3 exaggerates the restrained jump. T1 changes the orange harness to red and retains more than two final crew.",
+      "calibration": "Above the strong-useful anchor of 8 for broad brief delivery, below exceptional because explicit constraints are missed."
     },
     {
       "criterion": "visualQuality",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Inspect original resolution, lighting, faces, background and material artifacts over complete clips."
+      "score": 8.7,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text"
+      ],
+      "rationale": "Faces, matte fabrics, industrial/stone sets and lighting are convincing in inspected frames. Wide crowds and fine detail are softer than portraits. Native clips are 720p-class, including square I2V.",
+      "calibration": "Strong cinematic presentation without inferring 1080p detail or artifact-free intermediate frames."
     },
     {
       "criterion": "motion",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Watch complete motion at native speed and inspect contact, camera trajectories and bridge/collapse physics."
+      "score": 8.1,
+      "status": "editorial-estimated",
+      "confidence": "low",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "external-flash-review"
+      ],
+      "rationale": "Hand/canister interaction and broad escape actions are readable across sampled frames. Bow mechanics, the heavy bus jump and intervening physical trajectories are less securely evidenced.",
+      "calibration": "Near the strong-useful anchor; selected stills support action legibility, not a controlled continuous-motion measurement."
     },
     {
       "criterion": "consistency",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Track identities, wardrobe, props and environment within and across the requested cuts."
+      "score": 8.6,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text",
+        "external-flash-review"
+      ],
+      "rationale": "Faces, costumes, palette and props remain broadly recognizable across shots. I1 to V2/V3 preserves the woman, curls, ochre jacket and canister; V1 to V3 preserves the projectionist. B1 composition and T1 harness color show exact-compliance limits.",
+      "calibration": "Strong broad continuity below an exceptional identity/geometry claim; no repeat-run reliability inference."
     },
     {
       "criterion": "anatomy",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Review visible hands, faces, limbs and interactions at full resolution."
+      "score": 8.3,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text"
+      ],
+      "rationale": "Visible portraits and sampled V1/V3 hand-object contacts are plausible. T1 shows a readable face and lever hand. Complex crowds and every moving finger were not audited.",
+      "calibration": "Just above the strong anchor; occluded hands and distant faces are excluded from positive evidence."
     },
     {
       "criterion": "textRendering",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Requires a readable requested-text sample; these prompts intentionally excluded text."
+      "score": 8.2,
+      "status": "editorial-estimated",
+      "confidence": "low",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-text"
+      ],
+      "rationale": "T1 displays exactly SECTOR 9 and EVACUATE in white/amber uppercase. Both remain readable in six opening samples before the cut at 2.041667 seconds. This one large frontal sign does not establish small-type, multilingual or moving-label fidelity.",
+      "calibration": "Close to the strong anchor, with low confidence because one favorable lettering task provides limited diversity. The decimal is editorial judgment."
     },
     {
       "criterion": "lipsyncQuality",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Listen to original audio while reviewing visible mouth movement; ASR alone is insufficient."
+      "score": 7.8,
+      "status": "editorial-estimated",
+      "confidence": "low",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "external-flash-review"
+      ],
+      "rationale": "Existing ASR contains the requested short lines; sampled faces show speaking poses. A first-person Flash review reports reduced lip-sync drift. B1 ends back-facing. ASR/stills cannot establish phoneme alignment; V2/V3 ASR sound labels remain unverified possible deviations.",
+      "calibration": "Below the strong anchor because exact audio-mouth alignment was not measured; not a claimed lip-sync test pass."
     },
     {
       "criterion": "sequencingQuality",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Timecode actual cuts against requested four-shot briefs and record identity/action continuity."
+      "score": 8.6,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text"
+      ],
+      "rationale": "B scenes retain setup/action/resolution across four broad shots; V1/V2 use two and V3 uses three. T1 cuts at 2.041667 seconds and ends on the closed door. B2 release/collapse and B1 closing composition weaken precise beat execution.",
+      "calibration": "Strong native narrative ordering, with imperfect execution of every directed beat and no exact-timing guarantee."
     },
     {
       "criterion": "controllability",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Review each paired I2V/REF source and output; API acceptance alone does not prove adherence."
+      "score": 8.0,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-six",
+        "owned-text",
+        "fal-flash-t2v",
+        "fal-flash-i2v",
+        "fal-flash-ref2v"
+      ],
+      "rationale": "Actual I2V/REF results retain their paired identities and the sign/cut request works. Framing, wardrobe and action misses remain. Only current fal text/start-image/reference workflows count; no end frame, Modify, Extend or structured shot control is credited.",
+      "calibration": "The strong anchor reflects observed useful controls, not a count of API fields or controls imported from Kling UI."
     },
     {
       "criterion": "speedStability",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Requires a complete native application attempt ledger; external imported clips do not qualify."
+      "score": 7.8,
+      "status": "editorial-estimated",
+      "confidence": "low",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "owned-run-ledger",
+        "owned-text",
+        "external-flash-runs"
+      ],
+      "rationale": "Six recorded supplier attempts completed once: V1/V2/V3 took about 87.3/138.3/99.9 seconds for 5-second requests; B1/B2/B3 took 215.0/218.0/221.1 seconds for 15-second requests. T1 is an additional completed native paid job. SeedVideo separately reports 89–192-second T2V timings but an 842-second five-second I2V run attributed to upstream queueing; that outlier limits the speed/reliability inference.",
+      "calibration": "Useful observed delivery, insufficient for representative reliability. This editorial estimate is not native median/P90 or a population success rate."
     },
     {
       "criterion": "pricing",
-      "score": null,
-      "status": "withheld",
-      "requiredEvidence": "Relate active exact customer quotes to usable footage and the full attempt ledger before assessing relative value."
+      "score": 8.8,
+      "status": "editorial-estimated",
+      "confidence": "medium",
+      "evidenceTypes": [
+        "documented-evidence",
+        "editorial-inference"
+      ],
+      "sourceIds": [
+        "active-customer-tariffs",
+        "owned-six",
+        "owned-text"
+      ],
+      "rationale": "Active native pricing is 0.62 USD for 5-second 720p text/image creation; T1 was paid at that quote. The approved Flash grid is lower priced than full Kling 4 at matched 720p settings. Reference-video input changes the calculation.",
+      "calibration": "Strong relative value for cinematic scenes, discounted for 720p/20-second limits and narrower controls; no guaranteed cost per usable shot or supplier margin."
     }
   ],
   "reviewProtocol": {
     "generationAuthorizedByThisFile": false,
     "selectionPolicy": "Keep all six attempts, exact prompts, mode, reference lineage, original hashes and measured duration. Do not pool image- or reference-guided runs with text-only scenes as matched observations.",
-    "reviewPolicy": "Watch original full clips with sound; record timecoded observations for each relevant criterion against the existing 0–10 anchors, obtain a second review and retain disagreements. Unobservable criteria remain absent.",
-    "publicationPolicy": "Publish reviewed numbers only in the existing score owner. Use editorial-estimated disclosure for non-controlled observations; do not label them controlled measurements. Never copy full Kling 4 scores or extrapolate from Flash capabilities.",
+    "reviewPolicy": "Editorial estimates retain sampled-frame observations, exact prompts, receipts, ASR limits and an independent consistency review. Continuous audiovisual tests and native latency population thresholds remain separate validation standards.",
+    "publicationPolicy": "Publish eleven justified editorial estimates in the canonical score owner with localized disclosure. Preserve identity/source scope; no external capability-index or full Kling 4 score conversion.",
     "latencyPolicy": "External imports are not application delivery latency. Keep existing 30 completed jobs / 5 distinct users threshold for the rolling operational statistics."
+  },
+  "sources": [
+    {
+      "id": "owned-six",
+      "kind": "owned-noncontrolled-sample-observations",
+      "path": "docs/launch/2026-11-05-model-refresh/flash-marketing-assets.json",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "owned-text",
+      "kind": "owned-targeted-native-generation",
+      "path": "docs/launch/2026-11-05-model-refresh/flash-text-score-sample.json",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "owned-run-ledger",
+      "kind": "supplier-request-receipts-not-application-latency",
+      "path": "docs/launch/2026-11-05-model-refresh/cinema-results.json",
+      "note": "B1/B2/B3 receipts are private artifacts; summarized supplier intervals are retained below.",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "active-customer-tariffs",
+      "kind": "native-active-customer-prices",
+      "path": "docs/launch/2026-11-05-model-refresh/flash-tariff-applied.json",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "external-flash-review",
+      "kind": "independent-first-person-early-access-review",
+      "publisher": "Tim Simmons / Theoretically Media",
+      "url": "https://theoreticallymedia.com/blog/kling-4-early-look-gemini-4-argon-ideogram-4-5-eleven-v4/",
+      "publishedAt": "2026-10-01",
+      "checkedAt": "2026-11-06",
+      "scope": "Explicit Flash early access, 720p. Author observations only; its UI controls are not the current fal contract."
+    },
+    {
+      "id": "external-flash-runs",
+      "kind": "first-party-commercial-platform-run-report",
+      "publisher": "Nora / SeedVideo AI",
+      "url": "https://www.seeddance.io/blog/kling-4-0-flash-guide",
+      "publishedAt": "2026-11-04",
+      "checkedAt": "2026-11-06",
+      "scope": "Eight self-reported Flash renders, six T2V and two I2V. Not a MaxVideoAI or neutral randomized sample."
+    },
+    {
+      "id": "fal-flash-t2v",
+      "kind": "primary-api-contract-not-quality-evidence",
+      "url": "https://fal.ai/models/kling/v4/flash/text-to-video",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "fal-flash-i2v",
+      "kind": "primary-api-contract-not-quality-evidence",
+      "url": "https://fal.ai/models/kling/v4/flash/image-to-video",
+      "checkedAt": "2026-11-06"
+    },
+    {
+      "id": "fal-flash-ref2v",
+      "kind": "primary-api-contract-not-quality-evidence",
+      "url": "https://fal.ai/models/kling/v4/flash/reference-to-video",
+      "checkedAt": "2026-11-06"
+    }
+  ],
+  "supplierAttemptObservations": [
+    {
+      "asset": "B1",
+      "requestedDurationSec": 15,
+      "elapsedSeconds": 215.049,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    },
+    {
+      "asset": "B2",
+      "requestedDurationSec": 15,
+      "elapsedSeconds": 218.007,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    },
+    {
+      "asset": "B3",
+      "requestedDurationSec": 15,
+      "elapsedSeconds": 221.132,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    },
+    {
+      "asset": "V1",
+      "requestedDurationSec": 5,
+      "elapsedSeconds": 87.333,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    },
+    {
+      "asset": "V2",
+      "requestedDurationSec": 5,
+      "elapsedSeconds": 138.292,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    },
+    {
+      "asset": "V3",
+      "requestedDurationSec": 5,
+      "elapsedSeconds": 99.884,
+      "attempts": 1,
+      "status": "completed",
+      "nativeApplicationDeliverySample": false
+    }
+  ],
+  "externalEvaluations": [
+    {
+      "publisher": "Theoretically Media",
+      "modelLabel": "Kling 4 early-access Flash, 720p",
+      "kind": "qualitative-first-person-review",
+      "sourceId": "external-flash-review",
+      "summary": "Reports reduced dialogue drift and spatial coherence, alongside invented actions/clothing and flat performances. No numeric criterion score is reported."
+    },
+    {
+      "publisher": "SeedVideo AI",
+      "modelLabel": "Kling 4.0 Flash",
+      "kind": "self-reported-run-timing",
+      "sourceId": "external-flash-runs",
+      "renders": 8,
+      "modes": {
+        "t2v": 6,
+        "i2v": 2
+      },
+      "reportedSingleFiveSecondT2VSeconds": 89,
+      "reportedFiveJobBatchCompletedWithinSeconds": 192,
+      "reportedFiveSecondI2VSeconds": 842,
+      "summary": "Action/camera adherence and a wrong-rider instruction miss. The five-job batch is text-to-video; a separate five-second image-to-video run took 842 seconds, attributed to upstream queueing. These are platform-specific timings, not MaxVideoAI latency."
+    }
+  ],
+  "externalEvaluationChecks": [
+    {
+      "publisher": "Artificial Analysis",
+      "url": "https://artificialanalysis.ai/video/leaderboard/text-to-video",
+      "checkedAt": "2026-11-06",
+      "table": "AA-Video-T2V v2.1 with audio",
+      "rowsRetrieved": 31,
+      "result": "no-matching-Flash-model-in-retrieved-table",
+      "usedForNumericScores": false
+    },
+    {
+      "publisher": "Artificial Analysis",
+      "url": "https://artificialanalysis.ai/video/leaderboard/image-to-video",
+      "checkedAt": "2026-11-06",
+      "table": "AA-Video-I2V v2.1 with audio",
+      "rowsRetrieved": 32,
+      "result": "no-matching-Flash-model-in-retrieved-table",
+      "usedForNumericScores": false
+    },
+    {
+      "publisher": "SpicyAPI",
+      "url": "https://spicyapi.ai/reviews/kling-4-0-flash/report",
+      "checkedAt": "2026-11-06",
+      "reportedIndex": 51.0,
+      "scaleMaximum": 100,
+      "basis": "capability-only; public quality/blind-test dimensions absent",
+      "usedForNumericScores": false,
+      "reason": "Different service feature index with undeclared resolution/missing T2V; not visual quality and not convertible to our criteria."
+    },
+    {
+      "publisher": "Megaton",
+      "url": "https://megaton.ai/evaluations/kling/kling-4/report",
+      "checkedAt": "2026-11-06",
+      "modelLabel": "Kling 4.0 full model",
+      "usedForNumericScores": false,
+      "reason": "Different identity; excluded from Flash scoring."
+    }
+  ],
+  "publicCopy": {
+    "en": "Editorial estimate, 6 November 2026: 8.3/10 overall. Eleven criteria combine six original Flash clips, one targeted lettering sample, recorded requests, active prices and attributed first-person Flash reviews. Selected frames and transcripts do not establish precise lip sync or a controlled benchmark. Confidence is lower for motion, text, audio and delivery reliability; no external capability index is converted into these scores.",
+    "fr": "Estimation éditoriale du 6 novembre 2026 : 8,3/10 au global. Les onze critères croisent six clips Flash originaux, un rendu ciblé sur le texte, les relevés de requêtes, les tarifs actifs et des essais Flash publiés et attribués. Images échantillonnées et transcriptions ne constituent ni une mesure précise de synchronisation labiale ni un benchmark contrôlé. La confiance est plus faible pour mouvement, texte, audio et fiabilité ; aucun indice externe de capacités n’est converti en ces notes.",
+    "es": "Estimación editorial del 6 de noviembre de 2026: 8,3/10 global. Los once criterios combinan seis clips Flash originales, una muestra de texto, registros de solicitudes, precios activos y reseñas Flash de primera mano atribuidas. Fotogramas y transcripciones no constituyen una medición precisa de sincronización labial ni un benchmark controlado. La confianza es menor en movimiento, texto, audio y fiabilidad; ningún índice externo de capacidades se convierte en estas notas."
+  },
+  "assessmentLimitations": [
+    "Seven heterogeneous, non-random outputs; no standard prompt pack, blind comparison or repeated-run study.",
+    "Only large frontal uppercase text assessed; no fine print, multilingual typography or arbitrary moving signage.",
+    "No phoneme-level alignment or exhaustive intermediate-frame audit; ASR sound labels remain unverified.",
+    "Six supplier receipts and one native completion do not meet rolling latency eligibility: 30 completed jobs and five distinct users.",
+    "MaxVideoAI sells access to these models. External platform reports may also be commercially selected.",
+    "Overall uses fidelity, motion and consistency only. Eleven estimates do not imply eleven independently measured dimensions."
+  ],
+  "independentReview": {
+    "reviewedAt": "2026-11-06",
+    "reviewerRole": "Second AI-assisted reviewer",
+    "scope": "Six contact sheets, I1 reference, prompts, transcripts, receipts and calibration; separate T1 contact-sheet/probe review.",
+    "outcome": "Reduced fidelity 8.6→8.3, motion 8.4→8.1, consistency 8.7→8.6, anatomy 8.4→8.3, audio 8.0→7.8 and sequencing 8.7→8.6. Text 8.5→8.2 for limited sample diversity. Overall 8.3.",
+    "mediaReinspected": true,
+    "continuousMotionReviewed": false,
+    "synchronizedAudioReviewed": false,
+    "controlledValidation": false
   }
 }
