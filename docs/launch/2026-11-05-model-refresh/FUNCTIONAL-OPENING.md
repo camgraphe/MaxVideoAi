@@ -11,9 +11,11 @@ lot marketing. Il ne constitue pas une preuve de déploiement en production.
   Kling 4 en production. Aucun Modify, Extend, dernier cadre ou multi_prompt structuré.
 - GPT Image 2.6 Flare et Sunburst : création et retouche raster par OpenAI direct,
   trois tailles, cinq qualités, complexité et références privées conservées.
-- Les 72 tarifs Flash sont déjà appliqués. Les 2 040 tarifs GPT approuvés à ×1,50
-  doivent être appliqués par les dix lots de l'admin natif et relus avant fusion.
-  La PR #622 livre leur import exact. Aucune modification du registre ne crée un prix.
+- Les 72 tarifs Flash à ×1,30 et les 2 040 tarifs GPT à ×1,50 sont appliqués.
+  Les dix lots GPT ont été confirmés dans l’admin natif puis réconciliés, révision
+  2187 → 4227 : montants exacts, 2 040 devis public/billing concordants, 17 175 autres
+  cellules et 8 279 snapshots de paiement antérieurs préservés. Voir
+  `gpt26-tariff-applied.json`. Aucune modification du registre ne crée un prix.
 - Aucun nouvel appel fournisseur payant, changement de secret ou route de canary.
   Le Git Preview protégé sert à vérifier les interfaces et devis avant livraison.
 
