@@ -7,6 +7,7 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   studioTimelineEditing?: boolean;
   studioExports?: boolean;
   creatorTools?: boolean;
+  characterStudio?: boolean;
 };
 
 // Discovery entrypoint. Detailed rules live in each tool descriptor.
@@ -15,7 +16,9 @@ export function buildMaxVideoAiMcpInstructions(
   capabilities: MaxVideoAiMcpInstructionCapabilities,
 ): string {
   const instructions = [
-    'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
+    capabilities.characterStudio
+      ? 'MaxVideoAI plans, quotes and recovers AI video/image work. List saved identities with list_saved_characters.'
+      : 'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
   ];
   if (capabilities.paidGeneration) {
     instructions.push(

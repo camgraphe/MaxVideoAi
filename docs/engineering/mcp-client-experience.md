@@ -8,6 +8,35 @@ Studio `video.prepare` has a separate explicit `shotPlan` field, translated to t
 
 # MaxVideoAI : découverte, fluidité et continuité MCP
 
+## Character Studio and Recast — 6 November 2026 isolated preview candidate
+
+`MCP_CHARACTER_STUDIO_ENABLED=1` adds authenticated Character Studio tools.
+`list_saved_characters` returns the Character Builder workspace link and an
+optional exact-name search. `get_saved_character` resolves look names to exact
+IDs and returns a separate look cursor. `select_saved_character` returns the
+owned original asset ID when reference access is enabled. `save_character`
+accepts the exact completed Builder original and uses its stored recipe to
+distinguish a base identity from a look. Author new recipes in Character Builder.
+
+The dedicated Recast preparation and confirmation tools require both the
+reference and paid-generation gates. Preparation preserves the selected
+character or original, product reference and independent fractional video and
+audio passages in the Recast quote. Confirmation carries its exact USD amount
+and requires explicit approval for one attempt. `get_recast_quote` and
+`get_recast_status` keep the original quote and any accepted job recoverable
+under the same account and OAuth client when either execution gate is closed.
+Polling follows the returned quote-scoped retry, and completed media links are
+available in structured output and the compact JSON text fallback.
+
+The isolated preview accepts its exact HTTPS account origin for Builder,
+reference and recovery destinations. The existing OAuth host and grant
+requirements apply. The published production catalog excludes these eight
+descriptors, so the curated production policy and fixture fingerprints stay
+the same. With all capabilities enabled, instructions measure 1,999 UTF-8 bytes
+and the longest added descriptor measures 671 bytes. In-memory SDK checks
+exercise discovery, schema rejection, exact consent and recovery. Host
+selection and provider execution require separate evidence.
+
 ## Kling V4 bounded preparation — 22 October 2026 source candidate
 
 The outer `prepare_generation.settings.multiPrompt` schema can now represent up
