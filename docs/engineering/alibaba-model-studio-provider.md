@@ -26,6 +26,27 @@ Wan 2.5, Wan 2.6, and HappyHorse 1.0 are intentionally outside this direct route
 
 ### Wan 3 input parity
 
+Wan 3 and Prime require at least 240 pixels on each side of an input image,
+including first/last frames and optional references in Modify/Extend. The shared
+`WAN_3_INPUT_SCHEMA.constraints.minImageSidePx` drives upload and library checks;
+Web preflight and executable agent quotes validate owned original dimensions
+before funding. Missing trusted image metadata fails closed for these models;
+caller-supplied dimensions cannot qualify an original.
+Executable agent requests must import image URLs first so dimensions and file
+size can be verified before reservation. Non-executable budget estimates may
+still describe an unverified image. Upload and library rejections use the same
+localized cause, corrective action and no-debit message as Web preflight.
+
+`frontend/lib/wan-image-failure-messages.ts` owns the precise resolution-rejection
+projection. Only validated integer measurements from the known diagnostic enter
+the public English message; provider URLs, JSON and credentials remain private.
+That canonical message survives job/refund persistence and is localized for Web
+history and Billing. Preflight says no credits were charged. A terminal failure
+uses persisted payment state: `refunded_wallet` confirms the amount returned,
+while a failed `paid_wallet` job says its wallet refund is not yet confirmed.
+This projection does not change refunds or rewrite historical generic messages.
+The Wan image validation/guidance and Alibaba poll tests cover these boundaries.
+
 Wan 3 Standard and Prime share the same authored capability schema. Reference mode accepts image, video, audio, one public HTTPS document URL, or one public HTTPS webpage URL. Document and webpage references are mutually exclusive and require prompt expansion. The direct adapter maps them to Alibaba `file` and `link` media; the Fal pre-acceptance fallback adds Fal's required `enable_thinking=true` internally, so that transport-specific switch is not exposed as a MaxVideoAI product control.
 
 Reference audio is limited to MP3 and WAV. Keep the authored field formats aligned with the direct adapter so M4A and other unsupported uploads fail with a clear format message before wallet reservation. The adapter retains a specific MP3/WAV message for requests that bypass that early check.

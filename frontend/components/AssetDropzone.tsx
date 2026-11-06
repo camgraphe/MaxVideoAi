@@ -145,7 +145,7 @@ export function AssetDropzone({
       if (!onSelect) return;
       if (field.type === 'image') {
         const validation = await validateEngineImageFile({
-          file, acceptFormats, minimumSidePx: minimumImageSidePx, engineLabel: engine.label, assetCopy,
+          file, acceptFormats, minimumSidePx: minimumImageSidePx, engineLabel: engine.label, engineId: engine.id, locale, assetCopy,
         });
         if (!validation.ok) return onError?.(validation.message);
         onSelect(field, file, slotIndex, validation.dimensions);
@@ -210,11 +210,13 @@ export function AssetDropzone({
       constraints.maxVideoSizeMB,
       constraints.maxVideoDurationSec,
       engine.label,
+      engine.id,
       field,
       limits.audioMaxDurationSec,
       limits.videoMaxDurationSec,
       limits.videoMaxMB,
       mediaFieldConstraint,
+      locale,
       minimumImageSidePx,
       onError,
       onSelect,

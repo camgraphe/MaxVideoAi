@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isWan3EngineId } from '@/lib/wan3-pricing';
 import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { gptImage26ReferenceFailure, isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
@@ -934,8 +935,18 @@ function validateReferences(
     if (!fields.length) fail('references', 'reference_invalid');
     validateTrustedReferenceDuration(request, reference, fields, candidate, options);
     validateTrustedAudioFormat(reference, fields, candidate, options);
-    // H3's executable references already require owned, measured originals.
-    const minimumImageSide = ['minimax-h3', 'kling-v4', 'kling-v4-flash'].includes(candidate.engine.id)
+    const wanImage = isWan3EngineId(candidate.engine.id) && fields.length === 1 && fields[0]!.type === 'image';
+    if (wanImage && reference.kind !== 'asset' && !options.allowUnverifiedReferenceDuration) {
+      fail('references', 'reference_invalid', 'dimensions_unverified');
+    }
+    if (wanImage && options.resolvedReferences) {
+      const resolved = resolvedReference(reference, options);
+      if (typeof resolved?.sizeBytes !== 'number' || !Number.isFinite(resolved.sizeBytes) || resolved.sizeBytes <= 0) {
+        fail('references', 'reference_invalid', 'metadata_unverified');
+      }
+    }
+    // Executable references use owned, measured originals, never caller dimensions.
+    const minimumImageSide = ['minimax-h3', 'kling-v4', 'kling-v4-flash', 'wan-3', 'wan-3-prime'].includes(candidate.engine.id)
       ? candidate.engine.inputSchema?.constraints?.minImageSidePx : undefined;
     if (fields.length === 1 && fields[0]!.type === 'image'
       && typeof minimumImageSide === 'number' && minimumImageSide > 0 && options.resolvedReferences) {

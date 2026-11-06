@@ -26729,6 +26729,7 @@
           }
         ],
         "constraints": {
+          "minImageSidePx": 240,
           "maxCombinedVideoDurationSec": 15,
           "maxCombinedAudioDurationSec": 15,
           "maxSourcePlusOutputDurationSec": 30,
@@ -27462,6 +27463,7 @@
           }
         ],
         "constraints": {
+          "minImageSidePx": 240,
           "maxCombinedVideoDurationSec": 15,
           "maxCombinedAudioDurationSec": 15,
           "maxSourcePlusOutputDurationSec": 30,

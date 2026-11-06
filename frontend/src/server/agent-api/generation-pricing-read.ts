@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 import { resolveCanonicalFluxLineage } from './generation-flux-lineage';
 import { fluxDraftQuoteBinding } from '@/server/flux-draft-cache';
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
@@ -78,9 +79,21 @@ export function validateGenerationPricingCapabilities(
         throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires reference media.');
       }
       if (error.kind === 'reference_invalid') {
-        throw new AgentApiError('REFERENCE_INVALID', error.referenceFailure
+        const rejectedImage = error.referenceFailure === 'image_dimensions_too_small'
+          ? resolvedReferences?.find(reference => reference.mediaKind === 'image'
+            && ((typeof reference.width === 'number' && reference.width < 240)
+              || (typeof reference.height === 'number' && reference.height < 240))) : undefined;
+        const imageOnly = request.references.length > 0 && request.references.every(reference => reference.kind === 'https'
+          ? reference.mediaKind === 'image'
+          : resolvedReferences?.find(resolved => resolved.assetId === reference.assetId)?.mediaKind === 'image');
+        const wanError = rejectedImage ? 'IMAGE_DIMENSIONS_TOO_SMALL'
+          : imageOnly && ['dimensions_unverified', 'metadata_unverified'].includes(error.referenceFailure ?? '')
+            ? 'IMAGE_DIMENSIONS_UNVERIFIED' : undefined;
+        const wanMessage = wanError ? getWanReferenceValidationMessage({ engineId: request.engineId,
+          error: wanError, actualWidth: rejectedImage?.width, actualHeight: rejectedImage?.height, minimumSidePx: 240 }) : null;
+        throw new AgentApiError('REFERENCE_INVALID', wanMessage ?? (error.referenceFailure
           ? REFERENCE_CONSTRAINT_MESSAGES[error.referenceFailure]
-          : 'The reference media is invalid for this model mode.');
+          : 'The reference media is invalid for this model mode.'));
       }
       invalidParameter(error.field);
     }

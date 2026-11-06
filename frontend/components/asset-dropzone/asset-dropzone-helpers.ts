@@ -2,6 +2,7 @@ import type { EngineInputField } from '@/types/engines';
 import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import { readImageFileDimensions } from '@/lib/client-image-upload';
 import { getImageDimensionViolation } from '@/lib/image-dimension-constraints';
+import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 import {
   validateMediaFileAgainstConstraint,
   type MediaFieldConstraint,
@@ -146,6 +147,8 @@ export async function validateEngineImageFile(params: {
   acceptFormats: string[];
   minimumSidePx: number | null;
   engineLabel: string;
+  engineId?: string;
+  locale?: string;
   assetCopy: ReturnType<typeof getLocalizedAssetDropzoneCopy>;
 }): Promise<{ ok: true; dimensions?: { width: number; height: number } } | { ok: false; message: string }> {
   if (!params.file.type.startsWith('image/')) {
@@ -170,7 +173,9 @@ export async function validateEngineImageFile(params: {
   } catch {
     return {
       ok: false,
-      message: 'Unable to read this image\'s dimensions. Choose another image and try again.',
+      message: getWanReferenceValidationMessage({ engineId: params.engineId ?? '', locale: params.locale,
+        error: 'IMAGE_DIMENSIONS_UNVERIFIED' })
+        ?? 'Unable to read this image\'s dimensions. Choose another image and try again.',
     };
   }
   const violation = getImageDimensionViolation({
@@ -178,5 +183,8 @@ export async function validateEngineImageFile(params: {
     minimumSidePx: params.minimumSidePx,
     engineLabel: params.engineLabel,
   });
-  return violation ? { ok: false, message: violation.message } : { ok: true, dimensions };
+  return violation ? { ok: false, message: getWanReferenceValidationMessage({ engineId: params.engineId ?? '',
+    locale: params.locale, error: 'IMAGE_DIMENSIONS_TOO_SMALL', actualWidth: violation.width,
+    actualHeight: violation.height, minimumSidePx: violation.minimumSidePx }) ?? violation.message }
+    : { ok: true, dimensions };
 }

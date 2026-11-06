@@ -25,6 +25,9 @@ export type MediaInputEligibility = {
   maxDurationSec?: number | null;
   maxDurationExclusive?: boolean;
   minimumImageSidePx?: number;
+  engineId?: string;
+  actualWidth?: number;
+  actualHeight?: number;
 };
 const positive = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0;
 
@@ -65,9 +68,11 @@ export function getMediaInputEligibility({ asset, field, engine, mode, context =
   const minImageSide = field.type === 'image' ? normalizeMinimumImageSide(engine?.inputSchema?.constraints?.minImageSidePx) : null;
   const minVideoPixels = field.type === 'video' ? engine?.inputSchema?.constraints?.minVideoPixelCount : null;
   const klingEdit = engine?.activeVideoOperation === 'kling-edit' && field.id === 'video_url';
-  if (knownDimensions && ((minImageSide && getImageDimensionViolation({ width: asset.width, height: asset.height,
+  if (knownDimensions && minImageSide && getImageDimensionViolation({ width: asset.width, height: asset.height,
     minimumSidePx: minImageSide, engineLabel: engine?.label ?? '' }))
-    || (positive(minVideoPixels) && asset.width! * asset.height! < minVideoPixels)
+    return { status: 'blocked', issue: 'dimensions', minimumImageSidePx: minImageSide,
+      engineId: engine?.id, actualWidth: asset.width!, actualHeight: asset.height! };
+  if (knownDimensions && ((positive(minVideoPixels) && asset.width! * asset.height! < minVideoPixels)
     || (klingEdit && validateKlingEditSourceDimensions(asset)))) return { status: 'blocked', issue: 'dimensions' };
   const mime = asset.mime?.split(';', 1)[0]?.trim().toLowerCase();
   const knownMime = Boolean(mime && mime !== 'application/octet-stream');

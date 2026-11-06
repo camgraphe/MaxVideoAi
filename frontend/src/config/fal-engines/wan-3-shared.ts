@@ -102,6 +102,7 @@ export const WAN_3_INPUT_SCHEMA: NonNullable<EngineCaps['inputSchema']> = {
     { id: 'enable_prompt_expansion', type: 'boolean', label: 'Prompt expansion', modes: ['v2v'], default: false },
   ],
   constraints: {
+    minImageSidePx: 240,
     maxCombinedVideoDurationSec: 15,
     maxCombinedAudioDurationSec: 15,
     maxSourcePlusOutputDurationSec: 30,

@@ -22,6 +22,8 @@ import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { detectMediaDuration, detectVideoDimensions, detectVideoMetadata } from '@/server/media/detect-has-audio';
 import { isManagedStorageUrl } from '@/server/provider-output-policy';
 import type { ResolvedReference } from '@/server/agent-api/reference-types';
+import { isWan3EngineId } from '@/lib/wan3-pricing';
+import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 
 type QueryFn = <T = unknown>(sql: string, params?: readonly unknown[]) => Promise<T[]>;
 
@@ -333,6 +335,11 @@ export async function validateGenerationMediaConstraints(params: {
         : undefined) ?? (requiresExactSource && candidate.assetId ? undefined : matchingRows[0]);
     const sizeBytes = stored ? normalizeSizeBytes(stored.size_bytes) : null;
     if (!stored || sizeBytes == null) {
+      if (candidate.kind === 'image' && isWan3EngineId(params.engineId)) {
+        return failure({ error: 'MEDIA_DIMENSIONS_UNVERIFIED', fieldId: candidate.fieldId,
+          message: getWanReferenceValidationMessage({ engineId: params.engineId, field: candidate.fieldId,
+            error: 'MEDIA_DIMENSIONS_UNVERIFIED' })! });
+      }
       if (candidate.kind === 'image' && !requiresOwnedMedia) continue;
       return failure({
         error: 'MEDIA_METADATA_UNVERIFIED',
@@ -435,7 +442,9 @@ export async function validateGenerationMediaConstraints(params: {
         return failure({
           error: 'MEDIA_DIMENSIONS_UNVERIFIED',
           fieldId: candidate.fieldId,
-          message: 'This image reference has no trusted dimension metadata. Upload it again before generating.',
+          message: getWanReferenceValidationMessage({ engineId: params.engineId, field: candidate.fieldId,
+            error: 'MEDIA_DIMENSIONS_UNVERIFIED' })
+            ?? 'This image reference has no trusted dimension metadata. Upload it again before generating.',
           minimumSidePx,
         });
       }
@@ -443,7 +452,9 @@ export async function validateGenerationMediaConstraints(params: {
         return failure({
           error: 'MEDIA_DIMENSIONS_TOO_SMALL',
           fieldId: candidate.fieldId,
-          message: `This image is ${width} x ${height} px. ${engine.label} requires each side to be at least ${minimumSidePx} px.`,
+          message: getWanReferenceValidationMessage({ engineId: params.engineId, field: candidate.fieldId,
+            error: 'MEDIA_DIMENSIONS_TOO_SMALL', actualWidth: width, actualHeight: height, minimumSidePx })
+            ?? `This image is ${width} x ${height} px. ${engine.label} requires each side to be at least ${minimumSidePx} px.`,
           actualWidth: width,
           actualHeight: height,
           minimumSidePx,
