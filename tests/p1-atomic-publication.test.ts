@@ -74,7 +74,9 @@ test('atomic publication is backed by launch media, scores, specs, content, comp
     const launch = readinessById.get(id);
     assert.equal(launch?.waveId, 'p1', `${id}: readiness wave`);
     assert.equal(launch?.acceptedAssetCount, 2, `${id}: accepted videos`);
-    const score = scoresBySlug.get(id);
+    const score = id === 'gemini-omni-flash'
+      ? scores.historicalScores.find(row => row.modelSlug === id && row.modelVersion === '1.1')
+      : scoresBySlug.get(id);
     assert.ok(score, `${id}: score row`);
     for (const key of SCORE_KEYS) assert.equal(Number.isFinite(score[key]), true, `${id}.${key}`);
     assert.ok(specsBySlug.get(id)?.sources.length, `${id}: sourced key specs`);

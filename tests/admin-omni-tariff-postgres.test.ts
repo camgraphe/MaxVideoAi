@@ -39,7 +39,7 @@ test('Omni preserved token bands and editable output/source prices share active 
     const preserve = { operation: 'create' as const, scope: 'continuous_input' as const,
       scenarioId: selected.scenarioId, price: { kind: 'preserve_current' as const } };
     const initial = await previewCustomerTariffChange(preserve);
-    assert.equal(initial.proposedCents, 47);
+    assert.equal(initial.proposedCents, 33);
     assert.equal(initial.selector.durationSec, 'continuous');
     assert.ok(initial.continuousInputRange!.minimumGrossCents >= 0);
     const staged = await confirmCustomerTariffChange(preserve, initial.fingerprint, actor, () => {});
@@ -72,7 +72,7 @@ test('Omni preserved token bands and editable output/source prices share active 
     const back = await previewCustomerTariffChange(rollback);
     assert.equal(back.proposedCents, originals.find(row => row.scenario.id === neighbor.id)!.cents);
     await confirmCustomerTariffChange(rollback, back.fingerprint, actor, () => {});
-    assert.equal((await computeCanonicalPublicSnapshot(resolvePublicModelScenario(input)!.context)).totalCents, 47);
+    assert.equal((await computeCanonicalPublicSnapshot(resolvePublicModelScenario(input)!.context)).totalCents, 33);
     assert.equal(paid.totalCents, 55, 'a stored paid quote is immutable');
     assert.equal((await loadCustomerTariffHistory(staged.event.targetId)).length, 3);
     assert.equal((await db.pool.query('SELECT count(*)::integer AS n FROM app_customer_tariff_cell_versions')).rows[0].n, 2);

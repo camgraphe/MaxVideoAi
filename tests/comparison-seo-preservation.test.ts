@@ -33,11 +33,11 @@ test('comparison descriptions announce the criteria actually available in the sc
     });
     const { buildComparePageMetadata, buildCompareWebPageJsonLd, buildComparisonMetrics, getPublishedComparisonSlugs, resolveEngines } = requireFrontend(output);
     const descriptions = {
-      en: 'Compare Gemini Omni Flash 1.1 vs Google Veo 3.1 Fast on MaxVideoAI with key specs, and a scorecard across 10 criteria.',
-      fr: 'Comparez Gemini Omni Flash 1.1 vs Google Veo 3.1 Fast sur MaxVideoAI avec des caractéristiques clés et une grille de scores sur 10 critères.',
-      es: 'Compara Gemini Omni Flash 1.1 vs Google Veo 3.1 Fast en MaxVideoAI con specs clave y un scorecard en 10 criterios.',
+      en: 'Compare Gemini Omni Flash 1.2 and Veo 3.1 Fast for video editing, image references, native audio and current prices. Choose by workflow and output settings.',
+      fr: 'Comparez Gemini Omni Flash 1.2 et Veo 3.1 Fast : édition vidéo, images de référence, audio natif et prix actuels. Choisissez selon votre projet et vos réglages.',
+      es: 'Compara Gemini Omni Flash 1.2 y Veo 3.1 Fast: edición de vídeo, imágenes de referencia, audio nativo y precios actuales. Elige según tu proyecto y ajustes.',
     };
-    for (const locale of ['en', 'fr', 'es'] as const) await t.test(locale + ' generic description, Open Graph and Twitter', async () => {
+    for (const locale of ['en', 'fr', 'es'] as const) await t.test(locale + ' localized description, Open Graph and Twitter', async () => {
       const metadata = await buildComparePageMetadata({ params: Promise.resolve({ locale, slug: 'gemini-omni-flash-vs-veo-3-1-fast' }) });
       assert.equal(metadata.description, descriptions[locale]);
       assert.equal(metadata.openGraph.description, descriptions[locale]);
@@ -57,7 +57,7 @@ test('comparison descriptions announce the criteria actually available in the sc
       assert.equal(metrics.length, pairHasNativeAudio ? 10 : 9);
       assert.match(schema.description, new RegExp('\\b' + metrics.length + ' criteria\\b'));
       const authored = buildCompareWebPageJsonLd({ compareCopy: en.comparePage, comparisonCanonicalUrl: 'https://maxvideoai.com/ai-video-engines/gemini-omni-flash-vs-veo-3-1-fast', pairHasNativeAudio, left, right, pairHasKling3Native4k: false, metaOverride: { description: 'Compare {left} vs {right} with an 11-point scorecard.' } });
-      assert.equal(authored.description, 'Compare Gemini Omni Flash 1.1 vs Google Veo 3.1 Fast with a ' + metrics.length + '-criterion scorecard.');
+      assert.equal(authored.description, 'Compare Gemini Omni Flash 1.2 vs Google Veo 3.1 Fast with a ' + metrics.length + '-criterion scorecard.');
     });
     await t.test('all published pairs keep metadata counts aligned with their real scorecard in each locale', async () => {
       for (const slug of getPublishedComparisonSlugs()) {

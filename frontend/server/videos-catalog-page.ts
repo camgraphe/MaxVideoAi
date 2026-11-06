@@ -85,7 +85,7 @@ function catalogSql(sort: ExampleSort, withCuration: boolean, idsOnly = false, o
     FROM (SELECT COUNT(*)::int AS total FROM unique_memberships) totals
     LEFT JOIN selected_page page ON TRUE ORDER BY page.ordinal` : `SELECT totals.total,${includeVersionSamples ? `
       CASE WHEN page.ordinal=$4+1 OR page.job_id IS NULL THEN (
-        SELECT COALESCE(jsonb_agg(jsonb_build_object('engineId',engine_id,'videoId',job_id) ORDER BY ${SORT_SQL[sort]}),'[]'::jsonb)
+        SELECT COALESCE(jsonb_agg(jsonb_strip_nulls(jsonb_build_object('engineId',engine_id,'videoId',job_id,'engineLabel',NULLIF(engine_label,''))) ORDER BY ${SORT_SQL[sort]}),'[]'::jsonb)
         FROM (SELECT DISTINCT ON(engine_id) * FROM unique_memberships WHERE has_prompt
           ORDER BY engine_id,${SORT_SQL[sort]}) version_samples
       ) END AS version_samples,` : ''}media.*

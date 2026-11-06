@@ -19,10 +19,13 @@ export function CompareModelGalleries({ locale, left, right, galleries, returnPa
     <div className="compare-gallery-pair">
       {([['left', left], ['right', right]] as const).map(([side, entry]) => {
         const name = formatEngineName(entry);
+        const originalModels = [...new Set(galleries[side].map(item => item.engineLabel).filter(label => label && label !== name))];
+        const originalLabel = locale === 'fr' ? 'Modèles des exemples' : locale === 'es' ? 'Modelos de los ejemplos' : 'Models used in these examples';
         return <article key={entry.modelSlug} aria-label={`${copy.examples} · ${name}`}>
           <h3><EngineIcon engine={{ id: entry.engineId, brandId: entry.brandId, label: name }} size={28} framed={false} />{name}</h3>
+          {originalModels.length ? <p>{originalLabel}: {originalModels.join(', ')}</p> : null}
           {galleries[side].length ? <div className="compare-gallery-strip">
-            {galleries[side].map(item => <CompareGalleryCard engine={entry.modelSlug} key={item.id} locale={locale} item={item} name={name} watchLabel={copy.watch} returnPath={returnPath} />)}
+            {galleries[side].map(item => <CompareGalleryCard engine={entry.modelSlug} key={item.id} locale={locale} item={item} name={item.engineLabel || name} watchLabel={copy.watch} returnPath={returnPath} />)}
           </div> : <p className="compare-gallery-empty">{copy.empty}</p>}
           <Link href={getExamplesHref(entry.modelSlug) ?? '/examples'} prefetch={false} className="compare-gallery-link">{copy.allExamples}<ArrowUpRight size={16} aria-hidden="true" /></Link>
         </article>;

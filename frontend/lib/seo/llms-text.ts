@@ -69,7 +69,7 @@ export const P1_PRIMARY_COMPARISONS = [
   { slug: 'minimax-h3-vs-minimax-h3-max', label: 'MiniMax H3 vs MiniMax H3 Max' },
   { slug: 'kling-3-turbo-pro-vs-kling-3-turbo-standard', label: 'Kling 3 Turbo Pro vs Standard' },
   { slug: 'kling-3-pro-vs-kling-3-turbo-pro', label: 'Kling 3 Pro vs Kling 3 Turbo Pro' },
-  { slug: 'gemini-omni-flash-vs-kling-3-turbo-pro', label: 'Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro' },
+  { slug: 'gemini-omni-flash-vs-kling-3-turbo-pro', label: 'Gemini Omni Flash 1.2 vs Kling 3 Turbo Pro' },
 ] as const;
 
 export const TREND_PRIMARY_COMPARISONS = [
@@ -80,7 +80,7 @@ export const TREND_PRIMARY_COMPARISONS = [
 const ESTABLISHED_PRIMARY_COMPARISONS = [
   { slug: 'kling-v4-vs-kling-v4-flash', label: 'Kling 4.0 vs Kling 4.0 Flash' },
   // Retain useful discovery paths identified in GSC, including established versions.
-  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.2 vs Veo 3.1' },
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Seedance 2.0 Fast' },
   { slug: 'veo-3-1-fast-vs-veo-3-1-lite', label: 'Veo 3.1 Fast vs Veo 3.1 Lite' },
   { slug: 'veo-3-1-vs-veo-3-1-lite', label: 'Veo 3.1 vs Veo 3.1 Lite' },

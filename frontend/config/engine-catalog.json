@@ -1859,7 +1859,7 @@
   {
     "engineId": "gemini-omni-flash",
     "modelSlug": "gemini-omni-flash",
-    "marketingName": "Gemini Omni Flash 1.1",
+    "marketingName": "Gemini Omni Flash 1.2",
     "provider": "Google",
     "brandId": "google-gemini",
     "family": "veo",
@@ -1879,8 +1879,8 @@
         "gemini-omni-flash"
       ]
     },
-    "versionLabel": "1.1 Preview",
-    "availability": "limited",
+    "versionLabel": "1.2",
+    "availability": "available",
     "logoPolicy": "textOnly",
     "lifecycle": "current",
     "successorId": null,
@@ -1924,10 +1924,10 @@
     "surfacesSource": "registry",
     "engine": {
       "id": "gemini-omni-flash",
-      "label": "Gemini Omni Flash 1.1",
+      "label": "Gemini Omni Flash 1.2",
       "provider": "Google",
-      "version": "1.1 Preview",
-      "status": "early_access",
+      "version": "1.2",
+      "status": "live",
       "latencyTier": "fast",
       "queueDepth": 0,
       "region": "global",
@@ -2185,41 +2185,41 @@
       "pricingDetails": {
         "currency": "USD",
         "perSecondCents": {
-          "default": 10.136000000000001,
+          "default": 6.950399999999999,
           "byResolution": {
-            "360p": 3.3792500000000003,
-            "720p": 10.136000000000001,
-            "1080p": 15.204,
-            "4k": 30.408
+            "360p": 2.3172,
+            "720p": 6.950399999999999,
+            "1080p": 10.4256,
+            "4k": 20.8512
           }
         },
         "maxDurationSec": 10
       },
       "pricing": {
         "unit": "USD/s",
-        "base": 0.10136,
+        "base": 0.069504,
         "byResolution": {
-          "360p": 0.0337925,
-          "720p": 0.10136,
-          "1080p": 0.15204,
-          "4k": 0.30408
+          "360p": 0.023172,
+          "720p": 0.069504,
+          "1080p": 0.104256,
+          "4k": 0.208512
         },
         "currency": "USD",
-        "notes": "Google Omni 1.1 output-token provider facts by resolution; customer pricing is applied canonically."
+        "notes": "Google Omni 1.2 output-token provider facts by resolution; customer pricing is applied canonically."
       },
-      "updatedAt": "2026-09-03T00:00:00Z",
+      "updatedAt": "2026-11-05T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
         "provider": "google_vertex_omni",
-        "modelSlug": "gemini-omni-1.1-flash-preview"
+        "modelSlug": "gemini-omni-1.2-flash"
       },
-      "availability": "limited",
+      "availability": "available",
       "brandId": "google-gemini"
     },
     "modes": [
       {
         "mode": "t2v",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "t2v"
@@ -2253,7 +2253,7 @@
       },
       {
         "mode": "i2v",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "i2v"
@@ -2296,7 +2296,7 @@
       },
       {
         "mode": "ref2v",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "ref2v"
@@ -2339,7 +2339,7 @@
       },
       {
         "mode": "fl2v",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "fl2v"
@@ -2382,7 +2382,7 @@
       },
       {
         "mode": "v2v",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "v2v"
@@ -2417,7 +2417,7 @@
       },
       {
         "mode": "extend",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "extend"
@@ -2451,7 +2451,7 @@
       },
       {
         "mode": "retake",
-        "falModelId": "gemini-omni-1.1-flash-preview",
+        "falModelId": "gemini-omni-1.2-flash",
         "ui": {
           "modes": [
             "retake"

@@ -129,7 +129,8 @@ test('P1 identities are publicly discoverable after the atomic publication gate'
 test('P1 details expose only the actually executable canary modes and shared capability facts', async () => {
   const catalogDeps = deps();
   const gemini = await getAgentModelDetails('gemini-omni-flash', catalogDeps);
-  assert.equal(gemini.label, 'Gemini Omni Flash 1.1');
+  assert.equal(gemini.label, 'Gemini Omni Flash 1.2');
+  assert.ok(gemini.modes.every(mode => mode.audio === 'always_generated'), 'Omni sound direction is not an audio on/off switch');
   assert.deepEqual(gemini.modes.map(({ mode }) => mode), [
     't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend',
   ]);
@@ -170,6 +171,19 @@ test('P1 details expose only the actually executable canary modes and shared cap
   assert.equal(h3Serialized.includes('"provider":"fal"'), false);
   assert.equal(h3Serialized.includes('fal-ai'), false);
   assert.equal(h3Serialized.includes('minimax/h3-max'), false);
+});
+
+test('Omni rejects a silent-audio setting instead of accepting a provider option it cannot apply', () => {
+  const omni = candidate('gemini-omni-flash', ['t2v']);
+  const settings = { durationSec: 3, resolution: '360p', aspectRatio: '16:9' };
+  for (const audio of [undefined, true]) {
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(request({
+      engineId: 'gemini-omni-flash', mode: 't2v', settings: { ...settings, ...(audio === undefined ? {} : { audio }) },
+    }), omni));
+  }
+  assert.throws(() => validateCanonicalGenerationCapabilities(request({
+    engineId: 'gemini-omni-flash', mode: 't2v', settings: { ...settings, audio: false },
+  }), omni), GenerationCapabilityError);
 });
 
 test('Gemini first/last-frame and extension require owned media with trusted metadata end to end', () => {

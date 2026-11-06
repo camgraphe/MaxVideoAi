@@ -1,25 +1,25 @@
 {
-  "marketingName": "Gemini Omni Flash 1.1",
-  "versionLabel": "1.1",
+  "marketingName": "Gemini Omni Flash 1.2",
+  "versionLabel": "1.2",
   "seo": {
-    "title": "Gemini Omni Flash 1.1: vídeo IA 4K, edición y audio",
-    "description": "Genera vídeos Gemini Omni Flash 1.1 de 3–10 segundos desde texto, fotogramas, referencias o vídeo fuente, de 360p a 4K con audio nativo."
+    "title": "Gemini Omni Flash 1.2: vídeo IA 4K, edición y audio",
+    "description": "Genera vídeos Gemini Omni Flash 1.2 de 3–10 segundos desde texto, fotogramas, referencias o vídeo fuente, de 360p a 4K con audio nativo."
   },
-  "overview": "Gemini Omni Flash 1.1 es la ruta de vídeo multimodal directa de Google para generar, usar referencias, controlar inicio y fin, editar, extender y refinar.",
+  "overview": "Gemini Omni Flash 1.2 es la ruta de vídeo multimodal directa de Google para generar, usar referencias, controlar inicio y fin, editar, extender y refinar.",
   "decision": {
     "modelSlug": "gemini-omni-flash",
     "hero": {
-      "eyebrow": "GOOGLE OMNI FLASH 1.1",
-      "title": "Gemini Omni Flash 1.1",
+      "eyebrow": "GOOGLE OMNI FLASH 1.2",
+      "title": "Gemini Omni Flash 1.2",
       "subtitle": "Crea y edita vídeo de 3–10 segundos en 360p, 720p, 1080p o 4K con referencias, control de fotogramas y audio nativo.",
       "subtitleHighlights": [
         "3–10s",
         "360p–4K",
         "Native audio"
       ],
-      "paragraph": "Elige Omni Flash 1.1 cuando el flujo continúa después de un render: genera desde texto o imágenes, edita o extiende un clip y refina la interacción guardada.",
+      "paragraph": "Elige Omni Flash 1.2 cuando el flujo continúa después de un render: genera desde texto o imágenes, edita o extiende un clip y refina la interacción guardada.",
       "primaryCta": {
-        "label": "Generar con Gemini Omni Flash 1.1",
+        "label": "Generar con Gemini Omni Flash 1.2",
         "href": "/app?engine=gemini-omni-flash"
       },
       "secondaryCta": {
@@ -28,11 +28,11 @@
       },
       "quickLinks": [
         {
-          "label": "Comparar Omni Flash 1.1 con Veo 3.1",
+          "label": "Comparar Omni Flash 1.2 con Veo 3.1",
           "href": "/es/comparativa/gemini-omni-flash-vs-veo-3-1"
         },
         {
-          "label": "Ver precio de Omni Flash 1.1",
+          "label": "Ver precio de Omni Flash 1.2",
           "href": "/es/precios#gemini-omni-flash-pricing"
         },
         {
@@ -77,9 +77,9 @@
     "decisionCards": [
       {
         "title": "Ideal para iteración multimodal",
-        "body": "Usa Omni Flash 1.1 cuando referencias, edición, extensión y refinado deben convivir en un flujo Google.",
+        "body": "Usa Omni Flash 1.2 cuando referencias, edición, extensión y refinado deben convivir en un flujo Google.",
         "cta": {
-          "label": "Comparar Omni Flash 1.1 con Veo 3.1",
+          "label": "Comparar Omni Flash 1.2 con Veo 3.1",
           "href": "/es/comparativa/gemini-omni-flash-vs-veo-3-1"
         }
       }
@@ -96,19 +96,23 @@
       {
         "title": "Refinar",
         "body": "Usa una interacción guardada para pedir un cambio específico."
+      },
+      {
+        "title": "De Omni Flash 1.1 a 1.2",
+        "body": "Los nuevos resultados usan Gemini Omni Flash 1.2, disponible oficialmente desde el 5 de noviembre de 2026. Los ejemplos revisados y el Prompt Lab de abajo se crearon con 1.1 y conservan esa atribución. MaxVideoAI ofrece actualmente 3–10 segundos; las duraciones de generación y edición de 11–15 segundos documentadas por Google aún no se ofrecen aquí."
       }
     ],
     "pricingCopy": {
-      "title": "Precios de Gemini Omni Flash 1.1",
+      "title": "Precios de Gemini Omni Flash 1.2",
       "subtitle": "Compara el total exacto por duración y resolución antes del render.",
       "footnote": "La cotización mostrada al generar sigue siendo la referencia.",
-      "ctaLabel": "Generar con Omni Flash 1.1",
+      "ctaLabel": "Generar con Omni Flash 1.2",
       "ctaHref": "/app?engine=gemini-omni-flash",
       "maxDurationNote": "3–10s · 360p–4K"
     },
     "meta": {
-      "title": "Gemini Omni Flash 1.1: vídeo IA 4K, edición y audio",
-      "description": "Genera vídeos Gemini Omni Flash 1.1 de 3–10 segundos desde texto, fotogramas, referencias o vídeo fuente, de 360p a 4K con audio nativo."
+      "title": "Gemini Omni Flash 1.2: vídeo IA 4K, edición y audio",
+      "description": "Genera vídeos Gemini Omni Flash 1.2 de 3–10 segundos desde texto, fotogramas, referencias o vídeo fuente, de 360p a 4K con audio nativo."
     }
   },
   "prompting": {

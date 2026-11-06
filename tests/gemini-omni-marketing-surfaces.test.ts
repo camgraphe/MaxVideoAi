@@ -68,7 +68,7 @@ test('Gemini Omni Flash 1.1 has localized model content with non-cannibalizing i
 
   for (const locale of LOCALES) {
     const { raw, data, prompting } = readModelContent(locale);
-    assert.equal(data.marketingName, 'Gemini Omni Flash 1.1');
+    assert.equal(data.marketingName, 'Gemini Omni Flash 1.2');
     assert.match(raw, /360p/);
     assert.match(raw, /1080p/i);
     assert.match(raw, /4K/i);
@@ -198,24 +198,24 @@ test('Gemini Omni Flash is exposed on the pricing matrix with a visible 10s 720p
   for (const locale of LOCALES) {
     const row = buildPricingHubData(locale).video.rows.find((candidate) => candidate.anchorId === 'gemini-omni-flash-pricing');
     assert.ok(row, `${locale} pricing row should include Gemini Omni Flash`);
-    assert.equal(row.engineName, 'Gemini Omni Flash 1.1');
+    assert.equal(row.engineName, 'Gemini Omni Flash 1.2');
     assert.equal(row.family, 'veo');
     assert.equal(row.modelHref, expectedModelHrefs[locale]);
     assert.ok(row.links.some((link) => link.href === '/app?engine=gemini-omni-flash'));
 
     const previewQuote = row.quotes['10s-720p'];
     assert.equal(previewQuote.status, 'exact');
-    assert.equal(previewQuote.amountCents, 132);
-    assert.match(previewQuote.rateDisplay ?? '', /0[,.]13/);
+    assert.equal(previewQuote.amountCents, 91);
+    assert.match(previewQuote.rateDisplay ?? '', /0[,.]09/);
 
     const standard1080Quote = row.quotes['10s-1080p'];
     assert.equal(standard1080Quote.status, 'exact');
-    assert.equal(standard1080Quote.amountCents, 198);
-    assert.match(standard1080Quote.rateDisplay ?? '', /0[,.]20/);
+    assert.equal(standard1080Quote.amountCents, 136);
+    assert.match(standard1080Quote.rateDisplay ?? '', /0[,.]14/);
   }
 });
 
-test('Gemini Omni Flash comparison pages are published as scorecard-only with localized 1.1 overrides', () => {
+test('Gemini Omni Flash comparison pages are published as scorecard-only with localized 1.2 overrides', () => {
   const publishedSlugs = getPublishedComparisonSlugs();
   for (const slug of OMNI_COMPARE_SLUGS) {
     assert.ok(compareConfig.scoreboardOnlyComparisons.includes(slug), `${slug} should be scorecard-only at launch`);
@@ -230,7 +230,7 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.ok(spanishComparison, 'missing ES Omni vs Veo override');
   for (const comparison of [englishComparison, frenchComparison, spanishComparison]) {
     assert.ok((comparison.heroIntro?.length ?? 0) >= 140, 'localized context should explain the exact Veo variant');
-    assert.match(comparison.heroIntro ?? '', /Omni Flash 1\.1/);
+    assert.match(comparison.heroIntro ?? '', /Omni Flash 1\.2/);
     assert.match(comparison.heroIntro ?? '', /Veo 3\.1/);
     assert.ok((comparison.decisionSummary?.length ?? 0) >= 120, 'the opening should retain a substantive decision');
     assert.ok(comparison.decisionSummary!.length <= 240, 'the opening should remain concise');
@@ -241,16 +241,16 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.match(englishComparison.quickVerdict?.body ?? '', /Veo 3\.1/i);
 });
 
-test('Gemini Omni Flash limited preview is not labeled as pre-launch on compare pages', () => {
+test('Gemini Omni Flash GA release is not labeled as pre-launch on compare pages', () => {
   const entry = engineCatalog.find((candidate) => candidate.modelSlug === 'gemini-omni-flash');
   assert.ok(entry, 'Gemini Omni Flash catalog entry should exist');
-  assert.equal(entry.availability, 'limited');
+  assert.equal(entry.availability, 'available');
   assert.equal(isPrelaunchAvailability(entry), false);
 });
 
 test('Gemini Omni Flash has benchmark scores and a promoted comparison while the bounded menu prioritizes Veo', () => {
-  const score = scoresFile.scores.find((entry) => entry.modelSlug === 'gemini-omni-flash');
-  assert.ok(score, 'Gemini Omni Flash should have a benchmark score row for compare scorecards');
+  const score = scoresFile.historicalScores.find((entry) => entry.modelSlug === 'gemini-omni-flash');
+  assert.ok(score, 'Gemini Omni Flash should preserve its historical 1.1 benchmark record');
   for (const field of SCORE_FIELDS) {
     assert.equal(typeof (score as Record<string, unknown>)[field], 'number', `gemini-omni-flash.${field} should be scored`);
   }

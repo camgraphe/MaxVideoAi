@@ -2,7 +2,7 @@
 
 Research Date: 2026-09-03
 
-Purpose: preserve the existing Gemini Omni Flash authority while moving visible product language and capabilities to 1.1.
+Purpose: preserve the existing Gemini Omni Flash authority. The September 3 map below records the 1.1 launch. The November 5 upgrade keeps the same owners for 1.2; see [the upgrade evidence and URL decision](gemini-omni-flash-1-2-upgrade.md).
 
 ## Ownership Matrix
 

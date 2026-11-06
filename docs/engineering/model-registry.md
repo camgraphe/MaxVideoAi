@@ -75,7 +75,13 @@ navigation below the gallery. It intersects registry publication with real
 prompt-bearing membership across the full catalogue; older versions must not
 disappear merely because they move beyond the first 24 cards. Current/earlier
 groups follow `publication.examples.current`, never generation availability or a
-fallback to the first two models. Verify both a new published model without an
+fallback to the first two models. When an unversioned engine upgrades in place,
+preserve the stored `engine_label` in API cards, galleries, watch pages, JSON-LD
+and compact version samples; a recorded older numeric version also stays in the
+earlier-version group. Current catalog labels describe generation choices, not
+the provenance of already-created media. Archive old benchmark rows separately
+under `historicalScores` with `modelVersion`; current score readers must not
+inherit them. Verify both a new published model without an
 example and a historical example beyond page one with
 `tests/examples-version-continuity.test.ts` and
 `tests/examples-catalog-pagination-postgres.test.ts`. Update version-specific

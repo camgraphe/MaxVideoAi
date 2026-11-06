@@ -82,7 +82,7 @@ One app-published model-mode pair remains intentionally absent from MCP executio
 
 | Model | Mode | Scope | Why it remains closed |
 | --- | --- | --- | --- |
-| Gemini Omni Flash 1.1 | `retake` | Public MCP | Requires a private previous-interaction identifier; exposing it would break the transport-neutral contract. The authenticated workspace can retain that private interaction state. |
+| Gemini Omni Flash 1.2 | `retake` | Public MCP | Requires a private previous-interaction identifier; exposing it would break the transport-neutral contract. The authenticated workspace can retain that private interaction state. |
 
 LTX 2.3 audio-to-video and retake, the Luma Ray reframe modes, and Kling 2.5
 Standard now use verified MaxVideoAI assets, exact canonical pricing, and the
