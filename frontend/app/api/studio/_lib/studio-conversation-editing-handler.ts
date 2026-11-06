@@ -8,7 +8,7 @@ import {editStudioConversationTimeline} from '@/server/studio/conversation-edit-
 import {readStudioConversationTimeline} from '@/server/studio/conversation-timeline';
 import {conversationTimelineCommandSchema} from '@/lib/studio/conversation-timeline-editing';
 import {connectedStudioError} from './studio-connected-route-utils';
-import {studioJson} from './studio-route-utils';
+import {isStudioSameOriginRequest, studioJson} from './studio-route-utils';
 import {finishStudioExtensionAssembly} from '@/server/studio/conversation-extension-assembly';
 
 export function studioConversationEditingEnabled() {
@@ -20,7 +20,7 @@ export async function handleStudioConversationEditing(req: NextRequest,operation
   const access = await (dependencies.resolveAccess ?? resolveStudioApiAccess)(req);
   if (!access.ok) return studioJson({ok: false,error: access.error},{status: access.status});
   if (!(dependencies.enabled ?? studioConversationEditingEnabled())) return studioJson({ok: false,error: 'STUDIO_CONVERSATION_EDITING_DISABLED'},{status: 404});
-  if (operation !== 'read' && (req.headers.get('origin') !== req.nextUrl.origin || req.headers.get('sec-fetch-site') === 'cross-site')) return studioJson({ok: false,error: 'SAME_ORIGIN_REQUIRED'},{status: 403});
+  if (operation !== 'read' && !isStudioSameOriginRequest(req)) return studioJson({ok: false,error: 'SAME_ORIGIN_REQUIRED'},{status: 403});
   try {
     if (operation === 'read') return studioJson({ok: true,result: await (dependencies.read ?? readStudioConversationTimeline)({userId: access.userId,projectId: projectId!},req.nextUrl.searchParams.get('preview') === '1')});
     const reader = req.body?.getReader();

@@ -20,8 +20,14 @@ export const passageSeconds = (track: RecastTrack | null) =>
     : null;
 
 /** Keep the local original for re-editing. An overlong source is never implicitly shortened. */
-export function useRecastTrack(kind: 'audio' | 'video') {
+export function useRecastTrack(kind: 'audio' | 'video', initial?: Omit<RecastTrack, 'url'> | null) {
   const [track, setTrack] = useState<RecastTrack | null>(null);
+  useEffect(() => {
+    if (!initial) return;
+    const restored = { ...initial, url: URL.createObjectURL(initial.file) };
+    setTrack(restored);
+    return () => URL.revokeObjectURL(restored.url);
+  }, [initial]);
   const [editing, setEditing] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const url = track?.url;
@@ -51,11 +57,13 @@ export function useRecastTrack(kind: 'audio' | 'video') {
           ? {
               ...current,
               originalSeconds: duration,
-              range: wholeFits ? { startSec: 0, endSec: duration } : undefined,
+              range: current.range && current.range.startSec >= 0 && current.range.endSec <= duration &&
+                mediaExcerptDuration(current.range) > 0 && mediaExcerptDuration(current.range) <= RECAST_MAX_SOURCE_SECONDS
+                ? current.range : wholeFits ? { startSec: 0, endSec: duration } : undefined,
             }
           : current,
       );
-      setEditing(!wholeFits);
+      setEditing(!wholeFits && !(initial?.range && track?.file === initial.file && initial.range.endSec <= duration));
     };
     const timer = setTimeout(() => finish(NaN), 10000);
     probe.onloadedmetadata = () => finish(probe.duration);
@@ -68,6 +76,8 @@ export function useRecastTrack(kind: 'audio' | 'video') {
       clearTimeout(timer);
       URL.revokeObjectURL(url);
     };
+  // Initial range is checked against actual metadata; later selections have their own URL.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, kind]);
   return {
     track,

@@ -6,14 +6,14 @@ const bundle = bundleClientFlow(`
   import React,{act} from 'react';import {createRoot} from 'react-dom/client';
   import {CharacterStudioRecast} from './src/components/tools/character-builder/_components/CharacterStudioRecast.client';
   import {getCharacterStudioCopy} from './src/components/tools/character-builder/_lib/character-studio-copy';
-  const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;
+  let root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;
   window.labels=getCharacterStudioCopy('fr');
-  window.fx={act,unmount:()=>root.unmount(),render:()=>root.render(<CharacterStudioRecast
-    copy={window.labels} navigation={null} active={window.active} selection={window.selection}/>)};
-`, { '@/lib/authFetch': 'export const authFetch=(...args)=>fetch(...args);' });
+  window.fx={act,unmount:()=>root.unmount(),remount:()=>{root=createRoot(document.getElementById('root'));},render:()=>{const scene=<CharacterStudioRecast
+    copy={window.labels} navigation={null} active={window.active} selection={window.selection} accountId={window.accountId}/>;root.render(window.strict?<React.StrictMode>{scene}</React.StrictMode>:scene);}};
+`, { '@/lib/authFetch': 'export const authFetch=(...args)=>fetch(...args);', '../_lib/recast-draft-store': `export {draftImage, draftTrack, hasRecastDraft, restoreDraftImage} from './src/components/tools/character-builder/_lib/recast-draft-store'; export const loadRecastDraft=async(id)=>window.drafts.get(id)??null; export const saveRecastDraft=async(id,value)=>{if(window.storageFailure)throw Error('unavailable');window.drafts.set(id,value);};` });
 const id = (n: number) => 'ma_' + String(n).padStart(32, '0');
 
-async function mount(withCharacter = true) {
+async function mount(withCharacter = true, accountId?: string) {
   const dom = createClientFlowDom('/app/tools/character-builder');
   const w = dom.window as any;
   const doc = w.document;
@@ -40,7 +40,7 @@ async function mount(withCharacter = true) {
     return el;
   };
   w.fetch = async (url: string, options: any = {}) => {
-    if (url.includes('/confirm')) throw new Error('This test must never order a render');
+    if (url.includes('/confirm')) { if (w.confirmationFixture) return w.confirmationFixture(options); throw new Error('This test must never order a render'); }
     if (url.includes('prepare?')) return Response.json({ ok: true, ready: true });
     if (url.startsWith('/api/uploads/')) {
       uploads.push(url);
@@ -50,7 +50,7 @@ async function mount(withCharacter = true) {
     return new Promise<Response>(resolve => requests.push({ url, body: JSON.parse(options.body), signal: options.signal,
       resolve: body => resolve(Response.json(body)) }));
   };
-  w.active = true;
+  w.active = true; w.accountId=accountId; w.drafts=new Map(); w.confirm=()=>true;
   const savedCharacter = { jobId: 'saved-look', transferId: '1', imageUrl: 'https://example.invalid/portrait.png', name: 'Basil' };
   w.selection = withCharacter ? savedCharacter : null;
   w.eval(await bundle);
@@ -311,5 +311,103 @@ test('dialogue and audio suggest output duration while preserving an explicit us
     assert.equal(voice.body.mode, 'ref2v');
     assert.equal(voice.body.seconds, 6);
     assert.equal(voice.body.sourceSeconds, 0, 'audio duration must not become billable input video');
+  } finally { await f.dispose(); }
+});
+
+
+test('Recast restores its scene after remount, including separate local passages, without restoring a price', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'), 'Walk then show the watch');
+    await f.upload('video', 20); await f.passage('1.2','7.2');
+    await f.click(f.w.labels.dialogue);
+    await f.input(f.doc.querySelector('textarea'), 'This is my new watch.');
+    await f.upload('audio', 20); await f.passage('5.5','11.5');
+    const controls=f.doc.querySelectorAll('select');
+    await f.select(controls[0],'1080p'); await f.select(controls[1],'9:16'); await f.select(controls[2],'8');
+    await f.act(async()=>new Promise(resolve=>setTimeout(resolve,300)));
+    await f.act(async()=>f.w.fx.unmount()); f.w.selection=null; f.w.strict=true; f.w.fx.remount();
+    await f.act(async()=>f.w.fx.render());
+    for (const probe of f.probes.filter(el => typeof el.onloadedmetadata === 'function')) {
+      assert.ok(!f.revoked.includes(probe.src), 'restored file must remain readable after Strict Mode effect replay');
+      await f.act(async()=>{Object.defineProperty(probe,'duration',{value:20});probe.dispatchEvent(new f.w.Event('loadedmetadata'));});
+    }
+    assert.equal(f.doc.querySelector('textarea').value,'Walk then show the watch');
+    assert.equal(f.doc.querySelectorAll('select')[0].value,'1080p');
+    assert.equal(f.doc.querySelector('#recast-duration').value,'8');
+    assert.match(f.doc.body.textContent,/1,2.*7,2/);
+    await f.click(f.w.labels.dialogue + ' •');
+    assert.equal(f.doc.querySelector('textarea').value,'This is my new watch.');
+    assert.match(f.doc.body.textContent,/5,5.*11,5/);
+    assert.ok(f.doc.querySelector('img[alt="Basil"]'));
+    assert.ok(f.doc.querySelector('[data-recast-restored]'));
+    assert.equal(f.requests.filter(r=>r.url.includes('/prepare')).length,0);
+  } finally { await f.dispose(); }
+});
+
+test('New scene cancels preparation and clears references, descriptions, settings and saved draft', async () => {
+  const f=await mount(true,'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'),'Never reuse this direction');
+    await f.upload('video',6);
+    await f.select(f.doc.querySelector('#recast-duration'),'8');
+    await f.click(f.w.labels.reviewPrice);
+    const pending=f.requests.find(r=>r.url.endsWith('/prepare')); assert.ok(pending);
+    const reset=()=>f.doc.querySelector('[data-recast-new]'); assert.ok(reset(),'a visible New scene action');
+    f.w.confirm=()=>false;
+    await f.act(async()=>reset().click());
+    assert.equal(f.doc.querySelector('textarea').value,'Never reuse this direction');
+    f.w.confirm=()=>true;
+    await f.act(async()=>reset().click());
+    assert.equal(pending.signal!.aborted,true);
+    assert.equal(f.doc.querySelector('textarea').value,'');
+    assert.equal(f.doc.querySelector('#recast-duration').value,'6');
+    assert.equal(f.doc.querySelector('img[alt="Basil"]'),null);
+    assert.equal(f.doc.querySelector('video'),null);
+    await f.act(async()=>pending.resolve({ok:true,kind:'rehearsal',amountCents:999,currency:'USD',sourceSeconds:6,audioSeconds:0,revision:'test'}));
+    assert.doesNotMatch(f.doc.body.textContent,/9,99/);
+    await f.act(async()=>f.w.fx.unmount()); f.w.selection=null; f.w.fx.remount();
+    await f.act(async()=>f.w.fx.render());
+    assert.equal(f.doc.querySelector('textarea').value,'');
+    assert.equal(f.doc.querySelector('[data-recast-restored]'),null);
+    assert.ok(f.revoked.length>0);
+  } finally { await f.dispose(); }
+});
+
+test('failed draft storage warns before leaving and never reads another account draft', async () => {
+  const f=await mount(true,'account-a');
+  try {
+    f.w.storageFailure=true;
+    await f.input(f.doc.querySelector('textarea'),'Keep this scene');
+    await f.act(async()=>new Promise(resolve=>setTimeout(resolve,300)));
+    assert.ok(f.doc.querySelector('[data-recast-storage-error]'),'storage failure must be visible');
+    const event=new f.w.Event('beforeunload',{cancelable:true});
+    f.w.dispatchEvent(event); assert.equal(event.defaultPrevented,true);
+    assert.ok(f.doc.querySelector('[data-recast-storage-error]'));
+    await f.act(async()=>f.w.fx.unmount()); f.w.accountId='account-b'; f.w.selection=null; f.w.fx.remount();
+    await f.act(async()=>f.w.fx.render());
+    assert.equal(f.doc.querySelector('textarea').value,'');
+    assert.equal(f.doc.querySelector('img[alt="Basil"]'),null);
+  } finally { await f.dispose(); }
+});
+
+
+test('an uncertain confirmation keeps New scene disabled and protects reload until the same purchase is recovered', async () => {
+  const f=await mount(true,'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'),'Walk');
+    await f.click(f.w.labels.reviewPrice);
+    const request=f.requests.find(r=>r.url.endsWith('/prepare'))!;
+    await f.act(async()=>request.resolve({ok:true,kind:'wallet',quoteId:'11111111-1111-4111-8111-111111111111',
+      expiresAt:new Date(Date.now()+60000).toISOString(),amountCents:168,currency:'USD',sourceSeconds:0,audioSeconds:0,topupRequired:false}));
+    f.w.confirmationFixture=()=>Promise.reject(new Error('network lost'));
+    await f.act(async()=>f.doc.querySelector('[data-recast-submit]').click());
+    assert.equal(f.doc.querySelector('[data-recast-new]').disabled,true);
+    assert.equal(f.doc.querySelector('[data-recast-submit]').textContent,f.w.labels.recoverRecast);
+    const event=new f.w.Event('beforeunload',{cancelable:true}); f.w.dispatchEvent(event); assert.equal(event.defaultPrevented,true);
+    f.w.confirmationFixture=()=>Promise.resolve(Response.json({ok:true,jobId:'existing-job',status:'queued'}));
+    await f.act(async()=>f.doc.querySelector('[data-recast-submit]').click());
+    assert.ok(f.doc.querySelector('a[href="/app?job=existing-job"]'));
+    assert.equal(f.doc.querySelector('[data-recast-new]').disabled,false);
   } finally { await f.dispose(); }
 });

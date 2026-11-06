@@ -21,6 +21,8 @@ export function CharacterStudioRecastTiming({
   mode,
   onManual,
   ready,
+  settingsVisible = true,
+  showPrice = true,
 }: {
   copy: StudioCopy;
   timing: ReturnType<typeof getRecastTiming>;
@@ -34,6 +36,8 @@ export function CharacterStudioRecastTiming({
   mode: 'i2v' | 'v2v' | 'ref2v';
   onManual: (seconds: number | null) => void;
   ready: boolean;
+  settingsVisible?: boolean;
+  showPrice?: boolean;
 }) {
   const [price, setPrice] = useState<Price | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -97,7 +101,8 @@ export function CharacterStudioRecastTiming({
   const failed = Boolean(current && current.amount === null);
   const suggestion = hasVideo ? copy.sourceTiming : copy.autoTiming;
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-bg p-3">
+    <div className="space-y-2">
+      <div className={`${settingsVisible ? 'block' : 'hidden'} space-y-2 rounded-xl border border-border bg-bg p-3 lg:block`}>
       <div className="flex items-center justify-between gap-3">
         <label className="text-xs font-medium" htmlFor="recast-duration">
           {copy.clipDuration}
@@ -138,8 +143,10 @@ export function CharacterStudioRecastTiming({
           </p>
         )}
         {!timing.valid && <p role="status">{copy.durationLimit.replace('{max}', String(timing.maximum))}</p>}
-        {timing.speechTooLong && <p role="status">{copy.shortDuration}</p>}
       </div>
+      </div>
+      {timing.speechTooLong && <p role="status" className="text-xs text-text-secondary">{copy.shortDuration}</p>}
+      {showPrice && <>
       <div className="flex justify-between gap-2 border-t border-border pt-2 text-sm" aria-live="polite" aria-busy={loading}>
         <span>{copy.recastPrice.replace('{resolution}', resolution)}</span>
         <strong className="text-right">{!key ? '—' : loading ? readiness.estimating : current?.amount ?? copy.noPrice}</strong>
@@ -151,6 +158,7 @@ export function CharacterStudioRecastTiming({
           {readiness.retryEstimate}
         </button>
       </div>}
+      </>}
     </div>
   );
 }

@@ -15,7 +15,7 @@ import { CharacterStudioOverlays } from './character-builder/_components/Charact
 import { CharacterStudioIdentity } from './character-builder/_components/CharacterStudioIdentity.client';
 import deepmerge from 'deepmerge';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { type MediaLightboxEntry } from '@/components/MediaLightbox';
 import { useCharacterBuilderPrice } from './character-builder/_hooks/useCharacterBuilderPrice';
@@ -107,6 +107,12 @@ function CharacterBuilderAccountWorkspace({
   const [studioMode, setStudioMode] = useState<CharacterStudioMode>(() =>
     searchParams?.get('mode') === 'recast' ? 'recast' : 'character',
   );
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('mode') === studioMode) return;
+    url.searchParams.set('mode', studioMode);
+    window.history.replaceState(window.history.state, '', url);
+  }, [studioMode]);
   const [showMobileResults, setShowMobileResults] = useState(false);
   const [studioTab, setStudioTab] = useState<StudioTab>('explore');
   const [editorKey, setEditorKey] = useState(0);
@@ -473,6 +479,7 @@ function CharacterBuilderAccountWorkspace({
         results={renderResultsGallery('grid')}
         recast={
           <CharacterStudioRecast
+            accountId={user?.id ?? null}
             active={studioMode === 'recast'}
             copy={studioCopy}
             navigation={studioNavigation}

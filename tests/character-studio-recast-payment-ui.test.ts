@@ -42,7 +42,7 @@ async function mount() {
   w.eval(await bundle);
   await w.fx.act(async () => w.fx.render());
   const act = (fn: () => unknown) => w.fx.act(fn);
-  const button = () => w.document.querySelector('button');
+  const button = () => w.document.querySelector('[data-recast-submit]');
   const quote = {
     ok: true,
     kind: 'wallet',

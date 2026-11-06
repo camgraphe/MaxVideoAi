@@ -1,6 +1,6 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Clapperboard, Plus, Download, Upload, X } from 'lucide-react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { StudioRecastSelection } from '@/types/character-studio';
@@ -14,6 +14,9 @@ import {
   RecastPassagePlayer,
 } from './CharacterStudioRecastPassage.client';
 import { passageSeconds, useRecastTrack } from './useRecastTrack';
+import { useRecastDraft } from '../_hooks/useRecastDraft';
+import { draftImage, draftTrack, hasRecastDraft, restoreDraftImage, type RecastDraft } from '../_lib/recast-draft-store';
+import { getRecastSessionCopy } from '../_lib/recast-session-copy';
 
 import { CharacterStudioRecastSubmit } from './CharacterStudioRecastSubmit.client';
 import { CharacterStudioRecastPortrait } from './CharacterStudioRecastPortrait.client';
@@ -27,25 +30,55 @@ import {
   type RecastResolution,
 } from '@/lib/character-studio-recast-format';
 
-export function CharacterStudioRecast({
-  copy,
-  navigation,
-  active,
-  selection,
-  characterLibrary,
-}: {
+type RecastProps = {
   copy: StudioCopy;
   navigation: ReactNode;
   active: boolean;
   selection?: StudioRecastSelection | null;
   characterLibrary?: RecastCharacterLibraryAccess;
+  accountId?: string | null;
+};
+
+export function CharacterStudioRecast(props: RecastProps) {
+  return <RecastSession key={props.accountId ?? 'guest'} {...props} />;
+}
+
+function RecastSession(props: RecastProps) {
+  const copy = getRecastSessionCopy(props.copy.recastLocale);
+  const draft = useRecastDraft(props.accountId ?? null, copy.leave);
+  const ignoredSelection = useRef<StudioRecastSelection | null>(null);
+  if (draft.initial === undefined) return <div>{props.navigation}<p role="status">{copy.loading}</p></div>;
+  return <RecastScene {...props} key={draft.epoch}
+    selection={props.selection === ignoredSelection.current ? null : props.selection}
+    initialDraft={draft.initial} onDraft={draft.change} locked={draft.locked} onLock={draft.setLocked}
+    clearing={draft.clearing} storageError={draft.status === 'error'}
+    onNew={async (dirty) => {
+      if (draft.locked || draft.clearing || dirty && !window.confirm(copy.reset)) return;
+      ignoredSelection.current = props.selection ?? null;
+      await draft.reset();
+    }} />;
+}
+
+function RecastScene({ copy, navigation, active, selection, characterLibrary,
+  initialDraft, onDraft, onNew, locked, onLock, clearing, storageError,
+}: RecastProps & {
+  initialDraft: RecastDraft | null;
+  onDraft: (value: RecastDraft | null) => void;
+  onNew: (dirty: boolean) => void;
+  locked: boolean;
+  onLock: (value: boolean) => void;
+  clearing: boolean;
+  storageError: boolean;
 }) {
+  const sessionCopy = getRecastSessionCopy(copy.recastLocale);
+  const [outputOpen, setOutputOpen] = useState(false);
+  const [reviewed, setReviewed] = useState(false);
   const readerRoot = useRef<HTMLDivElement>(null);
   const readinessId = useId();
   const portraitSection = useRef<HTMLDivElement>(null);
   const directionSection = useRef<HTMLDivElement>(null);
-  const videoControl = useRecastTrack('video');
-  const audioControl = useRecastTrack('audio');
+  const videoControl = useRecastTrack('video', initialDraft?.video);
+  const audioControl = useRecastTrack('audio', initialDraft?.audio);
   const video = videoControl.track;
   const audio = audioControl.track;
   const editing = videoControl.editing || audioControl.editing;
@@ -56,11 +89,21 @@ export function CharacterStudioRecast({
         .forEach((video) => video.pause());
   }, [active, editing]);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
+  const [product, setProduct] = useState<LocalMedia | null>(null);
+  useEffect(() => {
+    const identity = restoreDraftImage(initialDraft?.portrait ?? null);
+    const object = restoreDraftImage(initialDraft?.product ?? null);
+    setPortrait(identity);
+    setProduct(object);
+    return () => {
+      if (identity?.file) URL.revokeObjectURL(identity.url);
+      if (object?.file) URL.revokeObjectURL(object.url);
+    };
+  }, [initialDraft]);
   useEffect(() => {
     if (selection) setPortrait({ url: selection.imageUrl, name: selection.name, jobId: selection.jobId });
   }, [selection]);
-  const [product, setProduct] = useState<LocalMedia | null>(null);
-  const [dialogue, setDialogue] = useState('');
+  const [dialogue, setDialogue] = useState(initialDraft?.dialogue ?? '');
   const productInput = useRef<HTMLInputElement>(null);
   const audioInput = useRef<HTMLInputElement>(null);
   useEffect(
@@ -69,12 +112,17 @@ export function CharacterStudioRecast({
     },
     [product],
   );
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(initialDraft?.prompt ?? '');
   const [error, setError] = useState('');
-  const [manualSeconds, setManualSeconds] = useState<number | null>(null);
-  const [resolution, setResolution] = useState<RecastResolution>('720p');
-  const [aspectRatio, setAspectRatio] = useState<RecastFraming>('auto');
-  const [locked, setLocked] = useState(false);
+  const [manualSeconds, setManualSeconds] = useState<number | null>(initialDraft?.manualSeconds ?? null);
+  const [resolution, setResolution] = useState<RecastResolution>(initialDraft?.resolution ?? '720p');
+  const [aspectRatio, setAspectRatio] = useState<RecastFraming>(initialDraft?.aspectRatio ?? 'auto');
+  const snapshot = useMemo<RecastDraft>(() => ({ version: 1,
+    portrait: draftImage(portrait), product: draftImage(product), video: draftTrack(video), audio: draftTrack(audio),
+    prompt, dialogue, manualSeconds, resolution, aspectRatio,
+  }), [portrait, product, video, audio, prompt, dialogue, manualSeconds, resolution, aspectRatio]);
+  const dirty = hasRecastDraft(snapshot);
+  useEffect(() => onDraft(dirty ? snapshot : null), [snapshot, dirty, onDraft]);
   const uploads = useRef<UploadCache>(new WeakMap());
   const timing = getRecastTiming({
     sourceSeconds: passageSeconds(video),
@@ -164,7 +212,15 @@ export function CharacterStudioRecast({
           className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 pb-4"
         >
           <div className="pt-1">
-            <h2 className="text-sm font-semibold">MaxVideoAI Recast</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold">MaxVideoAI Recast</h2>
+              <button type="button" data-recast-new disabled={locked || clearing} onClick={() => onNew(dirty)}
+                className="flex min-h-9 shrink-0 items-center gap-1 rounded-lg border border-border px-2 text-xs disabled:opacity-50">
+                <Plus size={13} aria-hidden="true" />{sessionCopy.newScene}
+              </button>
+            </div>
+            {initialDraft && <p data-recast-restored role="status" className="mt-2 text-xs text-text-secondary">{sessionCopy.restored}</p>}
+            {storageError && <p data-recast-storage-error role="alert" className="mt-2 text-xs text-text-secondary">{sessionCopy.storageError}</p>}
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">{copy.recastDraft}</p>
           </div>
           <section>
@@ -278,9 +334,14 @@ export function CharacterStudioRecast({
             </p>
           )}
         </fieldset>
-        <div className="shrink-0 space-y-2 border-t border-border p-3">
+        <div data-recast-footer className="shrink-0 space-y-2 border-t border-border p-3">
+          <button type="button" aria-expanded={outputOpen} aria-controls="recast-output-settings" disabled={locked}
+            onClick={() => setOutputOpen(value => !value)}
+            className="flex min-h-9 w-full items-center justify-between gap-2 text-xs lg:hidden">
+            <span>{sessionCopy.settings}</span><span>{resolution} · {aspectRatio} · {timing.seconds} s {outputOpen ? '−' : '+'}</span>
+          </button>
           <fieldset disabled={locked} className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
+            <div id="recast-output-settings" className={`grid-cols-2 gap-2 lg:grid ${outputOpen ? 'grid' : 'hidden'}`}>
               <label className="text-xs">
                 {copy.outputResolution}
                 <select
@@ -309,6 +370,8 @@ export function CharacterStudioRecast({
               </label>
             </div>
             <CharacterStudioRecastTiming
+              settingsVisible={outputOpen || !timing.valid}
+              showPrice={!reviewed}
               resolution={resolution}
               aspectRatio={aspectRatio}
               copy={copy}
@@ -355,7 +418,8 @@ export function CharacterStudioRecast({
             copy={copy}
             blockedReasonId={active && !canExport ? readinessId : undefined}
             cache={uploads.current}
-            onLock={setLocked}
+            onLock={onLock}
+            onReviewed={setReviewed}
             setup={
               active && canExport && portrait
                 ? {

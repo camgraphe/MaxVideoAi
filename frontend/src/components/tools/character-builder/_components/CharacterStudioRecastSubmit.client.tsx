@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import type { RecastSetup, RecastQuote, UploadCache } from '../_lib/recast-submit';
 import { getRecastReadinessCopy } from '../_lib/recast-readiness-copy';
+import { getRecastSessionCopy } from '../_lib/recast-session-copy';
 
 export function CharacterStudioRecastSubmit({
   copy,
@@ -12,12 +13,14 @@ export function CharacterStudioRecastSubmit({
   cache,
   onLock,
   blockedReasonId,
+  onReviewed,
 }: {
   copy: StudioCopy;
   setup: RecastSetup | null;
   cache: UploadCache;
   onLock: (v: boolean) => void;
   blockedReasonId?: string;
+  onReviewed?: (value: boolean) => void;
 }) {
   const [quote, setQuote] = useState<RecastQuote | null>(null);
   const [job, setJob] = useState<{ jobId: string; status: string } | null>(null);
@@ -25,6 +28,11 @@ export function CharacterStudioRecastSubmit({
   const [error, setError] = useState('');
   const [recovering, setRecovering] = useState(false);
   const [needsFunds, setNeedsFunds] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  useEffect(() => {
+    onReviewed?.(Boolean(quote));
+    return () => onReviewed?.(false);
+  }, [quote, onReviewed]);
   const flight = useRef(false);
   const cancel = useRef<AbortController | null>(null);
   useEffect(() => () => cancel.current?.abort(), []);
@@ -121,6 +129,9 @@ export function CharacterStudioRecastSubmit({
             <span>{quote.kind === 'rehearsal' ? copy.rehearsalPrice : copy.exactQuote}</span>
             <span>{amount}</span>
           </p>
+          <button type="button" aria-expanded={detailsOpen} onClick={() => setDetailsOpen(value => !value)}
+            className="min-h-8 underline underline-offset-4 lg:hidden">{getRecastSessionCopy(copy.recastLocale).quoteDetails}</button>
+          <div className={detailsOpen ? 'block' : 'hidden lg:block'}>
           <p>
             {setup.resolution} · {setup.aspectRatio} · {setup.seconds} s
           </p>
@@ -130,6 +141,7 @@ export function CharacterStudioRecastSubmit({
             </p>
           )}
           {quote.audioSeconds > 0 && <p>Audio · {seconds.format(quote.audioSeconds)} s</p>}
+          </div>
           {quote.kind === 'rehearsal' && <p>{copy.rehearsalHint}</p>}
           {quote.kind === 'wallet' && (quote.topupRequired || needsFunds) && (
             <Link href="/billing" target="_blank" rel="noopener noreferrer" className="underline">
@@ -149,6 +161,7 @@ export function CharacterStudioRecastSubmit({
       {quote?.kind !== 'rehearsal' && (
         <button
           type="button"
+          data-recast-submit
           onClick={run}
           disabled={!setup || busy}
           aria-describedby={!setup ? blockedReasonId : undefined}

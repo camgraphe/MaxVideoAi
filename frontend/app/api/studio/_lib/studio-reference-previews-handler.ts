@@ -2,7 +2,7 @@ import type {NextRequest} from 'next/server';
 import {resolveStudioApiAccess} from '@/server/studio/access';
 import {conversationReferencePreviewsSchema} from '@/lib/studio/conversation-reference-previews';
 import {readConversationReferencePreviews} from '@/server/studio/conversation-reference-previews';
-import {studioJson} from './studio-route-utils';
+import {isStudioSameOriginRequest, studioJson} from './studio-route-utils';
 
 export async function handleStudioReferencePreviews(req: NextRequest, projectId: string, dependencies: {
   enabled?: boolean;
@@ -13,7 +13,7 @@ export async function handleStudioReferencePreviews(req: NextRequest, projectId:
   if (!access.ok) return studioJson({ok: false, error: access.error}, {status: access.status});
   if (!(dependencies.enabled ?? process.env.STUDIO_IMAGE_CONVERSATION_ENABLED === 'true')) return studioJson({ok: false, error: 'STUDIO_IMAGE_PILOT_UNAVAILABLE'}, {status: 404});
   if (!projectId || projectId.length > 128 || projectId !== projectId.trim()) return studioJson({ok: false, error: 'INVALID_PROJECT'}, {status: 400});
-  if (req.headers.get('origin') !== req.nextUrl.origin || req.headers.get('sec-fetch-site') === 'cross-site') return studioJson({ok: false, error: 'SAME_ORIGIN_REQUIRED'}, {status: 403});
+  if (!isStudioSameOriginRequest(req)) return studioJson({ok: false, error: 'SAME_ORIGIN_REQUIRED'}, {status: 403});
   try {
     const reader = req.body?.getReader();
     if (!reader) return studioJson({ok: false, error: 'INVALID_REQUEST'}, {status: 400});

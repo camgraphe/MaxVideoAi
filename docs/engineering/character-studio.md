@@ -475,8 +475,41 @@ Only a definitive rejection allows a new review. The server already recovers
 claimed/accepted quotes before enforcing expiry; it never resubmits them.
 Insufficient funds offers a billing link in a separate tab, and the same reviewed
 quote can be retried after topup. The server remains authoritative for funds.
-This retention lasts for the mounted draft; reload/account persistence remains
-part of the separate journey validation task.
+This purchase recovery lasts for the mounted draft. Leaving while confirmation is
+pending or uncertain triggers a warning; a local scene draft never restores a
+purchase token or starts another render automatically.
+
+### Local scene recovery and reset (2026-11-06)
+
+`useRecastDraft` owns one IndexedDB scene per signed-in account on this device.
+It serializes saves, flushes edits on route unmount, and restores drafts younger
+than seven days. `recast-draft-store.ts` persists original Files, selected video
+and audio ranges, portrait/product references, direction, dialogue, duration,
+resolution and framing. It never persists blob URLs, estimates or purchase tokens.
+Fresh object URLs are created in effects and metadata revalidates restored ranges;
+React Strict Mode replay must not revoke the current playable URL.
+
+New scene confirms when content exists, clears the account draft and remounts the
+form, canceling pending price preparation and ignoring a stale character handoff.
+It is disabled during confirmation/recovery. Storage failures remain visible and
+protect reload/window close and ordinary link navigation. Browser storage is a
+device-local convenience, not a cross-device backup. Every restored scene requires
+a fresh exact quote. The mode is retained in the URL across reloads.
+
+On mobile, output settings and quote details are collapsible; the selected
+resolution/format/duration and exact price remain visible. Desktop retains the
+expanded controls. `character-studio-recast-pricing-ui.test.ts` covers scene
+restoration, independent passages, reset races, failed storage, account separation
+and uncertain-payment locking. The payment UI tests continue to target the actual
+purchase action, independently of the new disclosure buttons.
+
+For local Studio QA, enable the conversation, actions, editing and media flags in
+the isolated development launcher as well as `STUDIO_CHARACTER_STUDIO_ENABLED`.
+Studio's shared `isStudioSameOriginRequest` keeps production origin checks intact.
+In development only, it accounts for NextURL's loopback normalization by requiring
+the exact `127.0.0.1`/IPv6 Host, matching protocol and port, a canonical Origin and
+no cross-site Fetch Metadata. `studio-conversation-editing-route.test.ts` covers
+the local request and rejects foreign hosts, ports, paths and cross-site requests.
 
 Recast PostgreSQL tests verify expired/tampered quotes, tariff revision changes,
 fund depletion, concurrent confirmation, lost-response recovery, one-time refund,

@@ -5,7 +5,7 @@ import { resolveStudioApiAccess } from '@/server/studio/access';
 import { isStudioCharacterEnabled } from '@/server/studio/feature-access';
 import { readImageConversationProject } from '@/server/studio/image-conversation-repository';
 import { resolveStudioMedia } from '@/server/studio/media-resolver';
-import { studioJson } from './studio-route-utils';
+import { isStudioSameOriginRequest, studioJson } from './studio-route-utils';
 import { readStudioConversationBody } from './studio-image-conversation-handler';
 
 export async function handleStudioCharacters(req:NextRequest,projectId:string,operation:'read'|'select',options: {
@@ -17,7 +17,7 @@ export async function handleStudioCharacters(req:NextRequest,projectId:string,op
   if (!access.ok) return studioJson({ok:false,error:access.error},{status:access.status});
   if (!projectId || projectId.length>128 || projectId!==projectId.trim())
     return studioJson({ok:false,error:'INVALID_PROJECT'},{status:400});
-  if (operation==='select' && (req.headers.get('origin')!==req.nextUrl.origin || req.headers.get('sec-fetch-site')==='cross-site'))
+  if (operation==='select' && !isStudioSameOriginRequest(req))
     return studioJson({ok:false,error:'SAME_ORIGIN_REQUIRED'},{status:403});
   try {
     try {await readImageConversationProject(access.userId,projectId);}

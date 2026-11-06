@@ -13,7 +13,7 @@ import {
   LIVE_PRICING_POLICY_REVISION,
   PRICING_POLICY_HEADER,
 } from "@/lib/membership-policy";
-import { studioJson } from "./studio-route-utils";
+import { isStudioSameOriginRequest, studioJson } from "./studio-route-utils";
 
 export async function readStudioConversationBody(req: NextRequest) {
   if (!req.body) throw new Error("INVALID_BODY");
@@ -74,8 +74,7 @@ export async function handleStudioImageConversation(
     return studioJson({ ok: false, error: "INVALID_PROJECT" }, { status: 400 });
   if (
     action !== "read" &&
-    (req.headers.get("origin") !== req.nextUrl.origin ||
-      req.headers.get("sec-fetch-site") === "cross-site")
+    !isStudioSameOriginRequest(req)
   ) {
     return studioJson(
       { ok: false, error: "SAME_ORIGIN_REQUIRED" },
