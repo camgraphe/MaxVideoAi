@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "sampleId": "T1",
+  "modelSlug": "kling-v4-flash",
+  "evaluationDate": "2026-11-06",
+  "purpose": "Targeted lettering and dialogue sample; not the canonical benchmark prompt pack",
+  "approval": {
+    "source": "Explicit user approval of the exact 0.62 USD quote in this chat",
+    "approvedPriceCents": 62,
+    "currency": "USD",
+    "attempts": 1,
+    "retries": 0
+  },
+  "quoteId": "cd5a5edb-9d57-4fdc-b160-e5ac8069e15b",
+  "jobId": "cd5a5edb-9d57-4fdc-b160-e5ac8069e15b",
+  "requestHash": "aa521cb3380d7d61cb0582f4add0a4e19e22106700aa168cdfcbd6aea3f219ae",
+  "status": "completed",
+  "paymentStatus": "paid_wallet",
+  "priceCents": 62,
+  "savedToLibrary": true,
+  "prompt": "Create one self-contained five-second live-action science-fiction evacuation sequence, 16:9, two shots with one clean hard cut. Practical matte steel sets, dozens of people, convincing cinematic scale, no mirrors or transparent surfaces. Shot 1, 0–2 seconds: a locked medium-wide view of a huge evacuation corridor, with twenty crew members urgently crossing behind a large opaque illuminated wayfinding sign. The sign faces the camera squarely and fills the left third of the image, fully visible and sharply focused throughout the entire shot. Its top line reads exactly \"SECTOR 9\" in large white block letters; its second line reads exactly \"EVACUATE\" in large amber block letters. Render every letter correctly, with no flicker, no changing characters, no extra text or logos. Shot 2, 2–5 seconds: hard cut to a frontal medium close-up of the same female evacuation officer in a dark green uniform with an orange harness, eyes and mouth clearly visible. She shouts exactly \"Sector nine. Move!\" with precisely synchronized visible lips, pulls a solid red emergency lever, and the last two crew members run safely through the heavy steel door behind her as it closes. The escape resolves in the final frame. Restrained cool overhead light and warm alarm light, realistic faces and hands, natural body weight, rapid but readable movement. Native audio: the exact spoken line, alarm pulses, hurried footsteps and a heavy mechanical door closure. No subtitles, no music, no additional spoken words.",
+  "mode": "t2v",
+  "settings": {
+    "aspectRatio": "16:9",
+    "durationSec": 5,
+    "resolution": "720p"
+  },
+  "original": {
+    "sha256": "95eeec8c32c607c088f0d3bf9666a904c26024ff1741424123bd561aeaa0bb64",
+    "bytes": 2426603,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "durationSec": 5.041667,
+    "audio": true
+  },
+  "review": {
+    "sampleCadenceFps": 3,
+    "hardCutSeconds": 2.041667,
+    "requestedText": [
+      "SECTOR 9",
+      "EVACUATE"
+    ],
+    "observedText": [
+      "SECTOR 9",
+      "EVACUATE"
+    ],
+    "openingSamplesCorrect": 6,
+    "textScore": 8.2,
+    "confidence": "low",
+    "observations": [
+      "Exact two-line uppercase sign is readable in all six sampled opening frames.",
+      "One cut separates sign/crowd from front-facing officer and red lever; final sampled frame shows the door closed.",
+      "Harness is red rather than the requested orange; more than the requested last two crew remain behind her."
+    ],
+    "limits": [
+      "Single large frontal uppercase sign and locked camera, approximately two seconds.",
+      "No small text, moving-label, long-copy or multilingual coverage.",
+      "Audio stream is present; no word-level ASR or synchronized lip/audio analysis was performed for this sample."
+    ]
+  }
+}

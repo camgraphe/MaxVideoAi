@@ -1,4 +1,5 @@
 import type { MediaInputEligibility } from '@/lib/media-input-eligibility';
+import { getWanReferenceValidationMessage } from '@/lib/wan-image-failure-messages';
 
 export function mediaInputEligibilityMessage(result: MediaInputEligibility, locale = 'en'): string | null {
   const fr = locale.startsWith('fr'); const es = locale.startsWith('es');
@@ -9,6 +10,10 @@ export function mediaInputEligibilityMessage(result: MediaInputEligibility, loca
   if (result.status === 'unverified') return fr ? 'Les métadonnées manquantes seront vérifiées avant la génération.'
     : es ? 'Los datos pendientes se verificarán antes de generar.' : 'Missing media details will be verified before generation.';
   if (result.status !== 'blocked') return null;
+  const wanImage = getWanReferenceValidationMessage({ engineId: result.engineId ?? '', locale,
+    error: 'IMAGE_DIMENSIONS_TOO_SMALL', actualWidth: result.actualWidth, actualHeight: result.actualHeight,
+    minimumSidePx: result.minimumImageSidePx });
+  if (wanImage) return wanImage;
   if (result.minimumImageSidePx) return fr ? `Choisissez une image d’au moins ${result.minimumImageSidePx} px de chaque côté.`
     : es ? `Elige una imagen de al menos ${result.minimumImageSidePx} px por lado.` : `Choose an image at least ${result.minimumImageSidePx} px on each side.`;
   if (result.durationIssue === 'too-short') return fr ? `Source trop courte. Choisissez au moins ${result.minDurationSec} s.`

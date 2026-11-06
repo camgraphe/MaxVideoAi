@@ -88,8 +88,8 @@ const cases: { modelId: 'wan-3' | 'gpt-image-2-5-flare'; expected: AgentModelMod
       ...wanFacts,
       mode: 'i2v',
       references: [
-        { type: 'image', roles: ['first_frame'], assetRequired: false, required: true, min: 1, max: 1 },
-        { type: 'image', roles: ['last_frame'], assetRequired: false, required: false, min: 0, max: 1, description: 'Only valid with start_image_url.' },
+        { type: 'image', roles: ['first_frame'], assetRequired: true, minImageSidePx: 240, required: true, min: 1, max: 1 },
+        { type: 'image', roles: ['last_frame'], assetRequired: true, minImageSidePx: 240, required: false, min: 0, max: 1, description: 'Only valid with start_image_url.' },
       ],
     },
   },

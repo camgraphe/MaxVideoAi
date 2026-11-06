@@ -27,7 +27,7 @@ import {resolveStudioMedia,type StudioResolvedMedia} from './media-resolver';
 import type {CanonicalGenerationRequest} from '@/server/agent-api/generation-types';
 import type {CanonicalAudioRequest} from '@/server/agent-api/audio-normalization';
 import {GenerationNormalizationError, normalizeGenerationRequest,orderedGenerationReferenceRole,stableJson} from '@/server/agent-api/generation-normalization';
-import {GenerationCapabilityError, validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
+import {GenerationCapabilityError, WanImageCapabilityError, validateCanonicalGenerationCapabilities} from '@/server/agent-api/generation-capability-validation';
 import {projectAgentModelModeDetails} from '@/server/agent-api/model-details';
 import type {AgentPublicGenerationEngine} from '@/server/agent-api/model-catalog';
 import {toEngineGenerationMode} from '@/server/agent-api/generation-mode-aliases';
@@ -148,6 +148,7 @@ function canonicalPreparation<T>(build: () => T, correctable=false): T {
       throw failure;
     };
     if (error instanceof AgentApiError) return reject(error);
+    if (error instanceof WanImageCapabilityError) return reject(new AgentApiError('REFERENCE_INVALID', error.userMessage));
     if (error instanceof GenerationCapabilityError)
       return reject(new AgentApiError(error.kind === 'reference_required' ? 'REFERENCE_REQUIRED' : error.kind === 'reference_invalid' ? 'REFERENCE_INVALID' : 'PARAMETER_INVALID',
         `${error.field} is not supported for the selected model and mode.`));

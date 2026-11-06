@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-10-27",
+  "last_updated": "2026-11-06",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -675,6 +675,38 @@
       "speedStability": 7.5,
       "pricing": 8.4,
       "last_updated": "2026-10-27"
+    },
+    {
+      "modelSlug": "kling-v4-flash",
+      "fidelity": 8.3,
+      "visualQuality": 8.7,
+      "motion": 8.1,
+      "consistency": 8.6,
+      "anatomy": 8.3,
+      "textRendering": 8.2,
+      "lipsyncQuality": 7.8,
+      "sequencingQuality": 8.6,
+      "controllability": 8.0,
+      "speedStability": 7.8,
+      "pricing": 8.8,
+      "last_updated": "2026-11-06",
+      "reviewStatus": "editorial-estimated",
+      "evidenceFile": "kling-v4-flash-evidence.v1.json",
+      "reviewNote": "Eleven editorial estimates from seven owned non-controlled Flash outputs, recorded requests, active quotes and attributed first-person reviews. Overall 8.3; no borrowed full-model score or external-index conversion.",
+      "reviewSourceUrl": "https://maxvideoai.com/models/kling-v4-flash",
+      "reviewConfidence": {
+        "fidelity": "medium",
+        "visualQuality": "medium",
+        "motion": "low",
+        "consistency": "medium",
+        "anatomy": "medium",
+        "textRendering": "low",
+        "lipsyncQuality": "low",
+        "sequencingQuality": "medium",
+        "controllability": "medium",
+        "speedStability": "low",
+        "pricing": "medium"
+      }
     }
   ],
   "historicalScores": [

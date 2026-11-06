@@ -15,7 +15,7 @@ import {isGptImageFamilyEngineId} from '@/lib/image/gptImage2';
 import type {MembershipPricingContext} from '@/server/membership/user-membership-status';
 import {computeGenerationCatalogRevision} from './catalog-revision';
 import {AgentApiError,withMediaNeutralReferenceMessage} from './errors';
-import {GenerationCapabilityError,validateCanonicalGenerationCapabilities,type ReferenceConstraintFailure} from './generation-capability-validation';
+import {GenerationCapabilityError,WanImageCapabilityError,validateCanonicalGenerationCapabilities,type ReferenceConstraintFailure} from './generation-capability-validation';
 import {requireGenerationActor,studioReferenceFingerprint,type GenerationActor} from './generation-actor';
 import type {CanonicalGenerationRequest} from './generation-types';
 import type {AgentPublicGenerationEngine} from './model-catalog';
@@ -61,6 +61,12 @@ const REFERENCE_CONSTRAINT_MESSAGES: Record<ReferenceConstraintFailure, string> 
   image_dimensions_too_small: 'The reference image is too small for the selected model mode. Check get_model_details and import a larger original image.',
 };
 
+class WanImagePricingError extends AgentApiError {
+  constructor(error: WanImageCapabilityError) {
+    super('REFERENCE_INVALID', error.userMessage);
+  }
+}
+
 export function validateGenerationPricingCapabilities(
   request: CanonicalGenerationRequest,
   candidate: AgentPublicGenerationEngine,
@@ -73,6 +79,7 @@ export function validateGenerationPricingCapabilities(
       resolvedReferences ? { resolvedReferences } : {},
     );
   } catch (error) {
+    if (error instanceof WanImageCapabilityError) throw new WanImagePricingError(error);
     if (error instanceof GenerationCapabilityError) {
       if (error.kind === 'reference_required') {
         throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires reference media.');
@@ -216,6 +223,7 @@ export async function readGenerationPricing(request: CanonicalGenerationRequest,
       }
       validateGenerationPricingCapabilities(request, candidate, resolvedReferences);
     } catch (error) {
+      if (error instanceof WanImagePricingError) throw error;
       if (error instanceof AgentApiError) {
         throw request.mode === 'v2v' || request.mode === 'extend'
           ? withMediaNeutralReferenceMessage(error)
