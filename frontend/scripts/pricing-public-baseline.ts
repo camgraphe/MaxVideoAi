@@ -35,6 +35,13 @@ async function main(): Promise<void> {
   const nano21Launch = JSON.parse(await readFile(
     new URL('../../tests/fixtures/nano21-fixed-public-pricing-launch-2026-10-27.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
+  const novemberImageAdmission = JSON.parse(await readFile(
+    new URL('../../tests/fixtures/nov05-functional-image-public-projections-2026-11-06.json', import.meta.url), 'utf8',
+  )) as { rows: typeof rows };
+  if (!isDeepStrictEqual(novemberImageAdmission.rows, ['flare', 'sunburst'].map(variant => ({
+    id: `image-estimate:gpt-image-2-6-${variant}:default`, surface: 'image-estimate',
+    engineId: `gpt-image-2-6-${variant}`, status: 'unavailable',
+  })))) throw new Error('GPT Image 2.6 admission cannot introduce an offline fallback price.');
   const klingPublicDiscovery = JSON.parse(await readFile(
     new URL('../../tests/fixtures/kling-v4-public-discovery-projections-2026-10-27.json', import.meta.url), 'utf8',
   )) as { rows: typeof rows };
@@ -174,7 +181,7 @@ async function main(): Promise<void> {
   }
   // Approved archive sunsets: remove purchasable surfaces and invalidate Product offers.
   // Keep the pre-archive fixtures intact as historical pricing evidence.
-  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
+  const expectedWithLaunch = [...expected, ...launchAdditions.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...novemberImageAdmission.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows].map((row) => {
     const repair = customerOfferRepairs.get(row.id);
     if (!repair) return row;
     if (row.surface !== 'json-ld' || row.status !== 'exact' || row.customerTotalCents !== repair.previousCents) {

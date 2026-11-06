@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-11-06",
+  "scope": "Functional image admission adds no offline fallback amount; exact prices require native customer tariffs.",
+  "rows": [
+    { "id": "image-estimate:gpt-image-2-6-flare:default", "surface": "image-estimate", "engineId": "gpt-image-2-6-flare", "status": "unavailable" },
+    { "id": "image-estimate:gpt-image-2-6-sunburst:default", "surface": "image-estimate", "engineId": "gpt-image-2-6-sunburst", "status": "unavailable" }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "observedAt": "2026-11-05T22:38:30Z",
+  "source": "Vercel authenticated dashboard / Request Logs",
+  "requestId": "zvhkf-1793918257421-512328a20df1",
+  "requestedAt": "2026-11-05T22:37:37.421Z",
+  "localRequestedAt": "2026-11-05T23:37:37.421+01:00",
+  "timezone": "Europe/Madrid",
+  "method": "GET",
+  "path": "/api/cron/openai-image-recovery",
+  "status": 200,
+  "userAgent": "vercel-cron/1.0",
+  "deploymentId": "dpl_EcrT5NtBfUKgbiYYjZr2c91t7PPK",
+  "deploymentSha": "b5f4bdddaa27e8620293dc9a59811559decc0cf5",
+  "environment": "production",
+  "branch": "main",
+  "cache": "BYPASS",
+  "functionExecutionMs": 108,
+  "responseMs": 137,
+  "automaticRequestsObservedEveryMinute": true,
+  "credentialsRetrieved": false,
+  "configurationChanged": false,
+  "paidGenerationStarted": false,
+  "establishes": [
+    "production schedule runs",
+    "existing CRON_SECRET authorizes the platform request",
+    "storage recovery route returns success"
+  ],
+  "doesNotEstablish": [
+    "a real interrupted image job was recovered"
+  ],
+  "dashboardUrl": "https://vercel.com/camgraphes-projects/maxvideoai/logs?live=true&search=requestPath%3A%2Fapi%2Fcron%2Fopenai-image-recovery&datasource=legacy-logs&selectedLogId=zvhkf-1793918257421-512328a20df1"
+}

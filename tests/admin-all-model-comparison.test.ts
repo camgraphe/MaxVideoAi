@@ -9,8 +9,9 @@ import { filterProviderComparisonRows } from '../frontend/app/(core)/admin/prici
 test('admin comparison includes published models and the closed launch tariff candidates once', () => {
   const expected = listRuntimeModels().filter((model) => model.publication.app.published);
   const rows = buildAllModelComparisonScenarios();
-  assert.equal(expected.length, 51);
-  const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
+  assert.equal(expected.length, 54);
+  const closedLaunchIds = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']
+    .filter(id => !expected.some(model => model.id === id));
   assert.equal(rows.length, expected.length + closedLaunchIds.length);
   assert.deepEqual(new Set(rows.map(({ entry }) => entry.id)), new Set([...expected.map((model) => model.id), ...closedLaunchIds]));
   assert.equal(rows.filter(({entry})=>entry.id==='kling-v4').length,1);

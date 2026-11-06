@@ -42,7 +42,8 @@ test('Studio video discovery retains every executable public transport-neutral t
   const canonical=(await videoCatalog()).filter(e=>e.surface==='video');
   const studio=await createStudioVideoGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>canonical}}).catalog();
   assert.deepEqual(studio.map(e=>[e.engine.id,e.publicModes]),canonical.map(e=>[e.engine.id,e.publicModes]));
-  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138+6+4,'Conversation qualification preserves every proven public tuple.');
+  assert.equal(studio.reduce((count,entry)=>count+entry.publicModes.length,0),138+6+4+3,'Conversation qualification preserves every proven public tuple.');
+  assert.deepEqual(studio.find(e=>e.engine.id==='kling-v4-flash')!.publicModes,['t2v','i2v','ref2v']);
   assert.deepEqual(studio.find(e=>e.engine.id==='kling-v4')!.publicModes,['t2v','i2v','ref2v','v2v']);
   assert.equal(isWorkspaceModelCertifiedForBlock({modelId:'kling-v4',presetId:'generate-video',workflowType:'text_to_video'}),false,
     'Conversation publication does not widen the retired Canvas certification.');

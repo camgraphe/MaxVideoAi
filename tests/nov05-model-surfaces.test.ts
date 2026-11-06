@@ -25,7 +25,7 @@ test('GPT Image 2.6 rejects invalid owned reference metadata before a canonical 
   }
 });
 
-for (const id of ['gpt-image-2-6-flare','gpt-image-2-6-sunburst']) for (const mode of ['t2i','i2i']) test(`${id}/${mode} preserves canonical raster controls and is Studio certified but release closed`,()=>{
+for (const id of ['gpt-image-2-6-flare','gpt-image-2-6-sunburst']) for (const mode of ['t2i','i2i']) test(`${id}/${mode} preserves canonical raster controls and still requires provider credentials`,()=>{
   const raw={surface:'image',engineId:id,mode,prompt:'A product study',settings:{resolution:'1024x1024',quality:'max',complexity:'low',background:'transparent',outputFormat:'webp'},references:mode==='i2i'?[asset()]:[],outputCount:1};
   const request=normalizeGenerationRequest(raw);
   validateCanonicalGenerationCapabilities(request,candidate(id));
@@ -43,7 +43,7 @@ for (const mode of ['t2v','i2v','ref2v']) test(`Flash/${mode} has exact Studio c
   validateCanonicalGenerationCapabilities(request,candidate(request.engineId),{resolvedReferences:resolved});
   assert.equal(isStudioConversationVideoModeCertified(request.engineId,mode),true);
   assert.equal(isStudioConversationVideoModeCertified(request.engineId,'v2v'),false);
-  assert.equal(resolveAgentGenerationModeExecutability(candidate(request.engineId).engine,mode as 't2v',{bytePlusEnabled:false,bytePlusApiKey:undefined,falApiKey:'key'}).executable,false);
+  assert.equal(resolveAgentGenerationModeExecutability(candidate(request.engineId).engine,mode as 't2v',{bytePlusEnabled:false,bytePlusApiKey:undefined,falApiKey:'key'}).executable,true);
   assert.throws(()=>validateCanonicalGenerationCapabilities(flash(mode,{settings:{durationSec:30,resolution:'1080p'}}),candidate(request.engineId)));
 });
 
