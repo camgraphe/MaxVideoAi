@@ -36,6 +36,8 @@ Executable agent requests must import image URLs first so dimensions and file
 size can be verified before reservation. Non-executable budget estimates may
 still describe an unverified image. Upload and library rejections use the same
 localized cause, corrective action and no-debit message as Web preflight.
+Live MCP/Studio image-field discovery publishes `assetRequired: true` alongside
+`minImageSidePx: 240`, so clients import and measure references before quoting.
 
 `frontend/lib/wan-image-failure-messages.ts` owns the precise resolution-rejection
 projection. Only validated integer measurements from the known diagnostic enter

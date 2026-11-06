@@ -11,6 +11,7 @@ import { validateEngineImageFile } from '../frontend/components/asset-dropzone/a
 import { getLocalizedAssetDropzoneCopy } from '../frontend/lib/ltx-localization';
 import { validateGenerationPricingCapabilities } from '../frontend/src/server/agent-api/generation-pricing-read';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
+import { projectAgentModelModeDetails } from '../frontend/src/server/agent-api/model-details';
 
 const url = 'https://media.example/owned-original.png';
 const row: StoredMediaMetadataRow = { asset_id: 'image-1', url, origin_url: null,
@@ -18,6 +19,19 @@ const row: StoredMediaMetadataRow = { asset_id: 'image-1', url, origin_url: null
 
 for (const engineId of ['wan-3', 'wan-3-prime'] as const) {
   const engine = getFalEngineById(engineId)!.engine;
+  test(`${engineId} discovery advertises owned images and the same minimum before quoting`, () => {
+    const entry = getFalEngineById(engineId)!;
+    const candidate = { engine, surface: 'video' as const,
+      modeCaps: Object.fromEntries(entry.modes.map(mode => [mode.mode, mode.ui])) };
+    for (const mode of ['i2v', 'ref2v', 'v2v', 'extend'] as const) {
+      const images = projectAgentModelModeDetails(candidate, mode).references.filter(field => field.type === 'image');
+      assert.ok(images.length > 0);
+      for (const image of images) {
+        assert.equal(image.minImageSidePx, 240);
+        assert.equal(image.assetRequired, true);
+      }
+    }
+  });
   async function validate(fieldId: string, mode: Mode, rows: StoredMediaMetadataRow[]) {
     return validateGenerationMediaConstraints({ engineId, mode, userId: 'owner', inputSchema: engine.inputSchema,
       attachments: [{ name: 'original.png', type: 'image/png', size: 1, kind: 'image', slotId: fieldId,
