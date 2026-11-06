@@ -1,9 +1,10 @@
 # Qualification par modèle, mode et surface
 
-État du 5 novembre 2026. La fondation de la PR #620 est déployée sur les deux
-domaines au commit `b5f4bdd`. Les trois modèles restent fermés dans le registre.
-Les 72 tarifs Flash ont été confirmés dans l’admin ; les 2 040 tarifs GPT 2.6 sont
-approuvés avec un coefficient de 1,50, et leur application native reste à effectuer.
+État du 6 novembre 2026, avant ouverture fonctionnelle. Les PR #620 et #622 sont
+déployées sur les deux domaines au commit `f868a026b`. Les trois modèles restent
+fermés dans le registre de production. Les 72 tarifs Flash sont appliqués à ×1,30.
+Les 2 040 tarifs GPT à ×1,50 ont été confirmés par dix lots natifs puis réconciliés,
+révision 4227 ; voir `gpt26-tariff-applied.json`.
 L’accès fournisseur n’est pas une preuve d’exécution
 payante à travers App, Studio ou MCP.
 
@@ -17,13 +18,13 @@ payante traversant la surface, pas la découverte ou un devis en lecture seule.
 
 | Modèle / mode | Contrat local | API fournisseur | App réel | Studio réel | MCP réel | Tarif | Médias |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Flash / t2v | testé | V1 + B1/B2/B3 obtenus | en attente | en attente | en attente | appliqué, découverte fermée | 4 copies publiques, page fermée |
-| Flash / i2v | testé | V2 obtenu | en attente | en attente | en attente | appliqué, découverte fermée | copie publique, page fermée |
-| Flash / ref2v | testé | V3 obtenu | en attente | en attente | en attente | appliqué, découverte fermée | copie publique, page fermée |
-| Flare 2.6 / t2i | testé | I1 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
-| Flare 2.6 / i2i | testé | I3 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
-| Sunburst 2.6 / t2i | testé | I2 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
-| Sunburst 2.6 / i2i | testé | I4 obtenu | en attente | en attente | en attente | approuvé ×1,50, non appliqué | PNG + WebP publics, page fermée |
+| Flash / t2v | testé | V1 + B1/B2/B3 obtenus | non exécuté | non exécuté | non exécuté | appliqué, découverte fermée | 4 copies publiques, page fermée |
+| Flash / i2v | testé | V2 obtenu | non exécuté | non exécuté | non exécuté | appliqué, découverte fermée | copie publique, page fermée |
+| Flash / ref2v | testé | V3 obtenu | non exécuté | non exécuté | non exécuté | appliqué, découverte fermée | copie publique, page fermée |
+| Flare 2.6 / t2i | testé | I1 obtenu | non exécuté | non exécuté | non exécuté | appliqué ×1,50, découverte fermée | PNG + WebP publics, page fermée |
+| Flare 2.6 / i2i | testé | I3 obtenu | non exécuté | non exécuté | non exécuté | appliqué ×1,50, découverte fermée | PNG + WebP publics, page fermée |
+| Sunburst 2.6 / t2i | testé | I2 obtenu | non exécuté | non exécuté | non exécuté | appliqué ×1,50, découverte fermée | PNG + WebP publics, page fermée |
+| Sunburst 2.6 / i2i | testé | I4 obtenu | non exécuté | non exécuté | non exécuté | appliqué ×1,50, découverte fermée | PNG + WebP publics, page fermée |
 
 Les tests locaux couvrent limites, paramètres, refus avant devis, réservations et
 reprise via doubles de provider et PostgreSQL jetable. Les fixtures Studio

@@ -1,0 +1,874 @@
+{
+  "checkedAt": "2026-11-06T00:08:53.455Z",
+  "origin": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app",
+  "sha": "9f93c31b5ff81a953276a1b99efe5f3963df99c2",
+  "readOnly": true,
+  "routes": [
+    {
+      "path": "/models/kling-v4-flash",
+      "id": "kling-v4-flash",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "Organization",
+        "WebSite",
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer"
+      ],
+      "offers": [
+        {
+          "price": "0.62",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [],
+      "selectedFlashMedia": 2
+    },
+    {
+      "path": "/fr/modeles/kling-v4-flash",
+      "id": "kling-v4-flash",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "Organization",
+        "WebSite",
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer"
+      ],
+      "offers": [
+        {
+          "price": "0.62",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [],
+      "selectedFlashMedia": 2
+    },
+    {
+      "path": "/es/modelos/kling-v4-flash",
+      "id": "kling-v4-flash",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/kling-v4-flash"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "Organization",
+        "WebSite",
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer"
+      ],
+      "offers": [
+        {
+          "price": "0.62",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [],
+      "selectedFlashMedia": 2
+    },
+    {
+      "path": "/models/gpt-image-2-6-flare",
+      "id": "gpt-image-2-6-flare",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-flare-generation",
+        "gpt26-flare-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/fr/modeles/gpt-image-2-6-flare",
+      "id": "gpt-image-2-6-flare",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-flare",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-flare-generation",
+        "gpt26-flare-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/es/modelos/gpt-image-2-6-flare",
+      "id": "gpt-image-2-6-flare",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-flare",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-flare"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-flare"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-flare-generation",
+        "gpt26-flare-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/models/gpt-image-2-6-sunburst",
+      "id": "gpt-image-2-6-sunburst",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-sunburst-generation",
+        "gpt26-sunburst-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/fr/modeles/gpt-image-2-6-sunburst",
+      "id": "gpt-image-2-6-sunburst",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-sunburst",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-sunburst-generation",
+        "gpt26-sunburst-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/es/modelos/gpt-image-2-6-sunburst",
+      "id": "gpt-image-2-6-sunburst",
+      "kind": "model",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-sunburst",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/modeles/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/modelos/gpt-image-2-6-sunburst"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/models/gpt-image-2-6-sunburst"
+        }
+      ],
+      "robots": "index, follow",
+      "jsonLdTypes": [
+        "WebPage",
+        "Product",
+        "Offer",
+        "OfferShippingDetails",
+        "MonetaryAmount",
+        "DefinedRegion",
+        "ShippingDeliveryTime",
+        "QuantitativeValue",
+        "MerchantReturnPolicy",
+        "Brand",
+        "Organization",
+        "BreadcrumbList",
+        "ListItem",
+        "FAQPage",
+        "Question",
+        "Answer",
+        "WebSite"
+      ],
+      "offers": [
+        {
+          "price": "0.10",
+          "currency": "USD"
+        }
+      ],
+      "editorialImages": [
+        "gpt26-sunburst-generation",
+        "gpt26-sunburst-edit"
+      ],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+      "kind": "compare",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/comparatif/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/comparativa/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        }
+      ],
+      "robots": null,
+      "jsonLdTypes": [
+        "FAQPage",
+        "Question",
+        "Answer",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Organization",
+        "WebSite"
+      ],
+      "offers": [],
+      "editorialImages": [],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/fr/comparatif/kling-v4-vs-kling-v4-flash",
+      "kind": "compare",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/comparatif/kling-v4-vs-kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/comparatif/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/comparativa/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        }
+      ],
+      "robots": null,
+      "jsonLdTypes": [
+        "FAQPage",
+        "Question",
+        "Answer",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Organization",
+        "WebSite"
+      ],
+      "offers": [],
+      "editorialImages": [],
+      "selectedFlashMedia": 0
+    },
+    {
+      "path": "/es/comparativa/kling-v4-vs-kling-v4-flash",
+      "kind": "compare",
+      "status": 200,
+      "canonical": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/comparativa/kling-v4-vs-kling-v4-flash",
+      "alternates": [
+        {
+          "lang": "en",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "fr",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/fr/comparatif/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "es",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/es/comparativa/kling-v4-vs-kling-v4-flash"
+        },
+        {
+          "lang": "x-default",
+          "url": "https://maxvideoai-i8b39rdxz-camgraphes-projects.vercel.app/ai-video-engines/kling-v4-vs-kling-v4-flash"
+        }
+      ],
+      "robots": null,
+      "jsonLdTypes": [
+        "FAQPage",
+        "Question",
+        "Answer",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Organization",
+        "WebSite"
+      ],
+      "offers": [],
+      "editorialImages": [],
+      "selectedFlashMedia": 0
+    }
+  ],
+  "sitemaps": [
+    {
+      "path": "/sitemap-models.xml",
+      "status": 200,
+      "found": [
+        "/models/kling-v4-flash",
+        "/fr/modeles/kling-v4-flash",
+        "/es/modelos/kling-v4-flash",
+        "/models/gpt-image-2-6-flare",
+        "/fr/modeles/gpt-image-2-6-flare",
+        "/es/modelos/gpt-image-2-6-flare",
+        "/models/gpt-image-2-6-sunburst",
+        "/fr/modeles/gpt-image-2-6-sunburst",
+        "/es/modelos/gpt-image-2-6-sunburst"
+      ]
+    },
+    {
+      "path": "/sitemap-en.xml",
+      "status": 200,
+      "found": [
+        "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+        "/fr/comparatif/kling-v4-vs-kling-v4-flash",
+        "/es/comparativa/kling-v4-vs-kling-v4-flash"
+      ]
+    },
+    {
+      "path": "/sitemap-fr.xml",
+      "status": 200,
+      "found": [
+        "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+        "/fr/comparatif/kling-v4-vs-kling-v4-flash",
+        "/es/comparativa/kling-v4-vs-kling-v4-flash"
+      ]
+    },
+    {
+      "path": "/sitemap-es.xml",
+      "status": 200,
+      "found": [
+        "/ai-video-engines/kling-v4-vs-kling-v4-flash",
+        "/fr/comparatif/kling-v4-vs-kling-v4-flash",
+        "/es/comparativa/kling-v4-vs-kling-v4-flash"
+      ]
+    }
+  ],
+  "engines": [
+    {
+      "id": "kling-v4-flash",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "availability": "available"
+    },
+    {
+      "id": "gpt-image-2-6-flare",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "availability": "available"
+    },
+    {
+      "id": "gpt-image-2-6-sunburst",
+      "modes": [
+        "t2i",
+        "i2i"
+      ],
+      "availability": "available"
+    }
+  ],
+  "ok": true,
+  "publicPlayback": {
+    "compartiment9": [
+      [
+        {
+          "audioDecodedBytes": null,
+          "currentTime": 0.303544,
+          "duration": 15.041667,
+          "ended": false,
+          "error": null,
+          "muted": false,
+          "paused": false,
+          "readyState": 4,
+          "src": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/52203aa15eb35d6f45c0d43085ef18a52f4eb5749caf2017bafef6772340aa65.mp4",
+          "videoDecodedFrames": null
+        }
+      ],
+      [
+        {
+          "currentTime": 15.041667,
+          "duration": 15.041667,
+          "ended": true,
+          "error": null,
+          "muted": false,
+          "paused": true,
+          "readyState": 4,
+          "src": "https://media.maxvideoai.com/marketing-media/2816a13f-83e7-43a3-9381-422869833cac/52203aa15eb35d6f45c0d43085ef18a52f4eb5749caf2017bafef6772340aa65.mp4"
+        }
+      ]
+    ],
+    "dernierRempart": {
+      "fullPromptCharacters": 3676,
+      "exactPromptPresent": true,
+      "playback": [
+        [
+          {
+            "currentTime": 0.331617,
+            "duration": 15.041667,
+            "ended": false,
+            "error": null,
+            "muted": false,
+            "paused": false,
+            "src": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/e1e7275a7067915a81010d827e4af080e9c0fa4b135cd7f7176f61d1bdaaf105.mp4"
+          }
+        ],
+        [
+          {
+            "currentTime": 13.93406,
+            "duration": 15.041667,
+            "ended": false,
+            "error": null,
+            "muted": false,
+            "paused": false,
+            "src": "https://media.maxvideoai.com/marketing-media/33a7e5f4-dfc8-43c2-9972-769628c3d58a/e1e7275a7067915a81010d827e4af080e9c0fa4b135cd7f7176f61d1bdaaf105.mp4"
+          }
+        ]
+      ],
+      "end": {
+        "playButtonReturned": true,
+        "remainingVideos": [],
+        "mechanism": "ModelDecisionDemoMedia onEnded returns to its poster"
+      }
+    },
+    "catastrophe": {
+      "start": [
+        {
+          "currentTime": 0,
+          "duration": null,
+          "ended": false,
+          "error": null,
+          "muted": false,
+          "paused": false,
+          "src": "https://media.maxvideoai.com/marketing-media/1f51f247-79e9-42b4-8b39-3d5d73abc3ed/44332c13c4eab61e67bd37bd163d40fb823c8a418bfee3e437b207ac7f269130.mp4"
+        }
+      ],
+      "end": [
+        {
+          "currentTime": 15.041667,
+          "duration": 15.041667,
+          "ended": true,
+          "error": null,
+          "muted": false,
+          "paused": true,
+          "src": "https://media.maxvideoai.com/marketing-media/1f51f247-79e9-42b4-8b39-3d5d73abc3ed/44332c13c4eab61e67bd37bd163d40fb823c8a418bfee3e437b207ac7f269130.mp4"
+        }
+      ]
+    },
+    "legacyClips": [
+      {
+        "id": "job_external_fal_e4505068916ddfc6a39a340c76babbe492e07826",
+        "start": [
+          {
+            "currentTime": 0.106092,
+            "duration": 5.041667,
+            "ended": false,
+            "error": null,
+            "muted": false,
+            "paused": false,
+            "src": "https://media.maxvideoai.com/marketing-media/ecdf51c7-dfc0-4428-985d-1bcf10b57241/9969d4e68830295d3031ebd8a01f11584917e277d674424dbf3f9e107e51dced.mp4"
+          }
+        ],
+        "end": [
+          {
+            "currentTime": 5.041667,
+            "duration": 5.041667,
+            "ended": true,
+            "error": null,
+            "muted": false,
+            "paused": true
+          }
+        ]
+      },
+      {
+        "id": "job_external_fal_bd1ee18e0957799885b866be09e181fd6d9a327e",
+        "start": [
+          {
+            "currentTime": 0,
+            "duration": null,
+            "ended": false,
+            "error": null,
+            "muted": false,
+            "paused": false,
+            "src": "https://media.maxvideoai.com/marketing-media/bf625452-aa77-4648-83a1-1550db821a6a/a48c70868cabfbb2d14e205bd1d806f913e7fa43dc7a5e132c3faa3d76020f84.mp4"
+          }
+        ],
+        "end": [
+          {
+            "currentTime": 5.041667,
+            "duration": 5.041667,
+            "ended": true,
+            "error": null,
+            "muted": false,
+            "paused": true
+          }
+        ]
+      },
+      {
+        "id": "job_external_fal_7c1a941daa43ddd68700a03572259f635e3e2e59",
+        "start": [
+          {
+            "currentTime": 0,
+            "duration": null,
+            "ended": false,
+            "error": null,
+            "muted": false,
+            "paused": false,
+            "src": "https://media.maxvideoai.com/marketing-media/e14a3ac8-fef7-4dc1-a282-bd2188ee4bb0/d185f2f6365a2848a21b75f5446d6fff37ea7a696f9f61bdc050480ad680126a.mp4"
+          }
+        ],
+        "end": [
+          {
+            "currentTime": 5.041667,
+            "duration": 5.041667,
+            "ended": true,
+            "error": null,
+            "muted": false,
+            "paused": true
+          }
+        ]
+      }
+    ]
+  },
+  "imageViewerChecks": {
+    "variants": [
+      "gpt-image-2-6-flare",
+      "gpt-image-2-6-sunburst"
+    ],
+    "editOriginalsLoaded": true,
+    "sharedSourceModel": "gpt-image-2-6-flare",
+    "sharedSourceSha256": "5c1807810678c1a1436ee1655bf694358709f37013b8d192d9b90f0f9b6d946a",
+    "naturalDimensions": [
+      1024,
+      1024
+    ],
+    "workspaceModelQueryPreserved": true
+  },
+  "responsiveSmoke": {
+    "viewportWidth": 390,
+    "flashDocumentWidth": 378,
+    "sunburstDocumentWidth": 378,
+    "editViewerImageWidth": 330,
+    "horizontalOverflow": false,
+    "viewportOverrideReset": true,
+    "performanceMeasurement": false
+  },
+  "scope": "Protected Preview checks only; no paid generation, production opening or subjective soundtrack evaluation is established by this report."
+}

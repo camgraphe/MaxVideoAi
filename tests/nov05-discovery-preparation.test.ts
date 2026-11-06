@@ -16,7 +16,7 @@ import evidence from '../data/benchmarks/kling-v4-flash-evidence.v1.json';
 const flashId = 'kling-v4-flash';
 const pair = 'kling-v4-vs-kling-v4-flash';
 
-test('Flash comparison is ready in three locales but remains absent from public discovery while closed', () => {
+test('Flash comparison publishes in three locales and disappears when either registry endpoint is closed', () => {
   const file = `content/comparisons/${pair}.json`;
   const content = parseComparePageContentDocument(readFileSync(file, 'utf8'), pair, file);
   for (const locale of ['en', 'fr', 'es'] as const) {
@@ -25,34 +25,43 @@ test('Flash comparison is ready in three locales but remains absent from public 
     assert.equal(content[locale].primaryLinks?.length, 2);
   }
   assert.ok(compareConfig.scoreboardOnlyComparisons.includes(pair));
-  assert.equal(isPublishedComparisonSlug(pair), false);
-  assert.ok(!getPublishedComparisonSlugs().includes(pair));
-  assert.ok(!getHubComparisonSlugsForSitemap().includes(pair));
+  assert.equal(isPublishedComparisonSlug(pair), true);
+  assert.ok(getPublishedComparisonSlugs().includes(pair));
+  assert.ok(getHubComparisonSlugsForSitemap().includes(pair));
   const models = listRuntimeModels().map(model => structuredClone(model));
+  const flash = models.find(model => model.id === flashId)!;
+  flash.publication.model = { published: false, indexable: false };
+  flash.publication.compare.published = false;
+  flash.publication.compare.indexed = false;
   assert.ok(!buildPublishedComparisonSlugsFromModels(models, () => true).includes(pair));
   const originalMenu = buildMarketingModelMenu(models);
   const originalCompareMenu = buildMarketingCompareMenu(models);
-  const flash = models.find(model => model.id === flashId)!;
   flash.publication.model = { published: true, indexable: true };
   flash.publication.compare.published = true;
   flash.publication.compare.indexed = true;
   assert.deepEqual(buildMarketingModelMenu(models).map(item => item.slug), [flashId, ...originalMenu.map(item => item.slug)]);
   assert.deepEqual(buildMarketingCompareMenu(models).map(item => item.slug), [pair, ...originalCompareMenu.map(item => item.slug)]);
   assert.ok(buildPublishedComparisonSlugsFromModels(models, () => true).includes(pair));
+  const kling = models.find(model => model.id === 'kling-v4')!;
+  kling.publication.compare.published = false;
+  assert.ok(!buildPublishedComparisonSlugsFromModels(models, () => true).includes(pair));
 });
 
 test('Flash family copy requires publication and accepted exact-model media without changing the historical owner', () => {
   const models = listRuntimeModels().map(model => structuredClone(model));
+  const flash = models.find(model => model.id === flashId)!;
+  flash.publication.model = { published: false, indexable: false };
+  flash.publication.examples = { published: false, current: false, includeInFamilyCopy: false };
+  const closedModels = structuredClone(models);
   const baselineFamilies = buildModelFamilyDefinitions(models);
   const baselineKling = baselineFamilies.find(family => family.id === 'kling')!;
-  const flash = models.find(model => model.id === flashId)!;
   flash.publication.model = { published: true, indexable: true };
   flash.publication.examples = { published: true, current: true, includeInFamilyCopy: true };
   const withoutMedia = buildModelFamilyDefinitions(models, MODEL_LAUNCH_READY_MODELS.filter(row => row.modelId !== flashId));
   const complete = buildModelFamilyDefinitions(models);
   assert.equal(complete.find(family => family.id === 'kling')!.defaultModelSlug, baselineKling.defaultModelSlug);
   for (const locale of ['en', 'fr', 'es'] as const) {
-    const baseline = getLocalizedModelData(locale, baselineFamilies);
+    const baseline = getLocalizedModelData(locale, baselineFamilies, closedModels);
     assert.deepEqual(getLocalizedModelData(locale, withoutMedia, models), baseline);
     const ready = getLocalizedModelData(locale, complete, models);
     assert.match(ready.kling!.summary!, /Kling 4\.0 Flash/);

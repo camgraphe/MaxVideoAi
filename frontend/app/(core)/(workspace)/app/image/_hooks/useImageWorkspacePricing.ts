@@ -5,6 +5,8 @@ import { CUSTOMER_PRICING_REFRESH_EVENT } from '@/lib/customer-tariff-revision';
 import useSWR from 'swr';
 
 import { authFetch } from '@/lib/authFetch';
+import { resolveRequestedResolution } from '@/lib/image/inputSchema';
+import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { buildCustomImageSize } from '../_lib/image-workspace-utils';
 import type { PricingEstimateResponse } from '../_lib/image-workspace-types';
@@ -37,6 +39,7 @@ export function useImageWorkspacePricing({
   referenceSizeSignature,
   resolution,
   selectedEngineId,
+  selectedEngineCaps,
   aspectRatio,
   referenceImageCount,
 }: {
@@ -51,11 +54,15 @@ export function useImageWorkspacePricing({
   referenceSizeSignature: string;
   resolution: string | null;
   selectedEngineId?: string | null;
+  selectedEngineCaps?: EngineCaps;
   aspectRatio: string | null;
   referenceImageCount: number;
 }) {
   const priceEstimateKey = useMemo<ImagePricingKey | null>(() => {
-    if (!selectedEngineId) return null;
+    if (!selectedEngineId || selectedEngineCaps?.id !== selectedEngineId) return null;
+    // Model hydration resets incompatible fields after render. Wait for those
+    // values instead of quoting the new model with the previous model's size.
+    if (!resolveRequestedResolution(selectedEngineCaps, mode, resolution).ok) return null;
     return [
       'image-pricing',
       selectedEngineId,
@@ -78,10 +85,11 @@ export function useImageWorkspacePricing({
     mode,
     numImages,
     quality,
-  complexity,
+    complexity,
     referenceSizeSignature,
     resolution,
     selectedEngineId,
+    selectedEngineCaps,
     aspectRatio,
     referenceImageCount,
   ]);

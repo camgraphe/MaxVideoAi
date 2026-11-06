@@ -64,6 +64,12 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   const klingPricingDiscovery = JSON.parse(
     readFileSync('tests/fixtures/kling-v4-pricing-discovery-projections-2026-10-29.json', 'utf8')
   ) as PublicProjectionFixture;
+  const novemberMarketing = JSON.parse(
+    readFileSync('tests/fixtures/nov06-model-marketing-public-projections-2026-11-06.json', 'utf8')
+  ) as PublicProjectionFixture;
+  const novemberImages = JSON.parse(
+    readFileSync('tests/fixtures/nov05-functional-image-public-projections-2026-11-06.json', 'utf8')
+  ) as PublicProjectionFixture;
   assert.equal(fixture.version, 1);
   assert.equal(fixture.generatedFrom, 'canonical-public-pricing-paths');
   assert.ok(fixture.rows.length >= 250, `expected at least 250 public projection rows, got ${fixture.rows.length}`);
@@ -74,7 +80,9 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   ]);
   assert.equal(klingPricingDiscovery.rows.length, 10);
   assert.ok(klingPricingDiscovery.rows.every((row) => row.engineId === 'kling-v4' && row.status === 'unavailable'));
-  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows];
+  assert.equal(novemberMarketing.rows.length, 28);
+  assert.ok(novemberMarketing.rows.every(row => row.status === 'unavailable' && row.customerTotalCents === undefined));
+  const rows = [...fixture.rows, ...launch.rows, ...fluxMaxLaunch.rows, ...nano21Launch.rows, ...klingPublicDiscovery.rows, ...klingPricingDiscovery.rows, ...novemberImages.rows, ...novemberMarketing.rows];
   const ids = rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, 'public projection scenario ids must be unique');
 
@@ -163,7 +171,7 @@ test('public pricing baseline ignores machine-specific pricing environment overr
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /current \(612 rows\)/);
+  assert.match(result.stdout, /current \(640 rows\)/);
 });
 
 test('Character Studio static rows retire only four fixed prices and require a current native quote', async () => {

@@ -45,7 +45,7 @@ test('real gallery SQL preserves only the recorded mode through the card, media 
           supportsNativeAudio: true, demoPromptSource: 'media', defaultDemoPromptSource: 'media', demoMedia: media,
           defaultDemoPresentation: { audioBadgeLabel: '', altContext: '' }, referenceWorkflows: [] });
         assert.equal(vm.demo?.modeLabel, label);
-        assert.equal(vm.demo?.prompt, prompt.replace(/\s*\n+\s*/g, ' ').replace(/\s{2,}/g, ' ').trim());
+        assert.equal(vm.demo?.prompt, prompt.trim(), 'the full prompt preserves its submitted shot and sound paragraphs');
       }
     }
     const [row] = (await db.pool.query(BASE_SELECT)).rows;

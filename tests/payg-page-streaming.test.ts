@@ -120,8 +120,9 @@ test('PAYG emits its hero before held current prices, then preserves the settled
         h.release('showcase');
         for (;;) { const next = await reader.read(); if (next.done) break; tail += decoder.decode(next.value, { stream: true }); }
         assert.deepEqual(errors, []);
-        assert.equal(h.calls.length, 123, 'Hero and details consume one current video projection');
+        assert.equal(h.calls.length, 125, 'Hero and details consume one current video projection');
         assert.ok(h.calls.every((input: { mode: string }) => input.mode !== 't2i'));
+        assert.equal(h.calls.filter((input: { modelId: string }) => input.modelId === 'kling-v4-flash').length, 2, 'Only two new Flash video scenarios are added');
         const final = new JSDOM(shell + tail, { runScripts: 'dangerously', pretendToBeVisual: true });
         await new Promise(done => setTimeout(done, 60));
         const expectedData = h.buildPayAsYouGoPageData({ locale, content, pricingHub: await h.buildCurrentVideoPricingData(locale) });
@@ -192,7 +193,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       assert.ok(errors.length >= 1);
       assert.ok(errors.every(error => error === h.failure), 'Keep the original failed-read error for the server boundary');
       assert.equal(h.reads.length, 1);
-      assert.equal(h.calls.length, showcaseFailure ? 123 : 8);
+      assert.equal(h.calls.length, showcaseFailure ? 125 : 8);
       const doc = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
       await new Promise(done => setTimeout(done, 60));
       assert.equal(doc.window.document.querySelector('h1')?.textContent, content.hero.title);
@@ -206,7 +207,7 @@ test('PAYG emits its hero before held current prices, then preserves the settled
       doc.window.close();
       h.configure(); h.release('prices'); h.release('showcase');
       const recovered = await h.buildCurrentVideoPricingData('fr');
-      assert.equal(h.calls.length, 123, 'A later request owns fresh current quotes after failure');
+      assert.equal(h.calls.length, 125, 'A later request owns fresh current quotes after failure');
       assert.ok(recovered.video.rows.some((row: { quotes: Record<string, { amountCents?: number }> }) =>
         Object.values(row.quotes).some(quote => quote.amountCents === 1937)));
     });

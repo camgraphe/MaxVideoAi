@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {getRuntimeModelById} from '../frontend/config/model-runtime';
 import {readFileSync} from 'node:fs';
 import records from '../frontend/config/gpt26-editorial-images.json';
 import {parseGpt26EditorialImages,listGpt26EditorialImages} from '../frontend/lib/gpt26-editorial-images';
@@ -22,7 +23,13 @@ test('both 2.6 edits retain the same actual Flare source, never the Sunburst gen
    assert.doesNotMatch(view.metadataLabel,/Nano Banana/);
   }
  }
- assert.deepEqual(listGpt26EditorialImages('gpt-image-2-6-flare'),[],'publication remains closed');
+ for(const id of ['gpt-image-2-6-flare','gpt-image-2-6-sunburst']){
+  assert.deepEqual(listGpt26EditorialImages(id),images.filter(image=>image.engineId===id));
+  const model=getRuntimeModelById(id)!;
+  const published=model.publication.model.published;
+  try{model.publication.model.published=false;assert.deepEqual(listGpt26EditorialImages(id),[],'rollback hides editorial media');}
+  finally{model.publication.model.published=published;}
+ }
 });
 
 test('editorial validation rejects source drift, wrong model attribution and signed public URLs',()=>{
