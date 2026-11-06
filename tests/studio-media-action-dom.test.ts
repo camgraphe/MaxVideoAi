@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {mountToolFixture} from './helpers/tool-selection-fixture';
 const assetId=`ma_${'1'.repeat(32)}`;
-const stubs={'@/lib/authFetch':'export const authFetch=(url,init)=>window.fixtureFetch(url,init);','next/link':"import React from 'react';export default p=>React.createElement('a',{href:p.href},p.children);"};
-async function mount(kind='video'){return mountToolFixture(`import {StudioMediaAction} from './components/library/StudioMediaAction.client';function App(){return <StudioMediaAction locale="en" reference={{type:'asset',assetId:'${assetId}',kind:'${kind}'}}/>}`,stubs);}
+const stubs={'@/lib/authFetch':'export const authFetch=(url,init)=>window.fixtureFetch(url,init);','@/lib/supabaseClientLoader':'export const loadSupabaseClient=async()=>({auth:{getSession:async()=>({data:{session:{user:{id:"account-a"},access_token:"fixture"}}})}});','next/link':"import React from 'react';export default p=>React.createElement('a',{href:p.href},p.children);"};
+async function mount(kind='video'){return mountToolFixture(`import {StudioMediaAction} from './components/library/StudioMediaAction.client';function App(){return <StudioMediaAction locale="en" userId="account-a" reference={{type:'asset',assetId:'${assetId}',kind:'${kind}'}}/>}`,stubs);}
 async function click(f:any,text:string){const button=Array.from(f.w.document.querySelectorAll('button')).find((value:any)=>value.textContent===text) as any;assert.ok(button,text);assert.equal(button.disabled,false);await f.act(async()=>button.click());}
 async function select(f:any,index:number,value:string){const input=f.w.document.querySelectorAll('select')[index];await f.act(async()=>{input.value=value;input.dispatchEvent(new f.w.Event('change',{bubbles:true}));});}
 async function open(f:any){assert.equal(f.w.requests.length,0);await f.act(async()=>{f.w.document.querySelector('details').open=true;await new Promise(resolve=>setTimeout(resolve,0));});

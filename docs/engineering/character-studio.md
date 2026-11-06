@@ -6,6 +6,53 @@ pipeline. The approved proposal and phased scope live in
 `docs/redesign/2026-11-03-character-studio-proposal.md` and
 `docs/plans/2026-11-03-character-studio-implementation.md`.
 
+## MCP and Studio integration (2026-11-06)
+
+`server/character-studio/integration.ts` is the shared actor-aware owner for
+saved identities, exact look selection and dedicated Recast. MCP and Studio
+adapters use it rather than submitting a generic Wan quote. Character Builder
+remains the creator of authored character/look recipes: generic generated images
+cannot be saved as character recipes. Discovery supports case-insensitive exact
+names and cursor pagination; duplicate names require an explicit selection.
+Selection resolves the exact owned original, including looks beyond the first
+page, into canonical Media. It neither generates nor charges.
+
+The new MCP feature requires `MCP_CHARACTER_STUDIO_ENABLED=1`; purchase and
+reference operations retain their existing independent gates. Studio additionally
+requires `STUDIO_CHARACTER_STUDIO_ENABLED=1` and its existing conversational media
+gates. These new flags are activated only in `character-studio-test`. Its MCP
+resource is the exact stable test origin, not the production API. No wildcard
+preview host is trusted. Metadata/SDK verification is separate from a real host
+OAuth connection and does not establish automatic tool selection by that host.
+
+The same `prepareRecast` materializes independent video/audio passages and obtains
+the Character Recast commercial quote, currently provider cost ×2 in the test
+policy. Duration, resolution, product and chosen original are immutable in that
+quote. Its Recast binding and Studio journal entry commit in the same transaction.
+Confirmation requires the exact amount, currency and explicit approval. The quote
+is bound to the user, origin and OAuth client or Studio project; a generic Wan
+quote cannot cross this product boundary. Concurrent/repeated confirmation
+recovers the existing job and charge. Disabling execution prevents a new purchase
+but retains accepted-job recovery. A temporarily missing accepted job is a
+retryable recovery error, never permission for a replacement.
+
+Character Builder and completed Recast gallery results use the shared Studio
+continuation action. On explicit click it resolves the owned original into Media
+before opening the film picker; a gallery index or thumbnail is never used as
+source identity. Studio's named character/look picker imports that same original.
+Project selection and timeline placement remain explicit, with account/request
+cancellation on late responses.
+
+Regression owners: `character-studio-integration-postgres`,
+`mcp-character-studio`, `studio-character-recast-postgres`,
+`studio-character-picker-dom`, and `character-studio-continuation-dom`, alongside
+the existing financial, MCP client and Studio editor suites. Provider execution
+is substituted in these tests; they do not authorize or certify a paid render.
+No additional schema migration is needed beyond Character Studio migrations
+93–95 and the existing Studio journal schema. Earlier dated sections below record
+the implementation history; statements about the initial local-only Recast draft
+do not describe the current hosted integration.
+
 ## Ownership
 
 - `CharacterBuilderWorkspace.tsx` retains account isolation and wires generation,

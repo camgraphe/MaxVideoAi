@@ -10,12 +10,13 @@ import { createCreatorGenerationService } from '@/server/tools/creator-generatio
 import { reservePaidGenerationInitialJob } from '@/server/agent-api/paid-generation-execution';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { CanonicalGenerationReference } from '@/server/agent-api/generation-types';
-import type { ToolboxGenerationActor } from '@/server/agent-api/generation-actor';
+import { requireGenerationActor, type GenerationActor } from '@/server/agent-api/generation-actor';
+import type { CreatorGenerationOptions } from '@/server/tools/creator-generation-service';
 
 import { recastSettings as settings } from './recast-request';
 
 const engineId = 'wan-3-prime';
-async function portraitAsset(userId: string, portrait: z.infer<typeof settings>['portrait']) {
+export async function resolveCharacterPortraitAsset(userId: string, portrait: z.infer<typeof settings>['portrait']) {
   if ('assetId' in portrait) return portrait.assetId;
   await resolveStudioOutput({ query }, userId, portrait.jobId, portrait.imageUrl);
   const [existing] = await query<{ public_id: string }>(
@@ -51,10 +52,14 @@ const dependencies = {
   generation: createCreatorGenerationService,
 };
 
-export async function prepareRecast(actor: ToolboxGenerationActor, value: unknown, deps = dependencies) {
+export type RecastPreparationDependencies = typeof dependencies;
+export type RecastLifecycleOptions = Pick<CreatorGenerationOptions, 'onQuotePrepared'>;
+
+export async function prepareRecast(actor: GenerationActor, value: unknown, deps = dependencies, options: RecastLifecycleOptions = {}) {
+  requireGenerationActor(actor);
   const s = settings.parse(value);
   const mode = s.video ? 'v2v' : s.audio || s.product ? 'ref2v' : 'i2v';
-  const portrait = await portraitAsset(actor.userId, s.portrait);
+  const portrait = await resolveCharacterPortraitAsset(actor.userId, s.portrait);
   const references: CanonicalGenerationReference[] = [];
   for (const id of [portrait, s.product]) {
     if (!id) continue;
@@ -116,6 +121,7 @@ export async function prepareRecast(actor: ToolboxGenerationActor, value: unknow
           'INSERT INTO character_studio_recast_quotes(quote_id,user_id,request_hash,passages) VALUES ($1,$2,$3,$4::jsonb)',
           [quote.quoteId, actor.userId, quote.requestHash, JSON.stringify(passages)],
         );
+        await options.onQuotePrepared?.(quote, tx);
       },
     })
     .prepare({
@@ -140,14 +146,17 @@ export async function prepareRecast(actor: ToolboxGenerationActor, value: unknow
     topupRequired: quote.topupRequired,
     sourceSeconds: passages.video?.durationSec ?? 0,
     audioSeconds: passages.audio?.durationSec ?? 0,
+    passages,
+    quote,
   };
 }
 
 export async function confirmRecast(
-  actor: ToolboxGenerationActor,
+  actor: GenerationActor,
   value: unknown,
   generation = createCreatorGenerationService,
 ) {
+  requireGenerationActor(actor);
   const input = z
     .object({
       quoteId: z.string().uuid(),

@@ -8,7 +8,7 @@ const range = z
   .refine((r) => r.endSec > r.startSec && mediaExcerptDuration(r) <= 15);
 const track = z.object({ assetId, range }).strict();
 const saved = z.object({ jobId: z.string().min(1).max(160), imageUrl: z.string().min(1).max(4096) }).strict();
-export const recastSettings = z
+export const recastSettingsObject = z
   .object({
     portrait: z.union([z.object({ assetId }).strict(), saved]),
     product: assetId.optional(),
@@ -20,6 +20,11 @@ export const recastSettings = z
     resolution: z.enum(RECAST_RESOLUTIONS),
     aspectRatio: z.enum(RECAST_FRAMINGS),
   })
-  .strict()
-  .refine((s) => Boolean(s.direction || s.dialogue || s.video || s.audio))
-  .refine((s) => !s.video || s.seconds + mediaExcerptDuration(s.video.range) <= 30);
+  .strict();
+export function validRecastDirection(s: {direction: string; dialogue: string; video?: unknown; audio?: unknown}) {
+  return Boolean(s.direction || s.dialogue || s.video || s.audio);
+}
+export function validRecastDuration(s: {seconds: number; video?: {range: {startSec:number;endSec:number}}}) {
+  return !s.video || s.seconds + mediaExcerptDuration(s.video.range) <= 30;
+}
+export const recastSettings = recastSettingsObject.refine(validRecastDirection).refine(validRecastDuration);

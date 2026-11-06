@@ -21,7 +21,7 @@ export async function seedRecastPricingPolicy(pool: Pool, marginPercent = 1) {
     ON CONFLICT (id) DO UPDATE SET margin_percent=EXCLUDED.margin_percent, updated_at=clock_timestamp()`, [marginPercent]);
 }
 
-export async function recastHarness(t: TestContext) {
+export async function recastHarness(t: TestContext, options: {userId?:string} = {}) {
   const pg = await startDisposablePostgres('character-recast');
   const old = {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -86,7 +86,7 @@ export async function recastHarness(t: TestContext) {
     }
   await pg.pool.query('UPDATE app_customer_tariff_state SET active=TRUE');
   const actor = {
-    userId: 'recast-test',
+    userId: options.userId ?? 'recast-test',
     authMethod: 'toolbox-session' as const,
     clientId: null,
   };

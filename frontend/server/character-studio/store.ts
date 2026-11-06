@@ -41,14 +41,16 @@ const summary = (row: Row): StudioCharacterSummary => ({
 export async function listStudioCharacters(
   userId: string,
   before?: string | null,
+  name?: string,
 ): Promise<StudioCharacterPage> {
   if (!userId) throw new StudioLibraryError('auth_required', 401);
   const rows = await db.query<Row>(
     `SELECT c.id::text,c.name,c.source_job_id,c.image_url,c.thumb_url,c.created_at::text,
     (SELECT count(*) FROM character_studio_looks l WHERE l.character_id=c.id AND l.user_id=c.user_id)::text AS look_count
     FROM character_studio_characters c WHERE c.user_id=$1 AND ($2::bigint IS NULL OR c.id<$2)
+    AND ($3::text IS NULL OR lower(c.name)=lower($3))
     ORDER BY c.id DESC LIMIT 13`,
-    [userId, before ? studioId(before) : null],
+    [userId, before ? studioId(before) : null, name === undefined ? null : studioName(name)],
   );
   return {
     characters: rows.slice(0, 12).map(summary),
@@ -61,6 +63,7 @@ export async function getStudioCharacter(
   id: string,
   beforeLook?: string | null,
   executor: QueryExecutor = db,
+  lookName?: string,
 ): Promise<StudioCharacter> {
   const [row] = await executor.query<Row>(
     `SELECT c.*,c.id::text,c.created_at::text,
@@ -71,8 +74,9 @@ export async function getStudioCharacter(
   if (!row) throw new StudioLibraryError('character_unavailable', 404);
   const rows = await executor.query<Row>(
     `SELECT l.*,l.id::text,l.created_at::text FROM character_studio_looks l
-    WHERE l.user_id=$1 AND l.character_id=$2 AND ($3::bigint IS NULL OR l.id<$3) ORDER BY l.id DESC LIMIT 25`,
-    [userId, id, beforeLook ? studioId(beforeLook) : null],
+    WHERE l.user_id=$1 AND l.character_id=$2 AND ($3::bigint IS NULL OR l.id<$3)
+    AND ($4::text IS NULL OR lower(l.name)=lower($4)) ORDER BY l.id DESC LIMIT 25`,
+    [userId, id, beforeLook ? studioId(beforeLook) : null, lookName === undefined ? null : studioName(lookName)],
   );
   const looks: StudioLook[] = rows
     .slice(0, 24)
@@ -84,6 +88,18 @@ export async function getStudioCharacter(
     looks,
     nextLookCursor: rows.length > 24 ? String(rows[23].id) : null,
   };
+}
+
+/** Exact lookup does not depend on which page of looks the client has loaded. */
+export async function getStudioCharacterLook(userId: string, characterId: string, lookId: string): Promise<StudioLook> {
+  const [row] = await db.query<Row>(
+    `SELECT l.*,l.id::text,l.created_at::text FROM character_studio_looks l
+     JOIN character_studio_characters c ON c.id=l.character_id AND c.user_id=l.user_id
+     WHERE l.user_id=$1 AND l.character_id=$2 AND l.id=$3`,
+    [userId, studioId(characterId), studioId(lookId)],
+  );
+  if (!row) throw new StudioLibraryError('look_unavailable', 404);
+  return {...image(row), id:String(row.id), name:row.name, createdAt:row.created_at};
 }
 
 export async function saveStudioCharacterOutput(
