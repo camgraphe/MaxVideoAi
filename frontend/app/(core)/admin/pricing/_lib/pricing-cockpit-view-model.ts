@@ -3,6 +3,7 @@ import type {
   PricingChangePreview,
   PricingChangePreviewProvenance,
 } from '@/lib/admin/pricing-change-contract';
+import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
 
 export type PricingPolicySelector = {
   engineId?: string;
@@ -317,11 +318,15 @@ function selectorsMatch(left: PricingPolicySelector, right: PricingPolicySelecto
 }
 
 export function createPricingPolicyDraft(row: PricingPolicyInventoryRow, scopeToSelector = false): PricingPolicyDraft {
-  const base = row.databaseOverride ?? row.versionedRule;
+  const recast = row.selector.engineId === RECAST_PRICING_SELECTOR.engineId;
+  const base = recast ? (row.databaseOverride && selectorsMatch(row.databaseOverride, RECAST_PRICING_SELECTOR)
+    ? row.databaseOverride : { ...RECAST_PRICING_SELECTOR, id: makeGeneratedRuleId(RECAST_PRICING_SELECTOR),
+      marginPercent: 1, marginFlatCents: 0, surchargeAudioPercent: 0, surchargeUpscalePercent: 0,
+      currency: 'USD', compatibilityProfile: 'standard' }) : row.databaseOverride ?? row.versionedRule;
   if (!base) {
     throw new Error('Pricing inventory row has no policy rule');
   }
-  const createScoped = scopeToSelector && row.databaseOverride && !selectorsMatch(row.databaseOverride, row.selector);
+  const createScoped = (scopeToSelector || recast) && row.databaseOverride && !selectorsMatch(row.databaseOverride, row.selector);
   const draftSelector = createScoped ? row.selector : row.databaseOverride ?? row.selector;
   const id = createScoped ? makeGeneratedRuleId(row.selector) : row.databaseOverride?.id ?? (selectorsMatch(base, row.selector) ? base.id : makeGeneratedRuleId(row.selector));
   return {
@@ -334,7 +339,7 @@ export function createPricingPolicyDraft(row: PricingPolicyInventoryRow, scopeTo
     surchargeAudioPercent: ratioToPercentInput(base.surchargeAudioPercent),
     surchargeUpscalePercent: ratioToPercentInput(base.surchargeUpscalePercent),
     currency: base.currency,
-    compatibilityProfile: (createScoped ? row.effectiveProvenance?.compatibilityProfile : undefined) ?? base.compatibilityProfile ?? 'standard',
+    compatibilityProfile: (!recast && createScoped ? row.effectiveProvenance?.compatibilityProfile : undefined) ?? base.compatibilityProfile ?? 'standard',
   };
 }
 
@@ -359,6 +364,9 @@ export function buildPricingPolicyProposal(
   row: PricingPolicyInventoryRow,
   draft: PricingPolicyDraft
 ): PricingPolicyProposal {
+  if (draft.engineId === RECAST_PRICING_SELECTOR.engineId && !draft.marginPercent.trim()) {
+    throw new Error('A supplier cost coefficient is required.');
+  }
   const rule: PricingPolicyRuleView = {
     id: draft.id.trim(),
     ...(optionalText(draft.engineId) ? { engineId: optionalText(draft.engineId) } : {}),

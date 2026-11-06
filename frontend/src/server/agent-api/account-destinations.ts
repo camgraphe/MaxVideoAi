@@ -15,7 +15,7 @@ function isLoopbackHostname(hostname: string): boolean {
     || normalized === '::1';
 }
 
-function parseTrustedAccountUrl(value: string): URL {
+export function parseTrustedAccountUrl(value: string): URL {
   if (typeof value !== 'string' || value !== value.trim()) {
     throw new Error('Expected a trusted MaxVideoAI account URL.');
   }
@@ -34,6 +34,7 @@ function parseTrustedAccountUrl(value: string): URL {
   const officialStaging = parsed.protocol === 'https:'
     && hostname === 'maxvideoai-mcp-staging.vercel.app'
     && parsed.port === '';
+  const characterStudioPreview = parsed.origin === 'https://maxvideoai-env-character-studio-test-camgraphes-projects.vercel.app';
   const loopback = isLoopbackHostname(hostname)
     && (parsed.protocol === 'http:' || parsed.protocol === 'https:');
 
@@ -43,7 +44,7 @@ function parseTrustedAccountUrl(value: string): URL {
     || parsed.search
     || parsed.hash
     || parsed.pathname !== ACCOUNT_CONNECTIONS_PATH
-    || (!production && !officialStaging && !loopback)
+    || (!production && !officialStaging && !characterStudioPreview && !loopback)
   ) {
     throw new Error('Expected a trusted MaxVideoAI account URL.');
   }

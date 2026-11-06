@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isRecastAudioFile } from '@/lib/character-studio-recast';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
@@ -33,6 +34,7 @@ export const maxDuration = 60;
 type CompleteMultipartVideoUploadPayload = {
   uploadId?: unknown;
   key?: unknown;
+  kind?: unknown;
   fileName?: unknown;
   mime?: unknown;
   size?: unknown;
@@ -69,7 +71,8 @@ export async function POST(req: NextRequest) {
     return uploadJsonError('INVALID_UPLOAD_KEY', 400);
   }
 
-  if (!isSupportedVideoMime(mime)) {
+  const audio = payload?.kind === 'audio';
+  if (audio ? !isRecastAudioFile({ name: fileName, type: mime, size: requestedSize }) : !isSupportedVideoMime(mime)) {
     return uploadJsonError('UNSUPPORTED_TYPE', 415);
   }
 
@@ -86,7 +89,7 @@ export async function POST(req: NextRequest) {
   }
 
   const maxVideoMB = getMaxVideoUploadMB();
-  const maxBytes = videoUploadLimitBytes(maxVideoMB);
+  const maxBytes = audio ? 15 * 1024 * 1024 : videoUploadLimitBytes(maxVideoMB);
   if (requestedSize > maxBytes) {
     return uploadJsonError('FILE_TOO_LARGE', 413, { maxMB: maxVideoMB });
   }
@@ -126,6 +129,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const bytes = Buffer.concat(buffers, totalSize);
+    if (audio) {
+      const { storeAudioUpload } = await import('@/server/uploads/store-media-upload');
+      const stored = await storeAudioUpload({userId, fileName, declaredMime: mime, bytes, referenceEligibility:'workspace'});
+      await cleanupParts(parts);
+      return NextResponse.json({ok:true,asset:{id:stored.legacyAssetId, ...canonicalMediaAssetFields(stored.assetId,'audio'),
+        mediaFacts:stored.mediaFacts,url:stored.storageUrl,size:stored.sizeBytes,mime:stored.mimeType,name:fileName}});
+    }
     const measured = await readVideoUploadMetadata(bytes, fileName, mime);
     if (!measured) return uploadJsonError('METADATA_UNVERIFIED', 422);
     const uploadResult = await uploadFileBufferToKey({

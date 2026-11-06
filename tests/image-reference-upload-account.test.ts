@@ -92,7 +92,7 @@ test('control: uninterrupted image upload uses A and updates the reference',asyn
   try {
     const {pending}=await f.upload();
     assert.equal(new Headers(f.requests[0].init.headers).get('Authorization'),'Bearer token-account-A');
-    assert.equal(f.requests[0].init.credentials,'omit');
+    assert.equal(f.requests[0].init.credentials, 'same-origin');assert.equal(new Headers(f.requests[0].init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
     assert.ok(f.requests[0].init.signal);
     await f.w.fx.act(async()=>{f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{id:'A',url:'https://example.invalid/A.png'}})});await pending;});
     assert.equal(f.w.document.querySelector('output').textContent,'https://example.invalid/A.png');

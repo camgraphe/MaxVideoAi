@@ -56,11 +56,11 @@ export type PricingChangePreviewRow = {
   scenarioLabel?: string;
   engineId: string;
   surface: string;
-  currentTotalCents: number;
+  currentTotalCents: number | null;
   proposedTotalCents: number;
-  deltaCents: number;
+  deltaCents: number | null;
   deltaPercent: number | null;
-  currentProvenance: PricingChangePreviewProvenance;
+  currentProvenance: PricingChangePreviewProvenance | null;
   proposedProvenance: PricingChangePreviewProvenance;
   compatibilityProfile: string;
 };

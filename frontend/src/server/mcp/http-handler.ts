@@ -121,6 +121,8 @@ const AUDITABLE_TOOL_NAMES = new Set([
   'list_creator_tools', 'prepare_creator_tool', 'confirm_creator_tool', 'get_creator_tool_operation',
   'get_subtitle_document', 'edit_subtitle_document', 'prepare_subtitle_export', 'export_subtitle_text',
   'prepare_studio_subtitles',
+  'list_saved_characters', 'get_saved_character', 'select_saved_character', 'save_character',
+  'prepare_recast', 'confirm_recast', 'get_recast_quote', 'get_recast_status',
   'get_account_status',
   'list_models',
   'get_model_details',

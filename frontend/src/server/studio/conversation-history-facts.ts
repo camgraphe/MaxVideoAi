@@ -1,6 +1,7 @@
 import {recordedGenerationSourceVideoOutput} from '@/lib/generation-output-duration';
 import {query} from '@/lib/db';
 import {studioGenerationReferenceLimit} from './conversation-reference-limits';
+import {studioRecastActionSchema} from '@/lib/studio/conversation-character-contract';
 import type {StudioConversationHistoryFacts} from '@/lib/studio/image-conversation-contract';
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import {requireGenerationActor,type StudioGenerationActor} from '@/server/agent-api/generation-actor';
@@ -17,8 +18,21 @@ const MAX_DIRECTION_CHARS=1600;
 export function projectStudioQuoteDirections(turns:readonly StoredImageTurn[]):StudioConversationHistoryFacts['quoteDirections'] {
   const directions:StudioConversationHistoryFacts['quoteDirections']=[];
   for(const turn of [...turns].reverse()){
+    if(directions.length===MAX_HISTORICAL_FACTS)break;
     if(turn.state!=='ready'||!turn.quote_id||!uuid.test(turn.quote_id)||!turn.draft_json)continue;
     const draft=turn.draft_json;
+    if(draft.recast){
+      const parsed=studioRecastActionSchema.safeParse(draft.recast);
+      if(!parsed.success)continue;
+      const {portrait,product,video,audio,direction,dialogue,seconds,resolution,aspectRatio}=parsed.data;
+      // Reserve verbatim dialogue before shortening longer creative direction.
+      const directionLimit=MAX_DIRECTION_CHARS-dialogue.length;
+      directions.push({
+        requestId:turn.request_id,quoteId:turn.quote_id,truncated:direction.length>directionLimit,
+        recast:{portrait,product,video,audio,direction:direction.slice(0,directionLimit),dialogue,seconds,resolution,aspectRatio},
+      });
+      continue;
+    }
     const media=draft.media;
     let text=draft.image?.prompt??'';
     if(media){
@@ -32,7 +46,6 @@ export function projectStudioQuoteDirections(turns:readonly StoredImageTurn[]):S
     }
     if(!text)continue;
     directions.push({requestId:turn.request_id,quoteId:turn.quote_id,text:text.slice(0,MAX_DIRECTION_CHARS),truncated:text.length>MAX_DIRECTION_CHARS});
-    if(directions.length===MAX_HISTORICAL_FACTS)break;
   }
   return directions;
 }

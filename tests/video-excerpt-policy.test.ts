@@ -42,3 +42,11 @@ test('ranges reject nonfinite, reversed, source overflow and model overflow with
   assert.deepEqual(validateVideoExcerptRange({ startSec: 20, endSec: 38 }, 60, limits), { startSec: 20, endSec: 38 });
   for (const range of [{startSec: -1, endSec: 2}, {startSec: 4, endSec: 4}, {startSec: 5, endSec: 3}, {startSec: NaN, endSec: 4}, {startSec: 0, endSec: Infinity}, {startSec: 50, endSec: 61}, {startSec: 0, endSec: 18.01}]) assert.throws(() => validateVideoExcerptRange(range, 60, limits));
 });
+test('decimal subtraction cleanup preserves an exact fractional frame minimum', () => {
+  const minimum = 56 / 24;
+  const range = { startSec: 0, endSec: minimum };
+  const limits = { sourceFieldId: 'video', minDurationSec: minimum, maxDurationSec: 15,
+    maxSizeMB: 100, durationPolicy: 'requested' as const };
+  assert.deepEqual(validateVideoExcerptRange(range, 20, limits), range);
+  assert.throws(() => validateVideoExcerptRange({ ...range, endSec: minimum - 0.000001 }, 20, limits));
+});

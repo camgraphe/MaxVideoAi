@@ -5,12 +5,12 @@ import {studioExportConfirmationSchema} from '@/lib/studio/conversation-export-c
 import {AgentApiError} from '@/server/agent-api/errors';
 import {LIVE_PRICING_POLICY_REVISION,PRICING_POLICY_HEADER} from '@/lib/membership-policy';
 import {studioConversationEditingEnabled} from './studio-conversation-editing-handler';
-import {studioJson} from './studio-route-utils';
+import {isStudioSameOriginRequest, studioJson} from './studio-route-utils';
 export async function handleStudioConversationExportConfirmation(req:NextRequest,projectId:string,dependencies:{enabled?:boolean;resolveAccess?:typeof resolveStudioApiAccess;confirm?:typeof confirmStudioTimelineExport}={}){
   const access=await (dependencies.resolveAccess??resolveStudioApiAccess)(req);
   if(!access.ok)return studioJson({ok:false,error:access.error},{status:access.status});
   if(!(dependencies.enabled??(studioConversationEditingEnabled()&&process.env.STUDIO_CONVERSATION_EXPORTS_ENABLED==='true')))return studioJson({ok:false,error:'STUDIO_EXPORTS_UNAVAILABLE'},{status:404});
-  if(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site')return studioJson({ok:false,error:'SAME_ORIGIN_REQUIRED'},{status:403});
+  if(!isStudioSameOriginRequest(req))return studioJson({ok:false,error:'SAME_ORIGIN_REQUIRED'},{status:403});
   if(req.headers.get(PRICING_POLICY_HEADER)!==LIVE_PRICING_POLICY_REVISION)return studioJson({ok:false,error:'PRICING_REFRESH_REQUIRED',message:'Refresh and review this quote before confirming.'},{status:409});
   if(!studioExportConfirmationSchema.shape.projectId.safeParse(projectId).success)return studioJson({ok:false,error:'INVALID_PROJECT'},{status:400});
   try{

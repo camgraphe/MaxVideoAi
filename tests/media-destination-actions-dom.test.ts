@@ -5,6 +5,7 @@ const assetId=`ma_${'1'.repeat(32)}`;
 const stubs={
   '@/hooks/useRequireAuth':'export const useRequireAuth=()=>({user:{id:window.account??"account-a"},session:{access_token:"fixture"},loading:false});',
   '@/lib/authFetch':'export const authFetch=(url,init)=>window.fixtureFetch(url,init);',
+  '@/lib/supabaseClientLoader':'export const loadSupabaseClient=async()=>({auth:{getSession:async()=>({data:{session:{user:{id:window.account??"account-a"},access_token:"fixture"}}})}});',
   '@/content/feature-flags':'export const FEATURES={studio:{maxVideoAiEditor:true}};',
   'next/navigation':'export const useRouter=()=>({push:url=>window.navigations.push(url)});',
   'next/link':"import React from 'react';export default p=>React.createElement('a',{href:p.href},p.children);",

@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { resolveStudioApiAccess } from '@/server/studio/access';
 
+export function isStudioSameOriginRequest(req: NextRequest): boolean {
+  if (req.headers.get('sec-fetch-site') === 'cross-site') return false;
+  const origin = req.headers.get('origin');
+  if (origin === req.nextUrl.origin) return true;
+  // NextURL normalizes 127.0.0.1 to localhost. Preserve strict production checks
+  // and only recover the exact loopback Host used by this development request.
+  if (process.env.NODE_ENV !== 'development' || req.nextUrl.hostname !== 'localhost' || !origin) return false;
+  try {
+    const parsed = new URL(origin);
+    return origin === parsed.origin && (parsed.hostname === '127.0.0.1' || parsed.hostname === '[::1]') &&
+      parsed.protocol === req.nextUrl.protocol && parsed.port === req.nextUrl.port &&
+      parsed.host === req.headers.get('host');
+  } catch { return false; }
+}
+
 export function studioJson(body: unknown, init?: Parameters<typeof NextResponse.json>[1]) {
   const response = NextResponse.json(body, init);
   response.headers.set('Cache-Control', 'private, no-store');

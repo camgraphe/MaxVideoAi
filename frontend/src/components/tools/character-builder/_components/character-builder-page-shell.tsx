@@ -17,13 +17,13 @@ export function CharacterBuilderPageFrame({
   overlays?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
+    <div className="flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] min-h-0 flex-col overflow-hidden bg-bg">
       <HeaderBar />
-      <div className="flex flex-1 min-w-0 flex-col xl:flex-row">
+      <div className="flex min-h-0 flex-1 min-w-0 flex-col xl:flex-row">
         <div className="hidden xl:block">
           <AppSidebar />
         </div>
-        <main className="flex-1 min-w-0 overflow-y-auto p-5 pb-80 lg:p-7 lg:pb-40 xl:pb-64">
+        <main className="flex-1 min-h-0 min-w-0 overflow-hidden p-2 sm:p-3">
           {children}
         </main>
       </div>

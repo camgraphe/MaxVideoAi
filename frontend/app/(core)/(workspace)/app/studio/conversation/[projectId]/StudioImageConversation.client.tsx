@@ -49,6 +49,7 @@ function StudioImageConversationWorkspace({
   projectName,
   localQa = false,
   mediaEnabled = false,
+  characterEnabled = false,
   editingEnabled = false,
   exportsEnabled = false,
   exportAvailable = false,
@@ -60,6 +61,7 @@ function StudioImageConversationWorkspace({
   projectName: string;
   localQa?: boolean;
   mediaEnabled?: boolean;
+  characterEnabled?: boolean;
   editingEnabled?: boolean;
   exportsEnabled?: boolean;
   exportAvailable?: boolean;
@@ -287,7 +289,7 @@ function StudioImageConversationWorkspace({
                     composerRegion.current?.querySelector('textarea')?.focus();
                   }}
                   onConfirm={() =>
-                    void studio.confirm(turn.requestId, turn.quote!.quoteId)
+                    void studio.confirm(turn.requestId,turn.quote!.quoteId,turn.quote!.recast?turn.quote!.price:undefined)
                   }
                   onRenew={() => {
                     if(tasksEnabled){setText(turn.message);setShotPlanRevision(turn.shotPlanRevision);shelf.restore(imageTurnRetryInput(turn));composerRegion.current?.querySelector('textarea')?.focus();return;}
@@ -425,6 +427,7 @@ function StudioImageConversationWorkspace({
           onClose={() => setLibrary(false)}
           onSelect={select}
           mediaEnabled={mediaEnabled}
+          characterProjectId={characterEnabled ? projectId : undefined}
           purpose={libraryPurpose}
           returnFocusTo={libraryOpener.current}
           locale={appLocale === 'es' ? 'es' : locale}

@@ -263,7 +263,7 @@ for (const retire of ['none', 'account', 'slot', 'mode']) test(`library import d
     } else {
       await settle(w, () => f.requests.length === 1, 'owned import should dispatch');
       assert.equal(f.requests[0].bearer, 'Bearer token-A');
-      assert.equal(f.requests[0].init.credentials, 'omit');
+      assert.equal(f.requests[0].init.credentials, 'same-origin');assert.equal(new Headers(f.requests[0].init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
       assert.equal(f.requests[0].url, '/api/uploads/audio');
       assert.equal(w.probe.inputAssets.audio_urls[0].durationSec, 8);
     }
@@ -414,7 +414,7 @@ for (const [suite, kinds] of [
             assert.equal(f.requests.length, 1);
             assert.equal(f.requests[0].bearer, 'Bearer token-A');
             assert.equal(f.requests[0].file.name, file.name);
-            assert.equal(f.requests[0].init.credentials, 'omit');
+            assert.equal(f.requests[0].init.credentials, 'same-origin');assert.equal(new Headers(f.requests[0].init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
             assert.ok(f.requests[0].init.signal);
             assert.equal(f.requests[0].init.signal.aborted, false);
           }
@@ -811,7 +811,7 @@ for (const suite of ['main', 'kling'] as const) {
         new Headers(cleanup.init.headers).get('Authorization'),
         'Bearer token-A',
       );
-      assert.equal(cleanup.init.credentials, 'omit');
+      assert.equal(cleanup.init.credentials, 'same-origin');assert.equal(new Headers(cleanup.init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
       assert.equal(cleanup.init.signal?.aborted, false);
       assert.deepEqual(JSON.parse(cleanup.init.body as string).parts, [
         { partNumber: 1, etag: 'part-1', key: 'part-1', size: 3670016 },

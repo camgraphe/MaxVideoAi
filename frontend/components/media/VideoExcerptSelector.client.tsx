@@ -9,6 +9,7 @@ import { VideoExcerptTimeline, excerptTime } from './VideoExcerptTimeline.client
 import { useVideoExcerptFilmstrip } from './useVideoExcerptFilmstrip';
 import { videoExcerptStyles } from './video-excerpt-styles';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
+import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
 import { videoExcerptCopy, videoExcerptDurationMessage, videoExcerptFailureMessage } from '@/lib/video-excerpt-copy';
 import {
   validateVideoExcerptRange,
@@ -100,7 +101,7 @@ export function VideoExcerptSelector({
     valid = false;
   }
   const sourceTooShort = getMediaExcerptDurationIssue(durationSec, limits) === 'too-short';
-  const durationIssue = getMediaExcerptDurationIssue(range.endSec - range.startSec, limits);
+  const durationIssue = getMediaExcerptDurationIssue(mediaExcerptDuration(range), limits);
   const rangeMessage = sourceTooShort
     ? videoExcerptDurationMessage('too-short', limits, locale, mediaKind)
     : previewRange && durationIssue

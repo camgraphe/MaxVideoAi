@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { hasCharacterDraftChoices } from '../_lib/character-studio-state';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import {
   CHARACTER_BUILDER_STORAGE_KEY,
@@ -65,6 +66,8 @@ export function useCharacterBuilderPersistence({
   user,
 }: UseCharacterBuilderPersistenceOptions) {
   const visitorSanitizedRef = useRef(false);
+  const [restoredDraft, setRestoredDraft] = useState(false);
+  const dismissRestoredDraft = useCallback(() => setRestoredDraft(false), []);
   const accountId = user?.id ?? null;
 
   useEffect(() => {
@@ -74,6 +77,7 @@ export function useCharacterBuilderPersistence({
       setState(persisted);
       setAdvancedOpen(Boolean(persisted.advancedNotes));
       setShowStyleReferenceSlot(Boolean(getRefByRole(persisted.referenceImages, 'style')));
+      setRestoredDraft(hasCharacterDraftChoices(persisted));
     }
     const pending = readPersistedPendingRuns(accountId);
     if (pending.length) {
@@ -141,4 +145,5 @@ export function useCharacterBuilderPersistence({
     setStatusMessage,
     user,
   ]);
+  return { restoredDraft, dismissRestoredDraft };
 }

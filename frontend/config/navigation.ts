@@ -276,7 +276,7 @@ const MARKETING_COMPARE_DECISION_GUIDES_SECTION: MarketingNavSection = {
 
 export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'studio', icon: 'cinema', label: 'Studio', href: '/studio', emphasized: true, description: 'Your creative workspace with AI.' },
-  { key: 'character-builder', icon: 'character', label: 'Consistent Character AI', href: toolLink('character-builder') },
+  { key: 'character-builder', icon: 'character', label: 'Character Studio', href: toolLink('character-builder') },
   { key: 'angle', icon: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
   { key: 'upscale', icon: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
   { key: 'background-removal', icon: 'cutout', label: 'Video Background Remover', href: toolLink('background-removal') },

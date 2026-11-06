@@ -11,6 +11,7 @@ import type { ResolvedReference } from '@/server/agent-api/reference-types';
 import { AgentApiError } from '@/server/agent-api/errors';
 import type { ImageDraft, ImageTurnInput, ImageConversationHistoryTurn,StudioConversationHistoryFacts } from '@/lib/studio/image-conversation-contract';
 import {studioHistoryMessage,studioReferenceInputContent} from './conversation-reference-mentions';
+import {STUDIO_CHARACTER_DIRECTOR_TOOLS} from '@/lib/studio/conversation-character-contract';
 import {STUDIO_MEDIA_DIRECTOR_TOOLS} from '@/lib/studio/conversation-media-contract';
 import {STUDIO_EDITING_DIRECTOR_TOOLS} from '@/lib/studio/conversation-editing-contract';
 import {imageSelectionStripSchema} from '@/lib/studio/conversation-creation-contract';
@@ -101,13 +102,15 @@ function freezeStudioFilmResponse(response:StudioDirectorResponse,filmDuration:n
 import type {StudioTaskExecution} from "./tasks/execution";
 import {isStudioConstraintMismatch,isStudioComparisonMismatch,studioComparisonFingerprint,studioComparisonAttemptFingerprint,studioRepeatedComparisonReply,studioRecoveredComparisonReply} from './conversation-comparison-recovery';
 
-export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
+export function createStudioConversationDirector(options: {model?: StudioAssistantModel;runtimePolicy?:MiloRuntimePolicy;modelForNextCall?:()=>StudioAssistantModel;createResponse?: StudioResponseCreator; mediaEnabled?: boolean;characterEnabled?:boolean;editingEnabled?: boolean;exportsEnabled?: boolean;analysisEnabled?:boolean;analysisProfiles?:{video:boolean;audio:boolean};assistanceCreditsEnabled?: boolean;taskExecution?:StudioTaskExecution;localGreetingEnabled?:boolean} = {}) {
   return async (context: StudioDirectorContext): Promise<ImageDraft> => {
     const locale=studioConversationLanguage(context.message,context.history,context.locale??options.taskExecution?.locale??'en');
     const greeting=studioGreetingReply(context.message,context.references.length>0);
     if(greeting&&options.localGreetingEnabled!==false&&!options.taskExecution?.recoveryOnly)return greeting;
-    const selectedFilmPlan=options.mediaEnabled?studioSelectedFilmPlan(context.message,context.history):null;
-    const filmDuration=options.mediaEnabled&&!selectedFilmPlan&&!context.references.some(ref=>ref.mediaKind!=='image')?studioExplicitFilmDuration(context.message):null;
+    const characterEnabled=options.mediaEnabled===true&&options.characterEnabled===true;
+    const explicitRecast=characterEnabled&&/\brecast\b/i.test(context.message);
+    const selectedFilmPlan=options.mediaEnabled&&!explicitRecast?studioSelectedFilmPlan(context.message,context.history):null;
+    const filmDuration=options.mediaEnabled&&!explicitRecast&&!selectedFilmPlan&&!context.references.some(ref=>ref.mediaKind!=='image')?studioExplicitFilmDuration(context.message):null;
     if (!options.createResponse && !process.env.OPENAI_API_KEY)
       throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio conversation is not configured.');
     const create = options.createResponse ?? ((params) => new OpenAI({apiKey: process.env.OPENAI_API_KEY, maxRetries: 0, timeout: options.taskExecution?Math.max(1000,Math.min(120000,options.taskExecution.deadlineAt.getTime()-Date.now()-5000)):65000}).responses.create(params));
@@ -152,7 +155,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
     const maxResponses=options.taskExecution?.maxCalls??4;
     for (let index = 0; index < maxResponses; index++) {
       const analysisTools=options.analysisEnabled?studioAnalysisDirectorTools(options.analysisProfiles??{video:true,audio:true}):context.project.analyses?.length?[STUDIO_ANALYSIS_DIRECTOR_TOOLS[1]]:[];
-      const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools]
+      const availableTools = [...STUDIO_DIRECTOR_TOOLS,...(options.taskExecution?STUDIO_TASK_DIRECTOR_TOOLS:[]), ...(options.mediaEnabled ? STUDIO_MEDIA_DIRECTOR_TOOLS : []),...(characterEnabled ? STUDIO_CHARACTER_DIRECTOR_TOOLS : []),...(options.editingEnabled ? STUDIO_EDITING_DIRECTOR_TOOLS : []),...(options.exportsEnabled ? STUDIO_EXPORT_DIRECTOR_TOOLS : []),...analysisTools]
         .filter(tool=>!selectedFilmPlan||tool.action!=='pricing.compare');
       // A final comparison renders its own reply; other reads need another Response.
       // Older checkpointed reads remain recoverable during paid-response replay.
@@ -167,7 +170,7 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         include: ['reasoning.encrypted_content'],
         parallel_tool_calls: false,
         tool_choice: needsFilmComparison?{type:'function',name:'pricing_compare'}:'auto',
-        instructions: buildStudioDirectorInstructions({...options,taskEnabled:!!options.taskExecution})
+        instructions: buildStudioDirectorInstructions({...options,characterEnabled,taskEnabled:!!options.taskExecution})
           + `\n\nResponse ${index + 1} of ${maxResponses}: ${maxResponses - index} Responses remain, including this one. Open-model/alternative-price work starts with pricing_compare. Preserve selected models and reply-only planning; leave room to answer.`
           + (selectedFilmPlan?'\n\nThe client selected the last offered film variant. Continue that choice; do not offer or compare the same menu again. Preserve its model, component durations and explicit settings. Inspect only missing capabilities, then prepare the first unfinished requested component as a fresh exact quote. Use the complete earlier brief and retain the remaining film plan; one component quote is not the whole film. If essential direction is missing, ask one question. Never treat the historical total as the new quote price or confirm a purchase.':'')
           + (filmDuration?`\n\nThe requested complete film is ${filmDuration} seconds. First compare with filmDurationSec=${filmDuration}, surface video and t2v/i2v/ref2v as appropriate. Preserve explicitly selected models via candidateModelIds and all requested settings/references. Omit durationSec from settings unless the client explicitly set a component length; do not guess one. This call returns several fully priced cut plans; do not prepare the opening clip before the client chooses.`:'' )
@@ -235,6 +238,8 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         throw new AgentApiError('ENGINE_UNAVAILABLE', 'Studio editing tools are unavailable.');
       if (!options.exportsEnabled && STUDIO_EXPORT_DIRECTOR_TOOLS.some(tool => tool.action === action.action))
         throw new AgentApiError('ENGINE_UNAVAILABLE','Studio export tools are unavailable.');
+      if(freshResponse&&!characterEnabled&&STUDIO_CHARACTER_DIRECTOR_TOOLS.some(tool=>tool.action===action.action))
+        throw new AgentApiError('ENGINE_UNAVAILABLE','Studio character tools are unavailable.');
       if(freshResponse&&!options.analysisEnabled&&action.action==='analysis.prepare')throw new AgentApiError('ENGINE_UNAVAILABLE','Studio analysis tools are unavailable.');
       if(action.action==="project.recall"&&!options.taskExecution)throw new AgentApiError("ENGINE_UNAVAILABLE","Task memory is unavailable.");
       const comparisonFingerprint=studioComparisonFingerprint(action);
@@ -318,6 +323,11 @@ export function createStudioConversationDirector(options: {model?: StudioAssista
         continue;
       }
       if (result.ok && result.action === 'timeline.edit' && result.data.changed && !('replayed' in result&&result.replayed)) completedEdits++;
+      if (action.action === 'recast.prepare') {
+        if (!result.ok) throw new AgentApiError(result.error.code,result.error.message,result.error.retryable,result.error.nextAction);
+        if (result.action !== 'recast.prepare') throw new AgentApiError('INTERNAL_ERROR','Studio could not recover the Recast quote.');
+        return {reply:projectStudioReply(action.reply),image:null,recast:{...action,reply:projectStudioReply(action.reply)}};
+      }
       if (action.action === 'image.prepare' && result.ok) {
         return {reply: projectStudioReply(action.reply),image: imageSelectionStripSchema.parse(action)};
       }

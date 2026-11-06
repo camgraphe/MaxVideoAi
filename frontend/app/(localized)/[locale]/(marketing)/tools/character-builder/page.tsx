@@ -18,9 +18,9 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     englishPath: '/tools/character-builder',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image: '/assets/tools/redesign/character-builder-workspace-v2.webp',
+    image: '/assets/tools/character-studio/marketing/dixie.webp',
     imageAlt: content.meta.imageAlt,
-    imageDimensions: { width: 1316, height: 820 },
+    imageDimensions: { width: 900, height: 502 },
   });
 }
 

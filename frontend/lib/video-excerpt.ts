@@ -2,6 +2,7 @@ import type { EngineCaps, Mode } from '@/types/engines';
 import { getVideoWorkflowSourceField, isVideoSourceWorkflow, type VideoSourceWorkflow } from '@/lib/video-source-workflow';
 import { resolveEngineMediaFieldConstraint, validateMediaFileAgainstConstraint } from '@/lib/media-field-constraints';
 import { videoDurationPolicy } from '@/lib/video-workflow-capabilities';
+import { mediaExcerptDuration } from '@/lib/media-excerpt-timing';
 
 // Operational budgets apply only to excerpt preparation, never model generation.
 export const VIDEO_EXCERPT_PREPARATION_LIMITS = Object.freeze({ maxBytes: 100 * 1024 * 1024, maxSourceSec: 180, maxExcerptSec: 60, maxPixels: 16_777_216, maxFps: 120 });
@@ -91,7 +92,7 @@ export function validateVideoExcerptRange(range: VideoExcerptRange, sourceDurati
     || range.startSec < 0 || range.endSec <= range.startSec || range.endSec > sourceDurationSec) {
     throw new Error('Choose a valid start and end within the source video.');
   }
-  const length = range.endSec - range.startSec;
+  const length = mediaExcerptDuration(range);
   if ((limits.minDurationSec !== null && length < limits.minDurationSec)
     || (limits.maxDurationSec !== null && length > limits.maxDurationSec)) {
     throw new Error('The selected excerpt does not meet this model’s source duration limits.');

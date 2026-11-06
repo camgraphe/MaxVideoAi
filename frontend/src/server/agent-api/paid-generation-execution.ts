@@ -121,6 +121,8 @@ export type PaidGenerationSubmissionDependencies = {
 };
 
 export type ReservePaidGenerationInput = {
+  billingProduct?: 'character-recast';
+  customerProductLabel?: 'MaxVideoAI Recast';
   quote: McpGenerationQuote;
   candidate: AgentPublicGenerationEngine;
   pricingSnapshot: Record<string, unknown>;
@@ -210,7 +212,7 @@ function videoInitialParams(
       userId: quote.userId,
       amountCents: quote.priceCents,
       currency: quote.currency,
-      description: `${quote.authOrigin === 'studio-session' ? 'Studio' : 'MCP'} ${candidate.engine.label} - ${durationSec}s`,
+      description: `${input.customerProductLabel ?? `${quote.authOrigin === 'studio-session' ? 'Studio' : 'MCP'} ${candidate.engine.label}`} - ${durationSec}s`,
       jobId: quote.quoteId,
       snapshot: pricing,
       applicationFeeCents: fee,
@@ -222,7 +224,7 @@ function videoInitialParams(
       jobId: quote.quoteId,
       userId: quote.userId,
       engineId: quote.request.engineId,
-      engineLabel: candidate.engine.label,
+      engineLabel: input.customerProductLabel ?? candidate.engine.label,
       durationSec: durationSec as number,
       prompt: quote.request.prompt,
       thumbUrl: placeholder,
@@ -301,6 +303,7 @@ export async function reservePaidGenerationInitialJob(
   const pricing = canonicalPricing(input);
   if (input.quote.request.surface === 'video') {
     const params = videoInitialParams(input, pricing);
+    params.billingProduct = input.billingProduct;
     const timing = await resolveReservedVideoTiming(
       input.candidate.engine, input.quote.request, params.jobInsert.durationSec, dependencies.executor,
     );

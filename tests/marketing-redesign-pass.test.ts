@@ -49,7 +49,10 @@ test('home merges inspiration and examples while retaining discovery data in the
   const worlds = readFileSync('frontend/components/marketing/home/HomeCreativeWorlds.tsx', 'utf8');
   assert.doesNotMatch(route, /RealExamplesPreview/);
   assert.match(route, /HomeCreativeWorlds locale=\{locale\} cards=\{primaryBestForCards\} examplesCopy=\{content.examples\} modelDiscovery=\{/);
-  const boundary = route.slice(route.indexOf('<Suspense'), route.indexOf('</Suspense>'));
+  const boundaries = [...route.matchAll(/<Suspense\b[\s\S]*?<\/Suspense>/g)].map(match => match[0]);
+  const discoveryBoundaries = boundaries.filter(boundary => /<HomeDiscovery\b/.test(boundary));
+  assert.equal(discoveryBoundaries.length, 1, 'select the discovery boundary independently of optional character proof');
+  const boundary = discoveryBoundaries[0];
   assert.match(boundary, /fallback=\{<HomeModelDiscovery locale=\{locale\} examples=\{fallbackExamples\} providers=\{providers\} copy=\{content.examples\}/);
   assert.match(boundary, /<HomeDiscovery locale=\{locale\} examples=\{pendingData.examples\} providers=\{providers\} copy=\{content.examples\}/);
   assert.doesNotMatch(boundary, /<HomeHero|<HomeCreativeWorlds|<CreativeFilm/);

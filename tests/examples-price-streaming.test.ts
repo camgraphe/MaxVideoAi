@@ -49,6 +49,7 @@ async function bundle() {
     `,
     '@/lib/i18n/server': `import en from ${JSON.stringify(resolve('frontend/messages/en.json'))};import fr from ${JSON.stringify(resolve('frontend/messages/fr.json'))};import es from ${JSON.stringify(resolve('frontend/messages/es.json'))};export async function resolveDictionary({locale}){return {locale,dictionary:{en,fr,es}[locale]};}`,
     'next-intl/server': `export async function getTranslations(){return key=>key;}`,
+    '@/server/character-studio/marketing-demos': `export const getCharacterStudioMarketingVideos=async()=>[];`,
     '@/server/videos': `import {catalogue} from 'probe';export const listExamplesPage=async options=>catalogue('hub',options);export const listExampleFamilyPage=async(family,options)=>catalogue(family,options);export const listExamples=async()=>[];`,
     '@/server/pricing/quote-public': `export {quote as computeCurrentPublicSnapshot} from 'probe';`,
     '@/server/current-example-price': `import {quoteCurrentExamplePrices as actual} from ${JSON.stringify(resolve('frontend/server/current-example-price.ts'))};import {quoteBatch} from 'probe';export const quoteCurrentExamplePrices=videos=>quoteBatch(videos,actual);`,

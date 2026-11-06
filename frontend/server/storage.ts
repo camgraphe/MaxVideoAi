@@ -655,16 +655,19 @@ async function storageBodyToBuffer(body: unknown, signal?: AbortSignal): Promise
   throw new StorageUploadError('Failed to read storage object body.');
 }
 
-export async function getStorageObjectBuffer(key: string, options: { signal?: AbortSignal } = {}): Promise<Buffer> {
+export async function getStorageObjectBuffer(key: string, options: { signal?: AbortSignal; maxBytes?: number } = {}): Promise<Buffer> {
   const client = getS3Client();
   const response = await client.send(
     new GetObjectCommand({
       Bucket: S3_BUCKET,
       Key: key,
+      ...(options.maxBytes ? { Range: `bytes=0-${options.maxBytes}` } : {}),
     }),
     { abortSignal: options.signal },
   );
-  return storageBodyToBuffer(response.Body, options.signal);
+  const bytes = await storageBodyToBuffer(response.Body, options.signal);
+  if (options.maxBytes && bytes.length > options.maxBytes) throw new StorageUploadError('Storage object exceeds the allowed size.');
+  return bytes;
 }
 
 export async function uploadFilePath(params: {

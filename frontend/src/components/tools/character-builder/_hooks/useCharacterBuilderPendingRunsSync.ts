@@ -81,11 +81,11 @@ export function useCharacterBuilderPendingRunsSync({
           const freshRuns = completedRuns.filter((run) => !seenJobIds.has(run.jobId));
           if (!freshRuns.length) return previous;
           const nextRuns = [...freshRuns, ...previous.runs].slice(0, 12);
-          const firstResultId = freshRuns[0]?.results[0]?.id ?? previous.selectedResultId;
+          // Recovery belongs to history, which can outlive the draft that started it.
+          // Only a still-current generation response or an explicit click selects a result.
           return {
             ...previous,
             runs: nextRuns,
-            selectedResultId: firstResultId,
           };
         });
         void mutateHistoricalJobs(undefined, { revalidate: true });

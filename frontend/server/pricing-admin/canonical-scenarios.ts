@@ -17,6 +17,7 @@ import { NANO21_ENGINE_ID } from '@/lib/nano-banana-2-1';
 
 import { PricingAdminError } from './errors';
 import { buildLiveProductPolicyScenarios, buildLiveProductPolicyFacts } from './product-policy-scenarios';
+import { isRecastPolicySelector, validateRecastPolicyRule } from './recast-policy';
 
 export type PricingScenarioSelector = Pick<PricingPolicyRule, 'engineId' | 'mode' | 'resolution'>;
 export type PricingMembershipDiscountMap = Record<'member' | 'plus' | 'pro', number>;
@@ -51,11 +52,11 @@ export type PricingChangePreviewRow = {
   scenarioLabel?: string;
   engineId: string;
   surface: PricingAuditSurface;
-  currentTotalCents: number;
+  currentTotalCents: number | null;
   proposedTotalCents: number;
-  deltaCents: number;
+  deltaCents: number | null;
   deltaPercent: number | null;
-  currentProvenance: CanonicalPricingQuote['policyProvenance'];
+  currentProvenance: CanonicalPricingQuote['policyProvenance'] | null;
   proposedProvenance: CanonicalPricingQuote['policyProvenance'];
   compatibilityProfile: string;
 };
@@ -205,6 +206,13 @@ function quoteCanonicalScenarios(
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
+      if (projection === 'live' && scenario.input.adminProduct === 'recast') {
+        let qualified = policy.source === 'database' && isRecastPolicySelector(policy.rule);
+        try { validateRecastPolicyRule(policy.rule as unknown as Record<string, unknown>); } catch { qualified = false; }
+        if (!qualified) return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
+          reason: 'product_policy_not_authoritative', warning: 'Recast requires an exact scoped supplier-cost pricing rule; its current price is unavailable.',
+          policyProvenance: { source: policy.source, matchedBy: policy.matchedBy, sourceRuleId: policy.sourceRuleId, compatibilityProfile: profileId } };
+      }
       if (scenario.engineId === NANO21_ENGINE_ID || isKlingV4FalQueueEngineId(scenario.engineId) || isGptImage26EngineId(scenario.engineId)) {
         return { status: 'unsupported', scenarioId: scenario.id, engineId: scenario.engineId, surface: scenario.surface,
           reason: 'product_policy_not_authoritative',

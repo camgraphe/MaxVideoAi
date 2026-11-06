@@ -1,4 +1,5 @@
 import { createDefaultCharacterBuilderState } from '@/lib/character-builder';
+import { normalizeStudioColor } from '@/lib/character-studio-colors';
 import type {
   CharacterBuilderState,
   CharacterBuilderTraits,
@@ -11,7 +12,7 @@ import {
 
 export function findChoiceLabel(options: Array<{ id: string; label: string }>, value: string | null | undefined): string | null {
   if (!value) return null;
-  return options.find((option) => option.id === value)?.label ?? null;
+  return normalizeStudioColor(value) ?? options.find((option) => option.id === value)?.label ?? null;
 }
 
 export function describeTraitValue(
@@ -34,7 +35,7 @@ export function findChoiceSwatch(
   value: string | null | undefined
 ): string | null {
   if (!value || value === 'auto') return null;
-  return options.find((option) => option.id === value)?.swatch ?? null;
+  return normalizeStudioColor(value) ?? options.find((option) => option.id === value)?.swatch ?? null;
 }
 
 export function getHairSummary(

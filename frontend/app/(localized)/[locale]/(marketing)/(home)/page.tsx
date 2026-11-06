@@ -8,6 +8,8 @@ import { HomeConversationSection } from '@/components/marketing/home/HomeConvers
 import { HomeCreationSection } from '@/components/marketing/home/HomeCreationSection';
 import { HomeModelChoice } from '@/components/marketing/home/HomeModelChoice';
 import { HomeToolsGallery } from '@/components/marketing/home/HomeToolsGallery';
+import { HomeCharacterStudio } from '@/components/marketing/home/HomeCharacterStudio';
+import { HomeCharacterStudioProof } from './_components/HomeCharacterStudioProof';
 import { prepareHomePageData } from './_lib/home-page-data';
 import { HomeDiscovery } from './_components/HomeDiscovery';
 import { HomeModelDiscovery } from '@/components/marketing/home/HomeModelDiscovery';
@@ -82,6 +84,11 @@ export default async function HomePage(props: { params: Promise<{ locale: string
         locale={locale}
       />
       <DeferredMarketingContent><HomeCreationSection locale={locale} /></DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <Suspense fallback={<HomeCharacterStudio locale={locale} />}>
+          <HomeCharacterStudioProof locale={locale} />
+        </Suspense>
+      </DeferredMarketingContent>
       <DeferredMarketingContent>
         <HomeCreativeWorlds locale={locale} cards={primaryBestForCards} examplesCopy={content.examples} modelDiscovery={
           <Suspense fallback={<HomeModelDiscovery locale={locale} examples={fallbackExamples} providers={providers} copy={content.examples} />}>

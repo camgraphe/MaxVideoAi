@@ -193,9 +193,9 @@ export const PREP_LINK_VISUALS = {
       es: 'Fija la identidad, el vestuario y la calidad de referencia.',
     },
     alt: {
-      en: 'Character Builder reference example',
-      fr: 'Exemple de référence Character Builder',
-      es: 'Ejemplo de referencia de Character Builder',
+      en: 'Character Studio reference example',
+      fr: 'Exemple de référence Character Studio',
+      es: 'Ejemplo de referencia de Character Studio',
     },
   },
   '/tools/angle': {

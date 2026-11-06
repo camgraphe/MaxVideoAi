@@ -68,15 +68,19 @@ function previewOrigin(value) {
   throw new Error('Preview must be an HTTPS Vercel deployment origin without credentials, path or query.');
 }
 
-export async function readPreviewAdmissionCatalogues(previewUrl, token, request = fetch) {
+export async function readPreviewAdmissionCatalogues(previewUrl, access, request = fetch) {
   const origin = previewOrigin(previewUrl);
+  // The caller may explicitly supply an already configured automation credential.
+  // Never acquire/create one here or retry a refused OIDC request with another method.
+  const automation = typeof access === 'object' && access !== null;
+  const token = automation ? access.automationBypassSecret : access;
   if (typeof token !== 'string' || !token.trim()) {
-    throw new Error('An existing OIDC token is required; use the isolated env-run command in docs/deployment/github-vercel.md.');
+    throw new Error('An existing OIDC token or explicitly supplied automation credential is required; see docs/deployment/github-vercel.md.');
   }
   let expiresAt;
   try { expiresAt = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).exp; }
   catch { /* Vercel validates the actual credential; never echo it */ }
-  if (Number.isFinite(expiresAt) && expiresAt <= Date.now() / 1000) {
+  if (!automation && Number.isFinite(expiresAt) && expiresAt <= Date.now() / 1000) {
     throw new Error('Existing OIDC token has expired; refresh it with the isolated env-run command in docs/deployment/github-vercel.md.');
   }
   const read = async (url, label, headers) => {
@@ -90,7 +94,10 @@ export async function readPreviewAdmissionCatalogues(previewUrl, token, request 
   };
   const [production, preview] = await Promise.all([
     read('https://maxvideoai.com/api/engines', 'Production', { Accept: 'application/json' }),
-    read(`${origin.origin}/api/engines`, 'Preview', { Accept: 'application/json', 'x-vercel-trusted-oidc-idp-token': token }),
+    read(`${origin.origin}/api/engines`, 'Preview', {
+      Accept: 'application/json',
+      [automation ? 'x-vercel-protection-bypass' : 'x-vercel-trusted-oidc-idp-token']: token,
+    }),
   ]);
   return { production, preview };
 }
@@ -131,7 +138,10 @@ async function main() {
   if (previewUrl) {
     const deployment = api(`/v13/deployments/${previewUrl.hostname}`);
     const sha = previewDeploymentRevision(deployment, candidateSha);
-    const catalogues = await readPreviewAdmissionCatalogues(previewUrl.origin, process.env.VERCEL_OIDC_TOKEN);
+    const access = process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+      ? { automationBypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET }
+      : process.env.VERCEL_OIDC_TOKEN;
+    const catalogues = await readPreviewAdmissionCatalogues(previewUrl.origin, access);
     const parity = assertPreviewModelAdmissionParity(catalogues.production, catalogues.preview);
     preview = { url: previewUrl.origin, deploymentId: deployment.id, sha, ...parity };
   }

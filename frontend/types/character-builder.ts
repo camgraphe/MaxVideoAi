@@ -26,6 +26,8 @@ export interface CharacterBuilderReferenceImage {
 }
 
 export interface CharacterBuilderTraits {
+  characterType?: TraitValue<string>;
+  customCharacterDescription?: string;
   genderPresentation: TraitValue<'woman' | 'man' | 'androgynous' | 'custom'>;
   customGenderDescription?: string;
   ageRange: TraitValue<'teen' | 'young-adult' | 'adult' | 'mature' | 'senior'>;
@@ -37,6 +39,9 @@ export interface CharacterBuilderTraits {
   hairLength: TraitValue<string>;
   hairstyle: TraitValue<string>;
   eyeColor: TraitValue<string>;
+  eyeShape?: TraitValue<string>;
+  sceneId?: string | null;
+  customSceneDescription?: string;
   bodyBuild: TraitValue<string>;
   outfitEnabled: boolean;
   customOutfitDescription?: string;
@@ -54,6 +59,7 @@ export interface CharacterBuilderLineage {
 }
 
 export interface CharacterBuilderRequest {
+  characterId?: string | null;
   jobId?: string | null;
   action: CharacterBuilderAction;
   sourceMode: CharacterBuilderSourceMode;
@@ -90,6 +96,7 @@ export interface CharacterBuilderSettingsSnapshot {
   inputMode: 't2i' | 'i2i';
   prompt: string;
   builder: {
+    characterId?: string | null;
     sourceMode: CharacterBuilderSourceMode;
     outputMode: CharacterBuilderOutputMode;
     consistencyMode: CharacterBuilderConsistencyMode;
@@ -152,6 +159,7 @@ export interface CharacterBuilderRefinement {
 }
 
 export interface CharacterBuilderState {
+  characterId?: string | null;
   sourceMode: CharacterBuilderSourceMode;
   referenceImages: CharacterBuilderReferenceImage[];
   traits: CharacterBuilderTraits;

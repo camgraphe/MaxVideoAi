@@ -7,6 +7,7 @@ export type MaxVideoAiMcpInstructionCapabilities = {
   studioTimelineEditing?: boolean;
   studioExports?: boolean;
   creatorTools?: boolean;
+  characterStudio?: boolean;
 };
 
 // Discovery entrypoint. Detailed rules live in each tool descriptor.
@@ -14,12 +15,24 @@ export type MaxVideoAiMcpInstructionCapabilities = {
 export function buildMaxVideoAiMcpInstructions(
   capabilities: MaxVideoAiMcpInstructionCapabilities,
 ): string {
+  const recastPurchases = capabilities.characterStudio && capabilities.paidGeneration && capabilities.referenceUploads;
   const instructions = [
-    'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
+    capabilities.characterStudio
+      ? 'MaxVideoAI plans and quotes AI video/image work. Use list_saved_characters for identities.'
+      : 'MaxVideoAI plans AI video/image work, compares models, quotes generation and recovers media in one account.',
   ];
-  if (capabilities.paidGeneration) {
+  if (capabilities.characterStudio && !recastPurchases) {
+    instructions.push('Recast purchases are unavailable. Recover existing Recast with get_recast_status.');
+  }
+  if (recastPurchases) {
     instructions.push(
-      'For a complete request use prepare_generation. Display its exact quote; wait for explicit user approval before confirm_generation: one paid attempt. Ambiguous assent is not approval. Failure/refund needs a fresh quote and new approval; never resubmit automatically.',
+      'Use prepare_recast for Recast and prepare_generation otherwise. Show the exact quote. Wait for explicit user approval before confirmation. One paid attempt. Ambiguous assent gives no approval. Failure/refund needs a fresh quote and approval. Never auto-resubmit.',
+      'Recover Recast with get_recast_status. Otherwise use get_generation_status or list_recent_generations before any new attempt. Present completed results only.',
+    );
+  } else if (capabilities.paidGeneration) {
+    const genericRouting = capabilities.characterStudio ? 'For other generation, use' : 'For a complete request use';
+    instructions.push(
+      `${genericRouting} prepare_generation. Display its exact quote; wait for explicit user approval before confirm_generation: one paid attempt. Ambiguous assent is not approval. Failure/refund needs a fresh quote and new approval; never resubmit automatically.`,
       'Recover with get_generation_status or list_recent_generations before any new attempt; present_generation delivers only completed results.',
     );
   } else {

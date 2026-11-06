@@ -118,6 +118,18 @@ async function main(): Promise<void> {
     row.previous.id !== row.current.id || !['minimax-h3', 'minimax-h3-max'].includes(row.current.engineId)
   )) throw new Error('Invalid reviewed H3 capability pricing matrix.');
   const appliedH3Changes = new Set<string>();
+  const characterTransition = JSON.parse(await readFile(new URL(
+    '../../tests/fixtures/character-studio-public-pricing-transition-2026-11-05.json', import.meta.url,
+  ), 'utf8')) as { rows: Array<{ previous: typeof rows[number]; current: typeof rows[number] }> };
+  const characterChanges = new Map(characterTransition.rows.map((row) => [row.previous.id, row]));
+  const characterIds = ['draft', 'final'].flatMap((stage) => ['standard', 'pro'].map(
+    (quality) => `pricing-hub-tool:character-builder-${stage}:${quality}`,
+  ));
+  if (characterChanges.size !== 4 || characterTransition.rows.length !== 4 || characterIds.some(id => !characterChanges.has(id))
+    || characterTransition.rows.some(({ previous, current }) => !isDeepStrictEqual(current, {
+      id: previous.id, surface: 'pricing-hub-tool', engineId: previous.engineId, status: 'unavailable',
+    }))) throw new Error('Invalid Character Studio static pricing transition.');
+  const appliedCharacterChanges = new Set<string>();
   const omniChange = JSON.parse(await readFile(new URL('../../tests/fixtures/omni-1-2-public-pricing-change-2026-11-05.json', import.meta.url), 'utf8')) as {
     rows: Array<{ previous: typeof rows[number]; current: typeof rows[number] }>;
   };
@@ -212,6 +224,13 @@ async function main(): Promise<void> {
       }
       return { ...row, customerTotalCents: 16, displayedAmount: '$0.16' };
     })
+    .map((row) => {
+      const change = characterChanges.get(row.id);
+      if (!change) return row;
+      if (!isDeepStrictEqual(row, change.previous)) throw new Error(`Character transition does not match historical evidence: ${row.id}`);
+      appliedCharacterChanges.add(row.id);
+      return change.current;
+    })
     .map(row => {
       const change = omniChanges.get(row.id);
       if (!change) return row;
@@ -221,6 +240,7 @@ async function main(): Promise<void> {
     })
     .sort((left, right) => left.id.localeCompare(right.id));
   if (appliedOmniChanges.size !== omniChanges.size) throw new Error('Missing Omni 1.2 supplier-cost projection scenario.');
+  if (appliedCharacterChanges.size !== characterChanges.size) throw new Error('Missing Character Studio pricing transition scenario.');
   if (appliedH3Changes.size !== h3Changes.size) throw new Error('Missing H3 capability pricing scenario.');
   if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');
   if (!isDeepStrictEqual(rows, expectedWithLaunch)) {

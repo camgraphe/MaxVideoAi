@@ -19,6 +19,7 @@ export function buildSettingsSnapshot(
     inputMode,
     prompt,
     builder: {
+      characterId: request.characterId ?? null,
       sourceMode: request.sourceMode,
       outputMode: request.outputMode,
       consistencyMode: request.consistencyMode,

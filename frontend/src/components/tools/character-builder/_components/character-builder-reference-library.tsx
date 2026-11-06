@@ -193,8 +193,8 @@ export function CharacterReferenceLibraryModal({
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
           {error ? (
-            <div className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-              {error instanceof Error ? error.message : copy.library.error}
+            <div role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
+              {copy.library.error}
             </div>
           ) : isLoading && !assets.length ? (
             <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">

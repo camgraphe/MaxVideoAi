@@ -1,8 +1,11 @@
 import type { TransactionQueryExecutor } from '@/lib/db';
 import type { CreatorToolId } from '@/lib/toolbox/catalogue';
 import { computeCanonicalCreatorBillingSnapshot } from '@/server/pricing/quote-creator';
+import { computeCanonicalRecastBillingSnapshot } from '@/server/pricing/quote-recast';
+import type { RECAST_PRODUCT_ID } from '@/lib/character-recast-pricing';
 import { priceCanonicalGenerationInExecutor, priceCanonicalGenerationWithBilling } from '@/server/agent-api/generation-pricing';
 import { AgentApiError } from '@/server/agent-api/errors';
+import { parseTrustedAccountUrl } from '@/server/agent-api/account-destinations';
 import { requireGenerationActor, requireStudioGenerationRequest, studioReferenceFingerprint, type GenerationActor } from '@/server/agent-api/generation-actor';
 import { normalizeGenerationRequest } from '@/server/agent-api/generation-normalization';
 import { createPrepareGenerationForActorService, type PrepareGenerationDependencies, type PrepareGenerationInput } from '@/server/agent-api/prepare-generation';
@@ -16,8 +19,12 @@ import { resolveStudioMedia } from '@/server/studio/media-resolver';
 
 export type CreatorGenerationOptions = {
   enabled: boolean;
+  /** Trusted account destination supplied by the calling transport. */
+  accountUrl?: string;
   /** Chosen from the validated operation snapshot, never from generation settings. */
   toolId?: CreatorToolId;
+  /** Trusted route choice, never accepted from client settings. */
+  billingProduct?: typeof RECAST_PRODUCT_ID;
   expectedReferenceFingerprint?: string;
   prepareDependencies?: Partial<Omit<PrepareGenerationDependencies, 'trialRiskContext'>>;
   confirmDependencies?: Partial<Omit<ConfirmGenerationDependencies, 'trialRiskContext'>>;
@@ -28,11 +35,15 @@ export type CreatorGenerationOptions = {
 /** Private transport adapter. Callers authorize the actor and choose a supported tool profile. */
 export function createCreatorGenerationService(actor: GenerationActor, options: CreatorGenerationOptions) {
   requireGenerationActor(actor);
+  if (options.toolId && options.billingProduct) throw new Error('Choose exactly one product pricing owner.');
+  const computeProductSnapshot = options.billingProduct === 'character-recast' ? computeCanonicalRecastBillingSnapshot
+    : options.toolId ? (context: Parameters<typeof computeCanonicalRecastBillingSnapshot>[0], dependencies?: Parameters<typeof computeCanonicalRecastBillingSnapshot>[1]) =>
+      computeCanonicalCreatorBillingSnapshot(options.toolId!, context, dependencies) : null;
   const scope: GenerationQuoteScope = actor.authMethod === 'studio-session'
     ? { origin: 'studio-session', projectId: actor.projectId }
     : { origin: actor.authMethod };
   const quotes = createQuoteRepository(generationQuoteCodec, scope);
-  const accountUrl = 'https://maxvideoai.com/account/connections';
+  const accountUrl = parseTrustedAccountUrl(options.accountUrl ?? 'https://maxvideoai.com/account/connections').toString();
   const context = { clientIp: null, userAgent: null };
 
   async function resolveReferences(request: CanonicalGenerationRequest, executor?: TransactionQueryExecutor): Promise<ResolvedReference[]> {
@@ -58,11 +69,11 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
 
   const prepare = createPrepareGenerationForActorService(accountUrl, context, {
     ...options.prepareDependencies,
-    ...(options.toolId ? { priceGeneration: options.prepareDependencies?.priceGeneration ?? ((request, membershipTier, referenceContext) => {
+    ...(computeProductSnapshot ? { priceGeneration: options.prepareDependencies?.priceGeneration ?? ((request, membershipTier, referenceContext) => {
       if (!referenceContext.resolvedEngine) throw new Error('The creator pricing engine is unavailable.');
       return priceCanonicalGenerationWithBilling(request, membershipTier,
         { ...referenceContext, resolvedEngine: referenceContext.resolvedEngine },
-        pricingContext => computeCanonicalCreatorBillingSnapshot(options.toolId!, pricingContext));
+        pricingContext => computeProductSnapshot(pricingContext));
     }) } : {}),
     paidGenerationEnabled: () => options.enabled,
     // Tool operations have no trial preset. The original quote scope remains intact.
@@ -76,9 +87,9 @@ export function createCreatorGenerationService(actor: GenerationActor, options: 
   });
   const confirm = createConfirmGenerationForActorService(accountUrl, context, {
     ...options.confirmDependencies,
-    ...(options.toolId ? { priceGeneration: options.confirmDependencies?.priceGeneration ?? ((request, membershipTier, dependencies) =>
+    ...(computeProductSnapshot ? { priceGeneration: options.confirmDependencies?.priceGeneration ?? ((request, membershipTier, dependencies) =>
       priceCanonicalGenerationInExecutor(request, membershipTier, { ...dependencies,
-        computeBillingSnapshot: (pricingContext, billingDependencies) => computeCanonicalCreatorBillingSnapshot(options.toolId!, pricingContext, billingDependencies),
+        computeBillingSnapshot: computeProductSnapshot,
       })) } : {}),
     paidGenerationEnabled: () => options.enabled,
     trialGenerationEnabled: () => false,

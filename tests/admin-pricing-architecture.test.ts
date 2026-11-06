@@ -255,7 +255,8 @@ test('product policies stay inline in the selected category and refresh current 
   assert.match(cockpit, /setProductPolicyKey\(key\)/);
   assert.match(cockpit, /confirmPreview\(\)\.then\(\(\) => mutate\(/);
   assert.match(products, /row\.id === policyEditorRow/);
-  assert.match(products, /disabled=\{locked \|\| row\.totalCents == null\}/);
+  assert.match(products, /disabled=\{locked \|\| \(row\.totalCents == null && row\.policySelector\.engineId !== RECAST_PRICING_SELECTOR\.engineId\)\}/,
+    'only Recast may prepare its first scoped rule from an unavailable price');
   assert.doesNotMatch(editor, /onChange\('(?:engineId|mode|resolution|currency|compatibilityProfile)'/);
   assert.match(editor, /This editor preserves the selected scope/);
 });

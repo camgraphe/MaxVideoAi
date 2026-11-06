@@ -22,6 +22,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         builder.onResolve({ filter: /\.css$/ }, args => ({ path: args.path, namespace: 'empty' }));
         builder.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({ contents: '', loader: 'js' }));
         const mocks: Record<string, string> = {
+    '@/server/character-studio/marketing-demos': `export const getCharacterStudioMarketingVideos=async()=>[];`,
           probe: `
             export const calls=[], records=[];
             export const example={id:'fixture-example',engineId:'kling-3-pro',engine:'Kling 3 Pro',title:'Example',mode:'Image to video',duration:'12s',price:'$2.63',useCase:'Cinematic',imageSrc:'/fixture.webp',videoSrc:null,imageAlt:'Fixture cover',href:'/examples/kling',ctaLabel:'Examples',cloneLabel:'Use prompt'};
@@ -47,7 +48,7 @@ test('homepage starts retained reads together, drops unused proof reads and reco
           if (/^@\/components\/marketing\/(?:home\/)?[A-Z]/.test(args.path)) return { path: args.path, namespace: 'components' };
           if (!args.path.startsWith('.') && !args.path.startsWith('/') && !args.path.startsWith('@/') && !args.path.startsWith('node:')) return { path: requireFrontend.resolve(args.path), external: true };
         });
-        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeModelDiscovery=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomeConversationSection=()=>null,HomePricingSection=()=>null;` }));
+        builder.onLoad({ filter: /.*/, namespace: 'components' }, () => ({ loader: 'js', contents: `export const HomeHero=()=>null,HomeFaq=()=>null,WorkflowSeoSummary=()=>null,DeferredMarketingContent=()=>null,HomeCreativeWorlds=()=>null,HomeModelDiscovery=()=>null,HomeCreationSection=()=>null,HomeModelChoice=()=>null,HomeToolsGallery=()=>null,HomeConversationSection=()=>null,HomePricingSection=()=>null,HomeCharacterStudio=()=>null;` }));
         builder.onLoad({ filter: /.*/, namespace: 'controlled' }, args => ({ loader: 'js', resolveDir: process.cwd(), contents: mocks[args.path] ?? (args.path === 'examples'
           ? `import {read,examples} from 'probe';export const loadHomepageExamples=()=>read('examples',examples);export const assembleHomepageExampleCards=()=>examples;export const selectHomepageHeroPreviews=cards=>cards.slice(0,5);export const buildHomepageP0PromotionTargets=()=>[];`
           : args.path === 'demo-pricing' ? `import {read} from 'probe';export const buildCurrentHomePriceDemo=()=>read('demo-pricing',[]);`
@@ -120,9 +121,9 @@ test('homepage starts retained reads together, drops unused proof reads and reco
         assert.equal('proofStats' in hero.props, false);
         assert.equal('previews' in hero.props, false);
         assert.deepEqual(hero.props.programmedHeroItems, []);
-        const discovery = children[2].props.children.props.modelDiscovery;
+        const discovery = children.find((child: any) => child?.props?.children?.props?.modelDiscovery).props.children.props.modelDiscovery;
         assert.equal((await discovery.props.children.type(discovery.props.children.props)).props.examples, fixture.examples);
-        const comparison = children[3].props.children;
+        const comparison = children.find((child: any) => child?.props?.children?.props?.children?.props?.scores).props.children;
         assert.deepEqual(comparison.props.children.props.scores.opponents, []);
         assert.equal(comparison.props.fallback, comparison.props.children, 'the complete comparison remains visible in streamed HTML without JavaScript');
         const schemas = children.filter((child: { type: string }) => child.type === 'script');

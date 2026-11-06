@@ -330,11 +330,11 @@ export const DEFAULT_CHARACTER_COPY = {
     "quality": {
       "draft": {
         "label": "Standard",
-        "description": "Fast exploratory passes on Nano Banana 2."
+        "description": "Fast exploratory passes on Nano Banana 2.1."
       },
       "final": {
         "label": "Pro",
-        "description": "Cleaner export-ready references on Nano Banana Pro."
+        "description": "Cleaner export-ready references on Nano Banana 2.1."
       }
     },
     "format": {

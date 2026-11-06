@@ -4,7 +4,7 @@ import { loadPricingPolicyOverrides } from '@/lib/pricing-rule-store';
 import { getFalEngineById } from '@/config/falEngines';
 import { ANGLE_TOOL_ENGINES } from '@/config/tools-angle-engines';
 import { ANGLE_MULTI_OUTPUT_COUNT, estimateAngleCostUsd, getAngleBillingProductKeyForEngine } from '@/lib/tools-angle';
-import { getCharacterFormatResolution, getQualityEngineId } from '@/lib/character-builder';
+import { getCharacterFormatResolution } from '@/lib/character-builder';
 import { getBillingProductKey } from '@/server/tools/character-builder/utils';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import type { PricingContext } from '@/lib/pricing-context';
@@ -19,7 +19,10 @@ import { resolveBackgroundRemovalPricingContext } from '@/server/tools/backgroun
 import { computeCanonicalAudioBillingSnapshot, computeCanonicalBillingSnapshot, computeCanonicalStoryboardBillingSnapshot, computeCanonicalFinishingBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { ProductPricingInventory, ProductPricingRow } from '@/lib/admin/product-pricing-contract';
 import { listReferencedBillingProductKeys } from './billing-product-service';
-import { buildAdminAudioReferenceInputs } from './product-policy-scenarios';
+import { buildAdminAudioReferenceInputs, buildRecastPolicyScenarios, buildLiveProductPolicyFacts } from './product-policy-scenarios';
+import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
+import { resolveRecastPricingContext } from '@/server/character-studio/recast-public-price';
+import { computeCanonicalRecastBillingSnapshot } from '@/server/pricing/quote-recast';
 import { catalogSupplierReference } from './catalog-supplier-reference';
 import { resolveDynamicToolPriceMultiplier } from '@/lib/tools-dynamic-pricing';
 
@@ -44,6 +47,24 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
     }
     rows.push(row);
   };
+  const recastDuration = Math.max(2, Math.min(30, Math.round(durationSec)));
+  for (const scenario of buildRecastPolicyScenarios([recastDuration]).filter(s => s.input.inputVideoDurationSec === 0 || s.input.inputVideoDurationSec === 3.25)) {
+    const facts = buildLiveProductPolicyFacts(scenario);
+    await capture({ id: scenario.id, category: 'tools', label: 'Recast',
+      scenario: String(scenario.input.scenarioLabel), currency: 'USD', totalCents: null,
+      supplierCents: facts?.vendorSubtotalExactCents ?? null, supplierBasis: 'catalogue', quantity: recastDuration,
+      unit: 's output', policySelector: RECAST_PRICING_SELECTOR, notes: [
+        'Supplier reference: Wan 3 Prime · current configured provider-cost facts, including source plus output seconds.',
+        'Catalogue estimate; contract and invoice unconfirmed. Displayed /s divides the full scenario cost by output seconds.',
+        'Customer price uses provider cost × the editable Recast coefficient, with canonical cent rounding. An exact scoped rule is required; model and global policies cannot supply the Recast price.',
+      ] }, async () => {
+        const context = resolveRecastPricingContext({ modelId: 'wan-3-prime', mode: 'ref2v', durationSec: recastDuration,
+          resolution: String(scenario.input.outputResolution), aspectRatio: '16:9', hasVideoInput: scenario.input.hasVideoInput === true,
+          ...(scenario.input.hasVideoInput ? { inputVideoDurationSec: Number(scenario.input.inputVideoDurationSec) } : {}) });
+        if (!context) throw new Error('RECAST_PRICING_UNAVAILABLE');
+        return computeCanonicalRecastBillingSnapshot(context, { pricingPolicy });
+      });
+  }
   for (const { id, label, input } of buildAdminAudioReferenceInputs(durationSec)) {
       const config = getAudioPackConfig(input.pack);
       const seconds = input.durationSec;
@@ -82,9 +103,9 @@ export async function loadAdminProductPricing(durationSec = 10): Promise<Product
       const characterQuality = (['draft', 'final'] as const).find((quality) => getBillingProductKey(quality) === product.productKey);
       const angle = ANGLE_TOOL_ENGINES.find((item) => [false, true].some((multi) => getAngleBillingProductKeyForEngine(item.id, multi) === product.productKey));
       if (characterQuality) {
-        const character = getFalEngineById(getQualityEngineId(characterQuality));
+        const character = getFalEngineById(characterQuality === 'final' ? 'nano-banana-pro' : 'nano-banana-2');
         const resolution = getCharacterFormatResolution('standard', characterQuality);
-        row.scenario = `1 image · ${resolution.toUpperCase()} · ${character?.marketingName ?? 'Character Builder'} · standard format`;
+        row.scenario = `Legacy fixed product · 1 image · ${resolution.toUpperCase()} · ${character?.marketingName ?? 'Character Builder'}`;
         const reference = character && catalogSupplierReference({ engine: character.engine, durationSec: 1, mode: 't2i', resolution });
         if (reference && product.currency === 'USD') {
           row.supplierCents = reference.amountUsd * 100;

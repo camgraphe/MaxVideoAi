@@ -4,6 +4,17 @@ import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
 import type { PricingAuditScenario } from '@/lib/pricing-audit/types';
 import { FINISHING_TOOL_IDS, FINISHING_QUALITY_CHOICES, defaultFinishingSettings, finishingSettingsSchemas, isFinishingToolId } from '@/lib/toolbox/finishing';
 import { estimateFinishingVendorBudget } from '@/server/tools/finishing-providers';
+import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
+
+export function buildRecastPolicyScenarios(outputDurations: readonly number[] = [2, 5, 10, 15, 30]): PricingAuditScenario[] {
+  return ['480p', '720p', '1080p'].flatMap(outputResolution => outputDurations.flatMap(durationSec =>
+    [0, 3.25, 5, 15].filter(source => !source || source + durationSec <= 30).map(inputVideoDurationSec => ({
+      id: `admin-recast:${outputResolution}:${durationSec}:${inputVideoDurationSec}`, surface: 'tool' as const,
+      ...RECAST_PRICING_SELECTOR, durationSec, membershipTier: 'member' as const, compatibilityProfile: 'standard',
+      input: { adminProduct: 'recast', outputResolution, hasVideoInput: inputVideoDurationSec > 0, inputVideoDurationSec,
+        scenarioLabel: `Recast · ${outputResolution} · ${durationSec} s output · ${inputVideoDurationSec ? `${inputVideoDurationSec} s source` : 'no source video'}` },
+    }))));
+}
 
 /** Representative prices, including block boundaries. This is not a continuous coverage certificate. */
 function buildFinishingPolicyScenarios(): PricingAuditScenario[] {
@@ -56,10 +67,19 @@ export function buildLiveProductPolicyScenarios(): PricingAuditScenario[] {
   const boards: PricingAuditScenario[] = (['storyboard', 'storyboard_edit'] as const).flatMap((mode) =>
     (['hd', '4k', 'ultra'] as const).map((resolution) => ({ id: `admin-storyboard:${mode}:${resolution}`, surface: 'tool',
       engineId: 'storyboarder', mode, resolution, durationSec: 1, membershipTier: 'member', input: { adminProduct: 'storyboard' } })));
-  return [...audio.values(), ...boards, ...buildFinishingPolicyScenarios()];
+  return [...audio.values(), ...boards, ...buildFinishingPolicyScenarios(), ...buildRecastPolicyScenarios()];
 }
 
 export function buildLiveProductPolicyFacts(scenario: PricingAuditScenario) {
+  if (scenario.input.adminProduct === 'recast') {
+    const engine = getFalEngineById('wan-3-prime')?.engine;
+    if (!engine) return null;
+    // Authored scenarios need supplier facts, not a live public quote or policy reader.
+    const facts = buildPublicPricingFacts({ engine, mode: 'ref2v', durationSec: scenario.durationSec!,
+      resolution: String(scenario.input.outputResolution), hasVideoInput: scenario.input.hasVideoInput === true,
+      inputVideoDurationSec: Number(scenario.input.inputVideoDurationSec), aspectRatio: '16:9', useStandardDefinitionFacts: true });
+    return { ...facts.facts, engineId: scenario.engineId };
+  }
   if (scenario.input.adminProduct === 'finishing') {
     const toolId = String(scenario.input.toolId);
     if (!isFinishingToolId(toolId)) throw new Error('Unknown finishing pricing scenario.');

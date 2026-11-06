@@ -1,0 +1,62 @@
+[
+  {
+    "name": "dixie",
+    "source": "output/character-studio-v2/ugc-watch-demo/fresh-references/dixie-character.png",
+    "sourceSha256": "8d56bd6e5491fd04c0984c999a6104c1cfb129dee5dff338102f95443308209b",
+    "display": "frontend/public/assets/tools/character-studio/marketing/dixie.webp",
+    "displaySha256": "189b71b6e1488d1abdb3fdb927622dce9e51b71208703b9e0e4807fbe5bbe961",
+    "bytes": 26770,
+    "width": 900,
+    "height": 502
+  },
+  {
+    "name": "dixie-pop",
+    "source": "output/character-studio-v2/ugc-watch-demo/fresh-references/dixie-pop-look.png",
+    "sourceSha256": "6acba310ea385b5bb49a2b8086cec2bc61648d77a4f80f02e9722f224b14bd0e",
+    "display": "frontend/public/assets/tools/character-studio/marketing/dixie-pop.webp",
+    "displaySha256": "6866fa0ef4cf6ec1bfdcc7203051539158e307b9e3d5ba94d0bd61547f0c2eee",
+    "bytes": 32302,
+    "width": 900,
+    "height": 1117
+  },
+  {
+    "name": "vesper",
+    "source": "output/character-studio-v2/ugc-watch-demo/fresh-references/vesper-character.png",
+    "sourceSha256": "bb48aa9ba83b2fbc3384102043d4e58450c26da845d36bb890cb2c6f8a714846",
+    "display": "frontend/public/assets/tools/character-studio/marketing/vesper.webp",
+    "displaySha256": "688bd4b6d473b672be533cadf83f2371f51439868b660b7565fc92c344779c53",
+    "bytes": 59102,
+    "width": 900,
+    "height": 1117
+  },
+  {
+    "name": "marcel",
+    "source": "output/character-studio-v2/ugc-watch-demo/marcel-character-builder.png",
+    "sourceSha256": "af26aab984a0a5defc8445814c0e71a458bfd7177538ebef1e20a576fd0526ac",
+    "display": "frontend/public/assets/tools/character-studio/marketing/marcel.webp",
+    "displaySha256": "96e35f6c38dccd97637e0c330fae7698471ae4b8080b7cd131117e81a56dff82",
+    "bytes": 57744,
+    "width": 900,
+    "height": 502
+  },
+  {
+    "name": "dixie-recast",
+    "source": "output/character-studio-v2/ugc-watch-demo/fresh-references/dixie-result-poster.jpg",
+    "sourceSha256": "b8b0932958b1d18b5e689aa2329a089af0127d139548832b4c1da529cfad64e7",
+    "display": "frontend/public/assets/tools/character-studio/marketing/dixie-recast.webp",
+    "displaySha256": "3e8eda72c4c2a0a45f63675d33e5c514d2aa78fc0791f34c0841a37a5452f699",
+    "bytes": 33332,
+    "width": 720,
+    "height": 1280
+  },
+  {
+    "name": "vesper-recast",
+    "source": "output/character-studio-v2/ugc-watch-demo/fresh-references/vesper-result-poster.jpg",
+    "sourceSha256": "9a5f401bae513e6efbb790d5a76cebb36c1773e7ce98c02e5977b55d2bfc79d8",
+    "display": "frontend/public/assets/tools/character-studio/marketing/vesper-recast.webp",
+    "displaySha256": "1e71e5dd7953d18ba2c6fac3ffea90a4049abcdf4b0e2b6d0a54ee9524d87142",
+    "bytes": 65892,
+    "width": 720,
+    "height": 1280
+  }
+]

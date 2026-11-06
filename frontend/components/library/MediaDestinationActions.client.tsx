@@ -8,6 +8,7 @@ import { authFetch } from '@/lib/authFetch';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { stageMediaHandoff, supportsMediaDestination, discoverableMediaToolDestinations, MEDIA_TOOL_DESTINATIONS, type MediaDestination } from '@/lib/media-handoff';
 import { creatorCopy } from '@/components/tools/creator/creator-copy';
+import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getVideoContinuationEngine, resolveMediaContinuationOriginal, type VideoContinuationMode } from '@/lib/video-continuation';
 import { useVideoContinuationEngines } from './useVideoContinuationEngines';
 import { mediaActionCopy } from './media-action-copy';
@@ -21,7 +22,7 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
   const engines = useVideoContinuationEngines(userId, asset.kind === 'video');
   const extendEngine = getVideoContinuationEngine(engines, asset, 'extend', sourceEngineId);
   const modifyEngine = getVideoContinuationEngine(engines, asset, 'v2v', sourceEngineId);
-  const scope = JSON.stringify([userId, asset.id, asset.url, sourceEngineId]);
+  const scope = JSON.stringify([userId, asset.id, asset.kind, asset.url, asset.jobId, asset.sourceOutputId, sourceEngineId]);
   const pending = action?.scope === scope && action.pending;
   const error = action?.scope === scope && action.error;
   const scopeRef = useRef(scope);
@@ -72,8 +73,12 @@ export function MediaDestinationActions({ asset, userId, locale, onNavigate, sou
     {supportsMediaDestination(asset, 'image') ? <button type="button" disabled={pending} onClick={() => void open('image')}><AppGlyph name="image" /><span>{fr ? 'Créer à partir de cette image' : es ? 'Crear con esta imagen' : 'Create with this image'}</span></button> : null}
     {supportsMediaDestination(asset, 'upscale') ? toolButton('upscale') : null}
   </>;
-  const studio = FEATURES.studio.maxVideoAiEditor && /^ma_[a-f0-9]{32}$/.test(asset.id)
-    ? <StudioMediaAction key={scope} locale={locale} reference={{type:'asset',assetId:asset.id,kind:asset.kind}} /> : null;
+  const studioReference = canonicalMediaAssetFields(asset.id, asset.kind).ref;
+  const studio = !FEATURES.studio.maxVideoAiEditor ? null : studioReference?.type === 'asset'
+    ? <StudioMediaAction key={scope} locale={locale} userId={userId} reference={studioReference} />
+    : asset.jobId && asset.url
+      ? <StudioMediaAction key={scope} locale={locale} userId={userId} output={{...asset, jobId: asset.jobId}} />
+      : null;
   const feedback = <>{pending ? <span role="status">{fr ? 'Préparation…' : es ? 'Preparando…' : 'Preparing…'}</span> : null}{error ? <p role="alert">{copy.error}</p> : null}</>;
   if (presentation === 'creator') return <div className="creator-media-destinations">
     {studio ? <div className="creator-studio-action">{studio}</div> : null}

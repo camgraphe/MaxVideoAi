@@ -215,7 +215,7 @@
       "tools": {
         "items": {
           "ai-video-assistant": "Asistente de video para Claude, ChatGPT y Codex",
-          "character-builder": "Personajes IA consistentes",
+          "character-builder": "Character Studio",
           "angle": "Cambiar ángulo de cámara",
           "upscale": "Ampliar una imagen o video",
           "image": "Generar imagen",
@@ -493,7 +493,7 @@
         "title": "Producto",
         "items": {
           "angle": "Cambiar el ángulo de cámara",
-          "characterBuilder": "Character Builder",
+          "characterBuilder": "Character Studio",
           "pricing": "Precios",
           "paygVideo": "Video IA de pago por uso",
           "models": "Todos los modelos"
@@ -1064,7 +1064,7 @@
           {
             "title": "Asegura la consistencia del personaje",
             "body": "Crea una referencia reutilizable para escenas, variantes y storyboards.",
-            "toolLabel": "Character Builder",
+            "toolLabel": "Character Studio",
             "href": {
               "pathname": "/tools/character-builder"
             }
@@ -1125,7 +1125,7 @@
           },
           {
             "id": "character-builder",
-            "title": "Character Builder",
+            "title": "Character Studio",
             "body": "Crea personajes consistentes.",
             "shortBody": "Mantén personajes consistentes.",
             "href": {
@@ -1463,10 +1463,10 @@
           "cta": "Abrir Image"
         },
         "character": {
-          "eyebrow": "Character Builder",
+          "eyebrow": "Character Studio",
           "title": "Fija la continuidad del personaje",
           "body": "Crea un ancla de retrato o una hoja de 8 paneles antes de que el personaje tenga que sobrevivir a más de una escena.",
-          "cta": "Abrir Character Builder"
+          "cta": "Abrir Character Studio"
         },
         "angle": {
           "eyebrow": "Angle",
@@ -2930,7 +2930,7 @@
         },
         {
           "title": "Conoce las herramientas",
-          "body": "Descubre cómo Character Builder y Angle te ayudan a crear un personaje o a explorar distintos puntos de vista."
+          "body": "Descubre cómo Character Studio y Angle te ayudan a crear un personaje o a explorar distintos puntos de vista."
         },
         {
           "title": "Elige un modelo",
@@ -4324,7 +4324,7 @@
         "emptyUploads": "Aún no hay medios subidos. Importa medios desde tu dispositivo para verlos aquí.",
         "emptyGenerated": "Aún no hay renders guardados. Revisa renders recientes y guarda los outputs que quieras reutilizar.",
         "emptyStoryboard": "Aún no hay storyboards guardados. Guarda una imagen storyboard para verla aquí.",
-        "emptyCharacter": "Aún no hay recursos de personaje guardados. Genera uno en Character Builder para verlo aquí.",
+        "emptyCharacter": "Aún no hay recursos de personaje guardados. Genera uno en Character Studio para verlo aquí.",
         "emptyAngle": "Aún no hay recursos de ángulo guardados. Genera uno en la herramienta Angle para verlo aquí.",
         "emptyUpscale": "Aún no hay recursos upscale guardados. Guarda un resultado upscale para verlo aquí.",
         "deleteError": "No se pudo eliminar este recurso.",
@@ -5255,11 +5255,11 @@
         "quality": {
           "draft": {
             "label": "Standard",
-            "description": "Pasadas exploratorias rápidas en Nano Banana 2."
+            "description": "Pasadas exploratorias rápidas en Nano Banana 2.1."
           },
           "final": {
             "label": "Pro",
-            "description": "Referencias más limpias listas para exportar en Nano Banana Pro."
+            "description": "Referencias más limpias listas para exportar en Nano Banana 2.1."
           }
         },
         "format": {
@@ -7241,7 +7241,7 @@
           "title": "Crea referencias reutilizables de personaje",
           "body": "Convierte una imagen en una hoja de personaje de 8 vistas con 4 vistas de cuerpo completo y 4 close-ups, o crea una referencia de retrato antes de pasar a escenas, prompts y animación.",
           "cta": "Explorar herramienta",
-          "imageAlt": "Captura de la interfaz Character Builder de MaxVideoAI."
+          "imageAlt": "Captura de la interfaz Character Studio de MaxVideoAI."
         },
         "angle": {
           "eyebrow": "Control de perspectiva",
@@ -7274,14 +7274,14 @@
           "image": {
             "eyebrow": "Image",
             "title": "Genera la imagen base",
-            "body": "Crea primero el fotograma base y luego llévalo a Character Builder, Angle o la preparación de video.",
+            "body": "Crea primero el fotograma base y luego llévalo a Character Studio, Angle o la preparación de video.",
             "cta": "Abrir Image"
           },
           "character": {
-            "eyebrow": "Character Builder",
+            "eyebrow": "Character Studio",
             "title": "Crea una referencia de personaje reutilizable",
             "body": "Fija rostro, vestuario y silueta antes de pasar a escenas o a la preparación para video.",
-            "cta": "Abrir Character Builder"
+            "cta": "Abrir Character Studio"
           },
           "angle": {
             "eyebrow": "Angle",
@@ -7959,39 +7959,37 @@
           "turnaround de personaje IA",
           "consistencia de personaje para image-to-video"
         ],
-        "imageAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Builder.",
-        "schemaName": "Personajes IA consistentes",
-        "schemaDescription": "Crea un ancla de retrato o una hoja de personaje IA de 8 paneles a partir de un retrato, una referencia opcional de vestuario o desde cero, y luego reutilízala en escenas, ediciones y flujos de video basados en imagen fija.",
+        "imageAlt": "Dixie Trouble, retrato de personaje reutilizable generado en Character Studio.",
+        "schemaName": "Character Studio",
+        "schemaDescription": "Crea un personaje a partir de una foto o una idea. Guarda su identidad, genera nuevos looks y llévalo al vídeo con MaxVideoAI Recast.",
         "schemaFeatures": [
-          "Empezar desde un retrato de referencia, una referencia opcional de vestuario o un concepto creado desde cero",
-          "Generar un ancla de retrato reutilizable",
-          "Generar una hoja de personaje de 8 paneles con cuatro vistas de cuerpo completo y cuatro close-ups consistentes",
-          "Reutilizar la misma referencia de personaje en prompts y ediciones de imagen",
-          "Usar la referencia en Nano Banana y en motores de video que aceptan imágenes fijas de referencia"
+          "Personajes guardados",
+          "Nuevos looks",
+          "Vídeo Recast"
         ],
-        "howToTitle": "Cómo funciona Character Builder",
-        "howToDescription": "Crea una referencia de personaje reutilizable para mantener imágenes IA consistentes y preparar video desde una imagen fija."
+        "howToTitle": "Explorar el proceso",
+        "howToDescription": "Crea un personaje a partir de una foto o una idea. Guarda su identidad, genera nuevos looks y llévalo al vídeo con MaxVideoAI Recast."
       },
       "breadcrumb": {
         "home": "Inicio",
         "tools": "Herramientas",
-        "current": "Character Builder"
+        "current": "Character Studio"
       },
       "hero": {
-        "badge": "Herramienta de personajes IA consistentes",
+        "badge": "Character Studio",
         "secondaryBadge": "Ancla de retrato + hoja de personaje de 8 paneles",
-        "title": "Crea personajes con IA consistentes.",
-        "body": "Empieza con un retrato o una idea. Crea un retrato de referencia o una hoja de ocho vistas y reutilízala en tus imágenes y videos.",
-        "primaryCta": "Abrir Character Builder",
+        "title": "Personajes IA consistentes. Listos para la siguiente escena.",
+        "body": "Crea un personaje a partir de una foto o una idea. Guarda su identidad, genera nuevos looks y llévalo al vídeo con MaxVideoAI Recast.",
+        "primaryCta": "Crear mi personaje",
         "proofs": [
-          "Empieza con un retrato de referencia, una inspiración opcional de vestuario o un concepto creado desde cero",
-          "Genera un ancla de retrato reutilizable o una hoja de personaje de 8 paneles",
-          "Reutiliza el mismo personaje en escenas, prompts, ediciones y flujos de video basados en imagen fija"
+          "Personajes guardados",
+          "Nuevos looks",
+          "Vídeo Recast"
         ],
         "showcase": {
-          "topLabel": "Interfaz Character Builder",
+          "topLabel": "Interfaz Character Studio",
           "windowLabel": "elegir la entrada, generar la referencia, reutilizarla",
-          "imageAlt": "Captura completa de la interfaz Character Builder de MaxVideoAI.",
+          "imageAlt": "Captura completa de la interfaz Character Studio de MaxVideoAI.",
           "callouts": [
             {
               "label": "01",
@@ -8021,12 +8019,12 @@
           "La continuidad de la silueta se vuelve más difícil de sostener"
         ],
         "solutionLabel": "Lo que crea esta herramienta",
-        "solutionTitle": "Character Builder crea primero la referencia",
+        "solutionTitle": "Character Studio crea primero la referencia",
         "solutionBody": "Genera un ancla de retrato o una hoja de personaje de 8 paneles, y luego reutiliza esa misma base en prompts, ediciones y flujos de video basados en imagen fija.",
         "portraitInputLabel": "Retrato de referencia",
-        "portraitInputAlt": "Retrato de referencia usado como base en Character Builder.",
+        "portraitInputAlt": "Retrato de referencia usado como base en Character Studio.",
         "sheetLabel": "Hoja reutilizable de 8 paneles",
-        "sheetAlt": "Hoja de personaje de 8 paneles generada por Character Builder."
+        "sheetAlt": "Hoja de personaje de 8 paneles generada por Character Studio."
       },
       "howItWorks": {
         "eyebrow": "Cómo funciona",
@@ -8035,8 +8033,8 @@
         "steps": [
           {
             "stepLabel": "Empezar con",
-            "title": "Empezar con un rostro, un vestuario o un concepto",
-            "body": "Usa un retrato de referencia, agrega una dirección de estilo opcional o empieza sin imagen fuente.",
+            "title": "Crear tu personaje",
+            "body": "Sube una foto de identidad o describe un personaje. Elige su apariencia, ropa y escenario.",
             "pills": [
               "Retrato de referencia",
               "Referencia opcional de vestuario"
@@ -8044,8 +8042,8 @@
           },
           {
             "stepLabel": "Generar",
-            "title": "Generar un ancla de retrato o una hoja de 8 paneles",
-            "body": "Crea una referencia facial más cerrada o una hoja coherente con cuatro vistas de cuerpo completo y cuatro close-ups.",
+            "title": "Guardar un retrato o una ficha",
+            "body": "Elige el resultado y la resolución, revisa el precio, genera y guarda el personaje.",
             "pills": [
               "Ancla de retrato",
               "Hoja de personaje de 8 paneles"
@@ -8053,8 +8051,8 @@
           },
           {
             "stepLabel": "Reutilizar en",
-            "title": "Reutilizar en Image, edición y preparación de video",
-            "body": "Lleva la misma referencia a prompts, Nano Banana y herramientas de video basadas en imagen fija.",
+            "title": "Crear un look o un Recast",
+            "body": "Reutiliza la identidad con otra ropa o selecciónala en Recast con tus fragmentos de vídeo y audio.",
             "pills": [
               "Prompts de imagen",
               "Preparación de video"
@@ -8065,7 +8063,7 @@
         "comparisonBody": "La referencia resuelve la continuidad antes de que empieces a cambiar de escena.",
         "comparisons": [
           {
-            "eyebrow": "Sin Character Builder",
+            "eyebrow": "Sin Character Studio",
             "title": "Cada escena nueva tiene que reconstruir al personaje",
             "items": [
               "El rostro, el cabello y el vestuario se desalinean entre prompts",
@@ -8073,7 +8071,7 @@
             ]
           },
           {
-            "eyebrow": "Con Character Builder",
+            "eyebrow": "Con Character Studio",
             "title": "Una sola referencia mantiene al personaje estable",
             "items": [
               "Rostro, vestuario y silueta quedan alineados",
@@ -8106,7 +8104,7 @@
             ],
             "badge": "La más reutilizable",
             "stats": "4 vistas de cuerpo completo + 4 close-ups",
-            "imageAlt": "Hoja de personaje de 8 paneles generada por Character Builder."
+            "imageAlt": "Hoja de personaje de 8 paneles generada por Character Studio."
           },
           {
             "eyebrow": "Imagen fija para preparar video",
@@ -8121,13 +8119,13 @@
         ],
         "workflow": {
           "label": "Flujo de referencia",
-          "title": "Character Builder -> Nano Banana -> Video",
+          "title": "Character Studio -> Nano Banana -> Video",
           "chainLabel": "Hoja -> imagen fija -> video",
           "steps": [
             {
               "label": "01 · Hoja de personaje",
               "body": "Fija al personaje antes de que empiece el movimiento.",
-              "imageAlt": "Hoja de Character Builder usada como referencia reutilizable en Image y Video."
+              "imageAlt": "Hoja de Character Studio usada como referencia reutilizable en Image y Video."
             },
             {
               "label": "02 · Imagen fija de Nano Banana",
@@ -8221,9 +8219,13 @@
       },
       "faq": {
         "eyebrow": "FAQ",
-        "title": "FAQ de personajes IA consistentes",
+        "title": "Antes de crear tu personaje IA",
         "body": "Respuestas cortas antes de construir la referencia.",
         "items": [
+          {
+            "question": "¿Qué es Character Studio?",
+            "answer": "Character Studio, antes Character Builder, crea referencias de personajes IA reutilizables: retratos y fichas de ocho vistas. Puedes guardar personajes, generar nuevos looks y utilizarlos en MaxVideoAI Recast. Es distinto de Studio, el espacio de edición de vídeo."
+          },
           {
             "question": "¿Qué es un personaje IA consistente?",
             "answer": "Es construir una referencia estable para que el mismo rostro, el mismo vestuario y la misma silueta se mantengan consistentes después."
@@ -8243,6 +8245,22 @@
           {
             "question": "¿Puedo reutilizar esto en flujos image-to-video?",
             "answer": "Sí. Puedes reutilizarlo en prompts, en la preparación del primer fotograma con Nano Banana y en motores de video que aceptan imágenes fijas de referencia."
+          },
+          {
+            "question": "¿Puedo guardar un personaje y crear otro look?",
+            "answer": "Sí. Guarda el personaje, ábrelo en tu biblioteca y crea un look nuevo a partir de su identidad. Los looks guardados se pueden seleccionar en Recast."
+          },
+          {
+            "question": "¿Cómo funciona MaxVideoAI Recast?",
+            "answer": "Elige una imagen de personaje o un look guardado, añade un vídeo de referencia y selecciona el fragmento. También puedes aportar una imagen de producto, un diálogo o un fragmento de audio. Revisa la duración, la resolución y el presupuesto exacto antes de generar el vídeo."
+          },
+          {
+            "question": "¿Todas las imágenes y los vídeos serán idénticos?",
+            "answer": "No. Las referencias guían la identidad y la apariencia, pero la generación IA puede cambiar caras, ropa, movimientos o productos. Revisa cada resultado, especialmente los ángulos de una ficha y los detalles del producto."
+          },
+          {
+            "question": "¿Cuánto cuesta Character Studio?",
+            "answer": "La aplicación muestra el presupuesto actual antes de generar. Las imágenes y Recast se cobran por separado. La resolución de imagen, la duración del vídeo, los fragmentos de entrada y la resolución de vídeo pueden influir en el importe; cualquier cambio requiere un presupuesto actualizado."
           }
         ]
       },
@@ -8289,10 +8307,66 @@
         "eyebrow": "Crea la referencia primero",
         "title": "Mantén el mismo personaje de una escena a otra",
         "body": "Genera un ancla de retrato o una hoja de 8 paneles y luego reutiliza esa misma referencia en prompts, ediciones y flujos de video basados en imagen fija.",
-        "primaryCta": "Abrir Character Builder",
+        "primaryCta": "Abrir Character Studio",
         "panelLeft": "Personaje definido",
         "panelRight": "Listo para reutilizar",
-        "panelAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Builder."
+        "panelAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Studio."
+      },
+      "studio": {
+        "nav": [
+          "Crear",
+          "Nuevos looks",
+          "Fichas de personaje",
+          "Recast"
+        ],
+        "castingTitle": "Un rostro. Una personalidad. Todo un mundo.",
+        "castingBody": "Humano, animal o criatura imaginaria: describe el rostro, la edad, el tono de piel, el pelo, la ropa y el escenario. Añade tus indicaciones cuando las opciones no sean suficientes.",
+        "castingCaption": "Personajes reales generados en Character Studio",
+        "looksTitle": "Un personaje. Un look completamente nuevo.",
+        "looksBody": "Parte de un personaje guardado y cambia su ropa o escenario. Elige un estilo, describe tu vestuario o añade una imagen de referencia.",
+        "identity": "Identidad guardada",
+        "newLook": "Nuevo look",
+        "looksNote": "Dixie Trouble · dos generaciones reales. Revisa el rostro y los detalles antes de guardar un look.",
+        "outputsTitle": "La referencia adecuada para el próximo plano.",
+        "outputsBody": "Elige Retrato o Ficha de personaje, el formato y la resolución. El precio de generación se actualiza antes de confirmar.",
+        "portrait": "Retrato",
+        "portraitBody": "Una imagen para fijar el rostro y la apariencia.",
+        "sheet": "Ficha de personaje",
+        "sheetBody": "Una imagen con ocho vistas: cuatro ángulos de cuerpo entero y cuatro primeros planos correspondientes. Revisa cada vista antes de reutilizarla.",
+        "sheetAlt": "Ficha de referencia de un personaje IA con vistas frontal, lateral, de tres cuartos y trasera, y primeros planos.",
+        "recastEyebrow": "MaxVideoAI Recast",
+        "recastTitle": "Tu personaje. El movimiento que tú eliges.",
+        "recastBody": "Elige un personaje guardado o sube una imagen. Añade un vídeo y selecciona el fragmento que servirá de referencia de movimiento. Las imágenes de producto, el diálogo y las referencias de audio pueden guiar la escena.",
+        "recastSteps": [
+          "Elegir un personaje o look guardado",
+          "Seleccionar los fragmentos de vídeo y audio",
+          "Ajustar duración, formato y 720p o 1080p",
+          "Revisar el precio exacto y generar"
+        ],
+        "recastNote": "Recast genera un vídeo nuevo. El movimiento, la identidad y los detalles del producto pueden variar: revisa el resultado antes de utilizarlo en una campaña.",
+        "filmLabels": [
+          "Dixie · baile",
+          "Vesper · comedia de personaje"
+        ],
+        "filmDescriptions": [
+          "Un look rosa y blanco llevado a una coreografía.",
+          "Una diseñadora insecto en una escena con un coche deportivo."
+        ],
+        "frameLabel": "Fotograma de un Recast real",
+        "videoLabel": "Ver un vídeo generado",
+        "recastCta": "Abrir Character Studio",
+        "priceTitle": "Elige el resultado. Consulta el precio. Luego genera.",
+        "priceBody": "Retratos, nuevos looks y fichas de personaje son generaciones de imagen. Recast es una generación de vídeo independiente: la duración y la resolución elegidas influyen en su presupuesto. Consulta siempre el precio actual en la aplicación.",
+        "priceLink": "Cómo funciona el pago por uso",
+        "faqTitle": "Antes de crear tu personaje IA",
+        "finalTitle": "Conoce a tu próximo personaje recurrente.",
+        "finalBody": "Crea su identidad, guarda los looks que te gusten y llévalo a una nueva escena.",
+        "secondaryCta": "Explorar el proceso",
+        "roles": [
+          "Personajes recurrentes",
+          "Creadores y UGC",
+          "Mascotas de marca"
+        ]
       }
     },
     "backgroundRemoval": {
@@ -8501,7 +8575,7 @@
       "all": "Todas las herramientas",
       "open": "Abrir herramienta",
       "nav": "Explorar herramientas creativas",
-      "character": "Personaje",
+      "character": "Character Studio",
       "angle": "Ángulo de cámara",
       "upscale": "Ampliación",
       "background": "Recorte de video",

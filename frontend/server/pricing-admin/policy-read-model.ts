@@ -42,6 +42,7 @@ import {
   selectorKey,
   selectorOf,
 } from './policy-rules';
+import { RECAST_PRICING_SELECTOR } from '@/lib/character-recast-pricing';
 
 export function buildAllModelComparisonScenarios(auditScenarios: PricingAuditScenario[] = buildPricingAuditScenarios()) {
   const appPublished = new Set(listRuntimeModels().filter((model) => model.publication.app.published).map((model) => model.id));
@@ -149,6 +150,10 @@ export async function loadPricingPolicyInventory(
     const policyScenario: PricingPolicyScenario = { ...selector, engineId: scenario.engineId };
     const key = scenarioSelectorKey(selector);
     if (bySelector.has(key)) return;
+    if (selector.engineId === RECAST_PRICING_SELECTOR.engineId) {
+      bySelector.set(key, { selector, versionedRule: null, databaseOverride: null });
+      return;
+    }
     const versionedRule = resolvePricingPolicy({
       scenario: policyScenario,
       databaseRules: [],
@@ -171,6 +176,7 @@ export async function loadPricingPolicyInventory(
 
   bySelector.forEach((entry, key) => {
     if (!entry.selector.engineId) return;
+    if (entry.selector.engineId === RECAST_PRICING_SELECTOR.engineId) return;
     const effective = resolvePricingPolicy({
       scenario: { ...entry.selector, engineId: entry.selector.engineId },
       databaseRules,
@@ -215,7 +221,8 @@ export async function loadPricingPolicyInventory(
       (outcome): outcome is AdminCanonicalScenarioQuote => outcome.status === 'quoted'
     ).slice(0, 4);
     const representativeScenario = scenarios[0];
-    const matchedVersionedRule =
+    const recast = selector.engineId === RECAST_PRICING_SELECTOR.engineId;
+    const matchedVersionedRule = recast ? null :
       versionedRule ??
       (representativeScenario
         ? resolvePricingPolicy({
@@ -228,7 +235,7 @@ export async function loadPricingPolicyInventory(
             versionedRules: policy.rules,
           }).rule
         : null);
-    const effectiveProvenance = representativeScenario
+    const effectiveProvenance = representativeScenario && (!recast || representativeQuotes.length > 0)
       ? (() => {
           const resolved = resolveCanonicalAdminScenarioPolicy({ databaseRules, scenario: representativeScenario });
           const compatibilityProfile = representativeQuotes[0]?.policyProvenance.compatibilityProfile ??

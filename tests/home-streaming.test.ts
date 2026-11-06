@@ -17,6 +17,7 @@ async function bundle() {
   const directory = await mkdtemp(join(tmpdir(), 'home-streaming-'));
   const output = join(directory, 'owners.cjs');
   const mocks: Record<string, string> = {
+    '@/server/character-studio/marketing-demos': `export const getCharacterStudioMarketingVideos=async()=>[];`,
     probe: `
       export const calls=[], records=[];
       let released, gates;
@@ -39,7 +40,7 @@ async function bundle() {
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json', jsx: 'automatic',
     plugins: [{ name: 'controlled-home-io', setup(builder) {
       builder.onResolve({ filter: /\.css$/ }, args => ({ path: args.path, namespace: 'empty' }));
-      builder.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({ contents: '', loader: 'js' }));
+      builder.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({ contents: 'export default new Proxy({},{get:(_,key)=>key});', loader: 'js' }));
       builder.onResolve({ filter: /.*/ }, args => {
         if (args.path.startsWith(resolve('frontend/messages') + '/')) return { path: args.path, external: true };
         if (args.path.startsWith('@/messages/')) return { path: resolve('frontend', args.path.slice(2)), external: true };
@@ -126,7 +127,7 @@ test('real homepage streams the poster before pending exact prices and discovery
       assert.ok(tail.replace(/<!--[\s\S]*?-->/g, '').includes(expectedPricing), 'The revealed pricing demo preserves the exact canonical scenarios');
       assert.doesNotMatch(tail, /home-hero-section|creative-film/, 'The later reveal must replace discovery alone');
       const finalCards = fixture.assembleHomepageExampleCards({ locale, content: dictionary.home.redesign, globalCandidates: fixture.videos, familyVideos: new Map(), acceptedAssets: [] });
-      const providers = page.props.children[2].props.children.props.modelDiscovery.props.children.props.providers;
+      const providers = page.props.children.find((child: any) => child?.props?.children?.props?.modelDiscovery).props.children.props.modelDiscovery.props.children.props.providers;
       const expectedDiscovery = renderToStaticMarkup(wrap(React.createElement(fixture.HomeModelDiscovery, { locale, examples: finalCards, providers, copy: dictionary.home.redesign.examples })));
       assert.ok(tail.replace(/<!--[\s\S]*?-->/g, '').includes(expectedDiscovery), 'Final localized discovery markup must preserve the existing curation output');
       await tick();

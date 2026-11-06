@@ -21,6 +21,7 @@ import type {AudioSettingDetails,projectAudioVariantFixedOutput} from '@/server/
 import type {AgentModelGuidance,AgentModelEditorialGuidance,AgentModelEditorialSummary} from '@/server/agent-api/model-guidance';
 import type {AgentModelPromptingSource} from '@/server/agent-api/model-prompting-sources';
 import type {CustomerDisplayPrice} from '@/lib/customer-price-presentation';
+import {studioCharacterGetSchema,studioCharacterListSchema,studioRecastActionSchema,validateStudioRecast,STUDIO_CHARACTER_DIRECTOR_TOOLS,type StudioCharacterDetails,type StudioCharacterList} from './conversation-character-contract';
 import type {StudioAudioWorkflowFacts} from '@/server/studio/conversation-audio-discovery';
 
 export const studioMemorySchema = z.object({
@@ -79,7 +80,9 @@ export const studioActionRequestSchema = z.discriminatedUnion('action', [
   studioTimelineReadSchema,studioTimelineEditSchema,
   studioExportPrepareActionSchema,studioExportReadActionSchema,
   studioAnalysisPrepareActionSchema,studioAnalysisReadActionSchema,
+  studioCharacterListSchema,studioCharacterGetSchema,studioRecastActionSchema,
 ]).superRefine(validateStudioVideoPrompt).superRefine((value, context) => {
+  if(value.action==='recast.prepare')validateStudioRecast(value,context);
   if(value.action==='image.prepare')validateStudioImageReferences(value, context);
   if(value.action==='export.read'&&!!value.quoteId===!!value.exportId)context.addIssue({code:'custom',message:'Choose one quoteId or exportId.'});
 });
@@ -107,7 +110,10 @@ export type StudioActionResult =
   | {ok: true; action: 'pricing.read'; data: StudioPricingEstimate}
   | {ok: true; action: 'pricing.compare'; data: StudioPriceComparison}
   | {ok: true; action: 'model.details'; data: StudioCapabilityDetails}
+  | {ok: true; action: 'character.list'; data: StudioCharacterList}
+  | {ok: true; action: 'character.get'; data: StudioCharacterDetails}
   | {ok: true; action: 'image.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
+  | {ok: true; action: 'recast.prepare'; data: Omit<PreparedGeneration, 'balance' | 'topupRequired'>}
   | {ok: true; action: 'generation.read'; data: AgentGenerationStatus | null}
   | {ok: true; action: 'quote.discard'; data: StudioQuoteDiscardResult}
   | {ok: true; action: 'media.read'; data: StudioProjectMedia}
@@ -136,7 +142,7 @@ export const STUDIO_DIRECTOR_TOOLS = [
 ] as const;
 
 export function actionFromTool(name: string, value: unknown): StudioActionRequest {
-  const tool = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_TASK_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS].find(tool => tool.name === name);
+  const tool = [...STUDIO_DIRECTOR_TOOLS,...STUDIO_TASK_DIRECTOR_TOOLS, ...STUDIO_MEDIA_DIRECTOR_TOOLS,...STUDIO_EDITING_DIRECTOR_TOOLS,...STUDIO_EXPORT_DIRECTOR_TOOLS,...STUDIO_ANALYSIS_DIRECTOR_TOOLS,...STUDIO_CHARACTER_DIRECTOR_TOOLS].find(tool => tool.name === name);
   if (!tool || !value || typeof value !== 'object' || Array.isArray(value) || Object.hasOwn(value, 'action')) throw new Error('UNKNOWN_STUDIO_ACTION');
   // The discriminator is supplied by the server; model identity/scope arguments are rejected.
   return studioActionRequestSchema.parse({...value, action: tool.action});

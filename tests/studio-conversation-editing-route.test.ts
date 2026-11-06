@@ -51,3 +51,20 @@ test('renaming requires the authenticated account and origin; names and request 
   const response=await handleStudioConversationEditing(request(valid),'rename',undefined,options);
   assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');assert.equal(calls,1);
 });
+
+
+test('Studio accepts the exact development loopback host without widening production or cross-site access',async()=>{
+  const previous=process.env.NODE_ENV;
+  let writes=0;
+  const options={enabled:true,resolveAccess:async()=>({ok:true as const,userId:'owner'}),rename:async()=>{writes++;return {projectId:'film',name:'Local QA',updatedAt:'2026-11-06T12:00:00Z'};}};
+  const request=(origin='http://127.0.0.1:3016',host='127.0.0.1:3016',site='same-origin')=>new NextRequest('http://127.0.0.1:3016/api/studio/conversation-projects',{method:'PATCH',headers:{origin,host,'sec-fetch-site':site},body:JSON.stringify({projectId:'film',name:'Local QA',idempotencyKey:'local-qa'})});
+  const run=(req:NextRequest)=>handleStudioConversationEditing(req,'rename',undefined,options);
+  try {
+    process.env.NODE_ENV='development';
+    assert.equal((await run(request())).status,200);
+    for(const req of [request('http://127.0.0.1:3017'),request('https://foreign.example'),request(undefined,'localhost:3016'),request(undefined,undefined,'cross-site'),request('http://127.0.0.1:3016/path'),request('http://127.0.0.1:3016','foreign.example')])assert.equal((await run(req)).status,403);
+    process.env.NODE_ENV='production';
+    assert.equal((await run(request())).status,403);
+    assert.equal(writes,1);
+  } finally {if(previous===undefined)delete process.env.NODE_ENV;else process.env.NODE_ENV=previous;}
+});

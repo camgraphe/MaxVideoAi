@@ -4,9 +4,13 @@
 
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
-import {isCreatorToolPublic} from '@/lib/toolbox/creator-availability';
-const CharacterContinuation=dynamic(()=>import('./CharacterContinuation.client').then(module=>module.CharacterContinuation));
-import { Check, Download, Loader2, Sparkles, WandSparkles } from 'lucide-react';
+import { isCreatorToolPublic } from '@/lib/toolbox/creator-availability';
+const CharacterContinuation = dynamic(() =>
+  import('./CharacterContinuation.client').then((module) => module.CharacterContinuation),
+);
+import { Check, Download, Loader2, Sparkles, WandSparkles, Clapperboard, UserRoundPlus } from 'lucide-react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getStudioLibraryCopy } from '../_lib/character-studio-library-copy';
 
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -24,6 +28,9 @@ export function ResultCard({
   onDownload,
   onSave,
   onDuplicateSettings,
+  onKeepCharacter,
+  isLook = false,
+  onRecast,
   saving,
   copy,
 }: {
@@ -37,19 +44,28 @@ export function ResultCard({
   onDownload: () => void;
   onSave: () => void;
   onDuplicateSettings: () => void;
+  onKeepCharacter?: () => void;
+  isLook?: boolean;
+  onRecast?: () => void;
   saving: boolean;
   copy: CharacterCopy;
 }) {
+  const { locale } = useI18n();
+  const studioCopy = getStudioLibraryCopy(locale);
   return (
     <Card
       className={clsx(
         'overflow-hidden border bg-surface p-0 transition',
-        selected ? 'border-brand shadow-[0_0_0_1px_rgba(11,107,255,0.2)]' : 'border-border'
+        selected ? 'border-brand shadow-[0_0_0_1px_rgba(11,107,255,0.2)]' : 'border-border',
       )}
     >
       <div className="relative">
         <button type="button" onClick={onOpen} className="block w-full text-left">
-          <img src={result.thumbUrl ?? result.url} alt={copy.resultCard.generatedAlt} className="h-44 w-full object-cover" />
+          <img
+            src={result.thumbUrl ?? result.url}
+            alt={copy.resultCard.generatedAlt}
+            className="h-44 w-full object-cover"
+          />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent px-3 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-micro text-white/70">{subtitle}</p>
             <p className="mt-1 text-sm font-semibold text-white">{title}</p>
@@ -61,7 +77,9 @@ export function ResultCard({
               <Check className="h-3.5 w-3.5" />
               {copy.resultCard.selected}
             </span>
-          ) : <span />}
+          ) : (
+            <span />
+          )}
           {badge ? (
             <span className="inline-flex items-center rounded-full bg-brand/90 px-2 py-1 text-[11px] font-semibold text-on-brand shadow-sm">
               {badge}
@@ -70,7 +88,12 @@ export function ResultCard({
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 p-3">
-        <Button variant={selected ? 'primary' : 'outline'} size="sm" onClick={onSelect} className="min-w-[92px]">
+        <Button
+          variant={selected ? 'primary' : 'outline'}
+          size="sm"
+          onClick={onSelect}
+          className="min-w-[92px]"
+        >
           {selected ? copy.resultCard.selected : copy.resultCard.select}
         </Button>
         <div className="flex items-center gap-1">
@@ -90,8 +113,8 @@ export function ResultCard({
             onClick={onSave}
             disabled={saving}
             className="h-9 w-9 px-0"
-            aria-label={copy.resultCard.save}
-            title={copy.resultCard.save}
+            aria-label={studioCopy.saveMedia}
+            title={studioCopy.saveMedia}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           </Button>
@@ -107,7 +130,31 @@ export function ResultCard({
           </Button>
         </div>
       </div>
-      {isCreatorToolPublic('motion-transfer') ? <CharacterContinuation result={result}/> : null}
+      {onKeepCharacter || onRecast ? (
+        <div className="flex flex-wrap gap-2 px-3 pb-3">
+          {onKeepCharacter ? (
+            <button
+              type="button"
+              onClick={onKeepCharacter}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs hover:bg-surface-hover"
+            >
+              <UserRoundPlus size={14} />
+              {isLook ? studioCopy.saveLook : studioCopy.saveCharacter}
+            </button>
+          ) : null}
+          {onRecast ? (
+            <button
+              type="button"
+              onClick={onRecast}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs hover:bg-surface-hover"
+            >
+              <Clapperboard size={14} />
+              {studioCopy.recast}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {isCreatorToolPublic('motion-transfer') ? <CharacterContinuation result={result} /> : null}
     </Card>
   );
 }

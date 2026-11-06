@@ -24,6 +24,68 @@ import type { PricingRule } from '../frontend/src/lib/pricing-rule-store.ts';
 
 const actorId = '00000000-0000-0000-0000-000000000001';
 
+function recastRule(marginPercent = 1): PricingPolicyRule {
+  return policyRule('recast-only', { engineId: 'character-recast', mode: 'recast', resolution: 'video',
+    marginPercent, surchargeAudioPercent: 0, surchargeUpscalePercent: 0 });
+}
+
+test('Recast first configuration previews unavailable prices and confirms one audited scoped rule', async () => {
+  const existing = policyRule('wan-preserved', { engineId: 'wan-3', mode: 'ref2v', resolution: '720p' });
+  const harness = createMemoryHarness([existing]);
+  const proposal: PricingPolicyChangeProposal = { operation: 'create', rule: recastRule() };
+  const preview = await previewPricingPolicyChange(proposal, harness.deps);
+  assert.ok(preview.rows.length >= 18);
+  assert.ok(preview.rows.every(row => row.engineId === 'character-recast' && row.currentTotalCents === null
+    && row.deltaCents === null && row.currentProvenance === null && row.proposedTotalCents > 0));
+  assert.deepEqual(harness.rules, [existing]);
+  assert.deepEqual(harness.events, []);
+  assert.equal(harness.invalidateCalls, 0);
+  const applied = await confirmPricingPolicyChange(proposal, preview.previewFingerprint, actorId, harness.deps);
+  assert.equal(applied.committed, true);
+  assert.equal(harness.events.length, 1);
+  assert.equal(harness.events[0].previousState, null);
+  assert.equal(harness.events[0].previewSummary.deltaCents, null);
+  assert.equal(harness.events[0].actorId, actorId);
+  assert.deepEqual(harness.rules.find(rule => rule.id === existing.id), existing);
+  await assert.rejects(previewPricingPolicyChange({ operation: 'delete', targetId: 'recast-only' }, harness.deps), /Recast.*required|Recast.*remove/i);
+  await assert.rejects(previewPricingPolicyChange({ operation: 'rollback', targetId: 'recast-only', eventId: applied.event.id }, harness.deps), /Recast.*required|Recast.*remove/i);
+});
+
+test('Recast edits fence stale concurrent policy and rollback preserves immutable events', async () => {
+  const harness = createMemoryHarness([recastRule()]);
+  const proposal: PricingPolicyChangeProposal = { operation: 'update', targetId: 'recast-only', rule: recastRule(1.5) };
+  const preview = await previewPricingPolicyChange(proposal, harness.deps);
+  harness.transactionMutator = () => { harness.rules[0].marginPercent = 2; };
+  await assert.rejects(confirmPricingPolicyChange(proposal, preview.previewFingerprint, actorId, harness.deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'preview_stale');
+  assert.equal(harness.events.length, 0);
+  assert.equal(harness.rules[0].marginPercent, 2);
+  const fresh = await previewPricingPolicyChange(proposal, harness.deps);
+  harness.failEventInsert = true;
+  await assert.rejects(confirmPricingPolicyChange(proposal, fresh.previewFingerprint, actorId, harness.deps));
+  assert.equal(harness.rules[0].marginPercent, 2);
+  assert.equal(harness.events.length, 0);
+  harness.failEventInsert = false;
+  const applied = await confirmPricingPolicyChange(proposal, fresh.previewFingerprint, actorId, harness.deps);
+  const eventBefore = JSON.stringify(applied.event);
+  const rollback: PricingPolicyChangeProposal = { operation: 'rollback', targetId: 'recast-only', eventId: applied.event.id };
+  const restore = await previewPricingPolicyChange(rollback, harness.deps);
+  await confirmPricingPolicyChange(rollback, restore.previewFingerprint, actorId, harness.deps);
+  assert.equal(harness.rules[0].marginPercent, 2);
+  assert.equal(harness.events.length, 2);
+  assert.equal(JSON.stringify(harness.events.find(event => event.id === applied.event.id)), eventBefore);
+  await assert.rejects(previewPricingPolicyChange({ ...proposal, rule: policyRule('recast-only') }, harness.deps), /Recast/i);
+});
+
+test('Recast cannot replace an existing model or global rule to acquire its scope', async () => {
+  for (const current of [policyRule('kling'), policyRule('default', { engineId: undefined, mode: undefined, resolution: undefined })]) {
+    const harness = createMemoryHarness([current]);
+    await assert.rejects(previewPricingPolicyChange({ operation: 'update', targetId: current.id,
+      rule: { ...recastRule(), id: current.id } }, harness.deps), /Recast/i);
+    assert.deepEqual(harness.rules, [current]);
+  }
+});
+
 test('creator billing identities do not block unrelated model policy previews', async () => {
   const creatorRules = ['toolbox-subtitles', 'toolbox-lip-sync', 'toolbox-motion-control'].map((engineId) =>
     policyRule(engineId, {

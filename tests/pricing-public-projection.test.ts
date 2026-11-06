@@ -174,6 +174,22 @@ test('public pricing baseline ignores machine-specific pricing environment overr
   assert.match(result.stdout, /current \(640 rows\)/);
 });
 
+test('Character Studio static rows retire only four fixed prices and require a current native quote', async () => {
+  const frozen = JSON.parse(readFileSync('tests/fixtures/pricing-public-projections.v1.json', 'utf8')) as PublicProjectionFixture;
+  const transition = JSON.parse(readFileSync('tests/fixtures/character-studio-public-pricing-transition-2026-11-05.json', 'utf8')) as {
+    rows: Array<{ previous: PublicProjectionFixture['rows'][number]; current: PublicProjectionFixture['rows'][number] }>;
+  };
+  const { collectPublicPricingProjectionRows } = await import('../frontend/scripts/pricing-public-baseline-collector');
+  const current = await collectPublicPricingProjectionRows();
+  assert.equal(transition.rows.length, 4);
+  for (const change of transition.rows) {
+    assert.deepEqual(change.previous, frozen.rows.find(row => row.id === change.previous.id));
+    assert.equal(change.previous.status, 'exact');
+    assert.deepEqual(change.current, { id: change.previous.id, surface: 'pricing-hub-tool', engineId: change.previous.engineId, status: 'unavailable' });
+    assert.deepEqual(current.find(row => row.id === change.current.id), change.current);
+  }
+});
+
 test('Max launch adds only normal-list-plus-30-percent public projections and reproduces offline', () => {
   const launch = JSON.parse(readFileSync('tests/fixtures/flux-3-max-public-pricing-launch-2026-10-20.json', 'utf8')) as PublicProjectionFixture;
   assert.equal(launch.rows.length, 12);

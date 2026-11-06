@@ -1,10 +1,10 @@
 import type { AppLocale } from '@/i18n/locales';
-import { Link } from '@/i18n/navigation';
-import type { ImagePricingRow, OtherSurfacePricingData, PricingHubLink } from '../_lib/pricingHubData';
+import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
+import type { ImagePricingRow, OtherSurfacePricingData } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
 import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
-function InlineLinks({ links }: { links: PricingHubLink[] }) {
+function InlineLinks({ links }: { links: { label: string; href: LocalizedLinkHref }[] }) {
   return (
     <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold">
       {links.map((link, index) => (
@@ -116,6 +116,9 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
         <h3 id="tool-pricing-title" className="text-xl font-semibold tracking-normal text-text-primary">
           {copy.otherSurfaces.toolTitle}
         </h3>
+        <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary">
+          {copy.otherSurfaces.characterImageNote}
+        </p>
         <PricingTableScrollRegion labelledBy="tool-pricing-title" className="mt-4">
           <table className="min-w-[820px] text-left text-sm">
             <thead>
@@ -139,6 +142,25 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
                   </td>
                 </tr>
               ))}
+              <tr id="character-recast-pricing" className="scroll-mt-24 border-b border-hairline last:border-0">
+                <th scope="row" className="py-3 pr-4 font-semibold text-text-primary">{copy.tools.characterRecast}
+                  <p className="mt-1 max-w-[240px] text-xs font-normal leading-5 text-text-secondary">{copy.otherSurfaces.recastPricingNote}</p>
+                </th>
+                {(['price720', 'price1080'] as const).map((key) => <td key={key} className="px-4 py-3 text-text-secondary">
+                  <span className="text-xs font-semibold text-text-primary">{key === 'price720' ? '720p' : '1080p'}</span>
+                  {data.recastExamples?.length ? data.recastExamples.map(example => <p key={example.outputSeconds} className="mt-2">
+                    <strong className="block text-base tabular-nums text-text-primary">{example[key]}</strong>
+                    <span className="text-xs">{copy.otherSurfaces.recastExample(example.outputSeconds, example.sourceSeconds)}</span>
+                  </p>) : <p>{copy.liveQuote}</p>}
+                </td>)}
+                <td className="px-4 py-3 text-text-secondary">{copy.tools.recastUse}</td>
+                <td className="py-3 pl-4">
+                  <InlineLinks links={[
+                    { label: copy.links.tool, href: { pathname: '/tools/character-builder', hash: 'recast' } },
+                    { label: copy.links.livePrice, href: '/app/tools/character-builder?mode=recast' },
+                  ]} />
+                </td>
+              </tr>
             </tbody>
           </table>
         </PricingTableScrollRegion>
