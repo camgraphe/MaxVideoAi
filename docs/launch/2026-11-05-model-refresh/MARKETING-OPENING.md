@@ -61,3 +61,14 @@ Aucun nouvel appel payant, publication sociale ou envoi de newsletter n'est incl
 Les brouillons marketing restent dans MARKETING-DRAFTS.md. Revenir en arrière ferme
 les portes marketing dans le registre puis régénère les projections et passe par
 la même livraison Git ; les tarifs, reçus, médias et travaux acceptés sont conservés.
+
+La date d'ouverture fonctionnelle vérifiée est le 6 novembre 2026 ; la révision
+éditoriale du badge New est prévue le 6 décembre 2026. Les dates des sitemaps du lot
+sont alignées sur le 6 novembre. L'heure et le commit de publication marketing
+seront consignés dans le reçu final de livraison et la PR #624 après vérification
+des deux domaines, sans confondre le candidat avec son déploiement.
+
+La recette App a également révélé l'absence du bouton des options avancées lorsque
+seuls fond et complexité sont disponibles. Ce lot corrige le bouton et le passage
+de la complexité au panneau différé ; les sélections et setters existants restent
+les propriétaires des valeurs. Les tests DOM reproduisent puis couvrent ce défaut.
