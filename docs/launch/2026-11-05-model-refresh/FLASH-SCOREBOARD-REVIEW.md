@@ -45,7 +45,7 @@ fixes ne démontre pas la qualité des petits textes ou d'autres langues.
 ## Sources externes confrontées aux relevés
 
 - [Tim Simmons, 1er octobre](https://theoreticallymedia.com/blog/kling-4-early-look-gemini-4-argon-ideogram-4-5-eleven-v4/) : essai de première main explicitement Flash, avec améliorations rapportées et écarts d'action/performance. Son interface de bêta n'établit pas les contrôles de l'API fal actuelle.
-- [SeedVideo AI, 4 novembre](https://www.seeddance.io/blog/kling-4-0-flash-guide) : huit sorties Flash annoncées, six texte et deux image ; 89 s pour un clip de 5 s isolé et un lot de cinq terminé sous 192 s. Ces mesures restent celles de cette plateforme commerciale.
+- [SeedVideo AI, 4 novembre](https://www.seeddance.io/blog/kling-4-0-flash-guide) : huit sorties Flash annoncées, six texte et deux image ; 89 s pour un clip texte de 5 s isolé et un lot de cinq clips texte terminé sous 192 s. Un clip image de 5 s a pris 842 s, délai attribué à la file d'attente amont. Ces mesures restent celles de cette plateforme commerciale.
 - [Artificial Analysis texte](https://artificialanalysis.ai/video/leaderboard/text-to-video) et [image](https://artificialanalysis.ai/video/leaderboard/image-to-video), relevés le 6 novembre : aucune ligne Flash dans les tableaux récupérés de 31 et 32 modèles. Aucun Elo n'est inventé.
 - [SpicyAPI](https://spicyapi.ai/reviews/kling-4-0-flash/report) : son indice 51/100 repose uniquement sur ses capacités déclarées, avec des dimensions de qualité absentes. Il ne devient pas une note de rendu MaxVideoAI.
 - [Megaton Kling 4](https://megaton.ai/evaluations/kling/kling-4/report) : modèle complet, donc exclu des notes Flash.

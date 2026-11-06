@@ -260,7 +260,7 @@
         "owned-text",
         "external-flash-runs"
       ],
-      "rationale": "Six recorded supplier attempts completed once: V1/V2/V3 took about 87.3/138.3/99.9 seconds for 5-second requests; B1/B2/B3 took 215.0/218.0/221.1 seconds for 15-second requests. T1 is an additional completed native paid job. External timings are separately attributed.",
+      "rationale": "Six recorded supplier attempts completed once: V1/V2/V3 took about 87.3/138.3/99.9 seconds for 5-second requests; B1/B2/B3 took 215.0/218.0/221.1 seconds for 15-second requests. T1 is an additional completed native paid job. SeedVideo separately reports 89–192-second T2V timings but an 842-second five-second I2V run attributed to upstream queueing; that outlier limits the speed/reliability inference.",
       "calibration": "Useful observed delivery, insufficient for representative reliability. This editorial estimate is not native median/P90 or a population success rate."
     },
     {
@@ -421,7 +421,8 @@
       },
       "reportedSingleFiveSecondT2VSeconds": 89,
       "reportedFiveJobBatchCompletedWithinSeconds": 192,
-      "summary": "Action/camera adherence and a wrong-rider instruction miss; platform-specific timing, not MaxVideoAI latency."
+      "reportedFiveSecondI2VSeconds": 842,
+      "summary": "Action/camera adherence and a wrong-rider instruction miss. The five-job batch is text-to-video; a separate five-second image-to-video run took 842 seconds, attributed to upstream queueing. These are platform-specific timings, not MaxVideoAI latency."
     }
   ],
   "externalEvaluationChecks": [
