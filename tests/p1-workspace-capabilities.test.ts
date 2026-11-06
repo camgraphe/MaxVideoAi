@@ -23,7 +23,7 @@ test('workspace derives Kling Turbo multi-shot UI from the engine schema', () =>
 test('workspace keeps the complete Gemini 1.1 direct workflow, including private-interaction retake', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'gemini-omni-flash')?.engine;
   assert.ok(engine);
-  assert.equal(engine.label, 'Gemini Omni Flash 1.1');
+  assert.equal(engine.label, 'Gemini Omni Flash 1.2');
   assert.deepEqual(engine.modes, [
     't2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake',
   ]);

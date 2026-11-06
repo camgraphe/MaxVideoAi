@@ -108,6 +108,14 @@ async function main(): Promise<void> {
       id: previous.id, surface: 'pricing-hub-tool', engineId: previous.engineId, status: 'unavailable',
     }))) throw new Error('Invalid Character Studio static pricing transition.');
   const appliedCharacterChanges = new Set<string>();
+  const omniChange = JSON.parse(await readFile(new URL('../../tests/fixtures/omni-1-2-public-pricing-change-2026-11-05.json', import.meta.url), 'utf8')) as {
+    rows: Array<{ previous: typeof rows[number]; current: typeof rows[number] }>;
+  };
+  const omniChanges = new Map(omniChange.rows.map(row => [row.previous.id, row]));
+  if (omniChanges.size !== 13 || omniChanges.size !== omniChange.rows.length || omniChange.rows.some(row =>
+    row.previous.id !== row.current.id || row.current.engineId !== 'gemini-omni-flash'
+  )) throw new Error('Invalid Omni 1.2 supplier-cost projection matrix.');
+  const appliedOmniChanges = new Set<string>();
   const byId = new Map(fixture.rows.map((row) => [row.id, row]));
   const expected = fixture.rows.map((row) => {
     const standardId = row.id.replace(/:(plus|pro):/u, ':member:');
@@ -201,7 +209,15 @@ async function main(): Promise<void> {
       appliedCharacterChanges.add(row.id);
       return change.current;
     })
+    .map(row => {
+      const change = omniChanges.get(row.id);
+      if (!change) return row;
+      if (!isDeepStrictEqual(row, change.previous)) throw new Error(`Omni 1.2 change does not match historical evidence: ${row.id}`);
+      appliedOmniChanges.add(row.id);
+      return change.current;
+    })
     .sort((left, right) => left.id.localeCompare(right.id));
+  if (appliedOmniChanges.size !== omniChanges.size) throw new Error('Missing Omni 1.2 supplier-cost projection scenario.');
   if (appliedCharacterChanges.size !== characterChanges.size) throw new Error('Missing Character Studio pricing transition scenario.');
   if (appliedH3Changes.size !== h3Changes.size) throw new Error('Missing H3 capability pricing scenario.');
   if (appliedCustomerOfferRepairs.size !== customerOfferRepairs.size) throw new Error('Missing Product customer-price repair scenario.');

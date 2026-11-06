@@ -2,7 +2,7 @@ import type { GeneratePayload } from '@/lib/fal';
 import type { Mode } from '@/types/engines';
 
 export const GOOGLE_VERTEX_OMNI_PROVIDER = 'google_vertex_omni_direct' as const;
-export const GOOGLE_VERTEX_OMNI_MODEL_ID = 'gemini-omni-1.1-flash-preview' as const;
+export const GOOGLE_VERTEX_OMNI_MODEL_ID = 'gemini-omni-1.2-flash' as const;
 
 export type GoogleVertexOmniEngineId = 'gemini-omni-flash';
 export type GoogleVertexOmniMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v' | 'v2v' | 'extend' | 'retake'>;
@@ -10,7 +10,7 @@ export type GoogleVertexOmniMode = Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'fl2v
 export type GoogleVertexOmniModelRoute = {
   engineId: GoogleVertexOmniEngineId;
   providerModel: string;
-  launchStage: 'preview';
+  launchStage: 'ga';
   supportedModes: GoogleVertexOmniMode[];
   aspectRatios: Array<'16:9' | '9:16'>;
 };
@@ -23,7 +23,7 @@ const GOOGLE_VERTEX_OMNI_ROUTES: Record<GoogleVertexOmniEngineId, GoogleVertexOm
   'gemini-omni-flash': {
     engineId: 'gemini-omni-flash',
     providerModel: GOOGLE_VERTEX_OMNI_MODEL_ID,
-    launchStage: 'preview',
+    launchStage: 'ga',
     supportedModes: ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake'],
     aspectRatios: ['16:9', '9:16'],
   },

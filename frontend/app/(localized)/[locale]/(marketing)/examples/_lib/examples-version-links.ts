@@ -20,7 +20,13 @@ export function buildExamplesVersionLinks(
   return models.flatMap(model => {
     const id = canonical(model.engineId);
     const sample = byModel.get(id);
-    return sample ? [{ href: `/video/${encodeURIComponent(sample.videoId)}`, engineLabel: model.label,
-      current: current.has(canonical(model.slug)) || current.has(id) }] : [];
+    // An unversioned engine identity can now route to a newer generation. Keep
+    // recorded numeric versions out of Current versions without treating a
+    // provider prefix or other harmless label formatting as a version change.
+    const recordedVersion = sample?.engineLabel?.match(/\b\d+(?:\.\d+)*\b/g)?.join('.');
+    const currentVersion = model.label.match(/\b\d+(?:\.\d+)*\b/g)?.join('.');
+    const historicalVersion = Boolean(recordedVersion && currentVersion && recordedVersion !== currentVersion);
+    return sample ? [{ href: `/video/${encodeURIComponent(sample.videoId)}`, engineLabel: sample.engineLabel || model.label,
+      current: !historicalVersion && (current.has(canonical(model.slug)) || current.has(id)) }] : [];
   });
 }

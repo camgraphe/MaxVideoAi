@@ -33,10 +33,13 @@ test('archived public examples retain their identity and prompt while offering o
   const { getBaseEngines } = await import('../frontend/src/lib/engines');
   const { isArchivedGenerationModel } = await import('../frontend/lib/model-generation-policy');
   const engines = getBaseEngines();
-  for (const engineId of ['sora-2', 'openai-sora-2-pro', 'sora-pro', 'seedance-1-5-pro', 'seedance-v1.5-pro']) {
+  for (const [engineId, sourceLabel] of [
+    ['sora-2', 'Sora 2'], ['openai-sora-2-pro', 'Sora 2 Pro'], ['sora-pro', 'Sora 2 Pro'],
+    ['seedance-1-5-pro', 'Seedance 1.5 Pro'], ['seedance-v1.5-pro', 'Seedance 1.5 Pro'],
+  ]) {
     const quotedEngines: string[] = [];
     const detail = await projectExampleWatchDetail({
-      id: 'historical-example', engineId, engineLabel: 'Original archived model',
+      id: 'historical-example', engineId, engineLabel: sourceLabel,
       prompt: 'Keep this historical prompt', durationSec: 5, aspectRatio: '16:9',
       outputWidth: 1280, outputHeight: 720, hasAudio: true, createdAt: '',
       visibility: 'public', indexable: true, canUpscale: false,
@@ -49,7 +52,7 @@ test('archived public examples retain their identity and prompt while offering o
     }, engines);
     assert.ok(detail, engineId);
     assert.equal(detail.prompt, 'Keep this historical prompt');
-    assert.match(detail.engineLabel, /Sora|Seedance 1\.5/, 'keep the canonical historical model label');
+    assert.equal(detail.engineLabel, sourceLabel, 'keep the recorded historical model label for canonical IDs and aliases');
     assert.equal(detail.videoUrl, 'https://media.maxvideoai.com/historical-example.mp4');
     assert.equal(detail.recreateHref, null, 'an archived source must never offer same-model recreation');
     assert.ok(detail.modelHref, 'the historical model page remains available');

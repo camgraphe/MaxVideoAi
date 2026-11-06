@@ -276,7 +276,7 @@ function buildClientVideo({
       ? formatPromptExcerpt(video.promptExcerpt || video.prompt || 'MaxVideoAI render')
       : buildLocalizedExampleLabel(
           locale,
-          engineMeta?.label ?? video.engineLabel ?? 'Engine',
+          (video.engineLabel || engineMeta?.label) ?? 'Engine',
           video.aspectRatio ?? null,
           video.durationSec
         );
@@ -284,7 +284,7 @@ function buildClientVideo({
   return {
     id: video.id,
     href: `/video/${encodeURIComponent(video.id)}`,
-    engineLabel: engineMeta?.label ?? video.engineLabel ?? 'Engine',
+    engineLabel: (video.engineLabel || engineMeta?.label) ?? 'Engine',
     engineIconId: engineMeta?.id ?? canonicalEngineId ?? video.engineId ?? 'engine',
     engineBrandId: engineMeta?.brandId,
     priceLabel: formatCurrentExamplePrice(currentPrice, locale),

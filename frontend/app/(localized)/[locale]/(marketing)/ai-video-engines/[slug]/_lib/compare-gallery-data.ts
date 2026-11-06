@@ -2,7 +2,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import type { GalleryVideo } from '@/server/videos';
 
 export type CompareGalleryVideo = {
-  id: string; poster: string; video: string; preview: string | null;
+  id: string; engineLabel: string; poster: string; video: string; preview: string | null;
   duration: number; aspectRatio: string; hasAudio: boolean;
 };
 
@@ -16,7 +16,7 @@ export function selectCompareGalleryVideos(videos: GalleryVideo[], modelSlug: st
     seen.add(video.id);
     return true;
   }).slice(0, 3).map(video => ({
-    id: video.id, poster: video.thumbUrl!, video: video.videoUrl!, preview: video.previewVideoUrl ?? null,
+    id: video.id, engineLabel: video.engineLabel, poster: video.thumbUrl!, video: video.videoUrl!, preview: video.previewVideoUrl ?? null,
     duration: video.durationSec, aspectRatio: video.aspectRatio ?? '16:9', hasAudio: video.hasAudio,
   }));
 }

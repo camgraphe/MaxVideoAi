@@ -20,7 +20,7 @@ const EDITORIAL_COMPARISONS = [
   { slug: 'seedance-2-5-vs-wan-3', label: 'Seedance 2.5 vs Wan 3' },
   { slug: 'ltx-2-5-fast-vs-ltx-2-5-pro', label: 'LTX 2.5 Fast vs Pro' },
   { slug: 'wan-3-vs-wan-3-prime', label: 'Wan 3 vs Wan 3 Prime' },
-  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.2 vs Veo 3.1' },
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
 ] as const;
 

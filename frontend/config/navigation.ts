@@ -181,7 +181,7 @@ const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-5-vs-wan-3', label: 'Seedance 2.5 vs Wan 3' },
   { slug: 'ltx-2-5-fast-vs-ltx-2-5-pro', label: 'LTX 2.5 Fast vs Pro' },
   { slug: 'wan-3-vs-wan-3-prime', label: 'Wan 3 vs Wan 3 Prime' },
-  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.1 vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash 1.2 vs Veo 3.1' },
   // Established search demand: retain this route even as newer models are promoted.
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },
 ];
@@ -327,7 +327,7 @@ export const MARKETING_NAV_DROPDOWNS: Partial<Record<string, MarketingNavDropdow
         {slug:'gpt-image-2-6-sunburst',label:'GPT Image 2.6 Sunburst',icon:'image' as const},
         {slug:'gpt-image-2-5-flare',label:'GPT Image 2.5 Flare',icon:'image' as const},
         {slug:'flux-3',label:'FLUX 3',icon:'cinema' as const},
-        {slug:'gemini-omni-flash',label:'Gemini Omni Flash 1.1',icon:'cinema' as const},
+        {slug:'gemini-omni-flash',label:'Gemini Omni Flash 1.2',icon:'cinema' as const},
       ].flatMap(({slug,label,icon}) => {
         const model = listRuntimeModels().find(item => item.slug === slug && item.publication.model.published && item.publication.model.indexable && item.lifecycle !== 'retired' && item.lifecycle !== 'deep_legacy');
         if (!model) return [];
