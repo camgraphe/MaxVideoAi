@@ -90,3 +90,12 @@ complexité sont présents, et transmet la complexité au panneau chargé à la 
 Deux tests DOM reproduisent l'absence du bouton avant correction et vérifient
 ensuite l'ouverture, le choix, le changement d'état et la réouverture des contrôles.
 La vérification de cette correction déployée reste une étape du lot marketing.
+
+Le journal de 01:29:30 UTC montre aussi un devis image prématuré avec la résolution
+historique `1k` pendant l'hydratation du nouveau modèle. L'App obtenait ensuite le
+bon tarif, mais le premier appel renvoyait 500. Le candidat attend désormais une
+résolution admise par le schéma du modèle avant toute demande de prix. L'API
+valide cette résolution avant la normalisation 2.6 et renvoie le 400
+`resolution_invalid` prévu. Quatre cas reproduits avant correction couvrent les
+deux variantes, l'absence de requête prématurée, le devis valide et l'effacement
+du prix précédent lors d'un réglage incompatible. Les 27 tests ciblés passent.

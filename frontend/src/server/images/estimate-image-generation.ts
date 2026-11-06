@@ -125,9 +125,8 @@ async function estimateImageGenerationInternal(
 
   if (engineEntry.id === NANO21_ENGINE_ID && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable',404);
   const engine = engineEntry.engine;
-  const gpt26 = isGptImage26EngineId(engine.id) ? normalizeGptImage26Settings({ ...input, referenceImageSizes: undefined }) : null;
-  if (gpt26 && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable', 404);
-  if (gpt26 && input.referenceImageCount !== undefined && !Number.isInteger(input.referenceImageCount)) throw new ImageEstimateError('image_size_invalid', 400);
+  const isGpt26 = isGptImage26EngineId(engine.id);
+  if (isGpt26 && !engineEntry.surfaces.app.enabled) throw new ImageEstimateError('engine_unavailable', 404);
   const numImages = clampRequestedImageCount(engine, mode, requestedImages);
   if (!engineEntry.modes.some((entry) => entry.mode === mode)) {
     throw new ImageEstimateError('mode_unsupported', 400);
@@ -141,6 +140,9 @@ async function estimateImageGenerationInternal(
   if (!resolutionResult.ok) {
     throw new ImageEstimateError('resolution_invalid', 400, { allowed: resolutionResult.allowed });
   }
+
+  const gpt26 = isGpt26 ? normalizeGptImage26Settings({ ...input, referenceImageSizes: undefined }) : null;
+  if (gpt26 && input.referenceImageCount !== undefined && !Number.isInteger(input.referenceImageCount)) throw new ImageEstimateError('image_size_invalid', 400);
 
   const rawReferenceSizes = Array.isArray(input.referenceImageSizes) ? input.referenceImageSizes : [];
   const referenceImageSizes = normalizeReferenceImageSizes(rawReferenceSizes);
