@@ -1,21 +1,93 @@
 {
   "slug": "gemini-omni-flash-vs-kling-3-turbo-pro",
   "en": {
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Compare Gemini Omni Flash 1.1 and Kling 3 Turbo Pro for quality, editing, resolution, audio and speed.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Quick verdict", "body": "Choose Gemini Omni Flash 1.1 for 4K, reference stacks and video editing workflows. Choose Kling 3 Turbo Pro for fast 1080p generation and structured multishot sequences." },
+    "meta": {
+      "title": "Gemini Omni Flash 1.2 vs Kling 3 Turbo Pro",
+      "description": "Compare Gemini Omni Flash 1.2 and Kling 3 Turbo Pro for quality, editing, resolution, audio and speed.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Gemini Omni Flash 1.2 for 4K, reference stacks and video editing workflows. Choose Kling 3 Turbo Pro for fast 1080p generation and structured multishot sequences."
+    },
     "primaryLinksTitle": "Explore the models",
-    "primaryLinks": [{ "href": "/models/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/models/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+    "primaryLinks": [
+      {
+        "href": "/models/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.2"
+      },
+      {
+        "href": "/models/kling-3-turbo-pro",
+        "label": "Kling 3 Turbo Pro"
+      }
+    ],
+    "faq": {
+      "items": [
+        {
+          "question": "What happened to Omni Flash 1.1 and its scores?",
+          "answer": "Omni Flash 1.2 replaces 1.1 for new renders on MaxVideoAI. Earlier 1.1 examples, prompts and editorial assessments remain historical evidence. The September 3, 2026 assessment is not a benchmark of 1.2; we have not assigned it to the new version."
+        }
+      ]
+    }
   },
   "fr": {
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Comparez Gemini Omni Flash 1.1 et Kling 3 Turbo Pro sur la qualité, édition, résolution, audio et vitesse.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Verdict rapide", "body": "Choisissez Gemini Omni Flash 1.1 pour la 4K, les piles de références et l’édition vidéo. Choisissez Kling 3 Turbo Pro pour générer vite en 1080p et créer des séquences multishot structurées." },
+    "meta": {
+      "title": "Gemini Omni Flash 1.2 vs Kling 3 Turbo Pro",
+      "description": "Comparez Gemini Omni Flash 1.2 et Kling 3 Turbo Pro sur la qualité, édition, résolution, audio et vitesse.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Gemini Omni Flash 1.2 pour la 4K, les piles de références et l’édition vidéo. Choisissez Kling 3 Turbo Pro pour générer vite en 1080p et créer des séquences multishot structurées."
+    },
     "primaryLinksTitle": "Explorer les modèles",
-    "primaryLinks": [{ "href": "/fr/modeles/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/fr/modeles/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+    "primaryLinks": [
+      {
+        "href": "/fr/modeles/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.2"
+      },
+      {
+        "href": "/fr/modeles/kling-3-turbo-pro",
+        "label": "Kling 3 Turbo Pro"
+      }
+    ],
+    "faq": {
+      "items": [
+        {
+          "question": "Que deviennent Omni Flash 1.1 et ses notes ?",
+          "answer": "Omni Flash 1.2 remplace 1.1 pour les nouveaux rendus sur MaxVideoAI. Les exemples, prompts et évaluations éditoriales de 1.1 restent des éléments historiques. L’évaluation du 3 septembre 2026 ne mesure pas 1.2 ; nous ne l’attribuons pas à la nouvelle version."
+        }
+      ]
+    }
   },
   "es": {
-    "meta": { "title": "Gemini Omni Flash 1.1 vs Kling 3 Turbo Pro", "description": "Compara Gemini Omni Flash 1.1 y Kling 3 Turbo Pro en calidad, edición, resolución, audio y velocidad.", "titleBranding": "none" },
-    "quickVerdict": { "title": "Veredicto rápido", "body": "Elige Gemini Omni Flash 1.1 para 4K, pilas de referencias y edición de vídeo. Elige Kling 3 Turbo Pro para generar rápido en 1080p y crear secuencias multishot estructuradas." },
+    "meta": {
+      "title": "Gemini Omni Flash 1.2 vs Kling 3 Turbo Pro",
+      "description": "Compara Gemini Omni Flash 1.2 y Kling 3 Turbo Pro en calidad, edición, resolución, audio y velocidad.",
+      "titleBranding": "none"
+    },
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Gemini Omni Flash 1.2 para 4K, pilas de referencias y edición de vídeo. Elige Kling 3 Turbo Pro para generar rápido en 1080p y crear secuencias multishot estructuradas."
+    },
     "primaryLinksTitle": "Explorar los modelos",
-    "primaryLinks": [{ "href": "/es/modelos/gemini-omni-flash", "label": "Gemini Omni Flash 1.1" }, { "href": "/es/modelos/kling-3-turbo-pro", "label": "Kling 3 Turbo Pro" }]
+    "primaryLinks": [
+      {
+        "href": "/es/modelos/gemini-omni-flash",
+        "label": "Gemini Omni Flash 1.2"
+      },
+      {
+        "href": "/es/modelos/kling-3-turbo-pro",
+        "label": "Kling 3 Turbo Pro"
+      }
+    ],
+    "faq": {
+      "items": [
+        {
+          "question": "¿Qué ocurre con Omni Flash 1.1 y sus notas?",
+          "answer": "Omni Flash 1.2 sustituye a 1.1 para los nuevos resultados en MaxVideoAI. Los ejemplos, prompts y valoraciones editoriales de 1.1 siguen siendo evidencia histórica. La evaluación del 3 de septiembre de 2026 no mide 1.2 y no se atribuye a la nueva versión."
+        }
+      ]
+    }
   }
 }

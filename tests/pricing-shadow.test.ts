@@ -164,7 +164,7 @@ test('historical Sora and Seedance 1.5 billing and estimator evidence remains in
   }
 });
 
-test('canonical shadow quotes match frozen outputs except the approved Gemini Omni 1.1 refresh', async () => {
+test('canonical shadow quotes match frozen outputs except the Omni 1.2 supplier-cost projection refresh', async () => {
   const matrixPath = 'frontend/src/lib/pricing-audit/matrix.ts';
   assert.equal(existsSync(matrixPath), true, `${matrixPath} should exist`);
   const { buildPricingAuditMatrix } = await import('../frontend/src/lib/pricing-audit/matrix.ts');
@@ -191,29 +191,29 @@ test('canonical shadow quotes match frozen outputs except the approved Gemini Om
       {
         scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:member',
         currentTotalCents: 130,
-        canonicalTotalCents: 132,
-        deltaCents: 2,
+        canonicalTotalCents: 91,
+        deltaCents: -39,
         status: 'approved-change',
       },
       {
         scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:plus',
         currentTotalCents: 123,
-        canonicalTotalCents: 125,
-        deltaCents: 2,
+        canonicalTotalCents: 86,
+        deltaCents: -37,
         status: 'approved-change',
       },
       {
         scenarioId: 'billing:gemini-omni-flash:t2v:10:720p:pro',
         currentTotalCents: 117,
-        canonicalTotalCents: 119,
-        deltaCents: 2,
+        canonicalTotalCents: 82,
+        deltaCents: -35,
         status: 'approved-change',
       },
       {
         scenarioId: 'estimator:gemini-omni-flash:10:720p',
         currentTotalCents: 130,
-        canonicalTotalCents: 132,
-        deltaCents: 2,
+        canonicalTotalCents: 91,
+        deltaCents: -39,
         status: 'approved-change',
       },
     ]

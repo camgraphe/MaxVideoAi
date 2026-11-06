@@ -57,7 +57,7 @@ const SUPPORTED_MODEL_CONFIGS = [
   { id: 'minimax-h3', fallbackLabel: 'MiniMax H3' },
   { id: 'kling-v4', fallbackLabel: 'Kling 4.0' },
   { id: 'seedance-2-5', fallbackHref: '/models/seedance-2-5', fallbackLabel: 'Seedance 2.5' },
-  { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.1' },
+  { id: 'gemini-omni-flash', fallbackHref: '/models/gemini-omni-flash', fallbackLabel: 'Gemini Omni Flash 1.2' },
   { id: 'kling-3-turbo-pro', fallbackLabel: 'Kling 3.0 Turbo Pro' },
   { id: 'kling-3-turbo-standard', fallbackLabel: 'Kling 3.0 Turbo Standard' },
   { id: 'minimax-h3-max', fallbackLabel: 'MiniMax H3 Max' },

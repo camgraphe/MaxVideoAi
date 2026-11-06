@@ -7,6 +7,7 @@ import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
 import { quotePublicPricing } from '@/lib/pricing-public-quote';
 import { getModelByEngineId, type ModelRosterEntry } from '@/lib/model-roster';
 import type { EngineInputField } from '@/types/engines';
+import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 
 export type McpBudgetAudioState = 'enabled' | 'optional' | 'silent';
 
@@ -209,6 +210,7 @@ function resolveAudioControlState(field: EngineInputField): McpBudgetAudioState 
 }
 
 function resolveT2vAudioState(entry: FalEngineEntry): McpBudgetAudioState {
+  if (hasPromptDirectedNativeAudio(entry.engine, 't2v')) return 'enabled';
   const fields = [
     ...(entry.engine.inputSchema?.required ?? []),
     ...(entry.engine.inputSchema?.optional ?? []),

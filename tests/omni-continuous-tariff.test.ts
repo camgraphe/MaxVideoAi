@@ -5,7 +5,7 @@ import { buildBillingPricingFacts } from '../frontend/src/lib/pricing-billing-fa
 import { buildManualTariffScenario, continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
 import { resolvePricingPolicy } from '@maxvideoai/pricing';
 import { getVersionedPricingPolicy } from '../frontend/src/lib/pricing-policy-defaults';
-import { compileOmniContinuousTariffPrice } from '../frontend/server/pricing/omni-continuous-tariff';
+import { compileOmniContinuousTariffPrice, validateOmniContinuousTariffDomain } from '../frontend/server/pricing/omni-continuous-tariff';
 import { evaluateManualTariffPrice } from '../packages/pricing/src/manual-tariff-price';
 import { adjacentNonnegativeDouble } from '../frontend/server/pricing/pricing-number-boundaries';
 import { quoteCanonicalPricing } from '@maxvideoai/pricing';
@@ -15,6 +15,21 @@ import { prepareContinuousInputTariffChange } from '../frontend/server/pricing-a
 import { collectSellableManualTariffCoverage } from '../frontend/lib/pricing-audit/manual-tariff-coverage';
 import { chooseCustomerTariffScenario } from '../frontend/server/pricing-admin/customer-tariff-service';
 import { resolvePublicModelScenario } from '../frontend/server/pricing/quote-public-model-scenario';
+
+test('Omni historical 1.1 authored bands retain their amounts and full domain after the supplier upgrade', () => {
+  const engine = getFalEngineById('gemini-omni-flash')!.engine;
+  const context = { engine, mode: 'v2v' as const, resolution: '720p', durationSec: 5,
+    inheritedDurationSec: 5, inputVideoDurationSec: 5 };
+  const historical = { kind: 'unit_bands' as const, divisor: 10000, maxUnits: 110.048,
+    terms: [{ unit: 'output_tokens', centsPerUnit: 17.5 }, { unit: 'input_tokens', centsPerUnit: 1.5 }],
+    bands: [{ minUnits: 0, customerCents: 145 }] };
+  const before = JSON.stringify(historical);
+  assert.ok(validateOmniContinuousTariffDomain({ context, price: historical }).checkedBoundaries > 0);
+  assert.equal(evaluateManualTariffPrice(historical, { output_tokens: 57920, input_tokens: 57920 }).customerTotalCents, 145);
+  assert.equal(JSON.stringify(historical), before);
+  assert.throws(() => validateOmniContinuousTariffDomain({ context, price: { ...historical, maxUnits: 80 } }), /token bands/,
+    'lower current supplier costs must not hide missing coverage of the historical price expression');
+});
 
 test('Omni media quantities retain literal output/input tokens and share one continuous class for inherited output timing', () => {
   const engine = getFalEngineById('gemini-omni-flash')!.engine;

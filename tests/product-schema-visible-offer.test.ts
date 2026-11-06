@@ -22,10 +22,12 @@ test('visible offer and Product consume the same price and selected scenario for
         description: 'Archived model', heroTitle: engine.marketingName, heroPosterAbsolute: null }), null);
       continue;
     }
+    // The September repair fixture remains immutable; 1.2 updates only the inactive-policy projection.
+    const currentTotalCents = row.engineId === 'gemini-omni-flash' ? 91 : row.totalCents;
     const offer = resolveModelPublicOffer(engine, engine.engine)!;
     assert.ok(offer, row.id);
-    assert.equal(offer.amountCents, row.totalCents, row.id);
-    assert.equal(resolveModelOfferAmountCents(engine, engine.engine), row.totalCents, row.id);
+    assert.equal(offer.amountCents, currentTotalCents, row.id);
+    assert.equal(resolveModelOfferAmountCents(engine, engine.engine), currentTotalCents, row.id);
     assert.equal(offer.scenario.mode, row.mode, row.id);
     assert.equal(offer.scenario.resolution, row.resolution, row.id);
     if (row.mode === 't2v') {

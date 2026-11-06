@@ -29,7 +29,7 @@ const CAPABILITY_COPY: Record<string, { fr: string; es: string }> = {
   'short source video for edit; previous interaction id for refine': { fr: 'courte vidéo source pour la modification ; interaction précédente pour les retouches par conversation', es: 'video de origen corto para editar; interacción anterior para refinar mediante conversación' },
   'one source clip for extend': { fr: 'un clip source pour l’extension', es: 'un clip de origen para la extensión' },
   'image-to-video: 1 start image; reference-to-video: 1-3 stills': { fr: 'Image vers vidéo : 1 image de départ ; génération avec références : 1 à 3 images', es: 'Imagen a video: 1 imagen inicial; generación con referencias: de 1 a 3 imágenes' },
-  'supported in current omni 1.1 route': { fr: 'Pris en charge avec Omni 1.1 dans MaxVideoAI', es: 'Compatible con Omni 1.1 en MaxVideoAI' },
+  'supported in current omni 1.2 route': { fr: 'Pris en charge avec Omni 1.2 dans MaxVideoAI', es: 'Compatible con Omni 1.2 en MaxVideoAI' },
   'supported through native dialogue and audio generation': { fr: 'Pris en charge via le dialogue et l’audio natifs', es: 'Compatible mediante diálogo y audio nativos' },
   'prompt-based sound, camera and edit directions': { fr: 'Son, caméra et modifications guidés par le prompt', es: 'Sonido, cámara y edición guiados por el prompt' },
   'no visible maxvideoai watermark; provider/model provenance markers may apply': { fr: 'Aucun filigrane MaxVideoAI visible ; des marqueurs de provenance du fournisseur ou du modèle peuvent être présents', es: 'Sin marca de agua visible de MaxVideoAI; puede haber marcadores de procedencia del proveedor o del modelo' },

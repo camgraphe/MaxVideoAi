@@ -6,7 +6,7 @@ import {
 } from '../../lib/google-omni-pricing';
 
 const OMNI_DIRECTIVE_FIELD_VALUES: string[] = [];
-const OMNI_MODEL_ID = 'gemini-omni-1.1-flash-preview';
+const OMNI_MODEL_ID = 'gemini-omni-1.2-flash';
 const OMNI_DURATIONS = ['3s', '4s', '5s', '6s', '7s', '8s', '9s', '10s'];
 const OMNI_RESOLUTIONS = ['360p', '720p', '1080p', '4k'] as const;
 const OMNI_MODES = ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake'] as const;
@@ -17,10 +17,10 @@ function outputUsdPerSecond(resolution: keyof typeof GOOGLE_OMNI_OUTPUT_TOKENS_P
 
 const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
   id: 'gemini-omni-flash',
-  label: 'Gemini Omni Flash 1.1',
+  label: 'Gemini Omni Flash 1.2',
   provider: 'Google',
-  version: '1.1 Preview',
-  status: 'early_access',
+  version: '1.2',
+  status: 'live',
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
@@ -186,29 +186,29 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
       '4k': outputUsdPerSecond('4k'),
     },
     currency: 'USD',
-    notes: 'Google Omni 1.1 output-token provider facts by resolution; customer pricing is applied canonically.',
+    notes: 'Google Omni 1.2 output-token provider facts by resolution; customer pricing is applied canonically.',
   },
-  updatedAt: '2026-09-03T00:00:00Z',
+  updatedAt: '2026-11-05T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
     provider: 'google_vertex_omni',
     modelSlug: OMNI_MODEL_ID,
   },
-  availability: 'limited',
+  availability: 'available',
   brandId: 'google-gemini',
 };
 
 export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'gemini-omni-flash',
-    marketingName: 'Gemini Omni Flash 1.1',
-    cardTitle: 'Gemini Omni Flash 1.1 - conversational video generation',
+    marketingName: 'Gemini Omni Flash 1.2',
+    cardTitle: 'Gemini Omni Flash 1.2 - conversational video generation',
     provider: 'Google',
     brandId: 'google-gemini',
-    versionLabel: '1.1 Preview',
-    availability: 'limited',
+    versionLabel: '1.2',
+    availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: 'Google Vertex Gemini Omni Flash 1.1 Preview direct route. No Fal fallback is used.',
+    billingNote: 'Google Vertex Gemini Omni Flash 1.2 direct route. No Fal fallback is used.',
     engine: GEMINI_OMNI_FLASH_ENGINE,
     modes: [
       {
@@ -305,19 +305,19 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     defaultFalModelId: OMNI_MODEL_ID,
     seo: {
-      title: 'Gemini Omni Flash 1.1 Video Generator - Vertex AI Preview',
+      title: 'Gemini Omni Flash 1.2 Video Generator - Native Audio & Editing',
       description:
-        'Use Gemini Omni Flash 1.1 on MaxVideoAI for text, image, reference, first/last-frame, editing, extension, and conversational video workflows.',
+        'Use Gemini Omni Flash 1.2 on MaxVideoAI for text, image, reference, first/last-frame, editing, extension, and conversational video workflows.',
       canonicalPath: '/models/gemini-omni-flash',
     },
     type: 'Text, image, references, first/last frame, video edit, extension, conversational refine',
     seoText:
-      'Gemini Omni Flash 1.1 is Google’s preview multimodal video model for 360p through 4K clips from 3 to 10 seconds, combining text, images, reference assets, source video, and sound direction in one Vertex Interactions workflow.',
+      'Gemini Omni Flash 1.2 is Google’s generally available multimodal video model for 360p through 4K clips, with 3 to 10 seconds currently offered on MaxVideoAI, combining text, images, reference assets, source video, and sound direction in one Vertex Interactions workflow.',
     demoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/a01fb42f-92d9-4312-b1a1-a721fae5400b.mp4',
       imagePath: '/hero/veo-3-1-hero.jpg',
-      altText: 'Demo video representing Gemini Omni Flash 1.1 multimodal generation',
+      altText: 'Historical Gemini Omni Flash 1.1 video example',
     },
     prompts: [
       {
@@ -343,20 +343,20 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'Is Gemini Omni Flash available through Vertex AI?',
         answer:
-          'Google documents Gemini Omni Flash 1.1 for Vertex Agent Platform Interactions under the gemini-omni-1.1-flash-preview model id. MaxVideoAI’s Google-direct runtime remains publication-gated, and no Fal fallback is used.',
+          'Gemini Omni Flash 1.2 is generally available from Google and is the model used for new Omni renders on MaxVideoAI. Earlier examples retain their original 1.1 attribution.',
       },
       {
         question: 'What resolution and duration does Gemini Omni Flash support?',
         answer:
-          'Google documents 360p, 720p, 1080p, and 4K output, 16:9 and 9:16 aspect ratios, and integer durations from 3 through 10 seconds for the current preview.',
+          'MaxVideoAI currently offers 360p, 720p, 1080p, and 4K output, 16:9 and 9:16 aspect ratios, and 3–10-second clips. Google also documents up to 15 seconds for generation and editing; 11–15-second output is not yet offered here. First/last-frame generation and extension are limited to 10 seconds.',
       },
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 101,
+      amountCents: 70,
       durationSeconds: 10,
       resolution: '720p',
-      label: '1.1 Preview estimate',
+      label: '1.2 estimate',
     },
     promptExample:
       'A designer revises a sneaker ad on a studio monitor, then the scene becomes the final polished product clip, crisp foley, soft music bed, 720p vertical.',

@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
@@ -244,8 +245,9 @@ function projectDuration(caps: EngineModeUiCaps, engine: EngineCaps): AgentModel
   });
 }
 
-function projectAudio(caps: EngineModeUiCaps, engine: EngineCaps): AgentModelAudioPolicy {
+function projectAudio(caps: EngineModeUiCaps, engine: EngineCaps, mode: string): AgentModelAudioPolicy {
   if (!engine.audio) return 'unavailable';
+  if (hasPromptDirectedNativeAudio(engine, mode)) return 'always_generated';
   return caps.audioToggle === true ? 'optional' : 'always_generated';
 }
 
@@ -434,7 +436,7 @@ export function projectAgentModelModeDetails(
       ? getAspectRatioOptions(candidate.engine, imageMode)
       : [...(caps.aspectRatio ?? [])]),
     fps: Object.freeze([...fps]),
-    audio: projectAudio(caps, candidate.engine),
+    audio: projectAudio(caps, candidate.engine, toEngineGenerationMode(candidate.engine.id, mode)),
   } as const;
   return Object.freeze({
     mode,
