@@ -237,8 +237,8 @@ test('public gallery traverses every eligible video beyond the old window and hy
       assert.deepEqual(page.items.map(item=>item.id),baseline.items.map(item=>item.id),'version discovery cannot change curation or poster order');
       assert.ok(!page.items.some(item=>item.id==='historical-version'));
       assert.deepEqual(page.versionSamples,[
-        {engineId:'kling-3-pro',videoId:'kling-1'},
-        {engineId:'kling-2-6-pro',videoId:'historical-version'},
+        {engineId:'kling-3-pro',videoId:'kling-1',engineLabel:'Fixture'},
+        {engineId:'kling-2-6-pro',videoId:'historical-version',engineLabel:'Fixture'},
       ]);
       assert.equal(statements.length,1,'use the existing catalogue snapshot, not N reads per model');
       assert.equal(statements[0].hydratedRows,24,'old-version discovery must not hydrate extra media/settings');
@@ -253,7 +253,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
         }
         writeFileSync(process.env.EXAMPLES_VERSION_EVIDENCE_PATH,JSON.stringify({fixture:'same PostgreSQL17 family with 515 public members; only requested 24 media rows hydrated',sequence:'ABBAABBA',measurements},null,2)+'\n');
       }
-      assert.ok(page.versionSamples.every(sample=>Object.keys(sample).sort().join(',')==='engineId,videoId'));
+      assert.ok(page.versionSamples.every(sample=>Object.keys(sample).sort().join(',')==='engineId,engineLabel,videoId'));
       for(const whitespace of ['\t\n','\u00a0','\ufeff','\u1680\u2000\u200a\u2028\u2029\u202f\u205f\u3000']) {
         await db.query("UPDATE app_jobs SET prompt=$1 WHERE job_id='without-prompt'",[whitespace]);
         assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,page.versionSamples,'whitespace-only prompts do not create discovery links');
@@ -266,7 +266,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
       await db.query("DELETE FROM job_outputs WHERE job_id='historical-version'");
       await db.query(`INSERT INTO playlist_curations(playlist_id,mode,ordered_ids,excluded_ids)
         SELECT id,'manual',ARRAY['kling-20'],'{}' FROM playlists WHERE slug='family-kling'`);
-      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-20'}],'explicit family selection remains authoritative');
+      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-20',engineLabel:'Fixture'}],'explicit family selection remains authoritative');
     } finally {
       await db.query("DELETE FROM playlist_curations WHERE playlist_id=(SELECT id FROM playlists WHERE slug='family-kling');DELETE FROM job_outputs WHERE job_id='historical-version';DELETE FROM playlist_items WHERE video_id IN ('historical-version','without-prompt');DELETE FROM app_jobs WHERE job_id IN ('historical-version','without-prompt')");
     }
@@ -336,7 +336,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
     await postgres.pool.query('ALTER TABLE playlist_curations RENAME TO unavailable_curations');
     try {
       const legacy=await read(504);assert.equal(legacy.total,513);assert.equal(legacy.items.length,9);
-      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-1'}]);
+      assert.deepEqual((await reader.listExampleFamilyPage('kling',{sort:'playlist',limit:24,offset:0,includeVersionSamples:true})).versionSamples,[{engineId:'kling-3-pro',videoId:'kling-1',engineLabel:'Fixture'}]);
     }
     finally {await postgres.pool.query('ALTER TABLE unavailable_curations RENAME TO playlist_curations');}
   });
@@ -389,7 +389,7 @@ test('public gallery traverses every eligible video beyond the old window and hy
     for(const migration of ['23_video_seo_pages.sql','24_video_seo_canonical_slug.sql','25_video_seo_visual_context.sql','40_video_seo_rollout_exclusions.sql']) {
       await postgres.pool.query(readFileSync(`neon/migrations/${migration}`,'utf8'));
     }
-    await postgres.pool.query(`UPDATE app_jobs SET prompt=$1 WHERE job_id='kling-21'`, ['An original cinematic scene showing a dancer performing precise circular movements in a sunlit courtyard. The camera slowly orbits the dancer from left to right, preserving body proportions, natural lighting, soft shadows, stable architecture, expressive choreography and coherent realistic motion through a continuous five second landscape shot.']);
+    await postgres.pool.query(`UPDATE app_jobs SET prompt=$1,engine_label='Kling 3 Pro' WHERE job_id='kling-21'`, ['An original cinematic scene showing a dancer performing precise circular movements in a sunlit courtyard. The camera slowly orbits the dancer from left to right, preserving body proportions, natural lighting, soft shadows, stable architecture, expressive choreography and coherent realistic motion through a continuous five second landscape shot.']);
     await postgres.pool.query(`INSERT INTO video_seo_pages(video_id,seo_status,seo_title,meta_description,h1,video_object_name,short_description,target_keyword,intent,model_slug,examples_slug,canonical_slug)
       VALUES('kling-21','approved','Kling dance film — MaxVideoAI','Watch an original Kling dance film with a continuous camera orbit, natural lighting and the complete generation prompt.','Kling 3 Pro cinematic dance in a sunlit courtyard','Kling dance film','An original Kling 3 Pro dance film, with a continuous camera orbit around a sunlit courtyard and realistic choreography in a single flowing shot.','Kling dance film','camera-motion','kling-3-pro','kling','kling-dance-film')`);
     const popup=await reader.getExampleWatchDetail('kling-21');

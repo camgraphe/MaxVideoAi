@@ -9,13 +9,13 @@ import {
 } from '../frontend/src/server/video-providers/google-vertex-omni/model-map';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
 
-test('Gemini Omni Flash model map uses the Vertex Agent Platform 1.1 preview model id', () => {
+test('Gemini Omni Flash model map uses the Vertex Agent Platform 1.2 GA model id', () => {
   assert.equal(GOOGLE_VERTEX_OMNI_PROVIDER, 'google_vertex_omni_direct');
   assert.equal(isGoogleVertexOmniEngine('gemini-omni-flash'), true);
 
   const route = resolveGoogleVertexOmniModelRoute('gemini-omni-flash');
-  assert.equal(route.providerModel, 'gemini-omni-1.1-flash-preview');
-  assert.equal(route.launchStage, 'preview');
+  assert.equal(route.providerModel, 'gemini-omni-1.2-flash');
+  assert.equal(route.launchStage, 'ga');
   assert.deepEqual(route.supportedModes, ['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'extend', 'retake']);
   assert.deepEqual(route.aspectRatios, ['16:9', '9:16']);
 });

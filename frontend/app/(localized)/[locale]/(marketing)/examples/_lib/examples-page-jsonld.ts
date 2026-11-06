@@ -111,7 +111,7 @@ function buildExamplesItemListElements({
     const canonicalEngineId = resolveEngineLinkId(video.engineId);
     const engineKey = canonicalEngineId?.toLowerCase() ?? video.engineId?.toLowerCase() ?? '';
     const engineMeta = engineKey ? ENGINE_META.get(engineKey) : null;
-    const engineLabel = engineMeta?.label ?? video.engineLabel ?? canonicalEngineId ?? 'Engine';
+    const engineLabel = (video.engineLabel || engineMeta?.label) ?? canonicalEngineId ?? 'Engine';
     const detailPath = `/video/${encodeURIComponent(video.id)}`;
     const absoluteUrl = `${SITE}${detailPath}`;
     const fallbackLabel = `MaxVideoAI example ${video.id}`;

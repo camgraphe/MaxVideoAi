@@ -74,7 +74,7 @@ test('P1 LLM discovery exposes current names, canonical URLs, families, and scor
   });
   const text = buildLlmsText(mcpPublication, projection);
   const expectedLabels = {
-    'gemini-omni-flash': 'Gemini Omni Flash 1.1',
+    'gemini-omni-flash': 'Gemini Omni Flash 1.2',
     'kling-3-turbo-standard': 'Kling 3.0 Turbo Standard',
     'kling-3-turbo-pro': 'Kling 3.0 Turbo Pro',
     'minimax-h3-max': 'MiniMax H3 Max',

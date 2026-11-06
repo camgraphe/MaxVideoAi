@@ -23,7 +23,6 @@ import { estimateGoogleVertexOmniCost } from '@/server/video-providers/google-ve
 import { classifyGoogleVertexOmniError } from '@/server/video-providers/google-vertex-omni/errors';
 import {
   GOOGLE_VERTEX_OMNI_PROVIDER,
-  resolveGoogleVertexOmniModelRoute,
 } from '@/server/video-providers/google-vertex-omni/model-map';
 import {
   extractGoogleVertexOmniVideoOutput,
@@ -92,12 +91,18 @@ function nonNegativeNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
+function submittedOmniModel(attemptSnapshot?: unknown): string | null {
+  const model = recordValue(attemptSnapshot)?.providerModel;
+  return typeof model === 'string' && model.length > 0 ? model : null;
+}
+
 function estimateGoogleVertexOmniJobCost(job: GoogleVertexOmniPendingJob, attemptSnapshot?: unknown) {
   const snapshot = recordValue(job.pricing_snapshot);
   const meta = recordValue(snapshot?.meta);
   const attempt = recordValue(attemptSnapshot);
   const providerPricing = recordValue(attempt?.providerPricing);
   return estimateGoogleVertexOmniCost({
+    providerModel: submittedOmniModel(attemptSnapshot),
     engineId: job.engine_id,
     mode: typeof providerPricing?.mode === 'string'
       ? providerPricing.mode
@@ -287,7 +292,7 @@ function buildCostBreakdown(job: GoogleVertexOmniPendingJob, attemptSnapshot?: u
   return {
     provider: GOOGLE_VERTEX_OMNI_PROVIDER,
     provider_cost_source: estimate.source,
-    provider_model: resolveGoogleVertexOmniModelRoute(job.engine_id).providerModel,
+    provider_model: submittedOmniModel(attemptSnapshot),
     duration_sec: job.duration_sec,
     has_audio: job.has_audio === true,
     provider_cost_units: estimate.providerCostUnits,

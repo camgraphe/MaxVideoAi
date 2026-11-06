@@ -1,0 +1,364 @@
+{
+  "version": 1,
+  "reason": "Omni 1.2 supplier-cost refresh in inactive legacy-policy projections only. Active authored customer tariffs and paid receipts are unchanged.",
+  "rows": [
+    {
+      "previous": {
+        "id": "estimator:gemini-omni-flash:member:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 34,
+        "marginCents": 11,
+        "discountCents": 0,
+        "customerTotalCents": 45,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:gemini-omni-flash:member:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 23,
+        "marginCents": 7,
+        "discountCents": 0,
+        "customerTotalCents": 30,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "estimator:gemini-omni-flash:plus:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 34,
+        "marginCents": 11,
+        "discountCents": 0,
+        "customerTotalCents": 45,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:gemini-omni-flash:plus:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 23,
+        "marginCents": 7,
+        "discountCents": 0,
+        "customerTotalCents": 30,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "estimator:gemini-omni-flash:pro:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 34,
+        "marginCents": 11,
+        "discountCents": 0,
+        "customerTotalCents": 45,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "estimator:gemini-omni-flash:pro:default",
+        "surface": "estimator",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 23,
+        "marginCents": 7,
+        "discountCents": 0,
+        "customerTotalCents": 30,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "json-ld:gemini-omni-flash:offer",
+        "surface": "json-ld",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 132,
+        "unit": "offer",
+        "quantity": 1,
+        "structuredDataAmount": "1.32",
+        "compatibilityProfile": "schema-current"
+      },
+      "current": {
+        "id": "json-ld:gemini-omni-flash:offer",
+        "surface": "json-ld",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 91,
+        "unit": "offer",
+        "quantity": 1,
+        "structuredDataAmount": "0.91",
+        "compatibilityProfile": "schema-current"
+      }
+    },
+    {
+      "previous": {
+        "id": "model-page:gemini-omni-flash:default",
+        "surface": "model-page",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 101,
+        "marginCents": 31,
+        "discountCents": 0,
+        "customerTotalCents": 132,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "model-page:gemini-omni-flash:default",
+        "surface": "model-page",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 70,
+        "marginCents": 21,
+        "discountCents": 0,
+        "customerTotalCents": 91,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 198,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.98",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 136,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.36",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-1080p-audio",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 198,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.98",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-1080p-audio",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 136,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.36",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-720p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 132,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.32",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:10s-720p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 91,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$0.91",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:4k-route",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 396,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$3.96",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:4k-route",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 272,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$2.72",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:5s-720p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 67,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$0.67",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:5s-720p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 46,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$0.46",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:8s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 159,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.59",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:8s-1080p",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 108,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.08",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "pricing-hub-video:gemini-omni-flash:entry-route",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 132,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$1.32",
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "pricing-hub-video:gemini-omni-flash:entry-route",
+        "surface": "pricing-hub-video",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "customerTotalCents": 91,
+        "unit": "scenario",
+        "quantity": 1,
+        "displayedAmount": "$0.91",
+        "compatibilityProfile": "standard"
+      }
+    },
+    {
+      "previous": {
+        "id": "workspace-preflight:gemini-omni-flash:default",
+        "surface": "workspace-preflight",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 101,
+        "marginCents": 31,
+        "discountCents": 0,
+        "customerTotalCents": 132,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      },
+      "current": {
+        "id": "workspace-preflight:gemini-omni-flash:default",
+        "surface": "workspace-preflight",
+        "engineId": "gemini-omni-flash",
+        "status": "exact",
+        "currency": "USD",
+        "vendorSubtotalCents": 70,
+        "marginCents": 21,
+        "discountCents": 0,
+        "customerTotalCents": 91,
+        "unit": "sec",
+        "quantity": 10,
+        "compatibilityProfile": "standard"
+      }
+    }
+  ]
+}

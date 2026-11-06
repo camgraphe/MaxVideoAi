@@ -4,7 +4,7 @@ export const geminiOmniFlashTemplateConfig: ModelPageTemplateConfig = {
   slug: 'gemini-omni-flash',
   intent: 'specialized',
   hero: {
-    eyebrow: 'GOOGLE GEMINI OMNI FLASH 1.1',
+    eyebrow: 'GOOGLE GEMINI OMNI FLASH 1.2',
     subtitleHighlightTerms: ['multimodal video editing', '3–10 seconds', '360p through 4K'],
     primaryCtaHref: '/app?engine=gemini-omni-flash',
     secondaryCtaHref: '/ai-video-engines/gemini-omni-flash-vs-veo-3-1',

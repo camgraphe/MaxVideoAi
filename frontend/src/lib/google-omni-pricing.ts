@@ -1,4 +1,5 @@
 export type GoogleOmniPricingInput = {
+  pricingVersion?: '1.1' | '1.2';
   outputResolution: '360p' | '720p' | '1080p' | '4k';
   outputDurationSec: number;
   inputImageCount: number;
@@ -12,11 +13,12 @@ export const GOOGLE_OMNI_OUTPUT_TOKENS_PER_SECOND = {
   '4k': 17_376,
 } as const;
 
-export const GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS = 17.5;
+export const GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS = 12;
+export const GOOGLE_OMNI_1_1_OUTPUT_USD_PER_MILLION_TOKENS = 17.5;
 export const GOOGLE_OMNI_INPUT_IMAGE_TOKENS = 1_120;
 export const GOOGLE_OMNI_INPUT_VIDEO_TOKENS_PER_SECOND = 5_792;
 export const GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS = 1.5;
-export const GOOGLE_OMNI_PRICING_SOURCE = 'google_omni_1_1_token_pricing';
+export const GOOGLE_OMNI_PRICING_SOURCE = 'google_omni_1_2_token_pricing';
 
 export type GoogleOmniPricingBreakdown = {
   outputTokens: number;
@@ -56,7 +58,8 @@ export function calculateGoogleOmniProviderCost(input: GoogleOmniPricingInput): 
   const inputImageTokens = GOOGLE_OMNI_INPUT_IMAGE_TOKENS * input.inputImageCount;
   const inputVideoTokens = GOOGLE_OMNI_INPUT_VIDEO_TOKENS_PER_SECOND * input.inputVideoDurationSec;
   const pricedTokenUnits =
-    outputTokens * GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS
+    outputTokens * (input.pricingVersion === '1.1'
+      ? GOOGLE_OMNI_1_1_OUTPUT_USD_PER_MILLION_TOKENS : GOOGLE_OMNI_OUTPUT_USD_PER_MILLION_TOKENS)
     + (inputImageTokens + inputVideoTokens) * GOOGLE_OMNI_INPUT_USD_PER_MILLION_TOKENS;
   const providerCostUsd = pricedTokenUnits / 1_000_000;
   const providerCostExactCents = pricedTokenUnits / 10_000;

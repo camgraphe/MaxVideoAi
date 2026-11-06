@@ -27,7 +27,14 @@ test('comparison gallery deduplicates before limiting to three actual model exam
 
 test('comparison gallery preserves exact media identity and strips unrelated user fields', () => {
   const [item] = selectCompareGalleryVideos([sample('a')], 'minimax-h3', 'minimax-h3');
-  assert.deepEqual(item, {id:'a', poster:'https://media.example/a.jpg', video:'https://media.example/a.mp4', preview:'https://media.example/a-preview.mp4',duration:12,aspectRatio:'16:9',hasAudio:true});
+  assert.deepEqual(item, {id:'a', engineLabel: 'MiniMax H3', poster:'https://media.example/a.jpg', video:'https://media.example/a.mp4', preview:'https://media.example/a-preview.mp4',duration:12,aspectRatio:'16:9',hasAudio:true});
+});
+
+test('an upgraded comparison retains the original version of its example videos', () => {
+  const [item] = selectCompareGalleryVideos([sample('historical-omni', {
+    engineId: 'gemini-omni-flash', engineLabel: 'Gemini Omni Flash 1.1',
+  })], 'gemini-omni-flash', 'gemini-omni-flash');
+  assert.equal(item.engineLabel, 'Gemini Omni Flash 1.1');
 });
 
 test('comparison gallery does not substitute another model when no examples exist', () => {

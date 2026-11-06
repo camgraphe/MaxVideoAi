@@ -20,7 +20,9 @@ test('repaired model Product offers match exact public customer quotes in all lo
         description: 'Archived model', heroTitle: engine.marketingName, heroPosterAbsolute: null }), null);
       continue;
     }
-    assert.equal(resolveModelOfferAmountCents(engine, engine.engine), row.totalCents, row.engineId);
+    // The September repair fixture remains immutable; 1.2 updates only the inactive-policy projection.
+    const currentTotalCents = row.engineId === 'gemini-omni-flash' ? 91 : row.totalCents;
+    assert.equal(resolveModelOfferAmountCents(engine, engine.engine), currentTotalCents, row.engineId);
     for (const locale of ['en', 'fr', 'es'] as const) {
       const quote = row.mode === 't2i'
         ? getImagePresetQuote(engine, {
@@ -33,7 +35,7 @@ test('repaired model Product offers match exact public customer quotes in all lo
             referenceImageCount: 0,
           }, locale);
       assert.equal(quote.status, 'exact', row.id);
-      assert.equal(quote.amountCents, row.totalCents, row.id);
+      assert.equal(quote.amountCents, currentTotalCents, row.id);
       const prefix = locale === 'en' ? '/models' : locale === 'fr' ? '/fr/modeles' : '/es/modelos';
       const product = buildProductSchema({ engine, pricingEngine: engine.engine,
         canonical: `https://maxvideoai.com${prefix}/${engine.modelSlug}`,

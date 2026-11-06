@@ -11,7 +11,7 @@ export type ListExamplesPageOptions = {
   engineGroup?: string | null;
 };
 
-export type ExampleVersionSample = { engineId: string; videoId: string };
+export type ExampleVersionSample = { engineId: string; videoId: string; engineLabel?: string };
 
 export type ListExamplesPageResult = {
   items: GalleryVideo[];
@@ -23,13 +23,13 @@ export type ListExamplesPageResult = {
 };
 
 /** Already-selected public membership; never expand a curated selection. */
-export function buildExampleVersionSamples(videos: readonly Pick<GalleryVideo, 'id' | 'engineId' | 'prompt' | 'promptExcerpt'>[]): ExampleVersionSample[] {
+export function buildExampleVersionSamples(videos: readonly (Pick<GalleryVideo, 'id' | 'engineId' | 'prompt' | 'promptExcerpt'> & { engineLabel?: string })[]): ExampleVersionSample[] {
   const seen = new Set<string>();
   return videos.flatMap(video => {
     const engineId = normalizeEngineId(video.engineId) ?? video.engineId;
     if (seen.has(engineId) || !(video.promptExcerpt?.trim() || video.prompt?.trim())) return [];
     seen.add(engineId);
-    return [{ engineId, videoId: video.id }];
+    return [{ engineId, videoId: video.id, ...(video.engineLabel ? { engineLabel: video.engineLabel } : {}) }];
   });
 }
 

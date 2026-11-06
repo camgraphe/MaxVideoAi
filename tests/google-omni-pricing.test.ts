@@ -14,27 +14,38 @@ import { estimateGoogleVertexOmniCost } from '../frontend/src/server/video-provi
 const engine = listFalEngines().find((entry) => entry.id === 'gemini-omni-flash')?.engine;
 assert.ok(engine);
 
-test('Google Omni 1.1 prices each output resolution from the documented output token rates', () => {
-  const base = { outputDurationSec: 3, inputImageCount: 0, inputVideoDurationSec: 0 } as const;
-  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '360p' }), 10);
-  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '720p' }), 30);
-  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '1080p' }), 46);
-  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '4k' }), 91);
+test('provider estimates retain the submitted Omni version and do not guess missing historical provenance', () => {
+  const input = { engineId: 'gemini-omni-flash', mode: 't2v' as const, durationSec: 3, resolution: '720p' };
+  assert.equal(estimateGoogleVertexOmniCost(input).providerCostUsd, 0.208512);
+  const legacy = estimateGoogleVertexOmniCost({ ...input, providerModel: 'gemini-omni-1.1-flash-preview' });
+  assert.equal(legacy.providerCostUsd, 0.30408);
+  assert.equal(legacy.source, 'google_omni_1_1_token_pricing');
+  for (const providerModel of [null, 'unrecognized-model']) {
+    assert.equal(estimateGoogleVertexOmniCost({ ...input, providerModel }).providerCostUsd, null);
+  }
 });
 
-test('Google Omni 1.1 includes image and source-video input tokens before final cent rounding', () => {
+test('Google Omni 1.2 prices each output resolution from the documented output token rates', () => {
+  const base = { outputDurationSec: 3, inputImageCount: 0, inputVideoDurationSec: 0 } as const;
+  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '360p' }), 7);
+  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '720p' }), 21);
+  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '1080p' }), 31);
+  assert.equal(calculateGoogleOmniProviderCostCents({ ...base, outputResolution: '4k' }), 63);
+});
+
+test('Google Omni 1.2 includes image and source-video input tokens before final cent rounding', () => {
   assert.equal(calculateGoogleOmniProviderCostCents({
     outputResolution: '720p',
     outputDurationSec: 3,
     inputImageCount: 2,
     inputVideoDurationSec: 0,
-  }), 31);
+  }), 21);
   assert.equal(calculateGoogleOmniProviderCostCents({
     outputResolution: '720p',
     outputDurationSec: 3,
     inputImageCount: 0,
     inputVideoDurationSec: 5,
-  }), 35);
+  }), 25);
 });
 
 test('Google Omni pricing retains fractional exact cents for canonical commercial math', () => {
@@ -44,9 +55,9 @@ test('Google Omni pricing retains fractional exact cents for canonical commercia
     inputImageCount: 0,
     inputVideoDurationSec: 0,
   });
-  assert.equal(pricing.providerCostUsd, 0.30408);
-  assert.equal(pricing.providerCostExactCents, 30.408);
-  assert.equal(pricing.providerCostCents, 30);
+  assert.equal(pricing.providerCostUsd, 0.208512);
+  assert.equal(pricing.providerCostExactCents, 20.8512);
+  assert.equal(pricing.providerCostCents, 21);
 });
 
 test('Google Omni exact pricing rejects source-video modes without verified duration metadata', () => {
@@ -86,10 +97,10 @@ test('Google Omni billing and public facts use the same factual token calculator
   const billing = buildBillingPricingFacts(context, engine.pricingDetails, 'USD');
   const publicFacts = buildPublicPricingFacts(context);
 
-  assert.equal(billing.facts.vendorSubtotalExactCents, 30.744);
-  assert.equal(publicFacts.facts.vendorSubtotalExactCents, 30.744);
-  assert.equal(billing.meta.provider_cost_source, 'google_omni_1_1_token_pricing');
-  assert.equal(publicFacts.meta.provider_cost_source, 'google_omni_1_1_token_pricing');
+  assert.equal(billing.facts.vendorSubtotalExactCents, 21.1872);
+  assert.equal(publicFacts.facts.vendorSubtotalExactCents, 21.1872);
+  assert.equal(billing.meta.provider_cost_source, 'google_omni_1_2_token_pricing');
+  assert.equal(publicFacts.meta.provider_cost_source, 'google_omni_1_2_token_pricing');
 });
 
 test('Google Omni edit pricing ignores selected duration and requires trusted inherited duration', () => {
@@ -97,12 +108,12 @@ test('Google Omni edit pricing ignores selected duration and requires trusted in
     {
       mode: 'v2v' as const,
       inputVideoDurationSec: 4,
-      expectedExactCents: 44.0192,
+      expectedExactCents: 31.2768,
     },
     {
       mode: 'retake' as const,
       inputVideoDurationSec: 0,
-      expectedExactCents: 40.544,
+      expectedExactCents: 27.8016,
     },
   ];
 
@@ -157,9 +168,9 @@ test('Google Omni edit pricing accepts trusted fractional inherited duration wit
   }, engine.pricingDetails, 'USD');
 
   assert.equal(v2v.facts.quantity, 4.25);
-  assert.equal(v2v.facts.vendorSubtotalExactCents, 46.7704);
+  assert.equal(v2v.facts.vendorSubtotalExactCents, 33.2316);
   assert.equal(chainedRetake.facts.quantity, 4.25);
-  assert.equal(chainedRetake.facts.vendorSubtotalExactCents, 43.078);
+  assert.equal(chainedRetake.facts.vendorSubtotalExactCents, 29.5392);
 
   assert.throws(() => buildBillingPricingFacts({
     engine,
@@ -232,6 +243,6 @@ test('Google Omni provider estimates stay unavailable until source-video duratio
     resolution: '720p',
     inputVideoDurationSec: 5,
   });
-  assert.equal(verified.providerCostUsd, 0.34752);
-  assert.equal(verified.source, 'google_omni_1_1_token_pricing');
+  assert.equal(verified.providerCostUsd, 0.251952);
+  assert.equal(verified.source, 'google_omni_1_2_token_pricing');
 });

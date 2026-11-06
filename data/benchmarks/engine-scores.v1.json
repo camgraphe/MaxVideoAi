@@ -34,21 +34,6 @@
       "pricing": 7.4
     },
     {
-      "modelSlug": "gemini-omni-flash",
-      "fidelity": 8.8,
-      "visualQuality": 8.5,
-      "motion": 8.2,
-      "consistency": 7.9,
-      "anatomy": 8.1,
-      "textRendering": 7.6,
-      "lipsyncQuality": 8.9,
-      "sequencingQuality": 8.0,
-      "controllability": 9.2,
-      "speedStability": 6.8,
-      "pricing": 8.1,
-      "last_updated": "2026-09-03"
-    },
-    {
       "modelSlug": "kling-3-turbo-standard",
       "fidelity": 8.2,
       "visualQuality": 8.0,
@@ -690,6 +675,24 @@
       "speedStability": 7.5,
       "pricing": 8.4,
       "last_updated": "2026-10-27"
+    }
+  ],
+  "historicalScores": [
+    {
+      "modelSlug": "gemini-omni-flash",
+      "fidelity": 8.8,
+      "visualQuality": 8.5,
+      "motion": 8.2,
+      "consistency": 7.9,
+      "anatomy": 8.1,
+      "textRendering": 7.6,
+      "lipsyncQuality": 8.9,
+      "sequencingQuality": 8.0,
+      "controllability": 9.2,
+      "speedStability": 6.8,
+      "pricing": 8.1,
+      "last_updated": "2026-09-03",
+      "modelVersion": "1.1"
     }
   ]
 }

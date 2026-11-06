@@ -187,14 +187,14 @@
       "modelSlug": "gemini-omni-flash",
       "sources": [
         "https://maxvideoai.com/models/gemini-omni-flash",
-        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-1-1-flash",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-1-2-flash",
         "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/video/generate-videos-from-references"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Supported (edit, extend, and conversational refine)",
-        "firstLastFrame": "Supported in current Omni 1.1 route",
+        "firstLastFrame": "Supported in current Omni 1.2 route",
         "referenceImageStyle": "Supported (up to 10 reference images)",
         "referenceVideo": "Supported (short source video for edit; previous interaction id for refine)",
         "maxResolution": "4K",
@@ -214,7 +214,7 @@
         "lipSync": "Supported through native dialogue and audio generation",
         "cameraMotionControls": "Prompt-based sound, camera and edit directions",
         "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
-        "releaseDate": "Google public preview: Aug 27 2026"
+        "releaseDate": "Google general availability: Nov 5 2026"
       }
     },
     {
