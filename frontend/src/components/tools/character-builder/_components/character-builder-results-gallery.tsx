@@ -140,7 +140,8 @@ export function CharacterBuilderResultsGallery({
                 onOpenLightbox({
                   id: result.id,
                   label: title,
-                  thumbUrl: result.url,
+                  imageUrl: result.url,
+                  thumbUrl: result.thumbUrl,
                   mediaType: 'image',
                   status: 'completed',
                   engineLabel: result.engineLabel,
@@ -200,7 +201,8 @@ export function CharacterBuilderResultsGallery({
                 onOpenLightbox({
                   id: item.id,
                   label: copy.resultCard.referenceOutput,
-                  thumbUrl: item.imageUrl,
+                  imageUrl: item.imageUrl,
+                  thumbUrl: item.thumbUrl,
                   mediaType: 'image',
                   status: 'completed',
                   engineLabel: item.engineLabel,

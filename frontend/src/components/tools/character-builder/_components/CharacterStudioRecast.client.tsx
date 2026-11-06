@@ -156,7 +156,7 @@ function RecastScene({ copy, navigation, active, selection, characterLibrary,
             /\.(mp4|mov)$/i.test(file.name) &&
             (!file.type || file.type.startsWith('video/'))
           )
-        : !file.type.startsWith('image/')) ||
+        : !(file.size > 0 && file.type.startsWith('image/'))) ||
       file.size > (kind === 'video' ? 100 : 20) * 1024 * 1024
     ) {
       setError(kind === 'video' ? copy.invalidVideo : copy.invalidImage);

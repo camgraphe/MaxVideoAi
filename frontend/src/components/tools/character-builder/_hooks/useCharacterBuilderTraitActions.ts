@@ -32,6 +32,7 @@ type TraitChoiceKey = keyof Pick<
 
 type UseCharacterBuilderTraitActionsOptions = {
   copy: CharacterCopy;
+  invalidateReferenceUpload: (role: CharacterBuilderReferenceImage['role']) => void;
   mustRemainDraft: string;
   resetState: CharacterBuilderState;
   setActiveBuildSection: Dispatch<SetStateAction<BuildLookSectionKey>>;
@@ -46,6 +47,7 @@ type UseCharacterBuilderTraitActionsOptions = {
 
 export function useCharacterBuilderTraitActions({
   copy,
+  invalidateReferenceUpload,
   mustRemainDraft,
   resetState,
   setActiveBuildSection,
@@ -147,6 +149,7 @@ export function useCharacterBuilderTraitActions({
   }, [setState]);
 
   const removeIdentityReference = useCallback(() => {
+    invalidateReferenceUpload('identity');
     setState((previous) => ({
       ...previous,
       sourceMode: previous.sourceMode === 'reference-image' ? 'scratch' : previous.sourceMode,
@@ -159,9 +162,10 @@ export function useCharacterBuilderTraitActions({
           ? normalizeTraitsForSourceMode(previous.traits, 'scratch')
           : previous.traits,
     }));
-  }, [setState]);
+  }, [invalidateReferenceUpload, setState]);
 
   const removeStyleReference = useCallback(() => {
+    invalidateReferenceUpload('style');
     setShowStyleReferenceSlot(false);
     setState((previous) => ({
       ...previous,
@@ -169,7 +173,7 @@ export function useCharacterBuilderTraitActions({
         (image: CharacterBuilderReferenceImage) => image.role !== 'style'
       ),
     }));
-  }, [setShowStyleReferenceSlot, setState]);
+  }, [invalidateReferenceUpload, setShowStyleReferenceSlot, setState]);
 
   return {
     addMustRemainTag,

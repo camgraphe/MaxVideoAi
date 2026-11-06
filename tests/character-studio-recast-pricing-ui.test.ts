@@ -411,3 +411,35 @@ test('an uncertain confirmation keeps New scene disabled and protects reload unt
     assert.equal(f.doc.querySelector('[data-recast-new]').disabled,false);
   } finally { await f.dispose(); }
 });
+
+for (const kind of ['portrait', 'product'] as const) {
+  test(`an empty ${kind} image preserves the selected reference and allows a corrected file`, async () => {
+    const f = await mount(true, 'account-a');
+    try {
+      const field = f.doc.querySelector(kind === 'portrait' ? 'input[accept="image/*"]' : 'input[accept^="image/jpeg"]');
+      const choose = (name: string, contents: string) => f.act(async () => {
+        Object.defineProperty(field, 'files', { configurable: true, value: [new f.w.File([contents], name, { type: 'image/png' })] });
+        field.dispatchEvent(new f.w.Event('change', { bubbles: true }));
+      });
+      if (kind === 'product') await choose('watch.png', 'existing-image');
+      const selectedName = kind === 'portrait' ? 'Basil' : 'watch.png';
+      const selected = f.doc.querySelector(`img[alt="${selectedName}"]`);
+      assert.ok(selected);
+      const originalUrl = selected.getAttribute('src');
+
+      await choose('empty.png', '');
+      const error = f.doc.querySelector('fieldset p[role="alert"]');
+      assert.ok(error, 'the invalid image must be explained before replacing the reference');
+      assert.match(error.textContent, /fichier image/i);
+      assert.equal(f.doc.querySelector(`img[alt="${selectedName}"]`)?.getAttribute('src'), originalUrl);
+      assert.ok(!f.doc.querySelector('img[alt="empty.png"]'));
+      assert.equal(f.revoked.includes(originalUrl), false);
+
+      await choose('corrected.png', 'replacement-image');
+      assert.ok(f.doc.querySelector('img[alt="corrected.png"]'));
+      assert.ok(!f.doc.querySelector('fieldset p[role="alert"]'));
+      assert.equal(f.uploads.length, 0);
+      assert.equal(f.requests.filter(request => /\/(prepare|confirm)$/.test(request.url)).length, 0);
+    } finally { await f.dispose(); }
+  });
+}

@@ -3,7 +3,7 @@ import { recastSettingsObject, validRecastDirection, validRecastDuration } from 
 
 const id = z.string().regex(/^[1-9]\d{0,17}$/);
 const name = z.string().trim().min(1).max(80);
-export const characterListInput = z.object({ cursor: id.nullable().optional(), name: name.optional() }).strict();
+export const characterListInput = z.object({ cursor: id.nullable().optional(), name: name.optional(), search: name.optional() }).strict();
 export const characterGetInput = z.object({ characterId: id, lookCursor: id.nullable().optional(), lookName: name.optional() }).strict();
 export const characterSelectionInput = z.object({ characterId: id, lookId: id.nullable().optional() }).strict();
 export const characterSaveInput = z.object({ name, jobId: z.string().min(1).max(160), imageUrl: z.string().min(1).max(4096) }).strict();

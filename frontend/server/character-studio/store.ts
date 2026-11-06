@@ -42,6 +42,7 @@ export async function listStudioCharacters(
   userId: string,
   before?: string | null,
   name?: string,
+  search?: string,
 ): Promise<StudioCharacterPage> {
   if (!userId) throw new StudioLibraryError('auth_required', 401);
   const rows = await db.query<Row>(
@@ -49,8 +50,10 @@ export async function listStudioCharacters(
     (SELECT count(*) FROM character_studio_looks l WHERE l.character_id=c.id AND l.user_id=c.user_id)::text AS look_count
     FROM character_studio_characters c WHERE c.user_id=$1 AND ($2::bigint IS NULL OR c.id<$2)
     AND ($3::text IS NULL OR lower(c.name)=lower($3))
+    AND ($4::text IS NULL OR strpos(lower(c.name),lower($4))>0)
     ORDER BY c.id DESC LIMIT 13`,
-    [userId, before ? studioId(before) : null, name === undefined ? null : studioName(name)],
+    [userId, before ? studioId(before) : null, name === undefined ? null : studioName(name),
+      search === undefined ? null : studioName(search)],
   );
   return {
     characters: rows.slice(0, 12).map(summary),

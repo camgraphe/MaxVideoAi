@@ -48,7 +48,7 @@ export function StudioCharacterLibrary({accountKey,projectId,locale,onSelect}: {
   },[accountKey,endpoint]);
 
   useEffect(() => {
-    const params = new URLSearchParams(name ? {name} : {});
+    const params = new URLSearchParams(name ? {search:name} : {});
     setPage(null);
     setDetail(null);
     setSelection(null);
@@ -65,7 +65,7 @@ export function StudioCharacterLibrary({accountKey,projectId,locale,onSelect}: {
       void request<CharacterPage>(new URLSearchParams({characterId:detail.id,lookCursor:detail.nextLookCursor}),undefined,
         next=>setDetail({...next,looks:[...detail.looks,...next.looks]}));
     } else if (page?.nextCursor) {
-      void request<LibraryPage>(new URLSearchParams({...(name?{name}:{}),cursor:page.nextCursor}),undefined,
+      void request<LibraryPage>(new URLSearchParams({...(name?{search:name}:{}),cursor:page.nextCursor}),undefined,
         next=>setPage({...next,characters:[...page.characters,...next.characters]}));
     }
   }
@@ -87,10 +87,10 @@ export function StudioCharacterLibrary({accountKey,projectId,locale,onSelect}: {
         event.preventDefault();
         const next = query.trim();
         if (next!==name) setName(next);
-        else if (!page) void request<LibraryPage>(new URLSearchParams(name?{name}:{}),undefined,setPage);
+        else if (!page) void request<LibraryPage>(new URLSearchParams(name?{search:name}:{}),undefined,setPage);
       }}>
         <label className={styles.search}><Search size={16} aria-hidden="true" /><input aria-label={t('Character name','Nom du personnage','Nombre del personaje')}
-          placeholder={t('Exact character name','Nom exact du personnage','Nombre exact del personaje')} value={query} onChange={event=>setQuery(event.target.value)} maxLength={80} /></label>
+          placeholder={t('Search by name','Rechercher par nom','Buscar por nombre')} value={query} onChange={event=>setQuery(event.target.value)} maxLength={80} /></label>
         <button type="submit" className={styles.more} disabled={busy}>{t('Search','Rechercher','Buscar')}</button>
       </form>}
     </div>

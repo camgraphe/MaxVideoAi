@@ -238,7 +238,7 @@ function CharacterBuilderAccountWorkspace({
     state,
     user,
   });
-  const { handleLibrarySelect, triggerUpload } = useCharacterBuilderReferenceAssets({
+  const { handleLibrarySelect, invalidateReferenceUpload, triggerUpload } = useCharacterBuilderReferenceAssets({
     captureAccountRequest: captureDraftRequest,
     copy,
     libraryModalRole,
@@ -254,6 +254,7 @@ function CharacterBuilderAccountWorkspace({
   const { handleSelectResult, removeIdentityReference, removeStyleReference } =
     useCharacterBuilderTraitActions({
       copy,
+      invalidateReferenceUpload,
       mustRemainDraft,
       resetState,
       setActiveBuildSection,

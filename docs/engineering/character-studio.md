@@ -17,6 +17,13 @@ names and cursor pagination; duplicate names require an explicit selection.
 Selection resolves the exact owned original, including looks beyond the first
 page, into canonical Media. It neither generates nor charges.
 
+The Studio character picker uses a separate `search` query for case-insensitive
+literal name fragments, so `Dixie` finds `Dixie Trouble`. Filtering occurs on the
+owned server query before its 12-character cursor page; pagination retains the
+same search. The `name` filter remains an exact case-insensitive match for MCP,
+the director and API callers. `%` and `_` have no wildcard meaning in `search`.
+Both filters retain the 80-character limit and existing account/project gates.
+
 The new MCP feature requires `MCP_CHARACTER_STUDIO_ENABLED=1`; purchase and
 reference operations retain their existing independent gates. Studio additionally
 requires `STUDIO_CHARACTER_STUDIO_ENABLED=1` and its existing conversational media

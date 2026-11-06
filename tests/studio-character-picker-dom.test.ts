@@ -62,3 +62,34 @@ test('changing account and project aborts a pending Character attachment',async(
     assert.equal(f.w.selected.length,0);
   } finally {await f.close();}
 });
+
+test('Character search accepts part of a name and keeps that filter through pagination and clearing',async()=>{
+  const f=await mount();
+  try {
+    await click(f,'Saved characters');
+    await f.respond(f.w.requests.at(-1),{ok:true,result:{characters:[{...selectedCharacter,name:'Dixie Trouble'}],nextCursor:null}});
+    const search=f.w.document.querySelector('input[aria-label="Character name"]');
+    const submit=async(value:string)=>f.act(async()=>{
+      Object.getOwnPropertyDescriptor(f.w.HTMLInputElement.prototype,'value')!.set!.call(search,value);
+      search.dispatchEvent(new f.w.Event('input',{bubbles:true}));
+    });
+    await submit(' Dixie ');
+    await click(f,'Search');
+    let url=new URL(f.w.requests.at(-1).url,'https://app.invalid');
+    assert.equal(url.searchParams.get('search'),'Dixie');
+    assert.equal(url.searchParams.has('name'),false,'the browser search must not use the exact-name filter');
+    await f.respond(f.w.requests.at(-1),{ok:true,result:{characters:[{...selectedCharacter,name:'Dixie Trouble'}],nextCursor:'4'}});
+    await click(f,'Load more');
+    url=new URL(f.w.requests.at(-1).url,'https://app.invalid');
+    assert.equal(url.searchParams.get('search'),'Dixie');
+    assert.equal(url.searchParams.get('cursor'),'4');
+    await f.respond(f.w.requests.at(-1),{ok:true,result:{characters:[{...selectedCharacter,id:'3',name:'Older Dixie'}],nextCursor:null}});
+    assert.match(f.w.document.body.textContent,/Dixie Trouble/);
+    assert.match(f.w.document.body.textContent,/Older Dixie/);
+    await submit('');
+    await click(f,'Search');
+    url=new URL(f.w.requests.at(-1).url,'https://app.invalid');
+    assert.equal(url.search,'');
+    assert.equal(f.w.requests.filter((entry:any)=>entry.init.method==='POST').length,0);
+  } finally {await f.close();}
+});

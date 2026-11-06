@@ -27,7 +27,7 @@ async function mountWorkspace(options: { userId?: string | null; loading?: boole
     './character-builder/_components/character-builder-workspace-components': `export const CharacterBuilderResultsGallery=(props)=>{window.resultActions=props;return null};export const CharacterReferenceLibraryModal=()=>null;export const SectionTitle=()=>null;`,
     './character-builder/_components/CharacterStudioComposer.client': `import React from 'react';export const CharacterStudioComposer=(props)=>{window.controls={...props,onGenerateOne:props.onGenerate};window.frames.push({user:window.fixtureAuth.user?.id,notes:props.state.advancedNotes,referenceIds:props.state.referenceImages.map(x=>x.id),runIds:props.state.runs.map(x=>x.id)});return <>{props.navigation}<pre id="draft">{JSON.stringify(props.state)}</pre></>};`,
     './character-builder/_components/CharacterStudioReference.client': `export {CharacterStudioReferenceInputs} from './src/components/tools/character-builder/_components/CharacterStudioReference.client';export const CharacterStudioReference=()=>null;`,
-    './character-builder/_components/CharacterStudioOverlays.client': `export const CharacterStudioOverlays=()=>null;`,
+    './character-builder/_components/CharacterStudioOverlays.client': `export const CharacterStudioOverlays=(props)=>{window.overlayControls=props;return null};`,
     './character-builder/_components/character-builder-page-shell': `import React from 'react';export const CharacterBuilderAuthGateModal=()=>null;export const CharacterBuilderDisabledState=()=>null;export const CharacterBuilderLoadingSkeleton=()=> <p id="loading">Loading</p>;export const CharacterBuilderPageFrame=({children,overlays})=><>{children}{overlays}</>;`,
   };
   const bundle = await build({ absWorkingDir: frontend, bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', write: false,
@@ -618,5 +618,149 @@ for (const role of ['identity', 'style']) test(`a pending ${role} upload cannot 
     await f.respond(upload, { ok: true, asset: { url: 'https://example.invalid/stale-upload.png', name: 'previous.png' } });
     assert.equal(f.draft().referenceImages.length, 1);
     assert.equal(f.draft().referenceImages[0].url, saved.character.identity.imageUrl);
+  } finally { await f.close(); }
+});
+
+
+async function chooseReferenceFile(f: Awaited<ReturnType<typeof mountWorkspace>>, role: 'identity' | 'style', name: string) {
+  const file = new f.w.File(['image'], name, { type: 'image/png' });
+  const input = f.w.document.querySelector(`input[data-character-reference=${role}]`);
+  Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+  await f.w.fx.act(async () => input.dispatchEvent(new f.w.Event('change', { bubbles: true })));
+  return file;
+}
+
+const referenceUploads = (f: Awaited<ReturnType<typeof mountWorkspace>>) =>
+  f.w.requests.filter((request: any) => request.url === '/api/uploads/image');
+const uploadedReference = (name: string) => ({ ok: true, asset: { url: `https://example.invalid/${name}.png`, name: `${name}.png` } });
+const referenceControl = (f: Awaited<ReturnType<typeof mountWorkspace>>, role: 'identity' | 'style') =>
+  f.w.controls[role === 'identity' ? 'identitySlot' : 'styleSlot'].props;
+
+for (const role of ['identity', 'style'] as const) {
+  test(`the newest ${role} upload remains selected when an older response arrives last`, async () => {
+    const f = await mountWorkspace();
+    try {
+      await chooseReferenceFile(f, role, 'older.png');
+      await chooseReferenceFile(f, role, 'newer.png');
+      const requests = referenceUploads(f);
+      assert.equal(requests.length, 2);
+      await f.respond(requests[1], uploadedReference('newer'));
+      await f.respond(requests[0], uploadedReference('older'));
+      assert.equal(f.draft().referenceImages.find((image: any) => image.role === role).url, 'https://example.invalid/newer.png');
+      assert.equal(JSON.parse(f.w.localStorage.getItem(`${stateKey}:account-A`)).state.referenceImages[0].url, 'https://example.invalid/newer.png');
+    } finally { await f.close(); }
+  });
+
+  test(`a newer ${role} upload supersedes an older file still being prepared`, async () => {
+    const f = await mountWorkspace();
+    try {
+      let finishPreparation!: (file: File) => void;
+      f.w.prepareUpload = (file: File) => file.name === 'older.png'
+        ? new Promise(resolve => { finishPreparation = resolve; })
+        : Promise.resolve(file);
+      const older = await chooseReferenceFile(f, role, 'older.png');
+      await chooseReferenceFile(f, role, 'newer.png');
+      await f.w.fx.act(async () => finishPreparation(older));
+      await f.tick();
+      const requests = referenceUploads(f);
+      assert.equal(requests.length, 1, 'superseded image preparation must not dispatch an upload');
+      await f.respond(requests[0], uploadedReference('newer'));
+      assert.equal(f.draft().referenceImages[0].url, 'https://example.invalid/newer.png');
+    } finally { await f.close(); }
+  });
+
+  test(`removing a ${role} reference invalidates its pending replacement`, async () => {
+    const f = await mountWorkspace();
+    try {
+      await chooseReferenceFile(f, role, 'existing.png');
+      await f.respond(referenceUploads(f)[0], uploadedReference('existing'));
+      await chooseReferenceFile(f, role, 'replacement.png');
+      await f.w.fx.act(async () => referenceControl(f, role).onRemove());
+      assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'), 'removal clears the abandoned upload status immediately');
+      await f.respond(referenceUploads(f)[1], uploadedReference('replacement'));
+      assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'), 'late response must not revive the abandoned upload status');
+      assert.deepEqual(f.draft().referenceImages, []);
+      if (role === 'identity') assert.equal(f.draft().sourceMode, 'scratch');
+    } finally { await f.close(); }
+  });
+
+  test(`a library ${role} selection wins over a pending upload for that slot`, async () => {
+    const f = await mountWorkspace();
+    try {
+      await chooseReferenceFile(f, role, 'pending.png');
+      await f.w.fx.act(async () => referenceControl(f, role).onLibrary());
+      await f.w.fx.act(async () => f.w.overlayControls.onSelectReference({ id: 'library-image', url: 'https://example.invalid/library.png', width: 800, height: 1000 }));
+      await f.respond(referenceUploads(f)[0], uploadedReference('pending'));
+      assert.equal(f.draft().referenceImages.find((image: any) => image.role === role).url, 'https://example.invalid/library.png');
+    } finally { await f.close(); }
+  });
+}
+
+test('independent identity and style uploads both survive out-of-order completion', async () => {
+  const f = await mountWorkspace();
+  try {
+    await chooseReferenceFile(f, 'identity', 'identity.png');
+    await chooseReferenceFile(f, 'style', 'style.png');
+    const requests = referenceUploads(f);
+    await f.respond(requests[1], uploadedReference('style'));
+    await f.respond(requests[0], uploadedReference('identity'));
+    assert.equal(f.draft().referenceImages.find((image: any) => image.role === 'identity').url, 'https://example.invalid/identity.png');
+    assert.equal(f.draft().referenceImages.find((image: any) => image.role === 'style').url, 'https://example.invalid/style.png');
+  } finally { await f.close(); }
+});
+
+test('New invalidates reference uploads during both preparation and response delivery', async () => {
+  const f = await mountWorkspace();
+  try {
+    await chooseReferenceFile(f, 'identity', 'sent.png');
+    const sent = referenceUploads(f)[0];
+    let finishPreparation!: (file: File) => void;
+    f.w.prepareUpload = () => new Promise(resolve => { finishPreparation = resolve; });
+    const preparing = await chooseReferenceFile(f, 'style', 'preparing.png');
+    await clickNewCharacter(f);
+    await f.w.fx.act(async () => finishPreparation(preparing));
+    await f.tick();
+    await f.respond(sent, uploadedReference('sent'));
+    assert.equal(referenceUploads(f).length, 1);
+    assert.deepEqual(f.draft().referenceImages, []);
+    assert.equal(f.draft().sourceMode, 'scratch');
+  } finally { await f.close(); }
+});
+
+
+for (const role of ['identity', 'style'] as const) test(`removing ${role} keeps the other reference upload status while it is active`, async () => {
+  const f = await mountWorkspace();
+  const otherRole = role === 'identity' ? 'style' : 'identity';
+  try {
+    await chooseReferenceFile(f, role, 'existing.png');
+    await f.respond(referenceUploads(f)[0], uploadedReference('existing'));
+    await chooseReferenceFile(f, otherRole, 'other-pending.png');
+    await chooseReferenceFile(f, role, 'replacement.png');
+    await f.w.fx.act(async () => referenceControl(f, role).onRemove());
+    const expectedStatus = otherRole === 'identity' ? 'Uploading identity reference…' : 'Uploading style reference…';
+    assert.equal(f.w.document.querySelector('[role=status]')?.textContent, expectedStatus);
+    await f.respond(referenceUploads(f)[2], uploadedReference('replacement'));
+    assert.equal(f.w.document.querySelector('[role=status]')?.textContent, expectedStatus);
+    await f.respond(referenceUploads(f)[1], uploadedReference('other-pending'));
+    assert.equal(f.draft().referenceImages.length, 1);
+    assert.equal(f.draft().referenceImages[0].role, otherRole);
+    assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'));
+  } finally { await f.close(); }
+});
+
+test('reference removal cannot revive an upload status belonging to a draft abandoned with New', async () => {
+  const f = await mountWorkspace();
+  try {
+    await chooseReferenceFile(f, 'style', 'old-draft.png');
+    await clickNewCharacter(f);
+    await chooseReferenceFile(f, 'identity', 'existing.png');
+    await f.respond(referenceUploads(f)[1], uploadedReference('existing'));
+    await chooseReferenceFile(f, 'identity', 'replacement.png');
+    await f.w.fx.act(async () => referenceControl(f, 'identity').onRemove());
+    assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'));
+    await f.respond(referenceUploads(f)[0], uploadedReference('old-draft'));
+    await f.respond(referenceUploads(f)[2], uploadedReference('replacement'));
+    assert.deepEqual(f.draft().referenceImages, []);
+    assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'));
   } finally { await f.close(); }
 });

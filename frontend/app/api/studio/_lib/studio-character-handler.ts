@@ -40,7 +40,9 @@ export async function handleStudioCharacters(req:NextRequest,projectId:string,op
           id,name,identity:portraitPreview(identity),looks:looks.map(look=>({id:look.id,name:look.name,...portraitPreview(look)})),nextLookCursor,
         }});
       }
-      const {characters,nextCursor} = await character.list({cursor:params.get('cursor'),name:params.get('name')??undefined});
+      const {characters,nextCursor} = await character.list({
+        cursor:params.get('cursor'),name:params.get('name')??undefined,search:params.get('search')??undefined,
+      });
       return studioJson({ok:true,result:{
         characters:characters.map(({id,name,identity,lookCount})=>({id,name,identity:portraitPreview(identity),lookCount})),nextCursor,
       }});

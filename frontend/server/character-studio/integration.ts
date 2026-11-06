@@ -77,7 +77,7 @@ export function createCharacterStudioIntegration(actor: GenerationActor, options
   return {
     list: (value: unknown = {}) => publicErrors(async () => {
       const input = characterListInput.parse(value);
-      return listStudioCharacters(actor.userId, input.cursor, input.name);
+      return listStudioCharacters(actor.userId, input.cursor, input.name, input.search);
     }),
     get: (value: unknown) => publicErrors(async () => {
       const input = characterGetInput.parse(value);
