@@ -6,10 +6,12 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { getFalEngineById } from '@/config/falEngines';
 import { getRuntimeModelById } from '@/config/model-runtime';
 import { loadPricingPolicyOverrides, type PricingPolicyOverrideLoadResult } from '@/lib/pricing-rule-store';
-import { collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
+import { buildManualTariffCoverageScenario, collectSellableManualTariffCoverage, type ManualTariffCoverageScenario } from '@/lib/pricing-audit/manual-tariff-coverage';
 import type { PublicModelQuote, PublicModelQuoteInput } from '@/lib/pricing-public-model-contract';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isGptImageFamilyEngineId } from '@/lib/image/gptImage2';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
+import { gptImage26PixelSize, gptImage26SizeMatchesRatio } from '@/lib/image/gptImage26Dimensions';
 import { resolvePublicGptImageQuoteSize } from '@/lib/image/gpt-image-quote-size';
 import { supportsWan3TariffInputDuration, withWan3TariffInputDuration } from '@/lib/pricing-audit/wan3-tariff-scenario';
 import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
@@ -84,6 +86,27 @@ function catalogDefault(modelId: string, mode: string, fieldId: string): string 
   return typeof field?.default === 'string' ? field.default : undefined;
 }
 
+function resolveGpt26PublicScenario(input: PublicModelQuoteInput): ManualTariffCoverageScenario | null {
+  const entry = getFalEngineById(input.modelId);
+  const mode = entry?.modes.find(candidate => candidate.mode === input.mode);
+  if (!entry || !mode || !['t2i', 'i2i'].includes(input.mode)
+    || !(mode.ui.resolution ?? entry.engine.resolutions).some(value => value === input.resolution)
+    || input.audio || input.voiceControl || input.hdr || input.exrExport || input.hasVideoInput
+    || [input.durationOption, input.inputVideoDurationSec, input.inputAudioDurationSec,
+      input.inheritedDurationSec, input.referenceTokenBudget].some(value => value !== undefined)) return null;
+  try {
+    const settings = normalizeGptImage26Settings({ resolution: input.resolution, quality: input.quality,
+      numImages: input.durationSec, customImageSize: input.customImageSize } as Parameters<typeof normalizeGptImage26Settings>[0]);
+    const size = gptImage26PixelSize(settings.resolution, settings.customImageSize);
+    if (input.aspectRatio !== undefined && input.aspectRatio !== 'auto'
+      && (!size || !gptImage26SizeMatchesRatio(size, input.aspectRatio))) return null;
+    return buildManualTariffCoverageScenario({ engine: entry.engine, mode: mode.mode, resolution: settings.resolution,
+      customImageSize: settings.customImageSize, durationSec: settings.numImages, quality: settings.quality,
+      referenceImageCount: input.referenceImageCount ?? (input.mode === 'i2i' ? 1 : 0),
+      ...(input.aspectRatio !== undefined ? { aspectRatio: input.aspectRatio } : {}) }, `${input.modelId}:${input.mode}:raster`);
+  } catch { return null; }
+}
+
 /** Public quoting accepts only catalog-supported exact scenarios and public model identities. */
 export function resolvePublicModelScenario(input: PublicModelQuoteInput): ManualTariffCoverageScenario | null {
   const model = getRuntimeModelById(input.modelId);
@@ -96,6 +119,7 @@ export function resolvePublicModelScenario(input: PublicModelQuoteInput): Manual
       !input.mode || !input.resolution || (input.quantity ?? 1) !== 1) return null;
   if (input.referenceImageCount !== undefined && (!Number.isSafeInteger(input.referenceImageCount)
     || input.referenceImageCount < 0 || input.referenceImageCount > 32)) return null;
+  if (isGptImage26EngineId(model.id)) return resolveGpt26PublicScenario(input);
   const defaultReferences = isLumaAgentsImageEngineId(model.id) || model.id === 'seedream-5-0-pro' ? 0 : 1;
   const gptImage = isGptImageFamilyEngineId(model.id);
   const entry = getFalEngineById(model.id);
@@ -285,8 +309,10 @@ export async function quotePublicModelScenario(
     const sourceLabel = !inheritsEditSource && (supportsWan3TariffInputDuration(scenario.modelId, scenario.selector.mode)
       || supportsSeedanceInputTariff(scenario.modelId, scenario.selector.mode, scenario.selector.billingInputType))
       ? ` output + ${scenario.context.inputVideoDurationSec}s input` : '';
+    const outputEstimateLabel = snapshot.meta?.providerCostKind === 'conservative-list-output-bound'
+      ? ' · conservative automatic-output estimate' : '';
     return { status: 'exact', amountCents: snapshot.totalCents, currency: snapshot.currency,
-      revision, scenarioLabel: `${input.mode} · ${quantityLabel}${sourceLabel} · ${input.resolution}` };
+      revision, scenarioLabel: `${input.mode} · ${quantityLabel}${sourceLabel} · ${input.resolution}${outputEstimateLabel}` };
   } catch {
     return { status: 'unavailable' };
   }

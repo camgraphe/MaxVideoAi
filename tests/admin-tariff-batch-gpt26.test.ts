@@ -22,7 +22,7 @@ test('all 2040 approved GPT prices pass bounded native previews and the public q
   assert.equal(batches.length, 10);
   for (const proposal of batches) {
     const plan = await buildTariffBatchPlan({ proposal, state, policy });
-    assert.equal(plan.fullScopeCount, 1020);
+    assert.equal(plan.fullScopeCount, 1044);
     assert.ok(plan.rows.length <= 226);
     assert.deepEqual(plan.counts, { create: plan.rows.length, update: 0, unchanged: 0, conflict: 0 });
     for (const row of plan.rows) {

@@ -114,6 +114,7 @@ const IMAGE_FIELD_BY_SETTING: Record<string, string> = {
   imageHeight: 'image_height',
   imageWidth: 'image_width',
   limitGenerations: 'limit_generations',
+  outputCompression: 'output_compression',
   outputFormat: 'output_format',
   quality: 'quality',
   complexity: 'complexity',

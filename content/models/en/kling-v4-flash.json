@@ -44,7 +44,7 @@
     },
     {
       "q": "Compare the available controls",
-      "a": "Flash does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project."
+      "a": "On MaxVideoAI, Flash currently does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project."
     }
   ],
   "custom": {
@@ -55,7 +55,7 @@
       "Describe the sound||The provider documents native audio. Specify atmosphere and dialogue in the prompt; this release has no audio switch or audio-file input."
     ],
     "specTitle": "Read specifications",
-    "specNote": "Flash does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project.",
+    "specNote": "On MaxVideoAI, Flash currently does not offer a final frame, structured shot plans, Modify, Extend, voice bindings, FPS, seed or guidance controls. Choose Kling 4.0 when its broader controls match your project.",
     "specSections": [
       {
         "title": "Edited sequence",

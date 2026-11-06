@@ -55,6 +55,8 @@ interface UseImageGenerationRunnerParams {
   mutateJobs: () => Promise<unknown>;
   numImages: number;
   outputFormat: string | null;
+  outputCompression?: number | null;
+  hasOutputCompressionField?: boolean;
   prompt: string;
   pricingSnapshot: PricingSnapshot | null;
   quality: string | null;
@@ -105,6 +107,8 @@ export function useImageGenerationRunner({
   mutateJobs,
   numImages,
   outputFormat,
+  outputCompression,
+  hasOutputCompressionField,
   prompt,
   quality,
   readyReferenceSizes,
@@ -216,6 +220,7 @@ export function useImageGenerationRunner({
           style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
+          ...(hasOutputCompressionField && (outputFormat === 'jpeg' || outputFormat === 'webp') && outputCompression != null ? { outputCompression } : {}),
           complexity: hasComplexityField ? ((complexity ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
           thinkingLevel: hasThinkingLevelField
             ? ((thinkingLevel ?? undefined) as 'minimal' | 'high' | undefined)
@@ -294,6 +299,8 @@ export function useImageGenerationRunner({
       mutateJobs,
       numImages,
       outputFormat,
+      outputCompression,
+      hasOutputCompressionField,
       prompt,
       pricingSnapshot,
       quality,

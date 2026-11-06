@@ -46,6 +46,9 @@ export interface ImageWorkspaceCopy {
     seedLabel: string;
     seedPlaceholder: string;
     outputFormatLabel: string;
+    outputCompressionLabel: string;
+    outputCompressionHint: string;
+    gpt26AutoQuoteHint: string;
     backgroundLabel: string;
     outputFormatHint: string;
     qualityLabel: string;
@@ -217,6 +220,9 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     seedLabel: 'Seed',
     seedPlaceholder: 'Optional',
     outputFormatLabel: 'Output format',
+    outputCompressionLabel: 'Output compression',
+    outputCompressionHint: 'JPEG/WebP only, 0–100. Leave empty for 100. Changes file encoding, not generation price.',
+    gpt26AutoQuoteHint: 'Auto size is quoted at the largest output size; Auto quality is quoted at Max. This fixed quote may exceed the cost of the generated result.',
     backgroundLabel: 'Background',
     outputFormatHint: 'Choose the file type for the final images.',
     qualityLabel: 'Quality',

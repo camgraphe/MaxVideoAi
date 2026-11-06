@@ -29,19 +29,22 @@ export function decimalRatio(value: string): { numerator: bigint; denominator: b
   const [whole, fraction = ''] = value.split('.');
   return { numerator: BigInt(whole + fraction), denominator: BigInt(10) ** BigInt(fraction.length) };
 }
-function price(value: unknown): TariffBatchPrice {
+function price(value: unknown, raster: boolean): TariffBatchPrice {
   const p = batchRecord(value);
   if (p.kind === 'fixed') {
     exactFields(p, ['kind', 'customerCents']);
     if (Number(p.customerCents) > 100_000_000 || !isValidManualTariffPrice(p)) batchInvalid('Invalid fixed price.');
   } else if (p.kind === 'unit_terms') {
     exactFields(p, ['kind', 'rounding', 'terms']);
-    if (p.rounding !== 'up' || !Array.isArray(p.terms) || p.terms.length !== 1) batchInvalid('Invalid continuous price.');
-    const term = batchRecord(p.terms[0]);
-    exactFields(term, ['unit', 'centsPerUnit']);
-    if (term.unit !== 'billable_seconds' || typeof term.centsPerUnit !== 'number' || !Number.isFinite(term.centsPerUnit)
-      || term.centsPerUnit < 0 || term.centsPerUnit > 1_000_000 || !isValidManualTariffPrice(p)) batchInvalid('Invalid continuous price.');
-    decimalRatio(String(term.centsPerUnit));
+    if (p.rounding !== 'up' || !Array.isArray(p.terms) || p.terms.length !== (raster ? 3 : 1)) batchInvalid('Invalid continuous price.');
+    for (const item of p.terms) {
+      const term = batchRecord(item);
+      exactFields(term, ['unit', 'centsPerUnit']);
+      const allowed = raster ? ['output_image_tokens', 'conservative_output_image_tokens', 'output_units', 'reference_image_outputs'] : ['billable_seconds'];
+      if (!allowed.includes(String(term.unit)) || typeof term.centsPerUnit !== 'number' || !Number.isFinite(term.centsPerUnit)
+        || term.centsPerUnit < 0 || term.centsPerUnit > 1_000_000 || !isValidManualTariffPrice(p)) batchInvalid('Invalid continuous price.');
+      decimalRatio(String(term.centsPerUnit));
+    }
   } else batchInvalid('Unsupported batch price.');
   return structuredClone(p) as TariffBatchPrice;
 }
@@ -75,8 +78,9 @@ export function parseTariffBatchProposal(value: unknown): TariffBatchProposal {
   const selections = items.map((item, i) => {
     const entry = batchRecord(item);
     exactFields(entry, pricing.kind === 'explicit' ? ['selector', 'price'] : ['selector']);
-    const literal = pricing.kind === 'explicit' ? price(entry.price) : undefined;
-    if (isGptImageTariffBatchModelId(modelId) && literal?.kind !== 'fixed') batchInvalid('GPT Image 2.6 requires an exact fixed price.');
+    const raster = isGptImageTariffBatchModelId(modelId) && selectors[i].durationSec === 'continuous';
+    const literal = pricing.kind === 'explicit' ? price(entry.price, raster) : undefined;
+    if (isGptImageTariffBatchModelId(modelId) && literal?.kind !== (raster ? 'unit_terms' : 'fixed')) batchInvalid('GPT Image 2.6 requires an exact fixed price or reviewed raster units.');
     return { selector: selectors[i], ...(literal ? { price: literal } : {}) };
   });
   return { schemaVersion: 1, modelId, intent: p.intent as 'create_missing' | 'replace_selected', reason: p.reason.trim(),

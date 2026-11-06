@@ -93,6 +93,7 @@ export type PersistedImageComposerState = {
   customImageSize: GptImage2ImageSize | null;
   seed: number | null;
   outputFormat: string | null;
+  outputCompression?: number | null;
   quality: string | null;
   background: string | null;
   style: string | null;

@@ -3,16 +3,17 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "GPT Image 2.6 Flare — Créer et retoucher des images matricielles | MaxVideoAI",
-    "description": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée."
+    "description": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément."
   },
-  "overview": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée.",
+  "overview": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément.",
   "pricingNotes": [
     "Créez et retouchez vos images dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
-    "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis."
+    "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis.",
+    "La taille ou la qualité automatique utilise un devis prudent calculé sur la sortie maximale des réglages automatiques choisis. Le prix à confirmer s’affiche avant la génération."
   ],
   "hero": {
     "title": "GPT Image 2.6 Flare — Créer et retoucher des images matricielles",
-    "intro": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée.",
+    "intro": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément.",
     "badge": "PNG · JPEG · WebP",
     "ctaPrimary": {
       "label": "Ouvrir l’espace de création",
@@ -32,11 +33,11 @@
   "faqs": [
     {
       "q": "Lire les caractéristiques",
-      "a": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée. PNG, JPEG et WebP sont pris en charge. La transparence exige PNG ou WebP. GIF, SVG, masques et retouches par annotation sont exclus de ce premier lot."
+      "a": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément. PNG, JPEG et WebP sont pris en charge. La transparence exige PNG ou WebP. GIF, SVG, masques et retouches par annotation sont exclus de ce premier lot."
     },
     {
       "q": "Références visuelles originales",
-      "a": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte huit références et une sortie par action."
+      "a": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte seize références et une sortie par action. L’espace image et MCP permettent jusqu’à dix sorties par requête."
     },
     {
       "q": "Tarification",
@@ -51,7 +52,7 @@
     "whyTitle": "GPT Image 2.6 Flare",
     "heroHighlights": [
       "Qualité et complexité||La qualité règle le rendu. La complexité règle la planification. Précisez le sujet et les contraintes à chaque niveau.",
-      "Références visuelles originales||Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte huit références et une sortie par action.",
+      "Références visuelles originales||Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte seize références et une sortie par action. L’espace image et MCP permettent jusqu’à dix sorties par requête.",
       "Image matricielle||PNG, JPEG et WebP sont pris en charge. La transparence exige PNG ou WebP. GIF, SVG, masques et retouches par annotation sont exclus de ce premier lot."
     ],
     "specTitle": "Lire les caractéristiques",
@@ -59,12 +60,12 @@
     "specSections": [
       {
         "title": "Scène de cinéma",
-        "body": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée.",
+        "body": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément.",
         "items": []
       },
       {
         "title": "Retouche contrôlée",
-        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte huit références et une sortie par action.",
+        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte seize références et une sortie par action. L’espace image et MCP permettent jusqu’à dix sorties par requête.",
         "items": []
       }
     ]
@@ -74,7 +75,7 @@
     "hero": {
       "eyebrow": "GPT IMAGE 2.6 FLARE",
       "title": "GPT Image 2.6 Flare — Créer et retoucher des images matricielles",
-      "subtitle": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée.",
+      "subtitle": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément.",
       "subtitleHighlights": [
         "1024"
       ],
@@ -116,7 +117,7 @@
       },
       {
         "title": "Références visuelles originales",
-        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte huit références et une sortie par action.",
+        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte seize références et une sortie par action. L’espace image et MCP permettent jusqu’à dix sorties par requête.",
         "tone": "reference"
       },
       {
@@ -146,11 +147,11 @@
     "referenceWorkflows": [
       {
         "title": "Scène de cinéma",
-        "body": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée."
+        "body": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément."
       },
       {
         "title": "Retouche contrôlée",
-        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte huit références et une sortie par action."
+        "body": "Retouchez à partir de 1 à 16 images originales PNG, JPEG ou WebP de votre bibliothèque, de 25 Mo maximum chacune. Studio accepte seize références et une sortie par action. L’espace image et MCP permettent jusqu’à dix sorties par requête."
       }
     ],
     "pricingCopy": {
@@ -163,7 +164,7 @@
     },
     "meta": {
       "title": "GPT Image 2.6 Flare — Créer et retoucher des images matricielles | MaxVideoAI",
-      "description": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée."
+      "description": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément."
     }
   },
   "prompting": {
@@ -232,7 +233,7 @@
         "id": "proof-0",
         "icon": "image",
         "title": "Scène de cinéma",
-        "body": "Choisissez 1024 × 1024, 1536 × 1024 ou 1024 × 1536 pixels, cinq niveaux de qualité et une complexité de planification faible, moyenne ou élevée."
+        "body": "Créez et retouchez des images carrées, paysage ou portrait, dont les formats 16:9 et 9:16 et les tailles personnalisées jusqu’en 4K. Choisissez cinq niveaux de qualité ou Auto et réglez la complexité séparément."
       },
       {
         "id": "proof-1",

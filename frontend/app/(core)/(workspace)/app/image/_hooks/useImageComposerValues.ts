@@ -15,6 +15,7 @@ export function useImageComposerValues(initialEngineId: string) {
   const [customImageHeight, setCustomImageHeight] = useState<string>('');
   const [seed, setSeed] = useState<string>('');
   const [outputFormat, setOutputFormat] = useState<string | null>(null);
+  const [outputCompression, setOutputCompression] = useState<number | null>(null);
   const [quality, setQuality] = useState<string | null>(null);
   const [background, setBackground] = useState<string | null>(null);
   const [style, setStyle] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export function useImageComposerValues(initialEngineId: string) {
     engineId, setEngineId, mode, setMode, prompt, setPrompt,
     numImages, setNumImages, aspectRatio, setAspectRatio, resolution, setResolution,
     customImageWidth, setCustomImageWidth, customImageHeight, setCustomImageHeight, seed, setSeed,
-    outputFormat, setOutputFormat, quality, setQuality, background, setBackground,
+    outputFormat, setOutputFormat, outputCompression, setOutputCompression, quality, setQuality, background, setBackground,
     style, setStyle, maskUrl, setMaskUrl, enableWebSearch, setEnableWebSearch,
     thinkingLevel, setThinkingLevel, complexity, setComplexity, limitGenerations, setLimitGenerations,
     watermark, setWatermark,

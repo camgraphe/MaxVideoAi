@@ -41,6 +41,9 @@ export type TariffBatchRow = {
   /** True when the displayed supplier estimate excludes unqualified input costs. */
   supplierCostIncomplete?: true;
   domain?: { maxInputSeconds: number; checkedBoundaries: number; minimumGrossCents: number };
+  rasterDomain?: { checkedDimensions: number; minTokensPerOutput: number; maxTokensPerOutput: number;
+    maxOutputCount: number; maxReferenceCount: number; minimumOutputOnlySurplusCents: number;
+    supplierCostIncomplete: true; conservativeOutput: boolean };
   issue?: string;
   rollbackEventId?: string;
 };

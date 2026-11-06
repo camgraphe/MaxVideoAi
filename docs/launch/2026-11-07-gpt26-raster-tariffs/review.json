@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 1,
+  "status": "offline_proposal_not_applied",
+  "currentDatabaseRevision": null,
+  "releaseReviewRequired": true,
+  "existingExactCellsRequiredToRemainUnchanged": 2040,
+  "newClasses": 48,
+  "batches": [
+    {
+      "file": "gpt-image-2-6-flare-raster.json",
+      "classes": 24,
+      "sha256": "e04de86e90c732bc5cc478524cb88d721f66b209619fb266a981e00ffb2eea27",
+      "conservativeAutoClasses": 14
+    },
+    {
+      "file": "gpt-image-2-6-sunburst-raster.json",
+      "classes": 24,
+      "sha256": "6b353188d807254333235c13143f13ba1b69ff1648c9883932ce032a9e900f12",
+      "conservativeAutoClasses": 14
+    }
+  ],
+  "retailRule": "(output LIST estimate + USD 0.01 per output + USD 0.02 per reference per output) × 1.50, final ceil cents",
+  "autoReview": "28 distinct auto classes use conservative output quantities, preserve provider auto settings, and require deliberate review.",
+  "supplierDisclosure": "Output estimates only; reserves are not bounds on text/reference input cost, total provider invoice or margin.",
+  "limits": {
+    "minPixels": 655360,
+    "maxPixels": 8294400,
+    "maxEdge": 3840,
+    "maxAspectRatio": 3,
+    "multipleOf": 16,
+    "minOutputs": 1,
+    "maxOutputs": 10,
+    "maxReferences": 16
+  },
+  "envelope": {
+    "checkedDimensions": 29146,
+    "tokens": {
+      "low": {
+        "min": 227,
+        "max": 2768,
+        "autoBound": 2768
+      },
+      "medium": {
+        "min": 422,
+        "max": 4894,
+        "autoBound": 4894
+      },
+      "high": {
+        "min": 514,
+        "max": 5930,
+        "autoBound": 5930
+      },
+      "xhigh": {
+        "min": 905,
+        "max": 10542,
+        "autoBound": 10542
+      },
+      "max": {
+        "min": 2061,
+        "max": 23719,
+        "autoBound": 23719
+      }
+    }
+  },
+  "examples": [
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "1536x864",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 7,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1078,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "864x1536",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 7,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1078,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "2048x2048",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 18,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3568,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "2048x1152",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 8,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1413,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "1152x2048",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 8,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1413,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "3840x2160",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 17,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3336,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "2160x3840",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 17,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3336,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "custom",
+      "customImageSize": {
+        "width": 1600,
+        "height": 896
+      },
+      "durationSec": 10,
+      "quality": "high",
+      "proposedCustomerCents": 66,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 11130,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "i2i",
+      "resolution": "custom",
+      "customImageSize": {
+        "width": 1536,
+        "height": 864
+      },
+      "durationSec": 10,
+      "quality": "high",
+      "referenceImageCount": 16,
+      "proposedCustomerCents": 544,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 10780,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "1536x864",
+      "durationSec": 1,
+      "quality": "auto",
+      "proposedCustomerCents": 21,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 4312
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "auto",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 29,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 5930
+    },
+    {
+      "modelId": "gpt-image-2-6-flare",
+      "mode": "t2i",
+      "resolution": "auto",
+      "durationSec": 1,
+      "quality": "auto",
+      "proposedCustomerCents": 109,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 23719
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "1536x864",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 7,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1078,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "864x1536",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 7,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1078,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "2048x2048",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 18,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3568,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "2048x1152",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 8,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1413,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "1152x2048",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 8,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 1413,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "3840x2160",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 17,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3336,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "2160x3840",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 17,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 3336,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "custom",
+      "customImageSize": {
+        "width": 1600,
+        "height": 896
+      },
+      "durationSec": 10,
+      "quality": "high",
+      "proposedCustomerCents": 66,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 11130,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "i2i",
+      "resolution": "custom",
+      "customImageSize": {
+        "width": 1536,
+        "height": 864
+      },
+      "durationSec": 10,
+      "quality": "high",
+      "referenceImageCount": 16,
+      "proposedCustomerCents": 544,
+      "currency": "USD",
+      "outputEstimateKind": "partial-list-output-components",
+      "estimatedOutputTokens": 10780,
+      "conservativeOutputTokens": null
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "1536x864",
+      "durationSec": 1,
+      "quality": "auto",
+      "proposedCustomerCents": 21,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 4312
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "auto",
+      "durationSec": 1,
+      "quality": "high",
+      "proposedCustomerCents": 29,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 5930
+    },
+    {
+      "modelId": "gpt-image-2-6-sunburst",
+      "mode": "t2i",
+      "resolution": "auto",
+      "durationSec": 1,
+      "quality": "auto",
+      "proposedCustomerCents": 109,
+      "currency": "USD",
+      "outputEstimateKind": "conservative-list-output-bound",
+      "estimatedOutputTokens": null,
+      "conservativeOutputTokens": 23719
+    }
+  ],
+  "activation": "Import each model proposal separately through the deployed native admin preview/confirm protocol only after explicit authorization. Review current-state fingerprint; preserve existing exact cells and receipts. No apply command exists in this script."
+}

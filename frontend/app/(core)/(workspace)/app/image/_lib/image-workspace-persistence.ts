@@ -38,6 +38,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
         : null;
     const seed = typeof raw.seed === 'number' && Number.isFinite(raw.seed) ? Math.round(raw.seed) : null;
     const outputFormat = typeof raw.outputFormat === 'string' ? raw.outputFormat : null;
+    const outputCompression = (outputFormat === 'jpeg' || outputFormat === 'webp') && typeof raw.outputCompression === 'number' && Number.isInteger(raw.outputCompression) && raw.outputCompression >= 0 && raw.outputCompression <= 100 ? raw.outputCompression : null;
     const quality = typeof raw.quality === 'string' ? raw.quality : null;
     const background = typeof raw.background === 'string' ? raw.background : null;
     const style = typeof raw.style === 'string' ? raw.style : null;
@@ -93,6 +94,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       customImageSize,
       seed,
       outputFormat,
+      outputCompression,
       quality,
       background,
       style,

@@ -123,7 +123,7 @@ export async function executeImageGeneration({
   const resolution = resolutionResult.resolution;
   const shouldSendResolution = resolutionResult.configurable;
   const parsedResolutionImageSize = isGptImageFamilyEngineId(engine.id) ? parseGptImage2SizeKey(resolution) : null;
-  let customImageSize: GptImage2ImageSize | null = parsedResolutionImageSize;
+  let customImageSize: GptImage2ImageSize | null = gpt26?.customImageSize ?? parsedResolutionImageSize;
   let providerImageSize: string | GptImage2ImageSize | null =
     parsedResolutionImageSize ?? (shouldSendResolution ? normalizeFalImageResolution(resolution) : null);
   if (isGptImageFamilyEngineId(engine.id) && mode === 'i2i' && resolution === 'auto') {
@@ -343,6 +343,7 @@ export async function executeImageGeneration({
         quality,
         background,
         complexity: gpt26?.complexity,
+        outputCompression: gpt26?.outputCompression,
         style,
         maskUrl,
         enableWebSearch,
@@ -447,7 +448,7 @@ export async function executeImageGeneration({
 
       const directProviderResponse = await executeDirectImageProviderIfAvailable({
         ...(nano21 ?? {}),
-        ...(gpt26 ? { complexity: gpt26.complexity, background: gpt26.background, preparedReferenceUrls: preparedOpenAIReferenceUrls } : {}),
+        ...(gpt26 ? { outputCompression: gpt26.outputCompression, complexity: gpt26.complexity, background: gpt26.background, customImageSize: gpt26.customImageSize, preparedReferenceUrls: preparedOpenAIReferenceUrls } : {}),
         billingProductKey,
         characterReferenceCount: characterReferences.length,
         combinedImageUrls,

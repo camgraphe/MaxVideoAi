@@ -1,5 +1,40 @@
 # Pricing Engine
 
+## GPT Image 2.6 raster tariffs (2026-11-07 candidate)
+
+The 2,040 exact launch cells retain their original identities and precedence.
+`lib/image/gptImage26Tariff.ts` projects any validated raster dimensions, 1–10
+outputs and 0/1–16 sources into factual output-token, output and reference-output
+quantities. The selected database reader fetches the exact selector plus one
+reviewed raster alternative. Missing or malformed tariffs fail closed; GPT 2.5
+tiers and percentage policy never supply a replacement amount.
+
+The native admin batch owner adds 48 literal classes: two models, two modes, six
+qualities and explicit/automatic size domains. Twenty are explicit-quality raster
+classes; 28 use automatic size or quality and require deliberate conservative-price
+review. Runtime reads stored absolute rates only. The prepared rates encode the
+approved output LIST estimate plus USD 0.01/output and USD 0.02/reference/output,
+then ×1.50 with a single final upward cent rounding. Existing exact prices can
+remain different and still win. The preparation command writes local proposals
+only; see [native batches](pricing-admin-batches.md).
+
+Automatic provider settings remain automatic in request/snapshot metadata.
+Pricing bounds output tokens with `max` quality and/or the 2880² maximum square,
+as applicable. The owner reports `conservative-list-output-bound`, keeps exact
+output tokens null, and records `providerConservativeOutputImageTokens` separately.
+Text and reference token costs stay unknown. Commercial reserves establish neither
+a total supplier bound nor a margin. The offline domain check covers all 29,146
+valid ordered dimension pairs and proves automatic output/quality bounds; literal
+price regression uses independent integer arithmetic throughout token/output-count
+boundaries. Public scenario admission validates this same domain without pretending
+the finite launch audit is exhaustive. The historical collector reports a separate
+continuous-raster coverage requirement.
+
+Real PG17/native-browser tests apply the additions only in disposable databases,
+verify all original exact rows and paid snapshots unchanged, exercise repeat
+confirmation/resume and quote through the selected database reader. These tests do
+not establish production activation or generation qualification.
+
 ## Kling 4 tariff preparation (2026-10-25)
 
 The V4 candidate remains closed to spending for every actor. Its factual supplier
