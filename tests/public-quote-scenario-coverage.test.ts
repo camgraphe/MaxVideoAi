@@ -32,10 +32,25 @@ test('unknown or unpublished model and unsupported mode scopes cannot expand to 
     { modelId: 'flux-3-draft', mode: '' },
     { modelId: 'wan-3', mode: 'missing-mode' },
     { modelId: 'wan-3', mode: '' },
+    { modelId: 'gpt-image-2-6-flare', mode: '' },
+    { modelId: 'gpt-image-2-6-flare', mode: 't2v' },
+    { modelId: 'gpt-image-2-6-sunburst', mode: 'missing-mode' },
     ...listRuntimeModels().filter(model => !model.publication.app.published).map(model => ({ modelId: model.id })),
   ]) {
     const scoped = collectSellableManualTariffCoverage(scope);
     assert.equal(scoped.scenarios.length, 0, JSON.stringify(scope));
     assert.deepEqual(scoped, { scenarios: [], gaps: [] });
+  }
+});
+
+test('GPT raster coverage keeps the continuous requirement visible in each supported image mode', () => {
+  for (const modelId of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
+    for (const mode of ['t2i', 'i2i']) {
+      const coverage = collectSellableManualTariffCoverage({ modelId, mode });
+      assert.equal(coverage.gaps.length, 1, `${modelId}/${mode}`);
+      assert.equal(coverage.gaps[0].modelId, modelId);
+      assert.ok(coverage.gaps[0].reason.startsWith(`${mode}:`));
+      assert.match(coverage.gaps[0].reason, /continuous raster tariff classes/);
+    }
   }
 });

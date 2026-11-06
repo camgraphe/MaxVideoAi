@@ -316,13 +316,13 @@ test('canonical projection returns one explicit outcome for every selected scena
     unsupported.filter((outcome) => outcome.engineId !== 'kling-v4').map((outcome) => outcome.scenarioId),
     [
       ...['flare', 'sunburst'].flatMap(variant => ['member', 'plus', 'pro'].map(tier =>
-        `billing:gpt-image-2-6-${variant}:t2i:4:1024x1024:${tier}`)),
+        `billing:gpt-image-2-6-${variant}:t2i:10:1024x1024:${tier}`)),
       ...['member', 'plus', 'pro'].map(tier => `billing:kling-v4-flash:t2v:5:720p:${tier}`),
       'billing:nano-banana-2-1:t2i:1:1k:member',
       'billing:nano-banana-2-1:t2i:1:1k:plus',
       'billing:nano-banana-2-1:t2i:1:1k:pro',
-      'estimator:gpt-image-2-6-flare:4:1024x1024',
-      'estimator:gpt-image-2-6-sunburst:4:1024x1024',
+      'estimator:gpt-image-2-6-flare:10:1024x1024',
+      'estimator:gpt-image-2-6-sunburst:10:1024x1024',
       'estimator:kling-v4-flash:5:720p',
       'estimator:nano-banana-2-1:1:1k',
       'pricing-hub:pika-text-to-video:10s-1080p-audio',
