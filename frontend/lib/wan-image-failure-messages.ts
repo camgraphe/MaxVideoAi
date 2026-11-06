@@ -4,19 +4,19 @@ const copy = {
   en: {
     small: 'The reference image is too small: {width} x {height} pixels. Use an image with at least 240 pixels on each side. Upload a larger image or choose another image before trying again.',
     unverified: 'We could not verify the dimensions of this image. Upload the original image again before generating. Each side must be at least 240 pixels.',
-    noCharge: 'No credits were charged.',
+    noCharge: 'No credits were charged for video generation.',
     refundUnconfirmed: 'A wallet refund has not been confirmed yet. Check your wallet or contact support.',
   },
   fr: {
     small: 'L’image de référence est trop petite : {width} x {height} pixels. Utilisez une image d’au moins 240 pixels de largeur et de hauteur. Importez une version plus grande ou choisissez une autre image avant de réessayer.',
     unverified: 'Nous n’avons pas pu vérifier les dimensions de cette image. Importez à nouveau l’image originale avant de générer. Chaque côté doit mesurer au moins 240 pixels.',
-    noCharge: 'Aucun crédit n’a été débité.',
+    noCharge: 'Aucun crédit n’a été débité pour la génération vidéo.',
     refundUnconfirmed: 'Le remboursement des crédits n’est pas encore confirmé. Consultez votre portefeuille ou contactez le support.',
   },
   es: {
     small: 'La imagen de referencia es demasiado pequeña: {width} x {height} píxeles. Utiliza una imagen con al menos 240 píxeles por lado. Sube una versión más grande o elige otra imagen antes de volver a intentarlo.',
     unverified: 'No hemos podido verificar las dimensiones de esta imagen. Vuelve a subir la imagen original antes de generar. Cada lado debe medir al menos 240 píxeles.',
-    noCharge: 'No se han descontado créditos.',
+    noCharge: 'No se han descontado créditos por la generación de vídeo.',
     refundUnconfirmed: 'El reembolso de los créditos todavía no se ha confirmado. Consulta tu monedero o contacta con soporte.',
   },
 };

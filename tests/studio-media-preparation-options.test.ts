@@ -364,7 +364,7 @@ test('Studio explains the Wan image minimum before promoting a project output', 
     assert.ok(error instanceof Error && 'code' in error);
     assert.equal(error.code, 'REFERENCE_INVALID');
     assert.match(error.message, /363.*119.*240/);
-    assert.match(error.message, /No credits were charged/);
+    assert.match(error.message, /No credits were charged for video generation/);
     assert.doesNotMatch(error.message, /https:|SECRET_/);
     return true;
   });

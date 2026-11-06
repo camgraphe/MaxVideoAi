@@ -46,7 +46,8 @@ source-access failures keep their existing neutral message.
 projection. Only validated integer measurements from the known diagnostic enter
 the public English message; provider URLs, JSON and credentials remain private.
 That canonical message survives job/refund persistence and is localized for Web
-history and Billing. Preflight says no credits were charged. A terminal failure
+history and Billing. Preflight confirms that no credits were charged for video
+generation; Studio assistance has separate accounting. A terminal failure
 uses persisted payment state: `refunded_wallet` confirms the amount returned,
 while a failed `paid_wallet` job says its wallet refund is not yet confirmed.
 This projection does not change refunds or rewrite historical generic messages.
