@@ -34,7 +34,7 @@ for(const kind of ['image','audio','video'])for(const switchAccount of [true,fal
     if(switchAccount)await w.fx.act(async()=>{w.owner='B';w.sessionStorage.setItem('last-known:user-id','B');w.fx.render();});
     await w.fx.act(async()=>lookup.resolve(session(switchAccount?'B':'A')));
     assert.equal(requests.length,switchAccount?0:1);
-    if(!switchAccount){assert.equal(new Headers(requests[0].init.headers).get('Authorization'),'Bearer token-A');assert.equal(requests[0].init.credentials,'omit');assert.equal(w.selected.length,1);}
+    if(!switchAccount){assert.equal(new Headers(requests[0].init.headers).get('Authorization'),'Bearer token-A');assert.equal(requests[0].init.credentials, 'same-origin');assert.equal(new Headers(requests[0].init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');assert.equal(w.selected.length,1);}
     else {
       assert.equal(w.selected.length,0);
       w.getSession=async()=>session('B');await choose(w,kind);

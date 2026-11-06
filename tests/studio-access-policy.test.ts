@@ -105,3 +105,18 @@ test('Studio page access accepts only a verified local bypass when no cookie ses
     { ok: false, status: 401, error: 'UNAUTHORIZED' },
   );
 });
+
+test('owned bearer operations cannot fall back to a local admin from ambient cookies', async () => {
+  const request = new NextRequest('http://localhost/api/studio/projects', {
+    headers: { authorization: 'Bearer member-token', 'x-maxvideoai-auth-mode': 'bearer' },
+  });
+  let bypassCalls = 0;
+  const base = { resolveLocalBypassUserId: async () => { bypassCalls++; return 'local-admin'; } };
+  assert.deepEqual(await resolveStudioApiAccess(request, enabledAdminOnly, dependencies(base)),
+    { ok: false, status: 403, error: 'FORBIDDEN' });
+  assert.deepEqual(await resolveStudioApiAccess(request, enabledAdminOnly, dependencies({ ...base, resolveRequestUserId: async () => null })),
+    { ok: false, status: 401, error: 'UNAUTHORIZED' });
+  assert.deepEqual(await resolveStudioApiAccess(request, enabledAdminOnly, dependencies({ ...base, resolveRequestUserId: async () => { throw Error('revoked'); } })),
+    { ok: false, status: 500, error: 'ACCESS_CHECK_FAILED' });
+  assert.equal(bypassCalls, 0);
+});

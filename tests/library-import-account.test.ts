@@ -104,7 +104,7 @@ test('the media library imports a large MOV and keeps every part bound to its in
   const upload=chunkedVideoUploadFixture();
   const f=await mount('video',async(input,init)=>{
     assert.equal(new Headers(init?.headers).get('Authorization'),'Bearer token-account-A');
-    assert.equal(init?.credentials,'omit');
+    assert.equal(init?.credentials, 'same-origin');assert.equal(new Headers(init?.headers).get('x-maxvideoai-auth-mode'), 'bearer');
     return upload.request(input,init);
   });
   try {

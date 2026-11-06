@@ -82,6 +82,21 @@ tests both configured hosts and restores its environment. The full prebuild
 passed 60 SEO tests plus registry and public-media coherence gates afterwards;
 runtime robots policy was not changed to obtain that result.
 
+Hosted validation also exposed two environment boundaries. The test database's
+112 connection slots were exhausted (`53300`) by direct serverless connections.
+Only its custom-environment `DATABASE_URL` was changed to the existing pooled
+endpoint, and only its test compute was restarted. Credentials, database contents,
+production configuration and compute size were preserved. The direct local URL
+remains available for migrations. This follows [Neon's connection-pooling guidance](https://neon.com/blog/postgres-support-case-recap).
+
+The protected preview then showed that `credentials: omit` in the owned browser
+transport also omitted Vercel's access cookie, redirecting Studio library requests
+to hosting sign-in. Owned requests now retain same-origin deployment cookies and
+explicitly require bearer-only application authentication. Missing, revoked or
+invalid bearers cannot fall back to a cookie belonging to another account; this
+mode returns no ambient session. Ordinary authentication retains its existing
+behavior. Real Auth fixture tests cover both modes, including account mismatch.
+
 Remaining live qualification: hosted UI and HTTP checks for the exact final SHA,
 fresh real-host OAuth catalog refresh, and a separately approved provider render.
 No test result here authorizes a new paid attempt. Before production, complete

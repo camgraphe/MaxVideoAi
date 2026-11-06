@@ -51,12 +51,16 @@ async function resolveStudioAccess(
     return { ok: false, status: 404, error: 'NOT_FOUND' };
   }
 
+  const resolveLocalBypass = () => request?.headers.get('x-maxvideoai-auth-mode') === 'bearer'
+    ? Promise.resolve(null)
+    : dependencies.resolveLocalBypassUserId(request);
+
   let userId: string | null;
   try {
     userId = await resolveUserId();
   } catch {
     try {
-      const bypassUserId = await dependencies.resolveLocalBypassUserId(request);
+      const bypassUserId = await resolveLocalBypass();
       return bypassUserId
         ? { ok: true, userId: bypassUserId }
         : { ok: false, status: 500, error: 'ACCESS_CHECK_FAILED' };
@@ -67,7 +71,7 @@ async function resolveStudioAccess(
 
   if (!userId) {
     try {
-      const bypassUserId = await dependencies.resolveLocalBypassUserId(request);
+      const bypassUserId = await resolveLocalBypass();
       return bypassUserId
         ? { ok: true, userId: bypassUserId }
         : { ok: false, status: 401, error: 'UNAUTHORIZED' };
@@ -84,7 +88,7 @@ async function resolveStudioAccess(
     if (await dependencies.isAdmin(userId)) {
       return { ok: true, userId };
     }
-    const bypassUserId = await dependencies.resolveLocalBypassUserId(request);
+    const bypassUserId = await resolveLocalBypass();
     return bypassUserId
       ? { ok: true, userId: bypassUserId }
       : { ok: false, status: 403, error: 'FORBIDDEN' };

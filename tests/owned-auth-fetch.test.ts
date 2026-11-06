@@ -43,7 +43,7 @@ for (const reader of ['fetchMediaLibraryAssets', 'recentOutputsFetcher']) {
     });
   }
 
-  test(`${reader} preserves pagination and uses its key's account bearer without cookie fallback`, async () => {
+  test(`${reader} preserves pagination and retains same-origin deployment cookies with strict account bearer authentication`, async () => {
     const f = await fixture();
     try {
       const url = reader === 'fetchMediaLibraryAssets'
@@ -54,7 +54,8 @@ for (const reader of ['fetchMediaLibraryAssets', 'recentOutputsFetcher']) {
       assert.equal(f.requests.length, 1);
       assert.equal(f.requests[0].url, url);
       assert.equal(new Headers(f.requests[0].init.headers).get('Authorization'), 'Bearer token-A');
-      assert.equal(f.requests[0].init.credentials, 'omit');
+      assert.equal(f.requests[0].init.credentials, 'same-origin');
+      assert.equal(new Headers(f.requests[0].init.headers).get('x-maxvideoai-auth-mode'), 'bearer');
       assert.equal(f.sessionReads(), 1, 'authFetch must not resolve ambient auth a second time');
     } finally { f.close(); }
   });

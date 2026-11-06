@@ -60,7 +60,8 @@ async function openStudio(f: Fixture) {
 
 function assertOwner(request: any, owner = 'account-a') {
   assert.equal(request.init.headers.get('Authorization'), `Bearer token-${owner}`);
-  assert.equal(request.init.credentials, 'omit');
+  assert.equal(request.init.credentials, 'same-origin');
+  assert.equal(request.init.headers.get('x-maxvideoai-auth-mode'), 'bearer');
 }
 
 function originalRequest(f: Fixture, jobId: string, kind: string) {
