@@ -29,6 +29,7 @@ export function ResultCard({
   onSave,
   onDuplicateSettings,
   onKeepCharacter,
+  isLook = false,
   onRecast,
   saving,
   copy,
@@ -44,6 +45,7 @@ export function ResultCard({
   onSave: () => void;
   onDuplicateSettings: () => void;
   onKeepCharacter?: () => void;
+  isLook?: boolean;
   onRecast?: () => void;
   saving: boolean;
   copy: CharacterCopy;
@@ -111,8 +113,8 @@ export function ResultCard({
             onClick={onSave}
             disabled={saving}
             className="h-9 w-9 px-0"
-            aria-label={copy.resultCard.save}
-            title={copy.resultCard.save}
+            aria-label={studioCopy.saveMedia}
+            title={studioCopy.saveMedia}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           </Button>
@@ -137,7 +139,7 @@ export function ResultCard({
               className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-xs hover:bg-surface-hover"
             >
               <UserRoundPlus size={14} />
-              {studioCopy.save}
+              {isLook ? studioCopy.saveLook : studioCopy.saveCharacter}
             </button>
           ) : null}
           {onRecast ? (

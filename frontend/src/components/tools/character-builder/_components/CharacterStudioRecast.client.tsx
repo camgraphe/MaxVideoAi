@@ -90,6 +90,9 @@ function RecastScene({ copy, navigation, active, selection, characterLibrary,
   }, [active, editing]);
   const [portrait, setPortrait] = useState<LocalMedia | null>(null);
   const [product, setProduct] = useState<LocalMedia | null>(null);
+  const selectionLocked = useRef(locked);
+  selectionLocked.current = locked;
+  const [blockedSelection, setBlockedSelection] = useState(false);
   useEffect(() => {
     const identity = restoreDraftImage(initialDraft?.portrait ?? null);
     const object = restoreDraftImage(initialDraft?.product ?? null);
@@ -101,7 +104,11 @@ function RecastScene({ copy, navigation, active, selection, characterLibrary,
     };
   }, [initialDraft]);
   useEffect(() => {
-    if (selection) setPortrait({ url: selection.imageUrl, name: selection.name, jobId: selection.jobId });
+    if (!selection) return;
+    // A Character handoff must not remount the recovery action for an uncertain purchase.
+    // Only a new selection triggers this effect; unlocking must not apply a blocked handoff.
+    setBlockedSelection(selectionLocked.current);
+    if (!selectionLocked.current) setPortrait({ url: selection.imageUrl, name: selection.name, jobId: selection.jobId });
   }, [selection]);
   const [dialogue, setDialogue] = useState(initialDraft?.dialogue ?? '');
   const productInput = useRef<HTMLInputElement>(null);
@@ -221,6 +228,7 @@ function RecastScene({ copy, navigation, active, selection, characterLibrary,
             </div>
             {initialDraft && <p data-recast-restored role="status" className="mt-2 text-xs text-text-secondary">{sessionCopy.restored}</p>}
             {storageError && <p data-recast-storage-error role="alert" className="mt-2 text-xs text-text-secondary">{sessionCopy.storageError}</p>}
+            {locked && blockedSelection && <p data-recast-locked-selection role="alert" className="mt-2 text-xs text-text-secondary">{sessionCopy.lockedSelection}</p>}
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">{copy.recastDraft}</p>
           </div>
           <section>

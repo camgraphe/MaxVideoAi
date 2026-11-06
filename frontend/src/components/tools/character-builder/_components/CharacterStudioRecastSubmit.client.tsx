@@ -35,7 +35,16 @@ export function CharacterStudioRecastSubmit({
   }, [quote, onReviewed]);
   const flight = useRef(false);
   const cancel = useRef<AbortController | null>(null);
+  const sessionCopy = getRecastSessionCopy(copy.recastLocale);
   useEffect(() => () => cancel.current?.abort(), []);
+  function cancelPreparation() {
+    if (quote || !busy) return;
+    cancel.current?.abort();
+    cancel.current = null;
+    flight.current = false;
+    setBusy(false);
+    setError('');
+  }
   useEffect(() => {
     if (quote?.kind !== 'wallet' || job || busy || recovering) return;
     const timer = setTimeout(
@@ -76,8 +85,10 @@ export function CharacterStudioRecastSubmit({
         if (!controller.signal.aborted) setJob(accepted);
       } else {
         const prepared = await api.prepareRecastQuote(setup, cache, controller.signal);
-        if (!controller.signal.aborted) setQuote(prepared);
-        setNeedsFunds(false);
+        if (!controller.signal.aborted) {
+          setQuote(prepared);
+          setNeedsFunds(false);
+        }
       }
     } catch (e) {
       if (controller.signal.aborted) return;
@@ -97,6 +108,9 @@ export function CharacterStudioRecastSubmit({
           RECAST_STORAGE_UNAVAILABLE: copy.storageUnavailable,
           ENGINE_UNAVAILABLE: copy.engineUnavailable,
           RENDER_DEFERRED: copy.engineUnavailable,
+          IMAGE_UPLOAD_INVALID: sessionCopy.unreadableImage,
+          VIDEO_UPLOAD_INVALID: sessionCopy.unreadableVideo,
+          AUDIO_UPLOAD_INVALID: sessionCopy.unreadableAudio,
         };
         // These structured rejections occur before acceptance; network/unknown errors do not.
         if (messages[code]) uncertain = recovering;
@@ -104,11 +118,14 @@ export function CharacterStudioRecastSubmit({
         setError(messages[code] ?? (quote ? copy.confirmIssue : copy.prepareIssue));
       }
     } finally {
-      flight.current = false;
-      if (quote) onLock(uncertain);
-      if (!controller.signal.aborted) {
-        setRecovering(uncertain);
-        setBusy(false);
+      // A cancelled preparation may finish after the user has already retried.
+      if (cancel.current === controller) {
+        flight.current = false;
+        if (quote) onLock(uncertain);
+        if (!controller.signal.aborted) {
+          setRecovering(uncertain);
+          setBusy(false);
+        }
       }
     }
   }
@@ -158,6 +175,8 @@ export function CharacterStudioRecastSubmit({
       {busy && !quote && <p role="status" data-recast-preparation-status className="text-xs leading-relaxed text-text-secondary">
         {getRecastReadinessCopy(copy.recastLocale).preparing}
       </p>}
+      {busy && !quote && <button type="button" data-recast-cancel-preparation onClick={cancelPreparation}
+        className="min-h-9 text-xs font-medium underline underline-offset-4">{sessionCopy.cancelPreparation}</button>}
       {quote?.kind !== 'rehearsal' && (
         <button
           type="button"

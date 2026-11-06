@@ -332,6 +332,8 @@ function CharacterBuilderAccountWorkspace({
   const { newLook, handoffRecast, newCharacter, chooseInspiration, changeMode, changeTab } =
     createStudioDraftTransitions({
       library,
+      currentMode: studioMode,
+      inspirationApplied: (name) => studioCopy.inspirationApplied.replace('{name}', () => name),
       beginDraftIntent,
       setState,
       setMode: setStudioMode,
@@ -348,15 +350,16 @@ function CharacterBuilderAccountWorkspace({
       },
     });
 
+  const showExplore = () => {
+    setStudioTab('explore');
+    setShowMobileResults(true);
+  };
   const studioNavigation = (
     <CharacterStudioNavigation
       mode={studioMode}
       onMode={changeMode}
       onNew={newCharacter}
-      onExplore={() => {
-        setStudioTab('explore');
-        setShowMobileResults(true);
-      }}
+      onExplore={showExplore}
       copy={studioCopy}
     />
   );
@@ -411,6 +414,7 @@ function CharacterBuilderAccountWorkspace({
           <CharacterStudioComposer
             key={`${editorKey}:${state.characterId ?? 'create'}`}
             navigation={studioNavigation}
+            onExplore={showExplore}
             state={state}
             setState={setState}
             locale={studioLocale}

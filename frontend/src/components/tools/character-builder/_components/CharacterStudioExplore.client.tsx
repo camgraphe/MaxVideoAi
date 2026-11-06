@@ -5,6 +5,19 @@ import { CHARACTER_INSPIRATIONS } from '../_lib/character-studio-state';
 import type { StudioCopy } from '../_lib/character-studio-copy';
 import { StudioImage } from './CharacterStudioChoices.client';
 
+export function CharacterStudioEntry({ identity, copy, onExplore }: { identity: ReactNode; copy: StudioCopy; onExplore?: () => void }) {
+  return (
+    <div className="px-3 pb-2 pt-1">
+      {identity}
+      {onExplore ? (
+        <button type="button" onClick={onExplore} className="mt-1 flex min-h-9 w-full items-center justify-center rounded-md px-3 text-xs text-text-secondary underline underline-offset-4 hover:bg-surface-hover hover:text-text-primary lg:hidden">
+          {copy.exploreInspirations}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 export function CharacterStudioExplore({
   copy,
   onChoose,

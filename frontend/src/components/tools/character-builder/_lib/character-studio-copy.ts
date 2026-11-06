@@ -102,6 +102,8 @@ const en = {
   startTitle: 'A starting point, your way.',
   startBody: 'Choose an inspiration and make its traits your own.',
   inspiration: 'Use inspiration',
+  exploreInspirations: 'Explore inspirations',
+  inspirationApplied: 'Inspiration {name} applied. Open Hair, Clothing style or Scene to customize it.',
   inspirationNote: 'These images illustrate a set of choices. Your character appears after generation.',
   fresh: 'Start from scratch',
   identity: 'Identity',
@@ -259,6 +261,8 @@ const fr: StudioCopy = {
   startTitle: 'Un point de départ, à ta façon.',
   startBody: 'Reprends une inspiration et personnalise ses traits.',
   inspiration: 'S’inspirer de',
+  exploreInspirations: 'Voir des inspirations',
+  inspirationApplied: 'Inspiration {name} appliquée. Ouvre Cheveux, Style vestimentaire ou Décor pour la personnaliser.',
   inspirationNote:
     'Ces images illustrent une sélection de caractéristiques. Ton personnage apparaît après génération.',
   fresh: 'Partir de zéro',
@@ -415,6 +419,8 @@ const es: StudioCopy = {
   startTitle: 'Un punto de partida, a tu manera.',
   startBody: 'Elige una inspiración y personaliza sus rasgos.',
   inspiration: 'Inspirarse en',
+  exploreInspirations: 'Ver inspiraciones',
+  inspirationApplied: 'Inspiración {name} aplicada. Abre Cabello, Estilo de ropa o Escenario para personalizarla.',
   inspirationNote:
     'Estas imágenes ilustran una selección de rasgos. Tu personaje aparece después de generar.',
   fresh: 'Empezar de cero',

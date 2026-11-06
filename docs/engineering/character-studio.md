@@ -228,6 +228,20 @@ loads, historical settings reuse and reference uploads. New look, settings reuse
 New character and inspiration invalidate older draft operations even within the
 same account; generation completion and durable saves keep the account lifetime.
 `character-studio-transitions.ts` owns these navigation/reset transitions.
+Switching Character/Recast modes preserves the editable draft and its pending
+reference uploads; clicking the already active mode is inert. A real mode change
+still cancels pending library detail selection. Inspiration selection announces
+the applied name and the visible styling sections; the mobile new-character
+editor exposes a named Explore action below the photo entry.
+
+Library retries repeat the failed list/detail read with its original character
+and pagination cursor, preserving already loaded characters and looks. Rename
+and presentation PATCH responses apply only their respective field, so a late
+response cannot overwrite another completed edit. Mutation errors stay attached
+to the detail selection that initiated them. The image-history media-save action
+names My media explicitly; keeping a character/look uses the existing typed save
+dialog label when the result's lineage is already known.
+
 `CharacterStudioWorkspaceView` owns layout/tabs and `CharacterStudioOverlays`
 owns dialogs/lightbox composition. Results expose Save and Recast; Mes personnages
 exposes rename, New look, saved looks and Recast. New look opens styling controls
@@ -422,6 +436,13 @@ The Recast purchase action uploads local originals to the authenticated account
 and sends the independent ranges to the existing video and audio excerpt workers.
 Their distinct, measured assets are the references in the wallet quote. The
 server resolves a saved portrait from its original Character Builder output.
+Preparing a price can be cancelled without clearing the scene. Cancellation
+aborts its upload/quote requests and removes pending upload cache entries;
+a failed upload also cancels its pending siblings, while successful owned
+uploads remain reusable. Multipart cleanup retains
+its independent request so cancelling does not suppress cleanup. Late responses
+cannot overwrite a newer attempt. Upload error strings and structured errors
+retain their cause, with image/video/audio-specific replacement guidance.
 Resolution (480p, 720p or 1080p) and framing (Auto, 9:16, 16:9, 1:1, 3:4 or
 4:3) participate in the brief, estimate and exact request. The default is 720p Auto.
 The second click confirms the reviewed quote ID, amount and currency. Any edit
@@ -485,6 +506,10 @@ quote can be retried after topup. The server remains authoritative for funds.
 This purchase recovery lasts for the mounted draft. Leaving while confirmation is
 pending or uncertain triggers a warning; a local scene draft never restores a
 purchase token or starts another render automatically.
+An external Character handoff during this lock is rejected with an explanation;
+it cannot replace the recovery action or apply itself silently after unlocking.
+A new explicit selection is required. The selection effect also preserves an
+initial handoff through React Strict Mode's effect replay.
 
 ### Local scene recovery and reset (2026-11-06)
 

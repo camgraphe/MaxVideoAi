@@ -103,3 +103,31 @@ test('optional public proof streams after the unchanged gallery and never gates 
   assert.match(view, /id="character-studio" className="scroll-mt-24"/);
   assert.match(view, /<Suspense fallback=\{null\}>/);
 });
+
+for (const locale of ['en', 'fr', 'es']) test(`the ${locale} new-character editor exposes inspirations before any generation`, async () => {
+  const f = await mountToolFixture(`
+    import {CharacterStudioComposer} from './src/components/tools/character-builder/_components/CharacterStudioComposer.client';
+    import {CharacterStudioExplore} from './src/components/tools/character-builder/_components/CharacterStudioExplore.client';
+    import {getCharacterStudioCopy} from './src/components/tools/character-builder/_lib/character-studio-copy';
+    import {DEFAULT_CHARACTER_COPY} from './src/components/tools/character-builder/_lib/character-builder-copy';
+    import {createDefaultCharacterBuilderState} from './src/lib/character-builder';
+    function App(){const [exploring,setExploring]=React.useState(false);const copy=getCharacterStudioCopy(window.locale);return exploring
+      ? <CharacterStudioExplore copy={copy} onNew={()=>{}} onChoose={name=>window.chosen=name}/>
+      : <CharacterStudioComposer state={{...createDefaultCharacterBuilderState(),characterId:window.characterId}} setState={()=>{}}
+          copy={DEFAULT_CHARACTER_COPY} labels={copy} locale={window.locale} navigation={null} identitySlot={null} styleSlot={null}
+          onExplore={()=>setExploring(true)} price={0.07} busy={false} canGenerate onGenerate={()=>window.generated=true}/>}
+  `, {}, w => {w.locale=locale;w.characterId=null;});
+  try {
+    const doc=f.w.document;
+    const text=locale==='fr'?'Voir des inspirations':locale==='es'?'Ver inspiraciones':'Explore inspirations';
+    const button=[...doc.querySelectorAll('button')].find((node:any)=>node.textContent===text) as any;
+    assert.ok(button,'a named inspiration action is available in the editor');
+    await f.act(()=>button.click());
+    const noor=[...doc.querySelectorAll('button')].find((node:any)=>node.getAttribute('aria-label')?.endsWith('Noor')) as any;
+    assert.ok(noor,'the action opens the actual inspiration list');
+    await f.act(()=>noor.click());
+    assert.equal(f.w.chosen,'Noor');
+    assert.equal(f.w.generated,undefined);
+    assert.equal(f.w.requests.length,0);
+  } finally {await f.close();}
+});

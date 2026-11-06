@@ -61,7 +61,7 @@ export function CharacterStudioLibrary({
       {library.error ? (
         <div role="alert" className="rounded-xl border border-border bg-bg p-4 text-sm">
           <p>{copy.unavailable}</p>
-          <button type="button" onClick={() => void library.load()} className={`${buttonClass} mt-3`}>
+          <button type="button" onClick={() => void library.retry()} className={`${buttonClass} mt-3`}>
             {copy.retry}
           </button>
         </div>

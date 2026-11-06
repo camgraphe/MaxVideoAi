@@ -11,6 +11,7 @@ import type { CaptureCharacterBuilderAccountRequest } from '../_lib/character-bu
 
 type Source = { jobId: string; imageUrl: string };
 type SaveTarget = Source & { characterId: string | null; loading: boolean };
+type FailedRead = { kind: 'list'; before?: string | null } | { kind: 'detail'; id: string; beforeLook?: string | null };
 const endpoint = '/api/character-studio/characters';
 const merge = <T extends { id: string }>(items: T[]) => [
   ...new Map(items.map((item) => [item.id, item])).values(),
@@ -33,6 +34,7 @@ export function useCharacterStudioLibrary({
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [failedRead, setFailedRead] = useState<FailedRead | null>(null);
   const [saveTarget, setSaveTarget] = useState<SaveTarget | null>(null);
   const [saveError, setSaveError] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -56,6 +58,7 @@ export function useCharacterStudioLibrary({
       const version = ++listVersion.current;
       setLoading(true);
       setError(false);
+      setFailedRead(null);
       try {
         const response = await authFetch(
           `${endpoint}${before ? `?before=${encodeURIComponent(before)}` : ''}`,
@@ -67,7 +70,10 @@ export function useCharacterStudioLibrary({
         setCharacters((previous) => (before ? merge([...previous, ...body.characters]) : body.characters));
         setNextCursor(body.nextCursor);
       } catch {
-        if (request.isCurrent() && version === listVersion.current) setError(true);
+        if (request.isCurrent() && version === listVersion.current) {
+          setFailedRead({ kind: 'list', before });
+          setError(true);
+        }
       } finally {
         if (request.isCurrent() && version === listVersion.current) setLoading(false);
       }
@@ -86,6 +92,7 @@ export function useCharacterStudioLibrary({
       if (!beforeLook) setSelected(null);
       setDetailLoading(true);
       setError(false);
+      setFailedRead(null);
       try {
         const response = await authFetch(
           `${endpoint}/${encodeURIComponent(id)}${beforeLook ? `?beforeLook=${encodeURIComponent(beforeLook)}` : ''}`,
@@ -102,7 +109,10 @@ export function useCharacterStudioLibrary({
         );
         return character;
       } catch {
-        if (request.isCurrent() && version === detailVersion.current) setError(true);
+        if (request.isCurrent() && version === detailVersion.current) {
+          setFailedRead({ kind: 'detail', id, beforeLook });
+          setError(true);
+        }
       } finally {
         if (request.isCurrent() && version === detailVersion.current) setDetailLoading(false);
       }
@@ -117,6 +127,7 @@ export function useCharacterStudioLibrary({
     cancelDetails();
     setSelected(null);
     setError(false);
+    setFailedRead(null);
   };
 
   const openSave = async (source: Source) => {
@@ -181,7 +192,9 @@ export function useCharacterStudioLibrary({
   const updateCharacter = async (id: string, patch: { name: string } | { presentation: import('@/lib/character-studio-presentation').StudioPresentation }) => {
     const request = captureAccountRequest();
     if (!request) return;
+    const detail = detailVersion.current;
     setError(false);
+    setFailedRead(null);
     try {
       const response = await authFetch(`${endpoint}/${encodeURIComponent(id)}`, {
         method: 'PATCH',
@@ -192,15 +205,19 @@ export function useCharacterStudioLibrary({
       const body = await response.json();
       if (!response.ok || !body.ok) throw new Error();
       if (!request.isCurrent()) return;
-      setCharacters((previous) =>
-        previous.map((item) => (item.id === id ? { ...item, name: body.character.name } : item)),
-      );
+      if ('name' in patch) {
+        setCharacters((previous) =>
+          previous.map((item) => (item.id === id ? { ...item, name: body.character.name } : item)),
+        );
+      }
       setSelected((previous) =>
-        previous?.id === id ? { ...previous, name: body.character.name, presentation: body.character.presentation } : previous,
+        previous?.id === id
+          ? { ...previous, ...('name' in patch ? { name: body.character.name } : { presentation: body.character.presentation }) }
+          : previous,
       );
       return true;
     } catch {
-      if (request.isCurrent()) setError(true);
+      if (request.isCurrent() && detail === detailVersion.current) setError(true);
     }
   };
   return {
@@ -210,6 +227,7 @@ export function useCharacterStudioLibrary({
     loading,
     detailLoading,
     error,
+    retry: () => failedRead?.kind === 'detail' ? openCharacter(failedRead.id, failedRead.beforeLook) : load(failedRead?.before),
     load,
     openCharacter,
     closeCharacter,

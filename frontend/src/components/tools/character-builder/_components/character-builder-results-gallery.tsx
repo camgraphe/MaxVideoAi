@@ -130,6 +130,7 @@ export function CharacterBuilderResultsGallery({
           <div key={result.id} className={itemClassName}>
             <ResultCard
               result={result}
+              isLook={Boolean(run?.settingsSnapshot?.builder.characterId)}
               selected={selectedResultId === result.id}
               title={title}
               subtitle={subtitle}

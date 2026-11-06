@@ -764,3 +764,36 @@ test('reference removal cannot revive an upload status belonging to a draft aban
     assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'));
   } finally { await f.close(); }
 });
+
+for (const navigation of ['same-mode', 'mode-round-trip'] as const) test(`an identity upload survives ${navigation} navigation without losing the current draft`, async () => {
+  const f = await mountWorkspace();
+  try {
+    await f.edit('Keep this draft');
+    await chooseReferenceFile(f, 'identity', 'reference.png');
+    const clickMode = async (label: string) => f.w.fx.act(async () => {
+      const button = [...f.w.document.querySelectorAll('[role="group"][aria-label="Character Studio"] button')]
+        .find((candidate: any) => candidate.textContent.includes(label)) as any;
+      assert.ok(button); button.click();
+    });
+    if (navigation === 'mode-round-trip') await clickMode('Recast');
+    await clickMode('Character');
+    await f.respond(referenceUploads(f)[0], uploadedReference('reference'));
+    assert.equal(f.draft().referenceImages[0]?.url, 'https://example.invalid/reference.png');
+    assert.equal(f.draft().advancedNotes, 'Keep this draft');
+    assert.ok(!f.w.document.querySelector('[role=status]')?.textContent?.includes('Uploading'));
+  } finally { await f.close(); }
+});
+
+test('choosing an inspiration explains the applied preset without submitting a generation', async () => {
+  const f = await mountWorkspace();
+  try {
+    await clickNewCharacter(f);
+    const inspiration = f.w.document.querySelector('[aria-label="Use inspiration Noor"]');
+    assert.ok(inspiration);
+    await f.w.fx.act(async () => inspiration.click());
+    assert.match(f.w.document.querySelector('[role=status]')?.textContent ?? '', /Noor/);
+    assert.match(f.w.document.querySelector('[role=status]')?.textContent ?? '', /applied/i);
+    assert.ok(f.draft().traits.hairstyle.value);
+    assert.equal(f.w.requests.filter((request: any) => request.url === '/api/tools/character-builder').length, 0);
+  } finally { await f.close(); }
+});

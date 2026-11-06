@@ -1,4 +1,9 @@
 const en = {
+  cancelPreparation: 'Cancel preparation',
+  lockedSelection: 'Check the pending generation confirmation before choosing another character. Your current scene has been kept.',
+  unreadableImage: 'This image could not be read. Choose another JPG, PNG, WebP or BMP image (up to 20 MB), then review the price again.',
+  unreadableVideo: 'This video could not be read. Choose another MP4 or MOV file (up to 100 MB), then select its passage again.',
+  unreadableAudio: 'This audio could not be read. Choose another MP3 or WAV file (up to 15 MB), then select its passage again.',
   newScene: 'New scene', reset: 'Start a new scene? This clears the current references, passages, text and quote. Saved characters and videos are kept.',
   restored: 'Your Recast scene was restored on this device. Review a fresh price before generating.',
   storageError: 'This scene could not be saved on this device. Keep this page open or download the shot brief before leaving.',
@@ -6,6 +11,11 @@ const en = {
   loading: 'Restoring your Recast scene…', settings: 'Output settings', quoteDetails: 'Quote details',
 };
 const fr: typeof en = {
+  cancelPreparation: 'Annuler la préparation',
+  lockedSelection: 'Vérifie la confirmation de génération en cours avant de choisir un autre personnage. Ta scène actuelle a été conservée.',
+  unreadableImage: 'Cette image ne peut pas être lue. Choisis une autre image JPG, PNG, WebP ou BMP (20 Mo maximum), puis vérifie à nouveau le prix.',
+  unreadableVideo: 'Cette vidéo ne peut pas être lue. Choisis un autre fichier MP4 ou MOV (100 Mo maximum), puis sélectionne à nouveau son passage.',
+  unreadableAudio: 'Cet audio ne peut pas être lu. Choisis un autre fichier MP3 ou WAV (15 Mo maximum), puis sélectionne à nouveau son passage.',
   newScene: 'Nouvelle scène', reset: 'Commencer une nouvelle scène ? Les références, passages, textes et devis actuels seront effacés. Tes personnages et vidéos enregistrés sont conservés.',
   restored: 'Ta scène Recast a été restaurée sur cet appareil. Vérifie un nouveau prix avant de générer.',
   storageError: 'Impossible de sauvegarder cette scène sur cet appareil. Garde cette page ouverte ou télécharge la fiche de tournage avant de quitter.',
@@ -13,6 +23,11 @@ const fr: typeof en = {
   loading: 'Restauration de ta scène Recast…', settings: 'Réglages de sortie', quoteDetails: 'Détail du devis',
 };
 const es: typeof en = {
+  cancelPreparation: 'Cancelar preparación',
+  lockedSelection: 'Comprueba la confirmación de generación pendiente antes de elegir otro personaje. Se ha conservado tu escena actual.',
+  unreadableImage: 'No se pudo leer esta imagen. Elige otra imagen JPG, PNG, WebP o BMP (máximo 20 MB) y revisa el precio de nuevo.',
+  unreadableVideo: 'No se pudo leer este vídeo. Elige otro archivo MP4 o MOV (máximo 100 MB) y vuelve a seleccionar su fragmento.',
+  unreadableAudio: 'No se pudo leer este audio. Elige otro archivo MP3 o WAV (máximo 15 MB) y vuelve a seleccionar su fragmento.',
   newScene: 'Nueva escena', reset: '¿Empezar una nueva escena? Se borrarán las referencias, fragmentos, textos y presupuesto actuales. Se conservan tus personajes y vídeos guardados.',
   restored: 'Tu escena Recast se ha restaurado en este dispositivo. Revisa un precio nuevo antes de generar.',
   storageError: 'No se pudo guardar esta escena en este dispositivo. Mantén la página abierta o descarga la ficha de rodaje antes de salir.',

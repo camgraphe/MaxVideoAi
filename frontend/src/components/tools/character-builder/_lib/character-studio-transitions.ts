@@ -11,6 +11,8 @@ type Set<T> = Dispatch<SetStateAction<T>>;
 /** All editor replacements share a draft lifetime; completed jobs keep their own account lifetime. */
 export function createStudioDraftTransitions({
   library,
+  currentMode,
+  inspirationApplied,
   beginDraftIntent,
   setState,
   setMode,
@@ -23,6 +25,8 @@ export function createStudioDraftTransitions({
   onReset,
 }: {
   library: ReturnType<typeof useCharacterStudioLibrary>;
+  currentMode: CharacterStudioMode;
+  inspirationApplied: (name: string) => string;
   beginDraftIntent: () => void;
   setState: Set<CharacterBuilderState>;
   setMode: Set<CharacterStudioMode>;
@@ -91,9 +95,10 @@ export function createStudioDraftTransitions({
       setState((previous) => applyCharacterInspiration(previous, name));
       setEditorKey((key) => key + 1);
       clearNotices();
+      setStatusMessage(inspirationApplied(name));
     },
     changeMode(mode: CharacterStudioMode) {
-      beginDraftIntent();
+      if (mode === currentMode) return;
       library.cancelDetails();
       setMode(mode);
     },

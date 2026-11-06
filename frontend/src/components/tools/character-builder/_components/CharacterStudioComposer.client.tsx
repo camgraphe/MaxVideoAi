@@ -12,6 +12,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { CharacterStudioOutputSettings } from './CharacterStudioOutputSettings.client';
+import { CharacterStudioEntry } from './CharacterStudioExplore.client';
 import { CharacterStudioAdvancedSettings } from './CharacterStudioAdvancedSettings.client';
 import { getCharacterFormatResolution } from '@/lib/character-builder';
 import {
@@ -60,7 +61,9 @@ export function CharacterStudioComposer({
   canGenerate,
   onGenerate,
   navigation,
+  onExplore,
 }: {
+  onExplore?: () => void;
   navigation: ReactNode;
   state: CharacterBuilderState;
   setState: Dispatch<SetStateAction<CharacterBuilderState>>;
@@ -161,7 +164,7 @@ export function CharacterStudioComposer({
     >
       {navigation}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain" data-studio-scroll="settings">
-        <div className="px-3 pb-2 pt-1">{identitySlot}</div>
+        <CharacterStudioEntry identity={identitySlot} copy={labels} onExplore={state.characterId ? undefined : onExplore} />
         {group(
           'type',
           labels.type,

@@ -13,7 +13,7 @@ const bundle = bundleClientFlow(`
 `, { '@/lib/authFetch': 'export const authFetch=(...args)=>fetch(...args);', '../_lib/recast-draft-store': `export {draftImage, draftTrack, hasRecastDraft, restoreDraftImage} from './src/components/tools/character-builder/_lib/recast-draft-store'; export const loadRecastDraft=async(id)=>window.drafts.get(id)??null; export const saveRecastDraft=async(id,value)=>{if(window.storageFailure)throw Error('unavailable');window.drafts.set(id,value);};` });
 const id = (n: number) => 'ma_' + String(n).padStart(32, '0');
 
-async function mount(withCharacter = true, accountId?: string) {
+async function mount(withCharacter = true, accountId?: string, strict = false) {
   const dom = createClientFlowDom('/app/tools/character-builder');
   const w = dom.window as any;
   const doc = w.document;
@@ -23,9 +23,11 @@ async function mount(withCharacter = true, accountId?: string) {
   const paused: any[] = [];
   const revoked: string[] = [];
   const deadlines: Array<() => void> = [];
+  const mediaDeadlines: Array<() => void> = [];
   const setTimeout = w.setTimeout.bind(w);
   w.setTimeout = (callback: () => void, delay?: number) => {
     if (delay === 15000) deadlines.push(callback);
+    if (delay === 10000) mediaDeadlines.push(callback);
     return setTimeout(callback, delay);
   };
   let serial = 0;
@@ -50,7 +52,7 @@ async function mount(withCharacter = true, accountId?: string) {
     return new Promise<Response>(resolve => requests.push({ url, body: JSON.parse(options.body), signal: options.signal,
       resolve: body => resolve(Response.json(body)) }));
   };
-  w.active = true; w.accountId=accountId; w.drafts=new Map(); w.confirm=()=>true;
+  w.active = true; w.strict = strict; w.accountId=accountId; w.drafts=new Map(); w.confirm=()=>true;
   const savedCharacter = { jobId: 'saved-look', transferId: '1', imageUrl: 'https://example.invalid/portrait.png', name: 'Basil' };
   w.selection = withCharacter ? savedCharacter : null;
   w.eval(await bundle);
@@ -62,7 +64,7 @@ async function mount(withCharacter = true, accountId?: string) {
     Object.getOwnPropertyDescriptor(prototype, 'value')!.set!.call(node, value);
     node.dispatchEvent(new w.Event('input', { bubbles: true }));
   });
-  return { w, doc, requests, uploads, paused, revoked, probes, deadlines, savedCharacter, button, act, input,
+  return { w, doc, requests, uploads, paused, revoked, probes, deadlines, mediaDeadlines, savedCharacter, button, act, input,
     click: (text: string) => act(async () => { assert.ok(button(text), text); button(text).click(); }),
     select: (node: any, value: string) => act(async () => {
       node.value = value; node.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -443,3 +445,258 @@ for (const kind of ['portrait', 'product'] as const) {
     } finally { await f.dispose(); }
   });
 }
+
+// Wave 2: recovery must retain the scene, including when the old request settles later.
+test('a stalled preparation can be cancelled without losing the scene, then retried safely', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'), 'Keep my scene');
+    await f.click(f.w.labels.reviewPrice);
+    const stalled = f.requests.find(r => r.url.endsWith('/prepare'))!;
+    assert.ok(stalled);
+    const cancel = f.doc.querySelector('[data-recast-cancel-preparation]');
+    assert.ok(cancel, 'preparation needs an explicit cancel action without resetting the scene');
+    await f.act(async () => cancel.click());
+    assert.equal(stalled.signal?.aborted, true);
+    assert.equal(f.doc.querySelector('textarea').value, 'Keep my scene');
+    assert.ok(f.doc.querySelector('img[alt="Basil"]'));
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    await f.click(f.w.labels.reviewPrice);
+    const retry = f.requests.filter(r => r.url.endsWith('/prepare')).at(-1)!;
+    assert.notEqual(retry, stalled);
+    await f.act(async () => stalled.resolve({ ok: true, kind: 'rehearsal', amountCents: 999, currency: 'USD', revision: 'old', sourceSeconds: 0, audioSeconds: 0 }));
+    assert.doesNotMatch(f.doc.body.textContent, /9,99/);
+    assert.equal(f.doc.querySelector('[data-recast-submit]').disabled, true, 'the cancelled flight must not unlock the newer attempt');
+    await f.act(async () => retry.resolve({ ok: true, kind: 'rehearsal', amountCents: 168, currency: 'USD', revision: 'current', sourceSeconds: 0, audioSeconds: 0 }));
+    assert.match(f.doc.body.textContent, /1,68/);
+    assert.ok(!f.doc.querySelector('[data-recast-cancel-preparation]'));
+    assert.equal(f.doc.querySelector('textarea').value, 'Keep my scene');
+  } finally { await f.dispose(); }
+});
+
+for (const kind of ['portrait', 'product'] as const) test(`an unreadable ${kind} upload asks for another image and a corrected file prepares successfully`, async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    const originalFetch = f.w.fetch;
+    let rejected = true;
+    f.w.createImageBitmap = async () => ({ width: 100, height: 100, close() {} });
+    f.w.fetch = (url: string, options: any) => url === '/api/uploads/image'
+      ? Promise.resolve(rejected
+        ? Response.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 })
+        : Response.json({ ok: true, asset: { assetId: id(4) } }))
+      : originalFetch(url, options);
+    await f.input(f.doc.querySelector('textarea'), 'Keep the direction');
+    const field = f.doc.querySelector(kind === 'portrait' ? 'input[accept="image/*"]' : 'input[accept^="image/jpeg"]');
+    const choose = (name: string) => f.act(async () => {
+      Object.defineProperty(field, 'files', { configurable: true, value: [new f.w.File(['bytes'], name, { type: 'image/png' })] });
+      field.dispatchEvent(new f.w.Event('change', { bubbles: true }));
+    });
+    await choose('unreadable.png');
+    await f.click(f.w.labels.reviewPrice);
+    assert.match(f.doc.querySelector('[role="alert"]').textContent, /image.*(?:lisible|lue|lire)|(?:lisible|lue|lire).*image/i);
+    assert.match(f.doc.querySelector('[role="alert"]').textContent, /(?:autre|nouveau|remplac)/i);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    assert.equal(f.requests.filter(r => r.url.endsWith('/prepare')).length, 0);
+    assert.equal(f.doc.querySelector('textarea').value, 'Keep the direction');
+    rejected = false;
+    await choose('corrected.png');
+    await f.click(f.w.labels.reviewPrice);
+    const prepared = f.requests.find(r => r.url.endsWith('/prepare'))!;
+    assert.ok(prepared);
+    assert.equal(kind === 'portrait' ? prepared.body.portrait.assetId : prepared.body.product, id(4));
+    assert.ok(!f.doc.querySelector('[role="alert"]'));
+  } finally { await f.dispose(); }
+});
+
+test('an external character selection cannot discard an uncertain purchase or apply itself later', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'), 'Walk');
+    await f.click(f.w.labels.reviewPrice);
+    const quoteId = '11111111-1111-4111-8111-111111111111';
+    await f.act(async () => f.requests.find(r => r.url.endsWith('/prepare'))!.resolve({ ok: true, kind: 'wallet', quoteId,
+      expiresAt: new Date(Date.now() + 60000).toISOString(), amountCents: 168, currency: 'USD', sourceSeconds: 0, audioSeconds: 0, topupRequired: false }));
+    f.w.confirmationFixture = () => Promise.reject(new Error('network lost'));
+    await f.act(async () => f.doc.querySelector('[data-recast-submit]').click());
+    assert.equal(f.doc.querySelector('[data-recast-submit]').textContent, f.w.labels.recoverRecast);
+    await f.act(async () => { f.w.active = false; f.w.fx.render(); });
+    await f.act(async () => {
+      f.w.selection = { jobId: 'new-job', imageUrl: 'https://example.invalid/other.png', name: 'Other character', transferId: '2' };
+      f.w.active = true; f.w.fx.render();
+    });
+    assert.equal(f.doc.querySelector('[data-recast-submit]')?.textContent, f.w.labels.recoverRecast, 'keep the original recovery action');
+    assert.ok(f.doc.querySelector('img[alt="Basil"]'));
+    assert.ok(!f.doc.querySelector('img[alt="Other character"]'));
+    assert.match(f.doc.querySelector('[data-recast-locked-selection]')?.textContent ?? '', /confirmation|vérifi/i);
+    f.w.confirmationFixture = (options: any) => {
+      assert.equal(JSON.parse(options.body).quoteId, quoteId);
+      return Promise.resolve(Response.json({ ok: true, jobId: 'existing-job', status: 'accepted' }));
+    };
+    await f.act(async () => f.doc.querySelector('[data-recast-submit]').click());
+    assert.ok(f.doc.querySelector('a[href="/app?job=existing-job"]'));
+    assert.ok(f.doc.querySelector('img[alt="Basil"]'), 'unlocking must not silently apply a previously rejected handoff');
+    assert.ok(!f.doc.querySelector('[data-recast-locked-selection]'));
+    await f.act(async () => { f.w.selection = { ...f.w.selection, transferId: '3' }; f.w.fx.render(); });
+    assert.ok(f.doc.querySelector('img[alt="Other character"]'), 'an explicit later selection is allowed after recovery');
+  } finally { await f.dispose(); }
+});
+
+test('cancelling a stalled local upload evicts only that attempt and retry keeps the corrected upload cached', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.upload('video', 5);
+    const uploads: Array<{ signal: AbortSignal; resolve: (value: Response) => void }> = [];
+    const originalFetch = f.w.fetch;
+    f.w.fetch = (url: string, options: any) => url === '/api/uploads/video'
+      ? new Promise<Response>(resolve => uploads.push({ signal: options.signal, resolve }))
+      : originalFetch(url, options);
+    await f.click(f.w.labels.reviewPrice);
+    assert.equal(uploads.length, 1);
+    await f.act(async () => f.doc.querySelector('[data-recast-cancel-preparation]').click());
+    assert.equal(uploads[0].signal?.aborted, true);
+    await f.click(f.w.labels.reviewPrice);
+    assert.equal(uploads.length, 2, 'retry must not wait on the cancelled cached upload');
+    await f.act(async () => uploads[0].resolve(Response.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 })));
+    assert.ok(!f.doc.querySelector('[role="alert"]'), 'old upload failure cannot replace the current progress');
+    await f.act(async () => uploads[1].resolve(Response.json({ ok: true, asset: { assetId: id(5), id: 'video', url: 'https://example.invalid/corrected.mp4' } })));
+    const quote = f.requests.find(r => r.url.endsWith('/prepare'))!;
+    assert.equal(quote.body.video.assetId, id(5));
+    await f.act(async () => quote.resolve({ ok: false, error: { code: 'ENGINE_UNAVAILABLE' } }));
+    await f.click(f.w.labels.reviewPrice);
+    assert.equal(uploads.length, 2, 'a late failed attempt must not evict the newer successful cache entry');
+    assert.equal(f.requests.filter(r => r.url.endsWith('/prepare')).length, 2);
+  } finally { await f.dispose(); }
+});
+
+for (const kind of ['video', 'audio'] as const) test(`invalid ${kind} formats and byte limits preserve the passage; corrupt or stalled metadata can be corrected`, async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    if (kind === 'audio') await f.click('Dialogue');
+    await f.upload(kind, 5, `good.${kind === 'video' ? 'mp4' : 'wav'}`);
+    const field = f.doc.querySelector(kind === 'video' ? 'input[accept="video/*"]' : 'input[accept^=".mp3"]');
+    const choose = (name: string, type: string, size?: number) => f.act(async () => {
+      const file = new f.w.File(['bytes'], name, { type });
+      if (size !== undefined) Object.defineProperty(file, 'size', { value: size });
+      Object.defineProperty(field, 'files', { configurable: true, value: [file] });
+      field.dispatchEvent(new f.w.Event('change', { bubbles: true }));
+    });
+    const original = f.doc.querySelector(`${kind}[controls]`).src;
+    for (const [name, type, size] of [
+      ['wrong.txt', 'text/plain', 5],
+      [kind === 'video' ? 'empty.mp4' : 'empty.wav', `${kind}/${kind === 'video' ? 'mp4' : 'wav'}`, 0],
+      [kind === 'video' ? 'large.mp4' : 'large.wav', `${kind}/${kind === 'video' ? 'mp4' : 'wav'}`, (kind === 'video' ? 100 : 15) * 1024 * 1024 + 1],
+    ] as const) {
+      await choose(name, type, size);
+      assert.ok(f.doc.querySelector('fieldset p[role="alert"]'));
+      assert.equal(f.doc.querySelector(`${kind}[controls]`).src, original);
+    }
+    await choose(kind === 'video' ? 'corrupt.mp4' : 'corrupt.wav', `${kind}/${kind === 'video' ? 'mp4' : 'wav'}`);
+    const broken = f.probes.findLast(el => typeof el.onerror === 'function');
+    await f.act(async () => broken.dispatchEvent(new f.w.Event('error')));
+    assert.ok(f.doc.querySelector('fieldset p[role="alert"]'));
+    assert.ok(!f.doc.querySelector(`${kind}[controls]`));
+    assert.ok(f.button(kind === 'video' ? f.w.labels.addVideo : f.w.labels.addAudio) || f.doc.querySelector(kind === 'video' ? 'input[accept="video/*"]' : 'input[accept^=".mp3"]'));
+    await choose(kind === 'video' ? 'stalled.mp4' : 'stalled.wav', `${kind}/${kind === 'video' ? 'mp4' : 'wav'}`);
+    const late = f.probes.findLast(el => typeof el.onloadedmetadata === 'function');
+    const staleMetadata = late.onloadedmetadata;
+    await f.act(async () => f.mediaDeadlines.at(-1)!());
+    assert.ok(f.doc.querySelector('fieldset p[role="alert"]'));
+    await f.upload(kind, 6, kind === 'video' ? 'corrected.mp4' : 'corrected.wav');
+    await f.act(async () => { Object.defineProperty(late, 'duration', { value: 25 }); staleMetadata(); });
+    assert.ok(!f.doc.querySelector('fieldset p[role="alert"]'));
+    assert.match(f.doc.querySelector(`${kind}[controls]`).src, /corrected/);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    assert.ok(!f.doc.querySelector('[role="dialog"]'), 'late invalidated metadata must not reopen a trim');
+  } finally { await f.dispose(); }
+});
+
+for (const kind of ['video', 'audio'] as const) test(`a cancelled ${kind} trim is reopened from readiness; invalid ranges stay editable and exact 15 seconds is accepted`, async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    if (kind === 'audio') await f.click('Dialogue');
+    await f.upload(kind, 20);
+    await f.click('Annuler');
+    await f.act(async () => f.doc.querySelector('[data-recast-action="passage"]').click());
+    assert.ok(f.doc.querySelector('[role="dialog"]'));
+    const start = () => f.doc.querySelector('input[aria-label="Début (secondes)"]');
+    const end = () => f.doc.querySelector('input[aria-label="Fin (secondes)"]');
+    for (const [a, b] of [['', '15'], ['-1', '10'], ['5', '5'], ['10', '8'], ['0', '15.001'], ['10', '21']]) {
+      await f.input(start(), a); await f.input(end(), b);
+      assert.equal(f.button('Utiliser ce passage').disabled, true, `invalid range ${a}..${b}`);
+      assert.ok(f.doc.querySelector('[role="dialog"]'));
+    }
+    await f.passage('5', '20');
+    assert.equal(f.doc.querySelector('#recast-duration').value, '15');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    await f.click('Choisir un passage');
+    await f.input(end(), '19.5');
+    await f.click('Annuler');
+    assert.match(f.doc.querySelector(`${kind}[controls]`).src, /#t=5,20$/);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+  } finally { await f.dispose(); }
+});
+
+test('whitespace direction and long dialogue explain the block; duration correction preserves the full text', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'), '   \n ');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true);
+    assert.ok(f.doc.querySelector('[data-recast-action="direction"]'));
+    assert.equal(f.doc.querySelector('textarea').maxLength, 2000);
+    await f.input(f.doc.querySelector('textarea'), 'x'.repeat(2000));
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    await f.click('Dialogue');
+    assert.equal(f.doc.querySelector('textarea').maxLength, 500);
+    const longDialogue = 'word '.repeat(100);
+    await f.input(f.doc.querySelector('textarea'), longDialogue);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true);
+    const action = f.doc.querySelector('[data-recast-action="duration"]');
+    assert.ok(action);
+    await f.act(async () => action.click());
+    assert.equal(f.doc.activeElement, f.doc.querySelector('#recast-duration'));
+    await f.select(f.doc.querySelector('#recast-duration'), '30');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    assert.equal(f.doc.querySelector('textarea').value, longDialogue);
+    await f.upload('video', 2);
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, true, 'source plus output must fit 30 seconds');
+    await f.select(f.doc.querySelector('#recast-duration'), '28');
+    assert.equal(f.button(f.w.labels.reviewPrice).disabled, false);
+    await f.click(f.w.labels.reviewPrice);
+    const quote = f.requests.find(r => r.url.endsWith('/prepare'))!;
+    assert.equal(quote.body.direction.length, 2000);
+    assert.equal(quote.body.dialogue, longDialogue);
+    assert.equal(quote.body.seconds, 28);
+  } finally { await f.dispose(); }
+});
+
+test('a failed local reset preserves the draft; retry after storage recovery clears it without a quote', async () => {
+  const f = await mount(true, 'account-a');
+  try {
+    await f.input(f.doc.querySelector('textarea'), 'Keep this draft');
+    await f.act(async () => new Promise(resolve => setTimeout(resolve, 300)));
+    f.w.storageFailure = true;
+    await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    assert.equal(f.doc.querySelector('textarea').value, 'Keep this draft');
+    assert.ok(f.doc.querySelector('img[alt="Basil"]'));
+    assert.ok(f.doc.querySelector('[data-recast-storage-error]'));
+    assert.equal(f.doc.querySelector('[data-recast-new]').disabled, false);
+    f.w.storageFailure = false;
+    await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    assert.equal(f.doc.querySelector('textarea').value, '');
+    assert.ok(!f.doc.querySelector('img[alt="Basil"]'));
+    assert.ok(!f.doc.querySelector('[data-recast-storage-error]'));
+    assert.equal(f.w.drafts.get('account-a'), null);
+    assert.equal(f.requests.filter(r => /\/(prepare|confirm)$/.test(r.url)).length, 0);
+  } finally { await f.dispose(); }
+});
+
+test('a character handoff survives the StrictMode effect replay and keeps its original identity', async () => {
+  const f = await mount(true, 'account-a', true);
+  try {
+    assert.equal(f.doc.querySelector('img[alt="Basil"]')?.getAttribute('src'), f.savedCharacter.imageUrl);
+    await f.input(f.doc.querySelector('textarea'), 'Walk');
+    await f.click(f.w.labels.reviewPrice);
+    const request = f.requests.find(r => r.url.endsWith('/prepare'))!;
+    assert.deepEqual(request.body.portrait, { jobId: f.savedCharacter.jobId, imageUrl: f.savedCharacter.imageUrl });
+  } finally { await f.dispose(); }
+});
