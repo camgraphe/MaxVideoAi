@@ -89,13 +89,16 @@ test('Wan i2v accepts its required start image without applying the ref2v refere
   for (const engineId of ['wan-3', 'wan-3-prime']) {
     const value = request(engineId, 'i2v', {
       references: [{
-        kind: 'https',
-        url: 'https://cdn.example.com/start.png',
+        kind: 'asset',
+        assetId: 'wan-start-image',
         role: 'first_frame',
-        mediaKind: 'image',
       }],
     });
-    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(value, candidate(engineId)));
+    assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(value, candidate(engineId), {
+      resolvedReferences: [{ assetId: 'wan-start-image', role: 'first_frame', mediaKind: 'image',
+        storageUrl: 'https://cdn.example.com/start.png', width: 1280, height: 720,
+        durationSec: null, mimeType: 'image/png', sizeBytes: 1024 }],
+    }));
   }
 });
 

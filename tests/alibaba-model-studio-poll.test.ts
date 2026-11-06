@@ -250,6 +250,39 @@ test('Alibaba poll refunds a terminally failed paid-wallet job once', async () =
   );
 });
 
+for (const engineId of ['wan-3', 'wan-3-prime']) {
+  test(`${engineId} persists the image dimensions and remedy in the job and refund`, async () => {
+    const queries: Array<{ sql: string; params?: unknown[] }> = [];
+    const job = { ...baseJob, engine_id: engineId };
+    const response = await runAlibabaModelStudioPoll({ deps: {
+      claimPollFn: allowGenerationPoll,
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) return [job] as never;
+        if (/FROM provider_attempts/.test(sql)) return [{ id: 36, attempt_index: 1 }] as never;
+        if (/SET status = 'failed'/.test(sql)) return [{ job_id: job.job_id }] as never;
+        if (/INSERT INTO app_receipts/.test(sql)) return [{ id: 'dimensions-refund' }] as never;
+        return [] as never;
+      },
+      getAlibabaModelStudioClientFn: () => ({ getTask: async () => ({ output: {
+        task_id: job.provider_job_id, task_status: 'FAILED', code: 'InvalidParameter',
+        message: 'Error validating image resolution: {"name":"InvalidParameter","code":400,"message":"image https://private.example/image.png?X-Amz-Signature=secret resolution must be at least 240x240, got 363x119"}',
+      } }) }),
+      ensureFastStartVideoFn: async () => { throw new Error('A rejected image has no output'); },
+    } });
+    assert.equal((await response.json()).updates, 1);
+    const message = String(queries.find(q => /SET status = 'failed'/.test(q.sql))?.params?.[1]);
+    const refund = queries.filter(q => /INSERT INTO app_receipts/.test(q.sql));
+    assert.equal(refund.length, 1);
+    for (const value of [message, String(refund[0]?.params?.[3])]) {
+      assert.match(value, /363.*119/);
+      assert.match(value, /240/);
+      assert.match(value, /larger image|another image/);
+      assert.doesNotMatch(value, /https|secret|InvalidParameter|retry in a few moments|No credits/);
+    }
+  });
+}
+
 test('Alibaba poll is disabled by default unless test dependencies are injected', async () => {
   const previous = process.env.ALIBABA_MODEL_STUDIO_ENABLED;
   process.env.ALIBABA_MODEL_STUDIO_ENABLED = 'false';

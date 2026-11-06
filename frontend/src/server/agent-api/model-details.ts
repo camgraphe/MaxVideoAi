@@ -1,4 +1,5 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
+import { isWan3EngineId } from '@/lib/wan3-pricing';
 import { hasPromptDirectedNativeAudio } from '@/lib/prompt-directed-audio';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { klingOwnedElementsProperty } from '@/lib/kling-owned-elements';
@@ -159,7 +160,8 @@ function projectReferences(
       type: field.type,
       ...(field.description ? {description: field.description} : {}),
       roles: Object.freeze([...roles]),
-      assetRequired: requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
+      assetRequired: (field.type === 'image' && isWan3EngineId(engine.id))
+        || requiresOwnedReferenceAsset(roles, mode, engine.id, engine) || durationSec !== null || Boolean(field.imageAspectRatio),
       ...(field.imageAspectRatio ? { imageAspectRatio: Object.freeze({ ...field.imageAspectRatio }) } : {}),
       ...(typeof minImageSidePx === 'number' && minImageSidePx > 0 ? { minImageSidePx } : {}),
       ...(assetRequiredWhen ? { assetRequiredWhen } : {}),

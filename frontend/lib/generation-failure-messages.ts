@@ -1,4 +1,5 @@
 import { getSeedanceFailureMessage } from './seedance-failure-messages';
+import { getWanImageFailureMessage } from './wan-image-failure-messages';
 
 type Locale = 'en' | 'fr' | 'es';
 const copy = {
@@ -96,7 +97,7 @@ export function getGenerationFailureFallbackMessage(locale = 'en'): string {
   return copy[localeKey(locale)].generic;
 }
 
-/** Return fixed public copy only. Never echo a provider body or interpolate its fields. */
+/** Return public templates only; known diagnostics may supply validated numeric measurements. */
 export function getKnownGenerationFailureMessage(params: {
   failureCode?: string | null;
   message?: string | null;
@@ -104,6 +105,8 @@ export function getKnownGenerationFailureMessage(params: {
 }): string | null {
   const seedance = getSeedanceFailureMessage(params);
   if (seedance) return seedance;
+  const wanImage = getWanImageFailureMessage(params.message, params.locale);
+  if (wanImage) return wanImage;
   const outputImage = getGeneratedImageFailureMessage(params.message, params.locale);
   if (outputImage) return outputImage;
   const text = copy[localeKey(params.locale)];

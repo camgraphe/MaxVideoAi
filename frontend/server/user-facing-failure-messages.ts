@@ -1,5 +1,6 @@
 import { getSeedanceFailureMessage, seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
 import { getGeneratedImageFailureMessage, getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
+import { getWanImageFailureMessage } from '@/lib/wan-image-failure-messages';
 import { SEEDANCE_OUTPUT_AUDIO_BLOCKED, SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
 
 const DEFAULT_FAILURE_MESSAGE =
@@ -264,7 +265,8 @@ function normalizeDurationSec(value: number | string | null | undefined): number
 
 export function toUserFacingFailureMessage(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
-  const knownMessage = getSeedanceFailureMessage({ message: normalized }) ?? getGeneratedImageFailureMessage(normalized);
+  const knownMessage = getWanImageFailureMessage(normalized)
+    ?? getSeedanceFailureMessage({ message: normalized }) ?? getGeneratedImageFailureMessage(normalized);
   if (knownMessage) return knownMessage;
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
   if (seedanceFailure === 'copyright') return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
@@ -282,6 +284,8 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
 
 export function toUserFacingRefundReason(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
+  const wanImage = getWanImageFailureMessage(normalized);
+  if (wanImage) return wanImage;
   if (getGeneratedImageFailureMessage(normalized)) return 'Generated image was blocked by safety checks.';
   const specificCode = seedanceFailureCodeFromMessage(normalized);
   if (specificCode === SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE) return 'Reference media could not be read.';
