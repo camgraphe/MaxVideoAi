@@ -37,7 +37,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     engineId, setEngineId, mode, setMode, prompt, setPrompt,
     numImages, setNumImages, aspectRatio, setAspectRatio, resolution, setResolution,
     customImageWidth, setCustomImageWidth, customImageHeight, setCustomImageHeight, seed, setSeed,
-    outputFormat, setOutputFormat, quality, setQuality, background, setBackground,
+    outputFormat, setOutputFormat, outputCompression, setOutputCompression, quality, setQuality, background, setBackground,
     style, setStyle, maskUrl, setMaskUrl, enableWebSearch, setEnableWebSearch,
     thinkingLevel, setThinkingLevel, complexity, setComplexity, limitGenerations, setLimitGenerations,
     watermark, setWatermark,
@@ -62,6 +62,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     isResolutionLocked,
     limitGenerationsField,
     maskUrlField,
+    outputCompressionField, showOutputCompressionControl,
     outputFormatField,
     outputFormatSelectOptions,
     qualityField,
@@ -92,6 +93,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     watermarkField,
     showWatermarkControl,
   } = useImageSettingsFields({
+    outputFormat,
     mode,
     resolution,
     resolvedCopy,
@@ -104,7 +106,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setLimitGenerations,
     setMaskUrl,
     setNumImages,
-    setOutputFormat,
+    setOutputFormat, setOutputCompression,
     setQuality,
     setResolution,
     setSeed,
@@ -193,7 +195,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     customImageWidth,
     customImageHeight,
     seed,
-    outputFormat,
+    outputFormat, outputCompression,
     quality,
     style,
     maskUrl,
@@ -213,7 +215,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setCustomImageWidth,
     setCustomImageHeight,
     setSeed,
-    setOutputFormat,
+    setOutputFormat, setOutputCompression,
     setQuality,
     setStyle,
     setMaskUrl,
@@ -240,7 +242,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setMaskUrl,
     setMode,
     setNumImages,
-    setOutputFormat,
+    setOutputFormat, setOutputCompression,
     setPrompt,
     setQuality,
     setReferenceSlots,
@@ -296,7 +298,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     hasEnableWebSearchField: Boolean(enableWebSearchField),
     hasLimitGenerationsField: Boolean(limitGenerationsField),
     hasMaskUrlField: Boolean(maskUrlField),
-    hasOutputFormatField: Boolean(outputFormatField),
+    hasOutputCompressionField: Boolean(outputCompressionField), hasOutputFormatField: Boolean(outputFormatField),
     hasQualityField: Boolean(qualityField),
     hasSeedField: Boolean(seedField),
     hasStyleField: Boolean(styleField),
@@ -308,7 +310,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     mode,
     mutateJobs,
     numImages,
-    outputFormat,
+    outputFormat, outputCompression,
     prompt,
     quality,
     readyReferenceSizes,
@@ -401,31 +403,31 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     resolvedCopy,
     supportsCharacterReferences,
   });
-  const pickerSettings = useMemo(() => ({ mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, complexity, seed, limitGenerations, watermark,
+  const pickerSettings = useMemo(() => ({ mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, outputCompression, background, style, thinkingLevel, complexity, seed, limitGenerations, watermark,
     referenceIndices: displayedReferenceSlots.flatMap((slot, index) => slot ? [index] : []),
     customImageWidth, customImageHeight, referenceImageCount: combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes }),
-    [mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, background, style, thinkingLevel, complexity, seed, limitGenerations, watermark, displayedReferenceSlots, customImageWidth, customImageHeight, combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes]);
+    [mode, numImages, resolution, aspectRatio, quality, enableWebSearch, maskUrl, outputFormat, outputCompression, background, style, thinkingLevel, complexity, seed, limitGenerations, watermark, displayedReferenceSlots, customImageWidth, customImageHeight, combinedReferenceUrls.length, selectedReferenceCount, readyReferenceSizes]);
   const modelPicker = useImageModelPicker({ engines: engineCapsList, engineId, accountId, settings: pickerSettings,
     apply: (id, settings) => { setEngineId(id); setResolution(settings.resolution); setAspectRatio(settings.aspectRatio);
-      setQuality(settings.quality); setEnableWebSearch(settings.enableWebSearch); setNumImages(settings.numImages); setOutputFormat(settings.outputFormat); setBackground(settings.background); setStyle(settings.style);
+      setQuality(settings.quality); setEnableWebSearch(settings.enableWebSearch); setNumImages(settings.numImages); setOutputFormat(settings.outputFormat); setOutputCompression(settings.outputCompression); setBackground(settings.background); setStyle(settings.style);
       setThinkingLevel(settings.thinkingLevel); setComplexity(settings.complexity); setSeed(settings.seed); setLimitGenerations(settings.limitGenerations); setWatermark(settings.watermark);
       setCustomImageWidth(settings.customImageWidth); setCustomImageHeight(settings.customImageHeight); } });
   const composerActionProps = guardComposerActions({
     setAspectRatio, setBackground, setCustomImageHeight, setCustomImageWidth, setEnableWebSearch, setEngineId: modelPicker.select,
-    setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat,
+    setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat, setOutputCompression,
     setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setComplexity, setWatermark,
     handleEditSelectedPreview, handleReferenceFile, handleReferenceUrl, handleRemoveReferenceSlot, handleRun,
     handleLibrarySelect, toggleCharacterReference, selectStarter,
   });
   const composerVisibilityProps = {
     showAspectRatioControl, showBackgroundControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
-    showMaskUrlControl: Boolean(maskUrlField), showNumImagesControl, showOutputFormatControl, showQualityControl,
+    showMaskUrlControl: Boolean(maskUrlField), showNumImagesControl, showOutputFormatControl, showOutputCompressionControl, showQualityControl,
     showResolutionControl, showSeedControl, showStyleControl, showThinkingLevelControl, showComplexityControl, showWatermarkControl,
   };
   const composerSettingsProps = {
     aspectRatio, aspectRatioSelectOptions, background, backgroundSelectOptions, booleanSelectOptions,
     customImageHeight, customImageWidth, enableWebSearch, limitGenerations, maskUrl, numImages,
-    outputFormat, outputFormatSelectOptions, quality, qualitySelectOptions, resolution, resolutionSelectOptions,
+    outputFormat, outputCompression, outputFormatSelectOptions, quality, qualitySelectOptions, resolution, resolutionSelectOptions,
     seed, style, styleSelectOptions, thinkingLevel, thinkingLevelSelectOptions, complexity, complexitySelectOptions, watermark,
   };
 

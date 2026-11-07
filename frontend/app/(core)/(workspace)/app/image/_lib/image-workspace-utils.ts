@@ -23,6 +23,14 @@ export function formatImageSizeLabel(value: string): string {
     landscape_4_3: 'Landscape 4:3 · 1024 x 768',
     landscape_16_9: 'Landscape 16:9 · 1920 x 1080',
     '3840x2160': '4K · 3840 x 2160',
+    '2160x3840': '4K · 9:16 · 2160 x 3840',
+    '1536x864': '16:9 · 1536 x 864',
+    '864x1536': '9:16 · 864 x 1536',
+    '1536x512': '3:1 · 1536 x 512',
+    '512x1536': '1:3 · 512 x 1536',
+    '2048x1152': '2K · 16:9 · 2048 x 1152',
+    '1152x2048': '2K · 9:16 · 1152 x 2048',
+    '1440x2560': '2.5K · 9:16 · 1440 x 2560',
     '2560x1440': '2.5K · 2560 x 1440',
     custom: 'Custom size',
   };
@@ -36,6 +44,7 @@ export function formatImageSizeLabel(value: string): string {
 
 export function formatQualityLabel(value: string): string {
   const normalized = value.trim().toLowerCase();
+  if (normalized === 'auto') return 'Auto';
   if (normalized === 'low') return 'Low';
   if (normalized === 'medium') return 'Medium';
   if (normalized === 'high') return 'High';

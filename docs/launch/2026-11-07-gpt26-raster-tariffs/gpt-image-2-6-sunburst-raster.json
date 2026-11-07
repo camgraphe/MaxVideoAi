@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 1,
+  "modelId": "gpt-image-2-6-sunburst",
+  "intent": "create_missing",
+  "reason": "GPT Image 2.6 raster extension; explicit input reserves, conservative auto-output estimates",
+  "pricing": {
+    "kind": "explicit"
+  },
+  "selections": [
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "auto",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "auto",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "high",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "high",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "low",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "low",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "max",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "max",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "medium",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "medium",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "xhigh",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "i2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "xhigh",
+        "referenceImageCount": "continuous"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "auto"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "auto"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "high"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "high"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "low"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "low"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "max"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "max"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "medium"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "medium"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "auto",
+        "durationSec": "continuous",
+        "quality": "xhigh"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "conservative_output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    },
+    {
+      "selector": {
+        "engineId": "gpt-image-2-6-sunburst",
+        "mode": "t2i",
+        "resolution": "continuous",
+        "durationSec": "continuous",
+        "quality": "xhigh"
+      },
+      "price": {
+        "kind": "unit_terms",
+        "rounding": "up",
+        "terms": [
+          {
+            "unit": "output_image_tokens",
+            "centsPerUnit": 0.0045
+          },
+          {
+            "unit": "output_units",
+            "centsPerUnit": 1.5
+          },
+          {
+            "unit": "reference_image_outputs",
+            "centsPerUnit": 3
+          }
+        ]
+      }
+    }
+  ]
+}

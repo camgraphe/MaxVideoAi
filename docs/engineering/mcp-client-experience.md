@@ -843,3 +843,32 @@ The 70 curated decisions and fixture-contract fingerprint are unchanged.
 `pnpm mcp:client:check` passes 194 tests with one intentional host skip, plus
 the curated evaluator. This is offline evidence; existing hosts require a
 catalog refresh after delivery. No paid qualification or publication is inferred.
+
+### 2026-11-07 — Optional GPT Image 2.6 raster compression
+
+Canonical image settings now accept `outputCompression`, an optional integer from
+0 to 100 for JPEG/WebP only. The shared preparation/comparison input schema uses
+the existing nullable default convention; normalization omits null and rejects
+explicit PNG compression. The setting is retained in immutable requests, hashes
+and saved settings, then sent as OpenAI `output_compression`. It changes encoding,
+not the generation tariff or price comparison inputs.
+
+The reviewed additive field is the only runtime metadata delta: removing it from
+the collected schemas reproduces prior policy fingerprint
+`03346ded564cbd256ead13e997912fc8cfd3c6ee242068b47cdb202faf5a196b`.
+The refreshed fingerprint is
+`5d5ad3dc054ef9ccb38003575a17ad0b2861db26eb31150e57368c79ec79701c`;
+all 70 curated decisions, 39 policy checks and the fixture-contract fingerprint
+remain unchanged. Global instructions remain 1,551 UTF-8 bytes, with 18 visible
+tool descriptors and a maximum description of 1,927 bytes. Preparation remains
+1,639 description bytes, with a 14,222-byte input schema (previously 13,989).
+Comparison remains 1,082 description bytes, with a 20,057-byte input schema
+(previously 19,591 because the shared settings schema occurs twice).
+
+The actual registered preparation handler and mocked provider transport preserve
+compression values including zero; App tests cover draft restoration, PNG clearing,
+and localized conservative Auto quote hints. `pnpm mcp:client:check` passes 194
+tests with one intentional host skip and all 70 curated scenarios; 86 focused
+compression, capability, normalization and App tests pass. Metadata collection and
+regression checks are offline. Delivery, catalog refresh and real-host behavior
+require their own evidence.

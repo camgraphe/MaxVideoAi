@@ -160,6 +160,7 @@ const IMAGE_SETTING_KEYS = new Set([
   'imageHeight',
   'imageWidth',
   'outputFormat',
+  'outputCompression',
   'quality',
   'complexity',
   'background',
@@ -685,7 +686,9 @@ function normalizeGenerationInput(input: unknown,comparison = false): CanonicalG
   };
   if (isGptImage26EngineId(result.engineId)) {
     try {
-      const native = normalizeGptImage26Settings({ ...result.settings, numImages: result.outputCount } as Parameters<typeof normalizeGptImage26Settings>[0]);
+      const native = normalizeGptImage26Settings({ ...result.settings, numImages: result.outputCount,
+        ...(result.settings.resolution === 'custom' ? {customImageSize: {width: result.settings.imageWidth, height: result.settings.imageHeight}} : {}),
+      } as Parameters<typeof normalizeGptImage26Settings>[0]);
       if (result.references.some(reference => reference.kind !== 'asset' || reference.role !== 'reference')
         || result.references.length > 16 || (result.mode === 't2i' && result.references.length)
         || (result.mode === 'i2i' && !result.references.length)) throw new Error('Owned edit references required.');

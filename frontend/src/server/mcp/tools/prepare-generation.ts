@@ -105,6 +105,9 @@ export const canonicalSettingsSchema = z.object({
     'Use only when get_model_details reports a background setting for the selected image model.',
   ),
   outputFormat: z.string().trim().min(1).max(64).nullable().default(null),
+  outputCompression: z.number().int().min(0).max(100).nullable().default(null).describe(
+    'JPEG/WebP encoding only, when reported by get_model_details. Omit for PNG; does not change generation price.',
+  ),
   middleFrameTime: z.number().positive().max(15).nullable().default(null),
   referenceOrder: z.string().max(128).nullable().default(null),
   enhanceRealism: z.boolean().nullable().default(null),

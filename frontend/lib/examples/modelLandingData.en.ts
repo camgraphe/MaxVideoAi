@@ -12,7 +12,7 @@ export const EN_KLING_V4_ADDITION = {
 export const EN_KLING_V4_FLASH_ADDITION = {
   summary: "Kling 4.0 Flash adds 3–20 second scenes at 720p from text, an opening image or visual references. Its gallery includes native multi-shot sequences with dialogue.",
   promptPatterns: "For Flash, describe each shot and cut within one prompt, with a clear action and a resolved final beat. Direct dialogue and ambience in the same prompt; there are no structured shot-duration fields.",
-  strengthsLimits: "Flash supports 720p generation with native audio. It does not expose Modify, Extend, an end image or an audio switch. Video references guide creation; they do not turn it into a video-editing mode.",
+  strengthsLimits: "On MaxVideoAI, Flash supports 720p generation with native audio. This workflow does not expose Modify, Extend, an end image or an audio switch. Video references guide creation; they do not turn it into a video-editing mode.",
   faq: [{ question: "How do Kling 4.0 and Flash differ?", answer: "Flash generates 3–20 second clips at 720p from text, an opening image or references, with cuts described in the prompt. Kling 4.0 also offers 1080p, up to 30 seconds, an optional end image, structured prompts with per-shot durations and a separate video-editing mode. Keep each example’s original model and settings, and check a fresh quote before generating." }],
 } satisfies Pick<LocalizedModelDescriptor, 'summary' | 'promptPatterns' | 'strengthsLimits' | 'faq'>;
 

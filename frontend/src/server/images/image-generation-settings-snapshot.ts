@@ -19,6 +19,7 @@ export function buildDefaultSettingsSnapshot(args: {
   customImageSize: GptImage2ImageSize | null;
   normalizedSeed: number | null;
   outputFormat: string | null;
+  outputCompression?: number;
   quality: string | null;
   background: string | null;
   complexity?: string;
@@ -49,6 +50,7 @@ export function buildDefaultSettingsSnapshot(args: {
       customImageSize: args.customImageSize,
       seed: args.normalizedSeed,
       outputFormat: args.outputFormat,
+      ...(args.outputCompression === undefined ? {} : { outputCompression: args.outputCompression }),
       quality: args.quality,
       background: args.background,
       ...(args.complexity ? { complexity: args.complexity } : {}),

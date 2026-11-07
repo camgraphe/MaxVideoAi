@@ -299,6 +299,7 @@ const CANONICAL_SETTING_BY_FIELD_ID: Readonly<Record<string, string>> = Object.f
   multi_prompt: 'multiPrompt',
   negative_prompt: 'negativePrompt',
   output_format: 'outputFormat',
+  output_compression: 'outputCompression',
   prompt_expansion_mode: 'promptExpansionMode',
   enhance_realism: 'enhanceRealism',
   middle_frame_time: 'middleFrameTime',

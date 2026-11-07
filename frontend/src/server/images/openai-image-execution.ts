@@ -17,7 +17,8 @@ import { recoverOpenAIImageResult, type OpenAIImageRecoveryDependencies } from '
 
 const PROVIDER_MODE = 'openai_images_direct';
 export type OpenAIImageExecutionParams = Parameters<typeof executeGoogleVertexImageGeneration>[0] & {
-  complexity?: string | null; background?: string | null; preparedReferenceUrls?: string[];
+  outputCompression?: number; complexity?: string | null; background?: string | null; preparedReferenceUrls?: string[];
+  customImageSize?: {width: number; height: number} | null;
 };
 
 export function assertOpenAIImageAvailable(engine: EngineCaps): void {
@@ -46,8 +47,9 @@ export async function executeOpenAIImageGeneration(params: OpenAIImageExecutionP
   try {
     (deps.assertAvailableFn ?? assertOpenAIImageAvailable)(params.engine);
     const settings = normalizeGptImage26Settings({ resolution: params.resolution, quality: params.quality ?? undefined,
-      complexity: params.complexity ?? undefined, outputFormat: params.outputFormat ?? undefined,
-      background: params.background ?? undefined, numImages: params.numImages } as Parameters<typeof normalizeGptImage26Settings>[0]);
+      complexity: params.complexity ?? undefined, outputFormat: params.outputFormat ?? undefined, outputCompression: params.outputCompression,
+      background: params.background ?? undefined, numImages: params.numImages,
+      customImageSize: params.customImageSize } as Parameters<typeof normalizeGptImage26Settings>[0]);
     const referenceUrls = params.preparedReferenceUrls ?? await (deps.prepareReferencesFn ?? prepareOpenAIImageReferences)({ userId: params.userId, urls: params.combinedImageUrls });
     const payload = buildOpenAIImagePayload({ modelId: params.engine.providerMeta?.modelSlug ?? '', mode: params.mode, prompt: params.effectivePrompt, settings, referenceUrls });
     await reserveOpenAIImageResult(openAIImageCompletionContext(params), deps.queryFn);

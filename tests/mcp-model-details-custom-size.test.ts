@@ -4,6 +4,7 @@ import test from 'node:test';
 import {listFalEngines} from '../frontend/src/config/falEngines';
 import {getRuntimeModelById} from '../frontend/config/model-runtime';
 import {getImageInputField} from '../frontend/lib/image/inputSchema';
+import {isGptImage26EngineId} from '../frontend/lib/image/gptImage26';
 import type {ImageGenerationMode} from '../frontend/types/image-generation';
 import {getAgentModelDetails,projectAgentModelModeDetails} from '../frontend/src/server/agent-api/model-details';
 import {listPublicAgentGenerationEngines} from '../frontend/src/server/agent-api/model-catalog';
@@ -28,7 +29,9 @@ const actor={authMethod:'studio-session' as const,userId:'dimension-review',proj
 const input={requestId:'123e4567-e89b-42d3-a456-426614174000',message:'Create a product image in landscape format.',references:[]};
 
 test('the custom-size contract covers every published image engine with custom dimensions',()=>{
-  assert.deepEqual(customEntries.map(entry=>entry.id).sort(),['gpt-image-2','gpt-image-2-5-flare','gpt-image-2-5-sunburst']);
+  assert.deepEqual(customEntries.map(entry=>entry.id).sort(),[
+    'gpt-image-2','gpt-image-2-5-flare','gpt-image-2-5-sunburst','gpt-image-2-6-flare','gpt-image-2-6-sunburst',
+  ]);
 });
 
 for(const entry of customEntries){
@@ -65,16 +68,27 @@ for(const entry of customEntries){
     assert.equal(checked,2,'Both published image workflows must expose the custom-size constraints.');
   });
 
-  test(`${entry.id} still rejects 1920x1080 custom dimensions and accepts the exact 16:9 preset`,async()=>{
+  test(`${entry.id} rejects invalid custom dimensions and preserves its supported 16:9 preset and custom pixels`,async()=>{
     const catalog=await listPublicAgentGenerationEngines(deps);
     const candidate=catalog.find(candidate=>candidate.engine.id===entry.id);
     assert.ok(candidate);
+    const image26=isGptImage26EngineId(entry.id);
+    const aspectSettings=image26?{}:{aspectRatio:'16:9'};
+    const presetResolution=image26?'1536x864':'landscape_16_9';
     const base={schemaVersion:1,surface:'image',engineId:entry.id,mode:'t2i',prompt:input.message,references:[],outputCount:1};
-    const invalid=normalizeGenerationRequest({...base,settings:{resolution:'custom',aspectRatio:'16:9',imageWidth:1920,imageHeight:1080}});
-    assert.throws(()=>validateCanonicalGenerationCapabilities(invalid,candidate),{kind:'parameter_invalid',field:'image_height'});
-    assert.deepEqual(invalid.settings,{resolution:'custom',aspectRatio:'16:9',imageWidth:1920,imageHeight:1080},'Validation must not silently round the client dimensions.');
-    const preset=normalizeGenerationRequest({...base,settings:{resolution:'landscape_16_9',aspectRatio:'16:9'}});
+    const invalid={...base,settings:{resolution:'custom',...aspectSettings,imageWidth:1920,imageHeight:1080}};
+    const savedInvalid=structuredClone(invalid);
+    assert.throws(()=>validateCanonicalGenerationCapabilities(normalizeGenerationRequest(invalid),candidate),
+      image26?{name:'GenerationNormalizationError',field:'settings'}:{kind:'parameter_invalid',field:'image_height'});
+    assert.deepEqual(invalid,savedInvalid,'Validation must not silently round the client dimensions.');
+    const preset=normalizeGenerationRequest({...base,settings:{resolution:presetResolution,...aspectSettings}});
     assert.doesNotThrow(()=>validateCanonicalGenerationCapabilities(preset,candidate));
+    assert.equal(preset.settings.resolution,presetResolution);
+    const custom=normalizeGenerationRequest({...base,settings:{resolution:'custom',...aspectSettings,imageWidth:1536,imageHeight:864}});
+    assert.doesNotThrow(()=>validateCanonicalGenerationCapabilities(custom,candidate));
+    assert.equal(custom.settings.resolution,'custom');
+    assert.equal(custom.settings.imageWidth,1536);
+    assert.equal(custom.settings.imageHeight,864);
 
     const studioCatalog=await createStudioImageGenerationService(actor,{enabled:true,prepareDependencies:{listPublicEngines:async()=>catalog}}).catalog();
     if(studioCatalog.some(candidate=>candidate.engine.id===entry.id)){
@@ -84,10 +98,17 @@ for(const entry of customEntries){
       assert.throws(()=>imageRequestFromDraft(draft,input,studioCatalog),{code:'PARAMETER_INVALID'});
       assert.deepEqual(draft,saved,'Failed preparation preserves the original request.');
       const actual=imageRequestFromDraft({...draft,image:{...draft.image!,settings:[]}},input,studioCatalog);
-      assert.equal(actual.settings.resolution,'landscape_16_9');
-      assert.equal(actual.settings.aspectRatio,'16:9');
+      assert.equal(actual.settings.resolution,presetResolution);
+      assert.equal(actual.settings.aspectRatio,image26?undefined:'16:9');
       assert.equal(Object.hasOwn(actual.settings,'imageWidth'),false);
       assert.equal(Object.hasOwn(actual.settings,'imageHeight'),false);
+      const customDraft:ImageDraft={...draft,image:{...draft.image!,settings:[{name:'imageWidth',value:1536},{name:'imageHeight',value:864}]}};
+      const savedCustom=structuredClone(customDraft);
+      const actualCustom=imageRequestFromDraft(customDraft,input,studioCatalog);
+      assert.equal(actualCustom.settings.resolution,'custom');
+      assert.equal(actualCustom.settings.imageWidth,1536);
+      assert.equal(actualCustom.settings.imageHeight,864);
+      assert.deepEqual(customDraft,savedCustom,'Successful preparation also preserves the authored draft.');
     }
   });
 }

@@ -8,6 +8,7 @@ type ControlOption = {
 };
 
 export type ImageAdvancedSettingsContentProps = {
+  outputCompression?: { label: string; hint: string; value: number | null; onChange: (value: number | null) => void };
   background?: {
     label: string;
     value: string;
@@ -96,6 +97,7 @@ function AdvancedSelect({
 
 export function ImageAdvancedSettingsContent({
   background,
+  outputCompression,
   seed,
   maskUrl,
   customImageSize,
@@ -107,6 +109,16 @@ export function ImageAdvancedSettingsContent({
 }: ImageAdvancedSettingsContentProps) {
   return (
     <div className="grid gap-3 rounded-input border border-border bg-surface-glass-60 p-3 md:grid-cols-2 xl:grid-cols-4">
+      {outputCompression ? (
+        <label className="flex min-w-0 flex-col gap-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{outputCompression.label}</span>
+          <input type="number" inputMode="numeric" min={0} max={100} step={1} placeholder="100"
+            value={outputCompression.value ?? ''}
+            onChange={event => { const raw = event.currentTarget.value; const value = Number(raw); if (!raw) outputCompression.onChange(null); else if (Number.isInteger(value) && value >= 0 && value <= 100) outputCompression.onChange(value); }}
+            className="h-11 rounded-input border border-border bg-surface px-3 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          <span className="text-xs text-text-muted">{outputCompression.hint}</span>
+        </label>
+      ) : null}
       {seed ? (
         <label className="flex min-w-0 flex-col gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{seed.label}</span>

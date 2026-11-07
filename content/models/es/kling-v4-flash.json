@@ -44,7 +44,7 @@
     },
     {
       "q": "Comparar los controles disponibles",
-      "a": "Flash no ofrece imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto."
+      "a": "En MaxVideoAI, Flash no ofrece actualmente imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto."
     }
   ],
   "custom": {
@@ -55,7 +55,7 @@
       "Describir el sonido||El proveedor documenta audio nativo. Indica ambiente y diálogo en el prompt; esta entrega no ofrece interruptor de audio ni archivo sonoro de entrada."
     ],
     "specTitle": "Leer especificaciones",
-    "specNote": "Flash no ofrece imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto.",
+    "specNote": "En MaxVideoAI, Flash no ofrece actualmente imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto.",
     "specSections": [
       {
         "title": "Secuencia montada",

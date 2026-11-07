@@ -3,7 +3,8 @@
 The optional **Tariff batches** section in `/admin/pricing` authors literal prices
 for either the complete 226-class Kling 4 domain, the 72-class Kling 4.0 Flash
 domain, or an explicitly selected subset of one model. GPT Image 2.6 Flare and
-Sunburst each have 1,020 exact image classes, imported in groups of at most 226. It
+Sunburst each retain 1,020 exact image classes and add 24 separately reviewed raster
+classes, imported in groups of at most 226. It
 neither publishes the model nor enables generation. The existing unit editor and
 canonical billing owners remain authoritative. No runtime coefficient is added.
 
@@ -46,14 +47,16 @@ already committed prices.
   target IDs, expiry and routing properties are rejected. A batch cannot mix model
   selectors or restore prices from another model's receipt. Flash has no Modify,
   1080p or 21–30-second classes; those selections fail canonical validation.
-  GPT Image 2.6 accepts only explicit fixed prices, with exact quality, output
-  count and edit-reference count. Mixed variants, video dimensions, LIST recipes
-  and continuous prices are rejected. Its review labels output count as images
+  GPT Image 2.6 accepts explicit fixed launch prices or three literal raster unit
+  terms. Raster selectors keep model, mode and quality exact; explicit dimensions
+  and output/reference counts use continuous selectors, while automatic size stays
+  a separate `resolution=auto` class. Mixed variants, video dimensions and LIST recipes
+  are rejected. Its review labels output count as images
   and the supplier estimate as output-only; incomplete cost cannot imply a margin.
 - `planner.ts` resolves actual effective cells from a complete model-scoped snapshot (including every exact exception and historical/future interval), preserves their stable IDs, quotes
   through `computeCanonicalBillingSnapshot`, and validates continuous domains
   through `validateCurrentContinuousTariffDomain`. Unavailable state never means
-  missing. Exact active exceptions and scheduled future prices block a continuous batch edit. The selected-model loader remains in the canonical tariff store and validates unknown ownership rather than assuming it is absent. The planner indexes the loaded rows once by canonical selector, retaining every interval for that key and all noncanonical exceptions. Quote resolution therefore avoids rescanning unrelated history for each class.
+  missing. Exact active exceptions and scheduled future prices block a video continuous batch edit. GPT raster classes intentionally preserve the existing exact grid's precedence; scheduled intervals for the selected raster class still block a change. The selected-model loader remains in the canonical tariff store and validates unknown ownership rather than assuming it is absent. The planner indexes the loaded rows once by canonical selector, retaining every interval for that key and all noncanonical exceptions. Quote resolution therefore avoids rescanning unrelated history for each class.
 - `service.ts` owns durable preview, claim, apply, status and reconciliation.
   `store.ts` owns operation SQL; existing tariff and event stores own prices and
   immutable per-cell history. Routes delegate through `http.ts`, which requires
@@ -136,6 +139,21 @@ imports use `gptImage26TariffScenarios()`. This example selects the 5-second 720
 Continuous prices use `kind=unit_terms`, `rounding=up`, and one term with
 `unit=billable_seconds` and a literal `centsPerUnit`. Supply continuous selectors
 from the canonical options; do not enumerate sampled input durations.
+
+GPT Image 2.6 raster proposals instead use three literal terms: 0.0045 cents per
+output-image token, 1.5 cents per output and 3 cents per reference per output.
+Automatic size or quality substitutes a separately named
+`conservative_output_image_tokens` quantity and retains the actual provider's auto
+settings. `gpt26.ts` enumerates only 24 classes per model, proves the geometry and
+nonnegative affine quantity domain, and prepares missing-only proposals. Its 28
+automatic classes across both models require explicit review of that conservative
+basis. No input-cost or complete provider-invoice bound is asserted.
+
+`prepare-gpt26-raster-tariffs.ts --out NEW_DIRECTORY` produces two proposal files
+and an offline review report without reading a target database or persisting an
+admin preview. It has no apply action. The concrete review package is under
+`docs/launch/2026-11-07-gpt26-raster-tariffs/`; native deployed preview/confirmation
+and current revision/fingerprint review remain separate authorized steps.
 
 The model selector resets selections, mode/resolution filters and the draft
 preview. The initial LIST recipe is 1.50 for Kling 4 and the user-approved 1.30

@@ -29,6 +29,7 @@ import {
 type UseImageSettingsFieldsParams = {
   mode: ImageGenerationMode;
   resolution: string | null;
+  outputFormat?: string | null;
   resolvedCopy: ImageWorkspaceCopy;
   selectedEngineCaps: EngineCaps | undefined;
   setAspectRatio: Dispatch<SetStateAction<string | null>>;
@@ -40,6 +41,7 @@ type UseImageSettingsFieldsParams = {
   setMaskUrl: Dispatch<SetStateAction<string>>;
   setNumImages: Dispatch<SetStateAction<number>>;
   setOutputFormat: Dispatch<SetStateAction<string | null>>;
+  setOutputCompression?: Dispatch<SetStateAction<number | null>>;
   setQuality: Dispatch<SetStateAction<string | null>>;
   setResolution: Dispatch<SetStateAction<string | null>>;
   setSeed: Dispatch<SetStateAction<string>>;
@@ -52,6 +54,7 @@ type UseImageSettingsFieldsParams = {
 export function useImageSettingsFields({
   mode,
   resolution,
+  outputFormat,
   resolvedCopy,
   selectedEngineCaps,
   setAspectRatio,
@@ -63,6 +66,7 @@ export function useImageSettingsFields({
   setMaskUrl,
   setNumImages,
   setOutputFormat,
+  setOutputCompression,
   setQuality,
   setResolution,
   setSeed,
@@ -113,6 +117,14 @@ export function useImageSettingsFields({
     () => getImageInputField(selectedEngineCaps ?? null, 'output_format', mode),
     [selectedEngineCaps, mode]
   );
+  const outputCompressionField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'output_compression', mode),
+    [selectedEngineCaps, mode]
+  );
+  const showOutputCompressionControl = Boolean(outputCompressionField) && (outputFormat === 'jpeg' || outputFormat === 'webp');
+  useEffect(() => {
+    if (!showOutputCompressionControl) setOutputCompression?.(null);
+  }, [showOutputCompressionControl, setOutputCompression]);
   const outputFormatOptions = useMemo(
     () => getImageFieldValues(selectedEngineCaps ?? null, 'output_format', mode),
     [selectedEngineCaps, mode]
@@ -502,6 +514,7 @@ export function useImageSettingsFields({
     isResolutionLocked,
     limitGenerationsField,
     maskUrlField,
+    outputCompressionField, showOutputCompressionControl,
     outputFormatField,
     outputFormatOptions,
     outputFormatSelectOptions,

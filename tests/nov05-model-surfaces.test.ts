@@ -69,7 +69,7 @@ test('Studio selects each 2.6 variant explicitly with exact pixel framing and on
     const result=imageRequestFromDraft(draft,input,[candidate(id)]);
     assert.equal(result.engineId,id); assert.equal(result.outputCount,1); assert.equal(result.settings.aspectRatio,undefined);
     assert.equal(result.settings.complexity,'low');
-    assert.throws(()=>imageRequestFromDraft({...draft,image:{...draft.image,aspectRatio:'16:9'}},input,[candidate(id)]));
+    assert.equal(imageRequestFromDraft({...draft,image:{...draft.image,aspectRatio:'16:9'}},input,[candidate(id)]).settings.resolution,'1536x864');
   }
 });
 

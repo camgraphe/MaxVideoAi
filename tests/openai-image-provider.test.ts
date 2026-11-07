@@ -33,7 +33,7 @@ test('2.6 accepts explicit raster tiers and refuses deferred formats, masks and 
   for (const quality of ['low', 'medium', 'high', 'xhigh', 'max'] as const) for (const complexity of ['low', 'medium', 'high'] as const) {
     assert.equal(normalizeGptImage26Settings({ quality, complexity }).quality, quality);
   }
-  for (const value of [{ outputFormat: 'svg' }, { outputFormat: 'gif' }, { maskUrl: 'https://example.test/mask' }, { markup: 'x' }, { quality: 'auto' }, { complexity: 'auto' }, { resolution: 'auto' }, { resolution: 'custom' }, { numImages: 1.5 }, { numImages: 5 }, { background: 'transparent', outputFormat: 'jpeg' }, { seed: 1 }, { frameCount: 4 }]) {
+  for (const value of [{ outputFormat: 'svg' }, { outputFormat: 'gif' }, { maskUrl: 'https://example.test/mask' }, { markup: 'x' }, { complexity: 'auto' }, { resolution: 'custom' }, { numImages: 1.5 }, { numImages: 11 }, { background: 'transparent', outputFormat: 'jpeg' }, { seed: 1 }, { frameCount: 4 }]) {
     assert.throws(() => normalizeGptImage26Settings(value as never), JSON.stringify(value));
   }
   assert.throws(() => buildOpenAIImagePayload({ ...base, modelId: 'gpt-image-2.5-flare' }));

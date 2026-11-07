@@ -16,6 +16,8 @@ import { isSeedance25LasInputPricing, isSeedance25EditInputPricing } from '@/ser
 import { seedanceInputTariffRate } from './seedance-input-tariff';
 import { normalizeSeedancePricingContext } from '@/lib/seedance-option-pricing';
 import { usesOperationReferenceSettlement } from '@/lib/video-operation';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { assertGptImage26RasterTariffPrice } from '@/lib/image/gptImage26Tariff';
 
 export class CustomerTariffUnavailableError extends Error {
   constructor(message: string) { super(message); this.name = 'CustomerTariffUnavailableError'; }
@@ -50,15 +52,20 @@ export function resolveCustomerTariffQuote(input: {
     if (!continuous) throw error;
     selector = continuous;
     cell = resolve(selector);
-    const units = manualTariffUnitNames(cell.price);
-    const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
-    const omni = continuous.engineId === 'gemini-omni-flash';
-    const openUnit = ['kling-v4', 'kling-v4-flash'].includes(continuous.engineId) ? 'billable_seconds' : continuous.referenceTokenBudget === 'continuous' ? 'reference_tokens'
-      : ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
-    const requiredInput = openUnit ? units.includes(openUnit) : units.includes(unit) || (omni && units.includes('input_tokens'));
-    const requiredOutput = !omni || units.includes('output_tokens') || units.includes('output_seconds');
-    if (cell.price.kind === 'fixed' || !requiredInput || !requiredOutput) {
-      throw new ManualTariffError('invalid_cell', 'Continuous source pricing requires an authored input-second rate.');
+    if (isGptImage26EngineId(selector.engineId)) {
+      try { assertGptImage26RasterTariffPrice(selector, cell.price); }
+      catch (error) { throw new ManualTariffError('invalid_cell', (error as Error).message); }
+    } else {
+      const units = manualTariffUnitNames(cell.price);
+      const unit = continuous.inputAudioDurationSec === 'continuous' ? 'input_audio_seconds' : 'input_video_seconds';
+      const omni = continuous.engineId === 'gemini-omni-flash';
+      const openUnit = ['kling-v4', 'kling-v4-flash'].includes(continuous.engineId) ? 'billable_seconds' : continuous.referenceTokenBudget === 'continuous' ? 'reference_tokens'
+        : ['lumaRay2', 'lumaRay2_flash'].includes(continuous.engineId) ? 'output_seconds' : null;
+      const requiredInput = openUnit ? units.includes(openUnit) : units.includes(unit) || (omni && units.includes('input_tokens'));
+      const requiredOutput = !omni || units.includes('output_tokens') || units.includes('output_seconds');
+      if (cell.price.kind === 'fixed' || !requiredInput || !requiredOutput) {
+        throw new ManualTariffError('invalid_cell', 'Continuous source pricing requires an authored input-second rate.');
+      }
     }
   }
   const quantities: Record<string, number> = {};

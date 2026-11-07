@@ -3,16 +3,17 @@
   "versionLabel": "2.6",
   "seo": {
     "title": "GPT Image 2.6 Sunburst — Create and edit raster images | MaxVideoAI",
-    "description": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+    "description": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity."
   },
-  "overview": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+  "overview": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity.",
   "pricingNotes": [
     "Create and edit images in the App, in Studio, or from your connected assistant through MCP. Review the price before each generation.",
-    "Review the current quote before confirming a generation. Changing settings or references requires a new quote."
+    "Review the current quote before confirming a generation. Changing settings or references requires a new quote.",
+    "Automatic size or quality uses a conservative quote based on the maximum output for the selected automatic settings. The confirmed price is shown before generation."
   ],
   "hero": {
     "title": "GPT Image 2.6 Sunburst — Create and edit raster images",
-    "intro": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+    "intro": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity.",
     "badge": "PNG · JPEG · WebP",
     "ctaPrimary": {
       "label": "Open the workspace",
@@ -32,11 +33,11 @@
   "faqs": [
     {
       "q": "Read specifications",
-      "a": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity. PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release."
+      "a": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity. PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release."
     },
     {
       "q": "Owned visual references",
-      "a": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action."
+      "a": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to sixteen references and one output per action. The image workspace and MCP support up to ten outputs per request."
     },
     {
       "q": "Pricing",
@@ -51,7 +52,7 @@
     "whyTitle": "GPT Image 2.6 Sunburst",
     "heroHighlights": [
       "Quality and complexity||Quality controls rendering. Complexity controls planning. Keep the subject and constraints explicit at every level.",
-      "Owned visual references||Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+      "Owned visual references||Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to sixteen references and one output per action. The image workspace and MCP support up to ten outputs per request.",
       "Raster image||PNG, JPEG and WebP are supported. Transparency requires PNG or WebP. GIF, SVG, masks and annotation editing are outside this first release."
     ],
     "specTitle": "Read specifications",
@@ -59,12 +60,12 @@
     "specSections": [
       {
         "title": "Cinematic scene",
-        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+        "body": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity.",
         "items": []
       },
       {
         "title": "Controlled edit",
-        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to sixteen references and one output per action. The image workspace and MCP support up to ten outputs per request.",
         "items": []
       }
     ]
@@ -74,7 +75,7 @@
     "hero": {
       "eyebrow": "GPT IMAGE 2.6 SUNBURST",
       "title": "GPT Image 2.6 Sunburst — Create and edit raster images",
-      "subtitle": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity.",
+      "subtitle": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity.",
       "subtitleHighlights": [
         "1024"
       ],
@@ -116,7 +117,7 @@
       },
       {
         "title": "Owned visual references",
-        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action.",
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to sixteen references and one output per action. The image workspace and MCP support up to ten outputs per request.",
         "tone": "reference"
       },
       {
@@ -146,11 +147,11 @@
     "referenceWorkflows": [
       {
         "title": "Cinematic scene",
-        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+        "body": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity."
       },
       {
         "title": "Controlled edit",
-        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to eight references and one output per action."
+        "body": "Edit from 1–16 owned PNG, JPEG or WebP images, up to 25 MB each. Studio accepts up to sixteen references and one output per action. The image workspace and MCP support up to ten outputs per request."
       }
     ],
     "pricingCopy": {
@@ -163,7 +164,7 @@
     },
     "meta": {
       "title": "GPT Image 2.6 Sunburst — Create and edit raster images | MaxVideoAI",
-      "description": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+      "description": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity."
     }
   },
   "prompting": {
@@ -232,7 +233,7 @@
         "id": "proof-0",
         "icon": "image",
         "title": "Cinematic scene",
-        "body": "Choose 1024 × 1024, 1536 × 1024 or 1024 × 1536 pixels, five quality levels and low, medium or high planning complexity."
+        "body": "Create and edit square, landscape or portrait images, including 16:9, 9:16 and custom sizes up to 4K. Choose five quality levels or Auto, with separate planning complexity."
       },
       {
         "id": "proof-1",

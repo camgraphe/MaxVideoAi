@@ -9,6 +9,7 @@ import { build } from 'esbuild';
 import tailwindConfig from '../frontend/tailwind.config';
 import { withTariffBatchFixture } from './helpers/tariff-batch-postgres-fixture';
 import { klingBatchClasses } from '../frontend/server/pricing-admin/tariff-batches/kling';
+import { gpt26RasterProposal } from '../frontend/server/pricing-admin/tariff-batches/gpt26';
 import { previewTariffBatch, confirmTariffBatch, readTariffBatch, reconcileTariffBatch, listTariffBatches } from '../frontend/server/pricing-admin/tariff-batches/service';
 
 const frontend = join(process.cwd(), 'frontend'), requireFrontend = createRequire(join(frontend, 'package.json'));
@@ -112,7 +113,7 @@ test('native batch UI applies one real transaction and recovers a lost response 
       await page.getByLabel('Exact batch JSON').fill(JSON.stringify(approved));
       await page.getByRole('button', { name: 'Preview batch', exact: true }).click();
       await page.getByText('226 create · 0 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
-      await page.getByText(new RegExp(`GPT Image 2.6 ${variant === 'flare' ? 'Flare' : 'Sunburst'} · 226 of 1020 canonical classes`)).waitFor();
+      await page.getByText(new RegExp(`GPT Image 2.6 ${variant === 'flare' ? 'Flare' : 'Sunburst'} · 226 of 1044 canonical classes`)).waitFor();
       await page.getByRole('note').filter({ hasText: 'Supplier estimate covers image output only.' }).waitFor();
       const firstRow = page.locator('[data-batch-review-row]').first();
       assert.match(await firstRow.innerText(), /1 image\(s\) · high/);
@@ -127,6 +128,19 @@ test('native batch UI applies one real transaction and recovers a lost response 
       await page.getByRole('button', { name: 'Confirm batch', exact: true }).click();
       await page.getByText('Committed', { exact: true }).first().waitFor();
       assert.equal((await db.pool.query("SELECT count(*) FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = $1", [`gpt-image-2-6-${variant}`])).rows[0].count, '226');
+      await page.getByRole('button', { name: 'New batch', exact: true }).click();
+      await page.getByLabel('Price input').selectOption('explicit');
+      await page.getByLabel('Exact batch JSON').fill(JSON.stringify(gpt26RasterProposal(`gpt-image-2-6-${variant}` as 'gpt-image-2-6-flare' | 'gpt-image-2-6-sunburst')));
+      await page.getByRole('button', { name: 'Preview batch', exact: true }).click();
+      await page.getByText('24 create · 0 update · 0 unchanged · 0 conflict', { exact: true }).waitFor();
+      const rasterRow = page.locator('[data-batch-review-row]').first();
+      assert.match(await rasterRow.innerText(), /conservative output image tokens/);
+      assert.match(await rasterRow.innerText(), /reference image outputs/);
+      assert.match(await rasterRow.innerText(), /Conservative output-only LIST estimate/);
+      assert.doesNotMatch(await rasterRow.innerText(), /billable seconds/);
+      await page.getByRole('button', { name: 'Confirm batch', exact: true }).click();
+      await page.getByText('Committed', { exact: true }).first().waitFor();
+      assert.equal((await db.pool.query("SELECT count(*) FROM app_customer_tariff_cells WHERE selector_json->>'engineId' = $1", [`gpt-image-2-6-${variant}`])).rows[0].count, '250');
     }
     const firstActorSaved = await page.evaluate(actor => localStorage.getItem(`admin.tariff-batch.operation.v1.${actor}`), actor);
     assert.ok(firstActorSaved);
