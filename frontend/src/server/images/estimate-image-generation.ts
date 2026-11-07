@@ -146,7 +146,7 @@ async function estimateImageGenerationInternal(
 
   const rawReferenceSizes = Array.isArray(input.referenceImageSizes) ? input.referenceImageSizes : [];
   const referenceImageSizes = normalizeReferenceImageSizes(rawReferenceSizes);
-  let customImageSize = parseGptImage2SizeKey(resolutionResult.resolution);
+  let customImageSize = gpt26?.customImageSize ?? parseGptImage2SizeKey(resolutionResult.resolution);
   if (isGptImageFamilyEngineId(engine.id) && resolutionResult.resolution === 'custom') {
     const result = validateGptImage2CustomImageSize(webExtensions ? input.customImageSize : undefined);
     if (!result.ok) {

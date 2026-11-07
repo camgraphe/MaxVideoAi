@@ -8,6 +8,9 @@ import { klingBatchClasses } from '../frontend/server/pricing-admin/tariff-batch
 import { previewTariffBatch, confirmTariffBatch, claimTariffBatch, applyTariffBatch, readTariffBatch, reconcileTariffBatch } from '../frontend/server/pricing-admin/tariff-batches/service';
 import { upsertCustomerTariffCell } from '../frontend/server/pricing/customer-tariff-store';
 import type { TariffBatchProposal } from '../frontend/server/pricing-admin/tariff-batches/contract';
+import { gpt26RasterProposal } from '../frontend/server/pricing-admin/tariff-batches/gpt26';
+import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import { GPT_IMAGE_2_6_ENGINE_REGISTRY } from '../frontend/src/config/fal-engines/gpt-image-2-6';
 
 const actor = '11111111-1111-4111-8111-111111111111';
 const source = 'a'.repeat(40);
@@ -58,6 +61,30 @@ test('all 2040 approved GPT tariffs commit in ten bounded operations without cha
   assert.equal(resume.plan.counts.unchanged, first.selections.length);
   assert.equal((await confirm(resume)).receipt!.changes.length, 0);
   assert.equal((await counts(db)).events, '2042');
+  const allExactBefore = (await db.pool.query('SELECT * FROM app_customer_tariff_cells ORDER BY id')).rows;
+  const engine = GPT_IMAGE_2_6_ENGINE_REGISTRY[0].engine;
+  const custom = { engine, mode: 'i2i' as const, resolution: 'custom', customImageSize: { width: 1536, height: 864 },
+    quality: 'high', durationSec: 10, referenceImageCount: 16 };
+  await assert.rejects(computeCanonicalBillingSnapshot(custom), /missing|tariff/i);
+  for (const modelId of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'] as const) {
+    const preview = await previewTariffBatch(gpt26RasterProposal(modelId), actor);
+    assert.deepEqual(preview.plan.counts, { create: 24, update: 0, unchanged: 0, conflict: 0 });
+    assert.ok(preview.plan.rows.every(row => row.rasterDomain?.checkedDimensions));
+    const committed = await confirm(preview);
+    assert.equal(committed.status, 'committed');
+    assert.equal(committed.receipt?.changes.length, 24);
+    const resume = await previewTariffBatch(gpt26RasterProposal(modelId), actor);
+    assert.equal(resume.plan.counts.unchanged, 24);
+    assert.equal((await confirm(resume)).receipt?.changes.length, 0);
+  }
+  assert.equal((await computeCanonicalBillingSnapshot(custom)).totalCents, 544);
+  const automatic = await computeCanonicalBillingSnapshot({ engine, mode: 't2i', resolution: 'auto', quality: 'auto', durationSec: 1 });
+  assert.equal(automatic.totalCents, 109);
+  assert.equal(automatic.meta?.providerConservativeOutputImageTokens, 23719);
+  assert.equal(automatic.meta?.providerOutputImageTokens, null);
+  assert.deepEqual((await db.pool.query("SELECT * FROM app_customer_tariff_cells WHERE selector_json->>'durationSec' != 'continuous' ORDER BY id")).rows, allExactBefore);
+  assert.deepEqual((await db.pool.query("SELECT * FROM app_jobs WHERE job_id = 'gpt-prior-paid'")).rows, paidBefore);
+  assert.equal((await counts(db)).cells, '2090');
 }));
 
 test('batch preview, atomic commit, immutable receipt, idempotent repeats and conforming resume', async () => fixture(async ({ db }) => {

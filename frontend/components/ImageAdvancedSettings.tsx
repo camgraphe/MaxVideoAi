@@ -29,14 +29,15 @@ export function ImageAdvancedSettings({
   enableWebSearch,
   thinkingLevel,
   complexity,
+  outputCompression,
   limitGenerations,
   watermark,
 }: ImageAdvancedSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const expanded = open ?? isOpen;
   const hasContent = useMemo(
-    () => Boolean(background || seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || complexity || limitGenerations || watermark),
-    [background, complexity, customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
+    () => Boolean(outputCompression || background || seed || maskUrl || customImageSize || enableWebSearch || thinkingLevel || complexity || limitGenerations || watermark),
+    [outputCompression, background, complexity, customImageSize, enableWebSearch, limitGenerations, maskUrl, seed, thinkingLevel, watermark]
   );
 
   if (!hasContent) return null;
@@ -71,6 +72,7 @@ export function ImageAdvancedSettings({
           enableWebSearch={enableWebSearch}
           thinkingLevel={thinkingLevel}
           complexity={complexity}
+          outputCompression={outputCompression}
           limitGenerations={limitGenerations}
           watermark={watermark}
         />

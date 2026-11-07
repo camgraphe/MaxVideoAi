@@ -9,7 +9,7 @@ import { normalizeJobStatus } from '../frontend/lib/job-status';
 
 const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWKsAAAAASUVORK5CYII=';
 const params = { userId: 'owner', jobId: 'offline-job', engine: { id: 'gpt-image-2-6-flare', label: 'GPT Image 2.6 Flare', providerMeta: { provider: 'openai_images', modelSlug: 'gpt-image-2.6-flare' } },
-  engineEntry: { id: 'gpt-image-2-6-flare', marketingName: 'GPT Image 2.6 Flare' }, mode: 't2i', effectivePrompt: 'A picture', combinedImageUrls: [], numImages: 1,
+  engineEntry: { id: 'gpt-image-2-6-flare', marketingName: 'GPT Image 2.6 Flare' }, mode: 't2i', effectivePrompt: 'A picture', combinedImageUrls: [], numImages: 10,
   outputFormat: 'png', quality: 'high', complexity: 'high', resolution: '1024x1024', background: 'auto', resolvedAspectRatio: null, pricing: { totalCents: 50 } } as OpenAIImageExecutionParams;
 
 test('OpenAI output, ambiguous transport and storage failure retain the paid identity and never cause another POST', async () => {
@@ -28,7 +28,7 @@ test('OpenAI output, ambiguous transport and storage failure retain the paid ide
         generateFn: async () => {
           posts++;
           if (scenario === 'transport' || scenario === 'rejection') throw new OpenAIImageError('Offline', { submissionState: scenario === 'transport' ? 'uncertain' : 'definitive', status: scenario === 'transport' ? 503 : 400 });
-          return { requestId: 'req_offline', body: { output_format: 'png', data: [{ b64_json: png }, ...(scenario === 'partial' ? [{ b64_json: 'invalid' }] : [])] } };
+          return { requestId: 'req_offline', body: { output_format: 'png', data: Array.from({length:10},(_,index)=>({b64_json: scenario === 'partial' && index === 9 ? 'invalid' : png})) } };
         },
         uploadFn: async () => { if (scenario === 'storage-failure') throw new Error('Storage unavailable'); return { url: 'https://media.maxvideoai.com/renders/owned.png', width: 1024, height: 1024, mime: 'image/png' }; },
         thumbnailsFn: async () => ['https://media.maxvideoai.com/thumbs/owned.webp'],
@@ -37,14 +37,14 @@ test('OpenAI output, ambiguous transport and storage failure retain the paid ide
         ambiguousFn: async (jobId) => { assert.equal(jobId, params.jobId); ambiguous++; },
       });
       if (scenario === 'complete') {
-        const output = await run; assert.equal(output.images.length, 1); assert.equal(output.providerJobId, 'req_offline');
+        const output = await run; assert.equal(output.images.length, 10); assert.equal(output.providerJobId, 'req_offline');
         assert.equal(completions, 1); assert.equal(ambiguous, 0); assert.equal(refunds, 0);
       } else {
         await assert.rejects(run, { code: scenario === 'rejection' ? 'OPENAI_IMAGE_ERROR' : 'provider_outcome_ambiguous' });
         assert.equal(completions, 0); assert.equal(ambiguous, scenario === 'rejection' ? 0 : 1); assert.equal(refunds, scenario === 'rejection' ? 1 : 0);
       }
       const saved = (await db.pool.query('SELECT * FROM app_jobs')).rows[0];
-      if (scenario === 'complete') assert.equal(saved.render_ids[0].url, 'https://media.maxvideoai.com/renders/owned.png');
+      if (scenario === 'complete') { assert.equal(saved.render_ids.length,10); assert.equal(saved.render_ids[0].url, 'https://media.maxvideoai.com/renders/owned.png'); }
       else assert.equal(saved.render_ids, null);
       if (scenario === 'partial') {
         const [receipt] = (await db.pool.query('SELECT * FROM app_openai_image_results')).rows;

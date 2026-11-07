@@ -1,5 +1,6 @@
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
+import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {
   cloneEngine,
@@ -318,14 +319,24 @@ export async function computeConfiguredPreflight(
   };
   let snapshot: PricingSnapshot;
   try {
+    // Image field IDs arrive in extraInputValues. Keep the canonical image
+    // normalizer authoritative over size, quality and the unrounded output count.
+    const gpt26 = isGptImage26EngineId(engine.id) ? normalizeGptImage26Settings({
+      resolution: requestedResolution, numImages: request.durationSec,
+      quality: rawExtraInputValues.quality, complexity: rawExtraInputValues.complexity,
+      ...(rawExtraInputValues.image_width !== undefined || rawExtraInputValues.image_height !== undefined
+        ? { customImageSize: { width: rawExtraInputValues.image_width, height: rawExtraInputValues.image_height } }
+        : {}),
+    } as Parameters<typeof normalizeGptImage26Settings>[0]) : null;
     snapshot = await (options.computePublicSnapshot ?? computeCanonicalPublicSnapshot)({
       workflowStep: options.seedanceWorkflowStep,
       operation: request.operation,
       engine: pricingEngine,
-      durationSec: seedanceEditSource?.billedDurationSec
+      durationSec: gpt26?.numImages ?? seedanceEditSource?.billedDurationSec
         ?? (engine.id === 'kling-v4' && request.mode === 'v2v' ? inheritedDurationSec : undefined)
         ?? durationSec,
-      resolution: effectiveResolution,
+      resolution: gpt26?.resolution ?? effectiveResolution,
+      ...(gpt26 ? { quality: gpt26.quality, complexity: gpt26.complexity, customImageSize: gpt26.customImageSize } : {}),
       aspectRatio: seedanceEditSource?.pricingAspectRatio ?? request.aspectRatio,
       mode: request.mode,
       membershipTier: memberTier,

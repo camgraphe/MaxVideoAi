@@ -38,7 +38,7 @@ const PUBLIC_CANONICAL_PARAMETER_FIELDS = new Set([
   'shotType','webpageUrl','sourcePositionHeight','sourcePositionWidth','sourcePositionX','sourcePositionY',
   'startTimeSec','extendPosition','modifyStrength','multiPrompt','exrExport','editDepthBlur','editFace',
   'reasoningLevel','keyframeIndexes','editKeyframeIndexes','editNormalsAugmentation','editPoseStrength','editStrength','editTrajectorySparsity',
-  'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','quality','complexity','background','style','thinkingLevel','watermark',
+  'enableWebSearch','limitGenerations','imageHeight','imageWidth','outputFormat','outputCompression','quality','complexity','background','style','thinkingLevel','watermark',
 ]);
 
 function invalidParameter(field?: string): never {

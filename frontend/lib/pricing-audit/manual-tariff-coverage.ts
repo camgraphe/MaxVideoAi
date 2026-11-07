@@ -122,6 +122,10 @@ export function collectSellableManualTariffCoverage(scope: { modelId?: string; m
       for (const { context, capabilityKey } of gptImage26TariffContexts()) {
         if (context.engine.id === model.id && (scope.mode === undefined || scope.mode === context.mode)) scenarios.push(buildManualTariffCoverageScenario(context, capabilityKey));
       }
+      for (const { mode } of entry.modes) {
+        if (scope.mode !== undefined && mode !== scope.mode) continue;
+        gaps.push({ modelId: model.id, reason: `${mode}: historical exact raster cells cover launch presets only; arbitrary dimensions, 1–10 outputs and automatic settings require the separately reviewed continuous raster tariff classes.` });
+      }
       continue;
     }
     for (const modeConfig of entry.modes) {

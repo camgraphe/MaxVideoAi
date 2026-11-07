@@ -1,4 +1,5 @@
 'use client';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { assistanceSettings } from '@/lib/prompt-assistance/client-context';
 import { imagePromptReviewKey } from '@/lib/prompt-assistance/application-review';
 
@@ -73,6 +74,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   numImages: number;
   openLibraryForSlot: (slotIndex: number) => void;
   outputFormat: string | null;
+  outputCompression?: number | null;
   outputFormatSelectOptions: ControlOption[];
   previewEntry: HistoryEntry | undefined;
   prompt: string;
@@ -100,6 +102,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   setMode: (value: ImageGenerationMode) => void;
   setNumImagesPreset: (value: number) => void;
   setOutputFormat: (value: string | null) => void;
+  setOutputCompression?: (value: number | null) => void;
   setPrompt: (value: string) => void;
   setQuality: (value: string | null) => void;
   setResolutionPreset: (value: string) => void;
@@ -117,6 +120,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   showMaskUrlControl: boolean;
   showNumImagesControl: boolean;
   showOutputFormatControl: boolean;
+  showOutputCompressionControl?: boolean;
   showQualityControl: boolean;
   showResolutionControl: boolean;
   showSeedControl: boolean;
@@ -174,6 +178,7 @@ export function ImageWorkspaceComposerSurface({
   numImages,
   openLibraryForSlot,
   outputFormat,
+  outputCompression,
   outputFormatSelectOptions,
   previewEntry,
   prompt,
@@ -201,6 +206,7 @@ export function ImageWorkspaceComposerSurface({
   setMode,
   setNumImagesPreset,
   setOutputFormat,
+  setOutputCompression,
   setPrompt,
   setQuality,
   setResolutionPreset,
@@ -218,6 +224,7 @@ export function ImageWorkspaceComposerSurface({
   showMaskUrlControl,
   showNumImagesControl,
   showOutputFormatControl,
+  showOutputCompressionControl,
   showQualityControl,
   showResolutionControl,
   showSeedControl,
@@ -344,7 +351,7 @@ export function ImageWorkspaceComposerSurface({
           onAssetUrlSelect={(_, url, slotIndex) => handleReferenceUrl(slotIndex, url, 'paste')}
           onOpenLibrary={(_, index) => openLibraryForSlot(index)}
           onNotice={setError}
-          optionsControl={(showBackgroundControl || showComplexityControl || showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
+          optionsControl={(showOutputCompressionControl || showBackgroundControl || showComplexityControl || showSeedControl || showThinkingLevelControl || showCustomImageSizeControl || showMaskUrlControl || showEnableWebSearchControl || showLimitGenerationsControl || showWatermarkControl) ? <WorkspaceOptionsButton open={optionsOpen} onToggle={() => setOptionsOpen((value) => !value)} /> : undefined}
           settingsBar={
             <ImageSettingsBar
               density="workspace"
@@ -413,9 +420,16 @@ export function ImageWorkspaceComposerSurface({
           generateLoadingLabel={resolvedCopy.runButton.running}
           extraFields={
             <div className="space-y-6">
+              {isGptImage26EngineId(selectedEngineId) && (resolution === 'auto' || quality === 'auto') ? (
+                <p className="text-xs text-text-muted">{resolvedCopy.composer.gpt26AutoQuoteHint}</p>
+              ) : null}
               <ImageAdvancedSettings
                 open={optionsOpen}
                 title={advancedSettingsTitle}
+                outputCompression={showOutputCompressionControl && setOutputCompression ? {
+                  label: resolvedCopy.composer.outputCompressionLabel, hint: resolvedCopy.composer.outputCompressionHint,
+                  value: outputCompression ?? null, onChange: setOutputCompression,
+                } : undefined}
                 background={
                   showBackgroundControl
                     ? {

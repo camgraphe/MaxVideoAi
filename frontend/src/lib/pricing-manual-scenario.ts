@@ -8,7 +8,8 @@ import type { PricingContext } from '@/lib/pricing-context';
 import { assertSeedanceWorkflowPricing } from '@/lib/seedance-workflow-pricing';
 import type { ManualTariffMedia } from '@/lib/pricing-manual-media';
 import { isGptImage25EngineId, isGptImageFamilyEngineId, normalizeGptImageQuality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
-import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
+import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { gptImage26ContinuousTariffSelector, gptImage26ManualTariffScenario } from '@/lib/image/gptImage26Tariff';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
@@ -26,6 +27,7 @@ export function continuousWan3TariffSelector(selector: ManualTariffSelector): Ma
 
 /** Reviewed continuous classes only; every other model keeps exact matching. */
 export function continuousInputTariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
+  if (isGptImage26EngineId(selector.engineId)) return gptImage26ContinuousTariffSelector(selector);
   if (['kling-v4', 'kling-v4-flash'].includes(selector.engineId) && selector.billingInputType === 'video_input') {
     const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
     const flash = selector.engineId === 'kling-v4-flash';
@@ -99,15 +101,7 @@ export function buildManualTariffScenario(context: PricingContext, facts: Pricin
   if (facts.engineId !== context.engine.id) throw new Error('Manual tariff engine and facts disagree');
   assertSeedanceWorkflowPricing(context);
   if (isGptImage26EngineId(facts.engineId)) {
-    const settings = normalizeGptImage26Settings({ resolution: context.resolution,
-      quality: context.quality ?? undefined, complexity: context.complexity ?? undefined,
-      numImages: context.durationSec } as Parameters<typeof normalizeGptImage26Settings>[0]);
-    // Requested pixels and price-neutral controls remain in the immutable quote.
-    // The reviewed cells use the same normalized identity on every surface.
-    return { selector: { engineId: facts.engineId, mode: context.mode!, resolution: settings.resolution,
-      durationSec: String(settings.numImages), quality: settings.quality,
-      ...(context.mode === 'i2i' ? { referenceImageCount: String(context.referenceImageCount) } : {}) },
-      quantities: { output_units: settings.numImages, reference_images: context.referenceImageCount ?? 0 } };
+    return gptImage26ManualTariffScenario(facts.engineId, context);
   }
   if (facts.engineId === NANO21_ENGINE_ID) {
     const settings = normalizeNano21Settings(context);

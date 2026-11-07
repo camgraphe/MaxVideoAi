@@ -11,8 +11,9 @@ export function extractOpenAIImages(payload: unknown, outputFormat: string, expe
   const root = record(payload);
   if (!root || (root.output_format !== undefined && root.output_format !== outputFormat) || !Array.isArray(root.data)) return { images: [], complete: false };
   const images: OpenAIInlineImage[] = [];
-  // A malformed response cannot expand the application's four-image envelope.
-  for (const [index, item] of root.data.slice(0, Math.min(expectedCount, 4)).entries()) {
+  // A malformed response cannot expand the provider's ten-image envelope.
+  if (!Number.isSafeInteger(expectedCount) || expectedCount < 1 || expectedCount > 10) return {images, complete: false};
+  for (const [index, item] of root.data.slice(0, expectedCount).entries()) {
     const encoded = record(item)?.b64_json;
     if (typeof encoded !== 'string' || encoded.length > 70_000_000 || encoded.length % 4 || /[^A-Za-z0-9+/=]/u.test(encoded)) continue;
     const data = Buffer.from(encoded, 'base64');

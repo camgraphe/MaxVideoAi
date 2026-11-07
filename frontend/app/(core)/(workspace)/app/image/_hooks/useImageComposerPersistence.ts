@@ -48,6 +48,7 @@ type UseImageComposerPersistenceParams = {
   customImageHeight: string;
   seed: string;
   outputFormat: string | null;
+  outputCompression?: number | null;
   quality: string | null;
   background: string | null;
   style: string | null;
@@ -68,6 +69,7 @@ type UseImageComposerPersistenceParams = {
   setCustomImageHeight: Dispatch<SetStateAction<string>>;
   setSeed: Dispatch<SetStateAction<string>>;
   setOutputFormat: Dispatch<SetStateAction<string | null>>;
+  setOutputCompression?: Dispatch<SetStateAction<number | null>>;
   setQuality: Dispatch<SetStateAction<string | null>>;
   setBackground: Dispatch<SetStateAction<string | null>>;
   setStyle: Dispatch<SetStateAction<string | null>>;
@@ -93,6 +95,7 @@ export function useImageComposerPersistence({
   customImageHeight,
   seed,
   outputFormat,
+  outputCompression,
   quality,
   background,
   style,
@@ -113,6 +116,7 @@ export function useImageComposerPersistence({
   setCustomImageHeight,
   setSeed,
   setOutputFormat,
+  setOutputCompression,
   setQuality,
   setBackground,
   setStyle,
@@ -235,6 +239,7 @@ export function useImageComposerPersistence({
         setOutputFormat(
           parsed.outputFormat && outputFormats.includes(parsed.outputFormat) ? parsed.outputFormat : defaultOutputFormat
         );
+        setOutputCompression?.(getImageInputField(engineMatch.engineCaps, 'output_compression', nextMode) ? parsed.outputCompression ?? null : null);
         const qualityValues = getImageFieldValues(engineMatch.engineCaps, 'quality', nextMode);
         const defaultQuality =
           getImageFieldDefaultString(engineMatch.engineCaps, 'quality', nextMode) ?? qualityValues[0] ?? null;
@@ -325,6 +330,7 @@ export function useImageComposerPersistence({
     setMode,
     setNumImages,
     setOutputFormat,
+    setOutputCompression,
     setPrompt,
     setQuality,
     setBackground,
@@ -351,6 +357,7 @@ export function useImageComposerPersistence({
       customImageSize: resolution === 'custom' ? buildCustomImageSize(customImageWidth, customImageHeight) : null,
       seed: seed.trim().length ? Math.round(Number(seed)) : null,
       outputFormat,
+      outputCompression,
       quality,
       background,
       style,
@@ -398,6 +405,7 @@ export function useImageComposerPersistence({
     mode,
     numImages,
     outputFormat,
+    outputCompression,
     persistableReferenceSlots,
     prompt,
     quality,

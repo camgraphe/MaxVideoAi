@@ -65,3 +65,37 @@ for (const field of ['complexity', 'background'] as const) {
     } finally { await fixture.close(); }
   });
 }
+
+for (const locale of ['en', 'fr', 'es']) test(`raster options expose compression and explain automatic quotes in ${locale}`, async () => {
+  const fixture = await mountToolFixture(`
+    import {I18nProvider} from './lib/i18n/I18nProvider';
+    import {ImageWorkspaceComposerSurface} from './app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface';
+    import {DEFAULT_COPY,mergeCopy} from './app/(core)/(workspace)/app/image/_lib/image-workspace-copy';
+    import messages from './messages/${locale}.json';
+    const copy=mergeCopy(DEFAULT_COPY,messages.workspace.image);window.expectedCompressionCopy=copy.composer;
+    function Surface(){const [outputCompression,setOutputCompression]=useState(0);
+      return <ImageWorkspaceComposerSurface selectedEngineId="gpt-image-2-6-flare"
+        engineCapsList={[]} selectedEngineCaps={{id:'gpt-image-2-6-flare'}}
+        mode="t2i" prompt="An image" numImages={1} quality="auto" resolution="auto"
+        resolvedCopy={copy} advancedSettingsTitle="Options" compositePreviewEntry={null}
+        pendingGenerations={[]} composerReferenceAssets={{}} referenceAssetFields={[]}
+        estimatedCostAmount={1} currency="USD" outputFormat="webp"
+        showOutputCompressionControl outputCompression={outputCompression} setOutputCompression={setOutputCompression} />;
+    }
+    function App(){return <I18nProvider locale="${locale}" dictionary={{}} fallback={{}}><Surface/></I18nProvider>}
+  `, stubs);
+  try {
+    const document = fixture.w.document as Document;
+    const copy = fixture.w.expectedCompressionCopy;
+    assert.ok(document.body.textContent?.includes(copy.gpt26AutoQuoteHint), 'automatic-price explanation is visible before opening options');
+    const toggle = document.querySelector<HTMLButtonElement>('.app-options-button');
+    assert.ok(toggle, 'compression alone exposes the options button');
+    await fixture.act(async () => toggle.click());
+    const label = Array.from(document.querySelectorAll('label')).find(element => element.textContent?.includes(copy.outputCompressionLabel));
+    assert.ok(label);
+    assert.ok(label.textContent?.includes(copy.outputCompressionHint));
+    const input = label.querySelector<HTMLInputElement>('input');
+    assert.ok(input);
+    assert.equal(input.value, '0'); assert.equal(input.min, '0'); assert.equal(input.max, '100'); assert.equal(input.step, '1');
+  } finally { await fixture.close(); }
+});

@@ -2,9 +2,23 @@
 
 GPT Image 2.6 Flare/Sunburst use the direct Images API. Their identity,
 publication, canonical manual tariffs and Studio certification remain separate
-gates. No fal key or fallback is needed on this image path. The first lot admits
-three raster sizes, four outputs in App/MCP, one in Studio, and owned raster
-references. GIF, SVG, annotations and masks are not admitted.
+gates. No fal key or fallback is needed on this image path. The raster correction
+admits seventeen exact pixel presets, custom/automatic dimensions, five explicit
+qualities plus Auto, ten outputs in App/MCP, one in Studio, and up to sixteen
+owned raster references on all three surfaces. GIF/SVG belong to the separately
+requested additional tool; annotations and masks are not admitted by this raster
+contract.
+
+`gptImage26Dimensions.ts` owns the exact 2.6 dimension envelope and ratio checks.
+`gptImage26.ts` validates raster settings and JPEG/WebP-only compression. Custom
+dimensions survive canonical imageWidth/imageHeight, the immutable quote and
+paid execution before becoming OpenAI's literal size string. Automatic settings
+remain `auto` in the provider payload; their conservative quote uses separately
+authored native cells and must not become a claim of measured supplier output.
+See [the raster tariff extension](../launch/2026-11-07-gpt26-raster-tariffs/README.md).
+The 2,040 historical exact cells remain preferred and unchanged. Unsupported or
+missing active tariffs still reject the request; catalog changes cannot activate
+prices. Compression is part of immutable request identity but is price-neutral.
 
 `openai-image-client.ts` owns one POST with the exact model ID, a fixed OpenAI
 origin and no automatic retry. A transport timeout, unreadable success response

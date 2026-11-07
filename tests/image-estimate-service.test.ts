@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { GPT_IMAGE_26_SIZES } from '../frontend/lib/image/gptImage26Dimensions.ts';
 import {
   ImageEstimateError,
   estimateImageGeneration,
@@ -152,7 +153,7 @@ for (const engineId of ['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst']) {
     const { response, payload } = await postEstimate({ engineId, mode: 't2i', resolution: '1k', quality: 'high' });
     assert.equal(response.status, 400);
     assert.deepEqual(payload, {
-      ok: false, error: 'resolution_invalid', allowed: ['1024x1024', '1536x1024', '1024x1536'],
+      ok: false, error: 'resolution_invalid', allowed: [...GPT_IMAGE_26_SIZES],
     });
   });
 }

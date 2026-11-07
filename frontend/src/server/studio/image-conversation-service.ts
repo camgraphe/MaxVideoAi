@@ -2,6 +2,7 @@ import {createCharacterStudioIntegration} from '@/server/character-studio/integr
 import {isStudioCharacterEnabled} from './feature-access';
 import type {StudioCharacterFactory} from './conversation-character';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
+import { gptImage26PixelSize, gptImage26SizeMatchesRatio } from '@/lib/image/gptImage26Dimensions';
 import type {StudioTaskExecution} from "./tasks/execution";
 import {customerDisplayPrice} from '@/lib/customer-price-presentation';
 import type {StudioExportDependencies} from './conversation-export-command';
@@ -118,21 +119,28 @@ export function imageRequestFromDraft(
   const allowed =
     candidate.modeCaps[mode]?.resolution ?? candidate.engine.resolutions;
   const details = projectAgentModelModeDetails(candidate,mode);
+  const image26 = isGptImage26EngineId(candidate.engine.id);
   // Explicit dimensions describe a custom size. Preserve that saved intent on
   // resume instead of pairing it with an incompatible aspect-ratio preset.
   const hasDimensions = selected.imageWidth !== undefined || selected.imageHeight !== undefined;
   const resolution = selected.resolution
     ?? (hasDimensions && details.resolutions.includes('custom') ? 'custom' : undefined)
+    ?? (image26 && ratio !== 'auto' ? allowed.find(value => {
+      if (value === 'custom' || value === 'auto') return false;
+      const size = gptImage26PixelSize(value);
+      return size && gptImage26SizeMatchesRatio(size, ratio);
+    }) : undefined)
     ?? choices[ratio]?.find((value) => allowed.includes(value)) ?? details.resolutions[0];
   if (!resolution)
     throw new AgentApiError(
       "PARAMETER_INVALID",
       "This image format is unavailable.",
     );
-  const image26 = isGptImage26EngineId(candidate.engine.id);
   if (image26) {
-    const ratioBySize: Record<string,string> = {'1024x1024':'1:1','1536x1024':'3:2','1024x1536':'2:3'};
-    if (ratio !== 'auto' && ratioBySize[String(resolution)] !== ratio) throw new AgentApiError('PARAMETER_INVALID','Choose 1:1, 3:2 or 2:3 and a matching GPT Image 2.6 size.');
+    let pixels;
+    try { pixels = gptImage26PixelSize(String(resolution), hasDimensions ? {width: Number(selected.imageWidth), height: Number(selected.imageHeight)} : undefined); }
+    catch { throw new AgentApiError('PARAMETER_INVALID','Choose valid GPT Image 2.6 pixel dimensions.'); }
+    if (ratio !== 'auto' && (!pixels || !gptImage26SizeMatchesRatio(pixels, ratio))) throw new AgentApiError('PARAMETER_INVALID','Choose pixel dimensions matching the requested image aspect ratio.');
     delete selected.aspectRatio;
   }
   try {
