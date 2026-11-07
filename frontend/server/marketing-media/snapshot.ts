@@ -6,6 +6,7 @@ import { sanitizePublicRecreationSnapshot } from './public-recreation';
 import { sanitizePublicVideoPricingSnapshot } from './public-pricing';
 
 type RecordValue = Record<string, unknown>;
+export const MARKETING_PUBLICATION_IMPORT_SCHEMA = 'maxvideoai-marketing-publication/v1';
 export type MarketingSource = { job: RecordValue; output?: RecordValue | null; poster_url?: string | null };
 export type MarketingCopyPlan = {
   videoId: string;
@@ -39,13 +40,16 @@ function canonical(value: unknown): unknown {
     );
   return value;
 }
-export const marketingSourceFingerprint = (source: MarketingSource) =>
+export const marketingSourceFingerprint = (source: unknown) =>
   createHash('sha256')
     .update(JSON.stringify(canonical(source)))
     .digest('hex');
 
 /** Capture generation inputs, not billing/provider execution records. No defaults are invented. */
-export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopyPlan {
+export function prepareMarketingSnapshot(
+  source: MarketingSource,
+  options?: { requireConsistentMediaKinds: boolean },
+): MarketingCopyPlan {
   const job = source.job;
   const originalUrl = normalizeMediaUrl(text(job.video_url));
   if (originalUrl && authoredSources.sources.some((source) => normalizeMediaUrl(source.url) === originalUrl))
@@ -149,7 +153,10 @@ export function prepareMarketingSnapshot(source: MarketingSource): MarketingCopy
     }
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash)
       throw new MarketingMediaError('A media reference is not a portable HTTPS source.');
-    if (!media.has(value)) media.set(value, { sourceUrl: value, role, kind });
+    const existing = media.get(value);
+    if (options?.requireConsistentMediaKinds && existing && existing.kind !== kind)
+      throw new MarketingMediaError('A source file has conflicting media roles.');
+    if (!existing) media.set(value, { sourceUrl: value, role, kind });
     if (media.size > 64) throw new MarketingMediaError('This video has too many media references to copy together.');
   }
   function visit(value: unknown, path: string, kind: 'image' | 'video' | 'audio' = 'image') {

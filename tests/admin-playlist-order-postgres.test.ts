@@ -9,7 +9,8 @@ test('playlist reorder is atomic and preserves the previous order when insertion
   const { getDb } = await import('../frontend/src/lib/db');
   try {
     await database.pool
-      .query(`CREATE TABLE playlists(id text PRIMARY KEY, slug text); INSERT INTO playlists VALUES ('p','custom'),('other','other'),('historical',' WELCOME '); CREATE TABLE playlist_items (playlist_id text, video_id text, order_index integer, pinned boolean, PRIMARY KEY (playlist_id, video_id));
+      .query(`CREATE TABLE playlists(id text PRIMARY KEY, slug text, is_public boolean NOT NULL DEFAULT true, updated_at timestamptz DEFAULT now(), updated_by text);
+      INSERT INTO playlists(id,slug) VALUES ('p','custom'),('other','other'),('historical',' WELCOME '); CREATE TABLE playlist_items (playlist_id text, video_id text, order_index integer, pinned boolean, PRIMARY KEY (playlist_id, video_id));
       INSERT INTO playlist_items VALUES ('p', 'a', 0, false), ('p', 'b', 1, true), ('other', 'z', 0, false);`);
     process.env.STARTER_PLAYLIST_SLUG = 'starter';
     await test('rejects_historical_core_writes', async () => {
@@ -43,7 +44,7 @@ test('playlist reorder is atomic and preserves the previous order when insertion
       { video_id: 'a', order_index: 0, pinned: false },
       { video_id: 'b', order_index: 1, pinned: true },
     ]);
-    await reorderPlaylistItems('p', [{ videoId: 'b', pinned: true }, { videoId: 'a' }]);
+    assert.equal(await reorderPlaylistItems('p', [{ videoId: 'b', pinned: true }, { videoId: 'a' }]), 'custom');
     assert.deepEqual(
       (
         await database.pool.query(`SELECT video_id FROM playlist_items WHERE playlist_id = 'p' ORDER BY order_index`)
@@ -55,6 +56,15 @@ test('playlist reorder is atomic and preserves the previous order when insertion
         .n,
       1
     );
+    assert.equal(await appendPlaylistItem('p', 'c'), 'custom');
+    assert.equal(await removePlaylistItem('p', 'c'), 'custom');
+    assert.deepEqual(await updatePlaylist('p', { slug: 'renamed', isPublic: false }), { previousSlug: 'custom', slug: 'renamed' });
+    assert.equal(await updatePlaylist('p', { isPublic: false }), null);
+    assert.deepEqual(await updatePlaylist('p', { isPublic: true }), { previousSlug: 'renamed', slug: 'renamed' });
+    assert.deepEqual((await database.pool.query("SELECT slug,is_public FROM playlists WHERE id='p'")).rows,
+      [{ slug: 'renamed', is_public: true }]);
+    assert.equal(await deletePlaylist('p'), 'renamed');
+    assert.equal((await database.pool.query("SELECT 1 FROM playlist_items WHERE playlist_id='p'")).rowCount, 0);
   } finally {
     await getDb().end();
     await database.cleanup();

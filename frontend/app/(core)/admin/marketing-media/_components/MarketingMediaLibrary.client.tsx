@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 import type { MarketingMediaItem } from '@/lib/marketing-media';
+import { MarketingPublicationImport } from './MarketingPublicationImport.client';
 
 function videoIdFromInput(input:string){
  const value=input.trim();
@@ -22,6 +23,7 @@ export function MarketingMediaLibrary({initialVideoId=''}:{initialVideoId?:strin
  const [videoId,setVideoId]=useState(initialVideoId);const [permission,setPermission]=useState(false);
  const [items,setItems]=useState<MarketingMediaItem[]>([]);const [offset,setOffset]=useState(0);const [nextOffset,setNextOffset]=useState<number|null>(null);
  const [loading,setLoading]=useState(true);const [busy,setBusy]=useState<string|null>(null);const [error,setError]=useState<string|null>(null);const [notice,setNotice]=useState<string|null>(null);
+ const importDisclosure=useRef<HTMLDetailsElement>(null);
  const load=useCallback(async(page:number,signal?:AbortSignal)=>{
   setLoading(true);
   try{const result=await request(`/api/admin/marketing-media?offset=${page}`,{signal});if(signal?.aborted)return;setItems(result.items);setNextOffset(result.nextOffset);}
@@ -57,6 +59,12 @@ export function MarketingMediaLibrary({initialVideoId=''}:{initialVideoId?:strin
    <div className="flex flex-wrap items-center gap-3"><Button type="submit" disabled={Boolean(busy)||!videoId.trim()}>{busy?.startsWith('copy:')?'Copying…':'Add to marketing media'}</Button>
     <p className="text-xs text-text-muted">Copies the original, preview, cover and required references. Existing public links keep their identity.</p></div>
   </form>
+  <details ref={importDisclosure} className="rounded-xl border border-border bg-surface p-4">
+   <summary className="cursor-pointer text-sm font-semibold">Import publication</summary>
+   <MarketingPublicationImport disabled={busy!==null&&busy!=='import'}
+    onBusyChange={importing=>setBusy(importing?'import':null)}
+    onSettled={async imported=>{if(imported&&offset!==0)setOffset(0);else await load(offset);}}/>
+  </details>
   {error?<p role="alert" className="rounded-lg border border-error-border bg-error-bg p-3 text-sm text-error">{error}</p>:null}
   {notice?<p role="status" className="text-sm text-text-secondary">{notice}</p>:null}
   <div className="flex items-center justify-between gap-3"><h2 className="font-semibold">Site library</h2><Button variant="outline" size="sm" disabled={loading||Boolean(busy)} onClick={()=>{setError(null);void load(offset);}}>Refresh</Button></div>
@@ -75,7 +83,12 @@ export function MarketingMediaLibrary({initialVideoId=''}:{initialVideoId?:strin
     <div className="flex flex-wrap items-center gap-2">
      {item.state==='ready'?<><a className="rounded-input border border-border px-3 py-2 text-sm font-semibold" href={`/app?from=${encodeURIComponent(item.videoId)}`}>Reuse settings</a>
       <Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>void change(item,'visibility')}>{item.visibility==='public'?'Make private':'Publish on site'}</Button></>:null}
-     {item.state==='failed'||(item.state==='copying'&&!item.copyActive)?<Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>void copy(item.videoId)}>Retry copy</Button>:null}
+     {item.state==='failed'||(item.state==='copying'&&!item.copyActive)?item.sourceKind==='import'?
+      <Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>{
+       const disclosure=importDisclosure.current;
+       if(disclosure){disclosure.open=true;disclosure.querySelector<HTMLInputElement>('input[type="file"]')?.focus();}
+      }}>Retry import</Button>:
+      <Button size="sm" variant="outline" disabled={Boolean(busy)} onClick={()=>void copy(item.videoId)}>Retry copy</Button>:null}
      <Button size="sm" variant="outline" disabled={Boolean(busy)||Boolean(item.placements.length)||Boolean(item.copyActive)} title={item.placements.length?'Remove site placements and unpublish before deleting.':undefined} onClick={()=>void change(item,'delete')}>{item.state==='deleting'?'Retry deletion':'Delete copy'}</Button>
     </div>
    </article>)}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/db';
 import { adminErrorToResponse, requireAdmin } from '@/server/admin';
+import { revalidateMarketingPlaylist } from '@/server/marketing-media/revalidate';
 import { deletePlaylist, getPlaylist, getPlaylistItems, isPlaylistLockedError, updatePlaylist } from '@/server/playlists';
 
 type RouteParams = {
@@ -76,13 +77,14 @@ export async function PUT(req: NextRequest, props: RouteParams) {
   };
 
   try {
-    await updatePlaylist(playlistId, {
+    const change = await updatePlaylist(playlistId, {
       slug,
       name,
       description: description ?? null,
       isPublic,
       userId: adminId,
     });
+    if (change) revalidateMarketingPlaylist(change.slug, change.previousSlug);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (isPlaylistLockedError(error)) {
@@ -111,7 +113,8 @@ export async function DELETE(req: NextRequest, props: RouteParams) {
   }
 
   try {
-    await deletePlaylist(playlistId);
+    const slug = await deletePlaylist(playlistId);
+    revalidateMarketingPlaylist(slug);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (isPlaylistLockedError(error)) {
