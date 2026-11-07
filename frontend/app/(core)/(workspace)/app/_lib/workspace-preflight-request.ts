@@ -1,8 +1,8 @@
 import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
-import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from './workspace-kling-v4-media';
+import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError, usesWorkspaceKlingFlashSourceDuration } from './workspace-kling-v4-media';
 import type { KlingElementState } from '@/components/KlingElementsBuilder';
 import { filterVideoOperationValues } from '@/lib/video-operation';
-import type { EngineCaps, Mode, PreflightRequest } from '@/types/engines';
+import type { AppPreflightRequest, EngineCaps, Mode, PreflightRequest } from '@/types/engines';
 import type { FormState } from './workspace-form-state';
 import type { ReferenceAsset } from './workspace-assets';
 import { buildKlingElementsPayload, buildWorkspacePreflightInputs } from './workspace-generation-inputs';
@@ -23,7 +23,7 @@ export type WorkspacePreflightRequestOptions = {
 export function buildWorkspacePreflightRequest({
   form, selectedEngine, submissionMode, effectiveDurationSec, supportsAudioToggle,
   voiceControlEnabled, inputAssets, klingElements = [], memberTier,
-}: WorkspacePreflightRequestOptions): PreflightRequest {
+}: WorkspacePreflightRequestOptions): AppPreflightRequest {
   const isKlingV4 = isKlingV4FalQueueEngineId(selectedEngine.id);
   const elements = isKlingV4 ? buildKlingElementsPayload({
     selectedEngineId: selectedEngine.id, submissionMode, supportsKlingV3Controls: false, klingElements,
@@ -59,8 +59,9 @@ export function buildWorkspacePreflightRequest({
   const durationOption = isKlingV4 ? effectiveDurationSec : durationSeconds
     ? Number(durationSeconds[1])
     : form.durationOption;
+  const sourceDuration = usesWorkspaceKlingFlashSourceDuration(selectedEngine.id, submissionMode, form.durationOption);
 
-  return {
+  const request: PreflightRequest = {
     engine: form.engineId,
     ...(form.operation ? { operation: form.operation } : {}),
     mode: submissionMode,
@@ -84,4 +85,7 @@ export function buildWorkspacePreflightRequest({
     ...(elements?.ok && elements.klingElementsPayload ? { elements: elements.klingElementsPayload } : {}),
     user: { memberTier },
   };
+  if (!sourceDuration) return request;
+  const { durationSec: _durationSec, durationOption: _durationOption, ...sourceRequest } = request;
+  return { ...sourceRequest, engine: 'kling-v4-flash', mode: 'v2v' };
 }

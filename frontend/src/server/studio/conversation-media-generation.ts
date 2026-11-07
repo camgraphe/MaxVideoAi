@@ -175,7 +175,7 @@ function videoDefaults(candidate: AgentPublicGenerationEngine, mode: CanonicalGe
     ? resolutionField.default : details.resolutions[0];
   return {
     ...Object.fromEntries(details.settings.filter(setting => setting.default !== null).map(setting => [setting.key, setting.default])),
-    ...(!(candidate.engine.id === 'kling-v4' && mode === 'v2v') && details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
+    ...(!(isKlingV4FalQueueEngineId(candidate.engine.id) && mode === 'v2v') && details.durationPolicy === 'requested' ? { durationSec: legacy ? 5 : normalizeVideoDurationOption(caps.duration?.default) ?? details.duration?.options?.[0] ?? details.duration?.range?.min } : {}),
     resolution: legacy ? '480p' : resolution,
     ...(details.aspectRatios.length ? {aspectRatio} : {}),
     ...(details.audio === 'optional' ? {audio: legacy ? false : true} : {}),

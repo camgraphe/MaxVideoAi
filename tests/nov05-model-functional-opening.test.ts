@@ -30,7 +30,7 @@ for (const id of ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunbur
     const entry = getFalEngineById(id)!;
     assert.equal(runtime.publication.app.published, true);
     assert.equal(entry.surfaces.app.enabled, true);
-    const expectedModes = id === 'kling-v4-flash' ? ['i2v', 'ref2v', 't2v'] : ['i2i', 't2i'];
+    const expectedModes = id === 'kling-v4-flash' ? ['i2v', 'ref2v', 't2v', 'v2v'] : ['i2i', 't2i'];
     const deps = { listEngines: async () => [entry.engine],
       surfaceByEngineId: () => id === 'kling-v4-flash' ? 'video' as const : 'image' as const,
       isModeExecutable: (engine: typeof entry.engine, mode: Parameters<typeof resolveAgentGenerationModeExecutability>[1]) =>

@@ -3,16 +3,16 @@
   "versionLabel": "4.0 Flash",
   "seo": {
     "title": "Kling 4.0 Flash — Dirigir una escena breve en 720p | MaxVideoAI",
-    "description": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p."
+    "description": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p."
   },
-  "overview": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
+  "overview": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
   "pricingNotes": [
     "Crea escenas de video en la App, en Studio o desde tu asistente conectado mediante MCP. Consulta el precio antes de cada generación.",
     "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
   ],
   "hero": {
     "title": "Kling 4.0 Flash — Dirigir una escena breve en 720p",
-    "intro": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
+    "intro": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
     "badge": "720p · 3–20 s",
     "ctaPrimary": {
       "label": "Abrir el espacio de creación",
@@ -32,11 +32,11 @@
   "faqs": [
     {
       "q": "Leer especificaciones",
-      "a": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p. Los vídeos de referencia comparten 20 segundos en total; cada sujeto de vídeo debe durar 3–8 segundos. Un sujeto de imagen incluye una vista frontal y 1–3 vistas adicionales."
+      "a": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p. El original, las referencias de vídeo y los sujetos de vídeo comparten un límite total de 20 segundos. Cada sujeto de vídeo dura entre 3 y 8 segundos. Un sujeto de imagen utiliza una vista frontal y de 1 a 3 vistas adicionales."
     },
     {
       "q": "Referencias visuales originales",
-      "a": "El modo de referencia acepta diez imágenes simples incluida la inicial, cinco vídeos simples y siete sujetos. MaxVideoAI limita este lanzamiento a 15 originales en total, incluidas las vistas de sujetos."
+      "a": "La creación admite diez imágenes, cinco vídeos y siete sujetos. Modify requiere un original (@Video1), con hasta diez imágenes, cuatro vídeos adicionales (@Video2 en adelante) y siete sujetos. Hasta tres sujetos pueden usar vídeo. MaxVideoAI limita el conjunto a 15 originales, incluidos el vídeo original y las vistas de sujetos."
     },
     {
       "q": "Precios",
@@ -44,27 +44,27 @@
     },
     {
       "q": "Comparar los controles disponibles",
-      "a": "En MaxVideoAI, Flash no ofrece actualmente imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto."
+      "a": "Modify requiere un prompt y un vídeo original de tu biblioteca de 3 a 20 segundos. Hereda su encuadre y duración, salvo que elijas una duración de salida explícita de 3 a 20 segundos enteros. Flash no ofrece Extend, imagen final, plan estructurado, vinculación de voz, FPS, semilla ni control de guía."
     }
   ],
   "custom": {
     "whyTitle": "Kling 4.0 Flash",
     "heroHighlights": [
-      "3–20 segundos enteros||Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
-      "Referencias visuales originales||El modo de referencia acepta diez imágenes simples incluida la inicial, cinco vídeos simples y siete sujetos. MaxVideoAI limita este lanzamiento a 15 originales en total, incluidas las vistas de sujetos.",
+      "Crear o modificar a 720p||Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
+      "Referencias visuales originales||La creación admite diez imágenes, cinco vídeos y siete sujetos. Modify requiere un original (@Video1), con hasta diez imágenes, cuatro vídeos adicionales (@Video2 en adelante) y siete sujetos. Hasta tres sujetos pueden usar vídeo. MaxVideoAI limita el conjunto a 15 originales, incluidos el vídeo original y las vistas de sujetos.",
       "Describir el sonido||El proveedor documenta audio nativo. Indica ambiente y diálogo en el prompt; esta entrega no ofrece interruptor de audio ni archivo sonoro de entrada."
     ],
     "specTitle": "Leer especificaciones",
-    "specNote": "En MaxVideoAI, Flash no ofrece actualmente imagen final, plan de tomas estructurado, Modify, Extend, vinculación de voz, FPS, semilla ni control de guía. Elige Kling 4.0 cuando sus controles adicionales encajen con tu proyecto.",
+    "specNote": "Modify requiere un prompt y un vídeo original de tu biblioteca de 3 a 20 segundos. Hereda su encuadre y duración, salvo que elijas una duración de salida explícita de 3 a 20 segundos enteros. Flash no ofrece Extend, imagen final, plan estructurado, vinculación de voz, FPS, semilla ni control de guía.",
     "specSections": [
       {
         "title": "Secuencia montada",
-        "body": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
+        "body": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
         "items": []
       },
       {
         "title": "Referencias visuales originales",
-        "body": "Los vídeos de referencia comparten 20 segundos en total; cada sujeto de vídeo debe durar 3–8 segundos. Un sujeto de imagen incluye una vista frontal y 1–3 vistas adicionales.",
+        "body": "El original, las referencias de vídeo y los sujetos de vídeo comparten un límite total de 20 segundos. Cada sujeto de vídeo dura entre 3 y 8 segundos. Un sujeto de imagen utiliza una vista frontal y de 1 a 3 vistas adicionales.",
         "items": []
       }
     ]
@@ -74,7 +74,7 @@
     "hero": {
       "eyebrow": "KLING 4.0 FLASH",
       "title": "Kling 4.0 Flash — Dirigir una escena breve en 720p",
-      "subtitle": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
+      "subtitle": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
       "subtitleHighlights": [
         "720p"
       ],
@@ -110,13 +110,13 @@
     },
     "features": [
       {
-        "title": "3–20 segundos enteros",
-        "body": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p.",
+        "title": "Crear o modificar a 720p",
+        "body": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p.",
         "tone": "duration"
       },
       {
         "title": "Referencias visuales originales",
-        "body": "El modo de referencia acepta diez imágenes simples incluida la inicial, cinco vídeos simples y siete sujetos. MaxVideoAI limita este lanzamiento a 15 originales en total, incluidas las vistas de sujetos.",
+        "body": "La creación admite diez imágenes, cinco vídeos y siete sujetos. Modify requiere un original (@Video1), con hasta diez imágenes, cuatro vídeos adicionales (@Video2 en adelante) y siete sujetos. Hasta tres sujetos pueden usar vídeo. MaxVideoAI limita el conjunto a 15 originales, incluidos el vídeo original y las vistas de sujetos.",
         "tone": "reference"
       },
       {
@@ -146,11 +146,11 @@
     "referenceWorkflows": [
       {
         "title": "Secuencia montada",
-        "body": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p."
+        "body": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p."
       },
       {
         "title": "Referencias visuales originales",
-        "body": "Los vídeos de referencia comparten 20 segundos en total; cada sujeto de vídeo debe durar 3–8 segundos. Un sujeto de imagen incluye una vista frontal y 1–3 vistas adicionales."
+        "body": "El original, las referencias de vídeo y los sujetos de vídeo comparten un límite total de 20 segundos. Cada sujeto de vídeo dura entre 3 y 8 segundos. Un sujeto de imagen utiliza una vista frontal y de 1 a 3 vistas adicionales."
       }
     ],
     "pricingCopy": {
@@ -159,11 +159,11 @@
       "footnote": "Crea escenas de video en la App, en Studio o desde tu asistente conectado mediante MCP. Consulta el precio antes de cada generación.",
       "ctaLabel": "Ver el precio actual",
       "ctaHref": "/es/precios#kling-v4-flash-pricing",
-      "maxDurationNote": "3–20 segundos enteros"
+      "maxDurationNote": "Creación: 3–20 segundos enteros. Modify: duración del original por defecto, o 3–20 segundos enteros."
     },
     "meta": {
       "title": "Kling 4.0 Flash — Dirigir una escena breve en 720p | MaxVideoAI",
-      "description": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p."
+      "description": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p."
     }
   },
   "prompting": {
@@ -211,7 +211,7 @@
       "Consulta el presupuesto actual antes de confirmar. Cambiar ajustes o referencias requiere un presupuesto nuevo."
     ],
     "engineWhy": [
-      "Los vídeos de referencia comparten 20 segundos en total; cada sujeto de vídeo debe durar 3–8 segundos. Un sujeto de imagen incluye una vista frontal y 1–3 vistas adicionales."
+      "El original, las referencias de vídeo y los sujetos de vídeo comparten un límite total de 20 segundos. Cada sujeto de vídeo dura entre 3 y 8 segundos. Un sujeto de imagen utiliza una vista frontal y de 1 a 3 vistas adicionales."
     ],
     "demo": {
       "title": "La última muralla",
@@ -259,7 +259,7 @@
         "id": "proof-0",
         "icon": "image",
         "title": "Escena cinematográfica",
-        "body": "Parte de un prompt, anima una imagen inicial o guía una escena nueva con referencias visuales. La salida es de 720p."
+        "body": "Parte de un prompt, anima una imagen inicial, guía una escena con referencias o modifica un vídeo original de tu biblioteca. La salida es de 720p."
       },
       {
         "id": "proof-1",

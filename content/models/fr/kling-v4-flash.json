@@ -3,16 +3,16 @@
   "versionLabel": "4.0 Flash",
   "seo": {
     "title": "Kling 4.0 Flash — Diriger une scène courte en 720p | MaxVideoAI",
-    "description": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p."
+    "description": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p."
   },
-  "overview": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
+  "overview": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
   "pricingNotes": [
     "Créez vos séquences vidéo dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
     "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis."
   ],
   "hero": {
     "title": "Kling 4.0 Flash — Diriger une scène courte en 720p",
-    "intro": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
+    "intro": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
     "badge": "720p · 3–20 s",
     "ctaPrimary": {
       "label": "Ouvrir l’espace de création",
@@ -32,11 +32,11 @@
   "faqs": [
     {
       "q": "Lire les caractéristiques",
-      "a": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p. Les vidéos de référence partagent 20 secondes au total ; chaque sujet vidéo doit durer 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues complémentaires."
+      "a": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p. La source, les références vidéo et les sujets vidéo partagent une limite totale de 20 secondes. Chaque sujet vidéo dure de 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues supplémentaires."
     },
     {
       "q": "Références visuelles originales",
-      "a": "Le mode référence accepte dix images simples, image initiale comprise, cinq vidéos simples et sept sujets. MaxVideoAI limite ce premier lancement à 15 originaux au total, vues des sujets comprises."
+      "a": "La création accepte dix images, cinq vidéos et sept sujets. Modify exige une source (@Video1), avec dix images, quatre vidéos supplémentaires (@Video2 et suivantes) et sept sujets au maximum. Trois sujets peuvent utiliser une vidéo. MaxVideoAI limite l’ensemble à 15 originaux, source et vues des sujets comprises."
     },
     {
       "q": "Tarification",
@@ -44,27 +44,27 @@
     },
     {
       "q": "Comparer les contrôles disponibles",
-      "a": "Dans MaxVideoAI, Flash ne propose actuellement ni image finale, plan de séquences structuré, Modify, Extend, liaison vocale, FPS, graine ou réglage de guidage. Choisissez Kling 4.0 si ses contrôles supplémentaires conviennent au projet."
+      "a": "Modify exige un prompt et une vidéo source de votre bibliothèque de 3 à 20 secondes. Il reprend son cadrage et sa durée, sauf si vous choisissez une durée de sortie explicite de 3 à 20 secondes entières. Flash ne propose ni Extend, image finale, découpage structuré, liaison vocale, FPS, graine ou réglage de guidage."
     }
   ],
   "custom": {
     "whyTitle": "Kling 4.0 Flash",
     "heroHighlights": [
-      "3 à 20 secondes entières||Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
-      "Références visuelles originales||Le mode référence accepte dix images simples, image initiale comprise, cinq vidéos simples et sept sujets. MaxVideoAI limite ce premier lancement à 15 originaux au total, vues des sujets comprises.",
+      "Créer ou modifier en 720p||Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
+      "Références visuelles originales||La création accepte dix images, cinq vidéos et sept sujets. Modify exige une source (@Video1), avec dix images, quatre vidéos supplémentaires (@Video2 et suivantes) et sept sujets au maximum. Trois sujets peuvent utiliser une vidéo. MaxVideoAI limite l’ensemble à 15 originaux, source et vues des sujets comprises.",
       "Décrire le son||Le fournisseur documente un son natif. Précisez l’ambiance et les dialogues dans le prompt ; ce lot ne propose ni interrupteur audio ni fichier sonore en entrée."
     ],
     "specTitle": "Lire les caractéristiques",
-    "specNote": "Dans MaxVideoAI, Flash ne propose actuellement ni image finale, plan de séquences structuré, Modify, Extend, liaison vocale, FPS, graine ou réglage de guidage. Choisissez Kling 4.0 si ses contrôles supplémentaires conviennent au projet.",
+    "specNote": "Modify exige un prompt et une vidéo source de votre bibliothèque de 3 à 20 secondes. Il reprend son cadrage et sa durée, sauf si vous choisissez une durée de sortie explicite de 3 à 20 secondes entières. Flash ne propose ni Extend, image finale, découpage structuré, liaison vocale, FPS, graine ou réglage de guidage.",
     "specSections": [
       {
         "title": "Séquence montée",
-        "body": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
+        "body": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
         "items": []
       },
       {
         "title": "Références visuelles originales",
-        "body": "Les vidéos de référence partagent 20 secondes au total ; chaque sujet vidéo doit durer 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues complémentaires.",
+        "body": "La source, les références vidéo et les sujets vidéo partagent une limite totale de 20 secondes. Chaque sujet vidéo dure de 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues supplémentaires.",
         "items": []
       }
     ]
@@ -74,7 +74,7 @@
     "hero": {
       "eyebrow": "KLING 4.0 FLASH",
       "title": "Kling 4.0 Flash — Diriger une scène courte en 720p",
-      "subtitle": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
+      "subtitle": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
       "subtitleHighlights": [
         "720p"
       ],
@@ -110,13 +110,13 @@
     },
     "features": [
       {
-        "title": "3 à 20 secondes entières",
-        "body": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p.",
+        "title": "Créer ou modifier en 720p",
+        "body": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p.",
         "tone": "duration"
       },
       {
         "title": "Références visuelles originales",
-        "body": "Le mode référence accepte dix images simples, image initiale comprise, cinq vidéos simples et sept sujets. MaxVideoAI limite ce premier lancement à 15 originaux au total, vues des sujets comprises.",
+        "body": "La création accepte dix images, cinq vidéos et sept sujets. Modify exige une source (@Video1), avec dix images, quatre vidéos supplémentaires (@Video2 et suivantes) et sept sujets au maximum. Trois sujets peuvent utiliser une vidéo. MaxVideoAI limite l’ensemble à 15 originaux, source et vues des sujets comprises.",
         "tone": "reference"
       },
       {
@@ -146,11 +146,11 @@
     "referenceWorkflows": [
       {
         "title": "Séquence montée",
-        "body": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p."
+        "body": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p."
       },
       {
         "title": "Références visuelles originales",
-        "body": "Les vidéos de référence partagent 20 secondes au total ; chaque sujet vidéo doit durer 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues complémentaires."
+        "body": "La source, les références vidéo et les sujets vidéo partagent une limite totale de 20 secondes. Chaque sujet vidéo dure de 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues supplémentaires."
       }
     ],
     "pricingCopy": {
@@ -159,11 +159,11 @@
       "footnote": "Créez vos séquences vidéo dans l’App, dans Studio ou depuis votre assistant connecté via MCP. Le prix s’affiche avant chaque génération.",
       "ctaLabel": "Voir le tarif actuel",
       "ctaHref": "/fr/tarifs#kling-v4-flash-pricing",
-      "maxDurationNote": "3 à 20 secondes entières"
+      "maxDurationNote": "Création : 3 à 20 secondes entières. Modify : durée de la source par défaut, ou 3 à 20 secondes entières."
     },
     "meta": {
       "title": "Kling 4.0 Flash — Diriger une scène courte en 720p | MaxVideoAI",
-      "description": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p."
+      "description": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p."
     }
   },
   "prompting": {
@@ -211,7 +211,7 @@
       "Consultez le devis actuel avant de confirmer. Toute modification des réglages ou des références nécessite un nouveau devis."
     ],
     "engineWhy": [
-      "Les vidéos de référence partagent 20 secondes au total ; chaque sujet vidéo doit durer 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues complémentaires."
+      "La source, les références vidéo et les sujets vidéo partagent une limite totale de 20 secondes. Chaque sujet vidéo dure de 3 à 8 secondes. Un sujet image comprend une vue frontale et 1 à 3 vues supplémentaires."
     ],
     "demo": {
       "title": "Le dernier rempart",
@@ -259,7 +259,7 @@
         "id": "proof-0",
         "icon": "image",
         "title": "Scène de cinéma",
-        "body": "Partez d’un prompt, animez une image initiale ou guidez une nouvelle scène avec des références visuelles. La sortie est en 720p."
+        "body": "Partez d’un prompt, animez une image initiale, guidez une scène avec des références ou modifiez une vidéo source de votre bibliothèque. La sortie est en 720p."
       },
       {
         "id": "proof-1",

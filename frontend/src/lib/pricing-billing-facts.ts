@@ -1,4 +1,4 @@
-import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE } from './kling-v4-flash-pricing';
+import { klingV4FlashPricingUsage, KLING_V4_FLASH_PRICING_SOURCE, KLING_V4_FLASH_MODIFY_PRICING_SOURCE } from './kling-v4-flash-pricing';
 import { isGptImage26EngineId } from '@/lib/image/gptImage26';
 import { calculateGptImage26ListOutputComponents } from '@/lib/image/gptImage26Pricing';
 import { klingV4PricingUsage, KLING_V4_PRICING_SOURCE } from './kling-v4-pricing';
@@ -115,8 +115,9 @@ function buildBillingPricingFactsInternal(
     const usage = klingV4FlashPricingUsage(context);
     return resultFromFacts({ engineId: engine.id, currency, vendorSubtotalExactCents: usage.supplierExactCents,
       base: { seconds: usage.outputDurationSec, rate: usage.supplierExactCents / 100 / usage.outputDurationSec, unit: 'sec', amountCents: Math.ceil(usage.supplierExactCents) },
-      meta: { pricing_model: 'kling_v4_flash_fal_public_list', provider_cost_source: KLING_V4_FLASH_PRICING_SOURCE,
-        provider_cost_checked_at: '2026-11-05', effective_supplier_charge_verified: false,
+      meta: { pricing_model: 'kling_v4_flash_fal_public_list',
+        provider_cost_source: context.mode === 'v2v' ? KLING_V4_FLASH_MODIFY_PRICING_SOURCE : KLING_V4_FLASH_PRICING_SOURCE,
+        provider_cost_checked_at: context.mode === 'v2v' ? '2026-11-07' : '2026-11-05', effective_supplier_charge_verified: false,
         input_video_duration_sec: usage.inputVideoDurationSec, output_duration_sec: usage.outputDurationSec,
         billable_seconds: usage.billableSeconds, has_video_input: usage.hasVideoInput } });
   }

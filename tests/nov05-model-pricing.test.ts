@@ -39,7 +39,7 @@ test('Flash supplier cost uses exact aggregate input timing, with independent no
   assert.equal(klingV4FlashPricingUsage(source).billableSeconds, 15.2501);
   assert.equal(klingV4FlashPricingUsage(source).supplierExactCents, 96.07563);
   assert.equal(klingV4FlashPricingUsage({ ...source, inputVideoDurationSec: 3 }).supplierExactCents, 63);
-  for (const patch of [{ inputVideoDurationSec: 20.001 }, { durationSec: 21 }, { durationSec: 3.5 }, { resolution: '1080p' }, { mode: 'v2v' }, { inheritedDurationSec: 5 }]) assert.throws(() => klingV4FlashPricingUsage({ ...source, ...patch } as never));
+  for (const patch of [{ inputVideoDurationSec: 20.001 }, { durationSec: 21 }, { durationSec: 3.5 }, { resolution: '1080p' }, { inheritedDurationSec: 5 }]) assert.throws(() => klingV4FlashPricingUsage({ ...source, ...patch } as never));
   assert.throws(() => klingV4FlashPricingUsage({ mode: 'ref2v', resolution: '720p', durationSec: 5 }));
 });
 
@@ -57,8 +57,9 @@ test('2.6 output estimates reproduce the current official calculator without tre
 
 test('Flash admin inventory and image tariffs never fall back to legacy percentage pricing', async () => {
   const flash = klingV4TariffScenarios('kling-v4-flash');
-  assert.equal(flash.length, 72);
-  assert.deepEqual([...new Set(flash.map(row => row.selector.mode))], ['t2v', 'i2v', 'ref2v']);
+  assert.equal(flash.length, 90);
+  assert.equal(flash.filter(row => row.selector.mode !== 'v2v').length, 72);
+  assert.deepEqual([...new Set(flash.map(row => row.selector.mode))], ['t2v', 'i2v', 'ref2v', 'v2v']);
   const contexts = [flash[0].context, ...['gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'].map(id => ({ engine: getFalEngineById(id)!.engine, mode: 't2i' as const, resolution: '1024x1024', durationSec: 1, quality: 'high' }))];
   for (const context of contexts) {
     const facts = buildBillingPricingFacts(context, undefined, 'USD');

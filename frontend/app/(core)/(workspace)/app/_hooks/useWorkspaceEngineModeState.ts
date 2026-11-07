@@ -367,7 +367,7 @@ export function useWorkspaceEngineModeState({
       if (!prepared) return;
       setForm((current) => {
         const candidate = prepared.form ?? current;
-        return coerceFormState(capabilityEngine, nextMode, candidate ? { ...candidate, mode: nextMode } : null);
+        return coerceFormState(capabilityEngine, nextMode, candidate ? { ...candidate, mode: capabilityEngine.id === 'kling-v4-flash' ? candidate.mode : nextMode } : null);
       });
     },
     [selectedEngine, capabilityEngine, setForm, workspaceExecutableModes, prepareModeAssets]
@@ -424,7 +424,7 @@ export function useWorkspaceEngineModeState({
           inputAssets: prepared.assets, klingElements }).implicitMode);
       setForm((current) => {
         const candidate = prepared.form ?? current;
-        return coerceFormState(base, nextMode, candidate ? { ...candidate, mode: nextMode,
+        return coerceFormState(base, nextMode, candidate ? { ...candidate, mode: base.id === 'kling-v4-flash' ? candidate.mode : nextMode,
           ...(isUnifiedKlingO3 ? { operation: mode === 'v2v' ? 'kling-edit' : nextMode === 'v2v' ? 'kling-reference' : undefined } : {}) } : null);
       });
     },

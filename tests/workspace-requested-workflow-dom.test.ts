@@ -89,6 +89,25 @@ async function mount(initialEngine = 'wan-3') {
   };
 }
 
+test('the real Flash mode toggle defaults a new Modify workflow to source duration', async () => {
+  const view = await mount('kling-v4-flash');
+  try {
+    await act(async () => view.workflow.handleComposerModeToggle('v2v'));
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    assert.equal(view.route.form?.durationOption, 'auto');
+    await view.source('ready');
+    await act(async () => view.route.setForm(current => current && { ...current, durationSec: 3, durationOption: 3 }));
+    await act(async () => view.workflow.handleComposerModeToggle(null));
+    assert.equal(view.workflow.submissionMode, 't2v');
+    assert.notEqual(view.route.form?.durationOption, 'auto');
+    await act(async () => view.workflow.handleComposerModeToggle('v2v'));
+    assert.equal(view.workflow.submissionMode, 'v2v');
+    assert.equal(view.route.form?.durationOption, 3, 'returning to Modify retains its explicit authored choice');
+  } finally {
+    await view.close();
+  }
+});
+
 test('recalling a generation with default advanced controls clears earlier CFG and shot choices', async () => {
   const view = await mount();
   try {

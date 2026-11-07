@@ -17,13 +17,14 @@ const schemas = {
   t2v: z.object({ ...common, prompt, aspect_ratio: z.enum(['16:9', '9:16', '1:1', '21:9']).optional() }).strict(),
   i2v: z.object({ ...common, prompt: prompt.optional(), start_image_url: url }).strict(),
   ref2v: z.object({ ...common, prompt, start_image_url: url.optional(), image_urls: z.array(url).max(10).optional(), video_urls: z.array(url).max(5).optional(), elements: z.array(element).max(7).optional(), aspect_ratio: z.enum(['auto', '16:9', '9:16', '1:1', '21:9']).optional() }).strict(),
+  v2v: z.object({ ...common, duration: common.duration.optional(), prompt, video_url: url, image_urls: z.array(url).max(10).optional(), video_urls: z.array(url).max(4).optional(), elements: z.array(element).max(7).optional() }).strict(),
 };
 const integer = (value: unknown) => typeof value === 'string' && /^\d+$/u.test(value.trim()) ? Number(value.trim()) : value;
 
 /** Inspect the authored App request before common normalizers drop unsupported fields. */
 export function getKlingV4FlashControlViolation(mode: string, body: Record<string, unknown>): string | null {
   if (!Object.hasOwn(KLING_V4_FLASH_ENDPOINTS, mode)) return 'Unsupported Flash mode.';
-  for (const field of ['fps', 'seed', 'cfgScale', 'audio', 'generate_audio', 'voiceIds', 'voiceControl', 'shotType', 'cameraFixed', 'loop', 'numFrames', 'audioUrl', 'audio_url', 'safetyChecker', 'endImageUrl', 'videoUrl', 'multiPrompt', 'multi_prompt', 'negativePrompt']) {
+  for (const field of ['fps', 'seed', 'cfgScale', 'audio', 'generate_audio', 'voiceIds', 'voiceControl', 'shotType', 'cameraFixed', 'loop', 'numFrames', 'audioUrl', 'audio_url', 'safetyChecker', 'endImageUrl', ...(mode === 'v2v' ? ['imageUrl', 'aspectRatio'] : ['videoUrl']), 'multiPrompt', 'multi_prompt', 'negativePrompt']) {
     if (body[field] !== undefined && body[field] !== null && body[field] !== '') return `Flash does not support ${field}.`;
   }
   if (body.extraInputValues && Object.values(body.extraInputValues as object).some(value => value !== undefined && value !== null)) return 'Flash has no additional provider controls.';
@@ -42,12 +43,12 @@ export function getKlingV4FlashConstraintViolation(mode: string, input: Record<s
     const issue = parsed.error.issues[0];
     return invalid(issue.code === 'unrecognized_keys' ? issue.keys[0] : issue.path.join('.') || 'input', issue.message);
   }
-  if (mode === 'ref2v') {
-    const refs = parsed.data as z.infer<typeof schemas.ref2v>;
+  if (mode === 'ref2v' || mode === 'v2v') {
+    const refs = parsed.data as z.infer<typeof schemas.ref2v> & { video_url?: string };
     const flatImages = (refs.image_urls?.length ?? 0) + Number(Boolean(refs.start_image_url));
     if (flatImages > 10) return invalid('image_urls', 'The opening image counts toward the ten-image limit.');
     if ((refs.elements?.filter(item => item.video_url).length ?? 0) > 3) return invalid('elements', 'Use at most three video subjects.');
-    const count = flatImages + (refs.video_urls?.length ?? 0) + (refs.elements ?? []).reduce((n, item) => n + (item.video_url ? 1 : 1 + (item.reference_image_urls?.length ?? 0)), 0);
+    const count = Number(Boolean(refs.video_url)) + flatImages + (refs.video_urls?.length ?? 0) + (refs.elements ?? []).reduce((n, item) => n + (item.video_url ? 1 : 1 + (item.reference_image_urls?.length ?? 0)), 0);
     if (!count) return invalid('references', 'Reference mode requires visual media.');
     if (count > KLING_V4_FLASH_REFERENCE_LIMIT) return invalid('references', 'This launch supports at most 15 originals, including subject views.');
   }
@@ -60,7 +61,7 @@ export function buildKlingV4FlashFalRequest(payload: GeneratePayload): { model: 
   const unsupported = { fps: payload.fps, seed: payload.seed, cfgScale: payload.cfgScale, audio: payload.audio === false ? false : undefined,
     voiceIds: payload.voiceIds?.length ? payload.voiceIds : undefined, shotType: payload.shotType, cameraFixed: payload.cameraFixed,
     loop: payload.loop, numFrames: payload.numFrames, audioUrl: payload.audioUrl, safetyChecker: payload.safetyChecker,
-    endImageUrl: payload.endImageUrl, videoUrl: payload.videoUrl, multiPrompt: payload.multiPrompt };
+    endImageUrl: payload.endImageUrl, ...(mode === 'v2v' ? { imageUrl: payload.imageUrl, aspectRatio: payload.aspectRatio } : { videoUrl: payload.videoUrl }), multiPrompt: payload.multiPrompt };
   for (const [field, value] of Object.entries(unsupported)) {
     if (value !== undefined && value !== null) throw new Error(`Kling 4.0 Flash does not expose ${field}.`);
   }
@@ -69,20 +70,25 @@ export function buildKlingV4FlashFalRequest(payload: GeneratePayload): { model: 
   const imageSlots = ['image_url', 'start_image_url', 'first_frame_url', 'image_urls', 'reference_image_urls', 'reference_images'];
   const videoSlots = ['video_urls', 'reference_video_urls', 'reference_videos'];
   for (const item of inputs) {
-    if (!(item.kind === 'image' ? imageSlots : item.kind === 'video' ? videoSlots : []).includes(item.slotId ?? '')) throw new Error('Kling 4.0 Flash unsupported attachment.');
+    if (!(item.kind === 'image' ? imageSlots : item.kind === 'video' ? [...videoSlots, ...(mode === 'v2v' ? ['video_url'] : [])] : []).includes(item.slotId ?? '')) throw new Error('Kling 4.0 Flash unsupported attachment.');
   }
   const read = (item: (typeof inputs)[number] | undefined) => item?.url?.trim() || item?.dataUrl?.trim();
   const image = payload.imageUrl?.trim() || read(inputs.find(item => ['image_url', 'start_image_url', 'first_frame_url'].includes(item.slotId ?? '')));
   const images = payload.referenceImages ?? inputs.filter(item => ['image_urls', 'reference_image_urls', 'reference_images'].includes(item.slotId ?? '')).map(read);
   const videos = inputs.filter(item => videoSlots.includes(item.slotId ?? '')).map(read);
+  const sources = inputs.filter(item => item.kind === 'video' && item.slotId === 'video_url');
+  const source = payload.videoUrl?.trim() || read(sources[0]);
+  if (sources.length > 1 || (payload.videoUrl && sources[0] && payload.videoUrl.trim() !== read(sources[0]))) throw new Error('Kling 4.0 Flash requires one consistent source video.');
   const elements = payload.elements?.map(item => {
     if (item.providerElementId !== undefined || item.voiceId !== undefined) throw new Error('Kling 4.0 Flash does not accept provider or voice bindings.');
     return { ...(item.frontalImageUrl ? { frontal_image_url: item.frontalImageUrl } : {}), ...(item.referenceImageUrls ? { reference_image_urls: item.referenceImageUrls } : {}), ...(item.videoUrl ? { video_url: item.videoUrl } : {}) };
   });
   if (payload.durationOption != null && payload.durationSec != null && integer(payload.durationOption) !== payload.durationSec) throw new Error('Kling 4.0 Flash conflicting duration selectors.');
   const requestBody: Record<string, unknown> = {
-    ...(payload.prompt.trim() ? { prompt: payload.prompt.trim() } : {}), duration: integer(payload.durationOption ?? payload.durationSec ?? 5), resolution: payload.resolution ?? '720p',
-    ...(mode !== 'i2v' ? { aspect_ratio: payload.aspectRatio ?? '16:9' } : {}), ...(image ? { start_image_url: image } : {}),
+    ...(payload.prompt.trim() ? { prompt: payload.prompt.trim() } : {}),
+    ...(mode === 'v2v' && payload.durationOption == null && payload.durationSec == null ? {} : { duration: integer(payload.durationOption ?? payload.durationSec ?? 5) }), resolution: payload.resolution ?? '720p',
+    ...(!['i2v', 'v2v'].includes(mode) ? { aspect_ratio: payload.aspectRatio ?? '16:9' } : {}), ...(image ? { start_image_url: image } : {}),
+    ...(source ? { video_url: source } : {}),
     ...(images.length ? { image_urls: images } : {}), ...(videos.length ? { video_urls: videos } : {}), ...(elements?.length ? { elements } : {}),
   };
   const violation = getKlingV4FlashConstraintViolation(mode, requestBody);

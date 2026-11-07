@@ -1,6 +1,7 @@
 import { isFluxLtxSourceOperation } from '@/lib/flux-ltx-operations';
 import { isH3SourceOperation } from '@/lib/h3-source-operations';
 import { isGptImage26EngineId, normalizeGptImage26Settings } from '@/lib/image/gptImage26';
+import { isKlingV4FalQueueEngineId } from '@/lib/kling-v4-family';
 import { resolveVideoOperationEngine } from '@/lib/video-operation';
 import {
   cloneEngine,
@@ -333,7 +334,7 @@ export async function computeConfiguredPreflight(
       operation: request.operation,
       engine: pricingEngine,
       durationSec: gpt26?.numImages ?? seedanceEditSource?.billedDurationSec
-        ?? (engine.id === 'kling-v4' && request.mode === 'v2v' ? inheritedDurationSec : undefined)
+        ?? (isKlingV4FalQueueEngineId(engine.id) && request.mode === 'v2v' ? inheritedDurationSec : undefined)
         ?? durationSec,
       resolution: gpt26?.resolution ?? effectiveResolution,
       ...(gpt26 ? { quality: gpt26.quality, complexity: gpt26.complexity, customImageSize: gpt26.customImageSize } : {}),

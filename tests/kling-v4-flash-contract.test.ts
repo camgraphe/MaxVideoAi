@@ -9,8 +9,8 @@ import type { GeneratePayload } from '../frontend/src/lib/fal-types';
 const payload: GeneratePayload = { engineId: 'kling-v4-flash', mode: 't2v', prompt: 'An original scene', durationSec: 5, resolution: '720p' };
 const url = 'https://media.maxvideoai.com/user-assets/reference.mp4';
 
-test('Flash exposes only its three exact 720p generation contracts', () => {
-  assert.deepEqual(KLING_V4_FLASH_ENGINE.modes, ['t2v', 'i2v', 'ref2v']);
+test('Flash exposes its four exact 720p generation contracts', () => {
+  assert.deepEqual(KLING_V4_FLASH_ENGINE.modes, ['t2v', 'i2v', 'ref2v', 'v2v']);
   assert.deepEqual(KLING_V4_FLASH_ENGINE.resolutions, ['720p']);
   assert.equal(KLING_V4_FLASH_ENGINE.maxDurationSec, 20);
   for (const durationSec of [3, 20]) assert.equal(buildKlingV4FlashFalRequest({ ...payload, durationSec }).requestBody.duration, durationSec);

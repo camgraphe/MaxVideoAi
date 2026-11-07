@@ -555,7 +555,7 @@ function assertSurfaceMode(surface: CanonicalGenerationSurface, mode: CanonicalG
 function normalizeSubjects(value: unknown, engineId: string, mode: CanonicalGenerationMode,
   references: CanonicalGenerationReference[]): CanonicalGenerationSubject[] | undefined {
   if (value === undefined) return undefined;
-  if (!(engineId === 'kling-v4' && ['ref2v', 'v2v'].includes(mode)) && !(engineId === 'kling-v4-flash' && mode === 'ref2v')) fail('subjects', 'Subjects are unsupported for this model and mode.');
+  if (!(isKlingV4FalQueueEngineId(engineId) && ['ref2v', 'v2v'].includes(mode))) fail('subjects', 'Subjects are unsupported for this model and mode.');
   assertDenseDataArray(value, 'subjects', 7);
   if (!value.length) fail('subjects', 'Provide at least one subject, or omit subjects.');
   const usedSlots = new Set<number>();
@@ -581,7 +581,7 @@ function normalizeSubjects(value: unknown, engineId: string, mode: CanonicalGene
     }
     if (entry.kind === 'video') {
       assertExactFields(entry, new Set(['kind', 'referenceSlot']), field);
-      if (mode !== 'ref2v' || ++videos > 3) fail(field, 'Only reference generation supports up to three video subjects.');
+      if (!(mode === 'ref2v' || (engineId === 'kling-v4-flash' && mode === 'v2v')) || ++videos > 3) fail(field, 'This mode does not support the requested video subjects.');
       return {kind: 'video', referenceSlot: slot(entry.referenceSlot)};
     }
     return fail(field, 'Choose an image or video subject.');

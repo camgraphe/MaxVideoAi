@@ -1,8 +1,8 @@
 # Admin tariff batches
 
 The optional **Tariff batches** section in `/admin/pricing` authors literal prices
-for either the complete 226-class Kling 4 domain, the 72-class Kling 4.0 Flash
-domain, or an explicitly selected subset of one model. GPT Image 2.6 Flare and
+for either the complete 226-class Kling 4 domain, the approved 72-class Kling 4.0
+Flash creation launch domain, or an explicitly selected subset of one model. GPT Image 2.6 Flare and
 Sunburst each retain 1,020 exact image classes and add 24 separately reviewed raster
 classes, imported in groups of at most 226. It
 neither publishes the model nor enables generation. The existing unit editor and
@@ -35,7 +35,7 @@ already committed prices.
 
 - `kling.ts` adapts canonical scenarios, deduplicates continuous Modify into two
   Kling 4 classes, and compiles LIST recipes using decimal integer arithmetic.
-  Flash has 54 fixed classes and 18 continuous reference-video classes, with its
+  Flash retains the November 5 launch scope: 54 fixed creation classes and 18 continuous reference-video classes, with its
   own supplier rates, source date and 20-second aggregate input bound. Supplier
   provenance is bound to the selected model in the operation fingerprint.
 - `models.ts` adds the canonical GPT Image 2.6 inventory and binds its own output
@@ -45,8 +45,13 @@ already committed prices.
   a 1–10 multiplier with at most six fractional digits, or explicit fixed/unit
   prices. HTTP bodies are limited to 2 MiB. Client actor, timestamps, currency,
   target IDs, expiry and routing properties are rejected. A batch cannot mix model
-  selectors or restore prices from another model's receipt. Flash has no Modify,
-  1080p or 21–30-second classes; those selections fail canonical validation.
+  selectors or restore prices from another model's receipt. The dated Flash batch
+  has no Modify, 1080p or 21–30-second classes; those selections fail canonical
+  validation for both recipe and explicit imports. The current unit editor keeps
+  all 90 Flash examples, including 18 Modify examples mapped to their own continuous
+  `v2v` class. Modify requires a separate literal unit-price preview and confirmation;
+  adding its endpoint does not extend the approved creation batch or authorize its
+  historical 1.30 multiplier for Modify.
   GPT Image 2.6 accepts explicit fixed launch prices or three literal raster unit
   terms. Raster selectors keep model, mode and quality exact; explicit dimensions
   and output/reference counts use continuous selectors, while automatic size stays

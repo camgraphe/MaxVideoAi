@@ -145,7 +145,7 @@ export async function resolveAdmittedMediaAwarePreflight(
 ): Promise<PreflightResponse> {
   const parsedRequest = parsePreflightRequestPayload(input.request);
   if (!parsedRequest.ok) return parsedRequest.response;
-  const sourceDurationRequested = parsedRequest.request.engine === 'kling-v4'
+  const sourceDurationRequested = isKlingV4FalQueueEngineId(parsedRequest.request.engine)
     && parsedRequest.request.mode === 'v2v' && parsedRequest.request.durationSec === undefined;
   // Admission placeholder only. Owned source facts must replace it before any quotation.
   const request: PreflightRequest = {...parsedRequest.request,durationSec:parsedRequest.request.durationSec ?? 3};
@@ -380,7 +380,8 @@ export async function resolveAdmittedMediaAwarePreflight(
     if (sourceDurationRequested) {
       const sources = (processed.trustedMediaReferences ?? []).filter(ref => ref.kind === 'video' && ref.fieldId === 'video_url');
       const seconds = sources[0]?.durationSec;
-      if (sources.length !== 1 || typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 3 || seconds > 30.05) {
+      const maximumSourceSeconds = engine.id === 'kling-v4-flash' ? 20.05 : 30.05;
+      if (sources.length !== 1 || typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 3 || seconds > maximumSourceSeconds) {
         return mediaPricingFailure('PRICING_MEDIA_FACTS_UNVERIFIED','One exact owned source duration is required for Kling 4 Modify.');
       }
       inheritedDurationSec = seconds;

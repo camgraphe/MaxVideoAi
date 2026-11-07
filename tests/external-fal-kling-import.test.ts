@@ -117,7 +117,7 @@ test('Documented nullable optionals and default shot durations preserve journal 
   }
 });
 
-test('Flash import keeps its exact three-mode contract and 720p defaults without inheriting V4 controls', async () => {
+test('Flash creation import keeps its exact controls and 720p defaults without inheriting V4 controls', async () => {
   const { externalFalImportInventory } = await import('../frontend/server/external-fal-import/inventory');
   const base = { ...klingImportFixture(), engineId: 'kling-v4-flash', endpoint: 'kling/v4/flash/text-to-video',
     providerInput: { prompt: 'A character speaks. Hard cut to a second character answering.' } };
@@ -151,4 +151,106 @@ test('Flash import keeps its exact three-mode contract and 720p defaults without
     providerInput: { prompt: 'Continue the scene.', start_image_url: start.providerUrl, video_urls: [video.providerUrl] }, references: refs };
   assert.equal(parseExternalFalImport(ref2v).references.length, 2);
   assert.throws(() => parseExternalFalImport({ ...ref2v, references: [...refs].reverse() }), /REFERENCE/);
+});
+
+test('Flash Modify imports preserve source and extra-reference slots separately for owned replay', () => {
+  const source = reference('video_url', 'video', 1);
+  const image = reference('image_urls.0', 'image', 2);
+  const video = reference('video_urls.0', 'video', 3);
+  const repeatedVideo = { ...video, slotId: 'video_urls.1' };
+  const subject = reference('elements.0.video_url', 'video', 4);
+  const references = [source, image, video, repeatedVideo, subject];
+  const providerInput = { prompt: 'Edit the source using these references.', video_url: source.providerUrl,
+    image_urls: [image.providerUrl], video_urls: [video.providerUrl, video.providerUrl],
+    elements: [{ video_url: subject.providerUrl }] };
+  const input = { ...klingImportFixture(), engineId: 'kling-v4-flash', mode: 'v2v',
+    endpoint: 'kling/v4/flash/video-to-video', providerInput, references };
+  const parsed = parseExternalFalImport(input);
+  if (parsed.engineId !== 'kling-v4-flash') throw new Error('Unexpected import engine');
+  const assets = [source, image, video, subject].map((ref, index) => ({ public_id: ref.assetId,
+    url: `https://media.maxvideoai.com/owned-${index}.${ref.kind === 'image' ? 'png' : 'mp4'}`,
+    mime_type: ref.kind === 'image' ? 'image/png' : 'video/mp4', size_bytes: 1024 }));
+  const settings = klingV4ImportSettings(parsed, assets);
+
+  assert.deepEqual(parsed.providerInput, providerInput);
+  assert.equal(settings.core.durationSec, null);
+  assert.equal(settings.core.durationOption, null);
+  assert.equal(settings.core.resolution, '720p');
+  assert.equal(settings.core.aspectRatio, null);
+  assert.deepEqual(settings.refs.videoUrls, [assets[2].url, assets[2].url]);
+  assert.deepEqual(settings.refs.inputs.map(({ slotId, assetId, url }) => ({ slotId, assetId, url })), [
+    { slotId: 'video_url', assetId: source.assetId, url: assets[0].url },
+    { slotId: 'image_urls', assetId: image.assetId, url: assets[1].url },
+    { slotId: 'video_urls', assetId: video.assetId, url: assets[2].url },
+    { slotId: 'video_urls', assetId: video.assetId, url: assets[2].url },
+  ]);
+  assert.deepEqual(settings.refs.elements, [{ videoUrl: assets[3].url, videoAssetId: subject.assetId }]);
+  assert.equal(externalFalImportPlan(input).financialWrites, 0);
+  assert.throws(() => parseExternalFalImport({ ...input, references: [...references].reverse() }), /REFERENCE_MAPPING/);
+});
+
+test('Flash Modify nullable optionals retain immutable provider input and source-duration replay', () => {
+  const source = reference('video_url', 'video', 1);
+  const subject = reference('elements.0.video_url', 'video', 2);
+  const base = { ...klingImportFixture(), engineId: 'kling-v4-flash', mode: 'v2v', endpoint: 'kling/v4/flash/video-to-video' };
+  const assets = [source, subject].map((ref, index) => ({ public_id: ref.assetId,
+    url: `https://media.maxvideoai.com/owned-${index}.mp4`, mime_type: 'video/mp4', size_bytes: 1024 }));
+  for (const elements of [null, [{ video_url: subject.providerUrl, frontal_image_url: null, reference_image_urls: null }]]) {
+    const providerInput = { prompt: 'Edit this source.', video_url: source.providerUrl,
+      duration: null, image_urls: null, video_urls: null, elements };
+    const input = { ...base, providerInput, references: elements ? [source, subject] : [source] };
+    const originalJson = JSON.stringify(input);
+    const parsed = parseExternalFalImport(input);
+    if (parsed.engineId !== 'kling-v4-flash') throw new Error('Unexpected import engine');
+    const settings = klingV4ImportSettings(parsed, assets);
+    assert.deepEqual(parsed.providerInput, providerInput);
+    assert.equal(JSON.stringify(input), originalJson);
+    assert.equal(settings.core.durationSec, null);
+    assert.equal(settings.core.durationOption, null);
+    assert.equal(settings.refs.videoUrls, null, 'The source must not be mirrored as an additional reference');
+    assert.deepEqual(settings.refs.inputs.map((item) => item.slotId), ['video_url']);
+    assert.equal(settings.refs.referenceImages, null);
+    assert.deepEqual(settings.refs.elements, elements ? [{ videoUrl: assets[1].url, videoAssetId: subject.assetId }] : null);
+    assert.notEqual(externalFalImportPlan(input).manifestSha256,
+      externalFalImportPlan({ ...input, providerInput: { ...providerInput, duration: 5 } }).manifestSha256);
+  }
+  for (const providerInput of [
+    { prompt: 'Edit this source.' },
+    { prompt: 'Edit this source.', video_url: null },
+    { prompt: null, video_url: source.providerUrl },
+    { prompt: 'Edit this source.', video_url: source.providerUrl, duration: 4.5 },
+    { prompt: 'Edit this source.', video_url: source.providerUrl, resolution: null },
+    { prompt: 'Edit this source.', video_url: source.providerUrl, aspect_ratio: null },
+    { prompt: 'Edit this source.', video_url: source.providerUrl, start_image_url: null },
+  ]) assert.throws(() => parseExternalFalImport({ ...base, providerInput, references: [source] }));
+  const opening = reference('start_image_url', 'image');
+  for (const { mode, path, providerInput, references } of [
+    { mode: 't2v', path: 'text-to-video', providerInput: { prompt: 'A film.' }, references: [] },
+    { mode: 'i2v', path: 'image-to-video', providerInput: { start_image_url: opening.providerUrl }, references: [opening] },
+    { mode: 'ref2v', path: 'reference-to-video', providerInput: { prompt: 'A film.', start_image_url: opening.providerUrl }, references: [opening] },
+  ]) {
+    const input = { ...base, mode, endpoint: `kling/v4/flash/${path}`, providerInput, references };
+    assert.equal(parseExternalFalImport(input).mode, mode);
+    assert.throws(() => parseExternalFalImport({ ...input, providerInput: { ...providerInput, duration: null } }));
+  }
+});
+
+test('Flash Modify image subjects tolerate a documented null video field without changing their stored views', () => {
+  const source = reference('video_url', 'video', 1);
+  const frontal = reference('elements.0.frontal_image_url', 'image', 2);
+  const view = reference('elements.0.reference_image_urls.0', 'image', 3);
+  const references = [source, frontal, view];
+  const providerInput = { prompt: 'Edit this source.', video_url: source.providerUrl,
+    elements: [{ frontal_image_url: frontal.providerUrl, reference_image_urls: [view.providerUrl], video_url: null }] };
+  const parsed = parseExternalFalImport({ ...klingImportFixture(), engineId: 'kling-v4-flash', mode: 'v2v',
+    endpoint: 'kling/v4/flash/video-to-video', providerInput, references });
+  if (parsed.engineId !== 'kling-v4-flash') throw new Error('Unexpected import engine');
+  const assets = references.map((ref, index) => ({ public_id: ref.assetId,
+    url: `https://media.maxvideoai.com/view-${index}.${ref.kind === 'video' ? 'mp4' : 'png'}`,
+    mime_type: ref.kind === 'video' ? 'video/mp4' : 'image/png', size_bytes: 1024 }));
+  assert.deepEqual(parsed.providerInput, providerInput);
+  assert.deepEqual(klingV4ImportSettings(parsed, assets).refs.elements, [{
+    frontalImageUrl: assets[1].url, frontalAssetId: frontal.assetId,
+    referenceImageUrls: [assets[2].url], referenceAssetIds: [view.assetId],
+  }]);
 });

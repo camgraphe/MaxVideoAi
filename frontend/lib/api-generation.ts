@@ -6,7 +6,7 @@ import { translateError } from '@/lib/error-messages';
 import type { AudioGenerateRequestBody, AudioGenerateResponse } from '@/lib/audio-generation';
 import type { GenerateAttachment } from '@/lib/fal';
 import type { SoraRequest } from '@/lib/sora';
-import type { PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { AppPreflightRequest, PreflightResponse } from '@/types/engines';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { VideoAsset } from '@/types/render';
 import type { CharacterBuilderRequest, CharacterBuilderResponse } from '@/types/character-builder';
@@ -119,7 +119,7 @@ function toPrimitiveArray(value: unknown): PrimitiveValue[] | undefined {
 }
 
 export async function runPreflight(
-  payload: PreflightRequest,
+  payload: AppPreflightRequest,
   options?: { accessToken?: string | null; signal?: AbortSignal },
 ): Promise<PreflightResponse> {
   const response = await authFetch('/api/preflight', {

@@ -470,7 +470,7 @@ export function projectAgentModelModeDetails(
     ]),
     ...(imageSize ? { imageSize } : {}),
     references: projectReferences(candidate.engine, mode),
-    ...((candidate.engine.id === 'kling-v4' && ['ref2v','v2v'].includes(mode)) || (candidate.engine.id === 'kling-v4-flash' && mode === 'ref2v') ? {subjects:{max:7 as const,maxVideo:mode==='ref2v'?3 as const:0 as const,maxVoiced:candidate.engine.id === 'kling-v4' && mode==='ref2v'?3 as const:0 as const,voiceBinding:'unavailable' as const,identity:'owned_reference_slots' as const,imageViews:{min:1 as const,max:3 as const}}} : {}),
+    ...(['kling-v4', 'kling-v4-flash'].includes(candidate.engine.id) && ['ref2v','v2v'].includes(mode) ? {subjects:{max:7 as const,maxVideo:mode==='ref2v'||candidate.engine.id==='kling-v4-flash'?3 as const:0 as const,maxVoiced:candidate.engine.id === 'kling-v4' && mode==='ref2v'?3 as const:0 as const,voiceBinding:'unavailable' as const,identity:'owned_reference_slots' as const,imageViews:{min:1 as const,max:3 as const}}} : {}),
     ...(referenceRequirement ? { referenceRequirement } : {}),
   });
 }

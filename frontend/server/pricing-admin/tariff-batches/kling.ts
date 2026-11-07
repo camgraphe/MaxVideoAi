@@ -9,7 +9,13 @@ import type { KlingTariffBatchModelId, TariffBatchPrice } from './contract';
 import { batchSelectorKey, decimalRatio } from './input';
 
 export function klingBatchClasses(modelId: KlingTariffBatchModelId = 'kling-v4') {
-  const rows = klingV4TariffScenarios(modelId).map(scenario => {
+  // The reviewed November 5 Flash launch batch stays within its original domain.
+  // New endpoints remain in the unit editor and need a separate price review.
+  const rows = klingV4TariffScenarios(modelId).filter(scenario => modelId !== 'kling-v4-flash'
+    || (['t2v', 'i2v', 'ref2v'].includes(scenario.selector.mode)
+      && scenario.selector.resolution === '720p'
+      && Number.isInteger(scenario.context.durationSec)
+      && scenario.context.durationSec >= 3 && scenario.context.durationSec <= 20)).map(scenario => {
     const continuous = continuousInputTariffSelector(scenario.selector);
     const selector: ManualTariffSelector = continuous ?? scenario.selector;
     return { selector, key: batchSelectorKey(selector), scenario,

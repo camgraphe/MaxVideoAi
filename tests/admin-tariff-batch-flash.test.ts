@@ -6,6 +6,8 @@ import { buildTariffBatchPlan } from '../frontend/server/pricing-admin/tariff-ba
 import { klingBatchClasses, klingBatchSourceFacts } from '../frontend/server/pricing-admin/tariff-batches/kling';
 import { batchSelectorKey, parseTariffBatchProposal } from '../frontend/server/pricing-admin/tariff-batches/input';
 import type { TariffBatchProposal } from '../frontend/server/pricing-admin/tariff-batches/contract';
+import { klingV4TariffScenarios } from '../frontend/lib/pricing-audit/kling-v4-tariff-scenario';
+import { continuousInputTariffSelector } from '../frontend/src/lib/pricing-manual-scenario';
 
 const policy = { status: 'loaded' as const, rules: [] };
 const state = { status: 'loaded' as const, active: true, revision: 7, databaseCells: [] as ManualTariffCell[], versionedCells: [] as ManualTariffCell[] };
@@ -54,4 +56,23 @@ test('Flash batches reject cross-model selectors and unsupported V4 classes', as
       pricing: { kind: 'list_multiplier', multiplier: '1.30' }, selections: [{ selector: { ...first, ...unsupported } }] }, state, policy }), /unsupported/i);
   }
   assert.throws(() => parseTariffBatchProposal({ ...flashProposal(), modelId: 'gpt-image-2-6-flare' }), /selector|field/i);
+});
+
+test('the approved Flash launch batch cannot author the separately reviewed Modify class', async () => {
+  const inventory = klingV4TariffScenarios('kling-v4-flash');
+  assert.equal(inventory.length, 90, 'The current unit editor retains every supported creation and Modify example.');
+  const modify = inventory.filter(row => row.selector.mode === 'v2v');
+  assert.equal(modify.length, 18);
+  const selector = continuousInputTariffSelector(modify[0].selector)!;
+  assert.deepEqual(selector, { engineId: 'kling-v4-flash', mode: 'v2v', resolution: '720p',
+    durationSec: 'continuous', inputVideoDurationSec: 'continuous', billingInputType: 'video_input' });
+  for (const pricing of [{ kind: 'list_multiplier', multiplier: '1.30' }, { kind: 'explicit' }] as const) {
+    const proposal: TariffBatchProposal = { ...flashProposal(), pricing,
+      selections: [{ selector, ...(pricing.kind === 'explicit' ? {
+        price: { kind: 'unit_terms' as const, rounding: 'up' as const,
+          terms: [{ unit: 'billable_seconds', centsPerUnit: 15 }] },
+      } : {}) }] };
+    await assert.rejects(buildTariffBatchPlan({ proposal, state, policy }), /unsupported/i,
+      'Neither the historical multiplier nor an explicit batch may extend the approved launch domain.');
+  }
 });

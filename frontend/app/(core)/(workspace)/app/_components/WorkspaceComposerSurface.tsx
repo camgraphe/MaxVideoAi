@@ -22,7 +22,8 @@ import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSetting
 import { SettingsControls } from '@/components/SettingsControls';
 // Subject slots occupy the initial form. A nested lazy boundary inserts the
 // panel late and moves the mobile results rail.
-import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError } from '../_lib/workspace-kling-v4-media';
+import { getWorkspaceKlingV4ActiveAssets, getWorkspaceKlingV4MediaError, usesWorkspaceKlingFlashSourceDuration } from '../_lib/workspace-kling-v4-media';
+import { videoSourceDurationLabel } from '@/lib/video-workflow-capabilities';
 import { buildKlingElementsPayload } from '../_lib/workspace-generation-inputs';
 import { KlingElementsBuilder, type KlingElementState, type KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
@@ -317,11 +318,12 @@ export function WorkspaceComposerSurface({
       selectedEngineId: selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements,
     });
     if (!elements.ok) return elements.message;
-    if (!multiPromptActive && (!Number.isInteger(form.durationSec) || form.durationSec < 3 || form.durationSec > (isFlash ? 20 : 30))) {
+    if (!multiPromptActive && !usesWorkspaceKlingFlashSourceDuration(selectedEngine.id, submissionMode, form.durationOption)
+      && (!Number.isInteger(form.durationSec) || form.durationSec < 3 || form.durationSec > (isFlash ? 20 : 30))) {
       return `Output duration must be 3–${isFlash ? 20 : 30} whole seconds.`;
     }
     return getWorkspaceKlingV4MediaError({ engineId: selectedEngine.id, mode: submissionMode, inputAssets, klingElements });
-  }, [isKlingV4, isFlash, selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements, multiPromptActive, form.durationSec, inputAssets]);
+  }, [isKlingV4, isFlash, selectedEngine.id, supportsKlingV3Controls, submissionMode, klingElements, multiPromptActive, form.durationSec, form.durationOption, inputAssets]);
   const activeKlingV4Fields = isKlingV4 ? Object.keys(getWorkspaceKlingV4ActiveAssets(submissionMode, inputAssets, selectedEngine.id)) : [];
   const hasInactiveKlingV4Media = isKlingV4 && (
     Object.entries(inputAssets).some(([field, assets]) => !activeKlingV4Fields.includes(field) && assets.some(Boolean)) ||
@@ -573,7 +575,7 @@ export function WorkspaceComposerSurface({
           hasSubjects: klingElements.length > 1 || klingElements.some(element => Boolean(element.frontal || element.video || element.references.some(Boolean))),
           content: <KlingElementsBuilder
             elements={klingElements}
-            variant={isFlash ? 'kling-v4-flash-reference' : isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
+            variant={isFlash ? submissionMode === 'v2v' ? 'kling-v4-flash-edit' : 'kling-v4-flash-reference' : isKlingV4 ? submissionMode === 'v2v' ? 'kling-v4-edit' : 'kling-v4-reference' : 'legacy'}
             onAddElement={handleKlingElementAdd}
             onRemoveElement={handleKlingElementRemove}
             onAddAsset={handleKlingElementAssetAdd}
@@ -697,6 +699,7 @@ export function WorkspaceComposerSurface({
                 caps={settingsCaps}
                 durationSec={durationSec}
                 durationOption={form.durationOption ?? null}
+                durationAutoLabel={isFlash && submissionMode === 'v2v' ? videoSourceDurationLabel(uiLocale) : undefined}
                 onDurationChange={handleDurationChange}
                 numFrames={form.numFrames ?? undefined}
                 onNumFramesChange={handleFramesChange}

@@ -17,7 +17,7 @@ const image: ResolvedReference = { assetId: 'owned-image', role: 'reference', sl
 
 test('Kling direct flags cannot reroute Flash or its production V4 precedent to the legacy V3 API', () => {
   for (const engineId of ['kling-v4', 'kling-v4-flash']) {
-    for (const mode of ['t2v', 'i2v', 'ref2v']) {
+    for (const mode of ['t2v', 'i2v', 'ref2v', 'v2v']) {
       for (const isAdmin of [false, true]) {
         assert.deepEqual(resolveVideoProviderRoutingPlan({ engineId, mode, isAdmin, env: {
           KLING_DIRECT_ENABLED: 'true', KLING_DIRECT_PUBLIC_ROUTING_ENABLED: 'true',

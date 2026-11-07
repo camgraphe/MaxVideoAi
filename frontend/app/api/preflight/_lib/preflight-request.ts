@@ -2,7 +2,8 @@ import { VIDEO_OPERATIONS } from '@/lib/video-operation';
 import { GPT_IMAGE_26_PRESET_SIZES } from '@/lib/image/gptImage26Dimensions';
 import { z } from 'zod';
 
-import type { PreflightRequest, PreflightResponse } from '@/types/engines';
+import type { AppPreflightRequest, PreflightResponse } from '@/types/engines';
+export type { AppPreflightRequest } from '@/types/engines';
 
 export const MAX_PREFLIGHT_BODY_BYTES = 128 * 1024;
 export const MAX_PREFLIGHT_INPUTS = 66;
@@ -101,13 +102,15 @@ const preflightRequestSchema = z.object({
   user: z.object({ memberTier: z.string().trim().min(1).max(32).optional() }).strict().optional(),
  }).strict().superRefine((request, context) => {
   if (request.durationSec === undefined
-    && (request.engine !== 'kling-v4' || request.mode !== 'v2v' || request.durationOption !== undefined)) {
+    && (!['kling-v4', 'kling-v4-flash'].includes(request.engine) || request.mode !== 'v2v' || request.durationOption !== undefined)) {
     context.addIssue({code:z.ZodIssueCode.custom,path:['durationSec'],message:'An explicit duration is required for this model and mode.'});
   }
   // The transport ceiling does not widen Seedance's separate admission contract.
   if (request.engine.startsWith('seedance-') && (request.inputs?.length ?? 0) > 50)
     context.addIssue({code:z.ZodIssueCode.custom,path:['inputs'],message:'Seedance supports at most 50 references.'});
-  if (request.elements !== undefined && !(((request.engine === 'kling-v4' && ['ref2v', 'v2v'].includes(request.mode)) || (request.engine === 'kling-v4-flash' && request.mode === 'ref2v')) && request.elements.filter(e => 'videoUrl' in e).length <= (request.mode === 'v2v' ? 0 : 3)))
+  if (request.elements !== undefined && !(['kling-v4', 'kling-v4-flash'].includes(request.engine)
+    && ['ref2v', 'v2v'].includes(request.mode)
+    && request.elements.filter(e => 'videoUrl' in e).length <= (request.engine === 'kling-v4' && request.mode === 'v2v' ? 0 : 3)))
     context.addIssue({code:z.ZodIssueCode.custom,path:['elements'],message:'Unsupported Kling subject composition.'});
 });
 
@@ -116,13 +119,6 @@ type PreflightRequestFailure = {
   status: 400 | 413;
   response: PreflightResponse;
 };
-
-/** Only the current V4 Modify transport admits source-duration omission. */
-export type AppPreflightRequest = PreflightRequest | (
-  Omit<PreflightRequest, 'engine' | 'mode' | 'durationSec'> & {
-    engine: 'kling-v4'; mode: 'v2v'; durationSec?: number;
-  }
-);
 
 type PreflightRequestSuccess = {
   ok: true;
@@ -171,7 +167,12 @@ export function parsePreflightRequestPayload(payload: unknown): PreflightRequest
     return failure(400, 'PREFLIGHT_REQUEST_INVALID', 'Invalid preflight request.');
   }
   if (parsed.data.durationSec === undefined) {
-    return {ok:true,request:{...parsed.data,engine:'kling-v4',mode:'v2v'}};
+    const engine = parsed.data.engine;
+    if ((engine !== 'kling-v4' && engine !== 'kling-v4-flash') || parsed.data.mode !== 'v2v'
+      || parsed.data.durationOption !== undefined) {
+      return failure(400, 'PREFLIGHT_REQUEST_INVALID', 'Invalid preflight request.');
+    }
+    return { ok: true, request: { ...parsed.data, engine, mode: 'v2v', durationSec: undefined, durationOption: undefined } };
   }
   return { ok: true, request: {...parsed.data,durationSec:parsed.data.durationSec} };
 }

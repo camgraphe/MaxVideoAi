@@ -1,6 +1,6 @@
 import { isEngineModeRuntimeAvailable } from '@/lib/engine-mode-availability';
 import { getVideoWorkflowSourceField, isVideoSourceWorkflow } from '@/lib/video-source-workflow';
-import type { EngineCaps, PreflightRequest } from '@/types/engines';
+import type { EngineCaps, AppPreflightRequest } from '@/types/engines';
 import type { EnginePickerOption } from '@/components/ui/engine-select/model-picker-types';
 import { type WorkspaceModelSetup } from './workspace-model-candidate';
 import { buildWorkspacePreflightRequest } from './workspace-preflight-request';
@@ -11,7 +11,7 @@ import { getEngineModeLabel } from './workspace-engine-helpers';
 
 import { preparePickerScenario, pickerAudioControl, type PickerScenario } from './workspace-picker-scenario';
 
-type PickerPreparedOption = EnginePickerOption & { request: PreflightRequest | null; iterations: number };
+type PickerPreparedOption = EnginePickerOption & { request: AppPreflightRequest | null; iterations: number };
 export function buildWorkspacePickerOptions({ current, engines, locale, memberTier, disabledEngineReasons, overrides }: {
   overrides?: PickerScenario;
   current: WorkspaceModelSetup;

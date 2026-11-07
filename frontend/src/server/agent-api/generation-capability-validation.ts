@@ -243,7 +243,7 @@ function validateVideoModeCaps(
     || !caps.duration.options.includes('auto'))) fail('durationOption');
   const sourceDurationPending = duration === undefined
     && (videoDurationPolicy(candidate.engine, request.mode as Mode, caps) === 'source_video'
-      || (request.engineId === 'kling-v4' && request.mode === 'v2v'));
+      || (isKlingV4FalQueueEngineId(request.engineId) && request.mode === 'v2v'));
   if (!sourceDurationPending) {
     if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
     if (caps.frames) fail('durationSec');
@@ -941,7 +941,7 @@ function validateReferences(
   }
   const subjectKinds = new Map<number, 'image' | 'video'>();
   for (const subject of request.subjects ?? []) {
-    if (!(request.engineId === 'kling-v4' && ['ref2v','v2v'].includes(request.mode)) && !(request.engineId === 'kling-v4-flash' && request.mode === 'ref2v')) fail('subjects');
+    if (!(isKlingV4FalQueueEngineId(request.engineId) && ['ref2v','v2v'].includes(request.mode))) fail('subjects');
     for (const slot of subject.kind === 'video' ? [subject.referenceSlot] : [subject.frontalReferenceSlot, ...subject.referenceSlots]) {
       subjectKinds.set(slot, subject.kind);
     }

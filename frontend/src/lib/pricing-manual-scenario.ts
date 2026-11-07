@@ -15,6 +15,7 @@ import { isMinimaxH3EngineId } from '@/lib/minimax-h3';
 import { isWan3EngineId, validateWan3PricingDuration } from '@/lib/wan3-pricing';
 import { ltx25AudioTariffBounds, validateLtx25AudioTariffDuration } from '@/lib/ltx25-audio-tariff';
 import { supportsSeedanceInputTariff, validateSeedanceInputTariffDuration } from '@/lib/seedance-input-tariff';
+import { klingV4FlashPricingUsage } from '@/lib/kling-v4-flash-pricing';
 
 /** A reviewed quantity-priced class; all other options still match exactly. */
 export function continuousWan3TariffSelector(selector: ManualTariffSelector): ManualTariffSelector | null {
@@ -31,7 +32,9 @@ export function continuousInputTariffSelector(selector: ManualTariffSelector): M
   if (['kling-v4', 'kling-v4-flash'].includes(selector.engineId) && selector.billingInputType === 'video_input') {
     const input = Number(selector.inputVideoDurationSec), output = Number(selector.durationSec);
     const flash = selector.engineId === 'kling-v4-flash';
-    if (flash && (selector.mode !== 'ref2v' || output > 20 || !Number.isInteger(output) || input > 20)) throw new Error('Invalid Kling Flash timing.');
+    if (flash) klingV4FlashPricingUsage({ mode: selector.mode as PricingContext['mode'], resolution: selector.resolution,
+      durationSec: output, hasVideoInput: true, inputVideoDurationSec: input,
+      ...(selector.mode === 'v2v' && !Number.isInteger(output) ? { inheritedDurationSec: output } : {}) });
     if (!['ref2v','v2v'].includes(selector.mode) || !Number.isFinite(input) || input < 3 || input > (selector.mode === 'v2v' ? 30.05 : 30)
       || !Number.isFinite(output) || output < 3 || output > 30.05) throw new Error('Invalid Kling V4 source/output timing.');
     return {...selector,inputVideoDurationSec:'continuous',...(selector.mode === 'v2v' ? {durationSec:'continuous'} : {})};
