@@ -24,6 +24,16 @@ Selected public references are adopted through the measured, account-owned impor
 
 Curated signed-in and guest job feeds retain this scalar mode/operation metadata without loading complete recipes for every card. Guest job detail verifies starter membership and current public visibility before reading the selected public `recreationSnapshot`; it never returns the personal `settingsSnapshot`. Signed-in personal job reads retain their existing ownership boundary. These handoffs carry creative settings, not a trusted generation price; current example prices and workspace quotes keep their existing canonical recalculation owners.
 
+## Importing a public publication
+
+An authenticated admin can import an already public marketing copy from a versioned `maxvideoai-marketing-publication/v1` JSON manifest. The export contains `source` with its public URL and export time, the public `publication` projection, the matching public `recreationSnapshot`, and `files` with only URL, MIME type, byte count and SHA-256. Export the selected publication and confirm it is still public and approved before transfer. The source page URL records provenance, and the destination opens only the selected media URLs. Use credential-free HTTPS content-addressed URLs under `/marketing-media/`. A protected environment can provide a sanitized export without sharing its protection credentials.
+
+The dry run validates the recipe and selected media closure without database or network access. It reports the publication identity, duration, resolution and required file count. Only the selected video, poster, current preview, keyframes and recipe references enter the copy. Unreferenced historical files cannot supply a fallback original or preview. Private bindings, missing required files, unsupported URLs and duplicate declarations fail validation. Import does not carry price receipts, placements or source account IDs.
+
+`import-publication.ts` uses the copy transport and the same size and time limits as promotion. Each anonymous, redirect-free download must match its manifest MIME, byte count and SHA-256 before storage. New copies use their own storage namespace and pass the public HEAD and Range checks before becoming ready. The import starts private and non-indexable. An admin may then review the result and use the existing visibility and placement controls.
+
+Retry an incomplete import with the same manifest. The fingerprint covers the public publication and recipe, its export provenance and required file declarations. Historical entries outside the selected closure and declaration order do not affect retry identity. A matching ready import returns the existing copy. A live lease, a different manifest or copy, and a deleting or retired identity return a conflict. Promotion from a personal job cannot take over an incomplete import.
+
 ## Public compatibility
 
 `marketingVideoReader` is used only by public/editorial read owners. It overlays ready publications over the existing `app_jobs` identity in the same SQL request. Personal activity, billing, job reads and private share tokens keep their own owners. No public page route, video ID, redirect, canonical slug, hreflang, editorial approval or sitemap publication rule changes. Output dimensions are retained independently of personal output rows.

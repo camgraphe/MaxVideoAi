@@ -2,9 +2,11 @@ import { randomUUID } from 'node:crypto';
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import {
   completeMarketingSnapshot,
+  MARKETING_PUBLICATION_IMPORT_SCHEMA,
   MarketingMediaError,
   marketingSourceFingerprint,
   prepareMarketingSnapshot,
+  record,
 } from './snapshot';
 import { marketingItem, readMarketingRow, readMarketingSource, type MarketingRow } from './store';
 import { copyMarketingMediaFile } from './storage';
@@ -32,6 +34,8 @@ export async function promoteMarketingVideo(
     if (previous?.state === 'deleted')
       throw new MarketingMediaError('This marketing publication has been deleted.', 409);
     if (previous?.state === 'ready') return { ready: previous };
+    if (record(previous?.source_record).schemaVersion === MARKETING_PUBLICATION_IMPORT_SCHEMA)
+      throw new MarketingMediaError('Retry this publication through Import publication using the same manifest.', 409);
     if (
       previous?.state === 'deleting' ||
       (previous?.state === 'copying' && previous.lease_until && new Date(previous.lease_until).getTime() > Date.now())

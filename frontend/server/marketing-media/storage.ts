@@ -11,9 +11,10 @@ export type MarketingFileContext = {
   ownerId: string | null;
   remainingBytes: number;
   signal: AbortSignal;
+  expected?: Pick<MarketingMediaFile, 'mime' | 'sizeBytes' | 'sha256'>;
 };
-const MAX_FILE_BYTES = 256 * 1024 ** 2;
-const MIME_EXTENSIONS: Record<string, string> = {
+export const MAX_MARKETING_FILE_BYTES = 256 * 1024 ** 2;
+export const MARKETING_MIME_EXTENSIONS: Readonly<Record<string, string>> = {
   'video/mp4': 'mp4',
   'video/quicktime': 'mov',
   'video/webm': 'webm',
@@ -64,16 +65,22 @@ export async function copyMarketingMediaFile(
   overrides: Partial<Dependencies> = {},
 ): Promise<MarketingMediaFile> {
   const dependencies = { ...defaults, ...overrides };
-  const limit = Math.min(MAX_FILE_BYTES, context.remainingBytes);
+  const expected = context.expected;
+  const limit = Math.min(MAX_MARKETING_FILE_BYTES, context.remainingBytes, expected?.sizeBytes ?? Infinity);
   const source = await dependencies.readUrl({ url: file.sourceUrl, userId: context.ownerId });
   const signal = AbortSignal.any([context.signal, AbortSignal.timeout(60_000)]);
-  const response = await dependencies.open(source, undefined, { signal, timeoutMs: 60_000 });
+  const response = await dependencies.open(source, undefined, {
+    signal, timeoutMs: 60_000, redirect: expected ? 'error' : undefined,
+  });
   const declared = headerValue(response.headers, 'content-length');
   const mime = (headerValue(response.headers, 'content-type') ?? '').split(';')[0].trim().toLowerCase();
   try {
     if (response.statusCode !== 200) throw new MarketingMediaError('A source file could not be copied.');
-    if (!MIME_EXTENSIONS[mime] || !mime.startsWith(file.kind + '/'))
+    if (!MARKETING_MIME_EXTENSIONS[mime] || !mime.startsWith(file.kind + '/'))
       throw new MarketingMediaError('A source file has an unsupported media type.');
+    const changed = () => new MarketingMediaError('A source file does not match the manifest MIME, size or hash.', 409);
+    if (expected && (mime !== expected.mime || (declared !== null && Number(declared) !== expected.sizeBytes)))
+      throw changed();
     if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > limit))
       throw new MarketingMediaError('A source file exceeds the copy size limit.');
     let size = 0;
@@ -88,7 +95,9 @@ export async function copyMarketingMediaFile(
       throw new MarketingMediaError('A source file download is incomplete.');
     const data = Buffer.concat(chunks);
     const sha256 = createHash('sha256').update(data).digest('hex');
-    const key = `marketing-media/${context.copyId}/${sha256}.${MIME_EXTENSIONS[mime]}`;
+    if (expected && (size !== expected.sizeBytes || sha256 !== expected.sha256)) throw changed();
+    signal.throwIfAborted();
+    const key = `marketing-media/${context.copyId}/${sha256}.${MARKETING_MIME_EXTENSIONS[mime]}`;
     const stored = await dependencies.put({
       key,
       data,
