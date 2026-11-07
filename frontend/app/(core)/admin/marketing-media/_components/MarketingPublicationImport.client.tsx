@@ -59,7 +59,7 @@ export function MarketingPublicationImport({
         try { return JSON.parse(text); } catch { throw new Error('Choose a valid JSON publication manifest.'); }
       });
       if (controller.signal.aborted) return;
-      const { preview } = await send(endpoint + '?preview=1', JSON.stringify({ manifest }), controller.signal);
+      const { preview } = await send(endpoint + '?preview=1', JSON.stringify({ manifest, permissionConfirmed: false }), controller.signal);
       if (!controller.signal.aborted) setSelection({ manifest, preview });
     } catch (err) {
       if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Unable to preview this manifest.');

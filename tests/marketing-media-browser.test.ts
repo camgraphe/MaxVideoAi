@@ -206,6 +206,11 @@ async function exercisePublicationImport(page: Page, url: string) {
   await choose('{');
   await expect(disclosure.getByRole('alert')).toContainText('valid JSON');
   assert.deepEqual(previewIds, []);
+  const nearLimit = { id: 'near-limit', pad: '' };
+  nearLimit.pad = 'x'.repeat(2 * 1024 ** 2 - Buffer.byteLength(JSON.stringify({ manifest: nearLimit })));
+  await choose(JSON.stringify(nearLimit));
+  await expect(disclosure.getByRole('alert')).toContainText('2 MiB', { timeout: 5_000 });
+  assert.deepEqual(previewIds, []);
   const submit = disclosure.getByRole('button', { name: 'Import private copy' });
   const permission = disclosure.getByRole('checkbox');
   await expect(submit).toBeDisabled();

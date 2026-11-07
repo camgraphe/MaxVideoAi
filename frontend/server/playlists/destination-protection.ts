@@ -30,8 +30,9 @@ export function assertDestinationSlugWritable(slug: string): void {
 }
 
 /** Read-only in previews; callers serialize mutations in their existing transaction. */
-export async function assertDestinationWritable(db: QueryExecutor, playlistId: string): Promise<void> {
+export async function assertDestinationWritable(db: QueryExecutor, playlistId: string): Promise<string> {
   const [playlist] = await db.query<{ slug: string }>('SELECT slug FROM playlists WHERE id=$1', [playlistId]);
   if (!playlist) throw new DestinationWriteError('Destination not found', 404);
   assertDestinationSlugWritable(playlist.slug);
+  return playlist.slug;
 }

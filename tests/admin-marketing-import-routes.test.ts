@@ -30,6 +30,8 @@ type FixtureRoutes = {
   append: ItemHandler;
   remove: ItemHandler;
   reorder: ItemHandler;
+  updatePlaylist: ItemHandler;
+  deletePlaylist: ItemHandler;
   projectItem: (row: unknown) => { sourceKind: string };
 };
 
@@ -37,7 +39,12 @@ async function fixture(t: import('node:test').TestContext, includeImport: boolea
   const requireFrontend = createRequire(resolve('frontend/package.json'));
   const directory = mkdtempSync(join(tmpdir(), 'marketing-import-routes-'));
   const state = {
-    authorization: 200, rejectWrite: false, events: [] as string[], imports: [] as unknown[],
+    authorization: 200, rejectWrite: false, rejectCache: false,
+    events: [] as string[], imports: [] as unknown[],
+    playlists: new Map([
+      ['character', { slug: 'character-studio-recast', isPublic: true }],
+      ['unrelated', { slug: 'other-playlist', isPublic: true }],
+    ]),
   };
   const globals = globalThis as typeof globalThis & { __marketingAdminRoutes?: typeof state };
   globals.__marketingAdminRoutes = state;
@@ -51,8 +58,7 @@ async function fixture(t: import('node:test').TestContext, includeImport: boolea
       export async function requireAdmin(){if(f().authorization!==200)throw Object.assign(Error('Not authorized'),{status:f().authorization});return 'existing-admin';}
       export function adminErrorToResponse(error){return Response.json({ok:false,error:error.message},{status:error.status??500});}`,
     '@/lib/db': `export const isDatabaseConfigured=()=>true;
-      export const query=async (sql,params)=>sql.includes('FROM playlists') && params[0]==='character' && params[1]==='character-studio-recast'
-        ? [{slug:'character-studio-recast'}] : [];
+      export const query=async()=>{throw Error('Unexpected separate database read');};
       export const withDbTransaction=()=>{throw Error('Unexpected database mutation');};`,
     '@/server/owned-media-read-access': `export const createOwnedMediaReadUrl=()=>{throw Error('Unexpected storage access');};`,
     '@/server/marketing-media/import-publication': `import {prepareMarketingPublicationImport} from '@/server/marketing-media/import-publication-manifest';
@@ -71,13 +77,38 @@ async function fixture(t: import('node:test').TestContext, includeImport: boolea
       export async function updateMarketingVisibility(id,patch){if(f().rejectWrite)throw Error('Update failed');
         f().events.push('visibility');return {job_id:id,visibility:patch.visibility,indexable:patch.indexable};}`,
     '@/server/video-seo-editorial': `export const getResolvedVideoSeoEditorialEntry=async()=>null;`,
-    'next/cache': `export const revalidatePath=path=>globalThis.__marketingAdminRoutes.events.push(path);`,
+    'next/cache': `export const revalidatePath=path=>{
+        const state=globalThis.__marketingAdminRoutes;
+        if(state.rejectCache)throw Error('Cache unavailable');
+        state.events.push(path);
+      };`,
     '@/server/playlists/curation-store': `export class CurationError extends Error {status=409;}`,
     '@/server/playlists': `import {CurationError} from '@/server/playlists/curation-store';
       const f=()=>globalThis.__marketingAdminRoutes;
-      export const appendPlaylistItem=async()=>{if(f().rejectWrite)throw new CurationError('Rejected');f().events.push('append');};
-      export const removePlaylistItem=async()=>{if(f().rejectWrite)throw new CurationError('Rejected');f().events.push('remove');};
-      export const reorderPlaylistItems=async()=>{if(f().rejectWrite)throw new CurationError('Rejected');f().events.push('reorder');};`,
+      function commit(action, id) {
+        if(f().rejectWrite)throw new CurationError('Rejected');
+        f().events.push(action);
+        return f().playlists.get(id).slug;
+      }
+      export const appendPlaylistItem=async id=>commit('append',id);
+      export const removePlaylistItem=async id=>commit('remove',id);
+      export const reorderPlaylistItems=async id=>commit('reorder',id);
+      export const getPlaylist=async()=>{throw Error('Unexpected separate playlist read');};
+      export const getPlaylistItems=getPlaylist;
+      export const isPlaylistLockedError=error=>error instanceof CurationError;
+      export async function updatePlaylist(id, patch) {
+        const previousSlug=commit('update',id);
+        const playlist=f().playlists.get(id);
+        const slug=patch.slug ?? previousSlug;
+        const isPublic=patch.isPublic ?? playlist.isPublic;
+        f().playlists.set(id,{slug,isPublic});
+        return slug !== previousSlug || isPublic !== playlist.isPublic ? {slug,previousSlug} : null;
+      }
+      export async function deletePlaylist(id) {
+        const slug=commit('delete',id);
+        f().playlists.delete(id);
+        return slug;
+      }`,
     '@/lib/indexnow': `export const submitToIndexNow=async()=>{globalThis.__marketingAdminRoutes.events.push('indexnow');};`,
   };
   await build({
@@ -85,6 +116,7 @@ async function fixture(t: import('node:test').TestContext, includeImport: boolea
       ${includeImport ? "export {POST as ingest} from './frontend/app/api/admin/marketing-media/import/route';" : ''}
       export {POST as visibility} from './frontend/app/api/admin/videos/[videoId]/visibility/route';
       export {POST as append, DELETE as remove, PUT as reorder} from './frontend/app/api/admin/playlists/[playlistId]/items/route';
+      export {PUT as updatePlaylist, DELETE as deletePlaylist} from './frontend/app/api/admin/playlists/[playlistId]/route';
       export {marketingItem as projectItem} from './frontend/server/marketing-media/store';` },
     outfile: output, bundle: true, platform: 'node', format: 'cjs', packages: 'external', tsconfig: 'frontend/tsconfig.json',
     plugins: [{ name: 'marketing-admin-route-boundaries', setup(builder) {
@@ -214,11 +246,17 @@ test('visibility and direct playlist edits refresh exact Character routes only a
   for (const [name, act, req] of actions) {
     state.events.length = 0;
     assert.equal((await act(req.clone(), itemProps('character'))).status, 200);
-    assert.equal(state.events[0], name);
+    assert.equal(state.events[0], name, 'the write commits before any refresh or IndexNow notification');
+    assert.equal(state.events.at(-1), 'indexnow');
     assert.deepEqual(state.events.filter(path => path.startsWith('/')).sort(), expected);
     state.events.length = 0;
     assert.equal((await act(req.clone(), itemProps('unrelated'))).status, 200);
     assert.deepEqual(state.events, [name, 'indexnow']);
+    state.events.length = 0;
+    state.rejectCache = true;
+    assert.equal((await act(req.clone(), itemProps('character'))).status, 200);
+    assert.deepEqual(state.events, [name, 'indexnow'], 'a cache failure must not report a committed edit as failed or skip IndexNow');
+    state.rejectCache = false;
     state.events.length = 0;
     state.authorization = 403;
     assert.equal((await act(req.clone(), itemProps('character'))).status, 403);
@@ -229,6 +267,39 @@ test('visibility and direct playlist edits refresh exact Character routes only a
     assert.deepEqual(state.events, []);
     state.rejectWrite = false;
   }
+});
+
+test('successful Character playlist visibility changes, slug changes and deletion refresh exact pages', async t => {
+  const { routes, state } = await fixture(t, false);
+  const props = { params: Promise.resolve({ playlistId: 'character' }) };
+  const url = 'http://localhost/api/admin/playlists/character';
+  for (const [patch, refresh] of [
+    [{ isPublic: false }, true],
+    [{ isPublic: false }, false],
+    [{ isPublic: true }, true],
+    [{ name: 'New display name' }, false],
+    [{ slug: 'renamed-character-playlist' }, true],
+    [{ isPublic: false }, false],
+    [{ slug: 'character-studio-recast' }, true],
+  ] as const) {
+    state.events.length = 0;
+    const response = await routes.updatePlaylist(jsonRequest(url, patch, 'PUT'), props);
+    assert.equal(response.status, 200);
+    assert.equal(state.events[0], 'update');
+    assert.deepEqual(state.events.slice(1).sort(), refresh ? [...paths].sort() : []);
+  }
+  state.events.length = 0;
+  state.rejectWrite = true;
+  assert.equal((await routes.updatePlaylist(jsonRequest(url, { isPublic: true }, 'PUT'), props)).status, 409);
+  assert.equal((await routes.deletePlaylist(new Request(url, { method: 'DELETE' }), props)).status, 409);
+  assert.deepEqual(state.events, []);
+  assert.equal(state.playlists.get('character')?.isPublic, false);
+  state.rejectWrite = false;
+  const response = await routes.deletePlaylist(new Request(url, { method: 'DELETE' }), props);
+  assert.equal(response.status, 200);
+  assert.equal(state.playlists.has('character'), false);
+  assert.equal(state.events[0], 'delete');
+  assert.deepEqual(state.events.slice(1).sort(), [...paths].sort());
 });
 
 test('the admin item projection distinguishes failed imports from original-job copies', async t => {

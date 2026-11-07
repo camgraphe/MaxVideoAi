@@ -36,16 +36,20 @@ export async function lockCuration(db: QueryExecutor, playlistId: string) {
   await db.query("SELECT pg_advisory_xact_lock(hashtextextended('playlist-curation-writers', 0))");
   await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`playlist-curation:${playlistId}`]);
 }
-export async function assertLegacyPlaylistEditable(db: QueryExecutor, playlistId: string) {
+export async function assertLegacyPlaylistEditable(db: QueryExecutor, playlistId: string): Promise<string> {
   await lockCuration(db, playlistId);
-  try { await assertDestinationWritable(db, playlistId); }
-  catch (error) {
+  let slug: string;
+  try {
+    slug = await assertDestinationWritable(db, playlistId);
+  } catch (error) {
     if (error instanceof DestinationWriteError) throw new CurationError(error.message, error.status);
     throw error;
   }
-  if (!(await curationSchemaAvailable(db))) return;
-  const rows = await db.query('SELECT 1 FROM playlist_curations WHERE playlist_id=$1', [playlistId]);
-  if (rows.length) throw new CurationError('This destination uses Site placements. Edit its selection there.');
+  if (await curationSchemaAvailable(db)) {
+    const rows = await db.query('SELECT 1 FROM playlist_curations WHERE playlist_id=$1', [playlistId]);
+    if (rows.length) throw new CurationError('This destination uses Site placements. Edit its selection there.');
+  }
+  return slug;
 }
 
 export type SavedCurationRow = { mode: CurationDraft['mode']; ordered_ids: string[]; excluded_ids: string[]; revision: string; opening_ids: CurationDraft['openingIds'] };

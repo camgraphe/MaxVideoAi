@@ -1,5 +1,4 @@
 import { revalidatePath } from 'next/cache';
-import { query } from '@/lib/db';
 import {
   CHARACTER_STUDIO_ARTICLE_SLUGS,
   CHARACTER_STUDIO_RECAST_PLAYLIST,
@@ -33,10 +32,12 @@ export async function revalidateMarketingPublication(videoId: string) {
   if (CHARACTER_STUDIO_REVIEWED_FILMS.has(videoId)) revalidateCharacterStudioPages();
 }
 
-/** Direct playlist mutations can add, hide, or reorder proof without touching a publication row. */
-export async function revalidateMarketingPlaylist(playlistId: string) {
-  const [match] = await query('SELECT 1 FROM playlists WHERE id=$1 AND slug=$2', [
-    playlistId, CHARACTER_STUDIO_RECAST_PLAYLIST,
-  ]);
-  if (match) revalidateCharacterStudioPages();
+/** Playlist writes supply their committed scope without another database read. */
+export function revalidateMarketingPlaylist(slug: string, previousSlug?: string) {
+  if (slug !== CHARACTER_STUDIO_RECAST_PLAYLIST && previousSlug !== CHARACTER_STUDIO_RECAST_PLAYLIST) return;
+  try {
+    revalidateCharacterStudioPages();
+  } catch (error) {
+    console.error('[marketing-media] Could not refresh Character pages after a committed playlist change.', error);
+  }
 }

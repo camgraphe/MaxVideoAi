@@ -12,12 +12,15 @@ export class LockedPlaylistError extends Error {
   }
 }
 
-async function assertPlaylistCanEditDetails(db: QueryExecutor, playlistId: string): Promise<void> {
+type PlaylistRoutingState = { slug: string; is_public: boolean };
+
+async function assertPlaylistCanEditDetails(db: QueryExecutor, playlistId: string): Promise<PlaylistRoutingState> {
   await lockCuration(db, playlistId);
   await assertDestinationWritable(db, playlistId);
-  const [playlist] = await db.query<{ slug: string }>('SELECT slug FROM playlists WHERE id=$1 FOR UPDATE', [playlistId]);
+  const [playlist] = await db.query<PlaylistRoutingState>('SELECT slug,is_public FROM playlists WHERE id=$1 FOR UPDATE', [playlistId]);
   if (!playlist) throw new Error('Playlist not found');
   if (isLockedPlaylistSlug(playlist.slug)) throw new LockedPlaylistError();
+  return playlist;
 }
 
 export async function createPlaylist(payload: {
@@ -42,7 +45,10 @@ export async function createPlaylist(payload: {
   return mapCreatedPlaylistRow(row);
 }
 
-export async function updatePlaylist(playlistId: string, payload: MutablePlaylistFields): Promise<void> {
+export async function updatePlaylist(
+  playlistId: string,
+  payload: MutablePlaylistFields,
+): Promise<{ previousSlug: string; slug: string } | null> {
   const updates: string[] = [];
   const params: unknown[] = [];
 
@@ -64,7 +70,7 @@ export async function updatePlaylist(playlistId: string, payload: MutablePlaylis
   }
 
   if (!updates.length) {
-    return;
+    return null;
   }
 
   const updatedByIndex = params.length + 1;
@@ -72,48 +78,54 @@ export async function updatePlaylist(playlistId: string, payload: MutablePlaylis
   params.push(payload.userId ?? null);
   params.push(playlistId);
 
-  await withDbTransaction(async db => {
-    await assertPlaylistCanEditDetails(db, playlistId);
+  return withDbTransaction(async db => {
+    const previous = await assertPlaylistCanEditDetails(db, playlistId);
     if (payload.slug && isLockedPlaylistSlug(payload.slug)) throw new LockedPlaylistError();
-    await db.query(
+    const [updated] = await db.query<PlaylistRoutingState>(
       `UPDATE playlists
      SET ${updates.join(', ')}, updated_at = NOW(), updated_by = $${updatedByIndex}
-     WHERE id = $${playlistIdIndex}`,
+     WHERE id = $${playlistIdIndex}
+     RETURNING slug,is_public`,
       params
     );
+    if (!updated || (previous.slug === updated.slug && previous.is_public === updated.is_public)) return null;
+    return { previousSlug: previous.slug, slug: updated.slug };
   });
 }
 
-export async function deletePlaylist(playlistId: string): Promise<void> {
-  await withDbTransaction(async db => {
-    await assertPlaylistCanEditDetails(db, playlistId);
+export async function deletePlaylist(playlistId: string): Promise<string> {
+  return withDbTransaction(async db => {
+    const { slug } = await assertPlaylistCanEditDetails(db, playlistId);
     await db.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
     await db.query(`DELETE FROM playlists WHERE id = $1`, [playlistId]);
+    return slug;
   });
 }
 
-export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await withDbTransaction(async executor => {
-    await assertLegacyPlaylistEditable(executor, playlistId);
+export async function appendPlaylistItem(playlistId: string, videoId: string): Promise<string> {
+  return withDbTransaction(async executor => {
+    const slug = await assertLegacyPlaylistEditable(executor, playlistId);
     await appendPlaylistItemWithExecutor(executor, playlistId, videoId);
+    return slug;
   });
 }
 
-export async function removePlaylistItem(playlistId: string, videoId: string): Promise<void> {
-  await withDbTransaction(async executor => {
-    await assertLegacyPlaylistEditable(executor, playlistId);
+export async function removePlaylistItem(playlistId: string, videoId: string): Promise<string> {
+  return withDbTransaction(async executor => {
+    const slug = await assertLegacyPlaylistEditable(executor, playlistId);
     await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1 AND video_id = $2`, [playlistId, videoId]);
+    return slug;
   });
 }
 
 export async function reorderPlaylistItems(
   playlistId: string,
   order: Array<{ videoId: string; pinned?: boolean }>
-): Promise<void> {
-  await withDbTransaction(async (executor) => {
-    await assertLegacyPlaylistEditable(executor, playlistId);
+): Promise<string> {
+  return withDbTransaction(async (executor) => {
+    const slug = await assertLegacyPlaylistEditable(executor, playlistId);
     await executor.query(`DELETE FROM playlist_items WHERE playlist_id = $1`, [playlistId]);
-    if (!order.length) return;
+    if (!order.length) return slug;
 
     const values: unknown[] = [];
     const inserts: string[] = [];
@@ -128,6 +140,7 @@ export async function reorderPlaylistItems(
        VALUES ${inserts.join(', ')}`,
       values
     );
+    return slug;
   });
 }
 

@@ -47,8 +47,8 @@ export async function POST(req: NextRequest, props: RouteParams) {
   }
 
   try {
-    await appendPlaylistItem(playlistId, videoId);
-    await revalidateMarketingPlaylist(playlistId);
+    const slug = await appendPlaylistItem(playlistId, videoId);
+    revalidateMarketingPlaylist(slug);
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -92,8 +92,8 @@ export async function DELETE(req: NextRequest, props: RouteParams) {
   }
 
   try {
-    await removePlaylistItem(playlistId, videoId);
-    await revalidateMarketingPlaylist(playlistId);
+    const slug = await removePlaylistItem(playlistId, videoId);
+    revalidateMarketingPlaylist(slug);
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -144,8 +144,8 @@ export async function PUT(req: NextRequest, props: RouteParams) {
   }
 
   try {
-    await reorderPlaylistItems(playlistId, normalized);
-    await revalidateMarketingPlaylist(playlistId);
+    const slug = await reorderPlaylistItems(playlistId, normalized);
+    revalidateMarketingPlaylist(slug);
     await submitToIndexNow('/examples');
     return NextResponse.json({ ok: true });
   } catch (error) {
