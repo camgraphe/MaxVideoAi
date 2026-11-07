@@ -31,14 +31,24 @@ test('all historical checkpoints and independently enumerated additive operation
   const cases = collectCustomerTariffCutoverCheckpoints();
   const novemberModels = ['kling-v4-flash', 'gpt-image-2-6-flare', 'gpt-image-2-6-sunburst'];
   assert.equal(cases.filter(row => row.kind === 'ordinary' && !['kling-v4', 'nano-banana-2-1', ...novemberModels].includes(row.scenario.modelId)).length, 20286);
-  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72, 1020, 1020]);
+  assert.deepEqual(novemberModels.map(id => cases.filter(row => row.scenario.modelId === id).length), [72 + 18, 1020, 1020]);
+  const flash = cases.filter(row => row.scenario.modelId === 'kling-v4-flash');
+  const flashCreation = flash.filter(row => ['t2v', 'i2v', 'ref2v'].includes(row.scenario.selector.mode));
+  assert.equal(flashCreation.length, 72, 'the historical Flash creation inventory remains separate from Modify');
+  assert.deepEqual(Object.fromEntries(['t2v', 'i2v', 'ref2v'].map(mode => [mode,
+    flashCreation.filter(row => row.scenario.selector.mode === mode).length])), { t2v: 18, i2v: 18, ref2v: 36 });
+  const flashModify = flash.filter(row => row.scenario.selector.mode === 'v2v');
+  assert.equal(flashModify.length, 18);
+  assert.deepEqual(new Set(flashModify.map(row => `${row.scenario.selector.resolution}:${row.scenario.selector.durationSec}:${row.scenario.selector.billingInputType}`)),
+    new Set(Array.from({ length: 18 }, (_, index) => `720p:${index + 3}:video_input`)),
+    'Modify adds its own 3–20-second video-input examples without replacing creation checkpoints');
   assert.equal(cases.filter(row => row.scenario.modelId === 'kling-v4').length, 280);
   assert.equal(cases.filter(row => row.scenario.modelId === 'nano-banana-2-1').length, 6,
     'new native fixed image cells remain separate from the old video inventory');
   assert.equal(cases.filter(row => row.kind === 'local_workflow').length, 324);
   assert.equal(cases.filter(row => row.kind === 'input_stress').length, 6372);
   assert.equal(cases.filter(row => String(row.kind) === 'new_offer').length, 89);
-  assert.equal(cases.length, 27071 + 280 + 6 + 72 + 1020 + 1020);
+  assert.equal(cases.length, 27071 + 280 + 6 + 72 + 18 + 1020 + 1020);
   assert.equal(new Set(cases.map(row => row.key)).size, cases.length);
   const veo = coverage.scenarios.filter(row => row.modelId === 'veo-3-1' && row.selector.mode === 'i2v');
   assert.equal(veo.length, 18);

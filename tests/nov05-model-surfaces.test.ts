@@ -12,7 +12,7 @@ import type { ResolvedReference } from '../frontend/src/server/agent-api/referen
 
 const candidate = (id: string) => { const entry=getFalEngineById(id)!; return {engine:entry.engine,surface:id.startsWith('gpt')?'image' as const:'video' as const,publicModes:entry.engine.modes,modeCaps:entry.engine.modeCaps ?? Object.fromEntries(entry.modes.map(mode=>[mode.mode,mode.ui]))}; };
 const asset = (assetId='reference',role='reference') => ({kind:'asset',assetId,role});
-const flash = (mode='ref2v', patch:Record<string,unknown>={}) => normalizeGenerationRequest({surface:'video',engineId:'kling-v4-flash',mode,prompt:'A cinematic scene',settings:{durationSec:5,resolution:'720p',...(mode!=='i2v'?{aspectRatio:'16:9'}:{})},references:mode==='t2v'?[]:[asset('reference',mode==='i2v'?'first_frame':'reference')],...patch});
+const flash = (mode='ref2v', patch:Record<string,unknown>={}) => normalizeGenerationRequest({surface:'video',engineId:'kling-v4-flash',mode,prompt:'A cinematic scene',settings:{durationSec:5,resolution:'720p',...(!['i2v','v2v'].includes(mode)?{aspectRatio:'16:9'}:{})},references:mode==='t2v'?[]:[asset('reference',mode==='i2v'?'first_frame':mode==='v2v'?'source':'reference')],...patch});
 const facts = (request:ReturnType<typeof flash>,seconds=5):ResolvedReference[] => request.references.map(ref=>({assetId:ref.kind==='asset'?ref.assetId:'',role:ref.role,slot:ref.slot,mediaKind:'video',storageUrl:'https://media.maxvideoai.com/user-assets/ref.mp4',width:1280,height:720,durationSec:seconds,mimeType:'video/mp4',sizeBytes:1024,fps:30}));
 
 test('GPT Image 2.6 rejects invalid owned reference metadata before a canonical quote', () => {
@@ -37,12 +37,12 @@ for (const id of ['gpt-image-2-6-flare','gpt-image-2-6-sunburst']) for (const mo
   assert.throws(()=>normalizeGenerationRequest({...raw,references:[{kind:'https',url:'https://media.maxvideoai.com/ref.png',role:'reference',mediaKind:'image'}]}));
 });
 
-for (const mode of ['t2v','i2v','ref2v']) test(`Flash/${mode} has exact Studio capability and canonical payload`,()=>{
+for (const mode of ['t2v','i2v','ref2v','v2v']) test(`Flash/${mode} has exact Studio capability and canonical payload`,()=>{
   const request=flash(mode,mode==='i2v'?{prompt:''}:{});
   const resolved=facts(request).map(ref=>mode==='i2v'?{...ref,mediaKind:'image' as const,mimeType:'image/png',durationSec:null}:ref);
   validateCanonicalGenerationCapabilities(request,candidate(request.engineId),{resolvedReferences:resolved});
   assert.equal(isStudioConversationVideoModeCertified(request.engineId,mode),true);
-  assert.equal(isStudioConversationVideoModeCertified(request.engineId,'v2v'),false);
+  assert.equal(isStudioConversationVideoModeCertified(request.engineId,'extend'),false);
   assert.equal(resolveAgentGenerationModeExecutability(candidate(request.engineId).engine,mode as 't2v',{bytePlusEnabled:false,bytePlusApiKey:undefined,falApiKey:'key'}).executable,true);
   assert.throws(()=>validateCanonicalGenerationCapabilities(flash(mode,{settings:{durationSec:30,resolution:'1080p'}}),candidate(request.engineId)));
 });

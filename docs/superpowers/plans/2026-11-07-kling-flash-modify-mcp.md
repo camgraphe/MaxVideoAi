@@ -53,8 +53,8 @@ Owners: workspace source/media projections, composer capabilities and model guid
 
 ## Delivery
 
-- [ ] Run focused regression checks, frontend lint/typecheck, exposure lint, registry check, required validation suites and feasible build.
-- [ ] Review the combined diff, resolve findings, commit/push and open a GitHub PR with evidence and qualification limits.
+- [x] Run focused regression checks, frontend lint/typecheck, exposure lint, registry check, required validation suites and feasible build.
+- [x] Review the combined diff, resolve findings, commit/push and open a GitHub PR with evidence and qualification limits.
 
 ## Review record
 
@@ -62,3 +62,5 @@ Owners: workspace source/media projections, composer capabilities and model guid
 - The historical 72-class Flash launch batch remains unchanged. The current inventory adds 18 distinct Modify examples; production activation requires a separate review.
 - Independent review found no remaining actionable issue after the replay and localized subject-help corrections.
 - Full local validation and build were attempted; disk exhaustion caused temporary-file failures. Focused regressions are rerun, and required GitHub CI remains the delivery gate.
+- [PR #632](https://github.com/camgraphe/MaxVideoAi/pull/632) is open. Its Git-backed Vercel preview built successfully; no production deployment or tariff activation was performed.
+- The complete local run exposed additional creation-only Studio and inventory fixtures. They now explicitly cover Modify, retain historical creation prices, and require an owned source plus a separately reviewed Modify tariff. The affected disk failures pass in focused reruns. The local financial rehearsal also observed the commit changing during execution; required CI evaluates a fixed committed source.

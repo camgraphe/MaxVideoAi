@@ -15,13 +15,14 @@ async function mount() {
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
   const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/app' });
   const previous = new Map<string, PropertyDescriptor | undefined>();
-  const requests: Array<{ resolve: (response: Response) => void; reject: (error: Error) => void }> = [];
+  const requests: Array<{ body: Record<string, unknown>; resolve: (response: Response) => void; reject: (error: Error) => void }> = [];
   for (const [key, value] of Object.entries({
     window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
     IS_REACT_ACT_ENVIRONMENT: true, BroadcastChannel: undefined,
-    fetch: (url: string) => {
+    fetch: (url: string, init?: RequestInit) => {
       assert.equal(url, '/api/preflight');
-      return new Promise<Response>((resolve, reject) => requests.push({ resolve, reject }));
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Promise<Response>((resolve, reject) => requests.push({ body, resolve, reject }));
     },
   })) {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
@@ -88,7 +89,8 @@ test(`${id}: Modify prices only a ready source and removes the previous quote im
     await f.tick();
     assert.equal(f.requests.length, 0);
     assert.equal(f.current.isPricing, false);
-    assert.equal(f.current.preflightError, undefined);
+    if (id === 'kling-v4-flash') assert.match(f.current.preflightError ?? '', /source video saved in your media library/);
+    else assert.equal(f.current.preflightError, undefined);
     if(id==='flux-3-draft') {
       await f.update({inputAssets:{video_url:[{kind:'video',name:'upload.mp4',size:1,type:'video/mp4',status:'ready',url:'https://example.com/upload.mp4'}] as never}});
       await f.tick();assert.equal(f.requests.length,0,'an upload cannot supply native Draft authority');
@@ -102,12 +104,26 @@ test(`${id}: Modify prices only a ready source and removes the previous quote im
       type: 'video/mp4', size: 1, previewUrl: 'blob:source', status: 'uploading' } as const;
     await f.update({ inputAssets: { video_url: [source] } });
     await f.tick(); assert.equal(f.requests.length, 0);
-    await f.update({ inputAssets: { video_url: [{ ...source, status: 'ready', url: 'https://example.com/source.mp4' }] } });
+    const readySource = { ...source, status: 'ready' as const, url: 'https://example.com/source.mp4', durationSec: 5, width: 1280, height: 720 };
+    if (id === 'kling-v4-flash') {
+      await f.update({ inputAssets: { video_url: [readySource] } });
+      await f.tick();
+      assert.equal(f.requests.length, 0, 'a ready URL without owned asset identity must not receive a quote');
+      assert.match(f.current.preflightError ?? '', /source video saved in your media library/);
+    }
+    await f.update({ inputAssets: { video_url: [{ ...readySource, assetId: 'owned-source' }] } });
     await f.tick(); assert.equal(f.requests.length, 1);
+    if (id === 'kling-v4-flash') {
+      assert.deepEqual(f.requests[0].body.inputs, [{ assetId: 'owned-source', slotId: 'video_url', kind: 'video', url: readySource.url }]);
+      assert.equal(f.requests[0].body.durationSec, undefined, 'source timing is verified by the server');
+      assert.equal(f.requests[0].body.durationOption, undefined);
+    }
+    assert.equal(f.current.preflightError, undefined);
     await f.respond(0); assert.equal(f.current.price, 1.25);
     await f.update({ inputAssets: {} });
     masked(f); await f.tick(); assert.equal(f.requests.length, 1);
-    assert.equal(f.current.preflightError, undefined);
+    if (id === 'kling-v4-flash') assert.match(f.current.preflightError ?? '', /source video saved in your media library/);
+    else assert.equal(f.current.preflightError, undefined);
   } finally { await f.dispose(); }
 });
 }
