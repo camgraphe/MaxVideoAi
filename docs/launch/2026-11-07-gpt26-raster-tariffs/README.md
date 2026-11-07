@@ -1,6 +1,6 @@
 # GPT Image 2.6 raster tariff proposal
 
-Status: **approved by the user on 7 November 2026, not yet applied**. Approval
+Status: **approved and applied in production on 7 November 2026**. Approval
 explicitly includes all 48 classes and the conservative Auto prices. The two JSON imports contain 24
 missing-only native classes each. Twenty classes cover explicit quality and
 dimensions; 28 separately identify automatic size and/or quality. Review those
@@ -12,10 +12,10 @@ The approved retail recipe is output LIST estimate + USD 0.01 per output + USD
 native rates are 0.0045 cents/output token, 1.5 cents/output and 3 cents/source/output.
 Input costs remain unknown; these reserves are not a supplier-spend bound.
 
-Both Flare and Sunburst have the following proposed text-to-image prices at high
+Both Flare and Sunburst have the following active text-to-image prices at high
 quality, one output and no sources:
 
-| Dimensions | Proposed price |
+| Dimensions | Active price |
 | --- | ---: |
 | 1536 × 864 or 864 × 1536 | $0.07 |
 | 2048 × 1152 or 1152 × 2048 | $0.08 |
@@ -24,9 +24,26 @@ quality, one output and no sources:
 | Automatic size, high quality | $0.29 |
 | Automatic size and quality | $1.09 |
 
-The two explicit 4K orientation canaries would therefore total **$0.34 customer
-retail**, conditional on a fresh exact active quote. This is not permission to
-submit either job and does not bound complete provider input costs.
+The two separately authorized 4K orientation canaries completed at **$0.34 net
+customer retail**; see [production qualification](../2026-11-06-capability-correction/QUALIFICATION.md).
+This evidence does not authorize another attempt or bound future provider costs.
+
+## Native production receipts
+
+Both missing-only imports committed through the authenticated native admin UI:
+
+| Model | Operation | Revision | Result |
+| --- | --- | --- | --- |
+| Flare | `8da06e96-02ea-462e-82f8-5d84eee265dd` | 4683 → 4707 | 24 created; 0 updates, conflicts or unchanged rows |
+| Sunburst | `eedc9525-57e7-4b78-9fb6-d4996055e2a1` | 4707 → 4731 | 24 created; 0 updates, conflicts or unchanged rows |
+
+Receipts bind source `a5d40efe66b2074cfc053f7a20f739df7fb9a3a3` (PR #627).
+Reconciliation found 1,044 active cells per model and unchanged digests for the
+1,020 historical exact cells per model. The nine global/scoped policy rows,
+including Character Studio Recast's approved ×2 rule, were unchanged. All 24 live
+quote checks passed across presets, custom dimensions, Auto and output counts.
+
+## Reproduction and validation
 
 `review.json` records each proposal hash, all 29,146 valid ordered dimension pairs,
 token extrema and representative customer quotes. The 2,040 existing exact cells
