@@ -17,6 +17,7 @@ import { passageSeconds, useRecastTrack } from './useRecastTrack';
 import { useRecastDraft } from '../_hooks/useRecastDraft';
 import { draftImage, draftTrack, hasRecastDraft, restoreDraftImage, type RecastDraft } from '../_lib/recast-draft-store';
 import { getRecastSessionCopy } from '../_lib/recast-session-copy';
+import { CharacterStudioRecastResetDialog } from './CharacterStudioRecastResetDialog.client';
 
 import { CharacterStudioRecastSubmit } from './CharacterStudioRecastSubmit.client';
 import { CharacterStudioRecastPortrait } from './CharacterStudioRecastPortrait.client';
@@ -47,16 +48,29 @@ function RecastSession(props: RecastProps) {
   const copy = getRecastSessionCopy(props.copy.recastLocale);
   const draft = useRecastDraft(props.accountId ?? null, copy.leave);
   const ignoredSelection = useRef<StudioRecastSelection | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  useEffect(() => {
+    if (!props.active || draft.locked) setConfirmReset(false);
+  }, [props.active, draft.locked]);
+  async function resetScene() {
+    if (draft.locked || draft.clearing) return;
+    ignoredSelection.current = props.selection ?? null;
+    await draft.reset();
+  }
   if (draft.initial === undefined) return <div>{props.navigation}<p role="status">{copy.loading}</p></div>;
-  return <RecastScene {...props} key={draft.epoch}
+  return <><RecastScene {...props} key={draft.epoch}
     selection={props.selection === ignoredSelection.current ? null : props.selection}
     initialDraft={draft.initial} onDraft={draft.change} locked={draft.locked} onLock={draft.setLocked}
     clearing={draft.clearing} storageError={draft.status === 'error'}
-    onNew={async (dirty) => {
-      if (draft.locked || draft.clearing || dirty && !window.confirm(copy.reset)) return;
-      ignoredSelection.current = props.selection ?? null;
-      await draft.reset();
-    }} />;
+    onNew={(dirty) => {
+      if (draft.locked || draft.clearing) return;
+      if (dirty) setConfirmReset(true);
+      else void resetScene();
+    }} />
+    {confirmReset && props.active && !draft.locked && <CharacterStudioRecastResetDialog copy={copy}
+      onClose={() => setConfirmReset(false)}
+      onConfirm={() => { setConfirmReset(false); void resetScene(); }} />}
+  </>;
 }
 
 function RecastScene({ copy, navigation, active, selection, characterLibrary,
