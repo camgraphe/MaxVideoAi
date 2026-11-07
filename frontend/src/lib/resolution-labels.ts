@@ -25,6 +25,8 @@ export function formatResolutionList(
 
 export function formatCompactResolutionLabel(resolution: string): string {
   const trimmed = resolution.trim();
+  // Pixel dimensions distinguish canvas orientation, even at the same quality tier.
+  if (/\d+\s*[x×]\s*\d+/iu.test(trimmed)) return trimmed;
   const normalized = trimmed.toLowerCase();
   if (normalized.startsWith('720p')) return '720p';
   if (normalized.startsWith('1080p')) return '1080p';

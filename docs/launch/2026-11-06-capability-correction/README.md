@@ -3,6 +3,18 @@
 Started 6 November; implementation and validation continued 7 November 2026.
 Branch `codex/gpt26-capabilities-flash-audit` starts from `594bceaee` on main.
 
+PR #627 merged as `a5d40efe66b2074cfc053f7a20f739df7fb9a3a3` and deployed to
+both production domains. The 48 approved native tariff additions are committed,
+all 2,040 historical exact prices are preserved, and both authorized 4K raster
+qualifications completed after correcting the deployed OpenAI key's Images
+permission. See [tariff receipts](../2026-11-07-gpt26-raster-tariffs/README.md)
+and [observed qualification](QUALIFICATION.md).
+
+The compact resolution formatter also needed to preserve pixel dimensions:
+otherwise both landscape and portrait controls displayed only “4K”. The follow-up
+in PR #629 preserves these dimension labels and includes Character Studio's
+concurrent PR #628 without changing its files.
+
 ## Raster correction
 
 Flare and Sunburst share the same dimension contract: 17 exact pixel presets,

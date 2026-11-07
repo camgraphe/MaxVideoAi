@@ -1,10 +1,11 @@
 # GPT Image 2.6 high-resolution qualification
 
-Prepared and explicitly authorized by the user on 7 November 2026. These requests
-have not been submitted. They require fresh active native quotes matching the
-approved USD 0.17 each and authorization covers exactly these two paid requests.
-No automatic retry. Keep originals and reuse successful outputs as marketing
-candidates, subject to visual review; this does not replace the existing heroes.
+Completed in production on 7 November 2026 through the native MCP quote and
+confirmation flow at USD 0.17 per successful image. The first Flare attempt was
+rejected and refunded; a fresh exact quote and explicit user approval authorized
+its replacement. Sunburst used its original approved single attempt. No automatic
+retry occurred. Originals are saved in the connected library and visually reviewed
+as marketing candidates; existing public heroes were not replaced.
 
 | Request | Model | Mode | Pixels | Quality / complexity | Output | Proposed retail |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -16,6 +17,43 @@ Both use 3,336 estimated image-output tokens: USD 0.10008 output list cost,
 plus USD 0.01 commercial input reserve, multiplied by 1.50 and rounded upward.
 The input reserve is not a provider cost ceiling. Provider text-input charges
 remain additional; inspect actual returned usage without claiming an invoice.
+
+## Observed production results
+
+| Result | Job | Decoded original | Customer charge | Provider usage |
+| --- | --- | --- | ---: | --- |
+| Flare, Last departure | `5a639095-8f4b-42ac-934a-d61ebbc2c639` | PNG RGB, 3840×2160, 13,055,005 bytes | $0.17 | 226 text input + 3,337 output tokens |
+| Sunburst, The horn at dawn | `902234de-9a1c-45a0-8510-5f6e2d89f1d4` | PNG RGB, 2160×3840, 13,089,715 bytes | $0.17 | 238 text input + 3,336 output tokens |
+
+Both jobs are `completed` and `paid_wallet`, with one stored output, a durable
+thumbnail and one completed provider request each. PNG IHDR dimensions, public
+HTTP Range responses and browser decoding agree. Visual review confirms the
+requested cinematic composition, crowds and foreground human action in both
+orientations. These observations qualify these two raster cases, not every
+possible size, quality, edit or automatic-setting combination.
+
+The failed Flare job `29d528b4-8894-48c9-a12d-9dbc66a8c17a` charged and refunded
+17 cents. The final wallet moved from 5,180 to 5,146 cents, with no pending hold:
+34 cents net for the two successful images. Provider list-cost estimates from
+returned usage are $0.10124 and $0.10127 respectively; neither is an invoice.
+
+### Authentication diagnosis and correction
+
+The production key was valid but restricted to model discovery, Responses and
+Chat Completions. A non-generative empty-payload request established the precise
+401 reason: missing `api.model.images.request`. This was not evidence that Milo
+or the whole OpenAI account was unavailable. Ten assistance calls in the preceding
+24 hours were settled; the five prompt-assistance requests were complete with
+zero authentication errors. Non-generative checks also passed authentication for
+the Responses input-token and Chat Completions endpoints.
+
+The user explicitly approved adding only the Images request permission to the
+existing key. No key was rotated or copied. After propagation, the same empty
+Images payload reached ordinary missing-model validation instead of 401; the two
+authorized production generations then succeeded. Local provider qualification
+and an environment-variable presence check alone had not established the deployed
+key's endpoint permissions. Future launch checks must verify the actual production
+credential's required scope without logging it or creating unapproved media.
 
 ## Last departure
 
