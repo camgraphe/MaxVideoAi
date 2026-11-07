@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import type { QueryExecutor } from '../frontend/src/lib/db';
+import { withDbTransaction, type QueryExecutor } from '../frontend/src/lib/db';
 import { promoteMarketingVideo } from '../frontend/server/marketing-media/copy';
 import { importMarketingPublication } from '../frontend/server/marketing-media/import-publication';
+import { MarketingMediaError } from '../frontend/server/marketing-media/snapshot';
 import { copyMarketingMediaFile } from '../frontend/server/marketing-media/storage';
 import { startDisposablePostgres } from './helpers/disposable-postgres';
 import { allExportedFiles, fixtureVideoId, importFiles, nestedReference, publicationManifest, selectedVideo, stalePreview, staleVideo } from './helpers/marketing-publication-fixture';
@@ -11,21 +12,11 @@ import { allExportedFiles, fixtureVideoId, importFiles, nestedReference, publica
 test('marketing publication imports are independent, immutable and fenced on PostgreSQL', async (t) => {
   const database = await startDisposablePostgres('marketing-import');
   t.after(() => database.cleanup());
+  // Match the application pool's client error handling when a transaction times out.
+  database.pool.on('connect', (client) => client.on('error', () => {}));
   const query: QueryExecutor['query'] = async (sql, params) => (await database.pool.query(sql, params as unknown[])).rows;
-  const transaction = async <T>(run: (db: QueryExecutor) => Promise<T>): Promise<T> => {
-    const client = await database.pool.connect();
-    try {
-      await client.query('BEGIN');
-      const result = await run({ query: async (sql, params) => (await client.query(sql, params as unknown[])).rows });
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
-  };
+  const transaction = <T>(run: (db: QueryExecutor) => Promise<T>): Promise<T> =>
+    withDbTransaction(run, { pool: database.pool });
   await query(readFileSync('neon/migrations/78_marketing_media.sql', 'utf8'));
   await query(`
     CREATE FUNCTION deny_personal_write() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -61,7 +52,7 @@ test('marketing publication imports are independent, immutable and fenced on Pos
     },
   });
   const deps = { db: { query }, transaction, copyFile };
-  const start = (id: string, overrides: Partial<typeof deps> = {}) => importMarketingPublication(
+  const start = (id: string, overrides: Partial<NonNullable<Parameters<typeof importMarketingPublication>[1]>> = {}) => importMarketingPublication(
     { manifest: publicationManifest(id), actorId: 'destination-admin', permissionConfirmed: true },
     { ...deps, ...overrides },
   );
@@ -145,6 +136,65 @@ test('marketing publication imports are independent, immutable and fenced on Pos
     }
     const [row] = await query<{ state: string }>('SELECT state FROM marketing_media WHERE video_id=$1', [id]);
     assert.equal(row.state, 'ready');
+  });
+
+  for (const [phase, updatePrefix] of [
+    ['progress', 'UPDATE marketing_media SET files='],
+    ['final', "UPDATE marketing_media SET state='ready'"],
+  ]) {
+    await t.test(`a queued ${phase} write cannot mutate the publication after the deadline`, async (t) => {
+      const id = `queued-${phase}-write`;
+      const wallTime = Date.now.bind(Date);
+      const cutoff = wallTime() + 1000;
+      let firstTime = true;
+      let lateWriteRan = false;
+      t.mock.method(Date, 'now', () => {
+        if (firstTime) {
+          firstTime = false;
+          return cutoff - 180_000;
+        }
+        // Keep the JS and statement timeouts from firing before the wall-clock
+        // SQL predicate has a chance to reject the already dispatched write.
+        return wallTime() - (lateWriteRan ? 0 : 1000);
+      });
+      const queueWrite = (db: QueryExecutor): QueryExecutor => ({
+        async query<T>(sql: string, params?: ReadonlyArray<unknown>) {
+          if (!sql.includes(updatePrefix)) return db.query<T>(sql, params);
+          await query('SELECT pg_sleep(GREATEST(0,EXTRACT(EPOCH FROM $1::timestamptz - clock_timestamp())) + 0.02)',
+            [new Date(cutoff).toISOString()]);
+          const rows = await db.query<T>(sql, params);
+          lateWriteRan = true;
+          return rows;
+        },
+      });
+      await assert.rejects(start(id, {
+        transaction: (run) => transaction((db) => run(queueWrite(db))),
+      }), { status: 504, message: /deadline/i });
+      assert.ok(lateWriteRan, 'PostgreSQL evaluated the queued statement after the cutoff');
+      const [row] = await query<{ state: string; publication: unknown; files: unknown[] }>(
+        'SELECT state,publication,files FROM marketing_media WHERE video_id=$1', [id],
+      );
+      assert.equal(row.state, 'failed');
+      assert.deepEqual(row.publication, {});
+      if (phase === 'progress') assert.deepEqual(row.files, []);
+    });
+  }
+
+  await t.test('a failure to save status preserves the original copy error', async (t) => {
+    const original = new MarketingMediaError('A source file does not match the manifest.', 409);
+    const unavailable = new Error('fixture database unavailable');
+    const rejectFailureStatus = (db: QueryExecutor): QueryExecutor => ({
+      query(sql, params) {
+        if (sql.includes("UPDATE marketing_media SET state='failed'")) return Promise.reject(unavailable);
+        return db.query(sql, params);
+      },
+    });
+    const warn = t.mock.method(console, 'warn', () => {});
+    await assert.rejects(start('unrecorded-failure', {
+      copyFile: async () => { throw original; },
+      transaction: (run) => transaction((db) => run(rejectFailureStatus(db))),
+    }), (error) => error === original);
+    assert.equal(warn.mock.callCount(), 1);
   });
 
   await t.test('other ready publications and retired or deleting identities cannot be overwritten', async () => {

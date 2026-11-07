@@ -136,12 +136,10 @@ export function prepareMarketingPublicationImport(value: unknown) {
   ) throw new MarketingMediaError('The recreation settings contain a private binding.');
   if (publication.engine_id !== recipe.engineId || !isDeepStrictEqual(publication.settings_snapshot, recipe))
     throw new MarketingMediaError('The publication engine and settings must match the public recreation recipe.');
-  if (recipe.operation !== undefined) {
-    try {
-      normalizeVideoOperation(recipe.engineId, recipe.inputMode, recipe.operation);
-    } catch {
-      throw new MarketingMediaError('The recreation operation is unsupported for this engine and mode.');
-    }
+  try {
+    normalizeVideoOperation(recipe.engineId, recipe.inputMode, recipe.operation);
+  } catch {
+    throw new MarketingMediaError('The recreation operation is missing or unsupported for this engine and mode.');
   }
 
   const plan = prepareMarketingSnapshot({

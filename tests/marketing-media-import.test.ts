@@ -40,6 +40,16 @@ test('a publication must match its portable recipe', () => {
   assert.throws(() => previewMarketingPublicationImport(settingsMismatch), /settings|match/i);
 });
 
+test('matching source settings must still include operations the engine requires', () => {
+  for (const engineId of ['minimax-h3-max', 'flux-3', 'flux-3-draft']) {
+    const manifest = publicationManifest();
+    manifest.publication.engine_id = engineId;
+    manifest.recreationSnapshot.engineId = engineId;
+    manifest.publication.settings_snapshot = structuredClone(manifest.recreationSnapshot);
+    assert.throws(() => previewMarketingPublicationImport(manifest), /operation/i);
+  }
+});
+
 test('the import rejects private bindings and provenance', () => {
   const manifest = publicationManifest();
   const privateRef = { ...manifest.recreationSnapshot.refs, source_job_id: 'private-job' };
@@ -109,7 +119,7 @@ test('explicit rights confirmation is required before touching storage or the da
   const inaccessible = async (): Promise<never> => assert.fail('Import touched an external dependency');
   await assert.rejects(
     importMarketingPublication({ manifest: publicationManifest(), actorId: 'admin', permissionConfirmed: false },
-      { db: { query: inaccessible }, transaction: inaccessible, copyFile: inaccessible }),
+      { transaction: inaccessible, copyFile: inaccessible }),
     { status: 403 },
   );
 });
