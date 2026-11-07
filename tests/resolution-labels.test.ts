@@ -11,4 +11,7 @@ test('compact resolution labels remove redundant quality descriptions', () => {
   assert.equal(formatCompactResolutionLabel('4K'), '4K');
   assert.equal(formatCompactResolutionLabel('2K'), '2K');
   assert.equal(formatCompactResolutionLabel('Auto'), 'Auto');
+  assert.equal(formatCompactResolutionLabel('4K · 3840 x 2160'), '4K · 3840 x 2160');
+  assert.equal(formatCompactResolutionLabel('4K · 9:16 · 2160 x 3840'), '4K · 9:16 · 2160 x 3840');
+  assert.equal(formatCompactResolutionLabel('4K · 2160×3840'), '4K · 2160×3840');
 });
