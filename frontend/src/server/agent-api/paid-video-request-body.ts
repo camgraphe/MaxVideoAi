@@ -469,7 +469,10 @@ export function buildPaidVideoRequestBody(
     body.inputs = [
       input(source[0]!, 'video_url'),
       ...(guideFrames[0] && guideFieldId ? [input(guideFrames[0], guideFieldId)] : []),
-      ...(imageFieldId && (imageFieldId !== 'image_urls' || ['seedance-2-5','kling-v4','kling-v4-flash'].includes(execution.engine.id))
+      // Edit validates owned image identity from inputs, not the URL projection alone.
+      ...(imageFieldId && (imageFieldId !== 'image_urls'
+        || execution.request.operation === 'kling-edit'
+        || ['seedance-2-5','kling-v4','kling-v4-flash'].includes(execution.engine.id))
         ? imageReferences.map((reference) => input(reference, imageFieldId)) : []),
       ...(videoFieldId ? videoReferences.map((reference) => input(reference, videoFieldId)) : []),
       ...(audioFieldId ? audioReferences.map((reference) => input(reference, audioFieldId)) : []),
