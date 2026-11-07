@@ -35,6 +35,8 @@ async function mount(withCharacter = true, accountId?: string, strict = false) {
   w.URL.revokeObjectURL = (url: string) => revoked.push(url);
   w.HTMLMediaElement.prototype.pause = function () { paused.push(this); };
   w.HTMLMediaElement.prototype.load = () => {};
+  w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+  w.HTMLDialogElement.prototype.close = function () { this.open = false; };
   const create = doc.createElement.bind(doc);
   doc.createElement = (tag: string, ...rest: any[]) => {
     const el = create(tag, ...rest);
@@ -356,11 +358,24 @@ test('New scene cancels preparation and clears references, descriptions, setting
     await f.click(f.w.labels.reviewPrice);
     const pending=f.requests.find(r=>r.url.endsWith('/prepare')); assert.ok(pending);
     const reset=()=>f.doc.querySelector('[data-recast-new]'); assert.ok(reset(),'a visible New scene action');
-    f.w.confirm=()=>false;
+    let nativeConfirmations = 0;
+    f.w.confirm=()=>{ nativeConfirmations++; return false; };
+    reset().focus();
     await f.act(async()=>reset().click());
+    assert.equal(nativeConfirmations, 0, 'reset must not block the browser with window.confirm');
+    assert.ok(f.doc.querySelector('dialog[open]'), 'confirmation stays inside the page');
+    assert.equal(f.doc.activeElement, f.button('Garder cette scène'), 'default focus preserves the draft');
+    assert.equal(pending.signal!.aborted, false, 'opening the confirmation does not discard work');
+    await f.click('Garder cette scène');
+    assert.equal(f.doc.querySelector('dialog'), null);
+    assert.equal(f.doc.activeElement, reset());
     assert.equal(f.doc.querySelector('textarea').value,'Never reuse this direction');
-    f.w.confirm=()=>true;
     await f.act(async()=>reset().click());
+    await f.act(async()=>f.doc.querySelector('dialog').dispatchEvent(new f.w.Event('cancel', {cancelable:true})));
+    assert.equal(f.doc.querySelector('dialog'), null, 'Escape keeps the scene');
+    assert.equal(f.doc.querySelector('textarea').value,'Never reuse this direction');
+    await f.act(async()=>reset().click());
+    await f.click('Commencer une nouvelle scène');
     assert.equal(pending.signal!.aborted,true);
     assert.equal(f.doc.querySelector('textarea').value,'');
     assert.equal(f.doc.querySelector('#recast-duration').value,'6');
@@ -373,6 +388,30 @@ test('New scene cancels preparation and clears references, descriptions, setting
     assert.equal(f.doc.querySelector('textarea').value,'');
     assert.equal(f.doc.querySelector('[data-recast-restored]'),null);
     assert.ok(f.revoked.length>0);
+  } finally { await f.dispose(); }
+});
+
+test('reset confirmation is unnecessary for an empty scene and cannot survive leaving Recast or switching accounts', async () => {
+  const f = await mount(false, 'account-a');
+  try {
+    let nativeConfirmations = 0;
+    f.w.confirm = () => { nativeConfirmations++; return false; };
+    await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    assert.equal(f.doc.querySelector('dialog'), null);
+    await f.input(f.doc.querySelector('textarea'), 'Keep account A scene');
+    await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    assert.ok(f.doc.querySelector('dialog[open]'));
+    await f.act(async () => { f.w.active = false; f.w.fx.render(); });
+    assert.equal(f.doc.querySelector('dialog'), null);
+    await f.act(async () => { f.w.active = true; f.w.fx.render(); });
+    assert.equal(f.doc.querySelector('dialog'), null, 'returning cannot reopen an old confirmation');
+    assert.equal(f.doc.querySelector('textarea').value, 'Keep account A scene');
+    await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    await f.act(async () => { f.w.accountId = 'account-b'; f.w.fx.render(); });
+    assert.equal(f.doc.querySelector('dialog'), null);
+    assert.equal(f.doc.querySelector('textarea').value, '');
+    assert.equal(nativeConfirmations, 0);
+    assert.equal(f.requests.filter(r => /\/(prepare|confirm)$/.test(r.url)).length, 0);
   } finally { await f.dispose(); }
 });
 
@@ -676,12 +715,14 @@ test('a failed local reset preserves the draft; retry after storage recovery cle
     await f.act(async () => new Promise(resolve => setTimeout(resolve, 300)));
     f.w.storageFailure = true;
     await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    await f.click('Commencer une nouvelle scène');
     assert.equal(f.doc.querySelector('textarea').value, 'Keep this draft');
     assert.ok(f.doc.querySelector('img[alt="Basil"]'));
     assert.ok(f.doc.querySelector('[data-recast-storage-error]'));
     assert.equal(f.doc.querySelector('[data-recast-new]').disabled, false);
     f.w.storageFailure = false;
     await f.act(async () => f.doc.querySelector('[data-recast-new]').click());
+    await f.click('Commencer une nouvelle scène');
     assert.equal(f.doc.querySelector('textarea').value, '');
     assert.ok(!f.doc.querySelector('img[alt="Basil"]'));
     assert.ok(!f.doc.querySelector('[data-recast-storage-error]'));

@@ -1,5 +1,6 @@
 const en = {
   cancelPreparation: 'Cancel preparation',
+  keepScene: 'Keep this scene', confirmReset: 'Start a new scene',
   lockedSelection: 'Check the pending generation confirmation before choosing another character. Your current scene has been kept.',
   unreadableImage: 'This image could not be read. Choose another JPG, PNG, WebP or BMP image (up to 20 MB), then review the price again.',
   unreadableVideo: 'This video could not be read. Choose another MP4 or MOV file (up to 100 MB), then select its passage again.',
@@ -12,6 +13,7 @@ const en = {
 };
 const fr: typeof en = {
   cancelPreparation: 'Annuler la préparation',
+  keepScene: 'Garder cette scène', confirmReset: 'Commencer une nouvelle scène',
   lockedSelection: 'Vérifie la confirmation de génération en cours avant de choisir un autre personnage. Ta scène actuelle a été conservée.',
   unreadableImage: 'Cette image ne peut pas être lue. Choisis une autre image JPG, PNG, WebP ou BMP (20 Mo maximum), puis vérifie à nouveau le prix.',
   unreadableVideo: 'Cette vidéo ne peut pas être lue. Choisis un autre fichier MP4 ou MOV (100 Mo maximum), puis sélectionne à nouveau son passage.',
@@ -24,6 +26,7 @@ const fr: typeof en = {
 };
 const es: typeof en = {
   cancelPreparation: 'Cancelar preparación',
+  keepScene: 'Mantener esta escena', confirmReset: 'Empezar una nueva escena',
   lockedSelection: 'Comprueba la confirmación de generación pendiente antes de elegir otro personaje. Se ha conservado tu escena actual.',
   unreadableImage: 'No se pudo leer esta imagen. Elige otra imagen JPG, PNG, WebP o BMP (máximo 20 MB) y revisa el precio de nuevo.',
   unreadableVideo: 'No se pudo leer este vídeo. Elige otro archivo MP4 o MOV (máximo 100 MB) y vuelve a seleccionar su fragmento.',

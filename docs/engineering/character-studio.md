@@ -521,7 +521,10 @@ resolution and framing. It never persists blob URLs, estimates or purchase token
 Fresh object URLs are created in effects and metadata revalidates restored ranges;
 React Strict Mode replay must not revoke the current playable URL.
 
-New scene confirms when content exists, clears the account draft and remounts the
+New scene uses an in-page dialog when content exists; never use `window.confirm`
+for this action because it blocks the host browser. Initial focus and Escape keep
+the scene, and cancel restores focus to New scene. Only explicit confirmation
+clears the account draft and remounts the
 form, canceling pending price preparation and ignoring a stale character handoff.
 It is disabled during confirmation/recovery. Storage failures remain visible and
 protect reload/window close and ordinary link navigation. Browser storage is a
