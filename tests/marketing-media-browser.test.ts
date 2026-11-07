@@ -4,12 +4,12 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import test from 'node:test';
-import { chromium } from '@playwright/test';
+import { chromium, expect, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 import tailwindConfig from '../frontend/tailwind.config';
 
 test(
-  'marketing admin handles copy, retry, placement protection and reuse at mobile and desktop widths',
+  'marketing admin handles original copies and private publication imports',
   { timeout: 120000 },
   async () => {
     const frontend = join(process.cwd(), 'frontend');
@@ -133,6 +133,7 @@ test(
         await mkdir('output/marketing-media', { recursive: true });
         await page.screenshot({ path: `output/marketing-media/admin-${width}.png`, fullPage: true });
       }
+      await exercisePublicationImport(page, `http://127.0.0.1:${address.port}`);
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();
@@ -140,3 +141,115 @@ test(
     }
   },
 );
+
+async function exercisePublicationImport(page: Page, url: string) {
+  const failed = { videoId: 'partial-import', sourceKind: 'import', state: 'failed', visibility: 'private', prompt: '',
+    engineLabel: 'Recast', sizeBytes: 0, createdAt: '2026-11-07', placements: [] };
+  const original = { ...failed, videoId: 'ordinary-copy', sourceKind: 'job' };
+  let items = [failed, original];
+  let listReads = 0;
+  const previewIds: string[] = [];
+  const importBodies: unknown[] = [];
+  const oldPreview = Promise.withResolvers<void>();
+  const oldPreviewHandled = Promise.withResolvers<void>();
+  const rejectedImport = Promise.withResolvers<void>();
+  await page.unrouteAll({ behavior: 'wait' });
+  await page.route('**/api/admin/**', async (route) => {
+    const request = route.request();
+    let body: unknown;
+    let status = 200;
+    let stale = false;
+    if (request.method() === 'GET') {
+      listReads++;
+      body = { ok: true, items, nextOffset: null };
+    } else {
+      const payload = request.postDataJSON();
+      const id = payload.manifest.id;
+      if (new URL(request.url()).searchParams.has('preview')) {
+        previewIds.push(id);
+        stale = id === 'stale';
+        if (stale) await oldPreview.promise;
+        body = { ok: true, preview: { videoId: id, name: id === 'stale' ? 'Stale film' : 'Reviewed film',
+          durationSec: 8, resolution: '1920 × 1080', width: 1920, height: 1080, fileCount: 3 } };
+      } else {
+        importBodies.push(payload);
+        if (importBodies.length === 1) {
+          await rejectedImport.promise;
+          status = 502;
+          body = { ok: false, error: 'Source unavailable. Retry with the same manifest.' };
+        } else {
+          const item = { ...failed, state: 'ready', visibility: importBodies.length > 2 ? 'public' : 'private' };
+          items = [item, original];
+          body = { ok: true, item };
+        }
+      }
+    }
+    try {
+      await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+    } finally {
+      if (stale) oldPreviewHandled.resolve();
+    }
+  });
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto(url);
+  const failedRow = page.getByRole('article').filter({ hasText: failed.videoId });
+  const originalRow = page.getByRole('article').filter({ hasText: original.videoId });
+  const disclosure = page.locator('details').filter({ has: page.getByText('Import publication', { exact: true }) });
+  const file = page.getByLabel('Publication manifest');
+  await originalRow.getByRole('button', { name: 'Retry copy', exact: true }).waitFor();
+  assert.equal(await failedRow.getByRole('button', { name: 'Retry copy', exact: true }).count(), 0);
+  await expect(file).toBeHidden();
+  await failedRow.getByRole('button', { name: 'Retry import', exact: true }).click({ timeout: 5_000 });
+  await expect(file).toBeVisible();
+  await expect(disclosure).toContainText('same manifest');
+  const choose = (json: string) => file.setInputFiles({ name: 'publication.json', mimeType: 'application/json', buffer: Buffer.from(json) });
+  await choose('{');
+  await expect(disclosure.getByRole('alert')).toContainText('valid JSON');
+  assert.deepEqual(previewIds, []);
+  const submit = disclosure.getByRole('button', { name: 'Import private copy' });
+  const permission = disclosure.getByRole('checkbox');
+  await expect(submit).toBeDisabled();
+  await choose('{"id":"stale"}');
+  await expect.poll(() => previewIds).toEqual(['stale']);
+  await expect(permission).toBeDisabled();
+  await choose(JSON.stringify({ id: failed.videoId }));
+  await expect(disclosure).toContainText('Reviewed film');
+  await expect(disclosure).toContainText(failed.videoId);
+  await expect(disclosure).toContainText('8 seconds');
+  await expect(disclosure).toContainText('1920 × 1080');
+  await expect(disclosure).toContainText('Required files');
+  await expect(disclosure.getByText('3', { exact: true })).toBeVisible();
+  oldPreview.resolve();
+  await oldPreviewHandled.promise;
+  await expect(disclosure.getByText('Stale film')).toHaveCount(0);
+  await expect(submit).toBeDisabled();
+  assert.deepEqual(importBodies, []);
+  await permission.check();
+  await submit.evaluate(button => {
+    const form = (button as HTMLButtonElement).form!;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+  await expect(disclosure.getByRole('button', { name: 'Importing…' })).toBeDisabled();
+  await expect(file).toBeDisabled();
+  await expect(permission).toBeDisabled();
+  await expect.poll(() => importBodies.length).toBe(1);
+  rejectedImport.resolve();
+  await expect(disclosure.getByRole('alert')).toContainText('Source unavailable');
+  await expect(permission).toBeChecked();
+  await expect(file).toBeEnabled();
+  const readsBeforeRetry = listReads;
+  await submit.click();
+  await expect(disclosure.getByRole('status')).toContainText('Private copy saved');
+  await expect(failedRow.getByRole('button', { name: 'Publish on site' })).toBeVisible();
+  assert.deepEqual(importBodies, Array(2).fill({ manifest: { id: failed.videoId }, permissionConfirmed: true }));
+  assert.ok(listReads > readsBeforeRetry, 'the site library was fetched after successful import');
+  await choose(JSON.stringify({ id: failed.videoId }));
+  await expect(permission).toBeEnabled();
+  await expect(permission).not.toBeChecked();
+  await permission.check();
+  await submit.click();
+  await expect(disclosure.getByRole('status')).toContainText('already public');
+  await expect(failedRow.getByRole('button', { name: 'Make private' })).toBeVisible();
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+}

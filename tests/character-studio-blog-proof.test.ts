@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { CHARACTER_STUDIO_ARTICLE_SLUGS } from '../frontend/lib/character-studio-marketing';
 import { mountToolFixture } from './helpers/tool-selection-fixture';
 
 const stubs = {
@@ -50,7 +51,8 @@ for (const locale of ['en', 'fr', 'es']) test(`blog proof ${locale} preserves tw
 test('character blog proof has a scoped nonblocking boundary and no private media fallback', () => {
   const owner = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_components/blog-character-studio-proof.tsx', 'utf8');
   const view = readFileSync('frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_components/blog-post-view.tsx', 'utf8');
-  assert.match(owner, /new Set\(\['ai-character-sheet-generator', 'how-to-create-consistent-ai-characters'\]\)/);
+  assert.deepEqual(CHARACTER_STUDIO_ARTICLE_SLUGS, ['ai-character-sheet-generator', 'how-to-create-consistent-ai-characters']);
+  assert.match(owner, /new Set\(CHARACTER_STUDIO_ARTICLE_SLUGS\)/);
   assert.match(owner, /if \(!CHARACTER_ARTICLES\.has\(canonicalSlug\)\) return null/);
   assert.match(owner, /<Suspense fallback=\{<CharacterStudioRecastExamples films=\{\[\]\}/);
   assert.match(owner, /<CharacterStudioPublicFilms locale=\{locale\} showLink showStills/);

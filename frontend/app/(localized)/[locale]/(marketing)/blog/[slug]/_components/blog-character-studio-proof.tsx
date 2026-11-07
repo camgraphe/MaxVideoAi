@@ -2,11 +2,12 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
+import { CHARACTER_STUDIO_ARTICLE_SLUGS } from '@/lib/character-studio-marketing';
 import { CharacterStudioPublicFilms } from '@/components/tools/character-builder/landing/CharacterStudioPublicFilms';
 import { CharacterStudioRecastExamples } from '@/components/tools/character-builder/landing/CharacterStudioRecastExamples.client';
 import { CHARACTER_STUDIO_ART } from '@/components/tools/character-builder/landing/character-studio-marketing-assets';
 
-const CHARACTER_ARTICLES = new Set(['ai-character-sheet-generator', 'how-to-create-consistent-ai-characters']);
+const CHARACTER_ARTICLES = new Set(CHARACTER_STUDIO_ARTICLE_SLUGS);
 export const isCharacterStudioArticle = (slug: string) => CHARACTER_ARTICLES.has(slug);
 const ACTIONS = {
   en: { create: 'Create my character', watch: 'See Recast examples' },

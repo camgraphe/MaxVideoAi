@@ -1,3 +1,15 @@
+export const MAX_MARKETING_IMPORT_BODY_BYTES = 2 * 1024 ** 2;
+
+export type MarketingImportPreview = {
+  videoId: string;
+  name: string;
+  durationSec: number;
+  resolution: string | null;
+  width: number | null;
+  height: number | null;
+  fileCount: number;
+};
+
 export type MarketingMediaFile = {
   sourceUrl: string;
   url: string;
@@ -13,6 +25,7 @@ export type MarketingPlacement = {
 };
 export type MarketingMediaItem = {
   videoId: string;
+  sourceKind: 'job' | 'import';
   state: 'copying' | 'ready' | 'failed' | 'deleting' | 'deleted';
   visibility: 'public' | 'private';
   prompt: string;
