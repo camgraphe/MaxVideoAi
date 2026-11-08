@@ -17,6 +17,14 @@ const originalBytes=70*1024*1024;
 const measured={source:'probe' as const,durationSec:20,width:320,height:180,hasAudio:true};
 const permission=(error:unknown)=>error instanceof StudioTaskStop&&error.reason==='permission';
 
+test('historical v3 video fingerprints retain their qualification-independent identity',async t=>{
+  const f=await sourceFixture(t),actor=await f.actor(),ref=await f.video(actor.userId);
+  const base=f.input(),input={...base,attachments:[ref],taskBudget:{...base.taskBudget,policyVersion:'studio-task-budget-2026-10-29-v3' as const}};
+  const before=await studioTaskSourceFingerprint(actor,input,f.db);
+  await f.pool.query('UPDATE media_assets SET width=320,height=180 WHERE public_id=$1',[assetId]);
+  assert.equal(await studioTaskSourceFingerprint(actor,input,f.db),before);
+});
+
 async function sourceFixture(t:Parameters<typeof studioTaskFixture>[0]) {
   const f=await studioTaskFixture(t);
   await f.pool.query(`CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,url text,status text,metadata jsonb,

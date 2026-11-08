@@ -20,7 +20,7 @@ test('a modern pending reply retains its original review baseline through real w
  const {getDb}=await import('../frontend/src/lib/db');
  t.after(async()=>{await getDb().end();if(previousDatabase===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previousDatabase;if(previousEnabled===undefined)delete process.env.STUDIO_ASSISTANCE_ENABLED;else process.env.STUDIO_ASSISTANCE_ENABLED=previousEnabled;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','96_milo_lite_output_allowance.sql','92_milo_reply_workers.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const {chooseStudioAssistance,readStudioAssistanceStatus}=await import('../frontend/src/server/studio/assistance-ledger');
  const {studioAssistancePolicy}=await import('../frontend/src/server/studio/assistance-policy');
  await chooseStudioAssistance('owner',{action:'select_sol',expectedRevision:0},studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'}));

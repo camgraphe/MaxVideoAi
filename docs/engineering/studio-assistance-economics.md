@@ -32,7 +32,7 @@ the composer open the existing settings and credits dialog; opening it does not
 select a model or buy credits. Max maps to GPT‑6.1 Sol and remains the default with
 the existing 500 included credits. Lite maps to GPT‑6 Luna/high, Standard to GPT‑6.1 Terra/high, and Max to GPT‑6.1 Sol/xhigh. Standard and Max share these credit lots at their model-specific rates. These public mode names do not rename stored task
 profiles: there is no public Quick/Standard/Complex work-profile picker. New
-requests use the internal Standard profile with the level’s frozen reasoning and 6,000-token output allowance; stored profiles and
+requests use the internal Standard profile with the level’s frozen reasoning and output allowance (runtime v2: Lite 32,000, Standard/Max 6,000 tokens); stored profiles and
 approvals remain valid. A Lite task, including a funding fallback, offers an
 Explore Max link. Assistance details stay in the dialog rather than an extra
 explanatory sentence below the composer.
@@ -162,7 +162,7 @@ and historical financial evidence are unaffected.
 GPT‑6 Luna has **no monthly per-account quota**. The existing owned conversation
 lease admits one active message per account. Reservation also refuses another
 request while a Luna call has unresolved usage. Its generous context bound is
-128,000 input tokens; new non-task runtimes allow 6,000 output tokens and four calls per message. Historical snapshots retain 2,200 output tokens. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
+128,000 input tokens; runtime v2 allows 32,000 output tokens for Lite and 6,000 for Standard/Max, with four calls per message. Historical snapshots retain their 2,200/6,000-token bounds. Complex creative direction may recommend GPT‑6.1 Sol; a change requires
 an explicit customer choice. New Luna task requests use the current high-reasoning
 policy and 6,000 output-token allowance. Historical task and fallback allowances
 retain their frozen policy. The sponsored campaign remains an operational availability gate, with
@@ -203,7 +203,7 @@ external assistant's plan/limits apply. They do not install, authorize or spend.
 2. The Responses input-token-count endpoint counts the exact prospective payload,
    including image inputs and tool schemas. This is a non-generative preflight,
    not a second assistant response. A counting error stops before reservation or
-   model dispatch. Input must be at most 272,000 tokens; output is capped by the frozen runtime (historically 2,200; new levels 6,000).
+   model dispatch. Input must be at most 272,000 tokens; output is capped by the frozen runtime (historically 2,200/6,000; runtime v2 gives Lite 32,000 while Standard/Max remain at 6,000).
    Native requests use `service_tier=default`, global OpenAI processing, no SDK
    retries, no built-in billable tools, and at most four dispatched responses per client message, including retries.
 3. Each model dispatch requires a committed conversation-response checkpoint and

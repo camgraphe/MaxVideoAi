@@ -18,7 +18,7 @@ test('composer analysis preserves tiers, shares credits, reuses observations and
   await pg.pool.query(`CREATE TABLE studio_projects(id text PRIMARY KEY,user_id text NOT NULL,deleted_at timestamptz);
     CREATE TABLE job_outputs(id text PRIMARY KEY,job_id text,user_id text,kind text,url text,mime_type text,status text);
     CREATE TABLE media_assets(id text PRIMARY KEY,public_id text,user_id text,kind text,url text,mime_type text,status text,original_name text,deleted_at timestamptz,metadata jsonb,source_job_id text,source_output_id text,thumb_url text,preview_url text,size_bytes bigint);`);
-  for(const name of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','64_studio_media_analysis.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','89_composer_reference_analysis.sql'])await pg.pool.query(readFileSync('neon/migrations/'+name,'utf8'));
+  for(const name of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','64_studio_media_analysis.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','96_milo_lite_output_allowance.sql','89_composer_reference_analysis.sql'])await pg.pool.query(readFileSync('neon/migrations/'+name,'utf8'));
   const user='composer-owner',session=randomUUID();
   const assistancePolicy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
   const policy={version:'context-analysis-v1',processingNanoUsdPerSecond:100_000,marginPercent:1,video:{maxInputTokens:12000,maxOutputTokens:2200},audio:{maxInputTokens:4096,maxOutputTokens:1200,rateVersion:'qualified-audio',textInputNanoUsd:2500,audioInputNanoUsd:32000,textOutputNanoUsd:10000}};

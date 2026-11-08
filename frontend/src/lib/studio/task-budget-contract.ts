@@ -3,8 +3,9 @@ import {studioAssistantModelSchema,studioMiloRuntime,type StudioAssistantModel} 
 
 export const STUDIO_TASK_LEGACY_POLICY_VERSION='studio-task-budget-2026-10-06-v1';
 export const STUDIO_TASK_V2_POLICY_VERSION='studio-task-budget-2026-10-11-v2';
-export const STUDIO_TASK_POLICY_VERSION='studio-task-budget-2026-10-29-v3';
-const policyVersion=z.enum([STUDIO_TASK_LEGACY_POLICY_VERSION,STUDIO_TASK_V2_POLICY_VERSION,STUDIO_TASK_POLICY_VERSION]);
+export const STUDIO_TASK_V3_POLICY_VERSION='studio-task-budget-2026-10-29-v3';
+export const STUDIO_TASK_POLICY_VERSION='studio-task-budget-2026-11-08-v4';
+const policyVersion=z.enum([STUDIO_TASK_LEGACY_POLICY_VERSION,STUDIO_TASK_V2_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION,STUDIO_TASK_POLICY_VERSION]);
 export type StudioTaskPolicyVersion=z.infer<typeof policyVersion>;
 export const STUDIO_TASK_MAX_CALLS=24;
 export const STUDIO_TASK_MAX_CREDITS=2000;
@@ -29,6 +30,7 @@ export function studioTaskProfileForModel(selection:StudioTaskSelection,model:St
     const runtime=studioMiloRuntime(model);
     return {...profile,reasoning:runtime.reasoning,maxOutputTokens:runtime.maxOutputTokens};
   }
+  if(reviewed.policyVersion===STUDIO_TASK_V3_POLICY_VERSION)return {...profile,reasoning:model==='gpt-6.1-sol'?'xhigh' as const:'high' as const,maxOutputTokens:6000 as const};
   if(model==='gpt-6.1-terra')throw new Error('Standard requires the current task policy.');
   return model==='gpt-6-luna'&&reviewed.policyVersion===STUDIO_TASK_V2_POLICY_VERSION
     ? {...profile,reasoning:'high' as const,maxOutputTokens:6000 as const}

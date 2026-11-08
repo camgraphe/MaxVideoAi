@@ -67,7 +67,7 @@ test('orphan reconciliation refunds missing media without refunding products own
     assert.equal((await run()).refunded,0,'A second cron run cannot create duplicate refunds.');
   });
   await t.test('real pack purchases retain both wallet debit and credits, including legacy receipt ownership',async()=>{
-    for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql'])await pg.pool.query(readFileSync(`neon/migrations/${file}`,'utf8'));
+    for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','96_milo_lite_output_allowance.sql'])await pg.pool.query(readFileSync(`neon/migrations/${file}`,'utf8'));
     const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
     for(const identity of ['actual','prefix-only','product-only','ledger-only']){
       const userId=`synthetic-pack-${identity}`;

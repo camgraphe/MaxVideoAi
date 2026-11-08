@@ -29,7 +29,7 @@ test('generic refunds protect Milo packs and preserve ordinary wallet refunds', 
   await createPaidGenerationTestSchema(pg.pool);
   for (const file of [
     '54_studio_assistance_ledger.sql', '62_studio_assistance_resolutions.sql',
-    '63_studio_assistance_credits.sql', '86_milo_three_levels.sql', '87_milo_runtime_bounds.sql',
+    '63_studio_assistance_credits.sql', '86_milo_three_levels.sql', '87_milo_runtime_bounds.sql','96_milo_lite_output_allowance.sql',
   ]) {
     await pg.pool.query(readFileSync(`neon/migrations/${file}`, 'utf8'));
   }
