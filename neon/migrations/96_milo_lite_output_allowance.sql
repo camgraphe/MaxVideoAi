@@ -1,7 +1,7 @@
 -- Apply explicitly after 87, and after 88 when Studio tasks exist. Existing
 -- runtime snapshots, task profiles, calls, tariffs and balances are unchanged.
 ALTER TABLE studio_assistance_calls DROP CONSTRAINT studio_assistance_calls_output_token_bound_check;
-ALTER TABLE studio_assistance_calls ADD CONSTRAINT studio_assistance_calls_output_token_bound_check CHECK(output_token_bound BETWEEN 0 AND 32000);
+ALTER TABLE studio_assistance_calls ADD CONSTRAINT studio_assistance_calls_output_token_bound_check CHECK(output_token_bound BETWEEN 0 AND CASE WHEN model='gpt-6-luna' THEN 32000 ELSE 6000 END);
 
 CREATE OR REPLACE FUNCTION enforce_studio_task_call_capacity() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE task record; segment_limit integer; has_task boolean:=false; frozen jsonb; owned boolean:=false; expected_output integer;

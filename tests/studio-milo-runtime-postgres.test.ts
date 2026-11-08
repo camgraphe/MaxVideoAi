@@ -16,6 +16,9 @@ test('all three Studio task levels persist and settle the exact runtime; histori
   const leaseId=randomUUID();await f.pool.query("UPDATE studio_tasks SET state='running',worker_id=$2,lease_expires_at=now()+interval '3 minutes',deadline_at=now()+interval '5 minutes' WHERE request_id=$1",[input.requestId,leaseId]);
   const call=await reserveStudioAssistanceCall({...actor,requestId:input.requestId,leaseId,index:0,inputTokens:1000,outputTokens:bound},f.policy);
   assert.equal(call.output_token_bound,bound);assert.equal(call.model,model);
+  if(model==='gpt-6-luna')for(const forgedModel of ['gpt-6.1-sol','gpt-6.1-terra']){
+    await assert.rejects(f.pool.query(`INSERT INTO studio_assistance_calls SELECT (jsonb_populate_record(NULL::studio_assistance_calls,to_jsonb(c)||jsonb_build_object('id',$2::text,'model',$3::text,'response_index',1))).* FROM studio_assistance_calls c WHERE c.id=$1`,[call.id,randomUUID(),forgedModel]),/check|bound/i,'A Luna task must not admit expanded output for Sol or Terra.');
+  }
   assert.equal(await settleStudioAssistanceCall(call.id,actor.userId,{id:randomUUID(),model,service_tier:'default',usage:{input_tokens:1000,input_tokens_details:{cached_tokens:0},output_tokens:model==='gpt-6-luna'?9000:4000,output_tokens_details:{reasoning_tokens:model==='gpt-6-luna'?7000:3000}}}),true);
  }
  const actor=await f.actor(),service=createStudioTaskService(actor,{enabled:true,assistancePolicy:f.policy}),input=f.input();
