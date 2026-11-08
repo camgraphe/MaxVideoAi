@@ -111,6 +111,12 @@ export function getKnownGenerationFailureMessage(params: {
   if (outputImage) return outputImage;
   const text = copy[localeKey(params.locale)];
   const message = params.message?.trim() ?? '';
+  const contentChecker = /^(?:([a-z_]+(?:\.\d+)*):\s*)?The content could not be processed because it contained material flagged by a content checker\.$/i.exec(message);
+  if (contentChecker) {
+    if (contentChecker[1]?.toLowerCase() === 'prompt') return text.promptBlocked;
+    if (/^(?:image_url|image_urls|reference_image_urls)(?:\.\d+)?$/i.test(contentChecker[1] ?? '')) return text.referenceBlocked;
+    return text.safety;
+  }
   if (/^Green net check rejected text \(input\)$/i.test(message)) return text.promptBlocked;
   if (/^Green net check rejected image \(input\)$/i.test(message)) return text.referenceBlocked;
   if (['reference_link_unsupported', 'IMAGE_HOST_NOT_ALLOWED'].includes(params.failureCode ?? '')
