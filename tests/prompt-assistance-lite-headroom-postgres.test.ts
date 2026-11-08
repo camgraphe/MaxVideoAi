@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+import test from 'node:test';
+import {getDb} from '../frontend/src/lib/db';
+import {chooseStudioAssistance} from '../frontend/src/server/studio/assistance-ledger';
+import {studioAssistancePolicy} from '../frontend/src/server/studio/assistance-policy';
+import {sendPromptAssistance as admit} from '../frontend/src/server/prompt-assistance/service';
+import {sendPromptAssistance} from './helpers/prompt-assistance-service';
+import {startDisposablePostgres,createPaidGenerationTestSchema} from './helpers/disposable-postgres';
+
+test('Lite completes and settles beyond the old output ceiling without retry, debit or replay drift',async t=>{
+  const pg=await startDisposablePostgres('lite-headroom'),previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+  t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
+  await createPaidGenerationTestSchema(pg.pool);
+  for(const name of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql','96_milo_lite_output_allowance.sql'])await pg.pool.query(readFileSync('neon/migrations/'+name,'utf8'));
+  const policy=studioAssistancePolicy({STUDIO_ASSISTANCE_ENABLED:'true'});
+  await chooseStudioAssistance('owner',{action:'select_luna',expectedRevision:0},policy);
+  const input={sessionId:randomUUID(),requestId:randomUUID(),draftRevision:2,locale:'en' as const,message:'Complete the full creative direction.',draft:{surface:'video' as const,engineId:'seedance-2-5',mode:'t2v' as const,target:'prompt' as const,text:'A dancer.',settings:{durationSec:5},references:[]}};
+  const context={surface:'video',model:{id:'seedance-2-5',label:'Seedance 2.5'},mode:'t2v',target:'prompt',maxChars:20000,capabilities:{},guide:{},references:[],referencePerception:'metadata_only'};
+  let calls=0;
+  const deps={policy,buildContext:async()=>context as never,count:async()=>22168,create:async(params:{model?:string|null;max_output_tokens?:number|null;reasoning?:{effort?:string|null}|null})=>{
+    calls++;assert.equal(params.model,'gpt-6-luna');assert.equal(params.max_output_tokens,32000);assert.equal(params.reasoning?.effort,'high');
+    return {id:'lite-complete',model:'gpt-6-luna',service_tier:'default',status:'completed',output:[],output_text:JSON.stringify({kind:'conversation',reply:'The complete creative direction, including the final shot.',text:null,analysisRequest:null}),usage:{input_tokens:22168,input_tokens_details:{cached_tokens:0},output_tokens:9000,output_tokens_details:{reasoning_tokens:7000}}} as never;
+  }};
+  const result=await sendPromptAssistance('owner',input,deps);
+  assert.equal(result.state,'complete');assert.match(result.reply?.reply??'',/including the final shot/);
+  const saved=(await pg.pool.query('SELECT * FROM studio_assistance_calls WHERE request_id=$1',[input.requestId])).rows[0];
+  assert.equal(saved.output_token_bound,32000);assert.equal(saved.state,'settled');assert.equal(saved.charged_cents,0);
+  assert.equal(saved.usage_facts.outputTokens,9000);assert.equal(Number(saved.reserved_nano_usd),18771000);
+  assert.equal((await sendPromptAssistance('owner',input,deps)).state,'complete');assert.equal(calls,1);
+  assert.equal((await pg.pool.query("SELECT count(*)::int n FROM app_receipts WHERE type='charge'")).rows[0].n,0);
+  const before=(await pg.pool.query('SELECT to_jsonb(c) AS data FROM studio_assistance_calls c')).rows;
+  await pg.pool.query(readFileSync('neon/migrations/96_milo_lite_output_allowance.sql','utf8'));
+  assert.deepEqual((await pg.pool.query('SELECT to_jsonb(c) AS data FROM studio_assistance_calls c')).rows,before,'Reapplying the migration cannot rewrite settled evidence.');
+  const pending={...input,requestId:randomUUID()};await admit('owner',pending,{policy,workersEnabled:true,executionOwner:'local'});
+  const row=(await pg.pool.query('SELECT lease_id FROM prompt_assistance_requests WHERE request_id=$1',[pending.requestId])).rows[0];
+  const insert=(changes:Record<string,unknown>)=>pg.pool.query(`INSERT INTO studio_assistance_calls SELECT (jsonb_populate_record(NULL::studio_assistance_calls,to_jsonb(c)||$2::jsonb)).* FROM studio_assistance_calls c WHERE c.id=$1`,[saved.id,JSON.stringify({id:randomUUID(),request_id:pending.requestId,lease_id:row.lease_id,state:'reserved',response_id:null,returned_model:null,service_tier:null,usage_facts:null,provider_min_nano_usd:null,provider_max_nano_usd:null,tariff_basis_nano_usd:null,charged_cents:null,settled_at:null,...changes})]);
+  await assert.rejects(insert({output_token_bound:32001}),/frozen Milo runtime policy/i);
+  await assert.rejects(insert({lease_id:randomUUID()}),/owned request lease/i);
+  await assert.rejects(insert({user_id:'foreign'}),/frozen Milo runtime|owned/i);
+  await chooseStudioAssistance('legacy-owner',{action:'select_luna',expectedRevision:0},policy);
+  const legacy={...input,sessionId:randomUUID(),requestId:randomUUID()};
+  await pg.pool.query(`INSERT INTO studio_assistance_turns SELECT (jsonb_populate_record(NULL::studio_assistance_turns,to_jsonb(t)||jsonb_build_object('user_id','legacy-owner','project_id',$2::text,'request_id',$3::text,'tariff_snapshot',jsonb_set(t.tariff_snapshot,'{runtime}','{"version":"milo-levels-2026-10-29-v1","reasoning":"high","maxOutputTokens":6000}'::jsonb)))).* FROM studio_assistance_turns t WHERE t.request_id=$1`,[input.requestId,'composer:'+legacy.sessionId,legacy.requestId]);
+  await admit('legacy-owner',legacy,{policy,workersEnabled:true,executionOwner:'local'});
+  const oldLease=(await pg.pool.query('SELECT lease_id FROM prompt_assistance_requests WHERE request_id=$1',[legacy.requestId])).rows[0].lease_id;
+  await assert.rejects(insert({user_id:'legacy-owner',project_id:'composer:'+legacy.sessionId,request_id:legacy.requestId,lease_id:oldLease}),/frozen Milo runtime policy/i,'An old 6,000-token approval must not admit a 32,000-token call.');
+});

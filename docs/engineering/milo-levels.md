@@ -1,4 +1,28 @@
-# Shared Milo levels — 2026-10-29
+# Shared Milo levels
+
+## Lite output headroom — 8 November 2026
+
+New runtime `milo-levels-2026-11-08-v2` keeps Luna/high and gives Lite 32,000 total
+output tokens, including reasoning. Standard/Terra/high and Max/Sol/xhigh retain
+6,000. New task policy `studio-task-budget-2026-11-08-v4` freezes the same values.
+Saved runtime v1 and task policies v1–v3 retain their original allowances and
+video source fingerprints. Existing sponsored fallback retains its recorded cap.
+
+This fixes the observed 6,000-token Luna responses that ended before a complete
+visible answer. [OpenAI documents](https://developers.openai.com/api/docs/guides/reasoning)
+that the output bound includes reasoning and can be exhausted before visible
+text; it recommends initial headroom of at least 25,000 total tokens. The larger
+allowance remains bounded, with no automatic retry or change to reply/target
+character limits, customer-credit ceilings, tariffs, call counts or deadlines.
+
+Apply only pending migration **96** after 87 (and 88 when tasks exist), before
+deploying the new runtime/workers. It extends the existing call guard for exact
+owned v2 Luna requests and appends v4 task validation; old snapshots, calls and
+balances are not rewritten. Apply it as a transaction. A v4 task refuses dispatch
+without its explicit migration. Preserve readers for new 32,000-token records on
+rollback; an old 6,000-token worker cannot safely own those new requests.
+
+## Shared levels introduced on 29 October 2026
 
 Studio and the video/image/audio prompt assistants use the same account, credit lots and settings dialog. Clicking Milo opens that dialog directly. Reading it or inspecting a tier does not select a model, buy credits or start a provider call.
 
@@ -12,7 +36,7 @@ Canonical ownership: `assistance-contract.ts` defines levels, tariffs and the fr
 
 The same 500 included monthly credits and purchased packs fund Standard and Max. Switching models retains purchased-usage pauses and all balances. A pack purchase retains the existing separate confirmation, frozen revision/tariff and idempotency key. Shared receipts say “Milo credit pack”; historical receipts are unchanged. Existing storage names (`included_sol`, `paid_sol`, `STUDIO_SOL_PACK_CENTS`) remain compatibility identifiers, not separate pools.
 
-New task policy `studio-task-budget-2026-10-29-v3` freezes the model's reasoning and 6000 output tokens (including reasoning), keeping existing call, deadline and customer-credit ceilings. New non-task turns store `milo-levels-2026-10-29-v1` inside the immutable tariff snapshot. Composer requests load that snapshot rather than consulting the current account selection. Historical v1/v2 tasks and turns without the new runtime keep their original bounds. Provider errors and unknown usage retain existing recovery semantics; no blind retry or silent model downgrade is added. Existing final-credit completion and sponsored Luna fallback remain bounded.
+The October task policy `studio-task-budget-2026-10-29-v3` froze the model's reasoning and 6000 output tokens (including reasoning), keeping existing call, deadline and customer-credit ceilings. Its non-task turns stored `milo-levels-2026-10-29-v1` inside the immutable tariff snapshot. Composer requests load that snapshot rather than consulting the current account selection. Historical v1/v2 tasks and turns without the new runtime keep their original bounds. Provider errors and unknown usage retain existing recovery semantics; no blind retry or silent model downgrade is added. Existing final-credit completion and sponsored Luna fallback remain bounded.
 
 The pinned SDK lacks `xhigh` in its generated type. `assistance-reasoning.ts` narrowly adapts that transport type; the actual API payload remains `xhigh`. Upgrade the SDK independently after compatibility verification.
 

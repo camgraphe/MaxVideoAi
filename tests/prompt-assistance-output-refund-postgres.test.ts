@@ -22,7 +22,7 @@ test('completed application-invalid Milo output restores customer credits and pr
  const pg=await startDisposablePostgres('milo-output-refund'),old=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
  t.after(async()=>{await getDb().end();if(old===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=old;await pg.cleanup();});
  await createPaidGenerationTestSchema(pg.pool);
- for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
+ for(const file of ['54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','85_prompt_assistance.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','96_milo_lite_output_allowance.sql','92_milo_reply_workers.sql','93_milo_output_credit_refunds.sql'])await pg.pool.query(readFileSync('neon/migrations/'+file,'utf8'));
  const userId=randomUUID(),input=request();
  const result=await sendPromptAssistance(userId,input,{policy,buildContext:async(user,input)=>buildPromptAssistanceContext(user,input,{catalog}),count:async()=>1000,create:async()=>response({kind:'conversation',reply:'Invalid tagged advice.',text:'Must not become a replacement.',analysisRequest:null})});
  assert.equal(result.state,'failed');

@@ -1,3 +1,4 @@
+import {STUDIO_TASK_POLICY_VERSION,STUDIO_TASK_V3_POLICY_VERSION} from '@/lib/studio/task-budget-contract';
 import {createCharacterStudioIntegration} from '@/server/character-studio/integration';
 import {prepareStudioConversationRecast,type StudioCharacterFactory} from './conversation-character';
 import {buildAssistantReviewContext} from '../assistant-review/context';
@@ -260,7 +261,7 @@ export async function runStudioImageActions(options: {
       if (!params) throw new AgentApiError('INTERNAL_ERROR','Studio is missing its model request bounds.');
       if(lunaFallback){
         params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);
-        params.reasoning={effort:options.taskExecution?.policyVersion==='studio-task-budget-2026-10-29-v3'?'high':params.reasoning?.effort==='low'?'low':'medium'};
+        params.reasoning={effort:[STUDIO_TASK_V3_POLICY_VERSION,STUDIO_TASK_POLICY_VERSION].includes(options.taskExecution?.policyVersion??'')?'high':params.reasoning?.effort==='low'?'low':'medium'};
         checkpointOptions?.prepareLunaInput?.();
         params.instructions=(params.instructions??'')+'\nMilo has continued this task in Lite (GPT-6 Luna) because the next credit-funded call could not be funded. Continue the remaining client request from the saved work. This assistance change does not authorize a different generation model, a credit purchase or a media confirmation.';
       }
@@ -281,7 +282,7 @@ export async function runStudioImageActions(options: {
           ||typeof action.reason!=='string'||!['included_exhausted','paid_budget_exhausted'].includes(action.reason))throw error;
         // The declined reservation created no response/call. Retry this same step once with Luna.
         currentModel='gpt-6-luna';lunaFallback={solBounds};
-        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:options.taskExecution?.policyVersion==='studio-task-budget-2026-10-29-v3'?'high':params.reasoning?.effort==='low'?'low':'medium'};
+        params.model=currentModel;params.max_output_tokens=Math.min(params.max_output_tokens??2200,2200);params.reasoning={effort:[STUDIO_TASK_V3_POLICY_VERSION,STUDIO_TASK_POLICY_VERSION].includes(options.taskExecution?.policyVersion??'')?'high':params.reasoning?.effort==='low'?'low':'medium'};
         return checkpoint();
       }
     },

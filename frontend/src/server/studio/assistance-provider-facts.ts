@@ -1,4 +1,4 @@
-import type {StudioAssistantModel} from '@/lib/studio/assistance-contract';
+import {MILO_LITE_MAX_OUTPUT_TOKENS,type StudioAssistantModel} from '@/lib/studio/assistance-contract';
 export const STUDIO_PROVIDER_RATE_VERSION = 'openai-standard-global-2026-10-03';
 export const STUDIO_TERRA_RATE_VERSION = 'openai-terra-standard-global-2026-10-29';
 export function studioProviderRateVersion(model:string){return model==='gpt-6.1-terra'?STUDIO_TERRA_RATE_VERSION:STUDIO_PROVIDER_RATE_VERSION;}
@@ -28,6 +28,6 @@ export function readStudioUsage(usage: unknown, model: unknown, serviceTier: unk
     providerMinNanoUsd,providerMaxNanoUsd,tariffBasisNanoUsd: common + noncached * rate.write};
 }
 export function studioProviderReservation(model: StudioAssistantModel, inputTokens: number, outputTokens: number,approvedOutputBound=2200) {
-  if (!count(inputTokens) || inputTokens > 272000 || !count(outputTokens) || !count(approvedOutputBound)||approvedOutputBound>6000||outputTokens>approvedOutputBound) throw new Error('Invalid Studio token bounds');
+  if (!count(inputTokens) || inputTokens > 272000 || !count(outputTokens) || !count(approvedOutputBound)||approvedOutputBound>(model==='gpt-6-luna'?MILO_LITE_MAX_OUTPUT_TOKENS:6000)||outputTokens>approvedOutputBound) throw new Error('Invalid Studio token bounds');
   return inputTokens * rates[model].write + outputTokens * rates[model].output;
 }
