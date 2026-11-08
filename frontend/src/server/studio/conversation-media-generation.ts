@@ -111,7 +111,7 @@ async function requireStudioMediaSource(actor: StudioGenerationActor, source: To
   catch {throw new AgentApiError('REFERENCE_INVALID', 'The selected media is no longer available.');}
 }
 
-async function promoteStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, dependencies: StudioMotionSourceDependencies,expected?:ResolvedReference, verifyPromotionUrl=false): Promise<{assetId:string; promoted?:{storageUrl:string;originalName?:string|null}}> {
+export async function promoteStudioMediaSource(actor: StudioGenerationActor, source: ToolAssetRef, dependencies: StudioMotionSourceDependencies,expected?:ResolvedReference, verifyPromotionUrl=false): Promise<{assetId:string; promoted?:{storageUrl:string;originalName?:string|null}}> {
   if (source.type === 'asset') return {assetId:source.assetId};
   // Explicit creation action uses the existing idempotent library-save owner, preserving original output provenance.
   const asset = await (dependencies.saveOutput ?? saveJobOutputToLibrary)({userId: actor.userId, jobId: source.jobId, outputId: source.outputId});

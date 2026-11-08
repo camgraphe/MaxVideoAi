@@ -37,7 +37,7 @@ export const conversationSelectionFields = selection;
 export const imageSelectionFields = {
   prompt: z.string().min(1).max(12000), aspectRatio: conversationAspectRatioSchema,
   ...selection, mode: z.enum(['t2i','i2i']).nullable().optional(),
-  references: z.array(conversationReferenceSchema.refine(reference => reference.ref.type === 'asset', 'Attach a saved library image.')).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).nullable().optional(),
+  references: z.array(conversationReferenceSchema).max(STUDIO_CONVERSATION_MAX_ATTACHMENTS).nullable().optional(),
 };
 const imageSelectionObject = z.object(imageSelectionFields);
 export const imageSelectionSchema = imageSelectionObject.strict().superRefine(validateStudioImageReferences);
@@ -69,5 +69,5 @@ export function conversationReferencesProperties(jobOutputs: boolean) {
 }
 export const imageSelectionProperties = {
   prompt: conversationCreationPromptProperty, aspectRatio: {type: 'string'}, ...conversationSelectionProperties,
-  mode: {type: ['string','null'], enum: ['t2i','i2i',null]}, references: conversationReferencesProperties(false),
+  mode: {type: ['string','null'], enum: ['t2i','i2i',null]}, references: conversationReferencesProperties(true),
 };

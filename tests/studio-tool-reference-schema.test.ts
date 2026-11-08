@@ -87,6 +87,26 @@ test('context enrichment never mutates or freezes the shared original tool prope
   for (const branch of videoAssetBranches(videoTool.properties)) assert.equal(branch.properties?.assetId?.enum, undefined);
 });
 
+test('image_prepare accepts exact native image outputs alongside scoped attachments and without any attachment', () => {
+  const tool = scopedTools.find(tool => tool.name === 'image_prepare')!;
+  const output = {type: 'job-output', kind: 'image', jobId: 'accepted-job', outputId: 'accepted-job:image:0'};
+  for (const current of [[], [resolved(imageA)]]) {
+    const validate = compile(studioToolReferenceProperties(tool.name, tool.properties, current));
+    const base = parameters('image_prepare', []);
+    assert.equal(validate({...base, references: [{ref: output, role: 'reference', slot: null}]}).valid, true);
+    for (const kind of ['video', 'audio']) {
+      assert.equal(validate({...base, references: [{ref: {...output, kind}, role: 'reference', slot: null}]}).valid, false);
+    }
+    assert.equal(validate({...base, references: [{ref: {type: 'job-output', kind: 'image', outputId: 'missing-job'}, role: 'reference', slot: null}]}).valid, false);
+  }
+  const validate = compile(studioToolReferenceProperties(tool.name, tool.properties, [resolved(imageA)]));
+  assert.equal(validate({...parameters('image_prepare', [imageA]), references: [
+    {ref: output, role: 'reference', slot: null},
+    {ref: asset(imageA), role: 'reference', slot: null},
+  ]}).valid, true);
+  assert.equal(validate(parameters('image_prepare', [foreign])).valid, false);
+});
+
 test('enriched properties and their nested enum are detached and immutable', () => {
   const tool = scopedTools.find(tool => tool.name === 'image_prepare')!;
   const original = structuredClone(tool.properties);
