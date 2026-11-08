@@ -95,3 +95,32 @@ test('bare Kling 422 remains an unknown failure rather than an invented content 
   assert.equal(guidance.getKnownGenerationFailureMessage({ message: 'Unexpected status code: 422', locale: 'fr' }), null);
   assert.doesNotMatch(toUserFacingFailureMessage('Unexpected status code: 422'), /safety|copyright|audio|reference/i);
 });
+
+for (const [locale, prompt, reference, wallet] of [
+  ['en', /prompt was blocked/i, /reference image was blocked/i, /returned to your wallet/i],
+  ['fr', /prompt a été bloqué/i, /image de référence a été bloquée/i, /recrédit/i],
+  ['es', /prompt ha sido bloqueado/i, /imagen de referencia ha sido bloqueada/i, /devuelto/i],
+] as const) {
+  test(`content-checker refusals retain the recorded input target in ${locale}`, () => {
+    const reason = 'The content could not be processed because it contained material flagged by a content checker.';
+    for (const [field, target] of [
+      ['prompt', prompt],
+      ['image_url', reference],
+      ['image_urls.0', reference],
+      ['reference_image_urls.0', reference],
+    ] as const) {
+      const message = `${field}: ${reason}`;
+      assert.match(guidance.getKnownGenerationFailureMessage({message, locale}) ?? '', target);
+      const displayed = getWorkspaceGenerationFailureMessage({message, paymentStatus:'paid_wallet'}, workspaceCopy, {locale}) ?? '';
+      assert.match(displayed, target);
+      assert.doesNotMatch(displayed, /image_url|content checker|fal\.ai/i);
+      assert.doesNotMatch(displayed, wallet);
+    }
+    for (const message of [reason, `unknown_field: ${reason}`]) {
+      const displayed = guidance.getKnownGenerationFailureMessage({message, locale}) ?? '';
+      assert.match(displayed, /safety|sécurité|seguridad/i);
+      assert.doesNotMatch(displayed, prompt);
+      assert.doesNotMatch(displayed, reference);
+    }
+  });
+}

@@ -63,6 +63,14 @@ test('persisted Studio quote facts stay exact, bounded, isolated and available t
     assert.equal((await read())?.walletRefund,undefined,'A partial receipt must not imply the full wallet recredit.');
     await pg.pool.query("UPDATE app_receipts SET amount_cents=48 WHERE job_id='failed-facts' AND type='refund'");
     assert.deepEqual((await read())?.walletRefund,{amountCents:48,currency:'USD',formattedAmount:'$0.48'});
+    for (const [field,target] of [['prompt',/prompt.*blocked/i],['image_url',/reference image.*blocked/i],['reference_image_urls.0',/reference image.*blocked/i]] as const) {
+      await pg.pool.query("UPDATE app_jobs SET message=$1 WHERE job_id='failed-facts'",[`${field}: The content could not be processed because it contained material flagged by a content checker.`]);
+      const facts=await read();
+      assert.match(facts?.failure?.message??'',target,'Milo must receive the recorded rejected input, rather than a generic failure.');
+      assert.equal(facts?.quoteState,'accepted');
+      assert.equal(facts?.status,'failed');
+      assert.deepEqual(facts?.walletRefund,{amountCents:48,currency:'USD',formattedAmount:'$0.48'});
+    }
     await pg.pool.query("UPDATE app_jobs SET message='PRIVATE_PROVIDER request_id=PRIVATE_TOKEN https://private.test' WHERE job_id='failed-facts'");
     const unknown=await read();
     assert.match(unknown?.failure?.message??'',/could not complete/i);

@@ -1,5 +1,22 @@
 # Studio conversationnel : raccord aux services MaxVideoAI
 
+## Reprise après refus de contenu — 8 novembre 2026
+
+Les refus historiques `prompt`, `image_url` et `reference_image_urls.0` du content
+checker passent par `generation-failure-messages.ts`, avec les messages sûrs
+localisés existants. Une cible absente ou inconnue reste un refus sans cible
+précisée ; un simple HTTP 422 ne prouve pas un refus de contenu. Les faits Studio
+conservent ainsi la distinction entre prompt, référence et sortie générée sans
+exposer le texte fournisseur privé.
+
+Les instructions conditionnelles de reprise demandent à Milo d'expliquer le
+motif enregistré puis de proposer des choix adaptés : modifier/remplacer la
+référence, revoir le prompt, ou comparer un autre moteur compatible après examen
+du refus avec le client. Les capacités et prix viennent des outils courants ;
+aucune permissivité ni acceptation n'est promise. Le choix du client précède le
+changement ; toute nouvelle génération garde son devis exact et sa confirmation.
+Le remboursement n'est annoncé que sur preuve du reçu existant.
+
 ## Retouche directe des images générées — 8 novembre 2026
 
 `image_prepare` accepte les images jointes et les identités exactes `job-output`
