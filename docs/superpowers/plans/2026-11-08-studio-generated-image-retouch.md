@@ -32,12 +32,12 @@
 
 **Interfaces:** Preserve service re-exports of imageRequestFromDraft and imageReferenceFingerprintFromReview. Add validateStudioImageRequest returning a read-only validated selection with materialize() for the canonical request and its expected reference fingerprint. Both prepare and resume use this owner.
 
-- [ ] Add failing tool/draft contract tests for exact native image identities.
-- [ ] Add source tests for preflight, mixed references, original drift, promotion provenance and denial before writes.
-- [ ] Add a PostgreSQL regression for native image quote preparation and recovery without reattachment, provider execution or charge.
-- [ ] Run the new tests and confirm they fail for the missing support.
-- [ ] Extend the contract and implement the shared validation/materialization path.
-- [ ] Update Milo's image tool guidance and the engineering guide.
+- [x] Add failing tool/draft contract tests for exact native image identities.
+- [x] Add source tests for preflight, mixed references, original drift, promotion provenance and denial before writes.
+- [x] Add a PostgreSQL regression for native image quote preparation and recovery without reattachment, provider execution or charge.
+- [x] Run the new tests and confirm they fail for the missing support.
+- [x] Extend the contract and implement the shared validation/materialization path.
+- [x] Update Milo's image tool guidance and the engineering guide.
 - [ ] Run focused tests, test:editor, qa:editor, lint:exposure, build and applicable CI validation.
 - [ ] Review the complete diff independently and address actionable findings.
 - [ ] Commit and create a reviewable pull request; report deployment status explicitly.

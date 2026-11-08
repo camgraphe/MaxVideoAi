@@ -12,7 +12,6 @@ import {
   imageTurnInputSchema,
   type ImageConversation,
   type ImageConversationTurn,
-  type ImageTurnInput,
   type ImageDraft,
   draftSurface, hasDraftCreation,
 } from "@/lib/studio/image-conversation-contract";
@@ -41,7 +40,6 @@ import {
 } from "./image-conversation-repository";
 import {defaultStudioMediaFactories, type StudioMediaFactories} from './conversation-media-generation';
 import {resolveStudioConversationAttachments,type StudioAttachmentFactsDependencies} from './conversation-attachment-facts';
-import type {ResolvedReference} from '@/server/agent-api/reference-types';
 import {buildStudioGenerationMediaAccess} from './generation-media-access';
 import {projectStudioReply} from '@/lib/studio/conversation-reply';
 import {imageRequestFromDraft,imageReferenceFingerprintFromReview} from './conversation-image-request';

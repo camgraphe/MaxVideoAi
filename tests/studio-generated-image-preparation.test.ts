@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {getFalEngineById} from '../frontend/src/config/falEngines';
+import {NANO21_ENGINE_ID} from '../frontend/src/lib/nano-banana-2-1';
 import type {ImageDraft} from '../frontend/src/lib/studio/image-conversation-contract';
 import type {ResolvedReference} from '../frontend/src/server/agent-api/reference-types';
 import {studioReferenceFingerprint} from '../frontend/src/server/agent-api/generation-actor';
@@ -121,4 +122,23 @@ test('mixed native and attached images retain the selected facts and reject chan
   await assert.rejects(validateStudioImageRequest({...options(changed),draft:mixed,input:{...input,references:[attachedId]},
     reviewedReferences:[{...reviewed,storageUrl:'https://cdn.maxvideoai.com/previous.png'}]}),{code:'REFERENCE_INVALID'});
   assert.equal(changed.writes(),0);
+});
+
+test('a native output and its already attached library copy preserve distinct ordered reference slots',async()=>{
+  const nano=getFalEngineById(NANO21_ENGINE_ID)!;
+  const nanoCatalog=[{engine:nano.engine,surface:'image' as const,publicModes:['i2i' as const],modeCaps:Object.fromEntries(nano.modes.map(mode=>[mode.mode,mode.ui]))}];
+  const saved={type:'asset' as const,kind:'image' as const,assetId:savedId};
+  for(const references of [[output,saved],[saved,output]]) {
+    const f=fixture();
+    const selection={...draft,image:{...draft.image!,modelId:NANO21_ENGINE_ID,
+      settings:[{name:'resolution',value:'1k'}],
+      references:references.map((ref,slot)=>({ref,role:'reference' as const,slot}))}};
+    const selected=await validateStudioImageRequest({...options(f),draft:selection,catalog:nanoCatalog,
+      input:{...input,references:[savedId]},reviewedReferences:[facts(savedId,savedUrl)]});
+    const result=await selected.materialize();
+    assert.deepEqual(result.request.references,[
+      {kind:'asset',assetId:savedId,role:'reference',slot:0},
+      {kind:'asset',assetId:savedId,role:'reference',slot:1},
+    ]);
+  }
 });

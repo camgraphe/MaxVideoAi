@@ -75,10 +75,10 @@ export async function validateStudioImageRequest(options:ImagePreparationOptions
     const request=build(aliases.map(alias=>promotions.get(alias)?.assetId??alias));
     const current=await resolveReferences(request);
     const expected=request.references.map(reference=>{
-      const alias=aliases.find(id=>(promotions.get(id)?.assetId??id)===(reference.kind==='asset'?reference.assetId:''));
-      const original=initial.find(item=>item.assetId===alias&&item.role===reference.role&&item.slot===reference.slot);
+      const original=initial.find(item=>(promotions.get(item.assetId)?.assetId??item.assetId)===(reference.kind==='asset'?reference.assetId:'')
+        &&item.role===reference.role&&item.slot===reference.slot);
       if(!original)throw new AgentApiError('REFERENCE_INVALID','The selected image identity is unavailable.');
-      const promoted=promotions.get(alias!)?.promoted;
+      const promoted=promotions.get(original.assetId)?.promoted;
       const measured=current.find(item=>reference.kind==='asset'&&item.assetId===reference.assetId&&item.role===reference.role&&item.slot===reference.slot);
       return {...original,assetId:reference.kind==='asset'?reference.assetId:original.assetId,...(promoted??{}),
         // Saving an exact original may measure previously unknown bytes.

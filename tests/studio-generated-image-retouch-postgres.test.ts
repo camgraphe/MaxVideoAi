@@ -12,7 +12,7 @@ import {createPaidGenerationTestSchema,startDisposablePostgres} from './helpers/
 import {addTopup,ProviderHarness} from './helpers/mcp-paid-e2e-harness';
 
 test('Milo retouches an exact generated project image without attachments and recovers the native draft without another response or charge',async t=>{
-  const pg=await startDisposablePostgres('studio-native-image-retouch');
+  const pg=await startDisposablePostgres('studio-retouch');
   const previous=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
   t.after(async()=>{await getDb().end();if(previous===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=previous;await pg.cleanup();});
   await createPaidGenerationTestSchema(pg.pool);
