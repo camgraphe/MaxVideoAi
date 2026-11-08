@@ -1,5 +1,31 @@
 # Studio conversationnel : raccord aux services MaxVideoAI
 
+## Retouche directe des images générées — 8 novembre 2026
+
+`image_prepare` accepte les images jointes et les identités exactes `job-output`
+retournées par `media_read`. Milo peut préparer une retouche de l'image déjà créée
+dans le projet sans demander de la joindre à nouveau. Une liste de références vide
+reste une création texte ; aucune ancienne pièce jointe ne remplace implicitement
+la sortie sélectionnée.
+
+`conversation-image-request.ts` possède la construction pure de la demande
+canonique ; les anciens exports du service restent compatibles.
+`conversation-image-preparation.ts` vérifie le modèle, les réglages et toutes les
+références avant d'écrire un brouillon ou de sauvegarder une sortie. Les sorties
+doivent appartenir au compte et au projet actifs, provenir d'un job session accepté
+et terminé, être prêtes et visibles. Les références jointes gardent les faits
+examinés lors du message.
+
+La matérialisation sauvegarde l'original avec le propriétaire idempotent existant,
+vérifie sa provenance et l'URL de la copie, puis revérifie les sources et lie
+l'empreinte des références au devis. Seule une mesure de taille jusque-là absente
+peut être enrichie par une copie possédée et liée à cet original. Le journal conserve
+les identités natives ; préparation et reprise utilisent le même validateur.
+Aucune génération ni charge fournisseur/wallet n'est lancée par cette préparation :
+le client doit confirmer le devis exact. Les tests PostgreSQL vérifient la reprise,
+l'isolation compte/projet, les sorties masquées/non prêtes, les changements de
+références et l'unicité du débit après confirmation.
+
 État au 1 octobre 2026 : premier lot image implémenté et qualifié en local derrière un gate fermé, **pas une connexion production livrée**. Le prototype isolé dispose de Sol réel, actions communes avec son MCP local, médias locaux, montage et rendu. L’évaluation est dans `experiments/studio-conversation/design/sol-evaluation-2026-10-01.md`.
 
 ## Capacités et choix — lot du 3 octobre 2026

@@ -30,6 +30,21 @@ test('image selection survives the action and saved-draft contracts without scop
   assert.equal(imageDraftSchema.safeParse({...draft, image: {...selection, settings: [{name: 'quality', value: 'high'}, {name: 'quality', value: 'low'}]}}).success, false);
 });
 
+test('a generated image keeps its exact native identity in the action and saved draft without reattachment', () => {
+  const image = {...selection, mode: 'i2i', references: [{
+    ref: {type: 'job-output', jobId: 'accepted-image-job', outputId: 'accepted-image-job:image:0', kind: 'image'},
+    role: 'reference', slot: null,
+  }]};
+  const action = actionFromTool('image_prepare', {reply: 'Review the retouch quote.', ...image});
+  assert.deepEqual(action, {action: 'image.prepare', reply: 'Review the retouch quote.', ...image});
+  assert.deepEqual(imageDraftSchema.parse({reply: 'Review the retouch quote.', image}).image, image);
+  for (const kind of ['video', 'audio']) {
+    assert.equal(imageDraftSchema.safeParse({reply: 'Review.', image: {...image, references: [{
+      ...image.references[0], ref: {...image.references[0].ref, kind},
+    }]}}).success, false);
+  }
+});
+
 test('image preparation preserves selected model and valid settings as a canonical MCP-equivalent request', () => {
   const catalog = [candidate('gpt-image-2-5-flare'), candidate('gpt-image-2')];
   const request = imageRequestFromDraft({reply: 'Review the quote.', image: selection} as never, input, catalog);
