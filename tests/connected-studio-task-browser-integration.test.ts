@@ -17,16 +17,17 @@ import type {ImageGenerationFactory} from '../frontend/src/server/studio/image-c
 import {createStudioImageGenerationService} from '../frontend/src/server/studio/image-generation-service';
 import {ensureBillingReceiptsSchema} from '../frontend/src/lib/schema/billing-receipts-schema';
 
+const selectedImageRecordId=randomUUID();
 const selectedImage='ma_'+'e'.repeat(32),selectedImageUrl='https://cdn.maxvideoai.com/studio-local-fixture/selected.webp';
 
 test('Milo modes preserve model selection, credits, references and explicit consent on desktop and mobile',async()=>{
   const previous=process.env.DATABASE_URL;
   const runtime=await startStudioIntegrationRuntime({mcp:{studioMontageCreation:false},conversation:true,conversationTasks:true,initializeDatabase:async db=>{
-    await initializeStudioConnectedFixture(db);
+    await initializeStudioConnectedFixture(db,{libraryPicker:true});
     for(const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql','54_studio_assistance_ledger.sql','62_studio_assistance_resolutions.sql','63_studio_assistance_credits.sql','65_studio_task_budgets.sql','67_studio_luna_reasoning.sql','86_milo_three_levels.sql','87_milo_runtime_bounds.sql','88_milo_task_profiles.sql','96_milo_lite_output_allowance.sql','94_studio_conversation_reply_envelope.sql'])await db.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await db.pool.query('ALTER TABLE app_jobs ADD COLUMN status text, ADD COLUMN message text, ADD COLUMN settings_snapshot jsonb, ADD COLUMN payment_status text');
     await db.pool.query('ALTER TABLE media_assets ADD COLUMN width integer, ADD COLUMN height integer, ADD COLUMN size_bytes bigint');
-    await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[randomUUID(),selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
+    await db.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready','Selected product',$5::jsonb)`,[selectedImageRecordId,selectedImage,STUDIO_FIXTURE_OWNERS[0],selectedImageUrl,JSON.stringify({mediaFacts:{source:'probe',width:1024,height:1024}})]);
     await db.pool.query(`CREATE TABLE user_account_restrictions(user_id text PRIMARY KEY,reason text NOT NULL,message text,active boolean NOT NULL DEFAULT true,restricted_at timestamptz NOT NULL DEFAULT clock_timestamp())`);
   }});
   process.env.DATABASE_URL=runtime.database.databaseUrl;
@@ -58,6 +59,15 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     });
     assert.equal(preparedReferences.status(),200,'Owned reference previews must be ready before visual checks');
     await preparedReferences.dispose();
+    const selectionProof=await owned.context.request.post(runtime.browserOrigin+'/api/media-library/selection/validate',{
+      data:{candidates:[{reference:{type:'asset',assetId:selectedImage,kind:'image'},originalUrl:selectedImageUrl}]},
+      headers:{origin:runtime.browserOrigin},timeout:90_000,
+    });
+    const preparedSelection=await selectionProof.json();
+    assert.equal(selectionProof.status(),200,JSON.stringify(preparedSelection));
+    assert.equal(preparedSelection.results[0].error,undefined,'The real owned selection is available before opening the picker');
+    assert.ok(preparedSelection.results[0].sourceRevision);
+    await selectionProof.dispose();
     const loaded=page.waitForResponse(response=>response.url().endsWith('/image-conversation')&&response.request().method()==='GET',{timeout:30_000});
     const assistanceLoaded=page.waitForResponse(response=>response.url().endsWith('/api/studio/assistance')&&response.request().method()==='GET',{timeout:30_000});
     const [,initial,assistance]=await Promise.all([
@@ -70,10 +80,17 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     const cookieReject=page.getByRole('button',{name:'Reject all',exact:true});
     if(await cookieReject.isVisible())await cookieReject.click();
     await page.route(selectedImageUrl,route=>route.fulfill({contentType:'image/webp',path:'frontend/public/media/mcp/project-demo/watch-static.webp'}));
-    await page.route('**/api/media-library/assets?*',route=>route.fulfill({json:{ok:true,assets:[{assetId:selectedImage,kind:'image',name:'Selected product',url:selectedImageUrl}],nextCursor:null}}));
+    await page.route('**/api/media-library/assets?*',route=>route.fulfill({json:{ok:true,assets:[{id:selectedImageRecordId,assetId:selectedImage,ref:{type:'asset',assetId:selectedImage,kind:'image'},kind:'image',source:'upload',name:'Selected product',url:selectedImageUrl,thumbUrl:selectedImageUrl,mime:'image/webp',width:1024,height:1024}],hasMore:false,nextCursor:null}}));
     await page.getByRole('button',{name:'Open library',exact:true}).click();
-    await page.getByRole('button',{name:'Choose Selected product',exact:true}).click();
+    const selectedReference=page.getByRole('dialog',{name:'MaxVideoAI library',exact:true}).getByRole('checkbox',{name:'Select Selected product',exact:true});
+    await selectedReference.check();
+    await expect(selectedReference).toBeChecked();
+    const selectionAccepted=page.waitForResponse(response=>response.url().endsWith('/api/media-library/selection/validate')&&response.request().method()==='POST');
     await page.getByRole('button',{name:'Add to conversation',exact:true}).click();
+    const acceptedSelection=await selectionAccepted;
+    const acceptedBody=await acceptedSelection.json();assert.equal(acceptedSelection.status(),200,JSON.stringify(acceptedBody));
+    assert.equal(acceptedBody.results[0].error,undefined);assert.ok(acceptedBody.results[0].sourceRevision);
+    assert.deepEqual(acceptedSelection.request().postDataJSON(),{candidates:[{reference:{type:'asset',assetId:selectedImage,kind:'image'},originalUrl:selectedImageUrl}]});
     await page.reload({waitUntil:'domcontentloaded'});
     await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
     const picker=page.getByRole('group',{name:'Work allowance'}),message=page.getByRole('textbox',{name:'Message Milo'});

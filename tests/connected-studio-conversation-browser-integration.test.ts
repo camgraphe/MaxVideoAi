@@ -17,7 +17,7 @@ assert.ok(browserName === 'chromium' || browserName === 'firefox' || browserName
 
 test('native chat timeline, persistent app themes and mobile chat access ('+browserName+')', {timeout: 240000},async () => {
   const runtime = await startStudioIntegrationRuntime({mcp: {studioMontageCreation: true},privateStorage: true,conversation: true,initializeDatabase: async database => {
-    await initializeStudioConnectedFixture(database);
+    await initializeStudioConnectedFixture(database,{libraryPicker:true});
     for (const name of ['00_create_profiles.sql','01_legal_documents.sql','02_user_consents.sql','04_profiles_timestamps.sql','12_app_settings.sql','30_mcp_paid_generation.sql','39_mcp_quote_lifetime.sql','49_studio_generation_scope.sql','50_studio_image_conversation.sql','51_studio_image_model_usage.sql','52_studio_conversation_runs.sql','53_studio_media_generation_scope.sql']) await database.pool.query(await readFile('neon/migrations/'+name,'utf8'));
     await database.pool.query('ALTER TABLE app_jobs ADD COLUMN status text');
     for(let index=0;index<2;index++) await database.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,mime_type,status,original_name,metadata) VALUES($1,$2,$3,'image',$4,'image/webp','ready',$5,'{}'::jsonb)`,[`20000000-0000-4000-8000-00000000000${index+5}`,referenceIds[index],STUDIO_FIXTURE_OWNERS[0],referenceUrls[index],index?'Night shift':'Watch study']);
@@ -102,8 +102,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.getByRole('button',{name: 'Open library',exact: true}).click();
       const dialog = page.getByRole('dialog',{name: 'MaxVideoAI library',exact: true});
       await expect(dialog).toBeVisible();
-      await expect(dialog.getByRole('alert')).toHaveText('The library is unavailable. Check your connection.');
-      await expect(dialog.getByRole('button',{name: 'Upload from device',exact: true})).toBeEnabled();
+      await expect(dialog.getByRole('alert')).toHaveText('The library is unavailable.');
+      await expect(dialog.getByRole('button',{name: 'Import',exact: true})).toBeEnabled();
       const bounds = await dialog.boundingBox();
       assert.ok(bounds && bounds.x >= 0 && bounds.x+bounds.width <= page.viewportSize()!.width,'Library fits the viewport.');
       await page.getByRole('button',{name: 'Close library',exact: true}).click();
@@ -113,8 +113,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.getByRole('button',{name: 'Open library',exact: true}).click();
       await expect(dialog.getByText('No media here yet',{exact: true})).toBeVisible();
       await expect(dialog.getByRole('button',{name:'Add to conversation',exact:true})).toBeDisabled();
-      await dialog.getByRole('button',{name: 'Audio',exact: true}).click();
-      await expect(dialog.getByRole('button',{name: 'Audio',exact: true})).toHaveAttribute('aria-pressed','true');
+      await dialog.getByRole('combobox',{name:'Media type',exact:true}).selectOption('audio');
+      await expect(dialog.getByRole('combobox',{name:'Media type',exact:true})).toHaveValue('audio');
       await expect(dialog.getByRole('alert')).toHaveCount(0);
       await proof('olive-library-'+page.viewportSize()!.width);
       await page.keyboard.press('Escape');
@@ -181,17 +181,29 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.route(referenceUrls[index],route=>route.fulfill({contentType:'image/webp',body}));
     }
     const libraryEndpoint=runtime.browserOrigin+'/api/media-library/assets?*';
-    await page.route(libraryEndpoint,route=>route.fulfill({json:{ok:true,assets:referenceIds.map((assetId,index)=>({assetId,kind:'image',name:index?'Night shift':'Watch study',url:referenceUrls[index]})),nextCursor:null}}));
+    await page.route(libraryEndpoint,route=>route.fulfill({json:{ok:true,assets:referenceIds.map((assetId,index)=>({id:`20000000-0000-4000-8000-00000000000${index+5}`,assetId,ref:{type:'asset',assetId,kind:'image'},kind:'image',source:'upload',name:index?'Night shift':'Watch study',url:referenceUrls[index],thumbUrl:referenceUrls[index],mime:'image/webp'})),hasMore:false,nextCursor:null}}));
+    const selectionWarmup=await owned.context.request.post(runtime.browserOrigin+'/api/media-library/selection/validate',{
+      data:{candidates:referenceIds.map((assetId,index)=>({reference:{type:'asset',assetId,kind:'image'},originalUrl:referenceUrls[index]}))},
+      headers:{origin:runtime.browserOrigin},timeout:90_000,
+    });
+    const selectionBody=await selectionWarmup.json();assert.equal(selectionWarmup.status(),200,JSON.stringify(selectionBody));
+    assert.equal(selectionBody.results.length,2);assert.ok(selectionBody.results.every((item:{error?:string;sourceRevision?:string})=>!item.error&&item.sourceRevision));await selectionWarmup.dispose();
     for(const name of ['Watch study','Night shift']) {
       await page.getByRole('button',{name:'Open library',exact:true}).click();
       const library = page.getByRole('dialog',{name:'MaxVideoAI library',exact:true});
-      await expect(library.getByRole('button',{name:'Upload from device',exact:true})).toBeInViewport();
-      const tile = library.getByRole('button',{name:'Choose '+name,exact:true});
-      await tile.click();
-      await expect(tile).toHaveAttribute('aria-pressed','true');
+      await expect(library.getByRole('button',{name:'Import',exact:true})).toBeInViewport();
+      const tile = library.getByRole('checkbox',{name:'Select '+name,exact:true});
+      await tile.check();
+      await expect(tile).toBeChecked();
       await expect(library).toBeVisible();
       await proof('library-selected-'+name.replaceAll(' ','-'));
+      const validation=page.waitForResponse(response=>response.url().endsWith('/api/media-library/selection/validate')&&response.request().method()==='POST');
       await library.getByRole('button',{name:'Add to conversation',exact:true}).click();
+      const checked=await validation,body=await checked.json();
+      assert.equal(checked.status(),200,JSON.stringify(body));
+      const index=name==='Watch study'?0:1;
+      assert.deepEqual(checked.request().postDataJSON(),{candidates:[{reference:{type:'asset',assetId:referenceIds[index],kind:'image'},originalUrl:referenceUrls[index]}]});
+      assert.equal(body.results[0].error,undefined);assert.ok(body.results[0].sourceRevision);
     }
     await page.unroute(libraryEndpoint);
     await page.reload({waitUntil:'domcontentloaded'});
