@@ -64,6 +64,7 @@ export function useWorkspaceAssets({
     resetAssetLibraryForSource,
   } = useWorkspaceAssetLibrary({
     userId,
+    listingEnabled: false,
     showNotice,
     setInputAssets,
   });

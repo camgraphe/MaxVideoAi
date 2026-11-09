@@ -422,7 +422,7 @@ export function AssetLibraryModal({
       />
       <AssetLibraryBrowser
         locale={uiLocale}
-        selection={{ ownerId, importQueue, scope: target?.scope ?? fieldLabel, busy, onBusyChange: setIsSelecting, onConfirm: onSelect, onConfirmMany: onSelectMany, getEligibility }}
+        selection={{ ownerId, browseLibrary: true, importQueue, scope: target?.scope ?? fieldLabel, busy, onBusyChange: setIsSelecting, onConfirm: onSelect, onConfirmMany: onSelectMany, getEligibility }}
         headingId={titleId}
         title={target?.role ? referenceCopy[target.role] : libraryTitle}
         subtitle={[!target?.role ? referenceCopy.kinds[assetType] : null, target?.slotIndex != null && (target?.capacity ?? 1) > 1 ? `${pickerCopy.slot} ${target.slotIndex + 1}` : null, (target?.capacity ?? 1) > 1 ? `${pickerCopy.capacity} ${target?.capacity}` : null].filter(Boolean).join(' · ')}

@@ -21,12 +21,14 @@ type FetchAssetLibraryOptions = {
 
 type UseWorkspaceAssetLibraryOptions = {
   userId?: string | null;
+  listingEnabled?: boolean;
   showNotice: (message: string) => void;
   setInputAssets: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
 };
 
 export function useWorkspaceAssetLibrary({
   userId = null,
+  listingEnabled = true,
   showNotice,
   setInputAssets,
 }: UseWorkspaceAssetLibraryOptions) {
@@ -100,6 +102,10 @@ export function useWorkspaceAssetLibrary({
 
   const fetchAssetLibrary = useCallback(async (options?: FetchAssetLibraryOptions) => {
     if (!userId || owner.current.userId !== userId) return;
+    if (!listingEnabled) {
+      invalidateLibraryMedia(userId);
+      return;
+    }
     const scope = owner.current;
     const request = ++requestVersion.current;
     const isCurrent = () => owner.current === scope && requestVersion.current === request && libraryCacheRevision(userId) === revision;
@@ -150,10 +156,10 @@ export function useWorkspaceAssetLibrary({
     } finally {
       if (isCurrent()) setIsAssetLibraryLoading(false);
     }
-  }, [assetLibraryKind, assetLibrarySource, userId, revision]);
+  }, [assetLibraryKind, assetLibrarySource, listingEnabled, userId, revision]);
 
   const loadMoreAssetLibrary = useCallback(async () => {
-    if (!userId || owner.current.userId !== userId || !assetLibraryNextCursor || isAssetLibraryLoadingMore) return;
+    if (!listingEnabled || !userId || owner.current.userId !== userId || !assetLibraryNextCursor || isAssetLibraryLoadingMore) return;
     const scope = owner.current;
     const request = ++requestVersion.current;
     const isCurrent = () => owner.current === scope && requestVersion.current === request && libraryCacheRevision(userId) === revision;
@@ -185,10 +191,10 @@ export function useWorkspaceAssetLibrary({
     } finally {
       if (isCurrent()) setIsAssetLibraryLoadingMore(false);
     }
-  }, [assetLibraryKind, assetLibraryLoadedKey, assetLibraryNextCursor, assetLibrarySource, isAssetLibraryLoadingMore, userId, revision]);
+  }, [assetLibraryKind, assetLibraryLoadedKey, assetLibraryNextCursor, assetLibrarySource, isAssetLibraryLoadingMore, listingEnabled, userId, revision]);
 
   useEffect(() => {
-    if (!userId || libraryOwnerId !== userId || !assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
+    if (!listingEnabled || !userId || libraryOwnerId !== userId || !assetPickerTarget || !assetLibraryRequestKey || isAssetLibraryLoading) return;
     if (assetLibraryLoadedKey === assetLibraryRequestKey) return;
     setAssetLibrary([]);
     setAssetLibraryError(null);
@@ -196,6 +202,7 @@ export function useWorkspaceAssetLibrary({
   }, [
     userId,
     libraryOwnerId,
+    listingEnabled,
     assetLibraryKind,
     assetLibraryLoadedKey,
     assetLibraryRequestKey,

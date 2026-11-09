@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';import test from 'node:test';
 import {bundleClientFlow,createClientFlowDom} from './helpers/client-flow-dom';import {installMediaGridGeometry} from './helpers/media-grid-dom';
 const bundle=bundleClientFlow(`import React,{act}from'react';import{createRoot}from'react-dom/client';import{AssetLibraryBrowser}from'./components/library/AssetLibraryBrowser';function App(){return <AssetLibraryBrowser assets={window.assets} assetType="image" source="all" availableSources={['all']} sourceLabels={{all:'All'}} onSourceChange={()=>{}} isLoading={Boolean(window.loading)} title="References" searchPlaceholder="Search" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null} selection={{scope:'model:pool',isDisabled:a=>a.id==='blocked',onConfirm:asset=>{window.accepted=[asset]},onConfirmMany:window.single?undefined:items=>window.accepted=items}}/>}const root=createRoot(document.getElementById('root'));window.IS_REACT_ACT_ENVIRONMENT=true;window.fx={act,render:()=>root.render(<App/>),unmount:()=>root.unmount()};`,{'@/lib/supabaseClientLoader':`export const loadSupabaseClient=async()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})}});`});
-test('ordinary picker uses the shared virtualized collection with separate keyboard preview and hidden ordered selection',async()=>{
+test('ordinary picker uses the shared virtualized collection with separate explicit preview and hidden ordered selection',async()=>{
  const dom=createClientFlowDom('/app'),w=dom.window as any;installMediaGridGeometry(w);w.assets=[{id:'one',name:'One',kind:'image',url:'https://example.invalid/one.png'},{id:'two',name:'Two',kind:'image',url:'https://example.invalid/two.png'},{id:'blocked',name:'Blocked',kind:'image',url:'https://example.invalid/blocked.png'}];w.eval(await bundle);
  try{await w.fx.act(async()=>w.fx.render());assert.equal(w.document.querySelector('[data-virtualized]')?.dataset.virtualized,'true');assert.equal(w.document.querySelector('.app-picker-card'),null);
  const rows=()=>[...w.document.querySelectorAll('[data-media-key]')] as HTMLElement[];
@@ -9,7 +9,7 @@ test('ordinary picker uses the shared virtualized collection with separate keybo
  await w.fx.act(async()=>rows()[0].querySelector<HTMLInputElement>('input')!.click());assert.equal(w.accepted,undefined);
  await w.fx.act(async()=>{rows()[1].focus();rows()[1].dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true}));rows()[1].dispatchEvent(new w.KeyboardEvent('keyup',{key:' ',code:'Space',bubbles:true}));});
  assert.equal(w.document.querySelectorAll('[data-basket-item]').length,2);
- const first=rows()[0];await w.fx.act(async()=>{first.focus();first.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));});assert.ok(w.document.querySelector('.app-media-detail-layout'));assert.equal(w.accepted,undefined);
+ const first=rows()[0];await w.fx.act(async()=>first.querySelector<HTMLButtonElement>('.compact-media-inspect')!.click());assert.ok(w.document.querySelector('.app-media-detail-layout'));assert.equal(w.accepted,undefined);
  await w.fx.act(async()=>[...w.document.querySelectorAll('button')].find((b:any)=>b.textContent==='Back').click());
  const grid=w.document.querySelector('[role=grid]');await w.fx.act(async()=>{w.loading=true;w.assets=[];w.fx.render();});assert.equal(w.document.querySelector('[role=grid]'),grid,'cache loading retains the virtual collection');await w.fx.act(async()=>{w.loading=false;w.fx.render();});assert.equal(w.document.querySelectorAll('[data-basket-item]').length,2);
  await w.fx.act(async()=>w.document.querySelector('.app-picker-use').click());assert.deepEqual(Array.from(w.accepted).map((a:any)=>a.id),['one','two']);
@@ -21,6 +21,32 @@ test('single-media adapter uses the same bounded virtual collection and never ac
  const dom=createClientFlowDom('/app'),w=dom.window as any;installMediaGridGeometry(w);w.single=true;w.assets=Array.from({length:1000},(_,i)=>({id:String(i),name:'Source '+i,kind:'image',url:'https://example.invalid/'+i+'.png'}));w.eval(await bundle);
  try{await w.fx.act(async()=>w.fx.render());const inputs=Array.from(w.document.querySelectorAll('.compact-media-check input')) as HTMLInputElement[];assert.ok(inputs.length>1&&inputs.length<1000,'virtualization bounds mounted rows');await w.fx.act(async()=>inputs[0].click());await w.fx.act(async()=>inputs[1].click());assert.equal(w.document.querySelectorAll('[data-basket-item]').length,1);await w.fx.act(async()=>w.document.querySelector('.app-picker-use').click());assert.equal(w.accepted.length,1);assert.equal(w.accepted[0].id,'1');}
  finally{await w.fx.act(async()=>w.fx.unmount());dom.window.close();}
+});
+
+test('thumbnail activation accepts only the clicked original instead of a previously staged basket', async () => {
+ const dom = createClientFlowDom('/app');
+ const w = dom.window as any;
+ installMediaGridGeometry(w);
+ w.assets = [
+  { id: 'one', name: 'One', kind: 'image', url: 'https://example.invalid/one.png' },
+  { id: 'two', name: 'Two', kind: 'image', url: 'https://example.invalid/two.png' },
+ ];
+ w.eval(await bundle);
+ try {
+  await w.fx.act(async () => w.fx.render());
+  const rows = Array.from(w.document.querySelectorAll('[data-media-key]')) as HTMLElement[];
+  await w.fx.act(async () => rows[1].querySelector<HTMLInputElement>('input')!.click());
+  assert.equal(w.accepted, undefined, 'a checkbox stages without applying');
+  await w.fx.act(async () => rows[0].querySelector<HTMLButtonElement>('.compact-media-preview')!.click());
+  assert.deepEqual(Array.from(w.accepted ?? []).map((asset: any) => [asset.id, asset.url]), [
+   ['one', 'https://example.invalid/one.png'],
+  ], 'the primary action directly accepts the clicked exact original, not the staged second image');
+  assert.equal(w.document.querySelector('.app-media-detail-layout'), null, 'insertion does not open the inspector');
+  assert.equal(w.document.querySelectorAll('[data-basket-item]').length, 1, 'direct activation does not rewrite the pending basket');
+ } finally {
+  await w.fx.act(async () => w.fx.unmount());
+  dom.window.close();
+ }
 });
 
 const preparedBundle=bundleClientFlow(`

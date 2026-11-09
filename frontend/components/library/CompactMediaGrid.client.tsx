@@ -2,7 +2,7 @@
 import { memo, useMemo, useRef } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
 import { GridLayout, ListLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
-import { Check, Film, ImageIcon, Music2 } from 'lucide-react';
+import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
 import { useLibraryMediaAccess } from '@/hooks/useLibraryMediaAccess';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 import { compactLibraryCopy } from './compact-library-copy';
@@ -61,6 +61,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   selectedKeys,
   onSelectionChange,
   onOpen,
+  onPreview,
+  openActionLabel,
   density,
   locale,
   userId,
@@ -77,6 +79,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   selectedKeys: ReadonlySet<string>;
   onSelectionChange: (keys: Set<string> | 'all') => void;
   onOpen: (asset: AssetBrowserAsset) => void;
+  onPreview?: (asset: AssetBrowserAsset) => void;
+  openActionLabel?: string;
   density: number;
   locale: string;
   userId: string;
@@ -97,8 +101,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
       audio: assets.length > 0 && assets.every((a) => a.kind === 'audio'),
     };
   const audio = geometry.current.audio;
-  const latest = useRef({ onOpen, onSelectionChange, assets, selectedKeys });
-  latest.current = { onOpen, onSelectionChange, assets, selectedKeys };
+  const latest = useRef({ onOpen, onPreview, onSelectionChange, assets, selectedKeys });
+  latest.current = { onOpen, onPreview, onSelectionChange, assets, selectedKeys };
   const items = useMemo<{ id: string; asset: AssetBrowserAsset | null; name: string }[]>(
     () =>
       loading
@@ -184,7 +188,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
       layout={audio ? 'stack' : 'grid'}
       className={`compact-media-grid ${audio ? 'is-audio' : 'is-grid'} ${virtualized ? '' : 'is-plain'}`}
       style={!virtualized && !audio ? { gridTemplateColumns: `repeat(auto-fill,minmax(${density}px,1fr))` } : undefined}
-      dependencies={[audio, locale, userId, renderAssetMeta, getAssetKey, selectionDisabledKeys]}
+      dependencies={[audio, locale, userId, renderAssetMeta, getAssetKey, selectionDisabledKeys, Boolean(onPreview), openActionLabel]}
       onAction={(key) => {
         const item = latest.current.assets.find((a) => getAssetKey(a) === key);
         if (item) latest.current.onOpen(item);
@@ -206,7 +210,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
               <Button
                 type="button"
                 className="compact-media-preview"
-                aria-label={`${copy.preview} ${item.name}`}
+                aria-label={`${openActionLabel ?? copy.preview} ${item.name}`}
+                isDisabled={disabled || loading || Boolean(onPreview && selectionDisabledKeys?.has(item.id))}
                 onPress={() => {
                   const current = latest.current.assets.find((a) => getAssetKey(a) === item.id);
                   if (current) latest.current.onOpen(current);
@@ -219,6 +224,20 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
                   {item.name}
                 </span>
               </Button>
+              {onPreview ? (
+                <Button
+                  type="button"
+                  className="compact-media-inspect"
+                  aria-label={`${copy.preview} ${item.name}`}
+                  isDisabled={disabled || loading}
+                  onPress={() => {
+                    const current = latest.current.assets.find((asset) => getAssetKey(asset) === item.id);
+                    if (current) latest.current.onPreview?.(current);
+                  }}
+                >
+                  <ScanSearch size={16} aria-hidden />
+                </Button>
+              ) : null}
               {item.asset.durationSec != null ? (
                 <span className="compact-media-duration">{duration(item.asset.durationSec)}</span>
               ) : null}

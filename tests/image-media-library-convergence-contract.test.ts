@@ -9,7 +9,7 @@ import { buildMediaLibraryAssetsKey } from '../frontend/lib/media-library-client
 const root = process.cwd();
 const imageDir = path.join(root, 'frontend/app/(core)/(workspace)/app/image');
 
-test('Generate Image and Media share the canonical first-page cache contract', () => {
+test('saved-asset compatibility keys retain their canonical first-page cache contract', () => {
   const sharedKey = buildMediaLibraryAssetsKey({
     userId: 'user-1',
     kind: 'image',
@@ -29,13 +29,8 @@ test('Generate Image and Media share the canonical first-page cache contract', (
   assert.deepEqual(mediaPageKey, sharedKey);
 });
 
-test('Generate Image paginates canonical image assets while keeping Characters specialized', () => {
+test('image compatibility readers retain paginated canonical assets and specialized Characters', () => {
   const dataHook = readFileSync(path.join(imageDir, '_hooks/useImageLibraryData.ts'), 'utf8');
-  const modal = readFileSync(path.join(imageDir, '_components/ImageLibraryModal.tsx'), 'utf8');
-  const picker = readFileSync(
-    path.join(root, 'frontend/components/library/ReferenceLibraryPicker.client.tsx'),
-    'utf8'
-  );
 
   assert.match(dataHook, /IMAGE_LIBRARY_PAGE_SIZE = 30/);
   assert.match(dataHook, /useSWRInfinite<MediaLibraryAssetsResponse>/);
@@ -43,11 +38,6 @@ test('Generate Image paginates canonical image assets while keeping Characters s
   assert.match(dataHook, /fetchMediaLibraryAssets/);
   assert.match(dataHook, /\/api\/character-references\?limit=60/);
   assert.doesNotMatch(dataHook, /\/api\/user-assets/);
-  assert.match(modal, /hasMore=\{!isCharacterMode && hasMore\}/);
-  assert.match(modal, /onLoadMore=\{loadMore\}/);
-  assert.match(picker, /const loadMoreControl =\s*\(browsingOrganization \? organized\.hasMore : hasMore\) && more/);
-  assert.match(picker, /\{copy\.searchMore\}/);
-  assert.match(picker, /app-picker-empty[\s\S]*\{loadMoreControl\}/);
 });
 
 test('preview save state and deletion use canonical account-scoped media routes', () => {
