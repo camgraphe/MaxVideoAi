@@ -61,6 +61,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     const errors: string[] = [];
     const pageErrors: string[] = [];
     const consoleErrors: string[] = [];
+    let reloadEvidence: Record<string,unknown> | null = null;
     page.on('response',response => {if (response.status() === 403) mediaFailures.push(new URL(response.url()).pathname);});
     page.on('pageerror',error => {errors.push(error.message);pageErrors.push(error.message.slice(0,1000));});
     page.on('console',message => {
@@ -75,6 +76,7 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
         path: new URL(diagnosticPage.url()).pathname,
         pageErrors: pageErrors.slice(-10),
         consoleErrors,
+        reloadEvidence,
         headings: (await diagnosticPage.getByRole('heading').allTextContents()).slice(0,10).map(text=>text.slice(0,200)),
         statuses: (await diagnosticPage.getByRole('status').allTextContents()).slice(0,10).map(text=>text.slice(0,500)),
         bodyTail: (await diagnosticPage.locator('body').innerText({timeout:1000})).slice(-2000),
@@ -394,8 +396,49 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
     await page.mouse.up();
     await expect(page.getByLabel('Film timeline',{exact: true})).toHaveAttribute('data-revision','4');
     await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
-    await page.reload({waitUntil: 'domcontentloaded'});
-    await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
+    // Persistence is checked after the new document's owned reads finish.
+    // DOMContentLoaded does not await either React reader; a previous poll must
+    // not satisfy this gate. The final DOM assertion keeps its existing budget.
+    const reloadStartedAt=Date.now();
+    const reloadHistoryUrl=runtime.browserOrigin+'/api/studio/projects/'+project.projectId+'/image-conversation';
+    const reloadTimelineUrl=runtime.browserOrigin+'/api/studio/projects/'+project.projectId+'/conversation-timeline?preview=1';
+    const reloadRequests=new Map<import('@playwright/test').Request,number>();
+    const reloadEvents:Record<string,unknown>[]=[];
+    let reloadNavigationRequested=false,reloadDocumentCommitted=false;
+    reloadEvidence={events:reloadEvents};
+    const reloadEvent=(request:import('@playwright/test').Request,event:string,extra:Record<string,unknown>={})=>{
+      if(reloadRequests.has(request))reloadEvents.push({readId:reloadRequests.get(request),event,path:new URL(request.url()).pathname,atMs:Date.now()-reloadStartedAt,...extra});
+    };
+    const onReloadRequest=(request:import('@playwright/test').Request)=>{
+      if(request.isNavigationRequest()&&request.frame()===page.mainFrame()&&request.url()===url){reloadNavigationRequested=true;reloadEvidence!.navigationRequestedAtMs=Date.now()-reloadStartedAt;}
+      if(!reloadDocumentCommitted||request.method()!=='GET'||![reloadHistoryUrl,reloadTimelineUrl].includes(request.url()))return;
+      reloadRequests.set(request,reloadRequests.size+1);reloadEvent(request,'request');
+    };
+    const onReloadNavigation=(frame:import('@playwright/test').Frame)=>{
+      if(reloadNavigationRequested&&frame===page.mainFrame()&&frame.url()===url){reloadDocumentCommitted=true;reloadEvidence!.documentCommittedAtMs=Date.now()-reloadStartedAt;}
+    };
+    const onReloadResponse=(response:import('@playwright/test').Response)=>reloadEvent(response.request(),'response',{status:response.status()});
+    const onReloadFinished=(request:import('@playwright/test').Request)=>reloadEvent(request,'finished');
+    const onReloadFailed=(request:import('@playwright/test').Request)=>reloadEvent(request,'failed',{error:request.failure()?.errorText});
+    page.on('request',onReloadRequest);page.on('framenavigated',onReloadNavigation);page.on('response',onReloadResponse);page.on('requestfinished',onReloadFinished);page.on('requestfailed',onReloadFailed);
+    try {
+      // Use the fixture's existing 30-second response budget, without changing
+      // the persistence assertion's five-second UI budget or retrying reload.
+      const historyRead=page.waitForResponse(response=>reloadRequests.has(response.request())&&response.url()===reloadHistoryUrl,{timeout:30000});
+      const timelineRead=page.waitForResponse(response=>reloadRequests.has(response.request())&&response.url()===reloadTimelineUrl,{timeout:30000});
+      const [,historyResponse,timelineResponse]=await Promise.all([page.reload({waitUntil:'domcontentloaded'}),historyRead,timelineRead]);
+      assert.deepEqual(await Promise.all([historyResponse.finished(),timelineResponse.finished()]),[null,null]);
+      const [reloadHistory,reloadTimeline]=await Promise.all([historyResponse.json(),timelineResponse.json()]);
+      const stored=(await runtime.database.pool.query('SELECT revision FROM studio_projects WHERE id=$1',[project.projectId])).rows[0];
+      Object.assign(reloadEvidence,{history:{status:historyResponse.status(),ok:reloadHistory.ok,projectId:reloadHistory.result?.projectId},timeline:{status:timelineResponse.status(),ok:reloadTimeline.ok,projectId:reloadTimeline.result?.data?.projectId,revision:reloadTimeline.result?.data?.revision,items:reloadTimeline.result?.items?.map((item:{id:string;startSec:number})=>({id:item.id,startSec:item.startSec}))},storedRevision:stored?.revision});
+      assert.equal(historyResponse.status(),200);assert.equal(reloadHistory.ok,true);assert.equal(reloadHistory.result.projectId,project.projectId);
+      assert.equal(timelineResponse.status(),200);assert.equal(reloadTimeline.ok,true);assert.equal(reloadTimeline.result.data.projectId,project.projectId);
+      assert.equal(reloadTimeline.result.data.revision,4);assert.equal(Number(stored?.revision),4);
+      assert.deepEqual(reloadTimeline.result.items.map((item:{id:string;startSec:number})=>({id:item.id,startSec:item.startSec})),[{id:'montage-clip-02',startSec:2}]);
+      await expect(page.locator('[data-timeline-item="montage-clip-02"]')).toHaveAttribute('data-timeline-start','2');
+    } finally {
+      page.off('request',onReloadRequest);page.off('framenavigated',onReloadNavigation);page.off('response',onReloadResponse);page.off('requestfinished',onReloadFinished);page.off('requestfailed',onReloadFailed);
+    }
     for (const width of [320,768]) {
       await page.setViewportSize({width,height: 844});
       await expect(page.getByRole('textbox',{name: 'Message Milo',exact: true})).toBeVisible();

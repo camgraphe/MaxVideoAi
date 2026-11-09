@@ -19,6 +19,7 @@ import {
   isSupportedImageMime,
 } from '@/lib/image/formats';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import type { MediaInputEligibility } from '@/lib/media-input-eligibility';
 import { useImageLibraryData } from '../_hooks/useImageLibraryData';
 import type {
   CharacterReferenceSelection,
@@ -97,7 +98,16 @@ function OpenImageLibraryModal({
     userId,
     source: activeSource,
     isCharacterMode,
+    enabled: isCharacterMode,
   });
+  const getEligibility = useCallback((asset: LibraryAsset): MediaInputEligibility => {
+    if (!supportedFormats.length) return { status: 'usable' };
+    const supportedByMime = isSupportedImageMime(supportedFormats, asset.mime);
+    const inferredFormat = inferImageFormatFromUrl(asset.url);
+    const supported = supportedByMime ?? (inferredFormat ? isSupportedImageFormat(supportedFormats, inferredFormat) : null);
+    return supported === false ? { status: 'blocked', issue: 'format' }
+      : { status: supported === null ? 'unverified' : 'usable' };
+  }, [supportedFormats]);
 
   useEffect(() => {
     if (!open) return;
@@ -241,12 +251,14 @@ function OpenImageLibraryModal({
           locale={uiLocale}
           selection={{
             ownerId:userId,
+            browseLibrary: !isCharacterMode,
             scope: `${userId ?? "guest"}:${selectionMode}:${target?.scope ?? 'reference'}`,
             busy: isSelecting,
             importQueue: isCharacterMode ? undefined : importQueue,
             onBusyChange: setIsSelecting,
             onConfirmMany: !isCharacterMode && onSelectMany ? assets => onSelectMany(assets as LibraryAsset[]) : undefined,
             onConfirm: isCharacterMode ? undefined : (asset) => onSelect(asset as LibraryAsset),
+            getEligibility: isCharacterMode ? undefined : getEligibility,
             selectedIds: isCharacterMode ? selectedCharacterIds : undefined,
             isDisabled: isCharacterMode ? (asset) => !selectedCharacterIds.has(asset.id) && selectedCharacterReferences.length >= characterSelectionLimit : undefined,
             onToggle: isCharacterMode ? (asset) => { const character = characterMap.get(asset.id); if (character) onToggleCharacter(character); } : undefined,
