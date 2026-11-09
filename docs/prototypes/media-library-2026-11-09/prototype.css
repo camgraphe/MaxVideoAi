@@ -210,6 +210,9 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
   input, select, textarea { min-height:44px; }
   .filter-chips button { min-height:44px; }
   .icon-button { width:44px; min-height:44px; }
+  .menu-options > button, .collection-menu nav button { min-height:44px; }
+  .collection-row > .icon-button { width:44px; min-height:44px; }
+  .collection-search input { min-height:44px; }
   .app-rail { display:none; }
   .app-header { min-height:54px; padding:0 16px; }
   .wordmark { font-size:13px; gap:12px; }
