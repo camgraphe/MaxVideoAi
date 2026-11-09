@@ -388,6 +388,30 @@ test('agent copyright failures preserve the refusal instead of matching copy as 
   }
 });
 
+test('web and agent reads correct historical Seedance prompt and unattributed refusals', () => {
+  for (const [providerErrorCode, failureCode, expected] of [
+    ['InputTextSensitiveContentDetected', 'seedance_prompt_blocked', /blocked the prompt/i],
+    ['BYTEPLUS_PROVIDER_ERROR', 'seedance_content_blocked', /blocked this request/i],
+  ] as const) {
+    const record = generationRecord({
+      status: 'failed', payment_status: 'refunded_wallet',
+      message: 'Seedance blocked reference media during its safety checks.',
+      settings_snapshot: { providerFailure: {
+        provider: 'byteplus_modelark', providerErrorCode, failureCode: 'seedance_reference_media_blocked',
+      } },
+    });
+    const agent = mapGenerationStatusRecordToAgent(record)!;
+    assert.equal(agent.failureCode, failureCode);
+    assert.match(agent.message ?? '', expected);
+    assert.doesNotMatch(agent.message ?? '', /blocked reference media/i);
+    assert.match(agent.message ?? '', /returned to your wallet/);
+    assert.equal(agent.retryAfterSeconds, null);
+    const web = mapGenerationStatusRecordToWeb(record);
+    assert.match(web.message ?? '', expected);
+    assert.equal(web.paymentStatus, 'refunded_wallet');
+  }
+});
+
 test('agent historical audio refusals override incorrect reference classification', () => {
   const result = mapGenerationStatusRecordToAgent(generationRecord({
     status: 'failed', payment_status: 'refunded_wallet',
