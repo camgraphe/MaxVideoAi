@@ -549,3 +549,23 @@ test('upload failures emit only coarse event codes and never forward raw secret 
   );
   assert.doesNotMatch(serviceSource + handlerSource, /console\.(?:error|warn)\([^\n]*,\s*error\b/);
 });
+
+test('display upload reuses normalized bytes, preserves private cleanup and both stored projections', async () => {
+  const { createStoreImageUploadService } = await loadService();
+  const recorded: any[] = []; const retained: string[] = []; const registered: string[] = [];
+  const imageDisplay = { version: 1, profile: 'image-display-v1', sourceUrl: 'https://cdn.example.com/reference.webp', sourceSha256: 'a'.repeat(64), url: 'https://cdn.example.com/display.webp', width: 640, height: 360, sizeBytes: 8, mimeType: 'image/webp' };
+  let prepared = 0;
+  const store = createStoreImageUploadService(makeServiceDependencies({
+    prepareImageRenditions: async (input: any) => { prepared++; assert.deepEqual(input.data, fakeDecoded().bytes); assert.equal(input.acl, 'private'); assert.equal(input.cacheControl, 'private, max-age=0'); assert.equal(input.prefix, 'user-asset-thumbs'); await input.beforeUpload('user-asset-thumbs/user_1/display.webp'); return { previewUrl: imageDisplay.url, imageDisplay }; },
+    createUploadImageThumbnail: async (input: any) => { await input.beforeUpload('user-asset-thumbs/user_1/thumb.webp'); return 'https://cdn.example.com/thumb.webp'; },
+    recordUserAsset: async (input: any) => { recorded.push(input); return 'asset_new'; }, ensureReusableAsset: async (input: any) => { recorded.push(input); return {}; },
+  }));
+  await store({ userId: 'user_1', fileName: 'image.tiff', declaredMime: 'image/tiff', bytes: Buffer.from('source'), storageAcl: 'private', storageCacheControl: 'private, max-age=0', cleanupObjects: { beforeUpload: async (entry: any) => { registered.push(entry.objectKey); assert.equal(entry.objectRole, 'thumbnail'); }, retain: async (key: string) => { retained.push(key); } } });
+  assert.equal(prepared, 1);
+  assert.deepEqual(recorded.map(value => value.metadata.imageDisplay), [imageDisplay, imageDisplay]);
+  assert.equal(recorded[1].previewUrl, imageDisplay.url);
+  assert.ok(retained.includes('user-asset-thumbs/user_1/display.webp'));
+  assert.ok(retained.includes('user-asset-thumbs/user_1/thumb.webp'));
+  assert.equal(new Set(registered).size,2);
+  assert.ok(registered.includes('user-asset-thumbs/user_1/display.webp'));
+});

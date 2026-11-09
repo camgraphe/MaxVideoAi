@@ -106,6 +106,7 @@ export function WorkspaceAppReadyView({
     handleSelectKlingLibraryAsset,
     handleImportKlingLibraryFile,
     handleSelectLibraryAsset,
+    handleSelectLibraryAssets,
     handleImportLibraryFile,
     inputAssets,
     isAssetLibraryLoading,
@@ -283,7 +284,7 @@ export function WorkspaceAppReadyView({
     <>
       <WorkspaceRecentReferences userId={app.user?.id} locale={uiLocale} engineId={selectedEngine.id} engine={selectedEngine}
         fields={inputSchemaSummary.assetFields} inputAssets={inputAssets} inputSchema={selectedEngine.inputSchema}
-        mode={submissionMode} onInsert={handleSelectLibraryAsset} availability={{
+        mode={submissionMode} workflowIntent={activeManualMode} onInsert={handleSelectLibraryAsset} availability={{
           inputAssets, isUnifiedSeedance, isUnifiedKlingO3, guestUploadLockedReason, workflowCopy,
           klingO3VideoToVideoSupported: supportsKlingO3VideoToVideo(selectedEngine),
           hasAnyVideoInput: getKlingO3AssetState({ inputAssets, klingElements }).hasAnyVideoInput,
@@ -489,6 +490,8 @@ export function WorkspaceAppReadyView({
         onCloseAssetLibrary={closeAssetLibrary}
         onRefreshAssets={fetchAssetLibrary}
         onLoadMoreAssets={loadMoreAssetLibrary}
+        workflowIntent={activeManualMode}
+        onSelectFieldAssets={handleSelectLibraryAssets}
         onSelectFieldAsset={handleSelectLibraryAsset}
         onImportFieldFile={handleImportLibraryFile}
         onSelectKlingAsset={handleSelectKlingLibraryAsset}

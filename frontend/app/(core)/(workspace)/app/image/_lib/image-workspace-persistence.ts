@@ -1,3 +1,4 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import { imageReferenceIdentity } from './image-reference-slot-state';
 import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import { parseCharacterReferenceEntry } from './image-workspace-character-references';
@@ -54,7 +55,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
       .map((entry): PersistedReferenceSlot => {
         if (entry === null) return null;
         if (!entry || typeof entry !== 'object') return null;
-        const record = entry as { url?: unknown; ref?: unknown; name?: unknown; source?: unknown; characterReference?: unknown };
+        const record = entry as MediaReadAccess & { url?: unknown; ref?: unknown; name?: unknown; source?: unknown; characterReference?: unknown };
         const url = typeof record.url === 'string' ? record.url.trim() : '';
         if (!url || url.startsWith('blob:')) return null;
         const source =
@@ -73,7 +74,7 @@ export function parsePersistedImageComposerState(value: string): PersistedImageC
             ? Math.round((record as { height: number }).height)
             : null;
         const characterReference = parseCharacterReferenceEntry(record.characterReference);
-        return { url, ref: imageReferenceIdentity(record), name: typeof record.name === 'string' ? record.name.trim() || undefined : undefined, source, width, height, characterReference };
+        return { readAccessOwnerId: record.readAccessOwnerId, readAccessRef: record.readAccessRef, readAccessRevision: record.readAccessRevision, url, ref: imageReferenceIdentity(record), name: typeof record.name === 'string' ? record.name.trim() || undefined : undefined, source, width, height, characterReference };
       });
     const characterReferencesRaw = Array.isArray(raw.characterReferences) ? raw.characterReferences : [];
     const characterReferences = characterReferencesRaw.reduce<PersistedCharacterReference[]>((acc, entry) => {

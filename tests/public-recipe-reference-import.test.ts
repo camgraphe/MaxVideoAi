@@ -23,13 +23,14 @@ const bytes = Buffer.from('synthetic approved video bytes');
 const sha256 = createHash('sha256').update(bytes).digest('hex');
 
 test('the ensure route isolates approved imports from legacy saving and ignores caller facts and lineage', async () => {
-  const fixture = { userId: 'visitor' as string | null, imports: [] as Record<string, unknown>[], saves: [] as unknown[] };
+  const fixture = { userId: 'visitor' as string | null, imports: [] as Record<string, unknown>[], saves: [] as unknown[], restores: [] as unknown[] };
   const globals = globalThis as typeof globalThis & { __publicReferenceRoute?: typeof fixture };
   globals.__publicReferenceRoute = fixture;
   const mocks: Record<string, string> = {
+    '@/server/media-library/foreground-visibility': 'export const restoreForegroundLibraryAsset=async(userId,asset)=>{globalThis.__publicReferenceRoute.restores.push({userId,asset});};',
     '@/lib/supabase-ssr': 'export const getRouteAuthContext=async()=>({userId:globalThis.__publicReferenceRoute.userId});',
     '@/server/marketing-media/import-reference': `export const importPublicRecipeReference=async input=>{globalThis.__publicReferenceRoute.imports.push(input);return {id:'ma_owned',url:input.url,size:123,width:1920,height:1080,durationSec:7.5};};`,
-    '@/server/media-library': `export const ensureReusableAsset=async input=>{globalThis.__publicReferenceRoute.saves.push(input);return {id:'legacy-save',url:input.url};};`,
+    '@/server/media-library': `export const ensureReusableAsset=async input=>{globalThis.__publicReferenceRoute.saves.push(input);return {id:'legacy-save',url:input.url,kind:input.kind,metadata:{}};};`,
   };
   try {
     const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `export {POST} from './frontend/app/api/media-library/ensure/route';` },
@@ -53,6 +54,8 @@ test('the ensure route isolates approved imports from legacy saving and ignores 
     assert.equal(fixture.imports.length, 1); assert.equal(fixture.saves.length, 0);
     assert.equal((await post({ url: publicUrl, kind: 'image' })).status, 200);
     assert.equal(fixture.saves.length, 1, 'ordinary ensure retains its existing owner');
+    assert.equal(fixture.restores.length, 1, 'explicit legacy Save restores its exact returned source');
+    assert.deepEqual(fixture.restores[0], { userId: 'visitor', asset: { id: 'legacy-save', url: publicUrl, kind: 'image', metadata: {} } });
     fixture.userId = null;
     assert.equal((await post({ publicVideoId: 'public-copy', url: publicUrl, kind: 'video' })).status, 401);
     assert.equal(fixture.imports.length, 1, 'authentication precedes import work');

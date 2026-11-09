@@ -27,7 +27,7 @@ for (const activeView of ['saved', 'review']) for (const changedSession of [true
   const requests:any[]=[];let reads=0;let blockOwnRefresh=false;
   w.activeView=activeView; w.owner='A';w.sessionStorage.setItem('last-known:user-id','A');
   w.getSession=()=>{reads++;if(reads===1){entered.resolve();return oldSession.promise;}return Promise.resolve({data:{session:{user:{id:w.owner},access_token:'token-'+w.owner}},error:null});};
-  const response=(owner:string)=>({ok:true,json:async()=>({ok:true,[activeView==='saved'?'assets':'outputs']:[{id:owner+'-asset',name:owner+'-watch.png',url:'https://example.invalid/'+owner+'/private.png',kind:'image',source:'upload',accessUrl:'https://example.invalid/'+owner+'/private.png?signature=original',thumbnailAccessUrl:'https://example.invalid/'+owner+'/poster.webp?signature=poster'}],nextCursor:null,hasMore:false})});
+  const response=(owner:string)=>({ok:true,json:async()=>({ok:true,assets:[{organization:{key:owner+'-key',favorite:false,trashedAt:null,collectionIds:[]},libraryRef:{type:'asset',assetId:'ma-'+owner,kind:'image'},sourceRevision:'revision',id:owner+'-asset',name:owner+'-watch.png',url:'https://example.invalid/'+owner+'/private.png',kind:'image',source:'upload',accessUrl:'https://example.invalid/'+owner+'/private.png?signature=original',thumbnailAccessUrl:'https://example.invalid/'+owner+'/poster.webp?signature=poster'}],nextCursor:null,hasMore:false})});
   w.fetch=(url:string,init:RequestInit)=>{
     const bearer=new Headers(init.headers).get('Authorization');requests.push({url,bearer});
     return blockOwnRefresh&&bearer==='Bearer token-A'?ownResponse.promise:Promise.resolve(response(bearer==='Bearer token-A'?'A':'B'));

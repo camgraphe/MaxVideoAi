@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -217,6 +218,6 @@ test('library promotion fetches the authorized source and persists only the new 
    return {key:'media-assets/owner/copy.png',url:`${base}/media-assets/owner/copy.png`,width:1088,height:608,size:buffer.length,mime:'image/png'};
   },
  });
- assert.deepEqual(copied,{url:`${base}/media-assets/owner/copy.png`,thumbUrl:null,mimeType:'image/png',width:1088,height:608,sizeBytes:buffer.length});
+ assert.deepEqual(copied,{url:`${base}/media-assets/owner/copy.png`,thumbUrl:null,mimeType:'image/png',width:1088,height:608,sizeBytes:buffer.length,sourceSha256:createHash('sha256').update(buffer).digest('hex')});
  assert.ok(!JSON.stringify(copied).includes('X-Amz-'));
 });

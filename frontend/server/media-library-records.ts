@@ -294,14 +294,14 @@ export function mapLegacyJobRowToOutputs(row: LegacyJobMediaRow): JobOutputRecor
       url,
       storageUrl: null,
       thumbUrl: normalizeString(entry.thumbUrl) ?? url,
-      previewUrl: null,
+      previewUrl: entry.previewUrl ?? null,
       mimeType: inferMimeFromUrl(url, 'image', entry.mimeType),
       width: normalizeInteger(entry.width),
       height: normalizeInteger(entry.height),
       durationSec: null,
       position: index,
       status,
-      metadata: { legacy: true, surface: row.surface ?? null },
+      metadata: { legacy: true, surface: row.surface ?? null, ...(entry.imageDisplay ? { imageDisplay: entry.imageDisplay } : {}) },
     });
   });
 

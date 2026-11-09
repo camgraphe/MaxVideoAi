@@ -1,3 +1,4 @@
+import { imageDisplayFields } from '@/lib/image-display';
 import type { GeneratedImage } from '@/types/image-generation';
 import type { GroupMemberSummary, GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
@@ -16,6 +17,7 @@ export function mapJobToHistoryEntry(job: Job): HistoryEntry | null {
     renderUrls.length > 0
       ? renderUrls.map((url, index) => ({
           url,
+          ...(job.imageRenders?.[index]?.url === url ? job.imageRenders[index] : {}),
           thumbUrl: resolvePreferredMediaUrl(renderThumbUrls[index], index === 0 ? job.thumbUrl ?? null : null, url),
         }))
       : (() => {
@@ -121,6 +123,8 @@ export function buildCompletedGroup({
     priceCents: totalPriceCents ?? null,
     currency: currency ?? null,
     originalUrl: image.url,
+    sourceOutputId: image.sourceOutputId ?? `${id}:image:${index}`,
+    ...imageDisplayFields(image.imageDisplay, image.url, image.previewUrl),
     thumbUrl: image.thumbUrl ?? image.url,
     aspectRatio,
     prompt,

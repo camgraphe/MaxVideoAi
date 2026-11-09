@@ -22,6 +22,11 @@ test('selection is portal-scoped with a single visible heading and owner-control
   assert.match(modal, /return createPortal/);
   assert.match(modal, /headingId=\{titleId\}/);
   assert.doesNotMatch(modal, /<h2/);
-  assert.match(picker, /await selection\.onConfirm/);
+  const selection=readFileSync('frontend/components/library/useReferencePickerSelection.ts','utf8');
+  assert.match(picker,/useReferencePickerSelection/);
+  assert.match(picker,/ReferencePickerFooter/);
+  assert.ok(picker.split('\n').length<=500);
+  assert.match(selection, /await live\.onConfirm/);
+  assert.match(selection,/validateLibraryPickerSelection/);
   assert.doesNotMatch(picker, /autoPlay|<video|<Image|asset\.id\}`/);
 });

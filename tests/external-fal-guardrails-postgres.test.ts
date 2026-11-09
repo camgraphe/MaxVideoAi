@@ -37,6 +37,7 @@ test('external provenance guards stay independent from model launch and preserve
     CREATE TRIGGER no_queue BEFORE INSERT OR UPDATE OR DELETE ON fal_queue_log FOR EACH ROW EXECUTE FUNCTION forbid_import_side_effect();
     CREATE TRIGGER no_attempt BEFORE INSERT OR UPDATE OR DELETE ON provider_attempts FOR EACH ROW EXECUTE FUNCTION forbid_import_side_effect();
     CREATE TRIGGER no_metric BEFORE INSERT OR UPDATE OR DELETE ON app_generate_metrics FOR EACH ROW EXECUTE FUNCTION forbid_import_side_effect();`);
+  await db.pool.query(readFileSync('neon/migrations/97_media_library_organization.sql', 'utf8'));
   await db.pool.query(readFileSync('neon/migrations/45_generation_timing_samples.sql', 'utf8'));
   await db.pool.query(readFileSync('neon/migrations/46_generation_provider_timing.sql', 'utf8'));
 

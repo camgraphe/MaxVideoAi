@@ -80,3 +80,13 @@ test('copyGeneratedImagesToStorage rejects required external outputs when storag
     /MaxVideoAI storage is required for generated image outputs/
   );
 });
+
+test('copy prepares optional derivatives from the original provider buffer without a second fetch', async () => {
+  let reads = 0; let prepared = 0;
+  const output = await copyGeneratedImagesToStorage({ images: [{ url: 'https://provider.example/image.png' }], jobId: 'job', userId: 'owner', requireOwnedOutput: true,
+    prepare: async (input: any) => { prepared++; assert.deepEqual(input.data, Buffer.from('original')); assert.equal(input.imageUrl, 'https://cdn.example/stored.png'); return { thumbUrl: 'https://cdn.example/thumb.webp', previewUrl: 'https://cdn.example/display.webp' }; },
+    deps: { isStorageConfigured: () => true, extractStorageKeyFromUrl: url => url.startsWith('https://cdn.example/') ? 'owned' : null,
+      fetch: async () => { reads++; return new Response('original', { headers: { 'content-type': 'image/png' } }); },
+      uploadImageToStorage: async () => ({ url: 'https://cdn.example/stored.png', key: 'owned', mime: 'image/png', width: 10, height: 10, size: 8 }) } } as any);
+  assert.equal(prepared, 1); assert.equal(reads, 1); assert.equal(output[0].previewUrl, 'https://cdn.example/display.webp');
+});

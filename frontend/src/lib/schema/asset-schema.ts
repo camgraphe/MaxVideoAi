@@ -35,6 +35,10 @@ export async function ensureAssetSchema(): Promise<void> {
     CREATE INDEX IF NOT EXISTS user_assets_user_source_sha_idx
     ON user_assets (user_id, source, (metadata->>'contentSha256'));
   `);
+  await query(`
+    CREATE INDEX IF NOT EXISTS user_assets_owner_url_lookup_idx ON user_assets (user_id, md5(url));
+    CREATE INDEX IF NOT EXISTS user_assets_owner_origin_lookup_idx ON user_assets (user_id, md5(metadata->>'originUrl'));
+  `);
   };
 
   ensureAssetsPromise = ensure().catch((error) => {

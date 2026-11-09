@@ -72,7 +72,7 @@ interface ImageWorkspaceComposerSurfaceProps {
   maskUrl: string;
   mode: ImageGenerationMode;
   numImages: number;
-  openLibraryForSlot: (slotIndex: number) => void;
+  openLibraryForSlot: (slotIndex?: number) => void;
   outputFormat: string | null;
   outputCompression?: number | null;
   outputFormatSelectOptions: ControlOption[];

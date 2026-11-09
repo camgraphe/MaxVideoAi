@@ -1,3 +1,4 @@
+import type { ImageDisplay } from '@/lib/image-display';
 import type { AcceptedToolQuote } from '@/lib/toolbox/quote';
 export type UpscaleMediaType = 'image' | 'video';
 
@@ -34,6 +35,8 @@ export interface UpscaleToolRequest {
 export interface UpscaleToolOutput {
   url: string;
   thumbUrl?: string | null;
+  previewUrl?: string;
+  imageDisplay?: ImageDisplay;
   width?: number | null;
   height?: number | null;
   mimeType?: string | null;

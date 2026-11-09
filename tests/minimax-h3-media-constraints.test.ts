@@ -219,7 +219,19 @@ test('audio uploads persist trusted duration metadata for MiniMax H3 references'
   const duration = options.properties.find(property => ts.isPropertyAssignment(property) && property.name.getText(parsed) === 'durationSec');
   assert.ok(duration && ts.isPropertyAssignment(duration));
   assert.equal(duration.initializer.getText(parsed), 'duration.durationSec');
-  assert.match(routeSource, /asset:\s*\{[^}]*durationSec:\s*stored\.durationSec/s);
+  const route = ts.createSourceFile('audio-upload-handler.ts', routeSource, ts.ScriptTarget.Latest, true);
+  const responseAssets: ts.ObjectLiteralExpression[] = [];
+  const visitRoute = (node: ts.Node): void => {
+    if (ts.isPropertyAssignment(node) && node.name.getText(route) === 'asset' && ts.isObjectLiteralExpression(node.initializer)) {
+      responseAssets.push(node.initializer);
+    }
+    ts.forEachChild(node, visitRoute);
+  };
+  visitRoute(route);
+  assert.equal(responseAssets.length, 1);
+  const responseDuration = responseAssets[0].properties.find(property => ts.isPropertyAssignment(property) && property.name.getText(route) === 'durationSec');
+  assert.ok(responseDuration && ts.isPropertyAssignment(responseDuration));
+  assert.equal(responseDuration.initializer.getText(route), 'stored.durationSec');
 });
 
 test('trusted audio duration probing reads an uploaded WAV buffer', async () => {

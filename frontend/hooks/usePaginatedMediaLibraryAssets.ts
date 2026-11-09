@@ -1,4 +1,5 @@
 'use client';
+import { useLibraryCacheRevision, libraryRevisionKey, useLibraryScopePersistence } from '@/hooks/useLibraryCacheRevision';
 
 import { useCallback, useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
@@ -23,19 +24,21 @@ export function usePaginatedMediaLibraryAssets({
   kind: MediaLibraryAssetKind;
   source?: string | null;
 }) {
+  const revision = useLibraryCacheRevision(userId);
+  const persistSize = useLibraryScopePersistence(JSON.stringify([userId, kind, source, enabled]));
   const query = useSWRInfinite<MediaLibraryAssetsResponse>(
     (pageIndex, previousPageData) => {
       if (!enabled || (previousPageData && !previousPageData.nextCursor)) return null;
-      return buildMediaLibraryAssetsKey({
+      return libraryRevisionKey(buildMediaLibraryAssetsKey({
         userId,
         kind,
         source,
         limit: MEDIA_LIBRARY_PICKER_PAGE_SIZE,
         cursor: pageIndex === 0 ? null : previousPageData?.nextCursor,
-      });
+      }), revision);
     },
     fetchMediaLibraryAssets,
-    { persistSize: false, revalidateFirstPage: false }
+    { persistSize, revalidateFirstPage: false }
   );
 
   const assets = useMemo<MediaLibraryAsset[]>(() => {

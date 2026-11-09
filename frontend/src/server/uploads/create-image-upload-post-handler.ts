@@ -1,3 +1,4 @@
+import { createUploadedMediaReadAccess } from '@/server/media-library/upload-read-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 
@@ -111,6 +112,7 @@ export function createImageUploadPostHandler(
       return NextResponse.json({
         ok: true,
         asset: {
+          ...await createUploadedMediaReadAccess(userId, { assetId: routeAsset.canonicalAssetId, legacyAssetId: routeAsset.assetId, url: routeAsset.url, kind: 'image' }),
           id: routeAsset.assetId,
           legacyAssetId: routeAsset.assetId,
           ...canonicalMediaAssetFields(routeAsset.canonicalAssetId, 'image'),
@@ -122,8 +124,10 @@ export function createImageUploadPostHandler(
           mime: routeAsset.mimeType,
           name: blob.name,
           thumbUrl: routeAsset.thumbUrl,
+          previewUrl: routeAsset.previewUrl,
+          imageDisplay: routeAsset.imageDisplay,
         },
-      });
+      }, { headers: { 'Cache-Control': 'private, no-store' } });
     } catch (error) {
       return errorResponse(error, limits.maxMB);
     }

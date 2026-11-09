@@ -8,22 +8,20 @@ import {
   type MediaLibraryAssetsResponse,
 } from '@/lib/media-library-client';
 
-export type LibraryView = 'saved' | 'review';
+export type LibraryView = 'all' | 'saved' | 'review';
 export type LibraryKind = 'image' | 'video' | 'audio';
 export type SavedAssetSource = 'all' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
 export type LibraryEntry = {
   view: LibraryView;
-  kind: LibraryKind;
+  kind: LibraryKind | 'all';
   jobId: string | null;
 };
 
 export function resolveLibraryEntry(params: Pick<URLSearchParams, 'get'> | null): LibraryEntry {
-  const view = params?.get('view') === 'review' ? 'review' : 'saved';
+  const view = params?.get('view') === 'review' ? 'review' : params?.get('view') === 'saved' ? 'saved' : 'all';
   const requestedKind = params?.get('kind');
-  const kind: LibraryKind = requestedKind === 'video' || requestedKind === 'audio'
-    ? requestedKind
-    : 'image';
+  const kind: LibraryKind | 'all' = requestedKind === 'video' || requestedKind === 'audio' || requestedKind === 'image' ? requestedKind : 'all';
   const requestedJobId = params?.get('job');
   const jobId = requestedJobId
     && requestedJobId === requestedJobId.trim()

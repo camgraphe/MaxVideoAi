@@ -18,6 +18,7 @@ type UseWorkspaceAssetsOptions = {
   locale?: string;
   inputSchema?: EngineInputSchema | null;
   preferredMode: Mode;
+  workflowIntent?: Mode | null;
   workflowCopy: {
     clearReferencesToUseStartEnd: string;
     clearStartEndToUseReferences: string;
@@ -38,6 +39,7 @@ export function useWorkspaceAssets({
   locale,
   inputSchema = engine?.inputSchema,
   preferredMode,
+  workflowIntent,
   workflowCopy,
   showNotice,
   klingElements,
@@ -48,7 +50,6 @@ export function useWorkspaceAssets({
     setAssetPickerTarget,
     assetLibraryKind,
     assetLibrarySource,
-    setAssetLibrary,
     visibleAssetLibrary,
     isAssetLibraryLoading,
     assetLibraryError,
@@ -67,7 +68,7 @@ export function useWorkspaceAssets({
     setInputAssets,
   });
 
-  const { handleOpenAssetLibrary, handleSelectLibraryAsset, handleImportLibraryFile, handleAssetAdd, handleAssetRemove } =
+  const { handleOpenAssetLibrary, handleSelectLibraryAsset, handleSelectLibraryAssets, handleImportLibraryFile, handleAssetAdd, handleAssetRemove } =
     useWorkspaceReferenceAssets({
       accountScope,
       engineId,
@@ -76,6 +77,7 @@ export function useWorkspaceAssets({
       assetPickerTarget,
       inputSchema,
       preferredMode,
+      workflowIntent,
       workflowCopy,
       showNotice,
       inputAssets,
@@ -84,8 +86,7 @@ export function useWorkspaceAssets({
       assetLibrarySource,
       resetAssetLibraryForSource,
       setAssetPickerTarget,
-      setAssetLibrary,
-    });
+      });
 
   const {
     handleOpenKlingAssetLibrary,
@@ -131,6 +132,7 @@ export function useWorkspaceAssets({
     handleOpenAssetLibrary,
     handleOpenKlingAssetLibrary,
     handleSelectLibraryAsset,
+    handleSelectLibraryAssets,
     handleImportLibraryFile,
     handleSelectKlingLibraryAsset,
     handleImportKlingLibraryFile,

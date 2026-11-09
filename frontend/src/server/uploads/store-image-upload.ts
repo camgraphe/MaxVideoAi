@@ -1,3 +1,5 @@
+import { prepareImageRenditions } from '@/server/image-thumbnails';
+import { imageDisplayFields, type ImageDisplay } from '@/lib/image-display';
 import { createHash } from 'node:crypto';
 
 import sharp, { type SharpOptions } from 'sharp';
@@ -99,6 +101,7 @@ type ExistingUploadRow = {
   height: number | null;
   size_bytes: string | number | null;
   thumb_url: string | null;
+  metadata?: Record<string, unknown>;
 };
 
 export type StoredImageUploadRouteAsset = {
@@ -110,6 +113,8 @@ export type StoredImageUploadRouteAsset = {
   mimeType: string;
   sizeBytes: number;
   thumbUrl: string | null;
+  previewUrl?: string;
+  imageDisplay?: ImageDisplay;
 };
 
 type ImageUploadServiceDependencies = {
@@ -122,6 +127,7 @@ type ImageUploadServiceDependencies = {
   query: typeof query;
   uploadImageToStorage: typeof uploadImageToStorage;
   createUploadImageThumbnail: typeof createUploadImageThumbnail;
+  prepareImageRenditions: typeof prepareImageRenditions;
   recordUserAsset: typeof recordUserAsset;
   ensureReusableAsset: typeof ensureReusableAsset;
   logImageUploadEvent: typeof logImageUploadEvent;
@@ -365,6 +371,7 @@ const defaultDependencies: ImageUploadServiceDependencies = {
   query,
   uploadImageToStorage,
   createUploadImageThumbnail,
+  prepareImageRenditions,
   recordUserAsset,
   ensureReusableAsset,
   logImageUploadEvent,
@@ -409,6 +416,7 @@ export function createStoreImageUploadService(
       await dependencies.ensureAssetSchema();
       existingAssets = await dependencies.query<ExistingUploadRow>(
         `SELECT ua.asset_id,
+                ua.metadata,
                 ua.url,
                 ua.mime_type,
                 ua.width,
@@ -486,6 +494,19 @@ export function createStoreImageUploadService(
         } : {}),
         ...(params.signal ? { signal: params.signal } : {}),
       });
+      const cleanupDisplayKeys: string[] = [];
+      // An explicitly injected old thumbnail owner retains its historical no-extra-I/O contract.
+      const display = (!overrides.createUploadImageThumbnail || overrides.prepareImageRenditions)
+        ? await dependencies.prepareImageRenditions({
+          data: normalized.bytes, imageUrl: uploadResult.url, jobId: 'upload', index: 0,
+          userId: params.userId, prefix: 'user-asset-thumbs', thumbUrl: imageThumbUrl,
+          ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
+          ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
+          ...(params.cleanupObjects ? { beforeUpload: async (objectKey: string) => {
+            await params.cleanupObjects!.beforeUpload({ objectRole: 'thumbnail', objectKey, safeToDelete: true });
+            cleanupDisplayKeys.push(objectKey);
+          } } : {}), signal: params.signal,
+        }).catch(() => ({})) : {};
       params.signal?.throwIfAborted();
       const width = uploadResult.width ?? normalized.width;
       const height = uploadResult.height ?? normalized.height;
@@ -505,6 +526,7 @@ export function createStoreImageUploadService(
           normalizedFromMime: normalized.normalizedFromMime,
           contentSha256,
           thumbUrl: imageThumbUrl,
+          ...display,
         },
       });
 
@@ -519,7 +541,8 @@ export function createStoreImageUploadService(
           height,
           sizeBytes,
           thumbUrl: imageThumbUrl,
-          metadata: { originalName: params.fileName, mediaFacts: { source: 'probe', width, height } },
+          ...display,
+          metadata: { ...display, originalName: params.fileName, mediaFacts: { source: 'probe', width, height } },
         })
         .catch(() => {
           dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
@@ -528,6 +551,7 @@ export function createStoreImageUploadService(
       if (params.cleanupObjects) {
         await params.cleanupObjects.retain(uploadResult.key);
         if (cleanupThumbnailKey) await params.cleanupObjects.retain(cleanupThumbnailKey);
+        if ('imageDisplay' in display && display.imageDisplay) for (const key of cleanupDisplayKeys) await params.cleanupObjects.retain(key);
       }
 
       return {
@@ -568,6 +592,7 @@ export async function loadStoredImageUploadRouteAsset(params: {
     const assets = await query<ExistingUploadRow>(
       `SELECT ua.asset_id,
               ma.public_id,
+              ua.metadata,
               ua.url,
               ua.mime_type,
               ua.width,
@@ -597,6 +622,7 @@ export async function loadStoredImageUploadRouteAsset(params: {
       mimeType: asset.mime_type,
       sizeBytes: numericSize(asset.size_bytes, 0),
       thumbUrl: asset.thumb_url,
+      ...imageDisplayFields(asset.metadata?.imageDisplay, asset.url),
     };
   } catch (error) {
     logImageUploadEvent('error', 'IMAGE_UPLOAD_PROJECTION_FAILED');

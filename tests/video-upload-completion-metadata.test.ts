@@ -36,8 +36,9 @@ async function fixture(kind: 'multipart' | 'direct', corrupt = false, portrait =
   };
   const stubs: Record<string, string> = {
     '@/server/uploads/store-media-upload': 'export const storeAudioUpload=async()=>{throw new Error("Video must never use the audio decoder.")};',
-    '@/lib/supabase-ssr': 'export const getRouteAuthContext=async()=>({userId:fixture.owner});',
+    '@/lib/supabase-ssr': 'export const createSupabaseServerClient=()=>{throw Error("Unexpected auth")};export const getRouteAuthContext=async()=>({userId:fixture.owner});',
     '@/server/storage': `
+      export const extractStorageKeyFromUrl=()=>null;
       export const isStorageKeyWithinUserPrefix=({key,prefix,userId})=>key.startsWith(prefix+'/'+userId+'/');
       export const buildPublicStorageUrl=()=>fixture.url;
       export const getStorageObjectMetadata=async()=>({size:fixture.bytes.length,mime:'video/quicktime'});

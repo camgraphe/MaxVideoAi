@@ -1,6 +1,7 @@
+import { imageDisplayFields } from '@/lib/image-display';
 import { NextRequest, NextResponse } from 'next/server';
 import { readMediaFacts } from '@/lib/media-identity';
-import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
+import {buildRecentOutputStoryboardHandoff,buildRecentOutputImage} from '@/server/media-library/output-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
   listRecentOutputPage,
@@ -15,31 +16,6 @@ export const runtime = 'nodejs';
 function normalizeKind(value: string | null): MediaKind | null {
   if (value === 'image' || value === 'video' || value === 'audio') return value;
   return null;
-}
-
-function buildRecentOutputStoryboardHandoff(output: JobOutputRecord) {
-  if (!output.jobPrompt) return null;
-  return extractStoryboardGeneratorDraftFromPrompt(output.jobPrompt, {
-    durationSec: output.jobDurationSec ?? output.durationSec,
-    aspectRatio: output.jobAspectRatio,
-    width: output.width,
-    height: output.height,
-  });
-}
-
-function buildRecentOutputImage(output: JobOutputRecord | null | undefined) {
-  if (!output?.url) return null;
-  return {
-    id: output.id,
-    jobId: output.jobId,
-    url: output.url,
-    thumbUrl: output.thumbUrl,
-    previewUrl: output.previewUrl,
-    mime: output.mimeType,
-    width: output.width,
-    height: output.height,
-    createdAt: output.createdAt,
-  };
 }
 
 export async function GET(req: NextRequest) {
@@ -91,6 +67,7 @@ export async function GET(req: NextRequest) {
       url: output.url,
       thumbUrl: output.thumbUrl,
       previewUrl: output.previewUrl,
+      ...(output.kind === 'image' ? imageDisplayFields(output.metadata.imageDisplay, output.url, output.previewUrl) : {}),
       playbackVideoUrl: typeof output.metadata.playbackVideoUrl === 'string' ? output.metadata.playbackVideoUrl : undefined,
       role: output.metadata.role === 'last_frame' ? 'last_frame' : undefined,
       mime: output.mimeType,

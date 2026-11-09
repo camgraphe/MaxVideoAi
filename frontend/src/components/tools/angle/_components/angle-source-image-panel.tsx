@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
+import { AngleSourcePreview } from './angle-source-preview';
 import { Images, Loader2, Upload, X } from 'lucide-react';
 import type {
   ChangeEvent,
@@ -114,7 +115,7 @@ export function AngleSourceImagePanel({
               </div>
             </div>
             <div className="overflow-hidden bg-bg">
-              <img src={sourceImage.url} alt={copy.sourceAlt} className="h-56 w-full object-contain" />
+              <AngleSourcePreview key={JSON.stringify([sourceImage.url, sourceImage.readAccessOwnerId, sourceImage.readAccessRevision])} image={sourceImage} copy={copy} />
             </div>
           </div>
         ) : (

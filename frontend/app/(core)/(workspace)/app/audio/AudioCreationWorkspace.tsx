@@ -250,6 +250,6 @@ function OwnedAudioCreationWorkspace({ userId }: { userId: string | null }) {
         }) : null}
       </section>
     </AudioCreationResults></div>
-    {libraryOpen && userId ? <ReferenceLibrary key={userId} copy={copy} onClose={() => setLibraryOpen(false)} onSelect={reference => { updateDraft({ reference }); setLibraryOpen(false); }} /> : null}
+    {userId ? <ReferenceLibrary key={userId} open={libraryOpen} intent={JSON.stringify([intent,draft.voiceModel])} locale={locale} userId={userId} copy={copy} onClose={() => setLibraryOpen(false)} onSelect={reference => { updateDraft({ reference }); setLibraryOpen(false); }} /> : null}
   </main>;
 }

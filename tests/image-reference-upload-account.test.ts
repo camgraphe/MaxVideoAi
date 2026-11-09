@@ -250,3 +250,39 @@ test('re-uploading a slot cannot be cleared by the previous file failure', async
     assert.equal(f.w.document.querySelector('output').textContent, 'https://example.invalid/second.png');
   } finally { await f.dispose(); }
 });
+
+
+test('image ordered basket fills distinct empty slots and last-member refusal commits none',async()=>{
+ const f=await mount();try {
+  const assets=[1,2].map(i=>({id:'image'+i,url:'https://example.invalid/'+i+'.png',mime:'image/png'}));
+  await f.w.fx.act(async()=>assert.equal(f.w.probe.handleLibrarySelectMany(assets),true));
+  assert.deepEqual(Array.from(f.w.probe.readyReferenceUrls),assets.map(a=>a.url));
+  const before=JSON.stringify(f.w.probe.persistableReferenceSlots);
+  await f.w.fx.act(async()=>assert.equal(f.w.probe.handleLibrarySelectMany([...assets,{id:'bad',url:'https://example.invalid/bad.gif',mime:'image/gif'}]),false));
+  assert.equal(JSON.stringify(f.w.probe.persistableReferenceSlots),before);
+  await f.w.fx.act(async()=>assert.equal(f.w.probe.handleLibrarySelectMany(Array.from({length:4},(_,i)=>({id:'new'+i,url:'https://example.invalid/new'+i+'.png',mime:'image/png'}))),false));
+  assert.equal(JSON.stringify(f.w.probe.persistableReferenceSlots),before);
+ }finally{await f.dispose();}
+});
+
+test('Character toggles remain immediate and ordinary batch shares their real slot capacity',async()=>{
+ const f=await mount();try{
+  const character={id:'character-A',jobId:'character-job',imageUrl:'https://example.invalid/character.png'};
+  await f.w.fx.act(async()=>f.w.probe.toggleCharacterReference(character));assert.equal(f.w.probe.selectedCharacterReferences.length,1);
+  const limit=f.w.probe.referenceSlotLimit,items=Array.from({length:limit},(_,i)=>({id:'ordinary-'+i,url:'https://example.invalid/ordinary-'+i+'.png',mime:'image/png'}));
+  const before=JSON.stringify(f.w.probe.persistableReferenceSlots);await f.w.fx.act(async()=>assert.equal(f.w.probe.handleLibrarySelectMany(items),false));assert.equal(JSON.stringify(f.w.probe.persistableReferenceSlots),before);
+  await f.w.fx.act(async()=>assert.equal(f.w.probe.handleLibrarySelectMany(items.slice(0,limit-1)),true));assert.equal(f.w.probe.selectedCharacterReferences.length,1);
+  await f.w.fx.act(async()=>f.w.probe.closeLibraryModal());assert.equal(f.w.probe.selectedCharacterReferences.length,1,'Done/Close retains accepted Character toggles');
+  await f.w.fx.act(async()=>f.w.probe.toggleCharacterReference(character));assert.equal(f.w.probe.selectedCharacterReferences.length,0);
+ }finally{await f.dispose();}
+});
+
+test('image upload and library slots retain owned read descriptors while drafts omit transient grants',async()=>{
+ const f=await mount();const original='https://example.invalid/private.png',ref={type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'image'};
+ const dto={id:'stored',assetId:ref.assetId,ref,url:original,mime:'image/png',readAccessOwnerId:'account-A',readAccessRef:ref,readAccessRevision:'ra_'+'a'.repeat(64),readAccessExpiresAt:'2099-01-01T00:00:00Z',accessUrl:original+'?grant=1'};
+ try{const {pending}=await f.upload();await f.w.fx.act(async()=>{f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:dto})});await pending;});
+ assert.equal(f.w.probe.displayedReferenceSlots[0].accessUrl,dto.accessUrl);assert.equal(f.w.probe.readyReferenceUrls[0],original);
+ const stored=f.w.probe.persistableReferenceSlots[0];assert.equal(stored.readAccessOwnerId,'account-A');assert.deepEqual(JSON.parse(JSON.stringify(stored.readAccessRef)),ref);assert.equal(stored.accessUrl,undefined);assert.equal(stored.readAccessExpiresAt,undefined);
+ await f.w.fx.act(async()=>f.w.probe.handleLibrarySelect(dto,0));assert.equal(f.w.probe.displayedReferenceSlots[0].accessUrl,dto.accessUrl);
+ }finally{await f.dispose();}
+});

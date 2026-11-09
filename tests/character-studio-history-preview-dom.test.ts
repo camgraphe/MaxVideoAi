@@ -60,7 +60,12 @@ for (const source of ['recent', 'history'] as const) {
         const opener = thumbnail.closest('button');
         opener.focus();
         await f.act(async () => opener.click());
-        const reader = doc.querySelector('[role="dialog"] img');
+        // The stored thumbnail remains visible while the real lazy reader mounts.
+        // No qualified display is supplied, so its reading source must still be the exact original.
+        for (let i = 0; i < 40 && ![...doc.querySelectorAll('[role="dialog"] img')].some(image => image.getAttribute('src') === original); i++) {
+          await f.act(async () => new Promise(resolve => setTimeout(resolve, 5)));
+        }
+        const reader = [...doc.querySelectorAll('[role="dialog"] img')].find(image => image.getAttribute('src') === original);
         assert.ok(reader);
         assert.equal(reader.getAttribute('src'), original, 'inspection must use the original through the private-safe reader');
         assert.equal(reader.hasAttribute('srcset'), false);

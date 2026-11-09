@@ -1,3 +1,5 @@
+import { restoreForegroundLibraryAsset } from '@/server/media-library/foreground-visibility';
+import { serializeLibraryAsset } from '@/server/media-library/asset-response';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset, type MediaKind } from '@/server/media-library';
@@ -54,23 +56,8 @@ export async function POST(req: NextRequest) {
       durationSec: payload?.kind !== 'audio' && typeof payload?.durationSec === 'number' ? payload.durationSec : null,
     });
 
-    return NextResponse.json({
-      ok: true,
-      asset: {
-        id: asset.id,
-        url: asset.url,
-        thumbUrl: asset.thumbUrl,
-        previewUrl: asset.previewUrl,
-        width: asset.width,
-        height: asset.height,
-        durationSec: asset.durationSec,
-        mime: asset.mimeType,
-        size: asset.sizeBytes,
-        source: asset.source,
-        jobId: asset.sourceJobId,
-        sourceOutputId: asset.sourceOutputId,
-      },
-    });
+    await restoreForegroundLibraryAsset(userId, asset);
+    return NextResponse.json({ ok: true, asset: serializeLibraryAsset(asset) });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'SAVE_FAILED';
     return NextResponse.json({ ok: false, error: message }, { status: 422 });

@@ -458,6 +458,7 @@ export default function AudioWorkspace() {
       </aside>
 
       <AudioGeneratedVideoPickerModal
+        userId={user?.id}
         open={generatedPickerOpen}
         videos={generatedVideos}
         isLoading={isGeneratedVideosLoading}

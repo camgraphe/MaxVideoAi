@@ -1,12 +1,14 @@
 'use client';
+import { useLibraryMediaAccess } from '@/hooks/useLibraryMediaAccess';
+import { invalidateLibraryMedia, useLibraryCacheRevision } from '@/hooks/useLibraryCacheRevision';
 
 import { useEffect, useRef, useState } from 'react';
 import { Upload, Images, X, Film, AudioLines, Loader2 } from 'lucide-react';
 import { creatorExperienceCopy } from './creator-experience-copy';
-import { AssetLibraryBrowser, type AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
-import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
-import { authFetch } from '@/lib/authFetch';
+import { type AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
+import { LibraryPickerDialog } from '@/components/library/LibraryPickerDialog.client';
 import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
+import { resolveMediaSourceRef } from '@/lib/media-identity';
 import { uploadVideoFile } from '@/lib/client-video-upload';
 import { buildMediaLibraryAssetsUrl, type MediaLibraryAssetsResponse } from '@/lib/media-library-client';
 import type { ToolMediaKind } from '@/lib/toolbox/catalogue';
@@ -14,8 +16,8 @@ import { creatorCopy } from './creator-copy';
 import { selectCreatorSource, type CreatorSource } from './creator-source-selection';
 import styles from './creator-workspace.module.css';
 
-export function CreatorSourcePicker({ userId, locale, label, hint, kind, source, onChange, onBusyChange, disabled = false }: {
-  userId?: string; locale: string; label: string; hint?: string; kind: ToolMediaKind; source: CreatorSource | null;
+export function CreatorSourcePicker({ intent, userId, locale, label, hint, kind, source, onChange, onBusyChange, disabled = false }: {
+  intent?: string; userId?: string; locale: string; label: string; hint?: string; kind: ToolMediaKind; source: CreatorSource | null;
   onChange(source: CreatorSource | null): void; onBusyChange?(busy: boolean): void; disabled?: boolean;
 }) {
   const copy = creatorCopy(locale), experience = creatorExperienceCopy(locale);
@@ -42,19 +44,21 @@ export function CreatorSourcePicker({ userId, locale, label, hint, kind, source,
         if (!response.ok || !data.ok) throw new Error('Upload failed');
         asset = data.asset;
       }
+      invalidateLibraryMedia(userId);
       const selected = selectCreatorSource(asset, kind, file.name);
       if (mounted.current && !controller.signal.aborted) onChange(selected);
     } catch { if (mounted.current && !controller.signal.aborted) setError(copy.uploadError); }
     finally { uploading.current = false; if (uploadController.current === controller) uploadController.current = null; if (mounted.current && !controller.signal.aborted) { setBusy(false); onBusyChange?.(false); } }
   }
   const importLabel = kind === 'image' ? experience.importImage : kind === 'video' ? experience.importVideo : experience.importAudio;
-  const thumbnail = source?.thumbnailUrl ?? (kind === 'image' ? source?.url : undefined);
+  const mediaAccess = useLibraryMediaAccess({ userId, asset: source ?? {} });
+  const thumbnail = mediaAccess.retired ? undefined : mediaAccess.access.thumbnailAccessUrl ?? (source?.readAccessRef || source?.readAccessOwnerId ? kind === 'image' ? mediaAccess.access.accessUrl : undefined : source?.thumbnailUrl ?? (kind === 'image' ? source?.url : undefined));
   return <section className={styles.sourceCard}>
     <h2>{label}</h2>
     {hint ? <p className={styles.sourceHint}>{hint}</p> : null}
     {source ? <div className={styles.selectedSource}>
       <div className={styles.sourceThumbnail}>{thumbnail ? /* eslint-disable-next-line @next/next/no-img-element -- Account-owned media stays outside public optimization. */
-        <img src={thumbnail} alt="" /> : kind === 'audio' ? <AudioLines size={22} aria-hidden="true" /> : <Film size={22} aria-hidden="true" />}</div>
+        <img src={thumbnail} alt="" onError={() => { void mediaAccess.refresh(); }} /> : kind === 'audio' ? <AudioLines size={22} aria-hidden="true" /> : <Film size={22} aria-hidden="true" />}</div>
       <div><strong title={source.name}>{source.name || copy.source}</strong><span>{experience.selected}{source.durationSec ? ` · ${Number(source.durationSec.toFixed(2))} ${copy.seconds}` : ''}</span></div>
       <button type="button" disabled={disabled || busy} onClick={() => onChange(null)} aria-label={`${copy.remove} — ${label}`}><X size={17} aria-hidden="true" /></button>
     </div> : null}
@@ -69,23 +73,24 @@ export function CreatorSourcePicker({ userId, locale, label, hint, kind, source,
       <button type="button" className={styles.libraryButton} disabled={!userId || disabled || busy} onClick={() => setOpen(true)}><Images size={16} aria-hidden="true" />{copy.library}</button>
     </div>
     {error ? <p role="alert">{error}</p> : null}
-    {open && userId ? <CreatorLibraryPicker key={`${userId}:${kind}`} locale={locale} kind={kind} disabled={disabled || busy}
-      onClose={() => setOpen(false)} onSelect={asset => { onChange(selectCreatorSource(asset, kind, copy.library)); setOpen(false); setError(null); }} /> : null}
+    <CreatorLibraryPicker open={open && Boolean(userId)} intent={intent ?? `creator:${kind}`} key={`${userId}:${intent ?? kind}`} userId={userId ?? ""} locale={locale} kind={kind} disabled={disabled || busy}
+      onClose={() => setOpen(false)} onSelect={asset => { onChange(selectCreatorSource(asset, kind, copy.library)); setOpen(false); setError(null); }} />
   </section>;
 }
 
-function CreatorLibraryPicker({ locale, kind, disabled, onClose, onSelect }: {
-  locale: string; kind: ToolMediaKind; disabled: boolean; onClose(): void; onSelect(asset: AssetBrowserAsset): void;
+function CreatorLibraryPicker({ open, intent, userId, locale, kind, disabled, onClose, onSelect }: {
+  open: boolean; intent: string; userId: string; locale: string; kind: ToolMediaKind; disabled: boolean; onClose(): void; onSelect(asset: AssetBrowserAsset): void;
 }) {
   const copy = creatorCopy(locale);
-  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose });
+  const revision = useLibraryCacheRevision(userId);
   const [assets, setAssets] = useState<AssetBrowserAsset[]>([]), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState<string | null>(null), [retry, setRetry] = useState(0), [hasMore, setHasMore] = useState(false);
   const nextCursor = useRef<string | null>(null);
   useEffect(() => {
+    if (!open || !userId) return;
     const controller = new AbortController();
     setBusy(true); setError(null);
-    void authFetch(buildMediaLibraryAssetsUrl({ kind, limit: 30, cursor }), { signal: controller.signal }).then(async response => {
+    void ownedAuthFetch(buildMediaLibraryAssetsUrl({ kind, limit: 30, cursor }), userId, { signal: controller.signal }).then(async response => {
       const data = await response.json() as MediaLibraryAssetsResponse;
       if (!response.ok || !data.ok) throw new Error('Library unavailable');
       if (controller.signal.aborted) return;
@@ -96,16 +101,12 @@ function CreatorLibraryPicker({ locale, kind, disabled, onClose, onSelect }: {
     }).catch(() => { if (!controller.signal.aborted) setError(copy.sourceError); })
       .finally(() => { if (!controller.signal.aborted) setBusy(false); });
     return () => controller.abort();
-  }, [kind, cursor, retry, copy.sourceError]);
-  return <div className={styles.modalBackdrop}>
-    <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={copy.library} tabIndex={-1} onKeyDown={onDialogKeyDown} className={styles.libraryDialog}>
-      <AssetLibraryBrowser locale={locale} assetType={kind} assets={assets} title={copy.library} source="all" availableSources={['all']}
+  }, [kind, cursor, retry, copy.sourceError, userId, open, revision]);
+  return <LibraryPickerDialog open={open} userId={userId} intent={intent} locale={locale} assetType={kind} assets={assets} title={copy.library} source="all" availableSources={['all']}
         sourceLabels={{ all: copy.all }} onSourceChange={() => {}} isLoading={busy && !assets.length} error={error}
         searchPlaceholder={copy.search} sourcesTitle={copy.source} emptyLabel={copy.empty} emptySearchLabel={copy.empty}
         onClose={onClose} closeLabel={copy.close} renderAssetActions={() => null} hasMore={hasMore} isLoadingMore={busy && !!assets.length}
         loadMoreLabel={copy.loadMore} onLoadMore={() => { if (!busy) setCursor(nextCursor.current); }}
         headerActions={error ? <button type="button" onClick={() => setRetry(value => value + 1)}>{copy.retry}</button> : undefined}
-        selection={{ scope: `creator:${kind}`, busy: disabled, onConfirm: onSelect, isDisabled: asset => !/^ma_[a-f0-9]{32}$/.test(asset.id) }} />
-    </div>
-  </div>;
+        selection={{ busy: disabled, onConfirm: onSelect, isDisabled: asset => !resolveMediaSourceRef(asset, kind) }} />;
 }

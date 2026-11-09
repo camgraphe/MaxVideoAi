@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createRequire } from 'node:module';
+import Module, { createRequire } from 'node:module';
+import { build } from 'esbuild';
+import path from 'node:path';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -36,10 +38,21 @@ async function mount(large = false) {
   const require = createRequire(import.meta.url);
   const css = require.extensions['.css'];
   require.extensions['.css'] = (module) => { module.exports = { __esModule: true, default: {} }; };
+  // This test imports Next client owners through Node's CJS TS loader. Bundle the
+  // real ESM-only Uppy dependency as Next does; preserve its implementation.
+  const frontendRequire = createRequire(path.resolve('frontend/package.json'));
+  const uppyPath = frontendRequire.resolve('@uppy/core');
+  const previousUppy = require.cache[uppyPath];
+  const bundledUppy = await build({ entryPoints: [uppyPath], bundle: true, platform: 'browser', format: 'cjs', write: false });
+  const uppyModule = new Module(uppyPath);
+  new Function('module', 'exports', 'require', bundledUppy.outputFiles[0].text)(uppyModule, uppyModule.exports, frontendRequire);
+  require.cache[uppyPath] = uppyModule;
   let View: typeof WorkspaceAppReadyView;
   try {
     ({ WorkspaceAppReadyView: View } = await import('../frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView'));
   } finally {
+    if (previousUppy) require.cache[uppyPath] = previousUppy;
+    else delete require.cache[uppyPath];
     if (css) require.extensions['.css'] = css;
     else delete require.extensions['.css'];
   }

@@ -1,4 +1,5 @@
 'use client';
+import { libraryOriginalAccessHref } from '@/lib/library-media-access';
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
@@ -34,7 +35,7 @@ export function VideoSharePanel({ asset, locale, fixedShareUrl }: { asset: Asset
   const filename = suggestDownloadFilename(asset.url, 'maxvideoai-video.mp4');
   const downloadHref = asset.source === 'public-example' && asset.jobId
     ? `/api/video-shares/public-download?${new URLSearchParams({ jobId: asset.jobId })}`
-    : buildAppDownloadUrl(asset.accessUrl ?? asset.url, filename);
+    : libraryOriginalAccessHref(asset, 'download', filename) ?? buildAppDownloadUrl(asset.accessUrl ?? asset.url, filename);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => panelRef.current?.scrollIntoView?.({ block: 'nearest' }));

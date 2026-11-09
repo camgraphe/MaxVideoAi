@@ -17,20 +17,29 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
   const facts = (await database.pool.query("SELECT current_setting('listen_addresses') AS listeners, current_setting('server_version_num')::int AS version")).rows[0];
   assert.equal(facts.listeners, '');
   assert.ok(facts.version >= 170000 && facts.version < 180000);
-  await database.pool.query(`CREATE TABLE media_assets (
-    id text PRIMARY KEY, public_id text DEFAULT ('ma_' || md5(random()::text)),
-    user_id text, kind text, url text, thumb_url text, preview_url text, mime_type text,
-    width int, height int, size_bytes bigint, source text, source_job_id text, source_output_id text,
-    status text, metadata jsonb, created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(), deleted_at timestamptz
-  )`);
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = database.databaseUrl;
+  const db = await import('../frontend/src/lib/db');
+  const schema = await import('../frontend/src/lib/schema');
+  t.after(async () => {
+    await db.getDb().end();
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+  });
+  await schema.ensureMediaLibrarySchema();
+  await schema.ensureAssetSchema();
+  await schema.ensureMediaLibraryOrganizationSchema();
+  await database.pool.query('CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,hidden boolean DEFAULT false)');
   const fixture = {
     query: async (sql: string, values: unknown[]) => (await database.pool.query(sql, values)).rows,
+    transaction: db.withDbTransaction,
+    isTransactionQueryExecutor: db.isTransactionQueryExecutor,
     userId: viewer,
     publicImports: 0,
   };
   const stubs: Record<string, string> = {
-    '@/lib/db': 'export const query = (sql, values) => fixture.query(sql, values); export const isTransactionQueryExecutor = () => false; export const withDbTransaction = () => {throw Error("Unexpected transaction");};',
-    '@/lib/schema': 'export const ensureAssetSchema = async () => {}; export const ensureMediaLibrarySchema = async () => {};',
+    '@/lib/db': 'export const query = (sql, values) => fixture.query(sql, values); export const isTransactionQueryExecutor = executor => fixture.isTransactionQueryExecutor(executor); export const withDbTransaction = callback => fixture.transaction(callback);',
+    '@/lib/schema': 'export const ensureAssetSchema = async () => {}; export const ensureMediaLibrarySchema = async () => {}; export const ensureMediaLibraryOrganizationSchema = async () => {};',
     '@/lib/supabase-ssr': 'export const getRouteAuthContext = async () => ({userId:fixture.userId});',
     'next/server': 'export const NextResponse = {json:(body, init) => new Response(JSON.stringify(body), init)};',
     '@/server/storage': `export * from './server/storage'; export const recordUserAsset = async () => {};`,
@@ -98,7 +107,7 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       const response = await api.POST({ json: async () => ({
         kind: 'image', mime: 'image/png', source: 'upload', ...submittedPayload,
       }) });
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, await response.clone().text());
       const payload = await response.json();
       const stored = (await database.pool.query('SELECT * FROM media_assets WHERE id=$1 AND user_id=$2', [payload.asset.id, viewer])).rows[0];
       assert.equal(stored.user_id, viewer);
@@ -125,7 +134,7 @@ test('saving a foreign storage URL cannot turn an owned library row into a priva
       [`https://media.maxvideoai.com/user-assets/${owner}/foreign-cdn-image.png`, null],
     ]) {
       const response = await cdnApi.POST({ json: async () => ({ kind: 'image', mime: 'image/png', source: 'upload', url }) });
-      assert.equal(response.status, 200);
+      assert.equal(response.status, 200, await response.clone().text());
       const payload = await response.json();
       const stored = (await database.pool.query('SELECT * FROM media_assets WHERE id=$1 AND user_id=$2', [payload.asset.id, viewer])).rows[0];
       const page = await cdnApi.listAgentMedia({}, principal, {

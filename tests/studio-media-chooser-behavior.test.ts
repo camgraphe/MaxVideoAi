@@ -1,3 +1,5 @@
+import {mediaGridGlobals} from './helpers/media-grid-dom';
+import './helpers/uppy-node-fixture';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import test from 'node:test';
@@ -15,7 +17,8 @@ const video = {assetId: 'ma_'+'b'.repeat(32),url: 'https://media.test/original.m
 const output = {id: 'out-1',jobId: 'job-1',url: image.url,thumbUrl: image.thumbUrl,status: 'ready'};
 const response = (payload: unknown, ok = true) => ({ok,json: async () => payload}) as Response;
 
-async function mountChooser(request: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es'} = {}, strict = false, explicitOpener = false) {
+async function mountChooser(rawRequest: typeof fetch, options: {purpose?: 'reference'|'timeline';locale?: 'en'|'fr'|'es';characterProjectId?:string} = {}, strict = false, explicitOpener = false) {
+  const request: typeof fetch = async (url,init) => String(url).includes('/selection/validate') ? response({ok:true,results:JSON.parse(String(init?.body)).candidates.map((candidate:any)=>({reference:candidate.reference}))}) : String(url).endsWith('/organization') ? response({ok:true,succeededCount:1,failedCount:0,results:[{status:'succeeded',state:{favorite:false,trashedAt:null,collectionIds:[]}}]}) : rawRequest(url,init);
   const dom = new JSDOM('<button id="opener">Open</button><textarea id="composer"></textarea><div id="root"></div>', {url: 'https://maxvideoai.test/app/studio'});
   if (strict) {
     // JSDOM lacks modal inertness. Native dialogs reject outside focus while open,
@@ -29,7 +32,7 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
   let focusBeforeModal: string | null = null;
   dom.window.HTMLDialogElement.prototype.showModal = function() {if(!this.hasAttribute('open'))focusBeforeModal=dom.window.document.activeElement?.id??null;this.setAttribute('open','');this.querySelector('button')?.focus();};
   const previous = new Map<string,PropertyDescriptor|undefined>();
-  for (const [key,value] of Object.entries({window: dom.window,HTMLElement: dom.window.HTMLElement,document: dom.window.document,React,fetch: request,FormData: dom.window.FormData,IS_REACT_ACT_ENVIRONMENT: true})) {
+  for (const [key,value] of Object.entries({...mediaGridGlobals(dom.window),window: dom.window,HTMLElement: dom.window.HTMLElement,document: dom.window.document,React,fetch: request,FormData: dom.window.FormData,IS_REACT_ACT_ENVIRONMENT: true})) {
     previous.set(key,Object.getOwnPropertyDescriptor(globalThis,key));
     Object.defineProperty(globalThis,key,{configurable: true,writable: true,value});
   }
@@ -44,10 +47,10 @@ async function mountChooser(request: typeof fetch, options: {purpose?: 'referenc
   const element = React.createElement(ImageReferenceLibrary,{accountKey:'account-A',onClose: () => {},onSelect: asset => selected.push(asset),mediaEnabled: true,...options,...(explicitOpener ? {returnFocusTo: originalTrigger} : {})});
   await React.act(async () => root.render(strict ? React.createElement(React.StrictMode,null,element) : element));
   const settle = () => React.act(async () => {await new Promise(resolve => setTimeout(resolve,230));});
-  const button = (label: string) => [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label') === label || item.textContent?.trim() === label);
+  const button = (label: string) => label.startsWith('Choose ')&&!label.startsWith('Choose ·') ? [...dom.window.document.querySelectorAll<HTMLInputElement>('.compact-media-check input')].find(item=>item.getAttribute('aria-label')==='Select '+label.slice(7)) : [...dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(item => item.getAttribute('aria-label')?.replace(' · ', ' ').replace(/^Selected /,'Choose ') === label || item.textContent?.trim() === label);
   await settle();
   return {dom,selected,button,settle,unmount,focusBeforeModal,session,
-    async click(label: string) {const target = button(label);assert.ok(target,'button '+label+' exists');await React.act(async () => target.click());},
+    async click(label: string) {const value=({'Recent creations':'recent','Library':'all','Videos':'video','Images':'image'} as Record<string,string>)[label];if(value){const select=[...dom.window.document.querySelectorAll('select')].find(select=>[...select.options].some(option=>option.value===value))!;assert.ok(select,'filter '+label);await React.act(async()=>{select.value=value;select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));});return;} const target = button(label);assert.ok(target,'button '+label+' exists');await React.act(async () => target.click());},
     async dispose() {await unmount();session.restore();dom.window.close();for(const [key,descriptor] of previous){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else Reflect.deleteProperty(globalThis,key);}},
   };
 }
@@ -60,17 +63,17 @@ test('library choice is staged, thumbnail fallback preserves the original and Ad
     assert.equal(add.disabled,true);
     await fixture.click('Choose Watch study');
     assert.equal(fixture.selected.length,0,'browsing a tile does not attach media');
-    assert.equal(fixture.button('Choose Watch study')!.getAttribute('aria-pressed'),'true');
+    assert.equal(fixture.button('Choose Watch study')!.checked,true);
     const thumbnail = fixture.dom.window.document.querySelector('img')!;
     assert.equal(thumbnail.getAttribute('src'),image.thumbUrl);
     await React.act(async () => thumbnail.dispatchEvent(new fixture.dom.window.Event('error')));
-    assert.equal(thumbnail.getAttribute('src'),image.url);
+    assert.notEqual(fixture.dom.window.document.querySelector('img')?.getAttribute('src'),image.url,'failed poster must not fetch the original into the grid');
     await fixture.click('Add to conversation');
-    assert.deepEqual(fixture.selected,[image]);
+    assert.equal(fixture.selected.length,1); assert.equal(fixture.selected[0].assetId,image.assetId); assert.equal(fixture.selected[0].url,image.url);
   } finally {await fixture.dispose();}
 });
 
-test('recent creation is promoted only on Add and a media filter clears a staged selection', async () => {
+test('recent creation is promoted only on Add and a media filter retains the captured original', async () => {
   const writes: unknown[] = [];
   const fixture = await mountChooser((async (url,init) => {
     if (init?.method === 'POST') {writes.push(JSON.parse(init.body as string));return response({ok: true,asset: {url: image.url}});}
@@ -78,42 +81,34 @@ test('recent creation is promoted only on Add and a media filter clears a staged
   }) as typeof fetch,{purpose: 'timeline'});
   try {
     await fixture.click('Recent creations');await fixture.settle();
-    const card = fixture.dom.window.document.querySelector<HTMLButtonElement>('[data-media-choice]')!;
+    const card = fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-check input')!;
     assert.ok(card);
     await React.act(async () => card.click());
     assert.deepEqual(writes,[],'merely selecting a recent output is read-only');
     assert.equal(fixture.button('Add to timeline')!.disabled,false);
     await fixture.click('Videos');
-    assert.equal(fixture.button('Add to timeline')!.disabled,true,'changed kind cannot reuse an image selection');
+    assert.equal(fixture.button('Add to timeline')!.disabled,false,'kind is a browse filter, not the timeline intent');
     await fixture.settle();
     await fixture.click('Images');await fixture.settle();
-    await React.act(async () => fixture.dom.window.document.querySelector<HTMLButtonElement>('[data-media-choice]')!.click());
+    assert.equal(fixture.dom.window.document.querySelector<HTMLInputElement>('.compact-media-check input')!.checked,true);
     await fixture.click('Add to timeline');
     assert.deepEqual(writes,[{jobId: 'job-1',outputId: 'out-1'}]);
-    assert.deepEqual(fixture.selected,[image]);
+    assert.equal(fixture.selected.length,1); assert.equal(fixture.selected[0].assetId,image.assetId); assert.equal(fixture.selected[0].url,image.url);
   } finally {await fixture.dispose();}
 });
 
-test('a failed upload clears the file input for retry and late upload results cannot attach after a filter change', async () => {
-  let finish!: (value: Response) => void;
-  let uploads = 0;
-  const fixture = await mountChooser((async (_url,init) => {
-    if (init?.method === 'POST') {uploads++;if(uploads===1)return response({ok:false},false);return new Promise<Response>(resolve=>{finish=resolve;});}
-    return response({ok: true,assets: []});
-  }) as typeof fetch);
+test('a failed import clears the input and retry keeps imported media staged until confirmation', async () => {
+  let uploads=0;
+  const fixture=await mountChooser((async(url,init)=>{if(init?.method==='POST'){uploads++;return response({ok:uploads>1,asset:{...image,id:image.assetId}},uploads>1);}return response({ok:true,assets:[]});}) as typeof fetch);
   try {
-    const input = fixture.dom.window.document.querySelector<HTMLInputElement>('input[type="file"]')!;
-    const file = new fixture.dom.window.File(['image'],'study.webp',{type:'image/webp'});
-    Object.defineProperty(input,'files',{configurable:true,value:[file]});
-    Object.defineProperty(input,'value',{configurable:true,writable:true,value:'study.webp'});
-    await React.act(async () => input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
-    assert.equal(input.value,'','the same file can be selected after failure');
-    assert.ok(fixture.dom.window.document.querySelector('[role="alert"]'));
-    await React.act(async () => input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
-    await fixture.click('Videos');
-    await React.act(async () => finish(response({ok:true,asset:image})));
-    assert.deepEqual(fixture.selected,[],'a replaced upload intent must not attach to the current filter');
-  } finally {await fixture.dispose();}
+    const input=fixture.dom.window.document.querySelector<HTMLInputElement>('input[type=file]')!;
+    Object.defineProperty(input,'files',{configurable:true,value:[new fixture.dom.window.File(['image'],'study.webp',{type:'image/webp'})]});
+    await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
+    assert.equal(input.value,'');assert.equal(uploads,0);await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-library-import button')!.click());
+    assert.match(fixture.dom.window.document.querySelector('.app-library-import')!.textContent!,/Failed/);assert.deepEqual(fixture.selected,[]);
+    await fixture.click('Retry');assert.equal(uploads,2);assert.deepEqual(fixture.selected,[]);
+    await fixture.click('Choose · study.webp');await fixture.click('Add to conversation');assert.equal(fixture.selected[0].url,image.url);
+  }finally{await fixture.dispose();}
 });
 
 for (const purpose of ['reference','timeline'] as const) {
@@ -127,7 +122,7 @@ for (const purpose of ['reference','timeline'] as const) {
       Object.defineProperty(input,'files',{configurable:true,value:[file]});
       await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
       assert.equal(fixture.dom.window.document.querySelector('[role="alert"]')===null,true,'the video import must succeed');
-      assert.equal(upload.completed,true);
+      assert.equal(upload.completed,false); await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-library-import button')!.click()); assert.equal(upload.completed,true); assert.equal(fixture.selected.length,0); await fixture.click('Choose · reference.mov');await fixture.click(purpose==='reference'?'Add to conversation':'Add to timeline');
       assert.equal(fixture.selected.length,1);
       assert.equal(fixture.selected[0].assetId,upload.asset.assetId);
       assert.equal(fixture.selected[0].kind,'video');
@@ -137,7 +132,7 @@ for (const purpose of ['reference','timeline'] as const) {
   });
 }
 
-for(const change of ['filter','account'] as const)test('changing the library '+change+' cancels a chunked MOV import without attaching it',async()=>{
+for(const change of ['filter','account'] as const)test('chunked import keeps browse-filter intent and rejects account retirement: '+change,async()=>{
   let release!:()=>void;
   const part=new Promise<void>(resolve=>{release=resolve;});
   const upload=chunkedVideoUploadFixture(()=>part);
@@ -148,16 +143,16 @@ for(const change of ['filter','account'] as const)test('changing the library '+c
     const file=new fixture.dom.window.File([new Uint8Array(5*1024*1024)],'reference.mov',{type:'video/quicktime'});
     Object.defineProperty(input,'files',{configurable:true,value:[file]});
     await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
-    assert.equal(fixture.button('Uploading…')?.disabled,true);
+    await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.app-library-import button')!.click()); assert.match(fixture.dom.window.document.querySelector('.app-library-import')!.textContent!,/Importing/);
     if(change==='filter')await fixture.click('Images');else fixture.session.switchTo('account-B');
     await React.act(async()=>{release();await part;});
-    assert.equal(upload.completed,false);
-    assert.deepEqual(fixture.selected,[]);
+    assert.equal(upload.completed,change==='filter');
+    assert.deepEqual(fixture.selected,[],'uploads never attach without confirmation');
     if(change==='filter')assert.equal(fixture.dom.window.document.querySelector('[role="alert"]')===null,true);
   }finally{release();await fixture.dispose();}
 });
 
-for (const [locale,add,upload] of [['fr','Ajouter à la conversation','Importer depuis cet appareil'],['es','Añadir a la conversación','Subir desde este dispositivo']] as const) {
+for (const [locale,add,upload] of [['fr','Ajouter à la conversation','Importer'],['es','Añadir a la conversación','Importar']] as const) {
   test('chooser provides '+locale+' action labels',async()=>{
     const fixture = await mountChooser((async()=>response({ok:true,assets:[]})) as typeof fetch,{locale});
     try {assert.ok(fixture.button(add));assert.ok(fixture.button(upload));} finally {await fixture.dispose();}
@@ -173,9 +168,9 @@ test('a late recent promotion is cancelled when the selection intent changes', a
   }) as typeof fetch);
   try {
     await fixture.click('Recent creations');await fixture.settle();
-    await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('[data-media-choice]')!.click());
+    await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-check input')!.click());
     await fixture.click('Add to conversation');
-    await fixture.click('Library');
+    await fixture.unmount();
     assert.equal(promotionSignal?.aborted,true);
     await React.act(async()=>finish(response({ok:true,asset:{url:image.url}})));
     assert.deepEqual(fixture.selected,[]);
@@ -199,7 +194,7 @@ test('a late pagination response cannot replace another media kind and video ori
     assert.equal(fixture.button('Choose Watch study'),undefined);
     assert.equal(fixture.dom.window.document.querySelectorAll('img').length,0,'video original is never treated as a thumbnail');
     await fixture.click('Choose Film study');await fixture.click('Add to conversation');
-    assert.deepEqual(fixture.selected,[video]);
+    assert.equal(fixture.selected[0].url,video.url); assert.equal(fixture.selected[0].assetId,video.assetId);
   } finally {await fixture.dispose();}
 });
 
@@ -230,4 +225,78 @@ test('an explicit clicked trigger receives focus when Safari leaves the active e
     await fixture.unmount();
     assert.equal(fixture.dom.window.document.activeElement?.id,'opener','the actual clicked button takes precedence over activeElement');
   } finally {await fixture.dispose();}
+});
+
+
+test('visiting the specialized saved-character source preserves the ordinary captured basket and modal host',async()=>{
+ const fixture=await mountChooser((async()=>response({ok:true,assets:[image],characters:[]})) as typeof fetch,{characterProjectId:'project-A'});
+ try{await fixture.click('Choose Watch study');const dialog=fixture.dom.window.document.querySelector('dialog');await fixture.click('Saved characters');await fixture.click('Media');assert.equal(fixture.dom.window.document.querySelector('dialog'),dialog);assert.equal(fixture.dom.window.document.querySelectorAll('[data-basket-item]').length,1);assert.equal(fixture.selected.length,0);await fixture.click('Add to conversation');assert.equal(fixture.selected[0].assetId,image.assetId);}finally{await fixture.dispose();}
+});
+
+for (const kind of ['audio', 'video'] as const) test(`Saved characters retires the active ${kind} reader without losing basket or imports`, async () => {
+  const media = {...video, kind, name: 'Film study', url: `https://media.test/original.${kind === 'audio' ? 'mp3' : 'mp4'}`};
+  const fixture = await mountChooser((async () => response({ok:true, assets:[media], characters:[]})) as typeof fetch, {characterProjectId:'project-A'});
+  try {
+    const select = fixture.dom.window.document.querySelector<HTMLSelectElement>('select[aria-label="Media type"]')!;
+    await React.act(async () => {select.value=kind;select.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true}));});
+    await fixture.settle();
+    await fixture.click('Choose Film study');
+    const input=fixture.dom.window.document.querySelector<HTMLInputElement>('input[type=file]')!;
+    Object.defineProperty(input,'files',{configurable:true,value:[new fixture.dom.window.File(['queued'],'retained.wav',{type:'audio/wav'})]});
+    await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
+    assert.match(fixture.dom.window.document.querySelector('.app-library-import')!.textContent!,/retained.wav/);
+    await fixture.click('Back');
+    const preview = fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-preview') ?? [...fixture.dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(b => b.getAttribute('aria-label')?.includes('Preview'));
+    assert.ok(preview, 'preview action exists');
+    await React.act(async()=>preview.click());
+    await fixture.settle();
+    const reader=fixture.dom.window.document.querySelector<HTMLMediaElement>(kind)!;
+    assert.ok(reader, 'actual progressive reader mounted');
+    const sourceNodes=[reader,...reader.querySelectorAll('source')];
+    assert.ok(sourceNodes.some(node=>node.getAttribute('src')===media.url),'active reader uses the exact original');
+    let pauses=0;
+    Object.defineProperty(reader,'paused',{configurable:true,value:false});
+    reader.pause=()=>{pauses++;};
+    fixture.button('Saved characters')!.focus();
+    await fixture.click('Saved characters');
+    assert.ok(fixture.dom.window.document.querySelector(kind) === null,'inactive AV reader must unmount');
+    assert.ok(sourceNodes.every(node=>!node.hasAttribute('src')),'all captured original/source attributes released');
+    assert.equal(pauses,1,'playing reader paused');
+    assert.equal(fixture.dom.window.document.activeElement,fixture.button('Saved characters'),'focus stays on visible tab');
+    fixture.button('Media')!.focus();
+    await fixture.click('Media');
+    assert.equal(fixture.dom.window.document.querySelector(kind),null,'return must not resurrect preview');
+    assert.equal(fixture.dom.window.document.querySelectorAll('[data-basket-item]').length,1,'captured basket retained');
+    assert.equal(fixture.dom.window.document.activeElement,fixture.button('Media'),'return focus remains valid');
+    await fixture.click('1 · Source');
+    assert.match(fixture.dom.window.document.querySelector('.app-library-import')!.textContent!,/retained.wav/,'queued import survives surfaces');
+    await fixture.click('Back');
+    await React.act(async()=>preview.click());
+    assert.ok(fixture.dom.window.document.querySelector(kind),'a fresh preview still works');
+    await fixture.click('Saved characters');
+  } finally {await fixture.dispose();}
+});
+
+test('Saved characters retires a pending private preview and its late grant cannot reopen Media',async()=>{
+ const media={...video,kind:'audio',name:'Pending audio',readAccessOwnerId:'account-A',readAccessRef:{type:'asset',assetId:video.assetId,kind:'audio'},readAccessRevision:'revision',readAccessExpiresAt:'2000-01-01T00:00:00Z'};
+ let finish!:(value:Response)=>void,signal:AbortSignal|undefined;
+ const fixture=await mountChooser((async(url,init)=>{
+  if(String(url).includes('/read-access')){signal=init?.signal as AbortSignal;return new Promise<Response>(resolve=>{finish=resolve;});}
+  return response({ok:true,assets:[media],characters:[]});
+ }) as typeof fetch,{characterProjectId:'project-A'});
+ const client=await (await import('../frontend/src/lib/supabaseClientLoader')).loadSupabaseClient();
+ const originalSubscribe=client.auth.onAuthStateChange;
+ client.auth.onAuthStateChange=(()=>({data:{subscription:{unsubscribe(){}}}})) as typeof originalSubscribe;
+ try{
+  const select=fixture.dom.window.document.querySelector<HTMLSelectElement>('select[aria-label="Media type"]')!;
+  await React.act(async()=>{select.value='audio';select.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true}));});await fixture.settle();
+  await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-preview')!.click());
+  assert.ok(finish,'real read owner requests a private grant');
+  await fixture.click('Saved characters');
+  assert.ok(signal,'private read attempt is pending');
+  assert.ok(!fixture.dom.window.document.querySelector('audio'),'inactive preview has no decoder');
+  await React.act(async()=>finish(response({ok:true,access:{...media,accessUrl:'https://grant.test/late.mp3'}})));
+  await fixture.click('Media');
+  assert.ok(!fixture.dom.window.document.querySelector('audio'),'late grant never remounts the reader');
+ }finally{await fixture.dispose();client.auth.onAuthStateChange=originalSubscribe;}
 });

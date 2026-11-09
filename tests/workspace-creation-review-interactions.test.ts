@@ -1,3 +1,4 @@
+import './helpers/uppy-node-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
@@ -351,12 +352,12 @@ test('actual image Media picker owns focus, Escape and body lock and restores it
     assert.equal(doc.body.style.overflow, '');
     const command = fixture.container.querySelector<HTMLButtonElement>('button')!;
     await act(async () => { command.click(); });
-    await act(async () => new Promise(resolve => setTimeout(resolve, 5)));
+    await act(async()=>new Promise(resolve=>setTimeout(resolve,5)));
     const dialog = doc.querySelector<HTMLElement>('[role="dialog"]')!;
     assert.equal(dialog.getAttribute('aria-label'), DEFAULT_COPY.library.modal.title);
     assert.equal(doc.body.style.overflow, 'hidden');
     assert.ok(dialog.contains(doc.activeElement));
-    assert.equal(dialog.querySelector('input[type="file"]')?.getAttribute('tabindex'), '-1');
+    assert.equal(dialog.getAttribute('tabindex'), '-1');
     await act(async () => dialog.dispatchEvent(new fixture.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.equal(doc.querySelector('[role="dialog"]'), null);
     assert.equal(doc.activeElement, command); assert.equal(doc.body.style.overflow, '');

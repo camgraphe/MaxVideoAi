@@ -20,9 +20,9 @@ export type RecentReferenceDropProps = {
   onDragOverCapture: (event: DragEvent) => void;
   onDropCapture: (event: DragEvent) => void;
 };
-export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fields, availability, inputSchema, mode, inputAssets, onInsert, children }: {
+export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fields, availability, inputSchema, mode, workflowIntent, inputAssets, onInsert, children }: {
   userId?: string | null; locale: string; engineId: string; engine?: EngineCaps; fields: AssetFieldConfig[];
-  availability: WorkspaceReferenceAvailability; inputSchema?: EngineInputSchema; mode: Mode;
+  availability: WorkspaceReferenceAvailability; inputSchema?: EngineInputSchema; mode: Mode; workflowIntent?: Mode | null;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   onInsert: (field: EngineInputField, asset: UserAsset, index?: number) => Promise<unknown>;
   children: (surface: { recentMedia: ReactNode; recentDropProps: RecentReferenceDropProps; refreshRecentMedia: () => void }) => ReactNode;
@@ -75,8 +75,8 @@ export function WorkspaceRecentReferences({ userId, locale, engineId, engine, fi
   </>;
   return <>
     {children({ recentMedia, recentDropProps, refreshRecentMedia: feed.retry })}
-    {selected ? <WorkspaceRecentRoleDialog key={`${selection?.scope}:${engineId}:${selected.id}`} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
-      inputSchema={inputSchema} engine={engine} mode={mode} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => { setSelection(null); handoff.close(); }}
+    {selected ? <WorkspaceRecentRoleDialog key={`${userId}:${selection?.scope}:${engineId}:${selected.id}`} userId={userId} asset={metadata.asset ?? selected} fields={eligibleFields} inputAssets={inputAssets}
+      inputSchema={inputSchema} engine={engine} mode={mode} workflowIntent={workflowIntent} locale={locale} metadataLoading={metadata.loading} metadataError={metadata.error} onMetadataRetry={metadata.retry} onClose={() => { setSelection(null); handoff.close(); }}
       onInsert={(entry, index) => onInsert(entry.field, metadata.asset ?? selected, index)} /> : null}
   </>;
 }

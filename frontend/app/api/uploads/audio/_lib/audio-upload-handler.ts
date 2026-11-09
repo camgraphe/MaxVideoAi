@@ -1,3 +1,4 @@
+import { createUploadedMediaReadAccess } from '@/server/media-library/upload-read-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -161,6 +162,7 @@ export async function handleAudioUpload(
     return NextResponse.json({
       ok: true,
       asset: {
+        ...await createUploadedMediaReadAccess(userId, { assetId: stored.assetId, legacyAssetId: stored.legacyAssetId, url: stored.storageUrl, kind: 'audio' }),
         id: stored.legacyAssetId,
         legacyAssetId: stored.legacyAssetId,
         ...canonicalMediaAssetFields(stored.assetId, 'audio'),
@@ -173,7 +175,7 @@ export async function handleAudioUpload(
         name: blob.name,
         durationSec: stored.durationSec,
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     if (error instanceof MediaUploadError) {
       if (error.code === 'UNSUPPORTED_TYPE') {

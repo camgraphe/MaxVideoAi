@@ -4299,6 +4299,7 @@
         "importing": "Import…",
         "importFailed": "Import impossible. Réessayez.",
         "refresh": "Actualiser",
+        "loadMore": "Charger plus",
         "searchSaved": "Rechercher un nom ou un ID de rendu…",
         "searchRenders": "Rechercher un prompt ou un ID de rendu…",
         "create": "Créer"
@@ -4648,7 +4649,8 @@
         "jobLabel": "Job {id}",
         "sourceLabel": "Source {label}",
         "uploadDurationWarning": "La vidéo source a bien été importée, mais sa durée n’a pas pu être lue dans le navigateur.",
-        "selectedDurationWarning": "La vidéo sélectionnée a bien été chargée, mais sa durée n’a pas pu être confirmée dans le navigateur."
+        "selectedDurationWarning": "La vidéo sélectionnée a bien été chargée, mais sa durée n’a pas pu être confirmée dans le navigateur.",
+        "previewUnavailable": "Aperçu de la source indisponible."
       },
       "controls": {
         "eyebrow": "Réglages",
@@ -4939,7 +4941,9 @@
           "label": "Qwen Multiple Angles",
           "description": "Modèle Qwen d’édition d’image multi-angle optimisé pour la cohérence des angles."
         }
-      }
+      },
+      "sourcePreviewUnavailable": "Aperçu de la source indisponible.",
+      "retrySourcePreview": "Réessayer"
     },
     "characterBuilder": {
       "auto": "Auto",

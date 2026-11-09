@@ -7,7 +7,7 @@ import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
 import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';
 import {
@@ -198,7 +198,7 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
       engineId: engine.id,
       engineLabel: engine.label,
     });
-    const thumbUrls = await createImageThumbnailBatch({
+    const thumbUrls = typeof prepareImageRenditions === 'function' ? persistedOutputs.map(output => output.thumbUrl ?? null) : await createImageThumbnailBatch({
       jobId,
       userId: input.userId,
       imageUrls: persistedOutputs.map((output) => output.url),
@@ -269,6 +269,8 @@ export async function runAngleTool(input: RunAngleToolInput): Promise<AngleToolR
           width: output.width ?? null,
           height: output.height ?? null,
           thumbUrl: output.thumbUrl ?? null,
+          previewUrl: output.previewUrl,
+          metadata: { imageDisplay: output.imageDisplay },
         })
       )
     );

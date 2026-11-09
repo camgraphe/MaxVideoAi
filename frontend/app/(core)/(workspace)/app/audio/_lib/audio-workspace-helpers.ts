@@ -1,3 +1,5 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
+import { mediaReadAccessFields } from '@/lib/library-media-access';
 import {
   AudioLines,
   Clapperboard,
@@ -141,7 +143,7 @@ export async function probeVideoDuration(url: string): Promise<number | null> {
   });
 }
 
-type UploadedWorkspaceAsset = { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts };
+type UploadedWorkspaceAsset = MediaReadAccess & { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts };
 type AudioUploadOperation = { expectedUserId: string; signal: AbortSignal };
 
 export function uploadAsset(file: File, kind: 'video'): Promise<UploadedWorkspaceAsset>;
@@ -150,6 +152,7 @@ export async function uploadAsset(file: File, kind: 'video' | 'audio', operation
   if (kind === 'video') {
     const uploaded = await uploadVideoFile(file);
     return {
+      ...mediaReadAccessFields(uploaded),
       url: uploaded.url,
       name: uploaded.name ?? file.name,
       ref: uploaded.ref,
@@ -181,13 +184,14 @@ export async function uploadAsset(file: File, kind: 'video' | 'audio', operation
   });
   ensureActive();
   const payload = (await response.json().catch(() => null)) as
-    | { ok?: boolean; error?: string; asset?: { url?: string; name?: string; assetId?: unknown; mediaFacts?: unknown } }
+    | { ok?: boolean; error?: string; asset?: MediaReadAccess & { url?: string; name?: string; assetId?: unknown; mediaFacts?: unknown } }
     | null;
   ensureActive();
   if (!response.ok || !payload?.ok || !payload.asset?.url) {
     throw new Error(payload?.error ?? 'Upload failed');
   }
   return {
+    ...mediaReadAccessFields(payload.asset),
     url: payload.asset.url,
     name: payload.asset.name ?? file.name,
     ref: canonicalMediaAssetFields(payload.asset.assetId, 'audio').ref,

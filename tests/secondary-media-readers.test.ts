@@ -1,3 +1,6 @@
+import {mediaGridGlobals} from './helpers/media-grid-dom';
+import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
+import './helpers/uppy-node-fixture';
 import { mockBrowserSession } from './helpers/browser-session-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -42,7 +45,7 @@ function browserFixture({ desktop = true, reducedMotion = false, saveData = fals
   Object.defineProperty(dom.window.navigator, 'connection', { value: { saveData } });
   dom.window.HTMLMediaElement.prototype.play = () => { playCalls++; return Promise.resolve(); };
   dom.window.HTMLMediaElement.prototype.pause = () => {};
-  const replacements = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, IntersectionObserver: Observer, IS_REACT_ACT_ENVIRONMENT: true };
+  const replacements = { ...mediaGridGlobals(dom.window), HTMLElement:dom.window.HTMLElement, window: dom.window, document: dom.window.document, navigator: dom.window.navigator, IntersectionObserver: Observer, IS_REACT_ACT_ENVIRONMENT: true };
   const old = new Map(Object.keys(replacements).map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   for (const [key, value] of Object.entries(replacements)) Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
   const container = dom.window.document.getElementById('root')!;
@@ -146,8 +149,9 @@ for (const tool of ['angle', 'character'] as const) {
     const asset = { id: 'image', kind: 'image' as const, url: 'https://private.example/original.png?sig=original', thumbUrl: 'https://private.example/thumb.webp?sig=thumb', source: 'saved_job_output' };
     const secondAsset = { id: 'image-2', kind: 'image' as const, url: 'https://private.example/second.png?sig=original', thumbUrl: 'https://private.example/second.webp?sig=thumb' };
     let selected: unknown;
-    globalThis.fetch = async (input) => {
+    globalThis.fetch = async (input,init) => {
       const url = String(input);
+      if(url.includes('/selection/validate'))return Response.json({ok:true,results:JSON.parse(String(init?.body)).candidates.map((candidate:any)=>({reference:candidate.reference}))});
       requests.push(url);
       return url.includes('cursor=page-2')
         ? Response.json({ ok: true, assets: [secondAsset], hasMore: false, nextCursor: null })
@@ -163,27 +167,26 @@ for (const tool of ['angle', 'character'] as const) {
       const modal = tool === 'angle'
         ? React.createElement(AngleImageLibraryModal, { ...props, copy: DEFAULT_ANGLE_COPY })
         : React.createElement(CharacterReferenceLibraryModal, { ...props, copy: DEFAULT_CHARACTER_COPY });
-      await act(async () => f.root.render(React.createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, modal)));
+      await act(async () => f.root.render(React.createElement(SWRConfig, { value: { provider: () => new Map(), dedupingInterval: 0 } }, React.createElement(I18nProvider,{locale:'en',dictionary:{},fallback:{},children:modal}))));
       assert.deepEqual(requests, ['/api/media-library/assets?limit=30&kind=image']);
-      assert.equal(f.container.querySelectorAll('img').length, 1);
-      const loadMore = [...f.container.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Load more');
+      assert.equal(f.dom.window.document.querySelectorAll('img').length, 1);
+      const loadMore = [...f.dom.window.document.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Load more');
       assert.ok(loadMore, 'A cursor-backed page exposes the localized load-more control');
       await act(async () => loadMore.click());
       assert.deepEqual(requests, [
         '/api/media-library/assets?limit=30&kind=image',
         '/api/media-library/assets?limit=30&kind=image&cursor=page-2',
       ]);
-      assert.equal(f.container.querySelectorAll('img').length, 2);
-      const image = f.container.querySelector('img')!;
+      assert.equal(f.dom.window.document.querySelectorAll('img').length, 2);
+      const image = f.dom.window.document.querySelector('img')!;
       assert.equal(image.src, asset.thumbUrl);
       assert.equal(image.getAttribute('loading'), 'lazy');
       assert.equal(image.getAttribute('referrerPolicy'), 'no-referrer');
-      await act(async () => image.closest('button')!.click());
-      assert.deepEqual(selected, { ...asset, source: 'generated' });
+      await act(async () => image.closest('[data-media-key]')!.querySelector<HTMLInputElement>('input')!.click());
+      assert.equal(selected,undefined);await act(async()=>f.dom.window.document.querySelector<HTMLButtonElement>('.app-picker-use')!.click());assert.equal((selected as any).url,asset.url);assert.equal((selected as any).source,'generated');
       await act(async () => image.dispatchEvent(new f.dom.window.Event('error')));
-      assert.equal(image.src, asset.url, 'A broken stored thumbnail retains exact-original fallback');
-      await act(async () => image.dispatchEvent(new f.dom.window.Event('error')));
-      assert.equal(image.src, asset.url, 'Original failure does not start a fallback loop');
+      assert.notEqual(f.dom.window.document.querySelector('img')?.src, asset.url, 'A broken thumbnail must not fetch original bytes in a grid');
+
     } finally { await session.restore(); globalThis.fetch = previousFetch; await f.cleanup(); }
   });
 }

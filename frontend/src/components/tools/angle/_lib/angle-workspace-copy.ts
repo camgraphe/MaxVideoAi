@@ -14,6 +14,8 @@ export const DEFAULT_ANGLE_COPY = {
   "library": "Choose from Media",
   "remove": "Remove",
   "sourceAlt": "Source",
+  "sourcePreviewUnavailable": "Source preview unavailable.",
+  "retrySourcePreview": "Retry",
   "addSourceTitle": "Add a source image",
   "addSourceBody": "Drop, paste, upload, or choose from Media.",
   "upload": "Upload",

@@ -143,6 +143,10 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
     resultPreviewUrl,
     sourcePreviewIsVideo,
     sourcePreviewUrl,
+    sourcePreviewError,
+    sourcePreviewPending,
+    onSourcePreviewError,
+    onSourcePreviewRetry,
     sourceSizeLabel,
     zoomCanvasHeight,
     zoomCanvasWidth,
@@ -413,6 +417,10 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
                   resultPreviewUrl={resultPreviewUrl}
                   sourcePreviewIsVideo={sourcePreviewIsVideo}
                   sourcePreviewUrl={sourcePreviewUrl}
+                  sourcePreviewError={sourcePreviewError}
+                  sourcePreviewPending={sourcePreviewPending}
+                  onSourcePreviewError={onSourcePreviewError}
+                  onSourcePreviewRetry={onSourcePreviewRetry}
                   sourceSizeLabel={sourceSizeLabel}
                   zoomCanvasHeight={zoomCanvasHeight}
                   zoomCanvasWidth={zoomCanvasWidth}
@@ -430,6 +438,8 @@ export function UpscaleSession({ auth, initialKind }: { auth: ReturnType<typeof 
     >{!user ? <ToolAuthNotice locale={locale} path={`/app/tools/upscale?kind=${mediaType}`} /> : null}</ToolWorkbench>
     <ToolMediaHandoff userId={user?.id} destination="upscale" locale={locale} onSelect={selectLibraryAsset} disabled={running || uploading} />
     <UpscaleLibraryModal
+        userId={user?.id}
+        intent={`upscale:${engineId}:${mediaType}`}
         assets={visibleLibraryAssets}
         copy={copy}
         error={libraryError}

@@ -22,7 +22,7 @@ function deferred<T>() {
   return {promise,resolve};
 }
 type UploadResponse={ok:boolean;payload:unknown};
-async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,desktop=true,uploadRequest?:typeof fetch) {
+async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,desktop=true,uploadRequest?:typeof fetch,persist=false) {
   const dom=new JSDOM('<div id="root"></div>',{url:'http://localhost/'});
   const mediaListeners=new Set<()=>void>();
   Object.defineProperty(dom.window,'matchMedia',{value:()=>({get matches(){return desktop;},
@@ -46,13 +46,13 @@ async function mount(initialTurns:ImageConversationTurn[]=[],mediaEnabled=true,d
   const session=await uploadSessionFixture();
   let turns=initialTurns;
   let state!:ReturnType<typeof useConversationMediaShelf>;
-  function Fixture(){state=useConversationMediaShelf(turns,'en',mediaEnabled,'account-A');return null;}
+  function Fixture(){state=useConversationMediaShelf(turns,'en',mediaEnabled,'account-A',persist?{scopeKey:'account-A/project-A',ready:true}:undefined);return null;}
   const root=createRoot(dom.window.document.getElementById('root')!);
   const render=()=>root.render(React.createElement(React.StrictMode,null,React.createElement(Fixture)));
   await act(async()=>render());
   let unmounted=false;
   return {
-    get state(){return state;},requests,session,
+    get state(){return state;},requests,session,dom,
     file:(name='image.png',type='image/png')=>new dom.window.File(['fixture'],name,{type}),
     queue(response:UploadResponse|(()=>Promise<UploadResponse>)){responses.push(typeof response==='function'?response:async()=>response);},
     async rerender(next:ImageConversationTurn[]){turns=next;await act(async()=>render());},
@@ -270,4 +270,21 @@ test('unmount during an upload prevents attaching its result or uploading the re
     assert.equal(view.requests.length,1);
     assert.deepEqual(view.state.references,[]);
   }finally{await view.close();}
+});
+
+
+test('ordered shelf admission is atomic on last-member refusal and deduplicates canonical identities',async()=>{
+ const view=await mount([],true,true,undefined,true);try {
+  await act(async()=>assert.equal(view.state.attachMany([asset(2,'video'),asset(1),asset(2,'video'),asset(3,'audio')]),true));
+  assert.deepEqual(view.state.references.map(x=>x.assetId),[asset(2).assetId,asset(1).assetId,asset(3).assetId]);
+  const before=JSON.stringify({items:view.state.items,refs:view.state.references});
+  const persisted=view.dom.window.sessionStorage.getItem('maxvideoai:studio:selection:v1:account-A/project-A');
+  await act(async()=>assert.equal(typeof view.state.attachMany([{...asset(4),assetId:'internal-row'}]),'string'));assert.equal(view.dom.window.sessionStorage.getItem('maxvideoai:studio:selection:v1:account-A/project-A'),persisted);
+  await act(async()=>assert.equal(typeof view.state.attachMany(Array.from({length:STUDIO_CONVERSATION_MAX_ATTACHMENTS},(_,i)=>asset(i+10))),'string'));
+  assert.equal(JSON.stringify({items:view.state.items,refs:view.state.references}),before);
+ } finally {await view.close();}
+ const images=await mount([],false);try {
+  await act(async()=>assert.equal(typeof images.state.attachMany([asset(1),asset(2,'audio')]),'string'));
+  assert.equal(images.state.references.length,0);assert.equal(images.state.items.length,0);
+ }finally{await images.close();}
 });

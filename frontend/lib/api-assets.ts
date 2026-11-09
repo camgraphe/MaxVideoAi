@@ -1,6 +1,7 @@
+import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import { authFetch } from '@/lib/authFetch';
 
-type SavedAsset = {
+type SavedAsset = Partial<AssetBrowserAsset> & {
   id: string;
   url: string;
   width?: number | null;
@@ -56,7 +57,7 @@ export async function saveImageToLibrary(payload: {
   jobId?: string | null;
   label?: string | null;
   source?: string | null;
-}, request?: { accessToken: string; signal: AbortSignal }) {
+}, request?: Parameters<typeof saveAssetToLibrary>[1]) {
   return saveAssetToLibrary({
     ...payload,
     kind: 'image',

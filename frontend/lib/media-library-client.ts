@@ -1,3 +1,6 @@
+import type { ImageDisplay } from '@/lib/image-display';
+import type { MediaFacts } from '@/lib/media-identity';
+import type { ToolAssetRef } from '@/lib/toolbox/contract';
 import type { MediaReadAccess } from '@/lib/media-read-access';
 import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
 
@@ -6,9 +9,13 @@ export type MediaLibraryAssetKind = 'image' | 'video' | 'audio';
 export type MediaLibraryAsset = MediaReadAccess & {
   name?: string | null;
   id: string;
+  assetId?: string;
+  ref?: ToolAssetRef;
+  mediaFacts?: MediaFacts;
   url: string;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  imageDisplay?: ImageDisplay;
   playbackVideoUrl?: string | null;
   kind?: MediaLibraryAssetKind;
   mime?: string | null;

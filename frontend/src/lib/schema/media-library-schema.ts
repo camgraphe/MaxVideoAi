@@ -145,6 +145,10 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
   await query(`
     CREATE INDEX IF NOT EXISTS media_assets_kind_idx ON media_assets (kind);
   `);
+  await query(`
+    CREATE INDEX IF NOT EXISTS media_assets_owner_url_lookup_idx ON media_assets (user_id, md5(url), kind);
+    CREATE INDEX IF NOT EXISTS media_assets_owner_origin_lookup_idx ON media_assets (user_id, md5(metadata->>'originUrl'), kind);
+  `);
   };
 
   ensureMediaLibraryPromise = ensure().catch((error) => {

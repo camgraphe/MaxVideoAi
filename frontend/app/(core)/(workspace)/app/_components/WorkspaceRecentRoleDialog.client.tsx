@@ -12,7 +12,10 @@ import type { EngineCaps, EngineInputSchema, Mode } from '@/types/engines';
 import { getRecentReferenceIssue } from '../_lib/workspace-recent-media';
 import type { ReferenceAsset, UserAsset } from '../_lib/workspace-assets';
 
-export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSchema, engine, mode, locale, onClose, onInsert, metadataLoading = false, metadataError = false, onMetadataRetry }: {
+export function WorkspaceRecentRoleDialog({ userId, asset, fields, inputAssets, inputSchema, engine, mode, workflowIntent, locale, onClose, onInsert, metadataLoading = false, metadataError = false, onMetadataRetry }: {
+  userId?: string | null;
+  /** Null means inferred Create; submission mode can change during a successful insertion. */
+  workflowIntent?: Mode | null;
   asset: UserAsset; fields: AssetFieldConfig[]; inputAssets: Record<string, (ReferenceAsset | null)[]>;
   inputSchema?: EngineInputSchema; engine?: EngineCaps; mode: Mode; locale: string; onClose: () => void;
   metadataLoading?: boolean; metadataError?: boolean; onMetadataRetry?: () => void;
@@ -22,7 +25,14 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
   const compatible = fields.filter(({ field }) => field.type === asset.kind);
   const [fieldId, setFieldId] = useState('');
   const [slot, setSlot] = useState('add');
-  const [pending, setPending] = useState(false);
+  const scope = JSON.stringify([userId, asset.id, asset.assetId, asset.ref, asset.kind, asset.url, asset.jobId, asset.sourceOutputId, engine?.id, workflowIntent === undefined ? mode : workflowIntent, fieldId, slot]);
+  const context = useRef({ scope, revision: 0 });
+  if (context.current.scope !== scope) context.current = { scope, revision: context.current.revision + 1 };
+  const revision = context.current.revision;
+  const [action, setAction] = useState<{ revision: number; pending: boolean; error?: string } | null>(null);
+  const pending = action?.revision === revision && action.pending;
+  const failure = action?.revision === revision ? action.error : null;
+  const inFlight = useRef<number | null>(null);
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const entry = compatible.find(({ field }) => field.id === fieldId) ?? (compatible.length === 1 ? compatible[0] : null);
@@ -52,10 +62,23 @@ export function WorkspaceRecentRoleDialog({ asset, fields, inputAssets, inputSch
         </> : null}
         {metadataLoading ? <p role="status">{copy.preparing}</p> : metadataError ? <div role="alert"><p>{copy.issues.metadata}</p><button type="button" onClick={onMetadataRetry}>{copy.retry}</button></div> : null}
         {disabledReason || (!metadataLoading && (issue || eligibilityMessage)) ? <p role="status">{disabledReason ?? (issue ? eligibilityMessage ?? copy.issues[issue] : eligibilityMessage)}</p> : null}
+        {failure ? <p role="alert">{failure}</p> : null}
         <button type="button" className="app-recent-insert" disabled={!entry || Boolean(disabledReason || issue) || pending || metadataLoading} onClick={async () => {
-          if (!entry || entry.disabled || getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine)) return;
-          setPending(true);
-          try { await onInsert(entry, slotIndex); if (mounted.current) onClose(); } finally { if (mounted.current) setPending(false); }
+          if (!entry || entry.disabled || inFlight.current === revision || getRecentReferenceIssue(asset, entry, inputAssets, inputSchema, mode, slotIndex, engine)) return;
+          const isCurrent = () => mounted.current && context.current.revision === revision;
+          inFlight.current = revision;
+          setAction({ revision, pending: true });
+          try {
+            const result = await onInsert(entry, slotIndex);
+            if (!isCurrent()) return;
+            if (result === false || typeof result === 'string') setAction({ revision, pending: false, error: typeof result === 'string' && result.trim() ? result : copy.insertError });
+            else onClose();
+          } catch {
+            if (isCurrent()) setAction({ revision, pending: false, error: copy.insertError });
+          } finally {
+            if (inFlight.current === revision) inFlight.current = null;
+            if (isCurrent()) setAction(current => current?.revision === revision ? { ...current, pending: false } : current);
+          }
         }}>{pending ? copy.preparing : slot === 'add' ? copy.add : copy.replace}</button>
       </>}
     </div>

@@ -1,6 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
+import { useRetireSlotMedia } from './useRetireSlotMedia';
 import { AppGlyph } from '@/components/app/AppGlyph';
 import { useEffect, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -8,16 +9,17 @@ import { workspaceReferenceCopy } from '@/components/composer/workspace-referenc
 import type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 
 /** Media, upload and removal are siblings: native controls never activate replacement. */
-export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotIndex, slotLabel, disabled, disabledReason, minCount, inputRef, canOpenLibrary, onDisabledAttempt, onDrop, onPaste, onInputChange, onSelectFileSlot, onOpenLibrarySlot, onRemoveSlot, assetCopy, workspacePresentation }: AssetDropzoneSlotProps) {
+export function WorkspaceAssetSlot({ onMediaError, asset, accept, mediaKind = 'image', slotIndex, slotLabel, disabled, disabledReason, minCount, inputRef, canOpenLibrary, onDisabledAttempt, onDrop, onPaste, onInputChange, onSelectFileSlot, onOpenLibrarySlot, onRemoveSlot, assetCopy, workspacePresentation }: AssetDropzoneSlotProps) {
   const { locale } = useI18n();
   const copy = workspaceReferenceCopy(locale);
   const slotRef = useRef<HTMLDivElement>(null);
+  useRetireSlotMedia(slotRef, asset?.previewUrl);
   const selected = workspacePresentation?.selected;
   useEffect(() => {
     if (selected) slotRef.current?.scrollIntoView?.({ block: 'nearest' });
   }, [selected]);
   const label = workspacePresentation?.label ?? slotLabel;
-  return <div ref={slotRef} className="app-workspace-asset-slot" data-asset-index={slotIndex} data-reference-selected={selected || undefined}
+  return <div onErrorCapture={onMediaError} ref={slotRef} className="app-workspace-asset-slot" data-asset-index={slotIndex} data-reference-selected={selected || undefined}
     onDragOver={(event) => event.preventDefault()}
     onDrop={(event) => { event.preventDefault(); if (disabled) onDisabledAttempt(); else onDrop(event, slotIndex); }}
     onPaste={(event) => { if (disabled) onDisabledAttempt(); else onPaste(event, slotIndex); }}>
@@ -27,7 +29,7 @@ export function WorkspaceAssetSlot({ asset, accept, mediaKind = 'image', slotInd
       {canOpenLibrary ? <button type="button" className="app-reference-library-target" disabled={disabled} title={`${copy.library} · ${slotLabel}`} aria-label={`${copy.library} · ${slotLabel}`} onClick={() => onOpenLibrarySlot(slotIndex)}><AppGlyph name="library" /><span>{copy.library}</span></button> : null}
     </div> : <>
     {asset ? <div className="app-reference-media">
-      {asset.kind === 'image' ? <img src={asset.previewUrl} alt={asset.name} loading="lazy" /> : asset.kind === 'video' ? <video src={asset.previewUrl} controls preload="none" aria-label={asset.name} /> : <audio src={asset.previewUrl} controls preload="none" aria-label={asset.name} />}
+      {!asset.previewUrl ? null : asset.kind === 'image' ? <img src={asset.previewUrl} alt={asset.name} loading="lazy" /> : asset.kind === 'video' ? <video key={asset.previewUrl} src={asset.previewUrl} controls preload="none" aria-label={asset.name} /> : <audio key={asset.previewUrl} src={asset.previewUrl} controls preload="none" aria-label={asset.name} />}
     </div> : null}
     <div className="app-reference-slot-label"><span>{workspacePresentation?.label ?? asset?.badge ?? asset?.name ?? slotLabel}</span>{slotIndex < minCount && !asset ? <small>{copy.required}</small> : null}
       {workspacePresentation && typeof asset.durationSec === 'number' ? <small>{new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(asset.durationSec)} s</small> : null}

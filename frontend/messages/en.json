@@ -4271,6 +4271,7 @@
         "importing": "Importing…",
         "importFailed": "Import failed. Please try again.",
         "refresh": "Refresh",
+        "loadMore": "Load more",
         "searchSaved": "Search names or render IDs…",
         "searchRenders": "Search prompts or render IDs…",
         "create": "Create"
@@ -4620,7 +4621,8 @@
         "jobLabel": "Job {id}",
         "sourceLabel": "{label} source",
         "uploadDurationWarning": "The source video uploaded, but its duration could not be read in the browser.",
-        "selectedDurationWarning": "The selected video loaded, but its duration could not be confirmed in the browser."
+        "selectedDurationWarning": "The selected video loaded, but its duration could not be confirmed in the browser.",
+        "previewUnavailable": "Source preview unavailable."
       },
       "controls": {
         "eyebrow": "Controls",
@@ -4911,7 +4913,9 @@
           "label": "Qwen Multiple Angles",
           "description": "Qwen image edit multiple-angle engine tuned for angle consistency."
         }
-      }
+      },
+      "sourcePreviewUnavailable": "Source preview unavailable.",
+      "retrySourcePreview": "Retry"
     },
     "characterBuilder": {
       "auto": "Auto",

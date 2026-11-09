@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { serializeAngleSourceImage } from './angle/_lib/angle-source-image';
 import { ToolMediaHandoff } from '@/components/library/ToolMediaHandoff.client';
 import deepmerge from 'deepmerge';
 import Link from 'next/link';
@@ -183,12 +184,7 @@ function AngleAccountWorkspace({ auth }: { auth: ReturnType<typeof useRequireAut
       params,
       safeMode,
       generateBestAngles,
-      sourceImage: sourceImage
-        ? {
-            ...sourceImage,
-            previewUrl: sourceImage.previewUrl?.startsWith('blob:') ? sourceImage.url : sourceImage.previewUrl ?? sourceImage.url,
-          }
-        : null,
+      sourceImage: sourceImage ? serializeAngleSourceImage(sourceImage) : null,
       result,
       selectedOutputIndex,
     };

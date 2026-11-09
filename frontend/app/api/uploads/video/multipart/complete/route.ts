@@ -1,3 +1,4 @@
+import { createUploadedMediaReadAccess } from '@/server/media-library/upload-read-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { isRecastAudioFile } from '@/lib/character-studio-recast';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
@@ -133,8 +134,8 @@ export async function POST(req: NextRequest) {
       const { storeAudioUpload } = await import('@/server/uploads/store-media-upload');
       const stored = await storeAudioUpload({userId, fileName, declaredMime: mime, bytes, referenceEligibility:'workspace'});
       await cleanupParts(parts);
-      return NextResponse.json({ok:true,asset:{id:stored.legacyAssetId, ...canonicalMediaAssetFields(stored.assetId,'audio'),
-        mediaFacts:stored.mediaFacts,url:stored.storageUrl,size:stored.sizeBytes,mime:stored.mimeType,name:fileName}});
+      return NextResponse.json({ok:true,asset:{...await createUploadedMediaReadAccess(userId,{assetId:stored.assetId,legacyAssetId:stored.legacyAssetId,url:stored.storageUrl,kind:'audio'}),id:stored.legacyAssetId, ...canonicalMediaAssetFields(stored.assetId,'audio'),
+        mediaFacts:stored.mediaFacts,url:stored.storageUrl,size:stored.sizeBytes,mime:stored.mimeType,name:fileName}}, {headers:{'Cache-Control':'private, no-store'}});
     }
     const measured = await readVideoUploadMetadata(bytes, fileName, mime);
     if (!measured) return uploadJsonError('METADATA_UNVERIFIED', 422);
@@ -176,6 +177,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       asset: {
+        ...await createUploadedMediaReadAccess(userId, { assetId: canonicalAsset?.publicId, legacyAssetId: assetId, url: uploadResult.url, kind: 'video' }),
         id: assetId,
         legacyAssetId: assetId,
         ...canonicalMediaAssetFields(canonicalAsset?.publicId, 'video'),
@@ -186,7 +188,7 @@ export async function POST(req: NextRequest) {
         name: fileName,
         thumbUrl: null,
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('[upload] failed to complete chunked video upload', {
       uploadId,

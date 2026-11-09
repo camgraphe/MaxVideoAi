@@ -1,0 +1,94 @@
+{
+  "capture": "Initial paired seed before each controlled measurement reset",
+  "variants": {
+    "baseline": {
+      "revision": "5135e4e2b7ad04261d26b3f7669eb2ec8aded1db",
+      "seedSha256": "d6daf2adeb08092e308b27463b2c8c4c0f1ff9c129693cfe93f294064350fad8",
+      "sourceLockSha256": "d072ea63b20147e35297de490cef5ed2ef592114197838ddf772b525b99265ce",
+      "installedLockSha256": "08ef27033df81e4771591c6ff42d1837b4cf9347b9f9553d2a333f20e66039d1",
+      "node": "v22.23.4",
+      "harnessHashes": {
+        "runtime.ts": "d9f949fa1a6e8867efefd3cc8cc3b0bc4e277245a3a73d2e8fe3d8b1267397d0",
+        "seed.ts": "d64dde1dea08992fea4a86b605a51fb038e84b367f6667bed5e3251e970893e6",
+        "s3-service.ts": "d0feee214b715a07890cdec49e7854a73541ee82dece3d736422df6264a83494",
+        "s3-signature.ts": "2afc8c14601bbb8ba5db0a5455fe14fa0226df3f9c56c529afb63ee2cf9103d9",
+        "bootstrap-worker.ts": "3e26ea748154acffa6f5d76b446c5500d5c61bcd92c97503e73318e98851fb5a",
+        "optimize-snapshot.ts": "351f42ead014733fcbe69bc04844c3956dd4f366c13e8ac870d147d0d07a95c9",
+        "verify-storage.ts": "c162f2726ca5c9c4bac2fda83a29db56bc773c29a11de3c345459673fc247c21",
+        "verify-connected.ts": "b248ebc72c5e8f78e83c9e98600fa9ccfaf16238912b9cf4bc340fddf1fbd1c1",
+        "verify-readonly.ts": "0fe8c8a4bcb0b8228585624f641dffe8b9ca3ca60a7001fec3a1d00d3ea6ae8b"
+      },
+      "mediaObjects": 376,
+      "publicObjects": 96,
+      "grantObjects": 278,
+      "identityProjection": "sorted key,bytes,sha256,mimeType,role,publicResource,requiresGrant",
+      "identitySha256": "55545b0a15acbec65fb8d9dc8396f4d3c0b0747f2d43b70744da74b4d5d31e9d",
+      "jobsComplement": {
+        "inputSha256": "8e07c99e1d65221367adef7f152273088da1d13a08b869b45b510288e99b0dc0",
+        "builderHashes": {
+          "video": "ade9d6a30636b86c8fcff70a8e717b797c9ecdcf0086fb85ceb663f098a5f871",
+          "image": "48ed7787425f6e836e9d6e9d61d24442c6cf803d0c928b4b29c2110984d052c2",
+          "audio": "2e9fea07f9a5422c3345a3a365655d4fa5e3e2da62aa0e15e7df44932aa72665"
+        },
+        "migrationHashes": {
+          "47_generation_poll_state.sql": "5496737aecbeed6715f1c118fa68fd31806ac0150daac59e06369862f63e6848",
+          "53_seedance_draft_links.sql": "f6207f460ea08cdd669c590d934bd4b07d2becc20dfa2e5a810423a71ee02087",
+          "59_seedance_draft_final_state.sql": "6bbe84de4d705c7a098b264c7ddc26018ac098fb4e11c7dfb190aa4a549b6736"
+        },
+        "jobs": 12
+      }
+    },
+    "candidate": {
+      "revision": "9df0cb33f35f5bdb8f72e043c79455fc542f25e3",
+      "seedSha256": "d6daf2adeb08092e308b27463b2c8c4c0f1ff9c129693cfe93f294064350fad8",
+      "sourceLockSha256": "08ef27033df81e4771591c6ff42d1837b4cf9347b9f9553d2a333f20e66039d1",
+      "installedLockSha256": "08ef27033df81e4771591c6ff42d1837b4cf9347b9f9553d2a333f20e66039d1",
+      "node": "v22.23.4",
+      "harnessHashes": {
+        "runtime.ts": "846dd18e29524b2018b4e744efa60237966fb7e605b38818d2ede60739099942",
+        "seed.ts": "d64dde1dea08992fea4a86b605a51fb038e84b367f6667bed5e3251e970893e6",
+        "s3-service.ts": "d0feee214b715a07890cdec49e7854a73541ee82dece3d736422df6264a83494",
+        "s3-signature.ts": "2afc8c14601bbb8ba5db0a5455fe14fa0226df3f9c56c529afb63ee2cf9103d9",
+        "bootstrap-worker.ts": "b2d86a2c74165dcb63bd2affbf10be82fcfc27a49ce0efa9ee1692f9a7a53103",
+        "job-fixture.ts": "2ca8521b3d44d81f3ef76803eefdbd0cbcc4f360121c80fbecb4c544f80e0bbd",
+        "optimize-snapshot.ts": "351f42ead014733fcbe69bc04844c3956dd4f366c13e8ac870d147d0d07a95c9",
+        "verify-storage.ts": "c162f2726ca5c9c4bac2fda83a29db56bc773c29a11de3c345459673fc247c21",
+        "verify-connected.ts": "b248ebc72c5e8f78e83c9e98600fa9ccfaf16238912b9cf4bc340fddf1fbd1c1",
+        "verify-readonly.ts": "0fe8c8a4bcb0b8228585624f641dffe8b9ca3ca60a7001fec3a1d00d3ea6ae8b"
+      },
+      "mediaObjects": 376,
+      "publicObjects": 96,
+      "grantObjects": 278,
+      "identityProjection": "sorted key,bytes,sha256,mimeType,role,publicResource,requiresGrant",
+      "identitySha256": "55545b0a15acbec65fb8d9dc8396f4d3c0b0747f2d43b70744da74b4d5d31e9d",
+      "jobsComplement": {
+        "inputSha256": "8e07c99e1d65221367adef7f152273088da1d13a08b869b45b510288e99b0dc0",
+        "builderHashes": {
+          "video": "ade9d6a30636b86c8fcff70a8e717b797c9ecdcf0086fb85ceb663f098a5f871",
+          "image": "48ed7787425f6e836e9d6e9d61d24442c6cf803d0c928b4b29c2110984d052c2",
+          "audio": "2e9fea07f9a5422c3345a3a365655d4fa5e3e2da62aa0e15e7df44932aa72665"
+        },
+        "migrationHashes": {
+          "47_generation_poll_state.sql": "5496737aecbeed6715f1c118fa68fd31806ac0150daac59e06369862f63e6848",
+          "53_seedance_draft_links.sql": "f6207f460ea08cdd669c590d934bd4b07d2becc20dfa2e5a810423a71ee02087",
+          "59_seedance_draft_final_state.sql": "6bbe84de4d705c7a098b264c7ddc26018ac098fb4e11c7dfb190aa4a549b6736"
+        },
+        "jobs": 12
+      }
+    }
+  },
+  "limits": [
+    "Same installed lock, different historical source locks.",
+    "Baseline startup/bootstrap helper hashes differ; explicit identical jobs complement v2 applied after baseline resets.",
+    "376 registered objects:96public,278grant-required,2unreferenced.",
+    "Initial30saved-image composition differs at tie boundary030/031; exact012and097 comparisons are identified separately."
+  ],
+  "publicBaselineEquivalent": {
+    "measuredRevision": "5135e4e2b7ad04261d26b3f7669eb2ec8aded1db",
+    "publicRevision": "6e12d08ca07c423615e862b6ca1bd47d0f5ffa59",
+    "frontendGitTree": "79b792aad5286b1841edfa6ff02ddb32dcfbcf51",
+    "rootLockGitBlob": "b6550a6829ac9d6497d6f02f40fe744c90bdefc6",
+    "verifiedBy": "git rev-parse <revision>:frontend and <revision>:pnpm-lock.yaml for both revisions",
+    "scope": "Exact frontend source tree and root lock equality; measured source remains5135. Reproduction can export public6e12 with the same fixture, installed dependencies and explicit jobs complement; this is not a second measured run."
+  }
+}

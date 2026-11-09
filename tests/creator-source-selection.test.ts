@@ -57,3 +57,14 @@ test('matching decimal passages are not blocked by floating-point subtraction',a
   const timing=getCreatorLipTiming('video',{audio,source},{audio:{enabled:true,start:'0.1',end:'7.5'},source:{enabled:true,start:'1.2',end:'8.6'}});
   assert.equal(timing.issue,undefined);assert.equal(timing.passages.audio?.durationSec,7.4);assert.equal(timing.passages.source?.durationSec,7.4);
 });
+
+test('source selection validates explicit refs and refuses conflicting identities before falling back',()=>{
+ const assetId='ma_33333333333333333333333333333333';
+ const base={id:'internal-row',url:'https://private.example/original.png',kind:'image'};
+ assert.deepEqual(selectCreatorSource({...base,ref:{type:'asset',assetId,kind:'image'}},'image').ref,{type:'asset',assetId,kind:'image'});
+ assert.deepEqual(selectCreatorSource({...base,ref:{type:'job-output',jobId:'job-a',outputId:'output-b',kind:'image'}},'image').ref,{type:'job-output',jobId:'job-a',outputId:'output-b',kind:'image'});
+ for(const ref of [{type:'asset',assetId,kind:'video'},{type:'asset',assetId:'ma_44444444444444444444444444444444',kind:'image'},{type:'asset',assetId:'invalid',kind:'image'}]) {
+  assert.throws(()=>selectCreatorSource({...base,assetId,ref},'image'));
+ }
+ assert.throws(()=>selectCreatorSource({...base,ref:{type:'job-output',jobId:'job-a',outputId:'output-b',kind:'image'},jobId:'job-other',sourceOutputId:'output-b'},'image'));
+});

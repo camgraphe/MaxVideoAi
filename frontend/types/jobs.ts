@@ -1,3 +1,4 @@
+import type { ImageRenderEntry } from '@/lib/image-renders';
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { VideoOperation } from '@/lib/video-operation';
@@ -33,6 +34,7 @@ export interface Job {
   iterationCount?: number | null;
   splitMode?: string | null;
   renderIds?: string[] | null;
+  imageRenders?: ImageRenderEntry[];
   renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;

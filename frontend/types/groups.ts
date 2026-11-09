@@ -1,3 +1,4 @@
+import type { ImageDisplay } from '@/lib/image-display';
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { Job } from '@/types/jobs';
 
@@ -18,6 +19,9 @@ export interface GroupMemberSummary {
   currency?: string | null;
   thumbUrl?: string | null;
   originalUrl?: string | null;
+  previewUrl?: string;
+  imageDisplay?: ImageDisplay;
+  sourceOutputId?: string;
   videoUrl?: string | null;
   previewVideoUrl?: string | null;
   playbackVideoUrl?: string | null;

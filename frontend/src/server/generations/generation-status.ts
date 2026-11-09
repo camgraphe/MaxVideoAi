@@ -276,6 +276,7 @@ export function mapGenerationStatusRecordToWeb(
     iterationCount: record.iteration_count ?? undefined,
     renderIds: override('renderIds', extractRenderIds(parsedRenders.entries) ?? undefined),
     renderThumbUrls: override('renderThumbUrls', extractRenderThumbUrls(parsedRenders) ?? undefined),
+    imageRenders: parsedRenders.hasStructuredEntries ? parsedRenders.entries : undefined,
     heroRenderId: record.hero_render_id ?? undefined,
     localKey: record.local_key ?? undefined,
     message: override('message', message ?? undefined) ?? undefined,

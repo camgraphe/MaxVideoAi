@@ -292,6 +292,8 @@ export function useImageComposerPersistence({
             next[index] = slot.characterReference
               ? createCharacterReferenceSlot(slot.characterReference, `stored-${index}`)
               : {
+                  readAccessOwnerId: slot.readAccessOwnerId, readAccessRef: slot.readAccessRef, readAccessRevision: slot.readAccessRevision,
+                  ...(slot.readAccessRef ? {readAccessExpiresAt: new Date(0).toISOString()} : {}),
                   id: `stored-${index}`,
                   ref: slot.ref,
                   name: slot.name,
