@@ -200,6 +200,7 @@ export function WorkspaceReferenceSection({ managementRef, managementMode, compa
     {popupFields.length || (activeCommand === 'collections' || activeCommand === 'all') && subjectReferences ? <WorkspaceReferencePopup singleRole={Boolean(activeFrame || activeSource)} title={popupTitle} closeLabel={copy.close} onClose={close}>
       <WorkspaceReferenceInventory fields={popupFields} sourceFieldId={sourceField?.id} initialFieldId={popupTarget?.fieldId} assets={assets} locale={locale} renderField={(entry) => <>
         {compact && entry.field.type === 'video' ? workflowNotices.map(note=><p key={note.code} role="note" className="mb-3 text-xs leading-relaxed text-text-muted">{note.message}</p>) : null}
+        {onOpenLibrary && (entry.field.maxCount ?? 1) > 1 ? <button type="button" className="app-reference-command" disabled={entry.disabled} onClick={() => openLibrary(entry.field)}>{copy.library}</button> : null}
         <AssetDropzone key={entry.field.id} {...entry} headerAction={compact ? entry.headerAction : undefined}
         workspaceDisabledReasonContent={compact && referenceAuthAction && entry.disabledReason?.trim() === referenceAuthAction.label
           ? <a className="app-reference-signin" href={referenceAuthAction.href}>{referenceAuthAction.label}</a>

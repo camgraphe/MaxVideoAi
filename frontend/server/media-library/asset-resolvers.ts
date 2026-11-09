@@ -1,3 +1,4 @@
+import { parseImageDisplay } from '@/lib/image-display';
 import { query } from '@/lib/db';
 import { normalizeString, type MediaKind } from '../media-library-records';
 
@@ -97,4 +98,16 @@ export async function resolveReusableAssetPreviewUrl(params: {
   );
 
   return normalizeString(rows[0]?.preview_url) ?? null;
+}
+
+/** Generated display metadata is read from the exact ready owned original, never a sibling or supplied preview. */
+export async function resolveReusableImageDisplay(params: { userId: string; normalizedUrl: string; sourceJobId?: string | null; sourceOutputId?: string | null }) {
+  if (!params.sourceOutputId) return undefined;
+  const [row] = await query<{ url: string; preview_url: string | null; metadata: Record<string, unknown> }>(
+    `SELECT COALESCE(storage_url,url) AS url, preview_url, metadata FROM job_outputs
+     WHERE user_id=$1 AND id=$2 AND kind='image' AND status='ready'
+       AND ($3::text IS NULL OR job_id=$3) AND (url=$4 OR storage_url=$4) LIMIT 1`,
+    [params.userId, params.sourceOutputId, params.sourceJobId ?? null, params.normalizedUrl]);
+  if (!row) throw new Error('IMAGE_OUTPUT_SOURCE_MISMATCH');
+  return parseImageDisplay(row.metadata?.imageDisplay, params.normalizedUrl, row.preview_url);
 }

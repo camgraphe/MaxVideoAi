@@ -15,6 +15,7 @@ export function CharacterStudioOverlays(props: {
   lightboxEntry: MediaLightboxEntry | null;
   onCloseLightbox: () => void;
   referenceOpen: boolean;
+  referenceRole?: string | null;
   userId: string | null;
   onCloseReference: () => void;
   onSelectReference: ComponentProps<typeof CharacterReferenceLibraryModal>['onSelect'];
@@ -52,6 +53,7 @@ export function CharacterStudioOverlays(props: {
         />
       ) : null}
       <CharacterReferenceLibraryModal
+        role={props.referenceRole}
         open={props.referenceOpen}
         userId={props.userId}
         onClose={props.onCloseReference}

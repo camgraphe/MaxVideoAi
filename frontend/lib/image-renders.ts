@@ -1,8 +1,12 @@
 import { normalizeMediaUrl } from './media';
+import { imageDisplayFields, type ImageDisplay } from './image-display';
 
 export interface ImageRenderEntry {
   url: string;
+  sourceOutputId?: string;
   thumbUrl?: string | null;
+  previewUrl?: string | null;
+  imageDisplay?: ImageDisplay;
   width?: number | null;
   height?: number | null;
   mimeType?: string | null;
@@ -10,7 +14,10 @@ export interface ImageRenderEntry {
 
 export interface StoredImageRenderEntry {
   url: string;
+  sourceOutputId?: string;
   thumb_url: string;
+  previewUrl?: string;
+  imageDisplay?: ImageDisplay;
   width: number | null;
   height: number | null;
   mime_type: string | null;
@@ -63,6 +70,8 @@ function parseRenderArray(input: unknown[]): ParsedStoredImageRenders {
     entries.push({
       url,
       thumbUrl,
+      ...(typeof record.sourceOutputId === 'string' && record.sourceOutputId.trim() ? { sourceOutputId: record.sourceOutputId } : {}),
+      ...imageDisplayFields(record.imageDisplay, url, normalizeStringValue(record.previewUrl ?? record.preview_url)),
       width: normalizeDimension(record.width),
       height: normalizeDimension(record.height),
       mimeType: normalizeMime(record.mime_type ?? record.mimeType),
@@ -107,6 +116,8 @@ export function buildStoredImageRenderEntries(images: ImageRenderEntry[]): Store
     acc.push({
       url,
       thumb_url: thumbUrl,
+      ...(image.sourceOutputId ? { sourceOutputId: image.sourceOutputId } : {}),
+      ...imageDisplayFields(image.imageDisplay, url, image.previewUrl),
       width: normalizeDimension(image.width),
       height: normalizeDimension(image.height),
       mime_type: normalizeMime(image.mimeType),

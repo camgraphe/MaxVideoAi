@@ -1,0 +1,805 @@
+{
+  "purpose": "Disposable local prototype media; no private/customer/external data.",
+  "generatedAt": "2026-11-08T23:08:12.440Z",
+  "generationCommand": "PROTOTYPE_SHARP_PACKAGE=/path/to/frontend/package.json node prepare-fixtures.mjs",
+  "sourceRoot": "frontend/public",
+  "physicalAssetCount": 20,
+  "imageCount": 16,
+  "videoCount": 3,
+  "audioCount": 1,
+  "firstCases": [
+    {
+      "name": "Après-fête",
+      "kind": "image",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "name": "Dixie — portrait",
+      "kind": "image",
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "name": "Personnage — vidéo",
+      "kind": "video",
+      "width": 960,
+      "height": 540,
+      "durationSec": 5
+    },
+    {
+      "name": "Ambiance — audio",
+      "kind": "audio",
+      "width": 0,
+      "height": 0,
+      "durationSec": 28
+    },
+    {
+      "name": "Motel disco",
+      "kind": "image",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "name": "Portrait — fixture vidéo",
+      "kind": "video",
+      "width": 540,
+      "height": 960,
+      "durationSec": 5
+    },
+    {
+      "name": "Le chapeau — vidéo",
+      "kind": "video",
+      "width": 960,
+      "height": 540,
+      "durationSec": 5
+    }
+  ],
+  "thumbnailPolicy": "120/320 pixel maximum edge, fit inside, no cropping, no upscaling; full-oriented frame retained.",
+  "imagePreviewPolicy": "1280 pixel maximum edge WebP. Original image copies retain their source bytes.",
+  "videoPolicy": "5-second local fixture clips, H264/yuv420p/24fps, no crop, AAC where source audio exists, faststart. Fixture original max-edge960; preview max-edge640.",
+  "portraitVideo": "Portrait — fixture vidéo is a static 5s clip made from the existing Dixie public portrait. It tests 9:16 geometry, not portrait motion quality.",
+  "logicalMetadataPolicy": "Deterministic synthetic IDs/ref/name/source/date/favorite/collection membership. Measured size/dimensions/duration are reused from each physical original fixture.",
+  "limitations": [
+    "1000/10000 records reuse 20 physical originals; cached requests underrepresent a real library of 10000 unique files.",
+    "All URLs are local/public fixtures. No private grants, expiry, backend ownership, server pagination or real tool mutation is exercised.",
+    "Video originals in this fixture are newly encoded 5s demo fragments, not complete repository source videos. Full source provenance is recorded below.",
+    "No existing local public video had portrait geometry; the portrait fixture is explicitly static.",
+    "Audio has width=height=0 and a generic icon; the icon dimensions are not audio facts."
+  ],
+  "provenance": [
+    {
+      "slug": "afterparty",
+      "kind": "image",
+      "repositorySource": "media/mcp/creations/daylight-afterparty.webp",
+      "sourceSha256": "3f51271eedce9d1f4b9a5c8274417e1942004c6979ef9f5d4c4b6d51d42ac79a",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/afterparty.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/afterparty-120.webp",
+          "width": 120,
+          "height": 68,
+          "bytes": 1126
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/afterparty-320.webp",
+          "width": 320,
+          "height": 180,
+          "bytes": 5842
+        },
+        "preview": {
+          "url": "/fixtures/previews/afterparty.webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 37898
+        }
+      }
+    },
+    {
+      "slug": "dixie",
+      "kind": "image",
+      "repositorySource": "assets/tools/character-studio/marketing/dixie-recast.webp",
+      "sourceSha256": "3e8eda72c4c2a0a45f63675d33e5c514d2aa78fc0791f34c0841a37a5452f699",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/dixie.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/dixie-120.webp",
+          "width": 68,
+          "height": 120,
+          "bytes": 1016
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/dixie-320.webp",
+          "width": 180,
+          "height": 320,
+          "bytes": 3986
+        },
+        "preview": {
+          "url": "/fixtures/previews/dixie.webp",
+          "width": 720,
+          "height": 1280,
+          "bytes": 24864
+        }
+      }
+    },
+    {
+      "slug": "disco-motel",
+      "kind": "image",
+      "repositorySource": "assets/app-starters/disco-motel-0b809fbcec19.webp",
+      "sourceSha256": "0b809fbcec195bd90f2ac8701d1bb92cbccbda49b800b27234af2b5a42907f51",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/disco-motel.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/disco-motel-120.webp",
+          "width": 120,
+          "height": 120,
+          "bytes": 3340
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/disco-motel-320.webp",
+          "width": 320,
+          "height": 320,
+          "bytes": 17110
+        },
+        "preview": {
+          "url": "/fixtures/previews/disco-motel.webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 145076
+        }
+      }
+    },
+    {
+      "slug": "acid-portrait",
+      "kind": "image",
+      "repositorySource": "assets/app-starters/acid-portrait-f5440c7f5eb0.webp",
+      "sourceSha256": "f5440c7f5eb0da5eb8b957539daa51b02442be7e816f72e7af93bd1b89ba0aa4",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/acid-portrait.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/acid-portrait-120.webp",
+          "width": 120,
+          "height": 120,
+          "bytes": 2612
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/acid-portrait-320.webp",
+          "width": 320,
+          "height": 320,
+          "bytes": 12116
+        },
+        "preview": {
+          "url": "/fixtures/previews/acid-portrait.webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 110230
+        }
+      }
+    },
+    {
+      "slug": "night-shift",
+      "kind": "image",
+      "repositorySource": "assets/app-starters/night-shift-9f91929fe7da.webp",
+      "sourceSha256": "9f91929fe7da157e8d1f0072ea232c87062c20a232af3b61ca24b62fede82252",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/night-shift.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/night-shift-120.webp",
+          "width": 120,
+          "height": 120,
+          "bytes": 3082
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/night-shift-320.webp",
+          "width": 320,
+          "height": 320,
+          "bytes": 15956
+        },
+        "preview": {
+          "url": "/fixtures/previews/night-shift.webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 149190
+        }
+      }
+    },
+    {
+      "slug": "vesper",
+      "kind": "image",
+      "repositorySource": "assets/tools/character-studio/marketing/vesper-recast.webp",
+      "sourceSha256": "1e71e5dd7953d18ba2c6fac3ffea90a4049abcdf4b0e2b6d0a54ee9524d87142",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/vesper.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/vesper-120.webp",
+          "width": 68,
+          "height": 120,
+          "bytes": 1540
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/vesper-320.webp",
+          "width": 180,
+          "height": 320,
+          "bytes": 6996
+        },
+        "preview": {
+          "url": "/fixtures/previews/vesper.webp",
+          "width": 720,
+          "height": 1280,
+          "bytes": 51300
+        }
+      }
+    },
+    {
+      "slug": "nano-campaign",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/nano-banana/campaign.webp",
+      "sourceSha256": "dfd8490b5ca96edf670f5824bd0716683ed3c3cda7f931cf5c579cda3c00f924",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/nano-campaign.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/nano-campaign-120.webp",
+          "width": 120,
+          "height": 68,
+          "bytes": 498
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/nano-campaign-320.webp",
+          "width": 320,
+          "height": 180,
+          "bytes": 1488
+        },
+        "preview": {
+          "url": "/fixtures/previews/nano-campaign.webp",
+          "width": 1280,
+          "height": 720,
+          "bytes": 8578
+        }
+      }
+    },
+    {
+      "slug": "nano-reference",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/nano-banana/reference.webp",
+      "sourceSha256": "ede2d6a5f1033f494e7be85481d87fd0bea490cd10fcc0cfa5f0eb0a7dfc5742",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/nano-reference.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/nano-reference-120.webp",
+          "width": 120,
+          "height": 90,
+          "bytes": 586
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/nano-reference-320.webp",
+          "width": 320,
+          "height": 240,
+          "bytes": 1854
+        },
+        "preview": {
+          "url": "/fixtures/previews/nano-reference.webp",
+          "width": 1280,
+          "height": 960,
+          "bytes": 10768
+        }
+      }
+    },
+    {
+      "slug": "seedream-character",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/seedream/character.webp",
+      "sourceSha256": "3552b75179032ba59a417fc0990804e92e20aeb2390e2927c119d6935d88e395",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/seedream-character.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/seedream-character-120.webp",
+          "width": 120,
+          "height": 90,
+          "bytes": 696
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/seedream-character-320.webp",
+          "width": 320,
+          "height": 240,
+          "bytes": 2066
+        },
+        "preview": {
+          "url": "/fixtures/previews/seedream-character.webp",
+          "width": 1280,
+          "height": 960,
+          "bytes": 11916
+        }
+      }
+    },
+    {
+      "slug": "seedream-edit",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/seedream/edit.webp",
+      "sourceSha256": "a194df0184537e0fc7755cbee5a574ae64e52b64e7e6115cbb9282c084c09eab",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/seedream-edit.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/seedream-edit-120.webp",
+          "width": 120,
+          "height": 120,
+          "bytes": 584
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/seedream-edit-320.webp",
+          "width": 320,
+          "height": 320,
+          "bytes": 1908
+        },
+        "preview": {
+          "url": "/fixtures/previews/seedream-edit.webp",
+          "width": 1280,
+          "height": 1280,
+          "bytes": 12296
+        }
+      }
+    },
+    {
+      "slug": "gpt-product",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/gpt-image-2/product.webp",
+      "sourceSha256": "577968cadeed1f8f0b4fa32fa42f3e5f55039710cd1869f3c30e86c683a86459",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/gpt-product.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/gpt-product-120.webp",
+          "width": 120,
+          "height": 90,
+          "bytes": 612
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/gpt-product-320.webp",
+          "width": 320,
+          "height": 240,
+          "bytes": 1868
+        },
+        "preview": {
+          "url": "/fixtures/previews/gpt-product.webp",
+          "width": 1280,
+          "height": 960,
+          "bytes": 11034
+        }
+      }
+    },
+    {
+      "slug": "luma-research",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/luma-uni-1/research.webp",
+      "sourceSha256": "886ecd110331b7abe0c5e738ed9b76efe569b1c0a3ee04aef8828a8b88e14628",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/luma-research.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/luma-research-120.webp",
+          "width": 120,
+          "height": 120,
+          "bytes": 692
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/luma-research-320.webp",
+          "width": 320,
+          "height": 320,
+          "bytes": 2748
+        },
+        "preview": {
+          "url": "/fixtures/previews/luma-research.webp",
+          "width": 1280,
+          "height": 1280,
+          "bytes": 22562
+        }
+      }
+    },
+    {
+      "slug": "cartographer",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/minimax-h3/reference/cartographer-one.png",
+      "sourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/cartographer.png",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/cartographer-120.webp",
+          "width": 80,
+          "height": 120,
+          "bytes": 974
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/cartographer-320.webp",
+          "width": 213,
+          "height": 320,
+          "bytes": 3966
+        },
+        "preview": {
+          "url": "/fixtures/previews/cartographer.webp",
+          "width": 853,
+          "height": 1280,
+          "bytes": 47592
+        }
+      }
+    },
+    {
+      "slug": "nano-wide",
+      "kind": "image",
+      "repositorySource": "assets/model-examples/nano-banana-2/wide.webp",
+      "sourceSha256": "c3cd87c8bca13df7fc36835c28712234a89b9ca483001d99b5c769911609cf06",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/nano-wide.webp",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/nano-wide-120.webp",
+          "width": 120,
+          "height": 51,
+          "bytes": 378
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/nano-wide-320.webp",
+          "width": 320,
+          "height": 137,
+          "bytes": 1278
+        },
+        "preview": {
+          "url": "/fixtures/previews/nano-wide.webp",
+          "width": 1280,
+          "height": 548,
+          "bytes": 7208
+        }
+      }
+    },
+    {
+      "slug": "pika-portrait",
+      "kind": "image",
+      "repositorySource": "hero/pika-22.jpg",
+      "sourceSha256": "5e4aa9b54862694f74fffc7e9653acc9521db9cfe62c04bfb0c303dbe00410ec",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/pika-portrait.jpg",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/pika-portrait-120.webp",
+          "width": 68,
+          "height": 120,
+          "bytes": 1180
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/pika-portrait-320.webp",
+          "width": 180,
+          "height": 320,
+          "bytes": 3844
+        },
+        "preview": {
+          "url": "/fixtures/previews/pika-portrait.webp",
+          "width": 720,
+          "height": 1280,
+          "bytes": 18650
+        }
+      }
+    },
+    {
+      "slug": "wan-portrait",
+      "kind": "image",
+      "repositorySource": "hero/wan-25.jpg",
+      "sourceSha256": "5e4aa9b54862694f74fffc7e9653acc9521db9cfe62c04bfb0c303dbe00410ec",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/wan-portrait.jpg",
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/wan-portrait-120.webp",
+          "width": 68,
+          "height": 120,
+          "bytes": 1180
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/wan-portrait-320.webp",
+          "width": 180,
+          "height": 320,
+          "bytes": 3844
+        },
+        "preview": {
+          "url": "/fixtures/previews/wan-portrait.webp",
+          "width": 720,
+          "height": 1280,
+          "bytes": 18650
+        }
+      }
+    },
+    {
+      "slug": "main-character",
+      "kind": "video",
+      "repositorySource": "media/mcp/creations/main-character-720p.mp4",
+      "sourceSha256": "1397bcf19287ffe56ae2aab7121ae0863ccc43f29e32c3aabc7dafdd9e8f694e",
+      "fixtureOriginalIsFiveSecondExcerpt": true,
+      "fixtureOriginalIsStaticPortraitVideo": false,
+      "noCrop": true,
+      "original": "/fixtures/originals/main-character.mp4",
+      "originalFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 960,
+            "height": 540,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "r_frame_rate": "0/0",
+            "duration": "5.000000"
+          }
+        ],
+        "format": {
+          "duration": "5.000000",
+          "size": "329018"
+        }
+      },
+      "previewFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 640,
+            "height": 360,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "r_frame_rate": "0/0",
+            "duration": "5.013000"
+          }
+        ],
+        "format": {
+          "duration": "5.013000",
+          "size": "188779"
+        }
+      },
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/main-character-120.webp",
+          "width": 120,
+          "height": 68,
+          "bytes": 1912
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/main-character-320.webp",
+          "width": 320,
+          "height": 180,
+          "bytes": 8520
+        },
+        "preview": {
+          "url": "/fixtures/previews/main-character.webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 38364
+        }
+      }
+    },
+    {
+      "slug": "hat-stays",
+      "kind": "video",
+      "repositorySource": "media/mcp/creations/the-hat-stays-720p.mp4",
+      "sourceSha256": "b8eabed0b2c64eff0924016a215173b95855fb64f4e3b5bae6da396a16d51866",
+      "fixtureOriginalIsFiveSecondExcerpt": true,
+      "fixtureOriginalIsStaticPortraitVideo": false,
+      "noCrop": true,
+      "original": "/fixtures/originals/hat-stays.mp4",
+      "originalFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 960,
+            "height": 540,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "r_frame_rate": "0/0",
+            "duration": "5.000000"
+          },
+          {
+            "codec_type": "data",
+            "r_frame_rate": "0/0",
+            "duration": "5.000000"
+          }
+        ],
+        "format": {
+          "duration": "5.000000",
+          "size": "211769"
+        }
+      },
+      "previewFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 640,
+            "height": 360,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "channels": 2,
+            "r_frame_rate": "0/0",
+            "duration": "5.013000"
+          },
+          {
+            "codec_type": "data",
+            "r_frame_rate": "0/0",
+            "duration": "5.000000"
+          }
+        ],
+        "format": {
+          "duration": "5.013000",
+          "size": "131109"
+        }
+      },
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/hat-stays-120.webp",
+          "width": 120,
+          "height": 68,
+          "bytes": 1238
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/hat-stays-320.webp",
+          "width": 320,
+          "height": 180,
+          "bytes": 4318
+        },
+        "preview": {
+          "url": "/fixtures/previews/hat-stays.webp",
+          "width": 960,
+          "height": 540,
+          "bytes": 17792
+        }
+      }
+    },
+    {
+      "slug": "portrait-fixture",
+      "kind": "video",
+      "repositorySource": "assets/tools/character-studio/marketing/dixie-recast.webp",
+      "sourceSha256": "3e8eda72c4c2a0a45f63675d33e5c514d2aa78fc0791f34c0841a37a5452f699",
+      "fixtureOriginalIsFiveSecondExcerpt": false,
+      "fixtureOriginalIsStaticPortraitVideo": true,
+      "noCrop": true,
+      "original": "/fixtures/originals/portrait-fixture.mp4",
+      "originalFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 540,
+            "height": 960,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          }
+        ],
+        "format": {
+          "duration": "5.000000",
+          "size": "25493"
+        }
+      },
+      "previewFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 360,
+            "height": 640,
+            "r_frame_rate": "24/1",
+            "duration": "5.000000"
+          }
+        ],
+        "format": {
+          "duration": "5.000000",
+          "size": "15420"
+        }
+      },
+      "versions": {
+        "small": {
+          "url": "/fixtures/thumbs/portrait-fixture-120.webp",
+          "width": 68,
+          "height": 120,
+          "bytes": 1048
+        },
+        "thumb": {
+          "url": "/fixtures/thumbs/portrait-fixture-320.webp",
+          "width": 180,
+          "height": 320,
+          "bytes": 3934
+        },
+        "preview": {
+          "url": "/fixtures/previews/portrait-fixture.webp",
+          "width": 540,
+          "height": 960,
+          "bytes": 16046
+        }
+      }
+    },
+    {
+      "slug": "ambient",
+      "kind": "audio",
+      "repositorySource": "studio/demo-ambient.wav",
+      "sourceSha256": "e08357c44a2bc2a35cec0e9a29a33ab02ccbd33402eaf245d5f3bc2f515079b2",
+      "originalIsExactSourceCopy": true,
+      "original": "/fixtures/originals/ambient.wav",
+      "originalFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "pcm_s16le",
+            "codec_type": "audio",
+            "sample_rate": "8000",
+            "channels": 1,
+            "r_frame_rate": "0/0",
+            "duration": "28.000000"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "448044"
+        }
+      },
+      "previewFacts": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "8000",
+            "channels": 1,
+            "r_frame_rate": "0/0",
+            "duration": "28.000000"
+          }
+        ],
+        "format": {
+          "duration": "28.000000",
+          "size": "96579"
+        }
+      },
+      "cover": "Generic local audio icon; no waveform is fabricated."
+    }
+  ]
+}

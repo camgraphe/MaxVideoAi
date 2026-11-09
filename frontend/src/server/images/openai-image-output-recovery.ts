@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { query } from '@/lib/db';
 import { normalizeMediaUrl } from '@/lib/media';
 import { uploadImageToStorage } from '@/server/storage';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import type { GeneratedImage } from '@/types/image-generation';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import type { OpenAIImageResultRow } from './openai-image-result-store';
@@ -11,6 +11,7 @@ export type OpenAIImageRecoveryDependencies = {
   queryFn?: typeof query;
   uploadFn?: (params: Parameters<typeof uploadImageToStorage>[0]) => Promise<{ url: string; width?: number | null; height?: number | null; mime: string }>;
   thumbnailsFn?: typeof createImageThumbnailBatch;
+  renditionsFn?: typeof prepareImageRenditions;
   completeFn?: (params: Parameters<typeof persistCompletedImageGeneration>[0]) => Promise<{ heroThumb: string | null }>;
 };
 
@@ -55,7 +56,20 @@ export async function recoverOpenAIImageResult(jobId: string, userId: string, de
       return null;
     }
     const ordered = stored.sort((a, b) => a.index - b.index).map(entry => entry.image);
-    const thumbs = await (deps.thumbnailsFn ?? createImageThumbnailBatch)({ jobId, userId, imageUrls: ordered.map(image => image.url) });
+    const prepare = deps.renditionsFn ?? (deps.thumbnailsFn ? undefined : prepareImageRenditions);
+    if (prepare) {
+      for (const entry of stored) {
+        if (entry.image.imageDisplay) continue;
+        const original = receipt.images.find(image => image.index === entry.index);
+        if (!original) continue;
+        const facts = await prepare({ data: Buffer.from(original.base64, 'base64'), imageUrl: entry.image.url,
+          jobId, userId, index: entry.index, ...(entry.image.thumbUrl ? { thumbUrl: entry.image.thumbUrl } : {}) }).catch(() => ({}));
+        Object.assign(entry.image, facts);
+        await checkpoint();
+      }
+    }
+    const thumbs = prepare ? ordered.map(image => image.thumbUrl ?? null)
+      : await (deps.thumbnailsFn ?? createImageThumbnailBatch)({ jobId, userId, imageUrls: ordered.map(image => image.url) });
     await checkpoint();
     const images = ordered.map((image, index) => ({ ...image, thumbUrl: thumbs[index] ?? null }));
     const { heroThumb } = await (deps.completeFn ?? persistCompletedImageGeneration)({ ...receipt.completion_context, images, openAIRecoveryLease: lease });

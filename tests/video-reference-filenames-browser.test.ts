@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { chromium, expect } from '@playwright/test';
-import { startWorkspaceReferenceFixture } from './helpers/workspace-reference-browser-fixture';
+import { startWorkspaceReferenceFixture, referencePickerAuthModules } from './helpers/workspace-reference-browser-fixture';
+
+type FilenamesFixtureGlobal = typeof globalThis & {selected?:{name?:string;id:string;url:string;ref:unknown};attachment?:{name?:string};functionalLabel?:string};
 
 // Regression boundary: API names must survive the Video hook's normalization before reaching the real picker.
 const source = `
@@ -20,7 +22,7 @@ function Fixture(){
  const library=useWorkspaceAssetLibrary({userId:'synthetic-owner',showNotice:message=>{throw Error(message);},setInputAssets:setInputs});
  return <I18nProvider locale="en" dictionary={{}} fallback={{}}>
   <button onClick={()=>library.setAssetPickerTarget({kind:'field',field})}>Open Video references</button>
-  {library.assetPickerTarget?<AssetLibraryModal fieldLabel={field.label} assetType={library.assetLibraryKind}
+  {library.assetPickerTarget?<AssetLibraryModal ownerId="synthetic-owner" fieldLabel={field.label} assetType={library.assetLibraryKind}
    assets={library.visibleAssetLibrary} isLoading={library.isAssetLibraryLoading} error={library.assetLibraryError}
    hasMore={library.assetLibraryHasMore} isLoadingMore={library.isAssetLibraryLoadingMore} onLoadMore={library.loadMoreAssetLibrary}
    source={library.assetLibrarySource} onSourceChange={library.handleAssetLibrarySourceChange}
@@ -37,28 +39,39 @@ const poster = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://ww
 const staticAsset = {
   id: 'card-static', assetId: 'ma_' + 'a'.repeat(32), ref: { type: 'asset', assetId: 'ma_' + 'a'.repeat(32), kind: 'image' },
   name: 'watch-static.png', kind: 'image', source: 'upload', mime: 'image/png',
-  url: '/original-static-hash.png', thumbUrl: poster, width: 640, height: 480, size: 2048,
+  url: 'https://media.fixture.test/original-static-hash.png', thumbUrl: poster, width: 640, height: 480, size: 2048,
 };
 const motionAsset = { ...staticAsset, id: 'card-motion', assetId: 'ma_' + 'b'.repeat(32),
-  ref: { type: 'asset', assetId: 'ma_' + 'b'.repeat(32), kind: 'image' }, name: 'watch-motion-poster.png', url: '/original-motion-hash.png' };
+  ref: { type: 'asset', assetId: 'ma_' + 'b'.repeat(32), kind: 'image' }, name: 'watch-motion-poster.png', url: 'https://media.fixture.test/original-motion-hash.png' };
 
 test('Video Media API filenames survive hook refresh and pagination into picker search and confirmation', { timeout: 60000 }, async () => {
-  const fixture = await startWorkspaceReferenceFixture({ source, config: {} });
+  const token='filenames-fixture-token';
+  const fixture = await startWorkspaceReferenceFixture({ source, config: {}, hostModules: referencePickerAuthModules('synthetic-owner',token) });
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    const requests: string[] = [], errors: string[] = [];
+    const requests: string[] = [], errors: string[] = [], proofs: unknown[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/api/media-library/assets?**', route => {
       const url = new URL(route.request().url());
       requests.push(url.pathname + url.search);
       return route.fulfill({ json: url.searchParams.has('cursor')
         ? { ok: true, assets: [motionAsset], hasMore: false, nextCursor: null }
-        : { ok: true, assets: [staticAsset, { ...staticAsset, id: 'unnamed', name: ' ', url: '/legacy-original.png' }], hasMore: true, nextCursor: 'page-2' } });
+        : { ok: true, assets: [staticAsset, { ...staticAsset, id: 'unnamed', assetId:'ma_'+'c'.repeat(32), ref:{type:'asset',assetId:'ma_'+'c'.repeat(32),kind:'image'}, name: ' ', url: 'https://media.fixture.test/legacy-original.png' }], hasMore: true, nextCursor: 'page-2' } });
+    });
+    // Only the HTTP validation boundary is controlled in this UI fixture; the real client
+    // must send its initiating bearer, typed ref and exact original before confirmation.
+    await page.route('**/api/media-library/selection/validate', route => {
+      assert.equal(route.request().method(),'POST');
+      assert.equal(route.request().headers().authorization,'Bearer '+token);
+      assert.equal(route.request().headers()['x-maxvideoai-auth-mode'],'bearer');
+      const body=route.request().postDataJSON();
+      assert.deepEqual(body,{candidates:[{reference:motionAsset.ref,originalUrl:motionAsset.url}]});proofs.push(body);
+      return route.fulfill({json:{ok:true,results:[{reference:motionAsset.ref}]}});
     });
     await page.goto(fixture.url);
     await page.getByRole('button', { name: 'Open Video references' }).click();
-    const cards = page.locator('.app-picker-card');
+    const cards = page.getByRole('row');
     await expect(cards).toHaveCount(2);
     await expect(cards.first()).toContainText('watch-static.png');
     await expect(cards.nth(1)).toContainText('Images 2');
@@ -67,24 +80,38 @@ test('Video Media API filenames survive hook refresh and pagination into picker 
     await expect(cards.first()).toContainText('watch-static.png');
     await page.getByRole('searchbox').fill('watch-static.png');
     await expect(cards).toHaveCount(1);
-    await expect(cards.first()).toHaveAccessibleName('Choose · watch-static.png · 640 × 480');
+    await expect(cards.first()).toHaveAccessibleName('watch-static.png');
+    await expect(cards.first().getByRole('button',{name:'Preview watch-static.png',exact:true})).toBeVisible();
+    const staticChoice=page.getByRole('row',{name:'watch-static.png',exact:true}).getByRole('checkbox');
+    await expect(staticChoice).toHaveCount(1);await expect(staticChoice).toBeVisible();
+    await expect(staticChoice).toHaveAttribute('aria-label','Select watch-static.png');
+    await expect(staticChoice).toHaveAccessibleName('Select watch-static.png watch-static.png');
     await page.getByRole('searchbox').fill('');
     await page.getByRole('button', { name: 'Load more', exact: true }).click();
     await expect(cards).toHaveCount(3);
     await page.getByRole('searchbox').fill('watch-motion-poster.png');
     await expect(cards).toHaveCount(1);
-    await cards.first().click();
+    await expect(cards.first()).toHaveAccessibleName('watch-motion-poster.png');
+    const motionRow=page.getByRole('row',{name:'watch-motion-poster.png',exact:true});
+    await expect(motionRow.getByRole('button',{name:'Preview watch-motion-poster.png',exact:true})).toBeVisible();
+    const motionChoice=motionRow.getByRole('checkbox');await expect(motionChoice).toHaveCount(1);
+    await expect(motionChoice).toHaveAttribute('aria-label','Select watch-motion-poster.png');
+    await expect(motionChoice).toHaveAccessibleName('Select watch-motion-poster.png watch-motion-poster.png');
+    await expect(motionChoice).not.toBeChecked();await motionRow.locator('label.compact-media-check').click();await expect(motionChoice).toBeChecked();
     await expect(page.locator('.app-picker-selection')).toContainText('watch-motion-poster.png');
+    assert.equal(await page.evaluate(()=>(globalThis as FilenamesFixtureGlobal).selected),undefined,'Reference stays staged until confirmation');
     if (process.env.VIDEO_FILENAMES_EVIDENCE) await page.screenshot({ path: process.env.VIDEO_FILENAMES_EVIDENCE });
-    await page.locator('.app-picker-use').click();
+    await page.getByRole('button',{name:'Use selection',exact:true}).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
-    const selected = await page.evaluate(() => ({ selected: (globalThis as any).selected, attachment: (globalThis as any).attachment, label: (globalThis as any).functionalLabel }));
+    const selected = await page.evaluate(() => ({ selected: (globalThis as FilenamesFixtureGlobal).selected, attachment: (globalThis as FilenamesFixtureGlobal).attachment, label: (globalThis as FilenamesFixtureGlobal).functionalLabel }));
+    assert.ok(selected.selected && selected.attachment);
     assert.equal(selected.selected.name, 'watch-motion-poster.png');
     assert.equal(selected.attachment.name, 'watch-motion-poster.png');
     assert.equal(selected.selected.id, motionAsset.id);
     assert.equal(selected.selected.url, motionAsset.url);
     assert.deepEqual(selected.selected.ref, motionAsset.ref);
     assert.equal(selected.label, 'Image 1');
+    assert.equal(proofs.length,1,'Confirmation passes typed validation once');
     assert.deepEqual(requests, [
       '/api/media-library/assets?limit=30&kind=image',
       '/api/media-library/assets?limit=30&kind=image',

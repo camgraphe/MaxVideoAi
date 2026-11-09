@@ -1,4 +1,5 @@
 'use client';
+import { LibraryImportDialog } from '@/components/library/LibraryImportQueue.client';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -6,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import deepmerge from 'deepmerge';
-import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Trash2, Upload, X } from 'lucide-react';
+import { AudioWaveform, Clapperboard, Images, CheckCircle2, Plus, RefreshCw, Upload, X } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,8 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildAuthReturnTarget } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
+import type { LibraryBrowseScope } from '@/lib/library-browse';
+import { compactLibraryCopy } from '@/components/library/compact-library-copy';
 import { useLibraryPageData } from '../_hooks/useLibraryPageData';
 import {
   DEFAULT_LIBRARY_COPY,
@@ -46,7 +49,9 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     return deepmerge<LibraryCopy>(DEFAULT_LIBRARY_COPY, (rawCopy ?? {}) as Partial<LibraryCopy>);
   }, [rawCopy]);
   const [activeView, setActiveView] = useState<LibraryView>(libraryEntry.view);
-  const [activeKind, setActiveKind] = useState<LibraryKind>(libraryEntry.kind);
+  const [activeKind, setActiveKind] = useState<LibraryKind | 'all'>(libraryEntry.kind);
+  const [organizationScope, setOrganizationScope] = useState<Pick<LibraryBrowseScope, 'favorite' | 'trash' | 'collectionId' | 'sort'>>({ sort: 'recent' });
+  const compactCopy = compactLibraryCopy(locale);
   const [activeSource, setActiveSource] = useState<SavedAssetSource>('all');
 
   const {
@@ -56,7 +61,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     recentError,
     recentLoading,
     mutateRecentOutputs,
-    currentAssets,
+    currentAssets, scope, totalCount,
     searchQuery, setSearchQuery, hasMore, loadMore, isLoadingMore, activeJobId, clearJobFilter,
   } = useLibraryPageData({
     userId: user?.id,
@@ -64,12 +69,12 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     activeKind,
     activeSource,
     jobId: libraryEntry.jobId,
-    toolsEnabled,
+    toolsEnabled, organizationScope,
   });
 
   const {
     importInputRef,
-    deletingId,
+    importQueue, importQueueOpen, setImportQueueOpen,
     savingOutputIds,
     deleteError,
     saveError,
@@ -81,7 +86,6 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
     setImportError,
     setSaveError,
     handleImportChange,
-    handleDeleteAsset,
     handleSaveRecentOutput,
   } = useLibraryAssetMutations({
     userId: user?.id,
@@ -95,7 +99,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
   });
   const availableSources = useMemo(
     () =>
-      activeKind === 'video'
+      activeKind === 'all' ? (toolsEnabled ? (['all', 'upload', 'generated', 'storyboard', 'character', 'angle', 'upscale'] as const) : (['all', 'upload', 'generated'] as const)) : activeKind === 'video'
         ? (['all', 'upload', 'generated', 'upscale'] as const)
         : activeKind === 'audio'
           ? (['all', 'upload', 'generated'] as const)
@@ -155,11 +159,11 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
 
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg lg:h-[100dvh]">
+    <div className="flex h-[calc(100dvh-var(--app-bottom-nav-height,0px))] min-h-0 flex-col bg-bg">
       <HeaderBar />
       <div className="flex min-h-0 flex-1 min-w-0">
         <AppSidebar />
-        <main className="flex-1 min-w-0 p-5 lg:min-h-0 lg:overflow-hidden lg:p-7">
+        <main className="flex-1 min-h-0 min-w-0 overflow-auto p-3 lg:overflow-hidden lg:p-7">
           {authLoading ? (
             <div className="w-full animate-pulse rounded-card border border-border bg-surface p-8">
               <div className="h-4 w-24 rounded bg-surface-2" />
@@ -169,17 +173,19 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
           ) : !user ? (
             <MediaVisitorIntro locale={locale} nextPath={buildAuthReturnTarget('/app/library', searchParams)} />
           ) : (
-            <div className="pb-8 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:pb-0">
+            <div className="flex h-full min-h-0 flex-col">
               <input
                 ref={importInputRef}
                 type="file"
-                accept={activeKind === 'video' ? 'video/*' : activeKind === 'audio' ? 'audio/*' : 'image/*'}
+                multiple
+                accept={activeKind === 'all' ? 'image/*,video/*,audio/*' : activeKind === 'video' ? 'video/*' : activeKind === 'audio' ? 'audio/*' : 'image/*'}
                 className="sr-only"
                 aria-hidden="true"
                 tabIndex={-1}
                 onChange={handleImportChange}
               />
 
+              {importQueueOpen ? <LibraryImportDialog queue={importQueue} locale={locale} onClose={() => setImportQueueOpen(false)} /> : null}
               {activeJobId ? (
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm">
                   <span className="text-text-secondary">{t('workspace.library.review.linkedResult', 'Linked result')}</span>
@@ -196,6 +202,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 title={locale === 'fr' ? 'Médias' : locale === 'es' ? 'Medios' : 'Media'}
                 hideTitle
                 assetType={activeKind}
+                management={{ userId: user.id, scope, totalCount, onScopeChange: ({ view, ...patch }) => { if (view) { setActiveView(view); setActiveSource('all'); } setOrganizationScope((previous) => ({ ...previous, ...patch })); } }}
                 assets={currentAssets}
                 isLoading={
                   activeView === 'review'
@@ -216,10 +223,11 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 }
                 source={activeView === 'review' ? 'recent' : activeSource}
                 availableSources={[...availableSources, 'recent']}
-                sourceLabels={sourceLabels}
+                sourceLabels={activeKind === 'all' ? { ...sourceLabels, all: compactCopy.saved } : sourceLabels}
                 onSourceChange={(source) => {
                   clearMutationErrors();
                   if (source === 'recent') {
+                    setActiveSource('all');
                     setActiveView('review');
                     setDeleteError(null);
                     setImportError(null);
@@ -233,7 +241,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 searchPlaceholder={activeView === 'review' ? t('workspace.library.browser.searchRenders', 'Search prompts or render IDs…') ?? 'Search prompts or render IDs…' : t('workspace.library.browser.searchSaved', 'Search names or render IDs…') ?? 'Search names or render IDs…'}
                 sourcesTitle={copy.browser.sourcesTitle}
                 emptyLabel={emptyLabel || copy.assets.empty}
-                emptyContent={activeSource === 'all' && !activeJobId && !hasMore ? <MediaEmptyState
+                emptyContent={activeKind !== 'all' && activeSource === 'all' && !activeJobId && !hasMore ? <MediaEmptyState
                   kind={activeKind} locale={locale} saved={activeView === 'saved'}
                   onShowRenders={() => { clearMutationErrors(); setActiveView('review'); }}
                 /> : undefined}
@@ -255,6 +263,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                 retryLabel={copy.browser.refresh}
                 headerLeadingActions={
                   <>
+                    <Button type="button" variant={activeKind === 'all' ? 'primary' : 'outline'} aria-pressed={activeKind === 'all'} size="sm" className="!min-h-11 rounded-full px-3 text-sm" onClick={() => setActiveKind('all')}>{compactCopy.all}</Button>
                     <Button
                       type="button"
                       variant={activeKind === 'image' ? 'primary' : 'outline'}
@@ -291,6 +300,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   </>
                 }
                 headerActions={<>
+                  {importQueue.getSnapshot().files.length > 0 ? <button type="button" onClick={() => setImportQueueOpen(true)}>{locale.startsWith('fr') ? 'Imports' : locale.startsWith('es') ? 'Importaciones' : 'Imports'}</button> : null}
                     {isCreatorToolPublic('subtitles') ? <Link href="/app/library/subtitles" prefetch={false} className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm">
                       {locale.startsWith('fr') ? 'Sous-titres' : locale.startsWith('es') ? 'Subtítulos' : 'Subtitles'}
                     </Link> : null}
@@ -328,7 +338,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   asset.createdAt ? <span className="text-text-muted">{new Date(asset.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span> : null
                 }
                 renderAssetActions={(asset) =>
-                  activeView === 'review' ? (
+                  asset.jobId && asset.sourceOutputId ? (
                     <>
                       {asset.isSaved ? (
                         <Button
@@ -371,26 +381,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                         </Button>
                       )}
                     </>
-                  ) : (
-                    <>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteAsset(asset.id)}
-                        disabled={deletingId === asset.id}
-                        className="h-11 w-11 !min-h-11 rounded-xl border border-border bg-surface p-0 text-text-muted hover:border-state-warning hover:text-state-warning disabled:cursor-not-allowed disabled:opacity-60"
-                        aria-label={copy.assets.deleteButton}
-                        title={copy.assets.deleteButton}
-                      >
-                        {deletingId === asset.id ? (
-                          <span className="text-[10px] font-semibold">{copy.assets.deleting}</span>
-                        ) : (
-                          <Trash2 className="h-4 w-4" aria-hidden />
-                        )}
-                      </Button>
-                    </>
-                  )
+                  ) : null
                 }
               />
             </div>

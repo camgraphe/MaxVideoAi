@@ -55,7 +55,7 @@ export function useUpscaleSourceMedia({
   useEffect(() => {
     const url = mediaUrl.trim();
     if (mediaType !== 'image' || !url) return undefined;
-    if (source?.url === url && source.width && source.height) return undefined;
+    if (source?.url === url && (source.readAccessRef || source.readAccessOwnerId || (source.width && source.height))) return undefined;
 
     let cancelled = false;
     const image = new window.Image();
@@ -76,7 +76,7 @@ export function useUpscaleSourceMedia({
     return () => {
       cancelled = true;
     };
-  }, [mediaType, mediaUrl, setSource, source?.height, source?.url, source?.width]);
+  }, [mediaType, mediaUrl, setSource, source?.height, source?.url, source?.width, source?.readAccessRef, source?.readAccessOwnerId]);
 
   const handleUpload = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -126,6 +126,7 @@ export function useUpscaleSourceMedia({
         changeMediaType(nextMediaType);
       }
       setSource({
+        ...asset,
         id: asset.savedAssetId ?? (asset.sourceOutputId || asset.source === 'recent' || asset.id.startsWith('job:') ? null : asset.id),
         jobId: asset.jobId ?? (asset.id.startsWith('job:') ? asset.id.slice(4) : null),
         url: asset.url,

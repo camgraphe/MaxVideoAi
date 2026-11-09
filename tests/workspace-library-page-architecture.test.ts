@@ -65,21 +65,22 @@ test('workspace library data and mutation hooks own server data workflows', () =
 
   assert.match(dataHookSource, /'use client';/);
   assert.match(dataHookSource, /export function useLibraryPageData/);
-  assert.match(dataHookSource, /useSWRInfinite<AssetsResponse>/);
-  assert.match(dataHookSource, /useSWRInfinite<RecentOutputsResponse>/);
-  assert.match(dataHookSource, /previousPageData\.nextCursor/);
-  assert.match(dataHookSource, /dedupingInterval: 60_000/);
-  assert.match(dataHookSource, /dedupingInterval: 30_000/);
-  assert.match(dataHookSource, /buildSavedAssetsKey/);
-  assert.match(dataHookSource, /buildRecentOutputsKey/);
-  assert.match(dataHookSource, /currentAssets: activeView === 'saved'/);
+  assert.match(dataHookSource, /useLibraryBrowse/);
+  assert.match(dataHookSource, /normalizeLibraryBrowseScope/);
+  assert.match(dataHookSource, /organizationScope/);
+  assert.match(dataHookSource, /\.\.\.asset,\s*kind:\s*asset\.kind\s*\?\?\s*inferKind/);
+  assert.doesNotMatch(dataHookSource, /useSWRInfinite|\.filter\(/, 'common browse owns pagination, filtering and totals');
 
   assert.match(mutationHookSource, /'use client';/);
   assert.match(mutationHookSource, /export function useLibraryAssetMutations/);
   assert.match(mutationHookSource, /handleImportChange/);
   assert.match(mutationHookSource, /handleDeleteAsset/);
   assert.match(mutationHookSource, /handleSaveRecentOutput/);
-  assert.match(mutationHookSource, /prepareImageFileForUpload/);
+  assert.match(mutationHookSource, /useLibraryImportQueue/);
+  const uploadOwner = readFileSync('frontend/lib/library-file-import.ts', 'utf8');
+  assert.match(uploadOwner, /prepareImageFileForUpload/);
+  assert.match(uploadOwner, /uploadVideoFile/);
+  assert.match(uploadOwner, /ownedAuthFetch/);
   assert.match(mutationHookSource, /\/api\/media-library\/save-output/);
   assert.match(mutationHookSource, /\/api\/media-library\/assets\/\$\{encodeURIComponent\(assetId\)\}/);
 });
@@ -113,4 +114,17 @@ test('workspace library honors a recent-render deep link from the MCP result car
   const clientSource = readFileSync(clientPath, 'utf8');
   assert.match(clientSource, /useSearchParams\(\)/);
   assert.match(clientSource, /resolveLibraryEntry\(searchParams\)/);
+});
+
+test('production compact management preserves the browser facade and delegates presentation, selection and organization owners', () => {
+  const facade=readFileSync('frontend/components/library/AssetLibraryBrowser.tsx','utf8');
+  const browser=readFileSync('frontend/components/library/CompactLibraryBrowser.client.tsx','utf8');
+  const grid=readFileSync('frontend/components/library/CompactMediaGrid.client.tsx','utf8');
+  assert.match(facade,/dynamic\(\(\) => import\('\.\/CompactLibraryBrowser\.client'\)/,'the management dependency stays lazy for compatibility pickers');
+  assert.match(facade,/if \(props\.selection\) return <ReferenceLibraryPicker/);
+  for(const owner of ['useLibraryManagementSelection','CompactLibraryCollections','CompactMediaGrid','MediaActionPanel']) assert.match(browser,new RegExp(owner));
+  for(const slot of ['renderAssetActions','renderContinuation','getAssetHref','renderAssetMeta','headerLeadingActions','headerActions','titleActions','headingActions']) assert.match(browser,new RegExp(slot));
+  assert.doesNotMatch(browser,/fetch\(|method:\s*['"]DELETE/,'source transports and organization writes have separate owners');
+  assert.match(grid,/react-aria-components\/Virtualizer/);
+  assert.doesNotMatch(grid,/<video\b|<audio\b|next\/image/,'initial display uses private stored thumbnails or placeholders');
 });

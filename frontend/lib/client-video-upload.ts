@@ -1,3 +1,5 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
+import { mediaReadAccessFields } from '@/lib/library-media-access';
 import { authFetch } from '@/lib/authFetch';
 import { canonicalMediaAssetFields, readMediaFacts, type MediaFacts } from '@/lib/media-identity';
 import type { ToolAssetRef } from '@/lib/toolbox/contract';
@@ -7,7 +9,7 @@ export const CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
 export const DIRECT_VIDEO_UPLOAD_THRESHOLD_BYTES = CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES;
 export const CHUNKED_VIDEO_UPLOAD_CHUNK_BYTES = 3_670_016;
 
-export type UploadedVideoAsset = {
+export type UploadedVideoAsset = MediaReadAccess & {
   assetId?: string;
   legacyAssetId?: string;
   ref?: ToolAssetRef;
@@ -71,6 +73,7 @@ function readAssetPayload(payload: unknown, kind: 'audio' | 'video' = 'video'): 
   const id = (asset as { id?: unknown }).id;
   if (typeof url !== 'string' || !url) return null;
   return {
+    ...mediaReadAccessFields(asset as MediaReadAccess),
     ...canonicalMediaAssetFields((asset as { assetId?: unknown }).assetId, kind),
     mediaFacts: readMediaFacts((asset as { mediaFacts?: unknown }).mediaFacts),
     durationSec: readMediaFacts((asset as { mediaFacts?: unknown }).mediaFacts)?.durationSec,

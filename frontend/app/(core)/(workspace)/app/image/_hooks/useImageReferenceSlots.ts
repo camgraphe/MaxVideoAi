@@ -1,3 +1,6 @@
+import { mediaReadAccessFields } from '@/lib/library-media-access';
+import type { MediaReadAccess } from '@/lib/media-read-access';
+import { useImageLibrarySelection } from './useImageLibrarySelection';
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { CharacterReferenceSelection, ImageGenerationMode } from '@/types/image-generation';
 import type { EngineCaps } from '@/types/engines';
@@ -25,7 +28,6 @@ import {
   DEFAULT_UPLOAD_LIMIT_MB,
   MAX_REFERENCE_SLOTS,
   type ImageLibraryModalState,
-  type LibraryAsset,
   type ReferenceSlotValue,
   type UploadFailure,
 } from '../_lib/image-workspace-types';
@@ -243,6 +245,7 @@ export function useImageReferenceSlots({
             return previous;
           }
           next[index] = {
+            ...mediaReadAccessFields(asset as MediaReadAccess),
             id: slotId,
             ref: imageReferenceIdentity(asset),
             url: asset.url,
@@ -354,50 +357,15 @@ export function useImageReferenceSlots({
     });
   }, []);
 
-  const handleLibrarySelect = useCallback(
-    (asset: LibraryAsset, preferredIndex?: number) => {
-      if (preferredIndex !== undefined && (!Number.isInteger(preferredIndex) || preferredIndex < 0 || preferredIndex >= referenceSlotLimit)) return false;
-      if (!isSupportedReferenceAsset(asset.mime, asset.url)) {
-        showUnsupportedFormatError();
-        return false;
-      }
-      const slotIndex = resolveTargetReferenceSlotIndex(preferredIndex ?? libraryModal.slotIndex);
-      if (slotIndex >= referenceSlotLimit || slotIndex < 0) {
-        return false;
-      }
-      const index = slotIndex;
-      setReferenceSlots((previous) => {
-        const next = previous.slice();
-        cleanupSlotPreview(next[index]);
-        next[index] = {
-          id: asset.id,
-          name: asset.name?.trim() || undefined,
-          ref: imageReferenceIdentity(asset),
-          url: asset.url,
-          previewUrl: asset.url,
-          status: 'ready',
-          source: 'library',
-          width: asset.width ?? null,
-          height: asset.height ?? null,
-        };
-        return next;
-      });
-      closeLibraryModal();
-      return true;
-    },
-    [
-      closeLibraryModal,
-      isSupportedReferenceAsset,
-      libraryModal.slotIndex,
-      referenceSlotLimit,
-      resolveTargetReferenceSlotIndex,
-      showUnsupportedFormatError,
-      setReferenceSlots,
-    ]
-  );
+  const { handleLibrarySelect, handleLibrarySelectMany } = useImageLibrarySelection({
+    opening: libraryModal,
+    intent: JSON.stringify([accountId, selectedEngineCaps?.id, autoModeFromReferences ? 'auto' : mode, libraryModal.open, libraryModal.slotIndex, libraryModal.selectionMode]),
+    limit: referenceSlotLimit, slotIndex: libraryModal.slotIndex, supported: isSupportedReferenceAsset,
+    unsupported: showUnsupportedFormatError, setSlots: setReferenceSlots, close: closeLibraryModal,
+  });
 
-  const openLibraryForSlot = useCallback((index: number) => {
-    setLibraryModal({ open: true, slotIndex: index, selectionMode: 'reference', initialSource: 'all' });
+  const openLibraryForSlot = useCallback((index?: number) => {
+    setLibraryModal({ open: true, slotIndex: index ?? null, selectionMode: 'reference', initialSource: 'all' });
   }, []);
 
   const toggleCharacterReference = useCallback(
@@ -448,6 +416,7 @@ export function useImageReferenceSlots({
     displayedReferenceSlotCount,
     displayedReferenceSlots,
     handleLibrarySelect,
+    handleLibrarySelectMany,
     handleReferenceFile,
     handleReferenceUrl,
     handleRemoveReferenceSlot,

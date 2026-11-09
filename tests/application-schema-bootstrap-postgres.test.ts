@@ -46,6 +46,9 @@ test('explicit schema bootstrap establishes the baseline before migrations and r
   assert.match(bootstrap.stdout, /Application schema bootstrap completed/);
   assert.doesNotMatch(bootstrap.stdout, /postgresql:\/\//);
 
+  const organizationTables = await postgres.pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'library_%' ORDER BY table_name");
+  assert.deepEqual(organizationTables.rows.map(row => row.table_name), ['library_collection_members','library_collections','library_organization','library_organization_aliases','library_selection_snapshot_items','library_selection_snapshots']);
+
   const migrationFiles = readdirSync('neon/migrations')
     .filter((name) => name.endsWith('.sql'))
     .sort();

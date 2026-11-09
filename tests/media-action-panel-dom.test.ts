@@ -21,12 +21,11 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.equal(dom.window.document.querySelector('[role=dialog] h2')?.textContent, 'watch-scroll.mp4');
     assert.match(dom.window.document.querySelector('.app-media-panel-filename')?.textContent ?? '', /watch-scroll\.mp4/);
     assert.doesNotMatch(dom.window.document.body.textContent ?? '', /aaaaa|signature|secret/);
-    assert.equal(dom.window.document.querySelector('video'), null);
-    await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Lire la vidéo"]')!.click());
+    for(let i=0;i<60&&!dom.window.document.querySelector('video');i++) await act(async()=>new Promise(r=>setTimeout(r,5)));
     assert.equal(dom.window.document.querySelectorAll('video').length, 1);
-    assert.equal(dom.window.document.querySelector('video')?.getAttribute('src'), original);
+    assert.equal(dom.window.document.querySelector('video source')?.getAttribute('src'), original);
     assert.equal(dom.window.document.querySelector('video')?.getAttribute('preload'), 'none');
-    assert.equal(dom.window.document.querySelector('video')?.hasAttribute('autoplay'), true);
+    assert.equal(dom.window.document.querySelector('video')?.hasAttribute('autoplay'), false);
     assert.ok(dom.window.document.querySelector('[data-destination]'));
     await act(async () => [...dom.window.document.querySelectorAll('button')].find(button => button.textContent === 'Partager')!.click());
     assert.equal(dom.window.document.querySelectorAll('.app-video-share-destinations > *').length, 7);
@@ -42,10 +41,9 @@ test('media inspector keeps actions with one original reader and restores focus'
     assert.equal(xFlow.querySelector('a[aria-disabled="true"]')?.textContent, 'Partager seulement le lien (aperçu image)');
     const second = 'https://private.example/second.mp4';
     await act(async () => root.render(React.createElement(MediaActionPanel, { asset: { id: 'second', url: second, kind: 'video' }, locale: 'fr', onClose: () => root.render(null) }, React.createElement('button', { 'data-destination': true }, 'Destination'))));
-    assert.equal(dom.window.document.querySelector('video'), null);
-    await act(async () => dom.window.document.querySelector<HTMLButtonElement>('button[aria-label="Lire la vidéo"]')!.click());
+    for(let i=0;i<60&&!dom.window.document.querySelector('video');i++) await act(async()=>new Promise(r=>setTimeout(r,5)));
     assert.equal(dom.window.document.querySelectorAll('video').length, 1);
-    assert.equal(dom.window.document.querySelector('video')?.getAttribute('src'), second);
+    assert.equal(dom.window.document.querySelector('video source')?.getAttribute('src'), second);
     const originalLink = dom.window.document.querySelector('a[aria-label="Ouvrir l’original"]');
     assert.equal(originalLink?.getAttribute('href'), second);
     assert.equal(dom.window.document.querySelector('.app-video-share'), null);

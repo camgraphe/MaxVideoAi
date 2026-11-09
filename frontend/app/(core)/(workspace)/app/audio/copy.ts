@@ -62,6 +62,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     },
   },
   source: {
+    previewUnavailable: 'Source preview unavailable.',
     title: 'Source video',
     required: 'Needed for cinematic modes.',
     optional: 'Optional for music or voice-only.',

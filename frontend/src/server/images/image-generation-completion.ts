@@ -160,6 +160,8 @@ export async function persistCompletedImageGeneration(params: {
           width: image.width ?? null,
           height: image.height ?? null,
           thumbUrl: image.thumbUrl ?? null,
+          previewUrl: image.previewUrl,
+          metadata: { imageDisplay: image.imageDisplay },
         })
       )
     );

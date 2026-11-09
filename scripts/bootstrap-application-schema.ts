@@ -60,6 +60,7 @@ async function main(): Promise<void> {
     ensureEmailSchema,
     ensureMcpSchema,
     ensureMediaLibrarySchema,
+    ensureMediaLibraryOrganizationSchema,
   } = await import('../frontend/src/lib/schema.ts');
   const { getDb } = await import('../frontend/src/lib/db.ts');
 
@@ -67,6 +68,7 @@ async function main(): Promise<void> {
     await ensureBillingSchema();
     await ensureAssetSchema();
     await ensureMediaLibrarySchema();
+    await ensureMediaLibraryOrganizationSchema();
     await ensureEmailSchema();
     await ensureMcpSchema();
     console.info(

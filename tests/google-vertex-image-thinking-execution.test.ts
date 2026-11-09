@@ -44,6 +44,9 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
   test(`${engineId} preserves ${thinkingLevel ?? 'unset'} thinking through Vertex transport and completion persistence`, async () => {
     const requests: Array<{ url: string; body: Record<string, unknown> }> = [];
     const queries: Array<{ sql: string; params?: readonly unknown[] }> = [];
+    const rich = engineId === 'nano-banana-2' && thinkingLevel === 'minimal';
+    let preparations = 0;
+    const imageDisplay = {version:1,profile:'image-display-v1',sourceUrl:'https://storage.invalid/output.png',sourceSha256:'a'.repeat(64),url:'https://storage.invalid/display.webp',mimeType:'image/webp',width:1024,height:1024,sizeBytes:2000};
     const { persistCompletedImageGeneration } = loadModule<{ persistCompletedImageGeneration: Completion }>(
       'frontend/src/server/images/image-generation-completion.ts', {
         '@/lib/db': { query: async (sql: string, params?: readonly unknown[]) => { queries.push({ sql, params }); return []; } },
@@ -76,7 +79,7 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
           isStorageConfigured: () => true,
           uploadImageToStorage: async () => ({ url: 'https://storage.invalid/output.png', width: 1024, height: 1024, mime: 'image/png' }),
         },
-        '@/server/image-thumbnails': { createImageThumbnailBatch: async () => ['https://storage.invalid/thumb.jpg'] },
+        '@/server/image-thumbnails': { createImageThumbnailBatch: async () => { assert.equal(rich,false,'paired preparation must not refetch thumbnails'); return ['https://storage.invalid/thumb.jpg']; }, ...(rich ? {prepareImageRenditions:async(input:any)=>{preparations++;assert.deepEqual(input.data,Buffer.from('fixture'));assert.equal(input.imageUrl,imageDisplay.sourceUrl);return{thumbUrl:'https://storage.invalid/thumb.jpg',previewUrl:imageDisplay.url,imageDisplay};}} : {}) },
         '@/server/video-providers/google-vertex-gcs': {},
         './google-vertex-image-client': { GoogleVertexImageClient: SyntheticTransportClient, isGoogleVertexImageConfigured: () => true },
         './google-vertex-image-error': vertexError,
@@ -104,6 +107,7 @@ for (const { engineId, modelId, thinkingLevel, wireLevel } of [
       userId: 'synthetic-user', vendorAccountId: null, visibility: 'private',
     });
     assert.equal(result.ok, true);
+    if(rich){assert.equal(preparations,numImages);for(const image of result.images) assert.deepEqual(JSON.parse(JSON.stringify(image.imageDisplay)),imageDisplay);const stored=JSON.parse(String(queries[0].params?.[12]));assert.deepEqual(stored[0].imageDisplay,imageDisplay);}
     assert.equal(result.engineId, engineId);
     assert.equal(requests.length, numImages);
     for (const request of requests) {

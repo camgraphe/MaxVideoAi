@@ -1,7 +1,8 @@
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import type { GenerationObservation } from '@/lib/generation-observation';
 import type { AudioOutputKind } from '@/lib/audio-generation';
 
-export type SourceVideoState = {
+export type SourceVideoState = MediaReadAccess & {
   url: string;
   jobId?: string | null;
   thumbUrl?: string | null;
@@ -10,7 +11,10 @@ export type SourceVideoState = {
   label: string;
 };
 
-export type GeneratedSourceVideo = {
+export type GeneratedSourceVideo = MediaReadAccess & {
+  sourceOutputId?: string;
+  sourceRevision?: string;
+  ref?: import('@/lib/toolbox/contract').ToolAssetRef;
   jobId: string;
   url: string;
   thumbUrl: string | null;
@@ -18,7 +22,9 @@ export type GeneratedSourceVideo = {
   aspectRatio: string | null;
   label: string;
   createdAt: string;
-  hasAudio: boolean;
+  hasAudio: boolean | null;
+  width?: number | null;
+  height?: number | null;
 };
 
 export type AudioJobSettingsSnapshot = {

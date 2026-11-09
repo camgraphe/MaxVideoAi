@@ -2,6 +2,9 @@
 
 Read this guide when changing image/video presentation, poster URLs, generated media, thumbnail repairs, or public model examples. Keep model identity in `frontend/config/model-registry.json`; media delivery is not another model registry.
 
+For authenticated organization, collection, Trash and identity ownership, read
+[media-library.md](media-library.md).
+
 For sharing generated videos or public examples, also read `docs/engineering/video-sharing.md`.
 
 ## Browser video uploads
@@ -473,7 +476,7 @@ production cold/warm measurements and Safari/iOS playback remain rollout checks.
 - `server/owned-media-read-access.ts` grants 300-second server GET access only to exact owner-prefixed objects in configured storage. The storage ownership helper also recognizes existing content-addressed uploads under approved `prefix/by-content/SHA256(userId)[0:32]/` namespaces, including configured staging prefixes. Library copies and image/video thumbnail creation use this reader and persist only durable originals/derivatives and original provenance. Foreign-owner or unowned internal objects fail closed; external provider sources retain their existing URLs. The operator thumbnail backfill may explicitly opt ownerless rows into an unsigned HTTPS GET for the exact `renders/images/anonymous/` legacy prefix, without query strings, credentials or fragments. This never signs anonymous media or opens private storage; account-facing callers do not receive the exception. `tests/owned-media-read-access.test.ts` covers ownership denial, signing failure, actual content-addressed uploads, library promotion and the legacy backfill/Sharp/upload path using network doubles.
 - `server/fal-provider-media-access.ts` extends that reader at the server-only Fal submission boundary with grants bounded to one hour for asynchronous input retrieval. Sign only typed media fields in a transport copy and pass the authenticated owner through all fallback adapters. The exact-owner check includes the existing authenticated `inline` upload namespace, including its content-addressed form; anonymous and foreign inline objects are not granted access. Persist canonical inputs and enqueue summaries, never access grants. The provider diagnostic sanitizer covers synchronous submission and asynchronous webhook/poll logs, including up to three URL encoding layers, because validation bodies may echo input URLs. Local ownership/signing denial must occur before a paid provider call; a failed input download must not be reported as a completed render whose output could not be stored. `tests/fal-provider-media-access.test.ts` exercises the real submission/request-body owner with local signing and provider doubles.
 - Seedance's `src/server/video-providers/byteplus-modelark-media-access.ts` applies the same owner-checked, one-hour GET grants to typed image, video and audio content only after payload validation and before the provider-attempt marker. This includes already stored private prepared audio without changing its ACL or metadata. Draft inputs use the transport copy; Final retains its owned draft-task identity. Saved inputs and workflow recipes remain canonical. BytePlus diagnostics sanitize signed echoes in both submission and polling, including encoded URLs. Inaccessible input resources have a separate localized reference-access failure; generic startup failures do not infer moderation, while explicit real-person rejections retain their image/video safety guidance. `tests/byteplus-private-media-access.test.ts` covers the real builder/client request boundary, exact-owner denial, no grant persistence and accepted Edit replay without another submission.
-- Authenticated `GET /api/media-library/assets` projects separate `accessUrl`, `thumbnailAccessUrl`, `previewAccessUrl` and `playbackAccessUrl` grants for stored `upload` sources through `server/media-library/read-access.ts`. This bounded source class covers newly private excerpts and existing private MCP imports, which have no historical ACL marker. The exact storage owner is checked before signing; unrelated generated/public catalog projections stay unchanged. Canonical `url`, `thumbUrl`, `previewUrl`, asset refs and database rows never become grants. Responses use private/no-store caching; signing failure returns `LOAD_FAILED` rather than unsigned private fallback. Grants last 300 seconds and a fresh library read renews them; this does not provide indefinite access to a picker or selected preview left open. Shared library cards, reference pickers and original readers consume the corresponding grants without using video as an image fallback. Workspace selection keeps canonical original URL/ref for generation and puts only the temporary preview in the display field; input assets remain excluded from persisted workspace drafts. Download and native share-file actions pass the original read grant through the existing authenticated `/api/download` transport. Tests `library-private-read-access`, `library-private-read-dom` and `library-owner-cache` cover real local signatures, foreign-owner denial, canonical selection, both dropzones, thumbnail separation and account-scoped projection. No live storage request or production data repair is part of these checks.
+- Authenticated `GET /api/media-library/assets` projects separate `accessUrl`, `thumbnailAccessUrl`, `previewAccessUrl` and `playbackAccessUrl` grants for stored `upload` sources through `server/media-library/read-access.ts`. This bounded source class covers newly private excerpts and existing private MCP imports, which have no historical ACL marker. The exact storage owner is checked before signing; unrelated generated/public catalog projections stay unchanged. Canonical `url`, `thumbUrl`, `previewUrl`, asset refs and database rows never become grants. Responses use private/no-store caching; signing failure returns `LOAD_FAILED` rather than unsigned private fallback. Grants last 300 seconds. Exact-source renewal, expiry metadata, bounded client attempts and native original/download links are owned by `hooks/useLibraryMediaAccess.ts` and `server/media-library/exact-read-access.ts`; see `docs/engineering/media-library.md`. List refreshes do not reset healthy mounted decoders. Shared library cards, reference pickers and original readers consume the corresponding grants without using video as an image fallback. Workspace selection keeps canonical original URL/ref for generation and puts only the temporary preview in the display field; input assets remain excluded from persisted workspace drafts. Download and native share-file actions pass the original read grant through the existing authenticated `/api/download` transport. Tests `library-private-read-access`, `library-private-read-dom` and `library-owner-cache` cover real local signatures, foreign-owner denial, canonical selection, both dropzones, thumbnail separation and account-scoped projection. No live storage request or production data repair is part of these checks.
 
 - `server/media-library/owned-video-facts.ts` owns missing measured video facts for editing. It validates the ready owned original and provenance, obtains server read access, and uses a dedicated fixed 100 MiB qualification downloader plus local-file FFprobe in `src/server/audio/source-video-probe.ts`. Ready generated originals can exceed private upload limits; this envelope preserves the shared HTTPS, public-address DNS pinning, redirect and 30-second request guards plus the 15-second probe timeout. Private uploads and the global Audio source probe retain their existing limits. `tests/owned-video-facts.test.ts` exercises the canonical inspector with real MP4 bytes above 50 MiB and FFprobe, and verifies declared/streamed sources above 100 MiB stop without persisting facts. Exact owner, current original URL and ready/nonhidden state guard persistence to `job_outputs` and matching promoted assets. Store only measured duration, dimensions and audio presence in `metadata.mediaFacts` with `source: 'probe'`; requested duration remains history and no frame rate is inferred. Library promotion forwards validated facts. The shared conversation edit command releases each failed validation transaction before inspection, then rechecks the receipt, revision, project scope and media ownership in a fresh transaction. Insert/assembly may qualify each distinct selected video reference once, up to the command's 12-clip bound, without another assistant call, generation or paid analysis. Repeated references reuse persisted facts; a source still missing facts after its attempt stops rather than retrying indefinitely. Every resolved video reference retains its exact original URL through subsequent retries, so replacing that original during another source's inspection rejects the edit. The entire timeline edit and receipt remain atomic; independently validated source facts can survive a rejected edit. `tests/studio-conversation-edit-command-postgres.test.ts` covers multiple older sources, the 12-source bound, replay, nonpersisting/failed qualification and concurrent original, ownership and revision changes. `studio/media-resolver.ts` remains read-only and never downloads or repairs a source. Probe errors expose no signed URL or FFprobe command.
 - Audio completion passes its measured byte duration to the legacy output mapper, which preserves canonical `metadata.mediaFacts` separately from the historical integer duration. Synchronous Audio confirmation promotes only completed outputs after the exact owned quote is accepted; a promotion outage never fails or refunds the completed paid result. An accepted confirmation replay may retry this bounded promotion without generating or reserving again. Studio's read-only project projection exposes only validated probe durations for video/audio. Library insertion uses those same facts and floors source-limited frames, so an integer duration or a fractional final frame cannot extend a clip past its source. Focused coverage lives in `audio-reserved-execution-postgres`, `mcp-audio-services`, `media-library-contract`, `studio-conversation-media-scope-postgres` and `studio-conversation-timeline` tests.
@@ -1053,16 +1056,27 @@ remain unnamed.
 
 ### Library import account lifetime
 
-`LibraryPageClient` keeps its account-keyed subtree. `useLibraryAssetMutations`
-additionally binds each import to that owner, cancels a previous import and aborts
-on owner change or unmount. After image preparation and session lookup it checks
-that the operation is still current and the session belongs to the selecting user.
-Dispatch uses that explicit bearer token with cookies omitted, preventing an ambient
-session from retargeting the file. Server upload authorization remains authoritative.
-Late responses cannot refresh or change the next account's library. Cancellation
-cannot undo an upload already accepted by the server for its original owner.
-`tests/library-import-account.test.ts` covers image decoding, session lookup, all
-three media kinds, account transitions, navigation and replacement imports.
+`LibraryPageClient` keeps its account-keyed subtree. `useLibraryImportQueue`
+owns a serial Uppy queue for the account/context; its lifetime is independent of
+the open import presentation. Adding another file appends it. Pause completes the
+current transfer and waits before the next file. Close/reopen retains pending
+work and confirmed results; owner change or unmount retires and aborts the queue.
+`library-file-import.ts` uses existing image/audio FormData and video
+FormData/application-chunk transports through `ownedAuthFetch`. The owner is
+checked after preparation and session lookup, before dispatch; server upload
+authorization remains authoritative. Late results cannot enter a new owner's UI.
+Cancellation cannot undo a server-accepted original. Confirmed originals publish
+cache invalidation for their initiating owner even if final visibility fails.
+
+Canonical lookup and explicit Restore are a separate completion step. Failure
+retains the accepted asset and retries that step without uploading its bytes
+again. Re-adding the same successful immutable File object repeats completion/Restore
+without transfer. Queue selection IDs use object identity, because equal name, MIME,
+size and lastModified do not prove equal bytes. A fresh File always uses the existing
+server content-deduplication owner, including genuine same-content reimports; no
+whole-file client buffering or hash is added to decide queue identity. Background upserts never restore
+Trash. `library-import-account` and `library-import-queue` test actual adapters,
+partial success, pause, close/reopen, completion retry and retirement.
 
 ### Image references and library read ownership
 
@@ -1085,6 +1099,22 @@ upload. This is an operation ownership guard, not a replacement for server auth.
 test the actual hooks, SWR cache and transport with synthetic sessions and files.
 They cover delayed session/decoding/body work, A→B→A remounts, selection races,
 independent slots, saved and recent media, and preserved pagination.
+
+Successful image/audio/video uploads, including direct and multipart completion,
+add read-access fields through `server/media-library/upload-read-access.ts` after
+persistence. It reuses the exact stored-source/fence lookup and descriptor/signing
+owner; request URLs, revisions and metadata never define a lease. A replaced source
+cannot mix a new lease with the response's original URL. If read preparation fails,
+the acquired upload stays successful with a private marker; a resolved descriptor
+is retained with expired access for later renewal, while an unresolved row never
+gets an invented revision. Responses are private/no-store. The client video parser,
+Image/Video reference adapters and tool source adapters retain these fields without
+rewriting canonical URLs used by generation. Draft serializers retain stable
+owner/ref/revision only, never transient grants; restoration requests fresh access.
+Private readers must not fall back to canonical originals or posters while a lease
+is missing or retired. Local blobs and genuinely public sources retain exact display
+behavior. `upload-read-access-postgres`, `workspace-private-source-dom` and the
+private tool-source DOM suites cover this producer/consumer boundary.
 
 ### Video workspace reference upload ownership
 
@@ -1398,3 +1428,58 @@ request-body ceiling. Large audio imports require a separate transport change.
 Before public delivery of the new audio route, qualify its deployed FFmpeg bundle,
 authenticated read/prepare flow and private Range responses on the Git preview;
 local encoder/adapter tests alone are not deployment qualification.
+
+
+### Prepared private/library image displays
+
+`server/image-renditions.ts`, re-exported by `image-thumbnails.ts`, prepares the
+additive `image-display-v1` profile at existing upload/generation/tool completion
+boundaries. It rotates, fits inside 1920×1920 without enlargement and encodes
+WebP82 with alpha. The paired thumbnail is 640×640/WebP72. Uploaded thumbnails
+keep their existing separate WebP76 owner. Animation/multipage, unhelpful output
+(encoded bytes at least as large as original), and optional failures omit display
+facts; originals and successful thumbnails remain authoritative.
+
+`prepareImageRenditions` accepts available original bytes or performs one owned
+read for the pair. Processing is limited to two concurrent jobs, sources to
+100 MiB/100 million input pixels, fetch to ten seconds and each encoding to twelve
+seconds. Existing copy owners bound concurrent original buffers to two. The old
+`createImageThumbnailBatch` remains thumbnail-only, including its injected
+string/null return contract. Explicit old-only thumbnail dependencies do not
+silently opt callers into extra preparation I/O.
+
+`imageDisplay` is measured `{version:1, profile:'image-display-v1', sourceUrl,
+sourceSha256, url, mimeType:'image/webp', width, height, sizeBytes}`. Canonical URLs
+contain no read grants. Browser-safe `image-display.ts` requires exact original
+source, preview URL, supported profile and valid measured fields. Original
+width/height/MIME/size are never replaced. Structured renders, exact outputs,
+legacy/canonical records, recent/status/history responses and saved handoffs carry
+the optional facts. Output enrichment carries the exact `sourceOutputId` through
+sparse output positions; array position is not substituted for a recorded ID.
+Copied saved originals retain facts only when their actual bytes have the same
+SHA-256, then rebind `sourceUrl` to the saved original.
+
+Image uploads reuse normalized bytes and private ACL/cache/cancellation options.
+Each display uses the approved `user-asset-thumbs` ancillary root and existing
+`thumbnail` cleanup role with a `-display-v1-<digest>.webp` leaf. Register before
+PUT and retain after recording, independently from the ordinary thumbnail. No new
+cleanup role/root or public ACL default is introduced. OpenAI recovery checkpoints
+successful derivative facts beside stored originals and matches receipt bytes by
+original index on resume. Preparation never owns payment, provider submission,
+receipt leases or refunds. No GET encoding/probing or legacy bulk repair occurs.
+
+The common viewer keeps the thumbnail until active image decode, then uses only a
+qualified display and its private preview grant. Missing/unusable display falls
+back to the exact authorized original. Private failures use bounded read renewal
+and explicit Retry; actual owner retirement removes all readers and original
+links. Neighbors are thumbnail-only. Native active audio/video controls exist
+before first Play, with preload none and no autoplay. Inline YARL adds contain/zoom
+without a second modal/focus host. Functional Sharp/JSDOM fixtures establish these
+contracts; they do not establish transferred-byte, decode-time, CWV or visual
+quality gains. Comparable connected-browser qualification remains separate.
+
+`createSignedUploadUrl` uses a signing-only S3 client with checksum calculation
+`WHEN_REQUIRED`: a bodyless grant cannot bind a later nonempty upload to the
+empty-body CRC32. An explicitly supplied CRC32 stays signed. Ordinary bodyful
+storage clients retain SDK integrity defaults; no global checksum setting or
+upload transport changes. The installed SDK's offline request test checks both.

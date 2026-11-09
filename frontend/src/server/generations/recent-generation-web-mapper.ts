@@ -63,6 +63,7 @@ export function mapRecentGenerationRecordToWeb(record: RecentGenerationRecord) {
     iterationCount: record.iteration_count ?? undefined,
     renderIds,
     renderThumbUrls,
+    ...(parsedRenders.hasStructuredEntries ? { imageRenders: parsedRenders.entries } : {}),
     heroRenderId: record.hero_render_id ?? undefined,
     localKey: record.local_key ?? undefined,
     status: record.status ?? undefined,

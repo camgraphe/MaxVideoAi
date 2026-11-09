@@ -1,3 +1,4 @@
+import { prepareImageRenditions } from '@/server/image-thumbnails';
 import { isStorageConfigured, recordUserAsset, uploadImageToStorage } from '@/server/storage';
 import type { AngleToolEngineId, AngleToolOutput } from '@/types/tools-angle';
 
@@ -53,6 +54,7 @@ async function persistAngleOutput(params: {
       fileName: `angle-${engineId}-${outputIndex + 1}.${mime.split('/')[1] || 'png'}`,
     });
 
+    const display = typeof prepareImageRenditions === 'function' ? await prepareImageRenditions({ data: buffer, imageUrl: upload.url, jobId, userId, index: outputIndex }).catch(() => ({})) : {};
     const assetId = await recordUserAsset({
       userId,
       url: upload.url,
@@ -62,6 +64,7 @@ async function persistAngleOutput(params: {
       size: upload.size,
       source: 'angle',
       metadata: {
+        ...display,
         originUrl: output.url,
         jobId,
         providerJobId: providerJobId ?? null,
@@ -75,6 +78,7 @@ async function persistAngleOutput(params: {
 
     return {
       ...output,
+      ...display,
       url: upload.url,
       width: upload.width ?? output.width ?? null,
       height: upload.height ?? output.height ?? null,

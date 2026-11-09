@@ -19,7 +19,7 @@ export const STUDIO_CONNECTED_MONTAGE_INPUT = {
 } as const;
 
 /** Invoke ONLY as initializeDatabase of the verified, newly created Studio test runtime. */
-export async function initializeStudioConnectedFixture(database: DisposablePostgres): Promise<void> {
+export async function initializeStudioConnectedFixture(database: DisposablePostgres, options: { libraryPicker?: boolean } = {}): Promise<void> {
   for (const name of [
     '26_studio_projects.sql', '29_mcp_audit_events.sql', '41_mcp_client_family.sql',
     '42_studio_connected_montages.sql',
@@ -39,15 +39,26 @@ export async function initializeStudioConnectedFixture(database: DisposablePostg
     FROM unnest($1::text[]) AS owner_id
     ON CONFLICT DO NOTHING
   `, [[...STUDIO_FIXTURE_OWNERS]]);
-  // Exact media-reader shapes only. This does not claim the full app/library/funnel schema.
+  // Most Studio tests need only exact readers. Picker tests opt into the authored
+  // TEXT identities and created-at columns used by Media's canonical/legacy UNION.
+  // See media-library-schema.ts and asset-schema.ts; no runtime GET applies DDL.
+  const identityType = options.libraryPicker ? 'text' : 'uuid';
+  const createdAt = options.libraryPicker ? ', created_at timestamptz NOT NULL DEFAULT now()' : '';
   await database.pool.query(`
     CREATE TABLE app_jobs(job_id text PRIMARY KEY, user_id text NOT NULL, hidden boolean NOT NULL DEFAULT false);
-    CREATE TABLE job_outputs(id uuid PRIMARY KEY, job_id text, user_id text, kind text, url text,
-      storage_url text, mime_type text, status text, metadata jsonb);
-    CREATE TABLE media_assets(id uuid PRIMARY KEY, public_id text UNIQUE NOT NULL, user_id text NOT NULL,
+    CREATE TABLE job_outputs(id ${identityType} PRIMARY KEY, job_id text, user_id text, kind text, url text,
+      storage_url text, mime_type text, status text, metadata jsonb${createdAt});
+    CREATE TABLE media_assets(id ${identityType} PRIMARY KEY, public_id text UNIQUE NOT NULL, user_id text NOT NULL,
       kind text NOT NULL, url text NOT NULL, thumb_url text, preview_url text, mime_type text, status text,
-      deleted_at timestamptz, source_job_id text, source_output_id uuid, original_name text, metadata jsonb);
+      deleted_at timestamptz, source_job_id text, source_output_id ${identityType}, original_name text, metadata jsonb${createdAt});
   `);
+  if (options.libraryPicker) {
+    await database.pool.query(`CREATE TABLE user_assets (
+      asset_id text PRIMARY KEY, user_id text, url text NOT NULL, mime_type text,
+      metadata jsonb, created_at timestamptz NOT NULL DEFAULT now()
+    )`);
+    await database.pool.query(await readFile('neon/migrations/97_media_library_organization.sql', 'utf8'));
+  }
   const mediaFacts = { source: 'probe', durationSec: 6, width: 320, height: 180, hasAudio: true };
   const entries = [
     { suffix: 1, assetId: STUDIO_CONNECTED_ASSET_IDS.a, owner: STUDIO_FIXTURE_OWNERS[0], key: STUDIO_PRIVATE_MEDIA_KEYS.a, name: 'Pattern A', metadata: { mediaFacts } },

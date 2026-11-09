@@ -125,3 +125,22 @@ test('concurrent recovery claims one batch and an expired worker lease can resum
     assert.equal(completions, 2);
   } finally { await db.cleanup(); }
 });
+
+test('paired display preparation checkpoints receipt bytes and resumes completion without refetch or reupload',async()=>{
+ const db=await startDisposablePostgres('openai-display-recovery');
+ try{
+  await db.pool.query(`CREATE TABLE app_jobs(job_id TEXT PRIMARY KEY,user_id TEXT,status TEXT,payment_status TEXT); INSERT INTO app_jobs VALUES('recover-images','owner','running','paid_wallet')`);
+  await db.pool.query(readFileSync('neon/migrations/95_openai_image_results.sql','utf8'));
+  const queryFn=async<T>(sql:string,args?:readonly unknown[])=>(await db.pool.query(sql,args as unknown[])).rows as T[];
+  await reserveOpenAIImageResult(openAIImageCompletionContext({...params,numImages:1}),queryFn);
+  await persistOpenAIImageResult({jobId:params.jobId,userId:params.userId,requestId:'receipt',extracted:extractOpenAIImages({data:[{b64_json:png}]},'png',1),usage:null},queryFn);
+  let uploads=0,preparations=0,completions=0;
+  const sourceUrl='https://media.maxvideoai.com/original.png';
+  const imageDisplay={version:1 as const,profile:'image-display-v1' as const,sourceUrl,sourceSha256:'a'.repeat(64),url:'https://media.maxvideoai.com/display.webp',mimeType:'image/webp' as const,width:1920,height:960,sizeBytes:2000};
+  const deps={queryFn,uploadFn:async()=>{uploads++;return{url:sourceUrl,mime:'image/png'};},renditionsFn:async(input:any)=>{preparations++;assert.deepEqual(input.data,Buffer.from(png,'base64'));return{thumbUrl:'https://media.maxvideoai.com/thumb.webp',previewUrl:imageDisplay.url,imageDisplay};},completeFn:async(input:any)=>{completions++;assert.deepEqual(input.images[0].imageDisplay,imageDisplay);if(completions===1)throw Error('completion retry');await db.pool.query("UPDATE app_jobs SET status='completed'");return{heroThumb:input.images[0].thumbUrl};}};
+  await assert.rejects(recoverOpenAIImageResult(params.jobId,params.userId,deps),/completion retry/);
+  assert.deepEqual((await db.pool.query('SELECT stored_images FROM app_openai_image_results')).rows[0].stored_images[0].image.imageDisplay,imageDisplay);
+  await recoverOpenAIImageResult(params.jobId,params.userId,deps);
+  assert.equal(uploads,1);assert.equal(preparations,1);assert.equal(completions,2);
+ }finally{await db.cleanup();}
+});

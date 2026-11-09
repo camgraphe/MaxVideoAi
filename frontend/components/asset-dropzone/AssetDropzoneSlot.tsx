@@ -1,9 +1,11 @@
 'use client';
+import { useLibraryDisplayAccess } from '@/hooks/useLibraryMediaAccess';
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
 import { WorkspaceAssetSlot } from './WorkspaceAssetSlot.client';
-import type { KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
+import { useRetireSlotMedia } from './useRetireSlotMedia';
 import { Lock, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
@@ -11,11 +13,20 @@ import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
 import type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 export type { AssetDropzoneSlotProps } from './asset-dropzone-types';
 export function AssetDropzoneSlot(props: AssetDropzoneSlotProps) {
-  if (props.workspaceDensity) return <WorkspaceAssetSlot {...props} />;
-  return <DefaultAssetDropzoneSlot {...props} />;
+  const { access, refresh, retired } = useLibraryDisplayAccess(props.asset ?? {});
+  const privateSource = Boolean(props.asset?.readAccessRef || props.asset?.readAccessOwnerId);
+  const localPreview = props.asset?.previewUrl.startsWith('blob:') ? props.asset.previewUrl : undefined;
+  const asset = props.asset && !retired ? { ...props.asset,
+    previewUrl: localPreview ?? (props.asset.kind === 'video' ? access.previewAccessUrl ?? access.accessUrl : access.accessUrl) ?? (privateSource ? '' : props.asset.previewUrl),
+    thumbnailUrl: access.thumbnailAccessUrl ?? (privateSource ? undefined : props.asset.thumbnailUrl),
+  } : null;
+  const displayProps = { ...props, asset, onMediaError: () => { void refresh(); } };
+  if (props.workspaceDensity) return <WorkspaceAssetSlot {...displayProps} />;
+  return <DefaultAssetDropzoneSlot {...displayProps} />;
 }
 function DefaultAssetDropzoneSlot({
   accept,
+  onMediaError,
   asset,
   assetCopy,
   canOpenLibrary,
@@ -42,6 +53,8 @@ function DefaultAssetDropzoneSlot({
   onRemoveSlot,
   onSelectFileSlot,
 }: AssetDropzoneSlotProps) {
+  const mediaContainer = useRef<HTMLDivElement>(null);
+  useRetireSlotMedia(mediaContainer, asset?.previewUrl);
   const slotRequired = slotIndex < minCount;
   const showRequiredHint = slotRequired && engineId !== 'wan-2-6' && !hideRequiredSlotCopy;
   const isInitialCollectionSlot = isCollectionField && asset == null && filledAssetCount === 0 && displaySlotCount === 1;
@@ -98,6 +111,7 @@ function DefaultAssetDropzoneSlot({
 
   return (
     <div
+      ref={mediaContainer}
       tabIndex={0}
       className={clsx(
         'relative flex w-full flex-col justify-center text-center text-[12px] text-text-muted transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
@@ -134,6 +148,7 @@ function DefaultAssetDropzoneSlot({
           : 'cursor-default',
         disabled && !asset && 'cursor-not-allowed border-border/70 bg-surface/60 hover:border-border/70 hover:bg-surface/60 dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.08] dark:hover:bg-white/[0.03]'
       )}
+      onErrorCapture={onMediaError}
       onClick={triggerSelection}
       onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'Escape' && pickerOpen) {
@@ -186,7 +201,7 @@ function DefaultAssetDropzoneSlot({
           {fullBleedSingleAsset ? (
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-24 bg-gradient-to-b from-black/55 via-black/18 to-transparent" />
           ) : null}
-          {asset.kind === 'image' ? (
+          {!asset.previewUrl ? null : asset.kind === 'image' ? (
             <img
               src={asset.previewUrl}
               alt={asset.name}
@@ -206,11 +221,11 @@ function DefaultAssetDropzoneSlot({
                   : 'absolute inset-0 p-4'
               )}
             >
-              <audio src={asset.previewUrl} controls className="w-full" />
+              <audio key={asset.previewUrl} src={asset.previewUrl} controls className="w-full" />
             </div>
           ) : (
             <>
-              <video
+              <video key={asset.previewUrl}
                 src={asset.previewUrl} controls preload="metadata"
                 className={clsx(
                   'bg-black object-cover',

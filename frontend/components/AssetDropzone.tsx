@@ -48,7 +48,7 @@ interface AssetDropzoneProps {
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
-  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
+  onOpenLibrary?: (field: EngineInputField, slotIndex?: number) => void;
   onUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   referenceWarning?: string;
   guidance?: AssetFieldGuidanceCopy | null;

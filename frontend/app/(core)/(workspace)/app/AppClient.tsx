@@ -158,6 +158,7 @@ export default function AppClientPage({
     engineId: routeForm.form?.engineId,
     engine: composer.selectedEngine,
     preferredMode: composer.submissionMode,
+    workflowIntent: composer.activeManualMode,
     workflowCopy: app.workflowCopy,
     showNotice: noticeState.showNotice,
     klingElements: routeForm.klingElements,

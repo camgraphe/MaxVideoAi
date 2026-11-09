@@ -1,0 +1,2345 @@
+{
+  "inputBasename": "iab-comparison.json",
+  "inputSha256": "50b42c2c61163fcce5e9d6395801e3864956f1102ccac6662214205645b1ff26",
+  "sourceRevisions": {
+    "baseline": [
+      "5135e4e2b7ad04261d26b3f7669eb2ec8aded1db"
+    ],
+    "candidate": [
+      "9df0cb33f35f5bdb8f72e043c79455fc542f25e3"
+    ]
+  },
+  "rawRecords": 250,
+  "excludedQualificationRecords": 10,
+  "validRecords": 240,
+  "passes": 24,
+  "excludedRpcWallMs": [
+    {
+      "operation": "first-load-saved-images",
+      "wallMs": 356
+    },
+    {
+      "operation": "page-scroll",
+      "wallMs": 386
+    },
+    {
+      "operation": "exact012-image-click",
+      "wallMs": 398
+    },
+    {
+      "operation": "image-close",
+      "wallMs": 401
+    },
+    {
+      "operation": "recent-video-load",
+      "wallMs": 335
+    },
+    {
+      "operation": "exact097-video-open",
+      "wallMs": 349
+    },
+    {
+      "operation": "exact097-first-Play",
+      "wallMs": 421
+    },
+    {
+      "operation": "exact097-save",
+      "wallMs": 32633
+    },
+    {
+      "operation": "video-close",
+      "wallMs": 396
+    },
+    {
+      "operation": "post-save-saved-video-revisit",
+      "wallMs": 361
+    }
+  ],
+  "functional": {
+    "exactImageDecodes": 24,
+    "closesWithoutReaders": 48,
+    "videoPlays": 24,
+    "exactOutputSaves": 24
+  },
+  "timeouts": 0,
+  "truncatedCaptures": 0,
+  "exactImageBodyReductionPercent": 95.9861,
+  "exactImageRequests": [
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 1,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.485,
+      "cdpStartToResponseEventMs": 3.335,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 1,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 9.022,
+      "cdpStartToResponseEventMs": 2.968,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 1,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.148,
+      "cdpStartToResponseEventMs": 2.479,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 1,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.699,
+      "cdpStartToResponseEventMs": 2.761,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 2,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.274,
+      "cdpStartToResponseEventMs": 3.067,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 2,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.848,
+      "cdpStartToResponseEventMs": 4.784,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 2,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.292,
+      "cdpStartToResponseEventMs": 2.184,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 2,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.723,
+      "cdpStartToResponseEventMs": 2.628,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 3,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.701,
+      "cdpStartToResponseEventMs": 3.262,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 3,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.297,
+      "cdpStartToResponseEventMs": 2.958,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "round": 3,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 1.782,
+      "cdpStartToResponseEventMs": 1.719,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 3,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.604,
+      "cdpStartToResponseEventMs": 2.437,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 1,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.431,
+      "cdpStartToResponseEventMs": 4.58,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 1,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 6.795,
+      "cdpStartToResponseEventMs": 2.676,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 1,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.121,
+      "cdpStartToResponseEventMs": 2.976,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 1,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.753,
+      "cdpStartToResponseEventMs": 4.076,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 2,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 10.711,
+      "cdpStartToResponseEventMs": 2.87,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 2,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 7.249,
+      "cdpStartToResponseEventMs": 2.834,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 2,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.337,
+      "cdpStartToResponseEventMs": 2.563,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 2,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.789,
+      "cdpStartToResponseEventMs": 2.714,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 3,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 8.435,
+      "cdpStartToResponseEventMs": 3.653,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 3,
+      "role": "original",
+      "resourceSha256": "1dd50be3e23c37d05fa930ae901254e3b6beb8f04f0350afbd017bcb6e3e043d",
+      "declaredBodyBytes": 2280434,
+      "decodedDataBytes": 2280434,
+      "browserEncodedDataLength": 2280767,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 6.799,
+      "cdpStartToResponseEventMs": 2.798,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "round": 3,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.241,
+      "cdpStartToResponseEventMs": 2.611,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "round": 3,
+      "role": "display",
+      "resourceSha256": "30bfc340287f89002b81ab6c95a1e8064b865f763f0f76464ebdb203492a0c4f",
+      "declaredBodyBytes": 91534,
+      "decodedDataBytes": 91534,
+      "browserEncodedDataLength": 91866,
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "servedFromCache": false,
+      "completed": true,
+      "cdpStartToFinishMs": 2.712,
+      "cdpStartToResponseEventMs": 2.576,
+      "observedGeometry": [
+        1024,
+        1536
+      ]
+    }
+  ],
+  "operationGroups": [
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 392,
+        "median": 402,
+        "max": 407
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 411,
+        "median": 413,
+        "max": 425
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 390,
+        "median": 396,
+        "max": 398
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 331,
+        "median": 332,
+        "max": 345
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 329,
+        "median": 336,
+        "max": 362
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        88,
+        88,
+        88
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 388,
+        "median": 403,
+        "max": 418
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 357,
+        "median": 359,
+        "max": 372
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 357,
+        "median": 365,
+        "max": 367
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        76,
+        76,
+        76
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 336,
+        "median": 339,
+        "max": 343
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        66,
+        66,
+        66
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 388,
+        "median": 403,
+        "max": 404
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 385,
+        "median": 389,
+        "max": 397
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 417,
+        "median": 423,
+        "max": 425
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 399,
+        "median": 407,
+        "max": 408
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 324,
+        "median": 340,
+        "max": 342
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 299,
+        "median": 322,
+        "max": 332
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        86,
+        87,
+        87
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 392,
+        "median": 401,
+        "max": 408
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 352,
+        "median": 366,
+        "max": 486
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 308,
+        "median": 321,
+        "max": 341
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        76,
+        76,
+        75
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 304,
+        "median": 305,
+        "max": 340
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        64,
+        65,
+        64
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 392,
+        "median": 401,
+        "max": 407
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 396,
+        "median": 398,
+        "max": 413
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 408,
+        "median": 413,
+        "max": 420
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 395,
+        "median": 395,
+        "max": 398
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 334,
+        "median": 341,
+        "max": 341
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 338,
+        "median": 343,
+        "max": 361
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        78,
+        78,
+        78
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 400,
+        "median": 407,
+        "max": 414
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 365,
+        "median": 366,
+        "max": 367
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 353,
+        "median": 368,
+        "max": 383
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        76,
+        76,
+        76
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 331,
+        "median": 335,
+        "max": 350
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        66,
+        66,
+        66
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 383,
+        "median": 404,
+        "max": 412
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 389,
+        "median": 393,
+        "max": 401
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 409,
+        "median": 411,
+        "max": 413
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 391,
+        "median": 396,
+        "max": 399
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 347,
+        "median": 350,
+        "max": 353
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 295,
+        "median": 312,
+        "max": 330
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        76,
+        76,
+        77
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 393,
+        "median": 402,
+        "max": 405
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 355,
+        "median": 367,
+        "max": 473
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 330,
+        "median": 331,
+        "max": 332
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        76,
+        76,
+        76
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 298,
+        "median": 303,
+        "max": 303
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "variant": "baseline",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 400,
+        "median": 404,
+        "max": 408
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 400,
+        "median": 400,
+        "max": 401
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 154,
+        "median": 157,
+        "max": 162
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        7,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 399,
+        "median": 399,
+        "max": 405
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 337,
+        "median": 338,
+        "max": 346
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        10,
+        16,
+        16
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 300,
+        "median": 311,
+        "max": 321
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        91,
+        90,
+        94
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 399,
+        "median": 408,
+        "max": 411
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 370,
+        "median": 370,
+        "max": 381
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 368,
+        "median": 378,
+        "max": 389
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 349,
+        "median": 350,
+        "max": 359
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        70,
+        70,
+        70
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "cold-disabled",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 415,
+        "median": 417,
+        "max": 427
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 391,
+        "median": 395,
+        "max": 398
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 158,
+        "median": 159,
+        "max": 164
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 404,
+        "median": 404,
+        "max": 408
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 340,
+        "median": 344,
+        "max": 345
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 287,
+        "median": 338,
+        "max": 343
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        89,
+        90,
+        90
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 399,
+        "median": 412,
+        "max": 412
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 375,
+        "median": 377,
+        "max": 380
+      },
+      "mountedCards": {
+        "min": 30,
+        "median": 30,
+        "max": 30
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 341,
+        "median": 353,
+        "max": 369
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        80,
+        80,
+        80
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 308,
+        "median": 334,
+        "max": 358
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        68,
+        69,
+        69
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "desktop1440x900",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 413,
+        "median": 418,
+        "max": 425
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 380,
+        "median": 381,
+        "max": 406
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 161,
+        "median": 163,
+        "max": 165
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 400,
+        "median": 401,
+        "max": 407
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 344,
+        "median": 347,
+        "max": 348
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        16,
+        16,
+        16
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 350,
+        "median": 353,
+        "max": 358
+      },
+      "mountedCards": {
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        74,
+        74,
+        74
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 397,
+        "median": 398,
+        "max": 415
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 342,
+        "median": 345,
+        "max": 357
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 350,
+        "median": 354,
+        "max": 364
+      },
+      "mountedCards": {
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        77,
+        77,
+        77
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 345,
+        "median": 345,
+        "max": 354
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        70,
+        70,
+        70
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "cold-disabled",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 415,
+        "median": 420,
+        "max": 421
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact012-image-click",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 391,
+        "median": 408,
+        "max": 412
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        7,
+        7,
+        7
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-first-Play",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 156,
+        "median": 160,
+        "max": 162
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-save",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 403,
+        "median": 406,
+        "max": 409
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "exact097-video-open",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 342,
+        "median": 348,
+        "max": 349
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "first-load-saved-images",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 295,
+        "median": 296,
+        "max": 325
+      },
+      "mountedCards": {
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        72,
+        72,
+        73
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "image-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 403,
+        "median": 410,
+        "max": 412
+      },
+      "mountedCards": {
+        "min": 1,
+        "median": 1,
+        "max": 1
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "page-scroll",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 355,
+        "median": 363,
+        "max": 368
+      },
+      "mountedCards": {
+        "min": 15,
+        "median": 15,
+        "max": 15
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "post-save-saved-video-revisit",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 290,
+        "median": 327,
+        "max": 332
+      },
+      "mountedCards": {
+        "min": 12,
+        "median": 12,
+        "max": 12
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        77,
+        77,
+        76
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "recent-video-load",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 317,
+        "median": 339,
+        "max": 340
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        69,
+        69,
+        69
+      ]
+    },
+    {
+      "variant": "candidate",
+      "viewport": "mobile390x844",
+      "cacheCondition": "warm-enabled-primed",
+      "operation": "video-close",
+      "n": 3,
+      "rpcWallMsNotProductLatency": {
+        "min": 397,
+        "median": 407,
+        "max": 414
+      },
+      "mountedCards": {
+        "min": 6,
+        "median": 6,
+        "max": 6
+      },
+      "networkEventsNotDeduplicatedAcrossOperations": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "limits": [
+    "RPC wall durations include controller/tool overhead and different interaction primitives; not product latency or CWV.",
+    "First-page sets differ at timestamp-tied boundary030/031; no whole-page causal speedup claim.",
+    "Cache enabled and explicitly primed does not establish private cache hits; actual cache flags are retained.",
+    "CDP start/finish and response event timestamps are retained separately; event timing ordering can differ.",
+    "Public synthetic bodies use narrowly scoped IAB non-Document fulfillment; private image012 uses actual S3 HTTP.",
+    "Body bytes, browser encoded counts, queued public bodies, decoded geometry and visual fidelity are different quantities.",
+    "WebP display is lossy despite equal decoded dimensions; original identity remains available separately.",
+    "No real device, WAN/CDN, field CWV, paid generation, native gated Creator/Studio or production deployment claim."
+  ]
+}

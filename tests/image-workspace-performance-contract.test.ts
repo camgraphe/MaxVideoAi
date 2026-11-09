@@ -7,7 +7,7 @@ const galleryRailPath = 'frontend/app/(core)/(workspace)/app/image/_components/I
 const advancedSettingsPath = 'frontend/components/ImageAdvancedSettings.tsx';
 const advancedContentPath = 'frontend/components/image-advanced-settings/ImageAdvancedSettingsContent.tsx';
 
-test('image workspace defers closed conversion modals', () => {
+test('image workspace defers never-opened modals and preserves the import owner after first opening', () => {
   const source = readFileSync(runtimeModalsPath, 'utf8');
 
   assert.match(source, /dynamic(?:<[^>]+>)?\(\s*\(\) => import\('\.\/ImageAuthGateModal'\)/);
@@ -15,7 +15,9 @@ test('image workspace defers closed conversion modals', () => {
   assert.doesNotMatch(source, /import \{ ImageAuthGateModal \} from/);
   assert.doesNotMatch(source, /import \{ ImageLibraryModal \} from/);
   assert.match(source, /authModalOpen \? \([\s\S]*<ImageAuthGateModal/);
-  assert.match(source, /libraryModal\.open \? \([\s\S]*<ImageLibraryModal/);
+  assert.match(source, /if \(libraryModal\.open\) libraryHasOpened\.current = true/);
+  assert.match(source, /open=\{libraryModal\.open\}/);
+  assert.match(source, /libraryHasOpened\.current \? <ImageLibraryModal/);
 });
 
 test('image advanced fields load only after the stable toggle is expanded', () => {

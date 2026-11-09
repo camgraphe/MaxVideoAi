@@ -1,4 +1,5 @@
 'use client';
+import { useLibraryCacheRevision, libraryRevisionKey, useLibraryScopePersistence } from '@/hooks/useLibraryCacheRevision';
 
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
@@ -21,21 +22,23 @@ export function useImageLibraryData({ userId, source, isCharacterMode }: {
   source: AssetLibrarySource;
   isCharacterMode: boolean;
 }) {
+  const revision = useLibraryCacheRevision(userId);
+  const persistSize = useLibraryScopePersistence(JSON.stringify([userId, source, isCharacterMode]));
   const assetsQuery = useSWRInfinite<MediaLibraryAssetsResponse>(
     (pageIndex, previousPageData) => {
       if (isCharacterMode || (previousPageData && !previousPageData.nextCursor)) return null;
-      return buildMediaLibraryAssetsKey({
+      return libraryRevisionKey(buildMediaLibraryAssetsKey({
         userId,
         kind: 'image',
         source,
         limit: IMAGE_LIBRARY_PAGE_SIZE,
         cursor: pageIndex === 0 ? null : previousPageData?.nextCursor,
-      });
+      }), revision);
     },
     fetchMediaLibraryAssets,
     {
       keepPreviousData: false,
-      persistSize: false,
+      persistSize,
     }
   );
   const characterKey = userId && isCharacterMode

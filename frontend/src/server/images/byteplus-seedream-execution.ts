@@ -8,7 +8,7 @@ import {
   extractStorageKeyFromUrl,
   isStorageConfigured,
 } from '@/server/storage';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import { buildBytePlusSeedreamPayload } from './byteplus-seedream-payload';
 import { callBytePlusSeedream } from './byteplus-seedream-client';
 import {
@@ -148,8 +148,9 @@ export async function executeBytePlusSeedreamGeneration(params: {
       jobId: params.jobId,
       userId: params.userId,
       requireOwnedOutput: true,
+      prepare: prepareImageRenditions,
     });
-    const thumbUrls = await createImageThumbnailBatch({
+    const thumbUrls = typeof prepareImageRenditions === 'function' ? storedImages.map(image => image.thumbUrl ?? null) : await createImageThumbnailBatch({
       jobId: params.jobId,
       userId: params.userId,
       imageUrls: storedImages.map((image) => image.url),

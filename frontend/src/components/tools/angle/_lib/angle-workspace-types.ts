@@ -1,7 +1,8 @@
+import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import type { LibraryImageMedia } from '@/lib/library-image';
 import type { AngleToolEngineId, AngleToolNumericParams, AngleToolResponse } from '@/types/tools-angle';
 
-export type UploadedImage = {
+export type UploadedImage = Omit<Partial<AssetBrowserAsset>, 'id' | 'url' | 'source'> & {
   id?: string | null;
   url: string;
   previewUrl?: string | null;
@@ -11,7 +12,7 @@ export type UploadedImage = {
   source?: 'upload' | 'library' | 'paste' | 'example';
 };
 
-export type LibraryAsset = LibraryImageMedia & {
+export type LibraryAsset = LibraryImageMedia & Partial<Omit<AssetBrowserAsset, 'id' | 'kind'>> & {
   id: string;
   width?: number | null;
   height?: number | null;

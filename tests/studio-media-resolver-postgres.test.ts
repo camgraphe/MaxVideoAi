@@ -1,3 +1,4 @@
+import { MEDIA_LIBRARY_ORGANIZATION_SCHEMA } from '../frontend/src/lib/schema/media-library-organization-schema';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { startDisposablePostgres, missingDisposablePostgresCommand } from './helpers/disposable-postgres';
@@ -22,6 +23,9 @@ test('Studio resolver uses exact owned rows and owned original objects in a read
         ('hidden','ma_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb','owner-a','audio','https://media.maxvideoai.com/user-assets/owner-a/hidden.wav','audio/wav','ready',null,null,'out-hidden','{}'),
         ('forged','ma_cccccccccccccccccccccccccccccccc','owner-a','audio','https://media.maxvideoai.com/user-assets/owner-b/secret.wav','audio/wav','ready',null,null,null,'{}'),
         ('external','ma_dddddddddddddddddddddddddddddddd','owner-a','audio','https://cdn.maxvideoai.com/external.wav?sig=a%2Fb','audio/wav','ready',null,null,null,'{}');`);
+    await database.pool.query(MEDIA_LIBRARY_ORGANIZATION_SCHEMA);
+    await database.pool.query("INSERT INTO library_organization(user_id,key,kind,trashed_at) VALUES('owner-a','fixture-trash','audio',now())");
+    await database.pool.query("INSERT INTO library_organization_aliases(user_id,alias_type,alias_id,source_revision,organization_key,reference) VALUES('owner-a','asset','fixture-alias','fixture-revision','fixture-trash',$1::jsonb)",[JSON.stringify({type:'asset',assetId:'ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',kind:'audio'})]);
     const savedBase = process.env.S3_PUBLIC_BASE_URL;
     process.env.S3_PUBLIC_BASE_URL = 'https://media.maxvideoai.com';
     const { resolveStudioMedia } = await import('../frontend/src/server/studio/media-resolver');

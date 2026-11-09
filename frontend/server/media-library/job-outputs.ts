@@ -1,6 +1,9 @@
+import { imageDisplayFields } from '@/lib/image-display';
+import { buildStoredImageRenderEntries, parseStoredImageRenders, type ImageRenderEntry } from '@/lib/image-renders';
+import { libraryIdentityCtes } from './browse-identity-sql';
+import { activeLibrarySourceSql } from './visibility-sql';
 import { applicationJobSql } from '../app-job-origin';
 import { query, isTransactionQueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
-import { buildStoredImageRenderEntries } from '@/lib/image-renders';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
 import {
   mapLegacyJobRowToOutputs,
@@ -137,6 +140,7 @@ export function applyOutputsToJobPayload<T extends {
   lastFrameUrl?: string | null;
   renderIds?: string[] | null;
   renderThumbUrls?: string[] | null;
+  imageRenders?: ImageRenderEntry[];
 }>(job: T, outputs: JobOutputRecord[] | undefined): T {
   if (!outputs?.length) return job;
   const videos = outputs.filter((output) => output.kind === 'video').sort((a, b) => a.position - b.position);
@@ -147,6 +151,8 @@ export function applyOutputsToJobPayload<T extends {
   const firstAudio = audios[0];
   const imageEntries = images.map((output) => ({
     url: output.url,
+    sourceOutputId: output.id,
+    ...imageDisplayFields(output.metadata.imageDisplay, output.url, output.previewUrl),
     thumbUrl: output.thumbUrl ?? output.url,
     width: output.width,
     height: output.height,
@@ -162,6 +168,7 @@ export function applyOutputsToJobPayload<T extends {
     audioUrl: firstAudio?.url ?? job.audioUrl,
     thumbUrl: firstVideo?.thumbUrl ?? images[0]?.thumbUrl ?? job.thumbUrl,
     renderIds: images.length ? images.map((output) => output.url) : job.renderIds,
+    imageRenders: renderEntries.length ? parseStoredImageRenders(renderEntries).entries : job.imageRenders,
     renderThumbUrls: renderEntries.length ? renderEntries.map((entry) => entry.thumb_url) : job.renderThumbUrls,
   };
 }
@@ -201,7 +208,7 @@ export async function listRecentOutputPage(params: {
   const cursor = decodeMediaLibraryCursor(params.cursor);
   const searchPattern = buildMediaLibrarySearchPattern(params.q);
   const rows = await query<DbJobOutputRow>(
-    `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
+    `WITH ${libraryIdentityCtes()} SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
             o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
             saved.id AS saved_asset_id,
             j.prompt AS job_prompt,
@@ -214,6 +221,7 @@ export async function listRecentOutputPage(params: {
         AND saved.source_output_id = o.id
         AND saved.deleted_at IS NULL
       WHERE o.user_id = $1
+        AND ${activeLibrarySourceSql('job-output','o.id','o.kind')}
         AND ($5::text IS NOT NULL OR ${applicationJobSql('j')})
         AND j.hidden IS NOT TRUE
         AND o.status = 'ready'

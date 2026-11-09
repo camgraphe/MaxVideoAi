@@ -40,10 +40,10 @@ export function StoryboardReferenceLibraryModal({
     [t]
   );
 
-  if (!libraryModal.open) return null;
 
   return (
     <ImageLibraryModal
+      target={{scope: `storyboard:${libraryModal.slotIndex}`, slotIndex: libraryModal.slotIndex}}
       open={libraryModal.open}
       onClose={onClose}
       onSelect={onSelect}

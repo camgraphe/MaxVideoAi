@@ -1,3 +1,5 @@
+import {mediaGridGlobals} from './helpers/media-grid-dom';
+import './helpers/uppy-node-fixture';
 import { mockBrowserSession } from './helpers/browser-session-fixture';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -17,7 +19,7 @@ import { I18nProvider } from '../frontend/lib/i18n/I18nProvider';
 
 async function harness() {
   const dom = new JSDOM('<button id="opener">Open</button><div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
-  const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator, HTMLElement: dom.window.HTMLElement, React, IS_REACT_ACT_ENVIRONMENT: true };
+  const globals = { FormData:dom.window.FormData, ...mediaGridGlobals(dom.window), window: dom.window, document: dom.window.document, navigator: dom.window.navigator, HTMLElement: dom.window.HTMLElement, React, IS_REACT_ACT_ENVIRONMENT: true };
   const saved = new Map(Object.keys(globals).map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   dom.window.HTMLElement.prototype.getClientRects = function () { return [{ width: 44, height: 44 }] as unknown as DOMRectList; };
@@ -27,7 +29,7 @@ async function harness() {
     click: async (selector: string) => act(async () => doc.querySelector<HTMLButtonElement>(selector)!.click()),
     close: async () => { await act(async () => root.unmount()); dom.window.close(); for (const [key, descriptor] of saved) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else Reflect.deleteProperty(globalThis, key); } } };
 }
-const asset: AssetBrowserAsset = { id: 'original', url: 'https://private.example/original.png?sig=Exact', thumbUrl: 'https://private.example/thumb.png?sig=Thumb', kind: 'image', width: 1024, height: 768, sourceOutputId: 'output-7' };
+const asset: AssetBrowserAsset = { id: 'original', url: 'https://private.example/original.png?sig=Exact', thumbUrl: 'https://private.example/thumb.png?sig=Thumb', kind: 'image', width: 1024, height: 768, jobId: 'job-7', sourceOutputId: 'output-7' };
 const props: AssetLibraryBrowserProps = { title: 'Reference', assetType: 'image', assets: [asset], isLoading: false, source: 'all', availableSources: ['all', 'upload'], sourceLabels: { all: 'All', upload: 'Uploaded' }, onSourceChange() {}, searchPlaceholder: 'Search', sourcesTitle: 'Source', emptyLabel: 'Empty', emptySearchLabel: 'No match', renderAssetActions: () => null };
 
 for (const example of [
@@ -86,6 +88,7 @@ test('audio reference library imports through its supplied owned callback withou
 
 test('an audio reference slot requests and retains audio originals from Media', async () => {
   const { useWorkspaceAssetLibrary } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary');
+  const session = await mockBrowserSession('A');
   const h = await harness(); const oldFetch = globalThis.fetch; const urls: string[] = [];
   const audio = { id: 'voice', url: 'https://private.example/voice.wav?sig=Exact', kind: 'audio', mime: 'audio/wav', durationSec: 9 };
   globalThis.fetch = async input => { urls.push(String(input)); return Response.json({ ok: true, assets: [audio] }); };
@@ -98,7 +101,7 @@ test('an audio reference slot requests and retains audio originals from Media', 
     assert.match(urls[0], /kind=audio/);
     assert.equal(library.visibleAssetLibrary[0].url, audio.url);
     assert.equal(library.visibleAssetLibrary[0].durationSec, 9);
-  } finally { globalThis.fetch = oldFetch; await h.close(); }
+  } finally { await session.restore(); globalThis.fetch = oldFetch; await h.close(); }
 });
 
 test('picker filters known incompatibilities, explains all-media exclusions and keeps unknown originals selectable', async () => {
@@ -110,16 +113,16 @@ test('picker filters known incompatibilities, explains all-media exclusions and 
     await h.render(React.createElement(AssetLibraryBrowser, { ...props, assets: [unknown, wrong], selection: {
       scope: 'owner:image', getEligibility: value => getMediaInputEligibility({ asset: value, field }), onConfirm: value => { chosen = value; },
     } }));
-    assert.equal(h.doc.querySelectorAll('.app-picker-card').length, 1);
+    assert.equal(h.doc.querySelectorAll('.compact-media-check input').length, 1);
     assert.match(h.doc.body.textContent!, /validated|verified/i);
-    await h.click('.app-picker-card'); await h.click('.app-picker-use'); assert.equal(chosen, unknown);
+    await h.click('.compact-media-check input'); await h.click('.app-picker-use'); assert.equal(chosen, unknown);
     await act(async () => {
       const select = h.doc.querySelector<HTMLSelectElement>('select[data-compatibility-filter]')!;
       select.value = 'all'; select.dispatchEvent(new h.dom.window.Event('change', { bubbles: true }));
     });
-    const cards = h.doc.querySelectorAll<HTMLButtonElement>('.app-picker-card');
+    const cards = h.doc.querySelectorAll<HTMLButtonElement>('.compact-media-check input');
     assert.equal(cards.length, 2); assert.equal(cards[1].disabled, true);
-    assert.match(cards[1].textContent!, /Format/);
+    assert.match(cards[1].closest('[data-media-key]')!.textContent!, /Format/);
     await h.render(React.createElement(AssetLibraryBrowser, { ...props, assets: [wrong], selection: {
       scope: 'owner:image:other-slot', getEligibility: value => getMediaInputEligibility({ asset: value, field }),
     } }));
@@ -135,13 +138,13 @@ test('staged selection confirms exact original once, keeps rejection in panel, a
   try {
     await h.render(view());
     assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, true);
-    await h.click('.app-picker-card'); assert.equal(calls, 0);
+    await h.click('.compact-media-check input'); assert.equal(calls, 0);
     assert.equal(h.doc.querySelector('img')!.getAttribute('src'), asset.thumbUrl);
     await h.click('.app-picker-use'); await h.click('.app-picker-use');
     assert.equal(calls, 1); assert.equal(h.doc.querySelector('fieldset')!.disabled, true);
     await act(async () => resolve('Maximum references reached'));
     assert.match(h.doc.querySelector('[role="alert"]')!.textContent!, /Maximum/);
-    assert.equal(closed, 0); assert.equal(h.doc.querySelector('.app-picker-card')!.getAttribute('aria-pressed'), 'true');
+    assert.equal(closed, 0); assert.equal(h.doc.querySelector('.compact-media-check input')!.checked, true);
     await h.click('.app-picker-selection button');
     assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, true);
     await h.click('.app-picker-footer-actions button'); assert.equal(closed, 1); assert.equal(calls, 1);
@@ -158,10 +161,10 @@ test('accepted owner closes; busy focus stays inside and blocks Escape', async (
   }
   try {
     await h.render(React.createElement(Frame));
-    await h.click('.app-picker-card');
+    await h.click('.compact-media-check input');
     h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.focus();
     await h.click('.app-picker-use');
-    assert.equal(h.doc.activeElement?.getAttribute('role'), 'dialog', 'all controls disabled should recover focus to dialog');
+    assert.ok(h.doc.querySelector('[role=dialog]')!.contains(h.doc.activeElement),'busy collection focus stays within the modal');
     await act(async () => h.doc.activeElement!.dispatchEvent(new h.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     assert.ok(h.doc.querySelector('[role="dialog"]'));
     await act(async () => resolve());
@@ -169,14 +172,15 @@ test('accepted owner closes; busy focus stays inside and blocks Escape', async (
   } finally { await h.close(); }
 });
 
-test('source, destination and account scope changes reset choice; changed or removed originals cannot confirm', async () => {
+test('source changes retain choice; destination and account retire it and observed replacements cannot resurrect', async () => {
   const h = await harness();
   let calls = 0;
   const view = (scope: string, source: 'all' | 'upload' = 'all', assets = [asset]) => React.createElement(AssetLibraryBrowser, { ...props, source, assets, selection: { scope, onConfirm: () => { calls++; } } });
   try {
-    await h.render(view('owner-a:slot0')); await h.click('.app-picker-card');
-    for (const [scope, source] of [['owner-a:slot0', 'upload'], ['owner-a:slot1', 'all'], ['owner-b:slot1', 'all']] as const) {
-      await h.render(view(scope, source)); assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, true); await h.click('.app-picker-card');
+    await h.render(view('owner-a:slot0')); await h.click('.compact-media-check input');
+    await h.render(view('owner-a:slot0', 'upload')); assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, false);
+    for (const [scope, source] of [['owner-a:slot1', 'all'], ['owner-b:slot1', 'all']] as const) {
+      await h.render(view(scope, source)); assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, true); await h.click('.compact-media-check input');
     }
     await h.render(view('owner-b:slot1', 'all', [{ ...asset, url: asset.url + 'changed' }]));
     assert.equal(h.doc.querySelector<HTMLButtonElement>('.app-picker-use')!.disabled, true);
@@ -198,21 +202,22 @@ test('character mode keeps immediate toggles and capacity, with no staged Use or
 });
 
 test('audio source picker mounts no native video, preserves payload and portal focus/Escape', async () => {
-  const h = await harness();
+  const h = await harness(); const session=await mockBrowserSession('alice');const previousFetch=globalThis.fetch;let proofs=0;
+  globalThis.fetch=async(input,init)=>{const url=String(input);if(url.includes('/recent-outputs'))return new Response(JSON.stringify({ok:true,outputs:[],hasMore:false}));if(url.includes('/selection/validate-job-video')){proofs++;assert.deepEqual(JSON.parse(String(init?.body)),{jobId:'job1',originalUrl:video.url});return new Response(JSON.stringify({ok:true}));}throw Error('Unexpected '+url);};
   const video = { jobId: 'job1', url: 'https://private.example/original.mp4?sig=Exact', thumbUrl: 'https://private.example/poster.jpg?sig=Thumb', label: 'Clip', createdAt: new Date().toISOString(), hasAudio: true, durationSec: 5, aspectRatio: '16:9' };
   const copy = { picker: { title: 'Video source', description: 'Choose a video', close: 'Close', empty: 'Empty', audioBadge: 'Audio' }, source: { durationPending: 'Pending' } } as AudioWorkspaceCopy;
   let selected: unknown; let closed = 0;
   try {
     h.doc.getElementById('opener')!.focus();
-    await h.render(React.createElement(AudioGeneratedVideoPickerModal, { open: true, videos: [video], isLoading: false, error: null, locale: 'en', copy, onClose: () => closed++, onSelect: value => { selected = value; } }));
+    await h.render(React.createElement(AudioGeneratedVideoPickerModal, { open: true, userId:'alice', videos: [video], isLoading: false, error: null, locale: 'en', copy, onClose: () => closed++, onSelect: value => { selected = value; } }));
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
     assert.equal(h.doc.querySelector('#root [role="dialog"]'), null); assert.ok(h.doc.querySelector('body > .app-library-picker-layer [role="dialog"]'));
     assert.equal(h.doc.querySelector('video'), null); assert.equal(h.doc.querySelector('img')!.getAttribute('loading'), 'lazy');
-    await h.click('.app-picker-card'); assert.equal(selected, video);
+    await h.click('.compact-media-check input'); assert.equal(selected, undefined); await h.click('.app-picker-use'); assert.equal(selected, video);assert.equal(proofs,1,'authenticated historical proof must run');
     await act(async () => h.doc.querySelector('[role="dialog"]')!.dispatchEvent(new h.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))); assert.equal(closed, 1);
     await h.render(React.createElement(AudioGeneratedVideoPickerModal, { open: false, videos: [], isLoading: false, error: null, locale: 'en', copy, onClose() {}, onSelect() {} }));
     assert.equal(h.doc.activeElement?.id, 'opener'); assert.equal(h.doc.body.style.overflow, '');
-  } finally { await h.close(); }
+  } finally { globalThis.fetch=previousFetch;await session.restore();await h.close(); }
 });
 
 
@@ -245,6 +250,7 @@ test('reference role navigation defaults to compatible images and preserves actu
 
 test('video library owner hides prior account immediately, reopens empty and rejects late account/source responses', async () => {
   const { useWorkspaceAssetLibrary } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary');
+  const session = await mockBrowserSession('A');
   const h = await harness(); const oldFetch = globalThis.fetch;
   const requests: { url: string; resolve: (response: Response) => void }[] = [];
   globalThis.fetch = async input => new Promise(resolve => requests.push({ url: String(input), resolve }));
@@ -261,6 +267,7 @@ test('video library owner hides prior account immediately, reopens empty and rej
     assert.equal(library.visibleAssetLibrary[0].url, asset.url);
     const oldScopeWrite = library.setAssetLibrary;
     await act(async () => { void library.fetchAssetLibrary(); }); assert.equal(requests.length, 2);
+    session.setUserId('B');
     await h.render(React.createElement(Owner, { userId: 'B' }));
     assert.deepEqual(library.visibleAssetLibrary, []); assert.equal(library.assetPickerTarget, null);
     await act(async () => library.setAssetPickerTarget(target)); assert.equal(requests.length, 3); assert.deepEqual(library.visibleAssetLibrary, []);
@@ -275,12 +282,13 @@ test('video library owner hides prior account immediately, reopens empty and rej
     assert.deepEqual(library.visibleAssetLibrary, []);
     await act(async () => requests[4].resolve(Response.json({ ok: true, assets: [{ ...asset, id: 'B-upload' }] })));
     assert.deepEqual(library.visibleAssetLibrary.map(item => item.id), ['B-upload']);
-    await h.render(React.createElement(Owner, { userId: null })); assert.deepEqual(library.visibleAssetLibrary, []); assert.equal(library.assetPickerTarget, null);
-  } finally { globalThis.fetch = oldFetch; await h.close(); }
+    session.setUserId(null); await h.render(React.createElement(Owner, { userId: null })); assert.deepEqual(library.visibleAssetLibrary, []); assert.equal(library.assetPickerTarget, null);
+  } finally { await session.restore(); globalThis.fetch = oldFetch; await h.close(); }
 });
 
 test('video reference Media picker appends cursor pages without replacing the first page', async () => {
   const { useWorkspaceAssetLibrary } = await import('../frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary');
+  const session = await mockBrowserSession('owner');
   const h = await harness();
   const oldFetch = globalThis.fetch;
   const requests: string[] = [];
@@ -309,6 +317,7 @@ test('video reference Media picker appends cursor pages without replacing the fi
     assert.deepEqual(library.visibleAssetLibrary.map(item => item.id), [asset.id, 'page-2']);
     assert.equal(library.assetLibraryHasMore, false);
   } finally {
+    await session.restore();
     globalThis.fetch = oldFetch;
     await h.close();
   }
@@ -358,7 +367,8 @@ test('audio source-video owner masks account data/loading/errors synchronously a
     observations.push({ account, ids: state.generatedVideos.map(clip => clip.jobId), error: state.generatedVideosError, loading: state.isGeneratedVideosLoading });
     return React.createElement('output', {}, JSON.stringify(state));
   }
-  const render = (account: string | null, open = true) => h.render(React.createElement(Owner, { account, open }));
+  const session = await mockBrowserSession('A');
+  const render = (account: string | null, open = true) => {session.setUserId(account);return h.render(React.createElement(Owner, { account, open }));};
   const reply = (index: number, id: string) => act(async () => requests[index].resolve(Response.json({ ok: true, jobs: [{ jobId: id, videoUrl: `https://private.example/${id}.mp4?sig=Exact`, thumbUrl: `https://private.example/${id}.jpg`, durationSec: 5, aspectRatio: '16:9', createdAt: '2026-09-08T00:00:00Z', hasAudio: true, engineLabel: 'Model' }] })));
   try {
     await render('A'); await reply(0, 'A-original');
@@ -383,5 +393,119 @@ test('audio source-video owner masks account data/loading/errors synchronously a
     assert.ok(observations.slice(errorSwitch).every(value => value.error === null && value.ids.length === 0 && value.loading));
     await render('A', false); await reply(6, 'closed-late'); await render('A'); assert.equal(requests.length, 8);
     await reply(7, 'A-reopened'); assert.deepEqual(state.generatedVideos.map(clip => clip.jobId), ['A-reopened']);
-  } finally { globalThis.fetch = oldFetch; await h.close(); }
+  } finally { await session.restore(); globalThis.fetch = oldFetch; await h.close(); }
 });
+
+
+test('ordered basket survives source/page/cache changes, reorders, and retains a refused confirmation', async () => {
+  const h = await harness(); const second = {...asset, id:'second', url:'https://media.invalid/second.png'};
+  const accepted: AssetBrowserAsset[][] = [];
+  const view = (assets: AssetBrowserAsset[], source: 'all'|'upload'='all', scope='owner/model/role') => React.createElement(AssetLibraryBrowser, {...props,assets,source,selection:{scope,onConfirmMany:(items:AssetBrowserAsset[])=>{accepted.push(items);return 'Live budget changed';}}});
+  try {
+    await h.render(view([asset,second])); await h.click('.compact-media-check input');
+    await act(async()=>h.doc.querySelectorAll<HTMLInputElement>('.compact-media-check input')[1].click());
+    await h.render(view([], 'upload'));
+    assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,2);
+    await h.click('[data-basket-move="up"]');
+    await h.click('.app-picker-use'); assert.deepEqual(accepted,[[second,asset]]);
+    assert.match(h.doc.querySelector('[role=alert]')!.textContent!,/Live budget/);
+    assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,2);
+    await h.render(view([asset], 'all', 'owner/model2/role'));
+    assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,0);
+  } finally {await h.close();}
+});
+
+for(const change of ['model','role','account','reopen'] as const)test(`late targeted validation cannot accept a retired ${change} intent, including ABA`,async()=>{
+ const session=await mockBrowserSession('A'),h=await harness(),oldFetch=globalThis.fetch;let finish!:(x:Response)=>void,calls=0;
+ globalThis.fetch=async()=>new Promise(resolve=>finish=resolve);
+ const view=(scope='model-A:role-A',owner='A')=>React.createElement(AssetLibraryBrowser,{...props,selection:{scope,ownerId:owner,onConfirmMany:()=>{calls++;}}});
+ try{
+  await h.render(view());await h.click('.compact-media-check input');await h.click('.app-picker-use');assert.equal(calls,0);
+  if(change==='reopen')await h.render(React.createElement('div'));else await h.render(view(change==='model'?'model-B:role-A':change==='role'?'model-A:role-B':'model-A:role-A',change==='account'?'B':'A'));
+  await h.render(view());
+  await act(async()=>finish(Response.json({ok:true,results:[{reference:{type:'legacy',assetId:asset.id,kind:'image'}}]})));
+  assert.equal(calls,0);assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,0);
+ }finally{globalThis.fetch=oldFetch;await h.close();await session.restore();}
+});
+
+test('search-hidden Trash choice stays recoverable, Restore changes only organization, and Preview returns to the same host and basket',async()=>{
+ const session=await mockBrowserSession('A'),h=await harness(),oldFetch=globalThis.fetch;let trashed=true,calls=0;const seen:any[]=[];
+ const state=()=>({key:'lo_item',favorite:false,trashedAt:trashed?'2026-11-09T00:00:00Z':null,collectionIds:[]});
+ globalThis.fetch=async(url,init)=>{const body=init?.body?JSON.parse(String(init.body)):{};seen.push({url:String(url),body});if(String(url).endsWith('/selection/validate'))return Response.json({ok:true,results:[{reference:body.candidates[0].reference,state:state(),...trashed?{error:'SOURCE_TRASHED'}:{}}]});if(String(url).endsWith('/organization')){trashed=false;return Response.json({ok:true,succeededCount:1,failedCount:0,results:[{status:'succeeded',state:state()}]});}return Response.json({ok:true,collections:[]});};
+ const view=(assets=[asset])=>React.createElement('section',{'data-host':'stable'},React.createElement(AssetLibraryBrowser,{...props,assets,selection:{scope:'model:append',ownerId:'A',onConfirmMany:items=>{calls++;assert.equal(items[0].url,asset.url);}}}));
+ try{
+  await h.render(view());const host=h.doc.querySelector('[data-host]');await h.click('.compact-media-check input');await h.click('.compact-media-preview');assert.equal(h.doc.querySelector('[data-host]'),host);assert.equal(h.doc.querySelectorAll('[role=dialog]').length,0);
+  const back=[...h.doc.querySelectorAll('button')].find(b=>b.textContent==='Back')!;await act(async()=>back.click());assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,1);
+  await h.render(view([]));await h.click('.app-picker-use');assert.equal(calls,0);assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,1);assert.match(h.doc.body.textContent!,/In Trash/);
+  const restore=[...h.doc.querySelectorAll('button')].find(b=>b.textContent==='Restore')!;await act(async()=>restore.click());assert.equal(calls,0);
+  await h.click('.app-picker-use');assert.equal(calls,1);assert.equal(seen.filter(x=>x.url.endsWith('/organization')).length,1);assert.equal(seen[0].body.candidates[0].originalUrl,asset.url);
+ }finally{globalThis.fetch=oldFetch;await h.close();await session.restore();}
+});
+
+test('one dialog retains its real import queue after close/reopen and stages successful results only on Choose',async()=>{
+ const {LibraryPickerDialog}=await import('../frontend/components/library/LibraryPickerDialog.client');
+ const session=await mockBrowserSession('A'),h=await harness(),oldFetch=globalThis.fetch;
+ const uploaded={id:'internal',assetId:'ma_'+'a'.repeat(32),url:'https://example.invalid/import.png',kind:'image'};let finish!:(x:Response)=>void,uploads=0,accepted=0;
+ globalThis.fetch=async(url,init)=>{if(String(url).includes('/uploads/')){uploads++;return new Promise(done=>finish=done);}if(String(url).endsWith('/organization'))return Response.json({ok:true,succeededCount:1,failedCount:0});return Response.json({ok:true,results:JSON.parse(String(init?.body)).candidates.map((c:any)=>({reference:c.reference}))});};
+ const view=(open:boolean)=>React.createElement(LibraryPickerDialog,{...props,assets:[],open,userId:'A',intent:'model:references',selection:{onConfirm:()=>{accepted++;}}});
+ try{
+ await h.render(view(true));const input=h.doc.querySelector<HTMLInputElement>('input[type=file]')!;Object.defineProperty(input,'files',{configurable:true,value:[new h.dom.window.File(['png'],'source.png',{type:'image/png'})]});await act(async()=>input.dispatchEvent(new h.dom.window.Event('change',{bubbles:true})));
+ await h.click('.app-library-import button');assert.equal(uploads,1);await h.render(view(false));assert.equal(h.doc.querySelector('[role=dialog]'),null);
+ await act(async()=>finish(Response.json({ok:true,asset:uploaded})));assert.equal(accepted,0);
+ await h.render(view(true));assert.equal(h.doc.querySelectorAll('[role=dialog]').length,1);assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,0);
+ const queue=[...h.doc.querySelectorAll('button')].find(b=>b.textContent?.startsWith('1 ·'))!;await act(async()=>queue.click());
+ const choose=[...h.doc.querySelectorAll('button')].find(b=>b.textContent==='Choose · source.png')!;assert.ok(choose);await act(async()=>choose.click());assert.equal(accepted,0);await h.click('.app-picker-use');assert.equal(accepted,1);assert.equal(uploads,1);
+ }finally{globalThis.fetch=oldFetch;await h.close();await session.restore();}
+});
+
+test('authenticated Audio picker validates persisted outputs and never falls back around Trash or an exact-source mismatch',async()=>{
+ const h=await harness(),session=await mockBrowserSession('alice'),previousFetch=globalThis.fetch;
+ const video={jobId:'persisted-job',url:'https://owned.test/original.mp4',thumbUrl:null,label:'Persisted',createdAt:new Date().toISOString(),hasAudio:true,durationSec:5,aspectRatio:'16:9'};
+ const copy={picker:{title:'Video source',description:'Choose',close:'Close',empty:'Empty',audioBadge:'Audio'},source:{durationPending:'Pending'}} as AudioWorkspaceCopy;
+ let mode='valid',selected:unknown,validations=0,historical=0;
+ globalThis.fetch=async(input,init)=>{const url=String(input);if(url.includes('/recent-outputs'))return new Response(JSON.stringify({ok:true,hasMore:false,outputs:[{id:'actual-output',jobId:video.jobId,url:mode==='replaced'?'https://owned.test/new.mp4':video.url,status:'ready'}]}));if(url.includes('/selection/validate-job-video')){historical++;throw Error('must never fall back');}if(url.includes('/selection/validate')){validations++;const {candidates}=JSON.parse(String(init?.body));assert.deepEqual(candidates,[{reference:{type:'job-output',jobId:video.jobId,outputId:'actual-output',kind:'video'},originalUrl:video.url}]);return new Response(JSON.stringify({ok:true,results:[{reference:candidates[0].reference,...mode==='trash'?{error:'SOURCE_TRASHED',state:{key:'group',favorite:false,collectionIds:[],trashedAt:'2026-11-09'}}:{}}]}));}throw Error(url);};
+ const view=(open:boolean)=>React.createElement(AudioGeneratedVideoPickerModal,{open,userId:'alice',videos:[video],isLoading:false,error:null,locale:'en',copy,onClose(){},onSelect(value){selected=value;}});
+ try{for(mode of ['valid','trash','replaced']){selected=undefined;await h.render(view(true));await h.click('.compact-media-check input');await h.click('.app-picker-use');assert.equal(selected,mode==='valid'?video:undefined);if(mode!=='valid')assert.ok(h.doc.querySelector('[role=alert]'));await h.render(view(false));}assert.equal(validations,2);assert.equal(historical,0);}
+ finally{globalThis.fetch=previousFetch;await session.restore();await h.close();}
+});
+
+for (const mode of ['preview', 'import'] as const) {
+  test(`existing modal moves focus into inline ${mode} and restores the initiating control`, async () => {
+    const { createLibraryImportQueue } = await import('../frontend/lib/library-import-queue');
+    const session = await mockBrowserSession('A'), h = await harness(), oldFetch = globalThis.fetch;
+    const queue = createLibraryImportQueue({ userId: 'A' });
+    globalThis.fetch = async (url) => String(url).includes('seedance-workflow')
+      ? Response.json(null, { status: 404 }) : Response.json({ ok: true, items: [], nextCursor: null, hasMore: false });
+    try {
+      await h.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } }, React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
+        React.createElement(AssetLibraryModal, { fieldLabel: 'References', ownerId: 'A', assetType: 'image',
+          assets: [asset], isLoading: false, error: null, onClose() {}, onSelect() {}, source: 'all', onSourceChange() {},
+          onRefresh() {}, onDelete() {}, deletingAssetId: null, importQueue: queue }) })));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
+      const host = h.doc.querySelector('[role=dialog]')!;
+      const trigger = mode === 'preview' ? h.doc.querySelector<HTMLButtonElement>('.compact-media-preview')!
+        : [...h.doc.querySelectorAll<HTMLButtonElement>('.app-picker-import button')].find(button => button.textContent === 'Import')!;
+      trigger.focus();
+      if (mode === 'preview') await act(async () => trigger.click());
+      else {
+        const input = h.doc.querySelector<HTMLInputElement>('.app-picker-import input[type=file]')!;
+        await act(async () => trigger.click());
+        Object.defineProperty(input, 'files', { configurable: true, value: [new h.dom.window.File(['image'], 'queued.png', { type: 'image/png' })] });
+        await act(async () => input.dispatchEvent(new h.dom.window.Event('change', { bubbles: true })));
+      }
+      const back = [...h.doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Back')!;
+      assert.ok(h.doc.activeElement === back, 'the visible Back control receives entry focus');
+      assert.ok(host.contains(h.doc.activeElement));
+      assert.equal(h.doc.querySelectorAll('[role=dialog]').length, 1);
+      if (mode === 'preview') {
+        const organize = [...h.doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Organize')!;
+        organize.focus(); await act(async () => organize.click());
+        assert.ok(h.doc.activeElement === organize, 'inline management retains its visible initiating control');
+        assert.equal(h.doc.querySelectorAll('[role=dialog]').length, 1);
+      }
+      back.focus(); await act(async () => back.click());
+      assert.ok(h.doc.activeElement === trigger, 'Back restores the exact initiating control');
+      assert.equal(h.doc.querySelector('[role=dialog]'), host);
+    } finally { queue.retire(); globalThis.fetch = oldFetch; await h.close(); await session.restore(); }
+  });
+}

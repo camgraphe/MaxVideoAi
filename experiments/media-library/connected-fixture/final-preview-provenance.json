@@ -1,0 +1,296 @@
+{
+  "previewSource": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+  "controllerSource": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+  "priorPreviewSource": "91c84bede7fb4e844d0f6b9d50b843f7d3648579",
+  "measuredSource": "9df0cb33f35f5bdb8f72e043c79455fc542f25e3",
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0,
+    "node": "v22.23.4",
+    "mode": "production",
+    "startAfterBuild": true,
+    "gates": "normal prebuild/lint/types/postbuild",
+    "source": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+    "configUnchanged": true
+  },
+  "frontendGitTree": "2ff6db9e5e788e40cc42074beb4705a8a2c2d0c7",
+  "seedSha256": "d6daf2adeb08092e308b27463b2c8c4c0f1ff9c129693cfe93f294064350fad8",
+  "jobsComplementInputSha256": "8e07c99e1d65221367adef7f152273088da1d13a08b869b45b510288e99b0dc0",
+  "jobs": 12,
+  "sourceLockSha256": "08ef27033df81e4771591c6ff42d1837b4cf9347b9f9553d2a333f20e66039d1",
+  "installedLockSha256": "08ef27033df81e4771591c6ff42d1837b4cf9347b9f9553d2a333f20e66039d1",
+  "harnessHashes": {
+    "runtime.ts": "846dd18e29524b2018b4e744efa60237966fb7e605b38818d2ede60739099942",
+    "seed.ts": "d64dde1dea08992fea4a86b605a51fb038e84b367f6667bed5e3251e970893e6",
+    "s3-service.ts": "d0feee214b715a07890cdec49e7854a73541ee82dece3d736422df6264a83494",
+    "s3-signature.ts": "2afc8c14601bbb8ba5db0a5455fe14fa0226df3f9c56c529afb63ee2cf9103d9",
+    "bootstrap-worker.ts": "b2d86a2c74165dcb63bd2affbf10be82fcfc27a49ce0efa9ee1692f9a7a53103",
+    "job-fixture.ts": "2ca8521b3d44d81f3ef76803eefdbd0cbcc4f360121c80fbecb4c544f80e0bbd",
+    "optimize-snapshot.ts": "351f42ead014733fcbe69bc04844c3956dd4f366c13e8ac870d147d0d07a95c9",
+    "verify-storage.ts": "c162f2726ca5c9c4bac2fda83a29db56bc773c29a11de3c345459673fc247c21",
+    "verify-connected.ts": "b248ebc72c5e8f78e83c9e98600fa9ccfaf16238912b9cf4bc340fddf1fbd1c1",
+    "verify-readonly.ts": "0fe8c8a4bcb0b8228585624f641dffe8b9ca3ca60a7001fec3a1d00d3ea6ae8b"
+  },
+  "postgresVersionNumber": 170006,
+  "unchangedGitObjectsToMeasuredSource": {
+    "frontend/components/library/ProgressiveMediaReader.client.tsx": "65f43dfddd2cd2dad6c62a00169676c5b2c1a2ac",
+    "frontend/hooks/useLibraryMediaAccess.ts": "71520309bde0685562e8b0f357eee9f38b5625fc",
+    "frontend/hooks/useLibrarySourceAccess.ts": "5317b4db25b3b1598f9185494d50feffb1f7905d",
+    "frontend/lib/library-media-access.ts": "d2bd35fa40ef3ff0f070b6392e1684544f2ae902",
+    "frontend/server/media-library/browse.ts": "9918194a5dbff38e64c6c0e6b198b2ca3c891649",
+    "frontend/server/media-library/read-access.ts": "2d77bd9dca44d5105ac2b3b2907de4ef4df6233c",
+    "frontend/server/media-library/exact-read-access.ts": "bde3013c8d38faf0615792aa47f4c4c8edae73ea",
+    "pnpm-lock.yaml": "9a369ae20c211bad7ddcfb0df814fa0717d2778d",
+    "frontend/package.json": "b5fdb6bf0dc35c8040edc2455e1f76d7a6c34682"
+  },
+  "changedProductPathsFromMeasuredSource": [
+    "frontend/app/(core)/(workspace)/app/audio/_components/audio-generated-video-picker.tsx",
+    "frontend/app/(core)/(workspace)/app/audio/_hooks/useAudioGeneratedVideos.ts",
+    "frontend/app/(core)/(workspace)/app/audio/_lib/audio-workspace-types.ts",
+    "frontend/app/(core)/(workspace)/app/studio/conversation/[projectId]/_components/ImageReferenceLibrary.client.tsx",
+    "frontend/app/api/media-library/generated-videos/route.ts",
+    "frontend/components/library/AssetLibraryBrowser.tsx",
+    "frontend/components/library/ReferenceLibraryPicker.client.tsx",
+    "frontend/lib/generated-video-candidates.ts",
+    "frontend/lib/library-picker-validation.ts",
+    "frontend/server/media-library/generated-video-candidate-sql.ts",
+    "frontend/server/media-library/generated-video-candidates.ts",
+    "frontend/server/media-library/historical-job-video-validation.ts",
+    "frontend/server/media-library/visibility-sql.ts",
+    "frontend/src/components/tools/creator/SubtitleDocumentEditor.tsx",
+    "frontend/src/components/tools/upscale/_components/UpscaleLibraryModal.tsx",
+    "frontend/src/components/tools/upscale/_hooks/useUpscaleLibraryAssets.ts",
+    "frontend/src/server/generations/agent-generation-policy.ts",
+    "frontend/src/server/generations/recent-generations.ts"
+  ],
+  "postbuildGeneratedVideoReceipt": {
+    "source": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+    "controllerSource": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+    "readOnly": true,
+    "bootstrap": 307,
+    "results": [
+      {
+        "surface": "video",
+        "status": 200,
+        "anonymousStatus": 401,
+        "hasMore": false,
+        "candidates": [
+          {
+            "sourceOutputId": "fixture-098",
+            "jobId": "fixture-job-0",
+            "durationSec": 5,
+            "aspectRatio": "16:9",
+            "width": 960,
+            "height": 540,
+            "hasAudio": null,
+            "ref": {
+              "type": "job-output",
+              "jobId": "fixture-job-0",
+              "outputId": "fixture-098",
+              "kind": "video"
+            }
+          },
+          {
+            "sourceOutputId": "fixture-097",
+            "jobId": "fixture-job-0",
+            "durationSec": 5,
+            "aspectRatio": "16:9",
+            "width": 960,
+            "height": 540,
+            "hasAudio": null,
+            "ref": {
+              "type": "job-output",
+              "jobId": "fixture-job-0",
+              "outputId": "fixture-097",
+              "kind": "video"
+            }
+          },
+          {
+            "sourceOutputId": "fixture-096",
+            "jobId": "fixture-job-0",
+            "durationSec": 5,
+            "aspectRatio": "16:9",
+            "width": 960,
+            "height": 540,
+            "hasAudio": null,
+            "ref": {
+              "type": "job-output",
+              "jobId": "fixture-job-0",
+              "outputId": "fixture-096",
+              "kind": "video"
+            }
+          },
+          {
+            "sourceOutputId": "fixture-118",
+            "jobId": "fixture-job-7",
+            "durationSec": 5,
+            "aspectRatio": "9:16",
+            "width": 540,
+            "height": 960,
+            "hasAudio": null,
+            "ref": {
+              "type": "job-output",
+              "jobId": "fixture-job-7",
+              "outputId": "fixture-118",
+              "kind": "video"
+            }
+          },
+          {
+            "sourceOutputId": "fixture-117",
+            "jobId": "fixture-job-7",
+            "durationSec": 5,
+            "aspectRatio": "16:9",
+            "width": 960,
+            "height": 540,
+            "hasAudio": null,
+            "ref": {
+              "type": "job-output",
+              "jobId": "fixture-job-7",
+              "outputId": "fixture-117",
+              "kind": "video"
+            }
+          }
+        ]
+      },
+      {
+        "surface": "upscale",
+        "status": 200,
+        "anonymousStatus": 401,
+        "hasMore": false,
+        "candidates": []
+      }
+    ],
+    "pagination": {
+      "first": 1,
+      "rest": 4,
+      "noDuplicate": true
+    },
+    "limits": [
+      "Existing deterministic seed; no synthetic14-second row was added. No Trash/restore mutations performed by this verifier."
+    ]
+  },
+  "finalBroadValidationReportedByRoot": {
+    "source": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+    "fast": {
+      "pass": 11027,
+      "skip": 1,
+      "fail": 0
+    },
+    "integration": {
+      "pass": 1792,
+      "skip": 3,
+      "fail": 0
+    },
+    "studio": {
+      "pass": 4,
+      "skip": 0,
+      "fail": 0
+    }
+  },
+  "qualification": [
+    "Fresh complete source/controller-aligned runtime with unchanged deterministic seed135 and jobs12; prior import SQL state is not reused.",
+    "240 paired comparison records remain attributed to9df. Later source includes Subtitle observer recovery, generated-video identity/Trash/facts projection and Studio hidden reader retirement; the whole Library and frontend trees are not identical.",
+    "Only the specifically listed unchanged owners have Git object equality asserted. Final source has independent normal build and bounded HTTP/SQL checks; no repeated paired performance claim.",
+    "Root completed targeted native Trash/picker/restore, source playback, private012 and desktop/mobile geometry on87dd; retained-hook revision behavior remains DOM coverage and no paired measurements were repeated."
+  ],
+  "finalNativeObservedByRoot": {
+    "source": "87dd37bc4ed423b2421329fdb281c5d99234ec98",
+    "localRawEvidenceBasename": "iab-functional-final-87dd.json",
+    "trashRestore": {
+      "targetOutput": "fixture-096",
+      "trashSuccess": 1,
+      "trashFailure": 0,
+      "pickersAfterTrash": {
+        "audio": 4,
+        "upscaleVisibleGeneratedPath": 4
+      },
+      "targetAbsentAfterTrash": true,
+      "sameUrlSiblingsRetained": [
+        "fixture-097",
+        "fixture-098"
+      ],
+      "restoreSuccess": 1,
+      "restoreFailure": 0,
+      "pickersAfterRestore": {
+        "audio": 5,
+        "upscaleVisibleGeneratedPath": 5
+      },
+      "targetReturnsAfterRestore": true,
+      "navigationQualification": "Full route navigation and reopen; not a retained-hook native revision test."
+    },
+    "sourcePlayback": {
+      "sourceOutputId": "fixture-096",
+      "durationSec": 5,
+      "width": 960,
+      "height": 540,
+      "readyState": 4,
+      "error": null,
+      "audioTypedConfirmation": true,
+      "upscaleTypedConfirmation": true,
+      "nativeSpacePlay": true,
+      "inlineBackReleasesReadersAndRestoresOpener": true,
+      "transport": "Narrowly scoped public synthetic IAB Image/Media fulfillment",
+      "publicResource": true,
+      "requiresGrant": false,
+      "upscaleSpecificEndpointQualification": "Empty in this seed because no authored Upscale job; actual surface/fallback cases have separate PostgreSQL tests."
+    },
+    "privateImage012": {
+      "transport": "Actual private S3 HTTP",
+      "role": "display-v1 WebP",
+      "decodedWidth": 1024,
+      "decodedHeight": 1536,
+      "closeLeavesNoReaders": true,
+      "closeRestoresExactOpener": true
+    },
+    "desktop": {
+      "viewport": [
+        1440,
+        900
+      ],
+      "dpr": 1,
+      "rows": 30,
+      "gridClientWidth": 1090,
+      "gridScrollWidth": 1090,
+      "gridHeight": 526,
+      "screenshotBasename": "23-final-87dd-desktop.png"
+    },
+    "mobile": {
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1,
+      "decodedImages": 12,
+      "gridTop": 351,
+      "gridEnd": 717,
+      "gridHeight": 366,
+      "gridClientWidth": 348,
+      "gridScrollWidth": 348,
+      "documentWidth": 390,
+      "audioVideoReaders": 0,
+      "screenshotBasename": "24-final-87dd-mobile.png"
+    },
+    "captureQualification": "Acceptance PNGs use explicit full-viewport CDP capture. Earlier default23a and clipped810px captures remain raw diagnostics, excluded from acceptance.",
+    "deliveredPreview": {
+      "view": "Saved",
+      "savedResults": 111,
+      "hidden": true,
+      "ordinaryViewport": [
+        1280,
+        720
+      ],
+      "dpr": 2,
+      "temporaryViewportCleared": true,
+      "cacheEnabled": true,
+      "throughput": "unlimited",
+      "fetchPatterns": [],
+      "chromeClaimed": false
+    },
+    "limits": [
+      "No repeated paired timing/CWV claim.",
+      "No native Creator/Studio release-gate bypass.",
+      "No paid generation or production action.",
+      "Synthetic public Recent resources still require the operator fulfillment pump; not a product outage claim."
+    ]
+  }
+}

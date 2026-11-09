@@ -35,7 +35,7 @@ export const RECENT_GENERATIONS_SELECT = `id, job_id, user_id, updated_at, surfa
 const MAX_AGENT_RECENT_LIMIT = 50;
 const MAX_WEB_RECENT_LIMIT = 100;
 const MAX_CURSOR_CHARS = 256;
-const ECMASCRIPT_TRIM_CHARACTERS_SQL = `CONCAT(
+export const ECMASCRIPT_TRIM_CHARACTERS_SQL = `CONCAT(
   E'\\t\\n\\f\\r ',
   CHR(11), CHR(160), CHR(5760),
   CHR(8192), CHR(8193), CHR(8194), CHR(8195), CHR(8196), CHR(8197),

@@ -1,0 +1,104 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import test from 'node:test';
+import { build } from 'esbuild';
+import { startDisposablePostgres } from './helpers/disposable-postgres';
+const requireFrontend = createRequire(resolve('frontend/package.json'));
+test('actual browse/selection routes validate strictly, authenticate before SQL and preserve read-only originals', { timeout: 60000 }, async (t) => {
+    assert.ok(existsSync('frontend/app/api/media-library/browse/route.ts'), 'browse route must exist');
+    const pg = await startDisposablePostgres('browse-routes'), folder = mkdtempSync(join(tmpdir(), 'browse-routes-'));
+    const previous = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = pg.databaseUrl;
+    const fixture = { userId: 'alice' as string | null };
+    (globalThis as any).__browseRoutes = fixture;
+    let close: undefined | (() => Promise<void>);
+    t.after(async () => { await close?.(); process.env.DATABASE_URL = previous; delete (globalThis as any).__browseRoutes; rmSync(folder, { recursive: true, force: true }); await pg.cleanup(); });
+    const outfile = join(folder, 'routes.cjs');
+    await build({ stdin: { loader: 'ts', resolveDir: process.cwd(), contents: `export * as browse from './frontend/app/api/media-library/browse/route';export * as selection from './frontend/app/api/media-library/selection/route';export * as organization from './frontend/app/api/media-library/organization/route';export{getDb}from'@/lib/db';export{ensureAssetSchema,ensureMediaLibrarySchema,ensureMediaLibraryOrganizationSchema}from'@/lib/schema';` }, outfile, bundle: true, platform: 'node', format: 'cjs', define: { 'import.meta.url': JSON.stringify('file://' + resolve('frontend/server/upload-thumbnails.ts')) }, packages: 'external', tsconfig: 'frontend/tsconfig.json', plugins: [{ name: 'auth', setup(b) { b.onResolve({ filter: /^@\/lib\/supabase-ssr$/ }, () => ({ path: 'auth', namespace: 'fixture' })); b.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: 'export const createSupabaseServerClient=()=>{throw new Error("unexpected auth access")};export const getRouteAuthContext=async()=>({userId:globalThis.__browseRoutes.userId});', loader: 'ts' })); b.onResolve({ filter: /^(next\/server|pg)$/ }, a => ({ path: requireFrontend.resolve(a.path), external: true })); } }] });
+    const routes = requireFrontend(outfile);
+    close = () => routes.getDb().end();
+    const { NextRequest } = requireFrontend('next/server');
+    const req = (path: string, body?: unknown) => new NextRequest('http://localhost/api/media-library/' + path, { method: body === undefined ? 'GET' : 'POST', ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    fixture.userId = null;
+    delete process.env.DATABASE_URL;
+    assert.equal((await routes.browse.GET(req('browse'))).status, 401);
+    assert.equal((await routes.selection.POST(req('selection', {}))).status, 401);
+    fixture.userId = 'alice';
+    process.env.DATABASE_URL = pg.databaseUrl;
+    await routes.ensureAssetSchema();
+    await routes.ensureMediaLibrarySchema();
+    await routes.ensureMediaLibraryOrganizationSchema();
+    await pg.pool.query(`CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,hidden boolean,status text DEFAULT 'completed',prompt text,surface text,settings_snapshot jsonb,duration_sec integer,aspect_ratio text,created_at timestamptz DEFAULT now());
+    INSERT INTO media_assets(id,public_id,user_id,kind,url,source,metadata) VALUES('a','ma_11111111111111111111111111111111','alice','image','https://test/original','upload','{"originalName":"Photo.png"}');`);
+    for (const query of ['kind=bogus', 'kind=image&kind=video', 'favorite=no', 'trash=1', 'jobId=', 'collectionId=', 'cursor=bad', 'limit=oops', 'unrecognized=x'])
+        assert.equal((await routes.browse.GET(req('browse?' + query))).status, 400, query);
+    assert.equal((await routes.selection.POST(req('selection', { scope: { kind: ['image'] } }))).status, 400);
+    const ro = new URL(pg.databaseUrl);
+    ro.searchParams.set('options', '-c default_transaction_read_only=on');
+    process.env.DATABASE_URL = ro.toString();
+    const response = await routes.browse.GET(req('browse'));
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.totalCount, 1);
+    assert.equal(body.assets[0].url, 'https://test/original');
+    assert.equal(body.assets[0].assetId, 'ma_11111111111111111111111111111111');
+    assert.equal(body.assets[0].name, 'Photo.png');
+    assert.equal(body.assets[0].libraryRef.type, 'asset');
+    assert.equal(body.assets[0].organization.favorite, false);
+    assert.match(response.headers.get('Cache-Control'), /private/);
+    await pg.pool.query('ALTER TABLE library_organization RENAME TO missing_organization');
+    assert.equal((await routes.browse.GET(req('browse'))).status, 500);
+    await pg.pool.query('ALTER TABLE missing_organization RENAME TO library_organization');
+    await pg.pool.query(`INSERT INTO app_jobs(job_id,user_id,surface,hidden,prompt,settings_snapshot) VALUES
+    ('storyboard_parent','alice','storyboard',false,'A story','{}'),
+    ('storyboard_kling_first_frame_child','alice','storyboard',true,'frame','{"storyboard":{"parentJobId":"storyboard_parent"}}'),
+    ('external','alice','image',false,'external','{"origin":"external_fal_import"}');
+    INSERT INTO job_outputs(id,job_id,user_id,kind,url,metadata) VALUES
+    ('parent-output','storyboard_parent','alice','video','https://test/video','{}'),
+    ('first-frame','storyboard_kling_first_frame_child','alice','image','https://test/frame','{}'),
+    ('external-output','external','alice','image','https://test/external','{}');
+    INSERT INTO media_assets(id,public_id,user_id,kind,url,source,source_job_id,source_output_id,metadata) VALUES
+    ('saved-parent','ma_22222222222222222222222222222222','alice','video','https://test/copy','saved_job_output','storyboard_parent','parent-output','{"originUrl":"https://test/video"}');`);
+    const board = await routes.browse.GET(req('browse?view=review&surface=storyboard'));
+    assert.equal(board.status, 200);
+    const boardBody = await board.json();
+    assert.equal(boardBody.totalCount, 1);
+    assert.equal(boardBody.assets[0].isSaved, true);
+    assert.equal(boardBody.assets[0].savedAssetId, 'saved-parent');
+    assert.equal(boardBody.assets[0].klingFirstFrame.url, 'https://test/frame');
+    assert.equal(boardBody.assets[0].jobPrompt, undefined);
+    assert.equal((await (await routes.browse.GET(req('browse?view=review'))).json()).totalCount, 1);
+    assert.equal((await (await routes.browse.GET(req('browse?view=review&jobId=external'))).json()).totalCount, 1);
+    await pg.pool.query(`DELETE FROM media_assets WHERE id='saved-parent';DELETE FROM job_outputs;DELETE FROM app_jobs;`);
+    process.env.DATABASE_URL = pg.databaseUrl;
+    const created = await routes.selection.POST(req('selection', { scope: { view: 'all', kind: 'all', sort: 'recent' } }));
+    assert.equal(created.status, 201);
+    const snapshot = (await created.json()).snapshot;
+    const mutated = await routes.organization.POST(req('organization', { operation: 'trash', snapshotId: snapshot.id, excludedKeys: [] }));
+    assert.equal(mutated.status, 200);
+    const result = await mutated.json();
+    assert.deepEqual(result.succeededKeys, snapshot.keys);
+    assert.equal(result.results, undefined);
+    assert.equal((await (await routes.browse.GET(req('browse'))).json()).totalCount, 0);
+    assert.equal((await (await routes.browse.GET(req('browse?trash=true'))).json()).totalCount, 1);
+    await pg.pool.query(`CREATE FUNCTION snapshot_rollback() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'rollback'; END $$;
+      CREATE TRIGGER snapshot_rollback BEFORE UPDATE ON library_organization FOR EACH ROW EXECUTE FUNCTION snapshot_rollback()`);
+    const rollback = await routes.organization.POST(req('organization', { operation: 'favorite', snapshotId: snapshot.id }));
+    assert.equal(rollback.status, 500);
+    const rolledBack = await rollback.json();
+    assert.equal(rolledBack.succeededCount, 0);
+    assert.deepEqual(rolledBack.failed, [{ key: snapshot.keys[0], errorCode: 'TRANSACTION_FAILED' }]);
+    assert.equal((await pg.pool.query('SELECT favorite FROM library_organization')).rows[0].favorite, false);
+    await pg.pool.query('DROP TRIGGER snapshot_rollback ON library_organization');
+    const empty = await routes.selection.POST(req('selection', { scope: { view: 'all', kind: 'all', sort: 'recent' } }));
+    assert.equal(empty.status, 201);
+    const emptySnapshot = (await empty.json()).snapshot;
+    assert.equal(emptySnapshot.totalCount, 0);
+    assert.deepEqual(emptySnapshot.keys, []);
+    const emptyResult = await routes.organization.POST(req('organization', { operation: 'favorite', snapshotId: emptySnapshot.id }));
+    assert.equal(emptyResult.status, 200);
+    assert.equal((await emptyResult.json()).succeededCount, 0);
+});

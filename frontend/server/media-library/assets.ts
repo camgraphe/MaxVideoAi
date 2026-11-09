@@ -1,6 +1,8 @@
+import { parseImageDisplay } from '@/lib/image-display';
 import { readGeneratedVideoFacts } from '@/lib/generated-video-media-facts';
 import { resolveOwnedGeneratedVideo } from './generated-video-source';
 import { randomUUID } from 'crypto';
+import { persistLibraryAssetWithOrganization } from './organization-promotion';
 import { readMediaFacts } from '@/lib/media-identity';
 import { query } from '@/lib/db';
 import { ensureMediaLibrarySchema } from '@/lib/schema';
@@ -25,7 +27,7 @@ import {
   type MediaLibraryReadOptions,
 } from './asset-listing';
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
-import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
+import { resolveReusableImageDisplay, resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
 import type { MediaLibraryPage } from './pagination';
 
 export async function listLibraryAssets(params: {
@@ -137,7 +139,12 @@ export async function ensureReusableAsset(params: {
     sourceJobId: params.sourceJobId ?? null,
     sourceOutputId: params.sourceOutputId ?? null,
   });
-  const resolvedPreviewUrl = await resolveReusableAssetPreviewUrl({
+  const imageDisplay = params.kind === 'image' ? (params.sourceOutputId
+    ? await resolveReusableImageDisplay({ userId: params.userId, normalizedUrl, sourceJobId: params.sourceJobId, sourceOutputId: params.sourceOutputId })
+    : parseImageDisplay(suppliedMetadata.imageDisplay, normalizedUrl, params.previewUrl)) : undefined;
+  delete suppliedMetadata.imageDisplay;
+  if (imageDisplay) suppliedMetadata.imageDisplay = imageDisplay;
+  const resolvedPreviewUrl = imageDisplay?.url ?? await resolveReusableAssetPreviewUrl({
     userId: params.userId,
     kind: params.kind,
     normalizedUrl,
@@ -247,7 +254,7 @@ export async function ensureReusableAsset(params: {
     kind: params.kind,
     url: copied.url,
     thumbUrl: resolvedThumbUrl,
-    previewUrl: resolvedPreviewUrl,
+    previewUrl: imageDisplay && copied.url !== normalizedUrl && (!('sourceSha256' in copied) || copied.sourceSha256 !== imageDisplay.sourceSha256) ? null : resolvedPreviewUrl,
     mimeType: copied.mimeType,
     width: copied.width ?? mediaWidth,
     height: copied.height ?? mediaHeight,
@@ -265,12 +272,14 @@ export async function ensureReusableAsset(params: {
       previewUrl: resolvedPreviewUrl,
       durationSec,
       ...suppliedMetadata,
+      ...(imageDisplay ? { imageDisplay: copied.url === normalizedUrl ? imageDisplay
+        : ('sourceSha256' in copied && copied.sourceSha256 === imageDisplay.sourceSha256 ? { ...imageDisplay, sourceUrl: copied.url } : undefined) } : {}),
       ...(copied.mediaFacts ? { mediaFacts: copied.mediaFacts } : {}),
     },
   });
   insert.id = identity;
 
-  const rows = await query<DbMediaAssetRow>(
+  const rows = await persistLibraryAssetWithOrganization({ userId: params.userId, id: identity, urls: [normalizedUrl, insert.url], sourceJobId: insert.sourceJobId, sourceOutputId: insert.sourceOutputId }, executor => executor.query<DbMediaAssetRow>(
     `INSERT INTO media_assets (
        id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
        source_job_id, source_output_id, status, metadata
@@ -313,7 +322,7 @@ export async function ensureReusableAsset(params: {
       insert.status,
       JSON.stringify(insert.metadata),
     ]
-  );
+  ));
 
   await recordUserAsset({
     assetId: rows[0]?.id ?? randomUUID(),
@@ -377,6 +386,7 @@ export async function saveJobOutputToLibrary(params: {
     metadata: {
       ...(mediaFacts ? { mediaFacts } : {}),
       ...(typeof output.metadata.playbackVideoUrl === 'string' ? { playbackVideoUrl: output.metadata.playbackVideoUrl } : {}),
+      ...(output.metadata.imageDisplay ? { imageDisplay: output.metadata.imageDisplay } : {}),
       ...(output.metadata.lastFrame ? { lastFrame: output.metadata.lastFrame } : {}),
       ...(output.metadata.role === 'last_frame' ? { role: 'last_frame', sourceVideoUrl: output.metadata.sourceVideoUrl,
         sourceVideoOutputId: output.metadata.sourceVideoOutputId, sha256: output.metadata.sha256, sizeBytes: output.metadata.sizeBytes } : {}),

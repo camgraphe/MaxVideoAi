@@ -1,0 +1,30 @@
+{
+  "name": "maxvideoai-media-library-spike",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5188 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5188 --strictPort",
+    "test": "tsx --test src/*.test.ts"
+  },
+  "dependencies": {
+    "@uppy/core": "6.3.1",
+    "@uppy/react": "6.1.1",
+    "lucide-react": "0.553.0",
+    "react": "18.3.1",
+    "react-aria-components": "1.22.1",
+    "react-dom": "18.3.1",
+    "yet-another-react-lightbox": "3.33.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.6",
+    "@types/react": "18.3.27",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vite": "8.3.6"
+  }
+}

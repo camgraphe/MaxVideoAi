@@ -1,3 +1,4 @@
+import { parseStoredImageRenders, type ImageRenderEntry } from '@/lib/image-renders';
 import { readLastKnownUserId } from '@/lib/last-known';
 import { generationStage, normalizeGenerationObservation, type GenerationObservation } from '@/lib/generation-observation';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -31,6 +32,7 @@ export type JobStatusResult = {
   iterationIndex?: number | null;
   iterationCount?: number | null;
   renderIds?: string[] | null;
+  imageRenders?: ImageRenderEntry[];
   renderThumbUrls?: string[] | null;
   heroRenderId?: string | null;
   localKey?: string | null;
@@ -160,6 +162,7 @@ async function fetchJobStatus(jobId: string, isCurrent: () => boolean): Promise<
     iterationCount: payload.iterationCount ?? null,
     renderIds: renderIds ?? null,
     renderThumbUrls: renderThumbUrls ?? null,
+    imageRenders: payload.imageRenders === undefined ? undefined : parseStoredImageRenders(payload.imageRenders).entries,
     heroRenderId: payload.heroRenderId ?? null,
     localKey: payload.localKey ?? null,
     message: normalizedMessage ?? null,

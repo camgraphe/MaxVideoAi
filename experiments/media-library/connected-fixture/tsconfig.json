@@ -1,0 +1,17 @@
+{
+  "extends": "../../../frontend/tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "typeRoots": [
+      "../../../frontend/node_modules/@types"
+    ],
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": [
+    "./*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

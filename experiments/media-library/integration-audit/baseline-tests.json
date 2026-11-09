@@ -1,0 +1,71 @@
+{
+  "auditedAt": "2026-11-09T00:18:53.392780+00:00",
+  "auditedCommit": "5135e4e2b7ad04261d26b3f7669eb2ec8aded1db",
+  "timezone": "Europe/Madrid",
+  "scope": "Existing product owners tested locally with controlled network/auth and disposable PG17; no live product writes or paid generation",
+  "lanes": [
+    {
+      "name": "client_and_contracts",
+      "exitCode": 0,
+      "tests": 84,
+      "pass": 84,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "files": [
+        "tests/library-performance-contract.test.ts",
+        "tests/media-library-contract.test.ts",
+        "tests/library-owner-cache.test.ts",
+        "tests/library-private-read-access.test.ts",
+        "tests/library-private-read-dom.test.ts",
+        "tests/reference-picker-dom.test.ts",
+        "tests/library-stored-thumbnail-dom.test.ts",
+        "tests/media-action-panel-dom.test.ts",
+        "tests/media-destination-actions-dom.test.ts",
+        "tests/media-handoff-lifecycle-dom.test.ts",
+        "tests/media-tool-handoff.test.ts",
+        "tests/media-library-measured-facts.test.ts",
+        "tests/image-gallery-selection-dom.test.ts",
+        "tests/gallery-reader-navigation-dom.test.ts"
+      ],
+      "rawEvidence": "app-baseline-contracts.tap",
+      "rawEvidenceAvailability": "Local investigation artifact; not published in this repository."
+    },
+    {
+      "name": "disposable_postgres",
+      "exitCode": 0,
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "files": [
+        "tests/media-library-pagination-postgres.test.ts",
+        "tests/library-read-routes-postgres.test.ts",
+        "tests/media-library-preview-ownership-postgres.test.ts"
+      ],
+      "rawEvidence": "app-baseline-postgres.tap",
+      "rawEvidenceAvailability": "Local investigation artifact; not published in this repository."
+    }
+  ],
+  "total": {
+    "tests": 100,
+    "pass": 100,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "diagnostic": {
+    "file": "probe-known-gaps.ts",
+    "exitCode": 2,
+    "satisfiedControls": 2,
+    "unsatisfiedTargetExpectations": 3,
+    "resultFile": "known-gaps-results.json"
+  },
+  "limits": [
+    "No live authenticated page tested in this phase",
+    "No performance or media transfer measurements",
+    "The earlier prototype browser checks are a distinct dataset",
+    "Additional 64-test agent run overlaps these lanes and is not added to the total"
+  ]
+}

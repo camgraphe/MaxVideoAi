@@ -37,17 +37,17 @@ test('library GETs read the migrated schema without DDL, seeds or repair writes'
     ('hidden-output','storyboard_hidden',$1,'image','https://example.invalid/hidden.png','ready','{}'),
     ('other-output','storyboard_B',$2,'image','https://example.invalid/other.png','ready','{}'),
     ('first-frame','storyboard_kling_first_frame_A',$1,'image','https://example.invalid/first.png','ready','{}')`,[owner,other]);
-  await pg.pool.query(`INSERT INTO media_assets(id,user_id,kind,url,source,source_output_id,status,metadata)
-    VALUES('saved-A',$1,'image','https://example.invalid/board.png','saved_job_output','board-output','ready','{}')`,[owner]);
+  await pg.pool.query(`INSERT INTO media_assets(id,user_id,kind,url,source,source_job_id,source_output_id,status,metadata)
+    VALUES('saved-A',$1,'image','https://example.invalid/board.png','saved_job_output','storyboard_A','board-output','ready','{}')`,[owner]);
   const dbPath=resolve('frontend/src/lib/db.ts');
   const outputsPath=resolve('frontend/server/media-library/job-outputs.ts');
   const outfile=join(folder,'routes.cjs');
-  await build({stdin:{loader:'ts',resolveDir:process.cwd(),contents:`export{GET as characters}from'./frontend/app/api/character-references/route';export{GET as recent}from'./frontend/app/api/media-library/recent-outputs/route';export{getDb}from'@/lib/db';`},outfile,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',
+  await build({stdin:{loader:'ts',resolveDir:process.cwd(),contents:`export{GET as characters}from'./frontend/app/api/character-references/route';export{GET as recent}from'./frontend/app/api/media-library/recent-outputs/route';export{GET as assets}from'./frontend/app/api/media-library/assets/route';export{GET as browse}from'./frontend/app/api/media-library/browse/route';export{GET as collections}from'./frontend/app/api/media-library/collections/route';export{getDb}from'@/lib/db';`},outfile,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',
     plugins:[{name:'library-read-boundaries',setup(b){
       const mocks:Record<string,string>={
-        '@/lib/supabase-ssr':`export const getRouteAuthContext=async()=>({userId:globalThis.__libraryReads.userId});`,
+        '@/lib/supabase-ssr':`export const getRouteAuthContext=async()=>({userId:globalThis.__libraryReads.userId});export const createSupabaseServerClient=()=>{throw Error('unexpected auth call')};`,
         '@/lib/db':`export * from ${JSON.stringify(dbPath)};import * as real from ${JSON.stringify(dbPath)};export async function query(sql,params){globalThis.__libraryReads.statements.push(sql);return real.query(sql,params)}`,
-        '@/server/media-library':`export{listRecentOutputPage,listStoryboardKlingFirstFrameOutputs}from ${JSON.stringify(outputsPath)};`,
+        '@/server/media-library':`export{listRecentOutputPage,listStoryboardKlingFirstFrameOutputs}from ${JSON.stringify(outputsPath)};export{listLibraryAssetPage,findLibraryAssetByOrigin}from ${JSON.stringify(resolve('frontend/server/media-library/asset-listing.ts'))};export const deleteLibraryAsset=()=>{throw Error('unexpected write')};`,
         './mcp-output-assets':`export async function promoteCompletedMcpJobOutputs(){throw Error('unexpected write in GET')}`,
       };
       b.onResolve({filter:/.*/},a=>a.path in mocks?{path:a.path,namespace:'fixture'}:/^(next\/server|pg)$/.test(a.path)?{path:requireFrontend.resolve(a.path),external:true}:undefined);
@@ -65,7 +65,7 @@ test('library GETs read the migrated schema without DDL, seeds or repair writes'
     assert.equal(response.status,200);const body=await response.json();
     assert.equal(body.characters.length,1);assert.equal(body.characters[0].jobId,'character-A');
     assert.equal(body.characters[0].thumbUrl,'https://example.invalid/character-thumb.png');
-    assert.equal(fixture.statements.length,1);assert.ok(fixture.statements.every(sql=>/^\s*SELECT\b/i.test(sql)));
+    assert.equal(fixture.statements.length,1);assert.ok(fixture.statements.every(sql=>/^\s*(?:SELECT|WITH)\b/i.test(sql)));
   });
   await t.test('cold storyboard outputs enrich the included first frame with two read-only SELECTs',async()=>{
     fixture.statements.length=0;
@@ -75,7 +75,7 @@ test('library GETs read the migrated schema without DDL, seeds or repair writes'
     assert.equal(body.outputs[0].isSaved,true);assert.equal(body.outputs[0].savedAssetId,'saved-A');
     assert.equal(body.outputs[0].klingFirstFrame.url,'https://example.invalid/first.png');
     assert.equal(body.outputs[0].jobPrompt,undefined);
-    assert.equal(fixture.statements.length,2);assert.ok(fixture.statements.every(sql=>/^\s*SELECT\b/i.test(sql)));
+    assert.equal(fixture.statements.length,2);assert.ok(fixture.statements.every(sql=>/^\s*(?:SELECT|WITH)\b/i.test(sql)));
   });
   await t.test('recent filters and exact foreign job lookups remain account-scoped',async()=>{
     fixture.statements.length=0;
@@ -85,8 +85,23 @@ test('library GETs read the migrated schema without DDL, seeds or repair writes'
     const filtered=await routes.recent(request('media-library/recent-outputs?surface=storyboard&q=board%20fixture'));
     assert.deepEqual((await filtered.json()).outputs.map((x:any)=>x.id),['board-output']);
   });
+  await t.test('actual asset exact/general, browse and collection GETs stay read-only and hide whole trashed identities',async()=>{
+    for(const path of ['media-library/assets','media-library/assets?kind=image&originUrl=https://example.invalid/board.png']){
+      const response=await routes.assets(request(path));assert.equal(response.status,200);const body=await response.json();assert.equal(body.assets.length,1);assert.equal(body.assets[0].url,'https://example.invalid/board.png');
+    }
+    assert.equal((await routes.collections(request('media-library/collections'))).status,200);
+    const browse=await routes.browse(request('media-library/browse'));assert.equal(browse.status,200);const body=await browse.json();assert.equal(body.totalCount,1);
+    await pg.pool.query('INSERT INTO library_organization(user_id,key,kind,trashed_at) VALUES($1,$2,$3,now())',[owner,body.assets[0].organization.key,'image']);
+    assert.equal((await (await routes.assets(request('media-library/assets?limit=1'))).json()).assets.length,0);
+    assert.equal((await (await routes.assets(request('media-library/assets?kind=image&originUrl=https://example.invalid/board.png'))).json()).assets.length,0);
+    assert.equal((await (await routes.recent(request('media-library/recent-outputs?limit=1'))).json()).outputs.length,0);
+    assert.equal((await (await routes.browse(request('media-library/browse'))).json()).totalCount,0);
+    await pg.pool.query('UPDATE library_organization SET trashed_at=NULL WHERE user_id=$1',[owner]);
+    assert.equal((await (await routes.browse(request('media-library/browse'))).json()).totalCount,1);
+  });
   await t.test('unauthenticated reads perform no SQL and never return private media',async()=>{
     fixture.userId=null;fixture.statements.length=0;
+    assert.equal((await routes.assets(request('media-library/assets'))).status,401);assert.equal((await routes.browse(request('media-library/browse'))).status,401);assert.equal((await routes.collections(request('media-library/collections'))).status,401);
     const recent=await routes.recent(request('media-library/recent-outputs'));assert.equal(recent.status,401);
     const characters=await routes.characters(request('character-references'));const data=await characters.json();assert.deepEqual(data.characters,[]);
     assert.ok([200,401].includes(characters.status));assert.equal(fixture.statements.length,0);fixture.userId=owner;
@@ -94,7 +109,7 @@ test('library GETs read the migrated schema without DDL, seeds or repair writes'
   await t.test('missing primary schemas fail honestly and are never recreated by a GET',async()=>{
     const error=console.error;console.error=()=>{};
     try{
-      for(const [table,handler,url] of [['app_jobs',routes.characters,'character-references'],['job_outputs',routes.recent,'media-library/recent-outputs']] as const){
+      for(const [table,handler,url] of [['app_jobs',routes.characters,'character-references'],['job_outputs',routes.recent,'media-library/recent-outputs'],['library_organization',routes.assets,'media-library/assets'],['library_organization',routes.browse,'media-library/browse'],['library_collections',routes.collections,'media-library/collections']] as const){
         await pg.pool.query(`ALTER TABLE ${table} RENAME TO fixture_unavailable`);
         try{const response=await handler(request(url));assert.equal(response.status,500);assert.equal((await response.json()).ok,false);}
         finally{await pg.pool.query(`ALTER TABLE fixture_unavailable RENAME TO ${table}`);}

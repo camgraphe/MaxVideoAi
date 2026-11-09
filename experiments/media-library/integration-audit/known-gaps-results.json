@@ -1,0 +1,72 @@
+{
+  "auditedAt": "2026-11-09T00:17:08.823Z",
+  "mode": "Actual client owners in JSDOM with controlled auth/network boundaries; no production request",
+  "observations": [
+    {
+      "name": "Saved-media projection preserves canonical refs and measured duration",
+      "desired": {
+        "id": "url:internal-row",
+        "assetId": "ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ref": {
+          "type": "asset",
+          "assetId": "ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "kind": "audio"
+        },
+        "durationSec": 12.5
+      },
+      "observed": {
+        "id": "url:internal-row",
+        "assetId": null,
+        "ref": null,
+        "durationSec": null
+      },
+      "satisfied": false
+    },
+    {
+      "name": "Creator picker accepts an internal row with a valid canonical asset reference",
+      "desired": {
+        "disabled": false
+      },
+      "observed": {
+        "disabled": true,
+        "internalId": "url:internal-row",
+        "assetId": "ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "satisfied": false
+    },
+    {
+      "name": "Control: Creator picker accepts a row whose internal id is already canonical",
+      "desired": {
+        "disabled": false
+      },
+      "observed": {
+        "disabled": false,
+        "internalId": "ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "assetId": "ma_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "satisfied": true
+    },
+    {
+      "name": "A refused recent-media insertion keeps the dialog open",
+      "desired": {
+        "closed": 0
+      },
+      "observed": {
+        "closed": 1,
+        "inserted": 1
+      },
+      "satisfied": false
+    },
+    {
+      "name": "Control: a successful recent-media insertion closes the dialog",
+      "desired": {
+        "closed": 1
+      },
+      "observed": {
+        "closed": 1,
+        "inserted": 1
+      },
+      "satisfied": true
+    }
+  ]
+}

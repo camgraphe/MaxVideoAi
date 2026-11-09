@@ -577,8 +577,12 @@ export async function createSignedUploadUrl(params: {
   expiresInSeconds?: number;
   cacheControl?: string;
   acl?: string | null;
+  checksumCRC32?: string;
 }): Promise<{ key: string; url: string; publicUrl: string; headers: Record<string, string> }> {
-  const client = getS3Client();
+  // No bytes exist at presign time. Default WHEN_SUPPORTED would hash an empty
+  // body. Scope WHEN_REQUIRED to this signing client; bodyful PUTs keep integrity.
+  getS3Client(); // Validate the same storage configuration as ordinary uploads.
+  const client = new S3Client({ region: S3_REGION, credentials: { accessKeyId: S3_ACCESS_KEY_ID, secretAccessKey: S3_SECRET_ACCESS_KEY }, requestChecksumCalculation: 'WHEN_REQUIRED' });
   const contentType = params.mime || 'application/octet-stream';
   const cacheControl = params.cacheControl ?? S3_CACHE_CONTROL;
   const key = buildObjectKey({
@@ -592,6 +596,7 @@ export async function createSignedUploadUrl(params: {
     Key: key,
     ContentType: contentType,
     CacheControl: cacheControl,
+    ...(params.checksumCRC32 ? { ChecksumCRC32: params.checksumCRC32 } : {}),
   });
 
   const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
@@ -606,12 +611,12 @@ export async function createSignedUploadUrl(params: {
     headers['x-amz-acl'] = acl;
   }
 
-  return {
+  try { return {
     key,
     url: await getSignedUrl(client, command, { expiresIn: params.expiresInSeconds ?? 600 }),
     publicUrl: buildPublicUrl(key),
     headers,
-  };
+  }; } finally { client.destroy(); }
 }
 
 export async function getStorageObjectMetadata(key: string, signal?: AbortSignal): Promise<{ size: number | null; mime: string | null }> {

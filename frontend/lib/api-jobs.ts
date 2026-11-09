@@ -271,6 +271,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
               if (detail.renderIds !== undefined) {
                 next.renderIds = detail.renderIds;
               }
+              if (detail.imageRenders !== undefined) next.imageRenders = detail.imageRenders;
               if (detail.renderThumbUrls !== undefined) {
                 next.renderThumbUrls = detail.renderThumbUrls;
               }
@@ -374,6 +375,7 @@ export function useInfiniteJobs(pageSize = 12, options?: { type?: JobFeedType; s
         if (job.readyVideoUrl == null && existing.readyVideoUrl != null) merged.readyVideoUrl = existing.readyVideoUrl;
         if (job.previewFrame == null && existing.previewFrame != null) merged.previewFrame = existing.previewFrame;
         if (job.renderIds == null && existing.renderIds != null) merged.renderIds = existing.renderIds;
+        if (job.imageRenders == null && existing.imageRenders != null) merged.imageRenders = existing.imageRenders;
         if (job.renderThumbUrls == null && existing.renderThumbUrls != null) {
           merged.renderThumbUrls = existing.renderThumbUrls;
         }

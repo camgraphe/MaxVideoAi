@@ -1,3 +1,4 @@
+import type { prepareImageRenditions } from '@/server/image-renditions';
 import { resolveUpscaleOutputFetchTimeoutMs } from '@/lib/tools-upscale';
 import { isStorageConfigured, recordUserAsset, uploadFileBuffer, uploadImageToStorage } from '@/server/storage';
 import type { UpscaleMediaType, UpscaleOutputFormat, UpscaleToolEngineId, UpscaleToolOutput } from '@/types/tools-upscale';
@@ -13,6 +14,7 @@ export async function persistUpscaleOutput(params: {
   engineLabel: string;
   outputFormat: UpscaleOutputFormat;
   durationSec?: number | null;
+  prepare?: typeof prepareImageRenditions;
 }): Promise<UpscaleToolOutput> {
   const { output, mediaType, userId, jobId, providerJobId, engineId, engineLabel, outputFormat, durationSec } = params;
   if (!isStorageConfigured()) throw new Error('MaxVideoAI storage is required for upscale outputs');
@@ -49,6 +51,7 @@ export async function persistUpscaleOutput(params: {
         prefix: 'upscale',
         fileName: `upscale-${engineId}.${mime.split('/')[1] || 'png'}`,
       });
+      const display = params.prepare ? await params.prepare({ data: buffer, imageUrl: upload.url, jobId, userId, index: 0 }).catch(() => ({})) : {};
       const assetId = await recordUserAsset({
         userId,
         url: upload.url,
@@ -58,6 +61,7 @@ export async function persistUpscaleOutput(params: {
         size: upload.size,
         source: 'upscale',
         metadata: {
+          ...display,
           originUrl: output.url,
           jobId,
           providerJobId: providerJobId ?? null,
@@ -68,6 +72,7 @@ export async function persistUpscaleOutput(params: {
       });
       return {
         ...output,
+        ...display,
         url: upload.url,
         width: upload.width ?? output.width ?? null,
         height: upload.height ?? output.height ?? null,

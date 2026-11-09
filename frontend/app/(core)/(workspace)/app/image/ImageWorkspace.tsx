@@ -122,6 +122,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     displayedReferenceSlotCount,
     displayedReferenceSlots,
     handleLibrarySelect,
+    handleLibrarySelectMany,
     handleReferenceFile,
     handleReferenceUrl,
     handleRemoveReferenceSlot,
@@ -417,7 +418,7 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
     setLimitGenerations, setMaskUrl, setMode, setNumImagesPreset: setReferenceAwareNumImagesPreset, setOutputFormat, setOutputCompression,
     setPrompt, setQuality, setResolutionPreset, setSeed, setStyle, setThinkingLevel, setComplexity, setWatermark,
     handleEditSelectedPreview, handleReferenceFile, handleReferenceUrl, handleRemoveReferenceSlot, handleRun,
-    handleLibrarySelect, toggleCharacterReference, selectStarter,
+    handleLibrarySelect, handleLibrarySelectMany, toggleCharacterReference, selectStarter,
   });
   const composerVisibilityProps = {
     showAspectRatioControl, showBackgroundControl, showCustomImageSizeControl, showEnableWebSearchControl, showLimitGenerationsControl,
@@ -500,6 +501,8 @@ export default function ImageWorkspace({ engines, accountId }: ImageWorkspacePro
         characterSelectionLimit={characterSelectionLimit}
         closeLibraryModal={closeLibraryModal}
         closeViewer={closeViewer}
+        modelIntent={JSON.stringify([accountId, selectedEngine.id, autoModeFromReferences ? "auto" : mode])}
+        handleLibrarySelectMany={composerActionProps.handleLibrarySelectMany}
         handleLibrarySelect={composerActionProps.handleLibrarySelect}
         handleSaveVariantToLibrary={handleSaveVariantToLibrary}
         libraryModal={libraryModal}

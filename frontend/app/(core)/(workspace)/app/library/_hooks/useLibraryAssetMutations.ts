@@ -1,15 +1,12 @@
 'use client';
+import { invalidateLibraryMedia } from '@/hooks/useLibraryCacheRevision';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
-import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
-import { authFetch } from '@/lib/authFetch';
+import { useLibraryImportQueue } from '@/hooks/useLibraryImportQueue';
 import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
-import { uploadVideoFile } from '@/lib/client-video-upload';
-import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import {
-  resolveImageUploadErrorMessage,
   type LibraryCopy,
   type LibraryKind,
   type LibraryView,
@@ -18,16 +15,14 @@ import {
 
 export function useLibraryAssetMutations({
   userId,
-  activeKind,
   activeSource,
   copy,
   mutateAssets,
-  mutateRecentOutputs,
   setActiveSource,
   setActiveView,
 }: {
   userId?: string;
-  activeKind: LibraryKind;
+  activeKind: LibraryKind | 'all';
   activeSource: SavedAssetSource;
   copy: LibraryCopy;
   mutateAssets: () => Promise<unknown>;
@@ -39,14 +34,20 @@ export function useLibraryAssetMutations({
   const [savingOutputIds, setSavingOutputIds] = useState<Set<string>>(new Set());
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
+  const { queue: importQueue, state: importState } = useLibraryImportQueue(userId);
+  const [importQueueOpen, setImportQueueOpen] = useState(false);
+  const isImporting = importState.running;
   const [importError, setImportError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!importState.running && importState.files.length && importState.files.every(file => file.status === 'success')) {
+      setImportError(null);
+    }
+  }, [importState]);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  const importRequestRef = useRef<AbortController | null>(null);
-  const ownerRef = useRef(userId);
-  ownerRef.current = userId;
-  useEffect(() => () => { importRequestRef.current?.abort(); }, [userId]);
+  const ownerRef = useRef({ userId });
+  if (ownerRef.current.userId !== userId) ownerRef.current = { userId };
+  useEffect(() => { setImportQueueOpen(false); }, [userId]);
 
   const clearMutationErrors = useCallback(() => {
     setDeleteError(null);
@@ -59,106 +60,61 @@ export function useLibraryAssetMutations({
     setDeletingId(null);
   }, [clearMutationErrors]);
 
-  const handleImportChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.currentTarget.files?.[0] ?? null;
-      event.currentTarget.value = '';
-      if (!file || !userId) return;
-      importRequestRef.current?.abort();
-      const request = new AbortController();
-      importRequestRef.current = request;
-      const isCurrent = () => !request.signal.aborted && ownerRef.current === userId;
-
-
-      setImportError(null);
-      setSaveError(null);
-      setIsImporting(true);
-      try {
-        const preparedFile =
-          activeKind === 'image'
-            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-            : file;
-        if (!isCurrent()) return;
-        const client = await loadSupabaseClient();
-        if (!isCurrent()) return;
-        const { data, error } = await client.auth.getSession();
-        if (!isCurrent()) return;
-        const session = data.session;
-        if (error || !session?.access_token || session.user.id !== userId) {
-          throw new Error(copy.browser.importFailed);
-        }
-        if (activeKind === 'video') {
-          try {
-            await uploadVideoFile(file, {
-              request: (input, init) => ownedAuthFetch(input, userId, {...init, signal: request.signal}),
-              abortRequest: (input, init) => ownedAuthFetch(input, userId, {...init, signal: AbortSignal.timeout(10_000)}),
-            });
-          } catch (error) {
-            const failure = error as {status?: number; code?: unknown};
-            throw new Error(resolveImageUploadErrorMessage(failure.status ?? 0, failure.code, copy.browser.importFailed));
-          }
-          if (!isCurrent()) return;
-        } else {
-          const formData = new FormData();
-          formData.append('file', preparedFile, preparedFile.name);
-          const uploadEndpoint = activeKind === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
-          const response = await authFetch(uploadEndpoint, {
-            method: 'POST',
-            body: formData,
-            signal: request.signal,
-            headers: { Authorization: `Bearer ${session.access_token}` },
-            credentials: 'omit',
-          });
-          if (!isCurrent()) return;
-          const payload = await response.json().catch(() => null);
-          if (!isCurrent()) return;
-          if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-            const message = resolveImageUploadErrorMessage(response.status, payload?.error, copy.browser.importFailed);
-            throw new Error(message);
-          }
-        }
-
+  const handleImportChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.currentTarget.files ?? []);
+    event.currentTarget.value = '';
+    if (!files.length || !userId) return;
+    const initiatingScope = ownerRef.current;
+    setImportError(null); setImportQueueOpen(true);
+    try {
+      importQueue.add(files);
+      await importQueue.start();
+      if (ownerRef.current !== initiatingScope) return;
+      const state = importQueue.getSnapshot();
+      if (state.files.some(file => file.status === 'failed')) setImportError(copy.browser.importFailed);
+      if (state.files.some(file => file.status === 'success')) {
         setActiveView('saved');
-        if (activeSource !== 'all' && activeSource !== 'upload') {
-          setActiveSource('upload');
-        }
+        if (activeSource !== 'all' && activeSource !== 'upload') setActiveSource('upload');
         await mutateAssets();
-      } catch (error) {
-        if (!isCurrent()) return;
-        setImportError(error instanceof Error ? error.message : copy.browser.importFailed);
-      } finally {
-        if (isCurrent()) setIsImporting(false);
       }
-    },
-    [userId, activeKind, activeSource, copy.browser.importFailed, mutateAssets, setActiveSource, setActiveView]
-  );
+    } catch (error) {
+      if (ownerRef.current === initiatingScope) setImportError(error instanceof Error ? error.message : copy.browser.importFailed);
+    }
+  }, [userId, importQueue, activeSource, copy.browser.importFailed, mutateAssets, setActiveSource, setActiveView]);
 
   const handleDeleteAsset = useCallback(
     async (assetId: string) => {
+      if (!userId) return;
+      const initiatingScope = ownerRef.current;
+      const isCurrent = () => ownerRef.current === initiatingScope;
       setDeletingId(assetId);
       setDeleteError(null);
       setSaveError(null);
       try {
-        const response = await authFetch(`/api/media-library/assets/${encodeURIComponent(assetId)}`, {
+        const response = await ownedAuthFetch(`/api/media-library/assets/${encodeURIComponent(assetId)}`, userId, {
           method: 'DELETE',
         });
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? copy.assets.deleteError);
         }
-        await Promise.all([mutateAssets(), mutateRecentOutputs()]);
+        invalidateLibraryMedia(userId);
+        if (!isCurrent()) return;
       } catch (error) {
+        if (!isCurrent()) return;
         setDeleteError(error instanceof Error ? error.message : copy.assets.deleteError);
       } finally {
-        setDeletingId((current) => (current === assetId ? null : current));
+        if (isCurrent()) setDeletingId((current) => (current === assetId ? null : current));
       }
     },
-    [copy.assets.deleteError, mutateAssets, mutateRecentOutputs]
+    [copy.assets.deleteError, userId]
   );
 
   const handleSaveRecentOutput = useCallback(
     async (asset: AssetBrowserAsset) => {
-      if (!asset.jobId || !asset.sourceOutputId || asset.isSaved) return;
+      if (!userId || !asset.jobId || !asset.sourceOutputId || asset.isSaved) return;
+      const initiatingScope = ownerRef.current;
+      const isCurrent = () => ownerRef.current === initiatingScope;
       const outputId = asset.sourceOutputId;
       setSaveError(null);
       setSavingOutputIds((previous) => {
@@ -167,7 +123,7 @@ export function useLibraryAssetMutations({
         return next;
       });
       try {
-        const response = await authFetch('/api/media-library/save-output', {
+        const response = await ownedAuthFetch('/api/media-library/save-output', userId, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ jobId: asset.jobId, outputId }),
@@ -176,22 +132,25 @@ export function useLibraryAssetMutations({
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? copy.review.saveError);
         }
-        await Promise.all([mutateRecentOutputs(), mutateAssets()]);
+        invalidateLibraryMedia(userId);
+        if (!isCurrent()) return;
       } catch (error) {
+        if (!isCurrent()) return;
         setSaveError(error instanceof Error ? error.message : copy.review.saveError);
       } finally {
-        setSavingOutputIds((previous) => {
+        if (isCurrent()) setSavingOutputIds((previous) => {
           const next = new Set(previous);
           next.delete(outputId);
           return next;
         });
       }
     },
-    [copy.review.saveError, mutateAssets, mutateRecentOutputs]
+    [copy.review.saveError, userId]
   );
 
   return {
     importInputRef,
+    importQueue, importQueueOpen, setImportQueueOpen,
     deletingId,
     savingOutputIds,
     deleteError,

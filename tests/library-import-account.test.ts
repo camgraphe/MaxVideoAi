@@ -30,6 +30,7 @@ async function mount(kind = 'image', uploadRequest?: typeof fetch) {
   w.getSession = async () => ({ data: { session: w.actor ? { user: w.actor, access_token: 'token-'+w.actor.id } : null }, error: null });
   w.createImageBitmap = () => decode.promise;
   w.fetch = (url: string, init: RequestInit) => {
+    if (url === '/api/media-library/organization') return Promise.resolve({ok:true,json:async()=>({ok:true,succeededCount:1,failedCount:0})});
     if (uploadRequest) return uploadRequest(url, init);
     assert.equal(url, '/api/uploads/'+kind);
     const request = { url, init, body: init.body as FormData, ...deferred<unknown>() }; requests.push(request); return request.promise;
@@ -85,7 +86,7 @@ test('in-flight upload aborts on account change and ignores a late completion', 
     assert.equal(f.requests[0].body.get('file')?.name, 'private-A.png');
     await f.switchTo('account-B');
     assert.equal(f.requests[0].init.signal?.aborted, true);
-    await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{url:'https://example.invalid/synthetic.png'}})}));
+    await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{id:'image-stored',assetId:'ma_'+'a'.repeat(32),url:'https://example.invalid/synthetic.png'}})}));
     assert.equal(f.w.refreshes, 0);
   } finally { await f.dispose(); }
 });
@@ -95,7 +96,7 @@ test('current upload succeeds and refreshes saved media', async () => {
   try {
     await f.select(); await f.decode();
     assert.equal(f.requests.length, 1);
-    await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{url:'https://example.invalid/synthetic.png'}})}));
+    await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{id:'image-stored',assetId:'ma_'+'a'.repeat(32),url:'https://example.invalid/synthetic.png'}})}));
     assert.equal(f.w.refreshes, 1);
   } finally { await f.dispose(); }
 });
@@ -155,16 +156,37 @@ for (const transition of ['switch', 'unmount']) test(`session lookup finishing a
   } finally { await f.dispose(); }
 });
 
-test('a replacement upload aborts its predecessor and only the current result refreshes media', async () => {
+test('adding another file serializes it without cancelling an accepted predecessor', async () => {
   const f = await mount('video');
   try {
-    await f.select('first.mp4');
-    await f.select('second.mp4');
-    assert.equal(f.requests.length, 2);
-    assert.equal(f.requests[0].init.signal?.aborted, true);
-    await f.w.fx.act(async () => f.requests[0].resolve({ ok: true, json: async () => ({ ok: true, asset: { url: 'https://example.invalid/first.mp4' } }) }));
-    assert.equal(f.w.refreshes, 0);
-    await f.w.fx.act(async () => f.requests[1].resolve({ ok: true, json: async () => ({ ok: true, asset: { url: 'https://example.invalid/second.mp4' } }) }));
+    await f.select('first.mp4'); await f.select('second.mp4');
+    assert.equal(f.requests.length, 1);
+    assert.equal(f.requests[0].init.signal?.aborted, false);
+    await f.w.fx.act(async () => f.requests[0].resolve({ ok: true, json: async () => ({ ok: true, asset: { id:'first',assetId:'ma_'+'a'.repeat(32), url: 'https://example.invalid/first.mp4' } }) }));
     assert.equal(f.w.refreshes, 1);
+    await f.w.fx.act(async()=>f.w.document.querySelector<HTMLButtonElement>('.app-library-import > button')!.click());
+    assert.equal(f.requests.length, 2);
+    await f.w.fx.act(async () => f.requests[1].resolve({ ok: true, json: async () => ({ ok: true, asset: { id:'second',assetId:'ma_'+'b'.repeat(32), url: 'https://example.invalid/second.mp4' } }) }));
+    assert.equal(f.requests.filter(row => row.url === '/api/uploads/video').length,2);
+    assert.equal(f.w.document.querySelectorAll('.app-library-import li').length,2);
+    assert.equal([...f.w.document.querySelectorAll('.app-library-import li')].filter(row=>row.textContent?.includes('Imported')).length,2);
+  } finally { await f.dispose(); }
+});
+
+
+test('closing and reopening the import presentation retains the active transfer and durable success', async () => {
+  const f = await mount();
+  try {
+    await f.select(); await f.decode(); assert.equal(f.requests.length, 1);
+    const close = f.w.document.querySelector('[role="dialog"] button[aria-label="Close"]');
+    assert.ok(close);
+    await f.w.fx.act(async () => close.click());
+    assert.equal(f.w.document.querySelector('[role="dialog"]'), null);
+    assert.equal(f.requests[0].init.signal?.aborted, false);
+    await f.w.fx.act(async () => f.requests[0].resolve({ok:true,json:async()=>({ok:true,asset:{id:'image-stored',assetId:'ma_'+'a'.repeat(32),url:'https://example.invalid/synthetic.png'}})}));
+    const reopen = [...f.w.document.querySelectorAll('button')].find(button => button.textContent === 'Imports');
+    assert.ok(reopen); await f.w.fx.act(async () => reopen.click());
+    assert.ok(f.w.document.querySelector('[role="dialog"]')?.textContent.includes('Imported'));
+    assert.equal(f.requests.length, 1);
   } finally { await f.dispose(); }
 });

@@ -1,3 +1,5 @@
+import { resolveMediaSourceRef } from '@/lib/media-identity';
+import { mediaReadAccessFields } from '@/lib/library-media-access';
 import type { MediaReadAccess } from '@/lib/media-read-access';
 import type { ComposerAttachment, AssetFieldConfig } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
@@ -9,7 +11,7 @@ import {
 import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 import { storyboardImageRef, storyboardReferenceJobId } from './workspace-storyboard-reference-identity';
 
-export type ReferenceAsset = {
+export type ReferenceAsset = MediaReadAccess & {
   storyboardJobId?: string;
   identityResolutionFailed?: boolean;
   ref?: ComposerAttachment['ref'];
@@ -136,7 +138,7 @@ export function normalizeAssetLibraryPayload(
           url: asset.url,
           thumbUrl: asset.thumbUrl ?? null,
           previewUrl: asset.previewUrl ?? null,
-          accessUrl: asset.accessUrl,
+          ...mediaReadAccessFields(asset),
           thumbnailAccessUrl: asset.thumbnailAccessUrl,
           previewAccessUrl: asset.previewAccessUrl,
           playbackAccessUrl: asset.playbackAccessUrl,
@@ -196,7 +198,7 @@ export function shouldMirrorCharacterImageAsset(asset: UserAsset): boolean {
 
 export function mergeMirroredLibraryAsset(
   asset: UserAsset,
-  mirrored: {
+  mirrored: Partial<UserAsset> & {
     id: string;
     url: string;
     width?: number | null;
@@ -208,6 +210,7 @@ export function mergeMirroredLibraryAsset(
 ): UserAsset {
   return {
     ...asset,
+    ...mirrored,
     id: mirrored.id,
     url: mirrored.url,
     width: mirrored.width ?? asset.width,
@@ -220,7 +223,9 @@ export function mergeMirroredLibraryAsset(
 }
 
 export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, asset: UserAsset): ReferenceAsset {
+  const ref=resolveMediaSourceRef(asset,asset.kind);
   return {
+    ...mediaReadAccessFields(asset),
     id: asset.id || `library_${Date.now().toString(36)}`,
     fieldId: field.id,
     previewUrl: field.type === 'video' ? asset.previewAccessUrl ?? asset.previewUrl ?? asset.accessUrl ?? asset.url : asset.accessUrl ?? asset.url,
@@ -233,8 +238,8 @@ export function buildReferenceAssetFromLibraryAsset(field: EngineInputField, ass
     width: asset.width ?? null,
     height: asset.height ?? null,
     durationSec: asset.durationSec ?? null,
-    assetId: asset.assetId ?? asset.id,
-    ref: asset.ref ?? (asset.jobId && asset.sourceOutputId ? { type: 'job-output', jobId: asset.jobId, outputId: asset.sourceOutputId, kind: asset.kind } : { type: 'asset', assetId: asset.assetId ?? asset.id, kind: asset.kind }),
+    assetId: ref?.type==='asset' ? ref.assetId : undefined,
+    ref,
     status: 'ready',
   };
 }
@@ -630,6 +635,7 @@ export function buildComposerAttachments(
       asset
         ? {
             id: asset.id,
+            ...mediaReadAccessFields(asset),
             // Generation preflight retains its legacy marker; Milo receives only owned identity.
             assetId: storyboardReferenceJobId(asset) ? undefined : asset.assetId,
             ref: storyboardReferenceJobId(asset) ? storyboardImageRef(asset.ref, storyboardReferenceJobId(asset)) : asset.ref,

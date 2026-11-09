@@ -70,3 +70,23 @@ test('homepage section reads use the explicit baseline while mutations retain in
   const bootstrap = readFileSync('scripts/bootstrap-application-schema.ts', 'utf8');
   assert.match(bootstrap, /await ensureBillingSchema\(\)/);
 });
+
+
+test('collection GET reads the migrated organization schema without initialization', () => {
+  const source = readFileSync('frontend/app/api/media-library/collections/route.ts', 'utf8');
+  const get = source.slice(source.indexOf('export async function GET'), source.indexOf('export async function POST'));
+  assert.doesNotMatch(get, /ensure.*Schema|createLibraryCollection/);
+  const owner = readFileSync('frontend/server/media-library/collections.ts', 'utf8');
+  const list = owner.slice(owner.indexOf('export async function listLibraryCollections'), owner.indexOf('export async function createLibraryCollection'));
+  assert.doesNotMatch(list, /ensure.*Schema|CREATE TABLE|INSERT INTO|UPDATE /);
+});
+
+
+test('common browse GET owns auth and parsing while source projection remains read-only',()=>{
+  const route=readFileSync('frontend/app/api/media-library/browse/route.ts','utf8');
+  assert.match(route,/getRouteAuthContext/);assert.match(route,/browseLibrary/);
+  assert.doesNotMatch(route,/ensure\w*Schema\s*\(|ensureSchema:\s*true|createLibrarySelectionSnapshot|mutateLibrary/);
+  const owner=readFileSync('frontend/server/media-library/browse.ts','utf8');
+  assert.doesNotMatch(owner,/ensure\w*Schema\s*\(|ensureSchema:\s*true|INSERT INTO|UPDATE |CREATE TABLE/);
+  assert.match(owner,/limit \+ 1|limit\+1/);
+});

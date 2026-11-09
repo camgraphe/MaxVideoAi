@@ -1,3 +1,6 @@
+import {mediaGridGlobals} from './helpers/media-grid-dom';
+import './helpers/uppy-node-fixture';
+import { saveFactsDatabaseBoundary } from './helpers/save-facts-database-boundary';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -39,19 +42,21 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
     },
   };
   const mocks: Record<string, string> = {
-    '@/lib/db': `export const query=(...args)=>globalThis.audioLibraryFixture.query(...args);`,
-    '@/lib/schema': `export const ensureMediaLibrarySchema=async()=>{};`,
+    '@/lib/db': saveFactsDatabaseBoundary('globalThis.audioLibraryFixture'),
+    '@/lib/schema': `export const ensureMediaLibrarySchema=async()=>{};export const ensureAssetSchema=async()=>{};export const ensureMediaLibraryOrganizationSchema=async()=>{};`,
     '@/server/storage': `export const recordUserAsset=async()=>{}; export const uploadFileBuffer=async({data})=>{globalThis.audioLibraryFixture.uploaded=data;return {url:'https://fixture.example/saved.wav'}}; export const uploadImageToStorage=async()=>{throw Error('Unexpected image')}; export const extractStorageKeyFromUrl=()=>{throw Error('Unexpected video storage key read')};`,
     '@/server/owned-media-read-access': `export const createOwnedMediaReadUrl=async({url})=>url;`,
     '@/server/upload-thumbnails': `export const createUploadVideoThumbnail=async()=>{throw Error('Unexpected video')};`,
     '@/server/media/generated-video-facts': `export const measureGeneratedVideoBuffer=async()=>{throw Error('Unexpected video')};`,
     './generated-video-source': `export const resolveOwnedGeneratedVideo=async()=>{throw Error('Unexpected video')};`,
     './asset-listing': `export const findLibraryAssetByOrigin=async()=>null;export const listLibraryAssetPage=async()=>({items:[]});`,
-    './asset-resolvers': `export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async()=>null;`,
+    './asset-resolvers': `export const resolveReusableImageDisplay=async()=>undefined;export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async()=>null;`,
+    '@/lib/i18n/I18nProvider': `export const useI18n=()=>({locale:'en'});`,
+    '@/lib/owned-auth-fetch': `export const ownedAuthFetch=async(url,owner,init)=>new Response(JSON.stringify(url.includes('/selection/validate')?{ok:true,results:JSON.parse(init.body).candidates.map(c=>({reference:c.reference}))}:{ok:true,assets:globalThis.audioLibraryFixture.assets}));`,
     '@/lib/authFetch': `export const authFetch=async(url,init)=>{const fixture=globalThis.audioLibraryFixture;if(!init?.body)return new Response(JSON.stringify({ok:true,assets:fixture.assets}));const body=JSON.parse(init.body);const asset=await fixture.ensure({...body,userId:'owner-a',sourceJobId:body.jobId});return new Response(JSON.stringify({ok:true,asset}));};`,
   };
   const output = join(directory, 'library.cjs');
-  const compiled = await build({ stdin: { contents: `export {ensureReusableAsset} from './frontend/server/media-library/assets'; export {saveAssetToLibrary} from './frontend/lib/api-assets'; export {default as Library} from './frontend/app/(core)/(workspace)/app/audio/_components/AudioReferenceLibrary'; export {audioCreationCopy as copy} from './frontend/app/(core)/(workspace)/app/audio/_lib/audio-creation-copy';`, resolveDir: process.cwd(), loader: 'tsx' },
+  const compiled = await build({ stdin: { contents: `export {SWRConfig} from 'swr'; export {ensureReusableAsset} from './frontend/server/media-library/assets'; export {saveAssetToLibrary} from './frontend/lib/api-assets'; export {default as Library} from './frontend/app/(core)/(workspace)/app/audio/_components/AudioReferenceLibrary'; export {audioCreationCopy as copy} from './frontend/app/(core)/(workspace)/app/audio/_lib/audio-creation-copy';`, resolveDir: process.cwd(), loader: 'tsx' },
     outfile: output, write: false, bundle: true, platform: 'node', format: 'cjs', jsx: 'automatic',
     tsconfig: 'frontend/tsconfig.json', packages: 'external', loader: { '.css': 'empty', '.module.css': 'empty' },
     plugins: [{ name: 'audio-library-boundaries', setup(builder) {
@@ -64,7 +69,7 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
     } }],
   });
   await writeFile(output, compiled.outputFiles[0].contents);
-  const globals = { window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
+  const globals = { ...mediaGridGlobals(dom.window), window: dom.window, document: dom.window.document, navigator: dom.window.navigator,
     HTMLElement: dom.window.HTMLElement, React, IS_REACT_ACT_ENVIRONMENT: true, audioLibraryFixture: fixture,
     fetch: async () => new Response(fixture.source, { headers: { 'content-type': 'audio/wav' } }),
   };
@@ -72,7 +77,7 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
   for (const [key, value] of Object.entries(globals)) Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   const root = createRoot(dom.window.document.getElementById('root')!);
   try {
-    const { ensureReusableAsset, saveAssetToLibrary, Library, copy } = require(output);
+    const { ensureReusableAsset, saveAssetToLibrary, Library, copy, SWRConfig } = require(output);
     fixture.ensure = ensureReusableAsset;
     const asset = await saveAssetToLibrary({ url: 'https://fixture.example/original.wav', kind: 'audio', source: 'generated', jobId: 'audio-1' });
     assert.equal(asset.durationSec, 7, 'the existing client sends no duration; the server must measure the original bytes');
@@ -80,12 +85,12 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
     assert.deepEqual(fixture.uploaded, wav(7), 'saving must preserve original bytes');
     assert.equal(asset.metadata.originUrl, 'https://fixture.example/original.wav');
     assert.deepEqual(asset.metadata.mediaFacts, { source: 'probe', durationSec: 7 });
-    fixture.assets = [{ id: asset.id, url: asset.url, kind: 'audio', mime: asset.mimeType, size: asset.sizeBytes, durationSec: asset.durationSec }];
+    fixture.assets = [{ id: asset.assetId??asset.id, assetId: fixture.inserts[0].public_id, url: asset.url, kind: 'audio', mime: asset.mimeType, size: asset.sizeBytes, durationSec: asset.durationSec }];
     let selected: any;
-    await act(async () => root.render(React.createElement(Library, { copy: copy('en'), onClose() {}, onSelect(value: any) { selected = value; } })));
-    const button = [...document.querySelectorAll('button')].find(button => button.textContent === 'Select');
+    await act(async () => root.render(React.createElement(SWRConfig,{key:JSON.stringify(fixture.assets),value:{provider:()=>new Map(),dedupingInterval:0}},React.createElement(Library, { userId:'owner-a', copy: copy('en'), onClose() {}, onSelect(value: any) { selected = value; } }))));
+    const button = document.querySelector<HTMLButtonElement>('.compact-media-check input');
     assert.ok(button); assert.equal(button.disabled, false);
-    await act(async () => button.click());
+    await act(async () => button.click());assert.equal(selected,undefined);await act(async()=>document.querySelector<HTMLButtonElement>('.app-picker-use')!.click());
     assert.equal(selected.url, asset.url);
 
     const falseClaim = await ensureReusableAsset({ userId: 'owner-a', url: 'https://fixture.example/claim.wav', kind: 'audio', source: 'generated', durationSec: 1, metadata: { durationSec: 1, mediaFacts: { source: 'probe', durationSec: 1 } } });
@@ -94,16 +99,16 @@ test('saving audio measures its bytes and makes a valid saved WAV selectable wit
     fixture.source = wav(31);
     const long = await saveAssetToLibrary({ url: 'https://fixture.example/long.wav', kind: 'audio', source: 'generated', durationSec: 1 });
     assert.equal(long.durationSec, 31);
-    fixture.assets = [{ id: long.id, url: long.url, kind: 'audio', mime: long.mimeType, size: long.sizeBytes, durationSec: long.durationSec }];
-    await act(async () => root.render(React.createElement(Library, { key: 'long', copy: copy('en'), onClose() {}, onSelect() { throw Error('incompatible audio selected'); } })));
-    assert.equal([...document.querySelectorAll('button')].find(button => button.textContent === 'Select')?.disabled, true);
+    fixture.assets = [{ id: long.assetId??long.id, assetId: fixture.inserts[0].public_id, url: long.url, kind: 'audio', mime: long.mimeType, size: long.sizeBytes, durationSec: long.durationSec }];
+    await act(async () => root.render(React.createElement(SWRConfig,{key:JSON.stringify(fixture.assets),value:{provider:()=>new Map(),dedupingInterval:0}},React.createElement(Library, { userId:'owner-a', key: 'long', copy: copy('en'), onClose() {}, onSelect() { throw Error('incompatible audio selected'); } }))));
+    assert.equal(document.querySelector<HTMLButtonElement>('.compact-media-check input')?.disabled, true);
     for (const [name, fields] of Object.entries({
       unsupported: { mime: 'audio/ogg' }, oversized: { size: 10 * 1024 * 1024 + 1 },
       unknown: { durationSec: null }, nonfinite: { durationSec: Number.POSITIVE_INFINITY },
     })) {
-      fixture.assets = [{ id: asset.id, url: asset.url, kind: 'audio', mime: asset.mimeType, size: asset.sizeBytes, durationSec: asset.durationSec, ...fields }];
-      await act(async () => root.render(React.createElement(Library, { key: name, copy: copy('en'), onClose() {}, onSelect() { throw Error('incompatible audio selected'); } })));
-      assert.equal([...document.querySelectorAll('button')].find(button => button.textContent === 'Select')?.disabled, true, name);
+      fixture.assets = [{ id: asset.assetId??asset.id, assetId: fixture.inserts[0].public_id, url: asset.url, kind: 'audio', mime: asset.mimeType, size: asset.sizeBytes, durationSec: asset.durationSec, ...fields }];
+      await act(async () => root.render(React.createElement(SWRConfig,{key:JSON.stringify(fixture.assets),value:{provider:()=>new Map(),dedupingInterval:0}},React.createElement(Library, { userId:'owner-a', key: name, copy: copy('en'), onClose() {}, onSelect() { throw Error('incompatible audio selected'); } }))));
+      assert.equal(document.querySelector<HTMLButtonElement>('.compact-media-check input')?.disabled, true, name);
     }
 
     fixture.source = Buffer.from('not an audio file');

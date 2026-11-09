@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
@@ -22,6 +23,7 @@ test('saved audio listing projects measured exact-owner source durations in one 
     CREATE TABLE user_assets (asset_id text PRIMARY KEY, user_id text, url text, mime_type text,
       width integer, height integer, size_bytes bigint, source text, metadata jsonb, created_at timestamptz DEFAULT '2026-10-19T00:00:00Z');
   `);
+  await database.pool.query(readFileSync('neon/migrations/97_media_library_organization.sql','utf8'));
   const source = (id: string) => `https://fixture.example/${id}.wav`;
   const add = async (id: string, options: { owner?: string; jobOwner?: string; origin?: string; outputOwner?: string;
     outputSource?: string; outputId?: string; outputFacts?: unknown; snapshot?: unknown; hidden?: boolean;

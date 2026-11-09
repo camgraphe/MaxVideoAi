@@ -17,6 +17,9 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
   const pendingUpload=useRef<AbortController|null>(null);
   const initialized=useRef<string|null>(null);
   const storageKey=selection?'maxvideoai:studio:selection:v1:'+selection.scopeKey:null;
+  const context=useRef({key:JSON.stringify([accountKey,selection?.scopeKey])});
+  const contextKey=JSON.stringify([accountKey,selection?.scopeKey]);if(context.current.key!==contextKey)context.current={key:contextKey};
+  const captured=context.current,liveMedia=useRef(mediaEnabled);liveMedia.current=mediaEnabled;
   const history=turns.flatMap(turn=>turn.referenceMentions??[]);
   const latestHistory=useRef(history);latestHistory.current=history;
   const t=(en:string,fr:string)=>locale==='fr'?fr:en;
@@ -62,20 +65,27 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
       referenceMentions:refs.map(({assetId,label})=>({assetId,label})),
     }));} catch {/* A blocked store must not prevent using the current visible selection. */}
   }
-  function remember(asset:ImageLibraryAsset) {
-    const next=rememberShelfMedia(all.current,asset,latestHistory.current);
-    all.current=next.items;setItems(next.items);return next.item;
+  function attachMany(assets:ImageLibraryAsset[]):true|string {
+    if(!alive.current||context.current!==captured)return 'This conversation is no longer active.';
+    if(!assets.length||assets.some(asset=>!/^ma_[a-f0-9]{32}$/.test(asset.assetId)))return t('Choose media with a reusable library reference.','Choisissez un média avec une référence de bibliothèque réutilisable.');
+    if(assets.some(asset=>!liveMedia.current&&asset.kind&&asset.kind!=='image')) {
+      const message=t('Video and audio references are unavailable in this workspace. You can still preview them.','Les références vidéo et audio sont indisponibles dans cet espace. Vous pouvez toujours les consulter.');setError(message);return message;
+    }
+    const identities=new Set([...attached.current.map(item=>item.assetId),...assets.map(item=>item.assetId)]);
+    if(identities.size>STUDIO_CONVERSATION_MAX_ATTACHMENTS) {
+      const message=t(`You can attach up to ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} media to one message.`,`Vous pouvez joindre ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} médias par message.`);setError(message);return message;
+    }
+    let next=all.current;
+    const refs=attached.current.slice();
+    for(const asset of assets) {
+      const remembered=rememberShelfMedia(next,asset,latestHistory.current);next=remembered.items;
+      if(!refs.some(ref=>ref.assetId===asset.assetId))refs.push(remembered.item);
+    }
+    all.current=next;attached.current=refs;setItems(next);setReferences(refs);saveSelection();
+    setSelectedId(assets.at(-1)?.assetId??null);setExpanded(window.matchMedia('(min-width: 801px)').matches);setError(null);return true;
   }
   function attach(asset:ImageLibraryAsset) {
-    if(!mediaEnabled&&asset.kind&&asset.kind!=='image') {
-      setError(t('Video and audio references are unavailable in this workspace. You can still preview them.','Les références vidéo et audio sont indisponibles dans cet espace. Vous pouvez toujours les consulter.'));return null;
-    }
-    if(!attached.current.some(ref=>ref.assetId===asset.assetId)&&attached.current.length>=STUDIO_CONVERSATION_MAX_ATTACHMENTS) {
-      setError(t(`You can attach up to ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} media to one message.`,`Vous pouvez joindre ${STUDIO_CONVERSATION_MAX_ATTACHMENTS} médias par message.`));return null;
-    }
-    const item=remember(asset);
-    if(!attached.current.some(ref=>ref.assetId===asset.assetId)) {attached.current=[...attached.current,item];setReferences(attached.current);}
-    saveSelection();setSelectedId(item.assetId);setExpanded(window.matchMedia('(min-width: 801px)').matches);setError(null);return item;
+    return attachMany([asset])===true?all.current.find(item=>item.assetId===asset.assetId)!:null;
   }
   function detach(assetId:string) {
     attached.current=attached.current.filter(item=>item.assetId!==assetId);setReferences(attached.current);
@@ -131,5 +141,5 @@ export function useConversationMediaShelf(turns:ImageConversationTurn[],locale:C
     } catch {if(alive.current)setError(t('This import did not finish. Your attached media are still here. Try again from the library.','L’import n’a pas abouti. Vos médias joints sont conservés. Réessayez depuis la bibliothèque.'));}
     finally {busy.current=false;if(pendingUpload.current===controller)pendingUpload.current=null;if(alive.current)setUploading(false);}
   }
-  return {items,references,selectedId,expanded,setSelectedId,setExpanded,attach,detach,clear,restore,upload,uploading,error,setError};
+  return {items,references,selectedId,expanded,setSelectedId,setExpanded,attach,attachMany,detach,clear,restore,upload,uploading,error,setError};
 }

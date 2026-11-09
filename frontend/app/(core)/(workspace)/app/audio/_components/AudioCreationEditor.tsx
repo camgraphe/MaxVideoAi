@@ -17,6 +17,7 @@ import {
 } from '@/lib/audio-generation';
 import type { AudioCreationDraft, AudioCreationIntent } from '@/lib/audio-creation';
 import type { AudioCreationCopy } from '../_lib/audio-creation-copy';
+import { AudioSourcePreview } from './AudioSourcePreview.client';
 import { AudioVoicePreview } from './AudioVoicePreview.client';
 import styles from './audio-creation.module.css';
 
@@ -109,7 +110,7 @@ export function AudioCreationEditor({ locale='en', assistanceAccountId, intent, 
       </div></details>
       {draft.reference || draft.voiceModel === 'seed' ? <div className={styles.reference}>
         <input ref={input} type="file" accept="audio/mpeg,audio/wav,.mp3,.wav" hidden tabIndex={-1} onChange={event => { const file = event.target.files?.[0]; if (file) onFile(file); event.target.value = ''; }} />
-        {draft.reference ? <><div><span>{copy.reference}</span><strong>{assistanceEnabled ? 'Audio 1' : draft.reference.name}</strong></div><button type="button" onClick={() => onChange({ reference: null })}>{copy.remove}</button><audio controls preload="none" src={draft.reference.url} aria-label={copy.reference} /></> : <div className={styles.referenceSources}><span>{copy.reference}</span><button type="button" disabled={uploading} onClick={() => input.current?.click()}>{uploading ? copy.loading : copy.import}</button><button type="button" onClick={onLibrary}>{copy.library}</button></div>}
+        {draft.reference ? <><div><span>{copy.reference}</span><strong>{assistanceEnabled ? 'Audio 1' : draft.reference.name}</strong></div><button type="button" onClick={() => onChange({ reference: null })}>{copy.remove}</button><AudioSourcePreview source={draft.reference} kind="audio" label={copy.reference} errorLabel={copy.previewUnavailable} retryLabel={copy.retry} /></> : <div className={styles.referenceSources}><span>{copy.reference}</span><button type="button" disabled={uploading} onClick={() => input.current?.click()}>{uploading ? copy.loading : copy.import}</button><button type="button" onClick={onLibrary}>{copy.library}</button></div>}
         <p>{copy.referenceHint}</p>
       </div> : null}
     </> : intent === 'ambience' ? <p className={styles.note}>{copy.ambienceHint}</p> : null}
