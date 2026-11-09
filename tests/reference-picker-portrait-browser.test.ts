@@ -79,7 +79,8 @@ test('portrait video posters stay centered and uncropped in both reference selec
           await expect(choice).toHaveCount(1);
           await expect(choice).toHaveAttribute('aria-label','Select Poster 0');
           await expect(choice).toHaveAccessibleName('Select Poster 0 Poster 0');
-          await choice.check();
+          await expect(choice).not.toBeChecked();
+          await selectedRow.locator('label.compact-media-check').click();
           await expect(choice).toBeChecked();
           await expect(page.locator('.app-picker-selection')).toContainText('Poster 0');
           assert.equal(await page.evaluate(() => (globalThis as PortraitFixtureGlobal).selectedOriginal),undefined,'selection remains staged until confirmation');

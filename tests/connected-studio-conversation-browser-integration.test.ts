@@ -198,7 +198,8 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await expect(tile).toHaveCount(1);
       await expect(tile).toHaveAttribute('aria-label','Select '+name);
       await expect(tile).toHaveAccessibleName('Select '+name+' '+name);
-      await tile.check();
+      await expect(tile).not.toBeChecked();
+      await row.locator('label.compact-media-check').click();
       await expect(tile).toBeChecked();
       await expect(library).toBeVisible();
       await proof('library-selected-'+name.replaceAll(' ','-'));

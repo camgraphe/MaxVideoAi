@@ -89,7 +89,8 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await expect(selectedReference).toHaveCount(1);
     await expect(selectedReference).toHaveAttribute('aria-label','Select Selected product');
     await expect(selectedReference).toHaveAccessibleName('Select Selected product Selected product');
-    await selectedReference.check();
+    await expect(selectedReference).not.toBeChecked();
+    await selectedRow.locator('label.compact-media-check').click();
     await expect(selectedReference).toBeChecked();
     await expect(referenceLibrary).toBeVisible();
     const selectionAccepted=page.waitForResponse(response=>response.url().endsWith('/api/media-library/selection/validate')&&response.request().method()==='POST');

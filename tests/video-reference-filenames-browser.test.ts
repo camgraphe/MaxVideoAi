@@ -97,7 +97,7 @@ test('Video Media API filenames survive hook refresh and pagination into picker 
     const motionChoice=motionRow.getByRole('checkbox');await expect(motionChoice).toHaveCount(1);
     await expect(motionChoice).toHaveAttribute('aria-label','Select watch-motion-poster.png');
     await expect(motionChoice).toHaveAccessibleName('Select watch-motion-poster.png watch-motion-poster.png');
-    await motionChoice.check();await expect(motionChoice).toBeChecked();
+    await expect(motionChoice).not.toBeChecked();await motionRow.locator('label.compact-media-check').click();await expect(motionChoice).toBeChecked();
     await expect(page.locator('.app-picker-selection')).toContainText('watch-motion-poster.png');
     assert.equal(await page.evaluate(()=>(globalThis as FilenamesFixtureGlobal).selected),undefined,'Reference stays staged until confirmation');
     if (process.env.VIDEO_FILENAMES_EVIDENCE) await page.screenshot({ path: process.env.VIDEO_FILENAMES_EVIDENCE });
