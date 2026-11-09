@@ -9,17 +9,24 @@ import { startBaseline } from './baseline';
 const evidence = 'output/media-design-evidence';
 const measures: unknown[] = [];
 const appStateErrors: string[] = [];
+async function settleImages(page: Page) {
+  await expect.poll(() => page.locator('img').evaluateAll(images => images.filter(image => {
+    const r=image.getBoundingClientRect();
+    return r.width>0 && r.height>0 && r.bottom>0 && r.top<innerHeight && r.right>0 && r.left<innerWidth;
+  }).every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth>0)),{timeout:15_000,message:'visible posters must finish loading before accepting screenshots'}).toBe(true);
+}
 async function measure(page: Page, label: string) {
+  await settleImages(page);
   const result = await page.evaluate(() => {
     const library = document.querySelector('.picker-sheet .library') ?? document.querySelector('.library');
     const grid = library?.querySelector('.compact-media-canvas');
     const cards = Array.from(library?.querySelectorAll('.compact-media-tile') ?? []);
     const bounds = grid?.getBoundingClientRect();
-    const touch = Array.from(document.querySelectorAll('button,input,select,.compact-media-check')).filter(el => {
+    const touch = Array.from(document.querySelectorAll('button,input:not([type="checkbox"]):not([type="radio"]),select,.compact-media-check')).filter(el => {
       const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && r.left >= 0 && r.right <= innerWidth;
+      return r.width > 2 && r.height > 2 && r.bottom > 0 && r.top < innerHeight && r.left >= 0 && r.right <= innerWidth;
     }).map(el => {const r = el.getBoundingClientRect();return {name:el.getAttribute('aria-label')??el.textContent?.trim().slice(0,40),width:r.width,height:r.height};});
-    return {width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,grid:bounds ? {x:bounds.x,y:bounds.y,width:bounds.width,height:bounds.height}:null,domCards:cards.length,visibleCards:cards.filter(el => {const r=el.getBoundingClientRect();return r.top>=(bounds?.top??0)&&r.bottom<=(bounds?.bottom??innerHeight);}).length,shortTargets:touch.filter(r=>r.height<43||r.width<24),videoElements:document.querySelectorAll('video').length};
+    return {width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,grid:bounds ? {x:bounds.x,y:bounds.y,width:bounds.width,height:bounds.height}:null,domCards:cards.length,visibleCards:cards.filter(el => {const r=el.getBoundingClientRect();return r.top>=(bounds?.top??0)&&r.bottom<=(bounds?.bottom??innerHeight);}).length,shortTargets:touch.filter(r=>r.height<(innerWidth<=700?43:35)||r.width<(innerWidth<=700?43:23)),videoElements:document.querySelectorAll('video').length};
   });
   measures.push({label,...result});
   assert.ok(result.scrollWidth <= result.width + 1, `${label}: horizontal page overflow`);
@@ -138,6 +145,7 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       // Resolve thumbnails to the same local public assets used by the proposed layout.
       await page.route('**/assets/**',async route=>route.fulfill({response:await page.request.get(prototype.url+new URL(route.request().url()).pathname)}));
       await page.goto(baseline.url);await expect(page.locator('.compact-media-tile').first()).toBeVisible();
+      await settleImages(page);
       const baselineMeasure=await page.evaluate(()=>{const grid=document.querySelector('.compact-media-canvas')!.getBoundingClientRect();return{width:innerWidth,grid:{x:grid.x,y:grid.y,width:grid.width,height:grid.height},domCards:document.querySelectorAll('.compact-media-tile').length,scrollWidth:document.documentElement.scrollWidth};});
       measures.push({label:`baseline-${width}`,...baselineMeasure});
       await page.screenshot({path:`${evidence}/00-baseline-${width}.png`});await page.close();

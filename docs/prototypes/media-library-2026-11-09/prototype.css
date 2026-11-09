@@ -200,6 +200,8 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .toast.visible { opacity:1; }
 @media(max-width:700px) {
   button, .control { min-height:44px; font-size:12px; }
+  input, select, textarea { min-height:44px; }
+  .filter-chips button { min-height:44px; }
   .icon-button { width:44px; min-height:44px; }
   .app-rail { display:none; }
   .app-header { min-height:54px; padding:0 16px; }

@@ -19,7 +19,7 @@ function App() {
   const [scope, setScope] = useState<Scope>(defaultScope);
   const [loaded, setLoaded] = useState(params.get('loaded') === 'all' ? 10_000 : 60);
   const [scenario, setScenario] = useState(params.get('state') ?? 'ready');
-  const [density, setDensity] = useState(() => {try {return Number(localStorage.getItem('media-design:density')) || (innerWidth <= 700 ? 136 : 160);} catch {return innerWidth <= 700 ? 136 : 160;}});
+  const [density, setDensity] = useState(() => {try {return Number(localStorage.getItem('media-design:density')) || (innerWidth <= 700 ? 136 : 128);} catch {return innerWidth <= 700 ? 136 : 128;}});
   const [selected, setSelected] = useState(new Set<string>());
   const [page, setPage] = useState('library');
   const [picker, setPicker] = useState(params.has('picker'));
