@@ -481,11 +481,26 @@ resolution. No Dashboard or additional Uppy focus host is mounted.
 ## Contextual picker acceptance
 
 Ordinary media pickers use `CompactMediaGrid` through `ReferenceLibraryPicker`.
-The grid owns only keyboard/checkbox/Preview interaction and virtual layout. Its
+The grid owns only keyboard/checkbox/primary/Preview interaction and virtual layout. Its
 optional key/name adapters, single selection and selection-disabled keys preserve
 the page library's defaults. Character entities retain immediate toggles and a
 separate presentation; Character/look/Recast and owned-generation qualifications
 remain in their existing domain owners.
+
+In ordinary pickers, thumbnail activation adds that one exact candidate through
+`confirmAsset`; it does not stage it and then submit an older basket. The separate
+Preview control only opens inspection. Checkboxes retain ordered staging and one
+counted Add action accepts the complete basket. The management gallery leaves the
+primary action as its viewer. Empty valid slots in appendable groups open group
+addition; occupied, uploading/error and single-role slots retain exact replacement.
+
+Ordinary Create and Image hosts opt into `useReferencePickerBrowse`, which reuses
+the account-scoped common browse reader with `view=all`, actual kind/source, server
+search and cursor pagination. Explicit Recent uses `review`. These hosts suppress
+duplicate legacy listing; specialized generated-video proofs and Character entity
+readers retain their own owners. Character Studio media remain distinct from
+saved Character/Look entities; the picker links to the existing Character Studio
+route without inventing an identity or an unsupported tab URL.
 
 `useReferencePickerSelection` captures ordered original DTOs independently of
 loaded pages. Search, kind/source filters, pagination, cache invalidation and

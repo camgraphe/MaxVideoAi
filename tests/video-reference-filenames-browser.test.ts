@@ -5,7 +5,7 @@ import { startWorkspaceReferenceFixture, referencePickerAuthModules } from './he
 
 type FilenamesFixtureGlobal = typeof globalThis & {selected?:{name?:string;id:string;url:string;ref:unknown};attachment?:{name?:string};functionalLabel?:string};
 
-// Regression boundary: API names must survive the Video hook's normalization before reaching the real picker.
+// Regression boundary: common browse names must reach the real Video receiver and composer attachment.
 const source = `
 import {useState} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -19,7 +19,7 @@ const engine=listFalEngines().find(entry=>entry.id==='seedance-2-5').engine;
 const field=[...engine.inputSchema.required,...engine.inputSchema.optional].find(field=>field.type==='image'&&(field.maxCount??0)>1);
 function Fixture(){
  const [inputs,setInputs]=useState({});
- const library=useWorkspaceAssetLibrary({userId:'synthetic-owner',showNotice:message=>{throw Error(message);},setInputAssets:setInputs});
+ const library=useWorkspaceAssetLibrary({userId:'synthetic-owner',listingEnabled:false,showNotice:message=>{throw Error(message);},setInputAssets:setInputs});
  return <I18nProvider locale="en" dictionary={{}} fallback={{}}>
   <button onClick={()=>library.setAssetPickerTarget({kind:'field',field})}>Open Video references</button>
   {library.assetPickerTarget?<AssetLibraryModal ownerId="synthetic-owner" fieldLabel={field.label} assetType={library.assetLibraryKind}
@@ -44,20 +44,29 @@ const staticAsset = {
 const motionAsset = { ...staticAsset, id: 'card-motion', assetId: 'ma_' + 'b'.repeat(32),
   ref: { type: 'asset', assetId: 'ma_' + 'b'.repeat(32), kind: 'image' }, name: 'watch-motion-poster.png', url: 'https://media.fixture.test/original-motion-hash.png' };
 
-test('Video Media API filenames survive hook refresh and pagination into picker search and confirmation', { timeout: 60000 }, async () => {
+test('Video common Media filenames survive refresh, server search and pagination into exact attachments', { timeout: 60000 }, async () => {
   const token='filenames-fixture-token';
   const fixture = await startWorkspaceReferenceFixture({ source, config: {}, hostModules: referencePickerAuthModules('synthetic-owner',token) });
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    const requests: string[] = [], errors: string[] = [], proofs: unknown[] = [];
+    const requests: string[] = [], legacyRequests: string[] = [], errors: string[] = [], proofs: unknown[] = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/api/media-library/assets?**', route => {
+    page.on('request', request => { if (/\/api\/media-library\/(assets|recent-outputs)\?/.test(request.url())) legacyRequests.push(request.url()); });
+    const browseAsset = (asset: typeof staticAsset) => ({ ...asset, libraryRef: asset.ref, sourceRevision: 'sr_' + asset.id,
+      organization: { key: 'lo_' + asset.id, favorite: false, collectionIds: [], trashedAt: null } });
+    const unnamed = { ...staticAsset, id: 'unnamed', assetId:'ma_'+'c'.repeat(32), ref:{type:'asset',assetId:'ma_'+'c'.repeat(32),kind:'image'}, name: ' ', url: 'https://media.fixture.test/legacy-original.png' };
+    await page.route('**/api/media-library/browse?**', route => {
       const url = new URL(route.request().url());
       requests.push(url.pathname + url.search);
-      return route.fulfill({ json: url.searchParams.has('cursor')
-        ? { ok: true, assets: [motionAsset], hasMore: false, nextCursor: null }
-        : { ok: true, assets: [staticAsset, { ...staticAsset, id: 'unnamed', assetId:'ma_'+'c'.repeat(32), ref:{type:'asset',assetId:'ma_'+'c'.repeat(32),kind:'image'}, name: ' ', url: 'https://media.fixture.test/legacy-original.png' }], hasMore: true, nextCursor: 'page-2' } });
+      assert.equal(url.searchParams.get('view'), 'all');
+      assert.equal(url.searchParams.get('kind'), 'image');
+      const q = url.searchParams.get('q');
+      return route.fulfill({ json: q
+        ? { ok: true, assets: [browseAsset(q === 'watch-static.png' ? staticAsset : motionAsset)], totalCount: 1, hasMore: false, nextCursor: null }
+        : url.searchParams.has('cursor')
+          ? { ok: true, assets: [browseAsset(motionAsset)], totalCount: 3, hasMore: false, nextCursor: null }
+          : { ok: true, assets: [browseAsset(staticAsset), browseAsset(unnamed)], totalCount: 3, hasMore: true, nextCursor: 'page-2' } });
     });
     // Only the HTTP validation boundary is controlled in this UI fixture; the real client
     // must send its initiating bearer, typed ref and exact original before confirmation.
@@ -66,7 +75,7 @@ test('Video Media API filenames survive hook refresh and pagination into picker 
       assert.equal(route.request().headers().authorization,'Bearer '+token);
       assert.equal(route.request().headers()['x-maxvideoai-auth-mode'],'bearer');
       const body=route.request().postDataJSON();
-      assert.deepEqual(body,{candidates:[{reference:motionAsset.ref,originalUrl:motionAsset.url}]});proofs.push(body);
+      assert.deepEqual(body,{candidates:[{reference:{...motionAsset.ref,sourceRevision:'sr_card-motion'},originalUrl:motionAsset.url}]});proofs.push(body);
       return route.fulfill({json:{ok:true,results:[{reference:motionAsset.ref}]}});
     });
     await page.goto(fixture.url);
@@ -112,11 +121,11 @@ test('Video Media API filenames survive hook refresh and pagination into picker 
     assert.deepEqual(selected.selected.ref, motionAsset.ref);
     assert.equal(selected.label, 'Image 1');
     assert.equal(proofs.length,1,'Confirmation passes typed validation once');
-    assert.deepEqual(requests, [
-      '/api/media-library/assets?limit=30&kind=image',
-      '/api/media-library/assets?limit=30&kind=image',
-      '/api/media-library/assets?limit=30&kind=image&cursor=page-2',
-    ]);
+    const queries = requests.map(path => new URL(path, 'http://fixture.test').searchParams);
+    assert.ok(queries.some(query => query.get('q') === 'watch-static.png'));
+    assert.ok(queries.some(query => query.get('q') === 'watch-motion-poster.png'));
+    assert.equal(queries.filter(query => query.get('cursor') === 'page-2').length, 1);
+    assert.deepEqual(legacyRequests, [], 'the common browser must not duplicate the retired saved-only listing');
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

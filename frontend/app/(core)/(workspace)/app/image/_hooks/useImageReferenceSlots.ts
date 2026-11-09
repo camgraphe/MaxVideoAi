@@ -365,8 +365,10 @@ export function useImageReferenceSlots({
   });
 
   const openLibraryForSlot = useCallback((index?: number) => {
-    setLibraryModal({ open: true, slotIndex: index ?? null, selectionMode: 'reference', initialSource: 'all' });
-  }, []);
+    const append = referenceSlotLimit > 1 && index !== undefined && Number.isInteger(index)
+      && index >= 0 && index < referenceSlotLimit && referenceSlots[index] == null;
+    setLibraryModal({ open: true, slotIndex: append ? null : index ?? null, selectionMode: 'reference', initialSource: 'all' });
+  }, [referenceSlotLimit, referenceSlots]);
 
   const toggleCharacterReference = useCallback(
     (reference: CharacterReferenceSelection) => {

@@ -138,12 +138,18 @@ export function useWorkspaceReferenceAssets({
       if (nextSource !== assetLibrarySource) {
         resetAssetLibraryForSource(nextSource);
       }
-      setAssetPickerTarget({ kind: 'field', field, slotIndex });
+      // An empty collection slot opens the same append intent as the group action.
+      const maxCount = field.maxCount ?? 1;
+      const append = maxCount > 1 && slotIndex !== undefined
+        && Number.isInteger(slotIndex) && slotIndex >= 0 && slotIndex < maxCount
+        && inputAssets[field.id]?.[slotIndex] == null;
+      setAssetPickerTarget({ kind: 'field', field, slotIndex: append ? undefined : slotIndex });
     },
     [
       valid,
       assetLibrarySource,
       getSeedanceFieldBlockedMessage,
+      inputAssets,
       resetAssetLibraryForSource,
       setAssetPickerTarget,
       showNotice,

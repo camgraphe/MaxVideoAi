@@ -24,6 +24,7 @@ test('selection is portal-scoped with a single visible heading and owner-control
   assert.doesNotMatch(modal, /<h2/);
   const selection=readFileSync('frontend/components/library/useReferencePickerSelection.ts','utf8');
   assert.match(picker,/useReferencePickerSelection/);
+  assert.match(picker,/useReferencePickerBrowse/);
   assert.match(picker,/ReferencePickerFooter/);
   assert.ok(picker.split('\n').length<=500);
   assert.match(selection, /await live\.onConfirm/);

@@ -573,6 +573,10 @@
 .app-experience .app-picker-basket { flex: none; max-height: 160px; overflow: auto; padding: 8px 16px; border-top: 1px solid var(--app-line); }
 .app-experience .app-picker-basket li { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 .app-experience .app-picker-basket li > span:first-child { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-experience .app-picker-basket li { min-height: 44px; }
+.app-experience .app-picker-basket button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border: 1px solid var(--app-line); }
+.app-experience .app-picker-order-actions { display: flex; gap: 4px; flex: none; }
+.app-experience .app-picker-order-actions button { width: 44px; }
 .app-experience .app-picker-management { display: flex; flex-wrap: wrap; gap: 8px; }
 .app-experience .app-reference-picker > .compact-library-collections { max-height: 200px; overflow: auto; }
 .app-experience .app-reference-picker > .app-media-detail-layout { min-height: 0; overflow: auto; }
@@ -586,6 +590,17 @@
 .app-experience .app-reference-picker button:disabled, .app-experience .app-reference-picker fieldset:disabled { opacity: .5; cursor: not-allowed; }
 .app-experience .app-picker-filters { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(120px, 180px) auto; gap: 8px; flex: none; padding: 12px 16px; border: 0; border-bottom: 1px solid var(--app-line); }
 .app-experience .app-picker-filters input, .app-experience .app-picker-filters select { width: 100%; min-width: 0; background: var(--app-canvas); border: 1px solid var(--app-line); color: var(--app-ink); padding: 8px 10px; font-size: 13px; }
+.app-experience .app-picker-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.app-experience .app-picker-field > label { font-size: 11px; font-weight: 500; color: var(--app-muted); }
+.app-experience .app-picker-select { position: relative; min-width: 0; }
+.app-experience .app-picker-select select { appearance: none; padding-right: 32px; }
+.app-experience .app-picker-select > svg { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); pointer-events: none; color: var(--app-muted); }
+.app-experience .app-picker-instructions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; flex: none; padding: 8px 16px; font-size: 12px; color: var(--app-muted); border-bottom: 1px solid var(--app-line); }
+.app-experience .app-picker-instructions > span { white-space: nowrap; }
+.app-experience .app-picker-character-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 6px 10px; font-size: 12px; border-radius: 6px; border: 1px solid var(--app-line); }
+.app-experience .app-picker-import { grid-column: 1 / -1; flex-wrap: wrap; }
+.app-experience .app-reference-picker .compact-media-inspect { min-height: 36px; }
+.app-experience .app-reference-picker .compact-media-check { min-width: 36px; min-height: 36px; align-items: center; justify-content: center; top: 0; left: 0; }
 .app-experience .app-picker-import { display: flex; align-items: center; gap: 6px; }
 .app-experience .app-picker-import button { box-shadow: none; font-size: 12px; font-weight: 500; padding-inline: 10px; background: transparent; color: var(--app-ink); border: 1px solid var(--app-line); }
 .app-experience .app-picker-body { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 16px; scrollbar-width: thin; scrollbar-color: var(--app-line) transparent; }
@@ -626,6 +641,9 @@
   .app-experience .app-picker-heading { padding: 8px 12px; }
   .app-experience .app-picker-heading h2 { font-size: 15px; }
   .app-experience .app-picker-filters { grid-template-columns: minmax(80px, 1fr) minmax(100px, 1fr); padding: 8px 12px; }
+  .app-experience .app-picker-search-field { grid-column: 1 / -1; }
+  .app-experience .app-picker-instructions { padding-inline: 12px; }
+  .app-experience .app-reference-picker .compact-media-inspect { opacity: 1; }
   .app-experience .app-picker-import { grid-column: 1 / -1; }
   .app-experience .app-picker-body { padding: 12px; }
   .app-experience .app-picker-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

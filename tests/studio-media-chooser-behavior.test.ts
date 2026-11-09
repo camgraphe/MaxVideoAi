@@ -246,7 +246,7 @@ for (const kind of ['audio', 'video'] as const) test(`Saved characters retires t
     await React.act(async()=>input.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true})));
     assert.match(fixture.dom.window.document.querySelector('.app-library-import')!.textContent!,/retained.wav/);
     await fixture.click('Back');
-    const preview = fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-preview') ?? [...fixture.dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(b => b.getAttribute('aria-label')?.includes('Preview'));
+    const preview = fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-inspect') ?? [...fixture.dom.window.document.querySelectorAll<HTMLButtonElement>('button')].find(b => b.getAttribute('aria-label')?.includes('Preview'));
     assert.ok(preview, 'preview action exists');
     await React.act(async()=>preview.click());
     await fixture.settle();
@@ -290,7 +290,7 @@ test('Saved characters retires a pending private preview and its late grant cann
  try{
   const select=fixture.dom.window.document.querySelector<HTMLSelectElement>('select[aria-label="Media type"]')!;
   await React.act(async()=>{select.value='audio';select.dispatchEvent(new fixture.dom.window.Event('change',{bubbles:true}));});await fixture.settle();
-  await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-preview')!.click());
+  await React.act(async()=>fixture.dom.window.document.querySelector<HTMLButtonElement>('.compact-media-inspect')!.click());
   assert.ok(finish,'real read owner requests a private grant');
   await fixture.click('Saved characters');
   assert.ok(signal,'private read attempt is pending');

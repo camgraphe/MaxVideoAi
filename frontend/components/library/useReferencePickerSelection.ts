@@ -119,12 +119,12 @@ export function useReferencePickerSelection({
       return next.some((item, index) => item !== previous[index]) ? next : previous;
     });
   }, [assets]);
-  const confirm = async () => {
+  const accept = async (candidates: AssetBrowserAsset[]) => {
     if (
-      !selected ||
+      !candidates.length ||
       busy ||
       inFlight.current ||
-      basket.some(
+      candidates.some(
         (item) =>
           isDisabled(item) ||
           ('unavailable' in item && item.unavailable) ||
@@ -140,14 +140,17 @@ export function useReferencePickerSelection({
     try {
       // The insertion owner alone closes on acceptance; rejected choices remain reviewable.
       if (owner) {
-        const validation = await validateLibraryPickerSelection(owner, basket, selection.sourceProof);
+        const validation = await validateLibraryPickerSelection(owner, candidates, selection.sourceProof);
         if (!isCurrent()) return;
         setBasket((previous) =>
-          previous.map((item, index) => ({
-            ...item,
-            organization: validation[index]?.state ?? item.organization,
-            validationError: validation[index]?.error,
-          })),
+          previous.map((item) => {
+            const index = candidates.findIndex((candidate) => same(candidate, item));
+            return index < 0 ? item : {
+              ...item,
+              organization: validation[index]?.state ?? item.organization,
+              validationError: validation[index]?.error,
+            };
+          }),
         );
         if (validation.some((item) => item.error)) {
           setFailure(validation.some((item) => item.state?.trashedAt) ? labels[4] : unavailableLabel);
@@ -155,11 +158,11 @@ export function useReferencePickerSelection({
         }
       }
       const live = latestSelection.current;
-      if (basket.some((item) => live.isDisabled?.(item) || live.getEligibility?.(item)?.status === 'blocked')) {
+      if (candidates.some((item) => live.isDisabled?.(item) || live.getEligibility?.(item)?.status === 'blocked')) {
         setFailure(copy.error);
         return;
       }
-      const result = multiple ? await live.onConfirmMany?.(basket, { isCurrent }) : await live.onConfirm?.(selected);
+      const result = multiple ? await live.onConfirmMany?.(candidates, { isCurrent }) : await live.onConfirm?.(candidates[0]);
       if (!isCurrent()) return;
       if (result === false || typeof result === 'string') setFailure(typeof result === 'string' ? result : copy.error);
     } catch {
@@ -172,6 +175,8 @@ export function useReferencePickerSelection({
       }
     }
   };
+  const confirm = () => accept(basket);
+  const confirmAsset = (asset: AssetBrowserAsset) => accept([asset]);
 
   async function restore(item: AssetBrowserAsset) {
     if (!owner || busy || inFlight.current) return;
@@ -221,6 +226,7 @@ export function useReferencePickerSelection({
     labels,
     unavailableLabel,
     confirm,
+    confirmAsset,
     restore,
   };
 }

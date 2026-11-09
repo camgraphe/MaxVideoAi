@@ -1,4 +1,6 @@
 'use client';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { referencePickerBatchLabel } from './reference-picker-copy';
 import type { AssetBrowserAsset } from './AssetLibraryBrowser';
 import type { ReferencePickerSelection } from './ReferenceLibraryPicker.client';
 import type { useReferencePickerSelection } from './useReferencePickerSelection';
@@ -56,32 +58,35 @@ export function ReferencePickerFooter({
               ) : null}
               <button
                 type="button"
+                aria-label={`${labels[0]} · ${displayName(item, index)}`}
                 disabled={busy}
                 onClick={() => setBasket((previous) => previous.filter((value) => value !== item))}
               >
-                {labels[0]}
+                <X size={14} aria-hidden /><span>{labels[0]}</span>
               </button>
-              {index > 0 ? (
+              {basket.length > 1 ? (
+                <div className="app-picker-order-actions">
                 <button
                   type="button"
-                  disabled={busy}
-                  data-basket-move="up"
-                  aria-label={labels[1]}
+                  disabled={busy || index === 0}
+                  data-basket-move={index > 0 ? 'up' : undefined}
+                  aria-label={`${labels[1]} · ${displayName(item, index)}`}
+                  title={labels[1]}
                   onClick={() => move(index, -1)}
                 >
-                  ↑
+                  <ChevronUp size={18} aria-hidden />
                 </button>
-              ) : null}
-              {index < basket.length - 1 ? (
                 <button
                   type="button"
-                  disabled={busy}
-                  data-basket-move="down"
-                  aria-label={labels[2]}
+                  disabled={busy || index === basket.length - 1}
+                  data-basket-move={index < basket.length - 1 ? 'down' : undefined}
+                  aria-label={`${labels[2]} · ${displayName(item, index)}`}
+                  title={labels[2]}
                   onClick={() => move(index, 1)}
                 >
-                  ↓
+                  <ChevronDown size={18} aria-hidden />
                 </button>
+                </div>
               ) : null}
             </li>
           ))}
@@ -127,7 +132,7 @@ export function ReferencePickerFooter({
               }
               onClick={() => void confirm()}
             >
-              {busy ? copy.busy : (selection.confirmLabel ?? copy.use)}
+              {busy ? copy.busy : (selection.confirmLabel ?? (selection.onConfirmMany ? referencePickerBatchLabel(locale, basket.length) : copy.use))}
             </button>
           ) : null}
         </div>

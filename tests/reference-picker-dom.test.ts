@@ -415,12 +415,45 @@ test('ordered basket survives source/page/cache changes, reorders, and retains a
   } finally {await h.close();}
 });
 
-for(const change of ['model','role','account','reopen'] as const)test(`late targeted validation cannot accept a retired ${change} intent, including ABA`,async()=>{
+for (const outcome of ['accept', 'trash', 'version'] as const) {
+ test(`direct activation validates only the clicked source once and handles ${outcome}`, async () => {
+  const session = await mockBrowserSession('A'), h = await harness(), oldFetch = globalThis.fetch;
+  const reference = { type: 'asset' as const, assetId: 'ma_' + 'a'.repeat(32), kind: 'image' as const };
+  const clicked: AssetBrowserAsset = { ...asset, libraryRef: reference, sourceRevision: 'sr_one' };
+  const other: AssetBrowserAsset = { ...asset, id: 'other', url: 'https://private.example/other.png?sig=Other', libraryRef: { ...reference, assetId: 'ma_' + 'b'.repeat(32) }, sourceRevision: 'sr_two' };
+  const requests: unknown[] = [], accepted: AssetBrowserAsset[][] = [];
+  let finish!: (response: Response) => void;
+  globalThis.fetch = async (input, init) => {
+   assert.ok(String(input).endsWith('/selection/validate'));
+   requests.push(JSON.parse(String(init?.body)));
+   return new Promise(resolve => { finish = resolve; });
+  };
+  try {
+   await h.render(React.createElement(AssetLibraryBrowser, { ...props, assets: [clicked, other], selection: { ownerId: 'A', scope: 'model:append', onConfirmMany: items => { accepted.push(items); } } }));
+   await act(async () => h.doc.querySelectorAll<HTMLInputElement>('.compact-media-check input')[1].click());
+   const primary = h.doc.querySelector<HTMLButtonElement>('.compact-media-preview')!;
+   await act(async () => { primary.click(); primary.click(); });
+   assert.deepEqual(requests, [{ candidates: [{ reference: { ...reference, sourceRevision: 'sr_one' }, originalUrl: 'https://private.example/original.png?sig=Exact' }] }]);
+   assert.equal(accepted.length, 0, 'insertion waits for authoritative validation');
+   await act(async () => finish(Response.json({ ok: true, results: [{ reference, ...(outcome === 'accept' ? {} : { error: outcome === 'trash' ? 'SOURCE_TRASHED' : 'SOURCE_VERSION_CHANGED' }), state: { key: 'lo_one', favorite: false, collectionIds: [], trashedAt: outcome === 'trash' ? '2026-11-09T00:00:00Z' : null } }] })));
+   assert.equal(accepted.length, outcome === 'accept' ? 1 : 0);
+   if (outcome === 'accept') assert.deepEqual(accepted[0].map(item => [item.id, item.url]), [['original', 'https://private.example/original.png?sig=Exact']]);
+   else assert.ok(h.doc.querySelector('[role=alert]'), 'a refusal remains visible');
+   assert.equal(h.doc.querySelectorAll('[data-basket-item]').length, 1, 'the unrelated pending choice is preserved');
+  } finally { globalThis.fetch = oldFetch; await h.close(); await session.restore(); }
+ });
+}
+
+for (const activation of ['basket', 'direct'] as const)
+for(const change of ['model','role','account','reopen'] as const)test(`late ${activation} validation cannot accept a retired ${change} intent, including ABA`,async()=>{
  const session=await mockBrowserSession('A'),h=await harness(),oldFetch=globalThis.fetch;let finish!:(x:Response)=>void,calls=0;
  globalThis.fetch=async()=>new Promise(resolve=>finish=resolve);
  const view=(scope='model-A:role-A',owner='A')=>React.createElement(AssetLibraryBrowser,{...props,selection:{scope,ownerId:owner,onConfirmMany:()=>{calls++;}}});
  try{
-  await h.render(view());await h.click('.compact-media-check input');await h.click('.app-picker-use');assert.equal(calls,0);
+  await h.render(view());
+  if (activation === 'basket') { await h.click('.compact-media-check input'); await h.click('.app-picker-use'); }
+  else await h.click('.compact-media-preview');
+  assert.equal(calls,0);
   if(change==='reopen')await h.render(React.createElement('div'));else await h.render(view(change==='model'?'model-B:role-A':change==='role'?'model-A:role-B':'model-A:role-A',change==='account'?'B':'A'));
   await h.render(view());
   await act(async()=>finish(Response.json({ok:true,results:[{reference:{type:'legacy',assetId:asset.id,kind:'image'}}]})));
@@ -434,7 +467,7 @@ test('search-hidden Trash choice stays recoverable, Restore changes only organiz
  globalThis.fetch=async(url,init)=>{const body=init?.body?JSON.parse(String(init.body)):{};seen.push({url:String(url),body});if(String(url).endsWith('/selection/validate'))return Response.json({ok:true,results:[{reference:body.candidates[0].reference,state:state(),...trashed?{error:'SOURCE_TRASHED'}:{}}]});if(String(url).endsWith('/organization')){trashed=false;return Response.json({ok:true,succeededCount:1,failedCount:0,results:[{status:'succeeded',state:state()}]});}return Response.json({ok:true,collections:[]});};
  const view=(assets=[asset])=>React.createElement('section',{'data-host':'stable'},React.createElement(AssetLibraryBrowser,{...props,assets,selection:{scope:'model:append',ownerId:'A',onConfirmMany:items=>{calls++;assert.equal(items[0].url,asset.url);}}}));
  try{
-  await h.render(view());const host=h.doc.querySelector('[data-host]');await h.click('.compact-media-check input');await h.click('.compact-media-preview');assert.equal(h.doc.querySelector('[data-host]'),host);assert.equal(h.doc.querySelectorAll('[role=dialog]').length,0);
+  await h.render(view());const host=h.doc.querySelector('[data-host]');await h.click('.compact-media-check input');await h.click('.compact-media-inspect');assert.equal(h.doc.querySelector('[data-host]'),host);assert.equal(h.doc.querySelectorAll('[role=dialog]').length,0);
   const back=[...h.doc.querySelectorAll('button')].find(b=>b.textContent==='Back')!;await act(async()=>back.click());assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,1);
   await h.render(view([]));await h.click('.app-picker-use');assert.equal(calls,0);assert.equal(h.doc.querySelectorAll('[data-basket-item]').length,1);assert.match(h.doc.body.textContent!,/In Trash/);
   const restore=[...h.doc.querySelectorAll('button')].find(b=>b.textContent==='Restore')!;await act(async()=>restore.click());assert.equal(calls,0);
@@ -475,7 +508,9 @@ for (const mode of ['preview', 'import'] as const) {
     const session = await mockBrowserSession('A'), h = await harness(), oldFetch = globalThis.fetch;
     const queue = createLibraryImportQueue({ userId: 'A' });
     globalThis.fetch = async (url) => String(url).includes('seedance-workflow')
-      ? Response.json(null, { status: 404 }) : Response.json({ ok: true, items: [], nextCursor: null, hasMore: false });
+      ? Response.json(null, { status: 404 }) : String(url).includes('/media-library/browse')
+        ? Response.json({ ok: true, assets: [{ ...asset, kind: 'image', sourceRevision: 'sr_focus', organization: { key: 'lo_focus', favorite: false, collectionIds: [], trashedAt: null } }], totalCount: 1, nextCursor: null, hasMore: false })
+        : Response.json({ ok: true, items: [], nextCursor: null, hasMore: false });
     try {
       await h.render(React.createElement(SWRConfig, { value: { provider: () => new Map() } }, React.createElement(I18nProvider, { locale: 'en', dictionary: {}, fallback: {}, children:
         React.createElement(AssetLibraryModal, { fieldLabel: 'References', ownerId: 'A', assetType: 'image',
@@ -483,9 +518,9 @@ for (const mode of ['preview', 'import'] as const) {
           onRefresh() {}, onDelete() {}, deletingAssetId: null, importQueue: queue }) })));
       await act(async () => { await new Promise(resolve => setTimeout(resolve, 5)); });
       const host = h.doc.querySelector('[role=dialog]')!;
-      const trigger = mode === 'preview' ? h.doc.querySelector<HTMLButtonElement>('.compact-media-preview')!
+      const trigger = mode === 'preview' ? h.doc.querySelector<HTMLButtonElement>('.compact-media-inspect')!
         : [...h.doc.querySelectorAll<HTMLButtonElement>('.app-picker-import button')].find(button => button.textContent === 'Import')!;
-      trigger.focus();
+      await act(async () => trigger.focus());
       if (mode === 'preview') await act(async () => trigger.click());
       else {
         const input = h.doc.querySelector<HTMLInputElement>('.app-picker-import input[type=file]')!;
@@ -499,7 +534,7 @@ for (const mode of ['preview', 'import'] as const) {
       assert.equal(h.doc.querySelectorAll('[role=dialog]').length, 1);
       if (mode === 'preview') {
         const organize = [...h.doc.querySelectorAll<HTMLButtonElement>('button')].find(button => button.textContent === 'Organize')!;
-        organize.focus(); await act(async () => organize.click());
+        await act(async () => { organize.focus(); organize.click(); });
         assert.ok(h.doc.activeElement === organize, 'inline management retains its visible initiating control');
         assert.equal(h.doc.querySelectorAll('[role=dialog]').length, 1);
       }
