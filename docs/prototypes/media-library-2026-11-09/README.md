@@ -1,5 +1,7 @@
 # Bibliothèque et références — proposition interactive
 
+> **Itération V2 en cours.** Lire [REPRISE.md](REPRISE.md) avant de continuer. Les résultats complets sur `70463ad1` décrivent la V1, pas les derniers ajouts de mosaïque, liste et identification sans noms fiables.
+
 Prototype jetable, sans modification applicative. Branche `codex/media-library-design`, basée sur le `main` vérifié le 9 novembre 2026 (`b08af8a3f`). La PR 638 reste sous la responsabilité du chat de livraison. Aucun déploiement ni fusion n’est prévu ici.
 
 ## Ouvrir

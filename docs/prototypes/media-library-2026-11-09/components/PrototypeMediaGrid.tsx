@@ -3,14 +3,14 @@
 'use client';
 import { memo, useMemo, useRef } from 'react';
 import { Button, Checkbox, GridList, GridListItem, type Selection } from 'react-aria-components';
-import { GridLayout, ListLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
+import { GridLayout, ListLayout, WaterfallLayout, Size, Virtualizer } from 'react-aria-components/Virtualizer';
 import { Check, Film, ImageIcon, Music2, ScanSearch } from 'lucide-react';
 import { useLibraryMediaAccess } from '@/hooks/useLibraryMediaAccess';
 import type { AssetBrowserAsset } from '../../../../frontend/components/library/AssetLibraryBrowser';
 import { compactLibraryCopy } from '../../../../frontend/components/library/compact-library-copy';
 import { compactMediaSource } from '../../../../frontend/components/library/media-action-copy';
 const defaultAssetKey = (asset: AssetBrowserAsset) => asset.organization?.key ?? asset.id;
-const audioOptions = { rowSize: 64, gap: 4 };
+const audioOptions = { rowSize: 52, gap: 2 };
 function sameResource(a: string, b: string) {
   try {
     const x = new URL(a),
@@ -76,6 +76,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   getAssetName,
   selectionMode = 'multiple',
   selectionDisabledKeys,
+  displayMode = 'mosaic',
 }: {
   assets: AssetBrowserAsset[];
   selectedKeys: ReadonlySet<string>;
@@ -94,6 +95,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
   getAssetName?: (asset: AssetBrowserAsset) => string;
   selectionMode?: 'single' | 'multiple';
   selectionDisabledKeys?: ReadonlySet<string>;
+  displayMode?: 'mosaic' | 'grid' | 'list';
 }) {
   const copy = compactLibraryCopy(locale);
   const geometry = useRef({ count: 0, audio: false });
@@ -103,6 +105,7 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
       audio: assets.length > 0 && assets.every((a) => a.kind === 'audio'),
     };
   const audio = geometry.current.audio;
+  const list = audio || displayMode === 'list';
   const latest = useRef({ onOpen, onPreview, onSelectionChange, assets, selectedKeys });
   latest.current = { onOpen, onPreview, onSelectionChange, assets, selectedKeys };
   const items = useMemo<{ id: string; asset: AssetBrowserAsset | null; name: string }[]>(
@@ -130,6 +133,12 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
     }),
     [density],
   );
+  const mosaicOptions = useMemo(() => ({
+    minItemSize: new Size(density, 64),
+    maxItemSize: new Size(density + 24, Infinity),
+    minSpace: new Size(6, 6),
+    maxHorizontalSpace: 8,
+  }), [density]);
   const anchor = useRef<string | null>(null);
   const changed = (keys: Selection) => {
     if (keys === 'all') {
@@ -187,10 +196,10 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
       onSelectionChange={changed}
       disabledBehavior={selectionDisabledKeys && !disabled && !loading ? 'selection' : 'all'}
       disabledKeys={disabled || loading ? items.map((item) => item.id) : selectionDisabledKeys}
-      layout={audio ? 'stack' : 'grid'}
-      className={`compact-media-grid ${audio ? 'is-audio' : 'is-grid'} ${virtualized ? '' : 'is-plain'}`}
-      style={!virtualized && !audio ? { gridTemplateColumns: `repeat(auto-fill,minmax(${density}px,1fr))` } : undefined}
-      dependencies={[audio, locale, userId, renderAssetMeta, getAssetKey, selectionDisabledKeys, Boolean(onPreview), openActionLabel]}
+      layout={list ? 'stack' : 'grid'}
+      className={`compact-media-grid ${list ? 'is-list' : displayMode === 'mosaic' ? 'is-mosaic' : 'is-grid'} ${virtualized ? '' : 'is-plain'}`}
+      style={!virtualized && !list ? { gridTemplateColumns: `repeat(auto-fill,minmax(${density}px,1fr))` } : undefined}
+      dependencies={[list, displayMode, locale, userId, renderAssetMeta, getAssetKey, selectionDisabledKeys, Boolean(onPreview), openActionLabel]}
       onAction={(key) => {
         const item = latest.current.assets.find((a) => getAssetKey(a) === key);
         if (item) latest.current.onOpen(item);
@@ -202,7 +211,8 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
           textValue={item.name}
           data-media-key={item.id}
           data-kind={item.asset?.kind}
-          className={`compact-media-tile ${audio ? 'compact-audio-row' : ''}`}
+          className={`compact-media-tile ${list ? 'compact-audio-row compact-list-row' : displayMode === 'mosaic' ? 'compact-mosaic-tile' : ''}`}
+          style={{'--media-aspect': item.asset?.kind === 'audio' ? 2 : item.asset?.width && item.asset?.height ? item.asset.width / item.asset.height : 1} as React.CSSProperties}
         >
           {item.asset ? (
             <>
@@ -243,9 +253,10 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
               {item.asset.durationSec != null ? (
                 <span className="compact-media-duration">{duration(item.asset.durationSec)}</span>
               ) : null}
-              <span className="compact-media-kind">
-                {compactMediaSource(item.asset.source ?? '', locale, item.asset.kind)}
+              <span className="compact-media-kind" aria-label={`Type : ${{image:'Image',video:'Vidéo',audio:'Audio'}[item.asset.kind]}`}>
+                {{image:'Image',video:'Vidéo',audio:'Audio'}[item.asset.kind]}
               </span>
+              {list ? <span className="compact-list-dimensions" aria-label={`Dimensions : ${item.asset.width && item.asset.height ? `${item.asset.width} × ${item.asset.height}` : 'audio'}`}>{item.asset.width && item.asset.height ? `${item.asset.width} × ${item.asset.height}` : '—'}</span> : null}
               {renderAssetMeta ? <span className="compact-media-meta">{renderAssetMeta(item.asset)}</span> : null}
             </>
           ) : (
@@ -268,12 +279,16 @@ export const CompactMediaGrid = memo(function CompactMediaGrid({
         }
       }}
       className="compact-media-canvas"
-      data-layout={audio ? 'audio-list' : 'grid'}
+      data-layout={list ? 'list' : displayMode}
       data-virtualized={virtualized}
     >
       {virtualized ? (
-        audio ? (
-          <Virtualizer key="audio" layout={ListLayout} layoutOptions={audioOptions}>
+        list ? (
+          <Virtualizer key="list" layout={ListLayout} layoutOptions={audioOptions}>
+            {collection}
+          </Virtualizer>
+        ) : displayMode === 'mosaic' ? (
+          <Virtualizer key="mosaic" layout={WaterfallLayout} layoutOptions={mosaicOptions} shouldObserveItemSize>
             {collection}
           </Virtualizer>
         ) : (

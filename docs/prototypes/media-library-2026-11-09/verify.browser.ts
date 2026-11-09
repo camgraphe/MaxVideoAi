@@ -75,8 +75,8 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
       await page.keyboard.press('Escape');
       await expect(page.getByRole('button',{name:'Character Retirer le filtre provenance'})).toBeVisible();
       await page.getByRole('button',{name:'Character Retirer le filtre provenance'}).click();
-      await page.getByRole('searchbox',{name:'Rechercher des médias'}).fill('Portrait');
-      await expect(page.locator('.compact-media-tile').first()).toContainText('Portrait');
+      await page.getByRole('searchbox',{name:'Rechercher des médias'}).fill('danseuse');
+      await expect(page.locator('.compact-media-tile').first()).toContainText('Character');
       await page.getByRole('button',{name:'Effacer la recherche',exact:true}).click();
       for(const row of [page.locator('.compact-media-tile').nth(0),page.locator('.compact-media-tile').nth(1)])await row.locator('.compact-media-check').click();
       await expect(page.locator('.selection-summary')).toContainText('2 sélectionnés');
@@ -142,7 +142,7 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
     const stress = await measure(volume,'11-volume-10000');
     assert.ok(stress.domCards < 120,`10k assets render ${stress.domCards} tiles`);
     await volume.locator('.compact-media-grid').evaluate(el=>el.scrollTo(0,el.scrollHeight));
-    await expect(volume.locator('.compact-media-tile').last()).toContainText('9997');
+    await expect(volume.locator('.compact-media-tile').last()).toHaveAttribute('data-media-key','demo-9997');
     await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
     await volume.getByRole('searchbox',{name:'Rechercher une collection'}).fill('1000');
     await expect(volume.getByRole('navigation',{name:'Collections',exact:true}).getByRole('button',{name:'Collection de démonstration 1000',exact:true})).toBeVisible();
