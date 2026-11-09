@@ -36,11 +36,14 @@ La référence visuelle générée par `baseline.ts` monte les vrais composants 
 - Distinguer le choix d’une collection de sa gestion. Le menu « Gérer » ouvre une fiche dédiée ; supprimer une collection conserve ses médias.
 - Garder la recherche visible. Provenance et état d’enregistrement restent dans Filtres, avec des puces visibles quand ils sont actifs. Trier et Affichage ont chacun un contrôle nommé.
 - Faire apparaître les actions groupées après sélection. Les commandes sélectionner les médias chargés / tous les résultats restent accessibles dans Plus d’options.
+- Sur desktop, réunir emplacement, types et import sur une même ligne. Conserver les onglets sur leur propre ligne lorsque la largeur manque. Densité initiale 128 px sur desktop, 136 px sur mobile ; le curseur garde toute la plage actuelle 88–184 px par pas de 8.
 - Afficher les médias entiers avec `object-fit: contain`, une géométrie fixe, des miniatures paresseuses et aucun lecteur vidéo dans la grille. Le prototype contient de vrais posters publics 16:9 et 9:16.
 - Dans le sélecteur : vignette = ajout direct, aperçu = bouton distinct, cases = panier ordonné à confirmer. Le panier compact devient détaillé à la demande. Le remplacement reste limité à l’emplacement occupé.
 - Préserver les références sélectionnées au changement de filtre dans le sélecteur ; conserver l’effacement annoncé de la sélection de gestion lorsque son périmètre change.
 
 Le prototype réutilise une copie isolée de la grille du candidat 638 (`449014a5`) afin de montrer ses interactions sans réimplémenter ni modifier son correctif dans le produit. Après la fusion de 638, une éventuelle intégration doit revenir à la grille partagée du dernier main.
+
+La recherche de collections parmi 1 000 entrées est locale dans la démo. Le GET actuel `/api/media-library/collections` prend `limit` et `cursor`, sans recherche globale. L’intégration devra définir une recherche serveur paginée, ou annoncer clairement une recherche limitée aux collections déjà chargées ; ne pas charger arbitrairement toutes les collections du compte pour reproduire le prototype.
 
 ## Parité et responsabilités pour une intégration
 

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Clapperboard, FolderOpen, Grid2X2, ImagePlus, Layers, Moon, Plus, Settings2, Sparkles, Sun, Upload } from 'lucide-react';
 import { CompactMediaGrid } from './components/PrototypeMediaGrid';
 import { Collections } from './components/Collections';
-import { Toolbar } from './components/Toolbar';
+import { Toolbar, KindTabs } from './components/Toolbar';
 import { SelectionBar } from './components/SelectionBar';
 import { Viewer } from './components/Viewer';
 import { Sheet, Field, Popup } from './components/Primitives';
@@ -71,7 +71,7 @@ function App() {
   useEffect(() => () => clearTimeout(toastTimer.current),[]);
   const totalLabel = `${filtered.length.toLocaleString('fr')} média${filtered.length>1?'s':''}`;
   const library = (isPicker: boolean) => <section className={`library ${isPicker ? 'in-picker' : ''}`} aria-label={isPicker ? 'Choisir depuis les médias' : 'Bibliothèque médias'}>
-    <div className="library-heading"><Collections items={collections} folder={scope.folder} onChoose={folder => patch({folder})} onChange={setCollections} notify={notify}/><span className="library-count">{scenario === 'loading' ? 'Chargement…' : totalLabel}</span><button className="control import-main" onClick={() => setImportOpen(true)}><Upload size={17}/><span>Importer</span></button></div>
+    <div className="library-heading"><Collections items={collections} folder={scope.folder} onChoose={folder => patch({folder})} onChange={setCollections} notify={notify}/><span className="library-count">{scenario === 'loading' ? 'Chargement…' : totalLabel}</span><div className="heading-kinds"><KindTabs scope={scope} patch={patch}/></div><button className="control import-main" onClick={() => setImportOpen(true)}><Upload size={17}/><span>Importer</span></button></div>
     <Toolbar scope={scope} patch={patch} density={density} setDensity={n => {setDensity(n);try{localStorage.setItem('media-design:density',String(n));}catch{}}} picker={isPicker} onImport={() => setImportOpen(true)} onRefresh={refresh} onSelect={all => {setSelected(new Set((all?filtered:visible).map(a=>a.id)));notify(all?`Tous les ${filtered.length.toLocaleString('fr')} résultats sont sélectionnés dans la démo.`:`${visible.length} médias chargés sélectionnés.`);}} onTool={setTool}/>
     <div className="results-caption"><span>{isPicker ? replaceSlot === undefined ? `Références image · ${10-references.length} places disponibles` : `Remplacer l’image ${replaceSlot+1} · un seul média` : scope.folder === 'trash' ? 'Restaurez vos médias depuis la corbeille' : 'Récemment ajoutés'}</span>{isPicker ? <button className="text-button" onClick={() => setTool('Character Studio')}>Character Studio<Sparkles size={14}/></button> : <span className="subtle">Formats entiers</span>}</div>
     {partial ? <div className="status-error" role="alert"><p>{partial}</p><button onClick={() => {setScenario('ready');setPartial(null);notify('Démo rétablie. La sélection restante est conservée ; relancez votre action.');}}>Reprendre avec les médias restants</button></div> : null}

@@ -1,10 +1,13 @@
 import { ArrowDownWideNarrow, Check, ExternalLink, LayoutGrid, MoreHorizontal, RefreshCw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
 import { kindLabels, sources, type Scope } from '../fixtures';
 import { Popup, Field } from './Primitives';
+export function KindTabs({scope,patch}: {scope: Scope; patch: (patch: Partial<Scope>) => void}) {
+  return <nav className="kind-tabs" aria-label="Types de médias">{Object.entries(kindLabels).map(([id,label]) => <button key={id} aria-pressed={scope.kind === id} onClick={() => patch({kind:id as Scope['kind']})}>{label}</button>)}</nav>;
+}
 export function Toolbar({scope, patch, density, setDensity, picker, onImport, onRefresh, onSelect, onTool}: {scope: Scope; patch: (patch: Partial<Scope>) => void; density: number; setDensity: (value: number) => void; picker: boolean; onImport: () => void; onRefresh: () => void; onSelect: (all: boolean) => void; onTool: (tool: string) => void}) {
   const filterCount = Number(scope.source !== 'all') + Number(scope.view !== 'all') + Number(picker && scope.compatibility !== 'compatible');
   return <>
-    <div className="kind-row"><nav className="kind-tabs" aria-label="Types de médias">{Object.entries(kindLabels).map(([id,label]) => <button key={id} aria-pressed={scope.kind === id} onClick={() => patch({kind:id as Scope['kind']})}>{label}</button>)}</nav><span className="kind-hint">Vos créations, réunies.</span></div>
+    <div className="kind-row mobile-kind-row"><KindTabs scope={scope} patch={patch}/><span className="kind-hint">Vos créations, réunies.</span></div>
     <div className="browse-toolbar">
       <label className="search main-search"><Search size={18}/><span className="sr-only">Rechercher des médias</span><input type="search" value={scope.query} placeholder="Rechercher vos médias…" maxLength={200} onChange={event => patch({query:event.target.value})}/>{scope.query ? <button className="icon-button" aria-label="Effacer la recherche" onClick={() => patch({query:''})}><X size={16}/></button> : <kbd>/</kbd>}</label>
       <div className="toolbar-controls">

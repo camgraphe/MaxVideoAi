@@ -34,6 +34,7 @@ h1, h2, h3, p { margin: 0; }
 .workspace-badge { color:var(--app-muted); font-size:11px; }
 .library { display:flex; flex-direction:column; min-height:0; flex:1; padding:16px 28px 14px; gap:0; }
 .library-heading { display:flex; align-items:center; gap:12px; min-height:44px; padding-bottom:10px; }
+.heading-kinds { display:none; }
 .collection-trigger { font-size:18px; font-weight:600; padding-left:0; max-width:min(65vw,420px); }
 .collection-trigger > span { text-overflow:ellipsis; overflow:hidden; }
 .collection-trigger svg:first-child { color:var(--app-accent); flex:none; }
@@ -198,6 +199,12 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .demo-bar .control { min-height:26px; font-size:10px; padding:2px 8px; border:0; background:transparent; }
 .toast { position:fixed; z-index:100; bottom:48px; left:50%; transform:translateX(-50%); max-width:min(550px,calc(100vw - 24px)); padding:12px 18px; border:1px solid var(--app-line); background:var(--app-ink); color:var(--app-panel); box-shadow:0 10px 40px #0002; border-radius:10px; font-size:12px; line-height:1.6; opacity:0; pointer-events:none; }
 .toast.visible { opacity:1; }
+@media(min-width:1000px) {
+  .heading-kinds { display:flex; margin-left:20px; }
+  .mobile-kind-row { display:none; }
+  .library-heading { border-bottom:1px solid var(--app-line); padding-bottom:0; margin-bottom:14px; }
+  .collection-trigger { max-width:280px; font-size:16px; }
+}
 @media(max-width:700px) {
   button, .control { min-height:44px; font-size:12px; }
   input, select, textarea { min-height:44px; }
