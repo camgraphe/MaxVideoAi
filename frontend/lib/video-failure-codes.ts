@@ -1,5 +1,7 @@
 export const SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED = 'seedance_output_copyright_restricted';
 export const SEEDANCE_OUTPUT_AUDIO_BLOCKED = 'seedance_output_audio_blocked';
+export const SEEDANCE_PROMPT_BLOCKED = 'seedance_prompt_blocked';
+export const SEEDANCE_CONTENT_BLOCKED = 'seedance_content_blocked';
 export const SEEDANCE_INPUT_VIDEO_TOO_SMALL = 'seedance_input_video_too_small';
 export const SEEDANCE_I2V_RATIO_REJECTED = 'seedance_i2v_ratio_rejected';
 export const SEEDANCE_TASK_TYPE_CONSTRAINT = 'seedance_task_type_constraint';
@@ -26,6 +28,14 @@ export function getVideoFailureCodeFromSettingsSnapshot(settingsSnapshot: unknow
     return SEEDANCE_OUTPUT_AUDIO_BLOCKED;
   }
   const failureCode = providerFailure.failureCode;
+  if (providerFailure.provider === 'byteplus_modelark' && typeof providerFailure.providerErrorCode === 'string') {
+    const code = providerFailure.providerErrorCode.trim();
+    if (/^inputtextsensitivecontentdetected(?:\.|$)/i.test(code)) return SEEDANCE_PROMPT_BLOCKED;
+    // These older records discarded the precise rejection. Do not attribute it to a reference.
+    if (failureCode === SEEDANCE_REFERENCE_MEDIA_BLOCKED && code === 'BYTEPLUS_PROVIDER_ERROR') {
+      return SEEDANCE_CONTENT_BLOCKED;
+    }
+  }
   if (typeof failureCode === 'string' && failureCode.length) return failureCode;
   const provider = providerFailure.provider;
   const providerErrorCode = providerFailure.providerErrorCode;

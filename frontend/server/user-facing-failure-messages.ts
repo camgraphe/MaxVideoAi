@@ -1,7 +1,7 @@
 import { getSeedanceFailureMessage, seedanceFailureCodeFromMessage } from '@/lib/seedance-failure-messages';
 import { getGeneratedImageFailureMessage, getKnownGenerationFailureMessage } from '@/lib/generation-failure-messages';
 import { getWanImageFailureMessage } from '@/lib/wan-image-failure-messages';
-import { SEEDANCE_OUTPUT_AUDIO_BLOCKED, SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
+import { SEEDANCE_CONTENT_BLOCKED, SEEDANCE_OUTPUT_AUDIO_BLOCKED, SEEDANCE_PROMPT_BLOCKED, SEEDANCE_REFERENCE_MEDIA_BLOCKED, SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE, SEEDANCE_REFERENCE_VIDEO_BLOCKED, SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED } from '@/lib/video-failure-codes';
 
 const DEFAULT_FAILURE_MESSAGE =
   'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
@@ -288,6 +288,8 @@ export function toUserFacingRefundReason(message: string | null | undefined): st
   if (wanImage) return wanImage;
   if (getGeneratedImageFailureMessage(normalized)) return 'Generated image was blocked by safety checks.';
   const specificCode = seedanceFailureCodeFromMessage(normalized);
+  if (specificCode === SEEDANCE_PROMPT_BLOCKED) return 'Prompt was blocked by Seedance safety checks.';
+  if (specificCode === SEEDANCE_CONTENT_BLOCKED) return 'Request was blocked by Seedance safety checks.';
   if (specificCode === SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE) return 'Reference media could not be read.';
   if (specificCode === SEEDANCE_OUTPUT_AUDIO_BLOCKED) return 'Generated audio was blocked by safety checks.';
   if (specificCode === SEEDANCE_REFERENCE_MEDIA_BLOCKED) return 'Reference media was blocked by Seedance safety checks.';

@@ -1,6 +1,8 @@
 import type { NormalizedVideoProviderTask, NormalizedVideoProviderUsage } from '@/server/video-providers/types';
 import {
+  SEEDANCE_CONTENT_BLOCKED,
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
+  SEEDANCE_PROMPT_BLOCKED,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
@@ -135,13 +137,23 @@ const SEEDANCE_COPYRIGHT_FAILURE_MESSAGE =
 const SEEDANCE_TASK_TYPE_FAILURE_MESSAGE =
   'Seedance could not apply the selected edit or extension to the source video. Clarify what should change or continue in the source video, then try again.';
 
-function getReferenceFailureCode(message: string): string | null {
+function getSeedanceInputFailureCode(message: string, providerErrorCode?: string | null): string | null {
   const normalized = message.toLowerCase();
+  const code = providerErrorCode?.trim() ?? '';
+  const inputKind = /^input(text|image|video|audio)sensitivecontentdetected(?:\.|$)/i.exec(code)?.[1].toLowerCase();
+  if (inputKind === 'text') return SEEDANCE_PROMPT_BLOCKED;
+  if (inputKind === 'image') return SEEDANCE_REFERENCE_IMAGE_BLOCKED;
+  if (inputKind === 'video') return SEEDANCE_REFERENCE_VIDEO_BLOCKED;
+  if (inputKind === 'audio') return SEEDANCE_REFERENCE_MEDIA_BLOCKED;
+  if (/^output\w+sensitivecontentdetected(?:\.|$)/i.test(code)) return SEEDANCE_CONTENT_BLOCKED;
   if (/video total duration.*(?:30\.2|30\b)/i.test(message)) return SEEDANCE_REFERENCE_VIDEO_DURATION_EXCEEDED;
-  if (/real person|private information|private content|recognizable|recognisable|identifiable|sensitive|policy/.test(normalized)) {
+  if (/^sensitivecontentdetected(?:\.|$)/i.test(code)
+    || /real person|private information|private content|recognizable|recognisable|identifiable|sensitive|policy|safety|moderation|prohibited|blocked/.test(normalized)) {
+    if (/input text/.test(normalized)) return SEEDANCE_PROMPT_BLOCKED;
     if (/input video|reference video/.test(normalized)) return SEEDANCE_REFERENCE_VIDEO_BLOCKED;
     if (/input image|reference image/.test(normalized)) return SEEDANCE_REFERENCE_IMAGE_BLOCKED;
-    return SEEDANCE_REFERENCE_MEDIA_BLOCKED;
+    if (/input audio|reference audio|input media|reference media/.test(normalized)) return SEEDANCE_REFERENCE_MEDIA_BLOCKED;
+    return SEEDANCE_CONTENT_BLOCKED;
   }
   return null;
 }
@@ -199,11 +211,15 @@ function getBytePlusUserSafeFailureMessage(
   if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
     return SEEDANCE_TASK_TYPE_FAILURE_MESSAGE;
   }
+  const inputFailureCode = getSeedanceInputFailureCode(providerMessage, providerErrorCode);
+  if (inputFailureCode === SEEDANCE_PROMPT_BLOCKED) {
+    return getSeedanceFailureMessage({ failureCode: inputFailureCode })!;
+  }
   if (isBytePlusCopyrightFailure(providerMessage, providerErrorCode)) {
     return SEEDANCE_COPYRIGHT_FAILURE_MESSAGE;
   }
-  const referenceMessage = getSeedanceFailureMessage({ failureCode: getReferenceFailureCode(providerMessage) });
-  if (referenceMessage) return referenceMessage;
+  const inputMessage = getSeedanceFailureMessage({ failureCode: inputFailureCode });
+  if (inputMessage) return inputMessage;
   if (isBytePlusVideoPixelFloorFailure(providerMessage)) {
     return 'The source video is too small for Seedance. Use a video with at least 407,696 total pixels and try again.';
   }
@@ -263,11 +279,12 @@ export function getBytePlusTaskFailureCode(
   if (isBytePlusTaskTypeConstraint(providerErrorCode)) {
     return SEEDANCE_TASK_TYPE_CONSTRAINT;
   }
+  const inputFailureCode = getSeedanceInputFailureCode(message, providerErrorCode);
+  if (inputFailureCode === SEEDANCE_PROMPT_BLOCKED) return inputFailureCode;
   if (isBytePlusCopyrightFailure(message, providerErrorCode)) {
     return SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED;
   }
-  const referenceCode = getReferenceFailureCode(message);
-  if (referenceCode) return referenceCode;
+  if (inputFailureCode) return inputFailureCode;
   if (isBytePlusVideoPixelFloorFailure(message)) {
     return SEEDANCE_INPUT_VIDEO_TOO_SMALL;
   }

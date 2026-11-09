@@ -5,7 +5,9 @@ import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } fro
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
 import { generatedVideoArtifactProjection } from '@/lib/generated-video-output-artifacts';
 import {
+  SEEDANCE_CONTENT_BLOCKED,
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
+  SEEDANCE_PROMPT_BLOCKED,
   getVideoFailureCodeFromSettingsSnapshot,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
@@ -81,7 +83,9 @@ const FAILED_ATTEMPT_BOUNDARY =
 
 const SAFE_AGENT_FAILURE_CODES = new Set([
   'reference_link_unsupported',
+  SEEDANCE_CONTENT_BLOCKED,
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
+  SEEDANCE_PROMPT_BLOCKED,
   SEEDANCE_I2V_RATIO_REJECTED,
   SEEDANCE_INPUT_VIDEO_TOO_SMALL,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,

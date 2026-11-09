@@ -1,6 +1,8 @@
 import {
+  SEEDANCE_CONTENT_BLOCKED,
   SEEDANCE_OUTPUT_AUDIO_BLOCKED,
   SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED,
+  SEEDANCE_PROMPT_BLOCKED,
   SEEDANCE_REFERENCE_IMAGE_BLOCKED,
   SEEDANCE_REFERENCE_MEDIA_BLOCKED,
   SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE,
@@ -12,6 +14,8 @@ import {
 type Locale = 'en' | 'fr' | 'es';
 const copy = {
   en: {
+    prompt: 'Seedance blocked the prompt during its safety checks. Change the prompt before trying again.',
+    content: 'Seedance blocked this request during its safety checks. Review the prompt and any reference media before trying again.',
     outputAudio: 'The generated audio was blocked by Seedance safety checks. Change the prompt or turn off generated audio before trying again.',
     copyright: 'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.',
     image: 'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.',
@@ -29,6 +33,8 @@ const copy = {
     noCharge: 'No credits were charged.',
   },
   fr: {
+    prompt: 'Seedance a bloqué le prompt lors de ses contrôles de sécurité. Modifiez le prompt avant de réessayer.',
+    content: 'Seedance a bloqué cette demande lors de ses contrôles de sécurité. Vérifiez le prompt et les éventuels médias de référence avant de réessayer.',
     outputAudio: 'Seedance a bloqué l’audio généré lors de ses contrôles de sécurité. Modifiez le prompt ou désactivez l’audio généré avant de réessayer.',
     copyright: 'Seedance a arrêté ce rendu après son démarrage, car ses contrôles de sortie ont détecté un contenu potentiellement soumis à des restrictions de droits d’auteur. Modifiez les personnages reconnaissables, marques, logos, références à des franchises ou le média source avant de réessayer.',
     image: 'Seedance a bloqué une image de référence, car elle pourrait contenir une personne reconnaissable ou du contenu privé. Utilisez une autre référence sans personne identifiable avant de réessayer.',
@@ -46,6 +52,8 @@ const copy = {
     noCharge: 'Aucun crédit n’a été débité.',
   },
   es: {
+    prompt: 'Seedance ha bloqueado el prompt durante sus controles de seguridad. Cambia el prompt antes de intentarlo de nuevo.',
+    content: 'Seedance ha bloqueado esta solicitud durante sus controles de seguridad. Revisa el prompt y los archivos de referencia, si los hay, antes de intentarlo de nuevo.',
     outputAudio: 'Seedance ha bloqueado el audio generado durante sus controles de seguridad. Cambia el prompt o desactiva el audio generado antes de intentarlo de nuevo.',
     copyright: 'Seedance detuvo este renderizado después de iniciarlo porque sus controles de salida detectaron posible contenido sujeto a restricciones de derechos de autor. Cambia los personajes reconocibles, marcas, logotipos, referencias a franquicias o el contenido fuente antes de volver a intentarlo.',
     image: 'Seedance ha bloqueado una imagen de referencia porque podría contener una persona reconocible o contenido privado. Utiliza otra referencia sin personas identificables antes de intentarlo de nuevo.',
@@ -71,6 +79,8 @@ function localeKey(locale: string): Locale {
 // Match only known customer copy for historical jobs without structured codes.
 export function seedanceFailureCodeFromMessage(message: string | null | undefined): string | null {
   if (!message || !/seedance/i.test(message)) return null;
+  if (/blocked (?:the )?prompt|prompt was blocked/i.test(message)) return SEEDANCE_PROMPT_BLOCKED;
+  if (/blocked this request|request was blocked/i.test(message)) return SEEDANCE_CONTENT_BLOCKED;
   if (/could not read (?:the )?reference media|reference media could not be read/i.test(message)) return SEEDANCE_REFERENCE_MEDIA_UNAVAILABLE;
   if (/generated audio.*blocked|blocked the generated audio/i.test(message)) return SEEDANCE_OUTPUT_AUDIO_BLOCKED;
   if (/copyright-restricted content|output.*copyright restrictions/i.test(message)) return SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED;
@@ -91,6 +101,8 @@ export function getSeedanceFailureMessage(params: {
   const text = copy[localeKey(params.locale ?? 'en')];
   const code = params.failureCode ?? seedanceFailureCodeFromMessage(params.message);
   switch (code) {
+    case SEEDANCE_PROMPT_BLOCKED: return text.prompt;
+    case SEEDANCE_CONTENT_BLOCKED: return text.content;
     case SEEDANCE_OUTPUT_AUDIO_BLOCKED: return text.outputAudio;
     case SEEDANCE_OUTPUT_COPYRIGHT_RESTRICTED: return text.copyright;
     case SEEDANCE_REFERENCE_IMAGE_BLOCKED: return text.image;
