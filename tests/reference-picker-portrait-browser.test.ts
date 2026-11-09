@@ -73,7 +73,14 @@ test('portrait video posters stay centered and uncropped in both reference selec
             assert.equal(await image.evaluate(node => getComputedStyle(node).objectPosition),'50% 50%','the full poster stays centered in its cover');
           }
           await expect(page.locator('video,audio')).toHaveCount(0);
-          await rows.first().getByRole('checkbox',{name:'Select Poster 0',exact:true}).check();
+          const selectedRow=page.getByRole('row',{name:'Poster 0',exact:true});
+          await expect(selectedRow.getByRole('button',{name:'Preview Poster 0',exact:true})).toBeVisible();
+          const choice=selectedRow.getByRole('checkbox');
+          await expect(choice).toHaveCount(1);
+          await expect(choice).toHaveAttribute('aria-label','Select Poster 0');
+          await expect(choice).toHaveAccessibleName('Select Poster 0 Poster 0');
+          await choice.check();
+          await expect(choice).toBeChecked();
           await expect(page.locator('.app-picker-selection')).toContainText('Poster 0');
           assert.equal(await page.evaluate(() => (globalThis as PortraitFixtureGlobal).selectedOriginal),undefined,'selection remains staged until confirmation');
           await page.getByRole('button', { name: 'Use selection', exact: true }).click();

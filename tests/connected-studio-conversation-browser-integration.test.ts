@@ -192,7 +192,12 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       await page.getByRole('button',{name:'Open library',exact:true}).click();
       const library = page.getByRole('dialog',{name:'MaxVideoAI library',exact:true});
       await expect(library.getByRole('button',{name:'Import',exact:true})).toBeInViewport();
-      const tile = library.getByRole('checkbox',{name:'Select '+name,exact:true});
+      const row=library.getByRole('row',{name,exact:true});
+      await expect(row.getByRole('button',{name:'Preview '+name,exact:true})).toBeVisible();
+      const tile = row.getByRole('checkbox');
+      await expect(tile).toHaveCount(1);
+      await expect(tile).toHaveAttribute('aria-label','Select '+name);
+      await expect(tile).toHaveAccessibleName('Select '+name+' '+name);
       await tile.check();
       await expect(tile).toBeChecked();
       await expect(library).toBeVisible();

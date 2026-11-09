@@ -82,9 +82,16 @@ test('Milo modes preserve model selection, credits, references and explicit cons
     await page.route(selectedImageUrl,route=>route.fulfill({contentType:'image/webp',path:'frontend/public/media/mcp/project-demo/watch-static.webp'}));
     await page.route('**/api/media-library/assets?*',route=>route.fulfill({json:{ok:true,assets:[{id:selectedImageRecordId,assetId:selectedImage,ref:{type:'asset',assetId:selectedImage,kind:'image'},kind:'image',source:'upload',name:'Selected product',url:selectedImageUrl,thumbUrl:selectedImageUrl,mime:'image/webp',width:1024,height:1024}],hasMore:false,nextCursor:null}}));
     await page.getByRole('button',{name:'Open library',exact:true}).click();
-    const selectedReference=page.getByRole('dialog',{name:'MaxVideoAI library',exact:true}).getByRole('checkbox',{name:'Select Selected product',exact:true});
+    const referenceLibrary=page.getByRole('dialog',{name:'MaxVideoAI library',exact:true});
+    const selectedRow=referenceLibrary.getByRole('row',{name:'Selected product',exact:true});
+    await expect(selectedRow.getByRole('button',{name:'Preview Selected product',exact:true})).toBeVisible();
+    const selectedReference=selectedRow.getByRole('checkbox');
+    await expect(selectedReference).toHaveCount(1);
+    await expect(selectedReference).toHaveAttribute('aria-label','Select Selected product');
+    await expect(selectedReference).toHaveAccessibleName('Select Selected product Selected product');
     await selectedReference.check();
     await expect(selectedReference).toBeChecked();
+    await expect(referenceLibrary).toBeVisible();
     const selectionAccepted=page.waitForResponse(response=>response.url().endsWith('/api/media-library/selection/validate')&&response.request().method()==='POST');
     await page.getByRole('button',{name:'Add to conversation',exact:true}).click();
     const acceptedSelection=await selectionAccepted;
