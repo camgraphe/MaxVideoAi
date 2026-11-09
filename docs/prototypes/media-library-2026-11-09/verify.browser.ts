@@ -139,7 +139,10 @@ test('synthetic media journeys and source baseline', {timeout:180_000}, async()=
     await volume.getByRole('button',{name:'Tous les médias',exact:true}).click();
     await volume.getByRole('searchbox',{name:'Rechercher une collection'}).fill('1000');
     await expect(volume.getByRole('navigation',{name:'Collections',exact:true}).getByRole('button',{name:'Collection de démonstration 1000',exact:true})).toBeVisible();
-    await measure(volume,'12-collection-search-1000');await volume.close();
+    await measure(volume,'12-collection-search-1000');
+    await volume.keyboard.press('Escape');
+    await volume.getByRole('button',{name:'Changer le thème',exact:true}).click();
+    await measure(volume,'13-dark-desktop');await volume.close();
     for(const width of [1440,390]) {
       const page=await browser.newPage({viewport:{width,height:width>700?1000:844}});
       // Resolve thumbnails to the same local public assets used by the proposed layout.

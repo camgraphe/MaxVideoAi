@@ -107,8 +107,9 @@ kbd { font-size:11px; border:1px solid var(--app-line); min-width:20px; text-ali
 .compact-media-cover { background:var(--tile); }
 .compact-media-name { font-size:11px; font-weight:450; background:var(--app-panel); padding:2px 8px; line-height:25px; }
 .compact-media-check { top:0; left:0; width:44px; height:44px; align-items:flex-start; justify-content:flex-start; padding:8px; }
-.compact-media-check > span { width:20px; height:20px; border-radius:5px; background:var(--white); box-shadow:0 1px 4px #0001; }
+.compact-media-check > span { width:20px; height:20px; border:1px solid var(--app-muted); border-radius:5px; background:var(--white); box-shadow:0 1px 4px #0001; }
 .compact-media-check[data-selected] > span { color:#fff9e8; }
+.dark .compact-media-check[data-selected] > span { color:#231c12; }
 .compact-media-inspect { position:absolute; z-index:2; display:grid; place-items:center; opacity:0; top:0; right:0; height:44px; min-height:44px; width:44px; border:0; background:var(--app-panel); border-radius:0 8px 0 8px; }
 .compact-media-tile:hover .compact-media-inspect, .compact-media-tile:focus-within .compact-media-inspect { opacity:1; }
 .compact-media-duration { bottom:34px; }
