@@ -10,10 +10,17 @@ const evidence = 'output/media-design-evidence';
 const measures: unknown[] = [];
 const appStateErrors: string[] = [];
 async function settleImages(page: Page) {
+  await expect(page.locator('.toast.visible')).toHaveCount(0,{timeout:8000});
   await expect.poll(() => page.locator('img').evaluateAll(images => images.filter(image => {
     const r=image.getBoundingClientRect();
     return r.width>0 && r.height>0 && r.bottom>0 && r.top<innerHeight && r.right>0 && r.left<innerWidth;
   }).every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth>0)),{timeout:15_000,message:'visible posters must finish loading before accepting screenshots'}).toBe(true);
+  // complete/naturalWidth precede async bitmap decoding. Let the decoded frame paint.
+  await page.locator('img').evaluateAll(images => Promise.all(images.filter(image => {
+    const r=image.getBoundingClientRect();
+    return r.width>0 && r.height>0 && r.bottom>0 && r.top<innerHeight;
+  }).map(image => (image as HTMLImageElement).decode())));
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
 }
 async function measure(page: Page, label: string) {
   await settleImages(page);
