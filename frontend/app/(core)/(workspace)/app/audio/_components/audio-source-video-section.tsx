@@ -1,5 +1,6 @@
 'use client';
 
+import { AudioSourcePreview } from './AudioSourcePreview.client';
 import type { Ref, RefObject } from 'react';
 import { CheckCircle2, FileVideo, Upload, Video } from 'lucide-react';
 
@@ -86,7 +87,7 @@ export function AudioSourceVideoSection({
       {sourceVideo ? (
         <div className="mt-3 flex items-center gap-3 rounded-[10px] border border-hairline bg-bg px-3 py-2">
           <div className="h-12 w-20 overflow-hidden rounded-[8px] border border-hairline bg-surface">
-            <video src={sourceVideo.url} poster={sourceVideo.thumbUrl ?? undefined} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+            <AudioSourcePreview source={sourceVideo} kind="video" controls={false} className="h-full w-full object-cover" errorLabel={copy.source.previewUnavailable} retryLabel={copy.rail.retry} />
           </div>
           <p className="min-w-0 flex-1 truncate text-xs text-text-secondary">
             {sourceVideo.aspectRatio ? `${sourceVideo.aspectRatio} · ` : ''}

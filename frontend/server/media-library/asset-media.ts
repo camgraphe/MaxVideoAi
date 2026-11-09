@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { type MediaFacts } from '@/lib/media-identity';
 import { probeMediaBuffer } from '@/server/media/detect-has-audio';
 import { type GeneratedVideoFacts } from '@/lib/generated-video-media-facts';
@@ -15,7 +16,7 @@ export async function copyRemoteMedia(params: {
   mimeType?: string | null;
   fileName?: string | null;
   ownedGeneratedVideo?: { mediaFacts: GeneratedVideoFacts | null };
-}, dependencies: { uploadImage?: typeof uploadImageToStorage } = {}): Promise<{ mediaFacts?: GeneratedVideoFacts | MediaFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
+}, dependencies: { uploadImage?: typeof uploadImageToStorage } = {}): Promise<{ sourceSha256?: string; mediaFacts?: GeneratedVideoFacts | MediaFacts | null; url: string; thumbUrl: string | null; mimeType: string | null; width: number | null; height: number | null; sizeBytes: number | null }> {
   const sourceUrl = await createOwnedMediaReadUrl({ url: params.url, userId: params.userId });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -40,6 +41,7 @@ export async function copyRemoteMedia(params: {
       fileName: params.fileName,
     });
     return {
+      sourceSha256: createHash('sha256').update(buffer).digest('hex'),
       url: upload.url,
       thumbUrl: null,
       mimeType: upload.mime,

@@ -1,22 +1,18 @@
 'use client';
-import { imageReferenceIdentity } from '../_lib/image-reference-slot-state';
+import { useLibraryImportQueue } from '@/hooks/useLibraryImportQueue';
+import type { LibraryImportQueueController } from '@/lib/library-import-queue';
 
 import dynamic from 'next/dynamic';
 import { createPortal } from 'react-dom';
 import { referencePickerCopy } from '@/components/library/reference-picker-copy';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
-  ChangeEvent,
   MouseEvent as ReactMouseEvent,
 } from 'react';
 import type { AssetLibraryBrowserProps, AssetLibrarySource } from '@/components/library/AssetLibraryBrowser';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
-import { Button } from '@/components/ui/Button';
-import { prepareImageFileForUpload } from '@/lib/client-image-upload';
-import { translateError } from '@/lib/error-messages';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { normalizeUiLocale } from '@/lib/ltx-localization';
-import { authFetch } from '@/lib/authFetch';
 import {
   inferImageFormatFromUrl,
   isSupportedImageFormat,
@@ -32,12 +28,10 @@ import {
   getCharacterReferenceLabel,
 } from '../_lib/image-workspace-character-references';
 import {
-  DEFAULT_COPY,
   formatTemplate,
   type ImageWorkspaceCopy,
 } from '../_lib/image-workspace-copy';
 import {
-  DEFAULT_UPLOAD_LIMIT_MB,
   type LibraryAsset,
 } from '../_lib/image-workspace-types';
 
@@ -50,6 +44,7 @@ export type ImageLibraryModalProps = {
   open: boolean;
   target?: { scope: string; capacity?: number; slotIndex?: number | null };
   onClose: () => void;
+  onSelectMany?: (assets: LibraryAsset[]) => boolean | void;
   onSelect: (asset: LibraryAsset) => boolean | void;
   onToggleCharacter: (reference: CharacterReferenceSelection) => void;
   selectedCharacterReferences: CharacterReferenceSelection[];
@@ -65,15 +60,20 @@ export type ImageLibraryModalProps = {
 
 export function ImageLibraryModal(props: ImageLibraryModalProps) {
   const { user } = useRequireAuth({ redirectIfLoggedOut: false });
-  return props.open ? <OpenImageLibraryModal key={user?.id ?? 'guest'} {...props} userId={user?.id ?? null} /> : null;
+  const context = useRef(props.target?.scope ?? 'image-reference');
+  if (props.open) context.current = props.target?.scope ?? 'image-reference';
+  const imports = useLibraryImportQueue(user?.id, context.current);
+  return props.open ? <OpenImageLibraryModal key={`${user?.id ?? 'guest'}:${context.current}`} {...props} importQueue={imports.queue} userId={user?.id ?? null} /> : null;
 }
 
 function OpenImageLibraryModal({
   userId,
+  importQueue,
   open,
   target,
   onClose,
   onSelect,
+  onSelectMany,
   onToggleCharacter,
   selectedCharacterReferences,
   characterSelectionLimit,
@@ -84,37 +84,16 @@ function OpenImageLibraryModal({
   supportedFormats,
   supportedFormatsLabel,
   toolsEnabled,
-}: ImageLibraryModalProps & { userId: string | null }) {
+}: ImageLibraryModalProps & { userId: string | null; importQueue: LibraryImportQueueController }) {
   const { t, locale } = useI18n();
   const uiLocale = normalizeUiLocale(locale);
   const [activeSource, setActiveSource] = useState<AssetLibrarySource>(initialSource);
   const [isSelecting, setIsSelecting] = useState(false);
   const pickerCopy = referencePickerCopy(uiLocale);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importError, setImportError] = useState<string | null>(null);
-  const handleClose = useCallback(() => { if (!isImporting && !isSelecting) onClose(); }, [isImporting, isSelecting, onClose]);
-  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: isImporting || isSelecting });
-  const importInputRef = useRef<HTMLInputElement | null>(null);
-  const mounted = useRef(true);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const handleClose = useCallback(() => { if (!isSelecting) onClose(); }, [isSelecting, onClose]);
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal({ onClose: handleClose, closeDisabled: isSelecting });
   const isCharacterMode = selectionMode === 'character';
-  const importLabel = t(
-    'workspace.generate.assetLibrary.import',
-    uiLocale === 'fr' ? 'Importer' : uiLocale === 'es' ? 'Importar' : 'Import'
-  ) as string;
-  const importingLabel = t(
-    'workspace.generate.assetLibrary.importing',
-    uiLocale === 'fr' ? 'Import en cours…' : uiLocale === 'es' ? 'Importando…' : 'Importing…'
-  ) as string;
-  const importFailedLabel = t(
-    'workspace.generate.assetLibrary.importFailed',
-    uiLocale === 'fr'
-      ? 'Import impossible. Réessayez.'
-      : uiLocale === 'es'
-        ? 'La importación falló. Inténtalo de nuevo.'
-        : 'Import failed. Please try again.'
-  ) as string;
-  const { data, error, hasMore, isLoading, isLoadingMore, loadMore, mutate } = useImageLibraryData({
+  const { data, error, hasMore, isLoading, isLoadingMore, loadMore } = useImageLibraryData({
     userId,
     source: activeSource,
     isCharacterMode,
@@ -124,64 +103,6 @@ function OpenImageLibraryModal({
     if (!open) return;
     setActiveSource(initialSource);
   }, [initialSource, open]);
-
-  const handleImportChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.currentTarget.files?.[0] ?? null;
-      event.currentTarget.value = '';
-      if (!file || isCharacterMode) return;
-
-      if (!file.type.startsWith('image/')) {
-        setImportError(t('workspace.image.errors.onlyImages', DEFAULT_COPY.errors.onlyImages) as string);
-        return;
-      }
-
-      setImportError(null);
-      setIsImporting(true);
-      try {
-        const preparedFile = await prepareImageFileForUpload(file, {
-          maxBytes: DEFAULT_UPLOAD_LIMIT_MB * 1024 * 1024,
-        });
-        const formData = new FormData();
-        formData.append('file', preparedFile, preparedFile.name);
-        const response = await authFetch('/api/uploads/image', {
-          method: 'POST',
-          body: formData,
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok || !payload?.asset?.url) {
-          const message = translateError({
-            code: typeof payload?.error === 'string' ? payload.error : null,
-            status: response.status,
-            message: importFailedLabel,
-          }).message;
-          throw new Error(message);
-        }
-
-        if (!mounted.current) return;
-        const uploadedAsset = payload.asset as LibraryAsset;
-        void mutate();
-        const accepted = onSelect({
-          id: uploadedAsset.id ?? `library_${Date.now().toString(36)}`,
-          url: uploadedAsset.url,
-          name: uploadedAsset.name,
-          ref: imageReferenceIdentity(uploadedAsset),
-          mime: uploadedAsset.mime ?? null,
-          width: uploadedAsset.width ?? null,
-          height: uploadedAsset.height ?? null,
-          size: uploadedAsset.size ?? null,
-          source: uploadedAsset.source ?? 'upload',
-          createdAt: uploadedAsset.createdAt,
-        });
-        if (accepted === false) setImportError(pickerCopy.error);
-      } catch (uploadError) {
-        setImportError(uploadError instanceof Error ? uploadError.message : importFailedLabel);
-      } finally {
-        setIsImporting(false);
-      }
-    },
-    [importFailedLabel, isCharacterMode, mutate, onSelect, pickerCopy.error, t]
-  );
 
   const assets = useMemo(() => {
     if (isCharacterMode) return [];
@@ -243,7 +164,8 @@ function OpenImageLibraryModal({
       if (isCharacterMode) {
         return characters.map((character) => ({
           id: character.id,
-          url: character.thumbUrl ?? character.imageUrl,
+          url: character.imageUrl,
+          thumbUrl: character.thumbUrl,
           kind: 'image' as const,
           source: 'character',
           createdAt: character.createdAt ?? undefined,
@@ -315,23 +237,15 @@ function OpenImageLibraryModal({
       onMouseDown={handleBackdropClick}
     >
       <div className="app-picker-container">
-        {!isCharacterMode ? (
-          <input
-            ref={importInputRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            tabIndex={-1}
-            aria-hidden="true"
-            onChange={handleImportChange}
-          />
-        ) : null}
         <AssetLibraryBrowser
           locale={uiLocale}
           selection={{
+            ownerId:userId,
             scope: `${userId ?? "guest"}:${selectionMode}:${target?.scope ?? 'reference'}`,
-            busy: isImporting || isSelecting,
+            busy: isSelecting,
+            importQueue: isCharacterMode ? undefined : importQueue,
             onBusyChange: setIsSelecting,
+            onConfirmMany: !isCharacterMode && onSelectMany ? assets => onSelectMany(assets as LibraryAsset[]) : undefined,
             onConfirm: isCharacterMode ? undefined : (asset) => onSelect(asset as LibraryAsset),
             selectedIds: isCharacterMode ? selectedCharacterIds : undefined,
             isDisabled: isCharacterMode ? (asset) => !selectedCharacterIds.has(asset.id) && selectedCharacterReferences.length >= characterSelectionLimit : undefined,
@@ -347,27 +261,12 @@ function OpenImageLibraryModal({
           assets={browserAssets}
           isLoading={!userId || isLoading}
           error={
-            importError ??
             (error ? (isCharacterMode ? (error instanceof Error ? error.message : characterCopy.empty) : copy.modal.error) : null)
           }
           source={activeSource}
           availableSources={availableSources}
           sourceLabels={copy.tabs}
           onSourceChange={setActiveSource}
-          headerActions={
-            !isCharacterMode ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full border-border bg-surface-2 px-3 text-sm text-text-secondary hover:bg-surface-3 hover:text-text-primary"
-                disabled={!userId || isImporting}
-                onClick={() => importInputRef.current?.click()}
-              >
-                {isImporting ? importingLabel : importLabel}
-              </Button>
-            ) : undefined
-          }
           searchPlaceholder={searchPlaceholder}
           sourcesTitle={sourcesTitle}
           emptyLabel={emptyLabel}

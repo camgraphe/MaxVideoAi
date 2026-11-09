@@ -23,7 +23,7 @@ test('real recent DTO preserves original identity and unknown facts remain selec
   assert.ok(resolved);
   assert.equal(getRecentReferenceIssue(resolved, entry, {}, undefined, 'i2v'), null);
   const input = buildReferenceAssetFromLibraryAsset(entry.field, resolved);
-  assert.equal(input.url, original); assert.equal(input.previewUrl, original); assert.equal(input.assetId, output.id);
+  assert.equal(input.url, original); assert.equal(input.previewUrl, original); assert.equal(input.assetId, undefined, 'an output ID is not a saved asset ID'); assert.deepEqual(input.ref, { type: 'job-output', jobId: output.jobId, outputId: output.id, kind: 'image' });
   assert.equal(input.fieldId, 'start'); assert.equal(input.type, 'image/png');
   for (const patch of [{ id: 'different' }, { userId: 'other' }, { kind: 'audio' }, { url: original + 'x' }, { size: 0 }, { size: NaN }, { mime: 'video/mp4' }]) {
     assert.equal(mergeRecentMetadata(recent, 'owner', { id: output.id, userId: 'owner', kind: 'image', url: original, size: 4096, mime: 'image/png', ...patch }), null);

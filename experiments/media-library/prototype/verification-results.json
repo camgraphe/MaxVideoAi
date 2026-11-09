@@ -1,0 +1,710 @@
+{
+  "testedAt": "2026-11-09T00:01:42.122Z",
+  "scope": "Local production-build prototype; synthetic metadata reuses 20 local public files; no production/API/auth performance certification",
+  "environment": {
+    "browsers": [
+      "Codex in-app browser (final desktop and mobile checks)",
+      "Chrome (earlier exploratory checks; connection cancelled at user request)"
+    ],
+    "data": "1000/10000 synthetic metadata records; 20 physical local public fixtures reused",
+    "mobile": "390x844 emulation, not a physical iOS/Android device",
+    "productionChanges": false
+  },
+  "checks": [
+    {
+      "name": "Select two visible checkbox labels from a cleared selection",
+      "observed": "2",
+      "passed": true
+    },
+    {
+      "name": "Trash two items and search the removed exact name",
+      "observed": {
+        "remaining": "998",
+        "search": "0"
+      },
+      "passed": true
+    },
+    {
+      "name": "Fresh reload then two checkbox labels",
+      "observed": "2",
+      "passed": true
+    },
+    {
+      "name": "Trash commands update, both media restore with same identities",
+      "passed": true
+    },
+    {
+      "name": "Portrait is contained, zoom works, favorite preserves active media",
+      "observed": {
+        "zoomed": {
+          "height": 1564,
+          "width": 879.75
+        },
+        "heading": "Dixie — portrait 001"
+      },
+      "passed": true
+    },
+    {
+      "name": "Audio is the only active player and starts after native Play",
+      "observed": {
+        "duration": 28,
+        "paused": false,
+        "readyState": 4,
+        "time": 0.145126
+      },
+      "passed": true
+    },
+    {
+      "name": "Closing viewer removes all players and restores grid focus/scroll",
+      "observed": {
+        "audios": 0,
+        "focused": "ma_f17e0000000000000000000000000002",
+        "scrollTop": 0,
+        "videos": 0
+      },
+      "passed": true
+    },
+    {
+      "name": "Shared picker keeps three ordered references through search and preview return",
+      "observed": {
+        "before": "1\nAprès-fête 001\n2\nDixie — portrait 001\n3\nMotel disco 001",
+        "after": "1\nAprès-fête 001\n2\nDixie — portrait 001\n3\nMotel disco 001",
+        "query": "Dixie"
+      },
+      "passed": true
+    },
+    {
+      "name": "Picker capacity, explicit full feedback, order and role preparation",
+      "observed": {
+        "fullBasketMessage": true,
+        "reorderedBasket": "1\nDixie — portrait 001\n2\nAprès-fête 001\n3\nMotel disco 001\n4\nPortrait acidulé 001",
+        "preparedImage": "Préparation simulée enregistrée\n4 médias affectés aux bons rôles. Vous pouvez fermer puis retrouver cette préparation.\nInspecter le raccord du prototype"
+      },
+      "passed": true
+    },
+    {
+      "name": "Image handoff plus audio picker preserves separate Lip Sync roles and canonical fixture refs",
+      "observed": {
+        "lipInitiallyDisabled": true,
+        "audioPickerKinds": [
+          "audio"
+        ],
+        "lipManifest": [
+          {
+            "role": "source",
+            "ref": {
+              "type": "asset",
+              "assetId": "ma_f17e0000000000000000000000000002",
+              "kind": "image"
+            },
+            "name": "Dixie — portrait 001"
+          },
+          {
+            "role": "audio",
+            "ref": {
+              "type": "asset",
+              "assetId": "ma_f17e0000000000000000000000000004",
+              "kind": "audio"
+            },
+            "name": "Ambiance — audio 001"
+          }
+        ]
+      },
+      "passed": true
+    },
+    {
+      "name": "Closing and reopening import retains all three queued files and offers resume",
+      "passed": true
+    },
+    {
+      "name": "Mobile selection keeps visible bulk tools and trash inside viewport",
+      "observed": {
+        "bulkButtons": [
+          {
+            "left": 0,
+            "name": "Favoris",
+            "right": 0,
+            "visible": false
+          },
+          {
+            "left": 173.8046875,
+            "name": "Utiliser dans…",
+            "right": 270.5078125,
+            "visible": true
+          },
+          {
+            "left": 303.3046875,
+            "name": "Corbeille",
+            "right": 375,
+            "visible": true
+          }
+        ],
+        "selected": "2",
+        "width": 390
+      },
+      "passed": true
+    },
+    {
+      "name": "Corrected mobile viewer constrains inner grid, complete portrait and close button",
+      "observed": {
+        "close": {
+          "left": 340,
+          "right": 380
+        },
+        "image": {
+          "height": 631,
+          "left": 17.53125,
+          "right": 372.46875,
+          "width": 354.9375
+        },
+        "viewerWidth": 390
+      },
+      "passed": true
+    },
+    {
+      "name": "Select all 10000, trash all and undo with same refs in memory",
+      "observed": {
+        "selectedTenThousand": "10000",
+        "afterTenThousandTrash": "0",
+        "afterTenThousandRestore": "10000"
+      },
+      "passed": true
+    },
+    {
+      "name": "Shift range, sorting preserves selection, filter clears selection",
+      "observed": {
+        "rangeCount": "6",
+        "sortedSelection": "6",
+        "filteredSelection": "0"
+      },
+      "passed": true
+    },
+    {
+      "name": "Import pause/resume, keep two successes, deliver and retry only failed third without duplicates",
+      "observed": {
+        "importedTwo": "10002",
+        "remainingImport": "Votre sélection\n1\n369 B / 200 Mo\nEssai à reprendre.svg\n369 B\nÉchec de test volontaire. Réessayez : le prochain essai aboutira.\nEssai interrompu\nRéessayer",
+        "importedThree": "10003"
+      },
+      "passed": true
+    },
+    {
+      "name": "Final controlled checkbox API selects exactly two items",
+      "observed": "2",
+      "passed": true
+    },
+    {
+      "name": "In-app browser first native video Play produces decoded frames with one mounted player",
+      "observed": {
+        "frames": 4,
+        "height": 360,
+        "paused": false,
+        "players": 1,
+        "readyState": 4,
+        "time": 0.015171,
+        "width": 640
+      },
+      "passed": true
+    },
+    {
+      "name": "Native multi-file chooser imports local public image fixtures with real measured dimensions",
+      "observed": {
+        "nativeLocalFiles": "Votre sélection\n2\n78 Ko / 200 Mo\nafterparty.webp\n45,5 Ko · 960 × 540\nPrêt\ndixie.webp\n32,6 Ko · 720 × 1280\nPrêt",
+        "afterLocalFiles": "10005"
+      },
+      "passed": true
+    },
+    {
+      "name": "Audio-only results use compact virtualized rows without idle players",
+      "observed": {
+        "audios": 0,
+        "layout": "audio-list",
+        "results": "500",
+        "rows": 16,
+        "videos": 0
+      },
+      "passed": true
+    },
+    {
+      "name": "Audio list opens one native player, Play advances, closing removes it",
+      "observed": {
+        "players": 1,
+        "paused": false,
+        "time": 0.032075,
+        "readyState": 4,
+        "duration": 28,
+        "afterClosePlayers": 0
+      },
+      "passed": true
+    },
+    {
+      "name": "Mobile audio list keeps rows and controls within 390px",
+      "observed": {
+        "audioPlayers": 0,
+        "content": 390,
+        "firstRowRight": 380,
+        "layout": "audio-list",
+        "rows": 14,
+        "viewport": 390
+      },
+      "passed": true
+    },
+    {
+      "name": "Final in-app mobile portrait stays complete with reachable close control",
+      "observed": {
+        "close": {
+          "bottom": 50,
+          "height": 40,
+          "left": 340,
+          "right": 380,
+          "top": 10,
+          "width": 40,
+          "x": 340,
+          "y": 10
+        },
+        "images": [
+          {
+            "bottom": 708,
+            "height": 631,
+            "left": 17.53125,
+            "right": 372.46875,
+            "top": 77,
+            "width": 354.9375,
+            "x": 17.53125,
+            "y": 77
+          }
+        ],
+        "viewport": 390
+      },
+      "passed": true
+    },
+    {
+      "name": "Trashing a selected preview releases its slot, preserves search-hidden refs and accepts a replacement",
+      "observed": {
+        "beforeFix": {
+          "basket": "1Dixie — portrait 0012Motel disco 0013Portrait acidulé 001",
+          "status": "Vous pouvez choisir 4 médias pour ce rôle."
+        },
+        "hiddenBySearch": 4,
+        "afterFix": {
+          "basket": "1Dixie — portrait 0012Motel disco 0013Portrait acidulé 0014Service de nuit 001",
+          "count": 4,
+          "status": "4 / 4 sélectionnés"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "Saved tool drafts drop trashed refs and prepare a manifest with only available sources",
+      "observed": [
+        {
+          "role": "reference",
+          "ref": {
+            "type": "asset",
+            "assetId": "ma_f17e0000000000000000000000000005",
+            "kind": "image"
+          },
+          "name": "Motel disco 001"
+        },
+        {
+          "role": "reference",
+          "ref": {
+            "type": "asset",
+            "assetId": "ma_f17e0000000000000000000000000008",
+            "kind": "image"
+          },
+          "name": "Portrait acidulé 001"
+        },
+        {
+          "role": "reference",
+          "ref": {
+            "type": "asset",
+            "assetId": "ma_f17e0000000000000000000000000009",
+            "kind": "image"
+          },
+          "name": "Service de nuit 001"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "A collection-success notice clears the prior trash Undo action",
+      "observed": {
+        "buttons": [
+          ""
+        ],
+        "message": "1 médias ajoutés à Campagne"
+      },
+      "passed": true
+    }
+  ],
+  "exploratoryHistory": [
+    {
+      "name": "Select two distinct items by checkbox",
+      "expected": "2",
+      "observed": "3",
+      "passed": false,
+      "status": "superseded by a controlled check or stronger visual/decoded-frame observation; retained for traceability"
+    },
+    {
+      "name": "First native video Play starts decoding",
+      "observed": {
+        "paused": false,
+        "readyState": 4,
+        "time": 0.106513,
+        "videoHeight": 360,
+        "videoWidth": 640
+      },
+      "passed": false,
+      "status": "superseded by a controlled check or stronger visual/decoded-frame observation; retained for traceability"
+    },
+    {
+      "name": "Mobile portrait viewer fits the full viewport without horizontal overflow",
+      "observed": {
+        "contentWidth": 390,
+        "dialog": {
+          "height": 844,
+          "left": 0,
+          "right": 390,
+          "width": 390
+        },
+        "image": {
+          "height": 631,
+          "width": 354.9375
+        }
+      },
+      "passed": true,
+      "status": "superseded by a controlled check or stronger visual/decoded-frame observation; retained for traceability"
+    }
+  ],
+  "measurements": {
+    "initial": {
+      "audios": 0,
+      "height": 1049,
+      "lastRight": 1712,
+      "overflowX": false,
+      "tiles": 70,
+      "videos": 0,
+      "width": 1740
+    },
+    "initialRequests": {
+      "fixturePaths": [
+        "/fixtures/thumbs/afterparty-320.webp",
+        "/fixtures/thumbs/dixie-320.webp",
+        "/fixtures/thumbs/main-character-320.webp",
+        "/fixtures/audio-cover.svg",
+        "/fixtures/thumbs/disco-motel-320.webp",
+        "/fixtures/thumbs/portrait-fixture-320.webp",
+        "/fixtures/thumbs/hat-stays-320.webp",
+        "/fixtures/thumbs/acid-portrait-320.webp",
+        "/fixtures/thumbs/night-shift-320.webp",
+        "/fixtures/thumbs/vesper-320.webp",
+        "/fixtures/thumbs/nano-campaign-320.webp",
+        "/fixtures/thumbs/nano-reference-320.webp",
+        "/fixtures/thumbs/seedream-character-320.webp",
+        "/fixtures/thumbs/seedream-edit-320.webp",
+        "/fixtures/thumbs/gpt-product-320.webp",
+        "/fixtures/thumbs/luma-research-320.webp",
+        "/fixtures/thumbs/cartographer-320.webp",
+        "/fixtures/thumbs/nano-wide-320.webp",
+        "/fixtures/thumbs/pika-portrait-320.webp",
+        "/fixtures/thumbs/wan-portrait-320.webp"
+      ],
+      "fixtureEncodedBytes": 109358,
+      "fullMediaPaths": []
+    },
+    "renderComparison": [
+      {
+        "label": "virtualized-1000",
+        "count": 1000,
+        "results": 1000,
+        "renderMs": 113,
+        "virtualized": "true",
+        "tiles": 70,
+        "nodes": 1792,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1740,
+          "height": 1049
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 120
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 228
+          }
+        ],
+        "navigation": [
+          {
+            "domContentLoaded": 102.80000007152557,
+            "load": 102.89999997615814
+          }
+        ]
+      },
+      {
+        "label": "virtualized-10000",
+        "count": 10000,
+        "results": 10000,
+        "renderMs": 214,
+        "virtualized": "true",
+        "tiles": 70,
+        "nodes": 1792,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1740,
+          "height": 1049
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 120
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 228
+          }
+        ],
+        "navigation": [
+          {
+            "domContentLoaded": 102.80000007152557,
+            "load": 102.89999997615814
+          }
+        ]
+      }
+    ],
+    "mobile": {
+      "audios": 0,
+      "contentWidth": 390,
+      "firstRects": [
+        {
+          "height": 142,
+          "left": 15,
+          "top": 207.5,
+          "width": 117
+        },
+        {
+          "height": 142,
+          "left": 136,
+          "top": 207.5,
+          "width": 117
+        },
+        {
+          "height": 142,
+          "left": 257,
+          "top": 207.5,
+          "width": 117
+        },
+        {
+          "height": 142,
+          "left": 15,
+          "top": 357.5,
+          "width": 117
+        },
+        {
+          "height": 142,
+          "left": 136,
+          "top": 357.5,
+          "width": 117
+        },
+        {
+          "height": 142,
+          "left": 257,
+          "top": 357.5,
+          "width": 117
+        }
+      ],
+      "lastRight": 374,
+      "tiles": 18,
+      "videos": 0,
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    },
+    "finalComparison": [
+      {
+        "label": "virtualized-1000",
+        "browser": "Codex in-app browser",
+        "count": 1000,
+        "renderMs": 84,
+        "virtualized": "true",
+        "tiles": 48,
+        "nodes": 1357,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 144
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 144
+          }
+        ],
+        "script": "/assets/index-DvnC1pK7.js"
+      },
+      {
+        "label": "virtualized-10000",
+        "browser": "Codex in-app browser",
+        "count": 10000,
+        "renderMs": 171,
+        "virtualized": "true",
+        "tiles": 48,
+        "nodes": 1357,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 212
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 212
+          }
+        ],
+        "script": "/assets/index-DvnC1pK7.js"
+      },
+      {
+        "label": "plain-reference-10000",
+        "browser": "Codex in-app browser",
+        "count": 10000,
+        "renderMs": 0,
+        "virtualized": "false",
+        "tiles": 10000,
+        "nodes": 204300,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 800
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 856
+          }
+        ],
+        "script": "/assets/index-DvnC1pK7.js"
+      },
+      {
+        "label": "plain-reference-1000",
+        "browser": "Codex in-app browser",
+        "count": 1000,
+        "renderMs": 1489,
+        "virtualized": "false",
+        "tiles": 1000,
+        "nodes": 20700,
+        "videos": 0,
+        "audios": 0,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "paint": [
+          {
+            "name": "first-paint",
+            "startTime": 780
+          },
+          {
+            "name": "first-contentful-paint",
+            "startTime": 796
+          }
+        ],
+        "script": "/assets/index-DvnC1pK7.js"
+      }
+    ],
+    "accessibilitySnapshotLimit": {
+      "case": "plain 10000",
+      "result": "Full accessibility snapshot exceeded transport frame limit; metrics below use bounded read-only DOM/CDP sampling instead."
+    },
+    "timingQualification": "Single local observations. Frame-based timings can be delayed by background visibility and inspection; do not use these samples as p75/p95, field CWV or production/API speed proof. The decisive verified comparison is mounted DOM and idle decoder count.",
+    "finalBuild": {
+      "label": "reviewed-final-build-10000",
+      "browser": "Codex in-app browser",
+      "count": 10000,
+      "renderMs": 171,
+      "virtualized": "true",
+      "tiles": 48,
+      "nodes": 1357,
+      "videos": 0,
+      "audios": 0,
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "paint": [
+        {
+          "name": "first-paint",
+          "startTime": 200
+        },
+        {
+          "name": "first-contentful-paint",
+          "startTime": 200
+        }
+      ],
+      "script": "/assets/index-DZYxTP3P.js"
+    }
+  },
+  "findings": [
+    {
+      "id": "import-presentation-race",
+      "proof": "Chrome Uppy core: two uploadComplete=true and no currentUploads while UI kept one simulating. Deterministic concurrent React/Uppy reproduction red before, green after.",
+      "fix": "Single authoritative publish owner; no render-to-ref rollback.",
+      "browserRetest": "In-app browser pause, partial delivery and failed-only retry succeeds."
+    },
+    {
+      "id": "mobile-inner-overflow",
+      "fix": "Constrain viewer grid column to minmax(0,1fr), bound filmstrip width.",
+      "browserRetest": "Complete portrait and close button measured inside 390px."
+    },
+    {
+      "id": "stale-tool-role-ids",
+      "proof": {
+        "basket": "1Dixie — portrait 0012Motel disco 0013Portrait acidulé 001",
+        "status": "Vous pouvez choisir 4 médias pour ce rôle."
+      },
+      "fix": "Reconcile chosen IDs, saved drafts and incoming handoffs against active media; filter manifests defensively; preserve references hidden only by search.",
+      "browserRetest": "Four-slot basket accepts a replacement after preview deletion; saved manifest contains only three remaining valid refs."
+    },
+    {
+      "id": "unrelated-toast-undo",
+      "fix": "New notices reset their associated undo payload.",
+      "browserRetest": "Collection-success toast has no stale trash Undo."
+    },
+    {
+      "id": "picker-action-label",
+      "fix": "Visual and audio picker buttons announce selection; preview remains separate."
+    }
+  ],
+  "limitations": [
+    "All metadata in memory; no API, authentication, pagination or private grant renewal",
+    "20 repeated transport URLs do not represent 10000 independent media downloads",
+    "Single local timings are observational and do not establish production latency or Core Web Vitals gains",
+    "Tool handoffs and cloud transfer are simulated; no provider execution",
+    "Session state and imports are not durable across reload"
+  ],
+  "codeReview": {
+    "mode": "Independent read-only review and focused recheck",
+    "result": "Ready for local user review after all three reported issues were fixed and browser verified",
+    "productionAssessment": false
+  }
+}

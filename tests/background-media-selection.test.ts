@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { installMediaGridGeometry } from './helpers/media-grid-dom';
 import test from 'node:test';
 import path from 'node:path';
 import { build } from 'esbuild';
@@ -11,6 +12,7 @@ async function fixture(contents: string, stubs: Record<string,string> = {}) {
   } }], stdin: { loader: 'tsx', resolveDir: frontend, contents: `import React,{act,useState}from'react';import{createRoot}from'react-dom/client';window.IS_REACT_ACT_ENVIRONMENT=true;const noop=()=>{};${contents}` } });
   const dom = new JSDOM('<div id="root"></div>', { url: 'https://example.invalid/app/tools/background-removal', runScripts: 'dangerously', pretendToBeVisual: true });
   const w: any = dom.window;
+  installMediaGridGeometry(w);
   w.MessageChannel = class { port1 = { onmessage(){} }; port2 = { postMessage: () => setTimeout(() => this.port1.onmessage(), 0) }; };
   w.Headers = Headers;
   w.fetch = (...args: any[]) => { if (!w.fixtureFetch) throw Error('Unmocked network forbidden'); return w.fixtureFetch(...args); };
@@ -31,7 +33,9 @@ async function referenceSearch() {
     assert.ok(button(f,'Load more')); assert.equal(f.w.loads,0);
     await f.click(button(f,'Load more'));
     assert.equal(f.doc.querySelector('input[type=search]').value,'older-target');
-    assert.equal(f.doc.querySelectorAll('.app-picker-card').length,1);
+    assert.equal(f.doc.querySelectorAll('.compact-media-tile').length,1);
+    assert.match(f.doc.querySelector('.compact-media-tile').getAttribute('data-media-key'),/older/);
+    assert.equal(f.w.loads,1);
   } finally { await f.close(); }
 }
 const helpersPath = path.join(frontend,'src/components/tools/background-removal/_lib/background-removal-workspace-helpers.ts');

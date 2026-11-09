@@ -1,3 +1,4 @@
+import { createUploadedMediaReadAccess } from '@/server/media-library/upload-read-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
@@ -116,6 +117,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       asset: {
+        ...await createUploadedMediaReadAccess(userId, { assetId: canonicalAsset?.publicId, legacyAssetId: assetId, url: url, kind: 'video' }),
         id: assetId,
         legacyAssetId: assetId,
         ...canonicalMediaAssetFields(canonicalAsset?.publicId, 'video'),
@@ -126,7 +128,7 @@ export async function POST(req: NextRequest) {
         name: fileName,
         thumbUrl: null,
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     console.error('[upload] failed to record direct video asset', {
       key,

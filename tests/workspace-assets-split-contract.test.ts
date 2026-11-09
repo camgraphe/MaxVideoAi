@@ -57,53 +57,22 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.match(assetLibrarySource, /buildAssetLibraryUrl/);
 
   assert.match(referenceAssetsSource, /export function useWorkspaceReferenceAssets/);
-  assert.match(referenceAssetsSource, /const handleSelectLibraryAsset = useCallback/);
+  assert.match(referenceAssetsSource, /const handleSelectLibraryAsset = async/);
   assert.match(referenceAssetsSource, /const handleAssetAdd = useCallback/);
   assert.match(referenceAssetsSource, /prepareImageFileForUpload/);
   assert.match(referenceAssetsSource, /tryInsertReferenceAsset/);
   assert.match(referenceAssetsSource, /commitInputAssetMutation/);
-  assert.match(referenceAssetsSource, /settleReferenceAssetReservation/);
-  assert.match(referenceAssetsSource, /rollback\.discardedAsset/);
-  const handleSelectLibraryAssetIndex = referenceAssetsSource.indexOf(
-    'const handleSelectLibraryAsset = useCallback'
-  );
-  const handleAssetAddIndex = referenceAssetsSource.indexOf(
-    'const handleAssetAdd = useCallback'
-  );
-  const librarySelectionSource = referenceAssetsSource.slice(
-    handleSelectLibraryAssetIndex,
-    handleAssetAddIndex
-  );
-  const libraryInsertionIndex = librarySelectionSource.indexOf(
-    'const insertion = commitInputAssetMutation'
-  );
-  const videoMirrorIndex = librarySelectionSource.indexOf(
-    'await saveAssetToLibrary'
-  );
-  const imageMirrorIndex = librarySelectionSource.indexOf(
-    'await saveImageToLibrary'
-  );
-  const libraryMutationIndex = librarySelectionSource.indexOf(
-    'setAssetLibrary((previous)'
-  );
-  const pickerCloseIndex = librarySelectionSource.indexOf(
-    'setAssetPickerTarget(null)'
-  );
-  assert.ok(
-    libraryInsertionIndex >= 0 &&
-      libraryInsertionIndex < videoMirrorIndex &&
-      libraryInsertionIndex < imageMirrorIndex &&
-      libraryInsertionIndex < libraryMutationIndex
-  );
-  assert.ok(
-    pickerCloseIndex > libraryInsertionIndex &&
-      pickerCloseIndex < videoMirrorIndex &&
-      pickerCloseIndex < imageMirrorIndex
-  );
-  assert.equal(
-    librarySelectionSource.match(/setAssetPickerTarget\(null\)/g)?.length,
-    1
-  );
+  assert.doesNotMatch(referenceAssetsSource, /settleReferenceAssetReservation/);
+  const batch = readFileSync('frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceBatch.ts','utf8');
+  assert.match(referenceAssetsSource, /useWorkspaceReferenceBatch\(/);
+  assert.match(referenceAssetsSource, /handleSelectLibraryAssets\(field,\[asset\]/);
+  assert.match(batch, /tryInsertReferenceAsset/);
+  assert.match(batch, /candidate\(previous, prepared\)/);
+  assert.ok(batch.indexOf('await saveAssetToLibrary') < batch.indexOf('latest.current.commit'), 'durable preparation precedes the single current-state commit');
+  assert.ok(batch.indexOf('latest.current.commit') < batch.indexOf('latest.current.close()'));
+  assert.equal(batch.match(/latest.current.commit\(/g)?.length,1);
+  assert.match(appSource, /workflowIntent: composer\.activeManualMode/);
+  const handleAssetAddIndex=referenceAssetsSource.indexOf('const handleAssetAdd = useCallback');
   const uploadIndex = referenceAssetsSource.indexOf(
     'const upload = async',
     handleAssetAddIndex

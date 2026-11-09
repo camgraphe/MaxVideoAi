@@ -1,4 +1,7 @@
 'use client';
+import { useRef } from 'react';
+import { useLibraryReadOwner } from '@/hooks/useLibraryReadOwner';
+import { useLibraryImportQueue } from '@/hooks/useLibraryImportQueue';
 
 import type { ChangeEvent, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
@@ -39,6 +42,7 @@ const WorkspaceAuthGateModal = dynamic<WorkspaceAuthGateModalProps>(
 export function WorkspaceRuntimeModals({
   engine,
   mode,
+  workflowIntent,
   viewerGroup,
   onCloseViewer,
   onRefreshJob,
@@ -82,6 +86,7 @@ export function WorkspaceRuntimeModals({
   onRefreshAssets,
   onLoadMoreAssets,
   onSelectFieldAsset,
+  onSelectFieldAssets,
   onImportFieldFile,
   onSelectKlingAsset,
   onImportKlingFile,
@@ -89,6 +94,7 @@ export function WorkspaceRuntimeModals({
 }: {
   engine?: EngineCaps;
   mode?: Mode;
+  workflowIntent?: Mode | null;
   viewerGroup: VideoGroup | null;
   onCloseViewer: () => void;
   onRefreshJob: (jobId: string) => Promise<void>;
@@ -131,12 +137,17 @@ export function WorkspaceRuntimeModals({
   onCloseAssetLibrary: () => void;
   onRefreshAssets: (options: { source: AssetLibrarySource; kind: AssetLibraryKind }) => void | Promise<void>;
   onLoadMoreAssets: () => void | Promise<void>;
+  onSelectFieldAssets?: (field: EngineInputField, assets: UserAsset[], acceptance?: {isCurrent:()=>boolean}) => Promise<true|string>;
   onSelectFieldAsset: (field: EngineInputField, asset: UserAsset, slotIndex?: number) => void | string | Promise<void | string>;
   onImportFieldFile?: (field: EngineInputField, file: File, slotIndex?: number) => Promise<void | string>;
   onSelectKlingAsset: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, asset: UserAsset) => void | string;
   onImportKlingFile?: (target: Extract<AssetPickerTarget, { kind: 'kling' }>, file: File) => Promise<void | string>;
   onDeleteAsset: (asset: UserAsset) => void | Promise<void>;
 }) {
+  const owner = useLibraryReadOwner(true);
+  const queueContext = useRef('video-reference');
+  if (assetPickerTarget) queueContext.current = JSON.stringify([engine?.id, workflowIntent === undefined ? mode : workflowIntent, assetPickerTarget.kind === 'field' ? [assetPickerTarget.field.id,assetPickerTarget.slotIndex] : assetPickerTarget]);
+  const imports = useLibraryImportQueue(owner ?? undefined, queueContext.current);
   return (
     <>
       {viewerGroup ? (
@@ -180,6 +191,8 @@ export function WorkspaceRuntimeModals({
       ) : null}
       {assetPickerTarget ? (
         <AssetLibraryModal
+          ownerId={owner}
+          importQueue={assetPickerTarget.kind === "field" && assetPickerTarget.slotIndex == null && (assetPickerTarget.field.maxCount ?? 1) > 1 ? imports.queue : undefined}
           onImportFile={assetPickerTarget.kind === 'field'
             ? onImportFieldFile ? file => onImportFieldFile(assetPickerTarget.field, file, assetPickerTarget.slotIndex) : undefined
             : onImportKlingFile ? file => onImportKlingFile(assetPickerTarget, file) : undefined}
@@ -187,14 +200,14 @@ export function WorkspaceRuntimeModals({
             ? (asset, context) => getMediaInputEligibility({ asset, field: assetPickerTarget.field, engine, mode, context })
             : asset => getKlingElementMediaEligibility(asset, assetPickerTarget.slot)}
           target={assetPickerTarget.kind === 'field' ? {
-            scope: `${engine?.id}:${mode}:${JSON.stringify(assetPickerTarget.field)}:${assetPickerTarget.slotIndex ?? "append"}`,
+            scope: `${engine?.id}:${workflowIntent === undefined ? mode : workflowIntent}:${assetPickerTarget.field.id}:${assetPickerTarget.field.type}:${assetPickerTarget.slotIndex ?? "append"}`,
             capacity: assetPickerTarget.field.maxCount,
             slotIndex: assetPickerTarget.slotIndex,
             role: assetPickerTarget.field.type === 'image' && (assetPickerTarget.field.maxCount ?? 1) === 1
               ? ['end_image_url', 'end_image', 'last_frame_url'].includes(assetPickerTarget.field.id) ? 'end'
                 : ['image_url', 'start_image_url', 'start_image', 'first_frame_url', 'input_image'].includes(assetPickerTarget.field.id) ? 'start' : undefined
               : undefined,
-          } : { scope: `${engine?.id}:${mode}:${assetPickerTarget.elementId}:${assetPickerTarget.slot}:${assetPickerTarget.slotIndex ?? "append"}`, slotIndex: assetPickerTarget.slotIndex }}
+          } : { scope: `${engine?.id}:${workflowIntent === undefined ? mode : workflowIntent}:${assetPickerTarget.elementId}:${assetPickerTarget.slot}:${assetPickerTarget.slotIndex ?? "append"}`, slotIndex: assetPickerTarget.slotIndex }}
           fieldLabel={
             assetPickerTarget.kind === 'field'
               ? assetPickerTarget.field.label ?? fieldFallbackLabel
@@ -217,6 +230,7 @@ export function WorkspaceRuntimeModals({
             onRefreshAssets({ source: sourceOverride ?? assetLibrarySource, kind: assetLibraryKind })
           }
           onLoadMore={onLoadMoreAssets}
+          onSelectMany={assetPickerTarget.kind === 'field' && assetPickerTarget.slotIndex == null && (assetPickerTarget.field.maxCount ?? 1) > 1 && onSelectFieldAssets ? (assets, acceptance) => onSelectFieldAssets(assetPickerTarget.field, assets, acceptance) : undefined}
           onSelect={(asset) => {
             if (assetPickerTarget.kind === 'field') {
               return onSelectFieldAsset(assetPickerTarget.field, asset, assetPickerTarget.slotIndex);

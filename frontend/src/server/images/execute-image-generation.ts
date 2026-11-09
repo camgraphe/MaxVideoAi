@@ -8,7 +8,7 @@ import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
 import { getResultProviderMode } from '@/lib/result-provider';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import {
   getImageFieldValues,
   getImageInputField,
@@ -508,10 +508,10 @@ export async function executeImageGeneration({
           url: normalizeMediaUrl(image.url) ?? image.url,
         }));
         const stableImages = await copyGeneratedImagesToStorage({
-          images: normalizedImages, jobId, userId, requireOwnedOutput: true,
+          images: normalizedImages, jobId, userId, requireOwnedOutput: true, prepare: prepareImageRenditions,
         });
 
-        const thumbUrls = await createImageThumbnailBatch({
+        const thumbUrls = typeof prepareImageRenditions === 'function' ? stableImages.map(image => image.thumbUrl ?? null) : await createImageThumbnailBatch({
           jobId,
           userId,
           imageUrls: stableImages.map((image) => image.url),

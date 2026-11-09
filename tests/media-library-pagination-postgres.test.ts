@@ -64,6 +64,8 @@ test('recent output search and cursors run against PostgreSQL', { timeout: 90_00
     const { findLibraryAssetByOrigin, listLibraryAssetPage } = await import('../frontend/server/media-library/assets');
     const { ensureAssetSchema } = await import('../frontend/src/lib/schema');
     await ensureAssetSchema();
+    const {ensureMediaLibraryOrganizationSchema}=await import('../frontend/src/lib/schema');
+    await ensureMediaLibraryOrganizationSchema();
 
     const ids: string[] = [];
     let cursor: string | null = null;

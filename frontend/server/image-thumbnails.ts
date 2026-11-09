@@ -163,3 +163,7 @@ export async function createImageThumbnailBatch(input: BatchInput): Promise<Arra
     )
   );
 }
+
+/** Paired preparation is opt-in. Legacy thumbnail/backfill APIs remain thumbnail-only. */
+export { prepareImageRenditions } from './image-renditions';
+export type { ImageRenditionInput, ImageRenditions } from './image-renditions';

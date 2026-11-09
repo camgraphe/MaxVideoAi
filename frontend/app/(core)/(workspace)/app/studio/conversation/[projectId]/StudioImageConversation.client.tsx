@@ -146,8 +146,12 @@ function StudioImageConversationWorkspace({
   }
   function select(asset: ImageLibraryAsset) {
     if (libraryPurpose === 'timeline') {setTimelineInsertion({key: crypto.randomUUID(),asset});setLibrary(false);return;}
-    shelf.attach(asset);
-    setLibrary(false);
+    return selectMany([asset]);
+  }
+  function selectMany(assets: ImageLibraryAsset[]) {
+    const result = shelf.attachMany(assets);
+    if (result === true) setLibrary(false);
+    return result;
   }
   function mention(item:ShelfMedia) {
     const textarea=composerRegion.current?.querySelector('textarea');
@@ -421,18 +425,18 @@ function StudioImageConversationWorkspace({
         <ConversationTimeline visible={!mobile || mobilePanel === 'film'} projectId={projectId} projectName={studio.conversation.projectName} refreshKey={studio.conversation} insertion={timelineInsertion} onOpenLibrary={trigger => {libraryOpener.current=trigger;setLibraryPurpose('timeline');setLibrary(true);}} exportAvailable={exportAvailable} exportPending={exports.working} exportJobs={exports.jobs} onExportChange={exports.refresh}/>
       </ConversationMobilePanel>}
       {help && <ConversationHelp locale={locale} editingEnabled={editingEnabled} onClose={() => setHelp(false)} trigger={helpTrigger}/>}
-      {library && (
-        <ImageReferenceLibrary
+      <ImageReferenceLibrary
+          open={library}
           accountKey={accountKey}
           onClose={() => setLibrary(false)}
           onSelect={select}
+          onSelectMany={libraryPurpose === "reference" ? selectMany : undefined}
           mediaEnabled={mediaEnabled}
           characterProjectId={characterEnabled ? projectId : undefined}
           purpose={libraryPurpose}
           returnFocusTo={libraryOpener.current}
           locale={appLocale === 'es' ? 'es' : locale}
         />
-      )}
     </section>
   );
 }

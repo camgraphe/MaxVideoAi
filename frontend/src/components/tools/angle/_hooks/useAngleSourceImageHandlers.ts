@@ -187,12 +187,9 @@ export function useAngleSourceImageHandlers({
       setSourceImage((previous) => {
         cleanupSourcePreview(previous);
         return {
-          id: asset.id,
-          url: asset.url,
-          previewUrl: asset.url,
-          width: asset.width,
-          height: asset.height,
-          name: asset.url.split('/').pop() ?? copy.libraryImageName,
+          ...asset,
+          kind: 'image',
+          name: asset.name ?? asset.url.split('/').pop() ?? copy.libraryImageName,
           source: 'library',
         };
       });

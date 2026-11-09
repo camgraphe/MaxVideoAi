@@ -1,3 +1,4 @@
+import type { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import { matchesAcceptedToolQuote } from '@/lib/toolbox/quote';
 import { randomUUID } from 'crypto';
 import { ApiError, ValidationError } from '@fal-ai/client';
@@ -48,18 +49,9 @@ type RunUpscaleToolInput = UpscaleToolRequest & {
   userId: string;
 };
 
-type ImageThumbnailBatchInput = {
-  jobId: string;
-  userId?: string | null;
-  imageUrls: string[];
-  maxDimension?: number;
-  concurrency?: number;
-  fetchTimeoutMs?: number;
-  processingTimeoutMs?: number;
-};
-
 export type RunUpscaleToolDependencies = {
-  createImageThumbnailBatch?: (input: ImageThumbnailBatchInput) => Promise<Array<string | null>>;
+  prepareImageRenditions?: typeof prepareImageRenditions;
+  createImageThumbnailBatch?: typeof createImageThumbnailBatch;
   detectVideoMetadata?: (videoUrl: string, options?: { timeoutMs?: number }) => Promise<VideoMetadata | null>;
 };
 
@@ -221,6 +213,7 @@ export async function runUpscaleToolBase(
       engineLabel: engine.label,
       outputFormat,
       durationSec: videoMetadata?.durationSec ?? null,
+      prepare: dependencies.prepareImageRenditions,
     });
 
     let thumbUrl = UPSCALE_PLACEHOLDER_THUMB;
@@ -233,7 +226,7 @@ export async function runUpscaleToolBase(
           code: 'image_thumbnail_dependency_missing',
         });
       }
-      const [imageThumb] = await dependencies.createImageThumbnailBatch({
+      const [imageThumb] = dependencies.prepareImageRenditions ? [persistedOutput.thumbUrl] : await dependencies.createImageThumbnailBatch({
         jobId,
         userId: input.userId,
         imageUrls: [persistedOutput.url],
@@ -306,6 +299,8 @@ export async function runUpscaleToolBase(
       width: persistedOutput.width ?? null,
       height: persistedOutput.height ?? null,
       thumbUrl,
+      previewUrl: persistedOutput.previewUrl,
+      metadata: { imageDisplay: persistedOutput.imageDisplay },
     }).catch((assetError) => {
       console.warn('[tools/upscale] failed to persist media asset', { jobId }, assetError);
     });

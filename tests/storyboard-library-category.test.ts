@@ -52,7 +52,8 @@ test('library and image asset pickers include storyboard source when tools are e
   assert.doesNotMatch(clientSource, /toolsTitle=/);
   assert.doesNotMatch(clientSource, /toolLinks=/);
 
-  assert.match(dataHookSource, /asset\.source !== 'storyboard'/);
+  assert.match(dataHookSource, /source:\s*activeSource/);
+  assert.doesNotMatch(dataHookSource, /\.filter\(/, 'source filters precede the server limit');
   assert.match(assetBrowserSource, /'storyboard'/);
   assert.match(imageLibraryModalSource, /'storyboard'/);
   assert.match(sharedAssetModalSource, /'storyboard'/);

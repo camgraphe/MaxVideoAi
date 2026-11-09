@@ -1,3 +1,4 @@
+import { mediaReadAccessFields } from '@/lib/library-media-access';
 import { useMemo } from 'react';
 import { UserRoundPlus } from 'lucide-react';
 
@@ -84,6 +85,7 @@ export function useImageWorkspaceReferenceAssets({
       reference_images: displayedReferenceSlots.map((slot) =>
         slot
           ? {
+              ...mediaReadAccessFields(slot),
               kind: 'image',
               ref: slot.ref,
               name: slot.name ?? slot.url.split('/').pop() ?? resolvedCopy.composer.referenceSlotNameFallback,

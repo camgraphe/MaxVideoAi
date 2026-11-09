@@ -381,6 +381,7 @@ function CharacterBuilderAccountWorkspace({
           copy={copy}
           lightboxEntry={lightboxEntry}
           onCloseLightbox={() => setLightboxEntry(null)}
+          referenceRole={libraryModalRole}
           referenceOpen={libraryModalRole !== null}
           userId={user?.id ?? null}
           onCloseReference={() => setLibraryModalRole(null)}

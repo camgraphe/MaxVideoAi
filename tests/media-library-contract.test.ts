@@ -450,7 +450,8 @@ test('library cards use icon actions and put source navigation on the visual', (
   assert.match(panelSource, /<MediaDialog/);
   const dialogSource = fs.readFileSync(path.join(process.cwd(), 'frontend/components/library/MediaDialog.client.tsx'), 'utf8');
   assert.match(dialogSource, /useAccessibleModal/);
-  assert.match(clientSource, /<Trash2\s+className=/);
+  assert.match(fs.readFileSync('frontend/components/library/CompactLibraryBrowser.client.tsx','utf8'), /selection\.mutate|runSingle/);
+  assert.doesNotMatch(clientSource, /<Trash2\s+className=/, 'Trash belongs to organization owner, not physical Delete');
 });
 
 test('media assets preserve and backfill thumbnails from job outputs', () => {
@@ -518,11 +519,14 @@ test('video preview urls stay separate from final media urls across library cont
   assert.match(resolverSource, /export async function resolveReusableAssetPreviewUrl/);
   assert.match(mediaSource, /export async function createRemoteVideoAssetThumbnail/);
   assert.match(mediaSource, /createUploadVideoThumbnail/);
-  assert.match(assetsRoute, /previewUrl:\s*asset\.previewUrl/);
+  assert.match(assetsRoute, /serializeLibraryAsset/);
+  assert.match(fs.readFileSync(path.join(process.cwd(), 'frontend/server/media-library/asset-response.ts'), 'utf8'), /previewUrl:\s*asset\.previewUrl/);
   assert.match(recentRoute, /previewUrl:\s*output\.previewUrl/);
   assert.match(browserSource, /activePreviewId/);
-  assert.match(browserSource, /src=\{activePreviewId === asset\.id \? asset\.previewAccessUrl \?\? asset\.previewUrl \?\? undefined : undefined\}/);
-  assert.match(browserSource, /poster=\{asset\.thumbnailAccessUrl \?\? asset\.thumbUrl \?\? undefined\}/);
+  assert.match(browserSource, /<LibraryInlineVideo/);
+  const inlineReader = fs.readFileSync('frontend/components/library/LibraryInlineMedia.client.tsx','utf8');
+  assert.match(inlineReader, /access\.previewAccessUrl \?\? asset\.previewUrl/);
+  assert.match(inlineReader, /access\.thumbnailAccessUrl \?\? asset\.thumbUrl/);
 });
 
 test('job output upserts preserve detected dimensions when legacy sync omits them', () => {
@@ -713,7 +717,8 @@ test('storyboard recent outputs expose generator handoff metadata without leakin
   assert.match(jobOutputsSource, /j\.duration_sec\s+AS\s+job_duration_sec/i);
   assert.match(jobOutputsSource, /j\.aspect_ratio\s+AS\s+job_aspect_ratio/i);
   assert.match(recordsSource, /jobPrompt\?:\s*string\s*\|\s*null/);
-  assert.match(recentRoute, /extractStoryboardGeneratorDraftFromPrompt/);
+  assert.match(recentRoute, /from ['"]@\/server\/media-library\/output-handoff['"]/);
+  assert.match(fs.readFileSync(path.join(process.cwd(), 'frontend/server/media-library/output-handoff.ts'), 'utf8'), /extractStoryboardGeneratorDraftFromPrompt/);
   assert.match(recentRoute, /surface\s*===\s*'storyboard'/);
   assert.match(recentRoute, /storyboard:\s*surface\s*===\s*'storyboard'\s*\?\s*buildRecentOutputStoryboardHandoff/);
   assert.doesNotMatch(recentRoute, /jobPrompt:\s*output\.jobPrompt/);

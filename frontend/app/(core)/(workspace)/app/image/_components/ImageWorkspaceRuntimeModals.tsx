@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { Dispatch, SetStateAction } from 'react';
+import { useRef, type Dispatch, type SetStateAction } from 'react';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import type { CharacterReferenceSelection } from '@/types/image-generation';
 import type { VideoGroup } from '@/types/video-groups';
@@ -34,6 +34,8 @@ type ImageWorkspaceRuntimeModalsProps = {
   referenceSlotLimit: number;
   closeLibraryModal: () => void;
   closeViewer: () => void;
+  modelIntent: string;
+  handleLibrarySelectMany: (assets: LibraryAsset[]) => boolean | void;
   handleLibrarySelect: (asset: LibraryAsset) => boolean | void;
   handleSaveVariantToLibrary: (entry: MediaLightboxEntry) => Promise<void>;
   libraryModal: ImageLibraryModalState;
@@ -55,6 +57,8 @@ export function ImageWorkspaceRuntimeModals({
   closeLibraryModal,
   closeViewer,
   handleLibrarySelect,
+  handleLibrarySelectMany,
+  modelIntent,
   handleSaveVariantToLibrary,
   libraryModal,
   loginRedirectTarget,
@@ -67,6 +71,8 @@ export function ImageWorkspaceRuntimeModals({
   toolsEnabled,
   viewerGroup,
 }: ImageWorkspaceRuntimeModalsProps) {
+  const libraryHasOpened = useRef(false);
+  if (libraryModal.open) libraryHasOpened.current = true;
   return (
     <>
       {viewerGroup ? (
@@ -84,12 +90,12 @@ export function ImageWorkspaceRuntimeModals({
           onClose={() => setAuthModalOpen(false)}
         />
       ) : null}
-      {libraryModal.open ? (
-        <ImageLibraryModal
-          target={{ scope: `${libraryModal.slotIndex ?? "append"}:${referenceSlotLimit}:${supportedReferenceFormats.join(",")}`, capacity: referenceSlotLimit, slotIndex: libraryModal.slotIndex }}
+      {libraryHasOpened.current ? <ImageLibraryModal
+          target={{ scope: `${modelIntent}:${libraryModal.slotIndex ?? "append"}`, capacity: referenceSlotLimit, slotIndex: libraryModal.slotIndex }}
           open={libraryModal.open}
           onClose={closeLibraryModal}
           onSelect={handleLibrarySelect}
+          onSelectMany={libraryModal.slotIndex == null ? handleLibrarySelectMany : undefined}
           onToggleCharacter={toggleCharacterReference}
           selectedCharacterReferences={selectedCharacterReferences}
           characterSelectionLimit={characterSelectionLimit}
@@ -100,8 +106,7 @@ export function ImageWorkspaceRuntimeModals({
           supportedFormats={supportedReferenceFormats}
           supportedFormatsLabel={supportedReferenceFormatsLabel}
           toolsEnabled={toolsEnabled}
-        />
-      ) : null}
+        /> : null}
     </>
   );
 }

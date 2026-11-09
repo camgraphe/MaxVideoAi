@@ -18,7 +18,7 @@ export function GalleryMediaActionPanel({ assets, members, onClose, menuRef, onR
   const asset = assets[index] ?? assets[0];
   const member = members?.find(item => item.id === asset.id);
   const labels = locale.startsWith('fr') ? ['Voir le résultat', 'Reprendre les paramètres', 'Sauvegarder le résultat principal', 'Copier le lien principal', 'Sortie'] : locale.startsWith('es') ? ['Ver resultado', 'Recuperar ajustes', 'Guardar resultado principal', 'Copiar enlace principal', 'Resultado'] : ['View result', 'Reuse settings', 'Save main output', 'Copy main output link', 'Output'];
-  return <MediaActionPanel boundaryRef={menuRef} asset={asset} locale={locale} onClose={onClose} title={member?.engineLabel} details={member ? <>
+  return <MediaActionPanel boundaryRef={menuRef} asset={asset} neighbors={assets} onNavigateAsset={selected => setIndex(assets.indexOf(selected))} locale={locale} onClose={onClose} title={member?.engineLabel} details={member ? <>
       {member.prompt ? <p>{member.prompt}</p> : null}
       <dl><div><dt>{locale.startsWith('fr') ? 'Créé le' : locale.startsWith('es') ? 'Creado' : 'Created'}</dt><dd>{new Date(member.createdAt).toLocaleDateString(locale)}</dd></div>
       {typeof member.priceCents === 'number' ? <div><dt>{locale.startsWith('fr') ? 'Coût' : locale.startsWith('es') ? 'Coste' : 'Cost'}</dt><dd>{new Intl.NumberFormat(locale, { style: 'currency', currency: member.currency || 'USD' }).format(member.priceCents / 100)}</dd></div> : null}</dl>

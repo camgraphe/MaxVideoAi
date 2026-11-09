@@ -38,6 +38,7 @@ function buildImagesFromExistingJob(job: ExistingImageJobRow): GeneratedImage[] 
   const parsed = parseStoredImageRenders(job.render_ids);
   if (parsed.entries.length) {
     return parsed.entries.map((entry) => ({
+      ...entry,
       url: entry.url,
       thumbUrl: entry.thumbUrl ?? entry.url,
       width: entry.width ?? null,

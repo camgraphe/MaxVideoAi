@@ -1,3 +1,4 @@
+import type { ImageDisplay } from '@/lib/image-display';
 import type { Mode, PricingSnapshot } from './engines';
 
 export type ImageGenerationMode = Extract<Mode, 't2i' | 'i2i'>;
@@ -62,7 +63,10 @@ export interface ImageGenerationRequest {
 }
 
 export interface GeneratedImage {
+  sourceOutputId?: string;
   url: string;
+  previewUrl?: string | null;
+  imageDisplay?: ImageDisplay;
   thumbUrl?: string | null;
   width?: number | null;
   height?: number | null;

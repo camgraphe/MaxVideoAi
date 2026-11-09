@@ -73,7 +73,7 @@ export interface ComposerProps {
   onVideoExcerptEditorChange?: (field: EngineInputField, index: number, open: boolean) => void | Promise<string | void>;
   onAssetRemove?: (field: EngineInputField, index: number) => void;
   onNotice?: (message: string) => void;
-  onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
+  onOpenLibrary?: (field: EngineInputField, slotIndex?: number) => void;
   onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
   settingsNotice?: ReactNode;

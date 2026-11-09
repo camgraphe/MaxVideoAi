@@ -1,3 +1,4 @@
+import type { ImageDisplay } from '@/lib/image-display';
 export type AngleToolEngineId = 'flux-multiple-angles' | 'qwen-multiple-angles';
 
 export type AngleToolPresetId = 'dialogue' | 'product' | 'action';
@@ -21,6 +22,8 @@ export interface AngleToolRequest {
 export interface AngleToolOutput {
   url: string;
   thumbUrl?: string | null;
+  previewUrl?: string;
+  imageDisplay?: ImageDisplay;
   width?: number | null;
   height?: number | null;
   mimeType?: string | null;

@@ -30,6 +30,17 @@ export const workspaceReferenceFixtureSource = `
   createRoot(document.getElementById('root')).render(<Fixture />);
 `;
 
+/** Controlled SDK session for standalone picker UI; selection still uses real ownedAuthFetch. */
+export function referencePickerAuthModules(userId: string, accessToken: string) {
+  return { '@/lib/supabaseClientLoader': `
+    const session = ${JSON.stringify({user: {id: userId}, access_token: accessToken})};
+    export const loadSupabaseClient = async () => ({auth: {
+      getSession: async () => ({data: {session}, error: null}),
+      onAuthStateChange: () => ({data: {subscription: {unsubscribe() {}}}}),
+    }});
+  ` };
+}
+
 /** Real Composer/CSS with a local synthetic-data boundary; usable by tests and manual preview. */
 export async function startWorkspaceReferenceFixture(options: { source?: string; config?: unknown; assistancePreview?: boolean; assistanceLive?: boolean; perception?:boolean; hostModules?: Record<string, string> } = {}) {
   const frontend = join(process.cwd(), 'frontend');
@@ -43,7 +54,7 @@ export async function startWorkspaceReferenceFixture(options: { source?: string;
       builder.onLoad({ filter: /.*/, namespace: 'workspace-host' }, args => ({ contents: options.hostModules![args.path], loader: 'tsx', resolveDir: frontend }));
     } }] : [],
   });
-  const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css', 'src/styles/app-shell.css'].map(path => readFile(join(frontend, path), 'utf8')));
+  const styles = await Promise.all(['app/globals.css', 'src/styles/tokens.css', 'src/styles/skeleton.css', 'src/styles/app-experience.css', 'src/styles/app-shell.css', 'components/library/compact-library.css'].map(path => readFile(join(frontend, path), 'utf8')));
   const css = await requireFrontend('postcss')([requireFrontend('tailwindcss')({ ...tailwindConfig, content: [
     ...tailwindConfig.content.map(pattern => join(frontend, pattern)), { raw: source, extension: 'tsx' },
   ] })]).process(styles.join('\n').replace(/@(?:import|config)[^;]+;/g, ''), { from: join(frontend, 'app/globals.css') });

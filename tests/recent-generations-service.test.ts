@@ -418,6 +418,7 @@ test('web recent mapper preserves the authenticated route fixture including prom
     stripeChargeId: 'ch_private',
     renderIds: ['https://cdn.maxvideoai.com/image.png'],
     renderThumbUrls: ['https://cdn.maxvideoai.com/image-thumb.webp'],
+    imageRenders: [{ url: 'https://cdn.maxvideoai.com/image.png', thumbUrl: 'https://cdn.maxvideoai.com/image-thumb.webp', width: null, height: null, mimeType: null }],
     localKey: 'private-key',
     status: 'completed',
     progress: 100,

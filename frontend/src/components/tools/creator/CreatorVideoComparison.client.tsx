@@ -1,12 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLibrarySourceAccess } from '@/hooks/useLibrarySourceAccess';
+import type { CreatorSource } from './creator-source-selection';
 import { creatorWorkspaceCopy } from './creator-workspace-copy';
 import styles from './creator-workspace.module.css';
 
 type Props = {
   locale: string;
   sourceUrl: string;
+  sourceMedia?: CreatorSource;
+  onSourceError?(): void;
   resultUrl: string;
   sourcePoster?: string | null;
   resultPoster?: string | null;
@@ -17,10 +21,14 @@ type Props = {
 
 /** Signed originals stay exact. One manual transport owns both private readers. */
 export function CreatorVideoComparison(props: Props) {
-  return <ComparisonSession key={`${props.sourceUrl}:${props.resultUrl}:${props.sourceStartSec}:${props.sourceEndSec}`} {...props} />;
+  const access = useLibrarySourceAccess(props.sourceMedia, props.sourceUrl, props.sourcePoster);
+  const copy = creatorWorkspaceCopy(props.locale);
+  if (access.retired) return null;
+  if (!access.url) return access.pending ? null : <p role="alert">{copy.previewError}<button type="button" onClick={access.retry}>{copy.retry}</button></p>;
+  return <ComparisonSession key={`${access.url}:${props.resultUrl}:${props.sourceStartSec}:${props.sourceEndSec}`} {...props} sourceUrl={access.url} sourcePoster={access.poster} onSourceError={props.sourceMedia ? access.onError : undefined} />;
 }
 
-function ComparisonSession({ locale, sourceUrl, resultUrl, sourcePoster, resultPoster, sourceStartSec = 0, sourceEndSec, onRetry }: Props) {
+function ComparisonSession({ locale, sourceUrl, resultUrl, sourcePoster, resultPoster, sourceStartSec = 0, sourceEndSec, onRetry, onSourceError }: Props) {
   const copy = creatorWorkspaceCopy(locale);
   const container = useRef<HTMLDivElement>(null), source = useRef<HTMLVideoElement>(null), result = useRef<HTMLVideoElement>(null);
   const intended = useRef(false), generation = useRef(0), waiting = useRef(new Set<HTMLVideoElement>());
@@ -80,6 +88,7 @@ function ComparisonSession({ locale, sourceUrl, resultUrl, sourcePoster, resultP
   }, [playing, sync]);
   useEffect(() => {
     const before = source.current, after = result.current;
+    for (const [node, url] of [[before, sourceUrl], [after, resultUrl]] as const) if (node && node.getAttribute('src') !== url) node.setAttribute('src', url);
     const hidden = () => { if (document.visibilityState === 'hidden') stop(); };
     const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
       if (entries.every(entry => !entry.isIntersecting)) stop();
@@ -91,9 +100,9 @@ function ComparisonSession({ locale, sourceUrl, resultUrl, sourcePoster, resultP
       generation.current += 1;
       observer?.disconnect();
       document.removeEventListener('visibilitychange', hidden);
-      for (const node of [before, after]) if (node && !node.paused) node.pause();
+      for (const node of [before, after]) if (node) { if (!node.paused) node.pause(); node.removeAttribute("src"); }
     };
-  }, [stop]);
+  }, [stop, sourceUrl, resultUrl]);
 
   const events = {
     onLoadedMetadata: () => {
@@ -120,7 +129,7 @@ function ComparisonSession({ locale, sourceUrl, resultUrl, sourcePoster, resultP
   };
   return <div ref={container} className={styles.comparison}>
     <div className={styles.comparisonVideos}>
-      <figure><figcaption>{copy.original}</figcaption><video ref={source} src={sourceUrl} poster={sourcePoster ?? undefined} aria-label={copy.original} muted preload="none" playsInline {...events} /></figure>
+      <figure><figcaption>{copy.original}</figcaption><video ref={source} src={sourceUrl} poster={sourcePoster ?? undefined} aria-label={copy.original} muted preload="none" playsInline {...events} onError={() => { events.onError(); onSourceError?.(); }} /></figure>
       <figure><figcaption>{copy.result}</figcaption><video ref={result} src={resultUrl} poster={resultPoster ?? undefined} aria-label={copy.result} muted={muted} preload="none" playsInline {...events} onTimeUpdate={sync} /></figure>
     </div>
     <div className={styles.actions}>

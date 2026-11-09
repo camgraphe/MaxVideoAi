@@ -25,7 +25,8 @@ test('upscale API splits image and video routes so heavy native dependencies do 
   assert.match(legacyRoute, /NextResponse\.redirect/);
 
   const sharedTool = source(sharedToolPath);
-  assert.doesNotMatch(sharedTool, /@\/server\/image-thumbnails/);
+  assert.match(sharedTool, /import type \{ createImageThumbnailBatch, prepareImageRenditions \} from '@\/server\/image-thumbnails'/);
+  assert.doesNotMatch(sharedTool, /import (?!type )[^{;]*\{[^;]+from '@\/server\/image-thumbnails'/);
   assert.doesNotMatch(sharedTool, /@\/server\/media\/detect-has-audio/);
 
   const imageTool = source(imageToolPath);

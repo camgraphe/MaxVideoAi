@@ -2,7 +2,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { toolboxCopy } from '../../toolbox-copy';
 /* eslint-disable @next/next/no-img-element */
 
-import type { KeyboardEventHandler, PointerEventHandler, Ref } from 'react';
+import { useEffect, useRef, type KeyboardEventHandler, type PointerEventHandler, type Ref } from 'react';
 import { ChevronsLeftRight, Download, Save, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -46,6 +46,10 @@ export function UpscalePreviewCard({
   resultPreviewUrl,
   sourcePreviewIsVideo,
   sourcePreviewUrl,
+  sourcePreviewError,
+  sourcePreviewPending,
+  onSourcePreviewError,
+  onSourcePreviewRetry,
   sourceSizeLabel,
   zoomCanvasHeight,
   zoomCanvasWidth,
@@ -76,12 +80,22 @@ export function UpscalePreviewCard({
   resultPreviewUrl: string;
   sourcePreviewIsVideo: boolean;
   sourcePreviewUrl: string;
+  sourcePreviewError?: boolean;
+  sourcePreviewPending?: boolean;
+  onSourcePreviewError?: () => void;
+  onSourcePreviewRetry?: () => void;
   sourceSizeLabel: string;
   zoomCanvasHeight: number;
   zoomCanvasWidth: number;
 }) {
   const { locale } = useI18n();
   const labels = toolboxCopy(locale);
+  const sourceVideo = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = sourceVideo.current;
+    if (video && sourcePreviewUrl && video.getAttribute('src') !== sourcePreviewUrl) video.setAttribute('src', sourcePreviewUrl);
+    return () => { if (video) { if (!video.paused) video.pause(); video.removeAttribute('src'); } };
+  }, [sourcePreviewUrl, activePreviewMode]);
   return (
     <Card className="order-2 overflow-hidden rounded-[14px] border border-border bg-surface p-0 shadow-card xl:order-none">
       <div className="flex flex-wrap items-start justify-between gap-3 px-3 py-3">
@@ -151,10 +165,10 @@ export function UpscalePreviewCard({
               onKeyDown={onCompareKeyDown}
             >
               {activePreviewMode === 'source' ? (
-                sourcePreviewIsVideo ? (
-                  <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={sourcePreviewUrl} controls preload="none" playsInline />
+                !sourcePreviewUrl ? null : sourcePreviewIsVideo ? (
+                  <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} key={sourcePreviewUrl} ref={sourceVideo} onError={onSourcePreviewError} src={sourcePreviewUrl} controls preload="none" playsInline />
                 ) : (
-                  <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={sourcePreviewUrl} alt="" draggable={false} />
+                  <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} onError={onSourcePreviewError} src={sourcePreviewUrl} alt="" draggable={false} />
                 )
               ) : activePreviewMode === 'result' ? (
                 resultPreviewIsVideo ? (
@@ -165,27 +179,36 @@ export function UpscalePreviewCard({
               ) : resultPreviewIsVideo ? (
                 <>
                   <video className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} muted preload="none" playsInline />
-                  <video
+                  {sourcePreviewUrl ? <video
+                    key={sourcePreviewUrl}
+                    ref={sourceVideo}
+                    onError={onSourcePreviewError}
+                    preload="none"
                     className={`absolute inset-0 h-full w-full ${mediaFitClass}`}
                     src={sourcePreviewUrl}
                     muted
                     playsInline
                     style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
-                  />
+                  /> : null}
                 </>
               ) : (
                 <>
                   <img className={`absolute inset-0 h-full w-full ${mediaFitClass}`} src={resultPreviewUrl} alt="" draggable={false} />
-                  <img
+                  {sourcePreviewUrl ? <img
+                    onError={onSourcePreviewError}
                     className={`absolute inset-0 h-full w-full ${mediaFitClass}`}
                     src={sourcePreviewUrl}
                     alt=""
                     draggable={false}
                     style={{ clipPath: `inset(0 ${100 - comparePosition}% 0 0)` }}
-                  />
+                  /> : null}
                 </>
               )}
 
+              {sourcePreviewError && activePreviewMode !== 'result' ? <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <p role="alert">{labels.sourcePreviewUnavailable}</p>
+                <Button type="button" disabled={sourcePreviewPending} onClick={onSourcePreviewRetry}>{labels.retrySourcePreview}</Button>
+              </div> : null}
               {activePreviewMode === 'compare' ? (
                 <>
                   <div className="absolute inset-y-0 w-px bg-on-inverse shadow-[0_0_0_1px_var(--surface-on-media-dark-40)]" style={{ left: `${comparePosition}%` }} />

@@ -1,3 +1,4 @@
+import { createUploadedMediaReadAccess } from '@/server/media-library/upload-read-access';
 import { NextRequest, NextResponse } from 'next/server';
 import { canonicalMediaAssetFields } from '@/lib/media-identity';
 
@@ -81,6 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       asset: {
+        ...await createUploadedMediaReadAccess(userId, { assetId: stored.assetId, legacyAssetId: stored.legacyAssetId, url: stored.storageUrl, kind: 'video' }),
         id: stored.legacyAssetId,
         legacyAssetId: stored.legacyAssetId,
         ...canonicalMediaAssetFields(stored.assetId, 'video'),
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest) {
         name: blob.name,
         thumbUrl: stored.previewUrl,
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
     return uploadErrorResponse(error);
   }

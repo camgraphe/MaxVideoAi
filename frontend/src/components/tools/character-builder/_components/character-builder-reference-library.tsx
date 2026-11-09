@@ -3,11 +3,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import { useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { useState } from 'react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { LibraryPickerDialog } from '@/components/library/LibraryPickerDialog.client';
 import { Images, Upload } from 'lucide-react';
 
 import { Button } from '@/components/ui/Button';
-import { LibraryImageThumbnail } from '@/components/library/LibraryImageThumbnail.client';
 import { usePaginatedMediaLibraryAssets } from '@/hooks/usePaginatedMediaLibraryAssets';
 import { isLibraryImageAsset } from '@/lib/library-image';
 import type { CharacterBuilderReferenceImage } from '@/types/character-builder';
@@ -41,10 +42,8 @@ export function ReferenceSlot({
     <div
       className={clsx(
         'w-full rounded-card border border-dashed p-4 text-left transition',
-        image
-          ? 'border-border bg-surface'
-          : 'border-border bg-bg/50 hover:border-border-hover hover:bg-surface-hover',
-        disabled && 'cursor-not-allowed opacity-60'
+        image ? 'border-border bg-surface' : 'border-border bg-bg/50 hover:border-border-hover hover:bg-surface-hover',
+        disabled && 'cursor-not-allowed opacity-60',
       )}
     >
       {image ? (
@@ -104,12 +103,14 @@ export function ReferenceSlot({
 
 export function CharacterReferenceLibraryModal({
   open,
+  role,
   userId,
   onClose,
   onSelect,
   copy,
 }: {
   open: boolean;
+  role?: string | null;
   userId: string | null;
   onClose: () => void;
   onSelect: (asset: CharacterLibraryAsset) => void;
@@ -117,134 +118,57 @@ export function CharacterReferenceLibraryModal({
 }) {
   const [activeSource, setActiveSource] = useState<'all' | 'upload' | 'generated' | 'character' | 'angle'>('all');
   const source = activeSource === 'all' ? null : activeSource;
-  const { assets: paginatedAssets, error, hasMore, isLoading, isLoadingMore, loadMore } = usePaginatedMediaLibraryAssets({
+  const {
+    assets: paginatedAssets,
+    error,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    loadMore,
+  } = usePaginatedMediaLibraryAssets({
     enabled: open,
     userId,
     kind: 'image',
     source,
   });
 
-  const assets = paginatedAssets
-    .filter(isLibraryImageAsset)
-    .map((asset) => ({
-      ...asset,
-      source: asset.source === 'saved_job_output' ? 'generated' : asset.source,
-    }));
+  const assets = paginatedAssets.filter(isLibraryImageAsset).map((asset) => ({
+    ...asset,
+    kind: 'image' as const,
+    source: asset.source === 'saved_job_output' ? 'generated' : asset.source,
+  }));
 
-  if (!open) return null;
-
-  const handleBackdropClick = (event: ReactMouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) onClose();
-  };
-
+  const { locale } = useI18n();
   return (
-    <div
-      className="fixed inset-0 z-[10050] flex items-center justify-center bg-surface-on-media-dark-60 px-3 py-6 sm:px-6"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={handleBackdropClick}
-    >
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-modal border border-border bg-surface shadow-float">
-        <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
-          <div>
-            <h2 className="text-lg font-semibold text-text-primary">{copy.library.choose}</h2>
-            <p className="text-xs text-text-secondary">{copy.library.body}</p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            className="self-start rounded-full border-border px-3 text-sm font-medium text-text-secondary hover:bg-bg sm:self-auto"
-          >
-            {copy.close}
-          </Button>
-        </div>
-        <div className="border-b border-border px-4 py-3 sm:px-6">
-          <div
-            role="tablist"
-            aria-label={copy.library.open}
-            className="flex w-full overflow-hidden rounded-full border border-border bg-surface-glass-70 text-xs font-semibold text-text-secondary"
-          >
-            {([
-              ['all', copy.library.tabs.all],
-              ['upload', copy.library.tabs.upload],
-              ['generated', copy.library.tabs.generated],
-              ['character', copy.library.tabs.character],
-              ['angle', copy.library.tabs.angle],
-            ] as const).map(([value, label]) => (
-              <Button
-                key={value}
-                type="button"
-                role="tab"
-                variant="ghost"
-                size="sm"
-                aria-selected={activeSource === value}
-                onClick={() => setActiveSource(value)}
-                className={clsx(
-                  'flex-1 rounded-none px-4 py-2',
-                  activeSource === value ? 'bg-brand text-on-brand hover:bg-brand' : 'text-text-secondary hover:bg-surface'
-                )}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-6">
-          {error ? (
-            <div role="alert" className="rounded-card border border-state-warning/40 bg-state-warning/10 px-4 py-6 text-sm text-state-warning">
-              {copy.library.error}
-            </div>
-          ) : isLoading && !assets.length ? (
-            <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={`character-library-skeleton-${index}`} className="rounded-card border border-border bg-surface-glass-60 p-0" aria-hidden>
-                  <div className="relative aspect-square overflow-hidden rounded-t-card bg-placeholder">
-                    <div className="skeleton absolute inset-0" />
-                  </div>
-                  <div className="border-t border-border px-4 py-3">
-                    <div className="h-3 w-24 rounded-full bg-skeleton" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : assets.length === 0 ? (
-            <div className="rounded-card border border-dashed border-border px-4 py-6 text-center text-sm text-text-secondary">
-              {copy.library.empty}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-gap-sm sm:grid-cols-2 lg:grid-cols-3">
-                {assets.map((asset) => (
-                <button
-                  key={asset.id}
-                  type="button"
-                  onClick={() => onSelect(asset)}
-                  className="overflow-hidden rounded-card border border-border bg-surface text-left transition hover:border-border-hover hover:shadow-card"
-                >
-                  <div className="relative aspect-square overflow-hidden bg-bg/50">
-                    <LibraryImageThumbnail asset={asset} className="h-full w-full object-cover" />
-                  </div>
-                  <div className="border-t border-border px-4 py-3">
-                    <p className="truncate text-xs font-medium text-text-primary">
-                      {asset.source ?? copy.library.tabs.all}
-                    </p>
-                  </div>
-                </button>
-                ))}
-              </div>
-              {hasMore ? (
-                <div className="flex justify-center">
-                  <Button type="button" variant="outline" size="sm" disabled={isLoadingMore} onClick={loadMore}>
-                    {copy.library.loadMore}
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <LibraryPickerDialog
+      open={open}
+      userId={userId}
+      intent={`character:${role ?? 'identity'}`}
+      locale={locale}
+      assetType="image"
+      assets={assets}
+      title={copy.library.choose}
+      subtitle={copy.library.body}
+      source={activeSource}
+      availableSources={['all', 'upload', 'generated', 'character', 'angle']}
+      sourceLabels={copy.library.tabs}
+      onSourceChange={(next) => setActiveSource(next as typeof activeSource)}
+      isLoading={isLoading}
+      isLoadingMore={isLoadingMore}
+      hasMore={hasMore}
+      onLoadMore={loadMore}
+      error={error ? copy.library.error : null}
+      searchPlaceholder={copy.library.open}
+      sourcesTitle={copy.library.open}
+      emptyLabel={copy.library.empty}
+      emptySearchLabel={copy.library.empty}
+      onClose={onClose}
+      closeLabel={copy.close}
+      renderAssetActions={() => null}
+      selection={{
+        onConfirm: (asset) =>
+          onSelect({ ...asset, width: asset.width ?? undefined, height: asset.height ?? undefined }),
+      }}
+    />
   );
 }

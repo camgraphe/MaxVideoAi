@@ -1,4 +1,5 @@
-import { useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useLibraryDisplayAccess } from '@/hooks/useLibraryMediaAccess';
+import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { UpscaleMediaType, UpscaleMode, UpscaleToolResponse } from '@/types/tools-upscale';
 import {
   clampComparePosition,
@@ -37,8 +38,28 @@ export function useUpscalePreviewState({
   const activePreviewMode: PreviewMode = hasResult
     ? (!hasSourcePreview || (previewMode === 'compare' && !canCompare) ? 'result' : previewMode)
     : 'source';
-  const sourcePreviewUrl = mediaUrl || SAMPLE_IMAGE_URL;
-  const resultPreviewUrl = output?.url || mediaUrl || SAMPLE_IMAGE_URL;
+  const selectedSource = source?.url === mediaUrl ? source : null;
+  const access = useLibraryDisplayAccess(selectedSource ?? {});
+  const privateSource = Boolean(selectedSource?.readAccessRef || selectedSource?.readAccessOwnerId);
+  // Original/compare intentionally retain original fidelity, including video playback.
+  const grantedSource = access.retired ? '' : privateSource ? access.access.accessUrl ?? '' : mediaUrl || SAMPLE_IMAGE_URL;
+  const [failedSource, setFailedSource] = useState<string | null>(null);
+  const currentSource = useRef(grantedSource);
+  currentSource.current = grantedSource;
+  const sourcePreviewUrl = failedSource === grantedSource ? '' : grantedSource;
+  const sourcePreviewError = !access.retired && !access.pending && privateSource && !sourcePreviewUrl;
+  const sourcePreviewPending = access.pending;
+  function onSourcePreviewError() {
+    const captured = grantedSource;
+    void access.refresh().then(recovered => {
+      if (!recovered && currentSource.current === captured) setFailedSource(captured);
+    });
+  }
+  function onSourcePreviewRetry() {
+    access.beginAttempt();
+    void access.refresh().then(recovered => { if (recovered) setFailedSource(null); });
+  }
+  const resultPreviewUrl = output?.url || sourcePreviewUrl;
   const sourcePreviewIsVideo = mediaType === 'video' && Boolean(mediaUrl);
   const resultPreviewIsVideo = output ? isOutputVideo(output) : sourcePreviewIsVideo;
   const compareEnabled = activePreviewMode === 'compare' && canCompare;
@@ -125,6 +146,10 @@ export function useUpscalePreviewState({
     sourceHeight,
     sourcePreviewIsVideo,
     sourcePreviewUrl,
+    sourcePreviewError,
+    sourcePreviewPending,
+    onSourcePreviewError,
+    onSourcePreviewRetry,
     sourceSizeLabel,
     sourceWidth,
     zoomCanvasHeight,

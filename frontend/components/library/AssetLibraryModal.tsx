@@ -29,26 +29,11 @@ export type AssetLibrarySource =
   | 'upscale';
 export type AssetLibraryKind = 'image' | 'video' | 'audio';
 
-export type UserAsset = {
-  name?: string | null;
-  id: string;
-  url: string;
-  thumbUrl?: string | null;
-  previewUrl?: string | null;
-  kind: 'image' | 'video' | 'audio';
-  width?: number | null;
-  height?: number | null;
-  size?: number | null;
-  durationSec?: number | null;
-  mime?: string | null;
-  source?: string | null;
-  createdAt?: string;
-  canDelete?: boolean;
-  jobId?: string | null;
-  sourceOutputId?: string | null;
-};
+export type UserAsset = import('./AssetLibraryBrowser').AssetBrowserAsset;
 
 export type AssetLibraryModalProps = {
+  ownerId?: string | null;
+  importQueue?: import("@/lib/library-import-queue").LibraryImportQueueController;
   fieldLabel: string;
   target?: { scope: string; role?: 'start' | 'end'; capacity?: number; slotIndex?: number };
   assetType: AssetLibraryKind;
@@ -58,6 +43,7 @@ export type AssetLibraryModalProps = {
   hasMore?: boolean;
   error: string | null;
   onClose: () => void;
+  onSelectMany?: import('./ReferenceLibraryPicker.client').ReferencePickerSelection['onConfirmMany'];
   onSelect: (asset: UserAsset) => void | string | Promise<void | string>;
   getEligibility?: (asset: UserAsset, context?: 'stored' | 'file') => MediaInputEligibility;
   onImportFile?: (file: File) => Promise<void | string>;
@@ -228,6 +214,8 @@ function getUploadFailureMessage(assetType: AssetLibraryKind, error: unknown, fa
 
 export function AssetLibraryModal({
   getEligibility,
+  importQueue,
+  ownerId,
   onImportFile,
   fieldLabel,
   target,
@@ -239,6 +227,7 @@ export function AssetLibraryModal({
   error,
   onClose,
   onSelect,
+  onSelectMany,
   source,
   onSourceChange,
   onRefresh,
@@ -433,7 +422,7 @@ export function AssetLibraryModal({
       />
       <AssetLibraryBrowser
         locale={uiLocale}
-        selection={{ scope: target?.scope ?? fieldLabel, busy, onBusyChange: setIsSelecting, onConfirm: onSelect, getEligibility }}
+        selection={{ ownerId, importQueue, scope: target?.scope ?? fieldLabel, busy, onBusyChange: setIsSelecting, onConfirm: onSelect, onConfirmMany: onSelectMany, getEligibility }}
         headingId={titleId}
         title={target?.role ? referenceCopy[target.role] : libraryTitle}
         subtitle={[!target?.role ? referenceCopy.kinds[assetType] : null, target?.slotIndex != null && (target?.capacity ?? 1) > 1 ? `${pickerCopy.slot} ${target.slotIndex + 1}` : null, (target?.capacity ?? 1) > 1 ? `${pickerCopy.capacity} ${target?.capacity}` : null].filter(Boolean).join(' · ')}
@@ -457,7 +446,7 @@ export function AssetLibraryModal({
         emptySearchLabel={emptySearchLabel}
         headerActions={
           <>
-            <Button
+            {!importQueue ? <Button
               type="button"
               variant="outline"
               size="sm"
@@ -466,7 +455,7 @@ export function AssetLibraryModal({
               onClick={() => importInputRef.current?.click()}
             >
               {isImporting ? importingLabel : importLabel}
-            </Button>
+            </Button> : null}
             <Button
               type="button"
               variant="outline"

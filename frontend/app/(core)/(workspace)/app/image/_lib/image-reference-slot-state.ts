@@ -57,6 +57,7 @@ export function buildPersistableReferenceSlots(
     const url = slot.url?.trim?.() ?? '';
     if (!url || url.startsWith('blob:')) return null;
     return {
+      readAccessOwnerId: slot.readAccessOwnerId, readAccessRef: slot.readAccessRef, readAccessRevision: slot.readAccessRevision,
       url,
       name: slot.name?.trim() || undefined,
       ref: imageReferenceIdentity(slot),

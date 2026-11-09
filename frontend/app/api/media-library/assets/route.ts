@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { privateMediaAssetName } from '@/server/media-library/private-asset-name';
-import { canonicalMediaAssetFields, readMediaFacts } from '@/lib/media-identity';
+import { serializeLibraryAsset } from '@/server/media-library/asset-response';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createLibraryMediaReadAccess } from '@/server/media-library/read-access';
 import {
@@ -57,27 +56,7 @@ export async function GET(req: NextRequest) {
   }
   return NextResponse.json({
     ok: true,
-    assets: page.items.map((asset, index) => ({
-      id: asset.id,
-      name: privateMediaAssetName(asset.metadata),
-      ...canonicalMediaAssetFields(asset.publicId, asset.kind),
-      mediaFacts: readMediaFacts(asset.metadata.mediaFacts),
-      url: asset.url,
-      thumbUrl: asset.thumbUrl,
-      previewUrl: asset.previewUrl,
-      ...readAccess[index],
-      playbackVideoUrl: typeof asset.metadata.playbackVideoUrl === 'string' ? asset.metadata.playbackVideoUrl : undefined,
-      mime: asset.mimeType,
-      width: asset.width,
-      height: asset.height,
-      size: asset.sizeBytes,
-      durationSec: asset.durationSec,
-      kind: asset.kind,
-      source: asset.source,
-      jobId: asset.sourceJobId,
-      sourceOutputId: asset.sourceOutputId,
-      createdAt: asset.createdAt,
-    })),
+    assets: page.items.map((asset, index) => serializeLibraryAsset(asset, readAccess[index])),
     nextCursor: page.nextCursor,
     hasMore: page.hasMore,
   }, { headers: { 'Cache-Control': 'private, no-store' } });

@@ -68,3 +68,9 @@ test("a saved internal UUID cannot masquerade as a reusable ma_ reference", asyn
     /momentanément indisponible/,
   );
 });
+
+test('canonical lookup keeps the exact saved original instead of the first canonical candidate',async()=>{
+ const exact={assetId:'ma_'+'e'.repeat(32),url:output.url};let calls=0;
+ const request=(async()=>({ok:true,json:async()=>++calls===1?{ok:true,asset:{url:output.url}}:{ok:true,assets:[{assetId:'ma_'+'f'.repeat(32),url:'https://cdn.maxvideoai.com/other.png'},exact]}})) as typeof fetch;
+ assert.deepEqual(await saveRecentImageReference(output,request),exact);
+});

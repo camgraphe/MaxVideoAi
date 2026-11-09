@@ -8,7 +8,7 @@ export const RECENT_MEDIA_LIMIT = 12;
 export const RECENT_MEDIA_DRAG_TYPE = 'application/x-maxvideoai-recent-reference';
 
 /** SWR key identity belongs to the authenticated account, kind and exact first page. */
-export function recentMediaScope(key: readonly [string, string] | null): string | null {
+export function recentMediaScope(key: readonly [string, string, ...number[]] | null): string | null {
   return key ? JSON.stringify(key) : null;
 }
 

@@ -1,3 +1,4 @@
+import { saveFactsDatabaseBoundary } from './helpers/save-facts-database-boundary';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import path from 'node:path';
@@ -44,11 +45,11 @@ const assetRow = (metadata: unknown, url = libraryUrl) => ({ id: 'output:job:vid
   thumb_url: 'https://owned.test/thumb.jpg', preview_url: null, mime_type: 'video/mp4', width: 1280, height: 720,
   size_bytes: 42, source: 'saved_job_output', source_job_id: 'job', source_output_id: 'job:video:0', status: 'ready', metadata, created_at: '2026-01-01' });
 const assetStubs = {
-  '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
-  '@/lib/schema': 'export const ensureMediaLibrarySchema = async () => {};',
+  '@/lib/db': saveFactsDatabaseBoundary('fixture'),
+  '@/lib/schema': 'export const ensureMediaLibrarySchema = async () => {}; export const ensureAssetSchema = async () => {}; export const ensureMediaLibraryOrganizationSchema = async () => {};',
   '@/server/storage': 'export const recordUserAsset = async (value) => fixture.mirror.push(value);',
   './asset-listing': 'export const findLibraryAssetByOrigin = async () => null; export const listLibraryAssetPage = async () => ({});',
-  './asset-resolvers': 'export const resolveReusableAssetThumbUrl = async () => null; export const resolveReusableAssetPreviewUrl = async () => null;',
+  './asset-resolvers': 'export const resolveReusableImageDisplay = async () => undefined; export const resolveReusableAssetThumbUrl = async () => null; export const resolveReusableAssetPreviewUrl = async () => null;',
   './asset-media': 'export const createRemoteVideoAssetThumbnail = async () => null; export const copyRemoteMedia = (...args) => fixture.copy(...args);',
 };
 test('existing saved copy receives reliable facts, reused on subsequent save; inaccessible refresh stays usable', async () => {

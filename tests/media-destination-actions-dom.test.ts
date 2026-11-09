@@ -92,3 +92,24 @@ test('late catalogs, degraded fallbacks and responses after unmount cannot expos
   assert.equal(f.w.navigations.length,0);assert.equal(f.w.sessionStorage.length,0);
  } finally {await f.close();}
 });
+
+test('Media upload Studio action resolves the public ref separately from the internal mutation id',async()=>{
+ const f=await mountToolFixture(`import {MediaDestinationActions} from './components/library/MediaDestinationActions.client';function App(){return <MediaDestinationActions userId="account-a" locale="en" asset={{id:'url:internal',assetId:'${assetId}',ref:{type:'asset',assetId:'${assetId}',kind:'image'},url:'https://private.invalid/original.png',accessUrl:'https://private.invalid/grant',kind:'image',name:'Product'}}/>}`,stubs,w=>{w.navigations=[];});
+ try {
+  const studio=Array.from(f.w.document.querySelectorAll('details')).find((node:any)=>node.querySelector('summary')?.textContent==='Use in Studio') as HTMLDetailsElement;
+  assert.ok(studio,'an upload with public identity offers Studio');
+  await f.act(async()=>{studio.open=true;await new Promise(resolve=>setTimeout(resolve,0));});
+  const resolve=f.w.requests.find((r:any)=>r.url==='/api/studio/media/resolve');assert.ok(resolve);
+  assert.deepEqual(JSON.parse(resolve.init.body),{refs:[{type:'asset',assetId,kind:'image'}]});
+  assert.equal(f.w.requests.some((r:any)=>r.url.includes('promote')),false);
+ } finally {await f.close();}
+});
+
+test('Studio never falls back to job metadata when an explicit public reference is invalid',async()=>{
+ const f=await mountToolFixture(`import {MediaDestinationActions} from './components/library/MediaDestinationActions.client';function App(){return <MediaDestinationActions userId="account-a" locale="en" asset={{id:'row',assetId:'${assetId}',ref:{type:'asset',assetId:'${assetId}',kind:'video'},jobId:'job-a',sourceOutputId:'output-a',url:'https://private.invalid/original.png',kind:'image'}}/>}`,stubs,w=>{w.navigations=[];});
+ try{assert.equal(Array.from(f.w.document.querySelectorAll('summary')).some((node:any)=>node.textContent==='Use in Studio'),false);assert.equal(f.w.requests.length,0);}finally{await f.close();}
+});
+test('Studio carries a ref-only job output into exact original resolution',async()=>{
+ const f=await mountToolFixture(`import {MediaDestinationActions} from './components/library/MediaDestinationActions.client';function App(){return <MediaDestinationActions userId="account-a" locale="en" asset={{id:'row',ref:{type:'job-output',jobId:'job-exact',outputId:'output-exact',kind:'image'},url:'https://private.invalid/original.png',kind:'image'}}/>}`,stubs,w=>{w.navigations=[];});
+ try{const studio=Array.from(f.w.document.querySelectorAll('details')).find((node:any)=>node.querySelector('summary')?.textContent==='Use in Studio') as HTMLDetailsElement;assert.ok(studio);await f.act(async()=>{studio.open=true;await new Promise(resolve=>setTimeout(resolve,0));});const request=f.w.requests[0];assert.ok(request);assert.match(request.url,/jobId=job-exact/);assert.equal(f.w.navigations.length,0);}finally{await f.close();}
+});

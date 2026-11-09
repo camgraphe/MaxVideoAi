@@ -1,7 +1,8 @@
 import type { UpscaleMediaType, UpscaleToolEngineId } from '@/types/tools-upscale';
+import type { AssetBrowserAsset } from '@/components/library/AssetLibraryBrowser';
 import type { Job } from '@/types/jobs';
 
-export type UploadedAsset = {
+export type UploadedAsset = Omit<Partial<AssetBrowserAsset>, 'id' | 'jobId' | 'url'> & {
   id?: string | null;
   jobId?: string | null;
   url: string;

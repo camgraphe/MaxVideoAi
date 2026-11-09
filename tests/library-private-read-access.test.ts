@@ -27,6 +27,10 @@ test('authenticated library grants owned upload reads without rewriting canonica
   const response=await route.GET(new NextRequest('https://app.test/api/media-library/assets?kind=video'));
   assert.equal(response.status,200);
   const {assets:[asset]}=await response.json();
+  assert.equal(asset.readAccessOwnerId,'owner');
+  assert.deepEqual(asset.readAccessRef,{type:'asset',assetId:'ma_'+'a'.repeat(32),kind:'video'});
+  assert.match(asset.readAccessRevision,/^ra_[a-f0-9]{64}$/);
+  assert.ok(Date.parse(asset.readAccessExpiresAt)>Date.now()+290000);
   assert.equal(asset.url,original);assert.equal(asset.thumbUrl,thumbnail);assert.equal(asset.previewUrl,original);
   for(const [field,path] of [['accessUrl','excerpt.mp4'],['thumbnailAccessUrl','excerpt.webp'],['previewAccessUrl','excerpt.mp4']]) {
     assert.equal(typeof asset[field],'string',`${field} must provide authorized display access`);

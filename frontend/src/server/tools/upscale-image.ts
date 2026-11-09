@@ -1,4 +1,4 @@
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import type { UpscaleToolRequest, UpscaleToolResponse } from '@/types/tools-upscale';
 import { runUpscaleToolBase, UpscaleToolError } from './upscale';
 
@@ -16,5 +16,6 @@ export async function runImageUpscaleTool(input: RunUpscaleImageToolInput): Prom
 
   return runUpscaleToolBase(input, {
     createImageThumbnailBatch,
+    prepareImageRenditions,
   });
 }

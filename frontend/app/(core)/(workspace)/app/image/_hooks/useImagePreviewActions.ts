@@ -1,8 +1,9 @@
-import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useLibraryCacheRevision, libraryRevisionKey, invalidateLibraryMedia } from '@/hooks/useLibraryCacheRevision';
+import { ownedAuthFetch } from '@/lib/owned-auth-fetch';
+import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import useSWR from 'swr';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveImageToLibrary } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { resolveStableMediaUrl } from '@/lib/media';
 import {
@@ -39,21 +40,23 @@ export function useImagePreviewActions({
   setStatusMessage,
 }: UseImagePreviewActionsParams) {
   const { user } = useRequireAuth({ redirectIfLoggedOut: false });
+  const revision = useLibraryCacheRevision(user?.id);
+  const owner = useRef({ userId: user?.id });
+  if (owner.current.userId !== user?.id) owner.current = { userId: user?.id };
   const [isSavingToLibrary, setIsSavingToLibrary] = useState(false);
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const selectedPreviewImage = previewEntry?.images?.[selectedPreviewImageIndex];
   const selectedPreviewUrl = resolveStableMediaUrl(selectedPreviewImage?.url, selectedPreviewImage?.thumbUrl);
-  const savedAssetLookupKey = buildMediaLibraryAssetsKey({
+  const savedAssetLookupKey = libraryRevisionKey(buildMediaLibraryAssetsKey({
     userId: canUseWorkspace ? user?.id : null,
     kind: 'image',
     source: librarySource,
     limit: 1,
     originUrl: selectedPreviewUrl,
-  });
+  }), revision);
   const {
     data: savedAssetsResponse,
-    mutate: mutateSavedAssets,
   } = useSWR<MediaLibraryAssetsResponse>(savedAssetLookupKey, fetchMediaLibraryAssets);
   const savedAsset = (savedAssetsResponse?.assets[0] as LibraryAsset | undefined) ?? null;
   const isInLibrary = Boolean(savedAsset?.id);
@@ -78,7 +81,10 @@ export function useImagePreviewActions({
 
   const handleAddToLibrary = useCallback(
     (url: string) => {
-      if (!previewEntry?.id) return;
+      if (!previewEntry?.id || !user?.id) return;
+      const initiatedBy = user.id;
+      const initiatingScope = owner.current;
+      const isCurrent = () => owner.current === initiatingScope;
       if (isSavingToLibrary) return;
       if (isRemovingFromLibrary) return;
       setIsSavingToLibrary(true);
@@ -89,16 +95,16 @@ export function useImagePreviewActions({
         jobId: previewEntry.jobId ?? previewEntry.id,
         label: previewEntry.prompt ?? undefined,
         source: librarySource,
-      })
+      }, { fetch: (input, init) => ownedAuthFetch(input, initiatedBy, init) })
         .then(() => {
-          setStatusMessage(savedToLibraryMessage);
-          void mutateSavedAssets();
+          invalidateLibraryMedia(initiatedBy);
+          if (isCurrent()) setStatusMessage(savedToLibraryMessage);
         })
         .catch((error) => {
-          setError(error instanceof Error ? error.message : genericError);
+          if (isCurrent()) setError(error instanceof Error ? error.message : genericError);
         })
         .finally(() => {
-          setIsSavingToLibrary(false);
+          if (isCurrent()) setIsSavingToLibrary(false);
         });
     },
     [
@@ -106,7 +112,7 @@ export function useImagePreviewActions({
       isRemovingFromLibrary,
       isSavingToLibrary,
       librarySource,
-      mutateSavedAssets,
+      user?.id,
       previewEntry,
       savedToLibraryMessage,
       setError,
@@ -115,13 +121,16 @@ export function useImagePreviewActions({
   );
 
   const handleRemoveFromLibrary = useCallback(() => {
-    if (!savedAsset?.id) return;
+    if (!savedAsset?.id || !user?.id) return;
+    const initiatedBy = user.id;
+    const initiatingScope = owner.current;
+    const isCurrent = () => owner.current === initiatingScope;
     if (isRemovingFromLibrary) return;
     if (isSavingToLibrary) return;
     setIsRemovingFromLibrary(true);
     setError(null);
     setStatusMessage(null);
-    void authFetch(`/api/media-library/assets/${encodeURIComponent(savedAsset.id)}`, {
+    void ownedAuthFetch(`/api/media-library/assets/${encodeURIComponent(savedAsset.id)}`, initiatedBy, {
       method: 'DELETE',
     })
       .then(async (response) => {
@@ -129,20 +138,20 @@ export function useImagePreviewActions({
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? 'Failed to remove from Media');
         }
-        setStatusMessage(removedFromLibraryMessage);
-        void mutateSavedAssets();
+        invalidateLibraryMedia(initiatedBy);
+        if (isCurrent()) setStatusMessage(removedFromLibraryMessage);
       })
       .catch((error) => {
-        setError(error instanceof Error ? error.message : genericError);
+        if (isCurrent()) setError(error instanceof Error ? error.message : genericError);
       })
       .finally(() => {
-        setIsRemovingFromLibrary(false);
+        if (isCurrent()) setIsRemovingFromLibrary(false);
       });
   }, [
     genericError,
     isRemovingFromLibrary,
     isSavingToLibrary,
-    mutateSavedAssets,
+    user?.id,
     removedFromLibraryMessage,
     savedAsset?.id,
     setError,

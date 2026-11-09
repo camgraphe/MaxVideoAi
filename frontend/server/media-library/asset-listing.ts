@@ -1,3 +1,6 @@
+import { legacyKindSql } from './organization-source-sql';
+import { libraryIdentityCtes } from './browse-identity-sql';
+import { activeLibrarySourceSql } from './visibility-sql';
 import { projectMissingAudioDurations } from './audio-duration-projection';
 import { applicationJobSql } from '../app-job-origin';
 import { query } from '@/lib/db';
@@ -47,7 +50,7 @@ export async function findLibraryAssetByOrigin(params: {
       source: source ?? 'import',
     });
     const identityRows = await query<DbMediaAssetRow>(
-      `/* media-library:exact-origin:identity */
+      `/* media-library:exact-origin:identity */ WITH ${libraryIdentityCtes('$2')}
        SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
               CASE
                 WHEN source = 'import' AND (
@@ -61,6 +64,7 @@ export async function findLibraryAssetByOrigin(params: {
          FROM media_assets
         WHERE id = $1
           AND user_id = $2
+          AND ${activeLibrarySourceSql('asset','media_assets.id','media_assets.kind','$2')}
           AND deleted_at IS NULL
           AND kind = $3
           AND (
@@ -83,7 +87,7 @@ export async function findLibraryAssetByOrigin(params: {
   }
 
   const canonicalRows = await query<DbMediaAssetRow>(
-    `/* media-library:exact-origin:canonical */
+    `/* media-library:exact-origin:canonical */ WITH ${libraryIdentityCtes()}
      SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
             source, source_job_id, source_output_id, status, metadata, created_at
        FROM (
@@ -116,6 +120,7 @@ export async function findLibraryAssetByOrigin(params: {
            a.created_at
          FROM media_assets a
          WHERE a.user_id = $1
+         AND ${activeLibrarySourceSql('asset','a.id','a.kind')}
            AND a.deleted_at IS NULL
            AND COALESCE(a.source, '') <> 'storyboard_template_reference'
            AND (a.url = $4 OR a.metadata->>'originUrl' = $4)
@@ -129,7 +134,7 @@ export async function findLibraryAssetByOrigin(params: {
   if (canonicalRows[0]) return (await projectMissingAudioDurations(params.userId, [mapAssetRow(canonicalRows[0])]))[0];
 
   const legacyRows = await query<DbMediaAssetRow>(
-    `/* media-library:exact-origin:legacy */
+    `/* media-library:exact-origin:legacy */ WITH ${libraryIdentityCtes()}
      SELECT id, public_id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes,
             source, source_job_id, source_output_id, status, metadata, created_at
        FROM (
@@ -169,6 +174,7 @@ export async function findLibraryAssetByOrigin(params: {
            u.created_at
          FROM user_assets u
          WHERE u.user_id = $1
+         AND ${activeLibrarySourceSql('legacy','u.asset_id',legacyKindSql())}
            AND COALESCE(u.source, '') <> 'storyboard_template_reference'
            AND (u.url = $4 OR u.metadata->>'originUrl' = $4)
        ) AS candidate
@@ -204,7 +210,7 @@ export async function listLibraryAssetPage(params: {
   const searchPattern = buildMediaLibrarySearchPattern(params.q);
 
   const rows = await query<DbMediaAssetRow>(
-    `WITH candidates AS (
+    `WITH ${libraryIdentityCtes()}, candidates AS (
        SELECT
          a.id,
          a.public_id,
@@ -243,6 +249,7 @@ export async function listLibraryAssetPage(params: {
          ) AS search_text
        FROM media_assets a
        WHERE a.user_id = $1
+         AND ${activeLibrarySourceSql('asset','a.id','a.kind')}
          AND a.deleted_at IS NULL
          AND COALESCE(a.source, '') <> 'storyboard_template_reference'
 
@@ -285,6 +292,7 @@ export async function listLibraryAssetPage(params: {
        WHERE $8::boolean
          AND ${applicationJobSql('j')}
          AND o.user_id = $1
+         AND ${activeLibrarySourceSql('job-output','o.id','o.kind')}
          AND j.hidden IS NOT TRUE
          AND o.status = 'ready'
 
@@ -335,6 +343,7 @@ export async function listLibraryAssetPage(params: {
          ) AS search_text
        FROM user_assets u
        WHERE u.user_id = $1
+         AND ${activeLibrarySourceSql('legacy','u.asset_id',legacyKindSql())}
          AND COALESCE(u.source, '') <> 'storyboard_template_reference'
      ),
      identified AS (

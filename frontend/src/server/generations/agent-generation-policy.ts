@@ -27,7 +27,8 @@ import type {
 
 const ACCEPTED_STATUSES = new Set(['accepted', 'created', 'pending', 'queued', 'submitted', 'waiting']);
 const RUNNING_STATUSES = new Set(['in_progress', 'processing', 'running']);
-const COMPLETED_STATUSES = new Set(['completed', 'finished', 'success', 'succeeded']);
+export const COMPLETED_GENERATION_STATUSES = ['completed', 'finished', 'success', 'succeeded'] as const;
+const COMPLETED_STATUSES = new Set<string>(COMPLETED_GENERATION_STATUSES);
 const FAILED_STATUSES = new Set([
   'aborted',
   'cancelled',

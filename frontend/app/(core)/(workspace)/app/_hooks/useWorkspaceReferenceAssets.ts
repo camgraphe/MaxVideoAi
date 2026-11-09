@@ -1,8 +1,10 @@
+import { mediaReadAccessFields } from '@/lib/library-media-access';
+import type { MediaReadAccess } from '@/lib/media-read-access';
+import { useWorkspaceReferenceBatch } from './useWorkspaceReferenceBatch';
 import { useWorkspaceAssetLifetime } from './useWorkspaceAssetLifetime';
 import { useWorkspaceStoryboardReferences } from './useWorkspaceStoryboardReferences';
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { useWorkspaceUploadOperation } from './useWorkspaceUploadOperation';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import { uploadVideoFile } from '@/lib/client-video-upload';
@@ -16,15 +18,9 @@ import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-loca
 import { normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
 import { resolveEngineMediaFieldConstraint } from '@/lib/media-field-constraints';
 import {
-  buildReferenceAssetFromLibraryAsset,
   getAssetLibrarySourceForField,
-  getLibraryAssetFieldMismatchMessage,
-  mergeMirroredLibraryAsset,
   removeReferenceAsset,
   revokeAssetPreview,
-  settleReferenceAssetReservation,
-  shouldMirrorCharacterImageAsset,
-  shouldMirrorVideoLibraryAsset,
   tryInsertReferenceAsset,
   type AssetLibrarySource,
   type AssetPickerTarget,
@@ -47,6 +43,7 @@ type UseWorkspaceReferenceAssetsOptions = {
   assetPickerTarget?: AssetPickerTarget | null;
   inputSchema?: EngineInputSchema | null;
   preferredMode: Mode;
+  workflowIntent?: Mode | null;
   workflowCopy: {
     clearReferencesToUseStartEnd: string;
     clearStartEndToUseReferences: string;
@@ -58,7 +55,6 @@ type UseWorkspaceReferenceAssetsOptions = {
   assetLibrarySource: AssetLibrarySource;
   resetAssetLibraryForSource: (nextSource: AssetLibrarySource) => void;
   setAssetPickerTarget: Dispatch<SetStateAction<AssetPickerTarget | null>>;
-  setAssetLibrary: Dispatch<SetStateAction<UserAsset[]>>;
 };
 
 function createReferenceAssetId(): string {
@@ -76,6 +72,7 @@ export function useWorkspaceReferenceAssets({
   assetPickerTarget,
   inputSchema,
   preferredMode,
+  workflowIntent,
   workflowCopy,
   showNotice,
   inputAssets,
@@ -84,7 +81,6 @@ export function useWorkspaceReferenceAssets({
   assetLibrarySource,
   resetAssetLibraryForSource,
   setAssetPickerTarget,
-  setAssetLibrary,
 }: UseWorkspaceReferenceAssetsOptions) {
   useWorkspaceStoryboardReferences(accountScope, inputAssets, setInputAssets);
   const valid = useWorkspaceAssetLifetime(accountScope);
@@ -154,148 +150,22 @@ export function useWorkspaceReferenceAssets({
     ],
   );
 
-  const handleSelectLibraryAsset = useCallback(
-    async (field: EngineInputField, asset: UserAsset, slotIndex?: number) => {
-      if (!valid()) return;
-      const blockedMessage = getSeedanceFieldBlockedMessage(field);
-      if (blockedMessage) {
-        showNotice(blockedMessage);
-        return blockedMessage;
-      }
-      const mismatchMessage = getLibraryAssetFieldMismatchMessage(field, asset);
-      if (mismatchMessage) {
-        showNotice(mismatchMessage);
-        return mismatchMessage;
-      }
-      const eligibility = getMediaInputEligibility({ asset, field, engine, mode: preferredMode });
-      if (eligibility.status === 'blocked') {
-        const message = mediaInputEligibilityMessage(eligibility, locale)!;
-        showNotice(message);
-        return message;
-      }
+  const handleSelectLibraryAssets = useWorkspaceReferenceBatch({
+    opening: assetPickerTarget,
+    intent: JSON.stringify([accountScope, engineId, workflowIntent === undefined ? preferredMode : workflowIntent, assetPickerTarget?.kind === 'field' ? [assetPickerTarget.field.id,assetPickerTarget.slotIndex] : assetPickerTarget]),
+    currentField: assetPickerTarget?.kind === "field" ? assetPickerTarget.field : undefined,
+    accountId: accountScope, valid, engineId, engine, locale, mode: preferredMode, inputSchema, inputAssets, workflowCopy,
+    commit: commitInputAssetMutation, close: () => setAssetPickerTarget(null),
+  });
 
-      const shouldMirrorVideo =
-        field.type === 'video' && asset.kind === 'video' && shouldMirrorVideoLibraryAsset(asset);
-      const shouldMirrorImage =
-        field.type === 'image' && asset.kind === 'image' && shouldMirrorCharacterImageAsset(asset);
-      const reservationId =
-        shouldMirrorVideo || shouldMirrorImage ? createReferenceAssetId() : null;
-      const newAsset = buildReferenceAssetFromLibraryAsset(field, asset);
-      const reservedAsset = reservationId
-        ? {
-            ...newAsset,
-            id: reservationId,
-            status: 'uploading' as const,
-          }
-        : newAsset;
-
-      const insertion = commitInputAssetMutation((previous) =>
-        tryInsertReferenceAsset(previous, field, reservedAsset, slotIndex, {
-          inputSchema,
-          preferredMode,
-        }),
-      );
-      if (!insertion.accepted) {
-        const message =
-          insertion.reason === 'reference_budget'
-            ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
-            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`;
-        showNotice(message);
-        return message;
-      }
-      setAssetPickerTarget(null);
-      if (!reservationId) {
-        if (insertion.replacedAsset) {
-          revokeAssetPreview(insertion.replacedAsset);
-        }
-        return;
-      }
-
-      try {
-        const mirrored = shouldMirrorVideo
-          ? await saveAssetToLibrary({
-              url: asset.url,
-              label: field.label ?? asset.url.split('/').pop() ?? 'Video',
-              source: asset.source === 'recent' ? 'saved_job_output' : asset.source,
-              kind: 'video',
-              jobId: asset.jobId ?? null,
-              sourceOutputId: asset.sourceOutputId ?? null,
-              durationSec: asset.durationSec ?? null,
-            })
-          : await saveImageToLibrary({
-              url: asset.url,
-              label: field.label ?? asset.url.split('/').pop() ?? 'Image',
-              source: asset.source,
-            });
-        if (!valid()) {
-          if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
-          return;
-        }
-        const resolvedAsset = mergeMirroredLibraryAsset(asset, mirrored);
-        const resolvedReferenceAsset = {
-          ...buildReferenceAssetFromLibraryAsset(field, resolvedAsset),
-          id: reservationId,
-        };
-        const settlement = commitInputAssetMutation((previous) =>
-          settleReferenceAssetReservation(previous, field, reservationId, resolvedReferenceAsset),
-        );
-        if (!settlement.settled) {
-          if (insertion.replacedAsset) {
-            revokeAssetPreview(insertion.replacedAsset);
-          }
-          return;
-        }
-        if (insertion.replacedAsset) {
-          revokeAssetPreview(insertion.replacedAsset);
-        }
-        setAssetLibrary((previous) =>
-          previous.map((entry) =>
-            entry.id === asset.id || entry.url === asset.url ? resolvedAsset : entry,
-          ),
-        );
-      } catch (error) {
-        if (!valid()) {
-          if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
-          return;
-        }
-        const rollback = commitInputAssetMutation((previous) =>
-          settleReferenceAssetReservation(previous, field, reservationId, insertion.replacedAsset),
-        );
-        if (rollback.settled && rollback.discardedAsset) {
-          revokeAssetPreview(rollback.discardedAsset);
-        } else if (!rollback.settled && insertion.replacedAsset) {
-          revokeAssetPreview(insertion.replacedAsset);
-        }
-        if (shouldMirrorVideo) {
-          console.error('[assets] failed to mirror generated video asset', error);
-          showNotice(
-            error instanceof Error
-              ? error.message
-              : 'Unable to prepare this video. Try importing the source clip directly.',
-          );
-        } else {
-          console.error('[assets] failed to mirror character library asset', error);
-          showNotice(
-            error instanceof Error
-              ? error.message
-              : 'Unable to prepare this character asset. Try another image.',
-          );
-        }
-      }
-    },
-    [
-      valid,
-      commitInputAssetMutation,
-      getSeedanceFieldBlockedMessage,
-      engine,
-      locale,
-      inputSchema,
-      preferredMode,
-      setAssetLibrary,
-      setAssetPickerTarget,
-      showNotice,
-    ],
-  );
+  const handleSelectLibraryAsset = async (field:EngineInputField,asset:UserAsset,slotIndex?:number) => {
+    const scope = importScope.current;
+    const isCurrent = () => valid() && importScope.current === scope;
+    if (!isCurrent()) return;
+    const result=await handleSelectLibraryAssets(field,[asset],{ isCurrent },slotIndex);
+    if (!isCurrent()) return;
+    if(result!==true){showNotice(result);return result;}
+  };
 
   const handleAssetAdd = useCallback(
     (
@@ -415,6 +285,7 @@ export function useWorkspaceReferenceAssets({
               if (!entry || entry.id !== assetId) return entry;
               return {
                 ...entry,
+                ...mediaReadAccessFields(assetResponse as MediaReadAccess),
                 status: 'ready' as const,
                 url: assetResponse.url,
                 thumbnailUrl: 'thumbUrl' in assetResponse ? assetResponse.thumbUrl ?? entry.thumbnailUrl : entry.thumbnailUrl,
@@ -530,6 +401,7 @@ export function useWorkspaceReferenceAssets({
     handleImportLibraryFile,
     handleOpenAssetLibrary,
     handleSelectLibraryAsset,
+    handleSelectLibraryAssets,
     handleAssetAdd,
     handleAssetRemove,
   };

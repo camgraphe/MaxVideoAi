@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import test from 'node:test';
+import { build } from 'esbuild';
+import { startDisposablePostgres } from './helpers/disposable-postgres';
+const requireFrontend=createRequire(resolve('frontend/package.json'));
+test('exact read renewal authorizes current source/version independently of Trash/group proof and preserves original navigation', {timeout:60000},async t=>{
+ assert.ok(existsSync('frontend/app/api/media-library/read-access/route.ts'),'exact owned read renewal route exists');
+ const pg=await startDisposablePostgres('library-read-renewal'),folder=mkdtempSync(join(tmpdir(),'library-read-renewal-'));
+ const prior=process.env.DATABASE_URL;process.env.DATABASE_URL=pg.databaseUrl;
+ const base='https://library-renewal-fixture.s3.us-east-1.amazonaws.com';
+ Object.assign(process.env,{S3_BUCKET:'library-renewal-fixture',S3_REGION:'us-east-1',S3_ACCESS_KEY_ID:'fixture-key',S3_SECRET_ACCESS_KEY:'fixture-secret',S3_PUBLIC_BASE_URL:base});
+ const fixture={userId:'alice' as string|null};(globalThis as any).__renewal=fixture;let close:(()=>Promise<void>)|undefined;
+ t.after(async()=>{await close?.();if(prior===undefined)delete process.env.DATABASE_URL;else process.env.DATABASE_URL=prior;delete (globalThis as any).__renewal;rmSync(folder,{recursive:true,force:true});await pg.cleanup()});
+ const outfile=join(folder,'routes.cjs');
+ await build({stdin:{loader:'ts',resolveDir:process.cwd(),contents:`export * as route from './frontend/app/api/media-library/read-access/route';export {createLibraryMediaReadAccess} from './frontend/server/media-library/read-access';export {mutateLibraryOrganization} from './frontend/server/media-library/organization';export {getDb} from '@/lib/db';export {ensureAssetSchema,ensureMediaLibrarySchema,ensureMediaLibraryOrganizationSchema} from '@/lib/schema';`},outfile,bundle:true,platform:'node',format:'cjs',packages:'external',tsconfig:'frontend/tsconfig.json',plugins:[{name:'auth',setup(b){b.onResolve({filter:/^@\/lib\/supabase-ssr$/},()=>({path:'auth',namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:'export const createSupabaseServerClient=()=>{throw new Error("unexpected auth")};export const getRouteAuthContext=async()=>({userId:globalThis.__renewal.userId});',loader:'ts'}));b.onResolve({filter:/^(next\/server|pg)$/},a=>({path:requireFrontend.resolve(a.path),external:true}));}}]});
+ const m=requireFrontend(outfile);close=()=>m.getDb().end();const {NextRequest}=requireFrontend('next/server');
+ const req=(body:any)=>new NextRequest('https://app.test/api/media-library/read-access',{method:'POST',body:JSON.stringify(body)});
+ fixture.userId=null;delete process.env.DATABASE_URL;assert.equal((await m.route.POST(req({}))).status,401);fixture.userId='alice';process.env.DATABASE_URL=pg.databaseUrl;
+ await m.ensureAssetSchema();await m.ensureMediaLibrarySchema();await m.ensureMediaLibraryOrganizationSchema();
+ await pg.pool.query('CREATE TABLE app_jobs(job_id text PRIMARY KEY,user_id text,hidden boolean DEFAULT false)');
+ const url=base+'/user-assets/alice/a.mp4',thumb=base+'/user-assets/alice/a.webp';
+ await pg.pool.query(`INSERT INTO media_assets(id,public_id,user_id,kind,url,thumb_url,preview_url,source,metadata) VALUES('a','ma_a','alice','video',$1,$2,$1,'upload',$3)`,[url,thumb,JSON.stringify({playbackVideoUrl:url})]);
+ const grant=await m.createLibraryMediaReadAccess('alice',{id:'a',publicId:'ma_a',kind:'video',url,thumbUrl:thumb,previewUrl:url,source:'upload',metadata:{playbackVideoUrl:url}});
+ const input={reference:grant.readAccessRef,revision:grant.readAccessRevision};
+ const trashed=await m.mutateLibraryOrganization({userId:'alice',operation:'trash',references:[input.reference]});assert.equal(trashed.succeededCount,1);
+ // Exact reads must neither depend on nor create organization state/aliases.
+ await pg.pool.query('ALTER TABLE library_organization RENAME TO fixture_unavailable_organization');
+ const readonly=new URL(pg.databaseUrl);readonly.searchParams.set('options','-c default_transaction_read_only=on');process.env.DATABASE_URL=readonly.toString();
+ const response=await m.route.POST(req(input));assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/private.*no-store/);
+ const access=(await response.json()).access;assert.deepEqual(access.readAccessRef,input.reference);assert.equal(access.readAccessRevision,input.revision);assert.ok(Date.parse(access.readAccessExpiresAt)>Date.now()+290000);
+ for(const field of ['accessUrl','thumbnailAccessUrl','previewAccessUrl','playbackAccessUrl'])assert.ok(new URL(access[field]).searchParams.get('X-Amz-Signature'),field);
+ assert.equal((await m.route.POST(req({...input,url:'https://attacker.test/file'}))).status,400);
+ assert.equal((await m.route.POST(req({...input,revision:'ra_'+'0'.repeat(64)}))).status,409);
+ assert.equal((await m.route.POST(req({...input,reference:{...input.reference,kind:'image'}}))).status,404);
+ fixture.userId='bob';assert.equal((await m.route.POST(req(input))).status,404);fixture.userId='alice';
+ for(const action of ['original','download']){const params=new URLSearchParams({reference:JSON.stringify(input.reference),revision:input.revision,action});const nav=await m.route.GET(new NextRequest('https://app.test/api/media-library/read-access?'+params));assert.equal(nav.status,307);const location=nav.headers.get('location');assert.ok(action==='original'?location.startsWith(url+'?'):new URL(location,'https://app.test').pathname==='/api/download');}
+
+ // A legacy source remains exactly readable even in an over-bound ambiguous group.
+ await pg.pool.query(`INSERT INTO user_assets(asset_id,user_id,url,mime_type,metadata) SELECT 'legacy-'||n,'alice',$1,'video/mp4',jsonb_build_object('thumbUrl',$2::text,'previewUrl',$1::text,'playbackVideoUrl',$1::text) FROM generate_series(1,1001)n`,[url,thumb]);
+ const legacyRef={type:'legacy',assetId:'legacy-1',kind:'video'};
+ assert.equal((await m.route.POST(req({reference:legacyRef,revision:input.revision}))).status,200);
+ await pg.pool.query(`INSERT INTO app_jobs(job_id,user_id) VALUES('owned-job','alice'),('foreign-job','bob')`);
+ await pg.pool.query(`INSERT INTO job_outputs(id,job_id,user_id,kind,url,thumb_url,preview_url,metadata) VALUES('owned-output','owned-job','alice','video',$1,$2,$1,jsonb_build_object('playbackVideoUrl',$1::text))`,[url,thumb]);
+ const outputRef={type:'job-output',jobId:'owned-job',outputId:'owned-output',kind:'video'};
+ assert.equal((await m.route.POST(req({reference:outputRef,revision:input.revision}))).status,200);
+ assert.equal((await m.route.POST(req({reference:{...outputRef,jobId:'foreign-job'},revision:input.revision}))).status,404);
+ await pg.pool.query("UPDATE app_jobs SET hidden=true WHERE job_id='owned-job'");
+ assert.equal((await m.route.POST(req({reference:outputRef,revision:input.revision}))).status,404);
+ await pg.pool.query("UPDATE media_assets SET thumb_url=$1 WHERE id='a'",[base+'/user-assets/alice/changed.webp']);
+ assert.equal((await m.route.POST(req(input))).status,409,'derivative source replacement changes the read revision');
+ await pg.pool.query("UPDATE media_assets SET thumb_url=$1 WHERE id='a'",[thumb]);
+ await pg.pool.query(`UPDATE media_assets SET url=$1 WHERE id='a'`,[base+'/user-assets/alice/replaced.mp4']);assert.equal((await m.route.POST(req(input))).status,409);
+ await pg.pool.query(`UPDATE media_assets SET url=$1,status='deleted' WHERE id='a'`,[url]);assert.equal((await m.route.POST(req(input))).status,404);
+ await pg.pool.query(`UPDATE media_assets SET status='ready',url=$1 WHERE id='a'`,[base+'/user-assets/bob/foreign.mp4']);
+ const foreignGrantInput={reference:input.reference,revision:(await import('node:crypto')).createHash('sha256').update(JSON.stringify([base+'/user-assets/bob/foreign.mp4',thumb,url,url])).digest('hex')};foreignGrantInput.revision='ra_'+foreignGrantInput.revision;
+ assert.equal((await m.route.POST(req(foreignGrantInput))).status,500);
+ assert.equal((await pg.pool.query('SELECT url FROM media_assets WHERE id=$1',['a'])).rows[0].url,base+'/user-assets/bob/foreign.mp4');
+ await pg.pool.query('ALTER TABLE media_assets RENAME TO fixture_missing_source');assert.equal((await m.route.POST(req(input))).status,500);
+ assert.equal((await pg.pool.query("SELECT to_regclass('public.media_assets') AS value")).rows[0].value,null,'missing source schema is never bootstrapped');
+});

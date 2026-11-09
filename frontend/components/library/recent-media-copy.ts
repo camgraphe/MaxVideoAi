@@ -7,6 +7,7 @@ export function recentMediaCopy(locale: string) {
     helper: 'Choisissez un média récent pour l’ajouter',
     role: 'Rôle de la référence', required: 'Requis', slot: 'Emplacement', add: 'Ajouter', replace: 'Remplacer',
     noRole: 'Ce modèle et ce mode n’acceptent pas ce type de référence.',
+    insertError: 'Impossible d’ajouter cette référence. Réessayez ou choisissez un autre emplacement.',
     preparing: 'Préparation…', drop: 'Déposez un média récent ici pour choisir son rôle.',
     issues: { dimensions: 'Dimensions incompatibles avec ce rôle.', mode: 'Rôle indisponible dans ce mode.', aspect_ratio: 'Proportions de l’image incompatibles.', kind: 'Type de média incompatible.', metadata: 'Certaines métadonnées sont indisponibles. Elles seront vérifiées avant la génération.', duration: 'Durée incompatible avec ce rôle.', size: 'Fichier trop volumineux pour ce rôle.', format: 'Format incompatible avec ce rôle.', field_limit: 'Ce rôle est plein. Choisissez explicitement un emplacement à remplacer.', reference_budget: 'Limite totale des références atteinte.' },
   };
@@ -18,6 +19,7 @@ export function recentMediaCopy(locale: string) {
     helper: 'Elige un medio reciente para añadirlo',
     role: 'Rol de la referencia', required: 'Obligatorio', slot: 'Posición', add: 'Añadir', replace: 'Reemplazar',
     noRole: 'Este modelo y modo no aceptan este tipo de referencia.',
+    insertError: 'No se pudo añadir esta referencia. Reintenta o elige otra posición.',
     preparing: 'Preparando…', drop: 'Suelta un medio reciente aquí para elegir su rol.',
     issues: { dimensions: 'Dimensiones incompatibles con este rol.', mode: 'Rol no disponible en este modo.', aspect_ratio: 'Proporciones de imagen incompatibles.', kind: 'Tipo de medio incompatible.', metadata: 'Algunos datos no están disponibles. Se verificarán antes de generar.', duration: 'Duración incompatible con este rol.', size: 'Archivo demasiado grande para este rol.', format: 'Formato incompatible con este rol.', field_limit: 'Este rol está lleno. Elige una posición para reemplazar.', reference_budget: 'Se alcanzó el límite total de referencias.' },
   };
@@ -29,6 +31,7 @@ export function recentMediaCopy(locale: string) {
     helper: 'Choose recent media to add',
     role: 'Reference role', required: 'Required', slot: 'Slot', add: 'Add', replace: 'Replace',
     noRole: 'This model and mode do not accept this reference type.',
+    insertError: 'Unable to add this reference. Try again or choose another slot.',
     preparing: 'Preparing…', drop: 'Drop recent media here to choose its reference role.',
     issues: { dimensions: 'Dimensiones incompatibles con este rol.', mode: 'Role unavailable in this workflow.', aspect_ratio: 'Image proportions are incompatible.', kind: 'Incompatible media type.', metadata: 'Some media details are unavailable. They will be verified before generation.', duration: 'Duration is incompatible with this role.', size: 'File is too large for this role.', format: 'Format is incompatible with this role.', field_limit: 'This role is full. Explicitly choose a slot to replace.', reference_budget: 'Total reference limit reached.' },
   };

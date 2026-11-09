@@ -1,3 +1,4 @@
+import { saveFactsDatabaseBoundary } from './helpers/save-facts-database-boundary';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -27,11 +28,11 @@ async function libraryFixture(existing: boolean, source = 'probe') {
     },
   };
   const stubs: Record<string, string> = {
-    '@/lib/db': 'export const query = (...args) => fixture.query(...args);',
-    '@/lib/schema': 'export const ensureMediaLibrarySchema = async () => {};',
+    '@/lib/db': saveFactsDatabaseBoundary('fixture'),
+    '@/lib/schema': 'export const ensureMediaLibrarySchema = async () => {}; export const ensureAssetSchema = async () => {}; export const ensureMediaLibraryOrganizationSchema = async () => {};',
     '@/server/storage': 'export const recordUserAsset = async value => fixture.mirrors.push(value);',
     './asset-listing': 'export const findLibraryAssetByOrigin = async () => null; export const listLibraryAssetPage = async () => ({items:[]});',
-    './asset-resolvers': 'export const resolveReusableAssetThumbUrl = async value => value.thumbUrl ?? null; export const resolveReusableAssetPreviewUrl = async value => value.previewUrl ?? null;',
+    './asset-resolvers': 'export const resolveReusableImageDisplay = async () => undefined; export const resolveReusableAssetThumbUrl = async value => value.thumbUrl ?? null; export const resolveReusableAssetPreviewUrl = async value => value.previewUrl ?? null;',
     './asset-media': 'export const copyRemoteMedia = async value => {fixture.copies++; return {url:"https://media.maxvideoai.com/copy.mp4",mimeType:"video/mp4",width:null,height:null,sizeBytes:123,thumbUrl:null};}; export const createRemoteVideoAssetThumbnail = async () => {throw Error("Unexpected thumbnail retry");};',
   };
   const compiled = await build({ absWorkingDir: frontend, entryPoints: ['server/media-library/assets.ts'], tsconfig: path.join(frontend, 'tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', write: false,

@@ -9,7 +9,7 @@ import {
   isStorageConfigured,
   uploadImageToStorage,
 } from '@/server/storage';
-import { createImageThumbnailBatch } from '@/server/image-thumbnails';
+import { createImageThumbnailBatch, prepareImageRenditions } from '@/server/image-thumbnails';
 import { uploadGoogleVertexGcsObject } from '@/server/video-providers/google-vertex-gcs';
 import { GoogleVertexImageClient, isGoogleVertexImageConfigured } from './google-vertex-image-client';
 import { GoogleVertexImageError } from './google-vertex-image-error';
@@ -128,6 +128,7 @@ async function uploadInlineImages(params: {
         width: upload.width,
         height: upload.height,
         mimeType: upload.mime,
+        ...(typeof prepareImageRenditions === 'function' ? await prepareImageRenditions({ data: image.data, imageUrl: normalizeMediaUrl(upload.url) ?? upload.url, jobId: params.jobId, userId: params.userId, index }).catch(() => ({})) : {}),
       };
     })
   );
@@ -228,7 +229,7 @@ export async function executeGoogleVertexImageGeneration(params: {
       jobId: params.jobId,
       userId: params.userId,
     });
-    const thumbUrls = await createImageThumbnailBatch({
+    const thumbUrls = typeof prepareImageRenditions === 'function' ? storedImages.map(image => image.thumbUrl ?? null) : await createImageThumbnailBatch({
       jobId: params.jobId,
       userId: params.userId,
       imageUrls: storedImages.map((image) => image.url),

@@ -1,3 +1,5 @@
+import { withDbTransaction, isTransactionQueryExecutor } from '../frontend/src/lib/db';
+import { MEDIA_LIBRARY_ORGANIZATION_SCHEMA } from '../frontend/src/lib/schema/media-library-organization-schema';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {copyFile,readFile,stat} from 'node:fs/promises';
@@ -15,9 +17,11 @@ import {conversationLibraryInsertTiming} from '../frontend/lib/studio/conversati
 test('published subtitle MP4 retains probed facts through the owned Studio media route',async t=>{
   const pg=await startDisposablePostgres('subtitle-publish');t.after(()=>pg.cleanup());
   await pg.pool.query(`CREATE TABLE media_assets(id text PRIMARY KEY,public_id text DEFAULT 'ma_'||md5(random()::text),user_id text,kind text,url text,thumb_url text,preview_url text,mime_type text,width int,height int,size_bytes bigint,source text,source_job_id text,source_output_id text,status text,metadata jsonb,created_at timestamptz DEFAULT NOW(),updated_at timestamptz DEFAULT NOW(),deleted_at timestamptz);
-    CREATE TABLE job_outputs(id text,job_id text,user_id text,status text);
+    CREATE TABLE job_outputs(id text,job_id text,user_id text,status text,kind text,url text,storage_url text,created_at timestamptz DEFAULT now());
+    CREATE TABLE user_assets(asset_id text,user_id text,url text,mime_type text,metadata jsonb,created_at timestamptz DEFAULT now());
     CREATE TABLE app_jobs(job_id text,user_id text,hidden boolean);
     INSERT INTO app_jobs VALUES('subtitle-render-job','owner',false);`);
+  await pg.pool.query(MEDIA_LIBRARY_ORGANIZATION_SCHEMA);
   const frontend=resolve('frontend'),localOutput=resolve('tests/fixtures/studio-media/pattern-b.mp4');
   const bytes=await readFile(localOutput),measured=await probeSubtitleMedia(localOutput);
   const base='https://subtitle-publish-fixture.s3.us-east-1.amazonaws.com';
@@ -29,6 +33,8 @@ test('published subtitle MP4 retains probed facts through the owned Studio media
   let uploaded=0,rendered=0;
   const fixture={
     owner:'owner' as string|null,
+    transaction: <T>(callback: Parameters<typeof withDbTransaction<T>>[0]) => withDbTransaction(callback, {pool:pg.pool}),
+    isTransactionQueryExecutor,
     query:async(sql:string,values:unknown[])=>(await pg.pool.query(sql,values)).rows,
     publishArtifact:publishTimelineExportArtifactWithDependencies,
     withOwnedSource:async(userId:string,ref:unknown,consume:(loaded:{path:string})=>Promise<unknown>,options:{expectedFingerprint:string})=>{
@@ -52,14 +58,14 @@ test('published subtitle MP4 retains probed facts through the owned Studio media
     './source':'export const withOwnedSubtitleSource=(...args)=>fixture.withOwnedSource(...args);',
     './render':'export const renderSubtitleVideo=input=>fixture.renderVideo(input);',
     '../timeline-exports/renderer':'export const publishTimelineExportArtifactWithDependencies=fixture.publishArtifact;',
-    '@/lib/db':'export const query=(sql,values)=>fixture.query(sql,values);',
-    '@/lib/schema':'export const ensureMediaLibrarySchema=async()=>{};export const ensureAssetSchema=async()=>{};',
+    '@/lib/db':'export const query=(sql,values)=>fixture.query(sql,values);export const withDbTransaction=callback=>fixture.transaction(callback);export const isTransactionQueryExecutor=fixture.isTransactionQueryExecutor;',
+    '@/lib/schema':'export const ensureMediaLibrarySchema=async()=>{};export const ensureAssetSchema=async()=>{};export const ensureMediaLibraryOrganizationSchema=async()=>{};',
     '@/server/media-library':"export {ensureReusableAsset} from './server/media-library/assets';",
     '@/server/storage':`export {extractStorageKeyFromUrl,ownedMediaStorageKeyForUrl,getStorageObjectMetadata,isAllowedAssetHost} from './server/storage';export const uploadFilePath=input=>fixture.upload(input);export const recordUserAsset=async()=>{};export const deleteStorageObjectByUrl=async()=>{throw Error('Unexpected remote deletion');};`,
     '@/server/upload-thumbnails':`export const createVideoThumbnailFromFile=async()=>${JSON.stringify(thumbnailUrl)};`,
     './asset-listing':'export const findLibraryAssetByOrigin=()=>{throw Error("No listing");};export const listLibraryAssetPage=findLibraryAssetByOrigin;',
     './asset-media':'export const copyRemoteMedia=()=>{throw Error("No remote copy");};export const createRemoteVideoAssetThumbnail=copyRemoteMedia;',
-    './asset-resolvers':'export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async input=>input.thumbUrl;',
+    './asset-resolvers':'export const resolveReusableImageDisplay=async()=>undefined;export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async input=>input.thumbUrl;',
     '../../_lib/studio-route-utils':'export const resolveStudioRouteContext=async()=>fixture.owner?{userId:fixture.owner}:{response:new Response(null,{status:401})};export const studioJson=(body,init)=>new Response(JSON.stringify(body),init);',
   };
   const bundle=await build({absWorkingDir:frontend,stdin:{contents:"export {renderAndPublishSubtitles} from './src/server/subtitles/publish';export {POST} from './app/api/studio/media/resolve/route';",resolveDir:frontend,loader:'ts'},tsconfig:resolve(frontend,'tsconfig.json'),bundle:true,platform:'node',format:'cjs',packages:'external',write:false,plugins:[{name:'subtitle-publication',setup(builder){

@@ -1,3 +1,5 @@
+import { isSignedMediaUrl } from '@/lib/media';
+import type { MediaReadAccess } from '@/lib/media-read-access';
 import { AUDIO_ELEVEN_VOICE_IDS, DEFAULT_ELEVEN_VOICE_ID } from './audio-eleven-voices';
 import {
   AUDIO_LANGUAGE_VALUES,
@@ -33,7 +35,7 @@ export type AudioCreationDraft = {
   voiceModel: AudioVoiceModel; voice: string; minimaxVoiceId: string; speed: number; volume: number; pitch: number;
   outputFormat: string; sampleRate: number; voiceDelivery: string; voiceProfile: string; voiceGender: string;
   language: string; musicModel: 'clip' | 'pro'; bpm: number; mood: string;
-  reference: { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts } | null;
+  reference: (MediaReadAccess & { url: string; name: string; ref?: ToolAssetRef; mediaFacts?: MediaFacts }) | null;
 };
 export function newAudioDraft(intent: AudioCreationIntent): AudioCreationDraft {
   return { prompt: '', script: '', lyrics: '', durationSec: intent === 'sfx' ? 8 : intent === 'ambience' ? 60 : 30,
@@ -106,4 +108,12 @@ export function isAudioDraftReady(intent: AudioCreationIntent, draft: AudioCreat
   if (intent === 'voice') return draft.script.trim().length > 0 && draft.script.length <= 5000;
   if (intent === 'song') return draft.prompt.trim().length >= 10 && draft.prompt.length <= 2000 && draft.lyrics.trim().length > 0 && draft.lyrics.length <= 3500;
   return draft.prompt.trim().length > 0 && draft.prompt.length <= 2000 && draft.durationSec >= 3 && draft.durationSec <= (intent === 'sfx' ? 30 : 184);
+}
+
+/** Persist canonical audio identity, never temporary transport grants. */
+export function serializeAudioReference(reference: AudioCreationDraft['reference']): AudioCreationDraft['reference'] {
+  if (!reference || isSignedMediaUrl(reference.url) || reference.url.startsWith('blob:')) return null;
+  return { url: reference.url, name: reference.name, ref: reference.ref, mediaFacts: reference.mediaFacts,
+    readAccessOwnerId: reference.readAccessOwnerId, readAccessRef: reference.readAccessRef,
+    readAccessRevision: reference.readAccessRevision };
 }

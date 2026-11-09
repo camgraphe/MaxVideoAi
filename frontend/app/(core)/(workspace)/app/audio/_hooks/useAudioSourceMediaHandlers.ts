@@ -65,8 +65,10 @@ export function useAudioSourceMediaHandlers({
     setResult(null);
     try {
       const uploaded = await uploadAsset(file, 'video');
-      const durationSec = await probeVideoDuration(uploaded.url);
+      const readUrl = uploaded.readAccessRef || uploaded.readAccessOwnerId ? uploaded.accessUrl : uploaded.url;
+      const durationSec = uploaded.mediaFacts?.durationSec ?? (readUrl ? await probeVideoDuration(readUrl) : null);
       setSourceVideo({
+        ...uploaded,
         url: uploaded.url,
         jobId: null,
         thumbUrl: null,
@@ -133,8 +135,10 @@ export function useAudioSourceMediaHandlers({
   const handleSelectGeneratedVideo = useCallback(async (video: GeneratedSourceVideo) => {
     manualWorkspaceOverrideRef.current = true;
     setNotice(null);
-    const durationSec = video.durationSec ?? (await probeVideoDuration(video.url));
+    const readUrl = video.readAccessRef || video.readAccessOwnerId ? video.accessUrl : video.url;
+    const durationSec = video.durationSec ?? (readUrl ? await probeVideoDuration(readUrl) : null);
     setSourceVideo({
+      ...video,
       url: video.url,
       jobId: video.jobId,
       thumbUrl: video.thumbUrl,

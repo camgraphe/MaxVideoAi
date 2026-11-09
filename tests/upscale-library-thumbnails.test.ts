@@ -25,14 +25,14 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
             })
           : Response.json({ ok: true, assets: [
               { id: 'saved', url: '/renders/saved.mp4', thumbUrl: '/renders/saved.jpg', mime: 'video/mp4', source: 'saved_job_output' },
-              { id: 'duplicate', url: '/renders/shared.mp4', mime: 'video/mp4', width: 1920, source: 'saved_job_output' },
+              { id: 'duplicate', jobId:'same', sourceOutputId: 'same-output', url: '/renders/shared.mp4', mime: 'video/mp4', width: 1920, source: 'saved_job_output' },
               { id: 'upload', url: '/renders/imported.mp4', mime: 'video/mp4', source: 'upload' },
               { id: 'image', url: '/renders/image.png', mime: 'image/png' },
             ], hasMore: true, nextCursor: 'page-2' });
       }
-      if (url.startsWith('/api/jobs?')) return Response.json({ ok: true, jobs: [
-        { jobId: 'same', videoUrl: '/renders/shared.mp4', thumbUrl: '/renders/shared.jpg' },
-        { jobId: 'recent', readyVideoUrl: '/renders/recent.mp4', thumbUrl: '/renders/recent.jpg', previewVideoUrl: '/preview.mp4' },
+      if (url.startsWith('/api/media-library/generated-videos?')) return Response.json({ ok: true, jobs: [
+        { jobId: 'same', sourceOutputId: 'same-output', videoUrl: '/renders/shared.mp4', thumbUrl: '/renders/shared.jpg' },
+        { jobId: 'recent', videoUrl: '/renders/recent.mp4', thumbUrl: '/renders/recent.jpg', previewVideoUrl: '/preview.mp4' },
         { jobId: 'frame', videoUrl: '/renders/frame.mp4', previewFrame: '/renders/frame.jpg' },
         { jobId: 'pending' },
       ] });
@@ -59,8 +59,8 @@ test('upscale library preserves available thumbnails and enriches duplicate vide
     assert.equal(library.libraryHasMore, true);
     // These independent first-page reads run concurrently; session lookup may reorder dispatch.
     assert.deepEqual([...requests].sort(), [
-      '/api/jobs?limit=80&type=video',
       '/api/media-library/assets?limit=30&kind=video&source=generated',
+      '/api/media-library/generated-videos?limit=30&surface=video',
     ]);
     await act(async () => library.loadMoreLibraryAssets());
     assets = library.visibleLibraryAssets;

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import ts from '../frontend/node_modules/typescript';
 
 const root = process.cwd();
 const workspacePath = join(root, 'frontend/src/components/tools/UpscaleWorkspace.tsx');
@@ -152,7 +153,7 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(libraryHookSource, /buildLibraryCacheKey/, 'library hook should own cache key usage');
   assert.match(libraryHookSource, /fetchMediaLibraryAssets/, 'library hook should use canonical paginated saved assets');
   assert.match(libraryHookSource, /loadMoreLibraryAssets/, 'library hook should expose progressive pagination');
-  assert.match(libraryHookSource, /JobsLibraryResponse/, 'library hook should merge generated video jobs');
+  assert.match(libraryHookSource, /GeneratedVideoCandidate/, 'library hook should merge the shared exact generated-video candidate DTO');
   assert.match(pricingHookSource, /useToolQuote/, 'pricing uses the account and input bound server quote');
   assert.match(pricingHookSource, /export function useUpscalePricingPreview/, 'pricing hook should be exported');
   assert.match(previewScrollerHookSource, /export function useUpscalePreviewScroller/, 'preview scroller hook should be exported');
@@ -187,9 +188,25 @@ test('upscale helper modules expose the expected workspace contract', () => {
   assert.match(inputPanelsSource, /ToolSourceInput/, 'source selection belongs to the shared tool source surface');
   assert.match(inputPanelsSource, /SelectMenu/, 'input panels should own recipe selectors');
   assert.match(libraryModalSource, /export function UpscaleLibraryModal/, 'library modal should be exported');
-  assert.match(libraryModalSource, /AssetLibraryBrowser/, 'library modal should own the shared library browser');
+  assert.match(libraryModalSource, /<LibraryPickerDialog/, 'library modal should delegate to the shared contextual picker');
   assert.match(libraryModalSource, /RefreshCw/, 'library modal should own refresh action rendering');
-  assert.match(libraryModalSource, /copy\.libraryUse/, 'library modal should own asset action copy');
+  const tree = ts.createSourceFile(libraryModalPath, libraryModalSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let admission = false, historicalProof = false;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(tree) === 'LibraryPickerDialog') {
+      const selection = node.attributes.properties.find(property => ts.isJsxAttribute(property) && property.name.getText(tree) === 'selection');
+      if (selection && ts.isJsxAttribute(selection) && selection.initializer && ts.isJsxExpression(selection.initializer) && selection.initializer.expression && ts.isObjectLiteralExpression(selection.initializer.expression)) {
+        for (const property of selection.initializer.expression.properties) if (ts.isPropertyAssignment(property)) {
+          if (property.name.getText(tree) === 'onConfirm') admission = property.initializer.getText(tree) === 'onSelectAsset';
+          if (property.name.getText(tree) === 'sourceProof') historicalProof = ts.isConditionalExpression(property.initializer) && property.initializer.whenTrue.getText(tree) === "'generated-video'" && property.initializer.whenFalse.getText(tree) === 'undefined';
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tree);
+  assert.ok(admission, 'library modal preserves the domain admission callback');
+  assert.ok(historicalProof, 'only the video picker enables historical video proof');
   assert.match(previewCardSource, /export function UpscalePreviewCard/, 'preview card should be exported');
   assert.match(previewCardSource, /PREVIEW_ZOOM_OPTIONS/, 'preview card should own zoom controls');
   assert.match(previewCardSource, /ChevronsLeftRight/, 'preview card should own compare affordance');

@@ -1,3 +1,5 @@
+import { withDbTransaction, isTransactionQueryExecutor } from '../frontend/src/lib/db';
+import { MEDIA_LIBRARY_ORGANIZATION_SCHEMA } from '../frontend/src/lib/schema/media-library-organization-schema';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {startDisposablePostgres} from './helpers/disposable-postgres';
@@ -48,23 +50,25 @@ test('new export publication creates a resolvable local asset with export proven
   const {hydrateOwnedVideoMediaFacts}=await import('../frontend/server/media-library/owned-video-facts');
   const pg=await startDisposablePostgres('export-writer-ref');t.after(()=>pg.cleanup());
   await pg.pool.query(`CREATE TABLE media_assets(id text PRIMARY KEY,public_id text DEFAULT 'ma_'||md5(random()::text),user_id text,kind text,url text,thumb_url text,preview_url text,mime_type text,width int,height int,size_bytes bigint,source text,source_job_id text,source_output_id text,status text,metadata jsonb,created_at timestamptz DEFAULT NOW(),updated_at timestamptz DEFAULT NOW(),deleted_at timestamptz);
-    CREATE TABLE job_outputs(id text,job_id text,user_id text,status text);
+    CREATE TABLE job_outputs(id text,job_id text,user_id text,status text,kind text,url text,storage_url text,created_at timestamptz DEFAULT now());
+    CREATE TABLE user_assets(asset_id text,user_id text,url text,mime_type text,metadata jsonb,created_at timestamptz DEFAULT now());
     CREATE TABLE app_jobs(job_id text,user_id text,hidden boolean);`);
+  await pg.pool.query(MEDIA_LIBRARY_ORGANIZATION_SCHEMA);
   const execute=async <T>(sql:string,values?:readonly unknown[])=>(await pg.pool.query(sql,values as unknown[])).rows as T[];
   const stubs:Record<string,string>={
-    '@/lib/db':'export const query=(sql,values)=>fixture.query(sql,values);',
-    '@/lib/schema':'export const ensureMediaLibrarySchema=async()=>{};',
+    '@/lib/db':'export const query=(sql,values)=>fixture.query(sql,values);export const withDbTransaction=callback=>fixture.transaction(callback);export const isTransactionQueryExecutor=fixture.isTransactionQueryExecutor;',
+    '@/lib/schema':'export const ensureMediaLibrarySchema=async()=>{};export const ensureAssetSchema=async()=>{};export const ensureMediaLibraryOrganizationSchema=async()=>{};',
     '@/server/storage':'export const recordUserAsset=async()=>{};',
     './asset-listing':'export const findLibraryAssetByOrigin=()=>{throw Error("No listing");};export const listLibraryAssetPage=findLibraryAssetByOrigin;',
     './asset-media':'export const copyRemoteMedia=()=>{throw Error("No network");};export const createRemoteVideoAssetThumbnail=copyRemoteMedia;',
-    './asset-resolvers':'export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async input=>input.thumbUrl;',
+    './asset-resolvers':'export const resolveReusableImageDisplay=async()=>undefined;export const resolveReusableAssetPreviewUrl=async()=>null;export const resolveReusableAssetThumbUrl=async input=>input.thumbUrl;',
   };
   const frontend=resolve('frontend');
   const bundle=await build({absWorkingDir:frontend,stdin:{contents:"export {ensureReusableAsset} from './server/media-library/assets';",resolveDir:frontend,loader:'ts'},tsconfig:resolve(frontend,'tsconfig.json'),bundle:true,platform:'node',format:'cjs',packages:'external',write:false,plugins:[{name:'local-assets',setup(builder){
     builder.onResolve({filter:/.*/},args=>args.path in stubs?{path:args.path,namespace:'fixture'}:undefined);
     builder.onLoad({filter:/.*/,namespace:'fixture'},args=>({contents:stubs[args.path],loader:'js',resolveDir:frontend}));
   }}]});
-  const module={exports:{} as any};runInNewContext(bundle.outputFiles[0].text,{module,exports:module.exports,fixture:{query:execute},require:createRequire(resolve(frontend,'package.json')),process:{env:{}},URL,console});
+  const module={exports:{} as any};runInNewContext(bundle.outputFiles[0].text,{module,exports:module.exports,fixture:{query:execute,transaction:<T>(callback:Parameters<typeof withDbTransaction<T>>[0])=>withDbTransaction(callback,{pool:pg.pool}),isTransactionQueryExecutor},require:createRequire(resolve(frontend,'package.json')),process:{env:{}},URL,console});
   const source='https://cdn.maxvideoai.com/timeline-exports/owner/new.mp4';
   const asset=await publish({outputPath:'/tmp/local-export-fixture.mp4',outputSize:1024,userId:'owner',exportId:'tlx_new',projectName:'Film',width:1280,height:720},{
     createLocalThumbnail:async()=>null,uploadPath:async()=>({url:source,key:'timeline-exports/owner/new.mp4'}) as any,

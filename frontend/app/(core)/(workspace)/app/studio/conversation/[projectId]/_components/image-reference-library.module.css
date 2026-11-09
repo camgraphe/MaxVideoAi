@@ -83,3 +83,8 @@
   .library .add {width: 100%;}
 }
 @media (prefers-reduced-motion: reduce) {.library .card {transition: none;}}
+
+/* The existing native dialog is the only host; embedded picker views fill its remaining space. */
+.browser { flex: 1; min-height: 0; overflow: hidden; display: flex; }
+.browser[hidden] { display: none; }
+.browser :global(.app-reference-picker) { height: 100%; width: 100%; border: 0; border-radius: 0; box-shadow: none; }
