@@ -24,8 +24,8 @@
 .library-character-detail-header button { display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 600px) {
   .library-media-navigation button, .library-storage-usage button, .compact-library-source select { min-height: 44px; }
-  .compact-library-source { flex: 1; }
-  .compact-library-source select { width: 100%; max-width: none; }
+  .compact-library-source { flex: 1 1 140px; }
+  .compact-library-source select { flex: 1; min-width: 0; width: 0; max-width: none; }
 }
 .compact-library {
   --compact-line: var(--app-line, var(--color-border, #d5d9df));

@@ -5,12 +5,13 @@ import { startWorkspaceReferenceFixture, referencePickerAuthModules } from './he
 
 const source = `import {useState} from 'react';import {createRoot} from 'react-dom/client';
 import {CompactLibraryBrowser} from './components/library/CompactLibraryBrowser.client';
+import {LibraryMediaNavigation} from './components/library/LibraryMediaNavigation.client';
 function Scene(){const[scope,setScope]=useState({view:'all',kind:'all',source:'all',sort:'recent'});
 return <main style={{height:'100dvh',display:'flex',padding:12}}><CompactLibraryBrowser locale="en" title="Media" hideTitle assets={globalThis.fixtureConfig.assets} assetType="all" isLoading={false}
 management={{userId:'gallery-owner',scope,onScopeChange:patch=>setScope(prev=>({...prev,...patch})),totalCount:200}}
 source={scope.source} availableSources={['all','upload','generated']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated'}} onSourceChange={source=>setScope(prev=>({...prev,source}))}
 searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match" renderAssetActions={()=>null}
-headerLeadingActions={<><button>All</button><button>Images</button><button>Videos</button><button>Audio</button></>}
+headerLeadingActions={<LibraryMediaNavigation locale="en" value="all" charactersEnabled onChange={()=>{}}/>}
 headerActions={<button>Import</button>}/></main>};createRoot(document.getElementById('root')).render(<Scene/>);`;
 const assets = Array.from({ length: 200 }, (_, index) => ({
   id: `asset-${index}`, name: `Image ${index}`, kind: 'image', source: 'upload',
@@ -64,6 +65,7 @@ test('real media browser keeps compact commands, visible selection and contained
       await expect(page.getByLabel('Library view', { exact: true })).toHaveValue('all');
       await page.keyboard.press('Escape');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false, 'no horizontal page overflow');
+      assert.equal(await page.locator('main').evaluate(element => element.scrollWidth > element.clientWidth + 1), false, 'no clipped origin selector or inner horizontal scrollbar');
       assert.equal(await page.locator('.compact-media-grid').evaluate(element => element.scrollWidth > element.clientWidth + 1), false, 'no virtual canvas overflow');
       assert.deepEqual(originals, [], 'browsing never downloads originals');
       assert.deepEqual(errors, []);

@@ -22,8 +22,9 @@ export function LibraryCharacters({ userId, locale, navigation }: { userId: stri
   const [selected, setSelected] = useState<string | null>(null);
   const fr = locale.startsWith('fr'), es = locale.startsWith('es');
   return <section className="library-characters compact-library">
+    <h1 className="sr-only">{fr ? 'Personnages' : es ? 'Personajes' : 'Characters'}</h1>
     <header className="compact-library-header">
-      {navigation}
+      <div className="compact-library-kind-actions">{navigation}</div>
       <Link prefetch={false} className="library-character-studio-link" href={selected ? studioHref(selected) : studioHref()}>{fr ? 'Ouvrir Character Studio' : es ? 'Abrir Character Studio' : 'Open Character Studio'}</Link>
     </header>
     <p className="library-character-intro">{fr ? 'Vos personnages sauvegardés et leurs looks, réutilisables dans Create, Studio et vos assistants connectés.' : es ? 'Tus personajes guardados y sus looks, reutilizables en Create, Studio y tus asistentes conectados.' : 'Your saved characters and looks, reusable in Create, Studio and your connected assistants.'}</p>

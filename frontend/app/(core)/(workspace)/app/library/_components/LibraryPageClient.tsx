@@ -207,7 +207,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   </Button>
                 </div>
               ) : null}
-              {charactersOpen ? <LibraryCharacters key={user.id} userId={user.id} locale={locale} navigation={mediaNavigation} /> : <AssetLibraryBrowser
+              {charactersOpen ? <LibraryCharacters key={`characters:${user.id}`} userId={user.id} locale={locale} navigation={mediaNavigation} /> : <AssetLibraryBrowser
                 layout="page"
                 locale={locale}
                 renderContinuation={(asset) => <MediaDestinationActions asset={asset} userId={user?.id} locale={locale} />}
@@ -364,7 +364,7 @@ function OwnedLibraryPageClient({ user, authLoading }: { user: { id: string } | 
                   ) : null
                 }
               />}
-              <LibraryStorageUsage key={user.id} userId={user.id} locale={locale} />
+              <LibraryStorageUsage key={`storage:${user.id}`} userId={user.id} locale={locale} />
             </div>
           )}
         </main>
