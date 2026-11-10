@@ -221,8 +221,9 @@ function Scene(){const library=useLibraryBrowse({userId:'gallery-owner',scope});
 return <main data-loaded={library.assets.length} style={{height:'100dvh',display:'flex',padding:12}}>
 <CompactLibraryBrowser locale="en" title="Media" assets={library.assets} assetType="all"
  management={{userId:'gallery-owner',scope,onScopeChange:()=>{},totalCount:library.totalCount}}
+ source="all" availableSources={['all','upload','generated']} sourceLabels={{all:'All',upload:'Uploads',generated:'Generated'}} onSourceChange={()=>{}}
  isLoading={library.isLoading} isLoadingMore={library.isLoadingMore} hasMore={library.hasMore}
- onLoadMore={library.loadMore} error={library.error?.message} onRetry={library.revalidate}
+ onLoadMore={library.loadMore} loadMoreLabel="Load more" error={library.error?.message} onRetry={library.revalidate}
  searchPlaceholder="Search media" sourcesTitle="Source" emptyLabel="Empty" emptySearchLabel="No match"
  renderAssetActions={()=>null}/></main>}
 createRoot(document.getElementById('root')).render(<SWRProvider><Scene/></SWRProvider>);`;

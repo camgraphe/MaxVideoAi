@@ -40,19 +40,24 @@ test('image imports participate in the content-object producer fence', { timeout
   });
   const input = { userId: owner, fileName: 'reimport.png', declaredMime: 'image/png', bytes };
 
-  await t.test('a deleted original can be uploaded again and selected through its new canonical identity', async () => {
-    await pg.pool.query(`INSERT INTO mcp_reference_upload_object_fences(object_key,state,created_at,updated_at)
-      VALUES($1,'deleted',now(),now())`, [key]);
+  await t.test('a deleted original and canonical tombstone can be reimported as a usable image', async () => {
+    const original = await store(input);
+    const oldAsset = (await pg.pool.query('SELECT id FROM media_assets WHERE user_id=$1 AND url=$2', [owner, url])).rows[0];
+    const { deleteLibraryAsset } = await import('../frontend/server/media-library/asset-deletion');
+    assert.equal(await deleteLibraryAsset({ userId: owner, assetId: oldAsset.id }), 'deleted');
+    // Physical cleanup has completed; no network/storage operation runs in this fixture.
+    await pg.pool.query("UPDATE mcp_reference_upload_object_fences SET state='deleted' WHERE object_key=$1", [key]);
     const result = await store(input);
     const asset = await loadStoredImageUploadRouteAsset({ userId: owner, assetId: result.assetId });
+    assert.notEqual(result.assetId, original.assetId);
     assert.equal(asset.url, url);
     assert.match(asset.canonicalAssetId!, /^ma_[a-f0-9]{32}$/);
-    assert.equal(writes, 1);
+    assert.equal(writes, 2);
     assert.deepEqual((await pg.pool.query('SELECT state,producer_claim_id FROM mcp_reference_upload_object_fences WHERE object_key=$1', [key])).rows,
       [{ state: 'referenced', producer_claim_id: null }]);
     const repeated = await store(input);
     assert.equal(repeated.assetId, result.assetId);
-    assert.equal(writes, 1, 'a live existing image is reused without rewriting storage');
+    assert.equal(writes, 2, 'a live existing image is reused without rewriting storage');
   });
 
   await t.test('an active deletion stops the upload before it writes any bytes', async () => {
