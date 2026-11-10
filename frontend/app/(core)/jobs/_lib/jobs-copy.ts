@@ -2,7 +2,11 @@ export const DEFAULT_JOBS_COPY = {
   title: 'History',
   activity: {
     title: 'Activity',
-    description: 'Your generations, in order. Open a result to keep creating.',
+    description: 'Follow your generations and pick up where you left off.',
+    mediaLibrary: 'Media library',
+    cost: 'Generation cost',
+    openIn: 'Open {tool}',
+    destinations: { create: 'Create', image: 'Image', audio: 'Audio', studio: 'Studio', storyboard: 'Storyboard', character: 'Characters', angle: 'Angle', upscale: 'Upscale', 'background-removal': 'Background removal', tools: 'Tools' },
     source: 'Source',
     sources: { all: 'All sources', video: 'Video', image: 'Image', audio: 'Audio', storyboard: 'Storyboard', character: 'Character', angle: 'Angle', upscale: 'Upscale', 'background-removal': 'Background removal', tool: 'Tools' },
     status: 'Status of loaded activity',

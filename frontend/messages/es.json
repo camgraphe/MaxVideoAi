@@ -3726,7 +3726,7 @@
     "jobs": {
       "activity": {
         "title": "Actividad",
-        "description": "Tus generaciones, en orden. Abre un resultado para seguir creando.",
+        "description": "Sigue tus generaciones y retoma tu creación.",
         "source": "Origen",
         "sources": {
           "all": "Todos los orígenes",
@@ -3749,7 +3749,22 @@
         },
         "statusHint": "Los estados filtran la actividad cargada. Carga más para consultar generaciones anteriores.",
         "filteredEmpty": "No hay generaciones coincidentes en la actividad cargada.",
-        "refresh": "Actualizar"
+        "refresh": "Actualizar",
+        "mediaLibrary": "Biblioteca",
+        "cost": "Coste de generación",
+        "openIn": "Abrir {tool}",
+        "destinations": {
+          "create": "Create",
+          "image": "Imagen",
+          "audio": "Audio",
+          "studio": "Studio",
+          "storyboard": "Storyboard",
+          "character": "Personajes",
+          "angle": "Angle",
+          "upscale": "Upscale",
+          "background-removal": "Quitar fondo",
+          "tools": "Herramientas"
+        }
       },
       "title": "Historial",
       "sections": {

@@ -7,6 +7,40 @@ image, audio, storyboard, character, angle, upscale, and background removal.
 The same `/api/jobs` collection endpoint also serves workspace consumers, so its
 initialized-schema requirement applies to every consumer, not only Activity.
 
+## Compact generation history
+
+Activity is a chronological work log; Media remains the place for collections,
+multi-selection, storage and reusable files. `JobsPageShell` renders route-local
+`ActivityRow` entries: a small lazy poster, model, prompt excerpt, source, exact
+date/time, existing generation cost and status. A multi-output generation retains
+its existing group and result count. No video/audio reader or original image is
+mounted by the list; the existing details viewer is loaded only when opened.
+Missing posters use a type icon. Appending history preserves each row's identity.
+The existing action panel retains save, reuse and history removal, with its
+account/source-scoped mutation feedback. The list does not request the model
+catalogue merely to decorate rows. Status filtering still applies to loaded
+history and says so when older pages remain.
+
+`activity-entry.ts` owns tool destinations. Create, image, audio, Storyboard and
+Character Builder accept an exact job handoff. Angle, Upscale and Background
+Removal only receive parameters their routes actually support; opening these
+tools must not claim to restore settings. Proven Studio jobs use the owned
+workspace redirect to their project. Mixed or ambiguous groups have no invented
+single destination. Row links disable speculative route prefetch.
+
+Activity explicitly requests `includeActivityOrigin`. Only that variant of the
+feed performs one batched read of accepted, account-owned generation quotes,
+concurrently with output enrichment. `activity-origin.ts` projects only the MCP
+origin or Studio project ID; raw quote data never reaches the browser. Ordinary
+Create feeds retain their existing read path. Unknown, conflicting or unavailable
+evidence omits provenance instead of guessing from a job ID, prompt or request
+shape. This optional read neither initializes schema nor writes generation state.
+
+`activity-list-dom`, `activity-list-browser` and `activity-entry` verify compact
+rendering, no original/playback loading, pagination identity, interactions and
+tool routing. The origin tests cover owned SQL projection, opt-in transport and
+cache isolation. These checks do not establish field Core Web Vitals gains.
+
 ## Owners
 
 - `frontend/lib/api-jobs.ts` owns SWR pagination, account/source scope isolation,

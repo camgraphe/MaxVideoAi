@@ -7,6 +7,7 @@ import sharp, { type SharpOptions } from 'sharp';
 import { query } from '@/lib/db';
 import { ensureAssetSchema } from '@/lib/schema';
 import { ensureReusableAsset } from '@/server/media-library';
+import { resolveExplicitUploadObjectKey } from '@/server/media-library/upload-incarnation';
 import { recordUserAsset, StorageUploadError, uploadImageToStorage } from '@/server/storage';
 import { createUploadImageThumbnail } from '@/server/upload-thumbnails';
 import { createImageUploadProducer, imageUploadProducerDependencies } from './image-upload-producer';
@@ -103,6 +104,7 @@ type ExistingUploadRow = {
   height: number | null;
   size_bytes: string | number | null;
   thumb_url: string | null;
+  purge_blocked?: boolean;
   metadata?: Record<string, unknown>;
 };
 
@@ -425,6 +427,7 @@ export function createStoreImageUploadService(
                 ua.width,
                 ua.height,
                 ua.size_bytes,
+                library_deleted_input(ua.user_id,jsonb_build_array(ua.asset_id,ua.url),ARRAY[]::text[]) AS purge_blocked,
                 COALESCE(ma.thumb_url, ua.metadata->>'thumbUrl') AS thumb_url
          FROM user_assets ua
          LEFT JOIN media_assets ma
@@ -445,6 +448,9 @@ export function createStoreImageUploadService(
 
     if (existingAssets.length > 0) {
       const [asset] = existingAssets;
+      if (asset.purge_blocked) {
+        throw new ImageUploadError('UPLOAD_FAILED', 'The image is being deleted; retry the upload after cleanup.');
+      }
       return {
         assetId: asset.asset_id,
         width: asset.width ?? normalized.width,
@@ -467,6 +473,7 @@ export function createStoreImageUploadService(
           userId: params.userId,
           prefix: 'user-assets',
           contentAddressed: true,
+          resolveContentAddressedKey: key => resolveExplicitUploadObjectKey(params.userId, key),
           ...(params.storageAcl !== undefined ? { acl: params.storageAcl } : {}),
           ...(params.storageCacheControl !== undefined ? { cacheControl: params.storageCacheControl } : {}),
           beforeUpload: async (objectKey: string) => {

@@ -30,9 +30,10 @@ const sharedMocks={
   '@/components/AppSidebar':`export const AppSidebar=()=>null;`,
   '@/components/FirstCreationState.client':`export const FirstCreationState=()=>null;`,
   '@/components/groups/GroupViewerModal':`export const GroupViewerModal=()=>null;`,
+  'next/link':`export default ({children,prefetch,...props})=><a {...props}>{children}</a>;`,
   'next/dynamic':`export default ()=>()=>null;`,
   '@/components/ui/Button':`export const Button=({children,variant,size,...rest})=><button {...rest}>{children}</button>;`,
-  '@/components/GroupedJobCard':`export const GroupedJobCard=({group,onAction,savingToLibrary})=><div><button onClick={()=>onAction(group,'save-to-library')} disabled={savingToLibrary}>Save main output</button><button onClick={()=>onAction(group,'remove')}>Remove from history</button></div>;`,
+  './ActivityRow.client':`export const ActivityRow=({group,onAction,savingToLibrary})=><div><button onClick={()=>onAction(group,'save-to-library')} disabled={savingToLibrary}>Save main output</button><button onClick={()=>onAction(group,'remove')}>Remove from history</button></div>;`,
 };
 test('Activity displays save/remove errors and supports retry without duplicate requests',async()=>{
   const directory=await mkdtemp(join(tmpdir(),'jobs-action-feedback-'));

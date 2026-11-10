@@ -72,6 +72,25 @@ producer fence remains the owner for content-addressed uploads and thumbnails.
 Provider replays cannot reactivate a purged identity or repopulate removed job
 projections. Independent outputs and a new explicit import keep separate identities.
 
+Explicit image/audio/video imports resolve content-addressed keys through
+`server/media-library/upload-incarnation.ts` before acquiring their producer lease,
+then revalidate the selected key under that lease before writing bytes. A purge
+that completes between lookup and acquisition causes an explicit retry without a
+PUT to the retired URL. Only an exact owned original in a completed purge object
+plan advances to a deterministic new key; pending/deleting requests reject the
+upload through their exact owned storage-path admission token. Image deduplication
+also checks the existing asset ID and URL against admission before returning it.
+Successive purge/import cycles follow that ledger with a bounded limit. The new
+URL creates a fresh canonical identity, and audio/video legacy IDs also include
+that incarnation. Repeated live content stays deduplicated. Old canonical IDs,
+legacy IDs and raw URLs remain deleted, including Studio references and generation
+admission. Prepared/derived writers do not opt in. No tombstone, request or storage
+fence is cleared. `tests/media-library-reimport-postgres.test.ts` exercises two full
+cycles per media kind through the actual upload, Trash and worker owners with
+only S3 transport replaced by isolated in-memory bytes. It also interleaves real
+purge completion before producer acquisition, verifies that a held producer lease
+prevents worker reclamation, and rejects imports during the pending queue.
+
 Migration `98_media_library_purge.sql` is an explicit deployment step after the
 existing organization/MCP schema migrations. It creates infrastructure and triggers;
 it does not enqueue or delete any customer media. No GET bootstraps schema. Keep

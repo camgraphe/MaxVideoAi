@@ -4,11 +4,15 @@ import type { Mode, PricingSnapshot } from '@/types/engines';
 import type { VideoOperation } from '@/lib/video-operation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 
+/** Account-owned accepted quote evidence projected by the jobs collection. */
+export type ActivityOrigin = { kind: 'mcp' } | { kind: 'studio'; projectId: string };
+
 export interface Job {
   jobId: string;
   surface?: JobSurface;
   billingProductKey?: BillingProductKey | null;
   settingsSnapshot?: unknown;
+  activityOrigin?: ActivityOrigin | null;
   engineLabel: string;
   durationSec: number;
   prompt: string;

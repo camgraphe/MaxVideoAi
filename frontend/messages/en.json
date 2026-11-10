@@ -3881,7 +3881,7 @@
     "jobs": {
       "activity": {
         "title": "Activity",
-        "description": "Your generations, in order. Open a result to keep creating.",
+        "description": "Follow your generations and pick up where you left off.",
         "source": "Source",
         "sources": {
           "all": "All sources",
@@ -3904,7 +3904,22 @@
         },
         "statusHint": "Status filters apply to loaded activity. Load more to check older generations.",
         "filteredEmpty": "No matching generations in the loaded activity.",
-        "refresh": "Refresh"
+        "refresh": "Refresh",
+        "mediaLibrary": "Media library",
+        "cost": "Generation cost",
+        "openIn": "Open {tool}",
+        "destinations": {
+          "create": "Create",
+          "image": "Image",
+          "audio": "Audio",
+          "studio": "Studio",
+          "storyboard": "Storyboard",
+          "character": "Characters",
+          "angle": "Angle",
+          "upscale": "Upscale",
+          "background-removal": "Background removal",
+          "tools": "Tools"
+        }
       },
       "title": "History",
       "sections": {

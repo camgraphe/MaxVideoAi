@@ -65,12 +65,13 @@ test('jobs route-local modules expose expected contracts', () => {
   assert.match(shellSource, /export function JobsPageShell/);
   assert.match(shellSource, /HeaderBar/);
   assert.match(shellSource, /AppSidebar/);
-  assert.match(shellSource, /GroupedJobCard/);
+  assert.match(shellSource, /ActivityRow/);
+  assert.doesNotMatch(shellSource, /<GroupedJobCard/);
   assert.match(shellSource, /GroupViewerModal/);
   assert.match(shellSource, /filterActivityGroups/);
   assert.doesNotMatch(shellSource, /CollapsedGroupRail|collapsedSections|sections\.map/);
   assert.match(shellSource, /JOBS_SOURCES/);
-  assert.match(shellSource, /heroJobId && surface !== 'background-removal'/, 'the background-removal tool does not hydrate job settings from query parameters');
+  assert.match(readFileSync(join(root, 'frontend/app/(core)/jobs/_components/ActivityRow.client.tsx'), 'utf8'), /resolveActivityDestination/, 'links use the tested per-tool hydration contract');
   assert.match(collapsedRailSource, /export function CollapsedGroupRailSkeleton/);
   assert.match(collapsedRailSource, /export function CollapsedGroupRail/);
   assert.match(skeletonCardsSource, /export function renderSkeletonCards/);
