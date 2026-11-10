@@ -102,6 +102,9 @@ The connected Studio walkthrough also requires `STUDIO_IMAGE_CONVERSATION_ENABLE
 match production. Otherwise `/app/studio` deliberately renders unavailable before
 opening its media picker. Check all three together and scope any parity repair to
 the intended Preview branch; library/reference QA never implies a paid Milo request.
+Also compare `CREATOR_TOOLS_ENABLED` for Tools/Subtitles navigation: the public
+catalogue retains its released entries while authenticated tool routes intentionally
+return 404 when that runtime gate is absent. Preserve quote/confirmation boundaries.
 
 ## Build guard and limits
 
