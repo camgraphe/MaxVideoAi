@@ -213,9 +213,16 @@ test('native chat timeline, persistent app themes and mobile chat access ('+brow
       const index=name==='Watch study'?0:1;
       assert.deepEqual(checked.request().postDataJSON(),{candidates:[{reference:{type:'asset',assetId:referenceIds[index],kind:'image'},originalUrl:referenceUrls[index]}]});
       assert.equal(body.results[0].error,undefined);assert.ok(body.results[0].sourceRevision);
+      // The validation response precedes the picker callback that saves the selection.
+      await expect(page.getByRole('button',{name:`Remove Image ${index+1}`,exact:true})).toBeVisible();
     }
     await page.unroute(libraryEndpoint);
-    await page.reload({waitUntil:'domcontentloaded'});
+    // Session selection restores only after the new document's owned history loads.
+    const selectionHistoryLoaded=page.waitForResponse(response=>response.request().method()==='GET'&&response.url()===runtime.browserOrigin+'/api/studio/projects/'+project.projectId+'/image-conversation',{timeout:30000});
+    const [,selectionHistory]=await Promise.all([page.reload({waitUntil:'domcontentloaded'}),selectionHistoryLoaded]);
+    const selectionHistoryBody=await selectionHistory.json();
+    assert.equal(selectionHistory.status(),200);assert.equal(selectionHistoryBody.ok,true);assert.equal(selectionHistoryBody.result.projectId,project.projectId);
+    await expect(page.getByRole('heading',{name:'What would you like to do?'})).toBeVisible({timeout:45000});
     await expect(page.getByRole('button',{name:'Remove Image 1',exact:true})).toBeVisible();
     await expect(page.getByRole('button',{name:'Remove Image 2',exact:true})).toBeVisible();
     const shelf=page.getByRole('complementary',{name:'Media panel',exact:true});
