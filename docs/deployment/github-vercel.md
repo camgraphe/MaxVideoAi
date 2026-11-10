@@ -86,7 +86,12 @@ For Create/Media integration previews, Git ancestry alone does not establish UI
 parity. Also verify the build-time `NEXT_PUBLIC_PROMPT_ASSISTANCE_LIVE=1` and
 `NEXT_PUBLIC_PROMPT_ASSISTANCE_PERCEPTION=1` flags, plus the corresponding runtime
 `PROMPT_ASSISTANCE_ENABLED=true` and `PROMPT_ASSISTANCE_PERCEPTION_ENABLED=true`
-gates against the reviewed production settings. Missing public flags deliberately
+gates against the reviewed production settings. Also verify the shared credits
+policy (`STUDIO_ASSISTANCE_ENABLED` and `STUDIO_ASSISTANCE_APPROVED_POLICY`):
+the assistant status must report enabled with the current reviewed credits policy,
+not merely render its tab. When reviewing Seedance Draft, compare the existing
+`SEEDANCE_2_5_DRAFT_ENABLED` gate as well. These checks do not change account
+credits or authorize a paid request. Missing public flags deliberately
 render the older composer layout even with current source. Match flags only in
 the intended preview branch/environment, rebuild through Git, then inspect the
 actual Create interface and its media picker. Do not copy production secrets or
