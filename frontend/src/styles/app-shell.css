@@ -99,6 +99,9 @@
 .app-experience .app-site-auth a, .app-experience .app-site-auth button { display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--app-line); border-radius: 4px; }
 .app-experience .app-site-dialog a:hover, .app-experience .app-site-dialog button:hover, .app-experience .app-connected-header button:hover { background: var(--surface-2); }
 .app-experience .app-navigation a:focus-visible, .app-experience .app-connected-header :is(button,a):focus-visible, .app-experience .app-site-dialog :is(button,a):focus-visible { outline: 2px solid var(--app-accent); outline-offset: -2px; }
+@media (min-width: 768px) {
+  .app-experience .app-site-preferences [role="menu"] { left: 0; right: auto; }
+}
 @media (max-width: 767px) {
   .app-experience { --header-height: 62px; --app-bottom-nav-height: calc(70px + env(safe-area-inset-bottom)); padding-bottom: var(--app-bottom-nav-height); }
   .app-experience .app-connected-header { padding: 6px 12px; gap: 8px; }
