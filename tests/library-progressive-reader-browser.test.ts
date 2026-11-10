@@ -4,7 +4,9 @@ import { chromium, expect } from '@playwright/test';
 import { startWorkspaceReferenceFixture, referencePickerAuthModules } from './helpers/workspace-reference-browser-fixture';
 
 test('portrait and landscape placeholders keep the final reader framing while the original loads', { timeout: 90000 }, async () => {
-  const source = `import{createRoot}from'react-dom/client';import{ProgressiveMediaReader}from'./components/library/ProgressiveMediaReader.client';createRoot(document.getElementById('root')).render(<main style={{width:'min(778px,100%)'}}><ProgressiveMediaReader asset={globalThis.fixtureConfig.asset} locale="en" label="Fixture image"/></main>);`;
+  // The standalone fixture strips CSS @imports; include the same lightbox styles
+  // that the real application loads from globals.css.
+  const source = `import 'yet-another-react-lightbox/styles.css';import{createRoot}from'react-dom/client';import{ProgressiveMediaReader}from'./components/library/ProgressiveMediaReader.client';createRoot(document.getElementById('root')).render(<main style={{width:'min(778px,100%)'}}><ProgressiveMediaReader asset={globalThis.fixtureConfig.asset} locale="en" label="Fixture image"/></main>);`;
   const browser = await chromium.launch();
   try {
     for (const [width, height] of [[1024, 1536], [1536, 1024]]) {
@@ -31,7 +33,7 @@ test('portrait and landscape placeholders keep the final reader framing while th
         await expect(page.locator('.app-library-reader-placeholder')).toHaveCount(0);
         const final = await page.locator('.yarl__slide_image').boundingBox();
         assert.ok(final);
-        for (const dimension of ['x', 'y', 'width', 'height'] as const) assert.ok(Math.abs(final[dimension] - painted[dimension]) <= 2, `${dimension}: no thumbnail-to-image jump`);
+        for (const dimension of ['x', 'y', 'width', 'height'] as const) assert.ok(Math.abs(final[dimension] - painted[dimension]) <= 2, `${dimension}: no thumbnail-to-image jump (${JSON.stringify({ painted, final })})`);
       } finally { release(); await page.close(); await fixture.close(); }
     }
   } finally { await browser.close(); }
